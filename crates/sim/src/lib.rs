@@ -2,6 +2,7 @@
 use rustdrive_core::*;
 use rustdrive_pipeline::replay::SensorLog;
 use rustdrive_pipeline::{DrivingPipeline, PipelineConfig, SensorFrame};
+use rustdrive_routing::{RoadNetwork, RoadNetworkSpec, RoutePlan};
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 
@@ -35,6 +36,16 @@ pub enum Expected {
     Stop,
     Fault,
 }
+/// Known map and pre-departure closure information, not sensed obstacle labels.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct NavigationSpec {
+    pub network: RoadNetworkSpec,
+    pub start: String,
+    pub goal: String,
+    #[serde(default)]
+    pub closed_edges: Vec<String>,
+}
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Scenario {
@@ -51,6 +62,11 @@ pub struct Scenario {
     pub gnss_dropout: Option<f64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub dynamics: Option<DynamicsSpec>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub navigation: Option<NavigationSpec>,
+    /// Independent swept-circle acceptance floor in meters; never a planner input.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub min_clearance_m: Option<f64>,
     pub objects: Vec<ObjectSpec>,
 }
 impl Scenario {
@@ -75,6 +91,23 @@ impl Scenario {
         }) {
             return Err("invalid dynamic plant calibration".into());
         }
+        if self
+            .min_clearance_m
+            .is_some_and(|d| !d.is_finite() || d < 0.0)
+        {
+            return Err("minimum clearance must be finite and nonnegative".into());
+        }
+        let selected = self.navigation_plan()?;
+        let object_limit = if let Some(plan) = &selected {
+            if !(20.0..=1000.0).contains(&plan.route.length())
+                || !(1.5..=10.0).contains(&plan.route.half_width)
+            {
+                return Err("selected map route is outside simulation geometry bounds".into());
+            }
+            plan.route.length()
+        } else {
+            self.road_length
+        };
         for time in [self.lidar_dropout, self.gnss_dropout]
             .into_iter()
             .flatten()
@@ -96,7 +129,7 @@ impl Scenario {
             .iter()
             .all(|x| x.is_finite())
                 || o.s < 0.0
-                || o.s > self.road_length
+                || o.s > object_limit
                 || !(0.2..=3.0).contains(&o.radius)
                 || o.speed.abs() > 12.0
                 || o.lateral_speed.abs() > 4.0
@@ -109,6 +142,13 @@ impl Scenario {
         Ok(())
     }
     pub fn route(&self) -> Route {
+        if self.navigation.is_some() {
+            return self
+                .navigation_plan()
+                .expect("validate scenario before building its route")
+                .unwrap()
+                .route;
+        }
         let n = self.road_length.ceil() as usize;
         Route::new(
             (0..=n)
@@ -120,6 +160,18 @@ impl Scenario {
             self.half_width,
         )
         .unwrap()
+    }
+    pub fn navigation_plan(&self) -> Result<Option<RoutePlan>, String> {
+        self.navigation
+            .as_ref()
+            .map(|nav| {
+                RoadNetwork::new(nav.network.clone())?.shortest_route(
+                    &nav.start,
+                    &nav.goal,
+                    &nav.closed_edges,
+                )
+            })
+            .transpose()
     }
     pub fn world_objects(&self, route: &Route, t: f64) -> Vec<WorldObject> {
         self.objects
@@ -192,6 +244,8 @@ pub struct Run {
     pub schema_version: u32,
     pub scenario: Scenario,
     pub route: Route,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub navigation: Option<RoutePlan>,
     pub vehicle: VehicleConfig,
     pub frames: Vec<Frame>,
     pub occupied_cells: Vec<Vec2>,
@@ -371,6 +425,12 @@ pub fn simulate_with_backend(
     scenario.validate()?;
     let dt = config.nominal_dt;
     let route = config.route.clone();
+    let navigation = scenario.navigation_plan()?;
+    if let Some(plan) = &navigation
+        && (plan.route.points != route.points || plan.route.half_width != route.half_width)
+    {
+        return Err("backend route differs from the selected navigation route".into());
+    }
     let vehicle = config.vehicle;
     let mut pipeline = DrivingPipeline::new(config.clone())?;
     let mut sensor_log = SensorLog::new(source, config);
@@ -441,7 +501,14 @@ pub fn simulate_with_backend(
                 clearance,
             });
         }
-        if progress >= route.length() - 2.0 && truth.speed < 0.2 {
+        let at_map_goal = navigation.as_ref().is_none_or(|plan| {
+            truth
+                .pose
+                .position
+                .distance(*plan.route.points.last().unwrap())
+                <= 2.0
+        });
+        if progress >= route.length() - 2.0 && truth.speed < 0.2 && at_map_goal {
             collisions += usize::from(clearance < 0.0);
             reached_goal = true;
             break;
@@ -479,6 +546,13 @@ pub fn simulate_with_backend(
     }
     if road_violations > 0 {
         failures.push(format!("{road_violations} road boundary violations"));
+    }
+    if let Some(required) = scenario.min_clearance_m
+        && minimum < required
+    {
+        failures.push(format!(
+            "minimum swept clearance {minimum:.3} m is below {required:.3} m"
+        ));
     }
     if error_max > 1.0 {
         failures.push(format!(
@@ -520,6 +594,7 @@ pub fn simulate_with_backend(
         schema_version: 1,
         scenario,
         route,
+        navigation,
         vehicle,
         frames,
         occupied_cells: pipeline.occupied_cells(),

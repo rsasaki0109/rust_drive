@@ -1293,11 +1293,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "rustdrive-routing"
+version = "0.1.0"
+dependencies = [
+ "rustdrive-core",
+ "serde",
+]
+
+[[package]]
 name = "rustdrive-sim"
 version = "0.1.0"
 dependencies = [
  "rustdrive-core",
  "rustdrive-pipeline",
+ "rustdrive-routing",
  "serde",
  "serde_json",
 ]

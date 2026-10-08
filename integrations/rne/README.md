@@ -70,3 +70,7 @@ The integration currently passes eight tests, including multi-seed hazard runs, 
 The current shared planner integrates bounded acceleration to compute arrival times, checks the retimed stopping path and its stationary hold, and uses a longer persistent lateral transition where low lateral authority requires it. The dynamic adapter caps calibrated forward acceleration at 2.0 m/s² and the existing conservative friction authority. No RNE engine revision changed for this extension. [Previous speed-planning methods and results](../../docs/speed-planning.md).
 
 The current tracking extension adds smooth supplied-route interpolation, estimated-heading joins and braking headroom in the shared algorithm crates; the engine and plant parameters stay pinned. Both the RNE multi-seed test and hazard CLI now require at most 20 emergency ticks in the specified low-friction avoidance fixture. Recorded counts are 9/8/7 for seeds 1/7/42. [Current tracking evidence and remaining limitations](../../docs/tracking.md).
+
+## Road-network demo
+
+The adapter also runs authored graph routes selected by the shared simulator before departure. With Pillow active, `bash scripts/rne-demo.sh dynamic assets/rne-demo.gif scenarios/route-detour.json` reproduces the opening README closure-detour GIF. The three map fixtures run across seeds 1/7/42 in the expanded acceptance/replay suite. Known closures are map inputs; they are not LiDAR objects. [Routing results and limits](../../docs/routing.md).

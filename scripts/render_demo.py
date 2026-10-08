@@ -55,6 +55,12 @@ def render(run, frame, index):
     for y in range(0, 428, 56):
         c.line([(0, y), (838, y)], fill='#172739')
     route = run['route']['points']
+    navigation = run.get('navigation')
+    if navigation:
+        nav = run['scenario']['navigation']
+        for edge in nav['network']['edges']:
+            c.line([world(p) for p in edge['points']], fill='#182638',
+                   width=int(2*edge['half_width']*scale), joint='curve')
     center = [world(p) for p in route]
     boundaries=[]
     for side in [-1,1]:
@@ -77,6 +83,14 @@ def render(run, frame, index):
             edge.append(world({'x':point['x']-dy/length*side*run['route']['half_width'],
                                'y':point['y']+dx/length*side*run['route']['half_width']}))
         c.line(edge, fill='#68809d', width=2, joint='curve')
+    if navigation:
+        for edge in nav['network']['edges']:
+            if edge['id'] in nav['closed_edges']:
+                geometry = [world(p) for p in edge['points']]
+                for j in range(0, len(geometry)-1, 4):
+                    c.line(geometry[j:j+2], fill=ORANGE, width=3)
+                cx,cy=geometry[len(geometry)//2]
+                c.text((cx-28,cy+8),'CLOSED',fill=ORANGE,font=font(11,True))
     for f in run['frames'][max(0,index-100):index:3]:
         p=world(f['truth']['pose']['position']);c.ellipse((p[0]-1,p[1]-1,p[0]+1,p[1]+1), fill=BLUE)
     trajectory = [world(p['position']) for p in frame['trajectory']['points']]
@@ -112,6 +126,30 @@ def render(run, frame, index):
     c.text((18,16),'LIVE WORLD  /  SENSOR-DRIVEN CLOSED LOOP',fill=MUTED,font=font(12,True))
     c.text((18,401),'10 m',fill=MUTED,font=font(11))
     c.line((66,409,66+113,409),fill=MUTED,width=2)
+    if navigation:
+        # The inset displays supplied map topology, closures and selected route.
+        # Its moving ego marker comes from recorded truth solely for visualization.
+        c.rounded_rectangle((526,266,820,410),10,fill='#0d1928',outline='#34506b')
+        c.text((540,275),f"ROUTE TO {nav['goal'].upper()}",fill=TEAL,font=font(12,True))
+        positions=[node['position'] for node in nav['network']['nodes']]
+        positions += [p for edge in nav['network']['edges'] for p in edge['points']]
+        xmin=min(p['x'] for p in positions);xmax=max(p['x'] for p in positions)
+        ymin=min(p['y'] for p in positions);ymax=max(p['y'] for p in positions)
+        factor=min(256/max(1,xmax-xmin),74/max(1,ymax-ymin))
+        def mini(p):
+            return 546+(p['x']-xmin)*factor,381-(p['y']-ymin)*factor
+        for edge in nav['network']['edges']:
+            color=ORANGE if edge['id'] in nav['closed_edges'] else '#40536d'
+            c.line([mini(p) for p in edge['points']],fill=color,width=2)
+        c.line([mini(p) for p in route],fill=TEAL,width=3)
+        for node in nav['network']['nodes']:
+            mx,my=mini(node['position'])
+            color=ORANGE if node['id']==nav['goal'] else MUTED
+            c.ellipse((mx-3,my-3,mx+3,my+3),fill=color)
+        mx,my=mini(frame['truth']['pose']['position'])
+        c.ellipse((mx-4,my-4,mx+4,my+4),fill=BLUE,outline=TEXT)
+        closure=', '.join(nav['closed_edges']) or 'none'
+        c.text((540,392),f'Known closures: {closure}',fill=MUTED,font=font(10))
     im.paste(canvas,(24,82))
     d=ImageDraw.Draw(im)
     d.rounded_rectangle((882,82,1176,510),16,fill=PANEL)
@@ -169,6 +207,8 @@ def main():
                 'scenario':run['scenario'],'summary':run['summary'],
                 'gif_frames':len(images),'playback_speed':3,
                 'renderer_command':f'python3 scripts/render_demo.py {args.run} --output {args.output}'}
+    if run.get('navigation'):
+        provenance['navigation']=run['navigation']
     # Match the full normalized configuration, never infer a recipe from the name.
     scenario_dir=Path(__file__).resolve().parent.parent/'scenarios'
     for scenario_path in sorted(scenario_dir.glob('*.json')):

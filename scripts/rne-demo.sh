@@ -10,7 +10,7 @@ if [[ "$(git -C "$rne_directory" rev-parse HEAD)" != "$(cat integrations/rne/rne
   exit 2
 fi
 cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- \
-  --scenario scenarios/mission.json --plant "$rne_plant" --seed 7 --output "artifacts/rne-$rne_plant"
+  --scenario "${3:-scenarios/mission.json}" --plant "$rne_plant" --seed 7 --output "artifacts/rne-$rne_plant"
 cargo run --release --locked --bin rustdrive -- replay \
   --log "artifacts/rne-$rne_plant/sensors.jsonl" --output "artifacts/rne-$rne_plant/replay"
 if ! python3 -c 'import PIL' >/dev/null 2>&1; then

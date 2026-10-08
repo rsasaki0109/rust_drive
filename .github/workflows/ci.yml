@@ -26,10 +26,19 @@ jobs:
         run: cargo run --release --locked --bin rustdrive -- run --scenario scenarios/mission.json --seed 7 --output artifacts/demo
       - name: Recompute sensor log
         run: cargo run --release --locked --bin rustdrive -- replay --log artifacts/demo/sensors.jsonl --output artifacts/demo/replay
+      - name: Drive mapped destinations and closure detour
+        shell: bash
+        run: |
+          for case in route-direct route-detour route-south; do
+            cargo run --release --locked --bin rustdrive -- run --scenario "scenarios/$case.json" --seed 7 --output "artifacts/routing/$case"
+            cargo run --release --locked --bin rustdrive -- replay --log "artifacts/routing/$case/sensors.jsonl" --output "artifacts/routing/$case/replay"
+          done
       - uses: actions/upload-artifact@v4
         with:
           name: telemetry-${{ matrix.os }}
-          path: artifacts/demo/
+          path: |
+            artifacts/demo/
+            artifacts/routing/
   visual:
     runs-on: ubuntu-latest
     steps:

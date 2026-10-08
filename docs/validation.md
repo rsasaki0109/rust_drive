@@ -41,7 +41,7 @@ The adapter tests additionally cover blocked-road stopping and acquisition-error
 
 - RNE runs native vehicle integration and CPU 3D ray queries with planar LiDAR. Rapier contact response is not used; swept circular collision/route scoring is independent. The GIF is top-down telemetry rendering, not a full 3D engine camera capture.
 - CARLA is not installed, implemented or tested. No GPU is required for the implemented RNE path. CARLA's standard rendered/camera workflow generally needs a suitable GPU; no-rendering limits sensors and has not been validated here.
-- No learned camera/semantic perception, 3D SLAM, global routing, traffic-rule reasoning, ROS 2 bridge or real vehicle actuator is implemented. The route and initial pose calibration are supplied.
+- No learned camera/semantic perception, 3D SLAM, traffic-rule reasoning, ROS 2 bridge or real vehicle actuator is implemented. The route and initial pose calibration are supplied.
 - Occupancy mapping is diagnostic. Planning has three lateral targets and heuristic CV forecasts. The current acceleration-aware timing is described in [speed planning](speed-planning.md). RNE adds a native friction limit/steering lag, without establishing realistic vehicle calibration or joint trajectory feasibility.
 - Replay verifies computation only; it cannot establish physical acceptance, timing, robust autonomy or operational safety. No certification, formal verification, hardware-in-the-loop or sensor/weather benchmark is claimed.
 - GitHub Actions' three-platform default checks plus Linux visualization/RNE jobs passed remotely as recorded below. Full RNE rendering/platform CI remains unexecuted here.
@@ -84,3 +84,12 @@ For speed-planning commit `7a6ada6b5301276bed046274f771d7e64253c4a0`, [run 37826
 ## Tracking extension (2026-10-09, Asia/Tokyo)
 
 The default workspace passes **76 tests**, formatting, Clippy with warnings denied, the locked release build and eight reference scenario/replay pairs. RNE passes eight adapter tests, formatting, Clippy and the release build. All 30 seeded acceptance runs pass with zero collisions/road violations, matching complete replay, valid speed profiles and bounded normal commanded steering rates. The low-friction fixture additionally gates emergency fallback at 20 ticks; measured counts are 9/8/7 for seeds 1/7/42, down from 73/83/80. [Current methods, command metrics and full results](tracking.md).
+
+
+For tracking commit `58cf7fe63060b1b9c8e4313a5e37c320e0a22f3c`, [run 37848670958](https://github.com/rsasaki0109/rust_drive/actions/runs/37848670958) completed all five jobs successfully.
+
+## Road-network extension (2026-10-09, Asia/Tokyo)
+
+Local checks pass **85 workspace tests**, **9 RNE adapter tests**, formatting, Clippy with warnings denied, locked release builds and eleven reference scenario/replay pairs. The expanded suite passes **48 runs**, including 18 mapped-route runs across both backends and three seeds. All have zero collisions/road violations, complete replay and fixed minimum-clearance floors; mapped runs also verify selected topology/geometry and destination arrival independently. Search is additionally checked against exhaustive simple-path distances across every closure subset of a cyclic graph. A negative integration test rejects a collision-free run whose required clearance exceeds the measured result.
+
+The opening README media now shows the actual seed-7 RNE dynamic closure detour, with map inset, selected route and known closure. It remains CPU-only telemetry rendering. Route handover while moving, lane topology, traffic rules and general sharp-turn feasibility are unimplemented. [Methods, measured table and full result snapshot](routing.md). Remote CI for this extension is separate from the preceding observed runs above.

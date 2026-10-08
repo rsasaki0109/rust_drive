@@ -1,5 +1,5 @@
 [package]
-name = "rustdrive-sim"
+name = "rustdrive-routing"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -7,15 +7,8 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-rustdrive-pipeline = { path = "../pipeline" }
-serde.workspace = true
-serde_json.workspace = true
 rustdrive-core = { path = "../core" }
-rustdrive-routing = { path = "../routing" }
+serde.workspace = true
 
 [lints]
 workspace = true
-
-[[bin]]
-name = "rustdrive"
-path = "src/main.rs"

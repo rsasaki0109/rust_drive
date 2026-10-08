@@ -214,3 +214,85 @@ fn actors_exist_before_motion_begins() {
             > 0.2
     );
 }
+
+#[test]
+fn map_destinations_and_closure_detours_drive_and_replay_across_seeds() {
+    for (case, edges, goal) in [
+        (
+            "route-direct",
+            vec!["approach", "main", "east-exit"],
+            "east",
+        ),
+        (
+            "route-detour",
+            vec!["approach", "detour", "east-exit"],
+            "east",
+        ),
+        ("route-south", vec!["approach", "south-branch"], "south"),
+    ] {
+        for seed in [1, 7, 42] {
+            let result = simulate(scenario(case), seed).unwrap();
+            assert!(
+                result.summary.passed,
+                "{case} seed {seed}: {:?}",
+                result.summary
+            );
+            let plan = result.navigation.as_ref().unwrap();
+            assert_eq!(plan.edge_ids, edges);
+            assert_eq!(plan.node_ids.last().unwrap(), goal);
+            assert!(result.summary.min_clearance >= 0.5);
+            let mut bytes = vec![];
+            result
+                .sensor_log
+                .as_ref()
+                .unwrap()
+                .write(&mut bytes)
+                .unwrap();
+            assert_eq!(
+                rustdrive_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink())
+                    .unwrap()
+                    .ticks,
+                result.summary.steps
+            );
+        }
+    }
+}
+
+#[test]
+fn closed_or_invalid_map_rejected_before_driving() {
+    let mut s = scenario("route-detour");
+    s.navigation
+        .as_mut()
+        .unwrap()
+        .closed_edges
+        .push("detour".into());
+    assert!(simulate(s, 7).unwrap_err().contains("unreachable"));
+    let mut s = scenario("route-direct");
+    s.navigation.as_mut().unwrap().goal = "unknown".into();
+    assert!(simulate(s, 7).is_err());
+    let mut s = scenario("route-direct");
+    s.navigation.as_mut().unwrap().network.edges[0].points[0].x = 3.0;
+    assert!(simulate(s, 7).is_err());
+}
+
+#[test]
+fn clearance_acceptance_rejects_a_collision_free_but_too_close_run() {
+    let s = scenario("route-direct");
+    let baseline = simulate(s.clone(), 7).unwrap();
+    assert!(baseline.summary.passed);
+    let mut stricter = s;
+    stricter.min_clearance_m = Some(baseline.summary.min_clearance + 0.1);
+    let result = simulate(stricter, 7).unwrap();
+    assert_eq!(result.summary.collisions, 0);
+    assert!(!result.summary.passed);
+    assert!(
+        result
+            .summary
+            .failures
+            .iter()
+            .any(|f| f.contains("minimum swept clearance"))
+    );
+    let mut invalid = scenario("mission");
+    invalid.min_clearance_m = Some(-1.0);
+    assert!(simulate(invalid, 7).is_err());
+}

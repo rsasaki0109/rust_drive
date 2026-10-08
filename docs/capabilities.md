@@ -24,7 +24,7 @@
 | Calibrated braking / curvature speed limits | Implemented / tested | Fixed known limits; sampled curvature; no combined-friction optimization |
 | Continuous candidate collision checks | Implemented / tested | Synchronized circular sweeps; accelerated-segment chord bound and retiming revalidation |
 | Reachable longitudinal speed profiles | Implemented / tested | Forward/backward acceleration bounds, local curvature caps, finite arrival times; no joint tire-force or jerk optimization |
-| Smooth route interpolation / heading join | Implemented / tested | C2 centerline segments and estimated-heading correction; sampled corridor containment, no topology or optimal path solver |
+| Smooth route interpolation / heading join | Implemented / tested | C2 centerline segments and estimated-heading correction; sampled corridor containment, no joint geometry/control optimization |
 | Low-friction tracking regression gate | Implemented / tested | Fixed RNE calibration, 3 seeds, at most 20 emergency ticks in the specified fixture; no universal bound |
 | Acceleration feedforward control | Implemented / tested | First-segment acceleration with PI feedback; steering still pure pursuit |
 | Stop and wait on blocked candidates | Implemented / tested | Feasible stopping profile and eight-second forecast hold, release on a clear candidate; no semantic priority rules |
@@ -34,7 +34,9 @@
 | Camera, radar, 3D LiDAR, learned detection | Planned | No placeholder inference implementation |
 | Learned prediction and training | Planned | No model/data/runtime packaged |
 | 3D mapping / SLAM / map localization | Planned | No truth-as-localization substitution |
-| Road graph / lane topology / global routing | Planned | v0.1 supplies a single route |
+| Directed road graph / shortest-distance routing | Implemented / tested | Authored planar maps, deterministic Dijkstra, known pre-departure closure detours, 3 route fixtures × 2 plants × 3 seeds |
+| Minimum-clearance regression conditions | Implemented / tested | Fixed swept-circle fixture floors; no real-driving clearance specification |
+| Lane topology / traffic-rule routing / moving route handover | Planned | No map importer, lane-change graph, turn penalties or intersection rules |
 | Traffic lights / signs / right of way / parking | Planned | No traffic-rule claims |
 | General dynamically feasible planning / MPC | Planned | Current lattice + pure pursuit baseline |
 | CARLA bridge | Planned; not implemented or validated | No CARLA server/assets installed |

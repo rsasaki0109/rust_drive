@@ -346,6 +346,27 @@ mod tests {
         assert!(result.summary.passed, "{:?}", result.summary);
     }
     #[test]
+    fn mapped_destinations_and_detour_run_with_native_dynamics() {
+        for (case, edge) in [
+            ("route-direct", "main"),
+            ("route-detour", "detour"),
+            ("route-south", "south-branch"),
+        ] {
+            let result = run(scenario(case), 7, Plant::Dynamic).unwrap();
+            assert!(result.summary.passed, "{case}: {:?}", result.summary);
+            assert!(
+                result
+                    .navigation
+                    .as_ref()
+                    .unwrap()
+                    .edge_ids
+                    .iter()
+                    .any(|id| id == edge)
+            );
+            assert!(result.summary.min_clearance >= 0.5);
+        }
+    }
+    #[test]
     fn acquisition_error_reaches_braking_guard() {
         let mut s = scenario("lidar-fault");
         s.lidar_dropout = None;
@@ -392,6 +413,11 @@ mod tests {
                 );
                 assert!(result.summary.max_tracks > 0);
                 if case == "low-friction" {
+                    assert!(
+                        result.summary.min_clearance >= 0.4,
+                        "low-friction clearance regressed: {:?}",
+                        result.summary
+                    );
                     assert!(
                         result.summary.emergency_steps <= 20,
                         "low-friction tracking regressed for seed {seed}: {:?}",

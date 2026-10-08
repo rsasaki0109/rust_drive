@@ -10,9 +10,69 @@ import sys
 
 ROOT = Path(__file__).resolve().parent.parent
 CASES = {
-    'reference': ['occluded-crossing', 'cut-in', 'multiple-blocked', 'opposing-crossings'],
-    'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop', 'multiple-blocked', 'opposing-crossings'],
+    'reference': ['occluded-crossing', 'cut-in', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south'],
+    'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south'],
 }
+# Fixed regression floors, chosen against the preceding measured fixture results.
+# They are simulation test constraints, not a universal safe-distance specification.
+CLEARANCE_FLOORS_M = {
+    'occluded-crossing': 1.0, 'cut-in': 0.7, 'multiple-blocked': 3.0,
+    'opposing-crossings': 0.7, 'low-friction': 0.4, 'low-friction-stop': 4.0,
+    'route-direct': 0.5, 'route-detour': 0.5, 'route-south': 0.5,
+}
+EXPECTED_EDGES = {
+    'route-direct': ['approach', 'main', 'east-exit'],
+    'route-detour': ['approach', 'detour', 'east-exit'],
+    'route-south': ['approach', 'south-branch'],
+}
+
+
+def clearance_regression(summary, case):
+    floor = CLEARANCE_FLOORS_M[case]
+    value = summary['min_clearance']
+    return {'floor_m': floor, 'measured_m': value,
+            'passed': math.isfinite(value) and value >= floor}
+
+
+def check_navigation(run, case):
+    """Check selected topology/geometry against fixture expectations independently."""
+    nav = run['scenario']['navigation']
+    plan = run['navigation']
+    edges = {edge['id']: edge for edge in nav['network']['edges']}
+    nodes = {node['id']: node['position'] for node in nav['network']['nodes']}
+    at = nav['start']
+    points = []
+    distance = 0.0
+    half_width = math.inf
+    node_ids = [at]
+    for id in plan['edge_ids']:
+        edge = edges[id]
+        if id in nav['closed_edges'] or edge['from'] != at:
+            raise ValueError('selected path violates closure or connectivity')
+        geometry = edge['points']
+        if (math.dist(xy(geometry[0]), xy(nodes[edge['from']])) > 1e-6
+                or math.dist(xy(geometry[-1]), xy(nodes[edge['to']])) > 1e-6):
+            raise ValueError('edge geometry disagrees with its map endpoints')
+        half_width = min(half_width, edge['half_width'])
+        distance += sum(math.dist(xy(a), xy(b)) for a, b in zip(geometry, geometry[1:]))
+        points.extend(geometry[1:] if points else geometry)
+        at = edge['to']
+        node_ids.append(at)
+    if (at != nav['goal'] or plan['edge_ids'] != EXPECTED_EDGES[case]
+            or plan['node_ids'] != node_ids or points != run['route']['points']
+            or points != plan['route']['points'] or abs(distance - plan['distance_m']) > 1e-7
+            or abs(distance - run['route']['lengths'][-1]) > 1e-7
+            or half_width != run['route']['half_width'] or half_width != plan['route']['half_width']):
+        raise ValueError('selected route differs from the expected mapped destination')
+    end_distance = math.dist(xy(run['frames'][-1]['truth']['pose']['position']), xy(nodes[nav['goal']]))
+    if end_distance > 2.0:
+        raise ValueError('vehicle did not stop within 2 m of the mapped destination')
+    return {'edge_ids': plan['edge_ids'], 'distance_m': distance,
+            'goal_distance_m': end_distance, 'passed': True}
+
+
+def xy(point):
+    return point['x'], point['y']
 
 
 def invoke(args):
@@ -165,11 +225,15 @@ def main():
                           and row['replay']['ticks'] == summary['steps'])
                     row['speed_profiles'] = check_speed_profiles(output/'sensors.jsonl')
                     row['control_metrics'] = control_metrics(output/'sensors.jsonl')
+                    row['clearance_regression'] = clearance_regression(summary, case)
+                    ok &= row['clearance_regression']['passed']
                     ok &= row['control_metrics']['max_normal_commanded_steering_rate_rad_s'] <= 0.7 + 1e-8
                     if backend == 'rne-dynamic' and case == 'low-friction':
                         row['tracking_regression_passed'] = summary['emergency_steps'] <= 20
                         ok &= row['tracking_regression_passed']
                     run = json.loads((output/'run.json').read_text())
+                    if case in EXPECTED_EDGES:
+                        row['navigation'] = check_navigation(run, case)
                     if run['scenario'].get('dynamics'):
                         frames = run['frames']
                         acceleration = max(abs((b['truth']['speed']-a['truth']['speed'])/(b['time']-a['time'])) for a,b in zip(frames, frames[1:]))

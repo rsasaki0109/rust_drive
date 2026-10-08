@@ -16,7 +16,9 @@ flowchart LR
   T --> F[Constant-velocity prediction]
   S --> M[Log-odds occupancy map]
   L --> M
-  R[Supplied route] --> A[Lateral lattice planning]
+  N[Supplied road graph + destination + known closures] --> D[Dijkstra routing]
+  D --> R[Resolved route]
+  R --> A[Lateral lattice planning]
   L --> A
   F --> A
   A --> C[Pure pursuit + acceleration feedforward / PI]
@@ -37,6 +39,7 @@ Ground truth never flows into obstacle prediction or planning. The simulator ini
 | Crate | Responsibility | Depends on |
 |---|---|---|
 | `rustdrive-core` | SI contracts, planar transforms, route interpolation and projection, algorithm traits | serde |
+| `rustdrive-routing` | Validated directed maps, shortest-distance routing and pre-departure closures | core, serde |
 | `rustdrive-localization` | State and covariance estimation, innovation gating | core |
 | `rustdrive-perception` | Point clustering, circular-object fitting, track identity and velocity | core |
 | `rustdrive-mapping` | Bounded occupancy grid and ray updates | core |
@@ -85,6 +88,10 @@ For accelerated segments, the circular sweep additionally covers the deviation f
 **Control.** Pure pursuit uses a shorter speed-dependent preview, an interpolated lookahead-circle intersection, bounded steering and a steering-rate limit. Emergency recovery starts from the emitted zero steering command. Longitudinal control uses the first segment's acceleration as feedforward plus bounded PI feedback on its initial speed; a stationary hold does not command forward acceleration. The pipeline health checks and control guard substitute a −6 m/s² command for non-finite output, missing/stale/invalid sensors, acquisition errors or excessive position variance. A planner emergency also brakes. The simulation adapters enforce actual authority; infeasible states can trigger repeated emergency fallback. This guards a simulation workflow; it is not a certified safety mechanism or redundant vehicle controller.
 
 **Simulation and evaluation.** A kinematic bicycle with bounded speed, acceleration and steering is integrated every 0.05 s. The ego and obstacles have circular collision footprints; relative swept segments test collision between integration endpoints. Current and terminal overlaps are also scored, and newly active actors receive endpoint checks. Each evaluated tick counts at most one collision; exact continuous activation-time checking remains absent. Road containment uses the ego center plus circular radius against route half-width. Tire friction and actuator lag are outside the reference model. The optional RNE dynamic plant adds a friction limit and steering lag; road elevation, suspension, rectangular collision evaluation, weather, camera imagery and traffic laws remain outside the demonstrated operating domain. See the [adapter boundaries](../integrations/rne/README.md). No throughput or real-time guarantee is claimed.
+
+## Map navigation
+
+The independent routing crate resolves a directed map and known edge closures before departure. The simulator records selected node/edge IDs and supplies the route to the local pipeline; minimum edge width defines its conservative corridor. Search uses standard-library Dijkstra with deterministic equal-cost choices and rejects invalid or unreachable requests. Authored fork/merge and alternative-destination fixtures run in both plants. Sensor replay records the resolved route and recomputes the local stack; it does not rerun map search. [Map format, actual results and limitations](routing.md).
 
 ## Extension decisions
 
