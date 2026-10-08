@@ -6,14 +6,15 @@ permissions:
   contents: read
 jobs:
   rust:
-    env:
-      RUSTUP_HOME: ${{ runner.temp }}/rustdrive-rustup
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+      - name: Isolate Rust toolchains
+        shell: bash
+        run: echo "RUSTUP_HOME=$RUNNER_TEMP/rustdrive-rustup" >> "$GITHUB_ENV"
       - name: Install pinned Rust
         run: rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
       - run: cargo fmt --all --check
@@ -30,10 +31,11 @@ jobs:
           path: artifacts/demo/
   visual:
     runs-on: ubuntu-latest
-    env:
-      RUSTUP_HOME: ${{ runner.temp }}/rustdrive-rustup
     steps:
       - uses: actions/checkout@v4
+      - name: Isolate Rust toolchains
+        shell: bash
+        run: echo "RUSTUP_HOME=$RUNNER_TEMP/rustdrive-rustup" >> "$GITHUB_ENV"
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -48,8 +50,6 @@ jobs:
 
   rne-cpu:
     runs-on: ubuntu-latest
-    env:
-      RUSTUP_HOME: ${{ runner.temp }}/rustdrive-rustup
     steps:
       - uses: actions/checkout@v4
         with:
@@ -62,6 +62,9 @@ jobs:
           sparse-checkout: |
             crates
             third_party
+      - name: Isolate Rust toolchains
+        shell: bash
+        run: echo "RUSTUP_HOME=$RUNNER_TEMP/rustdrive-rustup" >> "$GITHUB_ENV"
       - name: Install pinned toolchains
         run: |
           rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
