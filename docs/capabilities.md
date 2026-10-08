@@ -22,8 +22,10 @@
 | Initially occluded / late lateral crossing fixtures | Implemented / tested | Reference/RNE across 3 seeds; circular scheduled actors, no semantics |
 | Low-friction avoidance and stopping | Implemented / tested | RNE dynamic mu=0.2, 0.15 s steering lag, separate longitudinal/lateral limits |
 | Calibrated braking / curvature speed limits | Implemented / tested | Fixed known limits; sampled curvature; no combined-friction optimization |
-| Continuous candidate collision checks | Implemented / tested | Synchronized circular sweeps of trajectory/forecast polylines; constant-speed arrival-time approximation |
-| Stop and wait on blocked candidates | Implemented / tested | Calibrated stopping distance, stop hold, release on a clear candidate; no semantic priority rules |
+| Continuous candidate collision checks | Implemented / tested | Synchronized circular sweeps; accelerated-segment chord bound and retiming revalidation |
+| Reachable longitudinal speed profiles | Implemented / tested | Forward/backward acceleration bounds, local curvature caps, finite arrival times; no joint tire-force or jerk optimization |
+| Acceleration feedforward control | Implemented / tested | First-segment acceleration with PI feedback; steering still pure pursuit |
+| Stop and wait on blocked candidates | Implemented / tested | Feasible stopping profile and eight-second forecast hold, release on a clear candidate; no semantic priority rules |
 | Multiple blocked alternatives / opposing crossings | Implemented / tested | Scheduled circular actors; independent physical acceptance and full replay |
 | Linux build/test | Verified locally | Rust 1.90.0; optional RNE uses 1.95.0 |
 | macOS / Windows | Remote checks observed on recorded revisions | Results and runner failures in [validation](validation.md); no local hosts |

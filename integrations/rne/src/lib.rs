@@ -73,6 +73,7 @@ impl RneBackend {
             if let Some(d) = scenario.dynamics {
                 let conservative_acceleration = (0.6 * d.friction_coefficient * 9.81).min(2.5);
                 config.motion_limits = Some(MotionLimits {
+                    max_acceleration_m_s2: conservative_acceleration.min(2.0),
                     max_deceleration_m_s2: conservative_acceleration,
                     max_lateral_acceleration_m_s2: conservative_acceleration,
                 });

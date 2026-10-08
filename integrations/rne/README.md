@@ -63,6 +63,8 @@ RNE is dual MIT/Apache-2.0. Optional locked dependency licenses are inventoried 
 
 ## Occlusion, crossing and low-friction regressions
 
-Run `bash scripts/check-hazards.sh` from RustDrive for the 18-case reference/RNE suite and complete replay. The dynamic adapter accepts optional scenario `dynamics` calibration for friction and steering lag, adds a longitudinal `mu*g` actuation clamp, and supplies conservative fixed braking/lateral limits to the shared planner. Reference/kinematic backends reject this calibration. Combined longitudinal/lateral friction coupling and online friction estimation are absent. [Measured outcomes and the repaired braking failure](../../docs/hazard-validation.md).
+Run `bash scripts/check-hazards.sh` from RustDrive for the 30-case reference/RNE suite and complete replay. The dynamic adapter accepts optional scenario `dynamics` calibration for friction and steering lag, adds a longitudinal `mu*g` actuation clamp, and supplies conservative fixed forward/braking/lateral limits to the shared planner. Reference/kinematic backends reject this calibration. Combined longitudinal/lateral friction coupling and online friction estimation are absent. [Measured outcomes and the repaired braking failure](../../docs/hazard-validation.md).
 
 The integration currently passes eight tests, including multi-seed hazard runs, acquisition under real geometric occlusion, and measured acceleration/braking limits. The engine pin and standalone dependencies remain the same.
+
+The current shared planner integrates bounded acceleration to compute arrival times, checks the retimed stopping path and its stationary hold, and uses a longer persistent lateral transition where low lateral authority requires it. The dynamic adapter caps calibrated forward acceleration at 2.0 m/s² and the existing conservative friction authority. No RNE engine revision changed for this extension. [Current methods and results](../../docs/speed-planning.md).

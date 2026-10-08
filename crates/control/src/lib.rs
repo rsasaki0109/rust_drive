@@ -1,4 +1,4 @@
-//! Pure-pursuit lateral control and bounded PI longitudinal control.
+//! Pure-pursuit steering and acceleration feedforward with bounded PI speed feedback.
 use rustdrive_core::{
     ControlCommand, Controller, DrivingMode, EgoState, Trajectory, VehicleConfig, wrap_angle,
 };
@@ -45,19 +45,25 @@ impl Controller for PurePursuit {
             .atan()
             .clamp(-self.vehicle.max_steer, self.vehicle.max_steer);
         self.steering += (desired - self.steering).clamp(-0.7 * dt, 0.7 * dt);
-        let error = path.points[0].speed - ego.speed;
-        self.integral = (self.integral + error * dt).clamp(-2.0, 2.0);
-        let acceleration = if path.points[0].speed < 0.1 {
-            self.integral = 0.0;
-            // A blocked-candidate stop must not brake less than the PI loop's
-            // normal deceleration bound. Adapters enforce actual plant authority.
-            if path.mode == DrivingMode::Yield {
-                -4.0
-            } else {
-                -3.5
+        let initial = &path.points[0];
+        let acceleration = if let Some(next) = path.points.get(1) {
+            let duration = next.time - initial.time;
+            if !duration.is_finite()
+                || duration <= 0.0
+                || !next.speed.is_finite()
+                || !initial.speed.is_finite()
+            {
+                return ControlCommand::emergency();
             }
+            let feedforward = (next.speed - initial.speed) / duration;
+            let error = initial.speed - ego.speed;
+            self.integral = (self.integral + error * dt).clamp(-2.0, 2.0);
+            (feedforward + 1.5 * error + 0.15 * self.integral).clamp(-4.0, 2.0)
+        } else if initial.speed < 0.1 {
+            self.integral = 0.0;
+            -3.5
         } else {
-            (1.5 * error + 0.15 * self.integral).clamp(-4.0, 2.0)
+            return ControlCommand::emergency();
         };
         ControlCommand {
             acceleration,
@@ -95,6 +101,66 @@ pub fn guard(
 #[cfg(test)]
 mod tests {
     use super::*;
+    fn profile(initial: f64, next: f64, duration: f64) -> Trajectory {
+        Trajectory {
+            points: vec![
+                rustdrive_core::TrajectoryPoint {
+                    position: rustdrive_core::Vec2::default(),
+                    speed: initial,
+                    time: 0.0,
+                },
+                rustdrive_core::TrajectoryPoint {
+                    position: rustdrive_core::Vec2::new(3.0, 0.0),
+                    speed: next,
+                    time: duration,
+                },
+            ],
+            mode: DrivingMode::Cruise,
+            lateral_target: 0.0,
+        }
+    }
+    #[test]
+    fn feedforward_starts_from_rest_and_tracks_planned_braking() {
+        let mut controller = PurePursuit::default();
+        assert_eq!(
+            controller
+                .control(EgoState::default(), &profile(0.0, 2.0, 1.0), 0.05)
+                .acceleration,
+            2.0
+        );
+        let ego = EgoState {
+            speed: 4.0,
+            ..EgoState::default()
+        };
+        assert_eq!(
+            controller
+                .control(ego, &profile(4.0, 2.0, 1.0), 0.05)
+                .acceleration,
+            -2.0
+        );
+    }
+    #[test]
+    fn stationary_hold_does_not_command_acceleration() {
+        let mut controller = PurePursuit::default();
+        assert_eq!(
+            controller
+                .control(EgoState::default(), &profile(0.0, 0.0, 8.0), 0.05)
+                .acceleration,
+            0.0
+        );
+    }
+    #[test]
+    fn invalid_profile_time_brakes() {
+        let mut controller = PurePursuit::default();
+        for duration in [0.0, -1.0, f64::NAN] {
+            assert_eq!(
+                controller
+                    .control(EgoState::default(), &profile(0.0, 2.0, duration), 0.05)
+                    .acceleration,
+                -6.0
+            );
+        }
+    }
     #[test]
     fn stale_data_and_nan_brake() {
         let c = ControlCommand {

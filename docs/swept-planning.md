@@ -1,5 +1,7 @@
 # Continuous candidate collision validation
 
+This is the historical record for `38475ae` (constant-speed timing). The current pipeline uses [acceleration-aware speed planning](speed-planning.md); the snapshot below is retained for comparison.
+
 The lateral lattice now checks circular envelopes throughout each trajectory interval, not only at its 81 sample points. This implementation runs inside the shared sensor-only pipeline on both the reference and CPU-only RNE plants.
 
 ## Collision model and timing
@@ -31,7 +33,7 @@ bash scripts/check.sh
 bash scripts/check-hazards.sh --output artifacts/swept-planning
 ```
 
-The workspace check runs 56 tests, formatting, Clippy, a locked release build, and eight reference scenario/replay pairs. The hazard command builds both release binaries and runs **30 cases**, each with independent physical evaluation and full sensor-output replay:
+At this revision the workspace check ran 56 tests, formatting, Clippy, a locked release build, and eight reference scenario/replay pairs. The hazard command builds both release binaries and runs **30 cases**, each with independent physical evaluation and full sensor-output replay:
 
 - Reference: occluded crossing, cut-in, multiple blocked alternatives, and opposing crossings, each with seeds 1, 7 and 42.
 - RNE dynamic: those four scenarios plus low-friction avoidance and stopping, with the same three seeds.

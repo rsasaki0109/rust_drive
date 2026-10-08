@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import math
 from pathlib import Path
 import subprocess
 import sys
@@ -29,6 +30,56 @@ def source_fingerprint():
     for file in sorted(set(files)):
         digest.update(str(file.relative_to(ROOT)).encode()+b'\0'+file.read_bytes()+b'\0')
     return digest.hexdigest()
+
+
+def check_speed_profiles(log):
+    """Check distance, speed and time kinematics independently of planner code."""
+    active = holds = 0
+    max_acceleration = max_deceleration = 0.0
+    with log.open() as stream:
+        header = json.loads(next(stream))
+        limits = header['header']['config'].get('motion_limits') or {}
+        forward = limits.get('max_acceleration_m_s2', 2.0)
+        braking = limits.get('max_deceleration_m_s2', 2.5)
+        for line in stream:
+            record = json.loads(line)
+            if record.get('kind') != 'tick':
+                continue
+            expected = record['tick']['expected']
+            path = expected['trajectory']['points']
+            if expected['trajectory']['mode'] == 'Emergency':
+                continue
+            if not path or path[0]['time'] != 0.0:
+                raise ValueError('trajectory must start at relative time zero')
+            if abs(path[0]['speed'] - max(0.0, expected['estimate']['speed'])) > 1e-8:
+                raise ValueError('profile initial speed differs from the estimated state')
+            active += 1
+            for point in path:
+                values = [point['time'], point['speed'], *point['position'].values()]
+                if not all(math.isfinite(value) for value in values) or point['speed'] < 0:
+                    raise ValueError('non-finite or negative profile state')
+            for a, b in zip(path, path[1:]):
+                duration = b['time'] - a['time']
+                if duration <= 0:
+                    raise ValueError('profile time must increase')
+                distance = math.hypot(b['position']['x'] - a['position']['x'], b['position']['y'] - a['position']['y'])
+                integrated_distance = 0.5 * (a['speed'] + b['speed']) * duration
+                if abs(distance - integrated_distance) > 1e-7 * max(1.0, distance):
+                    raise ValueError('speed integral disagrees with segment distance')
+                acceleration = (b['speed'] - a['speed']) / duration
+                if acceleration > forward + 1e-7 or acceleration < -braking - 1e-7:
+                    raise ValueError('profile exceeds calibrated longitudinal authority')
+                max_acceleration = max(max_acceleration, acceleration)
+                max_deceleration = max(max_deceleration, -acceleration)
+                if distance < 1e-10:
+                    if a['speed'] != 0 or b['speed'] != 0:
+                        raise ValueError('stationary segment has nonzero speed')
+                    holds += 1
+    if not active:
+        raise ValueError('no active speed profiles checked')
+    return {'verified': True, 'active_trajectories': active, 'stationary_holds': holds,
+            'max_acceleration_m_s2': max_acceleration,
+            'max_deceleration_m_s2': max_deceleration}
 
 
 def main():
@@ -81,6 +132,7 @@ def main():
                           and summary['road_violations'] == 0 and code_replay == 0
                           and row.get('replay', {}).get('verified') is True
                           and row['replay']['ticks'] == summary['steps'])
+                    row['speed_profiles'] = check_speed_profiles(output/'sensors.jsonl')
                     run = json.loads((output/'run.json').read_text())
                     if run['scenario'].get('dynamics'):
                         frames = run['frames']

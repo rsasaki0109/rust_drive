@@ -78,7 +78,12 @@ fn segment_contact(
     contact_fraction(
         relative_start,
         relative_end,
-        vehicle_radius + object.radius + margin(end),
+        // Constant acceleration along a segment differs from its temporal chord
+        // by at most |delta_v| * duration / 8. Inflate the circle by this bound.
+        vehicle_radius
+            + object.radius
+            + margin(end)
+            + (b.speed - a.speed).abs() * (b.time - a.time) / 8.0,
     )
     .map(|fraction| start + (end - start) * fraction)
 }

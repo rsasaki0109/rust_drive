@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "backend": "rne-dynamic-rapier-lidar",
-  "input_trace": "artifacts/swept-planning/rne-dynamic/occluded-crossing/seed-7/run.json",
+  "input_trace": "artifacts/speed-planning/rne-dynamic/occluded-crossing/seed-7/run.json",
   "scenario": {
     "name": "Crossing object emerges from geometric occlusion",
     "duration": 70.0,
@@ -35,25 +35,25 @@
   "summary": {
     "scenario": "Crossing object emerges from geometric occlusion",
     "seed": 7,
-    "simulated_seconds": 25.700000000000003,
-    "steps": 515,
+    "simulated_seconds": 25.900000000000002,
+    "steps": 519,
     "reached_goal": true,
     "collisions": 0,
     "road_violations": 0,
-    "min_clearance": 1.1965014917672132,
-    "localization_rmse": 0.08905687350020576,
-    "localization_max_error": 0.23886821803436145,
-    "final_speed": 0.1566741521386891,
-    "progress": 139.70346055182623,
-    "emergency_steps": 0,
-    "avoidance_steps": 118,
+    "min_clearance": 1.3226719973852656,
+    "localization_rmse": 0.09152764081233818,
+    "localization_max_error": 0.23112530418811916,
+    "final_speed": 0.18188472437555148,
+    "progress": 139.01761836635956,
+    "emergency_steps": 25,
+    "avoidance_steps": 116,
     "max_tracks": 2,
     "passed": true,
     "failures": []
   },
-  "gif_frames": 87,
+  "gif_frames": 88,
   "playback_speed": 3,
-  "renderer_command": "python3 scripts/render_demo.py artifacts/swept-planning/rne-dynamic/occluded-crossing/seed-7/run.json --output assets/hazard-demo.gif",
+  "renderer_command": "python3 scripts/render_demo.py artifacts/speed-planning/rne-dynamic/occluded-crossing/seed-7/run.json --output assets/hazard-demo.gif",
   "rne_expected_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
-  "command": "cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- --scenario scenarios/occluded-crossing.json --plant dynamic --seed 7 --output artifacts/swept-planning/rne-dynamic/occluded-crossing/seed-7"
+  "command": "cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- --scenario scenarios/occluded-crossing.json --plant dynamic --seed 7 --output artifacts/speed-planning/rne-dynamic/occluded-crossing/seed-7"
 }

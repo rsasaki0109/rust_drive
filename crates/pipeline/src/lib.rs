@@ -13,8 +13,13 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct MotionLimits {
+    #[serde(default = "default_acceleration")]
+    pub max_acceleration_m_s2: f64,
     pub max_deceleration_m_s2: f64,
     pub max_lateral_acceleration_m_s2: f64,
+}
+fn default_acceleration() -> f64 {
+    2.0
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -47,7 +52,9 @@ impl PipelineConfig {
             return Err("invalid route arc-length metadata or excessive route length".into());
         }
         if self.motion_limits.is_some_and(|limits| {
-            !limits.max_deceleration_m_s2.is_finite()
+            !limits.max_acceleration_m_s2.is_finite()
+                || !(0.1..=2.0).contains(&limits.max_acceleration_m_s2)
+                || !limits.max_deceleration_m_s2.is_finite()
                 || !(0.1..=6.0).contains(&limits.max_deceleration_m_s2)
                 || !limits.max_lateral_acceleration_m_s2.is_finite()
                 || !(0.1..=6.0).contains(&limits.max_lateral_acceleration_m_s2)
@@ -138,6 +145,7 @@ impl DrivingPipeline {
         planner.cruise_speed = config.cruise_speed;
         planner.vehicle = config.vehicle;
         if let Some(limits) = config.motion_limits {
+            planner.max_acceleration_m_s2 = limits.max_acceleration_m_s2;
             planner.max_deceleration_m_s2 = limits.max_deceleration_m_s2;
             planner.max_lateral_acceleration_m_s2 = Some(limits.max_lateral_acceleration_m_s2);
         }
@@ -416,6 +424,16 @@ mod tests {
         }
     }
     #[test]
+    fn old_motion_limit_calibration_defaults_only_the_new_acceleration_field() {
+        let limits: MotionLimits = serde_json::from_str(
+            r#"{"max_deceleration_m_s2":1.2,"max_lateral_acceleration_m_s2":1.0}"#,
+        )
+        .unwrap();
+        assert_eq!(limits.max_acceleration_m_s2, 2.0);
+        assert_eq!(limits.max_deceleration_m_s2, 1.2);
+        assert_eq!(limits.max_lateral_acceleration_m_s2, 1.0);
+    }
+    #[test]
     fn invalid_calibration_is_rejected_before_execution() {
         let mut config = PipelineConfig::new(
             Route::new(vec![Vec2::default(), Vec2::new(100.0, 0.0)], 5.5).unwrap(),
@@ -423,9 +441,15 @@ mod tests {
             VehicleConfig::default(),
         );
         config.motion_limits = Some(MotionLimits {
+            max_acceleration_m_s2: 2.0,
             max_deceleration_m_s2: 0.0,
             max_lateral_acceleration_m_s2: 1.0,
         });
-        assert!(DrivingPipeline::new(config).is_err());
+        assert!(DrivingPipeline::new(config.clone()).is_err());
+        config.motion_limits.as_mut().unwrap().max_deceleration_m_s2 = 2.5;
+        for acceleration in [0.0, f64::NAN, 3.0] {
+            config.motion_limits.as_mut().unwrap().max_acceleration_m_s2 = acceleration;
+            assert!(DrivingPipeline::new(config.clone()).is_err());
+        }
     }
 }

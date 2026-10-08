@@ -42,7 +42,7 @@ The adapter tests additionally cover blocked-road stopping and acquisition-error
 - RNE runs native vehicle integration and CPU 3D ray queries with planar LiDAR. Rapier contact response is not used; swept circular collision/route scoring is independent. The GIF is top-down telemetry rendering, not a full 3D engine camera capture.
 - CARLA is not installed, implemented or tested. No GPU is required for the implemented RNE path. CARLA's standard rendered/camera workflow generally needs a suitable GPU; no-rendering limits sensors and has not been validated here.
 - No learned camera/semantic perception, 3D SLAM, global routing, traffic-rule reasoning, ROS 2 bridge or real vehicle actuator is implemented. The route and initial pose calibration are supplied.
-- Occupancy mapping is diagnostic. Planning has three lateral targets, heuristic CV forecasts and constant-speed time approximation. RNE adds a native friction limit/steering lag, without establishing realistic vehicle calibration or joint trajectory feasibility.
+- Occupancy mapping is diagnostic. Planning has three lateral targets and heuristic CV forecasts. The current acceleration-aware timing is described in [speed planning](speed-planning.md). RNE adds a native friction limit/steering lag, without establishing realistic vehicle calibration or joint trajectory feasibility.
 - Replay verifies computation only; it cannot establish physical acceptance, timing, robust autonomy or operational safety. No certification, formal verification, hardware-in-the-loop or sensor/weather benchmark is claimed.
 - GitHub Actions' three-platform default checks plus Linux visualization/RNE jobs passed remotely as recorded below. Full RNE rendering/platform CI remains unexecuted here.
 - Published cloud snapshots have reconnected with the retained RNE source/tooling and passed the checks described below. Independent fresh-task restoration remains unverified.
@@ -70,3 +70,10 @@ The revised planner passes **56 workspace tests**, Clippy, formatting, the locke
 The earlier planner failed the new between-sample oncoming regression in an isolated temporary test harness. Opposing scheduled crossings also reproduced a physical collision during development; the fixture and evaluation criteria were retained while repairing stop behavior and the trajectory's connection to the current estimate. The earlier numeric tables above are baseline records; the new compact snapshot and regenerated media describe this later implementation.
 
 Run [37810379211](https://github.com/rsasaki0109/rust_drive/actions/runs/37810379211), before this algorithm extension, passed Linux, Windows, GIF generation and RNE. Its macOS job was cancelled because no hosted runner was acquired; annotations reported ARM runner capacity constraints. The workflow now selects the officially supported `macos-15-intel` image for macOS x64 coverage. This selects a different pool; it does not guarantee runner availability or establish current ARM coverage.
+
+
+For continuous-planning commit `38475ae7c33440b7d5683d205bc9517320feb64b`, [run 37817176036](https://github.com/rsasaki0109/rust_drive/actions/runs/37817176036) completed all five jobs successfully, including the Intel macOS pool and the 30-case hazard suite.
+
+## Acceleration-aware planning extension (2026-10-09, Asia/Tokyo)
+
+The default workspace passes **68 tests**, formatting, Clippy with warnings denied, the locked release build, and eight reference scenario/replay pairs. The standalone RNE integration retains eight tests. The 30-case suite additionally verifies each non-emergency trajectory's initial speed, finite increasing times, integrated travel distance and calibrated longitudinal acceleration bounds independently in Python. Physical collision/road evaluation and complete sensor-output replay remain separate gates. [Current results and explicit limitations](speed-planning.md).

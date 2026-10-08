@@ -54,7 +54,7 @@ The integration has its own lockfile and does not enlarge the default workspace 
 bash scripts/check-hazards.sh
 ```
 
-After RNE setup, this CPU-only command runs occlusion, lateral crossings, multiple blocked alternatives, low-friction avoidance and low-friction stopping across seeds 1, 7 and 42. It checks physical outcomes and recomputes every sensor log. All 30 local reference/RNE runs pass. The planner sweeps the intervals between trajectory points and stops and waits for blocked candidates; regressions include a reproduced crossing collision repaired without relaxing its criteria. [Results and model boundaries](docs/swept-planning.md).
+After RNE setup, this CPU-only command runs occlusion, lateral crossings, multiple blocked alternatives, low-friction avoidance and low-friction stopping across seeds 1, 7 and 42. It checks physical outcomes and recomputes every sensor log. All 30 local reference/RNE runs pass. The planner computes bounded acceleration profiles, uses their arrival times for circular sweeps, and rechecks retimed stops and stationary holds. The suite also checks profile kinematics independently. [Current results and model boundaries](docs/speed-planning.md); [earlier swept-check regressions](docs/swept-planning.md).
 
 ![Initially occluded actor and crossing on an RNE run](assets/hazard-demo.gif)
 
@@ -66,8 +66,8 @@ After RNE setup, this CPU-only command runs occlusion, lateral crossings, multip
 | Localization | Three-state extended Kalman filter with wheel-speed / gyro prediction and gated GNSS correction |
 | Mapping | Supplied arc-length route plus ray-updated log-odds occupancy grid |
 | Prediction | Constant-velocity trajectories with a low-speed deadband; planning adds a time-dependent margin |
-| Planning | Three lateral candidates, quintic maneuvers joined from the current estimate, synchronized circular sweeps, stop/wait/resume and goal behavior; calibrated braking/curvature limits |
-| Control | Pure pursuit, bounded PI speed control, steering-rate limit, independent freshness / numeric guard |
+| Planning | Three lateral candidates, quintic maneuvers joined from the current estimate, synchronized circular sweeps, reachable acceleration / local curvature speed profiles, retimed stop/wait/resume and goal behavior |
+| Control | Pure pursuit, acceleration feedforward with bounded PI speed feedback, steering-rate limit, independent freshness / numeric guard |
 | Pipeline / replay | Transport-independent timestamped observations, health checks, full-output JSONL verification |
 | Simulation | Reference bicycle or optional RNE native Ackermann plants; noisy LiDAR/GNSS/odometry, swept collision evaluation |
 
@@ -103,7 +103,7 @@ cargo run --release --locked --bin rustdrive -- run \
   --scenario scenarios/lidar-fault.json --seed 7 --output artifacts/lidar-fault
 ```
 
-CI checks formatting, Clippy, the workspace test suite, release builds, and the closed-loop demo on Linux, macOS, and Windows, plus GIF generation and the pinned CPU-only RNE integration on Linux. All five jobs passed in [the hazard extension's CI run, attempt 2](https://github.com/rsasaki0109/rust_drive/actions/runs/37802806434/attempts/2). See [validation and limitations](docs/validation.md) for the checks actually executed and the initial infrastructure/toolchain failures.
+CI checks formatting, Clippy, the workspace test suite, release builds, and the closed-loop demo on Linux, macOS, and Windows, plus GIF generation and the pinned CPU-only RNE integration on Linux. All five jobs passed for the previous swept-planning revision in [run 37817176036](https://github.com/rsasaki0109/rust_drive/actions/runs/37817176036). See [validation and limitations](docs/validation.md) for the checks actually executed and the initial infrastructure/toolchain failures.
 
 ## Architecture and contributing
 

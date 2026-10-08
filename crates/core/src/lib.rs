@@ -91,7 +91,9 @@ pub struct Prediction {
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct TrajectoryPoint {
     pub position: Vec2,
+    /// Planned speed in m/s at this position and relative time.
     pub speed: f64,
+    /// Seconds from the current sensor frame; segment speed varies linearly in time.
     pub time: f64,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
