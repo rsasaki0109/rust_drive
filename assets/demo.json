@@ -18,7 +18,8 @@
         "radius": 1.0,
         "speed": 0.0,
         "lateral_speed": 0.0,
-        "active_from": 0.0
+        "active_from": 0.0,
+        "moving_from": 0.0
       },
       {
         "s": 98.0,
@@ -26,7 +27,8 @@
         "radius": 1.0,
         "speed": 2.5,
         "lateral_speed": 0.0,
-        "active_from": 0.0
+        "active_from": 0.0,
+        "moving_from": 0.0
       },
       {
         "s": 155.0,
@@ -34,30 +36,31 @@
         "radius": 0.75,
         "speed": 0.0,
         "lateral_speed": -1.0,
-        "active_from": 18.0
+        "active_from": 18.0,
+        "moving_from": 0.0
       }
     ]
   },
   "summary": {
     "scenario": "Curved-road obstacle avoidance",
     "seed": 7,
-    "simulated_seconds": 31.150000000000002,
-    "steps": 624,
+    "simulated_seconds": 39.25,
+    "steps": 786,
     "reached_goal": true,
     "collisions": 0,
     "road_violations": 0,
-    "min_clearance": 0.9256503385807417,
-    "localization_rmse": 0.06415515783835664,
-    "localization_max_error": 0.139505039031596,
-    "final_speed": 0.10079867552951585,
-    "progress": 220.24069059891255,
+    "min_clearance": 0.7577127760401865,
+    "localization_rmse": 0.05658694465369831,
+    "localization_max_error": 0.13832419240509658,
+    "final_speed": 0.15134254958077545,
+    "progress": 220.2605952562714,
     "emergency_steps": 0,
-    "avoidance_steps": 187,
+    "avoidance_steps": 278,
     "max_tracks": 2,
     "passed": true,
     "failures": []
   },
-  "gif_frames": 105,
+  "gif_frames": 132,
   "playback_speed": 3,
   "renderer_command": "python3 scripts/render_demo.py artifacts/demo/run.json --output assets/demo.gif",
   "command": "cargo run --release --locked --bin rustdrive -- run --scenario scenarios/mission.json --seed 7 --output artifacts/demo"

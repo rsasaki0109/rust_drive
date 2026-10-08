@@ -54,7 +54,7 @@ The integration has its own lockfile and does not enlarge the default workspace 
 bash scripts/check-hazards.sh
 ```
 
-After RNE setup, this CPU-only command runs occlusion, late lateral crossing, low-friction avoidance and low-friction stopping across seeds 1, 7 and 42. It checks physical outcomes and recomputes every sensor log. All 18 local reference/RNE runs pass; a reproduced low-friction braking failure was repaired using calibrated braking and curvature speed limits. [Results and model boundaries](docs/hazard-validation.md).
+After RNE setup, this CPU-only command runs occlusion, lateral crossings, multiple blocked alternatives, low-friction avoidance and low-friction stopping across seeds 1, 7 and 42. It checks physical outcomes and recomputes every sensor log. All 30 local reference/RNE runs pass. The planner sweeps the intervals between trajectory points and stops and waits for blocked candidates; regressions include a reproduced crossing collision repaired without relaxing its criteria. [Results and model boundaries](docs/swept-planning.md).
 
 ![Initially occluded actor and crossing on an RNE run](assets/hazard-demo.gif)
 
@@ -66,7 +66,7 @@ After RNE setup, this CPU-only command runs occlusion, late lateral crossing, lo
 | Localization | Three-state extended Kalman filter with wheel-speed / gyro prediction and gated GNSS correction |
 | Mapping | Supplied arc-length route plus ray-updated log-odds occupancy grid |
 | Prediction | Constant-velocity trajectories with a low-speed deadband; planning adds a time-dependent margin |
-| Planning | Three lateral candidates, persistent quintic maneuvers, time-indexed clearance checks, braking and goal behavior; optional calibrated braking/curvature speed limits |
+| Planning | Three lateral candidates, quintic maneuvers joined from the current estimate, synchronized circular sweeps, stop/wait/resume and goal behavior; calibrated braking/curvature limits |
 | Control | Pure pursuit, bounded PI speed control, steering-rate limit, independent freshness / numeric guard |
 | Pipeline / replay | Transport-independent timestamped observations, health checks, full-output JSONL verification |
 | Simulation | Reference bicycle or optional RNE native Ackermann plants; noisy LiDAR/GNSS/odometry, swept collision evaluation |

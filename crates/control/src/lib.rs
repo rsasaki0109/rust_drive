@@ -49,7 +49,13 @@ impl Controller for PurePursuit {
         self.integral = (self.integral + error * dt).clamp(-2.0, 2.0);
         let acceleration = if path.points[0].speed < 0.1 {
             self.integral = 0.0;
-            -3.5
+            // A blocked-candidate stop must not brake less than the PI loop's
+            // normal deceleration bound. Adapters enforce actual plant authority.
+            if path.mode == DrivingMode::Yield {
+                -4.0
+            } else {
+                -3.5
+            }
         } else {
             (1.5 * error + 0.15 * self.integral).clamp(-4.0, 2.0)
         };

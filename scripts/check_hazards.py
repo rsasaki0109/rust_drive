@@ -9,8 +9,8 @@ import sys
 
 ROOT = Path(__file__).resolve().parent.parent
 CASES = {
-    'reference': ['occluded-crossing', 'cut-in'],
-    'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop'],
+    'reference': ['occluded-crossing', 'cut-in', 'multiple-blocked', 'opposing-crossings'],
+    'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop', 'multiple-blocked', 'opposing-crossings'],
 }
 
 

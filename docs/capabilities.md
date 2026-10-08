@@ -22,8 +22,11 @@
 | Initially occluded / late lateral crossing fixtures | Implemented / tested | Reference/RNE across 3 seeds; circular scheduled actors, no semantics |
 | Low-friction avoidance and stopping | Implemented / tested | RNE dynamic mu=0.2, 0.15 s steering lag, separate longitudinal/lateral limits |
 | Calibrated braking / curvature speed limits | Implemented / tested | Fixed known limits; sampled curvature; no combined-friction optimization |
+| Continuous candidate collision checks | Implemented / tested | Synchronized circular sweeps of trajectory/forecast polylines; constant-speed arrival-time approximation |
+| Stop and wait on blocked candidates | Implemented / tested | Calibrated stopping distance, stop hold, release on a clear candidate; no semantic priority rules |
+| Multiple blocked alternatives / opposing crossings | Implemented / tested | Scheduled circular actors; independent physical acceptance and full replay |
 | Linux build/test | Verified locally | Rust 1.90.0; optional RNE uses 1.95.0 |
-| macOS / Windows | CI configured; not locally verified | No host-specific Rust dependencies expected |
+| macOS / Windows | Remote checks observed on recorded revisions | Results and runner failures in [validation](validation.md); no local hosts |
 | Camera, radar, 3D LiDAR, learned detection | Planned | No placeholder inference implementation |
 | Learned prediction and training | Planned | No model/data/runtime packaged |
 | 3D mapping / SLAM / map localization | Planned | No truth-as-localization substitution |

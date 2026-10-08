@@ -146,7 +146,7 @@ fn cli_replay_recomputes_and_rejects_corruption_without_stale_success() {
 
 #[test]
 fn crossing_hazards_across_seeds() {
-    for case in ["occluded-crossing", "cut-in"] {
+    for case in ["occluded-crossing", "cut-in", "opposing-crossings"] {
         for seed in [1, 7, 42] {
             let result = simulate(scenario(case), seed).unwrap();
             assert!(
@@ -156,6 +156,16 @@ fn crossing_hazards_across_seeds() {
             );
             assert!(result.summary.max_tracks > 0);
         }
+    }
+}
+#[test]
+fn stops_when_multiple_obstacles_block_all_lateral_alternatives() {
+    for seed in [1, 7, 42] {
+        let result = simulate(scenario("multiple-blocked"), seed).unwrap();
+        assert!(result.summary.passed, "seed {seed}: {:?}", result.summary);
+        assert!(result.summary.max_tracks >= 3);
+        assert!(result.summary.progress < 40.0);
+        assert!(result.summary.min_clearance > 0.5);
     }
 }
 #[test]

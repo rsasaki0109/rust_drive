@@ -45,7 +45,7 @@ The adapter tests additionally cover blocked-road stopping and acquisition-error
 - Occupancy mapping is diagnostic. Planning has three lateral targets, heuristic CV forecasts and constant-speed time approximation. RNE adds a native friction limit/steering lag, without establishing realistic vehicle calibration or joint trajectory feasibility.
 - Replay verifies computation only; it cannot establish physical acceptance, timing, robust autonomy or operational safety. No certification, formal verification, hardware-in-the-loop or sensor/weather benchmark is claimed.
 - GitHub Actions' three-platform default checks plus Linux visualization/RNE jobs passed remotely as recorded below. Full RNE rendering/platform CI remains unexecuted here.
-- Initial 26-test baseline passed after the previously published environment reconnected. The new RNE configuration draft still needs publication to capture these additions; independent fresh-task restoration remains unverified.
+- Published cloud snapshots have reconnected with the retained RNE source/tooling and passed the checks described below. Independent fresh-task restoration remains unverified.
 
 See [capabilities](capabilities.md), [architecture](architecture.md), [sensor replay](sensor-replay.md) and [RNE integration](../integrations/rne/README.md).
 
@@ -62,3 +62,11 @@ For hazard commit `560ea49cc4f9b89e1c91f62809a240603a11507e`, [run 37802806434, 
 The first attempt failed to acquire a hosted macOS runner. Its visualization job failed before compiling the demo, while rustup added manifest-required components to the runner's existing Rust installation: `failed to install component: 'clippy-preview-x86_64-unknown-linux-gnu', detected conflict: 'bin/cargo-clippy'`. Retrying only failed jobs passed without application changes. CI now installs toolchains under a job-specific `RUSTUP_HOME` in `runner.temp`, with the manifest-required Rust 1.90.0 components installed explicitly, to avoid using a runner image's pre-existing toolchain files. This change does not address hosted-runner capacity.
 
 Locally, installing Rust 1.90.0 plus Clippy/rustfmt into an empty temporary `RUSTUP_HOME` and running `bash scripts/demo.sh` passed: 624 replay ticks and a 105-frame GIF. The workspace check script also passed all 45 tests and six scenario/replay pairs. The opening README media is the existing verified 132-frame RNE dynamic run, with its original provenance preserved.
+
+## Continuous planning extension
+
+The revised planner passes **56 workspace tests**, Clippy, formatting, the locked release build and eight reference acceptance/replay scenarios. The RNE adapter passes its **8 tests**, formatting, Clippy and release build. All **30 seeded reference/RNE hazard runs** pass physical acceptance and full replay with zero collisions and road violations; low-friction longitudinal bounds remain checked. [Methods, regressions and updated results](swept-planning.md).
+
+The earlier planner failed the new between-sample oncoming regression in an isolated temporary test harness. Opposing scheduled crossings also reproduced a physical collision during development; the fixture and evaluation criteria were retained while repairing stop behavior and the trajectory's connection to the current estimate. The earlier numeric tables above are baseline records; the new compact snapshot and regenerated media describe this later implementation.
+
+Run [37810379211](https://github.com/rsasaki0109/rust_drive/actions/runs/37810379211), before this algorithm extension, passed Linux, Windows, GIF generation and RNE. Its macOS job was cancelled because no hosted runner was acquired; annotations reported ARM runner capacity constraints. The workflow now selects the officially supported `macos-15-intel` image for macOS x64 coverage. This selects a different pool; it does not guarantee runner availability or establish current ARM coverage.
