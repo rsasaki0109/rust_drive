@@ -19,7 +19,7 @@ For low calibrated lateral authority, the proposed quintic shift length increase
 - Analytic acceleration from rest: with 2 m/s² authority, reaching 16 m takes 4 s and reaching 40 m with an 8 m/s cruise limit takes 7 s.
 - Exact interpolated stops, strictly increasing finite times, reachable forward/braking bounds, stationary hold and rejection of an impossible stop.
 - Local curvature slowing followed by speed recovery on a straight; noisy overspeed recovery without an initial speed jump.
-- A crossing at x=16 m, t=4 s is detected with acceleration-aware timing. The old 3 m/s floor placed arrival at 5.33 s, after the crossing cleared.
+- A crossing at x=16 m, t=4 s is detected with acceleration-aware timing. The old 3 m/s floor placed arrival at 5.33 s, after the crossing cleared. The same regression was executed against committed planner `38475ae`: it returned `Cruise`, whereas the current planner returns `Yield` with a reachable stop.
 - A second actor crosses a braking destination after the original free path would have passed; revalidation rejects the stopped path.
 - High-speed low-friction avoidance requires a longer reachable shift. During development, the unchanged low-friction fixture reproduced a stop from which a short lateral candidate could not escape. Longer persistent shifts repaired goal completion without relaxing physical acceptance.
 - The earlier tiny-footprint oncoming regression now selects emergency braking because no feasible stopping profile exists before that encounter; no physically impossible zero-speed initial state is published.

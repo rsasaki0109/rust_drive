@@ -68,7 +68,7 @@ fn accelerating_arrival_time_detects_a_crossing_missed_by_a_three_meter_per_seco
     let object = Prediction {
         id: 1,
         positions: (0..=40)
-            .map(|i| Vec2::new(16.0, 8.0 - 0.4 * i as f64))
+            .map(|i| Vec2::new(16.0, 16.0 - 0.8 * i as f64))
             .collect(),
         radius: 0.5,
         dt: 0.2,
