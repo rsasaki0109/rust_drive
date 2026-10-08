@@ -44,7 +44,7 @@ The adapter tests additionally cover blocked-road stopping and acquisition-error
 - No learned camera/semantic perception, 3D SLAM, global routing, traffic-rule reasoning, ROS 2 bridge or real vehicle actuator is implemented. The route and initial pose calibration are supplied.
 - Occupancy mapping is diagnostic. Planning has three lateral targets, heuristic CV forecasts and constant-speed time approximation. RNE adds a native friction limit/steering lag, without establishing realistic vehicle calibration or joint trajectory feasibility.
 - Replay verifies computation only; it cannot establish physical acceptance, timing, robust autonomy or operational safety. No certification, formal verification, hardware-in-the-loop or sensor/weather benchmark is claimed.
-- GitHub Actions defines three-platform default checks plus Linux visualization/RNE jobs. Remote workflow results and full RNE rendering/platform CI have not been observed.
+- GitHub Actions' three-platform default checks plus Linux visualization/RNE jobs passed remotely as recorded below. Full RNE rendering/platform CI remains unexecuted here.
 - Initial 26-test baseline passed after the previously published environment reconnected. The new RNE configuration draft still needs publication to capture these additions; independent fresh-task restoration remains unverified.
 
 See [capabilities](capabilities.md), [architecture](architecture.md), [sensor replay](sensor-replay.md) and [RNE integration](../integrations/rne/README.md).
@@ -54,3 +54,11 @@ See [capabilities](capabilities.md), [architecture](architecture.md), [sensor re
 The later development tree passes 45 default-workspace tests, 8 RNE-adapter tests, formatting and Clippy in both workspaces. The default check script now executes six reference scenarios and their logs. The dedicated hazard command passes all 18 release-binary acceptance runs and full replay across seeds 1/7/42, including actual low-friction acceleration bounds. A low-friction braking overlap was reproduced and repaired without changing its fixture or acceptance criteria. Detailed metrics, source fingerprint and remaining model limitations: [hazard validation](hazard-validation.md) and [result snapshot](hazard-results.json).
 
 The previously published environment reconnected with the original pinned source/tooling and passed 37 tests, 5 adapter tests, both release missions, 624/785-tick replay and RNE GIF regeneration. This verifies that reconnection; an independently created task remains untested. No new RNE engine revision was needed for the hazard extension.
+
+## Observed GitHub Actions results
+
+For hazard commit `560ea49cc4f9b89e1c91f62809a240603a11507e`, [run 37802806434, attempt 2](https://github.com/rsasaki0109/rust_drive/actions/runs/37802806434/attempts/2) completed successfully: Linux, macOS and Windows workspace checks, Linux GIF generation, and Linux CPU-only RNE integration including the 18-run hazard suite.
+
+The first attempt failed to acquire a hosted macOS runner. Its visualization job failed before compiling the demo, while rustup added manifest-required components to the runner's existing Rust installation: `failed to install component: 'clippy-preview-x86_64-unknown-linux-gnu', detected conflict: 'bin/cargo-clippy'`. Retrying only failed jobs passed without application changes. CI now installs toolchains under a job-specific `RUSTUP_HOME` in `runner.temp`, with the manifest-required Rust 1.90.0 components installed explicitly, to avoid using a runner image's pre-existing toolchain files. This change does not address hosted-runner capacity.
+
+Locally, installing Rust 1.90.0 plus Clippy/rustfmt into an empty temporary `RUSTUP_HOME` and running `bash scripts/demo.sh` passed: 624 replay ticks and a 105-frame GIF. The workspace check script also passed all 45 tests and six scenario/replay pairs. The opening README media is the existing verified 132-frame RNE dynamic run, with its original provenance preserved.

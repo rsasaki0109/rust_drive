@@ -6,6 +6,8 @@ permissions:
   contents: read
 jobs:
   rust:
+    env:
+      RUSTUP_HOME: ${{ runner.temp }}/rustdrive-rustup
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
@@ -28,12 +30,14 @@ jobs:
           path: artifacts/demo/
   visual:
     runs-on: ubuntu-latest
+    env:
+      RUSTUP_HOME: ${{ runner.temp }}/rustdrive-rustup
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: rustup toolchain install 1.90.0 --profile minimal
+      - run: rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
       - run: python -m pip install -r scripts/requirements-demo.txt
       - name: Regenerate the actual demo
         run: bash scripts/demo.sh
@@ -44,6 +48,8 @@ jobs:
 
   rne-cpu:
     runs-on: ubuntu-latest
+    env:
+      RUSTUP_HOME: ${{ runner.temp }}/rustdrive-rustup
     steps:
       - uses: actions/checkout@v4
         with:
@@ -58,7 +64,7 @@ jobs:
             third_party
       - name: Install pinned toolchains
         run: |
-          rustup toolchain install 1.90.0 --profile minimal
+          rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
           rustup toolchain install 1.95.0 --profile minimal --component rustfmt --component clippy
       - name: Verify engine pin and CPU adapter
         working-directory: rust_drive

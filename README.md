@@ -2,9 +2,9 @@
 
 **A Rust-native autonomous driving stack.**
 
-![RustDrive: sensor-driven obstacle avoidance on a curved road](assets/demo.gif)
+![RustDrive running with RNE native vehicle dynamics and Rapier LiDAR](assets/rne-demo.gif)
 
-An original, modular driving stack with a working, deterministic closed-loop simulation. The vehicle processes synthetic LiDAR, fuses noisy GNSS and odometry, tracks and predicts obstacles, plans an avoidance trajectory, and steers and brakes to its destination. The GIF is rendered from the actual Rust run, at 3× playback speed; it is not a scripted vehicle animation.
+An original, modular driving stack with a working, deterministic closed-loop simulation. The vehicle processes synthetic LiDAR, fuses noisy GNSS and odometry, tracks and predicts obstacles, plans an avoidance trajectory, and steers and brakes to its destination. The opening GIF shows an actual CPU-only Robot Native Engine (RNE) run, using native vehicle dynamics and Rapier LiDAR queries. It is a top-down rendering of recorded telemetry at 3× playback speed. [Reproduce this RNE demo](#reproduce-the-gif).
 
 **Status: simulation research prototype, v0.1.** The verified operating domain is a supplied, wide, planar road with circular obstacles. A CPU-only Robot Native Engine (RNE) adapter also runs the same pipeline with native Ackermann dynamics and Rapier LiDAR queries. This is the starting point for an independent stack, not a replacement for mature driving systems or a system for use on public roads. CARLA, ROS 2, camera AI, 3D SLAM, traffic-rule reasoning, and real vehicle interfaces are not implemented. See the [capability matrix](docs/capabilities.md).
 
@@ -36,8 +36,6 @@ cargo run --release --locked --bin rustdrive -- replay \
 Replay creates a fresh pipeline and recomputes localization, tracks, predictions, trajectories and commands from observations. It compares every output with the recording, rejects corruption/truncation, and writes `replay.json` only after successful verification. `verified=true` establishes repeatable computation; physical goal/collision acceptance remains in `summary.json`. See the [log contract](docs/sensor-replay.md).
 
 ## CPU-only Robot Native Engine demo
-
-![RustDrive with RNE native vehicle dynamics and Rapier LiDAR](assets/rne-demo.gif)
 
 This is a top-down rendering of an actual RNE run, with friction-limited native vehicle dynamics, steering lag, and 3D Rapier ray queries sampled in a planar LiDAR sweep. The shared RustDrive pipeline drives it. No GPU, graphics context, ROS, Docker, CARLA server or pretrained model is required.
 
@@ -83,16 +81,17 @@ Python is optional and used only for visualization. Install Pillow in a virtual 
 python3 -m venv .venv
 . .venv/bin/activate
 python -m pip install -r scripts/requirements-demo.txt
-bash scripts/demo.sh
+bash scripts/setup-rne.sh
+bash scripts/rne-demo.sh dynamic
 ```
 
-Open `artifacts/demo/demo.gif`. To intentionally refresh the README asset:
+Open `artifacts/rne-dynamic/demo.gif`. To intentionally refresh the opening README asset:
 
 ```sh
-bash scripts/demo.sh assets/demo.gif
+bash scripts/rne-demo.sh dynamic assets/rne-demo.gif
 ```
 
-The renderer also emits a PNG and provenance JSON. The committed [demo metadata](assets/demo.json) records the seed, simulation metrics, and regeneration command. Fonts use DejaVu when available, with a portable fallback. GIF bytes may differ between Pillow/font versions; simulation replay is deterministic on the same binary/platform.
+The renderer also emits a PNG and provenance JSON. The committed [RNE demo metadata](assets/rne-demo.json) records the engine revision, seed, simulation metrics, and regeneration command. Fonts use DejaVu when available, with a portable fallback. GIF bytes may differ between Pillow/font versions; simulation replay is deterministic on the same binary/platform. The standalone reference simulator's GIF can also be regenerated with `bash scripts/demo.sh`; its provenance is in [reference demo metadata](assets/demo.json).
 
 ## Validation
 
@@ -104,7 +103,7 @@ cargo run --release --locked --bin rustdrive -- run \
   --scenario scenarios/lidar-fault.json --seed 7 --output artifacts/lidar-fault
 ```
 
-CI checks formatting, Clippy, the workspace test suite, release builds, and the closed-loop demo on Linux, macOS, and Windows, plus GIF generation and the pinned CPU-only RNE integration on Linux. The workflow is defined; remote GitHub Actions runs have not yet been observed. See [validation and limitations](docs/validation.md) for the checks actually executed in this development environment.
+CI checks formatting, Clippy, the workspace test suite, release builds, and the closed-loop demo on Linux, macOS, and Windows, plus GIF generation and the pinned CPU-only RNE integration on Linux. All five jobs passed in [the hazard extension's CI run, attempt 2](https://github.com/rsasaki0109/rust_drive/actions/runs/37802806434/attempts/2). See [validation and limitations](docs/validation.md) for the checks actually executed and the initial infrastructure/toolchain failures.
 
 ## Architecture and contributing
 
