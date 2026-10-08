@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "command": "cargo run --release --locked --bin rustdrive -- run --scenario scenarios/mission.json --seed 7 --output artifacts/demo",
+  "summary": {
+    "scenario": "Curved-road obstacle avoidance",
+    "seed": 7,
+    "simulated_seconds": 31.150000000000002,
+    "steps": 624,
+    "reached_goal": true,
+    "collisions": 0,
+    "road_violations": 0,
+    "min_clearance": 0.9256503385807449,
+    "localization_rmse": 0.06415515783835686,
+    "localization_max_error": 0.13950503903156822,
+    "final_speed": 0.10079867552952074,
+    "progress": 220.24069059891252,
+    "emergency_steps": 0,
+    "avoidance_steps": 187,
+    "max_tracks": 2,
+    "passed": true,
+    "failures": []
+  },
+  "gif_frames": 105,
+  "playback_speed": 3
+}

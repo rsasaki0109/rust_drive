@@ -1,0 +1,13 @@
+[package]
+name = "rustdrive-control"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+rustdrive-core = { path = "../core" }
+
+[lints]
+workspace = true
