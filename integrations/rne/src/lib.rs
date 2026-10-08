@@ -68,14 +68,23 @@ impl RneBackend {
             return Err("friction/lag calibration requires --plant dynamic".into());
         }
         let mut config = pipeline_config(&scenario);
+        config.validate()?;
         if plant == Plant::Dynamic {
-            config.cruise_speed = 6.0;
+            config.cruise_speed = scenario.cruise_speed.unwrap_or(6.0);
             if let Some(d) = scenario.dynamics {
                 let conservative_acceleration = (0.6 * d.friction_coefficient * 9.81).min(2.5);
+                let requested = config.motion_limits.unwrap_or(MotionLimits {
+                    max_acceleration_m_s2: 2.0,
+                    max_deceleration_m_s2: 2.5,
+                    max_lateral_acceleration_m_s2: 2.5,
+                });
                 config.motion_limits = Some(MotionLimits {
-                    max_acceleration_m_s2: conservative_acceleration.min(2.0),
-                    max_deceleration_m_s2: conservative_acceleration,
-                    max_lateral_acceleration_m_s2: conservative_acceleration,
+                    max_acceleration_m_s2: conservative_acceleration
+                        .min(requested.max_acceleration_m_s2),
+                    max_deceleration_m_s2: conservative_acceleration
+                        .min(requested.max_deceleration_m_s2),
+                    max_lateral_acceleration_m_s2: conservative_acceleration
+                        .min(requested.max_lateral_acceleration_m_s2),
                 });
             }
         }
@@ -254,6 +263,7 @@ impl SimulationBackend for RneBackend {
             }
         }
         Ok(SensorFrame {
+            navigation_update: None,
             time,
             odometry,
             gnss,
@@ -365,6 +375,40 @@ mod tests {
             );
             assert!(result.summary.min_clearance >= 0.5);
         }
+    }
+    #[test]
+    fn live_closure_handover_and_unreachable_hold_use_native_dynamics() {
+        for case in ["route-handover", "route-no-path", "route-reopen"] {
+            let result = run(scenario(case), 7, Plant::Dynamic).unwrap();
+            assert!(result.summary.passed, "{case}: {:?}", result.summary);
+            assert_eq!(result.summary.closure_violations, 0);
+            if case != "route-no-path" {
+                assert_eq!(result.summary.navigation_switches, 1);
+                assert!(result.route_history[1].true_speed <= 0.1);
+                assert!(result.route_history[1].estimated_speed.abs() <= 0.05);
+            } else {
+                assert_eq!(result.summary.navigation_switches, 0);
+            }
+        }
+    }
+    #[test]
+    fn known_six_meter_per_second_obstacle_deadlock_remains_an_explicit_failed_mission() {
+        let mut s = scenario("route-handover");
+        s.cruise_speed = Some(6.0);
+        s.motion_limits = None;
+        let result = run(s, 7, Plant::Dynamic).unwrap();
+        assert!(!result.summary.passed);
+        assert!(!result.summary.reached_goal);
+        assert_eq!(result.summary.navigation_switches, 1);
+        assert_eq!(result.summary.collisions, 0);
+        assert_eq!(result.summary.road_violations, 0);
+        assert!(
+            result
+                .summary
+                .failures
+                .iter()
+                .any(|f| f.contains("goal not reached"))
+        );
     }
     #[test]
     fn acquisition_error_reaches_braking_guard() {

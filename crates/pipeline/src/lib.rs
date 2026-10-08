@@ -1,5 +1,9 @@
 //! Shared sensor-to-command stack. No simulator, truth objects or physical world types.
+pub mod navigation;
 pub mod replay;
+use navigation::{
+    NavigationConfig, NavigationPhase, NavigationStatus, NavigationUpdate, Navigator,
+};
 use rustdrive_control::{PurePursuit, guard};
 use rustdrive_core::*;
 use rustdrive_localization::Ekf;
@@ -31,6 +35,8 @@ pub struct PipelineConfig {
     pub cruise_speed: f64,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub motion_limits: Option<MotionLimits>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub navigation: Option<NavigationConfig>,
 }
 impl PipelineConfig {
     pub fn new(route: Route, initial_pose: Pose, vehicle: VehicleConfig) -> Self {
@@ -41,6 +47,7 @@ impl PipelineConfig {
             nominal_dt: 0.05,
             cruise_speed: 8.0,
             motion_limits: None,
+            navigation: None,
         }
     }
     pub fn validate(&self) -> Result<(), String> {
@@ -48,6 +55,14 @@ impl PipelineConfig {
             return Err("route exceeds 5000 points".into());
         }
         let canonical = Route::new(self.route.points.clone(), self.route.half_width)?;
+        if let Some(nav) = &self.navigation {
+            let plan = nav.initial_plan()?;
+            if plan.route.points != self.route.points
+                || plan.route.half_width != self.route.half_width
+            {
+                return Err("navigation map does not match configured initial route".into());
+            }
+        }
         if canonical.lengths != self.route.lengths || canonical.length() > 1500.0 {
             return Err("invalid route arc-length metadata or excessive route length".into());
         }
@@ -96,6 +111,8 @@ pub struct SensorFrame {
     /// Explicit adapter acquisition failure. Empty returns are otherwise valid.
     #[serde(default)]
     pub lidar_failed: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub navigation_update: Option<NavigationUpdate>,
 }
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum HealthIssue {
@@ -109,6 +126,7 @@ pub enum HealthIssue {
     LocalizationUncertain,
     AcquisitionFailed,
     ClockGap,
+    InvalidNavigation,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -122,6 +140,8 @@ pub struct PipelineOutput {
     pub emergency: bool,
     pub health: Vec<HealthIssue>,
     pub position_variance: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub navigation: Option<NavigationStatus>,
 }
 /// Owns algorithm state; adapters supply observations and apply resulting commands.
 pub struct DrivingPipeline {
@@ -137,6 +157,7 @@ pub struct DrivingPipeline {
     last_odom: Option<Odometry>,
     last_lidar: Option<f64>,
     tracks: Vec<Track>,
+    navigator: Option<Navigator>,
 }
 impl DrivingPipeline {
     pub fn new(config: PipelineConfig) -> Result<Self, String> {
@@ -150,41 +171,39 @@ impl DrivingPipeline {
             planner.max_lateral_acceleration_m_s2 = Some(limits.max_lateral_acceleration_m_s2);
         }
         let controller = PurePursuit::with_vehicle(config.vehicle);
-        let min_x = config
-            .route
-            .points
-            .iter()
-            .map(|p| p.x)
-            .fold(f64::INFINITY, f64::min)
-            - 10.0;
-        let min_y = config
-            .route
-            .points
-            .iter()
-            .map(|p| p.y)
-            .fold(f64::INFINITY, f64::min)
-            - 20.0;
-        let max_x = config
-            .route
-            .points
+        let mut map_points = config.route.points.clone();
+        if let Some(nav) = &config.navigation {
+            map_points.extend(
+                nav.network
+                    .edges
+                    .iter()
+                    .flat_map(|e| e.points.iter())
+                    .copied(),
+            );
+        }
+        let min_x = map_points.iter().map(|p| p.x).fold(f64::INFINITY, f64::min) - 10.0;
+        let min_y = map_points.iter().map(|p| p.y).fold(f64::INFINITY, f64::min) - 20.0;
+        let max_x = map_points
             .iter()
             .map(|p| p.x)
             .fold(f64::NEG_INFINITY, f64::max)
             + 20.0;
-        let max_y = config
-            .route
-            .points
+        let max_y = map_points
             .iter()
             .map(|p| p.y)
             .fold(f64::NEG_INFINITY, f64::max)
             + 20.0;
-        let grid = OccupancyGrid::new(
-            Vec2::new(min_x, min_y),
-            ((max_x - min_x) / 0.5).ceil() as usize,
-            ((max_y - min_y) / 0.5).ceil() as usize,
-            0.5,
-        );
+        let width = ((max_x - min_x) / 0.5).ceil() as usize;
+        let height = ((max_y - min_y) / 0.5).ceil() as usize;
+        if width
+            .checked_mul(height)
+            .is_none_or(|cells| cells > 4_000_000)
+        {
+            return Err("map exceeds the occupancy allocation bound".into());
+        }
+        let grid = OccupancyGrid::new(Vec2::new(min_x, min_y), width, height, 0.5);
         let ekf = Ekf::new(config.initial_pose);
+        let navigator = config.navigation.clone().map(Navigator::new).transpose()?;
         Ok(Self {
             config,
             ekf,
@@ -198,6 +217,7 @@ impl DrivingPipeline {
             last_odom: None,
             last_lidar: None,
             tracks: vec![],
+            navigator,
         })
     }
     /// Clock errors return Err before mutation; callers must apply emergency braking on Err.
@@ -280,9 +300,49 @@ impl DrivingPipeline {
             health.push(HealthIssue::LocalizationUncertain);
         }
         let predictions = self.predictor.predict(&self.tracks);
-        let mut trajectory = self
-            .planner
-            .plan(estimate, &self.config.route, &predictions);
+        let mut switched = false;
+        if let Some(nav) = &mut self.navigator {
+            switched = nav.step(
+                input.navigation_update.as_ref(),
+                input.time,
+                estimate,
+                health.is_empty(),
+                self.config.vehicle.radius,
+                self.planner.max_deceleration_m_s2,
+            );
+            if nav.status().phase == NavigationPhase::Fault {
+                health.push(HealthIssue::InvalidNavigation);
+            }
+        } else if input.navigation_update.is_some() {
+            health.push(HealthIssue::InvalidNavigation);
+        }
+        if switched {
+            self.config.route = self.navigator.as_ref().unwrap().plan().route.clone();
+            // Keep EKF, sensor ages, tracks and occupancy. Reset only route-dependent actuation state.
+            let mut planner = LatticePlanner::default();
+            planner.cruise_speed = self.planner.cruise_speed;
+            planner.vehicle = self.planner.vehicle;
+            planner.max_acceleration_m_s2 = self.planner.max_acceleration_m_s2;
+            planner.max_deceleration_m_s2 = self.planner.max_deceleration_m_s2;
+            planner.max_lateral_acceleration_m_s2 = self.planner.max_lateral_acceleration_m_s2;
+            self.planner = planner;
+            self.controller.reset_route_state();
+        }
+        let stop_route = self.navigator.as_ref().and_then(Navigator::planning_route);
+        let mut trajectory = self.planner.plan(
+            estimate,
+            stop_route.as_ref().unwrap_or(&self.config.route),
+            &predictions,
+        );
+        if self.navigator.as_ref().is_some_and(|nav| {
+            matches!(
+                nav.status().phase,
+                NavigationPhase::Braking | NavigationPhase::Blocked
+            )
+        }) && trajectory.mode != DrivingMode::Emergency
+        {
+            trajectory.mode = DrivingMode::Yield;
+        }
         let command = if health.is_empty() {
             let requested = self.controller.control(estimate, &trajectory, dt);
             guard(
@@ -312,10 +372,17 @@ impl DrivingPipeline {
             emergency,
             health,
             position_variance: variance,
+            navigation: self.navigator.as_ref().map(Navigator::status),
         })
     }
     pub fn occupied_cells(&self) -> Vec<Vec2> {
         self.grid.occupied_cells()
+    }
+    pub fn active_route(&self) -> &Route {
+        &self.config.route
+    }
+    pub fn navigation_plan(&self) -> Option<&rustdrive_routing::RoutePlan> {
+        self.navigator.as_ref().map(Navigator::plan)
     }
 }
 fn stamp_valid(stamp: f64, now: f64) -> bool {
@@ -350,6 +417,7 @@ mod tests {
                 points: vec![],
             }),
             lidar_failed: false,
+            navigation_update: None,
         }
     }
     #[test]
@@ -361,6 +429,85 @@ mod tests {
         let out = p.step(&f).unwrap();
         assert!(out.health.contains(&HealthIssue::AcquisitionFailed));
         assert_eq!(out.command.acceleration, -6.0);
+    }
+    #[test]
+    fn invalid_navigation_latches_braking_and_does_not_reset_localization() {
+        let value: serde_json::Value =
+            serde_json::from_str(include_str!("../../../scenarios/route-direct.json")).unwrap();
+        let nav: NavigationConfig = serde_json::from_value(value["navigation"].clone()).unwrap();
+        let mut config = PipelineConfig::new(
+            nav.initial_plan().unwrap().route,
+            Pose::default(),
+            VehicleConfig::default(),
+        );
+        config.navigation = Some(nav);
+        let mut p = DrivingPipeline::new(config).unwrap();
+        for i in 0..=200 {
+            let time = i as f64 * 0.05;
+            let mut f = healthy(time);
+            f.odometry.as_mut().unwrap().speed = 1.0;
+            f.gnss.as_mut().unwrap().position = Vec2::new(time, 0.0);
+            p.step(&f).unwrap();
+        }
+        let mut f = healthy(10.05);
+        f.gnss = None;
+        f.navigation_update = Some(NavigationUpdate {
+            stamp: 10.05,
+            revision: 1,
+            closed_edges: vec!["typo".into()],
+        });
+        let out = p.step(&f).unwrap();
+        assert!(out.health.contains(&HealthIssue::InvalidNavigation));
+        assert_eq!(out.command.acceleration, -6.0);
+        assert!(out.estimate.pose.position.x > 9.0);
+        let mut f = healthy(10.1);
+        f.gnss = None;
+        assert!(
+            p.step(&f)
+                .unwrap()
+                .health
+                .contains(&HealthIssue::InvalidNavigation)
+        );
+        f.time = 10.15;
+        f.odometry.as_mut().unwrap().stamp = 10.15;
+        f.lidar.as_mut().unwrap().stamp = 10.15;
+        f.navigation_update = Some(NavigationUpdate {
+            stamp: 10.15,
+            revision: 1,
+            closed_edges: vec![],
+        });
+        let out = p.step(&f).unwrap();
+        assert!(!out.emergency);
+        assert!(out.estimate.pose.position.x > 9.0);
+    }
+    #[test]
+    fn map_route_mismatch_and_excessive_grid_extent_are_rejected() {
+        let value: serde_json::Value =
+            serde_json::from_str(include_str!("../../../scenarios/route-direct.json")).unwrap();
+        let nav: NavigationConfig = serde_json::from_value(value["navigation"].clone()).unwrap();
+        let mut c = PipelineConfig::new(
+            nav.initial_plan().unwrap().route,
+            Pose::default(),
+            VehicleConfig::default(),
+        );
+        c.navigation = Some(nav);
+        let mut mismatch = c.clone();
+        mismatch.route.half_width = 4.0;
+        assert!(DrivingPipeline::new(mismatch).is_err());
+        // An unused remote branch must not turn grid allocation into an overflow or OOM.
+        let map = &mut c.navigation.as_mut().unwrap().network;
+        map.nodes.push(rustdrive_routing::RoadNode {
+            id: "remote".into(),
+            position: Vec2::new(100000.0, 0.0),
+        });
+        map.edges.push(rustdrive_routing::RoadEdge {
+            id: "remote-edge".into(),
+            from: "east".into(),
+            to: "remote".into(),
+            points: vec![Vec2::new(200.0, 0.0), Vec2::new(100000.0, 0.0)],
+            half_width: 5.5,
+        });
+        assert!(DrivingPipeline::new(c).is_err());
     }
     #[test]
     fn duplicate_and_delayed_scans_cannot_refresh_health() {

@@ -296,3 +296,77 @@ fn clearance_acceptance_rejects_a_collision_free_but_too_close_run() {
     invalid.min_clearance_m = Some(-1.0);
     assert!(simulate(invalid, 7).is_err());
 }
+
+#[test]
+fn live_map_closures_stop_then_handover_without_resetting_estimation() {
+    for case in ["route-handover", "route-reopen"] {
+        for seed in [1, 7, 42] {
+            let result = simulate(scenario(case), seed).unwrap();
+            assert!(result.summary.passed, "seed {seed}: {:?}", result.summary);
+            assert_eq!(result.summary.navigation_switches, 1);
+            assert_eq!(result.summary.closure_violations, 0);
+            assert_eq!(result.route_history.len(), 2);
+            let switch = &result.route_history[1];
+            assert!(switch.estimated_speed.abs() <= 0.05);
+            assert!(switch.true_speed <= 0.1);
+            assert!(switch.time > 3.0);
+            assert!(result.frames.iter().any(|f| f.time >= 3.0
+                && f.navigation.as_ref().unwrap().phase
+                    == rustdrive_pipeline::navigation::NavigationPhase::Braking));
+            // Objects stay on the original world road, rather than teleporting when a route changes.
+            assert!(
+                result
+                    .frames
+                    .iter()
+                    .all(|f| f.objects[0].position == result.frames[0].objects[0].position)
+            );
+            let mut bytes = Vec::new();
+            result
+                .sensor_log
+                .as_ref()
+                .unwrap()
+                .write(&mut bytes)
+                .unwrap();
+            assert_eq!(
+                rustdrive_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink())
+                    .unwrap()
+                    .ticks,
+                result.summary.steps
+            );
+        }
+    }
+}
+
+#[test]
+fn no_route_holds_before_the_closed_branch_across_seeds() {
+    for seed in [1, 7, 42] {
+        let result = simulate(scenario("route-no-path"), seed).unwrap();
+        assert!(result.summary.passed, "seed {seed}: {:?}", result.summary);
+        assert_eq!(result.summary.navigation_switches, 0);
+        assert_eq!(result.summary.closure_violations, 0);
+        assert!(result.summary.progress + result.vehicle.radius < 40.0);
+        assert_eq!(
+            result
+                .frames
+                .last()
+                .unwrap()
+                .navigation
+                .as_ref()
+                .unwrap()
+                .phase,
+            rustdrive_pipeline::navigation::NavigationPhase::Blocked
+        );
+    }
+}
+
+#[test]
+fn late_closure_is_scored_as_failure_and_never_redirects_a_moving_vehicle() {
+    let mut s = scenario("route-handover");
+    s.navigation_updates[0].stamp = 18.0;
+    s.duration = 25.0;
+    let result = simulate(s, 7).unwrap();
+    assert!(!result.summary.passed);
+    assert!(result.summary.closure_violations > 0);
+    assert_eq!(result.summary.navigation_switches, 0);
+    assert!(result.summary.final_speed < 0.2);
+}

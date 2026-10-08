@@ -10,6 +10,7 @@ Configuration supplies a validated arc-length route, calibrated initial pose, ve
 - `odometry`: optional acquisition-stamped speed and yaw rate; required at 20 Hz.
 - `gnss`: optional acquisition-stamped noisy position/variance; generated at 5 Hz.
 - `lidar`: optional acquisition-stamped **body-frame** x-forward/y-left returns; generated at 10 Hz.
+- `navigation_update`: optional external closure snapshot, with acquisition stamp, increasing revision and complete closed-edge list; configured map required for route handling.
 - `lidar_failed`: explicit acquisition failure (default false), distinct from healthy zero returns.
 
 Absent samples do not refresh last accepted timestamps. Duplicate, out-of-order, future and invalid samples cannot refresh them either. Odometry older than 0.15 s, LiDAR older than 0.35 s or accepted GNSS older than 0.75 s brakes. Clock gaps over 0.25 s and excessive localization uncertainty brake. Regressing/non-finite clocks return an error before state mutation; adapters must stop on errors. This research health policy is intentionally conservative and does not support GNSS-denied navigation.
@@ -24,7 +25,7 @@ Ground-truth poses, object identities and physical collision results are not inp
 2. One or more `{"kind":"tick","tick":{"input":...,"expected":...}}` records.
 3. Mandatory `{"kind":"end","ticks":N}` count footer.
 
-The expected record contains the complete estimate, tracks, forecasts, trajectory, command, emergency state, health and position variance. It never enters the pipeline. Replay constructs fresh state from the header, feeds only inputs, and compares reserialized outputs exactly. Serde's float-roundtrip parsing preserves recorded f64 values. No tolerance or success shortcut hides differences.
+The expected record contains the complete estimate, tracks, forecasts, trajectory, command, emergency state, health, position variance and optional navigation state. It never enters the pipeline. Replay constructs fresh state from the header, feeds only inputs, and compares reserialized outputs exactly. Serde's float-roundtrip parsing preserves recorded f64 values. No tolerance or success shortcut hides differences.
 
 ```sh
 cargo run --release --locked --bin rustdrive -- replay \
@@ -44,3 +45,7 @@ Schema 1 describes the record format, not an algorithm revision. Changes such as
 Replay verifies deterministic computation, **not** collision avoidance, goal completion or real-time execution. An incomplete or colliding physical run can have a fully reproducible log. Physical acceptance is scored independently in `summary.json`; sensor logs intentionally contain no truth evaluator inputs.
 
 Acceleration calibration now includes `max_acceleration_m_s2` (0.1–2.0 m/s²). Older motion-limit objects without this field deserialize with 2.0 m/s²; explicitly supplied non-finite or out-of-range limits are rejected. Schema 1 remains readable, but revised speed/timing/control outputs require regenerated recordings for exact replay.
+
+## Map-aware navigation replay
+
+Optional `PipelineConfig.navigation` records the known graph/start/goal/initial closures and must match the initial route. Map-configured logs record `SensorFrame.navigation_update` snapshots and complete `PipelineOutput.navigation` state. Replay reruns initial routing, each accepted snapshot, stop-before-divergence transitions and route switching. It does not substitute expected routes or navigator states. Existing resolved-route logs omit these optional fields and still replay local computation without Dijkstra. A changed closure snapshot is covered by a mismatch test. Schema 1 remains readable; exact outputs are tied to this implementation. [Contract and physical evidence](handover.md).

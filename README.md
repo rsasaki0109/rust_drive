@@ -4,9 +4,9 @@
 
 ![RustDrive selecting a road-network detour with RNE native vehicle dynamics and Rapier LiDAR](assets/rne-demo.gif)
 
-An original, modular driving stack with a working, deterministic closed-loop simulation. The vehicle processes synthetic LiDAR, fuses noisy GNSS and odometry, tracks and predicts obstacles, plans an avoidance trajectory, and steers and brakes to its destination. The opening GIF shows an actual CPU-only Robot Native Engine (RNE) run: Dijkstra selects a detour around a known road closure, then the vehicle avoids a sensed obstacle and reaches the mapped destination using native vehicle dynamics and Rapier LiDAR queries. It is a top-down rendering of recorded telemetry at 3× playback speed. [Reproduce this RNE demo](#reproduce-the-gif).
+An original, modular driving stack with a working, deterministic closed-loop simulation. The vehicle processes synthetic LiDAR, fuses noisy GNSS and odometry, tracks and predicts obstacles, plans an avoidance trajectory, and steers and brakes to its destination. The opening GIF shows an actual CPU-only Robot Native Engine (RNE) run: a closure notification arrives during driving, the vehicle stops before the fork, switches to a Dijkstra detour, avoids a sensed obstacle and reaches the mapped destination using native vehicle dynamics and Rapier LiDAR queries. It is a top-down rendering of recorded telemetry at 3× playback speed. [Reproduce this RNE demo](#reproduce-the-gif).
 
-**Status: simulation research prototype, v0.1.** The verified operating domain is authored planar road corridors with circular obstacles, including a directed road-network fork, merge and pre-departure closure detour. A CPU-only Robot Native Engine (RNE) adapter also runs the same pipeline with native Ackermann dynamics and Rapier LiDAR queries. This is the starting point for an independent stack, not a replacement for mature driving systems or a system for use on public roads. CARLA, ROS 2, camera AI, 3D SLAM, traffic-rule reasoning, and real vehicle interfaces are not implemented. See the [capability matrix](docs/capabilities.md).
+**Status: simulation research prototype, v0.1.** The verified operating domain is authored planar road corridors with circular obstacles, including a directed road-network fork, merge and stopped handover after a live closure notification. A CPU-only Robot Native Engine (RNE) adapter also runs the same pipeline with native Ackermann dynamics and Rapier LiDAR queries. This is the starting point for an independent stack, not a replacement for mature driving systems or a system for use on public roads. CARLA, ROS 2, camera AI, 3D SLAM, traffic-rule reasoning, and real vehicle interfaces are not implemented. See the [capability matrix](docs/capabilities.md).
 
 ## Build and run
 
@@ -54,7 +54,7 @@ The integration has its own lockfile and does not enlarge the default workspace 
 bash scripts/check-hazards.sh
 ```
 
-After RNE setup, this CPU-only command runs occlusion, lateral crossings, multiple blocked alternatives, low-friction avoidance and low-friction stopping across seeds 1, 7 and 42. It checks physical outcomes and recomputes every sensor log. All 48 local reference/RNE runs pass, including 18 mapped-route runs. Fixed minimum-clearance floors also guard the fixtures. The planner computes bounded acceleration profiles, uses their arrival times for circular sweeps, and rechecks retimed stops and stationary holds. The suite also checks profile kinematics independently. [Current routing results and model boundaries](docs/routing.md); [tracking improvements](docs/tracking.md); [earlier swept-check regressions](docs/swept-planning.md).
+After RNE setup, this CPU-only command runs occlusion, lateral crossings, multiple blocked alternatives, low-friction avoidance and low-friction stopping across seeds 1, 7 and 42. It checks physical outcomes and recomputes every sensor log. All 66 local reference/RNE runs pass, including 18 live-navigation runs. Fixed minimum-clearance floors also guard the fixtures. The planner computes bounded acceleration profiles, uses their arrival times for circular sweeps, and rechecks retimed stops and stationary holds. The suite also checks profile kinematics independently. [Current handover results and model boundaries](docs/handover.md); [tracking improvements](docs/tracking.md); [earlier swept-check regressions](docs/swept-planning.md).
 
 ![Initially occluded actor and crossing on an RNE run](assets/hazard-demo.gif)
 
@@ -62,15 +62,15 @@ Low-friction tracking now produces 9/8/7 emergency ticks across the three seeds,
 
 ## Mapped destinations and closure detours
 
-The same five-node map supports an eastern destination, a southern branch and a known-closure detour. Route search runs before departure and supplies its centerline to local planning. Live route handover, signals and intersection priority remain future work.
+The same five-node map supports an eastern destination, a southern branch and a known-closure detour. Route search supplies a centerline to local planning. Live closure snapshots can trigger a stop before the fork and a detour handover; a reopened detour can resume a no-route hold. Signals and intersection priority remain future work.
 
 ```sh
 cargo run --release --locked --bin rustdrive -- run \
-  --scenario scenarios/route-detour.json --seed 7 --output artifacts/route-detour
-# Also try scenarios/route-direct.json and scenarios/route-south.json.
+  --scenario scenarios/route-handover.json --seed 7 --output artifacts/route-handover
+# Also try scenarios/route-no-path.json and scenarios/route-reopen.json.
 ```
 
-[Map format, reproducible RNE demo, measured results and boundaries](docs/routing.md).
+[Live handover, measured results and retained failures](docs/handover.md); [map format](docs/routing.md).
 
 ## What actually runs
 
@@ -78,7 +78,7 @@ cargo run --release --locked --bin rustdrive -- run \
 |---|---|
 | Perception | Unlabeled first-return planar LiDAR, range-adaptive clustering, bounded circle fitting, alpha-beta tracking |
 | Localization | Three-state extended Kalman filter with wheel-speed / gyro prediction and gated GNSS correction |
-| Mapping / navigation | Validated directed road graph, deterministic Dijkstra, known closure detours and destination selection; ray-updated log-odds occupancy grid |
+| Mapping / navigation | Validated directed road graph, deterministic Dijkstra, live closure snapshots, stopped detour handover and destination selection; ray-updated log-odds occupancy grid |
 | Prediction | Constant-velocity trajectories with a low-speed deadband; planning adds a time-dependent margin |
 | Planning | Three lateral candidates, smooth route geometry and quintic maneuvers joined from the estimated position / heading, synchronized circular sweeps, reachable acceleration / local curvature speed profiles, retimed stop/wait/resume and goal behavior |
 | Control | Interpolated pure pursuit, acceleration feedforward with bounded PI speed feedback, steering-rate limit, independent freshness / numeric guard |
@@ -96,13 +96,13 @@ python3 -m venv .venv
 . .venv/bin/activate
 python -m pip install -r scripts/requirements-demo.txt
 bash scripts/setup-rne.sh
-bash scripts/rne-demo.sh dynamic artifacts/rne-dynamic/demo.gif scenarios/route-detour.json
+bash scripts/rne-demo.sh dynamic artifacts/rne-dynamic/demo.gif scenarios/route-handover.json
 ```
 
 Open `artifacts/rne-dynamic/demo.gif`. To intentionally refresh the opening README asset:
 
 ```sh
-bash scripts/rne-demo.sh dynamic assets/rne-demo.gif scenarios/route-detour.json
+bash scripts/rne-demo.sh dynamic assets/rne-demo.gif scenarios/route-handover.json
 ```
 
 The renderer also emits a PNG and provenance JSON. The committed [RNE demo metadata](assets/rne-demo.json) records the engine revision, seed, simulation metrics, and regeneration command. Fonts use DejaVu when available, with a portable fallback. GIF bytes may differ between Pillow/font versions; simulation replay is deterministic on the same binary/platform. The standalone reference simulator's GIF can also be regenerated with `bash scripts/demo.sh`; its provenance is in [reference demo metadata](assets/demo.json).
@@ -117,12 +117,13 @@ cargo run --release --locked --bin rustdrive -- run \
   --scenario scenarios/lidar-fault.json --seed 7 --output artifacts/lidar-fault
 ```
 
-CI checks formatting, Clippy, the workspace test suite, release builds, and the closed-loop demo on Linux, macOS, and Windows, plus GIF generation and the pinned CPU-only RNE integration on Linux. All five jobs passed for the preceding tracking revision in [run 37848670958](https://github.com/rsasaki0109/rust_drive/actions/runs/37848670958). See [validation and limitations](docs/validation.md) for the checks actually executed and the initial infrastructure/toolchain failures.
+CI checks formatting, Clippy, the workspace test suite, release builds, and the closed-loop demo on Linux, macOS, and Windows, plus GIF generation and the pinned CPU-only RNE integration on Linux. All five jobs passed for the preceding road-network revision in [run 37856849026](https://github.com/rsasaki0109/rust_drive/actions/runs/37856849026). See [validation and limitations](docs/validation.md) for the checks actually executed and the initial infrastructure/toolchain failures.
 
 ## Architecture and contributing
 
 Ten small Cargo crates share transport-independent, serializable contracts. Algorithm implementations are ordinary synchronous Rust libraries. No custom executor or networking middleware is required. The optional RNE adapter and future ROS 2/CARLA bridges translate at the boundaries rather than become dependencies of the algorithms.
 
+- [Live closure handover, results and retained failures](docs/handover.md)
 - [Road networks, closure detours and regression results](docs/routing.md)
 - [Architecture and design decisions](docs/architecture.md)
 - [Reference OSS research and license analysis](docs/research.md)

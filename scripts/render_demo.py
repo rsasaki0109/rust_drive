@@ -54,10 +54,15 @@ def render(run, frame, index):
         c.line([(x-offset, 0), (x-offset, 428)], fill='#172739')
     for y in range(0, 428, 56):
         c.line([(0, y), (838, y)], fill='#172739')
-    route = run['route']['points']
+    selected_route = run['route']
+    for change in run.get('route_history', []):
+        if change['time'] <= frame['time']:
+            selected_route = change['plan']['route']
+    route = selected_route['points']
     navigation = run.get('navigation')
     if navigation:
         nav = run['scenario']['navigation']
+        closed_edges = (frame.get('navigation') or nav)['closed_edges']
         for edge in nav['network']['edges']:
             c.line([world(p) for p in edge['points']], fill='#182638',
                    width=int(2*edge['half_width']*scale), joint='curve')
@@ -68,8 +73,8 @@ def render(run, frame, index):
         for i, point in enumerate(route):
             a=route[max(0,i-1)];b=route[min(len(route)-1,i+1)]
             dx=b['x']-a['x'];dy=b['y']-a['y'];length=math.hypot(dx,dy)
-            boundary.append(world({'x':point['x']-dy/length*side*run['route']['half_width'],
-                                   'y':point['y']+dx/length*side*run['route']['half_width']}))
+            boundary.append(world({'x':point['x']-dy/length*side*selected_route['half_width'],
+                                   'y':point['y']+dx/length*side*selected_route['half_width']}))
         boundaries.append(boundary)
     c.polygon(boundaries[0]+list(reversed(boundaries[1])),fill='#1b2b3f')
     for i in range(0, len(center)-2, 6):
@@ -80,12 +85,12 @@ def render(run, frame, index):
         for i, point in enumerate(route):
             a=route[max(0, i-1)]; b=route[min(len(route)-1, i+1)]
             dx=b['x']-a['x']; dy=b['y']-a['y']; length=math.hypot(dx, dy)
-            edge.append(world({'x':point['x']-dy/length*side*run['route']['half_width'],
-                               'y':point['y']+dx/length*side*run['route']['half_width']}))
+            edge.append(world({'x':point['x']-dy/length*side*selected_route['half_width'],
+                               'y':point['y']+dx/length*side*selected_route['half_width']}))
         c.line(edge, fill='#68809d', width=2, joint='curve')
     if navigation:
         for edge in nav['network']['edges']:
-            if edge['id'] in nav['closed_edges']:
+            if edge['id'] in closed_edges:
                 geometry = [world(p) for p in edge['points']]
                 for j in range(0, len(geometry)-1, 4):
                     c.line(geometry[j:j+2], fill=ORANGE, width=3)
@@ -130,7 +135,8 @@ def render(run, frame, index):
         # The inset displays supplied map topology, closures and selected route.
         # Its moving ego marker comes from recorded truth solely for visualization.
         c.rounded_rectangle((526,266,820,410),10,fill='#0d1928',outline='#34506b')
-        c.text((540,275),f"ROUTE TO {nav['goal'].upper()}",fill=TEAL,font=font(12,True))
+        phase=(frame.get('navigation') or {}).get('phase','Following')
+        c.text((540,275),f"TO {nav['goal'].upper()} / {phase.upper()}",fill=TEAL,font=font(12,True))
         positions=[node['position'] for node in nav['network']['nodes']]
         positions += [p for edge in nav['network']['edges'] for p in edge['points']]
         xmin=min(p['x'] for p in positions);xmax=max(p['x'] for p in positions)
@@ -139,16 +145,23 @@ def render(run, frame, index):
         def mini(p):
             return 546+(p['x']-xmin)*factor,381-(p['y']-ymin)*factor
         for edge in nav['network']['edges']:
-            color=ORANGE if edge['id'] in nav['closed_edges'] else '#40536d'
+            color=ORANGE if edge['id'] in closed_edges else '#40536d'
             c.line([mini(p) for p in edge['points']],fill=color,width=2)
         c.line([mini(p) for p in route],fill=TEAL,width=3)
+        for edge in nav['network']['edges']:
+            if edge['id'] in (frame.get('navigation') or {}).get('pending_edges', []):
+                pending=[mini(p) for p in edge['points']]
+                for j in range(0,len(pending)-1,4):
+                    c.line(pending[j:j+2],fill=PURPLE,width=2)
+            if edge['id'] in closed_edges:
+                c.line([mini(p) for p in edge['points']],fill=ORANGE,width=2)
         for node in nav['network']['nodes']:
             mx,my=mini(node['position'])
             color=ORANGE if node['id']==nav['goal'] else MUTED
             c.ellipse((mx-3,my-3,mx+3,my+3),fill=color)
         mx,my=mini(frame['truth']['pose']['position'])
         c.ellipse((mx-4,my-4,mx+4,my+4),fill=BLUE,outline=TEXT)
-        closure=', '.join(nav['closed_edges']) or 'none'
+        closure=', '.join(closed_edges) or 'none'
         c.text((540,392),f'Known closures: {closure}',fill=MUTED,font=font(10))
     im.paste(canvas,(24,82))
     d=ImageDraw.Draw(im)
@@ -168,7 +181,7 @@ def render(run, frame, index):
         d.text((1076,y+32),unit,fill=MUTED,font=font(13))
     d.rounded_rectangle((24,528,1176,622),14,fill=PANEL)
     d.text((44,540),'MISSION PROGRESS',fill=MUTED,font=font(11,True))
-    length=run['route']['lengths'][-1];progress=min(1,frame['progress']/length)
+    length=selected_route['lengths'][-1];progress=min(1,frame['progress']/length)
     d.text((994,540),f"{frame['progress']:.0f} / {length:.0f} m",fill=TEXT,font=font(13,True))
     d.rounded_rectangle((44,574,1156,581),3,fill='#2b4058')
     d.rounded_rectangle((44,574,max(47,44+1112*progress),581),3,fill=TEAL)
@@ -209,6 +222,8 @@ def main():
                 'renderer_command':f'python3 scripts/render_demo.py {args.run} --output {args.output}'}
     if run.get('navigation'):
         provenance['navigation']=run['navigation']
+    if run.get('route_history'):
+        provenance['route_history']=run['route_history']
     # Match the full normalized configuration, never infer a recipe from the name.
     scenario_dir=Path(__file__).resolve().parent.parent/'scenarios'
     for scenario_path in sorted(scenario_dir.glob('*.json')):

@@ -1,5 +1,6 @@
 //! Deterministic closed-loop simulator. Only sensor observations enter the stack.
 use rustdrive_core::*;
+use rustdrive_pipeline::navigation::{NavigationConfig, NavigationStatus, NavigationUpdate};
 use rustdrive_pipeline::replay::SensorLog;
 use rustdrive_pipeline::{DrivingPipeline, PipelineConfig, SensorFrame};
 use rustdrive_routing::{RoadNetwork, RoadNetworkSpec, RoutePlan};
@@ -64,6 +65,12 @@ pub struct Scenario {
     pub dynamics: Option<DynamicsSpec>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub navigation: Option<NavigationSpec>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub navigation_updates: Vec<NavigationUpdate>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cruise_speed: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub motion_limits: Option<rustdrive_pipeline::MotionLimits>,
     /// Independent swept-circle acceptance floor in meters; never a planner input.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub min_clearance_m: Option<f64>,
@@ -97,7 +104,35 @@ impl Scenario {
         {
             return Err("minimum clearance must be finite and nonnegative".into());
         }
+        if self
+            .cruise_speed
+            .is_some_and(|s| !s.is_finite() || !(0.1..=8.0).contains(&s))
+        {
+            return Err("cruise speed must be within 0.1..=8.0 m/s".into());
+        }
         let selected = self.navigation_plan()?;
+        let mut last_stamp = -1.0;
+        let mut last_revision = 0;
+        for update in &self.navigation_updates {
+            let nav = self
+                .navigation
+                .as_ref()
+                .ok_or("map updates require navigation configuration")?;
+            if !update.stamp.is_finite()
+                || update.stamp <= last_stamp
+                || update.stamp < 0.0
+                || update.stamp >= self.duration
+                || update.revision <= last_revision
+                || update
+                    .closed_edges
+                    .iter()
+                    .any(|id| !nav.network.edges.iter().any(|e| &e.id == id))
+            {
+                return Err("invalid scheduled map snapshot".into());
+            }
+            last_stamp = update.stamp;
+            last_revision = update.revision;
+        }
         let object_limit = if let Some(plan) = &selected {
             if !(20.0..=1000.0).contains(&plan.route.length())
                 || !(1.5..=10.0).contains(&plan.route.half_width)
@@ -139,6 +174,7 @@ impl Scenario {
                 return Err("invalid object parameters".into());
             }
         }
+        pipeline_config(self).validate()?;
         Ok(())
     }
     pub fn route(&self) -> Route {
@@ -214,6 +250,8 @@ pub struct Frame {
     pub emergency: bool,
     pub progress: f64,
     pub clearance: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub navigation: Option<NavigationStatus>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Summary {
@@ -234,6 +272,20 @@ pub struct Summary {
     pub max_tracks: usize,
     pub passed: bool,
     pub failures: Vec<String>,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub navigation_switches: usize,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub closure_violations: usize,
+}
+fn is_zero(n: &usize) -> bool {
+    *n == 0
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct RouteTransition {
+    pub time: f64,
+    pub plan: RoutePlan,
+    pub estimated_speed: f64,
+    pub true_speed: f64,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Run {
@@ -246,6 +298,8 @@ pub struct Run {
     pub route: Route,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub navigation: Option<RoutePlan>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub route_history: Vec<RouteTransition>,
     pub vehicle: VehicleConfig,
     pub frames: Vec<Frame>,
     pub occupied_cells: Vec<Vec2>,
@@ -382,6 +436,7 @@ impl SimulationBackend for ReferenceBackend {
             gnss,
             lidar,
             lidar_failed: false,
+            navigation_update: None,
         })
     }
     fn advance(&mut self, command: ControlCommand, dt: f64) -> Result<(), String> {
@@ -393,7 +448,21 @@ impl SimulationBackend for ReferenceBackend {
 pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     let route = scenario.route();
     let (position, yaw) = route.sample(0.0, 0.0);
-    PipelineConfig::new(route, Pose { position, yaw }, VehicleConfig::default())
+    let mut config = PipelineConfig::new(route, Pose { position, yaw }, VehicleConfig::default());
+    if let Some(speed) = scenario.cruise_speed {
+        config.cruise_speed = speed;
+    }
+    config.motion_limits = scenario.motion_limits;
+    // Existing static fixtures retain resolved-route replay; live-update fixtures also record the map.
+    if !scenario.navigation_updates.is_empty() {
+        config.navigation = scenario.navigation.as_ref().map(|nav| NavigationConfig {
+            network: nav.network.clone(),
+            start: nav.start.clone(),
+            goal: nav.goal.clone(),
+            closed_edges: nav.closed_edges.clone(),
+        });
+    }
+    config
 }
 pub fn simulate(scenario: Scenario, seed: u64) -> Result<Run, String> {
     scenario.validate()?;
@@ -424,8 +493,8 @@ pub fn simulate_with_backend(
 ) -> Result<Run, String> {
     scenario.validate()?;
     let dt = config.nominal_dt;
-    let route = config.route.clone();
-    let navigation = scenario.navigation_plan()?;
+    let mut route = config.route.clone();
+    let mut navigation = scenario.navigation_plan()?;
     if let Some(plan) = &navigation
         && (plan.route.points != route.points || plan.route.half_width != route.half_width)
     {
@@ -449,11 +518,34 @@ pub fn simulate_with_backend(
     let mut max_tracks = 0;
     let mut steps = 0;
     let mut reached_goal = false;
+    let mut update_index = 0;
+    let mut route_history = Vec::new();
+    let mut navigation_switches = 0;
+    let mut closure_violations = 0;
+    let mut evaluation_closures = scenario
+        .navigation
+        .as_ref()
+        .map_or_else(Vec::new, |nav| nav.closed_edges.clone());
+    if !scenario.navigation_updates.is_empty() {
+        route_history.push(RouteTransition {
+            time: 0.0,
+            plan: navigation.clone().unwrap(),
+            estimated_speed: 0.0,
+            true_speed: backend.state().speed,
+        });
+    }
     for i in 0..=(scenario.duration / dt).round() as usize {
         let time = i as f64 * dt;
         let truth = backend.state();
         let objects = backend.objects(time);
-        let input = backend.observe(time, i)?;
+        let mut input = backend.observe(time, i)?;
+        if let Some(update) = scenario.navigation_updates.get(update_index)
+            && update.stamp <= time + 1e-9
+        {
+            input.navigation_update = Some(update.clone());
+            evaluation_closures = update.closed_edges.clone();
+            update_index += 1;
+        }
         if let Some(new_scan) = &input.lidar {
             scan = new_scan.clone();
         }
@@ -464,6 +556,39 @@ pub fn simulate_with_backend(
         let trajectory = result.trajectory.clone();
         let command = result.command;
         let emergency = result.emergency;
+        let navigation_status = result.navigation.clone();
+        if let Some(status) = &navigation_status
+            && status.switches > navigation_switches
+        {
+            route = pipeline.active_route().clone();
+            navigation = pipeline.navigation_plan().cloned();
+            route_history.push(RouteTransition {
+                time,
+                plan: navigation.clone().unwrap(),
+                estimated_speed: estimate.speed,
+                true_speed: truth.speed,
+            });
+            navigation_switches = status.switches;
+        }
+        // Score external closures independently of the navigator's reported closure state.
+        if !scenario.navigation_updates.is_empty()
+            && let (Some(plan), Some(nav)) = (&navigation, &scenario.navigation)
+        {
+            let progress = route.project(truth.pose.position).0;
+            let mut start_s = 0.0;
+            for id in &plan.edge_ids {
+                let edge = nav.network.edges.iter().find(|e| &e.id == id).unwrap();
+                if evaluation_closures.contains(id) && progress + vehicle.radius >= start_s {
+                    closure_violations += 1;
+                    break;
+                }
+                start_s += edge
+                    .points
+                    .windows(2)
+                    .map(|p| p[0].distance(p[1]))
+                    .sum::<f64>();
+            }
+        }
         sensor_log.record(input, result);
         if emergency {
             emergency_steps += 1;
@@ -499,6 +624,7 @@ pub fn simulate_with_backend(
                 emergency,
                 progress,
                 clearance,
+                navigation: navigation_status,
             });
         }
         let at_map_goal = navigation.as_ref().is_none_or(|plan| {
@@ -547,6 +673,9 @@ pub fn simulate_with_backend(
     if road_violations > 0 {
         failures.push(format!("{road_violations} road boundary violations"));
     }
+    if closure_violations > 0 {
+        failures.push(format!("{closure_violations} closed-edge entry violations"));
+    }
     if let Some(required) = scenario.min_clearance_m
         && minimum < required
     {
@@ -587,6 +716,8 @@ pub fn simulate_with_backend(
         max_tracks,
         passed: failures.is_empty(),
         failures,
+        navigation_switches,
+        closure_violations,
     };
     Ok(Run {
         backend: source.to_string(),
@@ -595,6 +726,7 @@ pub fn simulate_with_backend(
         scenario,
         route,
         navigation,
+        route_history,
         vehicle,
         frames,
         occupied_cells: pipeline.occupied_cells(),

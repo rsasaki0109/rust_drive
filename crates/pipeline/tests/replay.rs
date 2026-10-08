@@ -31,6 +31,7 @@ fn log() -> Vec<u8> {
                 points: vec![],
             }),
             lidar_failed: false,
+            navigation_update: None,
         };
         let output = pipeline.step(&input).unwrap();
         log.record(input, output);
@@ -66,6 +67,73 @@ fn changed_command_is_detected() {
         .collect::<String>();
     assert!(
         verify(Cursor::new(edited), std::io::sink())
+            .unwrap_err()
+            .contains("mismatch")
+    );
+}
+
+#[test]
+fn changing_a_map_snapshot_is_detected_by_full_recomputation() {
+    let scenario: serde_json::Value =
+        serde_json::from_str(include_str!("../../../scenarios/route-handover.json")).unwrap();
+    let nav: rustdrive_pipeline::navigation::NavigationConfig =
+        serde_json::from_value(scenario["navigation"].clone()).unwrap();
+    let mut config = PipelineConfig::new(
+        nav.initial_plan().unwrap().route,
+        Pose::default(),
+        VehicleConfig::default(),
+    );
+    config.navigation = Some(nav);
+    let mut pipeline = DrivingPipeline::new(config.clone()).unwrap();
+    let mut log = SensorLog::new("navigation-replay", config);
+    for i in 0..8 {
+        let time = i as f64 * 0.05;
+        let mut input = SensorFrame {
+            time,
+            odometry: Some(Odometry {
+                stamp: time,
+                speed: 0.0,
+                yaw_rate: 0.0,
+            }),
+            gnss: Some(Gnss {
+                stamp: time,
+                position: Vec2::default(),
+                variance: 0.02,
+            }),
+            lidar: Some(LidarScan {
+                stamp: time,
+                points: vec![],
+            }),
+            lidar_failed: false,
+            navigation_update: None,
+        };
+        if i == 1 {
+            input.navigation_update = Some(rustdrive_pipeline::navigation::NavigationUpdate {
+                stamp: time,
+                revision: 1,
+                closed_edges: vec!["main".into()],
+            });
+        }
+        let output = pipeline.step(&input).unwrap();
+        log.record(input, output);
+    }
+    let mut bytes = Vec::new();
+    log.write(&mut bytes).unwrap();
+    assert_eq!(
+        verify(Cursor::new(bytes), std::io::sink()).unwrap().ticks,
+        8
+    );
+    log.ticks[1]
+        .input
+        .navigation_update
+        .as_mut()
+        .unwrap()
+        .closed_edges
+        .clear();
+    let mut bytes = Vec::new();
+    log.write(&mut bytes).unwrap();
+    assert!(
+        verify(Cursor::new(bytes), std::io::sink())
             .unwrap_err()
             .contains("mismatch")
     );

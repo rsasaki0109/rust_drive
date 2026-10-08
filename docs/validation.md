@@ -1,95 +1,62 @@
-# Validation record
+# Sensor contract and replay
 
-Recorded on 2026-10-08 in the Linux Codex cloud workspace. Default workspace: Rust 1.90.0; optional RNE: Rust 1.95.0. Pillow 12.3.0, release and debug profiles. Results below describe local execution, not a safety assessment or independently restored task.
+`rustdrive-pipeline` exposes `PipelineConfig`, `SensorFrame`, `DrivingPipeline` and `PipelineOutput`. Both reference simulation and RNE call the same stateful synchronous library. No executor or middleware is needed.
 
-## Checks executed
+## Input boundary
 
-- `bash scripts/check.sh`: formatting, Clippy with warnings denied, **37 nonzero workspace tests**, locked release build, four CLI acceptance scenarios and full sensor-output replay for each passed. No tests failed or were ignored.
-- Default offline tests/replay work after dependencies are retained. Mission tests run seeds 1, 7 and 42; exact same-seed traces are compared on this binary/platform.
-- Regression coverage includes circular-object fitting, maneuver persistence, return to center, occlusion, EKF rejection/covariance, track expiration/velocity, occupancy rays, blocking and sensor timestamp faults.
-- New pipeline tests cover healthy empty scans vs acquisition errors, duplicate/delayed freshness, malformed/future sensor data, transactional clock rejection/gaps and stale odometry. Log tests cover recomputation, altered commands, truncation/count mismatch, schema/truth-field rejection and failing output writers.
-- CLI negative tests verify incomplete/colliding missions fail physical acceptance, invalid options/replay mismatches exit 2, and previous replay success reports are removed for corrupted or missing logs. These expected negative outcomes are not failing tests.
-- `bash scripts/setup-rne.sh`: matched the fixed engine pin, fetched locked dependencies, built release and passed **5 adapter tests**. Formatting and all-target Clippy with warnings denied also passed for the standalone integration.
-- RNE `cargo +1.95.0 test --locked -p rne_physics_rapier -p rne_sensor --jobs 4`: **150 tests** passed (42 Rapier, 103 sensor, 5 sensor integration). Affected-package Clippy passed. Existing vendored Rapier dependency warnings were emitted; they were not introduced by this change. Full RNE workspace/renderer validation was not run.
-- `bash scripts/demo.sh assets/demo.gif` and `bash scripts/rne-demo.sh dynamic assets/rne-demo.gif` generated the README media from actual release-binary runs and verified their sensor logs. The kinematic RNE demo script also completed. GIF dimensions/frame counts and representative PNGs were inspected: reference 105 frames; RNE dynamic 132 frames; both 1200×720.
+Configuration supplies a validated arc-length route, calibrated initial pose, vehicle geometry/limits, nominal time step and cruise speed and optional calibrated forward/braking/lateral acceleration limits. Missing optional limits select default planning limits; invalid supplied limits fail construction. The observed frame contains:
 
-## Reference release-binary results (seed 7)
+- `time`: finite, nonnegative, strictly increasing seconds on one simulation clock.
+- `odometry`: optional acquisition-stamped speed and yaw rate; required at 20 Hz.
+- `gnss`: optional acquisition-stamped noisy position/variance; generated at 5 Hz.
+- `lidar`: optional acquisition-stamped **body-frame** x-forward/y-left returns; generated at 10 Hz.
+- `navigation_update`: optional external closure snapshot, with acquisition stamp, increasing revision and complete closed-edge list; configured map required for route handling.
+- `lidar_failed`: explicit acquisition failure (default false), distinct from healthy zero returns.
 
-| Scenario | Acceptance | Goal | Colliding steps | Road violations | Min clearance (m) | Localization RMSE (m) | Final speed (m/s) | Replay ticks |
-|---|---|---|---|---|---|---|---|---|
-| mission | PASS | yes | 0 | 0 | 0.926 | 0.064 | 0.101 | 624 |
-| blocked | PASS | no (expected) | 0 | 0 | 2.370 | 0.049 | 0.000 | 401 |
-| lidar-fault | PASS | no (expected) | 0 | 0 | 47.736 | 0.055 | 0.000 | 321 |
-| gnss-fault | PASS | no (expected) | 0 | 0 | 45.284 | 0.158 | 0.000 | 321 |
+Absent samples do not refresh last accepted timestamps. Duplicate, out-of-order, future and invalid samples cannot refresh them either. Odometry older than 0.15 s, LiDAR older than 0.35 s or accepted GNSS older than 0.75 s brakes. Clock gaps over 0.25 s and excessive localization uncertainty brake. Regressing/non-finite clocks return an error before state mutation; adapters must stop on errors. This research health policy is intentionally conservative and does not support GNSS-denied navigation.
 
-The reference mission reaches 220.24 m arc length in 31.15 **simulated seconds**. The LiDAR/GNSS fault scenarios record 195/189 emergency-control steps. Raw evidence is in ignored `artifacts/check/`; committed `assets/demo.json` records the displayed run. No wall-clock throughput result is claimed.
+Ground-truth poses, object identities and physical collision results are not input fields. Unknown top-level fields are rejected. Synthetic sensors necessarily observe the simulator world; their noisy measurements cross this boundary.
 
-## RNE release-binary results (seed 7)
+## Log schema 1
 
-Engine: [`df6007aa40315e81d12ae00fc1f60369e393a178`](https://github.com/rsasaki0109/RobotNativeEngine/commit/df6007aa40315e81d12ae00fc1f60369e393a178), based on `81454814e997e6733f5bd1687d86a0cab03c1b03`. Both runs use the same supplied mission and shared pipeline, with plant-specific documented cruise settings.
+`sensors.jsonl` is separate from the evaluation/display `run.json`. It contains one JSON object per line:
 
-| Plant | Acceptance / goal | Colliding steps | Road violations | Min clearance (m) | Localization RMSE (m) | Final speed (m/s) | Simulated seconds | Replay ticks |
-|---|---|---|---|---|---|---|---|---|
-| Kinematic (8 m/s cruise) | PASS / yes | 0 | 0 | 0.572 | 0.067 | 0.158 | 37.25 | 746 |
-| Dynamic (6 m/s cruise) | PASS / yes | 0 | 0 | 0.947 | 0.082 | 0.106 | 39.20 | 785 |
+1. `{"kind":"header","header":{"schema_version":1,"source":"...","config":...}}`
+2. One or more `{"kind":"tick","tick":{"input":...,"expected":...}}` records.
+3. Mandatory `{"kind":"end","ticks":N}` count footer.
 
-The dynamic run reaches 220.31 m; maximum localization error is 0.252 m. Both RNE logs generated with Rust 1.95.0 also verified exactly using the Rust 1.90.0 default CLI locally. This is a tested pair, not a general portability guarantee. Raw evidence is under `artifacts/rne-{kinematic,dynamic}/`; committed `assets/rne-demo.json` contains the dynamic metrics and reproduction recipe.
+The expected record contains the complete estimate, tracks, forecasts, trajectory, command, emergency state, health and position variance. It never enters the pipeline. Replay constructs fresh state from the header, feeds only inputs, and compares reserialized outputs exactly. Serde's float-roundtrip parsing preserves recorded f64 values. No tolerance or success shortcut hides differences.
 
-The adapter tests additionally cover blocked-road stopping and acquisition-error braking. The RNE fix has a reproduced negative regression: a fixed/kinematic query collider moved from 5 m to 10 m previously returned its old 4 m ray range; after pose propagation it immediately returns 9 m without stepping. Before repair the integration encountered stale moving geometry and collisions. The repair passes the original acceptance criteria.
+```sh
+cargo run --release --locked --bin rustdrive -- replay \
+  --log artifacts/demo/sensors.jsonl --output artifacts/replay
+```
 
-## Limits and unexecuted checks
+Exit 0 means every tick matched and the count footer completed. Exit 2 means a mismatch, schema/input/clock error, empty/truncated log, extra data, or I/O failure. The reader limits each line to 8 MiB. It streams outputs and propagates flush errors. A previous `replay.json` is removed before reading the log; a new success report is written only after verification completes. `outputs.jsonl` may contain a partial prefix after failure and must not be interpreted as a verified run.
 
-- RNE runs native vehicle integration and CPU 3D ray queries with planar LiDAR. Rapier contact response is not used; swept circular collision/route scoring is independent. The GIF is top-down telemetry rendering, not a full 3D engine camera capture.
-- CARLA is not installed, implemented or tested. No GPU is required for the implemented RNE path. CARLA's standard rendered/camera workflow generally needs a suitable GPU; no-rendering limits sensors and has not been validated here.
-- No learned camera/semantic perception, 3D SLAM, traffic-rule reasoning, ROS 2 bridge or real vehicle actuator is implemented. The route and initial pose calibration are supplied.
-- Occupancy mapping is diagnostic. Planning has three lateral targets and heuristic CV forecasts. The current acceleration-aware timing is described in [speed planning](speed-planning.md). RNE adds a native friction limit/steering lag, without establishing realistic vehicle calibration or joint trajectory feasibility.
-- Replay verifies computation only; it cannot establish physical acceptance, timing, robust autonomy or operational safety. No certification, formal verification, hardware-in-the-loop or sensor/weather benchmark is claimed.
-- GitHub Actions' three-platform default checks plus Linux visualization/RNE jobs passed remotely as recorded below. Full RNE rendering/platform CI remains unexecuted here.
-- Published cloud snapshots have reconnected with the retained RNE source/tooling and passed the checks described below. Independent fresh-task restoration remains unverified.
+## Evidence and limits
 
-See [capabilities](capabilities.md), [architecture](architecture.md), [sensor replay](sensor-replay.md) and [RNE integration](../integrations/rne/README.md).
+Unit/integration tests check actual recomputation, changed commands, empty/truncated/dropped tick streams, schema/version/truth-field rejection and failing output writers. CLI tests verify exit 2 and removal of a stale success report for corrupted and missing input. Reference and RNE-generated logs are verified end to end.
 
-## Hazard-suite extension (2026-10-09, Asia/Tokyo)
+Exact repeatability is tested on this Linux build/platform. The locally recorded RNE Rust 1.95.0 dynamic log also verified with the Rust 1.90.0 default CLI; general cross-platform/toolchain bitwise reproducibility is not established. Schema changes require a future migration/version decision.
 
-The later development tree passes 45 default-workspace tests, 8 RNE-adapter tests, formatting and Clippy in both workspaces. The default check script now executes six reference scenarios and their logs. The dedicated hazard command passes all 18 release-binary acceptance runs and full replay across seeds 1/7/42, including actual low-friction acceleration bounds. A low-friction braking overlap was reproduced and repaired without changing its fixture or acceptance criteria. Detailed metrics, source fingerprint and remaining model limitations: [hazard validation](hazard-validation.md) and [result snapshot](hazard-results.json).
+Schema 1 describes the record format, not an algorithm revision. Changes such as the continuous candidate sweeps and stop/wait policy can change expected trajectories and commands. Regenerate recordings with the revised pipeline before expecting exact replay; old recordings may correctly report a mismatch. Algorithm-version migration and historical-binary replay are not implemented.
 
-The previously published environment reconnected with the original pinned source/tooling and passed 37 tests, 5 adapter tests, both release missions, 624/785-tick replay and RNE GIF regeneration. This verifies that reconnection; an independently created task remains untested. No new RNE engine revision was needed for the hazard extension.
+Replay verifies deterministic computation, **not** collision avoidance, goal completion or real-time execution. An incomplete or colliding physical run can have a fully reproducible log. Physical acceptance is scored independently in `summary.json`; sensor logs intentionally contain no truth evaluator inputs.
 
-## Observed GitHub Actions results
+Acceleration calibration now includes `max_acceleration_m_s2` (0.1–2.0 m/s²). Older motion-limit objects without this field deserialize with 2.0 m/s²; explicitly supplied non-finite or out-of-range limits are rejected. Schema 1 remains readable, but revised speed/timing/control outputs require regenerated recordings for exact replay.
 
-For hazard commit `560ea49cc4f9b89e1c91f62809a240603a11507e`, [run 37802806434, attempt 2](https://github.com/rsasaki0109/rust_drive/actions/runs/37802806434/attempts/2) completed successfully: Linux, macOS and Windows workspace checks, Linux GIF generation, and Linux CPU-only RNE integration including the 18-run hazard suite.
+## Map-aware navigation replay
 
-The first attempt failed to acquire a hosted macOS runner. Its visualization job failed before compiling the demo, while rustup added manifest-required components to the runner's existing Rust installation: `failed to install component: 'clippy-preview-x86_64-unknown-linux-gnu', detected conflict: 'bin/cargo-clippy'`. Retrying only failed jobs passed without application changes. CI now installs toolchains under a job-specific `RUSTUP_HOME` in `runner.temp`, with the manifest-required Rust 1.90.0 components installed explicitly, to avoid using a runner image's pre-existing toolchain files. This change does not address hosted-runner capacity.
-
-Locally, installing Rust 1.90.0 plus Clippy/rustfmt into an empty temporary `RUSTUP_HOME` and running `bash scripts/demo.sh` passed: 624 replay ticks and a 105-frame GIF. The workspace check script also passed all 45 tests and six scenario/replay pairs. The opening README media is the existing verified 132-frame RNE dynamic run, with its original provenance preserved.
-
-## Continuous planning extension
-
-The revised planner passes **56 workspace tests**, Clippy, formatting, the locked release build and eight reference acceptance/replay scenarios. The RNE adapter passes its **8 tests**, formatting, Clippy and release build. All **30 seeded reference/RNE hazard runs** pass physical acceptance and full replay with zero collisions and road violations; low-friction longitudinal bounds remain checked. [Methods, regressions and updated results](swept-planning.md).
-
-The earlier planner failed the new between-sample oncoming regression in an isolated temporary test harness. Opposing scheduled crossings also reproduced a physical collision during development; the fixture and evaluation criteria were retained while repairing stop behavior and the trajectory's connection to the current estimate. The earlier numeric tables above are baseline records; the new compact snapshot and regenerated media describe this later implementation.
-
-Run [37810379211](https://github.com/rsasaki0109/rust_drive/actions/runs/37810379211), before this algorithm extension, passed Linux, Windows, GIF generation and RNE. Its macOS job was cancelled because no hosted runner was acquired; annotations reported ARM runner capacity constraints. The workflow now selects the officially supported `macos-15-intel` image for macOS x64 coverage. This selects a different pool; it does not guarantee runner availability or establish current ARM coverage.
+Optional `PipelineConfig.navigation` records the known graph/start/goal/initial closures and must match the initial route. Map-configured logs record `SensorFrame.navigation_update` snapshots and complete `PipelineOutput.navigation` state. Replay reruns initial routing, each accepted snapshot, stop-before-divergence transitions and route switching. It does not substitute expected routes or navigator states. Existing resolved-route logs omit these optional fields and still replay local computation without Dijkstra. A changed closure snapshot is covered by a mismatch test. Schema 1 remains readable; exact outputs are tied to this implementation. [Contract and physical evidence](handover.md).
 
 
-For continuous-planning commit `38475ae7c33440b7d5683d205bc9517320feb64b`, [run 37817176036](https://github.com/rsasaki0109/rust_drive/actions/runs/37817176036) completed all five jobs successfully, including the Intel macOS pool and the 30-case hazard suite.
+For road-network commit `aa766836d6f79fc58c4cde5cc6560b019a8cbac1`, [run 37856849026](https://github.com/rsasaki0109/rust_drive/actions/runs/37856849026) completed all five jobs successfully.
 
-## Acceleration-aware planning extension (2026-10-09, Asia/Tokyo)
+## Live closure handover (2026-10-09, Asia/Tokyo)
 
-The default workspace passes **68 tests**, formatting, Clippy with warnings denied, the locked release build, and eight reference scenario/replay pairs. The standalone RNE integration retains eight tests. The 30-case suite additionally verifies each non-emergency trajectory's initial speed, finite increasing times, integrated travel distance and calibrated longitudinal acceleration bounds independently in Python. Physical collision/road evaluation and complete sensor-output replay remain separate gates. [Current results and explicit limitations](speed-planning.md).
+Local checks pass **97 workspace tests**, **11 RNE tests**, formatting, Clippy with warnings denied and locked release builds. The reference script passes fourteen scenario/replay pairs. The positive seeded suite passes **66 runs**, including 18 live-navigation runs, with zero collisions, road violations and closed-edge entry violations, full replay and unchanged per-fixture clearance/normal steering-rate constraints. Tests also cover protocol faults, late-notification failure, state retention, steering continuity and changed-snapshot replay detection.
 
+The live fixtures explicitly use 4 m/s cruise and a 1 m/s² planned lateral bound. A separately reproduced RNE seed-7 run at 6 m/s with curvature limits omitted fails goal acceptance while staying collision-free; its CLI returns 1 and its 1401 sensor ticks still replay. One of the eleven RNE tests asserts this retained failure; it is not a successful driving episode. [Methods, actual measurements, failed summary and limitations](handover.md).
 
-For speed-planning commit `7a6ada6b5301276bed046274f771d7e64253c4a0`, [run 37826988137](https://github.com/rsasaki0109/rust_drive/actions/runs/37826988137) completed all five jobs successfully: Linux, Intel macOS, Windows, visualization and the pinned CPU-only RNE adapter.
-
-## Tracking extension (2026-10-09, Asia/Tokyo)
-
-The default workspace passes **76 tests**, formatting, Clippy with warnings denied, the locked release build and eight reference scenario/replay pairs. RNE passes eight adapter tests, formatting, Clippy and the release build. All 30 seeded acceptance runs pass with zero collisions/road violations, matching complete replay, valid speed profiles and bounded normal commanded steering rates. The low-friction fixture additionally gates emergency fallback at 20 ticks; measured counts are 9/8/7 for seeds 1/7/42, down from 73/83/80. [Current methods, command metrics and full results](tracking.md).
-
-
-For tracking commit `58cf7fe63060b1b9c8e4313a5e37c320e0a22f3c`, [run 37848670958](https://github.com/rsasaki0109/rust_drive/actions/runs/37848670958) completed all five jobs successfully.
-
-## Road-network extension (2026-10-09, Asia/Tokyo)
-
-Local checks pass **85 workspace tests**, **9 RNE adapter tests**, formatting, Clippy with warnings denied, locked release builds and eleven reference scenario/replay pairs. The expanded suite passes **48 runs**, including 18 mapped-route runs across both backends and three seeds. All have zero collisions/road violations, complete replay and fixed minimum-clearance floors; mapped runs also verify selected topology/geometry and destination arrival independently. Search is additionally checked against exhaustive simple-path distances across every closure subset of a cyclic graph. A negative integration test rejects a collision-free run whose required clearance exceeds the measured result.
-
-The opening README media now shows the actual seed-7 RNE dynamic closure detour, with map inset, selected route and known closure. It remains CPU-only telemetry rendering. Route handover while moving, lane topology, traffic rules and general sharp-turn feasibility are unimplemented. [Methods, measured table and full result snapshot](routing.md). Remote CI for this extension is separate from the preceding observed runs above.
+The opening README GIF is now the actual RNE live-closure run, showing braking, a pending route and stopped handover. Traffic priority and continuous moving handover remain unimplemented. Remote CI for this extension remains separate from the preceding observed runs.

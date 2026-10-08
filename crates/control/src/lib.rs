@@ -15,6 +15,11 @@ impl PurePursuit {
             ..Self::default()
         }
     }
+    /// Clear route-specific longitudinal feedback while retaining the last emitted
+    /// steering command, so a stopped route handover respects the steering-rate limit.
+    pub fn reset_route_state(&mut self) {
+        self.integral = 0.0;
+    }
 }
 impl Controller for PurePursuit {
     fn control(&mut self, ego: EgoState, path: &Trajectory, dt: f64) -> ControlCommand {
@@ -175,6 +180,21 @@ mod tests {
                 .acceleration,
             0.0
         );
+    }
+    #[test]
+    fn route_handover_retains_steering_rate_continuity() {
+        let mut turning = profile(0.0, 0.0, 8.0);
+        turning.points[1].position.y = 3.0;
+        let mut controller = PurePursuit::default();
+        let mut before = ControlCommand::default();
+        for _ in 0..20 {
+            before = controller.control(EgoState::default(), &turning, 0.05);
+        }
+        assert!(before.steering.abs() > 0.3);
+        controller.reset_route_state();
+        let after = controller.control(EgoState::default(), &profile(0.0, 0.0, 8.0), 0.05);
+        assert!((after.steering - before.steering).abs() <= 0.7 * 0.05 + 1e-10);
+        assert_eq!(after.acceleration, 0.0);
     }
     #[test]
     fn invalid_profile_time_brakes() {

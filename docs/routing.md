@@ -1,5 +1,7 @@
 # Road networks and shortest-path navigation
 
+This page records the pre-departure routing baseline `aa76683`. The later [live-closure extension](handover.md) adds stopped handover, reopening and map-aware replay; its current results supersede the counts below.
+
 RustDrive now selects a route from a directed road map before departure. The same map can send the vehicle to an eastern or southern destination; a known closure on the eastern shortcut selects a longer detour. The resolved route drives the existing sensor-only pipeline in both the reference simulator and CPU-only RNE. This is map-based navigation, with no intersection priority or traffic-light logic.
 
 The opening README GIF is the actual seed-7 RNE dynamic detour run, rendered from telemetry at 3× speed. The inset shows supplied map topology, known closures, the selected route and the ego position for display. The orange shortcut is a map closure; it is not a fabricated LiDAR detection or a simulated barricade. Its [metadata](../assets/rne-demo.json) contains the exact scenario, selected edges and measured outcome.
@@ -79,4 +81,4 @@ These thresholds describe particular simulated circular footprints and scheduled
 
 ## Boundaries and next work
 
-Closures are applied before departure. Search can be called again with another closure set, but a moving vehicle's route handover, progress transfer and local-planner reset are not implemented. Maps are authored planar centerlines, without Lanelet2/OpenDRIVE import, lane-change topology, speed restrictions, turn penalties, road elevations, signals or right-of-way. The physical evaluator uses the selected conservative corridor; overlapping graph edges do not implement shared intersection traffic rules. Self-crossing-route progress ambiguity and arbitrary sharp-turn feasibility remain unresolved. The GIF is a top-down rendering of recorded CPU RNE data, not an engine camera or CARLA capture.
+The baseline applies closures before departure. The later [handover extension](handover.md) supports live closure snapshots and stopped switching before a shared-prefix divergence, with preserved estimation/tracking. Continuous handover at speed and general mid-edge replanning remain unimplemented. Maps are authored planar centerlines, without Lanelet2/OpenDRIVE import, lane-change topology, speed restrictions, turn penalties, road elevations, signals or right-of-way. The physical evaluator uses the selected conservative corridor; overlapping graph edges do not implement shared intersection traffic rules. Self-crossing-route progress ambiguity and arbitrary sharp-turn feasibility remain unresolved. The GIF is a top-down rendering of recorded CPU RNE data, not an engine camera or CARLA capture.

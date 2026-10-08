@@ -10,8 +10,8 @@ import sys
 
 ROOT = Path(__file__).resolve().parent.parent
 CASES = {
-    'reference': ['occluded-crossing', 'cut-in', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south'],
-    'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south'],
+    'reference': ['occluded-crossing', 'cut-in', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-no-path', 'route-reopen'],
+    'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-no-path', 'route-reopen'],
 }
 # Fixed regression floors, chosen against the preceding measured fixture results.
 # They are simulation test constraints, not a universal safe-distance specification.
@@ -19,11 +19,14 @@ CLEARANCE_FLOORS_M = {
     'occluded-crossing': 1.0, 'cut-in': 0.7, 'multiple-blocked': 3.0,
     'opposing-crossings': 0.7, 'low-friction': 0.4, 'low-friction-stop': 4.0,
     'route-direct': 0.5, 'route-detour': 0.5, 'route-south': 0.5,
+    'route-handover': 0.5, 'route-no-path': 4.0, 'route-reopen': 0.5,
 }
 EXPECTED_EDGES = {
     'route-direct': ['approach', 'main', 'east-exit'],
     'route-detour': ['approach', 'detour', 'east-exit'],
     'route-south': ['approach', 'south-branch'],
+    'route-handover': ['approach', 'detour', 'east-exit'],
+    'route-reopen': ['approach', 'detour', 'east-exit'],
 }
 
 
@@ -36,7 +39,9 @@ def clearance_regression(summary, case):
 
 def check_navigation(run, case):
     """Check selected topology/geometry against fixture expectations independently."""
-    nav = run['scenario']['navigation']
+    nav = dict(run['scenario']['navigation'])
+    if run['scenario'].get('navigation_updates'):
+        nav['closed_edges'] = run['scenario']['navigation_updates'][-1]['closed_edges']
     plan = run['navigation']
     edges = {edge['id']: edge for edge in nav['network']['edges']}
     nodes = {node['id']: node['position'] for node in nav['network']['nodes']}
@@ -73,6 +78,65 @@ def check_navigation(run, case):
 
 def xy(point):
     return point['x'], point['y']
+
+
+def check_live_navigation(run, log, case):
+    """Check stop-before-switch, update replay state and stationary world objects."""
+    ticks = []
+    with log.open() as stream:
+        for line in stream:
+            record = json.loads(line)
+            if record['kind'] == 'tick':
+                ticks.append(record['tick'])
+    updates = [t['input']['navigation_update'] for t in ticks if t['input'].get('navigation_update')]
+    if updates != run['scenario']['navigation_updates']:
+        raise ValueError('recorded map snapshots differ from the scheduled inputs')
+    observed_switches = 0
+    revision = 0
+    closures = run['scenario']['navigation']['closed_edges']
+    for i, tick in enumerate(ticks):
+        out = tick['expected']
+        nav = out['navigation']
+        snapshot = tick['input'].get('navigation_update')
+        if snapshot:
+            revision, closures = snapshot['revision'], snapshot['closed_edges']
+        if nav['revision'] != revision or nav['closed_edges'] != closures:
+            raise ValueError('navigation state did not apply the delivered closure snapshot')
+        if ((nav['phase'] == 'Following' and set(nav['active_edges']) & set(closures))
+                or set(nav['pending_edges']) & set(closures)):
+            raise ValueError('following or pending path includes a closed edge')
+        if nav['switches'] > observed_switches:
+            if nav['switches'] != observed_switches + 1 or i < 2:
+                raise ValueError('invalid handover count')
+            for prior in ticks[i-2:i+1]:
+                state = prior['expected']
+                if state['health'] or abs(state['estimate']['speed']) > 0.05:
+                    raise ValueError('handover lacks three healthy stopped estimates')
+            observed_switches += 1
+    history = run['route_history']
+    if len(history) != observed_switches + 1:
+        raise ValueError('route history differs from the replayed switch count')
+    for change in history[1:]:
+        if change['true_speed'] > 0.1 or abs(change['estimated_speed']) > 0.05:
+            raise ValueError('moving vehicle changed routes')
+        if change['time'] <= updates[0]['stamp']:
+            raise ValueError('route changed before the closure was delivered')
+    # Both fixtures contain a stationary object; route changes must not move it.
+    positions = [f['objects'][0]['position'] for f in run['frames']]
+    if any(p != positions[0] for p in positions):
+        raise ValueError('world object teleported during navigation')
+    if run['summary'].get('closure_violations', 0):
+        raise ValueError('truth entered a closed edge')
+    if case in ['route-handover', 'route-reopen']:
+        if observed_switches != 1 or ticks[-1]['expected']['navigation']['phase'] != 'Following':
+            raise ValueError('detour handover did not complete')
+    else:
+        if (observed_switches or ticks[-1]['expected']['navigation']['phase'] != 'Blocked'
+                or run['summary']['progress'] + run['vehicle']['radius'] >= 40.0
+                or run['summary']['final_speed'] >= 0.2):
+            raise ValueError('unreachable route did not hold before the closed fork')
+    return {'switches': observed_switches, 'history': [{k: h[k] for k in ['time', 'estimated_speed', 'true_speed']} | {'edge_ids': h['plan']['edge_ids']} for h in history],
+            'stationary_world_verified': True, 'passed': True}
 
 
 def invoke(args):
@@ -221,6 +285,7 @@ def main():
                         row['replay'] = json.loads(replay_file.read_text())
                     ok = (code == 0 and summary['passed'] and summary['collisions'] == 0
                           and summary['road_violations'] == 0 and code_replay == 0
+                          and summary.get('closure_violations', 0) == 0
                           and row.get('replay', {}).get('verified') is True
                           and row['replay']['ticks'] == summary['steps'])
                     row['speed_profiles'] = check_speed_profiles(output/'sensors.jsonl')
@@ -234,6 +299,8 @@ def main():
                     run = json.loads((output/'run.json').read_text())
                     if case in EXPECTED_EDGES:
                         row['navigation'] = check_navigation(run, case)
+                    if case in ['route-handover', 'route-no-path', 'route-reopen']:
+                        row['live_navigation'] = check_live_navigation(run, output/'sensors.jsonl', case)
                     if run['scenario'].get('dynamics'):
                         frames = run['frames']
                         acceleration = max(abs((b['truth']['speed']-a['truth']['speed'])/(b['time']-a['time'])) for a,b in zip(frames, frames[1:]))

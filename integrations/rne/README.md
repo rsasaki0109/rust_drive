@@ -73,4 +73,6 @@ The current tracking extension adds smooth supplied-route interpolation, estimat
 
 ## Road-network demo
 
-The adapter also runs authored graph routes selected by the shared simulator before departure. With Pillow active, `bash scripts/rne-demo.sh dynamic assets/rne-demo.gif scenarios/route-detour.json` reproduces the opening README closure-detour GIF. The three map fixtures run across seeds 1/7/42 in the expanded acceptance/replay suite. Known closures are map inputs; they are not LiDAR objects. [Routing results and limits](../../docs/routing.md).
+The adapter also runs authored graph routes selected by the shared simulator before departure. With Pillow active, `bash scripts/rne-demo.sh dynamic assets/rne-demo.gif scenarios/route-handover.json` reproduces the opening README closure-detour GIF. The three map fixtures run across seeds 1/7/42 in the expanded acceptance/replay suite. Known closures are map inputs; they are not LiDAR objects. [Routing results and limits](../../docs/routing.md).
+
+Live fixtures also carry timestamped closure snapshots into the shared navigator; RNE world objects stay on their initial road. Stopped handover and reopening are tested with an explicit 4 m/s cruise / 1 m/s² planned lateral bound. The documented 6 m/s run without curvature limits still fails physical goal acceptance and is retained as a negative regression. [Current handover results](../../docs/handover.md).

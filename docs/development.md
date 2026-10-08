@@ -2,7 +2,7 @@
 
 ## Toolchain and commands
 
-Rust 1.90.0 is pinned, edition 2024. Use `cargo build --workspace --locked`, `cargo test --workspace --locked`, `cargo fmt --all --check`, and `cargo clippy --workspace --all-targets --locked -- -D warnings`. `bash scripts/check.sh` additionally builds release binaries and runs eleven reference scenarios and verifies their sensor logs. Optional friction fixtures run through the RNE hazard suite. Keep `Cargo.lock` under version control and use `--locked` in CI and installation. Four build jobs are a suitable default for the cloud machine; `RUSTDRIVE_BUILD_JOBS` overrides setup parallelism.
+Rust 1.90.0 is pinned, edition 2024. Use `cargo build --workspace --locked`, `cargo test --workspace --locked`, `cargo fmt --all --check`, and `cargo clippy --workspace --all-targets --locked -- -D warnings`. `bash scripts/check.sh` additionally builds release binaries and runs fourteen reference scenarios and verifies their sensor logs. Optional friction fixtures run through the RNE hazard suite. Keep `Cargo.lock` under version control and use `--locked` in CI and installation. Four build jobs are a suitable default for the cloud machine; `RUSTDRIVE_BUILD_JOBS` overrides setup parallelism.
 
 The checkout already provides task isolation in Codex cloud. Use the existing `/workspace/rust_drive` checkout; do not create additional Git worktrees unless explicitly requested.
 
@@ -68,7 +68,7 @@ A later gate is a CARLA synchronous fixed-step bridge with timestamped sensors, 
 
 ## Hazard and friction fixtures
 
-`bash scripts/check-hazards.sh` builds both release binaries, runs all 48 reference/RNE runs across seeds 1/7/42 and verifies complete replay. Results include actual acceleration checks for friction fixtures and a source fingerprint; the command returns failure if either physical acceptance or replay fails. It uses standard-library Python only. See [current routing and regression results](routing.md).
+`bash scripts/check-hazards.sh` builds both release binaries, runs all 66 reference/RNE runs across seeds 1/7/42 and verifies complete replay. Results include actual acceleration checks for friction fixtures and a source fingerprint; the command returns failure if either physical acceptance or replay fails. It uses standard-library Python only. See [current handover and regression results](handover.md).
 
 Optional scenario `dynamics` supplies `friction_coefficient` (0.1–1.2) and `steering_lag_s` (0–1 s). These fields require RNE `--plant dynamic`; other plants reject them. They are fixed known calibration, not online estimation. Existing scenarios without the fields keep nominal behavior. `PipelineConfig.motion_limits` contains optional conservative `max_deceleration_m_s2` and `max_lateral_acceleration_m_s2`, which are validated and recorded in replay headers.
 
@@ -76,4 +76,6 @@ Optional scenario `dynamics` supplies `friction_coefficient` (0.1–1.2) and `st
 
 Optional `navigation` provides a directed map, start/goal IDs and known closed edge IDs; it replaces sine-road geometry with the selected route. The three `route-*.json` fixtures share one map and demonstrate destination changes and pre-departure detours. Objects use arc length on the selected route. Mapped goals additionally require the truth center within 2 m of the destination. Optional `min_clearance_m` adds an independent swept-circle acceptance floor, without changing planner inputs. The regression suite also enforces fixed per-fixture floors and expected mapped edge sequences. See [map schema and complete evidence](routing.md).
 
-`bash scripts/rne-demo.sh dynamic assets/rne-demo.gif scenarios/route-detour.json` regenerates the opening README GIF after activating a Pillow environment. Without the third argument, the script retains its original mission default.
+`bash scripts/rne-demo.sh dynamic assets/rne-demo.gif scenarios/route-handover.json` regenerates the opening README GIF after activating a Pillow environment. Without the third argument, the script retains its original mission default.
+
+Optional `navigation_updates` schedules complete `{stamp, revision, closed_edges}` snapshots on the simulation clock. Use `route-handover`, `route-no-path` and `route-reopen` for working examples. These worlds stay tied to the initial road when navigation changes. Optional `cruise_speed` and `motion_limits` supply explicit planning settings; invalid values fail before simulation. [Protocol, replay, exact reproduction and retained higher-speed failure](handover.md).

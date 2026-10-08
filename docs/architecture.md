@@ -16,7 +16,7 @@ flowchart LR
   T --> F[Constant-velocity prediction]
   S --> M[Log-odds occupancy map]
   L --> M
-  N[Supplied road graph + destination + known closures] --> D[Dijkstra routing]
+  N[Supplied road graph + destination + closure snapshots] --> D[Dijkstra routing]
   D --> R[Resolved route]
   R --> A[Lateral lattice planning]
   L --> A
@@ -39,7 +39,7 @@ Ground truth never flows into obstacle prediction or planning. The simulator ini
 | Crate | Responsibility | Depends on |
 |---|---|---|
 | `rustdrive-core` | SI contracts, planar transforms, route interpolation and projection, algorithm traits | serde |
-| `rustdrive-routing` | Validated directed maps, shortest-distance routing and pre-departure closures | core, serde |
+| `rustdrive-routing` | Validated directed maps, shortest-distance routing and edge closures | core, serde |
 | `rustdrive-localization` | State and covariance estimation, innovation gating | core |
 | `rustdrive-perception` | Point clustering, circular-object fitting, track identity and velocity | core |
 | `rustdrive-mapping` | Bounded occupancy grid and ray updates | core |
@@ -91,7 +91,7 @@ For accelerated segments, the circular sweep additionally covers the deviation f
 
 ## Map navigation
 
-The independent routing crate resolves a directed map and known edge closures before departure. The simulator records selected node/edge IDs and supplies the route to the local pipeline; minimum edge width defines its conservative corridor. Search uses standard-library Dijkstra with deterministic equal-cost choices and rejects invalid or unreachable requests. Authored fork/merge and alternative-destination fixtures run in both plants. Sensor replay records the resolved route and recomputes the local stack; it does not rerun map search. [Map format, actual results and limitations](routing.md).
+The independent routing crate resolves a directed map and known edge closures before departure. The simulator records selected node/edge IDs and supplies the route to the local pipeline; minimum edge width defines its conservative corridor. Search uses standard-library Dijkstra with deterministic equal-cost choices and rejects invalid or unreachable requests. Authored fork/merge and alternative-destination fixtures run in both plants. Resolved-route replay recomputes the local stack. Map-configured replay additionally recomputes Dijkstra and stopped handover from timestamped closure snapshots. The pipeline preserves estimation/tracking state and steering continuity while resetting route-dependent planner state and longitudinal feedback. [Live handover and retained failure](handover.md). [Map format, actual results and limitations](routing.md).
 
 ## Extension decisions
 
