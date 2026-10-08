@@ -143,3 +143,64 @@ fn cli_replay_recomputes_and_rejects_corruption_without_stale_success() {
     assert!(!summary.exists());
     fs::remove_dir_all(directory).unwrap();
 }
+
+#[test]
+fn crossing_hazards_across_seeds() {
+    for case in ["occluded-crossing", "cut-in"] {
+        for seed in [1, 7, 42] {
+            let result = simulate(scenario(case), seed).unwrap();
+            assert!(
+                result.summary.passed,
+                "{case} seed {seed}: {:?}",
+                result.summary
+            );
+            assert!(result.summary.max_tracks > 0);
+        }
+    }
+}
+#[test]
+fn newly_appearing_and_terminal_overlaps_fail_acceptance() {
+    let mut s = scenario("blocked");
+    s.duration = 1.0;
+    s.objects[0].s = 0.0;
+    s.objects[0].active_from = 0.05;
+    let result = simulate(s.clone(), 7).unwrap();
+    assert!(!result.summary.passed);
+    assert!(result.summary.collisions > 0);
+    assert!(result.summary.collisions <= result.summary.steps);
+    // An actor appearing only at the final evaluated tick must still count.
+    s.objects[0].s = 1.0;
+    s.objects[0].active_from = s.duration;
+    let result = simulate(s, 7).unwrap();
+    assert!(result.summary.collisions > 0);
+    assert!(!result.summary.passed);
+}
+#[test]
+fn unsupported_friction_is_not_silently_ignored() {
+    assert!(
+        simulate(scenario("low-friction"), 7)
+            .unwrap_err()
+            .contains("RNE")
+    );
+    let mut s = scenario("low-friction");
+    s.dynamics.as_mut().unwrap().friction_coefficient = 0.0;
+    assert!(s.validate().is_err());
+    let mut s = scenario("cut-in");
+    s.objects[0].moving_from = f64::INFINITY;
+    assert!(s.validate().is_err());
+}
+#[test]
+fn actors_exist_before_motion_begins() {
+    let s = scenario("cut-in");
+    let road = s.route();
+    assert_eq!(
+        s.world_objects(&road, 0.0)[0].position,
+        s.world_objects(&road, 4.9)[0].position
+    );
+    assert!(
+        s.world_objects(&road, 5.1)[0]
+            .position
+            .distance(s.world_objects(&road, 0.0)[0].position)
+            > 0.2
+    );
+}

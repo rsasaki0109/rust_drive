@@ -9,6 +9,13 @@ use rustdrive_planning::LatticePlanner;
 use rustdrive_prediction::ConstantVelocity;
 use serde::{Deserialize, Serialize};
 
+/// Conservative, externally calibrated planning limits, independent of simulator truth.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MotionLimits {
+    pub max_deceleration_m_s2: f64,
+    pub max_lateral_acceleration_m_s2: f64,
+}
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct PipelineConfig {
@@ -17,6 +24,8 @@ pub struct PipelineConfig {
     pub vehicle: VehicleConfig,
     pub nominal_dt: f64,
     pub cruise_speed: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub motion_limits: Option<MotionLimits>,
 }
 impl PipelineConfig {
     pub fn new(route: Route, initial_pose: Pose, vehicle: VehicleConfig) -> Self {
@@ -26,6 +35,7 @@ impl PipelineConfig {
             vehicle,
             nominal_dt: 0.05,
             cruise_speed: 8.0,
+            motion_limits: None,
         }
     }
     pub fn validate(&self) -> Result<(), String> {
@@ -35,6 +45,14 @@ impl PipelineConfig {
         let canonical = Route::new(self.route.points.clone(), self.route.half_width)?;
         if canonical.lengths != self.route.lengths || canonical.length() > 1500.0 {
             return Err("invalid route arc-length metadata or excessive route length".into());
+        }
+        if self.motion_limits.is_some_and(|limits| {
+            !limits.max_deceleration_m_s2.is_finite()
+                || !(0.1..=6.0).contains(&limits.max_deceleration_m_s2)
+                || !limits.max_lateral_acceleration_m_s2.is_finite()
+                || !(0.1..=6.0).contains(&limits.max_lateral_acceleration_m_s2)
+        }) {
+            return Err("invalid calibrated motion limits".into());
         }
         let v = self.vehicle;
         if !self.initial_pose.position.finite()
@@ -119,6 +137,10 @@ impl DrivingPipeline {
         let mut planner = LatticePlanner::default();
         planner.cruise_speed = config.cruise_speed;
         planner.vehicle = config.vehicle;
+        if let Some(limits) = config.motion_limits {
+            planner.max_deceleration_m_s2 = limits.max_deceleration_m_s2;
+            planner.max_lateral_acceleration_m_s2 = Some(limits.max_lateral_acceleration_m_s2);
+        }
         let controller = PurePursuit::with_vehicle(config.vehicle);
         let min_x = config
             .route
@@ -392,5 +414,18 @@ mod tests {
                 assert!(out.health.contains(&HealthIssue::StaleOdometry));
             }
         }
+    }
+    #[test]
+    fn invalid_calibration_is_rejected_before_execution() {
+        let mut config = PipelineConfig::new(
+            Route::new(vec![Vec2::default(), Vec2::new(100.0, 0.0)], 5.5).unwrap(),
+            Pose::default(),
+            VehicleConfig::default(),
+        );
+        config.motion_limits = Some(MotionLimits {
+            max_deceleration_m_s2: 0.0,
+            max_lateral_acceleration_m_s2: 1.0,
+        });
+        assert!(DrivingPipeline::new(config).is_err());
     }
 }

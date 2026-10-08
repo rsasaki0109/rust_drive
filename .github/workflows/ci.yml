@@ -74,6 +74,14 @@ jobs:
             cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- --scenario scenarios/mission.json --plant "$plant" --seed 7 --output "artifacts/rne-$plant"
             cargo run --release --locked --bin rustdrive -- replay --log "artifacts/rne-$plant/sensors.jsonl" --output "artifacts/rne-$plant/replay"
           done
+      - name: Run multi-seed hazard acceptance and full replay
+        working-directory: rust_drive
+        run: python3 scripts/check_hazards.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rne-hazard-evidence
+          path: rust_drive/artifacts/hazards/
       - uses: actions/upload-artifact@v4
         with:
           name: rne-cpu-telemetry

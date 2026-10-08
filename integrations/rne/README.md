@@ -55,8 +55,14 @@ The adapter uses crates.io Rapier 0.22.0 as supported by the backend manifest. T
 
 ## Verified boundaries
 
-Five adapter tests cover frame conversion, kinematic mission/blocked road, dynamic mission, acquisition-error braking and RNE-log recomputation. The affected RNE packages pass 150 tests. Full RNE workspace/rendering/platform CI is not claimed. Local scenario results and remaining limitations are in [validation](../../docs/validation.md).
+Eight adapter tests cover frame conversion, kinematic mission/blocked road, dynamic mission, acquisition-error braking, RNE-log recomputation, geometric occlusion, actual friction limits and multi-seed hazard runs. The affected RNE packages pass 150 tests. Full RNE workspace/rendering/platform CI is not claimed. Local scenario results and remaining limitations are in [validation](../../docs/validation.md).
 
 This is a planar known-route research integration. It does not establish realistic tire calibration, road elevation/suspension/contact response, camera perception, traffic reasoning, full 3D autonomous driving, hardware throughput or road safety. CARLA remains unimplemented; its standard rendered/camera workflow normally requires a suitable GPU, while no-rendering changes available sensors and does not by itself prove CPU-only support.
 
 RNE is dual MIT/Apache-2.0. Optional locked dependency licenses are inventoried in [THIRD_PARTY.md](THIRD_PARTY.md).
+
+## Occlusion, crossing and low-friction regressions
+
+Run `bash scripts/check-hazards.sh` from RustDrive for the 18-case reference/RNE suite and complete replay. The dynamic adapter accepts optional scenario `dynamics` calibration for friction and steering lag, adds a longitudinal `mu*g` actuation clamp, and supplies conservative fixed braking/lateral limits to the shared planner. Reference/kinematic backends reject this calibration. Combined longitudinal/lateral friction coupling and online friction estimation are absent. [Measured outcomes and the repaired braking failure](../../docs/hazard-validation.md).
+
+The integration currently passes eight tests, including multi-seed hazard runs, acquisition under real geometric occlusion, and measured acceleration/braking limits. The engine pin and standalone dependencies remain the same.

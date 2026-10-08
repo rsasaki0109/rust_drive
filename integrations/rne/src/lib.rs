@@ -11,7 +11,7 @@ use rne_robot::{AckermannDrive, VehicleDynamics, ackermann_kinematics, vehicle_d
 use rne_sensor::{LidarRaycaster, LidarSpec, SensorNoiseKey, sample_lidar_checked};
 use rne_world::Transform3;
 use rustdrive_core::{ControlCommand, EgoState, Gnss, LidarScan, Odometry, Pose, Vec2};
-use rustdrive_pipeline::{PipelineConfig, SensorFrame};
+use rustdrive_pipeline::{MotionLimits, PipelineConfig, SensorFrame};
 use rustdrive_sim::{
     Run, Scenario, SimulationBackend, WorldObject, pipeline_config, simulate_with_backend,
 };
@@ -64,9 +64,19 @@ impl RneBackend {
     /// Creates a headless native vehicle with a CPU Rapier query scene.
     pub fn new(scenario: Scenario, seed: u64, plant: Plant) -> Result<Self, String> {
         scenario.validate()?;
+        if scenario.dynamics.is_some() && plant != Plant::Dynamic {
+            return Err("friction/lag calibration requires --plant dynamic".into());
+        }
         let mut config = pipeline_config(&scenario);
         if plant == Plant::Dynamic {
             config.cruise_speed = 6.0;
+            if let Some(d) = scenario.dynamics {
+                let conservative_acceleration = (0.6 * d.friction_coefficient * 9.81).min(2.5);
+                config.motion_limits = Some(MotionLimits {
+                    max_deceleration_m_s2: conservative_acceleration,
+                    max_lateral_acceleration_m_s2: conservative_acceleration,
+                });
+            }
         }
         let mut world = World::new();
         let ego = spawn_named(&mut world, "rustdrive_ego");
@@ -101,7 +111,8 @@ impl RneBackend {
         ));
         if plant == Plant::Dynamic {
             world.entity_mut(ego).insert(VehicleDynamics {
-                steering_lag_s: 0.08,
+                friction_coefficient: scenario.dynamics.map_or(0.9, |d| d.friction_coefficient),
+                steering_lag_s: scenario.dynamics.map_or(0.08, |d| d.steering_lag_s),
                 ..VehicleDynamics::default()
             });
         }
@@ -253,18 +264,27 @@ impl SimulationBackend for RneBackend {
         if !command.finite() || !dt.is_finite() || dt <= 0.0 {
             return Err("invalid RNE actuation".into());
         }
+        // RNE limits lateral tire force but shapes forward speed independently.
+        // This adapter separately bounds longitudinal acceleration by mu*g.
+        // A combined longitudinal/lateral friction ellipse is not modeled.
+        let traction = self
+            .world
+            .get::<VehicleDynamics>(self.ego)
+            .map_or(6.0, |d| d.friction_coefficient * 9.81);
+        let acceleration = command
+            .acceleration
+            .clamp(-6.0_f64.min(traction), 2.0_f64.min(traction));
         let substeps = 10;
         let sub_dt = SimDuration::from_seconds(Seconds::new(dt / substeps as f64));
         {
             let mut drive = self.world.get_mut::<AckermannDrive>(self.ego).unwrap();
-            drive.target_speed_m_s =
-                (drive.speed_m_s + command.acceleration.clamp(-6.0, 2.0) * dt).clamp(0.0, 12.0);
+            drive.target_speed_m_s = (drive.speed_m_s + acceleration * dt).clamp(0.0, 12.0);
             drive.target_steering_rad = command
                 .steering
                 .clamp(-drive.max_steering_rad, drive.max_steering_rad);
             // Acceleration command maps to bounded target-speed ramp at this adapter boundary.
-            drive.max_acceleration_m_s2 = command.acceleration.clamp(0.0, 2.0);
-            drive.max_deceleration_m_s2 = (-command.acceleration).clamp(0.0, 6.0);
+            drive.max_acceleration_m_s2 = acceleration.max(0.0);
+            drive.max_deceleration_m_s2 = (-acceleration).max(0.0);
         }
         for _ in 0..substeps {
             match self.plant {
@@ -353,5 +373,94 @@ mod tests {
                 .ticks
                 > 0
         );
+    }
+    #[test]
+    fn hazard_scenarios_across_seeds() {
+        for case in [
+            "occluded-crossing",
+            "cut-in",
+            "low-friction",
+            "low-friction-stop",
+        ] {
+            for seed in [1, 7, 42] {
+                let result = run(scenario(case), seed, Plant::Dynamic).unwrap();
+                assert!(
+                    result.summary.passed,
+                    "{case} seed {seed}: {:?}",
+                    result.summary
+                );
+                assert!(result.summary.max_tracks > 0);
+            }
+        }
+    }
+    #[test]
+    fn lidar_reveals_a_geometrically_occluded_actor() {
+        let s = scenario("occluded-crossing");
+        let mut backend = RneBackend::new(s, 7, Plant::Dynamic).unwrap();
+        let target = backend.objects(0.0)[1].clone();
+        // Put both actors within the 45 m range to prove occlusion rather than range exclusion.
+        backend
+            .world
+            .get_mut::<Transform3>(backend.ego)
+            .unwrap()
+            .translation = to_rne(Vec2::new(40.0, 0.0));
+        let pose = backend.state().pose;
+        let hidden = backend.observe(0.0, 0).unwrap().lidar.unwrap();
+        assert!(!hidden.points.is_empty());
+        assert!(
+            hidden
+                .points
+                .iter()
+                .all(|p| pose.to_world(*p).distance(target.position) > target.radius + 0.05)
+        );
+        // Sensor fixture: move the acquisition mount past the occluder while the
+        // target remains stationary. Pose is used only for sensor verification.
+        backend
+            .world
+            .get_mut::<Transform3>(backend.ego)
+            .unwrap()
+            .translation = to_rne(Vec2::new(70.0, 0.0));
+        let pose = backend.state().pose;
+        let visible = backend.observe(12.0, 240).unwrap().lidar.unwrap();
+        assert!(
+            visible
+                .points
+                .iter()
+                .any(
+                    |p| (pose.to_world(*p).distance(target.position) - target.radius).abs() < 0.05
+                )
+        );
+    }
+    #[test]
+    fn low_friction_limits_actual_acceleration_and_braking() {
+        let mut backend =
+            RneBackend::new(scenario("low-friction-stop"), 7, Plant::Dynamic).unwrap();
+        let dt = 0.05;
+        backend
+            .advance(
+                ControlCommand {
+                    acceleration: 2.0,
+                    steering: 0.0,
+                },
+                dt,
+            )
+            .unwrap();
+        assert!((backend.state().speed / dt - 0.2 * 9.81).abs() < 1e-9);
+        backend
+            .world
+            .get_mut::<AckermannDrive>(backend.ego)
+            .unwrap()
+            .speed_m_s = 6.0;
+        backend.advance(ControlCommand::emergency(), dt).unwrap();
+        assert!(((6.0 - backend.state().speed) / dt - 0.2 * 9.81).abs() < 1e-9);
+        assert!(
+            backend
+                .config()
+                .motion_limits
+                .unwrap()
+                .max_deceleration_m_s2
+                < 0.2 * 9.81
+        );
+        assert!(RneBackend::new(scenario("low-friction"), 7, Plant::Kinematic).is_err());
     }
 }

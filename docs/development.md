@@ -2,7 +2,7 @@
 
 ## Toolchain and commands
 
-Rust 1.90.0 is pinned, edition 2024. Use `cargo build --workspace --locked`, `cargo test --workspace --locked`, `cargo fmt --all --check`, and `cargo clippy --workspace --all-targets --locked -- -D warnings`. `bash scripts/check.sh` additionally builds release binaries and runs every supplied scenario and verifies its sensor log. Keep `Cargo.lock` under version control and use `--locked` in CI and installation. Four build jobs are a suitable default for the cloud machine; `RUSTDRIVE_BUILD_JOBS` overrides setup parallelism.
+Rust 1.90.0 is pinned, edition 2024. Use `cargo build --workspace --locked`, `cargo test --workspace --locked`, `cargo fmt --all --check`, and `cargo clippy --workspace --all-targets --locked -- -D warnings`. `bash scripts/check.sh` additionally builds release binaries and runs six reference scenarios and verifies their sensor logs. Optional friction fixtures run through the RNE hazard suite. Keep `Cargo.lock` under version control and use `--locked` in CI and installation. Four build jobs are a suitable default for the cloud machine; `RUSTDRIVE_BUILD_JOBS` overrides setup parallelism.
 
 The checkout already provides task isolation in Codex cloud. Use the existing `/workspace/rust_drive` checkout; do not create additional Git worktrees unless explicitly requested.
 
@@ -36,7 +36,7 @@ Internet destinations for a first install are `sh.rustup.rs`, `static.rust-lang.
 }
 ```
 
-Road centerline is `(x, amplitude*sin(x/28))`; `road_length` sets x extent, not total curved arc length. Objects use route arc length `s`, lateral offset, circular radius, and optional route-speed, lateral-speed, and activation time. Motion starts at `active_from` (default 0). Route position clamps at the end. `lidar_dropout` and `gnss_dropout` stop new measurements at the selected simulated time. These are scenario/environment settings, not information passed to the planner.
+Road centerline is `(x, amplitude*sin(x/28))`; `road_length` sets x extent, not total curved arc length. Objects use route arc length `s`, lateral offset, circular radius, and optional route-speed, lateral-speed, and activation time. Objects exist from `active_from` (default 0); motion starts at `max(active_from, moving_from)`, with `moving_from` defaulting to 0. This permits a stationary object to be present before a later crossing, instead of making it appear at motion onset. Route position clamps at the end. `lidar_dropout` and `gnss_dropout` stop new measurements at the selected simulated time. These are scenario/environment settings, not information passed to the planner.
 
 `expected` can be:
 
@@ -44,7 +44,7 @@ Road centerline is `(x, amplitude*sin(x/28))`; `road_length` sets x extent, not 
 - `stop`: stop below 0.2 m/s after making at least 10 m progress without reaching the goal.
 - `fault`: activate freshness braking and stop below 0.2 m/s without reaching the goal.
 
-Every outcome also requires zero colliding integration steps, zero road-boundary violations, and localization maximum error ≤1 m. Scenario geometry and numerical values are validated; unknown JSON fields are rejected. The parser caps duration and road length, but this is a developer tool, not an untrusted network service. Inspect failure logs rather than changing acceptance criteria simply to make a scenario pass.
+Every outcome also requires zero colliding evaluation steps, zero road-boundary violations, and localization maximum error ≤1 m. Scenario geometry and numerical values are validated; unknown JSON fields are rejected. The parser caps duration and road length, but this is a developer tool, not an untrusted network service. Inspect failure logs rather than changing acceptance criteria simply to make a scenario pass.
 
 ## Trace and rendering
 
@@ -65,3 +65,9 @@ The renderer rejects a failing run as a success demo. Simulations can still emit
 No CARLA adapter is shipped. The default 2D simulator fulfills the initial reproducible end-to-end loop. The optional [RNE integration](../integrations/rne/README.md) provides CPU-only native kinematic/dynamic vehicle models and Rapier LiDAR acquisition, using the same pipeline and log contract. Its manifest is excluded from the default workspace; use Rust 1.95.0 and its own lockfile. Run `bash scripts/setup-rne.sh` once, then `bash scripts/rne-demo.sh dynamic` with the Pillow venv active. CI pins the engine revision and tests the integration on Linux.
 
 A later gate is a CARLA synchronous fixed-step bridge with timestamped sensors, explicit Unreal/world-frame conversion, collision callbacks, route fixtures and latency checks. Do not use CARLA actor transforms as operational localization or obstacle ground truth as operational perception. See [roadmap](roadmap.md).
+
+## Hazard and friction fixtures
+
+`bash scripts/check-hazards.sh` builds both release binaries, runs all 18 reference/RNE cases across seeds 1/7/42 and verifies complete replay. Results include actual acceleration checks for friction fixtures and a source fingerprint; the command returns failure if either physical acceptance or replay fails. It uses standard-library Python only. See [hazard validation](hazard-validation.md).
+
+Optional scenario `dynamics` supplies `friction_coefficient` (0.1–1.2) and `steering_lag_s` (0–1 s). These fields require RNE `--plant dynamic`; other plants reject them. They are fixed known calibration, not online estimation. Existing scenarios without the fields keep nominal behavior. `PipelineConfig.motion_limits` contains optional conservative `max_deceleration_m_s2` and `max_lateral_acceleration_m_s2`, which are validated and recorded in replay headers.

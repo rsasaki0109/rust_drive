@@ -10,10 +10,12 @@ An original, modular driving stack with a working, deterministic closed-loop sim
 
 ## Build and run
 
+The pipeline/replay/RNE additions are currently published on `feat/shared-pipeline-rne`; the commands below select that development branch.
+
 Rust 1.90.0 is pinned in `rust-toolchain.toml`. No ROS, GPU, Docker, models, simulator download, Python, or credentials are required for the Rust demo.
 
 ```sh
-git clone https://github.com/rsasaki0109/rust_drive.git
+git clone --branch feat/shared-pipeline-rne https://github.com/rsasaki0109/rust_drive.git
 cd rust_drive
 cargo test --workspace --locked
 cargo run --release --locked --bin rustdrive -- run \
@@ -48,6 +50,16 @@ bash scripts/rne-demo.sh dynamic
 
 The integration has its own lockfile and does not enlarge the default workspace dependencies. It uses RNE's native vehicle integrator and Rapier as a ray-query scene; independent circular/swept evaluation scores collisions. It does not use Rapier contact response or establish full 3D driving support. Setup preserves existing checkouts and stops if their revision differs. Detailed commands, coordinate conversion and engine fixes: [RNE integration](integrations/rne/README.md).
 
+## Hazard scenario regression suite
+
+```sh
+bash scripts/check-hazards.sh
+```
+
+After RNE setup, this CPU-only command runs occlusion, late lateral crossing, low-friction avoidance and low-friction stopping across seeds 1, 7 and 42. It checks physical outcomes and recomputes every sensor log. All 18 local reference/RNE runs pass; a reproduced low-friction braking failure was repaired using calibrated braking and curvature speed limits. [Results and model boundaries](docs/hazard-validation.md).
+
+![Initially occluded actor and crossing on an RNE run](assets/hazard-demo.gif)
+
 ## What actually runs
 
 | Component | Implementation |
@@ -56,7 +68,7 @@ The integration has its own lockfile and does not enlarge the default workspace 
 | Localization | Three-state extended Kalman filter with wheel-speed / gyro prediction and gated GNSS correction |
 | Mapping | Supplied arc-length route plus ray-updated log-odds occupancy grid |
 | Prediction | Constant-velocity trajectories with a low-speed deadband; planning adds a time-dependent margin |
-| Planning | Three lateral candidates, persistent quintic maneuvers, time-indexed clearance checks, braking and goal behavior |
+| Planning | Three lateral candidates, persistent quintic maneuvers, time-indexed clearance checks, braking and goal behavior; optional calibrated braking/curvature speed limits |
 | Control | Pure pursuit, bounded PI speed control, steering-rate limit, independent freshness / numeric guard |
 | Pipeline / replay | Transport-independent timestamped observations, health checks, full-output JSONL verification |
 | Simulation | Reference bicycle or optional RNE native Ackermann plants; noisy LiDAR/GNSS/odometry, swept collision evaluation |

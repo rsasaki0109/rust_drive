@@ -169,23 +169,27 @@ def main():
                 'scenario':run['scenario'],'summary':run['summary'],
                 'gif_frames':len(images),'playback_speed':3,
                 'renderer_command':f'python3 scripts/render_demo.py {args.run} --output {args.output}'}
-    # These reproduction recipes refer to the supplied mission only. Arbitrary
-    # scenarios retain their full configuration above rather than a false command.
-    mission_path=Path(__file__).resolve().parent.parent/'scenarios/mission.json'
-    mission=json.loads(mission_path.read_text())
-    mission.setdefault('lidar_dropout',None)
-    mission.setdefault('gnss_dropout',None)
-    for obj in mission['objects']:
-        for key in ['speed','lateral_speed','active_from']:
-            obj.setdefault(key,0)
-    if run['scenario']==mission:
+    # Match the full normalized configuration, never infer a recipe from the name.
+    scenario_dir=Path(__file__).resolve().parent.parent/'scenarios'
+    for scenario_path in sorted(scenario_dir.glob('*.json')):
+        scenario=json.loads(scenario_path.read_text())
+        scenario.setdefault('curve_amplitude',0)
+        scenario.setdefault('lidar_dropout',None)
+        scenario.setdefault('gnss_dropout',None)
+        for obj in scenario['objects']:
+            for key in ['speed','lateral_speed','active_from','moving_from']:
+                obj.setdefault(key,0)
+        if run['scenario']!=scenario:
+            continue
         seed=run['summary']['seed']
+        source_path=f'scenarios/{scenario_path.name}'
         if backend.startswith('rne-'):
             plant='dynamic' if backend.startswith('rne-dynamic') else 'kinematic'
-            provenance['rne_expected_revision']=(Path(__file__).resolve().parent.parent/'integrations/rne/rne-revision.txt').read_text().strip()
-            provenance['command']=f'cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- --scenario scenarios/mission.json --plant {plant} --seed {seed} --output artifacts/rne-{plant}'
+            provenance['rne_expected_revision']=(scenario_dir.parent/'integrations/rne/rne-revision.txt').read_text().strip()
+            provenance['command']=f'cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- --scenario {source_path} --plant {plant} --seed {seed} --output {args.run.parent}'
         else:
-            provenance['command']=f'cargo run --release --locked --bin rustdrive -- run --scenario scenarios/mission.json --seed {seed} --output artifacts/demo'
+            provenance['command']=f'cargo run --release --locked --bin rustdrive -- run --scenario {source_path} --seed {seed} --output {args.run.parent}'
+        break
     args.output.with_suffix('.json').write_text(json.dumps(provenance,indent=2)+'\n')
     with Image.open(args.output) as image:
         assert image.n_frames==len(images) and image.size==(WIDTH,HEIGHT)

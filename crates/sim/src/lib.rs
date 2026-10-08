@@ -17,6 +17,16 @@ pub struct ObjectSpec {
     pub lateral_speed: f64,
     #[serde(default)]
     pub active_from: f64,
+    /// Motion starts at this time; the object already exists at active_from.
+    #[serde(default)]
+    pub moving_from: f64,
+}
+/// Plant calibration, supported only by the native dynamic RNE adapter.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DynamicsSpec {
+    pub friction_coefficient: f64,
+    pub steering_lag_s: f64,
 }
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "snake_case")]
@@ -39,6 +49,8 @@ pub struct Scenario {
     pub lidar_dropout: Option<f64>,
     #[serde(default)]
     pub gnss_dropout: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub dynamics: Option<DynamicsSpec>,
     pub objects: Vec<ObjectSpec>,
 }
 impl Scenario {
@@ -54,6 +66,14 @@ impl Scenario {
             || self.curve_amplitude.abs() > 8.0
         {
             return Err("invalid scenario geometry or duration".into());
+        }
+        if self.dynamics.is_some_and(|d| {
+            !d.friction_coefficient.is_finite()
+                || !(0.1..=1.2).contains(&d.friction_coefficient)
+                || !d.steering_lag_s.is_finite()
+                || !(0.0..=1.0).contains(&d.steering_lag_s)
+        }) {
+            return Err("invalid dynamic plant calibration".into());
         }
         for time in [self.lidar_dropout, self.gnss_dropout]
             .into_iter()
@@ -71,6 +91,7 @@ impl Scenario {
                 o.speed,
                 o.lateral_speed,
                 o.active_from,
+                o.moving_from,
             ]
             .iter()
             .all(|x| x.is_finite())
@@ -80,6 +101,7 @@ impl Scenario {
                 || o.speed.abs() > 12.0
                 || o.lateral_speed.abs() > 4.0
                 || o.active_from < 0.0
+                || o.moving_from < 0.0
             {
                 return Err("invalid object parameters".into());
             }
@@ -105,7 +127,7 @@ impl Scenario {
             .enumerate()
             .filter(|(_, o)| t >= o.active_from)
             .map(|(id, o)| {
-                let elapsed = t - o.active_from;
+                let elapsed = (t - o.active_from.max(o.moving_from)).max(0.0);
                 WorldObject {
                     id: id as u64,
                     position: route
@@ -321,6 +343,9 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
 }
 pub fn simulate(scenario: Scenario, seed: u64) -> Result<Run, String> {
     scenario.validate()?;
+    if scenario.dynamics.is_some() {
+        return Err("dynamic plant calibration requires RNE --plant dynamic".into());
+    }
     let config = pipeline_config(&scenario);
     let backend = ReferenceBackend {
         scenario: scenario.clone(),
@@ -417,29 +442,34 @@ pub fn simulate_with_backend(
             });
         }
         if progress >= route.length() - 2.0 && truth.speed < 0.2 {
+            collisions += usize::from(clearance < 0.0);
             reached_goal = true;
             break;
         }
         if time >= scenario.duration {
+            collisions += usize::from(clearance < 0.0);
             break;
         }
         let previous = truth.pose.position;
         backend.advance(command, dt)?;
         let next_truth = backend.state();
         let next_objects = backend.objects(time + dt);
-        for object in &objects {
-            if let Some(next) = next_objects.iter().find(|n| n.id == object.id) {
-                let clearance = swept_distance(
+        let mut collided = clearance < 0.0;
+        for next in &next_objects {
+            let separation = if let Some(object) = objects.iter().find(|o| o.id == next.id) {
+                swept_distance(
                     previous.minus(object.position),
                     next_truth.pose.position.minus(next.position),
-                ) - vehicle.radius
-                    - object.radius;
-                minimum = minimum.min(clearance);
-                if clearance < 0.0 {
-                    collisions += 1;
-                }
-            }
+                )
+            } else {
+                // Newly active actor: never interpolate it backward before existence.
+                next_truth.pose.position.distance(next.position)
+            } - vehicle.radius
+                - next.radius;
+            minimum = minimum.min(separation);
+            collided |= separation < 0.0;
         }
+        collisions += usize::from(collided);
     }
     let truth = backend.state();
     let progress = route.project(truth.pose.position).0;

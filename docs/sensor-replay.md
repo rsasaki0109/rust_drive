@@ -4,7 +4,7 @@
 
 ## Input boundary
 
-Configuration supplies a validated arc-length route, calibrated initial pose, vehicle geometry/limits, nominal time step and cruise speed. The observed frame contains:
+Configuration supplies a validated arc-length route, calibrated initial pose, vehicle geometry/limits, nominal time step and cruise speed and optional calibrated braking/lateral acceleration limits. Missing optional limits preserve the original schema-1 behavior; invalid supplied limits fail construction. The observed frame contains:
 
 - `time`: finite, nonnegative, strictly increasing seconds on one simulation clock.
 - `odometry`: optional acquisition-stamped speed and yaw rate; required at 20 Hz.

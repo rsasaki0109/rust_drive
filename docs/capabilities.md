@@ -19,6 +19,9 @@
 | Versioned sensor-log replay | Implemented / tested | Full recomputation; exact comparison on this build/platform; no physical acceptance inference |
 | RNE kinematic/dynamic closed loop | Implemented / tested | CPU-only native plant, planar LiDAR in 3D query scene, friction/steering-lag dynamic model |
 | RNE raycast acquisition failure | Implemented / tested | Explicit error causes braking; healthy empty scan is distinct |
+| Initially occluded / late lateral crossing fixtures | Implemented / tested | Reference/RNE across 3 seeds; circular scheduled actors, no semantics |
+| Low-friction avoidance and stopping | Implemented / tested | RNE dynamic mu=0.2, 0.15 s steering lag, separate longitudinal/lateral limits |
+| Calibrated braking / curvature speed limits | Implemented / tested | Fixed known limits; sampled curvature; no combined-friction optimization |
 | Linux build/test | Verified locally | Rust 1.90.0; optional RNE uses 1.95.0 |
 | macOS / Windows | CI configured; not locally verified | No host-specific Rust dependencies expected |
 | Camera, radar, 3D LiDAR, learned detection | Planned | No placeholder inference implementation |

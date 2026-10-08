@@ -12,14 +12,14 @@ RustDrive's long-term target is a practical independent autonomous driving OSS. 
 
 ## M1 — Broader validated simulation (in progress)
 
-Implemented: shared sensor-only pipeline; versioned JSONL input/output replay with truncation/mismatch detection; CPU-only RNE adapter using native kinematic/dynamic vehicles and Rapier ray queries; native friction limits/steering lag; explicit acquisition-failure braking and out-of-order freshness regressions. Both plants pass the supplied mission locally. This does not complete M1.
+Implemented: shared sensor-only pipeline; versioned JSONL input/output replay with truncation/mismatch detection; CPU-only RNE adapter using native kinematic/dynamic vehicles and Rapier ray queries; native friction limits/steering lag; explicit acquisition-failure braking and out-of-order freshness regressions. Both plants pass the supplied mission locally. Four hazard fixtures, delayed actor motion, calibrated braking/curvature speed limits and 18 seeded reference/RNE acceptance/replay runs are now implemented ([evidence](hazard-validation.md)). This does not complete M1.
 
 Remaining:
 
 - Covariance and latency propagation, delayed-sensing motion compensation and trace migrations.
 - Parameterized road graphs, Dijkstra/A* route search, continuous lateral offsets, time-dependent longitudinal profiles and swept trajectory validation.
-- Rectangular collision shapes, actuator delay, friction-limited dynamics and longitudinal/lateral feasibility constraints.
-- Wider seeded scenario sweeps: occlusion, intersecting actors, stopped lead, localization outliers, delayed/out-of-order sensing and multiple blocked alternatives.
+- Rectangular collision shapes, calibrated actuator/dynamics models, combined longitudinal/lateral friction feasibility and optimized speed profiles.
+- Expand the existing occlusion/crossing/low-friction seeded suite with interacting actors, stopped lead, localization outliers, sensing latency and multiple blocked alternatives.
 - Gate: independent collision/rule evaluators, documented failure cases and regression fixtures; no relaxation of constraints to mask failures.
 
 ## M2 — CARLA end-to-end integration

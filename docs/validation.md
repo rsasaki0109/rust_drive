@@ -48,3 +48,9 @@ The adapter tests additionally cover blocked-road stopping and acquisition-error
 - Initial 26-test baseline passed after the previously published environment reconnected. The new RNE configuration draft still needs publication to capture these additions; independent fresh-task restoration remains unverified.
 
 See [capabilities](capabilities.md), [architecture](architecture.md), [sensor replay](sensor-replay.md) and [RNE integration](../integrations/rne/README.md).
+
+## Hazard-suite extension (2026-10-09, Asia/Tokyo)
+
+The later development tree passes 45 default-workspace tests, 8 RNE-adapter tests, formatting and Clippy in both workspaces. The default check script now executes six reference scenarios and their logs. The dedicated hazard command passes all 18 release-binary acceptance runs and full replay across seeds 1/7/42, including actual low-friction acceleration bounds. A low-friction braking overlap was reproduced and repaired without changing its fixture or acceptance criteria. Detailed metrics, source fingerprint and remaining model limitations: [hazard validation](hazard-validation.md) and [result snapshot](hazard-results.json).
+
+The previously published environment reconnected with the original pinned source/tooling and passed 37 tests, 5 adapter tests, both release missions, 624/785-tick replay and RNE GIF regeneration. This verifies that reconnection; an independently created task remains untested. No new RNE engine revision was needed for the hazard extension.

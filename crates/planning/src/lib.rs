@@ -5,6 +5,10 @@ use rustdrive_core::{
 pub struct LatticePlanner {
     pub cruise_speed: f64,
     pub vehicle: VehicleConfig,
+    /// Braking authority used for obstacle and goal speed envelopes.
+    pub max_deceleration_m_s2: f64,
+    /// Optional curvature-derived speed limit; None retains the baseline behavior.
+    pub max_lateral_acceleration_m_s2: Option<f64>,
     previous_lateral: f64,
     maneuver_start: Option<(f64, f64)>,
 }
@@ -13,6 +17,8 @@ impl Default for LatticePlanner {
         Self {
             cruise_speed: 8.0,
             vehicle: VehicleConfig::default(),
+            max_deceleration_m_s2: 2.5,
+            max_lateral_acceleration_m_s2: None,
             previous_lateral: 0.0,
             maneuver_start: None,
         }
@@ -20,11 +26,23 @@ impl Default for LatticePlanner {
 }
 impl Planner for LatticePlanner {
     fn plan(&mut self, ego: EgoState, route: &Route, objects: &[Prediction]) -> Trajectory {
+        if !self.max_deceleration_m_s2.is_finite()
+            || self.max_deceleration_m_s2 <= 0.0
+            || self
+                .max_lateral_acceleration_m_s2
+                .is_some_and(|a| !a.is_finite() || a <= 0.0)
+        {
+            return Trajectory {
+                points: vec![],
+                mode: DrivingMode::Emergency,
+                lateral_target: 0.0,
+            };
+        }
         let (s, lateral) = route.project(ego.pose.position);
         let remaining = (route.length() - s).max(0.0);
-        let cruise = self
-            .cruise_speed
-            .min((2.0 * 1.6 * (remaining - 1.0).max(0.0)).sqrt());
+        let cruise = self.cruise_speed.min(
+            (2.0 * 1.6_f64.min(self.max_deceleration_m_s2) * (remaining - 1.0).max(0.0)).sqrt(),
+        );
         let horizon = 40.0_f64.min(remaining);
         let mut best: Option<(f64, Trajectory)> = None;
         for target in [0.0_f64, 3.5, -3.5] {
@@ -67,9 +85,25 @@ impl Planner for LatticePlanner {
                 });
             }
             // Braking distance, including one control cycle + conservative planning buffer.
-            let permitted = (2.0 * 2.5 * (first_blocked - 4.0).max(0.0))
+            let mut permitted = (2.0 * self.max_deceleration_m_s2 * (first_blocked - 4.0).max(0.0))
                 .sqrt()
                 .min(cruise);
+            if let Some(acceleration) = self.max_lateral_acceleration_m_s2 {
+                // Circumcircle curvature from adjacent geometric path samples.
+                // Cap the whole short horizon conservatively; no claim of joint optimization.
+                for p in points.windows(3) {
+                    let a = p[1].position.minus(p[0].position);
+                    let b = p[2].position.minus(p[1].position);
+                    let c = p[2].position.minus(p[0].position);
+                    let product = a.x.hypot(a.y) * b.x.hypot(b.y) * c.x.hypot(c.y);
+                    if product > 1e-9 {
+                        let curvature = 2.0 * (a.x * b.y - a.y * b.x).abs() / product;
+                        if curvature > 1e-8 {
+                            permitted = permitted.min((acceleration / curvature).sqrt());
+                        }
+                    }
+                }
+            }
             for point in &mut points {
                 point.speed = permitted;
             }
@@ -79,7 +113,15 @@ impl Planner for LatticePlanner {
                 0.0
             };
             let score = switching_penalty
-                + if first_blocked.is_finite() { 15.0 } else { 0.0 }
+                + if first_blocked.is_finite() {
+                    if self.max_lateral_acceleration_m_s2.is_some() {
+                        100.0
+                    } else {
+                        15.0
+                    }
+                } else {
+                    0.0
+                }
                 + (cruise - permitted) * 12.0
                 + target.abs() * 0.35
                 + (target - self.previous_lateral).abs()
@@ -166,5 +208,59 @@ mod tests {
         let t = LatticePlanner::default().plan(ego, &road(2.0), &[obstacle()]);
         assert_eq!(t.mode, DrivingMode::Yield);
         assert!(t.points[0].speed < 8.0);
+    }
+    #[test]
+    fn reduced_braking_authority_reduces_obstacle_and_goal_speeds() {
+        let ego = EgoState {
+            speed: 6.0,
+            ..EgoState::default()
+        };
+        let nominal = LatticePlanner::default().plan(ego, &road(2.1), &[obstacle()]);
+        let mut limited = LatticePlanner {
+            max_deceleration_m_s2: 0.8,
+            ..LatticePlanner::default()
+        };
+        let low = limited.plan(ego, &road(2.1), &[obstacle()]);
+        assert!(low.points[0].speed + 2.0 < nominal.points[0].speed);
+        let mut near_goal = ego;
+        near_goal.pose.position.x = 94.0;
+        let nominal = LatticePlanner::default().plan(near_goal, &road(2.1), &[]);
+        let low = limited.plan(near_goal, &road(2.1), &[]);
+        assert!(low.points[0].speed < nominal.points[0].speed);
+    }
+    #[test]
+    fn avoidance_speed_obeys_calibrated_curvature_bound() {
+        let mut planner = LatticePlanner {
+            max_lateral_acceleration_m_s2: Some(0.6),
+            ..LatticePlanner::default()
+        };
+        let path = planner.plan(
+            EgoState {
+                speed: 6.0,
+                ..EgoState::default()
+            },
+            &road(5.5),
+            &[obstacle()],
+        );
+        assert!(path.lateral_target.abs() > 3.0);
+        for p in path.points.windows(3) {
+            let a = p[1].position.minus(p[0].position);
+            let b = p[2].position.minus(p[1].position);
+            let c = p[2].position.minus(p[0].position);
+            let curvature = 2.0 * (a.x * b.y - a.y * b.x).abs()
+                / (a.x.hypot(a.y) * b.x.hypot(b.y) * c.x.hypot(c.y));
+            assert!(p[1].speed.powi(2) * curvature <= 0.6 + 1e-9);
+        }
+    }
+    #[test]
+    fn invalid_motion_limits_stop_planning() {
+        let mut planner = LatticePlanner {
+            max_deceleration_m_s2: f64::NAN,
+            ..LatticePlanner::default()
+        };
+        assert_eq!(
+            planner.plan(EgoState::default(), &road(5.5), &[]).mode,
+            DrivingMode::Emergency
+        );
     }
 }
