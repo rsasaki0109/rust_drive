@@ -1,11 +1,7 @@
 //! Deterministic closed-loop simulator. Only sensor observations enter the stack.
-use rustdrive_control::{PurePursuit, guard};
 use rustdrive_core::*;
-use rustdrive_localization::Ekf;
-use rustdrive_mapping::OccupancyGrid;
-use rustdrive_perception::{LidarClusters, Tracker};
-use rustdrive_planning::LatticePlanner;
-use rustdrive_prediction::ConstantVelocity;
+use rustdrive_pipeline::replay::SensorLog;
+use rustdrive_pipeline::{DrivingPipeline, PipelineConfig, SensorFrame};
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 
@@ -103,7 +99,7 @@ impl Scenario {
         )
         .unwrap()
     }
-    fn world_objects(&self, route: &Route, t: f64) -> Vec<WorldObject> {
+    pub fn world_objects(&self, route: &Route, t: f64) -> Vec<WorldObject> {
         self.objects
             .iter()
             .enumerate()
@@ -167,6 +163,10 @@ pub struct Summary {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Run {
+    #[serde(default)]
+    pub backend: String,
+    #[serde(skip)]
+    pub sensor_log: Option<SensorLog>,
     pub schema_version: u32,
     pub scenario: Scenario,
     pub route: Route,
@@ -238,38 +238,121 @@ fn swept_distance(a: Vec2, b: Vec2) -> f64 {
     let nearest = a.plus(d.scaled(t));
     nearest.x.hypot(nearest.y)
 }
+/// Physics/sensor adapter boundary. The evaluator observes truth; the pipeline cannot.
+pub trait SimulationBackend {
+    fn state(&self) -> EgoState;
+    fn objects(&self, time: f64) -> Vec<WorldObject>;
+    fn observe(&mut self, time: f64, tick: usize) -> Result<SensorFrame, String>;
+    fn advance(&mut self, command: ControlCommand, dt: f64) -> Result<(), String>;
+}
+struct ReferenceBackend {
+    scenario: Scenario,
+    route: Route,
+    truth: EgoState,
+    vehicle: VehicleConfig,
+    rng: Rng,
+    command: ControlCommand,
+}
+impl SimulationBackend for ReferenceBackend {
+    fn state(&self) -> EgoState {
+        self.truth
+    }
+    fn objects(&self, time: f64) -> Vec<WorldObject> {
+        self.scenario.world_objects(&self.route, time)
+    }
+    fn observe(&mut self, time: f64, tick: usize) -> Result<SensorFrame, String> {
+        let odometry = Some(if tick == 0 {
+            Odometry {
+                stamp: time,
+                speed: 0.0,
+                yaw_rate: 0.0,
+            }
+        } else {
+            Odometry {
+                stamp: time,
+                speed: self.truth.speed + self.rng.noise(0.015),
+                yaw_rate: self.truth.speed / self.vehicle.wheelbase * self.command.steering.tan()
+                    + self.rng.noise(0.001),
+            }
+        });
+        let gnss = if tick.is_multiple_of(4) && self.scenario.gnss_dropout.is_none_or(|t| time < t)
+        {
+            Some(Gnss {
+                stamp: time,
+                position: self
+                    .truth
+                    .pose
+                    .position
+                    .plus(Vec2::new(self.rng.noise(0.14), self.rng.noise(0.14))),
+                variance: 0.02,
+            })
+        } else {
+            None
+        };
+        let lidar =
+            if tick.is_multiple_of(2) && self.scenario.lidar_dropout.is_none_or(|t| time < t) {
+                Some(lidar(
+                    self.truth.pose,
+                    &self.objects(time),
+                    time,
+                    &mut self.rng,
+                ))
+            } else {
+                None
+            };
+        Ok(SensorFrame {
+            time,
+            odometry,
+            gnss,
+            lidar,
+            lidar_failed: false,
+        })
+    }
+    fn advance(&mut self, command: ControlCommand, dt: f64) -> Result<(), String> {
+        self.command = command;
+        step_vehicle(&mut self.truth, command, self.vehicle, dt);
+        Ok(())
+    }
+}
+pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
+    let route = scenario.route();
+    let (position, yaw) = route.sample(0.0, 0.0);
+    PipelineConfig::new(route, Pose { position, yaw }, VehicleConfig::default())
+}
 pub fn simulate(scenario: Scenario, seed: u64) -> Result<Run, String> {
     scenario.validate()?;
-    let dt = 0.05;
-    let route = scenario.route();
-    let vehicle = VehicleConfig::default();
-    let (spawn, yaw) = route.sample(0.0, 0.0);
-    let mut truth = EgoState {
-        pose: Pose {
-            position: spawn,
-            yaw,
+    let config = pipeline_config(&scenario);
+    let backend = ReferenceBackend {
+        scenario: scenario.clone(),
+        route: config.route.clone(),
+        truth: EgoState {
+            pose: config.initial_pose,
+            speed: 0.0,
         },
-        speed: 0.0,
+        vehicle: config.vehicle,
+        rng: Rng::new(seed),
+        command: ControlCommand::default(),
     };
-    let mut ekf = Ekf::new(truth.pose);
-    let mut rng = Rng::new(seed);
-    let mut perception = LidarClusters;
-    let mut tracker = Tracker::default();
-    let predictor = ConstantVelocity::default();
-    let mut planner = LatticePlanner::default();
-    let mut controller = PurePursuit::default();
-    let mut grid = OccupancyGrid::new(
-        Vec2::new(-10.0, -20.0),
-        ((scenario.road_length + 30.0) / 0.5) as usize,
-        80,
-        0.5,
-    );
-    let mut command = ControlCommand::default();
+    simulate_with_backend(scenario, seed, backend, config, "reference-2d")
+}
+/// Score any backend through the exact same sensor-only stack and acceptance evaluator.
+pub fn simulate_with_backend(
+    scenario: Scenario,
+    seed: u64,
+    mut backend: impl SimulationBackend,
+    config: PipelineConfig,
+    source: &str,
+) -> Result<Run, String> {
+    scenario.validate()?;
+    let dt = config.nominal_dt;
+    let route = config.route.clone();
+    let vehicle = config.vehicle;
+    let mut pipeline = DrivingPipeline::new(config.clone())?;
+    let mut sensor_log = SensorLog::new(source, config);
     let mut scan = LidarScan {
-        stamp: f64::NEG_INFINITY,
+        stamp: 0.0,
         points: vec![],
     };
-    let mut tracks = Vec::new();
     let mut frames = Vec::new();
     let mut collisions = 0;
     let mut road_violations = 0;
@@ -283,48 +366,21 @@ pub fn simulate(scenario: Scenario, seed: u64) -> Result<Run, String> {
     let mut reached_goal = false;
     for i in 0..=(scenario.duration / dt).round() as usize {
         let time = i as f64 * dt;
-        if i > 0 {
-            ekf.predict(
-                Odometry {
-                    stamp: time,
-                    speed: truth.speed + rng.noise(0.015),
-                    yaw_rate: truth.speed / vehicle.wheelbase * command.steering.tan()
-                        + rng.noise(0.001),
-                },
-                dt,
-            );
+        let truth = backend.state();
+        let objects = backend.objects(time);
+        let input = backend.observe(time, i)?;
+        if let Some(new_scan) = &input.lidar {
+            scan = new_scan.clone();
         }
-        let objects = scenario.world_objects(&route, time);
-        if i % 4 == 0 && scenario.gnss_dropout.is_none_or(|t| time < t) {
-            ekf.update(Gnss {
-                stamp: time,
-                position: truth
-                    .pose
-                    .position
-                    .plus(Vec2::new(rng.noise(0.14), rng.noise(0.14))),
-                variance: 0.02,
-            });
-        }
-        let estimate = ekf.state();
-        if i % 2 == 0 && scenario.lidar_dropout.is_none_or(|t| time < t) {
-            scan = lidar(truth.pose, &objects, time, &mut rng);
-            let detections = perception.detect(&scan, estimate.pose);
-            tracks = tracker.update(&detections, time);
-            grid.update(&scan, estimate.pose);
-        }
-        let predictions = predictor.predict(&tracks);
-        let mut trajectory = planner.plan(estimate, &route, &predictions);
-        let requested = controller.control(estimate, &trajectory, dt);
-        command = guard(
-            requested,
-            time,
-            scan.stamp,
-            ekf.last_gnss,
-            ekf.position_variance(),
-        );
-        let emergency = command.acceleration <= -5.99;
+        let result = pipeline.step(&input)?;
+        let estimate = result.estimate;
+        let tracks = result.tracks.clone();
+        let predictions = result.predictions.clone();
+        let trajectory = result.trajectory.clone();
+        let command = result.command;
+        let emergency = result.emergency;
+        sensor_log.record(input, result);
         if emergency {
-            trajectory.mode = DrivingMode::Emergency;
             emergency_steps += 1;
         }
         if trajectory.mode == DrivingMode::Avoid {
@@ -344,7 +400,7 @@ pub fn simulate(scenario: Scenario, seed: u64) -> Result<Run, String> {
             .map(|o| truth.pose.position.distance(o.position) - vehicle.radius - o.radius)
             .fold(1000.0, f64::min);
         minimum = minimum.min(clearance);
-        if i % 2 == 0 {
+        if i.is_multiple_of(2) {
             frames.push(Frame {
                 time,
                 truth,
@@ -368,13 +424,14 @@ pub fn simulate(scenario: Scenario, seed: u64) -> Result<Run, String> {
             break;
         }
         let previous = truth.pose.position;
-        step_vehicle(&mut truth, command, vehicle, dt);
-        let next_objects = scenario.world_objects(&route, time + dt);
+        backend.advance(command, dt)?;
+        let next_truth = backend.state();
+        let next_objects = backend.objects(time + dt);
         for object in &objects {
             if let Some(next) = next_objects.iter().find(|n| n.id == object.id) {
                 let clearance = swept_distance(
                     previous.minus(object.position),
-                    truth.pose.position.minus(next.position),
+                    next_truth.pose.position.minus(next.position),
                 ) - vehicle.radius
                     - object.radius;
                 minimum = minimum.min(clearance);
@@ -384,6 +441,7 @@ pub fn simulate(scenario: Scenario, seed: u64) -> Result<Run, String> {
             }
         }
     }
+    let truth = backend.state();
     let progress = route.project(truth.pose.position).0;
     let mut failures = Vec::new();
     if collisions > 0 {
@@ -427,12 +485,14 @@ pub fn simulate(scenario: Scenario, seed: u64) -> Result<Run, String> {
         failures,
     };
     Ok(Run {
+        backend: source.to_string(),
+        sensor_log: Some(sensor_log),
         schema_version: 1,
         scenario,
         route,
         vehicle,
         frames,
-        occupied_cells: grid.occupied_cells(),
+        occupied_cells: pipeline.occupied_cells(),
         summary,
     })
 }

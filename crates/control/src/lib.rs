@@ -8,6 +8,14 @@ pub struct PurePursuit {
     integral: f64,
     steering: f64,
 }
+impl PurePursuit {
+    pub fn with_vehicle(vehicle: VehicleConfig) -> Self {
+        Self {
+            vehicle,
+            ..Self::default()
+        }
+    }
+}
 impl Controller for PurePursuit {
     fn control(&mut self, ego: EgoState, path: &Trajectory, dt: f64) -> ControlCommand {
         if path.mode == DrivingMode::Emergency

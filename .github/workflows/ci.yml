@@ -20,6 +20,8 @@ jobs:
       - run: cargo build --workspace --release --locked
       - name: Run closed-loop acceptance demo
         run: cargo run --release --locked --bin rustdrive -- run --scenario scenarios/mission.json --seed 7 --output artifacts/demo
+      - name: Recompute sensor log
+        run: cargo run --release --locked --bin rustdrive -- replay --log artifacts/demo/sensors.jsonl --output artifacts/demo/replay
       - uses: actions/upload-artifact@v4
         with:
           name: telemetry-${{ matrix.os }}
@@ -39,3 +41,40 @@ jobs:
         with:
           name: demo-gif
           path: artifacts/demo/demo.*
+
+  rne-cpu:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: rust_drive
+      - uses: actions/checkout@v4
+        with:
+          repository: rsasaki0109/RobotNativeEngine
+          ref: df6007aa40315e81d12ae00fc1f60369e393a178
+          path: RobotNativeEngine
+          sparse-checkout: |
+            crates
+            third_party
+      - name: Install pinned toolchains
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal
+          rustup toolchain install 1.95.0 --profile minimal --component rustfmt --component clippy
+      - name: Verify engine pin and CPU adapter
+        working-directory: rust_drive
+        run: |
+          test "$(git -C ../RobotNativeEngine rev-parse HEAD)" = "$(cat integrations/rne/rne-revision.txt)"
+          cargo +1.95.0 fmt --manifest-path integrations/rne/Cargo.toml --check
+          cargo +1.95.0 clippy --manifest-path integrations/rne/Cargo.toml --all-targets --locked -- -D warnings
+          cargo +1.95.0 test --manifest-path integrations/rne/Cargo.toml --locked
+      - name: Run both native plants and verify logs
+        working-directory: rust_drive
+        run: |
+          for plant in kinematic dynamic; do
+            cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- --scenario scenarios/mission.json --plant "$plant" --seed 7 --output "artifacts/rne-$plant"
+            cargo run --release --locked --bin rustdrive -- replay --log "artifacts/rne-$plant/sensors.jsonl" --output "artifacts/rne-$plant/replay"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rne-cpu-telemetry
+          path: rust_drive/artifacts/rne-*/

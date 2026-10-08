@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "backend": "reference-2d",
-  "input_trace": "artifacts/demo/run.json",
+  "backend": "rne-dynamic-rapier-lidar",
+  "input_trace": "artifacts/rne-dynamic/run.json",
   "scenario": {
     "name": "Curved-road obstacle avoidance",
     "duration": 65.0,
@@ -41,24 +41,25 @@
   "summary": {
     "scenario": "Curved-road obstacle avoidance",
     "seed": 7,
-    "simulated_seconds": 31.150000000000002,
-    "steps": 624,
+    "simulated_seconds": 39.2,
+    "steps": 785,
     "reached_goal": true,
     "collisions": 0,
     "road_violations": 0,
-    "min_clearance": 0.9256503385807417,
-    "localization_rmse": 0.06415515783835664,
-    "localization_max_error": 0.139505039031596,
-    "final_speed": 0.10079867552951585,
-    "progress": 220.24069059891255,
+    "min_clearance": 0.9473251901110222,
+    "localization_rmse": 0.08216805087254747,
+    "localization_max_error": 0.25241693841823226,
+    "final_speed": 0.1064060057081925,
+    "progress": 220.313889407029,
     "emergency_steps": 0,
-    "avoidance_steps": 187,
+    "avoidance_steps": 277,
     "max_tracks": 2,
     "passed": true,
     "failures": []
   },
-  "gif_frames": 105,
+  "gif_frames": 132,
   "playback_speed": 3,
-  "renderer_command": "python3 scripts/render_demo.py artifacts/demo/run.json --output assets/demo.gif",
-  "command": "cargo run --release --locked --bin rustdrive -- run --scenario scenarios/mission.json --seed 7 --output artifacts/demo"
+  "renderer_command": "python3 scripts/render_demo.py artifacts/rne-dynamic/run.json --output assets/rne-demo.gif",
+  "rne_expected_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
+  "command": "cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- --scenario scenarios/mission.json --plant dynamic --seed 7 --output artifacts/rne-dynamic"
 }

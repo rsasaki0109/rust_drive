@@ -86,3 +86,60 @@ fn cli_reports_failure_and_writes_evidence() {
     assert_eq!(result.status.code(), Some(2));
     fs::remove_dir_all(directory).unwrap();
 }
+
+#[test]
+fn cli_replay_recomputes_and_rejects_corruption_without_stale_success() {
+    use std::{fs, io::BufWriter, process::Command};
+    let directory =
+        std::env::temp_dir().join(format!("rustdrive-replay-cli-{}", std::process::id()));
+    fs::create_dir_all(&directory).unwrap();
+    let mut s = scenario("mission");
+    s.duration = 1.0;
+    let result = simulate(s, 7).unwrap();
+    // Replay validates computation, even when the short physical mission fails.
+    assert!(!result.summary.passed);
+    let log = directory.join("sensors.jsonl");
+    result
+        .sensor_log
+        .as_ref()
+        .unwrap()
+        .write(BufWriter::new(fs::File::create(&log).unwrap()))
+        .unwrap();
+    let invoke = || {
+        Command::new(env!("CARGO_BIN_EXE_rustdrive"))
+            .args(["replay", "--log"])
+            .arg(&log)
+            .arg("--output")
+            .arg(directory.join("replay"))
+            .output()
+            .unwrap()
+    };
+    assert_eq!(invoke().status.code(), Some(0));
+    let summary = directory.join("replay/replay.json");
+    let report: serde_json::Value = serde_json::from_slice(&fs::read(&summary).unwrap()).unwrap();
+    assert_eq!(report["verified"], true);
+    let text = fs::read_to_string(&log).unwrap();
+    let mut lines: Vec<serde_json::Value> = text
+        .lines()
+        .map(|s| serde_json::from_str(s).unwrap())
+        .collect();
+    lines[1]["tick"]["expected"]["command"]["acceleration"] = serde_json::json!(123.0);
+    fs::write(
+        &log,
+        lines
+            .iter()
+            .map(|v| serde_json::to_string(v).unwrap() + "\n")
+            .collect::<String>(),
+    )
+    .unwrap();
+    assert_eq!(invoke().status.code(), Some(2));
+    assert!(
+        !summary.exists(),
+        "failed replay must remove the previous success report"
+    );
+    fs::write(&summary, "previous success").unwrap();
+    fs::remove_file(&log).unwrap();
+    assert_eq!(invoke().status.code(), Some(2));
+    assert!(!summary.exists());
+    fs::remove_dir_all(directory).unwrap();
+}

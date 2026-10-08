@@ -2,7 +2,7 @@
 
 ## Toolchain and commands
 
-Rust 1.90.0 is pinned, edition 2024. Use `cargo build --workspace --locked`, `cargo test --workspace --locked`, `cargo fmt --all --check`, and `cargo clippy --workspace --all-targets --locked -- -D warnings`. `bash scripts/check.sh` additionally builds release binaries and runs every supplied scenario. Keep `Cargo.lock` under version control and use `--locked` in CI and installation. Four build jobs are a suitable default for the cloud machine; `RUSTDRIVE_BUILD_JOBS` overrides setup parallelism.
+Rust 1.90.0 is pinned, edition 2024. Use `cargo build --workspace --locked`, `cargo test --workspace --locked`, `cargo fmt --all --check`, and `cargo clippy --workspace --all-targets --locked -- -D warnings`. `bash scripts/check.sh` additionally builds release binaries and runs every supplied scenario and verifies its sensor log. Keep `Cargo.lock` under version control and use `--locked` in CI and installation. Four build jobs are a suitable default for the cloud machine; `RUSTDRIVE_BUILD_JOBS` overrides setup parallelism.
 
 The checkout already provides task isolation in Codex cloud. Use the existing `/workspace/rust_drive` checkout; do not create additional Git worktrees unless explicitly requested.
 
@@ -54,12 +54,14 @@ Each recorded 10 Hz frame includes simulator truth (evaluation/display only), th
 python3 scripts/render_demo.py artifacts/demo/run.json --output artifacts/my-demo.gif
 ```
 
-The renderer rejects a failing run as a success demo. Simulations can still emit failing telemetry; inspect JSON to diagnose the issue. Seeded rerunning is tested; arbitrary recorded sensor streams are not yet accepted as pipeline replay input. A stable sensor-log replay interface is a roadmap item.
+The renderer rejects a failing run as a success demo. Simulations can still emit failing telemetry; inspect JSON to diagnose the issue. Sensor-only `sensors.jsonl` additionally records every 20 Hz input and pipeline output plus calibrated configuration. Run `cargo run --release --locked --bin rustdrive -- replay --log artifacts/demo/sensors.jsonl --output artifacts/replay`. This recomputes the algorithm outputs, not simulator truth. An unsuccessful short mission can still have a correctly reproducible sensor log; use the physical acceptance report separately. See [sensor replay](sensor-replay.md).
 
 ## Replace an algorithm
 
-`Perception`, `Predictor`, `Planner`, and `Controller` traits are defined in `rustdrive-core`. Build alternatives as real libraries and wire them into simulator orchestration. Keep world/body transforms, SI units, timestamp/freshness handling, calibration and failure behavior explicit. Add a regression scenario plus independent acceptance metrics rather than a mock-only interface test. For an AI method, document model provenance and inference preprocessing, and retain a classical baseline for diagnosis.
+`Perception`, `Predictor`, `Planner`, and `Controller` traits are defined in `rustdrive-core`. Build alternatives as real libraries and wire them into `rustdrive-pipeline`, so all backends and replay exercise the same implementation. Keep world/body transforms, SI units, timestamp/freshness handling, calibration and failure behavior explicit. Add a regression scenario plus independent acceptance metrics rather than a mock-only interface test. For an AI method, document model provenance and inference preprocessing, and retain a classical baseline for diagnosis.
 
 ## External simulators
 
-No CARLA adapter is shipped. The default 2D simulator fulfills the initial reproducible end-to-end loop. The next gate is a CARLA synchronous fixed-step bridge with timestamped sensors, explicit Unreal/world-frame conversion, collision callbacks, route fixtures and latency checks. Do not use CARLA actor transforms as operational localization or obstacle ground truth as operational perception. See [roadmap](roadmap.md).
+No CARLA adapter is shipped. The default 2D simulator fulfills the initial reproducible end-to-end loop. The optional [RNE integration](../integrations/rne/README.md) provides CPU-only native kinematic/dynamic vehicle models and Rapier LiDAR acquisition, using the same pipeline and log contract. Its manifest is excluded from the default workspace; use Rust 1.95.0 and its own lockfile. Run `bash scripts/setup-rne.sh` once, then `bash scripts/rne-demo.sh dynamic` with the Pillow venv active. CI pins the engine revision and tests the integration on Linux.
+
+A later gate is a CARLA synchronous fixed-step bridge with timestamped sensors, explicit Unreal/world-frame conversion, collision callbacks, route fixtures and latency checks. Do not use CARLA actor transforms as operational localization or obstacle ground truth as operational perception. See [roadmap](roadmap.md).

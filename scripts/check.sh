@@ -8,4 +8,5 @@ cargo test --workspace --locked
 cargo build --workspace --release --locked
 for scenario in mission blocked lidar-fault gnss-fault; do
   target/release/rustdrive run --scenario "scenarios/$scenario.json" --seed 7 --output "artifacts/check/$scenario"
+  target/release/rustdrive replay --log "artifacts/check/$scenario/sensors.jsonl" --output "artifacts/check/$scenario/replay"
 done

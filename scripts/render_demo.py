@@ -37,7 +37,8 @@ def render(run, frame, index):
     d.text((28, 16), 'RustDrive', fill=TEXT, font=font(34, True))
     d.text((232, 31), 'A RUST-NATIVE AUTONOMOUS DRIVING STACK', fill=MUTED, font=font(13, True))
     d.rounded_rectangle((963, 23, 1172, 57), 16, fill='#19352f')
-    d.text((980, 31), '2D SIMULATION  /  3x', fill=TEAL, font=font(13, True))
+    badge = 'RNE CPU  /  3x' if run.get('backend', '').startswith('rne-') else '2D SIMULATION  /  3x'
+    d.text((980, 31), badge, fill=TEAL, font=font(13, True))
     d.rounded_rectangle((24, 82, 862, 510), 16, fill=PANEL)
     # Render to a separate layer so off-screen geometry cannot overwrite the HUD.
     canvas = Image.new('RGB', (838, 428), PANEL)
@@ -163,7 +164,29 @@ def main():
     images[0].save(args.output,save_all=True,append_images=images[1:],duration=[100]*(len(images)-1)+[1400],loop=0,optimize=False)
     preview_index=next((j for j,i in enumerate(indices) if frames[i]['time']>=7.5),len(images)//3)
     images[preview_index].save(args.output.with_suffix('.png'))
-    args.output.with_suffix('.json').write_text(json.dumps({'schema_version':1,'command':f"cargo run --release --locked --bin rustdrive -- run --scenario scenarios/mission.json --seed {run['summary']['seed']} --output artifacts/demo",'summary':run['summary'],'gif_frames':len(images),'playback_speed':3},indent=2)+'\n')
+    backend=run.get('backend', 'reference-bicycle')
+    provenance={'schema_version':1,'backend':backend,'input_trace':str(args.run),
+                'scenario':run['scenario'],'summary':run['summary'],
+                'gif_frames':len(images),'playback_speed':3,
+                'renderer_command':f'python3 scripts/render_demo.py {args.run} --output {args.output}'}
+    # These reproduction recipes refer to the supplied mission only. Arbitrary
+    # scenarios retain their full configuration above rather than a false command.
+    mission_path=Path(__file__).resolve().parent.parent/'scenarios/mission.json'
+    mission=json.loads(mission_path.read_text())
+    mission.setdefault('lidar_dropout',None)
+    mission.setdefault('gnss_dropout',None)
+    for obj in mission['objects']:
+        for key in ['speed','lateral_speed','active_from']:
+            obj.setdefault(key,0)
+    if run['scenario']==mission:
+        seed=run['summary']['seed']
+        if backend.startswith('rne-'):
+            plant='dynamic' if backend.startswith('rne-dynamic') else 'kinematic'
+            provenance['rne_expected_revision']=(Path(__file__).resolve().parent.parent/'integrations/rne/rne-revision.txt').read_text().strip()
+            provenance['command']=f'cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- --scenario scenarios/mission.json --plant {plant} --seed {seed} --output artifacts/rne-{plant}'
+        else:
+            provenance['command']=f'cargo run --release --locked --bin rustdrive -- run --scenario scenarios/mission.json --seed {seed} --output artifacts/demo'
+    args.output.with_suffix('.json').write_text(json.dumps(provenance,indent=2)+'\n')
     with Image.open(args.output) as image:
         assert image.n_frames==len(images) and image.size==(WIDTH,HEIGHT)
     print(f'{args.output}: {len(images)} frames, {WIDTH}x{HEIGHT}, {args.output.stat().st_size:,} bytes')

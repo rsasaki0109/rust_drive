@@ -21,3 +21,5 @@ For dual MIT/Apache-2.0 crates, preserve the applicable license when redistribut
 Optional visualization uses Pillow 12.3.0, MIT-CMU. It is a development tool, not linked into the Rust executable. The renderer prefers system DejaVu fonts (Bitstream Vera / DejaVu terms) and does not vendor the font files. GIF/PNG output is generated from original simulated data; the README contains no images from reference projects.
 
 Autoware and Apollo root licenses are Apache-2.0; openpilot is MIT at the researched revisions. These projects are architectural references rather than dependencies. See [research](docs/research.md) for source links and artifact-specific licensing restrictions.
+
+The optional standalone RNE adapter has a separate lockfile and [dependency inventory](integrations/rne/THIRD_PARTY.md). RNE is MIT OR Apache-2.0; no RNE source is vendored into the default RustDrive workspace.

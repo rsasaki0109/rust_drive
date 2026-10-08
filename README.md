@@ -6,7 +6,7 @@
 
 An original, modular driving stack with a working, deterministic closed-loop simulation. The vehicle processes synthetic LiDAR, fuses noisy GNSS and odometry, tracks and predicts obstacles, plans an avoidance trajectory, and steers and brakes to its destination. The GIF is rendered from the actual Rust run, at 3× playback speed; it is not a scripted vehicle animation.
 
-**Status: simulation research prototype, v0.1.** The verified operating domain is a supplied, wide, two-dimensional road with circular obstacles and idealized vehicle dynamics. This is the starting point for an independent stack, not a replacement for mature driving systems or a system for use on public roads. CARLA, ROS 2, camera AI, 3D SLAM, traffic-rule reasoning, and real vehicle interfaces are not implemented. See the [capability matrix](docs/capabilities.md).
+**Status: simulation research prototype, v0.1.** The verified operating domain is a supplied, wide, planar road with circular obstacles. A CPU-only Robot Native Engine (RNE) adapter also runs the same pipeline with native Ackermann dynamics and Rapier LiDAR queries. This is the starting point for an independent stack, not a replacement for mature driving systems or a system for use on public roads. CARLA, ROS 2, camera AI, 3D SLAM, traffic-rule reasoning, and real vehicle interfaces are not implemented. See the [capability matrix](docs/capabilities.md).
 
 ## Build and run
 
@@ -22,7 +22,31 @@ cargo run --release --locked --bin rustdrive -- run \
 
 First-time users without Rust can run `bash scripts/setup.sh` (requires Bash, curl, Internet access, and a supported host). Then `source scripts/env.sh` exposes the locally installed tools. On Windows, install [rustup](https://rustup.rs/) and use the Cargo commands above; helper shell scripts require Bash.
 
-The command prints acceptance results and writes `run.json` and `summary.json`. Exit status is **0** for passed scenario criteria, **1** for failed criteria, and **2** for invalid inputs or I/O errors. Time is simulated; the executable does not sleep or actuate hardware.
+The command prints acceptance results and writes `run.json`, `summary.json` and `sensors.jsonl`. Exit status is **0** for passed scenario criteria, **1** for failed criteria, and **2** for invalid inputs or I/O errors. Time is simulated; the executable does not sleep or actuate hardware.
+
+## Replay recorded sensors
+
+```sh
+cargo run --release --locked --bin rustdrive -- replay \
+  --log artifacts/demo/sensors.jsonl --output artifacts/replay
+```
+
+Replay creates a fresh pipeline and recomputes localization, tracks, predictions, trajectories and commands from observations. It compares every output with the recording, rejects corruption/truncation, and writes `replay.json` only after successful verification. `verified=true` establishes repeatable computation; physical goal/collision acceptance remains in `summary.json`. See the [log contract](docs/sensor-replay.md).
+
+## CPU-only Robot Native Engine demo
+
+![RustDrive with RNE native vehicle dynamics and Rapier LiDAR](assets/rne-demo.gif)
+
+This is a top-down rendering of an actual RNE run, with friction-limited native vehicle dynamics, steering lag, and 3D Rapier ray queries sampled in a planar LiDAR sweep. The shared RustDrive pipeline drives it. No GPU, graphics context, ROS, Docker, CARLA server or pretrained model is required.
+
+```sh
+bash scripts/setup-rne.sh        # Fetch pinned RNE beside this checkout; Rust 1.95.0
+# Activate the Pillow venv below to generate the GIF.
+bash scripts/rne-demo.sh dynamic
+# Or: bash scripts/rne-demo.sh kinematic
+```
+
+The integration has its own lockfile and does not enlarge the default workspace dependencies. It uses RNE's native vehicle integrator and Rapier as a ray-query scene; independent circular/swept evaluation scores collisions. It does not use Rapier contact response or establish full 3D driving support. Setup preserves existing checkouts and stops if their revision differs. Detailed commands, coordinate conversion and engine fixes: [RNE integration](integrations/rne/README.md).
 
 ## What actually runs
 
@@ -34,7 +58,8 @@ The command prints acceptance results and writes `run.json` and `summary.json`. 
 | Prediction | Constant-velocity trajectories with a low-speed deadband; planning adds a time-dependent margin |
 | Planning | Three lateral candidates, persistent quintic maneuvers, time-indexed clearance checks, braking and goal behavior |
 | Control | Pure pursuit, bounded PI speed control, steering-rate limit, independent freshness / numeric guard |
-| Simulation | Bicycle dynamics, noisy ray-cast sensors, moving and crossing obstacles, swept collision evaluation |
+| Pipeline / replay | Transport-independent timestamped observations, health checks, full-output JSONL verification |
+| Simulation | Reference bicycle or optional RNE native Ackermann plants; noisy LiDAR/GNSS/odometry, swept collision evaluation |
 
 The occupancy grid is built and exported for inspection; the current planner uses the supplied route and tracked obstacles, not the occupancy grid. Initial heading and route are supplied calibration / navigation inputs. Runtime simulator obstacle labels and ground-truth poses are used by sensing, rendering, and evaluation, never by planning.
 
@@ -67,11 +92,11 @@ cargo run --release --locked --bin rustdrive -- run \
   --scenario scenarios/lidar-fault.json --seed 7 --output artifacts/lidar-fault
 ```
 
-CI checks formatting, Clippy, the workspace test suite, release builds, and the closed-loop demo on Linux, macOS, and Windows, plus GIF generation on Linux. The workflow is defined; remote GitHub Actions runs have not yet been observed. See [validation and limitations](docs/validation.md) for the checks actually executed in this development environment.
+CI checks formatting, Clippy, the workspace test suite, release builds, and the closed-loop demo on Linux, macOS, and Windows, plus GIF generation and the pinned CPU-only RNE integration on Linux. The workflow is defined; remote GitHub Actions runs have not yet been observed. See [validation and limitations](docs/validation.md) for the checks actually executed in this development environment.
 
 ## Architecture and contributing
 
-Eight small Cargo crates share transport-independent, serializable contracts. Algorithm implementations are ordinary synchronous Rust libraries. No custom executor or networking middleware is required. Optional future ROS 2 and simulator bridges should translate at the boundaries rather than become dependencies of the algorithms.
+Nine small Cargo crates share transport-independent, serializable contracts. Algorithm implementations are ordinary synchronous Rust libraries. No custom executor or networking middleware is required. The optional RNE adapter and future ROS 2/CARLA bridges translate at the boundaries rather than become dependencies of the algorithms.
 
 - [Architecture and design decisions](docs/architecture.md)
 - [Reference OSS research and license analysis](docs/research.md)

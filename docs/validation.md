@@ -1,40 +1,50 @@
 # Validation record
 
-Recorded on 2026-10-08 in the Linux Codex cloud workspace. Rust 1.90.0, release and debug profiles, Pillow 12.3.0. This record describes the verified source tree and local cloud execution. It does not establish a GitHub release or a fresh-task restoration result.
+Recorded on 2026-10-08 in the Linux Codex cloud workspace. Default workspace: Rust 1.90.0; optional RNE: Rust 1.95.0. Pillow 12.3.0, release and debug profiles. Results below describe local execution, not a safety assessment or independently restored task.
 
 ## Checks executed
 
-- `bash scripts/setup.sh`: succeeded, including pinned tool activation, locked dependency fetch, release build and workspace tests.
-- `bash scripts/check.sh`: formatting, Clippy with warnings denied, workspace tests, release build and all four CLI acceptance scenarios succeeded.
-- `cargo test --workspace --locked --offline`: succeeded; no external service is required once dependencies are retained.
-- 26 nonzero unit/integration tests passed; no failures or ignored tests. Binary and doc-test targets with zero tests are not counted as validation.
-- Mission integration testing runs seeds 1, 7 and 42. Exact same-seed trace regeneration is tested on the current binary/platform.
-- Regression tests cover circular-object center fitting, persistent maneuver progress, return to road center, occlusion, EKF outlier rejection / covariance, track velocity / expiration, occupancy rays, blocking and timestamp faults.
-- A deliberate collision correctly fails simulator acceptance; the CLI correctly exits 1 and retains evidence for incomplete missions, and exits 2 for invalid options. These are expected negative-test outcomes, not unresolved failing tests.
-- Isolated visualization venv installed at `/workspace/.rustdrive-tools/demo-venv`. `bash scripts/demo.sh assets/demo.gif` exercises release CLI and renderer. GIF dimensions/frame count are checked by Pillow and a representative PNG was inspected.
+- `bash scripts/check.sh`: formatting, Clippy with warnings denied, **37 nonzero workspace tests**, locked release build, four CLI acceptance scenarios and full sensor-output replay for each passed. No tests failed or were ignored.
+- Default offline tests/replay work after dependencies are retained. Mission tests run seeds 1, 7 and 42; exact same-seed traces are compared on this binary/platform.
+- Regression coverage includes circular-object fitting, maneuver persistence, return to center, occlusion, EKF rejection/covariance, track expiration/velocity, occupancy rays, blocking and sensor timestamp faults.
+- New pipeline tests cover healthy empty scans vs acquisition errors, duplicate/delayed freshness, malformed/future sensor data, transactional clock rejection/gaps and stale odometry. Log tests cover recomputation, altered commands, truncation/count mismatch, schema/truth-field rejection and failing output writers.
+- CLI negative tests verify incomplete/colliding missions fail physical acceptance, invalid options/replay mismatches exit 2, and previous replay success reports are removed for corrupted or missing logs. These expected negative outcomes are not failing tests.
+- `bash scripts/setup-rne.sh`: matched the fixed engine pin, fetched locked dependencies, built release and passed **5 adapter tests**. Formatting and all-target Clippy with warnings denied also passed for the standalone integration.
+- RNE `cargo +1.95.0 test --locked -p rne_physics_rapier -p rne_sensor --jobs 4`: **150 tests** passed (42 Rapier, 103 sensor, 5 sensor integration). Affected-package Clippy passed. Existing vendored Rapier dependency warnings were emitted; they were not introduced by this change. Full RNE workspace/renderer validation was not run.
+- `bash scripts/demo.sh assets/demo.gif` and `bash scripts/rne-demo.sh dynamic assets/rne-demo.gif` generated the README media from actual release-binary runs and verified their sensor logs. The kinematic RNE demo script also completed. GIF dimensions/frame counts and representative PNGs were inspected: reference 105 frames; RNE dynamic 132 frames; both 1200×720.
 
-## Release-binary scenario results (seed 7)
+## Reference release-binary results (seed 7)
 
-| Scenario | Acceptance | Goal | Colliding steps | Road violations | Min clearance (m) | Localization RMSE (m) | Final speed (m/s) |
-|---|---|---|---|---|---|---|---|
-| mission | PASS | yes | 0 | 0 | 0.926 | 0.064 | 0.101 |
-| blocked | PASS | no (expected) | 0 | 0 | 2.370 | 0.049 | 0.000 |
-| lidar-fault | PASS | no (expected) | 0 | 0 | 47.736 | 0.055 | 0.000 |
-| gnss-fault | PASS | no (expected) | 0 | 0 | 45.284 | 0.158 | 0.000 |
+| Scenario | Acceptance | Goal | Colliding steps | Road violations | Min clearance (m) | Localization RMSE (m) | Final speed (m/s) | Replay ticks |
+|---|---|---|---|---|---|---|---|---|
+| mission | PASS | yes | 0 | 0 | 0.926 | 0.064 | 0.101 | 624 |
+| blocked | PASS | no (expected) | 0 | 0 | 2.370 | 0.049 | 0.000 | 401 |
+| lidar-fault | PASS | no (expected) | 0 | 0 | 47.736 | 0.055 | 0.000 | 321 |
+| gnss-fault | PASS | no (expected) | 0 | 0 | 45.284 | 0.158 | 0.000 | 321 |
 
-The mission completed in 31.15 **simulated seconds**, reaching 220.24 m arc length. This is not a wall-clock benchmark. The fault scenarios record 195 LiDAR-fault and 189 GNSS-fault emergency-control steps, respectively. The blocked-road vehicle stops before the obstacle.
+The reference mission reaches 220.24 m arc length in 31.15 **simulated seconds**. The LiDAR/GNSS fault scenarios record 195/189 emergency-control steps. Raw evidence is in ignored `artifacts/check/`; committed `assets/demo.json` records the displayed run. No wall-clock throughput result is claimed.
 
-Raw per-frame traces and summary files for these checks are under ignored `artifacts/check/`. The intentionally committed `assets/demo.json` records the displayed mission's metrics. No benchmark supports a real-time, hardware throughput, operational safety or accuracy generalization beyond these tests.
+## RNE release-binary results (seed 7)
 
-## Limitations and unexecuted checks
+Engine: [`df6007aa40315e81d12ae00fc1f60369e393a178`](https://github.com/rsasaki0109/RobotNativeEngine/commit/df6007aa40315e81d12ae00fc1f60369e393a178), based on `81454814e997e6733f5bd1687d86a0cab03c1b03`. Both runs use the same supplied mission and shared pipeline, with plant-specific documented cruise settings.
 
-- CARLA is not installed, implemented or tested. The end-to-end demo uses the project's real 2D reference simulator.
-- No camera AI, semantic perception, 3D SLAM, traffic-rule behavior, global routing, ROS 2 bridge or real vehicle actuator is implemented.
-- Occupancy mapping is diagnostic and does not feed collision planning. The map and initial heading are supplied.
-- Planning is limited to three fixed lateral targets, heuristic CV forecasts and constant-speed time approximation. Collision margins are not probability-calibrated; control/dynamics do not model tire limits or actuator delay.
-- No safety certification, formal verification, realistic sensor weather/noise benchmark or hardware-in-the-loop result is claimed.
-- macOS / Windows jobs and GIF generation are configured in GitHub Actions, but remote workflow execution has not been observed.
-- After the user published the cloud environment, all 26 tests, the release-binary mission and GIF regeneration passed again in the reconnected environment.
-- GitHub publication is separate from these local validation results. A tagged release and restoration in an independently created task have not been validated.
+| Plant | Acceptance / goal | Colliding steps | Road violations | Min clearance (m) | Localization RMSE (m) | Final speed (m/s) | Simulated seconds | Replay ticks |
+|---|---|---|---|---|---|---|---|---|
+| Kinematic (8 m/s cruise) | PASS / yes | 0 | 0 | 0.572 | 0.067 | 0.158 | 37.25 | 746 |
+| Dynamic (6 m/s cruise) | PASS / yes | 0 | 0 | 0.947 | 0.082 | 0.106 | 39.20 | 785 |
 
-See [capabilities](capabilities.md), [architecture](architecture.md) and [roadmap](roadmap.md) for boundaries and the next acceptance gates.
+The dynamic run reaches 220.31 m; maximum localization error is 0.252 m. Both RNE logs generated with Rust 1.95.0 also verified exactly using the Rust 1.90.0 default CLI locally. This is a tested pair, not a general portability guarantee. Raw evidence is under `artifacts/rne-{kinematic,dynamic}/`; committed `assets/rne-demo.json` contains the dynamic metrics and reproduction recipe.
+
+The adapter tests additionally cover blocked-road stopping and acquisition-error braking. The RNE fix has a reproduced negative regression: a fixed/kinematic query collider moved from 5 m to 10 m previously returned its old 4 m ray range; after pose propagation it immediately returns 9 m without stepping. Before repair the integration encountered stale moving geometry and collisions. The repair passes the original acceptance criteria.
+
+## Limits and unexecuted checks
+
+- RNE runs native vehicle integration and CPU 3D ray queries with planar LiDAR. Rapier contact response is not used; swept circular collision/route scoring is independent. The GIF is top-down telemetry rendering, not a full 3D engine camera capture.
+- CARLA is not installed, implemented or tested. No GPU is required for the implemented RNE path. CARLA's standard rendered/camera workflow generally needs a suitable GPU; no-rendering limits sensors and has not been validated here.
+- No learned camera/semantic perception, 3D SLAM, global routing, traffic-rule reasoning, ROS 2 bridge or real vehicle actuator is implemented. The route and initial pose calibration are supplied.
+- Occupancy mapping is diagnostic. Planning has three lateral targets, heuristic CV forecasts and constant-speed time approximation. RNE adds a native friction limit/steering lag, without establishing realistic vehicle calibration or joint trajectory feasibility.
+- Replay verifies computation only; it cannot establish physical acceptance, timing, robust autonomy or operational safety. No certification, formal verification, hardware-in-the-loop or sensor/weather benchmark is claimed.
+- GitHub Actions defines three-platform default checks plus Linux visualization/RNE jobs. Remote workflow results and full RNE rendering/platform CI have not been observed.
+- Initial 26-test baseline passed after the previously published environment reconnected. The new RNE configuration draft still needs publication to capture these additions; independent fresh-task restoration remains unverified.
+
+See [capabilities](capabilities.md), [architecture](architecture.md), [sensor replay](sensor-replay.md) and [RNE integration](../integrations/rne/README.md).

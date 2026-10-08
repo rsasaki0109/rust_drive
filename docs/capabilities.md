@@ -4,7 +4,7 @@
 
 | Capability | Status | Boundary |
 |---|---|---|
-| Closed-loop perception → prediction → planning → control | Implemented / tested | Planar reference simulator |
+| Closed-loop perception → prediction → planning → control | Implemented / tested | Reference and optional CPU RNE plants |
 | Noisy GNSS + speed / gyro EKF | Implemented / tested | Configured initial heading; no bias state |
 | Unlabeled LiDAR and occlusion | Implemented / tested | 720 rays, 45 m range, circular targets |
 | Clustering / circle fitting / alpha-beta tracking | Implemented / tested | No semantic classes; nearest-neighbor association |
@@ -15,7 +15,11 @@
 | LiDAR / GNSS dropout braking | Implemented / tested | Timestamp freshness and numeric checks |
 | Swept collision and road boundary evaluation | Implemented / tested | Circular bodies and planar route corridor |
 | Seeded repeatability and telemetry GIF | Implemented / tested | Same build/platform; Python optional |
-| Linux build/test | Verified locally | Rust 1.90.0 |
+| Sensor-only shared pipeline | Implemented / tested | Configured route/spawn; no operational truth inputs |
+| Versioned sensor-log replay | Implemented / tested | Full recomputation; exact comparison on this build/platform; no physical acceptance inference |
+| RNE kinematic/dynamic closed loop | Implemented / tested | CPU-only native plant, planar LiDAR in 3D query scene, friction/steering-lag dynamic model |
+| RNE raycast acquisition failure | Implemented / tested | Explicit error causes braking; healthy empty scan is distinct |
+| Linux build/test | Verified locally | Rust 1.90.0; optional RNE uses 1.95.0 |
 | macOS / Windows | CI configured; not locally verified | No host-specific Rust dependencies expected |
 | Camera, radar, 3D LiDAR, learned detection | Planned | No placeholder inference implementation |
 | Learned prediction and training | Planned | No model/data/runtime packaged |

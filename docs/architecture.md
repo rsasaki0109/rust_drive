@@ -23,7 +23,7 @@ flowchart LR
   S --> G[Freshness and numeric guard]
   L --> G
   C --> G
-  G --> B[Bicycle dynamics]
+  G --> B[Reference bicycle or RNE native vehicle]
   B --> W
   W --> E[Ground-truth evaluation / telemetry]
   M --> E
@@ -43,7 +43,9 @@ Ground truth never flows into obstacle prediction or planning. The simulator ini
 | `rustdrive-prediction` | Time-indexed constant-velocity baseline | core |
 | `rustdrive-planning` | Candidate selection, maneuver persistence, braking / goal modes | core |
 | `rustdrive-control` | Longitudinal and lateral actuation, freshness guard | core |
-| `rustdrive-sim` | Sensor generation, orchestration, scenario I/O, evaluation and CLI | all algorithm crates, serde / serde_json |
+| `rustdrive-pipeline` | Sensor-only orchestration, freshness/health, versioned recording and replay | core + algorithm crates, serde / serde_json |
+| `rustdrive-sim` | Reference sensors/plant, backend interface, independent evaluation and CLI | core + pipeline, serde / serde_json |
+| `rustdrive-rne` (optional standalone workspace) | RNE world/vehicle/sensor adapter | core + pipeline + sim, renderer-independent RNE crates |
 
 Unsafe Rust is forbidden at workspace level. There is no global message bus, custom scheduling runtime, ROS dependency, model download, or external service. Algorithm crates can be embedded into another application; the simulator is the current application, not a universal runtime.
 
@@ -52,10 +54,17 @@ Unsafe Rust is forbidden at workspace level. There is no global message bus, cus
 - Length in meters, speed in m/s, acceleration in m/s², time in seconds, angles in radians.
 - World frame is planar ENU (`x` east, `y` north), right-handed yaw positive counterclockwise.
 - LiDAR points are body-frame (`x` forward, `y` left). Detections, tracks, route points, and trajectories are world-frame.
-- Timestamps refer to one monotonically advancing simulation clock. The current adapter does not fuse out-of-order odometry or compensate delayed sensing.
+- Timestamps refer to one monotonically advancing simulation clock. Duplicate/out-of-order observations cannot refresh health. Clock regressions fail before mutation; clock gaps over 0.25 s brake. Delayed-sensing motion compensation is absent.
 - Vehicle/control and EKF prediction: 20 Hz. LiDAR/perception/tracking/map: 10 Hz. GNSS: 5 Hz. Prediction and planning: 20 Hz.
 - Lidar scan timestamps are checked independently of an empty scan: no returns are a valid observation, not a sensor failure.
+- `sensors.jsonl` has a separate version-1 sensor-only header/tick/count-footer contract, including calibrated route and expected outputs. Replay feeds observations to a fresh pipeline; expected outputs are comparison evidence only. [Contract and failure behavior](sensor-replay.md).
 - `run.json` has `schema_version = 1`, includes traceable inputs, output commands, estimates and evaluation truth, and is intended for developer inspection. It is not yet a stable external transport schema.
+
+## Shared application boundary
+
+`DrivingPipeline::step(&SensorFrame)` owns EKF, perception/tracking, occupancy, predictor, planner and controller state. Input contains only a monotonic clock, optional timestamped odometry/GNSS/body-frame LiDAR, and explicit LiDAR acquisition failure. Output contains estimate, tracks, predictions, trajectory, command and health diagnostics. It has no simulator object/pose inputs. Configuration supplies route, initial pose calibration and vehicle dimensions; this is a known-route demonstration.
+
+Missing/stale odometry, LiDAR or GNSS, invalid samples, excessive covariance and acquisition failure select finite emergency braking. Healthy empty LiDAR is accepted; a failed acquisition brakes immediately. An invalid clock returns `Err`; callers must stop rather than reuse a command. The reference and RNE backends implement observation/advance boundaries and share the same independent evaluator. Runtime truth stays inside sensor synthesis and evaluation/rendering.
 
 ## Algorithms
 
@@ -69,9 +78,9 @@ Unsafe Rust is forbidden at workspace level. There is no global message bus, cus
 
 **Planning.** The supplied polyline route is parameterized by arc length. Lateral targets are `0`, `+3.5`, and `−3.5` m, filtered by road width and the ego circular footprint. An anchored quintic shift preserves maneuver progress across replans. The planner penalizes sign changes, avoids jumping to the opposite side once the vehicle is displaced, checks 81 samples over up to 40 m against time-indexed predictions, and selects a target speed constrained by distance-to-blockage and distance-to-goal. Collision-envelope penalties encourage early avoidance. It is a baseline lattice with three fixed offsets, not a general maneuver search, global router, or optimizer. Time-to-sample uses a constant-speed approximation; longitudinal and lateral feasibility are not jointly optimized.
 
-**Control.** Pure pursuit uses speed-dependent lookahead, bounded steering and a steering-rate limit. A bounded PI loop regulates speed; stopping uses braking. The independent guard substitutes a −6 m/s² command for non-finite output, stale/future LiDAR or GNSS timestamps, or excessive position variance. This guards a simulation workflow; it is not a certified safety mechanism or redundant vehicle controller.
+**Control.** Pure pursuit uses speed-dependent lookahead, bounded steering and a steering-rate limit. A bounded PI loop regulates speed; stopping uses braking. The pipeline health checks and control guard substitute a −6 m/s² command for non-finite output, missing/stale/invalid sensors, acquisition errors or excessive position variance. This guards a simulation workflow; it is not a certified safety mechanism or redundant vehicle controller.
 
-**Simulation and evaluation.** A kinematic bicycle with bounded speed, acceleration and steering is integrated every 0.05 s. The ego and obstacles have circular collision footprints; relative swept segments test collision between integration endpoints. Road containment uses the ego center plus circular radius against route half-width. Tire friction, actuator lag, road elevation, suspension, rectangles, weather, camera imagery, and traffic laws are outside this model. No throughput or real-time guarantee is claimed.
+**Simulation and evaluation.** A kinematic bicycle with bounded speed, acceleration and steering is integrated every 0.05 s. The ego and obstacles have circular collision footprints; relative swept segments test collision between integration endpoints. Road containment uses the ego center plus circular radius against route half-width. Tire friction and actuator lag are outside the reference model. The optional RNE dynamic plant adds a friction limit and steering lag; road elevation, suspension, rectangular collision evaluation, weather, camera imagery and traffic laws remain outside the demonstrated operating domain. See the [adapter boundaries](../integrations/rne/README.md). No throughput or real-time guarantee is claimed.
 
 ## Extension decisions
 

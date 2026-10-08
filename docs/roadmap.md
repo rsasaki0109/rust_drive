@@ -10,9 +10,13 @@ RustDrive's long-term target is a practical independent autonomous driving OSS. 
 - Actual-run GIF, English design and capability documentation, lockfile and CI definition.
 - Local build/test/Clippy and acceptance runs pass. Publication, remote CI and external platform results remain separate.
 
-## M1 — Broader validated simulation
+## M1 — Broader validated simulation (in progress)
 
-- Sensor-stream replay and versioned trace contracts; covariance and latency propagation.
+Implemented: shared sensor-only pipeline; versioned JSONL input/output replay with truncation/mismatch detection; CPU-only RNE adapter using native kinematic/dynamic vehicles and Rapier ray queries; native friction limits/steering lag; explicit acquisition-failure braking and out-of-order freshness regressions. Both plants pass the supplied mission locally. This does not complete M1.
+
+Remaining:
+
+- Covariance and latency propagation, delayed-sensing motion compensation and trace migrations.
 - Parameterized road graphs, Dijkstra/A* route search, continuous lateral offsets, time-dependent longitudinal profiles and swept trajectory validation.
 - Rectangular collision shapes, actuator delay, friction-limited dynamics and longitudinal/lateral feasibility constraints.
 - Wider seeded scenario sweeps: occlusion, intersecting actors, stopped lead, localization outliers, delayed/out-of-order sensing and multiple blocked alternatives.
