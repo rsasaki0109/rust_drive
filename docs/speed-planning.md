@@ -1,5 +1,7 @@
 # Acceleration-aware speed planning
 
+This is the historical record for `7a6ada6`. Current geometry, control and validation are described in [tracking improvements](tracking.md). The result snapshot and numeric comparison below are retained unchanged.
+
 The shared Rust pipeline now computes a distance-varying speed profile and derives collision-checking arrival times from it. Both the reference bicycle and CPU-only RNE adapter run this implementation. It replaces the constant-speed timing recorded in [the earlier swept-planning stage](swept-planning.md).
 
 ## Profile and control

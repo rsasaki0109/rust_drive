@@ -77,3 +77,10 @@ For continuous-planning commit `38475ae7c33440b7d5683d205bc9517320feb64b`, [run 
 ## Acceleration-aware planning extension (2026-10-09, Asia/Tokyo)
 
 The default workspace passes **68 tests**, formatting, Clippy with warnings denied, the locked release build, and eight reference scenario/replay pairs. The standalone RNE integration retains eight tests. The 30-case suite additionally verifies each non-emergency trajectory's initial speed, finite increasing times, integrated travel distance and calibrated longitudinal acceleration bounds independently in Python. Physical collision/road evaluation and complete sensor-output replay remain separate gates. [Current results and explicit limitations](speed-planning.md).
+
+
+For speed-planning commit `7a6ada6b5301276bed046274f771d7e64253c4a0`, [run 37826988137](https://github.com/rsasaki0109/rust_drive/actions/runs/37826988137) completed all five jobs successfully: Linux, Intel macOS, Windows, visualization and the pinned CPU-only RNE adapter.
+
+## Tracking extension (2026-10-09, Asia/Tokyo)
+
+The default workspace passes **76 tests**, formatting, Clippy with warnings denied, the locked release build and eight reference scenario/replay pairs. RNE passes eight adapter tests, formatting, Clippy and the release build. All 30 seeded acceptance runs pass with zero collisions/road violations, matching complete replay, valid speed profiles and bounded normal commanded steering rates. The low-friction fixture additionally gates emergency fallback at 20 ticks; measured counts are 9/8/7 for seeds 1/7/42, down from 73/83/80. [Current methods, command metrics and full results](tracking.md).

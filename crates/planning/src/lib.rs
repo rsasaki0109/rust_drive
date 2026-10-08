@@ -1,5 +1,6 @@
 //! Receding-horizon lateral lattice with time-indexed collision envelopes.
 mod collision;
+mod geometry;
 mod speed;
 use rustdrive_core::{
     DrivingMode, EgoState, Planner, Prediction, Route, Trajectory, VehicleConfig,
@@ -35,6 +36,7 @@ impl Planner for LatticePlanner {
     fn plan(&mut self, ego: EgoState, route: &Route, objects: &[Prediction]) -> Trajectory {
         if !ego.speed.is_finite()
             || !ego.pose.position.finite()
+            || !ego.pose.yaw.is_finite()
             || !self.cruise_speed.is_finite()
             || self.cruise_speed <= 0.0
             || !self.max_acceleration_m_s2.is_finite()
@@ -63,12 +65,22 @@ impl Planner for LatticePlanner {
         let (s, lateral) = route.project(ego.pose.position);
         let remaining = (route.length() - s).max(0.0);
         let cruise = self.cruise_speed;
-        let horizon = 40.0_f64.min((remaining - 1.0).max(0.0));
+        let goal_distance = (remaining - 1.0).max(0.0);
+        // One meter before the endpoint is a desired goal, not an obstacle.
+        // If noise/tracking carries the estimate past it while still moving,
+        // use the remaining corridor for a reachable bounded stop.
+        let recovering_goal = goal_distance < 0.05 && ego.speed > 0.0;
+        let goal_distance = if recovering_goal {
+            (ego.speed.powi(2) / (2.0 * self.max_deceleration_m_s2) + 0.05).min(remaining)
+        } else {
+            goal_distance
+        };
+        let horizon = 40.0_f64.min(goal_distance);
         let limits = speed::Limits {
             acceleration: self.max_acceleration_m_s2,
             deceleration: self.max_deceleration_m_s2,
             lateral: self.max_lateral_acceleration_m_s2,
-            cruise,
+            cruise: if recovering_goal { 0.0 } else { cruise },
         };
         let mut best: Option<(f64, Trajectory)> = None;
         for target in [0.0_f64, 3.5, -3.5] {
@@ -92,25 +104,37 @@ impl Planner for LatticePlanner {
                 start_lateral
                     + (target - start_lateral) * quintic((s + distance - start_s) / transition)
             };
-            let tracking_error = lateral - anchored_offset(0.0);
+            let base = |distance| geometry::sample(route, s + distance, anchored_offset(distance));
+            let base_initial = base(0.0);
+            let base_tangent = base(0.01).minus(base_initial).scaled(100.0);
+            let position_error = ego.pose.position.minus(base_initial);
+            let desired_tangent = rustdrive_core::Vec2::new(ego.pose.yaw.cos(), ego.pose.yaw.sin())
+                .scaled(base_tangent.x.hypot(base_tangent.y));
+            let tangent_error = desired_tangent.minus(base_tangent);
             let mut geometry = Vec::new();
             let mut contained = true;
             for i in 0..=80 {
                 let ds = horizon * i as f64 / 80.0;
-                // Preserve maneuver progress, but join it from the measured lateral
-                // position. The controller may lag the previous maneuver, especially
-                // after a stop; a sweep must not start from an imaginary shifted ego.
-                let offset =
-                    anchored_offset(ds) + tracking_error * (1.0 - quintic(ds / transition));
-                if offset.abs() + self.vehicle.radius > route.half_width {
-                    contained = false;
-                    break;
-                }
                 let position = if i == 0 {
                     ego.pose.position
                 } else {
-                    route.sample(s + ds, offset).0
+                    base(ds)
+                        .plus(position_error.scaled(1.0 - quintic(ds / transition)))
+                        .plus(tangent_error.scaled(geometry::heading_weight(ds, transition)))
                 };
+                // Interpolation and heading correction may leave the supplied corridor;
+                // check the actual candidate against the unchanged route evaluator.
+                let corridor_radius = route.half_width - self.vehicle.radius;
+                // Distance to any point on the centerline is an upper bound on
+                // nearest-centerline distance. Most samples can be accepted with
+                // this bound; ambiguous ones still use the full corridor projection.
+                let reference = route.sample(s + ds, 0.0).0;
+                if position.distance(reference) > corridor_radius
+                    && route.project(position).1.abs() > corridor_radius
+                {
+                    contained = false;
+                    break;
+                }
                 geometry.push(position);
             }
             if !contained {
@@ -268,7 +292,7 @@ mod tests {
             next.points[0].position.y.abs() > 1.0,
             "quintic shift must not restart at every replan"
         );
-        assert!((next.points[8].position.y - first.points[20].position.y).abs() < 1e-9);
+        assert!((next.points[20].position.y - first.points[32].position.y).abs() < 1e-9);
     }
 
     #[test]
@@ -398,6 +422,47 @@ mod tests {
             "high-speed shift must extend beyond the previous 10 m transition"
         );
         assert!(path.points.last().unwrap().position.y.abs() > 3.4);
+    }
+    #[test]
+    fn path_joins_the_measured_heading_and_recovers_to_the_route() {
+        let mut ego = EgoState {
+            speed: 4.0,
+            ..EgoState::default()
+        };
+        ego.pose.yaw = 0.15;
+        let path = LatticePlanner::default().plan(ego, &road(5.5), &[]);
+        let delta = path.points[1].position.minus(path.points[0].position);
+        assert!((delta.y.atan2(delta.x) - ego.pose.yaw).abs() < 0.005);
+        assert!(path.points[20].position.y.abs() < 1e-10);
+    }
+    #[test]
+    fn goal_recovery_brakes_monotonically_within_the_remaining_corridor() {
+        let mut ego = EgoState {
+            speed: 0.6,
+            ..EgoState::default()
+        };
+        ego.pose.position.x = 99.05;
+        let path = LatticePlanner::default().plan(ego, &road(5.5), &[]);
+        assert_eq!(path.mode, DrivingMode::Goal);
+        assert_eq!(path.points[0].speed, ego.speed);
+        assert!(path.points.windows(2).all(|p| p[1].speed <= p[0].speed));
+        assert_eq!(path.points.last().unwrap().speed, 0.0);
+        assert!(path.points.last().unwrap().position.x < 100.0);
+        ego.pose.position.x = 99.98;
+        ego.speed = 1.0;
+        assert_eq!(
+            LatticePlanner::default().plan(ego, &road(5.5), &[]).mode,
+            DrivingMode::Emergency
+        );
+    }
+    #[test]
+    fn invalid_heading_rejects_the_candidate() {
+        let mut ego = EgoState::default();
+        ego.pose.yaw = f64::NAN;
+        assert_eq!(
+            LatticePlanner::default().plan(ego, &road(5.5), &[]).mode,
+            DrivingMode::Emergency
+        );
     }
     #[test]
     fn invalid_motion_limits_stop_planning() {

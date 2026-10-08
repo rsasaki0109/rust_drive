@@ -82,6 +82,37 @@ def check_speed_profiles(log):
             'max_deceleration_m_s2': max_deceleration}
 
 
+def control_metrics(log):
+    """Measure actual emitted commands, including emergency transitions."""
+    count = emergency = pairs = 0
+    squared_acceleration_changes = max_normal_steering_rate = 0.0
+    previous = None
+    with log.open() as stream:
+        for line in stream:
+            record = json.loads(line)
+            if record.get('kind') != 'tick':
+                continue
+            current = record['tick']['expected']
+            count += 1
+            emergency += int(current['emergency'])
+            if previous:
+                duration = current['time'] - previous['time']
+                if duration <= 0:
+                    raise ValueError('command clock must increase')
+                acceleration_change = (current['command']['acceleration'] - previous['command']['acceleration']) / duration
+                squared_acceleration_changes += acceleration_change**2
+                pairs += 1
+                if not current['emergency'] and not previous['emergency']:
+                    rate = abs(current['command']['steering'] - previous['command']['steering']) / duration
+                    max_normal_steering_rate = max(max_normal_steering_rate, rate)
+            previous = current
+    if not count or not pairs:
+        raise ValueError('insufficient command samples')
+    return {'ticks': count, 'emergency_ticks': emergency, 'emergency_fraction': emergency / count,
+            'commanded_acceleration_change_rms_m_s3': math.sqrt(squared_acceleration_changes / pairs),
+            'max_normal_commanded_steering_rate_rad_s': max_normal_steering_rate}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--backend', choices=['all', *CASES], default='all')
@@ -133,6 +164,11 @@ def main():
                           and row.get('replay', {}).get('verified') is True
                           and row['replay']['ticks'] == summary['steps'])
                     row['speed_profiles'] = check_speed_profiles(output/'sensors.jsonl')
+                    row['control_metrics'] = control_metrics(output/'sensors.jsonl')
+                    ok &= row['control_metrics']['max_normal_commanded_steering_rate_rad_s'] <= 0.7 + 1e-8
+                    if backend == 'rne-dynamic' and case == 'low-friction':
+                        row['tracking_regression_passed'] = summary['emergency_steps'] <= 20
+                        ok &= row['tracking_regression_passed']
                     run = json.loads((output/'run.json').read_text())
                     if run['scenario'].get('dynamics'):
                         frames = run['frames']

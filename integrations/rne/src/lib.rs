@@ -391,6 +391,13 @@ mod tests {
                     result.summary
                 );
                 assert!(result.summary.max_tracks > 0);
+                if case == "low-friction" {
+                    assert!(
+                        result.summary.emergency_steps <= 20,
+                        "low-friction tracking regressed for seed {seed}: {:?}",
+                        result.summary
+                    );
+                }
             }
         }
     }

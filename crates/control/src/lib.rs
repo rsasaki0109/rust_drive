@@ -25,20 +25,23 @@ impl Controller for PurePursuit {
             || !ego.speed.is_finite()
             || !dt.is_finite()
             || dt <= 0.0
+            || path
+                .points
+                .iter()
+                .any(|p| !p.position.finite() || !p.speed.is_finite() || !p.time.is_finite())
         {
             self.integral = 0.0;
+            self.steering = 0.0;
             return ControlCommand::emergency();
         }
-        let lookahead = (3.5 + ego.speed * 0.65).clamp(3.5, 10.0);
-        let target = path
-            .points
-            .iter()
-            .find(|p| p.position.distance(ego.pose.position) >= lookahead)
-            .unwrap_or_else(|| path.points.last().unwrap());
-        if !target.position.finite() || !target.speed.is_finite() {
+        // Shorter preview follows the smooth lateral maneuver more closely.
+        // Interpolate its circle intersection to avoid sample-index steering jumps.
+        let lookahead = (3.0 + ego.speed * 0.45).clamp(3.0, 8.0);
+        let target = pursuit_target(path, ego.pose.position, lookahead);
+        if !target.finite() {
             return ControlCommand::emergency();
         }
-        let delta = target.position.minus(ego.pose.position);
+        let delta = target.minus(ego.pose.position);
         let distance = delta.x.hypot(delta.y).max(0.1);
         let alpha = wrap_angle(delta.y.atan2(delta.x) - ego.pose.yaw);
         let desired = (2.0 * self.vehicle.wheelbase * alpha.sin() / distance)
@@ -70,6 +73,30 @@ impl Controller for PurePursuit {
             steering: self.steering,
         }
     }
+}
+fn pursuit_target(
+    path: &Trajectory,
+    origin: rustdrive_core::Vec2,
+    lookahead: f64,
+) -> rustdrive_core::Vec2 {
+    let mut previous = path.points[0].position;
+    if previous.distance(origin) >= lookahead {
+        return previous;
+    }
+    for point in path.points.iter().skip(1) {
+        let next = point.position;
+        if next.distance(origin) >= lookahead {
+            let relative = previous.minus(origin);
+            let delta = next.minus(previous);
+            let a = delta.x * delta.x + delta.y * delta.y;
+            let b = relative.x * delta.x + relative.y * delta.y;
+            let c = relative.x * relative.x + relative.y * relative.y - lookahead * lookahead;
+            let u = ((-b + (b * b - a * c).max(0.0).sqrt()) / a).clamp(0.0, 1.0);
+            return previous.plus(delta.scaled(u));
+        }
+        previous = next;
+    }
+    previous
 }
 /// Independent freshness / numeric guard; a simulation gate, not a certified safety system.
 pub fn guard(
@@ -160,6 +187,60 @@ mod tests {
                 -6.0
             );
         }
+    }
+    #[test]
+    fn interpolated_target_and_steering_match_a_known_circle() {
+        let radius = 20.0;
+        let mut path = profile(4.0, 4.0, 1.0);
+        path.points = (0..=80)
+            .map(|i| {
+                let angle = i as f64 * 0.01;
+                rustdrive_core::TrajectoryPoint {
+                    position: rustdrive_core::Vec2::new(
+                        radius * angle.sin(),
+                        radius * (1.0 - angle.cos()),
+                    ),
+                    speed: 4.0,
+                    time: radius * angle / 4.0,
+                }
+            })
+            .collect();
+        let target = pursuit_target(&path, rustdrive_core::Vec2::default(), 4.8);
+        assert!((target.x.hypot(target.y) - 4.8).abs() < 1e-10);
+        let mut controller = PurePursuit::default();
+        let ego = EgoState {
+            speed: 4.0,
+            ..EgoState::default()
+        };
+        let mut command = ControlCommand::default();
+        for _ in 0..20 {
+            command = controller.control(ego, &path, 0.05);
+        }
+        assert!((command.steering - (2.7_f64 / radius).atan()).abs() < 1e-4);
+    }
+    #[test]
+    fn emergency_recovery_starts_from_the_last_emitted_steering_command() {
+        let mut path = profile(4.0, 4.0, 1.0);
+        path.points[1].position.y = 3.0;
+        let mut controller = PurePursuit::default();
+        for _ in 0..10 {
+            controller.control(EgoState::default(), &path, 0.05);
+        }
+        let mut emergency = path.clone();
+        emergency.mode = DrivingMode::Emergency;
+        assert_eq!(
+            controller
+                .control(EgoState::default(), &emergency, 0.05)
+                .steering,
+            0.0
+        );
+        assert!(
+            controller
+                .control(EgoState::default(), &path, 0.05)
+                .steering
+                .abs()
+                <= 0.035 + 1e-10
+        );
     }
     #[test]
     fn stale_data_and_nan_brake() {

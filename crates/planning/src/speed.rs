@@ -35,18 +35,7 @@ pub(super) fn profile(
         positions.push(pair[1]);
         distances.push(start + length);
     }
-    // Cruise is a desired speed, not an instantaneous clamp on a noisy or
-    // overspeed initial state. Recover toward it with calibrated deceleration.
-    let mut speeds: Vec<f64> = distances
-        .iter()
-        .map(|distance| {
-            limits.cruise.max(
-                (initial_speed.powi(2) - 2.0 * limits.deceleration * distance)
-                    .max(0.0)
-                    .sqrt(),
-            )
-        })
-        .collect();
+    let mut hard_caps = vec![f64::INFINITY; positions.len()];
     if let Some(lateral) = limits.lateral {
         for (i, p) in positions.windows(3).enumerate() {
             let a = p[1].minus(p[0]);
@@ -58,7 +47,7 @@ pub(super) fn profile(
                 if curvature > 1e-8 {
                     let cap = (lateral / curvature).sqrt();
                     // Cover the local bend at both ends of its adjoining intervals.
-                    for speed in &mut speeds[i..=i + 2] {
+                    for speed in &mut hard_caps[i..=i + 2] {
                         *speed = speed.min(cap);
                     }
                 }
@@ -66,19 +55,34 @@ pub(super) fn profile(
         }
     }
     if stop_distance.is_some() {
-        *speeds.last_mut()? = 0.0;
+        *hard_caps.last_mut()? = 0.0;
     }
-    for i in (0..speeds.len() - 1).rev() {
+    // Hard feasibility uses the full supplied authority. Desired profiles reserve
+    // 20% braking headroom for observation noise and replanning/tracking errors.
+    let mut desired: Vec<f64> = hard_caps.iter().map(|cap| cap.min(limits.cruise)).collect();
+    for i in (0..hard_caps.len() - 1).rev() {
         let ds = distances[i + 1] - distances[i];
-        speeds[i] = speeds[i].min((speeds[i + 1].powi(2) + 2.0 * limits.deceleration * ds).sqrt());
+        hard_caps[i] =
+            hard_caps[i].min((hard_caps[i + 1].powi(2) + 2.0 * limits.deceleration * ds).sqrt());
+        desired[i] =
+            desired[i].min((desired[i + 1].powi(2) + 2.0 * 0.8 * limits.deceleration * ds).sqrt());
     }
-    if initial_speed > speeds[0] + 1e-6 {
+    if initial_speed > hard_caps[0] + 1e-6 {
         return None;
     }
-    speeds[0] = initial_speed;
+    let mut speeds = vec![initial_speed; positions.len()];
     for i in 1..speeds.len() {
         let ds = distances[i] - distances[i - 1];
-        speeds[i] = speeds[i].min((speeds[i - 1].powi(2) + 2.0 * limits.acceleration * ds).sqrt());
+        let lower = (speeds[i - 1].powi(2) - 2.0 * limits.deceleration * ds)
+            .max(0.0)
+            .sqrt();
+        let upper = (speeds[i - 1].powi(2) + 2.0 * limits.acceleration * ds)
+            .sqrt()
+            .min(hard_caps[i]);
+        if lower > upper + 1e-6 {
+            return None;
+        }
+        speeds[i] = desired[i].min(upper).max(lower.min(upper));
     }
     let mut points = vec![TrajectoryPoint {
         position: positions[0],
@@ -171,6 +175,22 @@ mod tests {
         assert_eq!(path.len(), 2);
         assert_eq!(path[0].position, path[1].position);
         assert_eq!(path[1].time, 8.0);
+    }
+    #[test]
+    fn nominal_stop_reserves_braking_authority_without_weakening_the_hard_bound() {
+        let path = profile(&line(), 2.0, &limits(), Some(20.0)).unwrap();
+        let peak_braking = path
+            .windows(2)
+            .map(|p| (p[0].speed - p[1].speed) / (p[1].time - p[0].time))
+            .fold(0.0_f64, f64::max);
+        assert!((peak_braking - 2.0).abs() < 1e-9);
+        // A state above the comfortable stopping envelope is still physically
+        // feasible: recover using full authority, preserving the measured speed.
+        let path = profile(&line(), 7.0, &limits(), Some(10.0)).unwrap();
+        assert_eq!(path[0].speed, 7.0);
+        let first_braking = (path[0].speed - path[1].speed) / path[1].time;
+        assert!((first_braking - 2.5).abs() < 1e-9);
+        assert!(profile(&line(), 7.1, &limits(), Some(10.0)).is_none());
     }
     #[test]
     fn noisy_overspeed_recovers_without_an_instantaneous_speed_clamp() {
