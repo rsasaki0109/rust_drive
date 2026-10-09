@@ -43,6 +43,10 @@ Remaining:
 
 ## M3 — Maps and multi-sensor understanding
 
+Bounded XYZ terrain/components, measured-data acquisition/evaluation and optional local fixed-map EKF corrections now execute. Reference/native five-second GNSS-denied runs and failure controls are replayed. This milestone remains incomplete: the frozen terrain baseline has held-out F1 0.2592 with six failed sites; apartment successes use imposed transforms and warm seeds, while natural alignment is rejected. Sparse native object acquisition also exposes ground false positives and missed actor clusters. [Measurements](datasets.md); [local matching](map-localization.md).
+
+Next: improve density-aware geometric support using calibration data, preserve the failed baseline and treat already inspected sites as regression data, then acquire a new independent automotive/terrain evaluation source. Validate natural-motion localization against documented pose references and measured extrinsics before claiming the 30% planning waypoint.
+
 - General 3D point processing and terrain classification, richer shape tracking and data association. Bounded local measured-ground removal is implemented for near-flat native query scenes.
 - Map formats and map localization, inertial bias estimation and bounded GNSS-denied tests.
 - Camera/radar fusion and optional learned models behind established contracts.

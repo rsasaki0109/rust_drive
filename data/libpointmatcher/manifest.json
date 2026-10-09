@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "dataset": "libpointmatcher",
+  "repository": "ethz-asl/libpointmatcher",
+  "revision": "62b347813e6aa4f0129457859e12a0371cc7a5da",
+  "upstream_license": "BSD-3-Clause repository license; original ASL dataset redistribution terms not separately established",
+  "redistribute_raw": false,
+  "physical_relative_pose_ground_truth": null,
+  "calibration_cloud": "cloud_0.vtk",
+  "held_out_cloud": "cloud_1.vtk",
+  "split_independence": "different views of one apartment, not independent environments",
+  "files": [
+    {
+      "file": "cloud_0.vtk",
+      "source_path": "examples/icp_tutorial/cloud_0.vtk",
+      "bytes": 1602685,
+      "sha256": "4df48182c7be6fa75d729ea9d9311d4ae9300919caa9d0ea8d6871868d4d1eb5",
+      "split": "calibration",
+      "role": "measured_geometry",
+      "points": 36674,
+      "encoding": "VTK ASCII POLYDATA"
+    },
+    {
+      "file": "cloud_1.vtk",
+      "source_path": "examples/icp_tutorial/cloud_1.vtk",
+      "bytes": 1602509,
+      "sha256": "3ee5f1b4a3eea7ef7f2daa824dcfd5bee30380ca00fbb618a641efc29c2b9423",
+      "split": "held_out",
+      "role": "measured_geometry",
+      "points": 36670,
+      "encoding": "VTK ASCII POLYDATA"
+    }
+  ]
+}

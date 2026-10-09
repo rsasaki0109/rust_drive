@@ -1,7 +1,11 @@
 //! Three-state EKF: wheel speed / gyro prediction and scalar GNSS updates.
+pub mod registration;
 use rustdrive_core::{
     EgoState, Gnss, GnssDecision, LocalizationDiagnostics, Odometry, Pose, Vec2, wrap_angle,
 };
+/// Conservative observation floors for an externally registered fixed-map pose.
+pub const MAP_POSITION_VARIANCE_FLOOR_M2: f64 = 0.01;
+pub const MAP_YAW_VARIANCE_FLOOR_RAD2: f64 = 1e-4;
 pub struct Ekf {
     state: EgoState,
     covariance: [[f64; 3]; 3],
@@ -111,6 +115,100 @@ impl Ekf {
         };
         self.covariance = next;
     }
+    /// Joint fixed-map x/y/body-yaw correction with conservative observation
+    /// floors, a wrapped-yaw innovation gate and Joseph covariance update.
+    /// Map observations never refresh GNSS timestamps or GNSS diagnostics.
+    pub fn correct_map_pose(&mut self, pose: Pose, covariance: [[f64; 3]; 3]) -> bool {
+        if !pose.position.finite()
+            || !pose.yaw.is_finite()
+            || covariance.iter().flatten().any(|value| !value.is_finite())
+        {
+            return false;
+        }
+        let mut noise = covariance;
+        for i in 0..3 {
+            for j in 0..3 {
+                let tolerance = 1e-10 * covariance[i][j].abs().max(covariance[j][i].abs()).max(1.0);
+                if (covariance[i][j] - covariance[j][i]).abs() > tolerance {
+                    return false;
+                }
+                noise[i][j] = covariance[i][j] / 2.0 + covariance[j][i] / 2.0;
+            }
+        }
+        if cholesky3(noise).is_none() {
+            return false;
+        }
+        noise[0][0] = noise[0][0].max(MAP_POSITION_VARIANCE_FLOOR_M2);
+        noise[1][1] = noise[1][1].max(MAP_POSITION_VARIANCE_FLOOR_M2);
+        noise[2][2] = noise[2][2].max(MAP_YAW_VARIANCE_FLOOR_RAD2);
+        let innovation = [
+            pose.position.x - self.state.pose.position.x,
+            pose.position.y - self.state.pose.position.y,
+            wrap_angle(pose.yaw - self.state.pose.yaw),
+        ];
+        if innovation.iter().any(|value| !value.is_finite()) {
+            return false;
+        }
+        let mut sum = [[0.0; 3]; 3];
+        for i in 0..3 {
+            for j in 0..3 {
+                sum[i][j] = self.covariance[i][j] + noise[i][j];
+            }
+        }
+        let Some(lower) = cholesky3(sum) else {
+            return false;
+        };
+        let mut whitened = [0.0; 3];
+        for i in 0..3 {
+            let residual = innovation[i] - (0..i).map(|j| lower[i][j] * whitened[j]).sum::<f64>();
+            whitened[i] = residual / lower[i][i];
+        }
+        let nis = whitened.iter().map(|value| value * value).sum::<f64>();
+        if !nis.is_finite() || nis > 36.0 {
+            return false;
+        }
+        let gain = self.covariance.map(|row| solve_cholesky3(lower, row));
+        if gain.iter().flatten().any(|value| !value.is_finite()) {
+            return false;
+        }
+        let correction: [f64; 3] =
+            std::array::from_fn(|i| (0..3).map(|j| gain[i][j] * innovation[j]).sum());
+        let next_pose = Pose {
+            position: self
+                .state
+                .pose
+                .position
+                .plus(Vec2::new(correction[0], correction[1])),
+            yaw: wrap_angle(self.state.pose.yaw + correction[2]),
+        };
+        let a: [[f64; 3]; 3] =
+            std::array::from_fn(|i| std::array::from_fn(|j| f64::from(i == j) - gain[i][j]));
+        let mut next = [[0.0; 3]; 3];
+        for i in 0..3 {
+            for j in 0..3 {
+                for (k, noise_row) in noise.iter().enumerate() {
+                    for (l, noise_value) in noise_row.iter().enumerate() {
+                        next[i][j] += a[i][k] * self.covariance[k][l] * a[j][l]
+                            + gain[i][k] * noise_value * gain[j][l];
+                    }
+                }
+            }
+        }
+        // Remove roundoff asymmetry before validating and committing the update.
+        for i in 0..3 {
+            for j in 0..i {
+                let symmetric = next[i][j] / 2.0 + next[j][i] / 2.0;
+                next[i][j] = symmetric;
+                next[j][i] = symmetric;
+            }
+        }
+        if !next_pose.position.finite() || !next_pose.yaw.is_finite() || cholesky3(next).is_none() {
+            return false;
+        }
+        self.state.pose = next_pose;
+        self.covariance = next;
+        true
+    }
     /// Accept only strictly new fixes within the joint 2D innovation gate.
     pub fn update(&mut self, fix: Gnss) -> bool {
         self.correct(fix) == GnssDecision::Accepted
@@ -209,9 +307,173 @@ impl Ekf {
         self.covariance[0][0] + self.covariance[1][1]
     }
 }
+fn cholesky3(matrix: [[f64; 3]; 3]) -> Option<[[f64; 3]; 3]> {
+    if matrix.iter().flatten().any(|value| !value.is_finite()) {
+        return None;
+    }
+    let mut lower = [[0.0; 3]; 3];
+    for i in 0..3 {
+        for j in 0..=i {
+            let residual = matrix[i][j] - (0..j).map(|k| lower[i][k] * lower[j][k]).sum::<f64>();
+            if i == j {
+                if residual <= 0.0 || !residual.is_finite() {
+                    return None;
+                }
+                lower[i][j] = residual.sqrt();
+            } else {
+                lower[i][j] = residual / lower[j][j];
+            }
+        }
+    }
+    lower
+        .iter()
+        .flatten()
+        .all(|value| value.is_finite())
+        .then_some(lower)
+}
+fn solve_cholesky3(lower: [[f64; 3]; 3], rhs: [f64; 3]) -> [f64; 3] {
+    let mut forward = [0.0; 3];
+    for i in 0..3 {
+        forward[i] = (rhs[i] - (0..i).map(|j| lower[i][j] * forward[j]).sum::<f64>()) / lower[i][i];
+    }
+    let mut result = [0.0; 3];
+    for i in (0..3).rev() {
+        result[i] =
+            (forward[i] - ((i + 1)..3).map(|j| lower[j][i] * result[j]).sum::<f64>()) / lower[i][i];
+    }
+    result
+}
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn map_pose_diagonal_joint_correction_matches_analytic_posterior() {
+        let mut e = Ekf::new(Pose::default());
+        let noise = [[0.04, 0.0, 0.0], [0.0, 0.09, 0.0], [0.0, 0.0, 0.002]];
+        assert!(e.correct_map_pose(
+            Pose {
+                position: Vec2::new(0.2, -0.1),
+                yaw: 0.1
+            },
+            noise
+        ));
+        let prior = [1.0, 1.0, 0.03];
+        let residual = [0.2, -0.1, 0.1];
+        let actual = [
+            e.state().pose.position.x,
+            e.state().pose.position.y,
+            e.state().pose.yaw,
+        ];
+        for i in 0..3 {
+            let gain = prior[i] / (prior[i] + noise[i][i]);
+            assert!((actual[i] - gain * residual[i]).abs() < 1e-12);
+            assert!(
+                (e.covariance[i][i] - prior[i] * noise[i][i] / (prior[i] + noise[i][i])).abs()
+                    < 1e-12
+            );
+        }
+    }
+    #[test]
+    fn map_pose_wraps_yaw_and_preserves_gnss_freshness_and_diagnostics() {
+        let mut e = Ekf::new(Pose {
+            position: Vec2::default(),
+            yaw: 3.13,
+        });
+        assert!(e.update(Gnss {
+            stamp: 1.0,
+            position: Vec2::default(),
+            variance: 0.02
+        }));
+        let before = e.diagnostics();
+        assert!(e.correct_map_pose(
+            Pose {
+                position: Vec2::new(0.02, -0.01),
+                yaw: -3.13
+            },
+            [[0.02, 0.0, 0.0], [0.0, 0.02, 0.0], [0.0, 0.0, 0.002]]
+        ));
+        assert!(wrap_angle(e.state().pose.yaw - 3.13).abs() < 0.03);
+        assert_eq!(e.last_gnss, 1.0);
+        let after = e.diagnostics();
+        assert_eq!(before.last_observed_stamp, after.last_observed_stamp);
+        assert_eq!(before.last_accepted_stamp, after.last_accepted_stamp);
+        assert_eq!(before.last_decision, after.last_decision);
+        assert_eq!(before.last_nis, after.last_nis);
+        assert_eq!(before.accepted_fixes, after.accepted_fixes);
+        assert_eq!(before.rejected_fixes, after.rejected_fixes);
+    }
+    #[test]
+    fn map_pose_covariance_floors_prevent_false_precision() {
+        let mut e = Ekf::new(Pose::default());
+        assert!(e.correct_map_pose(
+            Pose::default(),
+            [[1e-12, 0.0, 0.0], [0.0, 1e-12, 0.0], [0.0, 0.0, 1e-12]]
+        ));
+        assert!(
+            (e.covariance[0][0]
+                - MAP_POSITION_VARIANCE_FLOOR_M2 / (1.0 + MAP_POSITION_VARIANCE_FLOOR_M2))
+                .abs()
+                < 1e-12
+        );
+        assert!(
+            (e.covariance[2][2]
+                - 0.03 * MAP_YAW_VARIANCE_FLOOR_RAD2 / (0.03 + MAP_YAW_VARIANCE_FLOOR_RAD2))
+                .abs()
+                < 1e-12
+        );
+    }
+    #[test]
+    fn invalid_or_gated_joint_map_fixes_do_not_mutate_estimate() {
+        let mut e = Ekf::new(Pose::default());
+        let before = e.covariance;
+        for noise in [
+            [[0.02, 0.03, 0.0], [0.03, 0.02, 0.0], [0.0, 0.0, 0.001]],
+            [[0.02, 0.001, 0.0], [0.0, 0.02, 0.0], [0.0, 0.0, 0.001]],
+            [[f64::NAN, 0.0, 0.0], [0.0, 0.02, 0.0], [0.0, 0.0, 0.001]],
+            [[0.0; 3]; 3],
+        ] {
+            assert!(!e.correct_map_pose(Pose::default(), noise));
+        }
+        assert!(!e.correct_map_pose(
+            Pose {
+                position: Vec2::new(100.0, 0.0),
+                yaw: 0.0
+            },
+            [[0.02, 0.0, 0.0], [0.0, 0.02, 0.0], [0.0, 0.0, 0.001]]
+        ));
+        assert_eq!(e.covariance, before);
+        assert_eq!(e.state().pose.position, Vec2::default());
+        assert_eq!(e.state().pose.yaw, 0.0);
+        assert_eq!(e.last_gnss, f64::NEG_INFINITY);
+    }
+    #[test]
+    fn correlated_map_joseph_updates_stay_positive_and_symmetric() {
+        let mut e = Ekf::new(Pose::default());
+        let noise = [
+            [0.05, 0.01, 0.002],
+            [0.01, 0.06, -0.001],
+            [0.002, -0.001, 0.002],
+        ];
+        for i in 0..100 {
+            e.predict(
+                Odometry {
+                    stamp: i as f64 * 0.05,
+                    speed: 2.0,
+                    yaw_rate: 0.1,
+                },
+                0.05,
+            );
+            assert!(e.correct_map_pose(e.state().pose, noise));
+            assert!(cholesky3(e.covariance).is_some());
+            for a in 0..3 {
+                for b in 0..3 {
+                    assert!((e.covariance[a][b] - e.covariance[b][a]).abs() < 1e-12);
+                }
+            }
+        }
+        assert_eq!(e.last_gnss, f64::NEG_INFINITY);
+        assert_eq!(e.diagnostics().accepted_fixes, 0);
+    }
     #[test]
     fn chassis_turns_match_analytic_displacement_speed_and_covariance() {
         for direction in [-1.0_f64, 1.0] {

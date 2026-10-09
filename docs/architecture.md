@@ -62,14 +62,15 @@ Optional `local_route_geometry` uses bounded steering-radius corner fillets and 
 |---|---|---|
 | `rustdrive-core` | SI contracts, planar transforms, route interpolation and projection, algorithm traits | serde |
 | `rustdrive-routing` | Validated directed maps, shortest-distance routing, edge closures and bounded OSM import | core, serde |
-| `rustdrive-localization` | State and covariance estimation, innovation gating | core |
-| `rustdrive-perception` | Point clustering, circular-object fitting, track identity and velocity | core |
+| `rustdrive-localization` | State/covariance estimation, innovation gating, bounded local SE(2) fixed-map registration | core |
+| `rustdrive-perception` | Point clustering, circular-object fitting, track identity/velocity, bounded XYZ terrain/components | core |
 | `rustdrive-mapping` | Bounded occupancy grid and ray updates | core |
 | `rustdrive-prediction` | Time-indexed observed braking and constant-velocity baseline | core |
 | `rustdrive-planning` | Candidate selection, maneuver persistence, braking / goal modes | core |
 | `rustdrive-control` | Longitudinal and lateral actuation, freshness guard | core |
 | `rustdrive-pipeline` | Sensor-only orchestration, freshness/health, versioned recording and replay | core + algorithm crates, serde / serde_json |
 | `rustdrive-sim` | Reference sensors/plant, backend interface, independent evaluation and CLI | core + pipeline, serde / serde_json |
+| `rustdrive-dataset-eval` | Bounded PCD/LZF/VTK readers, measured-cloud evaluation and explicit semi-synthetic pose scoring | core + perception + localization, serde_json; Python SHA verification |
 | `rustdrive-rne` (optional standalone workspace) | RNE world/vehicle/sensor adapter | core + pipeline + sim, renderer-independent RNE crates |
 
 Unsafe Rust is forbidden at workspace level. There is no global message bus, custom scheduling runtime, ROS dependency, model download, or external service. Algorithm crates can be embedded into another application; the simulator is the current application, not a universal runtime.
@@ -92,6 +93,10 @@ Unsafe Rust is forbidden at workspace level. There is no global message bus, cus
 Missing/stale odometry, LiDAR or GNSS, invalid samples, excessive covariance and acquisition failure select finite emergency braking. Healthy empty LiDAR is accepted; a failed acquisition brakes immediately. An invalid clock returns `Err`; callers must stop rather than reuse a command. The reference and RNE backends implement observation/advance boundaries and share the same independent evaluator. Runtime truth stays inside sensor synthesis and evaluation/rendering.
 
 ## Algorithms
+
+Optional fixed-map localization registers synchronous measured body-XY scans to an offline supplied world map, fuses accepted XY/body-yaw poses and preserves genuine GNSS timestamps. Fresh accepted map scans bridge only bounded post-fix outages; stale/rejected scans and the ten-second maximum restore normal braking. [Timing, covariance assumptions and failures](map-localization.md).
+
+Optional XYZ terrain/components keep calibrated raw-beam validation and measured AABBs before planar detection envelopes. Sparse support faults retain braking; local geometric support is not road semantics. A separate measured-data evaluator keeps labels and imposed pose transforms outside algorithm input. Its held-out terrain failure and rejected natural alignment prevent claiming general 3D perception or real-motion localization. [Inputs and scores](datasets.md).
 
 **Localization.** State `(x, y, yaw)` and a full 3×3 covariance. Wheel speed and gyro propagate pose and the covariance Jacobian; GNSS position first passes a joint two-dimensional NIS gate using the full x/y innovation covariance and threshold 36, then receives independent scalar corrections with Joseph covariance updates. Invalid, duplicate/older or excessive innovations are rejected. Received but rejected fixes do not refresh accepted-GNSS health. Two consecutive strictly new fixes rejected by the innovation gate also activate `GnssInnovationHold` and braking, before the existing 0.75 s accepted-fix-age bound when applicable. A single outlier does not activate this additional hold. Only a newly accepted correction resets the private streak; missing, duplicate, old or invalid fixes neither add to it nor clear it. Good fixes can recover after a bounded outage without resetting estimator state. [GNSS baseline](gnss-robustness.md) and [current replay health contract](sensor-replay.md#gnss-acceptance-diagnostics). This conservative sustained-rejection policy is not a bias-estimating 3D inertial navigation filter or a general estimator-validity guarantee. Initial yaw is configured rather than estimated from GNSS at rest.
 

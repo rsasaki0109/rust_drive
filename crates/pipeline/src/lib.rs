@@ -6,6 +6,15 @@ mod lidar3d;
 pub use lidar3d::Lidar3dConfig;
 mod multi_height;
 pub use multi_height::MultiHeightLidarConfig;
+mod map_localization;
+use map_localization::MapLocalization;
+pub use map_localization::{
+    MapLocalizationConfig, MapLocalizationDecision, MapLocalizationDiagnostics,
+};
+mod perception_3d;
+pub use perception_3d::{
+    MeasuredObject3d, Perception3dConfig, Perception3dDiagnostics, TerrainSupportDiagnostics,
+};
 pub mod navigation;
 pub mod replay;
 mod scan_pose;
@@ -63,6 +72,10 @@ pub struct PipelineConfig {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub lidar3d: Option<Lidar3dConfig>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub localization_map: Option<MapLocalizationConfig>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub perception3d: Option<Perception3dConfig>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub navigation: Option<NavigationConfig>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub stop_lines: Vec<StopLine>,
@@ -84,6 +97,8 @@ impl PipelineConfig {
             motion_limits: None,
             multi_height_lidar: None,
             lidar3d: None,
+            localization_map: None,
+            perception3d: None,
             navigation: None,
             stop_lines: vec![],
             stop_signs: vec![],
@@ -91,6 +106,16 @@ impl PipelineConfig {
         }
     }
     pub fn validate(&self) -> Result<(), String> {
+        if let Some(map) = &self.localization_map {
+            map.validate()?;
+        }
+        if let Some(perception) = &self.perception3d {
+            perception.validate(
+                self.lidar3d
+                    .as_ref()
+                    .ok_or("XYZ perception requires calibrated 3D LiDAR")?,
+            )?;
+        }
         if self.multi_height_lidar.is_some() && self.lidar3d.is_some() {
             return Err("LiDAR input modes must be exclusive".into());
         }
@@ -253,6 +278,10 @@ pub struct PipelineOutput {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub localization: Option<LocalizationDiagnostics>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub map_localization: Option<MapLocalizationDiagnostics>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub perception3d: Option<Perception3dDiagnostics>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub navigation: Option<NavigationStatus>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub traffic_controls: Option<TrafficControlStatus>,
@@ -276,6 +305,7 @@ pub struct DrivingPipeline {
     last_lidar: Option<f64>,
     advanced_lidar_fault: Option<f64>,
     rejected_gnss_streak: u8,
+    map_localization: Option<MapLocalization>,
     scan_poses: scan_pose::ScanPoseHistory,
     tracks: Vec<Track>,
     navigator: Option<Navigator>,
@@ -337,6 +367,7 @@ impl DrivingPipeline {
         }
         let grid = OccupancyGrid::new(Vec2::new(min_x, min_y), width, height, 0.5);
         let ekf = Ekf::new(config.initial_pose);
+        let map_localization = config.localization_map.clone().map(MapLocalization::new);
         let navigator = config.navigation.clone().map(Navigator::new).transpose()?;
         Ok(Self {
             config,
@@ -352,6 +383,7 @@ impl DrivingPipeline {
             last_lidar: None,
             advanced_lidar_fault: None,
             rejected_gnss_streak: 0,
+            map_localization,
             scan_poses: scan_pose::ScanPoseHistory::default(),
             tracks: vec![],
             navigator,
@@ -423,8 +455,6 @@ impl DrivingPipeline {
         if self.rejected_gnss_streak >= 2 {
             health.push(HealthIssue::GnssInnovationHold);
         }
-        let estimate = self.ekf.state();
-        self.scan_poses.record(input.time, estimate.pose);
         if input.lidar_failed {
             health.push(HealthIssue::AcquisitionFailed);
             if self.config.multi_height_lidar.is_some() || self.config.lidar3d.is_some() {
@@ -433,6 +463,8 @@ impl DrivingPipeline {
         }
         let fused;
         let mut ground = None;
+        let mut perception3d = None;
+        let mut measured_acquisition = None;
         let scan = match (
             &self.config.multi_height_lidar,
             &self.config.lidar3d,
@@ -453,10 +485,24 @@ impl DrivingPipeline {
                 }
             }
             (None, Some(calibration), None, Some(cloud)) if input.lidar.is_none() => {
-                let projected = if calibration.ground.is_some()
+                let projected = if (calibration.ground.is_some()
+                    || self.config.perception3d.is_some())
                     && (input.lidar_failed || !stamp_valid(cloud.stamp, input.time))
                 {
                     Err(None)
+                } else if let Some(config) = &self.config.perception3d {
+                    match perception_3d::process(calibration, config, cloud) {
+                        Ok(acquisition) => {
+                            let scan = acquisition.scan.clone();
+                            perception3d = Some(acquisition.diagnostics.clone());
+                            measured_acquisition = Some(acquisition);
+                            Ok((scan, None))
+                        }
+                        Err(diagnostic) => {
+                            perception3d = Some(*diagnostic);
+                            Err(None)
+                        }
+                    }
                 } else {
                     calibration.project(cloud)
                 };
@@ -486,6 +532,25 @@ impl DrivingPipeline {
                 None
             }
         };
+        if let Some(map) = &mut self.map_localization {
+            let eligible = !input.lidar_failed
+                && !health.contains(&HealthIssue::InvalidLidar)
+                && scan.is_none_or(|scan| {
+                    stamp_valid(scan.stamp, input.time)
+                        && scan.points.len() <= 20_000
+                        && scan
+                            .points
+                            .iter()
+                            .all(|p| p.finite() && p.x.hypot(p.y) <= 200.0)
+                        && self.last_lidar.is_none_or(|last| scan.stamp > last)
+                        && self
+                            .advanced_lidar_fault
+                            .is_none_or(|fault_time| scan.stamp > fault_time)
+                });
+            map.update(scan, input.time, eligible, &mut self.ekf);
+        }
+        let estimate = self.ekf.state();
+        self.scan_poses.record(input.time, estimate.pose);
         if let Some(scan) = scan {
             if input.lidar_failed
                 || !stamp_valid(scan.stamp, input.time)
@@ -505,7 +570,11 @@ impl DrivingPipeline {
                     .is_none_or(|fault_time| scan.stamp > fault_time)
             {
                 if let Some(acquisition_pose) = self.scan_poses.at(scan.stamp, input.time) {
-                    let detections = self.perception.detect(scan, acquisition_pose);
+                    let detections = if let Some(acquisition) = &measured_acquisition {
+                        acquisition.detections_at(acquisition_pose)
+                    } else {
+                        self.perception.detect(scan, acquisition_pose)
+                    };
                     self.tracks = self.tracker.update(&detections, scan.stamp);
                     self.grid.update(scan, acquisition_pose);
                     self.last_lidar = Some(scan.stamp);
@@ -524,7 +593,13 @@ impl DrivingPipeline {
         if self.last_lidar.is_none_or(|t| input.time - t > 0.35 + 1e-9) {
             health.push(HealthIssue::StaleLidar);
         }
-        if !self.ekf.last_gnss.is_finite() || input.time - self.ekf.last_gnss > 0.75 + 1e-9 {
+        let effective_fix_stamp = self
+            .map_localization
+            .as_ref()
+            .map_or(self.ekf.last_gnss, |map| {
+                map.effective_fix_stamp(self.ekf.last_gnss)
+            });
+        if !effective_fix_stamp.is_finite() || input.time - effective_fix_stamp > 0.75 + 1e-9 {
             health.push(HealthIssue::StaleGnss);
         }
         let variance = self.ekf.position_variance();
@@ -696,7 +771,7 @@ impl DrivingPipeline {
                 requested,
                 input.time,
                 self.last_lidar.unwrap(),
-                self.ekf.last_gnss,
+                effective_fix_stamp,
                 variance,
             )
         } else {
@@ -722,6 +797,11 @@ impl DrivingPipeline {
             position_variance: variance,
             ground,
             localization: Some(self.ekf.diagnostics()),
+            map_localization: self
+                .map_localization
+                .as_ref()
+                .map(MapLocalization::diagnostics),
+            perception3d,
             navigation: self.navigator.as_ref().map(Navigator::status),
             traffic_controls: self.traffic_controls.as_ref().map(TrafficControls::status),
             stop_signs: self.stop_signs.as_ref().map(StopSigns::status),

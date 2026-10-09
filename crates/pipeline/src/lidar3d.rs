@@ -61,23 +61,20 @@ impl Lidar3dConfig {
         }
         Ok(())
     }
-    pub(crate) fn project(
-        &self,
-        scan: &Lidar3dScan,
-    ) -> Result<(LidarScan, Option<GroundDiagnostics>), Option<Box<GroundDiagnostics>>> {
+    pub(crate) fn validate_returns(&self, scan: &Lidar3dScan) -> Result<(), ()> {
         let ray_count = self
             .azimuth_columns
             .checked_mul(self.elevation_rings)
-            .ok_or(None)?;
+            .ok_or(())?;
         if scan.returns.len() > ray_count || scan.returns.len() > 20_000 {
-            return Err(None);
+            return Err(());
         }
         let mut indices = BTreeSet::new();
         for measured in &scan.returns {
             let p = measured.point;
             if measured.ray_index >= ray_count || !indices.insert(measured.ray_index) || !p.finite()
             {
-                return Err(None);
+                return Err(());
             }
             let up = p.z - self.mount_height_m;
             let range = p.x.hypot(p.y).hypot(up);
@@ -85,7 +82,7 @@ impl Lidar3dConfig {
                 || range < self.min_range_m - 1e-7
                 || range > self.max_range_m + 1e-7
             {
-                return Err(None);
+                return Err(());
             }
             let column = measured.ray_index / self.elevation_rings;
             let ring = measured.ray_index % self.elevation_rings;
@@ -103,9 +100,16 @@ impl Lidar3dConfig {
                 .zip(expected)
                 .any(|(actual, expected)| (actual - expected).abs() > DIRECTION_TOLERANCE)
             {
-                return Err(None);
+                return Err(());
             }
         }
+        Ok(())
+    }
+    pub(crate) fn project(
+        &self,
+        scan: &Lidar3dScan,
+    ) -> Result<(LidarScan, Option<GroundDiagnostics>), Option<Box<GroundDiagnostics>>> {
+        self.validate_returns(scan).map_err(|()| None)?;
         let (removed, diagnostics) = if let Some(ground) = &self.ground {
             let (removed, diagnostics) = ground.separate(scan).map_err(Some)?;
             (Some(removed), Some(diagnostics))

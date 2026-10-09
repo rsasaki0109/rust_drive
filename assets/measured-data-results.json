@@ -1,0 +1,1234 @@
+{
+  "schema_version": 1,
+  "scope": "Offline real measured geometry evaluation; ISPRS is airborne terrain, apartment registration is planar projection; no vehicle-driving or real-time acceptance",
+  "hash_verification": {
+    "after": "isprs-terrain: verified 30 files; license/provenance: data/isprs-terrain/SOURCE.md\nlibpointmatcher: verified 2 files; license/provenance: data/libpointmatcher/SOURCE.md\n32 pinned files, 8,190,410 bytes; acquisition is not algorithm acceptance",
+    "before": "isprs-terrain: verified 30 files; license/provenance: data/isprs-terrain/SOURCE.md\nlibpointmatcher: verified 2 files; license/provenance: data/libpointmatcher/SOURCE.md\n32 pinned files, 8,190,410 bytes; acquisition is not algorithm acceptance",
+    "python_executable": "python3",
+    "raw_sha256_verified": true,
+    "verifier": "scripts/fetch-datasets.py --verify-only"
+  },
+  "frozen_parameters": {
+    "object_config": {
+      "coordinate_bound_m": 10000000.0,
+      "max_candidate_work": 20000000,
+      "max_cluster_points": 200000,
+      "max_clusters": 10000,
+      "max_points": 500000,
+      "min_points": 3,
+      "tolerance_m": 0.6,
+      "voxel_size_m": 0.6
+    },
+    "registration_config": {
+      "ambiguity_rms_ratio": 1.05,
+      "ambiguity_translation_probe_m": 0.5,
+      "ambiguity_yaw_probe_rad": 0.1,
+      "max_condition_number": 10000.0,
+      "max_correspondence_m": 1.5,
+      "max_iterations": 30,
+      "max_map_points": 100000,
+      "max_neighbor_checks": 20000000,
+      "max_position_variance_m2": 0.25,
+      "max_rms_m": 0.2,
+      "max_scan_points": 20000,
+      "max_translation_jump_m": 2.0,
+      "max_yaw_jump_rad": 0.35,
+      "max_yaw_variance_rad2": 0.01,
+      "min_geometry_ratio": 0.01,
+      "min_overlap": 0.5,
+      "min_pairs": 20,
+      "translation_tolerance_m": 0.0001,
+      "trim_fraction": 0.2,
+      "yaw_tolerance_rad": 0.0001
+    },
+    "registration_preprocessing": {
+      "initial_error": [
+        0.04,
+        -0.03,
+        0.015
+      ],
+      "noise": "sensor XY: 0.001*sin(index*1.73), 0.001*cos(index*0.77) meters",
+      "selection": "first input point per XY voxel, voxels sorted lexicographically",
+      "transforms": [
+        [
+          0.4,
+          -0.25,
+          0.06
+        ],
+        [
+          -0.5,
+          0.35,
+          -0.08
+        ]
+      ],
+      "xy_voxel_m": 0.2,
+      "z_max_m": 2.0,
+      "z_min_m": 0.5
+    },
+    "terrain_config": {
+      "cell_size_m": 1.0,
+      "coordinate_bound_m": 10000000.0,
+      "initial_height_m": 0.15,
+      "max_candidate_work": 100000000,
+      "max_cells": 250000,
+      "max_height_m": 2.5,
+      "max_points": 500000,
+      "max_slope": 0.3,
+      "min_support_neighbors": 3,
+      "min_supported_cells": 12,
+      "min_supported_fraction": 0.5,
+      "window_radii_cells": [
+        1,
+        2,
+        4,
+        8,
+        16
+      ]
+    }
+  },
+  "terrain_aggregate": {
+    "calibration": {
+      "confusion": {
+        "fn": 43803,
+        "fp": 3213,
+        "tn": 65436,
+        "tp": 55930
+      },
+      "metrics": {
+        "accuracy": 0.7207777553420199,
+        "f1": 0.7040710994738034,
+        "precision": 0.9456740442655935,
+        "recall": 0.5607973288680778
+      }
+    },
+    "held_out": {
+      "confusion": {
+        "fn": 129431,
+        "fp": 1700,
+        "tn": 62506,
+        "tp": 22936
+      },
+      "metrics": {
+        "accuracy": 0.3945182455800123,
+        "f1": 0.25915944927487106,
+        "precision": 0.9309952914434161,
+        "recall": 0.15053128302060156
+      }
+    }
+  },
+  "registration": {
+    "cloud_preprocessing": [
+      {
+        "cloud": "cloud_0.vtk",
+        "input_sha256": "4df48182c7be6fa75d729ea9d9311d4ae9300919caa9d0ea8d6871868d4d1eb5",
+        "raw_points": 36674,
+        "selected_points": 179,
+        "split": "calibration"
+      },
+      {
+        "cloud": "cloud_1.vtk",
+        "input_sha256": "3ee5f1b4a3eea7ef7f2daa824dcfd5bee30380ca00fbb618a641efc29c2b9423",
+        "raw_points": 36670,
+        "selected_points": 161,
+        "split": "held_out"
+      }
+    ],
+    "covariance_scope": "Local independent-point ICP least-squares covariance; four correlated semi-synthetic cases do not establish calibration or statistical 95% coverage",
+    "natural_pair": {
+      "duration_ms": 2.450151,
+      "initial_pose": {
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "yaw": 0.0
+      },
+      "map_cloud": "cloud_0.vtk",
+      "physical_pose_ground_truth": null,
+      "reason": "insufficient unique trimmed registration overlap",
+      "scan_cloud": "cloud_1.vtk",
+      "scope": "Two measured views of one apartment; local XY projected residual/overlap only, no pose accuracy, independent-environment, or 6DOF claim",
+      "status": "rejected"
+    },
+    "semi_synthetic": [
+      {
+        "case_id": "calibration-transform-0",
+        "cloud": "cloud_0.vtk",
+        "conditioning": {
+          "ambiguity_probes": 6,
+          "condition_number": 5.084265809140073,
+          "geometry_ratio": 0.1706730228400056,
+          "neighbor_checks": 747834
+        },
+        "converged": true,
+        "covariance": [
+          [
+            7.017275799760664e-09,
+            -1.6892432251501867e-10,
+            1.8270148157097956e-10
+          ],
+          [
+            -1.6892432251501867e-10,
+            8.168813740606621e-09,
+            -1.2717033972920486e-09
+          ],
+          [
+            1.8270148157097956e-10,
+            -1.2717033972920486e-09,
+            1.375421202494083e-09
+          ]
+        ],
+        "duration_ms": 13.881174,
+        "initial_pose": {
+          "position": {
+            "x": 0.44,
+            "y": -0.28
+          },
+          "yaw": 0.075
+        },
+        "inlier_count": 143,
+        "inlier_fraction": 0.7988826815642458,
+        "input_sha256": "4df48182c7be6fa75d729ea9d9311d4ae9300919caa9d0ea8d6871868d4d1eb5",
+        "iterations": 4,
+        "known_pose": {
+          "position": {
+            "x": 0.4,
+            "y": -0.25
+          },
+          "yaw": 0.06
+        },
+        "nees": 6.349361152078307,
+        "points": 179,
+        "pose_error": {
+          "components": [
+            4.7155645689467285e-05,
+            -4.7572945756968466e-05,
+            9.07266570449039e-05
+          ],
+          "translation_m": 6.698387931723601e-05,
+          "yaw_rad": 9.07266570449039e-05
+        },
+        "recovered_pose": {
+          "position": {
+            "x": 0.4000471556456895,
+            "y": -0.25004757294575697
+          },
+          "yaw": 0.06009072665704483
+        },
+        "rms_m": 0.0009033243009420311,
+        "scope": "SEMI-SYNTHETIC: measured apartment geometry with an imposed SE2 pose and deterministic noise; not natural-pair pose ground truth",
+        "split": "calibration",
+        "standardized_component_errors": [
+          0.5629235566389895,
+          -0.5263571748987158,
+          2.446341323995733
+        ],
+        "status": "accepted",
+        "within_nominal_95_percent_ellipsoid": true
+      },
+      {
+        "case_id": "calibration-transform-1",
+        "cloud": "cloud_0.vtk",
+        "conditioning": {
+          "ambiguity_probes": 6,
+          "condition_number": 5.076583989149528,
+          "geometry_ratio": 0.17648603886504038,
+          "neighbor_checks": 209441
+        },
+        "converged": true,
+        "covariance": [
+          [
+            7.32432791050564e-09,
+            1.2316014757331137e-09,
+            -6.755704129036422e-10
+          ],
+          [
+            1.2316014757331137e-09,
+            1.157117309999351e-08,
+            -2.5112616606742066e-09
+          ],
+          [
+            -6.755704129036422e-10,
+            -2.5112616606742066e-09,
+            1.377502471731689e-09
+          ]
+        ],
+        "duration_ms": 3.992814,
+        "initial_pose": {
+          "position": {
+            "x": -0.46,
+            "y": 0.31999999999999995
+          },
+          "yaw": -0.065
+        },
+        "inlier_count": 143,
+        "inlier_fraction": 0.7988826815642458,
+        "input_sha256": "4df48182c7be6fa75d729ea9d9311d4ae9300919caa9d0ea8d6871868d4d1eb5",
+        "iterations": 4,
+        "known_pose": {
+          "position": {
+            "x": -0.5,
+            "y": 0.35
+          },
+          "yaw": -0.08
+        },
+        "nees": 7.368278537773194,
+        "points": 179,
+        "pose_error": {
+          "components": [
+            6.479259649472269e-06,
+            -9.679514347510354e-05,
+            9.269262503774911e-05
+          ],
+          "translation_m": 9.701175498861547e-05,
+          "yaw_rad": 9.269262503774911e-05
+        },
+        "recovered_pose": {
+          "position": {
+            "x": -0.4999935207403505,
+            "y": 0.3499032048565249
+          },
+          "yaw": -0.07990730737496235
+        },
+        "rms_m": 0.0009045046298011939,
+        "scope": "SEMI-SYNTHETIC: measured apartment geometry with an imposed SE2 pose and deterministic noise; not natural-pair pose ground truth",
+        "split": "calibration",
+        "standardized_component_errors": [
+          0.07570795136488763,
+          -0.8998391255930905,
+          2.497462569917158
+        ],
+        "status": "accepted",
+        "within_nominal_95_percent_ellipsoid": true
+      },
+      {
+        "case_id": "held_out-transform-0",
+        "cloud": "cloud_1.vtk",
+        "conditioning": {
+          "ambiguity_probes": 6,
+          "condition_number": 5.300274174685631,
+          "geometry_ratio": 0.11145826639236725,
+          "neighbor_checks": 529813
+        },
+        "converged": true,
+        "covariance": [
+          [
+            7.909367081000577e-09,
+            -1.1018810812012433e-10,
+            3.778626394148923e-10
+          ],
+          [
+            -1.1018810812012433e-10,
+            7.937841024480956e-09,
+            -4.298257874226158e-10
+          ],
+          [
+            3.778626394148923e-10,
+            -4.298257874226158e-10,
+            1.4739803531886864e-09
+          ]
+        ],
+        "duration_ms": 9.791037000000001,
+        "initial_pose": {
+          "position": {
+            "x": 0.44,
+            "y": -0.28
+          },
+          "yaw": 0.075
+        },
+        "inlier_count": 128,
+        "inlier_fraction": 0.7950310559006211,
+        "input_sha256": "3ee5f1b4a3eea7ef7f2daa824dcfd5bee30380ca00fbb618a641efc29c2b9423",
+        "iterations": 4,
+        "known_pose": {
+          "position": {
+            "x": 0.4,
+            "y": -0.25
+          },
+          "yaw": 0.06
+        },
+        "nees": 2.2702096869625095,
+        "points": 161,
+        "pose_error": {
+          "components": [
+            3.460456688275659e-05,
+            -4.582776195932725e-05,
+            5.570631750551058e-05
+          ],
+          "translation_m": 5.7425254160029076e-05,
+          "yaw_rad": 5.570631750551058e-05
+        },
+        "recovered_pose": {
+          "position": {
+            "x": 0.4000346045668828,
+            "y": -0.2500458277619593
+          },
+          "yaw": 0.06005570631750551
+        },
+        "rms_m": 0.0009037777674395466,
+        "scope": "SEMI-SYNTHETIC: measured apartment geometry with an imposed SE2 pose and deterministic noise; not natural-pair pose ground truth",
+        "split": "held_out",
+        "standardized_component_errors": [
+          0.38910118361222035,
+          -0.514372154667207,
+          1.4509705666624564
+        ],
+        "status": "accepted",
+        "within_nominal_95_percent_ellipsoid": true
+      },
+      {
+        "case_id": "held_out-transform-1",
+        "cloud": "cloud_1.vtk",
+        "conditioning": {
+          "ambiguity_probes": 6,
+          "condition_number": 5.311571816260075,
+          "geometry_ratio": 0.11476527134755528,
+          "neighbor_checks": 347289
+        },
+        "converged": true,
+        "covariance": [
+          [
+            7.984973009583809e-09,
+            5.982041424494565e-10,
+            -5.036676495321814e-10
+          ],
+          [
+            5.982041424494565e-10,
+            9.887306933022183e-09,
+            -1.7469172428485018e-09
+          ],
+          [
+            -5.036676495321814e-10,
+            -1.7469172428485018e-09,
+            1.4708452168685634e-09
+          ]
+        ],
+        "duration_ms": 6.349886,
+        "initial_pose": {
+          "position": {
+            "x": -0.46,
+            "y": 0.31999999999999995
+          },
+          "yaw": -0.065
+        },
+        "inlier_count": 128,
+        "inlier_fraction": 0.7950310559006211,
+        "input_sha256": "3ee5f1b4a3eea7ef7f2daa824dcfd5bee30380ca00fbb618a641efc29c2b9423",
+        "iterations": 4,
+        "known_pose": {
+          "position": {
+            "x": -0.5,
+            "y": 0.35
+          },
+          "yaw": -0.08
+        },
+        "nees": 2.4502509145479245,
+        "points": 161,
+        "pose_error": {
+          "components": [
+            2.397888433436357e-05,
+            -9.500549880281373e-05,
+            5.565945216856605e-05
+          ],
+          "translation_m": 9.798485442501932e-05,
+          "yaw_rad": 5.565945216856605e-05
+        },
+        "recovered_pose": {
+          "position": {
+            "x": -0.49997602111566564,
+            "y": 0.34990499450119716
+          },
+          "yaw": -0.07994434054783159
+        },
+        "rms_m": 0.0009045301815181448,
+        "scope": "SEMI-SYNTHETIC: measured apartment geometry with an imposed SE2 pose and deterministic noise; not natural-pair pose ground truth",
+        "split": "held_out",
+        "standardized_component_errors": [
+          0.2683442208191137,
+          -0.955453893081786,
+          1.4512941383476359
+        ],
+        "status": "accepted",
+        "within_nominal_95_percent_ellipsoid": true
+      }
+    ]
+  },
+  "full_report_sha256": "cd81139c97b9d217066d13c61d0836fb5cadcfbe3df2aad5c7cfddc231688cf8",
+  "manifests": {
+    "isprs_terrain": {
+      "calibration_samples": [
+        "samp11",
+        "samp12",
+        "samp21",
+        "samp22",
+        "samp23",
+        "samp24"
+      ],
+      "dataset": "isprs-terrain",
+      "held_out_samples": [
+        "samp31",
+        "samp41",
+        "samp42",
+        "samp51",
+        "samp52",
+        "samp53",
+        "samp54",
+        "samp61",
+        "samp71"
+      ],
+      "redistribute_raw": false,
+      "repository": "PointCloudLibrary/data",
+      "revision": "5c26bdd0591ba150b91858b5c9fe5e91cb39ae86",
+      "schema_version": 1,
+      "upstream_license": "BSD-3-Clause repository license; original ISPRS dataset redistribution terms not separately established"
+    },
+    "libpointmatcher": {
+      "calibration_cloud": "cloud_0.vtk",
+      "dataset": "libpointmatcher",
+      "held_out_cloud": "cloud_1.vtk",
+      "physical_relative_pose_ground_truth": null,
+      "redistribute_raw": false,
+      "repository": "ethz-asl/libpointmatcher",
+      "revision": "62b347813e6aa4f0129457859e12a0371cc7a5da",
+      "schema_version": 1,
+      "split_independence": "different views of one apartment, not independent environments",
+      "upstream_license": "BSD-3-Clause repository license; original ASL dataset redistribution terms not separately established"
+    }
+  },
+  "terrain_samples": [
+    {
+      "classification_diagnostics": {
+        "candidate_ground_cells": 8363,
+        "candidate_work": 3593932,
+        "confident": false,
+        "occupied_cells": 26485,
+        "rejected_cells": 18122,
+        "supported_cells": 6863,
+        "supported_fraction": 0.259127808193317
+      },
+      "classification_ms": 172.18755,
+      "cluster_ms": 39.520353,
+      "confusion": {
+        "fn": 13552,
+        "fp": 898,
+        "tn": 15319,
+        "tp": 8241
+      },
+      "ground_reference_sha256": "8112c6ed6914d7434ee94ea97d692f07034323ef177e437af0737f197d0ecce6",
+      "input_sha256": "0b2029dcd2c738e9c1631e553999f2c0995c59e2443c597b32cf928ebc1d1fb7",
+      "metrics": {
+        "accuracy": 0.6198368850302552,
+        "f1": 0.5328462433725591,
+        "precision": 0.9017397964766386,
+        "recall": 0.37814894690955814
+      },
+      "origin_xyz_m": {
+        "x": 512743.625,
+        "y": 5403547.5,
+        "z": 308.67999267578125
+      },
+      "points": 38010,
+      "raw_duplicate_points": 213,
+      "raw_unique_points": 37797,
+      "reference_duplicate_points": 140,
+      "reference_points": 21786,
+      "reference_unique_points": 21646,
+      "sample": "samp11",
+      "split": "calibration",
+      "objects": {
+        "candidate_work": 803553,
+        "cluster_count": 574,
+        "occupied_voxels": 24993,
+        "status": "evaluated",
+        "noise_points": 22643
+      }
+    },
+    {
+      "classification_diagnostics": {
+        "candidate_ground_cells": 14116,
+        "candidate_work": 5810724,
+        "confident": false,
+        "occupied_cells": 34485,
+        "rejected_cells": 20369,
+        "supported_cells": 12896,
+        "supported_fraction": 0.3739596926199797
+      },
+      "classification_ms": 281.757495,
+      "cluster_ms": 62.05039,
+      "confusion": {
+        "fn": 10121,
+        "fp": 726,
+        "tn": 24701,
+        "tp": 16571
+      },
+      "ground_reference_sha256": "51fce5a78172874d2cad7045e61b283acb22cc15d149d7799db9fb90c1727acd",
+      "input_sha256": "6cf0e4a6ce8d4a1be35a79aad892e2a9552c9bbb333d47d630a213143a424d61",
+      "metrics": {
+        "accuracy": 0.7918801204934861,
+        "f1": 0.7534156266339312,
+        "precision": 0.9580274035959994,
+        "recall": 0.6208227184175034
+      },
+      "origin_xyz_m": {
+        "x": 512204.125,
+        "y": 5403685.0,
+        "z": 333.1199951171875
+      },
+      "points": 52119,
+      "raw_duplicate_points": 391,
+      "raw_unique_points": 51728,
+      "reference_duplicate_points": 231,
+      "reference_points": 26691,
+      "reference_unique_points": 26460,
+      "sample": "samp12",
+      "split": "calibration",
+      "objects": {
+        "candidate_work": 977919,
+        "cluster_count": 939,
+        "occupied_voxels": 28985,
+        "status": "evaluated",
+        "noise_points": 24974
+      }
+    },
+    {
+      "classification_diagnostics": {
+        "candidate_ground_cells": 4873,
+        "candidate_work": 1504200,
+        "confident": true,
+        "occupied_cells": 8420,
+        "rejected_cells": 3547,
+        "supported_cells": 4450,
+        "supported_fraction": 0.5285035629453682
+      },
+      "classification_ms": 48.410603,
+      "cluster_ms": 7.447834,
+      "confusion": {
+        "fn": 3798,
+        "fp": 104,
+        "tn": 2771,
+        "tp": 6287
+      },
+      "ground_reference_sha256": "3529972af85fe5bd67bdd1886e28d321746a7f0dc7e7113157ee9123ad6e091a",
+      "input_sha256": "9aebd0ed77388fa22835f07bde6bced1eb2bfc5a6260d18468b7e67993bed56f",
+      "metrics": {
+        "accuracy": 0.6989197530864197,
+        "f1": 0.7631706724933236,
+        "precision": 0.9837271162572367,
+        "recall": 0.6234010907288051
+      },
+      "origin_xyz_m": {
+        "x": 513632.59375,
+        "y": 5403198.0,
+        "z": 291.29998779296875
+      },
+      "points": 12960,
+      "raw_duplicate_points": 146,
+      "raw_unique_points": 12814,
+      "reference_duplicate_points": 124,
+      "reference_points": 10085,
+      "reference_unique_points": 9961,
+      "sample": "samp21",
+      "split": "calibration",
+      "objects": {
+        "candidate_work": 182822,
+        "cluster_count": 139,
+        "occupied_voxels": 5313,
+        "status": "evaluated",
+        "noise_points": 4703
+      }
+    },
+    {
+      "classification_diagnostics": {
+        "candidate_ground_cells": 11766,
+        "candidate_work": 4216268,
+        "confident": true,
+        "occupied_cells": 20692,
+        "rejected_cells": 8926,
+        "supported_cells": 10927,
+        "supported_fraction": 0.5280784844384303
+      },
+      "classification_ms": 195.342234,
+      "cluster_ms": 39.057381,
+      "confusion": {
+        "fn": 7592,
+        "fp": 1158,
+        "tn": 9042,
+        "tp": 14914
+      },
+      "ground_reference_sha256": "d31b8a246d93b02fa748dbc2aaad56ea52d05ec6fcd6da109595794d88c74007",
+      "input_sha256": "e436292b5950bee955b053d3990cc6b42e1d648f8923ad2b1ce62a79d336a5f5",
+      "metrics": {
+        "accuracy": 0.7324649911331255,
+        "f1": 0.7731867903986728,
+        "precision": 0.9279492284718766,
+        "recall": 0.6626677330489648
+      },
+      "origin_xyz_m": {
+        "x": 513450.03125,
+        "y": 5402650.0,
+        "z": 296.29998779296875
+      },
+      "points": 32706,
+      "raw_duplicate_points": 314,
+      "raw_unique_points": 32392,
+      "reference_duplicate_points": 220,
+      "reference_points": 22504,
+      "reference_unique_points": 22284,
+      "sample": "samp22",
+      "split": "calibration",
+      "objects": {
+        "candidate_work": 467395,
+        "cluster_count": 727,
+        "occupied_voxels": 13293,
+        "status": "evaluated",
+        "noise_points": 10424
+      }
+    },
+    {
+      "classification_diagnostics": {
+        "candidate_ground_cells": 6914,
+        "candidate_work": 3367724,
+        "confident": false,
+        "occupied_cells": 18243,
+        "rejected_cells": 11329,
+        "supported_cells": 6048,
+        "supported_fraction": 0.33152442032560436
+      },
+      "classification_ms": 212.877186,
+      "cluster_ms": 26.069543,
+      "confusion": {
+        "fn": 6118,
+        "fp": 297,
+        "tn": 11575,
+        "tp": 7105
+      },
+      "ground_reference_sha256": "9005cacb07b5b9aeb4a7890737aef83d8b6a1c601cac04d4abe5035a14980c69",
+      "input_sha256": "35e872a6b4e36fa35f55d5f7bef2f159690c93e9aaa31bc24e4363d1e38dbd98",
+      "metrics": {
+        "accuracy": 0.7443713887228531,
+        "f1": 0.688969696969697,
+        "precision": 0.9598757092677654,
+        "recall": 0.5373213340391741
+      },
+      "origin_xyz_m": {
+        "x": 513648.3125,
+        "y": 5402975.0,
+        "z": 293.04998779296875
+      },
+      "points": 25095,
+      "raw_duplicate_points": 126,
+      "raw_unique_points": 24969,
+      "reference_duplicate_points": 64,
+      "reference_points": 13223,
+      "reference_unique_points": 13159,
+      "sample": "samp23",
+      "split": "calibration",
+      "objects": {
+        "candidate_work": 494038,
+        "cluster_count": 519,
+        "occupied_voxels": 15158,
+        "status": "evaluated",
+        "noise_points": 13070
+      }
+    },
+    {
+      "classification_diagnostics": {
+        "candidate_ground_cells": 2437,
+        "candidate_work": 877728,
+        "confident": false,
+        "occupied_cells": 5278,
+        "rejected_cells": 2841,
+        "supported_cells": 2199,
+        "supported_fraction": 0.41663508904888213
+      },
+      "classification_ms": 44.346484,
+      "cluster_ms": 4.86623,
+      "confusion": {
+        "fn": 2622,
+        "fp": 30,
+        "tn": 2028,
+        "tp": 2812
+      },
+      "ground_reference_sha256": "7d996a6194116f838b4bfc5a27eb0e4b8cce7e9a0414ab59fb77df68f3156a18",
+      "input_sha256": "d8962dfc992053fa3647673d0af8cbb34077827be027fbee850dc9878afad944",
+      "metrics": {
+        "accuracy": 0.6460224239188468,
+        "f1": 0.6795553407443209,
+        "precision": 0.9894440534834623,
+        "recall": 0.5174825174825175
+      },
+      "origin_xyz_m": {
+        "x": 513866.46875,
+        "y": 5403125.0,
+        "z": 310.7699890136719
+      },
+      "points": 7492,
+      "raw_duplicate_points": 78,
+      "raw_unique_points": 7414,
+      "reference_duplicate_points": 72,
+      "reference_points": 5434,
+      "reference_unique_points": 5362,
+      "sample": "samp24",
+      "split": "calibration",
+      "objects": {
+        "candidate_work": 129262,
+        "cluster_count": 97,
+        "occupied_voxels": 3920,
+        "status": "evaluated",
+        "noise_points": 3445
+      }
+    },
+    {
+      "classification_diagnostics": {
+        "candidate_ground_cells": 10936,
+        "candidate_work": 4235696,
+        "confident": true,
+        "occupied_cells": 19578,
+        "rejected_cells": 8642,
+        "supported_cells": 10468,
+        "supported_fraction": 0.5346817856778017
+      },
+      "classification_ms": 203.31569299999998,
+      "cluster_ms": 20.426067999999997,
+      "confusion": {
+        "fn": 2277,
+        "fp": 461,
+        "tn": 12845,
+        "tp": 13279
+      },
+      "ground_reference_sha256": "f78aa4d5dc8a8b205b0e178fd6cba6c855beb796c72fd2c460849d76bf1636c4",
+      "input_sha256": "1a1677c5ccbfbbc9fafa21ae0293ae9b53d32867ccf138e99ff74900cef74ea3",
+      "metrics": {
+        "accuracy": 0.9051347792945742,
+        "f1": 0.9065401419989078,
+        "precision": 0.966448326055313,
+        "recall": 0.8536256106968372
+      },
+      "origin_xyz_m": {
+        "x": 512268.34375,
+        "y": 5403187.5,
+        "z": 308.8800048828125
+      },
+      "points": 28862,
+      "raw_duplicate_points": 212,
+      "raw_unique_points": 28650,
+      "reference_duplicate_points": 95,
+      "reference_points": 15556,
+      "reference_unique_points": 15461,
+      "sample": "samp31",
+      "split": "held_out",
+      "objects": {
+        "candidate_work": 424298,
+        "cluster_count": 749,
+        "occupied_voxels": 12438,
+        "status": "evaluated",
+        "noise_points": 9772
+      }
+    },
+    {
+      "classification_diagnostics": {
+        "candidate_ground_cells": 1707,
+        "candidate_work": 977620,
+        "confident": false,
+        "occupied_cells": 6580,
+        "rejected_cells": 4873,
+        "supported_cells": 1573,
+        "supported_fraction": 0.23905775075987842
+      },
+      "classification_ms": 57.622006000000006,
+      "cluster_ms": 15.829804999999999,
+      "confusion": {
+        "fn": 3777,
+        "fp": 180,
+        "tn": 5447,
+        "tp": 1827
+      },
+      "ground_reference_sha256": "4cb530ffa90fb58dbf6c7d55f229ff301f24ddffcf54d75f724746bdc4d96f8a",
+      "input_sha256": "1ef417dc4c9aaec5496ca6c7b87f3763f9b116ad03c9247552b753091479f72d",
+      "metrics": {
+        "accuracy": 0.6476716231858249,
+        "f1": 0.4800945999211667,
+        "precision": 0.9103139013452914,
+        "recall": 0.32601713062098503
+      },
+      "origin_xyz_m": {
+        "x": 513248.625,
+        "y": 5403656.5,
+        "z": 299.5199890136719
+      },
+      "points": 11231,
+      "raw_duplicate_points": 171,
+      "raw_unique_points": 11060,
+      "reference_duplicate_points": 98,
+      "reference_points": 5602,
+      "reference_unique_points": 5504,
+      "sample": "samp41",
+      "split": "held_out",
+      "objects": {
+        "candidate_work": 258357,
+        "cluster_count": 245,
+        "occupied_voxels": 6536,
+        "status": "evaluated",
+        "noise_points": 5435
+      }
+    },
+    {
+      "classification_diagnostics": {
+        "candidate_ground_cells": 8007,
+        "candidate_work": 6418920,
+        "confident": false,
+        "occupied_cells": 29835,
+        "rejected_cells": 21828,
+        "supported_cells": 7290,
+        "supported_fraction": 0.24434389140271492
+      },
+      "classification_ms": 336.503794,
+      "cluster_ms": 67.40698400000001,
+      "confusion": {
+        "fn": 4614,
+        "fp": 1059,
+        "tn": 28967,
+        "tp": 7830
+      },
+      "ground_reference_sha256": "c5199cb0f7a1ec2c557af9157fbfadb8cad5b144536f2e5e8ca10661a940f1ee",
+      "input_sha256": "d029873e134927b4a7950c5973a49b4bdac9bd19980c2b34e9eb8452611b37ba",
+      "metrics": {
+        "accuracy": 0.8664233576642336,
+        "f1": 0.7340739699057798,
+        "precision": 0.880863989200135,
+        "recall": 0.6292189006750241
+      },
+      "origin_xyz_m": {
+        "x": 513547.90625,
+        "y": 5403430.0,
+        "z": 288.45001220703125
+      },
+      "points": 42470,
+      "raw_duplicate_points": 283,
+      "raw_unique_points": 42187,
+      "reference_duplicate_points": 55,
+      "reference_points": 12443,
+      "reference_unique_points": 12388,
+      "sample": "samp42",
+      "split": "held_out",
+      "objects": {
+        "candidate_work": 940910,
+        "cluster_count": 1553,
+        "occupied_voxels": 28488,
+        "status": "evaluated",
+        "noise_points": 22526
+      }
+    },
+    {
+      "classification_diagnostics": {
+        "candidate_ground_cells": 0,
+        "candidate_work": 282752,
+        "confident": false,
+        "occupied_cells": 17672,
+        "rejected_cells": 17672,
+        "supported_cells": 0,
+        "supported_fraction": 0.0
+      },
+      "classification_ms": 14.372608,
+      "cluster_ms": 38.560198,
+      "confusion": {
+        "fn": 13950,
+        "fp": 0,
+        "tn": 3895,
+        "tp": 0
+      },
+      "ground_reference_sha256": "c443163e0e5475c662e4ba4766008fddfded5829c4ea51508146bd6d432aaf7b",
+      "input_sha256": "ba3ded183136b1dec94111149be9040ec1ee6f15eecf1014a2c5a0bd651c05c5",
+      "metrics": {
+        "accuracy": 0.21826842252731857,
+        "f1": 0.0,
+        "precision": null,
+        "recall": 0.0
+      },
+      "origin_xyz_m": {
+        "x": 494199.78125,
+        "y": 5419837.5,
+        "z": 292.42999267578125
+      },
+      "points": 17845,
+      "raw_duplicate_points": 0,
+      "raw_unique_points": 17845,
+      "reference_duplicate_points": 0,
+      "reference_points": 13950,
+      "reference_unique_points": 13950,
+      "sample": "samp51",
+      "split": "held_out",
+      "objects": {
+        "candidate_work": 482541,
+        "cluster_count": 0,
+        "occupied_voxels": 17845,
+        "status": "evaluated",
+        "noise_points": 17845
+      }
+    },
+    {
+      "classification_diagnostics": {
+        "candidate_ground_cells": 0,
+        "candidate_work": 357936,
+        "confident": false,
+        "occupied_cells": 22371,
+        "rejected_cells": 22371,
+        "supported_cells": 0,
+        "supported_fraction": 0.0
+      },
+      "classification_ms": 19.943026,
+      "cluster_ms": 36.629673000000004,
+      "confusion": {
+        "fn": 20112,
+        "fp": 0,
+        "tn": 2362,
+        "tp": 0
+      },
+      "ground_reference_sha256": "ed92936a8253ec4e02227624c7c8c2fdab585518308e6bdc17b31352676bac63",
+      "input_sha256": "ba89c6d90004963587aa5ae2620630c83927a43d243bdfc3ad9d00aaa59336ca",
+      "metrics": {
+        "accuracy": 0.1050992257720032,
+        "f1": 0.0,
+        "precision": null,
+        "recall": 0.0
+      },
+      "origin_xyz_m": {
+        "x": 494198.53125,
+        "y": 5420712.0,
+        "z": 259.8299865722656
+      },
+      "points": 22474,
+      "raw_duplicate_points": 0,
+      "raw_unique_points": 22474,
+      "reference_duplicate_points": 0,
+      "reference_points": 20112,
+      "reference_unique_points": 20112,
+      "sample": "samp52",
+      "split": "held_out",
+      "objects": {
+        "candidate_work": 607610,
+        "cluster_count": 0,
+        "occupied_voxels": 22474,
+        "status": "evaluated",
+        "noise_points": 22474
+      }
+    },
+    {
+      "classification_diagnostics": {
+        "candidate_ground_cells": 0,
+        "candidate_work": 544480,
+        "confident": false,
+        "occupied_cells": 34030,
+        "rejected_cells": 34030,
+        "supported_cells": 0,
+        "supported_fraction": 0.0
+      },
+      "classification_ms": 59.246538,
+      "cluster_ms": 88.925991,
+      "confusion": {
+        "fn": 32989,
+        "fp": 0,
+        "tn": 1389,
+        "tp": 0
+      },
+      "ground_reference_sha256": "791a310ab9e32b4eb45d5d366aa4597055130dc519ae83b7032cd390c2d91265",
+      "input_sha256": "89427e8b6f24061d2dcc6ac63de3321077982b7c36add77cbff0c2df375e3abd",
+      "metrics": {
+        "accuracy": 0.04040374658211647,
+        "f1": 0.0,
+        "precision": null,
+        "recall": 0.0
+      },
+      "origin_xyz_m": {
+        "x": 494679.21875,
+        "y": 5420750.0,
+        "z": 326.1300048828125
+      },
+      "points": 34378,
+      "raw_duplicate_points": 0,
+      "raw_unique_points": 34378,
+      "reference_duplicate_points": 0,
+      "reference_points": 32989,
+      "reference_unique_points": 32989,
+      "sample": "samp53",
+      "split": "held_out",
+      "objects": {
+        "candidate_work": 929637,
+        "cluster_count": 0,
+        "occupied_voxels": 34378,
+        "status": "evaluated",
+        "noise_points": 34378
+      }
+    },
+    {
+      "classification_diagnostics": {
+        "candidate_ground_cells": 0,
+        "candidate_work": 137392,
+        "confident": false,
+        "occupied_cells": 8587,
+        "rejected_cells": 8587,
+        "supported_cells": 0,
+        "supported_fraction": 0.0
+      },
+      "classification_ms": 9.9761,
+      "cluster_ms": 14.443742,
+      "confusion": {
+        "fn": 3983,
+        "fp": 0,
+        "tn": 4625,
+        "tp": 0
+      },
+      "ground_reference_sha256": "4a20cfb17e612c0eedbd25755536776a6cb02dbb6b5059ac4da985b67414170d",
+      "input_sha256": "c8ee4c94ed3c278c09b3797848724405c6187acbc42b9d6fc509c4cb356ae600",
+      "metrics": {
+        "accuracy": 0.5372908921933085,
+        "f1": 0.0,
+        "precision": null,
+        "recall": 0.0
+      },
+      "origin_xyz_m": {
+        "x": 493814.375,
+        "y": 5420477.0,
+        "z": 264.92999267578125
+      },
+      "points": 8608,
+      "raw_duplicate_points": 0,
+      "raw_unique_points": 8608,
+      "reference_duplicate_points": 0,
+      "reference_points": 3983,
+      "reference_unique_points": 3983,
+      "sample": "samp54",
+      "split": "held_out",
+      "objects": {
+        "candidate_work": 232539,
+        "cluster_count": 0,
+        "occupied_voxels": 8608,
+        "status": "evaluated",
+        "noise_points": 8608
+      }
+    },
+    {
+      "classification_diagnostics": {
+        "candidate_ground_cells": 0,
+        "candidate_work": 556048,
+        "confident": false,
+        "occupied_cells": 34753,
+        "rejected_cells": 34753,
+        "supported_cells": 0,
+        "supported_fraction": 0.0
+      },
+      "classification_ms": 67.953919,
+      "cluster_ms": 85.94368700000001,
+      "confusion": {
+        "fn": 33854,
+        "fp": 0,
+        "tn": 1206,
+        "tp": 0
+      },
+      "ground_reference_sha256": "2162fb18560f1ac2320fbe5b8b55de39398ce5832c525e0a111a44844117fd16",
+      "input_sha256": "b717382cf30cc8a0c7430908ab777fc362ad33d0fc07720d5eac7d609d2b60c9",
+      "metrics": {
+        "accuracy": 0.03439817455790074,
+        "f1": 0.0,
+        "precision": null,
+        "recall": 0.0
+      },
+      "origin_xyz_m": {
+        "x": 497671.875,
+        "y": 5421228.0,
+        "z": 309.8900146484375
+      },
+      "points": 35060,
+      "raw_duplicate_points": 0,
+      "raw_unique_points": 35060,
+      "reference_duplicate_points": 0,
+      "reference_points": 33854,
+      "reference_unique_points": 33854,
+      "sample": "samp61",
+      "split": "held_out",
+      "objects": {
+        "candidate_work": 949011,
+        "cluster_count": 0,
+        "occupied_voxels": 35060,
+        "status": "evaluated",
+        "noise_points": 35060
+      }
+    },
+    {
+      "classification_diagnostics": {
+        "candidate_ground_cells": 0,
+        "candidate_work": 249360,
+        "confident": false,
+        "occupied_cells": 15585,
+        "rejected_cells": 15585,
+        "supported_cells": 0,
+        "supported_fraction": 0.0
+      },
+      "classification_ms": 18.660427,
+      "cluster_ms": 27.299666000000002,
+      "confusion": {
+        "fn": 13875,
+        "fp": 0,
+        "tn": 1770,
+        "tp": 0
+      },
+      "ground_reference_sha256": "b35ca5cabbb847935f93bbb1609045f1246c59852a64c83c0d7133dd01dda9af",
+      "input_sha256": "56685bf711877028369ed6899bf84b66df928dc92850f2f38135e15c7ef40ede",
+      "metrics": {
+        "accuracy": 0.11313518696069032,
+        "f1": 0.0,
+        "precision": null,
+        "recall": 0.0
+      },
+      "origin_xyz_m": {
+        "x": 496149.125,
+        "y": 5422294.0,
+        "z": 302.9700012207031
+      },
+      "points": 15645,
+      "raw_duplicate_points": 0,
+      "raw_unique_points": 15645,
+      "reference_duplicate_points": 0,
+      "reference_points": 13875,
+      "reference_unique_points": 13875,
+      "sample": "samp71",
+      "split": "held_out",
+      "objects": {
+        "candidate_work": 422996,
+        "cluster_count": 0,
+        "occupied_voxels": 15645,
+        "status": "evaluated",
+        "noise_points": 15645
+      }
+    }
+  ],
+  "independent_oracle": {
+    "terrain_sites": 15,
+    "independently_checked_aabbs": 5542,
+    "semi_synthetic_cases": 4,
+    "semi_synthetic_accepted": 4,
+    "scope": "Integrity and recomputed accuracy; no target accuracy, natural-pose GT or safety claim",
+    "mutations_rejected": [
+      "false_ground_score",
+      "missing_held_out_site",
+      "changed_split",
+      "changed_source",
+      "invented_physical_gt",
+      "changed_frozen_parameters",
+      "duplicate_ground_index",
+      "invented_aabb_extent",
+      "invented_pose_error"
+    ]
+  },
+  "evaluation_complete": true,
+  "metric_acceptance_claim": false,
+  "frozen_parameters_sha256": "36771cb7b4f6753ca43def41633ebb2f1736cff4495e7f8da574ea6f5dc66887",
+  "terrain_label_policy": "Exact original float32 XYZ membership in separate ground-reference subset; labels are read only after algorithm classification; duplicate coordinates share a label",
+  "timing_context": {
+    "architecture": "x86_64",
+    "measurement": "single synchronous elapsed wall-clock per operation; excludes raw file parsing and reference scoring; not a latency or real-time guarantee",
+    "os": "linux",
+    "profile": "release",
+    "rustc": "rustc 1.90.0 (1159e78c4 2025-09-14)"
+  }
+}

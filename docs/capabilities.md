@@ -6,6 +6,9 @@
 |---|---|---|
 | Closed-loop perception → prediction → planning → control | Implemented / tested | Reference and optional CPU RNE plants |
 | Noisy GNSS + speed / gyro EKF | Implemented / tested | Full x/y innovation gate, Joseph covariance updates, observed/accepted diagnostics; hold after two new rejected innovations until acceptance; configured initial heading, no bias state |
+| Optional local scan-to-fixed-map EKF corrections | Implemented / independently checked | Synchronous XY LiDAR, bounded local SE(2) registration/ambiguity checks; five-second GNSS-denied reference/native driving; ten-second maximum since genuine fix, no global localization/SLAM/6DOF or real-motion dataset pose accuracy |
+| Measured-data terrain baseline | Implemented / failed generalization | Frozen PMF on 15 genuine airborne clouds: held-out F1 0.2592 and six zero-F1 sites; licensed/versioned acquisition, no automotive road-semantics claim |
+| Measured XYZ components and AABBs | Implemented / tested experimentally | Bounded 3D Euclidean geometry, no semantic labels/hidden-object reconstruction; optional pipeline maps observed AABBs to planar envelopes; sparse native acquisition initially misses actor clusters and blocks on residual ground |
 | Unlabeled LiDAR and occlusion | Implemented / tested | 720 rays, 45 m range, circular targets and opt-in native cuboids |
 | Clustering / circle fitting / alpha-beta tracking | Implemented / tested | No semantic classes; nearest-neighbor association |
 | Acquisition-time LiDAR reprojection | Implemented / tested | At most 0.35 s / 64 EKF estimates; world detections and map rays use historical pose; no retroactive GNSS smoothing, delayed odometry/GNSS fusion or covariance propagation |
@@ -53,7 +56,7 @@
 | macOS / Windows | Remote checks observed on recorded revisions | Results and runner failures in [validation](validation.md); no local hosts |
 | Camera, radar, volumetric perception, learned detection | Planned | Actual native XYZ acquisition projects into a planar obstacle pipeline; no 3D object semantics, camera/radar inference or placeholder implementation |
 | Learned prediction and training | Planned | No model/data/runtime packaged |
-| 3D mapping / SLAM / map localization | Planned | No truth-as-localization substitution |
+| 3D mapping / SLAM / global localization | Planned | Optional local XY fixed-map matching is implemented separately; no truth-as-localization substitution |
 | Directed road graph / shortest-distance routing | Implemented / tested | Authored planar maps, deterministic Dijkstra, known pre-departure closure detours, 3 route fixtures × 2 plants × 3 seeds |
 | Bounded OpenStreetMap import | Implemented / tested | Versioned real ODbL extract, local WGS84/ENU, shared junctions and directed motor-road graph; explicit simulation widths, no lanes/elevation/turn-restriction interpretation |
 | Minimum-clearance regression conditions | Implemented / tested | Fixed swept-circle fixture floors; no real-driving clearance specification |

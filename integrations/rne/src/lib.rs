@@ -20,7 +20,8 @@ use rustdrive_core::{
     MultiHeightLidarScan, Odometry, Pose, Vec2, Vec3 as BodyPoint3,
 };
 use rustdrive_pipeline::{
-    GroundConfig, Lidar3dConfig, MotionLimits, MultiHeightLidarConfig, PipelineConfig, SensorFrame,
+    GroundConfig, Lidar3dConfig, MotionLimits, MultiHeightLidarConfig, Perception3dConfig,
+    PipelineConfig, SensorFrame,
 };
 use rustdrive_sim::traffic::{TrafficTelemetry, TrafficWorld};
 use rustdrive_sim::{
@@ -41,6 +42,7 @@ enum GroundMode {
     Disabled,
     Segmentation,
     VehicleBody,
+    TerrainObjects,
 }
 /// ENU planar coordinate to RNE Y-up world; north corresponds to negative Z.
 pub fn to_rne(point: Vec2) -> Vec3 {
@@ -81,7 +83,6 @@ pub struct RneBackend {
     scene: Option<Arc<Mutex<SceneCapture>>>,
     multi_height: bool,
     lidar_3d: bool,
-    ground_segmentation: bool,
     vehicle_body: bool,
     scene_obstacles: Vec<(Entity, String)>,
     /// Test/diagnostic injection; a checked raycast against an unknown world must brake.
@@ -204,6 +205,26 @@ impl RneBackend {
             GroundMode::VehicleBody,
         )
     }
+    /// Measured terrain/object processing over an actual native inclined XYZ cloud.
+    pub fn new_with_scene_terrain_objects(
+        scenario: Scenario,
+        seed: u64,
+        plant: Plant,
+        scene: Scene,
+    ) -> Result<Self, String> {
+        if scenario.duration > 120.0 {
+            return Err("native scene evidence requires duration <=120 seconds".into());
+        }
+        Self::create(
+            scenario,
+            seed,
+            plant,
+            Some(scene),
+            false,
+            true,
+            GroundMode::TerrainObjects,
+        )
+    }
     fn create(
         scenario: Scenario,
         seed: u64,
@@ -281,6 +302,16 @@ impl RneBackend {
                     None
                 },
             });
+        }
+        if ground_mode == GroundMode::TerrainObjects {
+            let acquisition = config.lidar3d.as_mut().unwrap();
+            acquisition.ground = None;
+            // Existing dense inclined acquisition and authored research height
+            // envelope. This sensing calibration does not enable body physics.
+            acquisition.azimuth_columns = 720;
+            acquisition.collision_bottom_m = body_calibration.bottom_m;
+            acquisition.collision_top_m = body_calibration.bottom_m + body_calibration.height_m;
+            config.perception3d = Some(Perception3dConfig::default());
         }
         config.validate()?;
         if plant == Plant::Dynamic {
@@ -425,7 +456,6 @@ impl RneBackend {
             scene,
             multi_height,
             lidar_3d,
-            ground_segmentation,
             vehicle_body,
             scene_obstacles,
             fail_lidar_from: None,
@@ -525,8 +555,7 @@ impl SimulationBackend for RneBackend {
             speed: truth.speed + self.noisy(tick, 0, 0.015),
             yaw_rate: body.angular_velocity_rad_s.y + self.noisy(tick, 1, 0.001),
         });
-        let gnss = if tick.is_multiple_of(4) && self.scenario.gnss_dropout.is_none_or(|t| time < t)
-        {
+        let gnss = if tick.is_multiple_of(4) && self.scenario.gnss_available(time) {
             Some(Gnss {
                 stamp: time,
                 position: truth.pose.position.plus(Vec2::new(
@@ -674,7 +703,8 @@ impl SimulationBackend for RneBackend {
                     }
                 }
                 let spec_3d = LidarSpec {
-                    ray_count: if self.ground_segmentation { 180 } else { 720 },
+                    ray_count: u32::try_from(self.config.lidar3d.as_ref().unwrap().azimuth_columns)
+                        .map_err(|_| "inclined LiDAR azimuth count exceeds native u32 bounds")?,
                     channel_count: 16,
                     min_elevation_rad: -std::f64::consts::PI / 12.0,
                     max_elevation_rad: std::f64::consts::PI / 12.0,
@@ -932,6 +962,23 @@ pub fn run_with_scene_ground_body(
         GroundMode::VehicleBody,
     )
 }
+/// Execute measured terrain/object perception without simulator semantic labels.
+pub fn run_with_scene_terrain_objects(
+    scenario: Scenario,
+    seed: u64,
+    plant: Plant,
+    scene: Scene,
+) -> Result<(Run, serde_json::Value), String> {
+    run_scene_mode(
+        scenario,
+        seed,
+        plant,
+        scene,
+        false,
+        true,
+        GroundMode::TerrainObjects,
+    )
+}
 fn run_scene_mode(
     scenario: Scenario,
     seed: u64,
@@ -943,7 +990,10 @@ fn run_scene_mode(
 ) -> Result<(Run, serde_json::Value), String> {
     let ground_segmentation = ground_mode != GroundMode::Disabled;
     let vehicle_body = ground_mode == GroundMode::VehicleBody;
-    let backend = if vehicle_body {
+    let terrain_objects = ground_mode == GroundMode::TerrainObjects;
+    let backend = if terrain_objects {
+        RneBackend::new_with_scene_terrain_objects(scenario.clone(), seed, plant, scene)?
+    } else if vehicle_body {
         RneBackend::new_with_scene_ground_body(scenario.clone(), seed, plant, scene)?
     } else if ground_segmentation {
         RneBackend::new_with_scene_ground(scenario.clone(), seed, plant, scene)?
@@ -958,6 +1008,7 @@ fn run_scene_mode(
     let config = backend.config();
     let calibration = config.multi_height_lidar.clone();
     let calibration_3d = config.lidar3d.clone();
+    let terrain_calibration = config.perception3d.clone();
     let mut run = simulate_with_backend(
         scenario,
         seed,
@@ -990,7 +1041,9 @@ fn run_scene_mode(
         evidence["multi_height_lidar"] = json!(calibration.unwrap());
     }
     if lidar_3d {
-        evidence["operating_mode"] = json!(if vehicle_body {
+        evidence["operating_mode"] = json!(if terrain_objects {
+            "lidar3d_terrain_objects"
+        } else if vehicle_body {
             "lidar3d_ground_body"
         } else if ground_segmentation {
             "lidar3d_ground"
@@ -1007,6 +1060,18 @@ fn run_scene_mode(
                 .ticks
                 .iter()
                 .filter_map(|tick| tick.expected.ground.as_ref())
+                .collect::<Vec<_>>()
+        );
+    }
+    if terrain_objects {
+        evidence["perception3d"] = json!(terrain_calibration.unwrap());
+        evidence["terrain_object_observations"] = json!(
+            run.sensor_log
+                .as_ref()
+                .unwrap()
+                .ticks
+                .iter()
+                .filter_map(|tick| tick.expected.perception3d.as_ref())
                 .collect::<Vec<_>>()
         );
     }

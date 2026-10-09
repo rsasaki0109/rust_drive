@@ -1,0 +1,16 @@
+[package]
+name = "rustdrive-dataset-eval"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+rustdrive-core = { path = "../core" }
+rustdrive-perception = { path = "../perception" }
+rustdrive-localization = { path = "../localization" }
+serde_json.workspace = true
+
+[lints]
+workspace = true

@@ -118,6 +118,22 @@ The opt-in local-route mode now completes the tested imported sharp branch and a
 python3 scripts/check-local-corners.py --backend all --compact --output artifacts/local-corners
 ```
 
+## Measured-data baselines and bounded GPS loss
+
+Rust ground extraction and XYZ object components now run on SHA-pinned measured point clouds. Independent evaluation preserves their current failures: held-out ground F1 is **0.2592**, six sites have F1 zero, and the natural apartment scan pair cannot be aligned by the local matcher. Four accurate pose cases use explicitly imposed transforms and warm initialization. [Data, licenses, reproduction and limitations](docs/datasets.md).
+
+The same local matcher also feeds a joint pose EKF correction in an optional driving mode. Fresh accepted scans can bridge at most ten seconds since a genuine GPS fix; stale or rejected matching and sensor loss restore braking. Reference and CPU RNE regressions exercise moving five-second GPS loss, recovery and failure controls, with full sensor-only replay. Their fixed map is an authored simulation prior. [Contract and measurements](docs/map-localization.md).
+
+An experimental `--lidar-3d --terrain-objects` mode clusters actual native XYZ surfaces into measured AABBs before supplying planar obstacle envelopes. One independently checked moving-lead stop passes with dense acquisition and a declared research height interval. The initial sparse acquisition failure is preserved as a replayable sensor recording. [Reproduction, calibration and blind zones](docs/terrain-objects.md).
+
+```sh
+python scripts/fetch-datasets.py
+cargo run --release --locked --bin rustdrive-dataset-eval -- \
+  --python python --output artifacts/datasets/report.json
+python scripts/check-datasets.py --report artifacts/datasets/report.json
+python scripts/check-map-localization.py --backend reference --output artifacts/map-localization
+```
+
 ## Hazard scenario regression suite
 
 ```sh

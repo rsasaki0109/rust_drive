@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "source_fingerprint_sha256": "12f9bb0597b8674d48a78b64f7f28892042645a8b41b64ee1832fffc8b799ee2",
+  "checker_dependency_sha256": {
+    "scripts/check-terrain-objects.py": "10388e2b3a24f8dfac1742c01966ad52df4c762018aa71a358506611d6bb35cc",
+    "scripts/check-ground-scenes.py": "1ae0699607d7417ba787da1f8000cd7253a3de8b6ff88ba5cbacec671ab652b6",
+    "scripts/check-lidar-3d.py": "915e2818b5d23c7307b047771380316be2b36f22c08786b3c19e01dff76a0e90",
+    "scripts/check-native-scenes.py": "66877b2a74e045f221899fc1edf03b8fee2aa88e5bf7833672149b6cba0f26cb",
+    "scripts/check_hazards.py": "e31bba2b36062768345a3f8300e5d28f910e4fa549818f0198df36799d6ea046"
+  },
+  "fixture_sha256": {
+    "scenario": "70b304b4b2afe305a28f70932c1137e4d2ce87e6df0be88db23017264fdfad25",
+    "scene": "f1c2e9c9493404647a23cec64a4ccefae911bdcf4a5ce9a6be3513bede515b32"
+  },
+  "rne_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
+  "passed": true,
+  "body_physics": false,
+  "semantic_recognition": false,
+  "scope": "One authored native lead-stop episode; observed-surface AABBs and fixed PMF baseline.",
+  "summary": {
+    "scenario": "Ground-separated inclined LiDAR follows a moving lead into a stop",
+    "seed": 7,
+    "simulated_seconds": 22.0,
+    "steps": 441,
+    "reached_goal": false,
+    "collisions": 0,
+    "road_violations": 0,
+    "min_clearance": 4.913298503332431,
+    "localization_rmse": 0.06768804581460114,
+    "localization_max_error": 0.20512748149352236,
+    "final_speed": 0.0,
+    "progress": 23.688562140208422,
+    "emergency_steps": 9,
+    "avoidance_steps": 0,
+    "max_tracks": 3,
+    "passed": true,
+    "failures": []
+  },
+  "replay": {
+    "source": "rne-dynamic-rapier-lidar",
+    "ticks": 441,
+    "verified": true
+  },
+  "physical": {
+    "passed": true,
+    "min_clearance_m": null,
+    "guard_overlap_intervals": 0,
+    "motion_samples": 4401,
+    "static_obstacle_checks": 0
+  },
+  "measured_xyz_aabb_provenance": {
+    "acquisitions": 221,
+    "ray_grid_entries": 2545920,
+    "xyz_returns": 1216923,
+    "confident_acquisitions": 221,
+    "aabbs": 4027,
+    "aabb_points": 202026,
+    "actor_returns": 43048,
+    "ground_returns": 1173875,
+    "actor_points_in_aabbs": 41743,
+    "ground_points_in_aabbs": 160283,
+    "maximum_range_residual_m": 0.03806723663113187,
+    "collision_relevant_actor_points": 41504,
+    "collision_relevant_ground_points": 10607,
+    "ground_only_collision_relevant_aabbs": 0,
+    "actor_collision_relevant_aabbs": 263,
+    "mixed_aabbs": 148,
+    "collision_relevant_mixed_aabbs": 148,
+    "maximum_mixed_aabb_extent_m": {
+      "x": 1.117187118034808,
+      "y": 5.97905164265581,
+      "z": 1.9780328627182304
+    },
+    "minimum_200hz_actor_clearance_bound_m": 4.7232985033324155,
+    "ground_support": {
+      "minimum_supported_fraction": 0.723463687150838,
+      "minimum_supported_cells": 214,
+      "maximum_candidate_work": 87184
+    },
+    "historical_zero_ground_member_assertion_passed": false,
+    "confident_fraction": 1.0
+  },
+  "sensor_only_boundary_verified": true,
+  "raw_sha256": {
+    "run.json": "61cfc833fd0da8331933f519158e4928e1c3d27227f596a1fc96b8d48315383f",
+    "scene.json": "f3b65ee5175a538525c83d17e6e886b9cca00e116706d8066bde6248cb930f5e",
+    "sensors.jsonl": "a54dae9349a691c6c9adc63687ebc15abde840922ba6383f5debe32e6a170d75"
+  },
+  "speed_profiles": {
+    "verified": true,
+    "active_trajectories": 432,
+    "stationary_holds": 392,
+    "max_acceleration_m_s2": 2.0000000000000036,
+    "max_deceleration_m_s2": 2.5000000000000018
+  },
+  "motion_predictions": {
+    "verified": true,
+    "forecasts": 567,
+    "braking_forecasts": 6,
+    "stale_fallbacks": 24,
+    "reacceleration_fallbacks": 289,
+    "max_forecast_deceleration_m_s2": 0.5583786454431244,
+    "aged_forecasts": 304,
+    "rebased_moving_forecasts": 131,
+    "max_epoch_age_s": 0.6499999999999995,
+    "current_epoch_reconstruction_verified": true
+  },
+  "control_metrics": {
+    "ticks": 441,
+    "emergency_ticks": 9,
+    "emergency_fraction": 0.02040816326530612,
+    "commanded_acceleration_change_rms_m_s3": 32.66189189072863,
+    "max_normal_commanded_steering_rate_rad_s": 0.7000000000000005
+  },
+  "gnss_integrity": {
+    "verified": true,
+    "holding_ticks": 0,
+    "max_consecutive_rejections": 0,
+    "hold_starts": [],
+    "accepted_releases": [],
+    "held_at_end": false,
+    "sensor_only_reconstruction_verified": true
+  },
+  "archive": {
+    "path": "artifacts/native-terrain-objects-dense/native-terrain-objects-seed-7.tar.gz",
+    "sha256": "f5468809af164be923479cce3ba4a661253025eede38a4c85278a08b49ef9598",
+    "bytes": 103457344,
+    "files_sha256": {
+      "summary.json": "8aea0d58db30c54c5f3012809fd030eeb74703ee6e9e9da87c235fdcd3330778",
+      "sensors.jsonl": "a54dae9349a691c6c9adc63687ebc15abde840922ba6383f5debe32e6a170d75",
+      "run.json": "61cfc833fd0da8331933f519158e4928e1c3d27227f596a1fc96b8d48315383f",
+      "scene.json": "f3b65ee5175a538525c83d17e6e886b9cca00e116706d8066bde6248cb930f5e",
+      "replay/replay.json": "da4e332bcc4cf617f228a12e63639237e6454eed044eb2c15d5f7a9c875e44b0",
+      "replay/outputs.jsonl": "bdd9b813622720d5b02cba639f7b63037b8b80b8c826d831d4a2be9503e8a7cb"
+    },
+    "gzip_crc_verified": true,
+    "raw_preserved": false
+  },
+  "complete": true,
+  "compaction": "All original raw file hashes and archive member hashes/CRC verified before deleting only the successful generated raw capture.",
+  "evidence_mutation_checks": {
+    "passed": true,
+    "method": "Altered decoded retained sensor evidence in memory; original raw files unchanged",
+    "cases": [
+      {
+        "mutation": "aabb_extent",
+        "rejected": true,
+        "diagnostic": "AABB not derived from actual measured XYZ"
+      },
+      {
+        "mutation": "ground_only_height_relevance",
+        "rejected": true,
+        "diagnostic": "measured height gate mismatch"
+      },
+      {
+        "mutation": "support_fraction",
+        "rejected": true,
+        "diagnostic": "invalid finite ground support diagnostics"
+      }
+    ]
+  }
+}

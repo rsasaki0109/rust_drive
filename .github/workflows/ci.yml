@@ -27,6 +27,16 @@ jobs:
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - run: cargo test --workspace --locked
       - run: cargo build --workspace --release --locked
+      - name: Evaluate pinned measured clouds and independently reconstruct scores
+        shell: bash
+        run: |
+          python scripts/test-fetch-datasets.py
+          python scripts/fetch-datasets.py
+          cargo run --release --locked --bin rustdrive-dataset-eval -- --python python --output artifacts/datasets/report.json
+          python scripts/check-datasets.py --report artifacts/datasets/report.json --output artifacts/datasets/oracle.json
+      - name: Verify bounded GNSS-denied reference driving and fail-closed controls
+        shell: bash
+        run: python scripts/check-map-localization.py --backend reference --output artifacts/map-localization
       - name: Run closed-loop acceptance demo
         run: cargo run --release --locked --bin rustdrive -- run --scenario scenarios/mission.json --seed 7 --output artifacts/demo
       - name: Recompute sensor log
@@ -57,6 +67,8 @@ jobs:
             artifacts/routing/
             artifacts/osm/
             artifacts/local-corners/
+            artifacts/datasets/*.json
+            artifacts/map-localization/
   visual:
     runs-on: ubuntu-latest
     steps:
@@ -129,6 +141,12 @@ jobs:
       - name: Drive unchanged sparse bends in both plants with calibrated chassis motion
         working-directory: rust_drive
         run: python3 scripts/check-local-corners.py --backend all --compact --output artifacts/local-corners
+      - name: Verify native GNSS-denied driving, expiry and sensor-loss controls
+        working-directory: rust_drive
+        run: python3 scripts/check-map-localization.py --backend rne-dynamic --output artifacts/map-localization
+      - name: Independently verify experimental XYZ terrain and measured actor AABBs
+        working-directory: rust_drive
+        run: python3 scripts/check-terrain-objects.py --compact --output artifacts/terrain-objects
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -160,6 +178,8 @@ jobs:
             rust_drive/artifacts/ground-scenes/
             rust_drive/artifacts/osm-scenes/
             rust_drive/artifacts/local-corners/
+            rust_drive/artifacts/map-localization/
+            rust_drive/artifacts/terrain-objects/
       - uses: actions/upload-artifact@v4
         with:
           name: rne-cpu-telemetry

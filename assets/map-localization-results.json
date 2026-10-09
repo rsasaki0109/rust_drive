@@ -1,0 +1,3205 @@
+{
+  "schema_version": 1,
+  "source_fingerprint_sha256": "a6bd732b37c8b3c5dd51f8c0808bfa9cf6727824b765a7275328d113a9459497",
+  "checker_sha256": "8e3e280d53f050fbdb1f9564e4fa139f47f967957ea1b3164ef63b9bb751f54c",
+  "offline_map_generator_sha256": "dbc52b916684cf936b4cbebc8b4c9948e55995eb3c3efcd27ac72c01030f240a",
+  "map_provenance": "Authored offline fixed landmark surface geometry; no live poses/labels",
+  "truth_domain": "planar evaluation; native cylinders are 3D Rapier query geometry",
+  "max_allowed_position_error_m": 0.5,
+  "max_allowed_yaw_error_rad": 0.1,
+  "accuracy_scope_counterexample": {
+    "backend": "rne-dynamic",
+    "scenario": "map-gnss-no-overlap",
+    "seed": 7,
+    "whole_episode_max_yaw_error_rad": 0.10396238209407008,
+    "whole_episode_max_position_error_m": 0.24230674085706386,
+    "first_emergency_s": 3.6,
+    "physical_acceptance_passed": true,
+    "preceding_whole_episode_yaw_gate_failed": true,
+    "interpretation": "Untrusted map is a finite fail-closed braking test, not an accurate-localization claim"
+  },
+  "cases": [
+    "map-gnss-recovery",
+    "map-gnss-prolonged",
+    "map-gnss-no-overlap",
+    "map-gnss-degenerate",
+    "map-gnss-lidar-loss",
+    "map-gnss-disabled"
+  ],
+  "seeds": [
+    1,
+    7,
+    42
+  ],
+  "replay_tamper_checks": [
+    {
+      "mutation": "offline_prior_shift",
+      "rejected": true,
+      "replay_exit_code": 2,
+      "replay_stderr": "rustdrive: replay mismatch at tick 0 (time 0.000)",
+      "source_log_sha256": "9a1650b4b9b999a2bde298ca1d3d1c42daad90f551e871b69126372d048754c5",
+      "corrupted_log_sha256": "f9d2328404565a51edb7386a1f209670ca355bd3dca778237e01a9229d24b4ee",
+      "evidence": "/tmp/rustdrive-map-final/tamper/offline_prior_shift.jsonl.gz",
+      "compressed_sha256": "797e669e784b82d2c1131147a06c512d386af34077a35274baafc8b9a963b07a"
+    },
+    {
+      "mutation": "accepted_stamp",
+      "rejected": true,
+      "replay_exit_code": 2,
+      "replay_stderr": "rustdrive: replay mismatch at tick 0 (time 0.000)",
+      "source_log_sha256": "9a1650b4b9b999a2bde298ca1d3d1c42daad90f551e871b69126372d048754c5",
+      "corrupted_log_sha256": "56b253a7733d15ae0eb40b40a48ee0c67aa763433b763786723ba54d2c176b45",
+      "evidence": "/tmp/rustdrive-map-final/tamper/accepted_stamp.jsonl.gz",
+      "compressed_sha256": "1b685da19ad3f0e3db9e34b7067341cb9914318f895f07cc5d7b9a7097092f6f"
+    },
+    {
+      "mutation": "fused_covariance",
+      "rejected": true,
+      "replay_exit_code": 2,
+      "replay_stderr": "rustdrive: replay mismatch at tick 0 (time 0.000)",
+      "source_log_sha256": "9a1650b4b9b999a2bde298ca1d3d1c42daad90f551e871b69126372d048754c5",
+      "corrupted_log_sha256": "77f51ed7ca8cd53b5ce9d2d06e2b0417e281514b2d4995bcdb548c9e44d795e4",
+      "evidence": "/tmp/rustdrive-map-final/tamper/fused_covariance.jsonl.gz",
+      "compressed_sha256": "fe1367733a172ef2f6592b438f0bf8addc41239709a633fd018215fe2ddb2f45"
+    },
+    {
+      "mutation": "body_scan_translation",
+      "rejected": true,
+      "replay_exit_code": 2,
+      "replay_stderr": "rustdrive: replay mismatch at tick 0 (time 0.000)",
+      "source_log_sha256": "9a1650b4b9b999a2bde298ca1d3d1c42daad90f551e871b69126372d048754c5",
+      "corrupted_log_sha256": "e3ec9f4acb3c3abffa8d0c4af9bb42b9db2262ce6c57572b972f21fea61e161c",
+      "evidence": "/tmp/rustdrive-map-final/tamper/body_scan_translation.jsonl.gz",
+      "compressed_sha256": "54a620fc521aa6338f9c7b8a1ec26e18e27e19191ad6364ec55e985040f98b1d"
+    }
+  ],
+  "passed": true,
+  "validation_stage": "Local GNSS-map validation before the separate terrain-only acquisition calibration refinement; map/default operation unchanged",
+  "command": "python3 scripts/check-map-localization.py --output /tmp/rustdrive-map-final",
+  "run_count": 36,
+  "driving_recovery_positive_count": 6,
+  "fail_closed_negative_count": 30,
+  "runs": [
+    {
+      "backend": "reference",
+      "scenario": "map-gnss-recovery",
+      "seed": 1,
+      "scenario_sha256": "1f778e861d6a22e6ddc1d367d31f2713b8b5e09b1ad668f1f21b7d6b33be0cf8",
+      "run_wall_seconds": 9.81700708399876,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "gnss_denied_driving_recovery",
+      "summary": {
+        "scenario": "Map Gnss Recovery",
+        "seed": 1,
+        "simulated_seconds": 17.8,
+        "steps": 357,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.4525619573826702,
+        "localization_rmse": 0.012943855544356252,
+        "localization_max_error": 0.06043717866336578,
+        "final_speed": 0.07666317408209217,
+        "progress": 49.01152765923338,
+        "emergency_steps": 4,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 357,
+        "accepted_map_scans": 179,
+        "rejected_map_scans": 0,
+        "map_rejection_reasons": [],
+        "covered_outage_ticks": 88,
+        "first_emergency_s": 17.25,
+        "first_outage_emergency_s": null,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 14.861315765384825,
+        "gnss_denied_min_speed_m_s": 2.9922887464471937,
+        "position_rmse_m": 0.012943855544356255,
+        "max_position_error_m": 0.06043717866336578,
+        "max_outage_position_error_m": 0.006480755197190676,
+        "max_yaw_error_rad": 0.002996341003915326,
+        "max_accepted_rms_m": 0.007743543236883774,
+        "max_accepted_map_position_error_m": 0.06043717866336578,
+        "max_accepted_map_yaw_error_rad": 0.002996341003915326,
+        "accuracy_gate_scope": "whole_positive_episode",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": false,
+        "max_fused_xy_variance_m2": 0.010000000000000004,
+        "max_neighbor_checks": 7437183,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 357,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-recovery/seed-1/run.json.gz",
+          "uncompressed_sha256": "825eacc74633c95924b950ff3efa0c0225d5c01e25dde4f331bb657526655f9e",
+          "compressed_sha256": "0f802ba0cd6e7f3884e145af244eba8b059cb30e881760b9611cb6f8c4bef1c8",
+          "compressed_bytes": 1369959
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-recovery/seed-1/sensors.jsonl.gz",
+          "uncompressed_sha256": "9a1650b4b9b999a2bde298ca1d3d1c42daad90f551e871b69126372d048754c5",
+          "compressed_sha256": "335543d141d8e65d2c5fbf15516beb0f919ec7e8430851c267fa4867ecc122f9",
+          "compressed_bytes": 1413921
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-recovery/seed-1/summary.json.gz",
+          "uncompressed_sha256": "516106f792f695cab0105ae666c0174098141be38ab1086c91c5af2f727b34e4",
+          "compressed_sha256": "268a0ea0f3465ddf1d9c5bbc0f648883b6b7c1d847787cbf83623b874e0be550",
+          "compressed_bytes": 310
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-recovery/seed-1/replay/replay.json.gz",
+          "uncompressed_sha256": "00db5d5ef29df1bd1ec79efb48d1a124afe84104a31241d4f07d0d5d29949bab",
+          "compressed_sha256": "f2778f08aa53d6ed806d69ab3e8f35c105e7074363f592170a1a201161987ed0",
+          "compressed_bytes": 90
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "reference",
+      "scenario": "map-gnss-recovery",
+      "seed": 7,
+      "scenario_sha256": "1f778e861d6a22e6ddc1d367d31f2713b8b5e09b1ad668f1f21b7d6b33be0cf8",
+      "run_wall_seconds": 9.677748788002646,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "gnss_denied_driving_recovery",
+      "summary": {
+        "scenario": "Map Gnss Recovery",
+        "seed": 7,
+        "simulated_seconds": 17.75,
+        "steps": 356,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.4516750572685044,
+        "localization_rmse": 0.013423487779601758,
+        "localization_max_error": 0.04646326939314346,
+        "final_speed": 0.15737486553355234,
+        "progress": 49.000021063493946,
+        "emergency_steps": 2,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 356,
+        "accepted_map_scans": 178,
+        "rejected_map_scans": 0,
+        "map_rejection_reasons": [],
+        "covered_outage_ticks": 88,
+        "first_emergency_s": 17.1,
+        "first_outage_emergency_s": null,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 14.854328320049635,
+        "gnss_denied_min_speed_m_s": 2.9911799308657017,
+        "position_rmse_m": 0.01342348777960176,
+        "max_position_error_m": 0.04646326939314346,
+        "max_outage_position_error_m": 0.0035791486000466576,
+        "max_yaw_error_rad": 0.0015845891365149356,
+        "max_accepted_rms_m": 0.00794024478314613,
+        "max_accepted_map_position_error_m": 0.04646326939314346,
+        "max_accepted_map_yaw_error_rad": 0.0015845891365149356,
+        "accuracy_gate_scope": "whole_positive_episode",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": false,
+        "max_fused_xy_variance_m2": 0.010000000000000004,
+        "max_neighbor_checks": 7068576,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 356,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-recovery/seed-7/run.json.gz",
+          "uncompressed_sha256": "9ac6d5f0e0747d3a098b77bb6dfbcdc483b62c187924f9cb1988c3a5b2a424ea",
+          "compressed_sha256": "7aaecb4f4eb2ba3e8061eb3149fe7f6a73bab616be507bee2055c9cd175d2df3",
+          "compressed_bytes": 1368450
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-recovery/seed-7/sensors.jsonl.gz",
+          "uncompressed_sha256": "006f9f4ebd30c111e924fb58e8ad0b8592894ef1864d85639fd0bd2070f88e4c",
+          "compressed_sha256": "444b7516712b68ec43a2874eb9a34eb74e1b0f58175213658a89e13d9249b934",
+          "compressed_bytes": 1411879
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-recovery/seed-7/summary.json.gz",
+          "uncompressed_sha256": "c23b2a395a4f4098fb0552902d4dd513072297f04db6ca5f96e26c7c54beac2b",
+          "compressed_sha256": "d58cd85aedf027cfeb6f16a70d7f52ffece162514285ee4a73a7dd4d28b98d76",
+          "compressed_bytes": 314
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-recovery/seed-7/replay/replay.json.gz",
+          "uncompressed_sha256": "82b9e7fa24feb8f91b78c2c95f223580c2d37ff9f1477b0524603c7c90483175",
+          "compressed_sha256": "5157c52dec97ae07e1ed4f06afb33b4609d1a020366ec3dbb679f6f7d0364e38",
+          "compressed_bytes": 90
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "reference",
+      "scenario": "map-gnss-recovery",
+      "seed": 42,
+      "scenario_sha256": "1f778e861d6a22e6ddc1d367d31f2713b8b5e09b1ad668f1f21b7d6b33be0cf8",
+      "run_wall_seconds": 9.515276430989616,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "gnss_denied_driving_recovery",
+      "summary": {
+        "scenario": "Map Gnss Recovery",
+        "seed": 42,
+        "simulated_seconds": 17.75,
+        "steps": 356,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.456800627501238,
+        "localization_rmse": 0.01364391401916027,
+        "localization_max_error": 0.04708816826960766,
+        "final_speed": 0.1894065016965376,
+        "progress": 48.99384503215985,
+        "emergency_steps": 4,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 356,
+        "accepted_map_scans": 178,
+        "rejected_map_scans": 0,
+        "map_rejection_reasons": [],
+        "covered_outage_ticks": 88,
+        "first_emergency_s": 17.2,
+        "first_outage_emergency_s": null,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 14.846533384726841,
+        "gnss_denied_min_speed_m_s": 2.9915464893082975,
+        "position_rmse_m": 0.013643914019160264,
+        "max_position_error_m": 0.04708816826960766,
+        "max_outage_position_error_m": 0.009492516208433895,
+        "max_yaw_error_rad": 0.0018560229417259322,
+        "max_accepted_rms_m": 0.007810055915318401,
+        "max_accepted_map_position_error_m": 0.04708816826960766,
+        "max_accepted_map_yaw_error_rad": 0.0018560229417259322,
+        "accuracy_gate_scope": "whole_positive_episode",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": false,
+        "max_fused_xy_variance_m2": 0.010000000000000004,
+        "max_neighbor_checks": 7136565,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 356,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-recovery/seed-42/run.json.gz",
+          "uncompressed_sha256": "f0872658584efc90e71dd4de8829e176d7b0acfbb561bab2e535c562f3de4798",
+          "compressed_sha256": "764b73e467401047d2ccf088e2d18d7a4f61c0e7aa5a9d03c8d51da97372efcf",
+          "compressed_bytes": 1361633
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-recovery/seed-42/sensors.jsonl.gz",
+          "uncompressed_sha256": "5667f87492f6ae0389dba1f76e01b9564637128d12b60066515052cd368422c9",
+          "compressed_sha256": "533803dc915dff32e21aef141dc30fade392d315e7c726ab42cd56abc4d529a7",
+          "compressed_bytes": 1405187
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-recovery/seed-42/summary.json.gz",
+          "uncompressed_sha256": "4716d3be00f5b616bf052c208a154944206fb560b7ed04dcda7bca4cf363cd85",
+          "compressed_sha256": "f6243198b7552b2a6ee9ed1b08e6510adbc34ece3eb771a0cc40ac78851fa559",
+          "compressed_bytes": 312
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-recovery/seed-42/replay/replay.json.gz",
+          "uncompressed_sha256": "82b9e7fa24feb8f91b78c2c95f223580c2d37ff9f1477b0524603c7c90483175",
+          "compressed_sha256": "4fcdce5b420082834aed007b98c0ae7bcbdcf7f0743d8d299c4f975e4de80f39",
+          "compressed_bytes": 90
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "reference",
+      "scenario": "map-gnss-prolonged",
+      "seed": 1,
+      "scenario_sha256": "9641f22c063971531f23eb35d3f4547d9db104e9f28edd06fd4f206fd8c70516",
+      "run_wall_seconds": 9.960439203001442,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss Prolonged",
+        "seed": 1,
+        "simulated_seconds": 18.0,
+        "steps": 361,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.5507550923017916,
+        "localization_rmse": 0.008454612359173655,
+        "localization_max_error": 0.06043717866336578,
+        "final_speed": 0.0,
+        "progress": 37.02461348056181,
+        "emergency_steps": 104,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 361,
+        "accepted_map_scans": 181,
+        "rejected_map_scans": 0,
+        "map_rejection_reasons": [],
+        "covered_outage_ticks": 185,
+        "first_emergency_s": 12.850000000000001,
+        "first_outage_emergency_s": 12.850000000000001,
+        "actual_gnss_recovery_observed": false,
+        "gnss_denied_driven_distance_m": 30.224507368010794,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.008454612359173651,
+        "max_position_error_m": 0.06043717866336578,
+        "max_outage_position_error_m": 0.006480755197190676,
+        "max_yaw_error_rad": 0.002996341003915326,
+        "max_accepted_rms_m": 0.007892701886009115,
+        "max_accepted_map_position_error_m": 0.06043717866336578,
+        "max_accepted_map_yaw_error_rad": 0.002996341003915326,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.010000000000000004,
+        "max_neighbor_checks": 7144109,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 361,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-prolonged/seed-1/run.json.gz",
+          "uncompressed_sha256": "e7303336d55576c53003b3dfe92759f009f2cc272853cf8a8657cb2e7e532159",
+          "compressed_sha256": "69688fa949454a12ab89914ee88b9189c9b084b34e167e6584da35a17aefdec3",
+          "compressed_bytes": 1020728
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-prolonged/seed-1/sensors.jsonl.gz",
+          "uncompressed_sha256": "b4ece234809a8c224a6ad626eaa7eaede1c1e2ff1aae3d2d7af3bd3b71d03750",
+          "compressed_sha256": "aa8302083e0959b48802b78f7443a5a3d72c522f3ecdf6fb2d3bad753cca30c7",
+          "compressed_bytes": 1066980
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-prolonged/seed-1/summary.json.gz",
+          "uncompressed_sha256": "6d70c6b30d4c003582f4bbd10a4bf890ae33f2c937430c39440684612ee4adcb",
+          "compressed_sha256": "9628493c158d033a0b4bc29f0c656016b5a11904894326413045827b3b09e58f",
+          "compressed_bytes": 308
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-prolonged/seed-1/replay/replay.json.gz",
+          "uncompressed_sha256": "ec11bb656a72a7cd8ebd42c4b624483dd380fe0be83c09238eea42837b36fc15",
+          "compressed_sha256": "e1d2f7e063d3b45f280b9448db25d18651e78ae2d673cb2e375d93eec41b2472",
+          "compressed_bytes": 90
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "reference",
+      "scenario": "map-gnss-prolonged",
+      "seed": 7,
+      "scenario_sha256": "9641f22c063971531f23eb35d3f4547d9db104e9f28edd06fd4f206fd8c70516",
+      "run_wall_seconds": 9.444738046004204,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss Prolonged",
+        "seed": 7,
+        "simulated_seconds": 18.0,
+        "steps": 361,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.550298476882248,
+        "localization_rmse": 0.007321468126433184,
+        "localization_max_error": 0.04646326939314346,
+        "final_speed": 0.0,
+        "progress": 37.03351526492602,
+        "emergency_steps": 104,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 361,
+        "accepted_map_scans": 181,
+        "rejected_map_scans": 0,
+        "map_rejection_reasons": [],
+        "covered_outage_ticks": 185,
+        "first_emergency_s": 12.850000000000001,
+        "first_outage_emergency_s": 12.850000000000001,
+        "actual_gnss_recovery_observed": false,
+        "gnss_denied_driven_distance_m": 30.232134889383225,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.007321468126433186,
+        "max_position_error_m": 0.04646326939314346,
+        "max_outage_position_error_m": 0.004664000396392126,
+        "max_yaw_error_rad": 0.0015845891365149356,
+        "max_accepted_rms_m": 0.008141827550560577,
+        "max_accepted_map_position_error_m": 0.04646326939314346,
+        "max_accepted_map_yaw_error_rad": 0.0015845891365149356,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.010000000000000004,
+        "max_neighbor_checks": 7165962,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 361,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-prolonged/seed-7/run.json.gz",
+          "uncompressed_sha256": "cb018ce62be126ce842d2e96126027e6798f7f046c2d62135ff8379f66b03e89",
+          "compressed_sha256": "62c855073cbaeccbfefdb83b7830b43deda8da6da04f2e602f19cf792c901aaf",
+          "compressed_bytes": 1016142
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-prolonged/seed-7/sensors.jsonl.gz",
+          "uncompressed_sha256": "6ee527cc7aa7cc8607e8f55921be2fc45c67698106610e19960a1ae510340cb7",
+          "compressed_sha256": "8f2eb90adc3fee8e1ddde348a8f594f22779fcd7aef370f23a2bb271e3222b0c",
+          "compressed_bytes": 1062365
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-prolonged/seed-7/summary.json.gz",
+          "uncompressed_sha256": "17ca85c64180a03c3d971aaa05acc366de0c5fa8263e6c53ad577798282b75c0",
+          "compressed_sha256": "860f4cd9181d394179a8edfdbfefe1b446b15130bf3e4336a4e9e1d07c73015a",
+          "compressed_bytes": 306
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-prolonged/seed-7/replay/replay.json.gz",
+          "uncompressed_sha256": "ec11bb656a72a7cd8ebd42c4b624483dd380fe0be83c09238eea42837b36fc15",
+          "compressed_sha256": "632ea808bdd9f42eb58e2409164ec2a124e1032e8495e5b51d47248ca928628f",
+          "compressed_bytes": 90
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "reference",
+      "scenario": "map-gnss-prolonged",
+      "seed": 42,
+      "scenario_sha256": "9641f22c063971531f23eb35d3f4547d9db104e9f28edd06fd4f206fd8c70516",
+      "run_wall_seconds": 10.214798201006488,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss Prolonged",
+        "seed": 42,
+        "simulated_seconds": 18.0,
+        "steps": 361,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.54943167817964,
+        "localization_rmse": 0.008445228411617996,
+        "localization_max_error": 0.04708816826960766,
+        "final_speed": 0.0,
+        "progress": 37.01545148388045,
+        "emergency_steps": 104,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 361,
+        "accepted_map_scans": 181,
+        "rejected_map_scans": 0,
+        "map_rejection_reasons": [],
+        "covered_outage_ticks": 185,
+        "first_emergency_s": 12.850000000000001,
+        "first_outage_emergency_s": 12.850000000000001,
+        "actual_gnss_recovery_observed": false,
+        "gnss_denied_driven_distance_m": 30.211043630609076,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.008445228411617996,
+        "max_position_error_m": 0.04708816826960766,
+        "max_outage_position_error_m": 0.009492516208433895,
+        "max_yaw_error_rad": 0.0018560229417259322,
+        "max_accepted_rms_m": 0.007832516508017905,
+        "max_accepted_map_position_error_m": 0.04708816826960766,
+        "max_accepted_map_yaw_error_rad": 0.0018560229417259322,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.010000000000000004,
+        "max_neighbor_checks": 7033103,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 361,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-prolonged/seed-42/run.json.gz",
+          "uncompressed_sha256": "e426bb5ac9abfdeb91a7312e241fd97c90fcb9aac48d946c4bc17c5236f08aa5",
+          "compressed_sha256": "4a2956004b05f747b119c8cd6bfde02828fe9b81bb51119c158530455028e45b",
+          "compressed_bytes": 1017561
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-prolonged/seed-42/sensors.jsonl.gz",
+          "uncompressed_sha256": "5e4aa252c8a7b1f5fa79435e2490c7b7cdd6844277ab380b28290e978264a68f",
+          "compressed_sha256": "05ca03177d38ea92347c06f6557ae5aa8a2be4adf3559ec24cc914f8568728a9",
+          "compressed_bytes": 1063590
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-prolonged/seed-42/summary.json.gz",
+          "uncompressed_sha256": "f28cff96bd026237c7c81b4ad72b3434df0c80c0f64faa33715558e58daa3836",
+          "compressed_sha256": "2f1378ded7f7f7d477c0f1b50be486e5d1bdd0142fa6e46dd6986b58133f745f",
+          "compressed_bytes": 307
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-prolonged/seed-42/replay/replay.json.gz",
+          "uncompressed_sha256": "ec11bb656a72a7cd8ebd42c4b624483dd380fe0be83c09238eea42837b36fc15",
+          "compressed_sha256": "d5ba82a4be5d391b57d47db33fc2b2a9fa462f66243f9b09096f97c1ed79e8e1",
+          "compressed_bytes": 90
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "reference",
+      "scenario": "map-gnss-no-overlap",
+      "seed": 1,
+      "scenario_sha256": "d840a9d28ddcbf525b4bf021aaebc0f93df65217b18453d080a9af9317e82424",
+      "run_wall_seconds": 0.045363206998445094,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss No Overlap",
+        "seed": 1,
+        "simulated_seconds": 8.0,
+        "steps": 161,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.892217223382644,
+        "localization_rmse": 0.046676513269114844,
+        "localization_max_error": 0.18244621446623333,
+        "final_speed": 0.0,
+        "progress": 9.275821556626466,
+        "emergency_steps": 88,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 161,
+        "accepted_map_scans": 0,
+        "rejected_map_scans": 81,
+        "map_rejection_reasons": [
+          "insufficient unique trimmed registration overlap"
+        ],
+        "covered_outage_ticks": 0,
+        "first_emergency_s": 3.6,
+        "first_outage_emergency_s": 3.6,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 2.4743795493636194,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.046676513269114865,
+        "max_position_error_m": 0.18244621446623333,
+        "max_outage_position_error_m": 0.018685810889789215,
+        "max_yaw_error_rad": 0.05512349676577699,
+        "max_accepted_rms_m": 0.0,
+        "max_accepted_map_position_error_m": null,
+        "max_accepted_map_yaw_error_rad": null,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.0,
+        "max_neighbor_checks": 0.0,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 161,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-no-overlap/seed-1/run.json.gz",
+          "uncompressed_sha256": "f40c3713f2ac8125e66d971e8ae3c311fb3be897f577eec9c1b5117d7759e010",
+          "compressed_sha256": "c7c38fb0abad062027672f6209707837f6a5d6aeaa119561ef9d5057053e3535",
+          "compressed_bytes": 544971
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-no-overlap/seed-1/sensors.jsonl.gz",
+          "uncompressed_sha256": "d783ea8f33ab279ad08d3392691670a94c1265f8d104f94134bb6ddd6d6e3667",
+          "compressed_sha256": "92d91b94c5a6a6d4e24943045a61d01ff55a988a9ca11c1528ece4cde8018200",
+          "compressed_bytes": 550308
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-no-overlap/seed-1/summary.json.gz",
+          "uncompressed_sha256": "c403b09ccd426b21cfb479bdb620e5c0722c6267980550d811454aa8251b156b",
+          "compressed_sha256": "0606aa866a9def55e6e18ee8aee8e04c61196f9979f5a3c8361f559323e2140e",
+          "compressed_bytes": 307
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-no-overlap/seed-1/replay/replay.json.gz",
+          "uncompressed_sha256": "b2bba110c5f24413b4d3d16c0405bc5183e301417638b59cc75e727d8f9060ac",
+          "compressed_sha256": "302610934c7a5b52d2155de9b0100c71517c87b401d301be81c56f4d86a7365f",
+          "compressed_bytes": 90
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "reference",
+      "scenario": "map-gnss-no-overlap",
+      "seed": 7,
+      "scenario_sha256": "d840a9d28ddcbf525b4bf021aaebc0f93df65217b18453d080a9af9317e82424",
+      "run_wall_seconds": 0.04616608899959829,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss No Overlap",
+        "seed": 7,
+        "simulated_seconds": 8.0,
+        "steps": 161,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.8661290221878137,
+        "localization_rmse": 0.07087147062836957,
+        "localization_max_error": 0.14057377448139208,
+        "final_speed": 0.0,
+        "progress": 9.27338983023313,
+        "emergency_steps": 88,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 161,
+        "accepted_map_scans": 0,
+        "rejected_map_scans": 81,
+        "map_rejection_reasons": [
+          "insufficient unique trimmed registration overlap"
+        ],
+        "covered_outage_ticks": 0,
+        "first_emergency_s": 3.6,
+        "first_outage_emergency_s": 3.6,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 2.4733733520052263,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.07087147062836954,
+        "max_position_error_m": 0.14057377448139208,
+        "max_outage_position_error_m": 0.07651292760751542,
+        "max_yaw_error_rad": 0.042278740553421734,
+        "max_accepted_rms_m": 0.0,
+        "max_accepted_map_position_error_m": null,
+        "max_accepted_map_yaw_error_rad": null,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.0,
+        "max_neighbor_checks": 0.0,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 161,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-no-overlap/seed-7/run.json.gz",
+          "uncompressed_sha256": "eb78850537045e4646099c8c9c74548aa44f522a06c7a0f3dc79e66cac81410a",
+          "compressed_sha256": "fa5036ac976c069f30a9ac1aa422a608e113bf10f98be3ea2518e904f5f51b7b",
+          "compressed_bytes": 557082
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-no-overlap/seed-7/sensors.jsonl.gz",
+          "uncompressed_sha256": "037cbba9a34c393425c6952c70592bac41f3d7a19ce9bb46d4410d77ee8fe7d0",
+          "compressed_sha256": "cadcd1efa57a1bfd49adda4d4fff161315cd482c973a567ba9fba3f92fe4ddd8",
+          "compressed_bytes": 562412
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-no-overlap/seed-7/summary.json.gz",
+          "uncompressed_sha256": "ffe37059e68d948da710971abc64c0fd7003d2a202055e274706cd97d986a411",
+          "compressed_sha256": "8ad292a2b90156ce9ccffbaeb1f3dd85f3265c492b0db98552136ea18d690230",
+          "compressed_bytes": 306
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-no-overlap/seed-7/replay/replay.json.gz",
+          "uncompressed_sha256": "b2bba110c5f24413b4d3d16c0405bc5183e301417638b59cc75e727d8f9060ac",
+          "compressed_sha256": "6a5bf7bcacc66497df90bfe071e7c703b031b49a59b2235934d7a58df27fae43",
+          "compressed_bytes": 90
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "reference",
+      "scenario": "map-gnss-no-overlap",
+      "seed": 42,
+      "scenario_sha256": "d840a9d28ddcbf525b4bf021aaebc0f93df65217b18453d080a9af9317e82424",
+      "run_wall_seconds": 0.04452696500811726,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss No Overlap",
+        "seed": 42,
+        "simulated_seconds": 8.0,
+        "steps": 161,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.821967968956033,
+        "localization_rmse": 0.07683141311011327,
+        "localization_max_error": 0.14187899390651487,
+        "final_speed": 0.0,
+        "progress": 9.280822368612322,
+        "emergency_steps": 88,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 161,
+        "accepted_map_scans": 0,
+        "rejected_map_scans": 81,
+        "map_rejection_reasons": [
+          "insufficient unique trimmed registration overlap"
+        ],
+        "covered_outage_ticks": 0,
+        "first_emergency_s": 3.6,
+        "first_outage_emergency_s": 3.6,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 2.4760256511841083,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.07683141311011328,
+        "max_position_error_m": 0.14187899390651487,
+        "max_outage_position_error_m": 0.07561148681912076,
+        "max_yaw_error_rad": 0.06599574185454227,
+        "max_accepted_rms_m": 0.0,
+        "max_accepted_map_position_error_m": null,
+        "max_accepted_map_yaw_error_rad": null,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.0,
+        "max_neighbor_checks": 0.0,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 161,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-no-overlap/seed-42/run.json.gz",
+          "uncompressed_sha256": "b409f9f286682b80904a54ea3095bb8fb69202333e0b9a594714b5f81db4c383",
+          "compressed_sha256": "d02822f737646210110c9a166fe02bedc95de68eec2da3989cdcebfdc1265a00",
+          "compressed_bytes": 563115
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-no-overlap/seed-42/sensors.jsonl.gz",
+          "uncompressed_sha256": "e10785d85d03b25cc8ee9d25a72ce91f9d2f85dc2b8908a117e728abe704df11",
+          "compressed_sha256": "bf9cbe8abc7ef0c557996c479ab6f3a74287d47e9b17abfa13ba40302026e5e6",
+          "compressed_bytes": 568447
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-no-overlap/seed-42/summary.json.gz",
+          "uncompressed_sha256": "53e0eaa803a010dc22f3923c5ec3751e20e68da0ab717d03cce432505f841fc6",
+          "compressed_sha256": "ba2348d58318547977d0c18922907d071dc6d996f3593aab41df3c6cb7bc4229",
+          "compressed_bytes": 308
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-no-overlap/seed-42/replay/replay.json.gz",
+          "uncompressed_sha256": "b2bba110c5f24413b4d3d16c0405bc5183e301417638b59cc75e727d8f9060ac",
+          "compressed_sha256": "6a5bf7bcacc66497df90bfe071e7c703b031b49a59b2235934d7a58df27fae43",
+          "compressed_bytes": 90
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "reference",
+      "scenario": "map-gnss-degenerate",
+      "seed": 1,
+      "scenario_sha256": "0ab85884d86bd59e490af244006b2f58c4833a5eb9e5e7987590f2b3fcb6fea8",
+      "run_wall_seconds": 0.06667561399808619,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss Degenerate",
+        "seed": 1,
+        "simulated_seconds": 8.0,
+        "steps": 161,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.892217223382644,
+        "localization_rmse": 0.046676513269114844,
+        "localization_max_error": 0.18244621446623333,
+        "final_speed": 0.0,
+        "progress": 9.275821556626466,
+        "emergency_steps": 88,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 161,
+        "accepted_map_scans": 0,
+        "rejected_map_scans": 81,
+        "map_rejection_reasons": [
+          "insufficient unique trimmed registration overlap"
+        ],
+        "covered_outage_ticks": 0,
+        "first_emergency_s": 3.6,
+        "first_outage_emergency_s": 3.6,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 2.4743795493636194,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.046676513269114865,
+        "max_position_error_m": 0.18244621446623333,
+        "max_outage_position_error_m": 0.018685810889789215,
+        "max_yaw_error_rad": 0.05512349676577699,
+        "max_accepted_rms_m": 0.0,
+        "max_accepted_map_position_error_m": null,
+        "max_accepted_map_yaw_error_rad": null,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.0,
+        "max_neighbor_checks": 0.0,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 161,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-degenerate/seed-1/run.json.gz",
+          "uncompressed_sha256": "4705fb82d96471f07b600e5e8d8864429622658e608c0449a13cb4903e201a46",
+          "compressed_sha256": "1fcec6e9f026d86c057cbe95dfeed3261a7b10ed31c53b7e1df88afcb9e7d919",
+          "compressed_bytes": 526848
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-degenerate/seed-1/sensors.jsonl.gz",
+          "uncompressed_sha256": "9f622986d5f0f08a182931f6d8dec207f7b80ca8b8ce0fc56cc4214856f8cc19",
+          "compressed_sha256": "a441199c7902163e1e3e7f4509d677887366e918ef4778a2861ae5d916a3f737",
+          "compressed_bytes": 532040
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-degenerate/seed-1/summary.json.gz",
+          "uncompressed_sha256": "9d5416748caeb4e420b734419d9f32951472d6fbc2e95cfc16d981e13f0c35aa",
+          "compressed_sha256": "9c87f4261ff43821dfac6bb6c82914e4ec3dec51dc95d8adbbbc9ecd26e87006",
+          "compressed_bytes": 305
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-degenerate/seed-1/replay/replay.json.gz",
+          "uncompressed_sha256": "b2bba110c5f24413b4d3d16c0405bc5183e301417638b59cc75e727d8f9060ac",
+          "compressed_sha256": "44353df56ba6526732c845cec0a496085db0f10f71690ea3a775f4e2ca115742",
+          "compressed_bytes": 90
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "reference",
+      "scenario": "map-gnss-degenerate",
+      "seed": 7,
+      "scenario_sha256": "0ab85884d86bd59e490af244006b2f58c4833a5eb9e5e7987590f2b3fcb6fea8",
+      "run_wall_seconds": 0.0675694689998636,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss Degenerate",
+        "seed": 7,
+        "simulated_seconds": 8.0,
+        "steps": 161,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.8661290221878137,
+        "localization_rmse": 0.07087147062836957,
+        "localization_max_error": 0.14057377448139208,
+        "final_speed": 0.0,
+        "progress": 9.27338983023313,
+        "emergency_steps": 88,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 161,
+        "accepted_map_scans": 0,
+        "rejected_map_scans": 81,
+        "map_rejection_reasons": [
+          "insufficient unique trimmed registration overlap"
+        ],
+        "covered_outage_ticks": 0,
+        "first_emergency_s": 3.6,
+        "first_outage_emergency_s": 3.6,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 2.4733733520052263,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.07087147062836954,
+        "max_position_error_m": 0.14057377448139208,
+        "max_outage_position_error_m": 0.07651292760751542,
+        "max_yaw_error_rad": 0.042278740553421734,
+        "max_accepted_rms_m": 0.0,
+        "max_accepted_map_position_error_m": null,
+        "max_accepted_map_yaw_error_rad": null,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.0,
+        "max_neighbor_checks": 0.0,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 161,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-degenerate/seed-7/run.json.gz",
+          "uncompressed_sha256": "d9aeb9c670f9a02bbc642334a45710c9de46c15114365dbd480df7252153736d",
+          "compressed_sha256": "599791068bbe98b95f0d259afe1235de1aa635b1acbb257ddf2e2249b3a42ba6",
+          "compressed_bytes": 538975
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-degenerate/seed-7/sensors.jsonl.gz",
+          "uncompressed_sha256": "4058be72c5f9cfddfea29dd46d8cf6479fe9555572bd8951eda2477ae217c882",
+          "compressed_sha256": "322e05a145bc4effe062570b77e401a0efedab90a5885d7374a32292c51415d9",
+          "compressed_bytes": 544116
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-degenerate/seed-7/summary.json.gz",
+          "uncompressed_sha256": "aea9efd44448c4ddd8a18e179ab42708f55e06ea48ca33c97b348a03490b7b47",
+          "compressed_sha256": "a24c74b93d32e421e18cca84b6e2119f322811b271aae8034c0e4c2f4ff42b77",
+          "compressed_bytes": 305
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-degenerate/seed-7/replay/replay.json.gz",
+          "uncompressed_sha256": "b2bba110c5f24413b4d3d16c0405bc5183e301417638b59cc75e727d8f9060ac",
+          "compressed_sha256": "44353df56ba6526732c845cec0a496085db0f10f71690ea3a775f4e2ca115742",
+          "compressed_bytes": 90
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "reference",
+      "scenario": "map-gnss-degenerate",
+      "seed": 42,
+      "scenario_sha256": "0ab85884d86bd59e490af244006b2f58c4833a5eb9e5e7987590f2b3fcb6fea8",
+      "run_wall_seconds": 0.06875080900499597,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss Degenerate",
+        "seed": 42,
+        "simulated_seconds": 8.0,
+        "steps": 161,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.821967968956033,
+        "localization_rmse": 0.07683141311011327,
+        "localization_max_error": 0.14187899390651487,
+        "final_speed": 0.0,
+        "progress": 9.280822368612322,
+        "emergency_steps": 88,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 161,
+        "accepted_map_scans": 0,
+        "rejected_map_scans": 81,
+        "map_rejection_reasons": [
+          "insufficient unique trimmed registration overlap"
+        ],
+        "covered_outage_ticks": 0,
+        "first_emergency_s": 3.6,
+        "first_outage_emergency_s": 3.6,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 2.4760256511841083,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.07683141311011328,
+        "max_position_error_m": 0.14187899390651487,
+        "max_outage_position_error_m": 0.07561148681912076,
+        "max_yaw_error_rad": 0.06599574185454227,
+        "max_accepted_rms_m": 0.0,
+        "max_accepted_map_position_error_m": null,
+        "max_accepted_map_yaw_error_rad": null,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.0,
+        "max_neighbor_checks": 0.0,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 161,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-degenerate/seed-42/run.json.gz",
+          "uncompressed_sha256": "c165b195f1dbf189e665175e732297cda7dfa2028bd967f4c1ea33181bd388aa",
+          "compressed_sha256": "c715faeb64e59740d09c1bf373b029448399fdc8cdb1d0fb94ba8286452559b3",
+          "compressed_bytes": 544855
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-degenerate/seed-42/sensors.jsonl.gz",
+          "uncompressed_sha256": "c3b881319fe49d9c0632d67a1182f001197cfd85506ab441f1a0430a10361721",
+          "compressed_sha256": "44c02e1a9a3d19c1866e802742ba0dd500c397e48932617384ffc4bfca8a85ae",
+          "compressed_bytes": 550394
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-degenerate/seed-42/summary.json.gz",
+          "uncompressed_sha256": "a92ff5ad2aeaa307f93a8111b3d10cedd04781cf3caa9f975d34181c4370e436",
+          "compressed_sha256": "8d99a3e1e561a80235ee54285add5f760daee44be3e5cfedc6ce38d795f302ea",
+          "compressed_bytes": 306
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-degenerate/seed-42/replay/replay.json.gz",
+          "uncompressed_sha256": "b2bba110c5f24413b4d3d16c0405bc5183e301417638b59cc75e727d8f9060ac",
+          "compressed_sha256": "81d35900c49fc4d131008e754edb0182689cf63ab1e97a6da5a82515b6a38353",
+          "compressed_bytes": 90
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "reference",
+      "scenario": "map-gnss-lidar-loss",
+      "seed": 1,
+      "scenario_sha256": "1eb11896752da9475427c6261f971fec8e7e33632d840a203e2da93f4607e4e7",
+      "run_wall_seconds": 2.900385674991412,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss Lidar Loss",
+        "seed": 1,
+        "simulated_seconds": 10.0,
+        "steps": 201,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.848536981798286,
+        "localization_rmse": 0.014701683138841884,
+        "localization_max_error": 0.10318820930465689,
+        "final_speed": 0.0,
+        "progress": 16.928925939140303,
+        "emergency_steps": 78,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 201,
+        "accepted_map_scans": 60,
+        "rejected_map_scans": 0,
+        "map_rejection_reasons": [],
+        "covered_outage_ticks": 51,
+        "first_emergency_s": 6.15,
+        "first_outage_emergency_s": 6.15,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 10.128819656382886,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.014701683138841891,
+        "max_position_error_m": 0.10318820930465689,
+        "max_outage_position_error_m": 0.01688196359677028,
+        "max_yaw_error_rad": 0.002996341003915326,
+        "max_accepted_rms_m": 0.0076685744676373135,
+        "max_accepted_map_position_error_m": 0.06043717866336578,
+        "max_accepted_map_yaw_error_rad": 0.002996341003915326,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.010000000000000004,
+        "max_neighbor_checks": 7103832,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 201,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-lidar-loss/seed-1/run.json.gz",
+          "uncompressed_sha256": "3cb5111073138a21b93aa3e317003f6a78abf624397b4ad35fdddd75ac919181",
+          "compressed_sha256": "d8e76bdedd88e2c06a617f6eee28d7b85231bee0a263aa9ade19d986361e4a5b",
+          "compressed_bytes": 563598
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-lidar-loss/seed-1/sensors.jsonl.gz",
+          "uncompressed_sha256": "9be6889aec29d134868b055850a2d45461007d6cd50ce9779980b5248008767c",
+          "compressed_sha256": "05f387c48c3cd300c34bf94215182347815b31eece662449afe12948d8e494fd",
+          "compressed_bytes": 577093
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-lidar-loss/seed-1/summary.json.gz",
+          "uncompressed_sha256": "e760ede282f822e4cb4f4b7ce1c7647c9ccf1458b2fa0ce8f2341e88df4a73cb",
+          "compressed_sha256": "d3435406bcc65f3127ecc38ecc6472babfff878a8a1066dcd1c1c9925edc4dbd",
+          "compressed_bytes": 307
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-lidar-loss/seed-1/replay/replay.json.gz",
+          "uncompressed_sha256": "b0d4fa61fbfe1cf95e4ff427ce94631a82f59df0611f4be20876d70e22755b4b",
+          "compressed_sha256": "6477af4943b101c884ea5dec5b787ad5d3fe93b3bc90a11790f551e3a0c58be1",
+          "compressed_bytes": 90
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "reference",
+      "scenario": "map-gnss-lidar-loss",
+      "seed": 7,
+      "scenario_sha256": "1eb11896752da9475427c6261f971fec8e7e33632d840a203e2da93f4607e4e7",
+      "run_wall_seconds": 2.8520826939929975,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss Lidar Loss",
+        "seed": 7,
+        "simulated_seconds": 10.0,
+        "steps": 201,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.851918093493478,
+        "localization_rmse": 0.011821351417790813,
+        "localization_max_error": 0.08137427939165415,
+        "final_speed": 0.0,
+        "progress": 16.930398356937538,
+        "emergency_steps": 78,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 201,
+        "accepted_map_scans": 60,
+        "rejected_map_scans": 0,
+        "map_rejection_reasons": [],
+        "covered_outage_ticks": 51,
+        "first_emergency_s": 6.15,
+        "first_outage_emergency_s": 6.15,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 10.129017945170478,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.011821351417790815,
+        "max_position_error_m": 0.08137427939165415,
+        "max_outage_position_error_m": 0.011538696903603967,
+        "max_yaw_error_rad": 0.0015845891365149356,
+        "max_accepted_rms_m": 0.00794024478314613,
+        "max_accepted_map_position_error_m": 0.04646326939314346,
+        "max_accepted_map_yaw_error_rad": 0.0015845891365149356,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.010000000000000004,
+        "max_neighbor_checks": 7044146,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 201,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-lidar-loss/seed-7/run.json.gz",
+          "uncompressed_sha256": "e4de0d9f437debd3ded42c85700e5ea7bf31de89eef59b2c2c769a94cee0158c",
+          "compressed_sha256": "449ddc420202cdf8dbc8f003cc7f224b8b1c2c6f1f79083ea686de8e4c625223",
+          "compressed_bytes": 557139
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-lidar-loss/seed-7/sensors.jsonl.gz",
+          "uncompressed_sha256": "c95ed27dc12a1306897fbde952f187af975e004d731b4ec093f7ded896001f22",
+          "compressed_sha256": "653bbf2e64eebd83d707e8bd3c4b5031f1d92bb7351c63a73ce96ba2c6c7537c",
+          "compressed_bytes": 570288
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-lidar-loss/seed-7/summary.json.gz",
+          "uncompressed_sha256": "586448d606ad69592274191e9f4824ff352eaaffc173dbb064293d33a9719dc8",
+          "compressed_sha256": "2d98f0fac09ad91bd79c58058db5f39db4aa6c056109294b9c24bda6ec847dd3",
+          "compressed_bytes": 306
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-lidar-loss/seed-7/replay/replay.json.gz",
+          "uncompressed_sha256": "b0d4fa61fbfe1cf95e4ff427ce94631a82f59df0611f4be20876d70e22755b4b",
+          "compressed_sha256": "a7148ed72a62a525ced5a5215e4f2098fbdc40cbdae1adc7b5aa971b92146b43",
+          "compressed_bytes": 90
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "reference",
+      "scenario": "map-gnss-lidar-loss",
+      "seed": 42,
+      "scenario_sha256": "1eb11896752da9475427c6261f971fec8e7e33632d840a203e2da93f4607e4e7",
+      "run_wall_seconds": 3.0197282090084627,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss Lidar Loss",
+        "seed": 42,
+        "simulated_seconds": 10.0,
+        "steps": 201,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.8498669935167062,
+        "localization_rmse": 0.01309319595481718,
+        "localization_max_error": 0.0824940163129689,
+        "final_speed": 0.0,
+        "progress": 16.928689417921003,
+        "emergency_steps": 78,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 201,
+        "accepted_map_scans": 60,
+        "rejected_map_scans": 0,
+        "map_rejection_reasons": [],
+        "covered_outage_ticks": 51,
+        "first_emergency_s": 6.15,
+        "first_outage_emergency_s": 6.15,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 10.124281492986857,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.013093195954817182,
+        "max_position_error_m": 0.0824940163129689,
+        "max_outage_position_error_m": 0.010526945969417579,
+        "max_yaw_error_rad": 0.0018560229417259322,
+        "max_accepted_rms_m": 0.007516471870289983,
+        "max_accepted_map_position_error_m": 0.04708816826960766,
+        "max_accepted_map_yaw_error_rad": 0.0018560229417259322,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.010000000000000004,
+        "max_neighbor_checks": 7032840,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 201,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-lidar-loss/seed-42/run.json.gz",
+          "uncompressed_sha256": "ccd83fe8140f31e95aa5e9b26e491c580ee0c6c2c640a95a56bfaf7706a07a31",
+          "compressed_sha256": "d623860c29085a5af416ec0499db9f0d60aafb38ad66ff692f13a9ccf7a20e94",
+          "compressed_bytes": 559842
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-lidar-loss/seed-42/sensors.jsonl.gz",
+          "uncompressed_sha256": "50f2ba9e6d3140a20c5c1522b075e7a8f94db52e65f9312d819b630faf367b8f",
+          "compressed_sha256": "dd11b60179b88e056566f31f045519ad4a18670705ddda97a51cde67b769604a",
+          "compressed_bytes": 572990
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-lidar-loss/seed-42/summary.json.gz",
+          "uncompressed_sha256": "19b982a33a84a256e14d53757f0cd6987ba40cebfc57f9faf3bea7a9a6ae09cd",
+          "compressed_sha256": "8970ee3cb31fb527004f37faff0d92533d754cb0d50b16bb4093eb10387e5ec1",
+          "compressed_bytes": 307
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-lidar-loss/seed-42/replay/replay.json.gz",
+          "uncompressed_sha256": "b0d4fa61fbfe1cf95e4ff427ce94631a82f59df0611f4be20876d70e22755b4b",
+          "compressed_sha256": "6af576d027d2985791057883ec512a2b57c6cbafc11d93294843c6dffdb3928a",
+          "compressed_bytes": 90
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "reference",
+      "scenario": "map-gnss-disabled",
+      "seed": 1,
+      "scenario_sha256": "f699842ec569949eb188f8481717628c2a4a7a1f3b4c0976a54d2098cae402f3",
+      "run_wall_seconds": 0.03892880700004753,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss Disabled",
+        "seed": 1,
+        "simulated_seconds": 8.0,
+        "steps": 161,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.892217223382644,
+        "localization_rmse": 0.046676513269114844,
+        "localization_max_error": 0.18244621446623333,
+        "final_speed": 0.0,
+        "progress": 9.275821556626466,
+        "emergency_steps": 88,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 161,
+        "accepted_map_scans": 0,
+        "rejected_map_scans": 0,
+        "map_rejection_reasons": [],
+        "covered_outage_ticks": 0,
+        "first_emergency_s": 3.6,
+        "first_outage_emergency_s": 3.6,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 2.4743795493636194,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.046676513269114865,
+        "max_position_error_m": 0.18244621446623333,
+        "max_outage_position_error_m": 0.018685810889789215,
+        "max_yaw_error_rad": 0.05512349676577699,
+        "max_accepted_rms_m": 0.0,
+        "max_accepted_map_position_error_m": null,
+        "max_accepted_map_yaw_error_rad": null,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.0,
+        "max_neighbor_checks": 0.0,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 161,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-disabled/seed-1/run.json.gz",
+          "uncompressed_sha256": "4d8b1e716ffd75a393dc3845f8566b916e35e359e6bba1be79218842f024bc69",
+          "compressed_sha256": "36f6da81333683ad198d50ba88d450c6c7c0fc91588b7c110987be6564eea049",
+          "compressed_bytes": 522943
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-disabled/seed-1/sensors.jsonl.gz",
+          "uncompressed_sha256": "c25957152c5274bfb3c47bd1bde8babe8ac6cb7bbbbc9bc13270c66fb05ce09f",
+          "compressed_sha256": "81e1e8a9ca4db504139bc8485de096c0231e951dcc535eab34ba125f75b664d2",
+          "compressed_bytes": 526684
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-disabled/seed-1/summary.json.gz",
+          "uncompressed_sha256": "415cb56828b0000c769fbd95f88239687c301057a2e4695a6e7bdfd91c4f58eb",
+          "compressed_sha256": "b91b07fa090f5c45a7e135e3a4bb5a184f961e9c60fcf1f1924ae1d1ea563148",
+          "compressed_bytes": 307
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-disabled/seed-1/replay/replay.json.gz",
+          "uncompressed_sha256": "b2bba110c5f24413b4d3d16c0405bc5183e301417638b59cc75e727d8f9060ac",
+          "compressed_sha256": "8c4bd4dd7d60b199a9de2805eb1e85d27d8196daef5c5203e45179ce3f9e7267",
+          "compressed_bytes": 90
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "reference",
+      "scenario": "map-gnss-disabled",
+      "seed": 7,
+      "scenario_sha256": "f699842ec569949eb188f8481717628c2a4a7a1f3b4c0976a54d2098cae402f3",
+      "run_wall_seconds": 0.038956029995460995,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss Disabled",
+        "seed": 7,
+        "simulated_seconds": 8.0,
+        "steps": 161,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.8661290221878137,
+        "localization_rmse": 0.07087147062836957,
+        "localization_max_error": 0.14057377448139208,
+        "final_speed": 0.0,
+        "progress": 9.27338983023313,
+        "emergency_steps": 88,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 161,
+        "accepted_map_scans": 0,
+        "rejected_map_scans": 0,
+        "map_rejection_reasons": [],
+        "covered_outage_ticks": 0,
+        "first_emergency_s": 3.6,
+        "first_outage_emergency_s": 3.6,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 2.4733733520052263,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.07087147062836954,
+        "max_position_error_m": 0.14057377448139208,
+        "max_outage_position_error_m": 0.07651292760751542,
+        "max_yaw_error_rad": 0.042278740553421734,
+        "max_accepted_rms_m": 0.0,
+        "max_accepted_map_position_error_m": null,
+        "max_accepted_map_yaw_error_rad": null,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.0,
+        "max_neighbor_checks": 0.0,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 161,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-disabled/seed-7/run.json.gz",
+          "uncompressed_sha256": "02e458b3c2cd238efcdfdf208d7f754d240a13d1f6a5328ebab625876d263cbd",
+          "compressed_sha256": "4d4da0eeeb94dac937d2bb4585e488115b5e8be9b0bb9039791b1d4146945cfe",
+          "compressed_bytes": 535185
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-disabled/seed-7/sensors.jsonl.gz",
+          "uncompressed_sha256": "cded6de26686077225d520d877fa28c25f28969207ff25ac9c580d238e7d843e",
+          "compressed_sha256": "b0c954ae50b44ebab3c92db636c3faee6beafb80c669000f305b32a80cc4cf70",
+          "compressed_bytes": 538681
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-disabled/seed-7/summary.json.gz",
+          "uncompressed_sha256": "86f37b2edeb2465f7213875d10366ed42d684543be91a77b84005aecb74af9b0",
+          "compressed_sha256": "709c1d4b7ae401d9c8d2a33f6d049123edcb638c6b36950d8a6d49f5ec515e54",
+          "compressed_bytes": 306
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-disabled/seed-7/replay/replay.json.gz",
+          "uncompressed_sha256": "b2bba110c5f24413b4d3d16c0405bc5183e301417638b59cc75e727d8f9060ac",
+          "compressed_sha256": "b05ac93bacb06031641f5ee3ddce9318563dc73d0be95fd7cbc498a56f9ffb6b",
+          "compressed_bytes": 90
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "reference",
+      "scenario": "map-gnss-disabled",
+      "seed": 42,
+      "scenario_sha256": "f699842ec569949eb188f8481717628c2a4a7a1f3b4c0976a54d2098cae402f3",
+      "run_wall_seconds": 0.03645203199994285,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss Disabled",
+        "seed": 42,
+        "simulated_seconds": 8.0,
+        "steps": 161,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.821967968956033,
+        "localization_rmse": 0.07683141311011327,
+        "localization_max_error": 0.14187899390651487,
+        "final_speed": 0.0,
+        "progress": 9.280822368612322,
+        "emergency_steps": 88,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 161,
+        "accepted_map_scans": 0,
+        "rejected_map_scans": 0,
+        "map_rejection_reasons": [],
+        "covered_outage_ticks": 0,
+        "first_emergency_s": 3.6,
+        "first_outage_emergency_s": 3.6,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 2.4760256511841083,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.07683141311011328,
+        "max_position_error_m": 0.14187899390651487,
+        "max_outage_position_error_m": 0.07561148681912076,
+        "max_yaw_error_rad": 0.06599574185454227,
+        "max_accepted_rms_m": 0.0,
+        "max_accepted_map_position_error_m": null,
+        "max_accepted_map_yaw_error_rad": null,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.0,
+        "max_neighbor_checks": 0.0,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 161,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-disabled/seed-42/run.json.gz",
+          "uncompressed_sha256": "8297b49ed04c9abc91378c930bf589623fbadb0ca517e0d3cda32a1cdd0f4793",
+          "compressed_sha256": "6ac300a903e6406d3f84ed882f64aa9a35798c95cfa7f9fbe301d4ab70e07ac4",
+          "compressed_bytes": 540951
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-disabled/seed-42/sensors.jsonl.gz",
+          "uncompressed_sha256": "86d0500d3d32a1985ae0296a0ce0d070110a4b17b159a7bcab5ec2f316038376",
+          "compressed_sha256": "dc355c4468def3aabab9e4753c91e422e9e19648bc3521708a85bea811cbeb94",
+          "compressed_bytes": 544885
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-disabled/seed-42/summary.json.gz",
+          "uncompressed_sha256": "ea14892dca2f94adca2d21eaba546dc7bdd8275f1e72bada81c5cc47fc9ed78b",
+          "compressed_sha256": "6986f0729c4c649439606302c6206ae228b2fe40d1b54ba10cc312d780a20bfd",
+          "compressed_bytes": 306
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/reference/map-gnss-disabled/seed-42/replay/replay.json.gz",
+          "uncompressed_sha256": "b2bba110c5f24413b4d3d16c0405bc5183e301417638b59cc75e727d8f9060ac",
+          "compressed_sha256": "b05ac93bacb06031641f5ee3ddce9318563dc73d0be95fd7cbc498a56f9ffb6b",
+          "compressed_bytes": 90
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "map-gnss-recovery",
+      "seed": 1,
+      "scenario_sha256": "1f778e861d6a22e6ddc1d367d31f2713b8b5e09b1ad668f1f21b7d6b33be0cf8",
+      "run_wall_seconds": 9.047210193995852,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "gnss_denied_driving_recovery",
+      "summary": {
+        "scenario": "Map Gnss Recovery",
+        "seed": 1,
+        "simulated_seconds": 17.7,
+        "steps": 355,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.4557310083223305,
+        "localization_rmse": 0.013517184899127352,
+        "localization_max_error": 0.03692223028673004,
+        "final_speed": 0.14891203772053563,
+        "progress": 49.0110264766673,
+        "emergency_steps": 2,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 355,
+        "accepted_map_scans": 178,
+        "rejected_map_scans": 0,
+        "map_rejection_reasons": [],
+        "covered_outage_ticks": 88,
+        "first_emergency_s": 17.45,
+        "first_outage_emergency_s": null,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 14.849612758806774,
+        "gnss_denied_min_speed_m_s": 2.9888126684269514,
+        "position_rmse_m": 0.013517184899127349,
+        "max_position_error_m": 0.03692223028673004,
+        "max_outage_position_error_m": 0.011633748230223529,
+        "max_yaw_error_rad": 0.002107948414801622,
+        "max_accepted_rms_m": 0.007407769579072988,
+        "max_accepted_map_position_error_m": 0.03692223028673004,
+        "max_accepted_map_yaw_error_rad": 0.002107948414801622,
+        "accuracy_gate_scope": "whole_positive_episode",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": false,
+        "max_fused_xy_variance_m2": 0.010000000000000004,
+        "max_neighbor_checks": 6942903,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 355,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-recovery/seed-1/run.json.gz",
+          "uncompressed_sha256": "0840299f10fdbca3bc00d1a7d845664f32c443db514779ed11bd33a902cc2a2a",
+          "compressed_sha256": "c4d81f7312bfb9b1f693e9cc076c01e126d2c2799fdabf3eac272949258efa96",
+          "compressed_bytes": 1363403
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-recovery/seed-1/sensors.jsonl.gz",
+          "uncompressed_sha256": "f9238482cc91bac3273b9f6fe0b9274f9497b2b9bcf50efbe6434fe16ca8676a",
+          "compressed_sha256": "024b5545843a37d406310d9e21e90c271f554c78f433134b22d481758fdb6e03",
+          "compressed_bytes": 1407375
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-recovery/seed-1/summary.json.gz",
+          "uncompressed_sha256": "8dcc3e3e1443e4dd20050f64d7c3a8bbd63a5d01565864c340c13922b433fe7a",
+          "compressed_sha256": "e747ad91ff21754c596069d7b3c2b9d42e249f2030b3a85c0378181f9d161c1a",
+          "compressed_bytes": 312
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-recovery/seed-1/replay/replay.json.gz",
+          "uncompressed_sha256": "52d968aac51dd8a897822d63c1ec6ad50a79adb55540d679d3891b1497872b06",
+          "compressed_sha256": "468a84f695edb35d68036c8e2f91f8e6256a88de3bd62f29c3088a2d45c79435",
+          "compressed_bytes": 102
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "map-gnss-recovery",
+      "seed": 7,
+      "scenario_sha256": "1f778e861d6a22e6ddc1d367d31f2713b8b5e09b1ad668f1f21b7d6b33be0cf8",
+      "run_wall_seconds": 8.992380124007468,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "gnss_denied_driving_recovery",
+      "summary": {
+        "scenario": "Map Gnss Recovery",
+        "seed": 7,
+        "simulated_seconds": 17.75,
+        "steps": 356,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.446827957654053,
+        "localization_rmse": 0.013499816307499779,
+        "localization_max_error": 0.051903876474261985,
+        "final_speed": 0.10258235403057692,
+        "progress": 48.999271184529974,
+        "emergency_steps": 3,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 356,
+        "accepted_map_scans": 178,
+        "rejected_map_scans": 0,
+        "map_rejection_reasons": [],
+        "covered_outage_ticks": 88,
+        "first_emergency_s": 17.2,
+        "first_outage_emergency_s": null,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 14.849984707161747,
+        "gnss_denied_min_speed_m_s": 2.9901407207894968,
+        "position_rmse_m": 0.013499816307499779,
+        "max_position_error_m": 0.051903876474261985,
+        "max_outage_position_error_m": 0.011172877366837555,
+        "max_yaw_error_rad": 0.0033050537194569962,
+        "max_accepted_rms_m": 0.007309829897772779,
+        "max_accepted_map_position_error_m": 0.051903876474261985,
+        "max_accepted_map_yaw_error_rad": 0.0033050537194569962,
+        "accuracy_gate_scope": "whole_positive_episode",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": false,
+        "max_fused_xy_variance_m2": 0.010000000000000004,
+        "max_neighbor_checks": 7096696,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 356,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-recovery/seed-7/run.json.gz",
+          "uncompressed_sha256": "a455596032e488f7e167e4d3f40201c56ec7bd64e8079ac8360155bc6fc1e145",
+          "compressed_sha256": "073818c28ed9098e10cfb355440dd8ec4153399f1541fdcb60b05e01667c1fd5",
+          "compressed_bytes": 1360896
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-recovery/seed-7/sensors.jsonl.gz",
+          "uncompressed_sha256": "c28be867bb445f684641fa348ee38a60145763349b79ce1c91c5286144711d84",
+          "compressed_sha256": "a7a3790a236e3f766714c45ca841beff63a5852e037c7bb8cb61b81310e49a91",
+          "compressed_bytes": 1404930
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-recovery/seed-7/summary.json.gz",
+          "uncompressed_sha256": "73757ef93d4682d3697beb63ffdf653e896012e6f8c2d7e09e322ae7ead7de42",
+          "compressed_sha256": "9037621a303319d7e08610fbee36242b2289a422ee01ecc55b267c52357440f6",
+          "compressed_bytes": 315
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-recovery/seed-7/replay/replay.json.gz",
+          "uncompressed_sha256": "4962be6844d16edb63adedf845f293d520412ccabe8f8e3426ab1740de1f96c1",
+          "compressed_sha256": "90aacea20664d57fe84347255839185f1a6fa1cdb549ba64879c754b4ce54b8e",
+          "compressed_bytes": 102
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "map-gnss-recovery",
+      "seed": 42,
+      "scenario_sha256": "1f778e861d6a22e6ddc1d367d31f2713b8b5e09b1ad668f1f21b7d6b33be0cf8",
+      "run_wall_seconds": 9.005702748996555,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "gnss_denied_driving_recovery",
+      "summary": {
+        "scenario": "Map Gnss Recovery",
+        "seed": 42,
+        "simulated_seconds": 17.8,
+        "steps": 357,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.449772322943927,
+        "localization_rmse": 0.01398064474413168,
+        "localization_max_error": 0.059840902393658406,
+        "final_speed": 0.0841876183759741,
+        "progress": 49.03299048618877,
+        "emergency_steps": 0,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 357,
+        "accepted_map_scans": 179,
+        "rejected_map_scans": 0,
+        "map_rejection_reasons": [],
+        "covered_outage_ticks": 88,
+        "first_emergency_s": null,
+        "first_outage_emergency_s": null,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 14.846503506297111,
+        "gnss_denied_min_speed_m_s": 2.9905755576138344,
+        "position_rmse_m": 0.013980644744131682,
+        "max_position_error_m": 0.059840902393658406,
+        "max_outage_position_error_m": 0.008283831637986452,
+        "max_yaw_error_rad": 0.0032837207596907447,
+        "max_accepted_rms_m": 0.007423261041332146,
+        "max_accepted_map_position_error_m": 0.059840902393658406,
+        "max_accepted_map_yaw_error_rad": 0.0032837207596907447,
+        "accuracy_gate_scope": "whole_positive_episode",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": false,
+        "max_fused_xy_variance_m2": 0.010000000000000004,
+        "max_neighbor_checks": 7167482,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 357,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-recovery/seed-42/run.json.gz",
+          "uncompressed_sha256": "6b95c9dde2ef1fa0e6f8804de911015a39bd7a95ac207b06b3c21592ee29f24c",
+          "compressed_sha256": "99dbb91e60aebf0ce3883ed837fee821c2b99acf18c169fd9b797e8821b8ebee",
+          "compressed_bytes": 1375455
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-recovery/seed-42/sensors.jsonl.gz",
+          "uncompressed_sha256": "af9c1aaaa621c62caf05a548abda4885c8920ab1c80f1d8d2ca0e79bc0c249a7",
+          "compressed_sha256": "5b4c14450ad1008577a6301e0d772cc37e08b12728100546bc6992fda0022890",
+          "compressed_bytes": 1419796
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-recovery/seed-42/summary.json.gz",
+          "uncompressed_sha256": "841137ccc715d0e4e41b0aadcf72315f459caf765237f50496b8af9cb956384b",
+          "compressed_sha256": "06ea75890990d027b818d1a5bfb2174217a7e0c1034ec4bf002d0a7e89dfe412",
+          "compressed_bytes": 311
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-recovery/seed-42/replay/replay.json.gz",
+          "uncompressed_sha256": "d466e01fcbdce507ecf2538a8c6a9a8cbab88b77cc5f8268b8ebab8cdf3e6c06",
+          "compressed_sha256": "2af064d2030a91c8b5835ffe22b9f7884d1b01709aec665ab4b928c9a3f05807",
+          "compressed_bytes": 102
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "map-gnss-prolonged",
+      "seed": 1,
+      "scenario_sha256": "9641f22c063971531f23eb35d3f4547d9db104e9f28edd06fd4f206fd8c70516",
+      "run_wall_seconds": 8.98165724799037,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss Prolonged",
+        "seed": 1,
+        "simulated_seconds": 18.0,
+        "steps": 361,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.550313832030775,
+        "localization_rmse": 0.009015885946152142,
+        "localization_max_error": 0.03692223028673004,
+        "final_speed": 0.0,
+        "progress": 37.031126226828746,
+        "emergency_steps": 104,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 361,
+        "accepted_map_scans": 181,
+        "rejected_map_scans": 0,
+        "map_rejection_reasons": [],
+        "covered_outage_ticks": 185,
+        "first_emergency_s": 12.850000000000001,
+        "first_outage_emergency_s": 12.850000000000001,
+        "actual_gnss_recovery_observed": false,
+        "gnss_denied_driven_distance_m": 30.29625425151103,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.009015885946152142,
+        "max_position_error_m": 0.03692223028673004,
+        "max_outage_position_error_m": 0.030833713827288868,
+        "max_yaw_error_rad": 0.002107948414801622,
+        "max_accepted_rms_m": 0.007047752275372353,
+        "max_accepted_map_position_error_m": 0.03692223028673004,
+        "max_accepted_map_yaw_error_rad": 0.002107948414801622,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.010000000000000004,
+        "max_neighbor_checks": 7136898,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 361,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-prolonged/seed-1/run.json.gz",
+          "uncompressed_sha256": "ef1396d9382c3c9c2b3cfdcbe80f70932e952d37181764c4e2762bfceb0df980",
+          "compressed_sha256": "96f490f73a37fcaf4f3135182fe52176fcadff06c57f9fbe928b1045f58f754f",
+          "compressed_bytes": 1015844
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-prolonged/seed-1/sensors.jsonl.gz",
+          "uncompressed_sha256": "e7946cb68946279bef4e414fab396387d31251df38b4cbfdcbfedab5b5e475d5",
+          "compressed_sha256": "6b3de621254f581e8877f353c07251e2f88c6cc7a9931618f108c38a62632fbf",
+          "compressed_bytes": 1062528
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-prolonged/seed-1/summary.json.gz",
+          "uncompressed_sha256": "b08c0249c3b44bf7f28dc878b55fa0c86a13c1314d1dd465eb8630ea74486f66",
+          "compressed_sha256": "c6e28245a6aa3381b57513ef2db3cbe3da7691639ae7b3c1691ecc841f7f8677",
+          "compressed_bytes": 307
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-prolonged/seed-1/replay/replay.json.gz",
+          "uncompressed_sha256": "b43b3d7ee93c6d64033d66978b1807a95b5b6508f2dd9955cb347859b5a145d0",
+          "compressed_sha256": "fadc526d36362afa2941a7fe8a0b3134f6972efe08083450b10e247290ab423e",
+          "compressed_bytes": 102
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "map-gnss-prolonged",
+      "seed": 7,
+      "scenario_sha256": "9641f22c063971531f23eb35d3f4547d9db104e9f28edd06fd4f206fd8c70516",
+      "run_wall_seconds": 9.088033307998558,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss Prolonged",
+        "seed": 7,
+        "simulated_seconds": 18.0,
+        "steps": 361,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.55021454518279,
+        "localization_rmse": 0.009744808978949825,
+        "localization_max_error": 0.051903876474261985,
+        "final_speed": 0.0,
+        "progress": 37.02430373147679,
+        "emergency_steps": 104,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 361,
+        "accepted_map_scans": 181,
+        "rejected_map_scans": 0,
+        "map_rejection_reasons": [],
+        "covered_outage_ticks": 185,
+        "first_emergency_s": 12.850000000000001,
+        "first_outage_emergency_s": 12.850000000000001,
+        "actual_gnss_recovery_observed": false,
+        "gnss_denied_driven_distance_m": 30.288290452197614,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.009744808978949825,
+        "max_position_error_m": 0.051903876474261985,
+        "max_outage_position_error_m": 0.028861149067471458,
+        "max_yaw_error_rad": 0.0033050537194569962,
+        "max_accepted_rms_m": 0.007487412932199288,
+        "max_accepted_map_position_error_m": 0.051903876474261985,
+        "max_accepted_map_yaw_error_rad": 0.0033050537194569962,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.010000000000000004,
+        "max_neighbor_checks": 7045360,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 361,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-prolonged/seed-7/run.json.gz",
+          "uncompressed_sha256": "e23f18bb3d9b8291dddfb13cb51c15ba72441e214f065e0a304a1ff0932df779",
+          "compressed_sha256": "46f91ff912dbb7b0a836b416b9037118500dc4949c98d5fbb22a422797df1d2a",
+          "compressed_bytes": 1014435
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-prolonged/seed-7/sensors.jsonl.gz",
+          "uncompressed_sha256": "8c04a0478ca9683a3110bc1872dc108756033f50a114ff6c1dbae2a746d4ed9a",
+          "compressed_sha256": "32405d76481625e5a2ab0cb42fe11e58a240b8428cddbe015b5cc0a7840b1a9c",
+          "compressed_bytes": 1061521
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-prolonged/seed-7/summary.json.gz",
+          "uncompressed_sha256": "2b08683d43615b12e354e631c86d8e7105e5ec72f08e4d04b85168e9644cc8c9",
+          "compressed_sha256": "a4b307b13feaece1354202b420560183dc1d5aed4a6c0c7b316d4be7bc73da22",
+          "compressed_bytes": 306
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-prolonged/seed-7/replay/replay.json.gz",
+          "uncompressed_sha256": "b43b3d7ee93c6d64033d66978b1807a95b5b6508f2dd9955cb347859b5a145d0",
+          "compressed_sha256": "ee9dd2e9e2094015c8f604f2eea504d217d4b29d74498ecea861744741fa94aa",
+          "compressed_bytes": 102
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "map-gnss-prolonged",
+      "seed": 42,
+      "scenario_sha256": "9641f22c063971531f23eb35d3f4547d9db104e9f28edd06fd4f206fd8c70516",
+      "run_wall_seconds": 9.014351865989738,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss Prolonged",
+        "seed": 42,
+        "simulated_seconds": 18.0,
+        "steps": 361,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.5495429110282313,
+        "localization_rmse": 0.009450787584668491,
+        "localization_max_error": 0.059840902393658406,
+        "final_speed": 0.0,
+        "progress": 37.02648574769491,
+        "emergency_steps": 104,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 361,
+        "accepted_map_scans": 181,
+        "rejected_map_scans": 0,
+        "map_rejection_reasons": [],
+        "covered_outage_ticks": 185,
+        "first_emergency_s": 12.850000000000001,
+        "first_outage_emergency_s": 12.850000000000001,
+        "actual_gnss_recovery_observed": false,
+        "gnss_denied_driven_distance_m": 30.28798878352573,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.009450787584668493,
+        "max_position_error_m": 0.059840902393658406,
+        "max_outage_position_error_m": 0.027872098135704924,
+        "max_yaw_error_rad": 0.0032837207596907447,
+        "max_accepted_rms_m": 0.007423261041332146,
+        "max_accepted_map_position_error_m": 0.059840902393658406,
+        "max_accepted_map_yaw_error_rad": 0.0032837207596907447,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.010000000000000004,
+        "max_neighbor_checks": 7080637,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 361,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-prolonged/seed-42/run.json.gz",
+          "uncompressed_sha256": "c54b21269f6114e0753865d8003e2db42048c6620a7931878f6c592f68949ee9",
+          "compressed_sha256": "f5a3ee38361c2b00c509b23b89f1152c33450a207bf477cd3ceff09bade1d487",
+          "compressed_bytes": 1015671
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-prolonged/seed-42/sensors.jsonl.gz",
+          "uncompressed_sha256": "0d915bf49016abf8771b62e76c848184eeb23fe28b75ea03177d72f6ebab19f0",
+          "compressed_sha256": "099f3a2f120e9909c4dff8b0a6605f6276e11919132a4d353e603c43c2bc182f",
+          "compressed_bytes": 1062331
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-prolonged/seed-42/summary.json.gz",
+          "uncompressed_sha256": "b6c10efae6c6d09a899e3eafef4b0f3bc7bb78c5e6b71eb18fc100f170f68d7c",
+          "compressed_sha256": "2ee396b9200ee4e83f4737eac635af40a6fc51a8aa96faa46059d3b18d9c85aa",
+          "compressed_bytes": 308
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-prolonged/seed-42/replay/replay.json.gz",
+          "uncompressed_sha256": "b43b3d7ee93c6d64033d66978b1807a95b5b6508f2dd9955cb347859b5a145d0",
+          "compressed_sha256": "49f8816a3609c7664a338a898bd33f6dd9aa8e082b93b0318384bb6cdd483594",
+          "compressed_bytes": 102
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "map-gnss-no-overlap",
+      "seed": 1,
+      "scenario_sha256": "d840a9d28ddcbf525b4bf021aaebc0f93df65217b18453d080a9af9317e82424",
+      "run_wall_seconds": 0.10487981801270507,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss No Overlap",
+        "seed": 1,
+        "simulated_seconds": 8.0,
+        "steps": 161,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.917160045022339,
+        "localization_rmse": 0.12083776488609659,
+        "localization_max_error": 0.1592909053312587,
+        "final_speed": 0.0,
+        "progress": 9.277971494814626,
+        "emergency_steps": 88,
+        "avoidance_steps": 0,
+        "max_tracks": 7,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 161,
+        "accepted_map_scans": 0,
+        "rejected_map_scans": 81,
+        "map_rejection_reasons": [
+          "insufficient unique trimmed registration overlap"
+        ],
+        "covered_outage_ticks": 0,
+        "first_emergency_s": 3.6,
+        "first_outage_emergency_s": 3.6,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 2.5436957056181266,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.12083776488609663,
+        "max_position_error_m": 0.1592909053312587,
+        "max_outage_position_error_m": 0.1463181441494567,
+        "max_yaw_error_rad": 0.05265920044059545,
+        "max_accepted_rms_m": 0.0,
+        "max_accepted_map_position_error_m": null,
+        "max_accepted_map_yaw_error_rad": null,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.0,
+        "max_neighbor_checks": 0.0,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 161,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-no-overlap/seed-1/run.json.gz",
+          "uncompressed_sha256": "b17b42b4ad67f7c0da662455b38e72bc8e974edf86b95c4aea46a081c6b85867",
+          "compressed_sha256": "ff8495c5658d958ccc13cea2ad6dd1d73899665efbc838f611d2447b82f63778",
+          "compressed_bytes": 577205
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-no-overlap/seed-1/sensors.jsonl.gz",
+          "uncompressed_sha256": "1d3dcf32efeb8027bb7f3f6b5a068dcb29dc3f6b3bb8cf9a1a3e87518fd82e7e",
+          "compressed_sha256": "ee720719f00a2467e3022e2c1afc1ddf36ca03b778ae76d1324344860bbfd114",
+          "compressed_bytes": 582157
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-no-overlap/seed-1/summary.json.gz",
+          "uncompressed_sha256": "183c12066bd0b1af9bd2ce1748c5a9d62bea39b89becdc96de771fffc6d39239",
+          "compressed_sha256": "32eaf1c1a7371d61a99f45d17362f595f14eeddb3f4b353d13d0034c0e756583",
+          "compressed_bytes": 307
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-no-overlap/seed-1/replay/replay.json.gz",
+          "uncompressed_sha256": "4bbb5361babfa8c42113c482772a1975135304651504e5016844fc2d70fba808",
+          "compressed_sha256": "aa77dab2f01e7c55d31e08979ba976c82aedf7dd9215ebd12d18e0585c93d53d",
+          "compressed_bytes": 102
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "map-gnss-no-overlap",
+      "seed": 7,
+      "scenario_sha256": "d840a9d28ddcbf525b4bf021aaebc0f93df65217b18453d080a9af9317e82424",
+      "run_wall_seconds": 0.10755158599931747,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss No Overlap",
+        "seed": 7,
+        "simulated_seconds": 8.0,
+        "steps": 161,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.7491685341644714,
+        "localization_rmse": 0.19545470452271702,
+        "localization_max_error": 0.24230674085706386,
+        "final_speed": 0.0,
+        "progress": 9.179219112535478,
+        "emergency_steps": 88,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 161,
+        "accepted_map_scans": 0,
+        "rejected_map_scans": 81,
+        "map_rejection_reasons": [
+          "insufficient unique trimmed registration overlap"
+        ],
+        "covered_outage_ticks": 0,
+        "first_emergency_s": 3.6,
+        "first_outage_emergency_s": 3.6,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 2.540326168679556,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.19545470452271696,
+        "max_position_error_m": 0.24230674085706386,
+        "max_outage_position_error_m": 0.24230674085706386,
+        "max_yaw_error_rad": 0.10396238209407008,
+        "max_accepted_rms_m": 0.0,
+        "max_accepted_map_position_error_m": null,
+        "max_accepted_map_yaw_error_rad": null,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.0,
+        "max_neighbor_checks": 0.0,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 161,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-no-overlap/seed-7/run.json.gz",
+          "uncompressed_sha256": "6a50130597bfd36793f5a86930c63f96a308fb7eee875b4fd60e5e3f084aeb80",
+          "compressed_sha256": "7bccbab9a7f74cb99a0944ca4fb2f26a0439ac7f16a6f2d89863696943d193e9",
+          "compressed_bytes": 636185
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-no-overlap/seed-7/sensors.jsonl.gz",
+          "uncompressed_sha256": "bcc5211137f4998d3077bbaa5224067fba54b92979d77f12bf4ddb34ebbf2775",
+          "compressed_sha256": "b0d21f9e516b32b867a209893e8157432ad976c55c2b91fc220458257cd7e186",
+          "compressed_bytes": 640970
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-no-overlap/seed-7/summary.json.gz",
+          "uncompressed_sha256": "0fe8b4f49f63aa733ea8b8192b04efcbf0f757eef9ef21d4f7d9c002e65d69ee",
+          "compressed_sha256": "85322bd88231855c26f3f80ed0fc30e8765e5aa4e4821a17ba8ae82d24e3780b",
+          "compressed_bytes": 309
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-no-overlap/seed-7/replay/replay.json.gz",
+          "uncompressed_sha256": "4bbb5361babfa8c42113c482772a1975135304651504e5016844fc2d70fba808",
+          "compressed_sha256": "196daa42f6b50f521aca31db5df666194f4f98c0aa31e57220c7e4efb61dbbbe",
+          "compressed_bytes": 102
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "map-gnss-no-overlap",
+      "seed": 42,
+      "scenario_sha256": "d840a9d28ddcbf525b4bf021aaebc0f93df65217b18453d080a9af9317e82424",
+      "run_wall_seconds": 0.12987915398844052,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss No Overlap",
+        "seed": 42,
+        "simulated_seconds": 8.0,
+        "steps": 161,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.6930265683359953,
+        "localization_rmse": 0.14695433958618473,
+        "localization_max_error": 0.18134488932166645,
+        "final_speed": 0.0,
+        "progress": 9.2762172256896,
+        "emergency_steps": 88,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 161,
+        "accepted_map_scans": 0,
+        "rejected_map_scans": 81,
+        "map_rejection_reasons": [
+          "insufficient unique trimmed registration overlap"
+        ],
+        "covered_outage_ticks": 0,
+        "first_emergency_s": 3.6,
+        "first_outage_emergency_s": 3.6,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 2.5406528369843224,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.14695433958618476,
+        "max_position_error_m": 0.18134488932166645,
+        "max_outage_position_error_m": 0.18134488932166645,
+        "max_yaw_error_rad": 0.08004692200810291,
+        "max_accepted_rms_m": 0.0,
+        "max_accepted_map_position_error_m": null,
+        "max_accepted_map_yaw_error_rad": null,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.0,
+        "max_neighbor_checks": 0.0,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 161,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-no-overlap/seed-42/run.json.gz",
+          "uncompressed_sha256": "5aead348e66ae089a1a082841be850c8f9766d02e6ba248f7db2f17804248209",
+          "compressed_sha256": "c220b23d23f856bef50d01264f4e3f381d600c8ef5a8b2bb0c7c246442153847",
+          "compressed_bytes": 654977
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-no-overlap/seed-42/sensors.jsonl.gz",
+          "uncompressed_sha256": "edacb3d9143467219cce87f27160a21a6385d938542f33ec6cc64a5354a58f0b",
+          "compressed_sha256": "cca6ecbd8ceb4c4b8d4f60c277cccd39e09ef622d9d8011d38eb0896336f41a4",
+          "compressed_bytes": 660271
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-no-overlap/seed-42/summary.json.gz",
+          "uncompressed_sha256": "8a218638173681a3a002378edfd7d2406f0b9f324537e8ee46c5b1d69a982fa2",
+          "compressed_sha256": "1bcc1936c667e283a15543bad4bbc5cec431e73f5b935c9006e41a75ca590619",
+          "compressed_bytes": 308
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-no-overlap/seed-42/replay/replay.json.gz",
+          "uncompressed_sha256": "4bbb5361babfa8c42113c482772a1975135304651504e5016844fc2d70fba808",
+          "compressed_sha256": "196daa42f6b50f521aca31db5df666194f4f98c0aa31e57220c7e4efb61dbbbe",
+          "compressed_bytes": 102
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "map-gnss-degenerate",
+      "seed": 1,
+      "scenario_sha256": "0ab85884d86bd59e490af244006b2f58c4833a5eb9e5e7987590f2b3fcb6fea8",
+      "run_wall_seconds": 0.13451196299865842,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss Degenerate",
+        "seed": 1,
+        "simulated_seconds": 8.0,
+        "steps": 161,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.917160045022339,
+        "localization_rmse": 0.12083776488609659,
+        "localization_max_error": 0.1592909053312587,
+        "final_speed": 0.0,
+        "progress": 9.277971494814626,
+        "emergency_steps": 88,
+        "avoidance_steps": 0,
+        "max_tracks": 7,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 161,
+        "accepted_map_scans": 0,
+        "rejected_map_scans": 81,
+        "map_rejection_reasons": [
+          "insufficient unique trimmed registration overlap"
+        ],
+        "covered_outage_ticks": 0,
+        "first_emergency_s": 3.6,
+        "first_outage_emergency_s": 3.6,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 2.5436957056181266,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.12083776488609663,
+        "max_position_error_m": 0.1592909053312587,
+        "max_outage_position_error_m": 0.1463181441494567,
+        "max_yaw_error_rad": 0.05265920044059545,
+        "max_accepted_rms_m": 0.0,
+        "max_accepted_map_position_error_m": null,
+        "max_accepted_map_yaw_error_rad": null,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.0,
+        "max_neighbor_checks": 0.0,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 161,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-degenerate/seed-1/run.json.gz",
+          "uncompressed_sha256": "1bc7efa365d7ef0f9a35c74bdbde9f726c14b1ece847c6bfdcccafb2aa12cd2f",
+          "compressed_sha256": "9f1f3892d2ea289c1497c63f8ec2dba670a98cbf1a3e00a01dbf6cdb70b46f08",
+          "compressed_bytes": 558982
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-degenerate/seed-1/sensors.jsonl.gz",
+          "uncompressed_sha256": "5fe3a7f6ff2a4a76ea6f642127ca1b806e517894534ab7937bc416044c800e17",
+          "compressed_sha256": "47d195e8577f9483743074b1c01b1f82d473062c384f1ae03297a39892537223",
+          "compressed_bytes": 564118
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-degenerate/seed-1/summary.json.gz",
+          "uncompressed_sha256": "229c8b0fa84c2117d720ed09923788e923cf87189f4d2f416aed21185eabe998",
+          "compressed_sha256": "f9544a0f132daf1deb9a549005ce4394392210914bdd3f6349e0800fb3f4445e",
+          "compressed_bytes": 305
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-degenerate/seed-1/replay/replay.json.gz",
+          "uncompressed_sha256": "4bbb5361babfa8c42113c482772a1975135304651504e5016844fc2d70fba808",
+          "compressed_sha256": "1b01d77437fcdbecba722a6dc4f90e3c8f46952a96e017735c1183df8daaf957",
+          "compressed_bytes": 102
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "map-gnss-degenerate",
+      "seed": 7,
+      "scenario_sha256": "0ab85884d86bd59e490af244006b2f58c4833a5eb9e5e7987590f2b3fcb6fea8",
+      "run_wall_seconds": 0.13231017999351025,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss Degenerate",
+        "seed": 7,
+        "simulated_seconds": 8.0,
+        "steps": 161,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.7491685341644714,
+        "localization_rmse": 0.19545470452271702,
+        "localization_max_error": 0.24230674085706386,
+        "final_speed": 0.0,
+        "progress": 9.179219112535478,
+        "emergency_steps": 88,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 161,
+        "accepted_map_scans": 0,
+        "rejected_map_scans": 81,
+        "map_rejection_reasons": [
+          "insufficient unique trimmed registration overlap"
+        ],
+        "covered_outage_ticks": 0,
+        "first_emergency_s": 3.6,
+        "first_outage_emergency_s": 3.6,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 2.540326168679556,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.19545470452271696,
+        "max_position_error_m": 0.24230674085706386,
+        "max_outage_position_error_m": 0.24230674085706386,
+        "max_yaw_error_rad": 0.10396238209407008,
+        "max_accepted_rms_m": 0.0,
+        "max_accepted_map_position_error_m": null,
+        "max_accepted_map_yaw_error_rad": null,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.0,
+        "max_neighbor_checks": 0.0,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 161,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-degenerate/seed-7/run.json.gz",
+          "uncompressed_sha256": "95d2c4ecfb1ebdf02a749a154a4b1305d090b5f4c9ed8bdee4bcb61c9bfce2b5",
+          "compressed_sha256": "b346a0256e460d7ec322e7e480b926919a145f5d00e049382852432f72444980",
+          "compressed_bytes": 617922
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-degenerate/seed-7/sensors.jsonl.gz",
+          "uncompressed_sha256": "2456d889460bc56203c6a49026a19364daebbd4543af2b01b0aace64c475beb4",
+          "compressed_sha256": "6a3fde38edceec3ae090d09def48cf74839ee8ab5acd50013fdecbb2b232997f",
+          "compressed_bytes": 622628
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-degenerate/seed-7/summary.json.gz",
+          "uncompressed_sha256": "9504459d1a38ce25de7edb971753dac73164393823b3c319e429ba5e36cbdbd9",
+          "compressed_sha256": "e1793f935ecba20c600fa0584e0251b0b12d0e3e360c36e558c703c8dd7da2e9",
+          "compressed_bytes": 307
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-degenerate/seed-7/replay/replay.json.gz",
+          "uncompressed_sha256": "4bbb5361babfa8c42113c482772a1975135304651504e5016844fc2d70fba808",
+          "compressed_sha256": "2ec40c2e38dcf38f7ed82cb6fa455341851265f990ad62e0c2f5bcd07def8079",
+          "compressed_bytes": 102
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "map-gnss-degenerate",
+      "seed": 42,
+      "scenario_sha256": "0ab85884d86bd59e490af244006b2f58c4833a5eb9e5e7987590f2b3fcb6fea8",
+      "run_wall_seconds": 0.12402852000377607,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss Degenerate",
+        "seed": 42,
+        "simulated_seconds": 8.0,
+        "steps": 161,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.6930265683359953,
+        "localization_rmse": 0.14695433958618473,
+        "localization_max_error": 0.18134488932166645,
+        "final_speed": 0.0,
+        "progress": 9.2762172256896,
+        "emergency_steps": 88,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 161,
+        "accepted_map_scans": 0,
+        "rejected_map_scans": 81,
+        "map_rejection_reasons": [
+          "insufficient unique trimmed registration overlap"
+        ],
+        "covered_outage_ticks": 0,
+        "first_emergency_s": 3.6,
+        "first_outage_emergency_s": 3.6,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 2.5406528369843224,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.14695433958618476,
+        "max_position_error_m": 0.18134488932166645,
+        "max_outage_position_error_m": 0.18134488932166645,
+        "max_yaw_error_rad": 0.08004692200810291,
+        "max_accepted_rms_m": 0.0,
+        "max_accepted_map_position_error_m": null,
+        "max_accepted_map_yaw_error_rad": null,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.0,
+        "max_neighbor_checks": 0.0,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 161,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-degenerate/seed-42/run.json.gz",
+          "uncompressed_sha256": "16fec3114548ba069e99a69822991f435287eac717c79bb534e333592987bd69",
+          "compressed_sha256": "cc6002122a1a50e16f3a18ea680d5580a5bad195bdf2c889dc962d4adacce798",
+          "compressed_bytes": 636586
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-degenerate/seed-42/sensors.jsonl.gz",
+          "uncompressed_sha256": "b8ca2db8759c65bf0a4afb5363b5b99e858b0617aaca2fc4ac17a213654d83da",
+          "compressed_sha256": "1b6585392d2772ea0e1677a67263d59b2b5754ecb7a40b17746a188bbdb3a167",
+          "compressed_bytes": 641913
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-degenerate/seed-42/summary.json.gz",
+          "uncompressed_sha256": "d0994275d8d34f9c779fb27050099118e865cb86b287159477934f2abd957ad7",
+          "compressed_sha256": "52123e31e393838853deea6d5146ae0e32346b6425a0a017d8e53c7e1dae3eb8",
+          "compressed_bytes": 305
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-degenerate/seed-42/replay/replay.json.gz",
+          "uncompressed_sha256": "4bbb5361babfa8c42113c482772a1975135304651504e5016844fc2d70fba808",
+          "compressed_sha256": "2ec40c2e38dcf38f7ed82cb6fa455341851265f990ad62e0c2f5bcd07def8079",
+          "compressed_bytes": 102
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "map-gnss-lidar-loss",
+      "seed": 1,
+      "scenario_sha256": "1eb11896752da9475427c6261f971fec8e7e33632d840a203e2da93f4607e4e7",
+      "run_wall_seconds": 3.008864449991961,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss Lidar Loss",
+        "seed": 1,
+        "simulated_seconds": 10.0,
+        "steps": 201,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.8522587970405557,
+        "localization_rmse": 0.038245648475513254,
+        "localization_max_error": 0.10060667128229883,
+        "final_speed": 0.0,
+        "progress": 16.925034304852524,
+        "emergency_steps": 78,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 201,
+        "accepted_map_scans": 60,
+        "rejected_map_scans": 0,
+        "map_rejection_reasons": [],
+        "covered_outage_ticks": 51,
+        "first_emergency_s": 6.15,
+        "first_outage_emergency_s": 6.15,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 10.19016220703534,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.038245648475513254,
+        "max_position_error_m": 0.10060667128229883,
+        "max_outage_position_error_m": 0.06608276953495842,
+        "max_yaw_error_rad": 0.002107948414801622,
+        "max_accepted_rms_m": 0.006956899132621551,
+        "max_accepted_map_position_error_m": 0.03692223028673004,
+        "max_accepted_map_yaw_error_rad": 0.002107948414801622,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.010000000000000004,
+        "max_neighbor_checks": 6942903,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 201,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-lidar-loss/seed-1/run.json.gz",
+          "uncompressed_sha256": "33cb066d761bb94bd2351fc5e5512ff61e9eb49e8d2052bc048cdf6df9cf81e0",
+          "compressed_sha256": "f14bc025aedf01d0802f88227cd690ff1d4f0a09a60d5f5f15643212a3885685",
+          "compressed_bytes": 554247
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-lidar-loss/seed-1/sensors.jsonl.gz",
+          "uncompressed_sha256": "89ed5e00f3cf96ff4ca654453d55f60c387d945e958b66f4cc636ab14fc30792",
+          "compressed_sha256": "199382f9f9d9964b3b1ab83535259f621aa87387c20fd6c6233ce3d36a490b06",
+          "compressed_bytes": 566877
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-lidar-loss/seed-1/summary.json.gz",
+          "uncompressed_sha256": "606b7021cd2b901e6bf9e36d811182fd641c3f7d8fae985010831b17a2e256cb",
+          "compressed_sha256": "35c6749c9975d60178333a263dc512707a76c1e03454cf68d2690ddd101b57d0",
+          "compressed_bytes": 308
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-lidar-loss/seed-1/replay/replay.json.gz",
+          "uncompressed_sha256": "1435c763f899f0347931ce562212874a47980c49ad5e238a70dd896edf38e2ab",
+          "compressed_sha256": "979791aa86fb4cc6232342f18f686fe29444dcccbace8c7bd6ab886d8c46b578",
+          "compressed_bytes": 102
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "map-gnss-lidar-loss",
+      "seed": 7,
+      "scenario_sha256": "1eb11896752da9475427c6261f971fec8e7e33632d840a203e2da93f4607e4e7",
+      "run_wall_seconds": 3.0610861610039137,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss Lidar Loss",
+        "seed": 7,
+        "simulated_seconds": 10.0,
+        "steps": 201,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.8500093775406197,
+        "localization_rmse": 0.03878600407306755,
+        "localization_max_error": 0.06889071895592551,
+        "final_speed": 0.0,
+        "progress": 16.928304620529556,
+        "emergency_steps": 78,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 201,
+        "accepted_map_scans": 60,
+        "rejected_map_scans": 0,
+        "map_rejection_reasons": [],
+        "covered_outage_ticks": 51,
+        "first_emergency_s": 6.15,
+        "first_outage_emergency_s": 6.15,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 10.192291246669955,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.03878600407306756,
+        "max_position_error_m": 0.06889071895592551,
+        "max_outage_position_error_m": 0.06889071895592551,
+        "max_yaw_error_rad": 0.0033050537194569962,
+        "max_accepted_rms_m": 0.0070443464027943,
+        "max_accepted_map_position_error_m": 0.051903876474261985,
+        "max_accepted_map_yaw_error_rad": 0.0033050537194569962,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.010000000000000004,
+        "max_neighbor_checks": 7096696,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 201,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-lidar-loss/seed-7/run.json.gz",
+          "uncompressed_sha256": "47539764f8dfe209f346f6e4568129507394f790e22573589ce5f47b57f7fb76",
+          "compressed_sha256": "80078c6e81805471721600597c458de14a50d8938f4aeb0ddd4dd6b1397f1457",
+          "compressed_bytes": 558106
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-lidar-loss/seed-7/sensors.jsonl.gz",
+          "uncompressed_sha256": "9f8665e459cfbd68af11be6797afc4dfa841cdb9da8bc764049d4b43734d9c6a",
+          "compressed_sha256": "0049ee36291066a5274039fefd17aecd74909dca5413e425e89cfa439a28aef8",
+          "compressed_bytes": 571279
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-lidar-loss/seed-7/summary.json.gz",
+          "uncompressed_sha256": "1c11e1ccf4bb428b11288f6f992f56da7697290b6cb8aa7d026d504c704a16e6",
+          "compressed_sha256": "27a8423b9a1824b1669ea3491e015f4e8285588501aecce9370f5e43fdb5c179",
+          "compressed_bytes": 306
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-lidar-loss/seed-7/replay/replay.json.gz",
+          "uncompressed_sha256": "1435c763f899f0347931ce562212874a47980c49ad5e238a70dd896edf38e2ab",
+          "compressed_sha256": "81672d79f32c7e990ffa1c2517cd4b51b81f0bd0cbabfc51e1cde9abae2aa225",
+          "compressed_bytes": 102
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "map-gnss-lidar-loss",
+      "seed": 42,
+      "scenario_sha256": "1eb11896752da9475427c6261f971fec8e7e33632d840a203e2da93f4607e4e7",
+      "run_wall_seconds": 2.9535902250063373,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss Lidar Loss",
+        "seed": 42,
+        "simulated_seconds": 10.0,
+        "steps": 201,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.8476229388560994,
+        "localization_rmse": 0.03726425150318214,
+        "localization_max_error": 0.06695584290208581,
+        "final_speed": 0.0,
+        "progress": 16.92824753050708,
+        "emergency_steps": 78,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 201,
+        "accepted_map_scans": 60,
+        "rejected_map_scans": 0,
+        "map_rejection_reasons": [],
+        "covered_outage_ticks": 51,
+        "first_emergency_s": 6.15,
+        "first_outage_emergency_s": 6.15,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 10.189750519693698,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.03726425150318213,
+        "max_position_error_m": 0.06695584290208581,
+        "max_outage_position_error_m": 0.06695584290208581,
+        "max_yaw_error_rad": 0.0032837207596907447,
+        "max_accepted_rms_m": 0.007423261041332146,
+        "max_accepted_map_position_error_m": 0.059840902393658406,
+        "max_accepted_map_yaw_error_rad": 0.0032837207596907447,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.010000000000000004,
+        "max_neighbor_checks": 7133778,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 201,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-lidar-loss/seed-42/run.json.gz",
+          "uncompressed_sha256": "7fc0ef9923a4f36c5f9c5f825443000c3eff1e4d00e68b4d0b07b3bcf5668b85",
+          "compressed_sha256": "94991b3749a5d830aff18e48482c93dc51358b22df1f0ef3625c5ce1ffb493cc",
+          "compressed_bytes": 560710
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-lidar-loss/seed-42/sensors.jsonl.gz",
+          "uncompressed_sha256": "04264b2aeb1dd96f3a8cdbae085e5ee3bd52be717aec12b0fa08ccac1e128b44",
+          "compressed_sha256": "4bc963edef7e9c5ee7050363f228669b31a8250a1a3234678fa379ef792d8613",
+          "compressed_bytes": 574088
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-lidar-loss/seed-42/summary.json.gz",
+          "uncompressed_sha256": "0ecb2b85ffde58a333948d98959e25c6eb211e8824107f531d7922f96b9cbe6d",
+          "compressed_sha256": "a9f8d3ab3fca6d48e1d49301df4508da885670aebe31c7dc5354dbe7a119f999",
+          "compressed_bytes": 307
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-lidar-loss/seed-42/replay/replay.json.gz",
+          "uncompressed_sha256": "1435c763f899f0347931ce562212874a47980c49ad5e238a70dd896edf38e2ab",
+          "compressed_sha256": "5943d69d05014bbaad113d16fbc8dc5d031732f85b583ab707564d997772226d",
+          "compressed_bytes": 102
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "map-gnss-disabled",
+      "seed": 1,
+      "scenario_sha256": "f699842ec569949eb188f8481717628c2a4a7a1f3b4c0976a54d2098cae402f3",
+      "run_wall_seconds": 0.09583793999627233,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss Disabled",
+        "seed": 1,
+        "simulated_seconds": 8.0,
+        "steps": 161,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.917160045022339,
+        "localization_rmse": 0.12083776488609659,
+        "localization_max_error": 0.1592909053312587,
+        "final_speed": 0.0,
+        "progress": 9.277971494814626,
+        "emergency_steps": 88,
+        "avoidance_steps": 0,
+        "max_tracks": 7,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 161,
+        "accepted_map_scans": 0,
+        "rejected_map_scans": 0,
+        "map_rejection_reasons": [],
+        "covered_outage_ticks": 0,
+        "first_emergency_s": 3.6,
+        "first_outage_emergency_s": 3.6,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 2.5436957056181266,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.12083776488609663,
+        "max_position_error_m": 0.1592909053312587,
+        "max_outage_position_error_m": 0.1463181441494567,
+        "max_yaw_error_rad": 0.05265920044059545,
+        "max_accepted_rms_m": 0.0,
+        "max_accepted_map_position_error_m": null,
+        "max_accepted_map_yaw_error_rad": null,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.0,
+        "max_neighbor_checks": 0.0,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 161,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-disabled/seed-1/run.json.gz",
+          "uncompressed_sha256": "25096edf2b83fec1662455b631227b0166765d5ccabdf5b229b96dd31dc61f8d",
+          "compressed_sha256": "1a70f7136d5509f50aa8fe8e7f4c31a26c9542bd984556abd0faeff3218884b8",
+          "compressed_bytes": 555165
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-disabled/seed-1/sensors.jsonl.gz",
+          "uncompressed_sha256": "d99ba9ced469d3119a8e53d99ca7eb4efa0448769e8610efed3f7bcefee92bb1",
+          "compressed_sha256": "0d639beae2c2d02ce2c79f5789c0b1dfaf619c27ce2706fafe61f5cbb103dcf4",
+          "compressed_bytes": 558593
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-disabled/seed-1/summary.json.gz",
+          "uncompressed_sha256": "106e9f55169740050edb0442d01468ad3a43bec9b19399c0f4cbbf5498dd6acf",
+          "compressed_sha256": "665c4b58ccf4503caab9d0cc73e04b6aaeda8683408ab7962d110aa52846d166",
+          "compressed_bytes": 307
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-disabled/seed-1/replay/replay.json.gz",
+          "uncompressed_sha256": "4bbb5361babfa8c42113c482772a1975135304651504e5016844fc2d70fba808",
+          "compressed_sha256": "2e3c074495ee6102aa564631b90376051eebe0f0ab977b3df1b6c79ba32a340d",
+          "compressed_bytes": 102
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "map-gnss-disabled",
+      "seed": 7,
+      "scenario_sha256": "f699842ec569949eb188f8481717628c2a4a7a1f3b4c0976a54d2098cae402f3",
+      "run_wall_seconds": 0.10565282200695947,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss Disabled",
+        "seed": 7,
+        "simulated_seconds": 8.0,
+        "steps": 161,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.7491685341644714,
+        "localization_rmse": 0.19545470452271702,
+        "localization_max_error": 0.24230674085706386,
+        "final_speed": 0.0,
+        "progress": 9.179219112535478,
+        "emergency_steps": 88,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 161,
+        "accepted_map_scans": 0,
+        "rejected_map_scans": 0,
+        "map_rejection_reasons": [],
+        "covered_outage_ticks": 0,
+        "first_emergency_s": 3.6,
+        "first_outage_emergency_s": 3.6,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 2.540326168679556,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.19545470452271696,
+        "max_position_error_m": 0.24230674085706386,
+        "max_outage_position_error_m": 0.24230674085706386,
+        "max_yaw_error_rad": 0.10396238209407008,
+        "max_accepted_rms_m": 0.0,
+        "max_accepted_map_position_error_m": null,
+        "max_accepted_map_yaw_error_rad": null,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.0,
+        "max_neighbor_checks": 0.0,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 161,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-disabled/seed-7/run.json.gz",
+          "uncompressed_sha256": "bc507d10a695aaebf84127b7a2df96363bc344416f13dd042eb7f71d09556348",
+          "compressed_sha256": "8964f5145f7e4f4ae4c5e99eaad3a58f98c37df9ed94d1670bf4f8e4748181c0",
+          "compressed_bytes": 614231
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-disabled/seed-7/sensors.jsonl.gz",
+          "uncompressed_sha256": "794363a997f177c17921acce15a9b624a78236a7d22bb80819fb34194e387838",
+          "compressed_sha256": "b07213570b0de233ec81cad191cb40cdc67b37df3f5ae1c8fc16d023ab7f19cb",
+          "compressed_bytes": 617161
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-disabled/seed-7/summary.json.gz",
+          "uncompressed_sha256": "09d10e80a2cdd8d01376adc4a2da944408c504e44b013b800dc33febf0eee87a",
+          "compressed_sha256": "59fbc9fc98badac10db2c8e3c1f3ee76ba17a083ce967253ae80aa21017fd4d4",
+          "compressed_bytes": 306
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-disabled/seed-7/replay/replay.json.gz",
+          "uncompressed_sha256": "4bbb5361babfa8c42113c482772a1975135304651504e5016844fc2d70fba808",
+          "compressed_sha256": "79d791f0b8d23fda52e2876d8938511d1fdfc8311e170ae940472862ce80bcc4",
+          "compressed_bytes": 102
+        }
+      },
+      "passed": true
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "map-gnss-disabled",
+      "seed": 42,
+      "scenario_sha256": "f699842ec569949eb188f8481717628c2a4a7a1f3b4c0976a54d2098cae402f3",
+      "run_wall_seconds": 0.10652237400063314,
+      "wall_timing_is_not_real_time_guarantee": true,
+      "expected_behavior": "fail_closed_negative",
+      "summary": {
+        "scenario": "Map Gnss Disabled",
+        "seed": 42,
+        "simulated_seconds": 8.0,
+        "steps": 161,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.6930265683359953,
+        "localization_rmse": 0.14695433958618473,
+        "localization_max_error": 0.18134488932166645,
+        "final_speed": 0.0,
+        "progress": 9.2762172256896,
+        "emergency_steps": 88,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "metrics": {
+        "passed": true,
+        "control_ticks": 161,
+        "accepted_map_scans": 0,
+        "rejected_map_scans": 0,
+        "map_rejection_reasons": [],
+        "covered_outage_ticks": 0,
+        "first_emergency_s": 3.6,
+        "first_outage_emergency_s": 3.6,
+        "actual_gnss_recovery_observed": true,
+        "gnss_denied_driven_distance_m": 2.5406528369843224,
+        "gnss_denied_min_speed_m_s": 0.0,
+        "position_rmse_m": 0.14695433958618476,
+        "max_position_error_m": 0.18134488932166645,
+        "max_outage_position_error_m": 0.18134488932166645,
+        "max_yaw_error_rad": 0.08004692200810291,
+        "max_accepted_rms_m": 0.0,
+        "max_accepted_map_position_error_m": null,
+        "max_accepted_map_yaw_error_rad": null,
+        "accuracy_gate_scope": "fresh_accepted_map_ticks_only",
+        "untrusted_map_whole_episode_error_is_reported_not_accuracy_acceptance": true,
+        "max_fused_xy_variance_m2": 0.0,
+        "max_neighbor_checks": 0.0,
+        "offline_prior_only": true,
+        "truth_used_only_for_evaluation": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 161,
+        "verified": true
+      },
+      "evidence": {
+        "run.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-disabled/seed-42/run.json.gz",
+          "uncompressed_sha256": "c079721e9cb2c23105b49648b28cc2a57f4760eabad753f97c70548262408570",
+          "compressed_sha256": "a15a48c91d7861ef189917c37f7c63bb4ae168bd1e47f208aa14e96be85e8ebf",
+          "compressed_bytes": 632855
+        },
+        "sensors.jsonl": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-disabled/seed-42/sensors.jsonl.gz",
+          "uncompressed_sha256": "3241acb42f648fd1321a678f735b486fb57a90e3416216312c541d8909fe3dab",
+          "compressed_sha256": "3611f62f82a53806837f53265052de7ff8cba1508a916b67120a5cc99ae17f96",
+          "compressed_bytes": 636332
+        },
+        "summary.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-disabled/seed-42/summary.json.gz",
+          "uncompressed_sha256": "8f732c4162af141aa268974bf0dc4b7ae54f1e7e65c82c22f06cd49e9e4ff774",
+          "compressed_sha256": "cd2df05db5773ff5343c87e1b2ec31ee102a054c5bd4005f4e2525f3271d6fc5",
+          "compressed_bytes": 306
+        },
+        "replay/replay.json": {
+          "path": "/tmp/rustdrive-map-final/rne-dynamic/map-gnss-disabled/seed-42/replay/replay.json.gz",
+          "uncompressed_sha256": "4bbb5361babfa8c42113c482772a1975135304651504e5016844fc2d70fba808",
+          "compressed_sha256": "295647c4fb387fbeead412eedcdb3556803424470cbd45df492d9653e8e36504",
+          "compressed_bytes": 102
+        }
+      },
+      "passed": true
+    }
+  ],
+  "later_source_change": "Terrain-only native acquisition calibration changed after map validation, preserving the map path; final-head CI reruns all map scenarios."
+}

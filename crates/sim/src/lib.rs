@@ -12,7 +12,7 @@ use rustdrive_pipeline::replay::SensorLog;
 use rustdrive_pipeline::stop_signs::StopSignStatus;
 use rustdrive_pipeline::traffic_controls::StopLine;
 use rustdrive_pipeline::traffic_controls::TrafficControlStatus;
-use rustdrive_pipeline::{DrivingPipeline, PipelineConfig, SensorFrame};
+use rustdrive_pipeline::{DrivingPipeline, MapLocalizationConfig, PipelineConfig, SensorFrame};
 use rustdrive_routing::{RoadNetwork, RoadNetworkSpec, RoutePlan};
 use sensor_timing::{SensorDelivery, SensorTiming};
 use serde::{Deserialize, Serialize};
@@ -71,6 +71,13 @@ pub struct GnssBiasWindow {
     pub until: f64,
     pub offset: Vec2,
 }
+/// Simulator-only acquisition outage, never supplied to the driving pipeline.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct GnssDropoutWindow {
+    pub from: f64,
+    pub until: f64,
+}
 fn is_false(value: &bool) -> bool {
     !*value
 }
@@ -92,6 +99,11 @@ pub struct Scenario {
     pub gnss_dropout: Option<f64>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub gnss_bias_windows: Vec<GnssBiasWindow>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub gnss_dropout_windows: Vec<GnssDropoutWindow>,
+    /// Explicit offline surveyed point map; never constructed from runtime truth.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub localization_map: Option<MapLocalizationConfig>,
     /// Simulator-only acquisition/delivery schedule; never supplied as pipeline calibration.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub sensor_timing: Option<SensorTiming>,
@@ -184,6 +196,23 @@ impl Scenario {
             }
             previous_end = window.until;
         }
+        if self.gnss_dropout_windows.len() > 64 {
+            return Err("at most 64 GNSS acquisition dropout windows are supported".into());
+        }
+        let mut previous_end = 0.0;
+        for window in &self.gnss_dropout_windows {
+            if !window.from.is_finite()
+                || !window.until.is_finite()
+                || window.from < previous_end
+                || window.from < 0.0
+                || window.until <= window.from
+                || window.from >= self.duration
+                || window.until > self.duration
+            {
+                return Err("invalid or overlapping GNSS acquisition dropout window".into());
+            }
+            previous_end = window.until;
+        }
         let mut last_stamp = -1.0;
         let mut last_revision = 0;
         for update in &self.navigation_updates {
@@ -272,6 +301,14 @@ impl Scenario {
             self.half_width,
         )
         .unwrap()
+    }
+    /// Acquisition-time availability shared by the reference and native plants.
+    pub fn gnss_available(&self, time: f64) -> bool {
+        self.gnss_dropout.is_none_or(|from| time < from)
+            && !self
+                .gnss_dropout_windows
+                .iter()
+                .any(|window| time + 1e-9 >= window.from && time < window.until - 1e-9)
     }
     pub fn navigation_plan(&self) -> Result<Option<RoutePlan>, String> {
         self.navigation
@@ -516,8 +553,7 @@ impl SimulationBackend for ReferenceBackend {
                     + self.rng.noise(0.001),
             }
         });
-        let gnss = if tick.is_multiple_of(4) && self.scenario.gnss_dropout.is_none_or(|t| time < t)
-        {
+        let gnss = if tick.is_multiple_of(4) && self.scenario.gnss_available(time) {
             Some(Gnss {
                 stamp: time,
                 position: self
@@ -569,6 +605,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     }
     config.motion_limits = scenario.motion_limits;
     config.local_route_geometry = scenario.local_route_geometry;
+    config.localization_map = scenario.localization_map.clone();
     config.stop_signs = scenario.stop_signs.clone();
     config.yield_intersections = scenario.yield_intersections.clone();
     config.stop_lines = scenario
@@ -825,6 +862,8 @@ pub fn simulate_with_backend(
             || !scenario.traffic_signals.is_empty()
             || !scenario.stop_signs.is_empty()
             || !scenario.yield_intersections.is_empty()
+            || scenario.localization_map.is_some()
+            || !scenario.gnss_dropout_windows.is_empty()
             || i.is_multiple_of(2)
             || finished
             || goal_since == Some(time)
@@ -1016,6 +1055,55 @@ pub fn simulate_with_backend(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn gnss_acquisition_windows_are_bounded_and_recover_at_the_end_boundary() {
+        let mut s: Scenario =
+            serde_json::from_str(include_str!("../../../scenarios/mission.json")).unwrap();
+        let original = serde_json::to_value(&s).unwrap();
+        assert!(original.get("gnss_dropout_windows").is_none());
+        assert!(original.get("localization_map").is_none());
+        s.gnss_dropout_windows = vec![GnssDropoutWindow {
+            from: 3.0,
+            until: 8.0,
+        }];
+        assert!(s.validate().is_ok());
+        assert!(s.gnss_available(2.8));
+        assert!(!s.gnss_available(3.0));
+        assert!(!s.gnss_available(7.8));
+        assert!(s.gnss_available(8.0));
+        for window in [
+            GnssDropoutWindow {
+                from: -1.0,
+                until: 1.0,
+            },
+            GnssDropoutWindow {
+                from: 3.0,
+                until: 3.0,
+            },
+            GnssDropoutWindow {
+                from: f64::NAN,
+                until: 8.0,
+            },
+            GnssDropoutWindow {
+                from: 3.0,
+                until: s.duration + 1.0,
+            },
+        ] {
+            s.gnss_dropout_windows = vec![window];
+            assert!(s.validate().is_err());
+        }
+        s.gnss_dropout_windows = vec![
+            GnssDropoutWindow {
+                from: 3.0,
+                until: 8.0,
+            },
+            GnssDropoutWindow {
+                from: 7.0,
+                until: 9.0,
+            },
+        ];
+        assert!(s.validate().is_err());
+    }
     #[test]
     fn opaque_adapter_body_ids_preserve_traffic_acceptance() {
         struct Renamed(ReferenceBackend);

@@ -1,0 +1,107 @@
+{
+  "source_fingerprint_sha256": "12f9bb0597b8674d48a78b64f7f28892042645a8b41b64ee1832fffc8b799ee2",
+  "workspace_check": {
+    "command": "CARGO_INCREMENTAL=0 bash scripts/check.sh",
+    "exit_code": 0,
+    "tests_passed": 278,
+    "scenario_replay_pairs": 49,
+    "log_sha256": "9bd05afdd79604819399ff59a68b92074e7574b0c907bfd37aba88f323a5935c"
+  },
+  "native_check": {
+    "toolchain": "1.95.0",
+    "profile": "release",
+    "fmt_passed": true,
+    "clippy_warnings_denied_passed": true,
+    "tests_passed": 46,
+    "test_log_sha256": "a94b54e561b2acfac413b38e66ccd0a405780fe72c98934d72ad23b01566c725",
+    "clippy_log_sha256": "b537369bc14048fe201ee13431d52c16683c65a2378fadb90bee1f891eea87a9"
+  },
+  "default_reference_byte_comparison": {
+    "prior_head": "2d3312c84dfa2e1947329b8f7c339a223c477eaf",
+    "scenario_replay_pairs": 49,
+    "files_sha256_verified": 245,
+    "changed": []
+  },
+  "opening_native_byte_comparison": {
+    "command": "rustdrive-rne --scenario scenarios/native-body-traffic-stop.json --scene scenes/ground-moving-traffic.json --lidar-3d --ground-segmentation --vehicle-body --plant dynamic --seed 7",
+    "full_replay_ticks": 441,
+    "byte_comparison": {
+      "summary.json": true,
+      "sensors.jsonl": true,
+      "run.json": true,
+      "scene.json": true,
+      "replay/replay.json": true,
+      "replay/outputs.jsonl": true
+    },
+    "original_hashes": {
+      "summary.json": "3ebda2eb37b4e4f8de9e3991788c2b25dcb91da111618929016265ab068e090d",
+      "sensors.jsonl": "dfddfa39149ecebe6deb32da60e0345be089af8051bb195cdf9a7963901c06af",
+      "run.json": "59afd56d92ef44eb3d7f4e2a217dbb86a4e1c2a33cc8013394a852b737ff4dcc",
+      "scene.json": "2ed02bb84130b82069ce381d6dd738e20272dc883de19f83cf20fd328592d4c7",
+      "replay/replay.json": "da4e332bcc4cf617f228a12e63639237e6454eed044eb2c15d5f7a9c875e44b0",
+      "replay/outputs.jsonl": "fff5ad054589b6e3538498e749301dfbe906ff78dc2cea3a9384e7c18f95ee18"
+    }
+  },
+  "opening_gif_sha256": "3e8fa58a55d41b707ae37be99e83cc086d9e31f6616bae334806f958a585a7a0",
+  "measured_dataset_inputs": {
+    "files": 32,
+    "bytes": 8190410,
+    "raw_redistributed": false,
+    "source_manifests": [
+      "data/isprs-terrain/manifest.json",
+      "data/libpointmatcher/manifest.json"
+    ]
+  },
+  "measured_results": "assets/measured-data-results.json",
+  "measured_integrity_oracle": {
+    "terrain_sites": 15,
+    "independently_checked_aabbs": 5542,
+    "semi_synthetic_cases": 4,
+    "semi_synthetic_accepted": 4,
+    "scope": "Integrity and recomputed accuracy; no target accuracy, natural-pose GT or safety claim",
+    "mutations_rejected": [
+      "false_ground_score",
+      "missing_held_out_site",
+      "changed_split",
+      "changed_source",
+      "invented_physical_gt",
+      "changed_frozen_parameters",
+      "duplicate_ground_index",
+      "invented_aabb_extent",
+      "invented_pose_error"
+    ]
+  },
+  "map_localization_results": "assets/map-localization-results.json",
+  "native_terrain_objects_results": "assets/terrain-objects-results.json",
+  "historical_sparse_sensors": {
+    "path": "assets/native-terrain-sparse-sensors.jsonl.gz",
+    "raw_sha256": "c78611553b127cf7a269ec661f9bb1f9fc91a885a9d9698c1bab5e62d4cbca39",
+    "replay": {
+      "source": "rne-dynamic-rapier-lidar",
+      "ticks": 41,
+      "verified": true
+    }
+  },
+  "goal_30_percent_reached": false,
+  "engineering_maturity_estimate_percent": 18,
+  "estimate_is_subjective": true,
+  "unresolved": [
+    "Held-out PMF F1 0.2592, including six zero-F1 sites",
+    "Natural apartment alignment rejected; four warm-seeded imposed-transform cases do not establish real-motion pose accuracy or calibration",
+    "Native terrain objects only one authored dense-acquisition case, mixed ground/actor components and low-object blind zones",
+    "Measured vehicle/extrinsics, camera/learned perception, general SLAM, lane topology and interaction control absent"
+  ],
+  "ci": {
+    "workflow_config_validated": true,
+    "new_remote_head_results": "Must be checked after publication; local checks do not establish Windows/macOS or all CI success"
+  },
+  "native_terrain_objects": {
+    "complete": true,
+    "replay_ticks": 441,
+    "checker_sha256": "10388e2b3a24f8dfac1742c01966ad52df4c762018aa71a358506611d6bb35cc",
+    "report_source_fingerprint_sha256": "12f9bb0597b8674d48a78b64f7f28892042645a8b41b64ee1832fffc8b799ee2",
+    "physical_driving_positive": true,
+    "original_zero_ground_member_assertion_passed": false,
+    "ground_only_collision_relevant_aabbs": 0
+  }
+}
