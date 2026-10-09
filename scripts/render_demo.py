@@ -224,12 +224,22 @@ def main():
     images=[render(run,frames[i],i) for i in indices]
     args.output.parent.mkdir(parents=True,exist_ok=True)
     images[0].save(args.output,save_all=True,append_images=images[1:],duration=[100]*(len(images)-1)+[1400],loop=0,optimize=False)
+    # Pillow merges identical adjacent frames (e.g. the final stopped sample).
+    # Verify the encoded timeline and report its actual frame count.
+    with Image.open(args.output) as image:
+        assert image.size==(WIDTH,HEIGHT) and 0<image.n_frames<=len(images)
+        gif_frames=image.n_frames
+        gif_duration_ms=0
+        for index in range(gif_frames):
+            image.seek(index)
+            gif_duration_ms+=image.info['duration']
+        assert gif_duration_ms==(len(images)-1)*100+1400
     preview_index=next((j for j,i in enumerate(indices) if frames[i]['time']>=7.5),len(images)//3)
     images[preview_index].save(args.output.with_suffix('.png'))
     backend=run.get('backend', 'reference-bicycle')
     provenance={'schema_version':1,'backend':backend,'input_trace':str(args.run),
                 'scenario':run['scenario'],'summary':run['summary'],
-                'gif_frames':len(images),'playback_speed':3,
+                'gif_frames':gif_frames,'playback_speed':3,
                 'renderer_command':f'python3 scripts/render_demo.py {args.run} --output {args.output}'}
     if run.get('navigation'):
         provenance['navigation']=run['navigation']
@@ -262,9 +272,7 @@ def main():
             provenance['command']=f'cargo run --release --locked --bin rustdrive -- run --scenario {source_path} --seed {seed} --output {args.run.parent}'
         break
     args.output.with_suffix('.json').write_text(json.dumps(provenance,indent=2)+'\n')
-    with Image.open(args.output) as image:
-        assert image.n_frames==len(images) and image.size==(WIDTH,HEIGHT)
-    print(f'{args.output}: {len(images)} frames, {WIDTH}x{HEIGHT}, {args.output.stat().st_size:,} bytes')
+    print(f'{args.output}: {gif_frames} frames, {WIDTH}x{HEIGHT}, {args.output.stat().st_size:,} bytes')
 
 
 if __name__=='__main__':main()

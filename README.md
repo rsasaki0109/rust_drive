@@ -54,9 +54,9 @@ The integration has its own lockfile and does not enlarge the default workspace 
 bash scripts/check-hazards.sh
 ```
 
-After RNE setup, this CPU-only command runs occlusion, lateral crossings, multiple blocked alternatives, low-friction avoidance and low-friction stopping across seeds 1, 7 and 42. It checks physical outcomes and recomputes every sensor log. All 120 positive local reference/RNE scenario runs pass, including 24 live-navigation, 36 GNSS-fault and 18 reactive-traffic runs. Fixed minimum-clearance floors also guard the fixtures. The planner computes bounded acceleration profiles, uses their arrival times for circular sweeps, and rechecks retimed stops and stationary holds. The suite also checks profile kinematics independently. [Current reactive-traffic results and retained deadline failures](docs/reactive-traffic.md); [terminal-stop baseline](docs/terminal-stopping.md); [GNSS gating baseline](docs/gnss-robustness.md); [tracking improvements](docs/tracking.md); [earlier swept-check regressions](docs/swept-planning.md).
+After RNE setup, this CPU-only command runs occlusion, lateral crossings, multiple blocked alternatives, low-friction avoidance and low-friction stopping across seeds 1, 7 and 42. It checks physical outcomes and recomputes every sensor log. All 126 positive local reference/RNE scenario runs pass, including 24 live-navigation, 42 GNSS-fault and 24 reactive-traffic runs. Fixed minimum-clearance floors also guard the fixtures. The planner computes bounded acceleration profiles, uses their arrival times for circular sweeps, and rechecks retimed stops and stationary holds. The suite also checks profile kinematics independently. [Current observed-braking results](docs/observed-braking.md); [reactive-traffic baseline](docs/reactive-traffic.md); [terminal-stop baseline](docs/terminal-stopping.md); [GNSS gating baseline](docs/gnss-robustness.md); [tracking improvements](docs/tracking.md); [earlier swept-check regressions](docs/swept-planning.md).
 
-Two additional short RNE follower episodes remain collision-free but miss their 65 s goal-residence deadline; they are recorded separately and excluded from the positive count. [Outcome details](docs/reactive-traffic.md).
+The original short follower fixture now completes its eight-second goal residence within 65 s in both plants across all three seeds. Two additional RNE cases with a five-meter follower sensing range fail the unchanged 1 m clearance floor and remain excluded from the positive count. [Measured changes and limitations](docs/observed-braking.md).
 
 The previously failing GNSS burst with scheduled traffic now reaches the goal without collisions. An additional fixture keeps evaluation running for 16 seconds after arrival, while the lead actor catches up to the endpoint. [Actual RNE recording, measurements and limits](docs/terminal-stopping.md).
 
@@ -66,7 +66,7 @@ The tracking baseline produced 9/8/7 emergency ticks across the three seeds, com
 
 ## Reactive traffic and stopped leads
 
-Optional simulator actors now follow their route with bounded acceleration, braking and finite-range proximity observations. Both plants exercise waiting for a stopped lead, resuming, braking behind ego during a GNSS outage and forming a stopped queue. The ego stack still uses constant-velocity prediction; conservative repeated stops near a narrow-road goal remain visible. [Actual RNE GIF, actor sensing boundary, measurements and failures](docs/reactive-traffic.md).
+Optional simulator actors now follow their route with bounded acceleration, braking and finite-range proximity observations. Both plants exercise waiting for a stopped lead, resuming, braking behind ego during a GNSS outage and forming a stopped queue. The ego stack uses sustained observed braking for at most one second, then coasts; conservative repeated stops near a narrow-road goal remain visible. [Measured prediction improvement](docs/observed-braking.md). [Actual RNE GIF, actor sensing boundary, measurements and failures](docs/reactive-traffic.md).
 
 ```sh
 cargo run --release --locked --bin rustdrive -- run \
@@ -92,7 +92,7 @@ cargo run --release --locked --bin rustdrive -- run \
 | Perception | Unlabeled first-return planar LiDAR, range-adaptive clustering, bounded circle fitting, alpha-beta tracking |
 | Localization | Three-state extended Kalman filter with wheel-speed / gyro prediction, joint GNSS innovation gate, Joseph covariance correction and acceptance diagnostics |
 | Mapping / navigation | Validated directed road graph, deterministic Dijkstra, live closure snapshots, stopped detour handover and destination selection; ray-updated log-odds occupancy grid |
-| Prediction | Constant-velocity trajectories with a low-speed deadband; planning adds a time-dependent margin |
+| Prediction | Constant-velocity baseline with a low-speed deadband; sustained observed braking for at most one second, then coasting; planning adds a time-dependent margin |
 | Planning | Three lateral candidates, smooth route geometry and quintic maneuvers joined from the estimated position / heading, synchronized circular sweeps, reachable acceleration / local curvature speed profiles, retimed stop/wait/resume and goal behavior |
 | Control | Interpolated pure pursuit, acceleration feedforward with bounded PI speed feedback, steering-rate limit, independent freshness / numeric guard |
 | Pipeline / replay | Transport-independent timestamped observations, health checks, full-output JSONL verification |
@@ -130,13 +130,14 @@ cargo run --release --locked --bin rustdrive -- run \
   --scenario scenarios/lidar-fault.json --seed 7 --output artifacts/lidar-fault
 ```
 
-CI checks formatting, Clippy, the workspace test suite, release builds, and the closed-loop demo on Linux, macOS, and Windows, plus GIF generation and the pinned CPU-only RNE integration on Linux. All five jobs passed for the preceding terminal-stopping revision in [run 37875855573](https://github.com/rsasaki0109/rust_drive/actions/runs/37875855573). See [validation and limitations](docs/validation.md) for the checks actually executed and the initial infrastructure/toolchain failures.
+CI checks formatting, Clippy, the workspace test suite, release builds, and the closed-loop demo on Linux, macOS, and Windows, plus GIF generation and the pinned CPU-only RNE integration on Linux. All five jobs passed for the preceding reactive-traffic revision `4620878` in [run 37879754523](https://github.com/rsasaki0109/rust_drive/actions/runs/37879754523). See [validation and limitations](docs/validation.md) for the checks actually executed and the initial infrastructure/toolchain failures.
 
 ## Architecture and contributing
 
 Ten small Cargo crates share transport-independent, serializable contracts. Algorithm implementations are ordinary synchronous Rust libraries. No custom executor or networking middleware is required. The optional RNE adapter and future ROS 2/CARLA bridges translate at the boundaries rather than become dependencies of the algorithms.
 
-- [Reactive traffic, stop/resume and retained deadline failures](docs/reactive-traffic.md)
+- [Observed braking, repaired deadline and current regression results](docs/observed-braking.md)
+- [Reactive traffic, stop/resume and historical deadline failures](docs/reactive-traffic.md)
 - [Terminal stopping, post-arrival evaluation and repaired traffic regression](docs/terminal-stopping.md)
 - [GNSS rejection, stopping/recovery and historical traffic failure](docs/gnss-robustness.md)
 - [Avoidance continuity and the repaired 6 m/s regression](docs/avoidance-continuity.md)

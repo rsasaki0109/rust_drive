@@ -10,7 +10,7 @@ use rustdrive_localization::Ekf;
 use rustdrive_mapping::OccupancyGrid;
 use rustdrive_perception::{LidarClusters, Tracker};
 use rustdrive_planning::LatticePlanner;
-use rustdrive_prediction::ConstantVelocity;
+use rustdrive_prediction::ObservedBraking;
 use serde::{Deserialize, Serialize};
 
 /// Conservative, externally calibrated planning limits, independent of simulator truth.
@@ -151,7 +151,7 @@ pub struct DrivingPipeline {
     ekf: Ekf,
     perception: LidarClusters,
     tracker: Tracker,
-    predictor: ConstantVelocity,
+    predictor: ObservedBraking,
     planner: LatticePlanner,
     controller: PurePursuit,
     grid: OccupancyGrid,
@@ -211,7 +211,7 @@ impl DrivingPipeline {
             ekf,
             perception: LidarClusters,
             tracker: Tracker::default(),
-            predictor: ConstantVelocity::default(),
+            predictor: ObservedBraking::default(),
             planner,
             controller,
             grid,
@@ -301,7 +301,7 @@ impl DrivingPipeline {
         if !variance.is_finite() || !(0.0..=4.0).contains(&variance) {
             health.push(HealthIssue::LocalizationUncertain);
         }
-        let predictions = self.predictor.predict(&self.tracks);
+        let predictions = self.predictor.predict(&self.tracks, input.time);
         let mut switched = false;
         if let Some(nav) = &mut self.navigator {
             switched = nav.step(

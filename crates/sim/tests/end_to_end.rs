@@ -526,6 +526,7 @@ fn reactive_traffic_stops_resumes_and_replays_from_ego_observations() {
         "traffic-lead-stop",
         "traffic-follower-brake",
         "traffic-queue",
+        "traffic-follower-deadline",
     ] {
         let result = simulate(scenario(name), 7).unwrap();
         assert!(result.summary.passed, "{name}: {:?}", result.summary);

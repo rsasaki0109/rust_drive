@@ -10,13 +10,13 @@ import sys
 
 ROOT = Path(__file__).resolve().parent.parent
 CASES = {
-    'reference': ['occluded-crossing', 'cut-in', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue'],
-    'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue'],
+    'reference': ['occluded-crossing', 'cut-in', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue', 'traffic-follower-deadline'],
+    'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue', 'traffic-follower-deadline'],
 }
 # Fixed regression floors, chosen against the preceding measured fixture results.
 # They are simulation test constraints, not a universal safe-distance specification.
 CLEARANCE_FLOORS_M = {
-    'traffic-lead-stop': 1.0, 'traffic-follower-brake': 1.0, 'traffic-queue': 1.0,
+    'traffic-lead-stop': 1.0, 'traffic-follower-brake': 1.0, 'traffic-queue': 1.0, 'traffic-follower-deadline': 1.0,
     'gnss-burst-traffic': 0.5, 'gnss-burst-traffic-hold': 0.5, 'gnss-spike': 0.5, 'gnss-burst': 0.5, 'gnss-persistent-bias': 4.0,
     'occluded-crossing': 1.0, 'cut-in': 0.7, 'multiple-blocked': 3.0,
     'opposing-crossings': 0.7, 'low-friction': 0.4, 'low-friction-stop': 4.0,
@@ -318,7 +318,7 @@ def check_traffic(run, log, case):
         minimum_fault_speed = min(f['traffic'][0]['speed_m_s'] for f in frames if 12 <= f['time'] < fault_end)
         if ego_hold < 1.0 or (case == 'traffic-follower-brake' and actor_hold < 0.25) or minimum_fault_speed >= 2.0:
             raise ValueError('ego/follower did not physically stop during the GNSS fault')
-        if not any(16 < f['time'] < 30 and f['traffic'][0]['speed_m_s'] > 2.0 and f['truth']['speed'] > 2.0 for f in frames):
+        if case != 'traffic-follower-short-range' and not any(16 < f['time'] < 30 and f['traffic'][0]['speed_m_s'] > 2.0 and f['truth']['speed'] > 2.0 for f in frames):
             raise ValueError('reactive follower and ego never resumed')
         if not any('StaleGnss' in t['expected']['health'] for t in ticks):
             raise ValueError('ego braking fixture did not exercise accepted-GNSS expiry')
@@ -331,7 +331,7 @@ def check_traffic(run, log, case):
             if f['truth']['speed'] >= 0.2 or f['truth']['pose']['position']['x'] < length-2.0:
                 break
             residence = frames[-1]['time']-f['time']
-        if case == 'traffic-follower-brake' and (residence < 8.0-1e-8 or not run['summary']['reached_goal']):
+        if case in ['traffic-follower-brake', 'traffic-follower-deadline'] and (residence < 8.0-1e-8 or not run['summary']['reached_goal']):
             raise ValueError('ego did not remain at the goal for the complete physical hold')
     return {'sensor_samples': sensor_samples, 'max_measured_actor_acceleration_m_s2': max_acceleration,
             'minimum_actor_pair_clearance_m': minimum_pair if math.isfinite(minimum_pair) else None,
@@ -465,6 +465,71 @@ def check_speed_profiles(log):
             'max_deceleration_m_s2': max_deceleration}
 
 
+def check_motion_predictions(log):
+    """Check forecast physics and observation support from the sensor log alone."""
+    history = {}
+    forecasts = braking_forecasts = stale_fallbacks = reacceleration_fallbacks = 0
+    max_deceleration = 0.0
+    with log.open() as stream:
+        next(stream)
+        for line in stream:
+            record = json.loads(line)
+            if record.get('kind') != 'tick':
+                continue
+            tick = record['tick']
+            now = tick['input']['time']
+            tracks = {t['id']: t for t in tick['expected']['tracks']}
+            history = {id: samples for id, samples in history.items() if id in tracks}
+            for forecast in tick['expected']['predictions']:
+                track = tracks[forecast['id']]
+                samples = history.setdefault(track['id'], [])
+                if samples and track['last_seen'] < samples[-1]['last_seen']:
+                    samples.clear()
+                if not samples or track['last_seen'] > samples[-1]['last_seen']:
+                    samples.append(track)
+                samples[:] = [s for s in samples if track['last_seen']-s['last_seen'] <= 0.8+1e-9][-32:]
+                v = math.hypot(*xy(track['velocity']))
+                dt = forecast['dt']
+                positions = list(map(xy, forecast['positions']))
+                origin = xy(track['position'])
+                baseline = [(origin[0]+track['velocity']['x']*i*dt*(v >= 0.7),
+                             origin[1]+track['velocity']['y']*i*dt*(v >= 0.7)) for i in range(len(positions))]
+                changed = any(math.dist(a, b) > 1e-8 for a, b in zip(positions, baseline))
+                forecasts += 1
+                stale = now-track['last_seen'] > 0.15+1e-9
+                reaccelerating = len(samples) >= 2 and v >= math.hypot(*xy(samples[-2]['velocity']))
+                if changed and (stale or reaccelerating or v < 0.7):
+                    raise ValueError('braking forecast lacks fresh decreasing-speed support')
+                stale_fallbacks += int(stale and not changed)
+                reacceleration_fallbacks += int(reaccelerating and not changed)
+                if not changed:
+                    continue
+                braking_forecasts += 1
+                old = min(samples, key=lambda s: abs(s['last_seen']-(track['last_seen']-0.6)))
+                if abs(track['last_seen']-old['last_seen']-0.6) > 0.025 or math.hypot(*xy(old['velocity']))-v < 0.18-1e-8:
+                    raise ValueError('braking hypothesis appeared without sustained measured deceleration')
+                if len(positions) != 41 or abs(dt-0.2) > 1e-9 or math.dist(origin, positions[0]) > 1e-8:
+                    raise ValueError('forecast horizon, spacing or initial state changed')
+                direction = (track['velocity']['x']/v, track['velocity']['y']/v)
+                distance = [(p[0]-origin[0])*direction[0]+(p[1]-origin[1])*direction[1] for p in positions]
+                for p, d in zip(positions, distance):
+                    if math.dist(p, (origin[0]+direction[0]*d, origin[1]+direction[1]*d)) > 1e-8:
+                        raise ValueError('braking forecast invented lateral motion')
+                means = [(b-a)/dt for a, b in zip(distance, distance[1:])]
+                if min(means) < -1e-8 or max(means) > v+1e-8:
+                    raise ValueError('braking forecast reverses or accelerates')
+                for a, b in zip(means, means[1:]):
+                    deceleration = (a-b)/dt
+                    if not -1e-8 <= deceleration <= 2.0+1e-8:
+                        raise ValueError('forecast exceeds bounded deceleration')
+                    max_deceleration = max(max_deceleration, deceleration)
+                if max(means[5:])-min(means[5:]) > 1e-8:
+                    raise ValueError('braking assumption persisted beyond one second')
+    return {'verified': True, 'forecasts': forecasts, 'braking_forecasts': braking_forecasts,
+            'stale_fallbacks': stale_fallbacks, 'reacceleration_fallbacks': reacceleration_fallbacks,
+            'max_forecast_deceleration_m_s2': max_deceleration}
+
+
 def control_metrics(log):
     """Measure actual emitted commands, including emergency transitions."""
     count = emergency = pairs = 0
@@ -549,6 +614,9 @@ def main():
                           and row.get('replay', {}).get('verified') is True
                           and row['replay']['ticks'] == summary['steps'])
                     row['speed_profiles'] = check_speed_profiles(output/'sensors.jsonl')
+                    row['motion_predictions'] = check_motion_predictions(output/'sensors.jsonl')
+                    if case == 'traffic-follower-deadline' and not row['motion_predictions']['braking_forecasts']:
+                        raise ValueError('deadline regression did not exercise observed-braking forecasts')
                     row['control_metrics'] = control_metrics(output/'sensors.jsonl')
                     row['clearance_regression'] = clearance_regression(summary, case)
                     ok &= row['clearance_regression']['passed']
@@ -583,26 +651,27 @@ def main():
     if 'rne-dynamic' in backends:
         report['known_failures'] = []
         for seed in [1, 42]:
-            output = args.output/'known-failure/traffic-follower-deadline'/f'seed-{seed}'
+            output = args.output/'known-failure/traffic-follower-short-range'/f'seed-{seed}'
             output.mkdir(parents=True, exist_ok=True)
             (output/'summary.json').unlink(missing_ok=True)
             (output/'replay/replay.json').unlink(missing_ok=True)
-            code, error = invoke([rne, '--plant', 'dynamic', '--scenario', ROOT/'scenarios/traffic-follower-deadline.json', '--seed', seed, '--output', output])
+            code, error = invoke([rne, '--plant', 'dynamic', '--scenario', ROOT/'scenarios/traffic-follower-short-range.json', '--seed', seed, '--output', output])
             summary = json.loads((output/'summary.json').read_text())
             replay_code, replay_error = invoke([cli, 'replay', '--log', output/'sensors.jsonl', '--output', output/'replay'])
             replay = json.loads((output/'replay/replay.json').read_text())
             run = json.loads((output/'run.json').read_text())
-            traffic = check_traffic(run, output/'sensors.jsonl', 'traffic-follower-deadline')
+            traffic = check_traffic(run, output/'sensors.jsonl', 'traffic-follower-short-range')
+            predictions = check_motion_predictions(output/'sensors.jsonl')
             rejected = (code == 1 and not summary['passed'] and not summary['reached_goal']
                         and summary['collisions'] == 0 and summary['road_violations'] == 0
                         and summary.get('traffic_collisions', 0) == 0 and summary.get('traffic_road_violations', 0) == 0
-                        and summary['min_clearance'] >= 1.0 and replay_code == 0 and replay['verified']
-                        and replay['ticks'] == summary['steps'] and summary['failures'] == ['goal not reached within duration'])
-            report['known_failures'].append({'backend': 'rne-dynamic', 'scenario': 'traffic-follower-deadline',
+                        and summary['min_clearance'] < 1.0 and replay_code == 0 and replay['verified']
+                        and replay['ticks'] == summary['steps'] and any(f.startswith('minimum swept clearance') for f in summary['failures']))
+            report['known_failures'].append({'backend': 'rne-dynamic', 'scenario': 'traffic-follower-short-range',
                 'seed': seed, 'exit_code': code, 'summary': summary, 'replay': replay,
-                'traffic': traffic, 'acceptance_rejection_verified': bool(rejected)})
+                'traffic': traffic, 'motion_predictions': predictions, 'acceptance_rejection_verified': bool(rejected)})
             report['passed'] &= bool(rejected)
-            print(f'rne-dynamic traffic-follower-deadline seed {seed}: deadline failure retained; rejection verified={rejected}', flush=True)
+            print(f'rne-dynamic traffic-follower-short-range seed {seed}: short-range clearance failure; rejection verified={rejected}', flush=True)
     report_file.write_text(json.dumps(report, indent=2)+'\n')
     print(f'{report_file}: {len(report["runs"])} runs; passed={report["passed"]}')
     return 0 if report['passed'] else 1

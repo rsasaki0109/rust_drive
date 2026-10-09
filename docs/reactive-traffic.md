@@ -1,4 +1,6 @@
-# Reactive traffic, stopped leads and queues
+# Reactive traffic baseline, stopped leads and queues
+
+This page records the reactive-traffic baseline at `4620878`, including its two genuine deadline failures. Its compact results remain unchanged. The [observed-braking extension](observed-braking.md) supersedes the current forecast, run counts and deadline outcomes while preserving the original fixture and acceptance criteria.
 
 RustDrive now has a stateful simulator traffic world shared by the reference and CPU-only RNE adapters. Optional route-following actors adjust speed from finite-range proximity observations. The ego vehicle continues to run the unchanged sensor-only localization, perception, prediction, planning and control pipeline. Existing analytic scheduled actors and all 102 preceding positive scenarios are retained.
 
@@ -30,7 +32,7 @@ Reactive cases record every 20 Hz truth tick in `run.json`, including actor stat
 
 The independent Python checker reconstructs proximity observations from pre-step truth geometry, reconstructs closing speed from gap differences, checks measured velocity/distance integration without position clamps, and verifies acceleration authority. It separately recomputes actor-pair swept clearance, checks the physical stops/resumption/queue, rejects injected GNSS, and verifies post-arrival residence. A complete reference run with renamed opaque adapter body IDs has identical physical results; evaluator identity is not a scenario-array index. Negative tests prove that insufficient sensing range can cause an actor collision, and that collisions between traffic actors or endpoint overruns fail physical acceptance rather than disappearing behind ego-only scoring.
 
-## Measured results (2026-10-09, Asia/Tokyo)
+## Baseline measured results (2026-10-09, Asia/Tokyo)
 
 Local formatting, Clippy with warnings denied, locked builds, **123 workspace tests** and **15 RNE tests** pass. The reference script passes **23 scenario/replay pairs**. All **120 positive runs** (57 reference and 63 RNE) pass across seeds 1/7/42, including 18 new traffic runs and all previous 102 cases. Every positive run has zero ego/traffic collisions, road/closure violations, complete replay and its unchanged prior clearance/profile/normal-steering gates. Two separately retained RNE deadline failures are **not** counted as successful runs. [Complete compact results and source fingerprint](traffic-results.json).
 
@@ -52,6 +54,8 @@ The ego predictor remains constant velocity and does not know that a follower wi
 The original shorter trial is preserved as `traffic-follower-deadline`: fault window [10,14), episode limit 65 s and eight-second residence. RNE seeds 1 and 42 remain collision-free but do not finish the required residence before the deadline. The CLI returns **1** and all 1301 ticks still replay; the suite and a native regression require explicit physical rejection. The longer positive case has **different** fault and evaluation durations to exercise an actual follower standstill; it does not repair or relabel the 65-second failure. Its original world, timing and criteria are kept unchanged in the retained fixture. `traffic-results.json` records both outcomes separately.
 
 ## Reproduce
+
+These commands describe the baseline. Its deadline command returns 1 on `4620878`; the current implementation repairs that outcome. Use [current commands and results](observed-braking.md) when developing on the latest branch.
 
 ```sh
 bash scripts/check.sh

@@ -16,7 +16,7 @@ flowchart LR
   S --> P[LiDAR clustering + circle fit]
   L --> P
   P --> T[Alpha-beta tracking]
-  T --> F[Constant-velocity prediction]
+  T --> F[Observed braking / constant-velocity prediction]
   S --> M[Log-odds occupancy map]
   L --> M
   N[Supplied road graph + destination + closure snapshots] --> D[Dijkstra routing]
@@ -46,7 +46,7 @@ Ground truth never flows into obstacle prediction or planning. The simulator ini
 | `rustdrive-localization` | State and covariance estimation, innovation gating | core |
 | `rustdrive-perception` | Point clustering, circular-object fitting, track identity and velocity | core |
 | `rustdrive-mapping` | Bounded occupancy grid and ray updates | core |
-| `rustdrive-prediction` | Time-indexed constant-velocity baseline | core |
+| `rustdrive-prediction` | Time-indexed observed braking and constant-velocity baseline | core |
 | `rustdrive-planning` | Candidate selection, maneuver persistence, braking / goal modes | core |
 | `rustdrive-control` | Longitudinal and lateral actuation, freshness guard | core |
 | `rustdrive-pipeline` | Sensor-only orchestration, freshness/health, versioned recording and replay | core + algorithm crates, serde / serde_json |
@@ -80,7 +80,7 @@ Missing/stale odometry, LiDAR or GNSS, invalid samples, excessive covariance and
 
 **Mapping.** A 0.5 m world-aligned log-odds grid records ray free-space and hit endpoints. It exports occupied cells for debugging. No-return beams are not exported by the sensor and therefore do not clear the entire sensing horizon. Dynamic-object ghost cells and repeated discretized ray cells remain limitations. The grid does not supply the current planner's collision geometry and does not perform SLAM or route discovery.
 
-**Prediction.** Eight seconds of constant-velocity extrapolation at 0.2 s spacing. Velocities below 0.7 m/s are treated as static to suppress tracking jitter. This heuristic can miss slowly moving objects. Planning adds a margin growing up to five seconds; the margin is heuristic, not a calibrated probability or covariance.
+**Prediction.** Eight seconds of motion forecasting at 0.2 s spacing. `ObservedBraking` keeps at most 0.8 s / 32 samples per present track. Three 0.2 s observation intervals must each show at least 0.3 m/s² deceleration with direction agreement at least 0.98. It uses half the weakest observed deceleration, capped at 2 m/s², for at most one second; then it coasts at the reduced speed, without reversal. Insufficient evidence, a fresh non-decreasing speed sample, direction changes or observation age over 0.15 s select the unchanged constant-velocity baseline. Duplicate timestamps do not extend evidence; absent tracks lose history. This is a single measured-motion hypothesis, not an interaction model or guarantee of future braking. [Results and limitations](observed-braking.md). Velocities below 0.7 m/s are treated as static to suppress tracking jitter. This heuristic can miss slowly moving objects. Planning adds a margin growing up to five seconds; the margin is heuristic, not a calibrated probability or covariance.
 
 **Planning.** The supplied polyline route is parameterized by arc length. Lateral targets are `0`, `+3.5`, and `−3.5` m, filtered by road width and the ego circular footprint. An anchored quintic shift preserves maneuver progress across replans; a fading position/tangent correction joins it from the current estimated position and heading when actual steering lags. The planner penalizes sign changes and avoids jumping to the opposite side once the vehicle is displaced. A small center-return penalty retains an unfinished lateral shift while an observed obstacle still spans the centerline ahead within the horizon. It expires when the anchored shift completes, or when the object is behind the circular footprints or clear of the centerline, and never bypasses candidate feasibility checks. [Policy and measured regression](avoidance-continuity.md). The planner interpolates supplied route knots with quintic Hermite centerline segments sharing position and first/second derivatives, and applies continuous normal offsets. The supplied polyline corridor remains unchanged; generated samples are checked against it. Each candidate starts with 81 geometric samples over up to 40 m. Circular collision envelopes are swept continuously along their connecting segments against linearly interpolated predictions, splitting at every intervening prediction knot. Prediction endpoints remain occupied after the forecast horizon. Malformed forecasts return an emergency trajectory.
 

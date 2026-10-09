@@ -513,17 +513,37 @@ mod tests {
         }
     }
     #[test]
-    fn conservative_follower_goal_deadline_is_explicitly_rejected() {
-        for seed in [1, 42] {
+    fn observed_braking_repairs_the_unchanged_follower_deadline() {
+        for seed in [1, 7, 42] {
             let r = run(scenario("traffic-follower-deadline"), seed, Plant::Dynamic).unwrap();
-            assert!(!r.summary.passed);
-            assert!(!r.summary.reached_goal);
+            assert!(r.summary.passed, "{:?}", r.summary);
+            assert!(r.summary.reached_goal);
+            assert!(r.summary.simulated_seconds <= 65.0);
+            assert!(r.summary.min_clearance >= 1.0);
             assert_eq!(r.summary.collisions + r.summary.traffic_collisions, 0);
+            let end = r.frames.last().unwrap().time;
+            for frame in r.frames.iter().filter(|f| f.time >= end - 8.0 - 1e-9) {
+                assert!(frame.truth.speed < 0.2);
+                assert!(frame.truth.pose.position.x >= 158.0);
+            }
+        }
+    }
+    #[test]
+    fn insufficient_follower_sensing_still_fails_the_physical_clearance_floor() {
+        for seed in [1, 42] {
+            let r = run(
+                scenario("traffic-follower-short-range"),
+                seed,
+                Plant::Dynamic,
+            )
+            .unwrap();
+            assert!(!r.summary.passed);
+            assert!(r.summary.min_clearance < 1.0);
             assert!(
                 r.summary
                     .failures
                     .iter()
-                    .any(|f| f.contains("goal not reached"))
+                    .any(|f| f.contains("minimum swept clearance"))
             );
         }
     }

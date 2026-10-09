@@ -2,7 +2,7 @@
 
 ## Toolchain and commands
 
-Rust 1.90.0 is pinned, edition 2024. Use `cargo build --workspace --locked`, `cargo test --workspace --locked`, `cargo fmt --all --check`, and `cargo clippy --workspace --all-targets --locked -- -D warnings`. `bash scripts/check.sh` additionally builds release binaries and runs twenty-three reference scenarios and verifies their sensor logs. Optional friction fixtures run through the RNE hazard suite. Keep `Cargo.lock` under version control and use `--locked` in CI and installation. Four build jobs are a suitable default for the cloud machine; `RUSTDRIVE_BUILD_JOBS` overrides setup parallelism.
+Rust 1.90.0 is pinned, edition 2024. Use `cargo build --workspace --locked`, `cargo test --workspace --locked`, `cargo fmt --all --check`, and `cargo clippy --workspace --all-targets --locked -- -D warnings`. `bash scripts/check.sh` additionally builds release binaries and runs twenty-four reference scenarios and verifies their sensor logs. Optional friction fixtures run through the RNE hazard suite. Keep `Cargo.lock` under version control and use `--locked` in CI and installation. Four build jobs are a suitable default for the cloud machine; `RUSTDRIVE_BUILD_JOBS` overrides setup parallelism.
 
 The checkout already provides task isolation in Codex cloud. Use the existing `/workspace/rust_drive` checkout; do not create additional Git worktrees unless explicitly requested.
 
@@ -68,7 +68,7 @@ A later gate is a CARLA synchronous fixed-step bridge with timestamped sensors, 
 
 ## Hazard and friction fixtures
 
-`bash scripts/check-hazards.sh` builds both release binaries, runs 120 positive reference/RNE scenario runs across seeds 1/7/42 and verifies complete replay. Results include actual acceleration checks for friction fixtures and a source fingerprint; the command returns failure if either physical acceptance or replay fails. It uses standard-library Python only. The repaired GNSS traffic world and its extended terminal-hold variant remain positive regressions. Three reactive-traffic fixtures add 18 positive runs; two separate RNE 65-second deadline failures must remain physically rejected and are excluded from that count. See [reactive traffic](reactive-traffic.md).
+`bash scripts/check-hazards.sh` builds both release binaries, runs 126 positive reference/RNE scenario runs across seeds 1/7/42 and verifies complete replay. Results include actual acceleration checks for friction fixtures and a source fingerprint; the command returns failure if either physical acceptance or replay fails. It uses standard-library Python only. The repaired GNSS traffic world and its extended terminal-hold variant remain positive regressions. Four reactive-traffic fixtures cover 24 positive runs, including the repaired original 65-second deadline. Two separate RNE five-meter follower sensing cases must fail the unchanged clearance floor and are excluded from that count. Sensor-log-only checks validate braking evidence, bounded forward forecast kinematics and fallback. See [observed braking](observed-braking.md). See [reactive traffic](reactive-traffic.md).
 
 Optional scenario `dynamics` supplies `friction_coefficient` (0.1–1.2) and `steering_lag_s` (0–1 s). These fields require RNE `--plant dynamic`; other plants reject them. They are fixed known calibration, not online estimation. Existing scenarios without the fields keep nominal behavior. `PipelineConfig.motion_limits` contains optional conservative `max_deceleration_m_s2` and `max_lateral_acceleration_m_s2`, which are validated and recorded in replay headers.
 
