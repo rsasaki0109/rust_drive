@@ -12,6 +12,6 @@ python3 -c 'import PIL' >/dev/null || { echo 'Activate the documented Pillow env
 rne_trace_directory="${3:-artifacts/rne-3d}"
 cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- \
   --scenario "${2:-scenarios/route-handover-fast.json}" --plant dynamic --seed 7 --output "$rne_trace_directory"
-cargo run --release --locked --bin rustdrive -- replay \
+cargo run --release --locked --bin rustdriving -- replay \
   --log "$rne_trace_directory/sensors.jsonl" --output "$rne_trace_directory/replay"
 python3 scripts/render_demo_3d.py "$rne_trace_directory/run.json" --output "${1:-artifacts/rne-3d/demo.gif}" "${@:4}"

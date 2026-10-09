@@ -1,10 +1,10 @@
 //! Offline measured geometry evaluation; reference labels never enter algorithms.
 mod adaptive;
-use rustdrive_core::{Pose, Vec2, Vec3, wrap_angle};
-use rustdrive_dataset_eval::{parse_pcd, parse_vtk, read_bounded};
-use rustdrive_localization::registration::{RegistrationConfig, RegistrationResult, match_scan};
-use rustdrive_perception::ground3d::{TerrainConfig, classify_ground};
-use rustdrive_perception::objects3d::{ObjectClusterConfig, cluster_objects};
+use rustdriving_core::{Pose, Vec2, Vec3, wrap_angle};
+use rustdriving_dataset_eval::{parse_pcd, parse_vtk, read_bounded};
+use rustdriving_localization::registration::{RegistrationConfig, RegistrationResult, match_scan};
+use rustdriving_perception::ground3d::{TerrainConfig, classify_ground};
+use rustdriving_perception::objects3d::{ObjectClusterConfig, cluster_objects};
 use serde_json::{Value, json};
 use std::collections::{BTreeMap, BTreeSet};
 use std::io::Write;
@@ -391,7 +391,7 @@ fn run() -> Result<(), String> {
             "--output" => output = PathBuf::from(args.next().ok_or("--output needs file")?),
             "--help" | "-h" => {
                 println!(
-                    "rustdrive-dataset-eval [--python PYTHON] [--repository REPO] [--data-root RAW_BASE] [--output REPORT.json]\nRequires downloaded SHA-pinned ISPRS and apartment data and python3 for the existing verification helper. No download occurs."
+                    "rustdriving-dataset-eval [--python PYTHON] [--repository REPO] [--data-root RAW_BASE] [--output REPORT.json]\nRequires downloaded SHA-pinned ISPRS and apartment data and python3 for the existing verification helper. No download occurs."
                 );
                 return Ok(());
             }

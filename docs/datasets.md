@@ -1,6 +1,6 @@
 # Measured-data evaluation sources
 
-RustDrive has revision- and SHA-pinned acquisition manifests for two small measured point-cloud sources. **Acquisition verification is separate from algorithm acceptance**: downloaded bytes and documented labels establish inputs, not perception or localization performance. Raw data remain ignored because repository-level BSD notices do not establish separate redistribution rights for the identified original third-party datasets.
+RustDriving has revision- and SHA-pinned acquisition manifests for two small measured point-cloud sources. **Acquisition verification is separate from algorithm acceptance**: downloaded bytes and documented labels establish inputs, not perception or localization performance. Raw data remain ignored because repository-level BSD notices do not establish separate redistribution rights for the identified original third-party datasets.
 
 ```sh
 # Requires Python 3 and curl; checks TLS, sizes and SHA-256 before installation.
@@ -28,7 +28,7 @@ The car example files from libpointmatcher are omitted: their acquisition is ins
 ## Executable baseline and observed failures
 
 ```sh
-cargo run --release --locked --bin rustdrive-dataset-eval -- \
+cargo run --release --locked --bin rustdriving-dataset-eval -- \
   --python python --output artifacts/datasets/report.json
 python scripts/check-datasets.py --report artifacts/datasets/report.json \
   --output artifacts/datasets/oracle.json

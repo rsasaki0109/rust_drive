@@ -1,6 +1,6 @@
 # Development roadmap
 
-RustDrive's long-term target is a practical independent autonomous driving OSS. Milestones are capability gates, not release dates or claims of parity with Autoware, Apollo or openpilot.
+RustDriving's long-term target is a practical independent autonomous driving OSS. Milestones are capability gates, not release dates or claims of parity with Autoware, Apollo or openpilot.
 
 The near-term user goal is a **50% engineering maturity estimate**. [Capability waypoints and evidence requirements](maturity.md) define the development direction; the percentage is subjective and does not imply road safety or parity. The current estimate is about 15%; measured-ground/body processing and the integrated attributed external-map runs support the change, with general sharp-route and planar/terrain limits retained.
 

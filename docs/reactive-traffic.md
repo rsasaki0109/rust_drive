@@ -2,7 +2,13 @@
 
 This page records the reactive-traffic baseline at `4620878`, including its two genuine deadline failures. Its compact results remain unchanged. The [observed-braking extension](observed-braking.md) supersedes the current forecast, run counts and deadline outcomes while preserving the original fixture and acceptance criteria.
 
-RustDrive now has a stateful simulator traffic world shared by the reference and CPU-only RNE adapters. Optional route-following actors adjust speed from finite-range proximity observations. The ego vehicle continues to run the unchanged sensor-only localization, perception, prediction, planning and control pipeline. Existing analytic scheduled actors and all 102 preceding positive scenarios are retained.
+The later [urban road-user demo](road-users.md) adds opt-in timestamped
+infrastructure signal control to forward-lane actors, and `moving_until` to end
+prescribed pedestrian crossings at the far footpath. The baseline below used
+neither option. Both fields default to absent and retain legacy serialization
+and behavior. Neither provides semantic visual recognition or human intent.
+
+RustDriving now has a stateful simulator traffic world shared by the reference and CPU-only RNE adapters. Optional route-following actors adjust speed from finite-range proximity observations. The ego vehicle continues to run the unchanged sensor-only localization, perception, prediction, planning and control pipeline. Existing analytic scheduled actors and all 102 preceding positive scenarios are retained.
 
 ![Actual RNE waiting for a stopped lead and resuming](../assets/traffic-demo.gif)
 

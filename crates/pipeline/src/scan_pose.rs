@@ -1,5 +1,5 @@
 //! Bounded acquisition-time transforms from estimator history, never world truth.
-use rustdrive_core::{Pose, wrap_angle};
+use rustdriving_core::{Pose, wrap_angle};
 use std::collections::VecDeque;
 
 const HISTORY_SECONDS: f64 = 0.35;
@@ -50,7 +50,7 @@ impl ScanPoseHistory {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rustdrive_core::Vec2;
+    use rustdriving_core::Vec2;
     #[test]
     fn interpolates_translation_and_short_yaw_arc_without_extrapolation() {
         let mut h = ScanPoseHistory::default();

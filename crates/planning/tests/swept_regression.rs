@@ -1,5 +1,5 @@
-use rustdrive_core::{DrivingMode, EgoState, Planner, Prediction, Route, Vec2};
-use rustdrive_planning::LatticePlanner;
+use rustdriving_core::{DrivingMode, EgoState, Planner, Prediction, Route, Vec2};
+use rustdriving_planning::LatticePlanner;
 
 #[test]
 fn oncoming_obstacle_between_samples_requires_braking() {

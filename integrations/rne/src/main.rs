@@ -1,13 +1,13 @@
-use rustdrive_rne::{
+use rustdriving_rne::{
     Plant, run, run_with_scene, run_with_scene_adaptive_terrain_objects, run_with_scene_ground,
-    run_with_scene_ground_body, run_with_scene_lidar_3d, run_with_scene_multi_height,
-    run_with_scene_terrain_objects, scene::Scene,
+    run_with_scene_ground_body, run_with_scene_ground_body_precise, run_with_scene_lidar_3d,
+    run_with_scene_multi_height, run_with_scene_terrain_objects, scene::Scene,
 };
-use rustdrive_sim::Scenario;
+use rustdriving_sim::Scenario;
 use std::{env, error::Error, fs, io::BufWriter, path::PathBuf, process};
 fn main() {
     if let Err(e) = execute() {
-        eprintln!("rustdrive-rne: {e}");
+        eprintln!("rustdriving-rne: {e}");
         process::exit(2);
     }
 }
@@ -15,7 +15,7 @@ fn execute() -> Result<(), Box<dyn Error>> {
     let args: Vec<_> = env::args().skip(1).collect();
     if args.is_empty() || args[0] == "--help" {
         println!(
-            "rustdrive-rne --scenario FILE [--scene FILE] [--multi-height | --lidar-3d [--terrain-objects [--adaptive-terrain] | --ground-segmentation [--vehicle-body]]] [--plant kinematic|dynamic] [--seed N] [--output DIR]"
+            "rustdriving-rne --scenario FILE [--scene FILE] [--multi-height | --lidar-3d [--terrain-objects [--adaptive-terrain] | --ground-segmentation [--vehicle-body [--precise-capsule-rays]]]] [--plant kinematic|dynamic] [--seed N] [--output DIR]"
         );
         return Ok(());
     }
@@ -25,6 +25,7 @@ fn execute() -> Result<(), Box<dyn Error>> {
     let mut lidar_3d = false;
     let mut ground_segmentation = false;
     let mut vehicle_body = false;
+    let mut precise_capsule_rays = false;
     let mut terrain_objects = false;
     let mut adaptive_terrain = false;
     let mut plant = Plant::Kinematic;
@@ -50,6 +51,11 @@ fn execute() -> Result<(), Box<dyn Error>> {
         }
         if option == "--vehicle-body" {
             vehicle_body = true;
+            index += 1;
+            continue;
+        }
+        if option == "--precise-capsule-rays" {
+            precise_capsule_rays = true;
             index += 1;
             continue;
         }
@@ -95,6 +101,12 @@ fn execute() -> Result<(), Box<dyn Error>> {
     if vehicle_body && !ground_segmentation {
         return Err("--vehicle-body requires --ground-segmentation".into());
     }
+    if precise_capsule_rays && !(vehicle_body && ground_segmentation && lidar_3d) {
+        return Err(
+            "--precise-capsule-rays requires --lidar-3d --ground-segmentation --vehicle-body"
+                .into(),
+        );
+    }
     if adaptive_terrain && !terrain_objects {
         return Err("--adaptive-terrain requires --terrain-objects and --lidar-3d".into());
     }
@@ -116,7 +128,11 @@ fn execute() -> Result<(), Box<dyn Error>> {
         } else if terrain_objects {
             run_with_scene_terrain_objects(scenario, seed, plant, scene)?
         } else if vehicle_body {
-            run_with_scene_ground_body(scenario, seed, plant, scene)?
+            if precise_capsule_rays {
+                run_with_scene_ground_body_precise(scenario, seed, plant, scene)?
+            } else {
+                run_with_scene_ground_body(scenario, seed, plant, scene)?
+            }
         } else if ground_segmentation {
             run_with_scene_ground(scenario, seed, plant, scene)?
         } else if lidar_3d {

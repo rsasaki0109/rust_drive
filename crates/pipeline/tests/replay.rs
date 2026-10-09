@@ -1,5 +1,5 @@
-use rustdrive_core::{Gnss, LidarScan, Odometry, Pose, Route, Vec2, VehicleConfig};
-use rustdrive_pipeline::{
+use rustdriving_core::{Gnss, LidarScan, Odometry, Pose, Route, Vec2, VehicleConfig};
+use rustdriving_pipeline::{
     DrivingPipeline, PipelineConfig, SensorFrame,
     replay::{SensorLog, verify},
 };
@@ -104,7 +104,7 @@ fn gnss_input_and_correction_diagnostics_are_both_recomputed() {
 fn changing_a_map_snapshot_is_detected_by_full_recomputation() {
     let scenario: serde_json::Value =
         serde_json::from_str(include_str!("../../../scenarios/route-handover.json")).unwrap();
-    let nav: rustdrive_pipeline::navigation::NavigationConfig =
+    let nav: rustdriving_pipeline::navigation::NavigationConfig =
         serde_json::from_value(scenario["navigation"].clone()).unwrap();
     let mut config = PipelineConfig::new(
         nav.initial_plan().unwrap().route,
@@ -139,7 +139,7 @@ fn changing_a_map_snapshot_is_detected_by_full_recomputation() {
             traffic_signal: None,
         };
         if i == 1 {
-            input.navigation_update = Some(rustdrive_pipeline::navigation::NavigationUpdate {
+            input.navigation_update = Some(rustdriving_pipeline::navigation::NavigationUpdate {
                 stamp: time,
                 revision: 1,
                 closed_edges: vec!["main".into()],

@@ -1,6 +1,6 @@
 # Terminal stopping and post-arrival physical evaluation
 
-RustDrive now reaches the destination in the original GNSS-burst traffic world and remains clear while the scheduled lead catches up. The repair uses candidate arc length for goal stopping and a feasible lateral stopping-place preference near the endpoint. Sensors, estimation, planning and control continue during a new optional physical residence period. No simulator actor labels, fault schedule or truth pose enter planning.
+RustDriving now reaches the destination in the original GNSS-burst traffic world and remains clear while the scheduled lead catches up. The repair uses candidate arc length for goal stopping and a feasible lateral stopping-place preference near the endpoint. Sensors, estimation, planning and control continue during a new optional physical residence period. No simulator actor labels, fault schedule or truth pose enter planning.
 
 ![Actual RNE GNSS recovery, traffic avoidance and terminal residence](../assets/terminal-demo.gif)
 
@@ -56,7 +56,7 @@ python3 scripts/render_demo.py \
 cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- \
   --scenario scenarios/gnss-burst-traffic-hold.json --plant dynamic --seed 7 \
   --output artifacts/terminal-hold
-cargo run --release --locked --bin rustdrive -- replay \
+cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/terminal-hold/sensors.jsonl --output artifacts/terminal-hold/replay
 ```
 

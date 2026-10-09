@@ -1,6 +1,6 @@
 //! Simulator-only upright cuboids, native scan evidence and conservative capsule guards.
 use rne_math::Vec3;
-use rustdrive_core::{Pose, Vec2};
+use rustdriving_core::{Pose, Vec2};
 use serde_json::{Value, json};
 use std::collections::BTreeSet;
 

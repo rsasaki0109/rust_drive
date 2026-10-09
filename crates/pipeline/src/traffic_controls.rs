@@ -1,6 +1,6 @@
 //! Mapped stop lines and timestamped infrastructure signal observations.
 //! Phase schedules and simulator truth never enter this module.
-use rustdrive_core::Route;
+use rustdriving_core::Route;
 use serde::{Deserialize, Serialize};
 
 pub const MAX_SIGNAL_AGE_S: f64 = 0.5;
@@ -297,8 +297,8 @@ mod tests {
     fn invalid_maps_are_rejected_and_stop_route_preserves_original_polyline() {
         let route = Route::new(
             vec![
-                rustdrive_core::Vec2::default(),
-                rustdrive_core::Vec2::new(100.0, 0.0),
+                rustdriving_core::Vec2::default(),
+                rustdriving_core::Vec2::new(100.0, 0.0),
             ],
             2.1,
         )

@@ -1,6 +1,6 @@
 # Measured multi-height LiDAR
 
-The optional native `--multi-height` mode sends measured returns from three horizontal LiDAR sweeps to the shared RustDrive pipeline. A calibrated height gate keeps the low and main planes for obstacle detection and excludes returns above the vehicle's configured collision envelope. This allows the existing planar driving stack to detect the 0.2 m high slab that its single 0.6 m scan misses.
+The optional native `--multi-height` mode sends measured returns from three horizontal LiDAR sweeps to the shared RustDriving pipeline. A calibrated height gate keeps the low and main planes for obstacle detection and excludes returns above the vehicle's configured collision envelope. This allows the existing planar driving stack to detect the 0.2 m high slab that its single 0.6 m scan misses.
 
 The implementation is **height-gated projection into a 2D obstacle pipeline**. It does not infer object heights, build a volumetric map, perform general 3D perception or add suspension/contact response. Scene cuboids and simulator truth remain outside driving inputs. The low plane is an actual native Rapier measurement, rather than an obstacle injected from scene labels.
 
@@ -16,7 +16,7 @@ cargo +1.95.0 run --release --locked \
   --scenario scenarios/native-scene-low-stop.json \
   --scene scenes/blind-low-slab.json --multi-height \
   --plant dynamic --seed 7 --output artifacts/multi-height-low
-cargo run --release --locked --bin rustdrive -- replay \
+cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/multi-height-low/sensors.jsonl \
   --output artifacts/multi-height-low/replay
 python3 scripts/check-native-scenes.py \

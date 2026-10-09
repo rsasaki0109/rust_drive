@@ -1,6 +1,6 @@
 # Native 3D query scenes
 
-RustDrive can opt into static, upright cuboids in the actual CPU-only RNE/Rapier query world. Their dimensions, height and yaw affect native LiDAR returns and a separate physical clearance guard. A ground-level barrier blocks the driving sensor; an otherwise identical raised barrier clears that sensor and the recorded ego capsule. This extends the simulator geometry beyond the preceding circular actors. Ego motion still uses the native **planar Ackermann plant**.
+RustDriving can opt into static, upright cuboids in the actual CPU-only RNE/Rapier query world. Their dimensions, height and yaw affect native LiDAR returns and a separate physical clearance guard. A ground-level barrier blocks the driving sensor; an otherwise identical raised barrier clears that sensor and the recorded ego capsule. This extends the simulator geometry beyond the preceding circular actors. Ego motion still uses the native **planar Ackermann plant**.
 
 This feature does not add 3D perception. By default, the driving pipeline receives the existing body-frame planar scan at **0.6 m** height. Additional horizontal scans at **0.15 m** and **3.7 m** are recorded only for independent validation; they never enter localization, tracking, planning or control. Scene labels, cuboid geometry and simulator poses remain simulator/evaluation inputs. Roadside buildings, trees, pavements and the detailed vehicle display model remain cosmetic.
 
@@ -18,7 +18,7 @@ cargo +1.95.0 run --release --locked \
   --scenario scenarios/native-scene-ground-stop.json \
   --scene scenes/ground-barrier.json --plant dynamic --seed 7 \
   --output artifacts/native-ground
-cargo run --release --locked --bin rustdrive -- replay \
+cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/native-ground/sensors.jsonl \
   --output artifacts/native-ground/replay
 bash scripts/check-native-scenes.sh --modes single-height

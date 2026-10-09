@@ -1,6 +1,6 @@
 //! Simulator-only infrastructure feed and independent stop-line rule evaluation.
 use crate::Scenario;
-use rustdrive_pipeline::traffic_controls::{
+use rustdriving_pipeline::traffic_controls::{
     SignalColor, SignalObservation, SignalState, StopLine, validate_stop_lines,
 };
 use serde::{Deserialize, Serialize};
@@ -42,7 +42,7 @@ pub fn validate(scenario: &Scenario) -> Result<(), String> {
     validate_stop_lines(
         &lines,
         &scenario.route(),
-        rustdrive_core::VehicleConfig::default().radius,
+        rustdriving_core::VehicleConfig::default().radius,
     )?;
     if !lines.is_empty() && !scenario.navigation_updates.is_empty() {
         return Err("signal fixtures currently require a fixed route".into());
@@ -168,8 +168,8 @@ mod tests {
             ReferenceBackend, SimulationBackend, WorldObject, pipeline_config,
             simulate_with_backend,
         };
-        use rustdrive_core::{ControlCommand, EgoState};
-        use rustdrive_pipeline::SensorFrame;
+        use rustdriving_core::{ControlCommand, EgoState};
+        use rustdriving_pipeline::SensorFrame;
         struct IgnoreControl(ReferenceBackend);
         impl SimulationBackend for IgnoreControl {
             fn state(&self) -> EgoState {

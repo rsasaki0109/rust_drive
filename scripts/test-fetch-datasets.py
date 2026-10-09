@@ -16,7 +16,7 @@ spec.loader.exec_module(fetch)
 
 class DatasetAcquisitionFailures(unittest.TestCase):
     def setUp(self):
-        self.directory = tempfile.TemporaryDirectory(prefix='rustdrive-data-test-')
+        self.directory = tempfile.TemporaryDirectory(prefix='rustdriving-data-test-')
         self.addCleanup(self.directory.cleanup)
         self.root = Path(self.directory.name)
         self.payload = b'original measured fixture\n'

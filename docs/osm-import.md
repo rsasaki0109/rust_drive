@@ -1,27 +1,27 @@
 # Bounded OpenStreetMap import
 
-RustDrive imports a local OpenStreetMap Overpass JSON document into its existing directed road network. The Rust implementation does not download maps, require Python/ROS, use OSMnx at runtime, or substitute map coordinates for sensing/localization. The checked-in [historical external extract and ODbL provenance](../maps/osm/SOURCE.md) provide real geographic data; the separate authored junction fixture tests topology without claiming external data.
+RustDriving imports a local OpenStreetMap Overpass JSON document into its existing directed road network. The Rust implementation does not download maps, require Python/ROS, use OSMnx at runtime, or substitute map coordinates for sensing/localization. The checked-in [historical external extract and ODbL provenance](../maps/osm/SOURCE.md) provide real geographic data; the separate authored junction fixture tests topology without claiming external data.
 
 ## Import, route and drive
 
 ```sh
-cargo run --release --locked --bin rustdrive -- import-osm \
+cargo run --release --locked --bin rustdriving -- import-osm \
   --input maps/osm/german-road-extract.json \
   --output artifacts/osm/map.json \
   --origin-lat 48.136 --origin-lon 10.0695 --default-half-width 3.0 \
   --scenario-output artifacts/osm/scenario.json \
   --start osm-node-7119017425 --goal osm-node-274969423 \
   --cruise-speed 2 --duration 180
-cargo run --release --locked --bin rustdrive -- run \
+cargo run --release --locked --bin rustdriving -- run \
   --scenario artifacts/osm/scenario.json --seed 7 --output artifacts/osm/reference
-cargo run --release --locked --bin rustdrive -- replay \
+cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/osm/reference/sensors.jsonl --output artifacts/osm/reference/replay
 
 # Pinned native RNE dynamics and sensor acquisition; setup-rne.sh first.
 cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- \
   --plant dynamic --scenario artifacts/osm/scenario.json --seed 7 \
   --output artifacts/osm/rne-dynamic
-cargo run --release --locked --bin rustdrive -- replay \
+cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/osm/rne-dynamic/sensors.jsonl --output artifacts/osm/rne-dynamic/replay
 ```
 
@@ -76,7 +76,7 @@ cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml
   --plant dynamic --scene scenes/osm-ground-clear.json \
   --scenario maps/osm/german-road-ground-scenario.json --seed 7 \
   --lidar-3d --ground-segmentation --vehicle-body --output artifacts/osm-ground
-cargo run --release --locked --bin rustdrive -- replay \
+cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/osm-ground/sensors.jsonl --output artifacts/osm-ground/replay
 
 # Six clear goals (two native plants × three seeds) and three dynamic barrier stops.

@@ -1211,72 +1211,72 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6b1e7f9a428571be2dc5bc0505c13fb6bf936822b894ec87abf8a08a4e51742d"
 
 [[package]]
-name = "rustdrive-control"
+name = "rustdriving-control"
 version = "0.1.0"
 dependencies = [
- "rustdrive-core",
+ "rustdriving-core",
 ]
 
 [[package]]
-name = "rustdrive-core"
+name = "rustdriving-core"
 version = "0.1.0"
 dependencies = [
  "serde",
 ]
 
 [[package]]
-name = "rustdrive-localization"
+name = "rustdriving-localization"
 version = "0.1.0"
 dependencies = [
- "rustdrive-core",
+ "rustdriving-core",
 ]
 
 [[package]]
-name = "rustdrive-mapping"
+name = "rustdriving-mapping"
 version = "0.1.0"
 dependencies = [
- "rustdrive-core",
+ "rustdriving-core",
 ]
 
 [[package]]
-name = "rustdrive-perception"
+name = "rustdriving-perception"
 version = "0.1.0"
 dependencies = [
- "rustdrive-core",
+ "rustdriving-core",
 ]
 
 [[package]]
-name = "rustdrive-pipeline"
+name = "rustdriving-pipeline"
 version = "0.1.0"
 dependencies = [
- "rustdrive-control",
- "rustdrive-core",
- "rustdrive-localization",
- "rustdrive-mapping",
- "rustdrive-perception",
- "rustdrive-planning",
- "rustdrive-prediction",
- "rustdrive-routing",
+ "rustdriving-control",
+ "rustdriving-core",
+ "rustdriving-localization",
+ "rustdriving-mapping",
+ "rustdriving-perception",
+ "rustdriving-planning",
+ "rustdriving-prediction",
+ "rustdriving-routing",
  "serde",
  "serde_json",
 ]
 
 [[package]]
-name = "rustdrive-planning"
+name = "rustdriving-planning"
 version = "0.1.0"
 dependencies = [
- "rustdrive-core",
+ "rustdriving-core",
 ]
 
 [[package]]
-name = "rustdrive-prediction"
+name = "rustdriving-prediction"
 version = "0.1.0"
 dependencies = [
- "rustdrive-core",
+ "rustdriving-core",
 ]
 
 [[package]]
-name = "rustdrive-rne"
+name = "rustdriving-rne"
 version = "0.1.0"
 dependencies = [
  "rne_core",
@@ -1287,27 +1287,27 @@ dependencies = [
  "rne_robot",
  "rne_sensor",
  "rne_world",
- "rustdrive-core",
- "rustdrive-pipeline",
- "rustdrive-sim",
+ "rustdriving-core",
+ "rustdriving-pipeline",
+ "rustdriving-sim",
  "serde_json",
 ]
 
 [[package]]
-name = "rustdrive-routing"
+name = "rustdriving-routing"
 version = "0.1.0"
 dependencies = [
- "rustdrive-core",
+ "rustdriving-core",
  "serde",
 ]
 
 [[package]]
-name = "rustdrive-sim"
+name = "rustdriving-sim"
 version = "0.1.0"
 dependencies = [
- "rustdrive-core",
- "rustdrive-pipeline",
- "rustdrive-routing",
+ "rustdriving-core",
+ "rustdriving-pipeline",
+ "rustdriving-routing",
  "serde",
  "serde_json",
 ]

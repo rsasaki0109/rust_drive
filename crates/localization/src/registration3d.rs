@@ -2,7 +2,7 @@
 //! points and a fixed map in the target frame, never current ground-truth poses.
 //! This is not SLAM or global relocalization. Covariance is conditional on the
 //! retained correspondences and an independent isotropic point-noise model.
-use rustdrive_core::Vec3;
+use rustdriving_core::Vec3;
 use std::collections::BTreeMap;
 
 #[derive(Clone, Copy, Debug, PartialEq)]

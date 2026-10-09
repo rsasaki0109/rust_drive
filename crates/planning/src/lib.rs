@@ -3,7 +3,7 @@ mod collision;
 mod corners;
 mod geometry;
 mod speed;
-use rustdrive_core::{
+use rustdriving_core::{
     DrivingMode, EgoState, Planner, Prediction, Route, Trajectory, VehicleConfig,
 };
 pub struct LatticePlanner {
@@ -153,8 +153,9 @@ impl Planner for LatticePlanner {
             let base_initial = base(0.0);
             let base_tangent = base(0.01).minus(base_initial).scaled(100.0);
             let position_error = ego.pose.position.minus(base_initial);
-            let desired_tangent = rustdrive_core::Vec2::new(ego.pose.yaw.cos(), ego.pose.yaw.sin())
-                .scaled(base_tangent.x.hypot(base_tangent.y));
+            let desired_tangent =
+                rustdriving_core::Vec2::new(ego.pose.yaw.cos(), ego.pose.yaw.sin())
+                    .scaled(base_tangent.x.hypot(base_tangent.y));
             let tangent_error = desired_tangent.minus(base_tangent);
             let mut geometry = Vec::new();
             let mut contained = true;
@@ -195,7 +196,7 @@ impl Planner for LatticePlanner {
             else {
                 continue;
             };
-            let contact = |path: &[rustdrive_core::TrajectoryPoint]| {
+            let contact = |path: &[rustdriving_core::TrajectoryPoint]| {
                 objects
                     .iter()
                     .filter_map(|object| {
@@ -203,7 +204,7 @@ impl Planner for LatticePlanner {
                             path,
                             object,
                             self.vehicle.radius,
-                            rustdrive_core::Vec2::new(ego.pose.yaw.cos(), ego.pose.yaw.sin()),
+                            rustdriving_core::Vec2::new(ego.pose.yaw.cos(), ego.pose.yaw.sin()),
                         )
                     })
                     .fold(f64::INFINITY, f64::min)
@@ -346,7 +347,7 @@ fn quintic(u: f64) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rustdrive_core::Vec2;
+    use rustdriving_core::Vec2;
     fn road(width: f64) -> Route {
         Route::new(vec![Vec2::new(0.0, 0.0), Vec2::new(100.0, 0.0)], width).unwrap()
     }
@@ -361,7 +362,7 @@ mod tests {
     #[test]
     fn goal_stop_uses_candidate_arc_length_after_a_lateral_return() {
         let ego = EgoState {
-            pose: rustdrive_core::Pose {
+            pose: rustdriving_core::Pose {
                 position: Vec2::new(70.0, 3.5),
                 yaw: 0.0,
             },
@@ -620,7 +621,7 @@ mod tests {
         assert!(peak(&low) + 1.0 < peak(&nominal));
         assert_eq!(low.points[0].speed, ego.speed);
         let near_goal = EgoState {
-            pose: rustdrive_core::Pose {
+            pose: rustdriving_core::Pose {
                 position: Vec2::new(94.0, 0.0),
                 yaw: 0.0,
             },
@@ -745,7 +746,9 @@ mod tests {
     fn yields_inside_braking_distance_and_waits_until_candidate_clears() {
         let mut planner = LatticePlanner::default();
         let mut object = obstacle();
-        object.positions.fill(rustdrive_core::Vec2::new(24.0, 0.0));
+        object
+            .positions
+            .fill(rustdriving_core::Vec2::new(24.0, 0.0));
         let approaching = EgoState {
             speed: 8.0,
             ..EgoState::default()
@@ -755,7 +758,7 @@ mod tests {
         assert_eq!(stop.points[0].speed, approaching.speed);
         assert_eq!(stop.points.last().unwrap().speed, 0.0);
         let waiting_ego = EgoState {
-            pose: rustdrive_core::Pose {
+            pose: rustdriving_core::Pose {
                 position: stop.points.last().unwrap().position,
                 yaw: 0.0,
             },

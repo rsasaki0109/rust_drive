@@ -397,7 +397,7 @@ def main():
             'seeds must be distinct u64 values')
     require(len(set(args.plants)) == len(args.plants) and len(set(args.modes)) == len(args.modes), 'plants and modes must be distinct')
     fixture_contracts()
-    cli, native = ROOT/'target/release/rustdrive', ROOT/'integrations/rne/target/release/rustdrive-rne'
+    cli, native = ROOT/'target/release/rustdriving', ROOT/'integrations/rne/target/release/rustdriving-rne'
     require(cli.is_file() and native.is_file(), 'build locked reference and native release binaries first')
     pin = (ROOT/'integrations/rne/rne-revision.txt').read_text().strip()
     head = subprocess.run(['git', '-C', ROOT.parent/'RobotNativeEngine', 'rev-parse', 'HEAD'], capture_output=True, text=True, check=True).stdout.strip()

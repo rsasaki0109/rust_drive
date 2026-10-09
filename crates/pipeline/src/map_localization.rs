@@ -1,6 +1,6 @@
 //! Optional local scan registration to a supplied surveyed world-frame map.
-use rustdrive_core::{LidarScan, Pose, Vec2};
-use rustdrive_localization::{
+use rustdriving_core::{LidarScan, Pose, Vec2};
+use rustdriving_localization::{
     Ekf,
     registration::{RegistrationConfig, match_scan},
 };
@@ -233,7 +233,7 @@ impl MapLocalization {
 mod tests {
     use super::*;
     use crate::{DrivingPipeline, HealthIssue, PipelineConfig, SensorFrame};
-    use rustdrive_core::{Gnss, Odometry, Route, VehicleConfig};
+    use rustdriving_core::{Gnss, Odometry, Route, VehicleConfig};
 
     fn surveyed_points() -> Vec<Vec2> {
         (0..36)

@@ -1,6 +1,6 @@
 //! Bounded voxel-neighbor Euclidean components with measured XYZ AABBs.
 //! Outputs describe observed surfaces; they do not infer hidden shape or semantics.
-use rustdrive_core::Vec3;
+use rustdriving_core::Vec3;
 use std::collections::{BTreeMap, BTreeSet};
 
 #[derive(Clone, Debug)]

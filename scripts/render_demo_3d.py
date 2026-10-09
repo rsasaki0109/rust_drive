@@ -326,7 +326,9 @@ def main():
     parser.add_argument('--native-scene', type=Path, help='Successful native scene.json evidence; opt in to rendering physical cuboids')
     parser.add_argument('--traffic-models', nargs='+', choices=['hatchback','sedan','van','pickup'], default=['hatchback'], help='Display models assigned in stable actor appearance order')
     parser.add_argument('--actor-models', nargs='+', default=[], help='Explicit display-only ID=model assignments, e.g. 0=sedan 1=pedestrian 2=cyclist')
-    parser.add_argument('--camera', choices=['ego','traffic','street'], default='ego', help='Follow ego or frame ego and active reactive vehicles')
+    parser.add_argument('--environment', choices=['suburban', 'urban'], default='suburban', help='Original display scenery; does not add operational map or sensor geometry')
+    parser.add_argument('--dog-pairs', nargs='+', default=[], help='Recorded pedestrian ID=dog ID companions; display a leash between their actual positions')
+    parser.add_argument('--camera', choices=['ego','traffic','street'], default='ego', help='Follow ego, fit traffic in perspective, or use a fixed-scale orthographic local street view')
     parser.add_argument('--preview-time', type=float, help='Render one PNG instead of the complete GIF')
     parser.add_argument('--samples', type=int, default=16)
     parser.add_argument('--threads', type=int, default=4)
@@ -351,9 +353,32 @@ def main():
             actor_id = int(id_text)
         except ValueError:
             parser.error('actor models require integer ID=model assignments')
-        if actor_id not in known_ids or actor_id in actor_models or model not in ('hatchback', 'sedan', 'van', 'pickup', 'pedestrian', 'cyclist'):
+        if actor_id not in known_ids or actor_id in actor_models or model not in ('hatchback', 'sedan', 'van', 'pickup', 'truck', 'pedestrian', 'cyclist', 'dog', 'elder', 'child', 'parent_stroller'):
             parser.error('actor display model must name a unique recorded ID and a supported model')
         actor_models[actor_id] = model
+    dog_pairs = {}
+    for assignment in args.dog_pairs:
+        try:
+            owner, companion = (int(value) for value in assignment.split('=', 1))
+        except ValueError:
+            parser.error('dog pairs require integer pedestrian ID=dog ID assignments')
+        if (owner in dog_pairs or companion in dog_pairs.values() or
+                actor_models.get(owner) != 'pedestrian' or actor_models.get(companion) != 'dog'):
+            parser.error('dog pairs require unique recorded pedestrians and dogs with explicit model assignments')
+        dog_pairs[owner] = companion
+    renderer_sources = ['blender_scene.py', 'blender_assets.py', 'render_demo_3d.py']+(
+        ['blender_vru_assets.py'] if any(model in ('pedestrian', 'cyclist', 'elder', 'child', 'parent_stroller') for model in actor_models.values()) else [])
+    if args.environment == 'urban' or any(model in ('truck', 'dog') for model in actor_models.values()):
+        renderer_sources.append('blender_city_assets.py')
+    if any(model in ('elder', 'child', 'parent_stroller') for model in actor_models.values()):
+        renderer_sources.append('blender_family_assets.py')
+    def source_hash():
+        digest = hashlib.sha256()
+        for source in renderer_sources:
+            digest.update(source.encode())
+            digest.update((ROOT/'scripts'/source).read_bytes())
+        return digest.hexdigest()
+    renderer_hash = source_hash()
     native_evidence = load_native_scene(args.native_scene, run) if args.native_scene else None
     indices = [0]
     for i in range(1, len(frames)):
@@ -371,7 +396,8 @@ def main():
         request = {'run': str(args.run.resolve()), 'indices': indices,
                    'frames_directory': temporary, 'samples': args.samples,
                    'scene_output': str(args.scene_output.resolve()) if args.scene_output else None,
-                   'traffic_models': args.traffic_models, 'actor_models': actor_models, 'camera': args.camera}
+                   'traffic_models': args.traffic_models, 'actor_models': actor_models, 'camera': args.camera,
+                   'environment': args.environment, 'dog_pairs': dog_pairs}
         if native_evidence:
             request['native_scene'] = native_evidence['scene']
             if native_evidence.get('operating_mode') in GROUND_MODES:
@@ -405,6 +431,11 @@ def main():
                 a['id'] in expected_objects and math.hypot(a['position']['x']-expected_objects[a['id']]['position']['x'], a['position']['y']-expected_objects[a['id']]['position']['y']) <= 1e-4 for a in record['objects'])
             if record['time'] != frame['time'] or pose_error > 1e-4 or abs(record['ego_pose']['yaw']-expected_pose['yaw']) > 1e-5 or not objects_match:
                 raise SystemExit('Rendered scene state differs from the recorded simulation')
+            scales = record['display_scales']
+            declared = scene_info['vehicle_display_scales']
+            if (scales['ego'] != declared['ego'] or
+                    any(scale != declared['actors'][identifier] for identifier, scale in scales['actors'].items())):
+                raise SystemExit('Vehicle display scale changed during the recorded episode')
             if native_evidence:
                 verify_native_cuboids(record['native_cuboids'], native_evidence['scene'])
                 if native_evidence.get('operating_mode') in GROUND_MODES:
@@ -415,8 +446,8 @@ def main():
                 image = Image.new('RGB', (960, 640), '#0a1220')
                 image.paste(rendered, (0, 54))
             draw = ImageDraw.Draw(image)
-            draw.text((22, 10), 'RustDrive', font=font(28, True), fill='#edf4ff')
-            draw.text((204, 20), 'RNE NATIVE DYNAMICS  /  BLENDER 3D REPLAY', font=font(12, True), fill='#46e3c2')
+            draw.text((22, 10), 'RustDriving', font=font(28, True), fill='#edf4ff')
+            draw.text((236, 20), 'RNE NATIVE DYNAMICS  /  BLENDER 3D REPLAY', font=font(12, True), fill='#46e3c2')
             if native_evidence:
                 label = {'multi_height_lidar': 'MULTI-HEIGHT / PLANAR EGO',
                          'lidar3d': 'INCLINED LIDAR / PLANAR EGO',
@@ -429,6 +460,8 @@ def main():
             draw.text((610, 608), 'BLUE ego   TRAFFIC actors   TEAL plan   /   3x', font=font(12), fill='#8698b3')
             images.append(image)
         if args.preview_time is not None:
+            if source_hash() != renderer_hash:
+                raise SystemExit('Renderer source changed during the capture')
             images[0].save(args.output.with_suffix('.png'))
             print(args.output.with_suffix('.png'))
             if args.scene_output:
@@ -443,10 +476,8 @@ def main():
                 gif.seek(index)
                 duration += gif.info['duration']
             assert gif.size == (960, 640) and duration == sum(durations)
-        renderer_hash = hashlib.sha256()
-        for source in ['blender_scene.py', 'blender_assets.py', 'render_demo_3d.py']+(['blender_vru_assets.py'] if any(model in ('pedestrian', 'cyclist') for model in actor_models.values()) else []):
-            renderer_hash.update(source.encode())
-            renderer_hash.update((ROOT/'scripts'/source).read_bytes())
+        if source_hash() != renderer_hash:
+            raise SystemExit('Renderer source changed during the capture')
         provenance = {'schema_version': 1, 'backend': run['backend'],
                       'renderer': 'Blender Cycles CPU', 'blender_version': subprocess.check_output(['blender', '--version'], text=True).splitlines()[0],
                       'input_trace': str(args.run), 'input_sha256': hashlib.sha256(args.run.read_bytes()).hexdigest(),
@@ -454,12 +485,14 @@ def main():
                       'scenario': run['scenario'], 'summary': run['summary'], 'gif_frames': count,
                       'sampled_frames': len(images), 'playback_speed': 3, 'scene_states_verified': len(audit),
                       'samples': args.samples, 'physics_domain': 'planar', 'scene': scene_info,
-                      'renderer_source_sha256': renderer_hash.hexdigest(),
+                      'renderer_source_sha256': renderer_hash,
+                      'vehicle_display_scale_states_verified': len(audit),
                       'gif_palette_colors': 192, 'gif_dither': False, 'spatial_filter': '3x3 median, viewport only',
                       'renderer_command': shlex.join(['python3','scripts/render_demo_3d.py',str(args.run),'--output',str(args.output),
                                                      '--samples',str(args.samples),'--threads',str(args.threads),'--camera',args.camera,
-                                                     '--traffic-models',*args.traffic_models]+(['--scene-output',str(args.scene_output)] if args.scene_output else [])+
-                                                    (['--native-scene',str(args.native_scene)] if args.native_scene else [])+(['--actor-models',*args.actor_models] if args.actor_models else []))}
+                                                     '--traffic-models',*args.traffic_models,'--environment',args.environment]+(['--scene-output',str(args.scene_output)] if args.scene_output else [])+
+                                                    (['--native-scene',str(args.native_scene)] if args.native_scene else [])+(['--actor-models',*args.actor_models] if args.actor_models else [])+
+                                                    (['--dog-pairs',*args.dog_pairs] if args.dog_pairs else []))}
         if native_evidence:
             provenance['native_scene'] = {
                 'input': str(args.native_scene),
@@ -471,6 +504,9 @@ def main():
                 'operational_lidar_height_m': 0.6,
                 'diagnostic_lidar_heights_m': [0.15, 3.7],
                 'contact_response': False}
+            if native_evidence.get('precise_capsule_rays'):
+                provenance['native_scene']['precise_capsule_rays'] = True
+                provenance['native_scene']['capsule_query_refinement'] = native_evidence['capsule_query_refinement']
             if native_evidence.get('operating_mode') == 'multi_height_lidar':
                 calibration = native_evidence['multi_height_lidar']
                 details = provenance['native_scene']
@@ -508,7 +544,7 @@ def main():
                         details['body_guard'] = {'calibration': native_evidence['body_guard']['calibration'],
                                                  'summary': native_evidence['body_guard']['summary'],
                                                  'mesh_states_verified': len(audit),
-                                                 'visualization': 'separate wire envelope; cosmetic car dimensions are not calibrated',
+                                                 'visualization': 'separate wire envelope; cosmetic SI vehicle presets are independent of physical calibration',
                                                  'guard_scope': 'upright body versus static obstacle cuboids; explicit road excluded',
                                                  'traffic_geometry': 'native capsule proxies; circumscribed circular planar clearance'}
         args.output.with_suffix('.json').write_text(json.dumps(provenance, indent=2)+'\n')

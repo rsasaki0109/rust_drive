@@ -1,6 +1,6 @@
 //! Directed map routing in world ENU meters, independent of sensing and simulation.
 pub mod osm;
-use rustdrive_core::{Route, Vec2};
+use rustdriving_core::{Route, Vec2};
 use serde::{Deserialize, Serialize};
 use std::{
     cmp::Ordering,

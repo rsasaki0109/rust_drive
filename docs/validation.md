@@ -1,6 +1,6 @@
 # Sensor contract and replay
 
-`rustdrive-pipeline` exposes `PipelineConfig`, `SensorFrame`, `DrivingPipeline` and `PipelineOutput`. Both reference simulation and RNE call the same stateful synchronous library. No executor or middleware is needed.
+`rustdriving-pipeline` exposes `PipelineConfig`, `SensorFrame`, `DrivingPipeline` and `PipelineOutput`. Both reference simulation and RNE call the same stateful synchronous library. No executor or middleware is needed.
 
 ## Input boundary
 
@@ -28,7 +28,7 @@ Ground-truth poses, object identities and physical collision results are not inp
 The expected record contains the complete estimate, tracks, forecasts, trajectory, command, emergency state, health and position variance. It never enters the pipeline. Replay constructs fresh state from the header, feeds only inputs, and compares reserialized outputs exactly. Serde's float-roundtrip parsing preserves recorded f64 values. No tolerance or success shortcut hides differences.
 
 ```sh
-cargo run --release --locked --bin rustdrive -- replay \
+cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/demo/sensors.jsonl --output artifacts/replay
 ```
 
@@ -323,3 +323,52 @@ was reproduced, then both archived oracles and the later 7/11 partial benchmark
 were verified again; no pose, covariance, work or accuracy gate was relaxed.
 Remote CI for the follow-up publication is reported separately. Visual asset
 quality does not change the subjective maturity estimate of about 20%.
+
+
+## RustDriving namespace and original road-user meshes (2026-10-10, Asia/Tokyo)
+
+Cargo packages and CLI commands now use `rustdriving-*` / `rustdriving`. The
+[rename validation](../assets/package-rename-validation.json) checks all four
+lockfiles: only project package names change; external versions, dependencies
+and checksums remain fixed. Historical recordings, source snapshots, versioned
+schema identifiers and the original adaptive-ground freeze remain unchanged.
+Adaptive evaluation after the import rename is an explicit regression on
+previously viewed data, with the original measured-data failures retained.
+The archived RGB-D oracle uses its original
+[`Cargo-v1.lock`](../integrations/rgbd/baselines/Cargo-v1.lock).
+
+The [vehicle audit](../assets/vehicle-display-audit.json),
+[truck/dog audit](../assets/city-display-audit.json) and
+[family audit](../assets/family-display-audit.json) independently measure
+80 + 20 + 30 display poses. They check SI dimensions, radius-independent
+geometry, round wheels and retained recorded roots. Family cases also measure
+hand contact with the cane and stroller pushbar. The separate
+[family showroom](../assets/family-models.json) is CPU-rendered display evidence,
+not a driving run. [Physical city checks and limitations](road-users.md) remain
+separate from mesh checks.
+
+The completed urban recording passes seeds 1, 7 and 42: 2,763 sensor-only
+replay ticks, 3,983,040 full-grid ray entries and 27,603 native 200 Hz poses.
+Continuous clearance for every one of the 171 actor pairs stays at least 1 m;
+the minimum is 1.003840 m. Each run crosses both signals on freshly observed
+green and holds continuously behind the red-light queue for at least 8 seconds.
+These are authored-scenario checks, not certification of general traffic rules.
+Two failed development trials remain separately identified in the results.
+
+The final CPU GIF contains 155 verified scene/vehicle-scale states at 960×640,
+with 3× playback and a final hold (16.8 seconds encoded). The actual seed-7 trace,
+native scene and renderer hashes are retained in its [provenance](../assets/city-demo.json).
+The required workspace checks pass 306 tests and 49 scenario/replay pairs;
+all 245 legacy output files remain byte-identical. Native integration checks
+pass 55 release tests, strict Clippy and formatting. The opt-in physical-capsule
+query correction also retains four byte-identical unflagged native outputs.
+[Local validation](../assets/city-demo-validation.json) records these checks.
+
+GitHub denied the requested repository rename with HTTP 403 (`Resource not
+accessible by integration`). After the physical checks, only the Cargo
+repository URL was corrected to the current `rust_drive` address. The local
+validation records both source fingerprints, verifies the original fingerprint
+after normalizing that one metadata field, and checks unchanged release-binary
+hashes. Workspace checks and the locked native release build were rerun after
+that correction. Package names remain `rustdriving-*`; remote CI status is
+reported separately from these local results.

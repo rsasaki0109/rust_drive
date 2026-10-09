@@ -34,7 +34,7 @@ def set_line(obj, points):
         vertex.co = (*point, 1)
 
 
-def road(points, half_width, asphalt, marking):
+def road(points, half_width, asphalt, marking, center_marking=True):
     vertices, borders = [], [[], []]
     for i, point in enumerate(points):
         before, after = points[max(0, i-1)], points[min(len(points)-1, i+1)]
@@ -52,7 +52,7 @@ def road(points, half_width, asphalt, marking):
     obj.data.materials.append(asphalt)
     for border in borders:
         line('Corridor edge', border, marking, 0.045)
-    for i in range(0, len(points)-1, 3):
+    for i in (range(0, len(points)-1, 3) if center_marking else []):
         a, b = points[i:i+2]
         line('Decorative center marking', [(a['x'], a['y'], 0.06), (b['x'], b['y'], 0.06)], marking, 0.04)
     return obj
@@ -71,6 +71,12 @@ def native_cuboid_audit(models):
 def main():
     request = json.loads(Path(sys.argv[sys.argv.index('--')+1]).read_text())
     run = json.loads(Path(request['run']).read_text())
+    actor_models = {int(key): value for key, value in request.get('actor_models', {}).items()}
+    urban = request.get('environment') == 'urban'
+    if any(model in ('elder', 'child', 'parent_stroller') for model in actor_models.values()):
+        from blender_family_assets import elder, child as family_child, parent_stroller, animate_family
+    if urban or any(model in ('truck', 'dog') for model in actor_models.values()):
+        from blender_city_assets import STYLE as CITY_STYLE, truck, dog, animate_dog, city_environment
     bpy.ops.object.select_all(action='SELECT')
     bpy.ops.object.delete(use_global=False)
     scene = bpy.context.scene
@@ -101,6 +107,33 @@ def main():
     cube('Ground plane', (100, 0, -.12), (1000, 1000, .2), grass)
     navigation = run['scenario'].get('navigation')
     edges = navigation['network']['edges'] if navigation else [run['route']]
+    opposing_display_lanes = []
+    service_display_lanes = []
+    if request.get('camera') == 'street' and actor_models and not navigation:
+        # Infer a display strip from actual opposing vehicle motion. It is not
+        # an additional operational route, lane rule or physical road boundary.
+        route = run['route']
+        a, b = route['points'][0], route['points'][-1]
+        dx, dy = b['x']-a['x'], b['y']-a['y']
+        length = math.hypot(dx, dy)
+        ux, uy = dx/length, dy/length
+        for identifier, model in actor_models.items():
+            if model not in ('hatchback', 'sedan', 'van', 'pickup', 'truck'):
+                continue
+            positions = [actor['position'] for frame in run['frames'] for actor in frame['objects'] if actor['id'] == identifier]
+            if len(positions) < 2:
+                continue
+            first, last = positions[0], positions[-1]
+            lateral = -(first['x']-a['x'])*uy+(first['y']-a['y'])*ux
+            travel = (last['x']-first['x'])*ux+(last['y']-first['y'])*uy
+            if abs(travel) > 1 and abs(lateral) > route['half_width']:
+                lane_group = opposing_display_lanes if travel < 0 else service_display_lanes
+                if not any(abs(lateral-lane['offset_m']) < .1 for lane in lane_group):
+                    lane_group.append({'actor_id': identifier, 'offset_m': lateral, 'display_only': True})
+                else:
+                    continue
+                edges = list(edges)+[{'points': [{'x': p['x']-uy*lateral, 'y': p['y']+ux*lateral}
+                                               for p in route['points']], 'half_width': route['half_width']}]
     intersection_specs = run['scenario'].get('yield_intersections', [])
     if intersection_specs:
         # These perpendicular streets are display geometry inferred from the
@@ -113,10 +146,22 @@ def main():
             half_width = (bounds['max']['x']-bounds['min']['x'])/2
             edges.append({'points':[{'x':center_x,'y':center_y+i*2} for i in range(-18,19)],
                           'half_width':half_width})
+    if urban:
+        edges = [dict(edge, half_width=1.8) for edge in edges]
     closures = {}
     roads = []
     for edge in edges:
-        surface = road(edge['points'], edge['half_width'], asphalt, marking)
+        points = edge['points']
+        if request.get('camera') == 'street':
+            first, second, before, last = points[0], points[1], points[-2], points[-1]
+            dx, dy = second['x']-first['x'], second['y']-first['y']
+            length = math.hypot(dx, dy)
+            ex, ey = last['x']-before['x'], last['y']-before['y']
+            extent = math.hypot(ex, ey)
+            points = [{'x': first['x']-20*dx/length, 'y': first['y']-20*dy/length}]+points+[
+                {'x': last['x']+20*ex/extent, 'y': last['y']+20*ey/extent}]
+        surface = road(points, edge['half_width'], asphalt, marking,
+                       center_marking=not opposing_display_lanes)
         bpy.context.view_layer.objects.active = surface
         solid = surface.modifiers.new('Road thickness', 'SOLIDIFY')
         solid.thickness = .04
@@ -134,13 +179,58 @@ def main():
         union.operation, union.solver, union.object = 'UNION', 'EXACT', surface
         bpy.ops.object.modifier_apply(modifier=union.name)
         bpy.data.objects.remove(surface, do_unlink=True)
-    scenery = environment(edges)
+    exclusion_paths = []
+    if request.get('camera') == 'street':
+        # Keep cosmetic trees/buildings out of the actual recorded road-user
+        # sweeps. This does not add obstacles or sensing to the simulator.
+        for identifier in actor_models:
+            positions = [actor['position'] for frame in run['frames'] for actor in frame['objects'] if actor['id'] == identifier]
+            if len(positions) >= 2:
+                exclusion_paths.append({'points': positions, 'half_width': 1.2})
+    scenery = (city_environment if urban else environment)(edges, exclusion_paths=exclusion_paths)
+    if urban:
+        # Keep the display facades behind the recorded traffic in this fixed
+        # street view. Foreground roofs otherwise hide ego and the stroller.
+        # These buildings are cosmetic and never enter physical sensing.
+        a, b = run['route']['points'][0], run['route']['points'][-1]
+        dx, dy = b['x']-a['x'], b['y']-a['y']
+        length = math.hypot(dx, dy)
+        center = opposing_display_lanes[0]['offset_m']/2 if opposing_display_lanes else 0
+        hidden = 0
+        for obj in list(bpy.data.objects):
+            if obj.get('scenery_kind') != 'building':
+                continue
+            lateral = (-(obj.location.x-a['x'])*dy+(obj.location.y-a['y'])*dx)/length
+            if lateral > center:
+                obj.hide_render = True
+                for scenery_part in obj.children_recursive:
+                    scenery_part.hide_render = True
+                hidden += 1
+        scenery['foreground_buildings_hidden_for_camera'] = hidden
+        pavement = material('Urban public plaza paving', (.26, .30, .32))
+        cycling = material('Urban cycle path', (.18, .25, .27))
+        for low, high in [(-24, -12), (19, 25)]:
+            cube('Display pedestrian plaza', (40, (low+high)/2, .025), (120, high-low, .05), pavement)
+        for low, high in [(-6.15, -1.85), (1.85, 6.2)]:
+            cube('Display crossing footpath', (40, (low+high)/2, .025), (120, high-low, .05), pavement)
+        for lateral in [8, 11]:
+            cube('Display recorded bicycle path', (40, lateral, .025), (120, 2.2, .05), cycling)
+        # Original zebra paint at actual recorded crossing positions; signal
+        # timing and actor yielding are checked separately in the driving log.
+        for identifier in [1, 4, 6]:
+            first = next((a for frame in run['frames'] for a in frame['objects'] if a['id'] == identifier), None)
+            if first:
+                for offset in [-1.2, -.6, 0, .6, 1.2]:
+                    cube('Display crossing stripe '+str(identifier), (first['position']['x']+offset, 0, .067), (.3, 3.5, .014), marking)
+        for lane in [0]+[spec['offset_m'] for spec in opposing_display_lanes+service_display_lanes]:
+            direction = -1 if lane < 0 else 1
+            for distance in range(5, 81, 18):
+                arrow = line('Display lane direction arrow', [(distance-direction*.8, lane, .08), (distance+direction*.6, lane, .08)], marking, .065)
+                line('Display lane direction arrowhead', [(distance, lane-.35, .08), (distance+direction*.6, lane, .08), (distance, lane+.35, .08)], marking, .065)
     ground_mode = request.get('ground_mode', False)
-    if ground_mode:
-        # Only physical road tiles supply the new-mode asphalt surface.
-        # Decorative markings and suburban scenery remain visual overlays.
-        for surface in roads[:1]:
-            bpy.data.objects.remove(surface, do_unlink=True)
+    # Corridor coloring sits above the recorded flat support. Its edges and
+    # inferred opposing lane remain display-only; the full physical tile is
+    # retained and independently audited without pretending it is all asphalt.
     native_models = {}
     ground_models = {}
     if request.get('native_scene'):
@@ -155,7 +245,7 @@ def main():
         if ground_mode:
             for box in request['native_scene']['ground_cuboids']:
                 obj = cube('Native physical road '+box['id'], box['center_m'],
-                           [2*half for half in box['half_extents_m']], asphalt)
+                           [2*half for half in box['half_extents_m']], grass)
                 obj.rotation_euler.z = box['yaw_rad']
                 obj['native_scene_id'] = box['id']
                 obj['native_scene_physical_ground_geometry'] = True
@@ -212,6 +302,11 @@ def main():
     camera.data.clip_end = 1000
     scene.camera = camera
     ego = car('Recorded ego', run['vehicle']['radius'], blue, glass, tire, headlight, ego=True)
+    # This local view uses one orthographic scale for all road users: physical
+    # collision radii and camera depth cannot change their displayed size.
+    if request.get('camera') == 'street':
+        camera.data.type = 'ORTHO'
+        camera.data.ortho_scale = 64 if urban else 52
     body_envelope = None
     if ground_mode and request.get('body_calibration'):
         calibration = request['body_calibration']
@@ -232,7 +327,6 @@ def main():
                 first = first_positions.setdefault(actor['id'],p)
                 if math.hypot(p['x']-first['x'],p['y']-first['y']) > 1e-6:
                     dynamic_ids.add(actor['id'])
-    actor_models = {int(key): value for key, value in request.get('actor_models', {}).items()}
     if actor_models:
         first_positions = {}
         for recorded in run['frames']:
@@ -250,19 +344,32 @@ def main():
             if actor['id'] in actors:
                 continue
             selected = actor_models.get(actor['id'])
-            if selected in ('pedestrian', 'cyclist'):
-                actors[actor['id']] = (pedestrian if selected == 'pedestrian' else cyclist)('Recorded '+selected, actor['radius'])
+            if selected == 'dog':
+                actors[actor['id']] = dog('Recorded dog '+str(actor['id']), actor['radius'])
+                vehicle_models.append({'id': actor['id'], 'model': selected, 'display_only': True})
+            elif selected in ('pedestrian', 'cyclist', 'elder', 'child', 'parent_stroller'):
+                palette = [(0.04, .30, .56), (.76, .22, .06), (.32, .14, .52)]
+                jacket = material('Recorded road-user jacket '+str(actor['id']), palette[len(vehicle_models) % len(palette)])
+                maker = {'pedestrian': pedestrian, 'cyclist': cyclist}
+                if selected in ('elder', 'child', 'parent_stroller'):
+                    maker.update(elder=elder, child=family_child, parent_stroller=parent_stroller)
+                actors[actor['id']] = maker[selected](
+                    'Recorded '+selected+' '+str(actor['id']), actor['radius'], {'jacket': jacket})
                 vehicle_models.append({'id': actor['id'], 'model': selected, 'display_only': True})
             elif actor['id'] in dynamic_ids or selected:
-                number = len(vehicle_models)
+                number = sum(row['model'] in ('hatchback', 'sedan', 'van', 'pickup', 'truck') for row in vehicle_models)
                 variant = selected or request.get('traffic_models', ['hatchback'])[number % len(request.get('traffic_models', ['hatchback']))]
-                paint = actor_paints[number % len(actor_paints)] if len(request.get('traffic_models', ['hatchback'])) > 1 else orange
-                actors[actor['id']] = car('Recorded traffic actor' if intersection_specs else 'Recorded reactive actor', actor['radius'], paint, glass, tire, headlight, variant=variant)
+                paint = actor_paints[number % len(actor_paints)] if actor_models or len(request.get('traffic_models', ['hatchback'])) > 1 else orange
+                label = 'Recorded traffic actor '+str(actor['id'])
+                actors[actor['id']] = truck(label, actor['radius'], paint, glass, tire, headlight) if variant == 'truck' else car(label, actor['radius'], paint, glass, tire, headlight, variant=variant)
                 vehicle_models.append({'id': actor['id'], 'model': variant, 'color': list(paint.diffuse_color[:3])})
             else:
                 actors[actor['id']] = barrel(actor['radius'], orange, marking)
     planned = line('Actual planned trajectory', [], teal, .075)
     predictions = line('Actual track forecasts', [], purple, .04)
+    leash_material = material('Dog leash', (.055, .065, .085))
+    dog_pairs = {int(key): value for key, value in request.get('dog_pairs', {}).items()}
+    leashes = {owner: line('Recorded companion leash '+str(owner), [], leash_material, .012) for owner in dog_pairs}
     audit = []
     output = Path(request['frames_directory'])
     distances = [0.0]
@@ -287,16 +394,21 @@ def main():
             body_envelope.rotation_euler.z = pose['yaw']
         camera.location = (x-11, y-16, 16)
         target = (x+4, y, 0)
-        if request.get('camera') in ('traffic', 'street'):
+        if request.get('camera') == 'street':
+            c, s = math.cos(pose['yaw']), math.sin(pose['yaw'])
+            target = (x+12*c, y+12*s, 0)
+            if urban:
+                lateral = opposing_display_lanes[0]['offset_m']/2 if opposing_display_lanes else 0
+                target = (target[0]-lateral*s, target[1]+lateral*c, 0)
+                camera.location = (target[0]-18*c-32*s, target[1]-18*s+32*c, 30)
+            else:
+                camera.location = (target[0]-18*c+32*s, target[1]-18*s-32*c, 26)
+        elif request.get('camera') == 'traffic':
             bodies = [{'position': pose['position'], 'radius': run['vehicle']['radius']}]+[a for a in frame['objects'] if a['id'] in dynamic_ids]
-            if request.get('camera') == 'street':
-                # Show local recorded road users without zooming out for a cyclist
-                # that has already left the local road view. All poses are audited.
-                bodies = [bodies[0]] + [a for a in bodies[1:] if math.hypot(a['position']['x']-x, a['position']['y']-y) <= 30]
             positions = [a['position'] for a in bodies]
             min_x,max_x = min(p['x'] for p in positions),max(p['x'] for p in positions)
             min_y,max_y = min(p['y'] for p in positions),max(p['y'] for p in positions)
-            height = max(12, math.hypot(max_x-min_x,max_y-min_y)*.35+12) if request.get('camera') == 'street' else max(16, math.hypot(max_x-min_x,max_y-min_y)*.45+16)
+            height = max(16, math.hypot(max_x-min_x,max_y-min_y)*.45+16)
             center_x,center_y = (min_x+max_x)/2,(min_y+max_y)/2
             target = (center_x,center_y,0)
             # Fit the complete display bounds, not just the center positions:
@@ -354,11 +466,24 @@ def main():
                                 break
         for actor in frame['objects']:
             obj = actors[actor['id']]
-            if obj.get('vru_kind'):
+            if obj.get('vru_kind') or obj.get('dog_kind'):
                 prior = next((a for a in run['frames'][max(0, index-1)]['objects'] if a['id'] == actor['id']), None)
                 dt = frame['time']-run['frames'][max(0, index-1)]['time']
                 speed = math.hypot(actor['position']['x']-prior['position']['x'], actor['position']['y']-prior['position']['y'])/dt if prior and dt > 0 else 0
-                animate_vru(obj, frame['time'], speed)
+                animator = animate_family if obj.get('avatar_kind') else animate_dog if obj.get('dog_kind') else animate_vru
+                animator(obj, frame['time'], speed)
+        bpy.context.view_layer.update()
+        active = {actor['id'] for actor in frame['objects']}
+        for owner, companion in dog_pairs.items():
+            leashes[owner].hide_render = owner not in active or companion not in active
+            if not leashes[owner].hide_render:
+                walker, pet = actors[owner], actors[companion]
+                hands = [child for child in walker.children_recursive if ' hand' in child.name]
+                collar = pet.matrix_world @ Vector(pet['leash_anchor_local_m'])
+                hand = min((child.matrix_world.translation for child in hands), key=lambda p: (p-collar).length) if hands else walker.matrix_world @ Vector((.1, -.2, .9))
+                midpoint = (hand+collar)/2
+                midpoint.z -= .14
+                set_line(leashes[owner], [hand, midpoint, collar])
         set_line(planned, [(p['position']['x'], p['position']['y'], .11) for p in frame['trajectory']['points']])
         forecast = frame['predictions'][0]['positions'] if frame['predictions'] else []
         set_line(predictions, [(p['x'], p['y'], .12) for p in forecast])
@@ -372,6 +497,8 @@ def main():
         state = {'frame_index': index, 'time': frame['time'], 'ego_pose': rendered_pose,
                  'objects': rendered_objects, 'closed_edges': closed,
                  'camera_position': list(camera.location)}
+        state['display_scales'] = {'ego': list(ego.scale),
+                                   'actors': {str(a['id']): list(actors[a['id']].scale) for a in frame['objects']}}
         if native_models or ground_mode:
             state['native_cuboids'] = native_cuboid_audit(native_models)
         if ground_mode:
@@ -386,7 +513,7 @@ def main():
         scene.render.filepath = str(output/f'{number:04d}.png')
         bpy.ops.render.render(write_still=True)
     (output/'audit.json').write_text(json.dumps(audit, indent=2)+'\n')
-    scene_info = {'style': STYLE, 'seed': 1729, 'scenery_counts': scenery,
+    scene_info = {'style': CITY_STYLE if urban else STYLE, 'seed': 1729, 'scenery_counts': scenery,
                   'ego_model': 'hatchback', 'traffic_models': vehicle_models,
                   'camera': request.get('camera', 'ego'),
                   'actor_models': actor_models,
@@ -394,12 +521,34 @@ def main():
                   'mapped_signal_ids': list(signal_models),
                   'mapped_stop_sign_ids': [s['id'] for s in stop_specs],
                   'mapped_intersection_ids': [s['stop_line']['id'] for s in intersection_specs]}
+    scene_info['opposing_display_lanes'] = opposing_display_lanes
+    scene_info['service_display_lanes'] = service_display_lanes
+    scene_info['left_traffic_display'] = bool(opposing_display_lanes) and all(lane['offset_m'] < 0 for lane in opposing_display_lanes)
+    if scene_info['left_traffic_display']:
+        scene_info['main_street_center_offset_m'] = max(lane['offset_m'] for lane in opposing_display_lanes)/2
+    scene_info['environment'] = request.get('environment', 'suburban')
+    if urban:
+        scene_info['painted_lane_half_width_m'] = 1.8
+        scene_info['crossing_stripe_actor_ids'] = [1, 4, 6]
+    scene_info['dog_pairs'] = dog_pairs
+    scene_info['dog_leashes_display_only'] = bool(dog_pairs)
+    scene_info['display_road_extension_m'] = 20 if request.get('camera') == 'street' else 0
+    scene_info['scenery_excludes_recorded_actor_paths'] = bool(exclusion_paths)
+    scene_info['camera_projection'] = camera.data.type
+    if camera.data.type == 'ORTHO':
+        scene_info['camera_orthographic_scale_m'] = camera.data.ortho_scale
+    scene_info['vehicle_display_dimensions_m'] = {
+        'ego': dict(ego['display_dimensions_m']),
+        'actors': {str(identifier): dict(obj['display_dimensions_m'])
+                   for identifier, obj in actors.items() if obj.get('vehicle_model')}}
+    scene_info['vehicle_display_scales'] = {'ego': list(ego.scale),
+        'actors': {str(identifier): list(obj.scale) for identifier, obj in actors.items()}}
     if native_models or ground_mode:
         scene_info['native_scene_name'] = request['native_scene']['name']
         scene_info['native_cuboids'] = native_cuboid_audit(native_models)
     if ground_mode:
         scene_info['native_ground_cuboids'] = native_cuboid_audit(ground_models)
-        scene_info['road_surface'] = 'actual SceneV2 ground cuboids; top at flat datum 0 m'
+        scene_info['road_surface'] = 'actual SceneV2 support cuboids at flat datum 0 m with display-only asphalt corridor overlays'
         scene_info['scenery_physical'] = False
         if body_envelope is not None:
             scene_info['body_envelope'] = native_cuboid_audit({'research-body-envelope': body_envelope})[0]

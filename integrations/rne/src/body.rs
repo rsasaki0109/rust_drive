@@ -10,7 +10,7 @@ use rne_physics::{
 };
 use rne_physics_rapier::RapierBackend;
 use rne_world::Transform3;
-use rustdrive_core::{Pose, Vec2};
+use rustdriving_core::{Pose, Vec2};
 use serde_json::{Value, json};
 
 const SPEED_BOUND_M_S: f64 = 12.0;
@@ -481,13 +481,13 @@ mod tests {
         assert!((hit.point_m.x + 2.1).abs() < 1e-6);
         assert_eq!(physics.contacts(world_id).unwrap()[0].impulse, 0.0);
     }
-    fn fixture(goal: bool) -> rustdrive_sim::Scenario {
+    fn fixture(goal: bool) -> rustdriving_sim::Scenario {
         let input = if goal {
             include_str!("../../../scenarios/native-scene-raised-goal.json")
         } else {
             include_str!("../../../scenarios/native-scene-low-stop.json")
         };
-        let mut scenario: rustdrive_sim::Scenario = serde_json::from_str(input).unwrap();
+        let mut scenario: rustdriving_sim::Scenario = serde_json::from_str(input).unwrap();
         scenario.half_width = 3.0;
         scenario
     }
@@ -544,16 +544,16 @@ mod tests {
             }
             let mut bytes = vec![];
             run.sensor_log.as_ref().unwrap().write(&mut bytes).unwrap();
-            rustdrive_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink())
+            rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink())
                 .unwrap();
         }
     }
     #[test]
     fn ignoring_native_braking_cannot_hide_actual_cuboid_overlap() {
         use crate::{Plant, RneBackend};
-        use rustdrive_core::{ControlCommand, EgoState};
-        use rustdrive_pipeline::SensorFrame;
-        use rustdrive_sim::{SimulationBackend, WorldObject, simulate_with_backend};
+        use rustdriving_core::{ControlCommand, EgoState};
+        use rustdriving_pipeline::SensorFrame;
+        use rustdriving_sim::{SimulationBackend, WorldObject, simulate_with_backend};
         struct IgnoreControl(RneBackend);
         impl SimulationBackend for IgnoreControl {
             fn state(&self) -> EgoState {

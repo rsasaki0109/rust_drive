@@ -6,7 +6,7 @@
 - Hashes, byte sizes and frozen split: [manifest.json](manifest.json).
 - Two unchanged ASCII VTK files: **3,205,194 bytes**, **36,674 / 36,670 points**.
 
-The pinned [ICP tutorial](https://github.com/ethz-asl/libpointmatcher/blob/62b347813e6aa4f0129457859e12a0371cc7a5da/doc/ICPIntro.md) explicitly identifies these two views as scans from the ASL/ETH Zurich apartment dataset and links its original acquisition site. This documents measured geometry, unlike an authored point cloud. The exported fixtures do not provide acquisition timestamps, a sensor calibration or independently measured relative poses. Their normals/descriptors, when present, are upstream processing products and are not new RustDrive measurements.
+The pinned [ICP tutorial](https://github.com/ethz-asl/libpointmatcher/blob/62b347813e6aa4f0129457859e12a0371cc7a5da/doc/ICPIntro.md) explicitly identifies these two views as scans from the ASL/ETH Zurich apartment dataset and links its original acquisition site. This documents measured geometry, unlike an authored point cloud. The exported fixtures do not provide acquisition timestamps, a sensor calibration or independently measured relative poses. Their normals/descriptors, when present, are upstream processing products and are not new RustDriving measurements.
 
 Use `cloud_0.vtk` for calibration and `cloud_1.vtk` for held-out perturbation evaluation. These are different views of the **same apartment**, so this split cannot establish generalization to independent environments. Do not tune algorithm settings using the held-out cloud or its evaluation output.
 
@@ -21,4 +21,4 @@ python scripts/fetch-datasets.py --dataset libpointmatcher
 python scripts/fetch-datasets.py --dataset libpointmatcher --verify-only
 ```
 
-The repository declares BSD-3-Clause, copyright © 2010–2023 the libpointmatcher authors; its notice is preserved in [UPSTREAM-LICENSE.txt](UPSTREAM-LICENSE.txt). The tutorial identifies an external original ASL dataset, but the pinned example does not establish separate original data redistribution terms. RustDrive therefore does not redistribute these raw files or relicense them under Apache-2.0. Revision-pinned acquisition is for local research; `raw/` is ignored. Document any separate permission before redistributing original or derived clouds.
+The repository declares BSD-3-Clause, copyright © 2010–2023 the libpointmatcher authors; its notice is preserved in [UPSTREAM-LICENSE.txt](UPSTREAM-LICENSE.txt). The tutorial identifies an external original ASL dataset, but the pinned example does not establish separate original data redistribution terms. RustDriving therefore does not redistribute these raw files or relicense them under Apache-2.0. Revision-pinned acquisition is for local research; `raw/` is ignored. Document any separate permission before redistributing original or derived clouds.

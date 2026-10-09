@@ -25,13 +25,13 @@ use intersections::{IntersectionStatus, YieldIntersection, YieldIntersections};
 use navigation::{
     NavigationConfig, NavigationPhase, NavigationStatus, NavigationUpdate, Navigator,
 };
-use rustdrive_control::{PurePursuit, guard};
-use rustdrive_core::*;
-use rustdrive_localization::Ekf;
-use rustdrive_mapping::OccupancyGrid;
-use rustdrive_perception::{LidarClusters, Tracker};
-use rustdrive_planning::LatticePlanner;
-use rustdrive_prediction::ObservedBraking;
+use rustdriving_control::{PurePursuit, guard};
+use rustdriving_core::*;
+use rustdriving_localization::Ekf;
+use rustdriving_mapping::OccupancyGrid;
+use rustdriving_perception::{LidarClusters, Tracker};
+use rustdriving_planning::LatticePlanner;
+use rustdriving_prediction::ObservedBraking;
 use serde::{Deserialize, Serialize};
 use stop_signs::{StopSignStatus, StopSigns};
 use traffic_controls::{
@@ -168,7 +168,7 @@ impl PipelineConfig {
                     "local route geometry requires explicit lateral motion calibration".into(),
                 );
             }
-            rustdrive_planning::validate_local_route_geometry(&self.route, self.vehicle)?;
+            rustdriving_planning::validate_local_route_geometry(&self.route, self.vehicle)?;
             if !self.stop_lines.is_empty()
                 || !self.stop_signs.is_empty()
                 || !self.yield_intersections.is_empty()
@@ -815,7 +815,7 @@ impl DrivingPipeline {
     pub fn active_route(&self) -> &Route {
         &self.config.route
     }
-    pub fn navigation_plan(&self) -> Option<&rustdrive_routing::RoutePlan> {
+    pub fn navigation_plan(&self) -> Option<&rustdriving_routing::RoutePlan> {
         self.navigator.as_ref().map(Navigator::plan)
     }
 }
@@ -1106,11 +1106,11 @@ mod tests {
         assert!(DrivingPipeline::new(mismatch).is_err());
         // An unused remote branch must not turn grid allocation into an overflow or OOM.
         let map = &mut c.navigation.as_mut().unwrap().network;
-        map.nodes.push(rustdrive_routing::RoadNode {
+        map.nodes.push(rustdriving_routing::RoadNode {
             id: "remote".into(),
             position: Vec2::new(100000.0, 0.0),
         });
-        map.edges.push(rustdrive_routing::RoadEdge {
+        map.edges.push(rustdriving_routing::RoadEdge {
             id: "remote-edge".into(),
             from: "east".into(),
             to: "remote".into(),

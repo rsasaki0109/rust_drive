@@ -1,7 +1,7 @@
 //! Physical conflict-zone occupancy scoring; no driver diagnostics are consulted.
 use crate::WorldObject;
-use rustdrive_core::Vec2;
-use rustdrive_pipeline::intersections::YieldIntersection;
+use rustdriving_core::Vec2;
+use rustdriving_pipeline::intersections::YieldIntersection;
 use std::collections::BTreeMap;
 
 const REQUIRED_GAP_S: f64 = 2.0;
@@ -114,8 +114,8 @@ impl IntersectionRuleEvaluator {
 mod tests {
     use super::*;
     use crate::Scenario;
-    use rustdrive_pipeline::intersections::ConflictBounds;
-    use rustdrive_pipeline::traffic_controls::StopLine;
+    use rustdriving_pipeline::intersections::ConflictBounds;
+    use rustdriving_pipeline::traffic_controls::StopLine;
 
     fn intersection() -> YieldIntersection {
         YieldIntersection {
@@ -240,8 +240,8 @@ mod tests {
     #[test]
     fn controller_ignoring_backend_cannot_hide_a_physical_priority_violation() {
         use crate::{ReferenceBackend, SimulationBackend, pipeline_config, simulate_with_backend};
-        use rustdrive_core::{ControlCommand, EgoState};
-        use rustdrive_pipeline::SensorFrame;
+        use rustdriving_core::{ControlCommand, EgoState};
+        use rustdriving_pipeline::SensorFrame;
         struct IgnoreControl(ReferenceBackend);
         impl SimulationBackend for IgnoreControl {
             fn state(&self) -> EgoState {
@@ -275,6 +275,7 @@ mod tests {
             lateral_speed: -1.5,
             active_from: 0.0,
             moving_from: 0.0,
+            moving_until: None,
             following: None,
         }];
         let config = pipeline_config(&scenario);

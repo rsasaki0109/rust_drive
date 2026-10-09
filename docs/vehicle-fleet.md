@@ -1,6 +1,6 @@
 # Multiple vehicles in the RNE demo
 
-The new `traffic-fleet-queue` fixture has three reactive participants ahead of ego on a straight suburban test road. They start at 25, 50 and 75 m at 4 m/s, observe finite-range gaps, and brake behind a static circular obstacle at 110 m. Ego runs the existing RustDrive pipeline from noisy GNSS, wheel/gyro and first-return planar LiDAR. The expected outcome is a stopped queue, not arrival at the road endpoint.
+The new `traffic-fleet-queue` fixture has three reactive participants ahead of ego on a straight suburban test road. They start at 25, 50 and 75 m at 4 m/s, observe finite-range gaps, and brake behind a static circular obstacle at 110 m. Ego runs the existing RustDriving pipeline from noisy GNSS, wheel/gyro and first-return planar LiDAR. The expected outcome is a stopped queue, not arrival at the road endpoint.
 
 ![Actual RNE three-vehicle queue rendered in 3D](../assets/traffic-fleet-demo.gif)
 
@@ -32,7 +32,7 @@ Individual commands are also available:
 cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- \
   --scenario scenarios/traffic-fleet-queue.json --plant dynamic --seed 7 \
   --output artifacts/fleet-native
-cargo run --release --locked --bin rustdrive -- replay \
+cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/fleet-native/sensors.jsonl --output artifacts/fleet-native/replay
 python3 scripts/render_demo_3d.py artifacts/fleet-native/run.json \
   --output assets/traffic-fleet-demo.gif --traffic-models sedan van pickup \

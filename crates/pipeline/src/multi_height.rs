@@ -1,5 +1,5 @@
 //! Bounded, calibrated height selection before the ordinary planar algorithms.
-use rustdrive_core::{LidarScan, MultiHeightLidarScan};
+use rustdriving_core::{LidarScan, MultiHeightLidarScan};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
 

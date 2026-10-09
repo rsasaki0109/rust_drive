@@ -133,7 +133,7 @@ def main():
     args.output.mkdir(parents=True, exist_ok=True)
     report_path = args.output/'report.json'
     report_path.write_text(json.dumps(report, indent=2)+'\n')
-    cli, native = ROOT/'target/release/rustdrive', ROOT/'integrations/rne/target/release/rustdrive-rne'
+    cli, native = ROOT/'target/release/rustdriving', ROOT/'integrations/rne/target/release/rustdriving-rne'
     for seed in args.seeds:
         raw = (args.verify_existing or args.output)/f'seed-{seed}'
         if args.verify_existing is None:

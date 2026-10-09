@@ -1,9 +1,9 @@
-use rustdrive_camera_detect::{Detector, read_image};
+use rustdriving_camera_detect::{Detector, read_image};
 use std::{env, path::Path};
 fn run() -> Result<(), String> {
     let args: Vec<String> = env::args().skip(1).collect();
     if args.len() != 6 || args[0] != "--model" || args[2] != "--image" || args[4] != "--output" {
-        return Err("usage: rustdrive-camera-detect --model yolox_nano.onnx --image measured.jpg --output detections.json".into());
+        return Err("usage: rustdriving-camera-detect --model yolox_nano.onnx --image measured.jpg --output detections.json".into());
     }
     let detector = Detector::load(Path::new(&args[1]))?;
     let (image, sha256) = read_image(Path::new(&args[3]))?;

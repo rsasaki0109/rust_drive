@@ -1,7 +1,7 @@
 //! Bounded deterministic point-to-point registration against a supplied fixed 2D
 //! map. Correspondences and pose come only from the supplied points; no simulator
 //! labels or true poses are accepted. This is local ICP, not global localization.
-use rustdrive_core::{Pose, Vec2, wrap_angle};
+use rustdriving_core::{Pose, Vec2, wrap_angle};
 use std::collections::BTreeMap;
 
 #[derive(Clone, Debug)]

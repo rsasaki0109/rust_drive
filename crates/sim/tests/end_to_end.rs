@@ -1,4 +1,4 @@
-use rustdrive_sim::{Scenario, simulate};
+use rustdriving_sim::{Scenario, simulate};
 fn scenario(name: &str) -> Scenario {
     serde_json::from_str(
         &std::fs::read_to_string(format!(
@@ -95,7 +95,7 @@ fn gnss_outliers_stop_and_recover_without_resetting_localization() {
                 {
                     assert_eq!(
                         diagnostic.last_decision,
-                        Some(rustdrive_core::GnssDecision::RejectedInnovation)
+                        Some(rustdriving_core::GnssDecision::RejectedInnovation)
                     );
                     assert!(diagnostic.last_accepted_stamp.unwrap() < 5.0);
                 }
@@ -123,13 +123,13 @@ fn gnss_outliers_stop_and_recover_without_resetting_localization() {
                         .unwrap()
                         .expected
                         .health
-                        .contains(&rustdrive_pipeline::HealthIssue::StaleGnss)
+                        .contains(&rustdriving_pipeline::HealthIssue::StaleGnss)
                 );
             }
             let mut bytes = Vec::new();
             log.write(&mut bytes).unwrap();
             assert_eq!(
-                rustdrive_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink())
+                rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink())
                     .unwrap()
                     .ticks,
                 result.summary.steps
@@ -151,13 +151,13 @@ fn actual_collision_fails_acceptance() {
 #[test]
 fn cli_reports_failure_and_writes_evidence() {
     use std::{fs, process::Command};
-    let directory = std::env::temp_dir().join(format!("rustdrive-cli-{}", std::process::id()));
+    let directory = std::env::temp_dir().join(format!("rustdriving-cli-{}", std::process::id()));
     fs::create_dir_all(&directory).unwrap();
     let mut s = scenario("mission");
     s.duration = 1.0;
     let input = directory.join("scenario.json");
     fs::write(&input, serde_json::to_vec(&s).unwrap()).unwrap();
-    let result = Command::new(env!("CARGO_BIN_EXE_rustdrive"))
+    let result = Command::new(env!("CARGO_BIN_EXE_rustdriving"))
         .args(["run", "--scenario"])
         .arg(&input)
         .arg("--output")
@@ -168,7 +168,7 @@ fn cli_reports_failure_and_writes_evidence() {
     let evidence: serde_json::Value =
         serde_json::from_slice(&fs::read(directory.join("run/summary.json")).unwrap()).unwrap();
     assert_eq!(evidence["passed"], false);
-    let result = Command::new(env!("CARGO_BIN_EXE_rustdrive"))
+    let result = Command::new(env!("CARGO_BIN_EXE_rustdriving"))
         .args(["run", "--unknown", "x"])
         .output()
         .unwrap();
@@ -180,7 +180,7 @@ fn cli_reports_failure_and_writes_evidence() {
 fn cli_replay_recomputes_and_rejects_corruption_without_stale_success() {
     use std::{fs, io::BufWriter, process::Command};
     let directory =
-        std::env::temp_dir().join(format!("rustdrive-replay-cli-{}", std::process::id()));
+        std::env::temp_dir().join(format!("rustdriving-replay-cli-{}", std::process::id()));
     fs::create_dir_all(&directory).unwrap();
     let mut s = scenario("mission");
     s.duration = 1.0;
@@ -195,7 +195,7 @@ fn cli_replay_recomputes_and_rejects_corruption_without_stale_success() {
         .write(BufWriter::new(fs::File::create(&log).unwrap()))
         .unwrap();
     let invoke = || {
-        Command::new(env!("CARGO_BIN_EXE_rustdrive"))
+        Command::new(env!("CARGO_BIN_EXE_rustdriving"))
             .args(["replay", "--log"])
             .arg(&log)
             .arg("--output")
@@ -338,7 +338,7 @@ fn map_destinations_and_closure_detours_drive_and_replay_across_seeds() {
                 .write(&mut bytes)
                 .unwrap();
             assert_eq!(
-                rustdrive_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink())
+                rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink())
                     .unwrap()
                     .ticks,
                 result.summary.steps
@@ -401,7 +401,7 @@ fn live_map_closures_stop_then_handover_without_resetting_estimation() {
             assert!(switch.time > 3.0);
             assert!(result.frames.iter().any(|f| f.time >= 3.0
                 && f.navigation.as_ref().unwrap().phase
-                    == rustdrive_pipeline::navigation::NavigationPhase::Braking));
+                    == rustdriving_pipeline::navigation::NavigationPhase::Braking));
             // Objects stay on the original world road, rather than teleporting when a route changes.
             assert!(
                 result
@@ -417,7 +417,7 @@ fn live_map_closures_stop_then_handover_without_resetting_estimation() {
                 .write(&mut bytes)
                 .unwrap();
             assert_eq!(
-                rustdrive_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink())
+                rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink())
                     .unwrap()
                     .ticks,
                 result.summary.steps
@@ -443,7 +443,7 @@ fn no_route_holds_before_the_closed_branch_across_seeds() {
                 .as_ref()
                 .unwrap()
                 .phase,
-            rustdrive_pipeline::navigation::NavigationPhase::Blocked
+            rustdriving_pipeline::navigation::NavigationPhase::Blocked
         );
     }
 }
@@ -476,7 +476,7 @@ fn terminal_traffic_is_avoided_through_an_extended_physical_hold() {
             .write(&mut bytes)
             .unwrap();
         assert_eq!(
-            rustdrive_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink())
+            rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink())
                 .unwrap()
                 .ticks,
             result.summary.steps
@@ -542,7 +542,7 @@ fn reactive_traffic_stops_resumes_and_replays_from_ego_observations() {
             .write(&mut bytes)
             .unwrap();
         assert_eq!(
-            rustdrive_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink())
+            rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink())
                 .unwrap()
                 .ticks,
             result.summary.steps
@@ -592,7 +592,7 @@ fn malformed_following_parameters_and_stop_windows_are_rejected() {
     }
     let mut s = s;
     s.objects[0].following.as_mut().unwrap().stop_windows.push(
-        rustdrive_sim::traffic::StopWindow {
+        rustdriving_sim::traffic::StopWindow {
             from: 9.0,
             until: 12.0,
         },

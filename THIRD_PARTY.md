@@ -1,8 +1,8 @@
 # Third-party licensing
 
-The optional packaged OpenStreetMap extract and derived ENU road database are © OpenStreetMap contributors, under ODbL 1.0, separately from RustDrive's Apache-2.0 code. [Pinned source, attribution, conversion and redistribution terms](maps/osm/SOURCE.md). No OSMnx implementation is copied or required at runtime. The extract is historical and cropped; its presence does not establish current physical map accuracy.
+The optional packaged OpenStreetMap extract and derived ENU road database are © OpenStreetMap contributors, under ODbL 1.0, separately from RustDriving's Apache-2.0 code. [Pinned source, attribution, conversion and redistribution terms](maps/osm/SOURCE.md). No OSMnx implementation is copied or required at runtime. The extract is historical and cropped; its presence does not establish current physical map accuracy.
 
-RustDrive code is original Apache-2.0. No Autoware, Apollo or openpilot implementation is vendored. This is the dependency inventory for the committed Cargo.lock, recorded on 2026-10-08 from Cargo metadata.
+RustDriving code is original Apache-2.0. No Autoware, Apollo or openpilot implementation is vendored. This is the dependency inventory for the committed Cargo.lock, recorded on 2026-10-08 from Cargo metadata.
 
 | Package | Locked version | SPDX expression |
 |---|---|---|
@@ -26,4 +26,4 @@ Optional 3D visualization invokes the separately installed Blender executable (G
 
 Autoware and Apollo root licenses are Apache-2.0; openpilot is MIT at the researched revisions. These projects are architectural references rather than dependencies. See [research](docs/research.md) for source links and artifact-specific licensing restrictions.
 
-The optional standalone RNE adapter has a separate lockfile and [dependency inventory](integrations/rne/THIRD_PARTY.md). RNE is MIT OR Apache-2.0; no RNE source is vendored into the default RustDrive workspace.
+The optional standalone RNE adapter has a separate lockfile and [dependency inventory](integrations/rne/THIRD_PARTY.md). RNE is MIT OR Apache-2.0; no RNE source is vendored into the default RustDriving workspace.

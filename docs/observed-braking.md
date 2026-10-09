@@ -1,6 +1,6 @@
 # Observed braking and the repaired follower deadline
 
-RustDrive now forecasts a short continuation of **measured** obstacle braking instead of extending the latest velocity unchanged. The unchanged `traffic-follower-deadline` fixture completes its eight-second goal residence within 65 seconds in both plants across seeds 1/7/42. The original world, GNSS fault [10,14), plant, engine revision and physical acceptance remain unchanged. All eight seconds of stationary collision checking and the 1 m clearance floor remain mandatory.
+RustDriving now forecasts a short continuation of **measured** obstacle braking instead of extending the latest velocity unchanged. The unchanged `traffic-follower-deadline` fixture completes its eight-second goal residence within 65 seconds in both plants across seeds 1/7/42. The original world, GNSS fault [10,14), plant, engine revision and physical acceptance remain unchanged. All eight seconds of stationary collision checking and the 1 m clearance floor remain mandatory.
 
 ![Actual RNE follower-deadline run with observed braking](../assets/prediction-demo.gif)
 

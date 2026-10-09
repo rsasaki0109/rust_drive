@@ -420,7 +420,7 @@ def main():
             and all(0 <= seed < 2**64 for seed in args.seeds), 'seeds must be distinct u64 values')
     require(len(set(args.plants)) == len(args.plants), 'plants must be distinct')
     require(len(set(args.modes)) == len(args.modes), 'operating modes must be distinct')
-    cli, native = ROOT/'target/release/rustdrive', ROOT/'integrations/rne/target/release/rustdrive-rne'
+    cli, native = ROOT/'target/release/rustdriving', ROOT/'integrations/rne/target/release/rustdriving-rne'
     require(cli.is_file() and native.is_file(), 'build the locked reference and native release binaries first')
     fixture_contracts()
     args.output.mkdir(parents=True, exist_ok=True)

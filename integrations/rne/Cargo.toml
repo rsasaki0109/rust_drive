@@ -1,15 +1,15 @@
 [workspace]
 
 [package]
-name = "rustdrive-rne"
+name = "rustdriving-rne"
 version = "0.1.0"
 edition = "2024"
 license = "Apache-2.0"
 
 [dependencies]
-rustdrive-core = { path = "../../crates/core" }
-rustdrive-pipeline = { path = "../../crates/pipeline" }
-rustdrive-sim = { path = "../../crates/sim" }
+rustdriving-core = { path = "../../crates/core" }
+rustdriving-pipeline = { path = "../../crates/pipeline" }
+rustdriving-sim = { path = "../../crates/sim" }
 serde_json = { version = "1.0", features = ["float_roundtrip"] }
 rne_core = { path = "../../../RobotNativeEngine/crates/rne_core" }
 rne_ecs = { path = "../../../RobotNativeEngine/crates/rne_ecs" }

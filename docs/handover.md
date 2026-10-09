@@ -2,7 +2,7 @@
 
 This page records the `cc9ba4d` baseline, including its retained 6 m/s failure. The [current avoidance extension](avoidance-continuity.md) repairs that regression, expands the suite and supplies the current README GIF; its results supersede the measurements below.
 
-RustDrive now receives known road-closure snapshots while driving, stops before a divergent or closed edge, and switches to a detour after three healthy stopped estimates. If no route remains, it holds on the existing corridor. A later snapshot that makes the detour available permits a stopped handover and resumed driving. The GIF at that revision was the actual seed-7 CPU-only RNE dynamic run, rendered from telemetry at 3× speed.
+RustDriving now receives known road-closure snapshots while driving, stops before a divergent or closed edge, and switches to a detour after three healthy stopped estimates. If no route remains, it holds on the existing corridor. A later snapshot that makes the detour available permits a stopped handover and resumed driving. The GIF at that revision was the actual seed-7 CPU-only RNE dynamic run, rendered from telemetry at 3× speed.
 
 This is a deliberately restricted handover policy for authored planar maps. It does not implement continuous rerouting at speed, traffic-light logic, intersection priority or physical road-closure perception.
 

@@ -2,7 +2,7 @@
 
 ## Goal and first operating domain
 
-RustDrive aims to become an independent Rust autonomous driving stack. Version 0.1 first establishes a small executable baseline: a vehicle follows a known curved route, avoids sensed objects, yields on a blocked narrow road, and brakes when required sensing becomes stale. The reference simulator is intentionally 2D, CPU-only, deterministic, and small enough to exercise in ordinary CI. These properties make a useful algorithm development harness; they do not establish physical or operational validity.
+RustDriving aims to become an independent Rust autonomous driving stack. Version 0.1 first establishes a small executable baseline: a vehicle follows a known curved route, avoids sensed objects, yields on a blocked narrow road, and brakes when required sensing becomes stale. The reference simulator is intentionally 2D, CPU-only, deterministic, and small enough to exercise in ordinary CI. These properties make a useful algorithm development harness; they do not establish physical or operational validity.
 
 ## Current dataflow
 
@@ -60,18 +60,18 @@ Optional `local_route_geometry` uses bounded steering-radius corner fillets and 
 
 | Crate | Responsibility | Depends on |
 |---|---|---|
-| `rustdrive-core` | SI contracts, planar transforms, route interpolation and projection, algorithm traits | serde |
-| `rustdrive-routing` | Validated directed maps, shortest-distance routing, edge closures and bounded OSM import | core, serde |
-| `rustdrive-localization` | State/covariance estimation, innovation gating, bounded local SE(2) fixed-map registration | core |
-| `rustdrive-perception` | Point clustering, circular-object fitting, track identity/velocity, bounded XYZ terrain/components | core |
-| `rustdrive-mapping` | Bounded occupancy grid and ray updates | core |
-| `rustdrive-prediction` | Time-indexed observed braking and constant-velocity baseline | core |
-| `rustdrive-planning` | Candidate selection, maneuver persistence, braking / goal modes | core |
-| `rustdrive-control` | Longitudinal and lateral actuation, freshness guard | core |
-| `rustdrive-pipeline` | Sensor-only orchestration, freshness/health, versioned recording and replay | core + algorithm crates, serde / serde_json |
-| `rustdrive-sim` | Reference sensors/plant, backend interface, independent evaluation and CLI | core + pipeline, serde / serde_json |
-| `rustdrive-dataset-eval` | Bounded PCD/LZF/VTK readers, measured-cloud evaluation and explicit semi-synthetic pose scoring | core + perception + localization, serde_json; Python SHA verification |
-| `rustdrive-rne` (optional standalone workspace) | RNE world/vehicle/sensor adapter | core + pipeline + sim, renderer-independent RNE crates |
+| `rustdriving-core` | SI contracts, planar transforms, route interpolation and projection, algorithm traits | serde |
+| `rustdriving-routing` | Validated directed maps, shortest-distance routing, edge closures and bounded OSM import | core, serde |
+| `rustdriving-localization` | State/covariance estimation, innovation gating, bounded local SE(2) fixed-map registration | core |
+| `rustdriving-perception` | Point clustering, circular-object fitting, track identity/velocity, bounded XYZ terrain/components | core |
+| `rustdriving-mapping` | Bounded occupancy grid and ray updates | core |
+| `rustdriving-prediction` | Time-indexed observed braking and constant-velocity baseline | core |
+| `rustdriving-planning` | Candidate selection, maneuver persistence, braking / goal modes | core |
+| `rustdriving-control` | Longitudinal and lateral actuation, freshness guard | core |
+| `rustdriving-pipeline` | Sensor-only orchestration, freshness/health, versioned recording and replay | core + algorithm crates, serde / serde_json |
+| `rustdriving-sim` | Reference sensors/plant, backend interface, independent evaluation and CLI | core + pipeline, serde / serde_json |
+| `rustdriving-dataset-eval` | Bounded PCD/LZF/VTK readers, measured-cloud evaluation and explicit semi-synthetic pose scoring | core + perception + localization, serde_json; Python SHA verification |
+| `rustdriving-rne` (optional standalone workspace) | RNE world/vehicle/sensor adapter | core + pipeline + sim, renderer-independent RNE crates |
 
 Unsafe Rust is forbidden at workspace level. There is no global message bus, custom scheduling runtime, ROS dependency, model download, or external service. Algorithm crates can be embedded into another application; the simulator is the current application, not a universal runtime.
 

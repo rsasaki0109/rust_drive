@@ -8,7 +8,7 @@ Output preserves acquisition-body XYZ AABBs, point counts and original return-ve
 bash scripts/setup-rne.sh
 source scripts/env.sh
 cargo +1.95.0 build --release --locked --manifest-path integrations/rne/Cargo.toml
-integrations/rne/target/release/rustdrive-rne \
+integrations/rne/target/release/rustdriving-rne \
   --scenario scenarios/native-ground-traffic-stop.json \
   --scene scenes/ground-moving-traffic.json --plant dynamic \
   --lidar-3d --terrain-objects --seed 7 --output artifacts/terrain-objects/run
@@ -23,7 +23,7 @@ The first 180-column, broad-height acquisition is preserved as a **failed two-se
 
 ```sh
 python -c "import gzip,pathlib; pathlib.Path('artifacts').mkdir(exist_ok=True); pathlib.Path('artifacts/terrain-sparse.jsonl').write_bytes(gzip.decompress(pathlib.Path('assets/native-terrain-sparse-sensors.jsonl.gz').read_bytes()))"
-cargo run --release --locked --bin rustdrive -- replay \
+cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/terrain-sparse.jsonl --output artifacts/terrain-sparse-replay
 ```
 

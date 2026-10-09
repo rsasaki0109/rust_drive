@@ -1,10 +1,10 @@
 # CPU-only Robot Native Engine integration
 
-This standalone Cargo workspace embeds [RobotNativeEngine](https://github.com/rsasaki0109/RobotNativeEngine) native vehicle systems and Rapier LiDAR queries into the **same RustDrive pipeline** used by the reference simulator and replay. It is executable code with integration tests, not a mock or renderer-driven vehicle animation.
+This standalone Cargo workspace embeds [RobotNativeEngine](https://github.com/rsasaki0109/RobotNativeEngine) native vehicle systems and Rapier LiDAR queries into the **same RustDriving pipeline** used by the reference simulator and replay. It is executable code with integration tests, not a mock or renderer-driven vehicle animation.
 
 ## Reproduce
 
-From the RustDrive checkout, with Git, Rust, a C linker and network access:
+From the RustDriving checkout, with Git, Rust, a C linker and network access:
 
 ```sh
 bash scripts/setup.sh
@@ -17,9 +17,9 @@ bash scripts/rne-demo.sh dynamic
 bash scripts/rne-demo.sh kinematic
 ```
 
-Setup fetches exactly [`df6007aa40315e81d12ae00fc1f60369e393a178`](https://github.com/rsasaki0109/RobotNativeEngine/commit/df6007aa40315e81d12ae00fc1f60369e393a178) (also in `rne-revision.txt`) into sibling `../RobotNativeEngine`, using a sparse checkout of crates and vendored dependencies. An existing checkout is preserved; setup exits if HEAD differs rather than resetting user work. The engine fixes are on `feat/rustdrive-sensor-contract`, based on upstream `81454814e997e6733f5bd1687d86a0cab03c1b03`.
+Setup fetches exactly [`df6007aa40315e81d12ae00fc1f60369e393a178`](https://github.com/rsasaki0109/RobotNativeEngine/commit/df6007aa40315e81d12ae00fc1f60369e393a178) (also in `rne-revision.txt`) into sibling `../RobotNativeEngine`, using a sparse checkout of crates and vendored dependencies. An existing checkout is preserved; setup exits if HEAD differs rather than resetting user work. The engine fixes are on `feat/rustdriving-sensor-contract`, based on upstream `81454814e997e6733f5bd1687d86a0cab03c1b03`.
 
-Rust 1.95.0 is pinned here to match RNE; the default RustDrive workspace retains 1.90.0. The standalone lockfile keeps optional dependencies out of default builds. No `wgpu`/Vulkan renderer, window, GPU, ROS, Docker, model weights or simulator assets are needed. `rne_render` contains backend-neutral types required transitively by the sensor library; no GPU backend is linked.
+Rust 1.95.0 is pinned here to match RNE; the default RustDriving workspace retains 1.90.0. The standalone lockfile keeps optional dependencies out of default builds. No `wgpu`/Vulkan renderer, window, GPU, ROS, Docker, model weights or simulator assets are needed. `rne_render` contains backend-neutral types required transitively by the sensor library; no GPU backend is linked.
 
 Without Python:
 
@@ -28,7 +28,7 @@ cargo +1.95.0 test --manifest-path integrations/rne/Cargo.toml --locked
 cargo +1.95.0 clippy --manifest-path integrations/rne/Cargo.toml --all-targets --locked -- -D warnings
 cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- \
   --scenario scenarios/mission.json --plant dynamic --seed 7 --output artifacts/rne-dynamic
-cargo run --release --locked --bin rustdrive -- replay \
+cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/rne-dynamic/sensors.jsonl --output artifacts/rne-dynamic/replay
 ```
 
@@ -36,7 +36,7 @@ After fetching/building, add `--offline` to Cargo commands to use retained depen
 
 ## Model and conversions
 
-- RustDrive is planar ENU: x east, y north, positive counterclockwise yaw. RNE is Y-up: `(x,y)` maps to `(x,0.6,-y)`; yaw maps to a positive-Y quaternion. Tests exercise round-trip coordinates and orientation.
+- RustDriving is planar ENU: x east, y north, positive counterclockwise yaw. RNE is Y-up: `(x,y)` maps to `(x,0.6,-y)`; yaw maps to a positive-Y quaternion. Tests exercise round-trip coordinates and orientation.
 - `kinematic` uses RNE `AckermannDrive` and `ackermann_kinematics`, with the 8 m/s reference cruise setting.
 - `dynamic` uses `VehicleDynamics` and `vehicle_dynamics`, with friction coefficient 0.9, steering time constant 0.08 s, and a 6 m/s cruise setting. This avoids claiming identical behavior/calibration across plants.
 - Plants integrate ten 0.005 s substeps per 0.05 s control tick (200 Hz simulated integration). Acceleration is mapped to a bounded speed target; steering and acceleration/deceleration limits are explicit.
@@ -63,7 +63,7 @@ RNE is dual MIT/Apache-2.0. Optional locked dependency licenses are inventoried 
 
 ## Occlusion, crossing and low-friction regressions
 
-Run `bash scripts/check-hazards.sh` from RustDrive for the seeded reference/RNE hazard suite and complete replay. The dynamic adapter accepts optional scenario `dynamics` calibration for friction and steering lag, adds a longitudinal `mu*g` actuation clamp, and supplies conservative fixed forward/braking/lateral limits to the shared planner. Reference/kinematic backends reject this calibration. Combined longitudinal/lateral friction coupling and online friction estimation are absent. [Measured outcomes and the repaired braking failure](../../docs/hazard-validation.md).
+Run `bash scripts/check-hazards.sh` from RustDriving for the seeded reference/RNE hazard suite and complete replay. The dynamic adapter accepts optional scenario `dynamics` calibration for friction and steering lag, adds a longitudinal `mu*g` actuation clamp, and supplies conservative fixed forward/braking/lateral limits to the shared planner. Reference/kinematic backends reject this calibration. Combined longitudinal/lateral friction coupling and online friction estimation are absent. [Measured outcomes and the repaired braking failure](../../docs/hazard-validation.md).
 
 The integration currently passes 27 tests, including multi-seed hazard runs, acquisition under real geometric occlusion, measured acceleration/braking limits, and the opt-in native cuboid scenes described below. The engine pin and standalone dependencies remain the same.
 

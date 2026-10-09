@@ -19,7 +19,7 @@ cargo +1.95.0 run --release --locked \
   --scene scenes/ground-midbeam.json \
   --lidar-3d --ground-segmentation \
   --plant dynamic --seed 7 --output artifacts/ground-mid
-cargo run --release --locked --bin rustdrive -- replay \
+cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/ground-mid/sensors.jsonl \
   --output artifacts/ground-mid/replay
 python3 scripts/check-ground-scenes.py --compact \
@@ -92,7 +92,7 @@ cargo +1.95.0 run --release --locked \
   --scene scenes/ground-moving-traffic.json \
   --lidar-3d --ground-segmentation --vehicle-body \
   --plant dynamic --seed 7 --output artifacts/ground-moving
-cargo run --release --locked --bin rustdrive -- replay \
+cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/ground-moving/sensors.jsonl \
   --output artifacts/ground-moving/replay
 python3 scripts/render_demo_3d.py artifacts/ground-moving/run.json \

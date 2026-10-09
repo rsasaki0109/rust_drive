@@ -1,6 +1,6 @@
 //! Known map updates and a conservative stop-before-divergence route handover.
-use rustdrive_core::{EgoState, Route, wrap_angle};
-use rustdrive_routing::{RoadNetwork, RoadNetworkSpec, RoutePlan};
+use rustdriving_core::{EgoState, Route, wrap_angle};
+use rustdriving_routing::{RoadNetwork, RoadNetworkSpec, RoutePlan};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -16,7 +16,7 @@ pub struct NavigationConfig {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rustdrive_core::{Pose, Vec2};
+    use rustdriving_core::{Pose, Vec2};
     fn config() -> NavigationConfig {
         let value: serde_json::Value =
             serde_json::from_str(include_str!("../../../scenarios/route-direct.json")).unwrap();

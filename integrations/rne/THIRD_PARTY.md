@@ -2,7 +2,7 @@
 
 Generated from locked Cargo metadata on 2026-10-08. This standalone integration does not change the default workspace dependency set. The inventory includes target-conditional packages in the lockfile; presence here does not mean a package was linked into the Linux binary.
 
-RobotNativeEngine crates are dual MIT OR Apache-2.0 at the pinned revision; keep the applicable engine license and notices when redistributing. RustDrive code is Apache-2.0. Rapier is Apache-2.0. No implementation from Autoware, Apollo or openpilot is copied.
+RobotNativeEngine crates are dual MIT OR Apache-2.0 at the pinned revision; keep the applicable engine license and notices when redistributing. RustDriving code is Apache-2.0. Rapier is Apache-2.0. No implementation from Autoware, Apollo or openpilot is copied.
 
 The following external packages are resolved by this integration. Applicable package license texts are retained in [THIRD_PARTY_LICENSES.txt](THIRD_PARTY_LICENSES.txt); review target-specific obligations for binary distribution. This metadata inventory is not a license compatibility certification.
 

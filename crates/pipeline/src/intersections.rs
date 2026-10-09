@@ -1,7 +1,7 @@
 //! Fixed-route yielding from mapped conflict geometry and observed motion forecasts.
 //! No simulator traffic schedule or physical-object identity enters this module.
 use crate::traffic_controls::{StopLine, planning_prefix};
-use rustdrive_core::{EgoState, Prediction, Route, Vec2, wrap_angle};
+use rustdriving_core::{EgoState, Prediction, Route, Vec2, wrap_angle};
 use serde::{Deserialize, Serialize};
 
 pub const FORECAST_HORIZON_S: f64 = 8.0;
@@ -283,7 +283,7 @@ impl YieldIntersections {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rustdrive_core::Pose;
+    use rustdriving_core::Pose;
     fn zone() -> YieldIntersection {
         YieldIntersection {
             stop_line: StopLine {

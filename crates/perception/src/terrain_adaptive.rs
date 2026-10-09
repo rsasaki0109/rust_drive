@@ -6,7 +6,7 @@
 //! Unknown geometry remains non-ground. Broad isolated roofs and ground-like
 //! shallow obstacles are intrinsically ambiguous; confidence is support, not a
 //! calibrated probability. This does not replace the frozen PMF baseline.
-use rustdrive_core::Vec3;
+use rustdriving_core::Vec3;
 use std::collections::BTreeMap;
 
 #[derive(Clone, Debug)]

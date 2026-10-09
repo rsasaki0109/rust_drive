@@ -8,6 +8,12 @@ import bpy
 
 STYLE = 'suburban-test-road-v2'
 VEHICLE_MODELS = ('hatchback', 'sedan', 'van', 'pickup')
+VEHICLE_DIMENSIONS_M = {
+    'hatchback': (4.25, 1.78, 1.48),
+    'sedan': (4.65, 1.82, 1.46),
+    'van': (5.00, 1.95, 2.05),
+    'pickup': (5.35, 1.95, 1.82),
+}
 
 
 def material(name, color, metallic=0, roughness=.45):
@@ -104,7 +110,11 @@ def variant_cabin(parent, r, variant, paint, glass, trim):
 
 
 def car(name, radius, paint, glass, tire, headlight, ego=False, variant='hatchback'):
-    """Original display vehicle, scaled to the recorded circular footprint."""
+    """Original SI display vehicle; radius remains simulation metadata only.
+
+    Preset width includes body handles/sills, excluding mirrors. Cosmetics do
+    not replace recorded sensing/collision circles or research body calibration.
+    """
     if variant not in VEHICLE_MODELS:
         raise ValueError('Unknown display vehicle model: '+variant)
     parent = bpy.data.objects.new(name, None)
@@ -112,8 +122,16 @@ def car(name, radius, paint, glass, tire, headlight, ego=False, variant='hatchba
     parent['asset_style'] = STYLE
     parent['display_only'] = True
     parent['vehicle_model'] = variant
-    parent['wheel_radius'] = .205*radius
-    r = radius
+    parent['declared_circle_radius'] = radius
+    dimensions = VEHICLE_DIMENSIONS_M[variant]
+    length, width, height = dimensions
+    parent['display_dimensions_m'] = dict(zip(('length', 'width', 'height'), dimensions))
+    parent['display_dimension_scope'] = 'Body including bumpers/handles; excludes mirrors, wheels and cosmetic sensor'
+    wheel_radius = {'hatchback': .31, 'sedan': .325, 'van': .36, 'pickup': .38}[variant]
+    parent['wheel_radius'] = wheel_radius
+    # Body meshes use their original unit shape before independent SI scaling.
+    # Wheel meshes are rebuilt in metres, keeping their radial sections round.
+    r = 1.0
     steel = material(name+' brushed alloy', (.42,.48,.55), .75, .22)
     trim = material(name+' black trim', (.018,.025,.035), .2, .3)
     red = material(name+' tail lights', (.72,.012,.024), .25, .24)
@@ -155,15 +173,16 @@ def car(name, radius, paint, glass, tire, headlight, ego=False, variant='hatchba
         for x in [-.56,.56]:
             hub = bpy.data.objects.new('Rolling wheel', None)
             bpy.context.collection.objects.link(hub)
-            hub.parent, hub.location = parent, (x*r,side*.493*r,.235*r)
+            hub.parent, hub.location = parent, (x*length/1.7895, side*(width/2-.105), wheel_radius)
             hub['rolling_wheel'] = True
-            cylinder('Tire', (0,0,0), .205*r, .15*r, tire, hub, (math.pi/2,0,0))
-            cylinder('Dark wheel face', (0,side*.078*r,0), .146*r, .012*r, trim, hub, (math.pi/2,0,0))
-            cylinder('Alloy hub', (0,side*.09*r,0), .045*r, .025*r, steel, hub, (math.pi/2,0,0))
+            wheel_scale = wheel_radius/.205
+            cylinder('Tire', (0,0,0), wheel_radius, .20, tire, hub, (math.pi/2,0,0))
+            cylinder('Dark wheel face', (0,side*.102,0), .146*wheel_scale, .012, trim, hub, (math.pi/2,0,0))
+            cylinder('Alloy hub', (0,side*.110,0), .045*wheel_scale, .025, steel, hub, (math.pi/2,0,0))
             for k in range(5):
                 angle = k*math.tau/5
-                spoke = cube('Alloy spoke', (.084*r*math.sin(angle),side*.092*r,.084*r*math.cos(angle)),
-                             (.028*r,.02*r,.17*r), steel, hub, .005*r)
+                spoke = cube('Alloy spoke', (.084*wheel_scale*math.sin(angle),side*.110,.084*wheel_scale*math.cos(angle)),
+                             (.028*wheel_scale,.02,.17*wheel_scale), steel, hub, .005*wheel_scale)
                 spoke.rotation_euler.y = angle
         cube('Headlight', (.822*r,side*.26*r,.405*r), (.065*r,.19*r,.075*r), headlight, parent, .02*r)
         cube('Tail light', (-.82*r,side*.29*r,.415*r), (.055*r,.14*r,.09*r), red, parent, .015*r)
@@ -173,11 +192,51 @@ def car(name, radius, paint, glass, tire, headlight, ego=False, variant='hatchba
     cube('Front bumper', (.86*r,0,.255*r), (.04*r,.54*r,.035*r), trim, parent, .01*r)
     cube('Rear bumper', (-.85*r,0,.27*r), (.04*r,.57*r,.045*r), trim, parent, .01*r)
     cube('Rear plate', (-.881*r,0,.36*r), (.015*r,.17*r,.055*r), headlight, parent)
+    roof_unit_height = {'hatchback': .96, 'sedan': .84, 'van': 1.22, 'pickup': 1.04}[variant]
+    body_scale = (length/1.7895, width/.986, height/roof_unit_height)
+    for obj in parent.children:
+        if obj.get('rolling_wheel'):
+            continue
+        obj['vehicle_display_part'] = 'mirror' if obj.name.startswith(('Mirror stem', 'Side mirror')) else 'body'
+        obj.location = tuple(a*b for a,b in zip(obj.location, body_scale))
+        for vertex in obj.data.vertices:
+            vertex.co = tuple(a*b for a,b in zip(vertex.co, body_scale))
+        # Bevel widths remain cosmetic and cannot expand the original hull.
+        for modifier in obj.modifiers:
+            if modifier.type == 'BEVEL':
+                modifier.width *= min(body_scale)
     if ego:
         # Cosmetic sensor housing; the recorded LiDAR sweep remains unchanged.
-        cylinder('Display sensor base', (-.22*r,0,1.015*r), .15*r, .05*r, trim, parent)
-        cylinder('Display sensor housing', (-.22*r,0,1.075*r), .115*r, .08*r, steel, parent)
-        cylinder('Display sensor band', (-.22*r,0,1.087*r), .117*r, .026*r, glass, parent)
+        cylinder('Display sensor base', (-.22*body_scale[0],0,height+.025), .15, .05, trim, parent)
+        cylinder('Display sensor housing', (-.22*body_scale[0],0,height+.09), .115, .08, steel, parent)
+        cylinder('Display sensor band', (-.22*body_scale[0],0,height+.102), .117, .026, glass, parent)
+        for obj in parent.children:
+            if obj.name.startswith('Display sensor'):
+                obj['vehicle_display_part'] = 'sensor'
+    bpy.context.view_layer.update()
+    graph = bpy.context.evaluated_depsgraph_get()
+    inverse = parent.matrix_world.inverted()
+    points = []
+    part_points = {'body': [], 'mirror': [], 'sensor': []}
+    for obj in parent.children_recursive:
+        if obj.type != 'MESH':
+            continue
+        evaluated = obj.evaluated_get(graph)
+        data = evaluated.to_mesh()
+        try:
+            local_points = [inverse @ evaluated.matrix_world @ vertex.co for vertex in data.vertices]
+            points.extend(local_points)
+            if obj.get('vehicle_display_part') in part_points:
+                part_points[obj['vehicle_display_part']].extend(local_points)
+        finally:
+            evaluated.to_mesh_clear()
+    parent['display_radius_m'] = max(math.hypot(p.x,p.y) for p in points)+.01
+    parent['display_height_m'] = max(p.z for p in points)+.01
+    for part, vertices in dict(part_points, full=points).items():
+        if vertices:
+            parent['display_'+part+'_bounds_m'] = {
+                'minimum': [min(p[i] for p in vertices) for i in range(3)],
+                'maximum': [max(p[i] for p in vertices) for i in range(3)]}
     return parent
 
 
@@ -233,7 +292,7 @@ def sidewalk(edge, side, edges, paving, curb):
     return count,objects
 
 
-def environment(edges):
+def environment(edges, exclusion_paths=None):
     """Deterministic scenery placed outside all authored road corridors."""
     rng = random.Random(1729)
     paving = material('Concrete pavement', (.38,.40,.37))
@@ -249,8 +308,9 @@ def environment(edges):
     roof = material('Building roof', (.17,.20,.23))
     occupied = []
     counts = {'trees':0,'buildings':0,'lamps':0,'sidewalk_sections':0}
+    placement_edges = list(edges)+list(exclusion_paths or [])
     def available(x,y,radius):
-        return outside_roads(x,y,edges,radius+.5) and all(
+        return outside_roads(x,y,placement_edges,radius+.5) and all(
             math.hypot(x-a,y-b)>radius+r+.8 for a,b,r in occupied)
     def tree(x,y):
         cylinder('Tree trunk', (x,y,1.6), .14, 3.2, bark)
@@ -280,6 +340,11 @@ def environment(edges):
             nx,ny=-dy/length,dx/length;mid=((a['x']+b['x'])/2,(a['y']+b['y'])/2)
             if s+length>=next_tree:
                 x,y=mid[0]+nx*(edge['half_width']+4.5),mid[1]+ny*(edge['half_width']+4.5)
+                if exclusion_paths:
+                    for shift in [0,4,8,12]:
+                        if available(x+nx*shift,y+ny*shift,2.1):
+                            x,y=x+nx*shift,y+ny*shift
+                            break
                 if available(x,y,2.1):tree(x,y)
                 next_tree=s+length+18
             if s+length>=next_lamp:
@@ -294,6 +359,11 @@ def environment(edges):
             if s+length>=next_building:
                 x,y=(mid[0]+10*dx/length+nx*(edge['half_width']+9),
                      mid[1]+10*dy/length+ny*(edge['half_width']+9))
+                if exclusion_paths:
+                    for shift in [0,8,16]:
+                        if available(x+nx*shift,y+ny*shift,6):
+                            x,y=x+nx*shift,y+ny*shift
+                            break
                 if available(x,y,6):building(x,y)
                 next_building=s+length+38
             s+=length
