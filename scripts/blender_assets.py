@@ -308,3 +308,20 @@ def barrel(radius, amber, white):
     for z in [-.38,.38]:
         cylinder('Reflective band',(0,0,z),radius*1.003,.13,white,obj)
     return obj
+
+
+def traffic_signal(name, position, yaw, materials):
+    """Original roadside display light; map/feed geometry only, never a sensor."""
+    parent = bpy.data.objects.new(name, None)
+    bpy.context.collection.objects.link(parent)
+    parent.location, parent.rotation_euler = (*position, 0), (0, 0, yaw)
+    parent['display_only'] = True
+    trim = material(name+' dark housing', (.022,.028,.035), .25, .3)
+    steel = material(name+' steel pole', (.28,.31,.33), .65, .35)
+    cylinder('Signal pole', (0,0,1.6), .065, 3.2, steel, parent)
+    cube('Signal housing', (0,0,3.25), (.26,.36,1.0), trim, parent, .04)
+    lenses = {}
+    for color, z in [('Red',3.55),('Yellow',3.25),('Green',2.95)]:
+        obj = cylinder(color+' lens', (-.145,0,z), .12, .04, materials['off'], parent, (0,math.pi/2,0))
+        lenses[color] = obj
+    return parent, lenses

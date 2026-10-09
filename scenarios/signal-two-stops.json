@@ -1,0 +1,44 @@
+{
+  "name": "Signal Two Stops",
+  "duration": 80,
+  "road_length": 130,
+  "half_width": 2.1,
+  "expected": "goal",
+  "cruise_speed": 4,
+  "min_clearance_m": 1.0,
+  "objects": [],
+  "traffic_signals": [
+    {
+      "stop_line": {
+        "id": "first",
+        "route_s_m": 35
+      },
+      "phases": [
+        {
+          "from": 0,
+          "color": "Red"
+        },
+        {
+          "from": 20,
+          "color": "Green"
+        }
+      ]
+    },
+    {
+      "stop_line": {
+        "id": "second",
+        "route_s_m": 80
+      },
+      "phases": [
+        {
+          "from": 0,
+          "color": "Yellow"
+        },
+        {
+          "from": 42,
+          "color": "Green"
+        }
+      ]
+    }
+  ]
+}

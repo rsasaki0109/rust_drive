@@ -1,6 +1,7 @@
 //! Shared sensor-to-command stack. No simulator, truth objects or physical world types.
 pub mod navigation;
 pub mod replay;
+pub mod traffic_controls;
 use navigation::{
     NavigationConfig, NavigationPhase, NavigationStatus, NavigationUpdate, Navigator,
 };
@@ -12,6 +13,9 @@ use rustdrive_perception::{LidarClusters, Tracker};
 use rustdrive_planning::LatticePlanner;
 use rustdrive_prediction::ObservedBraking;
 use serde::{Deserialize, Serialize};
+use traffic_controls::{
+    SignalObservation, StopLine, TrafficControlStatus, TrafficControls, validate_stop_lines,
+};
 
 /// Conservative, externally calibrated planning limits, independent of simulator truth.
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
@@ -37,6 +41,8 @@ pub struct PipelineConfig {
     pub motion_limits: Option<MotionLimits>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub navigation: Option<NavigationConfig>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub stop_lines: Vec<StopLine>,
 }
 impl PipelineConfig {
     pub fn new(route: Route, initial_pose: Pose, vehicle: VehicleConfig) -> Self {
@@ -48,6 +54,7 @@ impl PipelineConfig {
             cruise_speed: 8.0,
             motion_limits: None,
             navigation: None,
+            stop_lines: vec![],
         }
     }
     pub fn validate(&self) -> Result<(), String> {
@@ -75,6 +82,12 @@ impl PipelineConfig {
                 || !(0.1..=6.0).contains(&limits.max_lateral_acceleration_m_s2)
         }) {
             return Err("invalid calibrated motion limits".into());
+        }
+        validate_stop_lines(&self.stop_lines, &self.route, self.vehicle.radius)?;
+        if !self.stop_lines.is_empty() && self.navigation.is_some() {
+            return Err(
+                "mapped signals currently require a fixed route without live handover".into(),
+            );
         }
         let v = self.vehicle;
         if !self.initial_pose.position.finite()
@@ -113,6 +126,8 @@ pub struct SensorFrame {
     pub lidar_failed: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub navigation_update: Option<NavigationUpdate>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub traffic_signal: Option<SignalObservation>,
 }
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum HealthIssue {
@@ -127,6 +142,7 @@ pub enum HealthIssue {
     AcquisitionFailed,
     ClockGap,
     InvalidNavigation,
+    InvalidTrafficSignal,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -144,6 +160,8 @@ pub struct PipelineOutput {
     pub localization: Option<LocalizationDiagnostics>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub navigation: Option<NavigationStatus>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub traffic_controls: Option<TrafficControlStatus>,
 }
 /// Owns algorithm state; adapters supply observations and apply resulting commands.
 pub struct DrivingPipeline {
@@ -160,10 +178,13 @@ pub struct DrivingPipeline {
     last_lidar: Option<f64>,
     tracks: Vec<Track>,
     navigator: Option<Navigator>,
+    traffic_controls: Option<TrafficControls>,
 }
 impl DrivingPipeline {
     pub fn new(config: PipelineConfig) -> Result<Self, String> {
         config.validate()?;
+        let traffic_controls = (!config.stop_lines.is_empty())
+            .then(|| TrafficControls::new(config.stop_lines.clone()));
         let mut planner = LatticePlanner::default();
         planner.cruise_speed = config.cruise_speed;
         planner.vehicle = config.vehicle;
@@ -220,6 +241,7 @@ impl DrivingPipeline {
             last_lidar: None,
             tracks: vec![],
             navigator,
+            traffic_controls,
         })
     }
     /// Clock errors return Err before mutation; callers must apply emergency braking on Err.
@@ -330,7 +352,29 @@ impl DrivingPipeline {
             self.planner = planner;
             self.controller.reset_route_state();
         }
-        let stop_route = self.navigator.as_ref().and_then(Navigator::planning_route);
+        if let Some(controls) = &mut self.traffic_controls {
+            controls.step(
+                input.traffic_signal.as_ref(),
+                input.time,
+                self.config.route.project(estimate.pose.position).0,
+                self.config.vehicle.radius,
+                health.is_empty(),
+            );
+            if controls.status().fault {
+                health.push(HealthIssue::InvalidTrafficSignal);
+            }
+        } else if input.traffic_signal.is_some() {
+            health.push(HealthIssue::InvalidTrafficSignal);
+        }
+        let stop_route = self
+            .navigator
+            .as_ref()
+            .and_then(Navigator::planning_route)
+            .or_else(|| {
+                self.traffic_controls
+                    .as_ref()
+                    .and_then(|c| c.planning_route(&self.config.route))
+            });
         let mut trajectory = self.planner.plan(
             estimate,
             stop_route.as_ref().unwrap_or(&self.config.route),
@@ -342,6 +386,14 @@ impl DrivingPipeline {
                 NavigationPhase::Braking | NavigationPhase::Blocked
             )
         }) && trajectory.mode != DrivingMode::Emergency
+        {
+            trajectory.mode = DrivingMode::Yield;
+        }
+        if self
+            .traffic_controls
+            .as_ref()
+            .is_some_and(|c| c.status().stop_s_m.is_some())
+            && trajectory.mode != DrivingMode::Emergency
         {
             trajectory.mode = DrivingMode::Yield;
         }
@@ -377,6 +429,7 @@ impl DrivingPipeline {
             position_variance: variance,
             localization: Some(self.ekf.diagnostics()),
             navigation: self.navigator.as_ref().map(Navigator::status),
+            traffic_controls: self.traffic_controls.as_ref().map(TrafficControls::status),
         })
     }
     pub fn occupied_cells(&self) -> Vec<Vec2> {
@@ -422,6 +475,7 @@ mod tests {
             }),
             lidar_failed: false,
             navigation_update: None,
+            traffic_signal: None,
         }
     }
     #[test]

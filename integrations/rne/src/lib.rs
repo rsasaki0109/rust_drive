@@ -271,6 +271,7 @@ impl SimulationBackend for RneBackend {
         }
         Ok(SensorFrame {
             navigation_update: None,
+            traffic_signal: None,
             time,
             odometry,
             gnss,

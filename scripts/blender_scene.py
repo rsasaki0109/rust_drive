@@ -9,7 +9,7 @@ from bpy_extras.object_utils import world_to_camera_view
 from mathutils import Vector
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from blender_assets import STYLE, barrel, car, cube, environment, material
+from blender_assets import STYLE, barrel, car, cube, environment, material, traffic_signal
 
 
 def line(name, points, mat, width=0.04):
@@ -113,6 +113,33 @@ def main():
         bpy.ops.object.modifier_apply(modifier=union.name)
         bpy.data.objects.remove(surface, do_unlink=True)
     scenery = environment(edges)
+    signal_specs = run['scenario'].get('traffic_signals', [])
+    signal_models = {}
+    if signal_specs:
+        lamp_materials = {'off':material('Inactive signal lens', (.014,.016,.018))}
+        for color,rgb in [('Red',(.95,.015,.012)),('Yellow',(1,.53,.015)),('Green',(.018,.80,.10))]:
+            mat = material('Active signal '+color, rgb)
+            shader = mat.node_tree.nodes.get('Principled BSDF')
+            emission = shader.inputs.get('Emission Color') or shader.inputs.get('Emission')
+            if emission: emission.default_value = (*rgb,1)
+            if shader.inputs.get('Emission Strength'): shader.inputs['Emission Strength'].default_value = 1.5
+            lamp_materials[color] = mat
+        def route_at(distance,lateral=0):
+            points,lengths=run['route']['points'],run['route']['lengths']
+            i=next((i for i in range(1,len(lengths)) if lengths[i]>=distance),len(lengths)-1)
+            a,b=points[i-1],points[i]
+            t=(distance-lengths[i-1])/(lengths[i]-lengths[i-1])
+            yaw=math.atan2(b['y']-a['y'],b['x']-a['x'])
+            return (a['x']+(b['x']-a['x'])*t-math.sin(yaw)*lateral,
+                    a['y']+(b['y']-a['y'])*t+math.cos(yaw)*lateral),yaw
+        for spec in signal_specs:
+            mapped=spec['stop_line'];width=run['route']['half_width']
+            position,yaw=route_at(mapped['route_s_m'],width+1)
+            parent,lenses=traffic_signal('Mapped signal '+mapped['id'],position,yaw,lamp_materials)
+            parent['stop_line_id']=mapped['id']
+            a,_=route_at(mapped['route_s_m'],-width);b,_=route_at(mapped['route_s_m'],width)
+            line('Mapped stop line '+mapped['id'],[(*a,.075),(*b,.075)],marking,.12)
+            signal_models[mapped['id']]=lenses
     bpy.ops.object.light_add(type='SUN', location=(0, 0, 20))
     sun = bpy.context.object
     sun.rotation_euler = (.5, -.4, -.35)
@@ -221,12 +248,17 @@ def main():
         audit.append({'frame_index': index, 'time': frame['time'], 'ego_pose': rendered_pose,
                       'objects': rendered_objects, 'closed_edges': closed,
                       'camera_position': list(camera.location)})
+        for spec in signal_specs:
+            color=next(p['color'] for p in reversed(spec['phases']) if p['from']<=frame['time']+1e-9)
+            for lamp,obj in signal_models[spec['stop_line']['id']].items():
+                obj.data.materials[0]=lamp_materials[lamp if lamp==color else 'off']
         scene.render.filepath = str(output/f'{number:04d}.png')
         bpy.ops.render.render(write_still=True)
     (output/'audit.json').write_text(json.dumps(audit, indent=2)+'\n')
     (output/'scene-info.json').write_text(json.dumps({'style': STYLE, 'seed': 1729, 'scenery_counts': scenery,
                                                    'ego_model': 'hatchback', 'traffic_models': vehicle_models,
-                                                   'camera': request.get('camera', 'ego')}, indent=2)+'\n')
+                                                   'camera': request.get('camera', 'ego'),
+                                                   'mapped_signal_ids': list(signal_models)}, indent=2)+'\n')
     if request.get('scene_output'):
         bpy.ops.wm.save_as_mainfile(filepath=request['scene_output'])
 

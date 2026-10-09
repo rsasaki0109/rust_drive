@@ -32,6 +32,7 @@ fn log() -> Vec<u8> {
             }),
             lidar_failed: false,
             navigation_update: None,
+            traffic_signal: None,
         };
         let output = pipeline.step(&input).unwrap();
         log.record(input, output);
@@ -131,6 +132,7 @@ fn changing_a_map_snapshot_is_detected_by_full_recomputation() {
             }),
             lidar_failed: false,
             navigation_update: None,
+            traffic_signal: None,
         };
         if i == 1 {
             input.navigation_update = Some(rustdrive_pipeline::navigation::NavigationUpdate {

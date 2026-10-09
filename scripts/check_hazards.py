@@ -10,12 +10,13 @@ import sys
 
 ROOT = Path(__file__).resolve().parent.parent
 CASES = {
-    'reference': ['occluded-crossing', 'cut-in', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue', 'traffic-follower-deadline', 'traffic-fleet-queue'],
-    'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue', 'traffic-follower-deadline', 'traffic-fleet-queue'],
+    'reference': ['occluded-crossing', 'cut-in', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue', 'traffic-follower-deadline', 'traffic-fleet-queue', 'signal-red-green', 'signal-red-stop', 'signal-stale-stop', 'signal-stale-recovery', 'signal-two-stops', 'signal-approach-change'],
+    'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue', 'traffic-follower-deadline', 'traffic-fleet-queue', 'signal-red-green', 'signal-red-stop', 'signal-stale-stop', 'signal-stale-recovery', 'signal-two-stops', 'signal-approach-change'],
 }
 # Fixed regression floors, chosen against the preceding measured fixture results.
 # They are simulation test constraints, not a universal safe-distance specification.
 CLEARANCE_FLOORS_M = {
+    **dict.fromkeys(['signal-red-green','signal-red-stop','signal-stale-stop','signal-stale-recovery','signal-two-stops','signal-approach-change'],1.0),
     'traffic-lead-stop': 1.0, 'traffic-follower-brake': 1.0, 'traffic-queue': 1.0, 'traffic-follower-deadline': 1.0, 'traffic-fleet-queue': 1.0,
     'gnss-burst-traffic': 0.5, 'gnss-burst-traffic-hold': 0.5, 'gnss-spike': 0.5, 'gnss-burst': 0.5, 'gnss-persistent-bias': 4.0,
     'occluded-crossing': 1.0, 'cut-in': 0.7, 'multiple-blocked': 3.0,
@@ -38,6 +39,102 @@ def clearance_regression(summary, case):
     value = summary['min_clearance']
     return {'floor_m': floor, 'measured_m': value,
             'passed': math.isfinite(value) and value >= floor}
+
+
+def check_signals(run, log):
+    """Reconstruct observations, true front crossings and continuous close-line holds."""
+    with log.open() as stream:
+        header = json.loads(next(stream))['header']
+        ticks = [r['tick'] for line in stream if (r := json.loads(line))['kind'] == 'tick']
+    specs = run['scenario']['traffic_signals']
+    config = header['config']
+    if config['stop_lines'] != [s['stop_line'] for s in specs] or any(k in config for k in ['traffic_signals','phases','signal_dropout_windows']):
+        raise ValueError('signal schedule/fault truth entered the operational configuration')
+    if any(abs(p['y']) > 1e-9 for p in run['route']['points']):
+        raise ValueError('these independent signal fixture checks require a straight route')
+    frames = run['frames']
+    if len(frames) != len(ticks) or len(ticks) != run['summary']['steps']:
+        raise ValueError('signal evidence lacks a physical/control tick')
+    latest = None
+    accepted = 0
+    crossed = set()
+    crossings = []
+    previous_front = None
+    truth_margin = unknown_margin = math.inf
+    hold_start = {s['stop_line']['id']: None for s in specs}
+    hold_longest = dict.fromkeys(hold_start, 0.0)
+    radius = run['vehicle']['radius']
+    def phase(spec, now):
+        return next(p['color'] for p in reversed(spec['phases']) if p['from'] <= now+1e-9)
+    for index, (frame, tick) in enumerate(zip(frames, ticks)):
+        inp, out = tick['input'], tick['expected']
+        now = frame['time']
+        if abs(now-index*.05) > 1e-8 or abs(inp['time']-now) > 1e-8:
+            raise ValueError('signal evidence changed the control/acquisition clock')
+        dropout = any(w['from']-1e-9 <= now < w['until']-1e-9 for w in run['scenario'].get('signal_dropout_windows', []))
+        sample = inp.get('traffic_signal')
+        if bool(sample) != (index%4 == 0 and not dropout):
+            raise ValueError('signal acquisition does not match the declared sampling/dropout')
+        if sample:
+            expected = [{'id':s['stop_line']['id'], 'color':phase(s,now)} for s in specs]
+            if sample['stamp'] != now or sample['states'] != expected:
+                raise ValueError('signal observation differs from acquired infrastructure state')
+            latest = sample
+            accepted += 1
+        fresh = latest is not None and now-latest['stamp'] <= .5+1e-9
+        status = out['traffic_controls']
+        if status['fault'] or status['last_accepted_stamp'] != (latest['stamp'] if latest else None):
+            raise ValueError('valid signal evidence changed the accepted-age diagnostics')
+        if frame['traffic_controls'] != status:
+            raise ValueError('physical telemetry has inconsistent signal diagnostics')
+        front = frame['truth']['pose']['position']['x']+radius
+        for spec in specs:
+            id, line = spec['stop_line']['id'], spec['stop_line']['route_s_m']
+            real = phase(spec,now)
+            color = next(s['color'] for s in latest['states'] if s['id']==id) if fresh else 'Unknown'
+            actual = next(s for s in status['signals'] if s['id']==id)
+            if actual['color'] != color:
+                raise ValueError('green was released without a fresh accepted observation')
+            if real != 'Green' and (previous_front is None or previous_front < line):
+                truth_margin = min(truth_margin,line-front)
+            if id not in crossed and color != 'Green':
+                unknown_margin = min(unknown_margin,line-front)
+            crossing = (previous_front is None or previous_front < line) and front >= line
+            if crossing:
+                if id in crossed or real != 'Green' or color != 'Green':
+                    raise ValueError('physical front crossed without true AND freshly observed green')
+                crossed.add(id)
+                crossings.append({'id':id,'time':now,'observed_color':color})
+            holding = id not in crossed and color != 'Green' and 0 <= line-front <= 3.5 and frame['truth']['speed'] < .1
+            if holding:
+                if hold_start[id] is None: hold_start[id] = now
+                hold_longest[id] = max(hold_longest[id],now-hold_start[id])
+            else: hold_start[id] = None
+        previous_front = front
+    if (not accepted or any(d < 2.0-1e-8 for d in hold_longest.values())
+            or unknown_margin < 1.0 or truth_margin < 1.0
+            or run['summary'].get('signal_violations',0) != 0):
+        raise ValueError('signal stopping violated hold, clearance or crossing acceptance')
+    moving_change = False
+    for spec in specs:
+        yellow = next((p['from'] for p in spec['phases'] if p['color']=='Yellow' and p['from']>0),None)
+        if spec['phases'][0]['color']=='Green' and yellow is not None:
+            if not any(f['time']<yellow and f['truth']['speed']>2.0 for f in frames):
+                raise ValueError('approach-change fixture never drove before the signal changed')
+            moving_change = True
+    reported = run['summary'].get('signal_min_stopline_margin_m')
+    if (reported is None) != (not math.isfinite(truth_margin)) or (reported is not None and abs(reported-truth_margin)>1e-8):
+        raise ValueError('independent physical stop-line margin differs from summary')
+    if run['scenario']['expected']=='goal' and len(crossed) != len(specs):
+        raise ValueError('goal scenario did not cross every signal after its physical hold')
+    if run['scenario']['expected']=='stop' and crossed:
+        raise ValueError('permanent red/stale fixture crossed its stop line')
+    return {'signals':len(specs),'accepted_snapshots':accepted,'control_ticks':len(ticks),
+            'stopline_crossings':crossings,'continuous_close_line_holds_s':hold_longest,
+            'min_true_nonpermissive_margin_m':truth_margin if math.isfinite(truth_margin) else None,
+            'min_observed_nonpermissive_margin_m':unknown_margin,
+            'snapshot_reconstruction_verified':True,'moving_phase_change_exercised':moving_change,
+            'schedule_labels_absent_from_pipeline':True,'passed':True}
 
 
 def check_navigation(run, case):
@@ -629,7 +726,7 @@ def main():
                     ok = (code == 0 and summary['passed'] and summary['collisions'] == 0
                           and summary['road_violations'] == 0 and code_replay == 0
                           and summary.get('traffic_collisions', 0) == 0 and summary.get('traffic_road_violations', 0) == 0
-                          and summary.get('closure_violations', 0) == 0
+                          and summary.get('closure_violations', 0) == 0 and summary.get('signal_violations', 0) == 0
                           and row.get('replay', {}).get('verified') is True
                           and row['replay']['ticks'] == summary['steps'])
                     row['speed_profiles'] = check_speed_profiles(output/'sensors.jsonl')
@@ -644,6 +741,8 @@ def main():
                         row['tracking_regression_passed'] = summary['emergency_steps'] <= 20
                         ok &= row['tracking_regression_passed']
                     run = json.loads((output/'run.json').read_text())
+                    if case.startswith('signal-'):
+                        row['traffic_controls'] = check_signals(run, output/'sensors.jsonl')
                     if case.startswith('gnss-'):
                         row['gnss_fault'] = check_gnss_fault(run, output/'sensors.jsonl', case)
                     if case.startswith('traffic-'):

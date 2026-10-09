@@ -6,7 +6,7 @@
 
 An original, modular driving stack with a working, deterministic closed-loop simulation. The vehicle processes synthetic LiDAR, fuses noisy GNSS and odometry, tracks and predicts obstacles, plans an avoidance trajectory, and steers and brakes to its destination. The opening GIF shows an actual CPU-only Robot Native Engine (RNE) run: a closure notification arrives during driving, the vehicle stops before the fork, switches to a Dijkstra detour, avoids a sensed obstacle and reaches the mapped destination using native vehicle dynamics and Rapier LiDAR queries. It is a Blender Cycles CPU rendering of the recorded RNE run in 3D at 3× playback speed, with a 6 m/s cruise setting and no optional curvature cap. Driving physics and perception remain planar; the 3D scene is a visual replay. [Reproduce this RNE demo](#reproduce-the-gif).
 
-**Status: simulation research prototype, v0.1.** The verified operating domain is authored planar road corridors with circular obstacles, including a directed road-network fork, merge and stopped handover after a live closure notification. A CPU-only Robot Native Engine (RNE) adapter also runs the same pipeline with native Ackermann dynamics and Rapier LiDAR queries. This is the starting point for an independent stack, not a replacement for mature driving systems or a system for use on public roads. CARLA, ROS 2, camera AI, 3D SLAM, traffic-rule reasoning, and real vehicle interfaces are not implemented. See the [capability matrix](docs/capabilities.md).
+**Status: simulation research prototype, v0.1.** The verified operating domain is authored planar road corridors with circular obstacles, including a directed road-network fork, merge and stopped handover after a live closure notification. A CPU-only Robot Native Engine (RNE) adapter also runs the same pipeline with native Ackermann dynamics and Rapier LiDAR queries. This is the starting point for an independent stack, not a replacement for mature driving systems or a system for use on public roads. CARLA, ROS 2, camera AI, 3D SLAM, general intersection/priority reasoning, and real vehicle interfaces are not implemented. Mapped signal stops use timestamped infrastructure observations; camera signal recognition is not implemented. See the [capability matrix](docs/capabilities.md).
 
 ## Build and run
 
@@ -58,7 +58,7 @@ The integration has its own lockfile and does not enlarge the default workspace 
 bash scripts/check-hazards.sh
 ```
 
-After RNE setup, this CPU-only command runs occlusion, lateral crossings, multiple blocked alternatives, low-friction avoidance and low-friction stopping across seeds 1, 7 and 42. It checks physical outcomes and recomputes every sensor log. All 132 positive local reference/RNE scenario runs pass, including 24 live-navigation, 42 GNSS-fault and 30 reactive-traffic runs. Fixed minimum-clearance floors also guard the fixtures. The planner computes bounded acceleration profiles, uses their arrival times for circular sweeps, and rechecks retimed stops and stationary holds. The suite also checks profile kinematics independently. [Current observed-braking results](docs/observed-braking.md); [reactive-traffic baseline](docs/reactive-traffic.md); [terminal-stop baseline](docs/terminal-stopping.md); [GNSS gating baseline](docs/gnss-robustness.md); [tracking improvements](docs/tracking.md); [earlier swept-check regressions](docs/swept-planning.md).
+After RNE setup, this CPU-only command runs occlusion, lateral crossings, multiple blocked alternatives, low-friction avoidance and low-friction stopping across seeds 1, 7 and 42. It checks physical outcomes and recomputes every sensor log. All 168 positive local reference/RNE scenario runs pass, including 24 live-navigation, 42 GNSS-fault 30 reactive-traffic and 36 signal-control runs. Fixed minimum-clearance floors also guard the fixtures. The planner computes bounded acceleration profiles, uses their arrival times for circular sweeps, and rechecks retimed stops and stationary holds. The suite also checks profile kinematics independently. [Current observed-braking results](docs/observed-braking.md); [reactive-traffic baseline](docs/reactive-traffic.md); [terminal-stop baseline](docs/terminal-stopping.md); [GNSS gating baseline](docs/gnss-robustness.md); [tracking improvements](docs/tracking.md); [earlier swept-check regressions](docs/swept-planning.md).
 
 The original short follower fixture now completes its eight-second goal residence within 65 s in both plants across all three seeds. Two additional RNE cases with a five-meter follower sensing range fail the unchanged 1 m clearance floor and remain excluded from the positive count. [Measured changes and limitations](docs/observed-braking.md).
 
@@ -93,6 +93,15 @@ bash scripts/rne-3d-demo.sh artifacts/fleet/demo.gif \
   scenarios/traffic-fleet-queue.json artifacts/fleet \
   --traffic-models sedan van pickup --camera traffic \
   --scene-output artifacts/fleet/scene.blend
+```
+
+## Traffic signals and stopping rules
+
+Mapped signals now stop ego before red, yellow or unknown lines and release it on fresh green. Expired green observations cannot authorize crossing; a restored feed can resume driving. Six fixtures pass in reference and native RNE plants across three seeds, with independently checked physical crossings, continuous standstill and full sensor replay. The feed is synthetic infrastructure state, not camera recognition. [Commands, native 3D preview, measurements and limits](docs/traffic-signals.md).
+
+```sh
+cargo run --release --locked --bin rustdrive -- run \
+  --scenario scenarios/signal-red-green.json --seed 7 --output artifacts/signals
 ```
 
 ## Mapped destinations and closure detours
@@ -152,12 +161,14 @@ cargo run --release --locked --bin rustdrive -- run \
   --scenario scenarios/lidar-fault.json --seed 7 --output artifacts/lidar-fault
 ```
 
-CI checks formatting, Clippy, the workspace test suite, release builds, and the closed-loop demo on Linux, macOS, and Windows, plus GIF generation and the pinned CPU-only RNE integration on Linux. All five jobs passed for the preceding suburban-model revision `5df62d1` in [run 37891284562](https://github.com/rsasaki0109/rust_drive/actions/runs/37891284562). The RNE job also renders real mission and three-vehicle fleet frames in 3D on CPU and exports editable scenes. See [validation and limitations](docs/validation.md) for the checks actually executed and the initial infrastructure/toolchain failures.
+CI checks formatting, Clippy, the workspace test suite, release builds, and the closed-loop demo on Linux, macOS, and Windows, plus GIF generation and the pinned CPU-only RNE integration on Linux. All five jobs passed for the preceding fleet revision `fc207ce` in [run 37895714516](https://github.com/rsasaki0109/rust_drive/actions/runs/37895714516). The RNE job also renders real mission, three-vehicle fleet and signal-stop frames in 3D on CPU and exports editable scenes. See [validation and limitations](docs/validation.md) for the checks actually executed and the initial infrastructure/toolchain failures.
 
 ## Architecture and contributing
 
 Ten small Cargo crates share transport-independent, serializable contracts. Algorithm implementations are ordinary synchronous Rust libraries. No custom executor or networking middleware is required. The optional RNE adapter and future ROS 2/CARLA bridges translate at the boundaries rather than become dependencies of the algorithms.
 
+- [50% maturity goal, capability waypoints and evidence requirements](docs/maturity.md)
+- [Mapped signal stops, stale-feed recovery and measured rule acceptance](docs/traffic-signals.md)
 - [3D RNE GIFs, CPU rendering and reproduction](docs/3d-demo.md)
 - [Observed braking, repaired deadline and current regression results](docs/observed-braking.md)
 - [Reactive traffic, stop/resume and historical deadline failures](docs/reactive-traffic.md)

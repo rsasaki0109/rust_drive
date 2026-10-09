@@ -1,0 +1,30 @@
+{
+  "name": "Signal Stale Recovery",
+  "duration": 60,
+  "road_length": 100,
+  "half_width": 2.1,
+  "expected": "goal",
+  "cruise_speed": 4,
+  "min_clearance_m": 1.0,
+  "objects": [],
+  "traffic_signals": [
+    {
+      "stop_line": {
+        "id": "main",
+        "route_s_m": 45
+      },
+      "phases": [
+        {
+          "from": 0,
+          "color": "Green"
+        }
+      ]
+    }
+  ],
+  "signal_dropout_windows": [
+    {
+      "from": 4,
+      "until": 18
+    }
+  ]
+}

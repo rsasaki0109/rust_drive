@@ -11,7 +11,7 @@
 | Log-odds occupancy map | Implemented / tested | Exported diagnostic; not a planner input; no SLAM |
 | Static obstacle avoidance | Implemented / tested | Wide supplied road, three candidate offsets |
 | Moving lead / crossing object sensing | Implemented / tested in mission | CV / observed-braking ego forecast; optional simulator actors react to scalar proximity observations |
-| Reactive traffic following / stopped lead / queue | Implemented / tested | 24 seeded positive runs; ideal route proximity sensing and bounded 1D actors, no steering, priority or interaction-aware ego forecast |
+| Reactive traffic following / stopped lead / queue | Implemented / tested | 30 seeded positive runs; ideal route proximity sensing and bounded 1D actors, no steering, priority or interaction-aware ego forecast |
 | Traffic-pair collision and endpoint acceptance | Implemented / tested | Reactive actor pairs swept independently; negative collisions/overruns fail; scheduled-only pairs retain earlier criteria |
 | Narrow-corridor follower goal deadline | Authored regression repaired | Unchanged 65 s deadline / 8 s residence passes in both plants across 3 seeds; repeated conservative emergency stops remain |
 | Observed-braking prediction | Implemented / tested | Sustained sensor-derived track deceleration, bounded one-second persistence then coasting; no intentions, multimodal forecast or guaranteed future braking |
@@ -48,7 +48,8 @@
 | Avoidance continuity | Implemented / tested | Observed centerline occupancy discourages premature center return; seeded 6 m/s detour regression, swept feasibility remains mandatory |
 | Map-update fault handling and replay | Implemented / tested | Revision/stamp checks, latched malformed-update braking, full map-search and handover recomputation when configured |
 | Lane topology / traffic-rule routing / continuous moving handover | Planned | No map importer, lane-change graph, turn penalties or intersection rules |
-| Traffic lights / signs / right of way / parking | Planned | No traffic-rule claims |
+| Mapped traffic signals / stop-line holds | Implemented / tested | 30 physical/replay runs in two plants; 5 Hz infrastructure snapshots, red/yellow/unknown stops, freshness and green release; no camera signal recognition |
+| Stop signs / right of way / general intersections / parking | Planned | Other actors do not yet obey signals; no priority, lane or parking behavior |
 | General dynamically feasible planning / MPC | Planned | Current lattice + pure pursuit baseline |
 | CARLA bridge | Planned; not implemented or validated | No CARLA server/assets installed |
 | ROS 2 bridge | Planned; optional | No ROS dependency in algorithms |

@@ -1,11 +1,14 @@
 //! Deterministic closed-loop simulator. Only sensor observations enter the stack.
+pub mod signals;
 pub mod traffic;
 use rustdrive_core::*;
 use rustdrive_pipeline::navigation::{NavigationConfig, NavigationStatus, NavigationUpdate};
 use rustdrive_pipeline::replay::SensorLog;
+use rustdrive_pipeline::traffic_controls::TrafficControlStatus;
 use rustdrive_pipeline::{DrivingPipeline, PipelineConfig, SensorFrame};
 use rustdrive_routing::{RoadNetwork, RoadNetworkSpec, RoutePlan};
 use serde::{Deserialize, Serialize};
+use signals::{RuleEvaluator, SignalDropout, SignalSpec};
 use std::f64::consts::PI;
 use traffic::{FollowingSpec, TrafficTelemetry, TrafficWorld};
 
@@ -93,6 +96,10 @@ pub struct Scenario {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub goal_hold_seconds: Option<f64>,
     pub objects: Vec<ObjectSpec>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub traffic_signals: Vec<SignalSpec>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub signal_dropout_windows: Vec<SignalDropout>,
 }
 impl Scenario {
     pub fn validate(&self) -> Result<(), String> {
@@ -135,6 +142,7 @@ impl Scenario {
             return Err("goal hold must be finite, nonnegative and within duration".into());
         }
         let selected = self.navigation_plan()?;
+        signals::validate(self)?;
         let mut previous_end = 0.0;
         for window in &self.gnss_bias_windows {
             if !window.from.is_finite()
@@ -299,6 +307,8 @@ pub struct Frame {
     pub navigation: Option<NavigationStatus>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub localization: Option<LocalizationDiagnostics>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub traffic_controls: Option<TrafficControlStatus>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Summary {
@@ -329,6 +339,10 @@ pub struct Summary {
     pub navigation_switches: usize,
     #[serde(default, skip_serializing_if = "is_zero")]
     pub closure_violations: usize,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub signal_violations: usize,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub signal_min_stopline_margin_m: Option<f64>,
 }
 fn is_zero(n: &usize) -> bool {
     *n == 0
@@ -496,6 +510,7 @@ impl SimulationBackend for ReferenceBackend {
             lidar,
             lidar_failed: false,
             navigation_update: None,
+            traffic_signal: None,
         })
     }
     fn advance(&mut self, command: ControlCommand, dt: f64) -> Result<(), String> {
@@ -513,6 +528,11 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
         config.cruise_speed = speed;
     }
     config.motion_limits = scenario.motion_limits;
+    config.stop_lines = scenario
+        .traffic_signals
+        .iter()
+        .map(|s| s.stop_line.clone())
+        .collect();
     // Existing static fixtures retain resolved-route replay; live-update fixtures also record the map.
     if !scenario.navigation_updates.is_empty() {
         config.navigation = scenario.navigation.as_ref().map(|nav| NavigationConfig {
@@ -587,6 +607,7 @@ pub fn simulate_with_backend(
     let mut route_history = Vec::new();
     let mut navigation_switches = 0;
     let mut closure_violations = 0;
+    let mut signal_rules = RuleEvaluator::default();
     let mut evaluation_closures = scenario
         .navigation
         .as_ref()
@@ -616,7 +637,15 @@ pub fn simulate_with_backend(
                 traffic_collided |= separation < 0.0;
             }
         }
+        // Evaluate true physical crossings against the external phase schedule.
+        // Neither this evaluator nor its phase schedule enters the driver.
+        signal_rules.observe(
+            &scenario.traffic_signals,
+            time,
+            traffic_route.project(truth.pose.position).0 + vehicle.radius,
+        );
         let mut input = backend.observe(time, i)?;
+        input.traffic_signal = signals::observe(&scenario, time, i);
         // Fault injection changes observations only, using the acquisition clock.
         // The pipeline/replay header does not contain the scheduled fault labels.
         if let Some(fix) = &mut input.gnss {
@@ -645,6 +674,7 @@ pub fn simulate_with_backend(
         let emergency = result.emergency;
         let navigation_status = result.navigation.clone();
         let localization_status = result.localization;
+        let traffic_control_status = result.traffic_controls.clone();
         if let Some(status) = &navigation_status
             && status.switches > navigation_switches
         {
@@ -724,7 +754,12 @@ pub fn simulate_with_backend(
                 traffic_road_violations += 1;
             }
         }
-        if !traffic.is_empty() || i.is_multiple_of(2) || finished || goal_since == Some(time) {
+        if !traffic.is_empty()
+            || !scenario.traffic_signals.is_empty()
+            || i.is_multiple_of(2)
+            || finished
+            || goal_since == Some(time)
+        {
             frames.push(Frame {
                 time,
                 truth,
@@ -741,6 +776,7 @@ pub fn simulate_with_backend(
                 traffic,
                 navigation: navigation_status,
                 localization: localization_status,
+                traffic_controls: traffic_control_status,
             });
         }
         if finished {
@@ -833,6 +869,12 @@ pub fn simulate_with_backend(
             "localization max error {error_max:.3} m exceeds 1 m"
         ));
     }
+    if signal_rules.violations != 0 {
+        failures.push(format!(
+            "{} nonpermissive physical stop-line crossings",
+            signal_rules.violations
+        ));
+    }
     match scenario.expected {
         Expected::Goal if !reached_goal => failures.push("goal not reached within duration".into()),
         Expected::Stop if truth.speed > 0.2 || reached_goal || progress < 10.0 => {
@@ -866,6 +908,8 @@ pub fn simulate_with_backend(
         failures,
         navigation_switches,
         closure_violations,
+        signal_violations: signal_rules.violations,
+        signal_min_stopline_margin_m: signal_rules.minimum_nonpermissive_margin_m,
     };
     Ok(Run {
         backend: source.to_string(),
