@@ -54,7 +54,10 @@
 | Multiple blocked alternatives / opposing crossings | Implemented / tested | Scheduled circular actors; independent physical acceptance and full replay |
 | Linux build/test | Verified locally | Rust 1.90.0; optional RNE uses 1.95.0 |
 | macOS / Windows | Remote checks observed on recorded revisions | Results and runner failures in [validation](validation.md); no local hosts |
-| Camera, radar, volumetric perception, learned detection | Planned | Actual native XYZ acquisition projects into a planar obstacle pipeline; no 3D object semantics, camera/radar inference or placeholder implementation |
+| Offline learned image detection | Implemented / tiny execution check | Optional locked tract-onnx CPU YOLOX; one NASA portrait/reference box, repeated inference and malformed-asset checks; no road-image benchmark, metric depth, sensor fusion or control integration |
+| Adaptive terrain classifier | Implemented / failed new-environment acceptance | Original six calibration F1 0.8215 and nine viewed regression F1 0.8133; fresh Autzen reference F1 0.3571, confidence false; optional fail-closed pipeline mode, no automotive accuracy claim |
+| Local 6DOF point registration / recorded RGB-D evaluator | Implemented / experimental | Bounded Horn/ICP with ambiguity checks; recorded natural-motion poses used only by evaluator; documented temporal protocols and rejected pairs, no global SLAM or vehicle fusion |
+| Radar / camera driving fusion / 3D object semantics | Planned | Offline inference and native XYZ acquisition do not establish metric camera observations or semantic 3D driving |
 | Learned prediction and training | Planned | No model/data/runtime packaged |
 | 3D mapping / SLAM / global localization | Planned | Optional local XY fixed-map matching is implemented separately; no truth-as-localization substitution |
 | Directed road graph / shortest-distance routing | Implemented / tested | Authored planar maps, deterministic Dijkstra, known pre-departure closure detours, 3 route fixtures × 2 plants × 3 seeds |

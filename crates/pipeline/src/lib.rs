@@ -13,7 +13,8 @@ pub use map_localization::{
 };
 mod perception_3d;
 pub use perception_3d::{
-    MeasuredObject3d, Perception3dConfig, Perception3dDiagnostics, TerrainSupportDiagnostics,
+    AdaptiveTerrainSupportDiagnostics, MeasuredObject3d, Perception3dConfig,
+    Perception3dDiagnostics, TerrainSupportDiagnostics,
 };
 pub mod navigation;
 pub mod replay;

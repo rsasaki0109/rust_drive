@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "recorded_utc": "2026-10-09T19:53:09.773783+00:00",
+  "host": {
+    "os": "Linux",
+    "architecture": "x86_64",
+    "cpu_quota_cores": 4.0,
+    "gpu_used": false
+  },
+  "model_sha256": "c789161ed43c8269fcd4e67c67eeeb4e80c622da2eb296a20bc6007bd18a0b7d",
+  "image_sha256": "874dba0332a5a9a6a9268e732745f57c7ba21bc733867463daaae4a766f0a03f",
+  "annotation_sha256": "11e721e049f44f43cba66f240c249869116380a7fb17a5880dd3102512efdba9",
+  "binary_sha256": "39aca441699c181206b84ee0070ae4657d4d071d9245fc6ba4f32f7aa7489b32",
+  "source_sha256": {
+    "integrations/onnx/Cargo.lock": "84e7f9d7384362f4fd5f41eff588c01e05e2c0b49377e4798b0f7089c15e030c",
+    "integrations/onnx/Cargo.toml": "24f98f5b60c304b981d06ed451d84855c1e9c84c85eb06922d35ae4b93d8e779",
+    "integrations/onnx/check.py": "5060db70e0ec17d84678b9aaa2e3273b34232306cbe0f3341b48aa4b45409451",
+    "integrations/onnx/fetch.py": "86fc0d09ecfc24f47a94b906ace4f9b5e82c38f2945b187c6aa44c05cb3c19b4",
+    "integrations/onnx/score.py": "f5eedaa9131217d8ba88fb6a3f5b0ce6ecfd57b19dcd3aa2fd88d7e47cda7576",
+    "integrations/onnx/src/lib.rs": "85ba191e76eb1b0a784b018b0b80924055ce3ba54cae6efca0ff93511611580d",
+    "integrations/onnx/src/main.rs": "ec09e0888dedac6403266403555242df8ae062fa9106bfb743ed36479d8f1a84"
+  },
+  "actual_inference_runs": 3,
+  "repeated_detection_identity": true,
+  "synthetic_blank_detection_count": 0,
+  "malformed_image_rejected": true,
+  "same_length_corrupt_model_rejected": true,
+  "independent_checker_mutations_rejected": 3,
+  "model_load_seconds": 0.241880629,
+  "inference_seconds": [
+    0.083464563,
+    0.073273009
+  ],
+  "measured_image_score": {
+    "schema_version": 1,
+    "evaluation": "one measured public-domain astronaut portrait, independently supplied torchvision person box",
+    "image_count": 1,
+    "reference_object_count": 1,
+    "detection_count": 1,
+    "true_positive_count": 1,
+    "false_negative_count": 0,
+    "unmatched_prediction_count": 0,
+    "best_person_iou": 0.9486495011563861,
+    "confidence_threshold": 0.3,
+    "match_iou_threshold": 0.5,
+    "limitations": [
+      "Portrait is outside driving domain; one image establishes actual inference only.",
+      "No COCO AP, road-camera accuracy, metric depth, or vehicle-control validation."
+    ],
+    "detection_sha256": "07295645565f12df74f1bf2c9a53d19e4677a3a79e48bbc5401cd2c2afb76ef1"
+  },
+  "limitations": [
+    "One NASA portrait is not road-camera validation or a COCO AP benchmark.",
+    "Model release is published under an Apache-2.0 repository; no separate weight license is published.",
+    "Offline image-coordinate boxes are not connected to vehicle control."
+  ]
+}

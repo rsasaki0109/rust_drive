@@ -1,0 +1,34 @@
+{
+  "schema": "rustdrive-adaptive-ground-freeze-v1",
+  "created_utc": "2026-10-09T19:48:00.147356+00:00",
+  "calibration_samples": [
+    "samp11",
+    "samp12",
+    "samp21",
+    "samp22",
+    "samp23",
+    "samp24"
+  ],
+  "previously_viewed_regression_samples": [
+    "samp31",
+    "samp41",
+    "samp42",
+    "samp51",
+    "samp52",
+    "samp53",
+    "samp54",
+    "samp61",
+    "samp71"
+  ],
+  "algorithm_source_sha256": "a5e20db00507cb53de3ba264e948fc64a84d00ddb2febb40037f29c5b074b8d9",
+  "frozen_parameters_sha256": "663357b0129368df9311eb644911b51353e974513eded126b12f55f264538e3e",
+  "manifest_sha256": "0802989fed87baad1959573453d7745934f664b9fe9cd7ebe1515f54c40e352e",
+  "fresh_source": "pdal-autzen",
+  "accuracy_gate": {
+    "precision_min": 0.9,
+    "recall_min": 0.7,
+    "f1_min": 0.8,
+    "confidence_required": true
+  },
+  "scope": "One new thinned airborne environment; agreement with embedded TerraScan reference classes, not certified manual ground truth; no tuning after inspection."
+}

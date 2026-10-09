@@ -1,4 +1,5 @@
 //! Offline measured geometry evaluation; reference labels never enter algorithms.
+mod adaptive;
 use rustdrive_core::{Pose, Vec2, Vec3, wrap_angle};
 use rustdrive_dataset_eval::{parse_pcd, parse_vtk, read_bounded};
 use rustdrive_localization::registration::{RegistrationConfig, RegistrationResult, match_scan};
@@ -445,7 +446,12 @@ fn run() -> Result<(), String> {
     Ok(())
 }
 fn main() {
-    if let Err(error) = run() {
+    let result = if std::env::args().nth(1).as_deref() == Some("adaptive-ground") {
+        adaptive::run()
+    } else {
+        run()
+    };
+    if let Err(error) = result {
         eprintln!("dataset evaluation: {error}");
         std::process::exit(2);
     }

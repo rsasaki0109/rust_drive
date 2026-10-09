@@ -247,3 +247,50 @@ The required workspace check passes formatting, warnings-denied Clippy, locked b
 The preceding published CI completed its entire native job successfully, including the 276-hazard, native/multi-height/inclined/ground/body/OSM matrices and CPU scene previews. Its Windows Rust job failed before corner driving because checkout converted the pinned source XML/JSON to CRLF; Linux/macOS matrix jobs were canceled by fail-fast. Narrow `.gitattributes` rules preserve just those source bytes. An actual Git autocrlf checkout regression includes an unprotected CRLF control, runs the original map oracle, and rejects newline and appended-byte tampering without changing checksums. This local emulation does not establish fresh Windows CI success; the next publication run is reported separately.
 
 This is a low-speed no-slip repair for the two clear circular-vehicle fixtures. Sampled narrow margins and emergency interruptions remain; arbitrary native bends, high-speed slip, obstacle interaction on these bends and rectangular-body corner acceptance are unverified. The former failure and pre-repair source fingerprint remain in the historical report. Other full matrices retain their preceding fingerprints and are rerun in CI. Rust/engine pins and lockfiles are unchanged. Subjective OSS-relative maturity remains **about 15%**.
+
+
+## Optional measured research modules (2026-10-10, Asia/Tokyo)
+
+The final local source passes the required `bash scripts/check.sh`: 301 workspace
+tests, formatting, strict Clippy, locked release build and all 49 default
+scenario/full-replay pairs. All 245 default raw output files are byte-identical
+to the preceding baseline. Native release formatting, strict Clippy and all 46
+tests pass. The opening ground/body run retains all six raw file hashes and its
+441-tick replay; the README's first 3D GIF retains its original SHA. Root and RNE
+lockfiles, Rust pins and RNE revision are unchanged. New optional integrations
+have separate committed locks. [Exact validation record](../assets/research-cpu-validation.json).
+
+Adaptive terrain uses only the original six calibration samples before its
+source/configuration freeze. Their F1 is 0.8215; the nine already viewed sites
+are regression data with F1 0.8133. Fresh Autzen fails the fixed gates: F1 0.3571,
+recall 0.2174 and insufficient confidence. Only ground references are scored,
+so precision 1.0 does not validate false-positive rejection. Independent parsing,
+unit/index/AABB/metric reconstruction and corruption checks pass; integrity does
+not mean accuracy. One optional native adaptive lead-stop run independently
+passes 441-tick replay, measured ray/AABB checks and a 4.872 m bounded actor
+clearance. Mixed ground/object components remain. [Terrain boundaries](adaptive-ground.md).
+
+Bounded 6DOF registration is scored against actual recorded depth and mocap,
+starting from identity. Original slow and fast protocols each reject all 11
+pairs. Exact nearest-neighbor AABB pruning preserves brute-force correspondence
+results in 1,800 authored queries without relaxing geometry or the work budget.
+The previously viewed fast interval then accepts 10/11 as regression; a separately
+frozen later interval accepts 7/11 (5/9 temporal-held-out), with three work-budget
+and one ambiguity rejection retained. Accepted later pose errors reach 8.53 mm
+and 0.02104 rad, but all data shares one room and the conditional covariance is
+severely overconfident. No vehicle fusion, SLAM or real-time claim follows.
+Independent pose/residual/covariance reconstruction and 14 mutations pass.
+[Recorded protocols and failed uncertainty](recorded-rgbd.md).
+
+Optional Rust-native CPU ONNX inference executes the official YOLOX nano model
+through tract. One measured NASA portrait matches an independently supplied
+reference person box with IoU 0.94865; repeated actual inference, a synthetic
+blank and rejection checks pass. Four Rust tests, strict release Clippy and
+formatting pass. One portrait does not validate driving-camera accuracy, metric
+depth or control integration. [Sources, licenses and actual inference](../integrations/onnx/README.md).
+
+The engineering estimate is about 20%, with the requested 30% still unmet.
+Fresh terrain accuracy, partial recorded-motion acceptance, covariance
+calibration, measured extrinsics and automotive camera evaluation remain open.
+The research CI job retains failed accuracy outcomes while checking their
+integrity; publication-run status is reported separately.

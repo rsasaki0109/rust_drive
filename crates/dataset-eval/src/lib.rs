@@ -239,9 +239,211 @@ pub fn parse_vtk(bytes: &[u8]) -> Result<Vec<Vec3>, String> {
         .map(|_| finite_point(Vec3::new(coordinate()?, coordinate()?, coordinate()?)))
         .collect()
 }
+/// Uncompressed legacy LAS 1.0–1.3 point formats 0–3. Scaling is applied to
+/// signed integer XYZ; classification flags never enter the geometry result.
+#[derive(Debug)]
+pub struct LasGeometry {
+    pub points: Vec<Vec3>,
+    pub version_minor: u8,
+    pub point_format: u8,
+    pub scales: [f64; 3],
+    pub offsets: [f64; 3],
+}
+struct LasHeader {
+    offset: usize,
+    record_bytes: usize,
+    count: usize,
+    version_minor: u8,
+    point_format: u8,
+    scales: [f64; 3],
+    offsets: [f64; 3],
+}
+fn las_header(bytes: &[u8]) -> Result<LasHeader, String> {
+    if bytes.len() > MAX_FILE_BYTES || bytes.len() < 227 || &bytes[..4] != b"LASF" {
+        return Err("invalid or oversized LAS header".into());
+    }
+    if bytes[24] != 1 || bytes[25] > 3 {
+        return Err("requires LAS version 1.0–1.3".into());
+    }
+    let u16_at = |i| u16::from_le_bytes(bytes[i..i + 2].try_into().unwrap()) as usize;
+    let u32_at = |i| u32::from_le_bytes(bytes[i..i + 4].try_into().unwrap()) as usize;
+    let f64_at = |i| f64::from_le_bytes(bytes[i..i + 8].try_into().unwrap());
+    let header_bytes = u16_at(94);
+    let offset = u32_at(96);
+    let record_bytes = u16_at(105);
+    let count = u32_at(107);
+    let point_format = bytes[104];
+    let min_record = match point_format {
+        0 => 20,
+        1 => 28,
+        2 => 26,
+        3 => 34,
+        _ => return Err("compressed or unsupported LAS point format".into()),
+    };
+    if header_bytes < if bytes[25] == 3 { 235 } else { 227 }
+        || header_bytes > offset
+        || offset > bytes.len()
+        || record_bytes < min_record
+        || record_bytes > 256
+        || count == 0
+        || count > MAX_POINTS
+        || count
+            .checked_mul(record_bytes)
+            .and_then(|n| offset.checked_add(n))
+            .is_none_or(|end| end > bytes.len())
+    {
+        return Err("LAS header offsets, records, or point count exceed bounds".into());
+    }
+    // Verify each variable-length record ends before point data. Never search
+    // for coordinates through metadata or trust an unchecked point offset.
+    let vlrs = u32_at(100);
+    if vlrs > 4096 {
+        return Err("too many LAS variable-length records".into());
+    }
+    let mut cursor = header_bytes;
+    for _ in 0..vlrs {
+        let vlr = bytes
+            .get(cursor..cursor.checked_add(54).ok_or("LAS VLR overflow")?)
+            .ok_or("truncated LAS VLR")?;
+        let length = u16::from_le_bytes(vlr[20..22].try_into().unwrap()) as usize;
+        cursor = cursor
+            .checked_add(54 + length)
+            .ok_or("LAS VLR size overflow")?;
+        if cursor > offset {
+            return Err("LAS VLR overlaps point data".into());
+        }
+    }
+    let scales = [f64_at(131), f64_at(139), f64_at(147)];
+    let offsets = [f64_at(155), f64_at(163), f64_at(171)];
+    if scales
+        .iter()
+        .any(|v| !v.is_finite() || *v <= 0. || *v > 1000.)
+        || offsets
+            .iter()
+            .any(|v| !v.is_finite() || v.abs() > 10_000_000.)
+    {
+        return Err("LAS scales/offsets invalid or unbounded".into());
+    }
+    Ok(LasHeader {
+        offset,
+        record_bytes,
+        count,
+        version_minor: bytes[25],
+        point_format,
+        scales,
+        offsets,
+    })
+}
+pub fn parse_las_points(bytes: &[u8]) -> Result<LasGeometry, String> {
+    let h = las_header(bytes)?;
+    let mut points = Vec::with_capacity(h.count);
+    for i in 0..h.count {
+        let record = &bytes[h.offset + i * h.record_bytes..h.offset + (i + 1) * h.record_bytes];
+        let coordinate = |axis: usize| {
+            f64::from(i32::from_le_bytes(
+                record[axis * 4..axis * 4 + 4].try_into().unwrap(),
+            )) * h.scales[axis]
+                + h.offsets[axis]
+        };
+        points.push(finite_point(Vec3::new(
+            coordinate(0),
+            coordinate(1),
+            coordinate(2),
+        ))?);
+    }
+    Ok(LasGeometry {
+        points,
+        version_minor: h.version_minor,
+        point_format: h.point_format,
+        scales: h.scales,
+        offsets: h.offsets,
+    })
+}
+/// Evaluator-only classification decoder: class 2 ground, known classes other
+/// than 0/1/7/8/12 non-ground; unknown/unclassified/noise/overlap or withheld
+/// returns have no accuracy label. Coordinates are not selected using labels.
+pub fn parse_las_labels(bytes: &[u8]) -> Result<Vec<Option<bool>>, String> {
+    let h = las_header(bytes)?;
+    Ok((0..h.count)
+        .map(|i| {
+            let classification = bytes[h.offset + i * h.record_bytes + 15];
+            let class = classification & 31;
+            if classification & 128 != 0 || ![2, 3, 4, 5, 6, 9, 10, 11].contains(&class) {
+                None
+            } else {
+                Some(class == 2)
+            }
+        })
+        .collect())
+}
 #[cfg(test)]
 mod tests {
     use super::*;
+    fn las() -> Vec<u8> {
+        let mut b = vec![0; 227 + 3 * 34];
+        b[..4].copy_from_slice(b"LASF");
+        b[24] = 1;
+        b[25] = 2;
+        b[94..96].copy_from_slice(&227u16.to_le_bytes());
+        b[96..100].copy_from_slice(&227u32.to_le_bytes());
+        b[104] = 3;
+        b[105..107].copy_from_slice(&34u16.to_le_bytes());
+        b[107..111].copy_from_slice(&3u32.to_le_bytes());
+        for axis in 0..3 {
+            b[131 + axis * 8..139 + axis * 8]
+                .copy_from_slice(&[0.01f64, 0.02, 0.1][axis].to_le_bytes());
+            b[155 + axis * 8..163 + axis * 8]
+                .copy_from_slice(&[100f64, 200., 300.][axis].to_le_bytes());
+        }
+        for (i, class) in [2u8, 6, 128 | 2].into_iter().enumerate() {
+            let base = 227 + i * 34;
+            for (axis, value) in [-100i32, 250, 10].into_iter().enumerate() {
+                b[base + axis * 4..base + axis * 4 + 4].copy_from_slice(&value.to_le_bytes());
+            }
+            b[base + 15] = class;
+        }
+        b
+    }
+    #[test]
+    fn las_integer_scaling_and_labels_remain_separate() {
+        let bytes = las();
+        let geometry = parse_las_points(&bytes).unwrap();
+        assert_eq!(geometry.points, vec![Vec3::new(99., 205., 301.); 3]);
+        assert_eq!(geometry.scales, [0.01, 0.02, 0.1]);
+        assert_eq!(
+            parse_las_labels(&bytes).unwrap(),
+            [Some(true), Some(false), None]
+        );
+        let mut changed = bytes.clone();
+        changed[227 + 15] = 7;
+        assert_eq!(parse_las_points(&changed).unwrap().points, geometry.points);
+        assert_eq!(parse_las_labels(&changed).unwrap()[0], None);
+    }
+    #[test]
+    fn las_rejects_truncation_compression_invalid_scaling_and_offsets() {
+        let original = las();
+        let mut compressed = original.clone();
+        compressed[104] = 128 | 3;
+        let mut wrong_offset = original.clone();
+        wrong_offset[96..100].copy_from_slice(&220u32.to_le_bytes());
+        let mut bad_scale = original.clone();
+        bad_scale[131..139].copy_from_slice(&f64::NAN.to_le_bytes());
+        let mut overlap = original.clone();
+        overlap[100..104].copy_from_slice(&1u32.to_le_bytes());
+        let mut enormous = original.clone();
+        enormous[107..111].copy_from_slice(&500_001u32.to_le_bytes());
+        for bytes in [
+            compressed,
+            wrong_offset,
+            bad_scale,
+            overlap,
+            enormous,
+            original[..original.len() - 1].to_vec(),
+        ] {
+            assert!(parse_las_points(&bytes).is_err());
+            assert!(parse_las_labels(&bytes).is_err());
+        }
+    }
     #[test]
     fn lzf_overlap_and_long_reference_are_real_copies() {
         assert_eq!(

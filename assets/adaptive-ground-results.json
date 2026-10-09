@@ -1,0 +1,609 @@
+{
+  "schema": "rustdrive-adaptive-ground-results-v1",
+  "scope": "Offline measured airborne terrain; old viewed sites are regression; fresh one-site reference-label agreement fails acceptance; no real-time or automotive accuracy claim",
+  "baseline_preserved": "assets/measured-data-results.json",
+  "reports": {
+    "calibration_original": {
+      "raw_report_sha256": "871a155ff06d292fc8c3c5dc71bcae9bac9251e05f82d9cea3d0b26c1954df5c",
+      "dataset": "isprs-terrain",
+      "algorithm_source_sha256": "a5e20db00507cb53de3ba264e948fc64a84d00ddb2febb40037f29c5b074b8d9",
+      "frozen_parameters_sha256": "663357b0129368df9311eb644911b51353e974513eded126b12f55f264538e3e",
+      "aggregate": {
+        "confusion": {
+          "fn": 29514,
+          "fp": 1006,
+          "tn": 67643,
+          "tp": 70219
+        },
+        "metrics": {
+          "accuracy": 0.8187454716062287,
+          "f1": 0.8214766199885352,
+          "precision": 0.9858757458757459,
+          "recall": 0.7040698665436717
+        }
+      },
+      "site_aggregates": {
+        "site1": {
+          "confusion": {
+            "fn": 18707,
+            "fp": 412,
+            "tn": 41232,
+            "tp": 29778
+          },
+          "metrics": {
+            "accuracy": 0.7878707186366208,
+            "f1": 0.7569876072449953,
+            "precision": 0.986353097052004,
+            "recall": 0.6141693307208415
+          }
+        },
+        "site2": {
+          "confusion": {
+            "fn": 10807,
+            "fp": 594,
+            "tn": 26411,
+            "tp": 40441
+          },
+          "metrics": {
+            "accuracy": 0.8543059052049122,
+            "f1": 0.8764561186784131,
+            "precision": 0.9855245522115268,
+            "recall": 0.789123477989385
+          }
+        }
+      },
+      "samples": [
+        {
+          "sample": "samp11",
+          "points": 38010,
+          "confusion": {
+            "fn": 14105,
+            "fp": 164,
+            "tn": 16053,
+            "tp": 7688
+          },
+          "metrics": {
+            "accuracy": 0.62459878979216,
+            "f1": 0.5186709394501602,
+            "precision": 0.9791136016301579,
+            "recall": 0.352773826458037
+          },
+          "classification_ms": 1249.120791,
+          "classification_diagnostics": {
+            "candidate_work": 35260007,
+            "confident": false,
+            "occupied_cells": 26485,
+            "rejected_elevated_cells": 18208,
+            "rejected_low_cells": 3003,
+            "supported_cells": 10977,
+            "supported_fraction": 0.41446101566924676
+          }
+        },
+        {
+          "sample": "samp12",
+          "points": 52119,
+          "confusion": {
+            "fn": 4602,
+            "fp": 248,
+            "tn": 25179,
+            "tp": 22090
+          },
+          "metrics": {
+            "accuracy": 0.906943724937163,
+            "f1": 0.9010809708341831,
+            "precision": 0.9888978422419196,
+            "recall": 0.8275887906488836
+          },
+          "classification_ms": 1799.7582300000001,
+          "classification_diagnostics": {
+            "candidate_work": 59185530,
+            "confident": true,
+            "occupied_cells": 34485,
+            "rejected_elevated_cells": 16113,
+            "rejected_low_cells": 2077,
+            "supported_cells": 23528,
+            "supported_fraction": 0.6822676526025808
+          }
+        },
+        {
+          "sample": "samp21",
+          "points": 12960,
+          "confusion": {
+            "fn": 1167,
+            "fp": 42,
+            "tn": 2833,
+            "tp": 8918
+          },
+          "metrics": {
+            "accuracy": 0.906712962962963,
+            "f1": 0.936518771331058,
+            "precision": 0.9953125,
+            "recall": 0.8842835894893406
+          },
+          "classification_ms": 444.798912,
+          "classification_diagnostics": {
+            "candidate_work": 15437404,
+            "confident": true,
+            "occupied_cells": 8420,
+            "rejected_elevated_cells": 1696,
+            "rejected_low_cells": 174,
+            "supported_cells": 7878,
+            "supported_fraction": 0.9356294536817102
+          }
+        },
+        {
+          "sample": "samp22",
+          "points": 32706,
+          "confusion": {
+            "fn": 4484,
+            "fp": 239,
+            "tn": 9961,
+            "tp": 18022
+          },
+          "metrics": {
+            "accuracy": 0.8555922460710573,
+            "f1": 0.8841464910344151,
+            "precision": 0.9869119982476315,
+            "recall": 0.8007642406469386
+          },
+          "classification_ms": 1103.523131,
+          "classification_diagnostics": {
+            "candidate_work": 36468428,
+            "confident": true,
+            "occupied_cells": 20692,
+            "rejected_elevated_cells": 7170,
+            "rejected_low_cells": 539,
+            "supported_cells": 15938,
+            "supported_fraction": 0.7702493717378697
+          }
+        },
+        {
+          "sample": "samp23",
+          "points": 25095,
+          "confusion": {
+            "fn": 3941,
+            "fp": 254,
+            "tn": 11618,
+            "tp": 9282
+          },
+          "metrics": {
+            "accuracy": 0.8328352261406655,
+            "f1": 0.8156773144690013,
+            "precision": 0.9733640939597316,
+            "recall": 0.7019587083112758
+          },
+          "classification_ms": 955.8206809999999,
+          "classification_diagnostics": {
+            "candidate_work": 29496876,
+            "confident": true,
+            "occupied_cells": 18243,
+            "rejected_elevated_cells": 10186,
+            "rejected_low_cells": 1094,
+            "supported_cells": 10494,
+            "supported_fraction": 0.5752343364578194
+          }
+        },
+        {
+          "sample": "samp24",
+          "points": 7492,
+          "confusion": {
+            "fn": 1215,
+            "fp": 59,
+            "tn": 1999,
+            "tp": 4219
+          },
+          "metrics": {
+            "accuracy": 0.8299519487453284,
+            "f1": 0.8688220757825371,
+            "precision": 0.9862085086489013,
+            "recall": 0.7764078027235922
+          },
+          "classification_ms": 273.821884,
+          "classification_diagnostics": {
+            "candidate_work": 9003063,
+            "confident": true,
+            "occupied_cells": 5278,
+            "rejected_elevated_cells": 2034,
+            "rejected_low_cells": 231,
+            "supported_cells": 4244,
+            "supported_fraction": 0.804092459264873
+          }
+        }
+      ]
+    },
+    "regression": {
+      "raw_report_sha256": "fc304d9ee81218010d4833a1d8b9eaab8f6bdc4686c204b9247033376eae3a8a",
+      "dataset": "isprs-terrain",
+      "algorithm_source_sha256": "a5e20db00507cb53de3ba264e948fc64a84d00ddb2febb40037f29c5b074b8d9",
+      "frozen_parameters_sha256": "663357b0129368df9311eb644911b51353e974513eded126b12f55f264538e3e",
+      "aggregate": {
+        "confusion": {
+          "fn": 45166,
+          "fp": 4048,
+          "tn": 60158,
+          "tp": 107201
+        },
+        "metrics": {
+          "accuracy": 0.7727602240353137,
+          "f1": 0.8133117868414663,
+          "precision": 0.963613156073313,
+          "recall": 0.7035709832181509
+        }
+      },
+      "site_aggregates": {
+        "site3": {
+          "confusion": {
+            "fn": 689,
+            "fp": 368,
+            "tn": 12938,
+            "tp": 14867
+          },
+          "metrics": {
+            "accuracy": 0.9633774513200748,
+            "f1": 0.9656717872105486,
+            "precision": 0.9758450935346242,
+            "recall": 0.9557084083311905
+          }
+        },
+        "site4": {
+          "confusion": {
+            "fn": 5411,
+            "fp": 3562,
+            "tn": 32091,
+            "tp": 12637
+          },
+          "metrics": {
+            "accuracy": 0.8329081395132306,
+            "f1": 0.7379916489035536,
+            "precision": 0.7801098833261313,
+            "recall": 0.7001883865248227
+          }
+        },
+        "site5": {
+          "confusion": {
+            "fn": 28986,
+            "fp": 109,
+            "tn": 12162,
+            "tp": 42048
+          },
+          "metrics": {
+            "accuracy": 0.6507412520256888,
+            "f1": 0.7429565954890407,
+            "precision": 0.9974144270227957,
+            "recall": 0.591941886983698
+          }
+        },
+        "site6": {
+          "confusion": {
+            "fn": 6723,
+            "fp": 4,
+            "tn": 1202,
+            "tp": 27131
+          },
+          "metrics": {
+            "accuracy": 0.8081289218482601,
+            "f1": 0.8897014215678237,
+            "precision": 0.9998525889073153,
+            "recall": 0.8014119454126544
+          }
+        },
+        "site7": {
+          "confusion": {
+            "fn": 3357,
+            "fp": 5,
+            "tn": 1765,
+            "tp": 10518
+          },
+          "metrics": {
+            "accuracy": 0.7851070629594119,
+            "f1": 0.8622018198212968,
+            "precision": 0.9995248503278533,
+            "recall": 0.758054054054054
+          }
+        }
+      },
+      "samples": [
+        {
+          "sample": "samp31",
+          "points": 28862,
+          "confusion": {
+            "fn": 689,
+            "fp": 368,
+            "tn": 12938,
+            "tp": 14867
+          },
+          "metrics": {
+            "accuracy": 0.9633774513200748,
+            "f1": 0.9656717872105486,
+            "precision": 0.9758450935346242,
+            "recall": 0.9557084083311905
+          },
+          "classification_ms": 1062.739834,
+          "classification_diagnostics": {
+            "candidate_work": 35487709,
+            "confident": true,
+            "occupied_cells": 19578,
+            "rejected_elevated_cells": 7354,
+            "rejected_low_cells": 899,
+            "supported_cells": 14926,
+            "supported_fraction": 0.7623863520277863
+          }
+        },
+        {
+          "sample": "samp41",
+          "points": 11231,
+          "confusion": {
+            "fn": 1170,
+            "fp": 25,
+            "tn": 5602,
+            "tp": 4434
+          },
+          "metrics": {
+            "accuracy": 0.8935980767518475,
+            "f1": 0.8812481367385472,
+            "precision": 0.9943933617403005,
+            "recall": 0.791220556745182
+          },
+          "classification_ms": 283.701692,
+          "classification_diagnostics": {
+            "candidate_work": 9271299,
+            "confident": true,
+            "occupied_cells": 6580,
+            "rejected_elevated_cells": 3450,
+            "rejected_low_cells": 415,
+            "supported_cells": 3549,
+            "supported_fraction": 0.5393617021276595
+          }
+        },
+        {
+          "sample": "samp42",
+          "points": 42470,
+          "confusion": {
+            "fn": 4241,
+            "fp": 3537,
+            "tn": 26489,
+            "tp": 8203
+          },
+          "metrics": {
+            "accuracy": 0.8168589592653638,
+            "f1": 0.6783824015878267,
+            "precision": 0.6987223168654174,
+            "recall": 0.6591931854709097
+          },
+          "classification_ms": 1450.5796420000001,
+          "classification_diagnostics": {
+            "candidate_work": 43793583,
+            "confident": true,
+            "occupied_cells": 29835,
+            "rejected_elevated_cells": 16614,
+            "rejected_low_cells": 4870,
+            "supported_cells": 15260,
+            "supported_fraction": 0.5114798055974527
+          }
+        },
+        {
+          "sample": "samp51",
+          "points": 17845,
+          "confusion": {
+            "fn": 3200,
+            "fp": 24,
+            "tn": 3871,
+            "tp": 10750
+          },
+          "metrics": {
+            "accuracy": 0.819333146539647,
+            "f1": 0.869600388286685,
+            "precision": 0.9977724150733247,
+            "recall": 0.7706093189964157
+          },
+          "classification_ms": 516.899232,
+          "classification_diagnostics": {
+            "candidate_work": 21597678,
+            "confident": true,
+            "occupied_cells": 17672,
+            "rejected_elevated_cells": 5184,
+            "rejected_low_cells": 428,
+            "supported_cells": 14460,
+            "supported_fraction": 0.8182435491172476
+          }
+        },
+        {
+          "sample": "samp52",
+          "points": 22474,
+          "confusion": {
+            "fn": 10584,
+            "fp": 45,
+            "tn": 2317,
+            "tp": 9528
+          },
+          "metrics": {
+            "accuracy": 0.5270534840259856,
+            "f1": 0.6419403739262254,
+            "precision": 0.9952992792228141,
+            "recall": 0.4737470167064439
+          },
+          "classification_ms": 680.3252990000001,
+          "classification_diagnostics": {
+            "candidate_work": 24426665,
+            "confident": true,
+            "occupied_cells": 22371,
+            "rejected_elevated_cells": 10984,
+            "rejected_low_cells": 286,
+            "supported_cells": 14208,
+            "supported_fraction": 0.6351079522596218
+          }
+        },
+        {
+          "sample": "samp53",
+          "points": 34378,
+          "confusion": {
+            "fn": 14047,
+            "fp": 4,
+            "tn": 1385,
+            "tp": 18942
+          },
+          "metrics": {
+            "accuracy": 0.591279306533248,
+            "f1": 0.7294502743814384,
+            "precision": 0.9997888736408741,
+            "recall": 0.5741913971323774
+          },
+          "classification_ms": 1182.2236500000001,
+          "classification_diagnostics": {
+            "candidate_work": 42495687,
+            "confident": true,
+            "occupied_cells": 34030,
+            "rejected_elevated_cells": 12343,
+            "rejected_low_cells": 674,
+            "supported_cells": 26437,
+            "supported_fraction": 0.7768733470467235
+          }
+        },
+        {
+          "sample": "samp54",
+          "points": 8608,
+          "confusion": {
+            "fn": 1155,
+            "fp": 36,
+            "tn": 4589,
+            "tp": 2828
+          },
+          "metrics": {
+            "accuracy": 0.8616403345724907,
+            "f1": 0.826055206659851,
+            "precision": 0.9874301675977654,
+            "recall": 0.7100175746924429
+          },
+          "classification_ms": 288.49943900000005,
+          "classification_diagnostics": {
+            "candidate_work": 10472784,
+            "confident": true,
+            "occupied_cells": 8587,
+            "rejected_elevated_cells": 4158,
+            "rejected_low_cells": 881,
+            "supported_cells": 6959,
+            "supported_fraction": 0.8104110865261441
+          }
+        },
+        {
+          "sample": "samp61",
+          "points": 35060,
+          "confusion": {
+            "fn": 6723,
+            "fp": 4,
+            "tn": 1202,
+            "tp": 27131
+          },
+          "metrics": {
+            "accuracy": 0.8081289218482601,
+            "f1": 0.8897014215678237,
+            "precision": 0.9998525889073153,
+            "recall": 0.8014119454126544
+          },
+          "classification_ms": 1223.81446,
+          "classification_diagnostics": {
+            "candidate_work": 46896258,
+            "confident": true,
+            "occupied_cells": 34753,
+            "rejected_elevated_cells": 4948,
+            "rejected_low_cells": 65,
+            "supported_cells": 32145,
+            "supported_fraction": 0.9249561188962104
+          }
+        },
+        {
+          "sample": "samp71",
+          "points": 15645,
+          "confusion": {
+            "fn": 3357,
+            "fp": 5,
+            "tn": 1765,
+            "tp": 10518
+          },
+          "metrics": {
+            "accuracy": 0.7851070629594119,
+            "f1": 0.8622018198212968,
+            "precision": 0.9995248503278533,
+            "recall": 0.758054054054054
+          },
+          "classification_ms": 486.511354,
+          "classification_diagnostics": {
+            "candidate_work": 20949609,
+            "confident": true,
+            "occupied_cells": 15585,
+            "rejected_elevated_cells": 3242,
+            "rejected_low_cells": 113,
+            "supported_cells": 14314,
+            "supported_fraction": 0.918447224895733
+          }
+        }
+      ]
+    },
+    "fresh_heldout": {
+      "raw_report_sha256": "3c19a858861ad7b1195639871bfe9642d957421802283b1733c1b1274f7bdef2",
+      "dataset": "pdal-autzen",
+      "algorithm_source_sha256": "a5e20db00507cb53de3ba264e948fc64a84d00ddb2febb40037f29c5b074b8d9",
+      "frozen_parameters_sha256": "663357b0129368df9311eb644911b51353e974513eded126b12f55f264538e3e",
+      "aggregate": {
+        "confusion": {
+          "fn": 2128,
+          "fp": 0,
+          "tn": 0,
+          "tp": 591
+        },
+        "metrics": {
+          "accuracy": 0.21735932328061788,
+          "f1": 0.35709969788519635,
+          "precision": 1.0,
+          "recall": 0.21735932328061788
+        }
+      },
+      "site_aggregates": {
+        "autzen": {
+          "confusion": {
+            "fn": 2128,
+            "fp": 0,
+            "tn": 0,
+            "tp": 591
+          },
+          "metrics": {
+            "accuracy": 0.21735932328061788,
+            "f1": 0.35709969788519635,
+            "precision": 1.0,
+            "recall": 0.21735932328061788
+          }
+        }
+      },
+      "samples": [
+        {
+          "sample": "autzen",
+          "points": 10653,
+          "confusion": {
+            "fn": 2128,
+            "fp": 0,
+            "tn": 0,
+            "tp": 591
+          },
+          "metrics": {
+            "accuracy": 0.21735932328061788,
+            "f1": 0.35709969788519635,
+            "precision": 1.0,
+            "recall": 0.21735932328061788
+          },
+          "classification_ms": 105.15770400000001,
+          "classification_diagnostics": {
+            "candidate_work": 2951640,
+            "confident": false,
+            "occupied_cells": 10618,
+            "rejected_elevated_cells": 2066,
+            "rejected_low_cells": 724,
+            "supported_cells": 2441,
+            "supported_fraction": 0.22989263514786212
+          }
+        }
+      ]
+    }
+  },
+  "fresh_acceptance_passed": false,
+  "fresh_label_limitation": "2719 scored ground points; 7934 unknown excluded; zero scored non-ground points, so precision 1.0 does not test false positives."
+}

@@ -1,7 +1,7 @@
 use rustdrive_rne::{
-    Plant, run, run_with_scene, run_with_scene_ground, run_with_scene_ground_body,
-    run_with_scene_lidar_3d, run_with_scene_multi_height, run_with_scene_terrain_objects,
-    scene::Scene,
+    Plant, run, run_with_scene, run_with_scene_adaptive_terrain_objects, run_with_scene_ground,
+    run_with_scene_ground_body, run_with_scene_lidar_3d, run_with_scene_multi_height,
+    run_with_scene_terrain_objects, scene::Scene,
 };
 use rustdrive_sim::Scenario;
 use std::{env, error::Error, fs, io::BufWriter, path::PathBuf, process};
@@ -15,7 +15,7 @@ fn execute() -> Result<(), Box<dyn Error>> {
     let args: Vec<_> = env::args().skip(1).collect();
     if args.is_empty() || args[0] == "--help" {
         println!(
-            "rustdrive-rne --scenario FILE [--scene FILE] [--multi-height | --lidar-3d [--terrain-objects | --ground-segmentation [--vehicle-body]]] [--plant kinematic|dynamic] [--seed N] [--output DIR]"
+            "rustdrive-rne --scenario FILE [--scene FILE] [--multi-height | --lidar-3d [--terrain-objects [--adaptive-terrain] | --ground-segmentation [--vehicle-body]]] [--plant kinematic|dynamic] [--seed N] [--output DIR]"
         );
         return Ok(());
     }
@@ -26,6 +26,7 @@ fn execute() -> Result<(), Box<dyn Error>> {
     let mut ground_segmentation = false;
     let mut vehicle_body = false;
     let mut terrain_objects = false;
+    let mut adaptive_terrain = false;
     let mut plant = Plant::Kinematic;
     let mut seed = 7;
     let mut output = PathBuf::from("artifacts/rne");
@@ -49,6 +50,11 @@ fn execute() -> Result<(), Box<dyn Error>> {
         }
         if option == "--vehicle-body" {
             vehicle_body = true;
+            index += 1;
+            continue;
+        }
+        if option == "--adaptive-terrain" {
+            adaptive_terrain = true;
             index += 1;
             continue;
         }
@@ -89,6 +95,12 @@ fn execute() -> Result<(), Box<dyn Error>> {
     if vehicle_body && !ground_segmentation {
         return Err("--vehicle-body requires --ground-segmentation".into());
     }
+    if adaptive_terrain && !terrain_objects {
+        return Err("--adaptive-terrain requires --terrain-objects and --lidar-3d".into());
+    }
+    if terrain_objects && ground_segmentation {
+        return Err("--terrain-objects and --ground-segmentation are mutually exclusive".into());
+    }
     if terrain_objects && !lidar_3d {
         return Err("--terrain-objects requires --lidar-3d and a physical ground scene".into());
     }
@@ -99,7 +111,9 @@ fn execute() -> Result<(), Box<dyn Error>> {
         serde_json::from_str(&fs::read_to_string(input.ok_or("--scenario required")?)?)?;
     let (result, scene_evidence) = if let Some(path) = scene_input {
         let scene = Scene::from_json(&fs::read_to_string(path)?)?;
-        let (result, evidence) = if terrain_objects {
+        let (result, evidence) = if adaptive_terrain {
+            run_with_scene_adaptive_terrain_objects(scenario, seed, plant, scene)?
+        } else if terrain_objects {
             run_with_scene_terrain_objects(scenario, seed, plant, scene)?
         } else if vehicle_body {
             run_with_scene_ground_body(scenario, seed, plant, scene)?

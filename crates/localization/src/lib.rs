@@ -1,5 +1,6 @@
 //! Three-state EKF: wheel speed / gyro prediction and scalar GNSS updates.
 pub mod registration;
+pub mod registration3d;
 use rustdrive_core::{
     EgoState, Gnss, GnssDecision, LocalizationDiagnostics, Odometry, Pose, Vec2, wrap_angle,
 };

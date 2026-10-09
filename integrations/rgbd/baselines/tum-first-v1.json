@@ -1,0 +1,474 @@
+{
+  "accuracy_gates": {
+    "rotation_rad": 0.1,
+    "translation_m": 0.1
+  },
+  "cargo_lock_sha256": "d9e092be3a8bfc69e07eed3610f17f49b289edac6cea3878f0fa80d4bce11461",
+  "dataset": "tum-fr1-xyz",
+  "evaluator_source_sha256": "39b3dfeea0d655ff8e8c3dbdf2bfd3fe517e659fcb51ef4ed1e278a11d29a593",
+  "files": [
+    {
+      "bytes": 36783,
+      "file": "depth.txt",
+      "role": "depth_index",
+      "sha256": "d5abcc12d67cd2f5ae6f405ab1459a416ab2c1cdfb16d9bbd137d5f77d3285df"
+    },
+    {
+      "bytes": 201100,
+      "file": "groundtruth.txt",
+      "role": "evaluation_only_mocap_ground_truth",
+      "sha256": "aac0319a6ef4e1cdf61e779d2152b95aa7e9f7b1749d6d18717b43ddabffede2"
+    },
+    {
+      "bytes": 125530,
+      "file": "1305031102.160407.png",
+      "role": "depth_frame",
+      "sha256": "3d2b60049ced75b1c4f468ee1ff734650e4b31ca1a535698a02a1434f41eafae"
+    },
+    {
+      "bytes": 120384,
+      "file": "1305031102.494271.png",
+      "role": "depth_frame",
+      "sha256": "53232cdd3fce4bafee048ee7d2ad0417b672b8c45ecc8673c920b36c86c14d6c"
+    },
+    {
+      "bytes": 118833,
+      "file": "1305031102.828537.png",
+      "role": "depth_frame",
+      "sha256": "cc53c137bd6d292df3e93de9ce9a3f947595b7e7ce5fb7c2aab776b010333564"
+    },
+    {
+      "bytes": 122751,
+      "file": "1305031103.162795.png",
+      "role": "depth_frame",
+      "sha256": "7f931cabc8359bf8f407fd66b5f254dfa4feec8e4f94e830462f883a1fbd90ae"
+    },
+    {
+      "bytes": 123042,
+      "file": "1305031103.494472.png",
+      "role": "depth_frame",
+      "sha256": "2d210bf2617d2b40f9b2053a80fd961db9626ea6be273da0e4a0dd55de95715e"
+    },
+    {
+      "bytes": 120867,
+      "file": "1305031103.830367.png",
+      "role": "depth_frame",
+      "sha256": "471eca30fa895109f592b8a8c84446e0ba00f76dbd41a8c948b00c88d6dc9efc"
+    },
+    {
+      "bytes": 123321,
+      "file": "1305031104.163440.png",
+      "role": "depth_frame",
+      "sha256": "f80486c27a5b2911366b7667dbbf96571eeeb91e76ea96bd270692d1d92d60ac"
+    },
+    {
+      "bytes": 124766,
+      "file": "1305031104.495673.png",
+      "role": "depth_frame",
+      "sha256": "31d5ba10451b6957561b23c49aa85785797ffe81c5456e2ac20f27f52640dc39"
+    },
+    {
+      "bytes": 129688,
+      "file": "1305031104.830961.png",
+      "role": "depth_frame",
+      "sha256": "58a4e6143d49445f403e24945fcbf58c8e067e3446563496496cbb5f7e0b1b06"
+    },
+    {
+      "bytes": 130793,
+      "file": "1305031105.159979.png",
+      "role": "depth_frame",
+      "sha256": "b55505884a9b15c2484e7cf308625aa75cfd1a5253bc303b3d9e81b00728911c"
+    },
+    {
+      "bytes": 123671,
+      "file": "1305031105.497931.png",
+      "role": "depth_frame",
+      "sha256": "350fb47c2535f4a468b3b64e34bce3d889f361610971a4a36d0cf85105e82232"
+    },
+    {
+      "bytes": 120061,
+      "file": "1305031105.830008.png",
+      "role": "depth_frame",
+      "sha256": "64fd564a531ac9ec927577fba7e19c052d86ba9e72d8a0e585893b0d3566d384"
+    }
+  ],
+  "ground_truth_interpolation": {
+    "extrapolation": false,
+    "max_bracket_s": 0.02,
+    "method": "linear translation and shortest-arc quaternion SLERP"
+  },
+  "limitations": [
+    "Temporal held-out frames share one room and acquisition; no independent-scene generalization.",
+    "Calibration is the upstream registered-depth teaching reader model, not measured vehicle sensor calibration.",
+    "Local point-to-point pair registration only; no camera AI, global localization, loop closure, SLAM, driving or covariance calibration.",
+    "Conditional covariance excludes map error, depth correlation and association uncertainty.",
+    "Recorded mocap is evaluation-only; failed pairs remain in the report."
+  ],
+  "manifest_sha256": "9a752f28cc6211f2e7c08adbd8d0928f4b3eae1f29bef8c994c2b68c86f98cf7",
+  "matcher_source_sha256": "7ad5c6f11df62509ae5e3d9fe704646c8415a4b6c536970cc9e242b7800f222e",
+  "pairs": [
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 0.377119162,
+      "current_file": "1305031102.494271.png",
+      "current_timestamp": 1305031102.494271,
+      "evaluation_only_relative_truth": {
+        "quaternion_wxyz": [
+          0.9988146977283694,
+          -0.04281932287818907,
+          -0.023145251895954483,
+          0.00005004710096023768
+        ],
+        "translation_m": [
+          -0.009465324237141082,
+          0.02142387908362131,
+          0.11847464697738186
+        ]
+      },
+      "initial_pose": "identity; no current motion-capture pose supplied",
+      "interval_s": 0.3338639736175537,
+      "map_points": 2229,
+      "previous_file": "1305031102.160407.png",
+      "previous_timestamp": 1305031102.160407,
+      "rejection": "insufficient unique registration overlap",
+      "scan_points": 1773,
+      "split": "calibration",
+      "within_accuracy_gates": false
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 0.563274585,
+      "current_file": "1305031102.828537.png",
+      "current_timestamp": 1305031102.828537,
+      "evaluation_only_relative_truth": {
+        "quaternion_wxyz": [
+          0.9998854933217083,
+          -0.006190268640645563,
+          0.013808721863730333,
+          4.4103344022383695e-6
+        ],
+        "translation_m": [
+          -0.0019077066772278384,
+          0.014581571301212515,
+          0.1251121111632738
+        ]
+      },
+      "initial_pose": "identity; no current motion-capture pose supplied",
+      "interval_s": 0.33426594734191895,
+      "map_points": 1773,
+      "previous_file": "1305031102.494271.png",
+      "previous_timestamp": 1305031102.494271,
+      "rejection": "registration distance budget exhausted",
+      "scan_points": 1425,
+      "split": "calibration",
+      "within_accuracy_gates": false
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 0.558772858,
+      "current_file": "1305031103.162795.png",
+      "current_timestamp": 1305031103.162795,
+      "evaluation_only_relative_truth": {
+        "quaternion_wxyz": [
+          0.9998998802051794,
+          -5.8070203242110985e-6,
+          -0.013380794653082506,
+          0.004602593442676647
+        ],
+        "translation_m": [
+          -0.008492552722572544,
+          0.02213975836809312,
+          0.10704218973091151
+        ]
+      },
+      "initial_pose": "identity; no current motion-capture pose supplied",
+      "interval_s": 0.3342580795288086,
+      "map_points": 1425,
+      "previous_file": "1305031102.828537.png",
+      "previous_timestamp": 1305031102.828537,
+      "rejection": "registration distance budget exhausted",
+      "scan_points": 1240,
+      "split": "held_out",
+      "within_accuracy_gates": false
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 0.559814737,
+      "current_file": "1305031103.494472.png",
+      "current_timestamp": 1305031103.494472,
+      "evaluation_only_relative_truth": {
+        "quaternion_wxyz": [
+          0.9993402373242575,
+          -0.028795960392213715,
+          -0.02138366060750177,
+          0.0057115487225234685
+        ],
+        "translation_m": [
+          0.0019239952257594783,
+          0.001495866737605489,
+          0.017500444512033475
+        ]
+      },
+      "initial_pose": "identity; no current motion-capture pose supplied",
+      "interval_s": 0.3316769599914551,
+      "map_points": 1240,
+      "previous_file": "1305031103.162795.png",
+      "previous_timestamp": 1305031103.162795,
+      "rejection": "registration distance budget exhausted",
+      "scan_points": 1117,
+      "split": "held_out",
+      "within_accuracy_gates": false
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 0.261764499,
+      "current_file": "1305031103.830367.png",
+      "current_timestamp": 1305031103.830367,
+      "evaluation_only_relative_truth": {
+        "quaternion_wxyz": [
+          0.9997086784155267,
+          0.018153806550774643,
+          -0.01163548925840907,
+          -0.010844952656210383
+        ],
+        "translation_m": [
+          -0.003995270671842799,
+          -0.02934664262811615,
+          -0.11690846653907894
+        ]
+      },
+      "initial_pose": "identity; no current motion-capture pose supplied",
+      "interval_s": 0.3358950614929199,
+      "map_points": 1117,
+      "previous_file": "1305031103.494472.png",
+      "previous_timestamp": 1305031103.494472,
+      "rejection": "insufficient unique registration overlap",
+      "scan_points": 1458,
+      "split": "held_out",
+      "within_accuracy_gates": false
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 0.319057482,
+      "current_file": "1305031104.163440.png",
+      "current_timestamp": 1305031104.16344,
+      "evaluation_only_relative_truth": {
+        "quaternion_wxyz": [
+          0.9995952399171997,
+          0.02102088209027614,
+          0.010342464301334342,
+          -0.016140392907188217
+        ],
+        "translation_m": [
+          -0.003639683026476437,
+          -0.026512114331235348,
+          -0.14462972961951182
+        ]
+      },
+      "initial_pose": "identity; no current motion-capture pose supplied",
+      "interval_s": 0.3330729007720947,
+      "map_points": 1458,
+      "previous_file": "1305031103.830367.png",
+      "previous_timestamp": 1305031103.830367,
+      "rejection": "insufficient unique registration overlap",
+      "scan_points": 1864,
+      "split": "held_out",
+      "within_accuracy_gates": false
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 0.453744353,
+      "current_file": "1305031104.495673.png",
+      "current_timestamp": 1305031104.495673,
+      "evaluation_only_relative_truth": {
+        "quaternion_wxyz": [
+          0.9994699890108237,
+          0.021925631924623074,
+          0.024044120020391385,
+          0.0009423501763013709
+        ],
+        "translation_m": [
+          -0.007496994530627021,
+          -0.013913998460024946,
+          -0.11142348682225167
+        ]
+      },
+      "initial_pose": "identity; no current motion-capture pose supplied",
+      "interval_s": 0.3322329521179199,
+      "map_points": 1864,
+      "previous_file": "1305031104.163440.png",
+      "previous_timestamp": 1305031104.16344,
+      "rejection": "insufficient unique registration overlap",
+      "scan_points": 2181,
+      "split": "held_out",
+      "within_accuracy_gates": false
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 0.28666257,
+      "current_file": "1305031104.830961.png",
+      "current_timestamp": 1305031104.830961,
+      "evaluation_only_relative_truth": {
+        "quaternion_wxyz": [
+          0.9942731243247369,
+          0.09222516619968202,
+          0.05232919939207237,
+          0.013308938949147184
+        ],
+        "translation_m": [
+          0.007705525624074783,
+          -0.005420184047774557,
+          -0.09602548794835197
+        ]
+      },
+      "initial_pose": "identity; no current motion-capture pose supplied",
+      "interval_s": 0.33528804779052734,
+      "map_points": 2181,
+      "previous_file": "1305031104.495673.png",
+      "previous_timestamp": 1305031104.495673,
+      "rejection": "insufficient unique registration overlap",
+      "scan_points": 2864,
+      "split": "held_out",
+      "within_accuracy_gates": false
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 0.626325741,
+      "current_file": "1305031105.159979.png",
+      "current_timestamp": 1305031105.159979,
+      "evaluation_only_relative_truth": {
+        "quaternion_wxyz": [
+          0.9995223358972832,
+          -0.030408216676407945,
+          -0.0047082378048805,
+          -0.002876264551819427
+        ],
+        "translation_m": [
+          -0.0023057760067013433,
+          0.017408261554291427,
+          0.05344121674277802
+        ]
+      },
+      "initial_pose": "identity; no current motion-capture pose supplied",
+      "interval_s": 0.32901811599731445,
+      "map_points": 2864,
+      "previous_file": "1305031104.830961.png",
+      "previous_timestamp": 1305031104.830961,
+      "rejection": "registration distance budget exhausted",
+      "scan_points": 2682,
+      "split": "held_out",
+      "within_accuracy_gates": false
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 0.297707884,
+      "current_file": "1305031105.497931.png",
+      "current_timestamp": 1305031105.497931,
+      "evaluation_only_relative_truth": {
+        "quaternion_wxyz": [
+          0.9960312543836243,
+          -0.07300363809041199,
+          -0.05042951806120663,
+          -0.00700519983030945
+        ],
+        "translation_m": [
+          -0.03333125425269823,
+          0.033240278532339795,
+          0.13593448788741114
+        ]
+      },
+      "initial_pose": "identity; no current motion-capture pose supplied",
+      "interval_s": 0.3379518985748291,
+      "map_points": 2682,
+      "previous_file": "1305031105.159979.png",
+      "previous_timestamp": 1305031105.159979,
+      "rejection": "insufficient unique registration overlap",
+      "scan_points": 1984,
+      "split": "held_out",
+      "within_accuracy_gates": false
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 0.594055553,
+      "current_file": "1305031105.830008.png",
+      "current_timestamp": 1305031105.830008,
+      "evaluation_only_relative_truth": {
+        "quaternion_wxyz": [
+          0.9998561762964993,
+          -0.004202393637607854,
+          0.014065575164521227,
+          0.008492714804444204
+        ],
+        "translation_m": [
+          0.007772652607081598,
+          0.015462117483875493,
+          0.1416954455014432
+        ]
+      },
+      "initial_pose": "identity; no current motion-capture pose supplied",
+      "interval_s": 0.3320770263671875,
+      "map_points": 1984,
+      "previous_file": "1305031105.497931.png",
+      "previous_timestamp": 1305031105.497931,
+      "rejection": "registration distance budget exhausted",
+      "scan_points": 1535,
+      "split": "held_out",
+      "within_accuracy_gates": false
+    }
+  ],
+  "preprocessing": {
+    "cx": 319.5,
+    "cy": 239.5,
+    "fx": 525.0,
+    "fy": 525.0,
+    "height": 480,
+    "max_depth_m": 5.0,
+    "maximum_sampled_pixels": 4800,
+    "min_depth_m": 0.3,
+    "pixel_step": 8,
+    "point_order": "lexicographic voxel key",
+    "sample_origin_pixel": [
+      0,
+      0
+    ],
+    "units_per_metre": 5000,
+    "voxel_m": 0.03,
+    "voxel_representative": "first row-major sampled valid pixel",
+    "width": 640
+  },
+  "registration_config": {
+    "ambiguity_rms_ratio": 1.05,
+    "ambiguity_rotation_probe_rad": 0.07,
+    "ambiguity_translation_probe_m": 0.15,
+    "max_condition_number": 10000.0,
+    "max_correspondence_m": 0.3,
+    "max_iterations": 30,
+    "max_map_points": 20000,
+    "max_neighbor_checks": 20000000,
+    "max_position_variance_m2": 0.25,
+    "max_rms_m": 0.08,
+    "max_rotation_jump_rad": 0.35,
+    "max_rotation_variance_rad2": 0.01,
+    "max_scan_points": 5000,
+    "max_translation_jump_m": 0.5,
+    "min_geometry_ratio": 0.005,
+    "min_overlap": 0.4,
+    "min_pairs": 30,
+    "rotation_tolerance_rad": 0.0001,
+    "translation_tolerance_m": 0.0001,
+    "trim_fraction": 0.2
+  },
+  "repository": "MarcelBruckner-TUMProjects/3D-Scanning-Motion-Capture",
+  "revision": "f367047ee71f5304c6d7deaec55c4874bb8b035e",
+  "schema_version": 1,
+  "selection": "all 11 consecutive pairs from the 12 preregistered depth frames; no pair omission; current frame determines split",
+  "summary": {
+    "accepted": 0,
+    "all_pairs_passed": false,
+    "heldout_pairs": 9,
+    "heldout_passed": 0,
+    "pairs": 11,
+    "passed": 0,
+    "rejected": 11
+  }
+}

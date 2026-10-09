@@ -43,6 +43,7 @@ enum GroundMode {
     Segmentation,
     VehicleBody,
     TerrainObjects,
+    AdaptiveTerrainObjects,
 }
 /// ENU planar coordinate to RNE Y-up world; north corresponds to negative Z.
 pub fn to_rne(point: Vec2) -> Vec3 {
@@ -225,6 +226,26 @@ impl RneBackend {
             GroundMode::TerrainObjects,
         )
     }
+    /// Optional density-adaptive terrain profile; no semantic simulator labels.
+    pub fn new_with_scene_adaptive_terrain_objects(
+        scenario: Scenario,
+        seed: u64,
+        plant: Plant,
+        scene: Scene,
+    ) -> Result<Self, String> {
+        if scenario.duration > 120.0 {
+            return Err("native scene evidence requires duration <=120 seconds".into());
+        }
+        Self::create(
+            scenario,
+            seed,
+            plant,
+            Some(scene),
+            false,
+            true,
+            GroundMode::AdaptiveTerrainObjects,
+        )
+    }
     fn create(
         scenario: Scenario,
         seed: u64,
@@ -303,7 +324,10 @@ impl RneBackend {
                 },
             });
         }
-        if ground_mode == GroundMode::TerrainObjects {
+        if matches!(
+            ground_mode,
+            GroundMode::TerrainObjects | GroundMode::AdaptiveTerrainObjects
+        ) {
             let acquisition = config.lidar3d.as_mut().unwrap();
             acquisition.ground = None;
             // Existing dense inclined acquisition and authored research height
@@ -311,7 +335,11 @@ impl RneBackend {
             acquisition.azimuth_columns = 720;
             acquisition.collision_bottom_m = body_calibration.bottom_m;
             acquisition.collision_top_m = body_calibration.bottom_m + body_calibration.height_m;
-            config.perception3d = Some(Perception3dConfig::default());
+            config.perception3d = Some(if ground_mode == GroundMode::AdaptiveTerrainObjects {
+                Perception3dConfig::adaptive()
+            } else {
+                Perception3dConfig::default()
+            });
         }
         config.validate()?;
         if plant == Plant::Dynamic {
@@ -979,6 +1007,23 @@ pub fn run_with_scene_terrain_objects(
         GroundMode::TerrainObjects,
     )
 }
+/// Execute the bounded adaptive terrain profile over genuine native XYZ returns.
+pub fn run_with_scene_adaptive_terrain_objects(
+    scenario: Scenario,
+    seed: u64,
+    plant: Plant,
+    scene: Scene,
+) -> Result<(Run, serde_json::Value), String> {
+    run_scene_mode(
+        scenario,
+        seed,
+        plant,
+        scene,
+        false,
+        true,
+        GroundMode::AdaptiveTerrainObjects,
+    )
+}
 fn run_scene_mode(
     scenario: Scenario,
     seed: u64,
@@ -990,8 +1035,14 @@ fn run_scene_mode(
 ) -> Result<(Run, serde_json::Value), String> {
     let ground_segmentation = ground_mode != GroundMode::Disabled;
     let vehicle_body = ground_mode == GroundMode::VehicleBody;
-    let terrain_objects = ground_mode == GroundMode::TerrainObjects;
-    let backend = if terrain_objects {
+    let adaptive_terrain = ground_mode == GroundMode::AdaptiveTerrainObjects;
+    let terrain_objects = matches!(
+        ground_mode,
+        GroundMode::TerrainObjects | GroundMode::AdaptiveTerrainObjects
+    );
+    let backend = if adaptive_terrain {
+        RneBackend::new_with_scene_adaptive_terrain_objects(scenario.clone(), seed, plant, scene)?
+    } else if terrain_objects {
         RneBackend::new_with_scene_terrain_objects(scenario.clone(), seed, plant, scene)?
     } else if vehicle_body {
         RneBackend::new_with_scene_ground_body(scenario.clone(), seed, plant, scene)?
@@ -1041,7 +1092,9 @@ fn run_scene_mode(
         evidence["multi_height_lidar"] = json!(calibration.unwrap());
     }
     if lidar_3d {
-        evidence["operating_mode"] = json!(if terrain_objects {
+        evidence["operating_mode"] = json!(if adaptive_terrain {
+            "lidar3d_adaptive_terrain_objects"
+        } else if terrain_objects {
             "lidar3d_terrain_objects"
         } else if vehicle_body {
             "lidar3d_ground_body"
