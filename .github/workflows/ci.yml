@@ -29,7 +29,7 @@ jobs:
       - name: Drive mapped destinations, closure detour and signal rules
         shell: bash
         run: |
-          for case in route-direct route-detour route-south route-handover route-no-path route-reopen signal-red-green signal-red-stop signal-stale-stop signal-stale-recovery signal-two-stops signal-approach-change; do
+          for case in route-direct route-detour route-south route-handover route-no-path route-reopen signal-red-green signal-red-stop signal-stale-stop signal-stale-recovery signal-two-stops signal-approach-change stop-sign-single stop-sign-two stop-sign-signal stop-sign-obstacle stop-sign-gnss-recovery; do
             cargo run --release --locked --bin rustdrive -- run --scenario "scenarios/$case.json" --seed 7 --output "artifacts/routing/$case"
             cargo run --release --locked --bin rustdrive -- replay --log "artifacts/routing/$case/sensors.jsonl" --output "artifacts/routing/$case/replay"
           done
@@ -108,6 +108,7 @@ jobs:
           python scripts/render_demo_3d.py artifacts/rne-dynamic/run.json --preview-time 7.5 --output artifacts/rne-dynamic/preview-3d.gif --samples 4 --threads 2 --scene-output artifacts/rne-dynamic/scene-3d.blend
           python scripts/render_demo_3d.py artifacts/hazards/rne-dynamic/traffic-fleet-queue/seed-7/run.json --preview-time 30 --traffic-models sedan van pickup --camera traffic --output artifacts/rne-fleet/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-fleet/scene.blend
           python scripts/render_demo_3d.py artifacts/hazards/rne-dynamic/signal-red-green/seed-7/run.json --preview-time 15 --output artifacts/rne-signals/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-signals/scene.blend
+          python scripts/render_demo_3d.py artifacts/hazards/rne-dynamic/stop-sign-single/seed-7/run.json --preview-time 10.5 --output artifacts/rne-stop-signs/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-stop-signs/scene.blend
       - uses: actions/upload-artifact@v4
         if: always()
         with:

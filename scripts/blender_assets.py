@@ -325,3 +325,30 @@ def traffic_signal(name, position, yaw, materials):
         obj = cylinder(color+' lens', (-.145,0,z), .12, .04, materials['off'], parent, (0,math.pi/2,0))
         lenses[color] = obj
     return parent, lenses
+
+
+def stop_sign(name, position, yaw):
+    """Original octagonal display sign. It never enters LiDAR or collision geometry."""
+    parent=bpy.data.objects.new(name,None)
+    bpy.context.collection.objects.link(parent)
+    parent.location,parent.rotation_euler=(*position,0),(0,0,yaw)
+    parent['display_only']=True
+    steel=material(name+' galvanized steel',(.28,.31,.33),.65,.35)
+    white=material(name+' white border',(.95,.95,.91))
+    red=material(name+' red face',(.65,.018,.012))
+    cylinder('Stop sign pole',(0,0,1.45),.055,2.9,steel,parent)
+    for label,x,radius,mat in [('border',-.035,.47,white),('face',-.045,.42,red)]:
+        vertices=[(x,math.sin((k+.5)*math.pi/4)*radius,
+                   2.9+math.cos((k+.5)*math.pi/4)*radius) for k in range(8)]
+        mesh=bpy.data.meshes.new(name+' '+label)
+        mesh.from_pydata(vertices,[],[tuple(range(8))]);mesh.update()
+        obj=bpy.data.objects.new(name+' '+label,mesh)
+        bpy.context.collection.objects.link(obj);obj.parent=parent
+        obj.data.materials.append(mat)
+    text=bpy.data.curves.new(name+' lettering','FONT')
+    text.body='STOP';text.align_x='CENTER';text.align_y='CENTER';text.size=.28;text.extrude=.002
+    obj=bpy.data.objects.new(name+' lettering',text)
+    bpy.context.collection.objects.link(obj);obj.parent=parent
+    obj.location=(-.05,0,2.9);obj.rotation_euler=(math.pi/2,0,-math.pi/2)
+    obj.data.materials.append(white)
+    return parent

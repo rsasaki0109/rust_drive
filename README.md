@@ -58,7 +58,7 @@ The integration has its own lockfile and does not enlarge the default workspace 
 bash scripts/check-hazards.sh
 ```
 
-After RNE setup, this CPU-only command runs occlusion, lateral crossings, multiple blocked alternatives, low-friction avoidance and low-friction stopping across seeds 1, 7 and 42. It checks physical outcomes and recomputes every sensor log. All 168 positive local reference/RNE scenario runs pass, including 24 live-navigation, 42 GNSS-fault 30 reactive-traffic and 36 signal-control runs. Fixed minimum-clearance floors also guard the fixtures. The planner computes bounded acceleration profiles, uses their arrival times for circular sweeps, and rechecks retimed stops and stationary holds. The suite also checks profile kinematics independently. [Current observed-braking results](docs/observed-braking.md); [reactive-traffic baseline](docs/reactive-traffic.md); [terminal-stop baseline](docs/terminal-stopping.md); [GNSS gating baseline](docs/gnss-robustness.md); [tracking improvements](docs/tracking.md); [earlier swept-check regressions](docs/swept-planning.md).
+After RNE setup, this CPU-only command runs occlusion, lateral crossings, multiple blocked alternatives, low-friction avoidance and low-friction stopping across seeds 1, 7 and 42. It checks physical outcomes and recomputes every sensor log. All 198 positive local reference/RNE scenario runs pass, retaining the preceding 168 and adding 30 stop-sign episodes. These include live navigation, GNSS faults, reactive traffic, infrastructure signals and mapped stop-sign holds. Fixed minimum-clearance floors also guard the fixtures. The planner computes bounded acceleration profiles, uses their arrival times for circular sweeps, and rechecks retimed stops and stationary holds. The suite also checks profile kinematics independently. [Current observed-braking results](docs/observed-braking.md); [reactive-traffic baseline](docs/reactive-traffic.md); [terminal-stop baseline](docs/terminal-stopping.md); [GNSS gating baseline](docs/gnss-robustness.md); [tracking improvements](docs/tracking.md); [earlier swept-check regressions](docs/swept-planning.md).
 
 The original short follower fixture now completes its eight-second goal residence within 65 s in both plants across all three seeds. Two additional RNE cases with a five-meter follower sensing range fail the unchanged 1 m clearance floor and remain excluded from the positive count. [Measured changes and limitations](docs/observed-braking.md).
 
@@ -104,9 +104,20 @@ cargo run --release --locked --bin rustdrive -- run \
   --scenario scenarios/signal-red-green.json --seed 7 --output artifacts/signals
 ```
 
+## Stop signs and healthy standstill
+
+![Actual RNE mapped stop-sign hold and restart, rendered in 3D](assets/stop-sign-demo.gif)
+
+Ego now holds near a mapped stop line for two continuous healthy seconds before restarting. Distant/rolling stops and sensor-fault time cannot satisfy the measured stop timer. Five fixtures cover one/two stops, a red signal, a sensed blockage and GNSS recovery in both plants across three seeds. Independent actual-front/actual-speed checks reject crossings without a complete physical stop. Map signs are known configuration; camera sign detection and right-of-way reasoning remain future work. [Commands, GIF provenance, measured results and limits](docs/stop-signs.md).
+
+```sh
+cargo run --release --locked --bin rustdrive -- run \
+  --scenario scenarios/stop-sign-single.json --seed 7 --output artifacts/stop-signs
+```
+
 ## Mapped destinations and closure detours
 
-The same five-node map supports an eastern destination, a southern branch and a known-closure detour. Route search supplies a centerline to local planning. Live closure snapshots can trigger a stop before the fork and a detour handover; a reopened detour can resume a no-route hold. Signals and intersection priority remain future work.
+The same five-node map supports an eastern destination, a southern branch and a known-closure detour. Route search supplies a centerline to local planning. Live closure snapshots can trigger a stop before the fork and a detour handover; a reopened detour can resume a no-route hold. Mapped signals and stop signs operate on fixed routes; intersection priority and control remapping during live handover remain future work.
 
 ```sh
 cargo run --release --locked --bin rustdrive -- run \
@@ -161,7 +172,7 @@ cargo run --release --locked --bin rustdrive -- run \
   --scenario scenarios/lidar-fault.json --seed 7 --output artifacts/lidar-fault
 ```
 
-CI checks formatting, Clippy, the workspace test suite, release builds, and the closed-loop demo on Linux, macOS, and Windows, plus GIF generation and the pinned CPU-only RNE integration on Linux. All five jobs passed for the preceding fleet revision `fc207ce` in [run 37895714516](https://github.com/rsasaki0109/rust_drive/actions/runs/37895714516). The RNE job also renders real mission, three-vehicle fleet and signal-stop frames in 3D on CPU and exports editable scenes. See [validation and limitations](docs/validation.md) for the checks actually executed and the initial infrastructure/toolchain failures.
+CI checks formatting, Clippy, the workspace test suite, release builds, and the closed-loop demo on Linux, macOS, and Windows, plus GIF generation and the pinned CPU-only RNE integration on Linux. All five jobs passed for the preceding signal revision `de0faac7` in [run 37914908056](https://github.com/rsasaki0109/rust_drive/actions/runs/37914908056). The RNE job also renders real mission, three-vehicle fleet, signal-stop and stop-sign frames in 3D on CPU and exports editable scenes. See [validation and limitations](docs/validation.md) for the checks actually executed and the initial infrastructure/toolchain failures.
 
 ## Architecture and contributing
 

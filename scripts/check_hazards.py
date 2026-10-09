@@ -10,13 +10,14 @@ import sys
 
 ROOT = Path(__file__).resolve().parent.parent
 CASES = {
-    'reference': ['occluded-crossing', 'cut-in', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue', 'traffic-follower-deadline', 'traffic-fleet-queue', 'signal-red-green', 'signal-red-stop', 'signal-stale-stop', 'signal-stale-recovery', 'signal-two-stops', 'signal-approach-change'],
-    'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue', 'traffic-follower-deadline', 'traffic-fleet-queue', 'signal-red-green', 'signal-red-stop', 'signal-stale-stop', 'signal-stale-recovery', 'signal-two-stops', 'signal-approach-change'],
+    'reference': ['occluded-crossing', 'cut-in', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue', 'traffic-follower-deadline', 'traffic-fleet-queue', 'signal-red-green', 'signal-red-stop', 'signal-stale-stop', 'signal-stale-recovery', 'signal-two-stops', 'signal-approach-change', 'stop-sign-single', 'stop-sign-two', 'stop-sign-signal', 'stop-sign-obstacle', 'stop-sign-gnss-recovery'],
+    'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue', 'traffic-follower-deadline', 'traffic-fleet-queue', 'signal-red-green', 'signal-red-stop', 'signal-stale-stop', 'signal-stale-recovery', 'signal-two-stops', 'signal-approach-change', 'stop-sign-single', 'stop-sign-two', 'stop-sign-signal', 'stop-sign-obstacle', 'stop-sign-gnss-recovery'],
 }
 # Fixed regression floors, chosen against the preceding measured fixture results.
 # They are simulation test constraints, not a universal safe-distance specification.
 CLEARANCE_FLOORS_M = {
-    **dict.fromkeys(['signal-red-green','signal-red-stop','signal-stale-stop','signal-stale-recovery','signal-two-stops','signal-approach-change'],1.0),
+    **dict.fromkeys(['stop-sign-single', 'stop-sign-two', 'stop-sign-signal', 'stop-sign-obstacle', 'stop-sign-gnss-recovery'],1.0),
+    **dict.fromkeys(['signal-red-green','signal-red-stop','signal-stale-stop','signal-stale-recovery','signal-two-stops','signal-approach-change', 'stop-sign-single', 'stop-sign-two', 'stop-sign-signal', 'stop-sign-obstacle', 'stop-sign-gnss-recovery'],1.0),
     'traffic-lead-stop': 1.0, 'traffic-follower-brake': 1.0, 'traffic-queue': 1.0, 'traffic-follower-deadline': 1.0, 'traffic-fleet-queue': 1.0,
     'gnss-burst-traffic': 0.5, 'gnss-burst-traffic-hold': 0.5, 'gnss-spike': 0.5, 'gnss-burst': 0.5, 'gnss-persistent-bias': 4.0,
     'occluded-crossing': 1.0, 'cut-in': 0.7, 'multiple-blocked': 3.0,
@@ -135,6 +136,73 @@ def check_signals(run, log):
             'min_observed_nonpermissive_margin_m':unknown_margin,
             'snapshot_reconstruction_verified':True,'moving_phase_change_exercised':moving_change,
             'schedule_labels_absent_from_pipeline':True,'passed':True}
+
+
+def check_stop_signs(run, log):
+    """Independently require a real continuous near-line hold before every crossing."""
+    with log.open() as stream:
+        config = json.loads(next(stream))['header']['config']
+        ticks = [r['tick'] for line in stream if (r := json.loads(line))['kind'] == 'tick']
+    lines = run['scenario']['stop_signs']
+    if config.get('stop_signs') != lines or 'gnss_bias_windows' in config:
+        raise ValueError('stop map or sensor-only replay boundary changed')
+    if any(abs(p['y']) > 1e-9 for p in run['route']['points']):
+        raise ValueError('stop-sign fixture evidence requires a straight route')
+    if len(run['frames']) != len(ticks) or len(ticks) != run['summary']['steps']:
+        raise ValueError('stop-sign evidence lacks a physical/control tick')
+    starts = dict.fromkeys(line['id'] for line in lines)
+    longest = dict.fromkeys(starts, 0.0)
+    satisfied, crossed, completed, crossings = set(), set(), {}, []
+    minimum = math.inf
+    releases = {}
+    fault_reset = False
+    previous = None
+    for index,(frame,tick) in enumerate(zip(run['frames'],ticks)):
+        now = frame['time']
+        if abs(now-index*.05)>1e-8 or tick['input']['time'] != now:
+            raise ValueError('stop-sign evidence changed the control clock')
+        out = tick['expected']
+        status = out['stop_signs']
+        if status != frame['stop_signs'] or [s['id'] for s in status['stops']] != [s['id'] for s in lines]:
+            raise ValueError('stop-sign diagnostics disagree with physical telemetry or map')
+        front = frame['truth']['pose']['position']['x']+run['vehicle']['radius']
+        for line,state in zip(lines,status['stops']):
+            id = line['id']; margin = line['route_s_m']-front
+            if id in crossed: continue
+            if id not in satisfied: minimum = min(minimum,margin)
+            holding = 0 <= margin <= 3.5 and abs(frame['truth']['speed']) <= .1
+            if holding:
+                if starts[id] is None: starts[id]=now
+                duration=now-starts[id]
+                longest[id]=max(longest[id],duration)
+                if duration+1e-9 >= 2 and id not in satisfied:
+                    satisfied.add(id); completed[id]=now
+            else: starts[id]=None
+            if state['phase']=='Released' and id not in releases:
+                if out['health'] or state['held_s']+1e-9<2:
+                    raise ValueError('driver released without healthy continuous measured stopping')
+                releases[id]=now
+            if previous and out['health'] and previous['stop_signs']['stops'][lines.index(line)]['phase']=='Holding':
+                if state['held_s'] != 0 or state['phase'] != 'Approaching':
+                    raise ValueError('sensor fault did not reset the driver stop timer')
+                fault_reset=True
+            if front >= line['route_s_m']:
+                if id not in satisfied or id not in releases:
+                    raise ValueError('physical front crossed before a complete physical AND measured stop')
+                crossed.add(id);crossings.append({'id':id,'time':now})
+        previous=out
+    if len(crossed)!=len(lines) or minimum<1.0 or run['summary'].get('stop_sign_violations',0):
+        raise ValueError('stop-sign fixture failed crossing/hold/margin acceptance')
+    if abs(minimum-run['summary']['stop_sign_min_margin_m'])>1e-8:
+        raise ValueError('independent physical stop-sign margin differs from summary')
+    fault=run['scenario'].get('gnss_bias_windows')
+    if fault and (not fault_reset or not any(t['expected']['emergency'] for t in ticks)
+                  or any(time<fault[-1]['until']+2-1e-8 for time in releases.values())):
+        raise ValueError('GNSS recovery did not exercise reset and a new complete healthy hold')
+    return {'stops':len(lines),'control_ticks':len(ticks),'physical_hold_completed_s':completed,
+            'continuous_close_line_holds_s':longest,'driver_releases_s':releases,
+            'stopline_crossings':crossings,'min_unreleased_margin_m':minimum,
+            'sensor_fault_timer_reset_exercised':fault_reset,'passed':True}
 
 
 def check_navigation(run, case):
@@ -727,6 +795,7 @@ def main():
                           and summary['road_violations'] == 0 and code_replay == 0
                           and summary.get('traffic_collisions', 0) == 0 and summary.get('traffic_road_violations', 0) == 0
                           and summary.get('closure_violations', 0) == 0 and summary.get('signal_violations', 0) == 0
+                          and summary.get('stop_sign_violations', 0) == 0
                           and row.get('replay', {}).get('verified') is True
                           and row['replay']['ticks'] == summary['steps'])
                     row['speed_profiles'] = check_speed_profiles(output/'sensors.jsonl')
@@ -741,7 +810,9 @@ def main():
                         row['tracking_regression_passed'] = summary['emergency_steps'] <= 20
                         ok &= row['tracking_regression_passed']
                     run = json.loads((output/'run.json').read_text())
-                    if case.startswith('signal-'):
+                    if run['scenario'].get('stop_signs'):
+                        row['stop_signs'] = check_stop_signs(run, output/'sensors.jsonl')
+                    if run['scenario'].get('traffic_signals'):
                         row['traffic_controls'] = check_signals(run, output/'sensors.jsonl')
                     if case.startswith('gnss-'):
                         row['gnss_fault'] = check_gnss_fault(run, output/'sensors.jsonl', case)

@@ -1,6 +1,7 @@
 //! Shared sensor-to-command stack. No simulator, truth objects or physical world types.
 pub mod navigation;
 pub mod replay;
+pub mod stop_signs;
 pub mod traffic_controls;
 use navigation::{
     NavigationConfig, NavigationPhase, NavigationStatus, NavigationUpdate, Navigator,
@@ -13,6 +14,7 @@ use rustdrive_perception::{LidarClusters, Tracker};
 use rustdrive_planning::LatticePlanner;
 use rustdrive_prediction::ObservedBraking;
 use serde::{Deserialize, Serialize};
+use stop_signs::{StopSignStatus, StopSigns};
 use traffic_controls::{
     SignalObservation, StopLine, TrafficControlStatus, TrafficControls, validate_stop_lines,
 };
@@ -43,6 +45,8 @@ pub struct PipelineConfig {
     pub navigation: Option<NavigationConfig>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub stop_lines: Vec<StopLine>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub stop_signs: Vec<StopLine>,
 }
 impl PipelineConfig {
     pub fn new(route: Route, initial_pose: Pose, vehicle: VehicleConfig) -> Self {
@@ -55,6 +59,7 @@ impl PipelineConfig {
             motion_limits: None,
             navigation: None,
             stop_lines: vec![],
+            stop_signs: vec![],
         }
     }
     pub fn validate(&self) -> Result<(), String> {
@@ -83,10 +88,24 @@ impl PipelineConfig {
         }) {
             return Err("invalid calibrated motion limits".into());
         }
-        validate_stop_lines(&self.stop_lines, &self.route, self.vehicle.radius)?;
-        if !self.stop_lines.is_empty() && self.navigation.is_some() {
+        let controls: Vec<_> = self
+            .stop_lines
+            .iter()
+            .chain(&self.stop_signs)
+            .cloned()
+            .collect();
+        validate_stop_lines(&controls, &self.route, self.vehicle.radius)?;
+        if self.stop_signs.iter().enumerate().any(|(i, line)| {
+            self.stop_signs[..i]
+                .iter()
+                .any(|old| (old.route_s_m - line.route_s_m).abs() < 8.0)
+        }) {
+            return Err("mapped stop signs must be at least 8 m apart".into());
+        }
+        if !controls.is_empty() && self.navigation.is_some() {
             return Err(
-                "mapped signals currently require a fixed route without live handover".into(),
+                "mapped traffic controls currently require a fixed route without live handover"
+                    .into(),
             );
         }
         let v = self.vehicle;
@@ -162,6 +181,8 @@ pub struct PipelineOutput {
     pub navigation: Option<NavigationStatus>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub traffic_controls: Option<TrafficControlStatus>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stop_signs: Option<StopSignStatus>,
 }
 /// Owns algorithm state; adapters supply observations and apply resulting commands.
 pub struct DrivingPipeline {
@@ -179,12 +200,15 @@ pub struct DrivingPipeline {
     tracks: Vec<Track>,
     navigator: Option<Navigator>,
     traffic_controls: Option<TrafficControls>,
+    stop_signs: Option<StopSigns>,
 }
 impl DrivingPipeline {
     pub fn new(config: PipelineConfig) -> Result<Self, String> {
         config.validate()?;
         let traffic_controls = (!config.stop_lines.is_empty())
             .then(|| TrafficControls::new(config.stop_lines.clone()));
+        let stop_signs =
+            (!config.stop_signs.is_empty()).then(|| StopSigns::new(config.stop_signs.clone()));
         let mut planner = LatticePlanner::default();
         planner.cruise_speed = config.cruise_speed;
         planner.vehicle = config.vehicle;
@@ -242,6 +266,7 @@ impl DrivingPipeline {
             tracks: vec![],
             navigator,
             traffic_controls,
+            stop_signs,
         })
     }
     /// Clock errors return Err before mutation; callers must apply emergency braking on Err.
@@ -366,14 +391,37 @@ impl DrivingPipeline {
         } else if input.traffic_signal.is_some() {
             health.push(HealthIssue::InvalidTrafficSignal);
         }
+        if let Some(stops) = &mut self.stop_signs {
+            let measured_speed = self
+                .last_odom
+                .filter(|o| input.time - o.stamp <= 0.05 + 1e-9)
+                .map(|o| o.speed);
+            stops.step(
+                &self.config.route,
+                input.time,
+                estimate,
+                self.config.vehicle.radius,
+                measured_speed,
+                health.is_empty(),
+            );
+        }
         let stop_route = self
             .navigator
             .as_ref()
             .and_then(Navigator::planning_route)
             .or_else(|| {
-                self.traffic_controls
+                let signal_route = self
+                    .traffic_controls
                     .as_ref()
-                    .and_then(|c| c.planning_route(&self.config.route))
+                    .and_then(|c| c.planning_route(&self.config.route));
+                let sign_route = self
+                    .stop_signs
+                    .as_ref()
+                    .and_then(|c| c.planning_route(&self.config.route));
+                [signal_route, sign_route]
+                    .into_iter()
+                    .flatten()
+                    .min_by(|a, b| a.length().total_cmp(&b.length()))
             });
         let mut trajectory = self.planner.plan(
             estimate,
@@ -397,8 +445,25 @@ impl DrivingPipeline {
         {
             trajectory.mode = DrivingMode::Yield;
         }
+        if self
+            .stop_signs
+            .as_ref()
+            .is_some_and(|s| s.endpoint().is_some())
+            && trajectory.mode != DrivingMode::Emergency
+        {
+            trajectory.mode = DrivingMode::Yield;
+        }
         let command = if health.is_empty() {
-            let requested = self.controller.control(estimate, &trajectory, dt);
+            let mut requested = self.controller.control(estimate, &trajectory, dt);
+            if self
+                .stop_signs
+                .as_ref()
+                .is_some_and(|s| s.holding_brake(&self.config.route, estimate))
+            {
+                // Hold real brake pressure while the stop timer runs. A noisy
+                // low-speed feedback correction must not creep through the hold.
+                requested.acceleration = requested.acceleration.min(-0.5);
+            }
             guard(
                 requested,
                 input.time,
@@ -430,6 +495,7 @@ impl DrivingPipeline {
             localization: Some(self.ekf.diagnostics()),
             navigation: self.navigator.as_ref().map(Navigator::status),
             traffic_controls: self.traffic_controls.as_ref().map(TrafficControls::status),
+            stop_signs: self.stop_signs.as_ref().map(StopSigns::status),
         })
     }
     pub fn occupied_cells(&self) -> Vec<Vec2> {

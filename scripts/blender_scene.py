@@ -9,7 +9,7 @@ from bpy_extras.object_utils import world_to_camera_view
 from mathutils import Vector
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from blender_assets import STYLE, barrel, car, cube, environment, material, traffic_signal
+from blender_assets import STYLE, barrel, car, cube, environment, material, stop_sign, traffic_signal
 
 
 def line(name, points, mat, width=0.04):
@@ -115,7 +115,8 @@ def main():
     scenery = environment(edges)
     signal_specs = run['scenario'].get('traffic_signals', [])
     signal_models = {}
-    if signal_specs:
+    stop_specs = run['scenario'].get('stop_signs', [])
+    if signal_specs or stop_specs:
         lamp_materials = {'off':material('Inactive signal lens', (.014,.016,.018))}
         for color,rgb in [('Red',(.95,.015,.012)),('Yellow',(1,.53,.015)),('Green',(.018,.80,.10))]:
             mat = material('Active signal '+color, rgb)
@@ -140,6 +141,13 @@ def main():
             a,_=route_at(mapped['route_s_m'],-width);b,_=route_at(mapped['route_s_m'],width)
             line('Mapped stop line '+mapped['id'],[(*a,.075),(*b,.075)],marking,.12)
             signal_models[mapped['id']]=lenses
+        for mapped in stop_specs:
+            width=run['route']['half_width']
+            position,yaw=route_at(mapped['route_s_m'],width+1)
+            parent=stop_sign('Mapped stop sign '+mapped['id'],position,yaw)
+            parent['stop_line_id']=mapped['id']
+            a,_=route_at(mapped['route_s_m'],-width);b,_=route_at(mapped['route_s_m'],width)
+            line('Mapped stop sign line '+mapped['id'],[(*a,.075),(*b,.075)],marking,.12)
     bpy.ops.object.light_add(type='SUN', location=(0, 0, 20))
     sun = bpy.context.object
     sun.rotation_euler = (.5, -.4, -.35)
@@ -258,7 +266,8 @@ def main():
     (output/'scene-info.json').write_text(json.dumps({'style': STYLE, 'seed': 1729, 'scenery_counts': scenery,
                                                    'ego_model': 'hatchback', 'traffic_models': vehicle_models,
                                                    'camera': request.get('camera', 'ego'),
-                                                   'mapped_signal_ids': list(signal_models)}, indent=2)+'\n')
+                                                   'mapped_signal_ids': list(signal_models),
+                                                   'mapped_stop_sign_ids': [s['id'] for s in stop_specs]}, indent=2)+'\n')
     if request.get('scene_output'):
         bpy.ops.wm.save_as_mainfile(filepath=request['scene_output'])
 

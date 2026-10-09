@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "backend": "rne-dynamic-rapier-lidar",
+  "renderer": "Blender Cycles CPU",
+  "blender_version": "Blender 4.3.2",
+  "input_trace": "/tmp/rustdrive-stops-preview/run.json",
+  "input_sha256": "2c4215fe55cc888379dfb176666ce6d19412fa7643319e383edab667f49aca1e",
+  "rne_expected_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
+  "scenario": {
+    "name": "Single Stop Sign",
+    "duration": 65.0,
+    "road_length": 100.0,
+    "half_width": 2.1,
+    "curve_amplitude": 0.0,
+    "expected": "goal",
+    "lidar_dropout": null,
+    "gnss_dropout": null,
+    "cruise_speed": 4.0,
+    "min_clearance_m": 1.0,
+    "objects": [],
+    "stop_signs": [
+      {
+        "id": "stop-a",
+        "route_s_m": 35.0
+      }
+    ]
+  },
+  "summary": {
+    "scenario": "Single Stop Sign",
+    "seed": 7,
+    "simulated_seconds": 30.55,
+    "steps": 612,
+    "reached_goal": true,
+    "collisions": 0,
+    "road_violations": 0,
+    "min_clearance": 1000.0,
+    "localization_rmse": 0.06848865098081064,
+    "localization_max_error": 0.20511198316673052,
+    "final_speed": 0.1551477808980576,
+    "progress": 99.03685620480952,
+    "emergency_steps": 8,
+    "avoidance_steps": 0,
+    "max_tracks": 0,
+    "passed": true,
+    "failures": [],
+    "stop_sign_min_margin_m": 2.046704202459779
+  },
+  "gif_frames": 103,
+  "sampled_frames": 103,
+  "playback_speed": 3,
+  "scene_states_verified": 103,
+  "samples": 16,
+  "physics_domain": "planar",
+  "scene": {
+    "style": "suburban-test-road-v2",
+    "seed": 1729,
+    "scenery_counts": {
+      "trees": 5,
+      "buildings": 2,
+      "lamps": 4,
+      "sidewalk_sections": 200
+    },
+    "ego_model": "hatchback",
+    "traffic_models": [],
+    "camera": "ego",
+    "mapped_signal_ids": [],
+    "mapped_stop_sign_ids": [
+      "stop-a"
+    ]
+  },
+  "renderer_source_sha256": "eabf2670900e58efef01669f6170e2b86814668cf94749cc2700178b978c1740",
+  "gif_palette_colors": 192,
+  "gif_dither": false,
+  "spatial_filter": "3x3 median, viewport only",
+  "renderer_command": "python3 scripts/render_demo_3d.py /tmp/rustdrive-stops-preview/run.json --output assets/stop-sign-demo.gif --samples 16 --threads 4 --camera ego --traffic-models hatchback"
+}

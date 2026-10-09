@@ -158,20 +158,25 @@ impl TrafficControls {
         self.status.clone()
     }
     pub fn planning_route(&self, route: &Route) -> Option<Route> {
-        let end = self.status.stop_s_m?.min(route.length());
-        if end >= route.length() {
-            return None;
-        }
-        let mut points: Vec<_> = route
-            .points
-            .iter()
-            .zip(&route.lengths)
-            .filter(|(_, s)| **s < end - 1e-6)
-            .map(|(p, _)| *p)
-            .collect();
-        points.push(route.sample(end, 0.0).0);
-        Some(Route::new(points, route.half_width).expect("validated stop-line prefix"))
+        planning_prefix(route, self.status.stop_s_m?)
     }
+}
+
+/// Reuse the existing planner on a temporary route prefix without replacing the map.
+pub(crate) fn planning_prefix(route: &Route, endpoint: f64) -> Option<Route> {
+    let end = endpoint.min(route.length());
+    if end >= route.length() {
+        return None;
+    }
+    let mut points: Vec<_> = route
+        .points
+        .iter()
+        .zip(&route.lengths)
+        .filter(|(_, s)| **s < end - 1e-6)
+        .map(|(p, _)| *p)
+        .collect();
+    points.push(route.sample(end, 0.0).0);
+    Some(Route::new(points, route.half_width).expect("validated stop-line prefix"))
 }
 
 #[cfg(test)]

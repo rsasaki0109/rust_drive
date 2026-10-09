@@ -48,8 +48,9 @@
 | Avoidance continuity | Implemented / tested | Observed centerline occupancy discourages premature center return; seeded 6 m/s detour regression, swept feasibility remains mandatory |
 | Map-update fault handling and replay | Implemented / tested | Revision/stamp checks, latched malformed-update braking, full map-search and handover recomputation when configured |
 | Lane topology / traffic-rule routing / continuous moving handover | Planned | No map importer, lane-change graph, turn penalties or intersection rules |
-| Mapped traffic signals / stop-line holds | Implemented / tested | 30 physical/replay runs in two plants; 5 Hz infrastructure snapshots, red/yellow/unknown stops, freshness and green release; no camera signal recognition |
-| Stop signs / right of way / general intersections / parking | Planned | Other actors do not yet obey signals; no priority, lane or parking behavior |
+| Mapped traffic signals / stop-line holds | Implemented / tested | 36 dedicated physical/replay runs plus 6 stop-sign combinations in two plants; 5 Hz infrastructure snapshots, red/yellow/unknown stops, freshness and green release; no camera signal recognition |
+| Mapped stop signs | Implemented / tested | 30 physical/replay episodes; continuous healthy two-second hold, brake retention, multiple signs, mixed signal/obstacle constraints and GNSS reset/recovery; no camera sign detector |
+| Right of way / general intersections / parking | Planned | Other actors do not yet obey controls; no all-way stop ordering, priority, lane or parking behavior |
 | General dynamically feasible planning / MPC | Planned | Current lattice + pure pursuit baseline |
 | CARLA bridge | Planned; not implemented or validated | No CARLA server/assets installed |
 | ROS 2 bridge | Planned; optional | No ROS dependency in algorithms |

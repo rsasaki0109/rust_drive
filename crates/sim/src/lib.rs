@@ -1,15 +1,19 @@
 //! Deterministic closed-loop simulator. Only sensor observations enter the stack.
 pub mod signals;
+pub mod stop_signs;
 pub mod traffic;
 use rustdrive_core::*;
 use rustdrive_pipeline::navigation::{NavigationConfig, NavigationStatus, NavigationUpdate};
 use rustdrive_pipeline::replay::SensorLog;
+use rustdrive_pipeline::stop_signs::StopSignStatus;
+use rustdrive_pipeline::traffic_controls::StopLine;
 use rustdrive_pipeline::traffic_controls::TrafficControlStatus;
 use rustdrive_pipeline::{DrivingPipeline, PipelineConfig, SensorFrame};
 use rustdrive_routing::{RoadNetwork, RoadNetworkSpec, RoutePlan};
 use serde::{Deserialize, Serialize};
 use signals::{RuleEvaluator, SignalDropout, SignalSpec};
 use std::f64::consts::PI;
+use stop_signs::StopRuleEvaluator;
 use traffic::{FollowingSpec, TrafficTelemetry, TrafficWorld};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -100,6 +104,8 @@ pub struct Scenario {
     pub traffic_signals: Vec<SignalSpec>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub signal_dropout_windows: Vec<SignalDropout>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub stop_signs: Vec<StopLine>,
 }
 impl Scenario {
     pub fn validate(&self) -> Result<(), String> {
@@ -143,6 +149,8 @@ impl Scenario {
         }
         let selected = self.navigation_plan()?;
         signals::validate(self)?;
+        let c = pipeline_config(self);
+        c.validate()?;
         let mut previous_end = 0.0;
         for window in &self.gnss_bias_windows {
             if !window.from.is_finite()
@@ -309,6 +317,8 @@ pub struct Frame {
     pub localization: Option<LocalizationDiagnostics>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub traffic_controls: Option<TrafficControlStatus>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stop_signs: Option<StopSignStatus>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Summary {
@@ -343,6 +353,10 @@ pub struct Summary {
     pub signal_violations: usize,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub signal_min_stopline_margin_m: Option<f64>,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub stop_sign_violations: usize,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stop_sign_min_margin_m: Option<f64>,
 }
 fn is_zero(n: &usize) -> bool {
     *n == 0
@@ -528,6 +542,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
         config.cruise_speed = speed;
     }
     config.motion_limits = scenario.motion_limits;
+    config.stop_signs = scenario.stop_signs.clone();
     config.stop_lines = scenario
         .traffic_signals
         .iter()
@@ -608,6 +623,7 @@ pub fn simulate_with_backend(
     let mut navigation_switches = 0;
     let mut closure_violations = 0;
     let mut signal_rules = RuleEvaluator::default();
+    let mut stop_rules = StopRuleEvaluator::new(scenario.stop_signs.len());
     let mut evaluation_closures = scenario
         .navigation
         .as_ref()
@@ -644,6 +660,12 @@ pub fn simulate_with_backend(
             time,
             traffic_route.project(truth.pose.position).0 + vehicle.radius,
         );
+        stop_rules.observe(
+            &scenario.stop_signs,
+            time,
+            traffic_route.project(truth.pose.position).0 + vehicle.radius,
+            truth.speed,
+        );
         let mut input = backend.observe(time, i)?;
         input.traffic_signal = signals::observe(&scenario, time, i);
         // Fault injection changes observations only, using the acquisition clock.
@@ -675,6 +697,7 @@ pub fn simulate_with_backend(
         let navigation_status = result.navigation.clone();
         let localization_status = result.localization;
         let traffic_control_status = result.traffic_controls.clone();
+        let stop_sign_status = result.stop_signs.clone();
         if let Some(status) = &navigation_status
             && status.switches > navigation_switches
         {
@@ -756,6 +779,7 @@ pub fn simulate_with_backend(
         }
         if !traffic.is_empty()
             || !scenario.traffic_signals.is_empty()
+            || !scenario.stop_signs.is_empty()
             || i.is_multiple_of(2)
             || finished
             || goal_since == Some(time)
@@ -777,6 +801,7 @@ pub fn simulate_with_backend(
                 navigation: navigation_status,
                 localization: localization_status,
                 traffic_controls: traffic_control_status,
+                stop_signs: stop_sign_status,
             });
         }
         if finished {
@@ -875,6 +900,12 @@ pub fn simulate_with_backend(
             signal_rules.violations
         ));
     }
+    if stop_rules.violations != 0 {
+        failures.push(format!(
+            "{} physical stop-sign crossings without a complete stop",
+            stop_rules.violations
+        ));
+    }
     match scenario.expected {
         Expected::Goal if !reached_goal => failures.push("goal not reached within duration".into()),
         Expected::Stop if truth.speed > 0.2 || reached_goal || progress < 10.0 => {
@@ -910,6 +941,8 @@ pub fn simulate_with_backend(
         closure_violations,
         signal_violations: signal_rules.violations,
         signal_min_stopline_margin_m: signal_rules.minimum_nonpermissive_margin_m,
+        stop_sign_violations: stop_rules.violations,
+        stop_sign_min_margin_m: stop_rules.minimum_unreleased_margin_m,
     };
     Ok(Run {
         backend: source.to_string(),
