@@ -18,6 +18,19 @@ cyclist that has left the local view. All recorded actor positions are audited,
 including actors beyond that view. Camera fitting uses conservative cosmetic
 mesh bounds, separately from the declared physical circles.
 
+![Original pedestrian and cyclist display meshes](../assets/vru-models.png)
+
+This close-up is a separate showroom study of the same meshes used in the GIF.
+It shows clothing, articulated limbs and bicycle details at a readable scale.
+The [render record](../assets/vru-models.json) retains source/image hashes and
+five-pose geometry and root-position audits for each model. It is a display
+study, rather than a driving capture. Reproduce it with CPU Blender:
+
+```sh
+blender --background --factory-startup --threads 2 \
+  --python scripts/render_vru_models.py -- assets/vru-models.png
+```
+
 ## Physical verification
 
 The unchanged 22-second fixture is checked with seeds 1, 7 and 42. All three
