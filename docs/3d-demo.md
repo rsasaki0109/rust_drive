@@ -1,6 +1,6 @@
 # 3D replay of actual RNE driving
 
-The README opening GIF shows measured ground removal and a moving lead with the research body envelope; its [commands, audits and limitations](ground-lidar.md#audited-replay-rendering) accompany the recording. The closure-detour and follower GIFs below show successful RNE dynamic recordings. Blender Cycles runs on CPU, with no GPU, display server, ROS or CARLA requirement. Simulation and sensor replay remain renderer-independent.
+The README opening GIF now shows a recorded crossing pedestrian, a cyclist and a moving lead over measured physical ground, with original articulated human/bicycle meshes. [Road-user checks, meshes and commands](road-users.md). The preceding [ground/body recording](ground-lidar.md#audited-replay-rendering) remains available as `assets/ground-demo.gif`. The closure-detour and follower GIFs below show successful RNE dynamic recordings. Blender Cycles runs on CPU, with no GPU, display server, ROS or CARLA requirement. Simulation and sensor replay remain renderer-independent.
 
 ![Actual RNE closure-detour run rendered in 3D](../assets/rne-3d-demo.gif)
 

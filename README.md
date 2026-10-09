@@ -2,9 +2,9 @@
 
 **A Rust-native autonomous driving stack.**
 
-![Actual RNE driving with measured ground removal and a moving lead vehicle, rendered in 3D](assets/ground-demo.gif)
+![Actual RNE driving with a crossing pedestrian, a cyclist and a lead vehicle rendered as articulated 3D meshes](assets/vru-demo.gif)
 
-An original, modular driving stack with a working, deterministic closed-loop simulation. The vehicle processes synthetic LiDAR, fuses noisy GNSS and odometry, tracks and predicts obstacles, and plans steering and braking. The opening GIF shows an actual CPU-only Robot Native Engine (RNE) run: native inclined XYZ LiDAR measures the physical road and a moving lead vehicle, measured ground removal preserves obstacle observations, and ego stops behind the lead. The teal wireframe shows a separate 4.2 × 1.8 × 1.5 m research body. Blender Cycles renders the recorded 22-second episode at 3× playback; motion and downstream object processing remain planar. Moving-traffic acceptance uses conservative circular sweeps; the static-box body guard is exercised by separate fixtures. [Measurements and limitations](docs/ground-lidar.md); [reproduce the GIF](#reproduce-the-gif).
+An original, modular driving stack with a working, deterministic closed-loop simulation. The vehicle processes synthetic LiDAR, fuses noisy GNSS and odometry, tracks and predicts obstacles, and plans steering and braking. The opening GIF replays an actual CPU-only Robot Native Engine (RNE) run: ego yields to a crossing pedestrian, while a cyclist travels beside the road and a lead vehicle stops ahead. Original articulated human meshes and a detailed bicycle add clothing, facial features, a helmet, tires, spokes, chain and pedals. Actor positions come from the recorded simulation; walking and pedaling are display animations. Native sensing and moving-actor collision checks use declared circular/capsule geometry, with no semantic recognition or avatar mesh collision. Blender Cycles renders the recorded 22-second episode at 3× playback. [Physical checks, mesh details and limitations](docs/road-users.md); [reproduce the GIF](#reproduce-the-gif).
 
 **Status: simulation research prototype, v0.1.** The verified operating domain is known planar road corridors with circular obstacles, including a directed road-network fork, merge and stopped handover after a live closure notification. Bounded OSM import supplies external road geometry; optional native cuboid scenes add actual XYZ sensing, measured local ground removal and research-body clearance. A CPU-only Robot Native Engine (RNE) adapter runs the same pipeline with native Ackermann dynamics and Rapier queries. This is the starting point for an independent stack, not a replacement for mature driving systems or a system for use on public roads. CARLA, ROS 2, 3D SLAM, general intersection/priority reasoning, and real vehicle interfaces are not implemented. Optional offline Rust-native CPU camera inference runs separately from driving; camera-based control is not implemented. Mapped signal stops use timestamped infrastructure observations; camera signal recognition is not implemented. See the [capability matrix](docs/capabilities.md).
 
@@ -12,12 +12,12 @@ Optional research additions include [density-aware measured terrain evaluation](
 
 ## Build and run
 
-The pipeline/replay/RNE additions are currently published on `feat/shared-pipeline-rne`; the commands below select that development branch.
+The shared pipeline, CPU RNE adapter and recorded 3D demos are available on `main`.
 
 Rust 1.90.0 is pinned in `rust-toolchain.toml`. No ROS, GPU, Docker, models, simulator download, Python, or credentials are required for the Rust demo.
 
 ```sh
-git clone --branch feat/shared-pipeline-rne https://github.com/rsasaki0109/rust_drive.git
+git clone https://github.com/rsasaki0109/rust_drive.git
 cd rust_drive
 cargo test --workspace --locked
 cargo run --release --locked --bin rustdrive -- run \
@@ -39,7 +39,7 @@ Replay creates a fresh pipeline and recomputes localization, tracks, predictions
 
 ## CPU-only Robot Native Engine demo
 
-The opening 3D GIF replays actual native vehicle dynamics, steering lag and inclined Rapier LiDAR queries against physical road support and a lead capsule. A separate closure-detour recording below uses the default planar sweep. Blender Cycles renders the road, vehicle proxies and recorded planned trajectories on CPU. The shared RustDrive pipeline drives it. No GPU, graphics context, ROS, Docker, CARLA server or pretrained model is required.
+The opening 3D GIF replays actual native vehicle dynamics, steering lag and inclined Rapier LiDAR queries against physical road support, a crossing pedestrian proxy, a cyclist proxy and a lead capsule. A separate closure-detour recording below uses the default planar sweep. Blender Cycles renders the road, vehicle proxies and recorded planned trajectories on CPU. The shared RustDrive pipeline drives it. No GPU, graphics context, ROS, Docker, CARLA server or pretrained model is required.
 
 ![Actual RNE closure notification, detour and obstacle avoidance rendered in 3D](assets/rne-3d-demo.gif)
 
@@ -260,18 +260,18 @@ python -m pip install -r scripts/requirements-demo.txt
 bash scripts/setup-rne.sh
 source scripts/env.sh
 cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- \
-  --scenario scenarios/native-body-traffic-stop.json --scene scenes/ground-moving-traffic.json \
+  --scenario scenarios/native-vru-demo.json --scene scenes/ground-moving-traffic.json \
   --lidar-3d --ground-segmentation --vehicle-body --plant dynamic --seed 7 \
-  --output artifacts/ground-moving
+  --output artifacts/vru-demo/seed-7
 cargo run --release --locked --bin rustdrive -- replay \
-  --log artifacts/ground-moving/sensors.jsonl --output artifacts/ground-moving/replay
-python3 scripts/render_demo_3d.py artifacts/ground-moving/run.json \
-  --native-scene artifacts/ground-moving/scene.json \
-  --output artifacts/ground-moving/demo.gif --samples 8 --threads 3 \
-  --camera traffic --traffic-models sedan
+  --log artifacts/vru-demo/seed-7/sensors.jsonl --output artifacts/vru-demo/seed-7/replay
+python3 scripts/render_demo_3d.py artifacts/vru-demo/seed-7/run.json \
+  --native-scene artifacts/vru-demo/seed-7/scene.json \
+  --output artifacts/vru-demo/demo.gif --samples 12 --threads 3 \
+  --camera street --actor-models 0=sedan 1=pedestrian 2=cyclist
 ```
 
-Open `artifacts/ground-moving/demo.gif`. The renderer emits a PNG and [provenance JSON](assets/ground-demo.json), auditing recorded body poses, road/obstacle meshes and measured sensor consistency. The published GIF has 75 frames at 960 × 640 pixels. To refresh the README asset intentionally, use `--output assets/ground-demo.gif` in the render command. [Independent physical checks and ground-classification limits](docs/ground-lidar.md); [editable models and older closure-detour reproduction](docs/3d-demo.md).
+Open `artifacts/vru-demo/demo.gif`. The renderer emits a PNG and [provenance JSON](assets/vru-demo.json), auditing recorded body and actor poses, road/obstacle meshes and measured sensor consistency. The published GIF has 75 frames at 960 × 640 pixels. To refresh the README asset intentionally, use `--output assets/vru-demo.gif` in the render command. [Independent road-user checks](docs/road-users.md); [ground-classification limits](docs/ground-lidar.md); [editable models and older demo reproduction](docs/3d-demo.md).
 
 GIF bytes may differ between Blender/Pillow/font versions; sensor replay is deterministic on the same binary/platform. The reference GIF remains reproducible with `bash scripts/demo.sh`.
 

@@ -232,6 +232,15 @@ def main():
                 first = first_positions.setdefault(actor['id'],p)
                 if math.hypot(p['x']-first['x'],p['y']-first['y']) > 1e-6:
                     dynamic_ids.add(actor['id'])
+    actor_models = {int(key): value for key, value in request.get('actor_models', {}).items()}
+    if actor_models:
+        first_positions = {}
+        for recorded in run['frames']:
+            for actor in recorded['objects']:
+                first = first_positions.setdefault(actor['id'], actor['position'])
+                if math.hypot(actor['position']['x']-first['x'], actor['position']['y']-first['y']) > 1e-6:
+                    dynamic_ids.add(actor['id'])
+        from blender_vru_assets import pedestrian, cyclist, animate as animate_vru
     actors = {}
     vehicle_models = []
     actor_paints = [orange, material('Van ivory', (.72,.75,.68), .2, .3),
@@ -240,9 +249,13 @@ def main():
         for actor in frame['objects']:
             if actor['id'] in actors:
                 continue
-            if actor['id'] in dynamic_ids:
+            selected = actor_models.get(actor['id'])
+            if selected in ('pedestrian', 'cyclist'):
+                actors[actor['id']] = (pedestrian if selected == 'pedestrian' else cyclist)('Recorded '+selected, actor['radius'])
+                vehicle_models.append({'id': actor['id'], 'model': selected, 'display_only': True})
+            elif actor['id'] in dynamic_ids or selected:
                 number = len(vehicle_models)
-                variant = request.get('traffic_models', ['hatchback'])[number % len(request.get('traffic_models', ['hatchback']))]
+                variant = selected or request.get('traffic_models', ['hatchback'])[number % len(request.get('traffic_models', ['hatchback']))]
                 paint = actor_paints[number % len(actor_paints)] if len(request.get('traffic_models', ['hatchback'])) > 1 else orange
                 actors[actor['id']] = car('Recorded traffic actor' if intersection_specs else 'Recorded reactive actor', actor['radius'], paint, glass, tire, headlight, variant=variant)
                 vehicle_models.append({'id': actor['id'], 'model': variant, 'color': list(paint.diffuse_color[:3])})
@@ -274,20 +287,24 @@ def main():
             body_envelope.rotation_euler.z = pose['yaw']
         camera.location = (x-11, y-16, 16)
         target = (x+4, y, 0)
-        if request.get('camera') == 'traffic':
+        if request.get('camera') in ('traffic', 'street'):
             bodies = [{'position': pose['position'], 'radius': run['vehicle']['radius']}]+[a for a in frame['objects'] if a['id'] in dynamic_ids]
+            if request.get('camera') == 'street':
+                # Show local recorded road users without zooming out for a cyclist
+                # that has already left the local road view. All poses are audited.
+                bodies = [bodies[0]] + [a for a in bodies[1:] if math.hypot(a['position']['x']-x, a['position']['y']-y) <= 30]
             positions = [a['position'] for a in bodies]
             min_x,max_x = min(p['x'] for p in positions),max(p['x'] for p in positions)
             min_y,max_y = min(p['y'] for p in positions),max(p['y'] for p in positions)
-            height = max(16, math.hypot(max_x-min_x,max_y-min_y)*.45+16)
+            height = max(12, math.hypot(max_x-min_x,max_y-min_y)*.35+12) if request.get('camera') == 'street' else max(16, math.hypot(max_x-min_x,max_y-min_y)*.45+16)
             center_x,center_y = (min_x+max_x)/2,(min_y+max_y)/2
             target = (center_x,center_y,0)
             # Fit the complete display bounds, not just the center positions:
             # a long queue can otherwise clip ego at the start in perspective.
-            corners = [Vector((a['position']['x']+sx*(a['radius']+.5),
-                               a['position']['y']+sy*(a['radius']+.5),z))
+            corners = [Vector((a['position']['x']+sx*(max(a['radius'], actors.get(a.get('id'), ego).get('display_radius_m', a['radius']))+.5),
+                               a['position']['y']+sy*(max(a['radius'], actors.get(a.get('id'), ego).get('display_radius_m', a['radius']))+.5),z))
                        for a in bodies for sx in [-1,1] for sy in [-1,1]
-                       for z in [0,2*a['radius']]]
+                       for z in [0,max(2*a['radius'], actors.get(a.get('id'), ego).get('display_height_m', 0))]]
             for attempt in range(32):
                 camera.location = (center_x-.7*height,center_y-height,height)
                 camera.rotation_euler = (Vector(target)-camera.location).to_track_quat('-Z','Y').to_euler()
@@ -325,7 +342,7 @@ def main():
                     dx, dy = actor['position']['x']-previous['position']['x'], actor['position']['y']-previous['position']['y']
                     if math.hypot(dx, dy) > 1e-6:
                         obj.rotation_euler.z = math.atan2(dy, dx)
-                elif intersection_specs:
+                elif intersection_specs or actor_models:
                     # First display pose uses the next actual recorded movement;
                     # it never uses a scripted actor velocity or advances time.
                     for later in run['frames'][index+1:]:
@@ -335,6 +352,13 @@ def main():
                             if math.hypot(dx,dy) > 1e-6:
                                 obj.rotation_euler.z = math.atan2(dy,dx)
                                 break
+        for actor in frame['objects']:
+            obj = actors[actor['id']]
+            if obj.get('vru_kind'):
+                prior = next((a for a in run['frames'][max(0, index-1)]['objects'] if a['id'] == actor['id']), None)
+                dt = frame['time']-run['frames'][max(0, index-1)]['time']
+                speed = math.hypot(actor['position']['x']-prior['position']['x'], actor['position']['y']-prior['position']['y'])/dt if prior and dt > 0 else 0
+                animate_vru(obj, frame['time'], speed)
         set_line(planned, [(p['position']['x'], p['position']['y'], .11) for p in frame['trajectory']['points']])
         forecast = frame['predictions'][0]['positions'] if frame['predictions'] else []
         set_line(predictions, [(p['x'], p['y'], .12) for p in forecast])
@@ -365,6 +389,8 @@ def main():
     scene_info = {'style': STYLE, 'seed': 1729, 'scenery_counts': scenery,
                   'ego_model': 'hatchback', 'traffic_models': vehicle_models,
                   'camera': request.get('camera', 'ego'),
+                  'actor_models': actor_models,
+                  'road_user_meshes_display_only': bool(actor_models),
                   'mapped_signal_ids': list(signal_models),
                   'mapped_stop_sign_ids': [s['id'] for s in stop_specs],
                   'mapped_intersection_ids': [s['stop_line']['id'] for s in intersection_specs]}
