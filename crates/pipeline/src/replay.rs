@@ -20,8 +20,8 @@ pub struct RecordedTick {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
 pub enum LogRecord {
-    Header { header: LogHeader },
-    Tick { tick: RecordedTick },
+    Header { header: Box<LogHeader> },
+    Tick { tick: Box<RecordedTick> },
     End { ticks: usize },
 }
 #[derive(Clone, Debug)]
@@ -50,11 +50,16 @@ impl SensorLog {
         write_record(
             &mut writer,
             &LogRecord::Header {
-                header: self.header.clone(),
+                header: Box::new(self.header.clone()),
             },
         )?;
         for tick in &self.ticks {
-            write_record(&mut writer, &LogRecord::Tick { tick: tick.clone() })?;
+            write_record(
+                &mut writer,
+                &LogRecord::Tick {
+                    tick: Box::new(tick.clone()),
+                },
+            )?;
         }
         write_record(
             &mut writer,

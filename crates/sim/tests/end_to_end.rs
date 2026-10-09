@@ -48,6 +48,95 @@ fn malformed_scenario_rejected() {
     s.duration = -1.0;
     assert!(simulate(s, 1).is_err());
 }
+#[test]
+fn invalid_or_overlapping_gnss_bias_windows_are_rejected() {
+    let s = scenario("gnss-burst");
+    for (from, until, x) in [
+        (-1.0, 8.0, 30.0),
+        (5.0, 5.0, 30.0),
+        (65.0, 66.0, 30.0),
+        (5.0, 301.0, 30.0),
+        (5.0, 8.0, f64::NAN),
+    ] {
+        let mut invalid = s.clone();
+        invalid.gnss_bias_windows[0].from = from;
+        invalid.gnss_bias_windows[0].until = until;
+        invalid.gnss_bias_windows[0].offset.x = x;
+        assert!(invalid.validate().is_err());
+    }
+    let mut overlapping = s.clone();
+    overlapping.gnss_bias_windows.push(s.gnss_bias_windows[0]);
+    assert!(overlapping.validate().is_err());
+    assert!(scenario("gnss-persistent-bias").validate().is_ok());
+}
+#[test]
+fn gnss_outliers_stop_and_recover_without_resetting_localization() {
+    for case in ["gnss-spike", "gnss-burst", "gnss-persistent-bias"] {
+        for seed in [1, 7, 42] {
+            let result = simulate(scenario(case), seed).unwrap();
+            assert!(
+                result.summary.passed,
+                "{case} seed {seed}: {:?}",
+                result.summary
+            );
+            assert!(result.summary.localization_max_error < 0.5);
+            let log = result.sensor_log.as_ref().unwrap();
+            for tick in &log.ticks {
+                let diagnostic = tick.expected.localization.unwrap();
+                if tick.input.gnss.is_some()
+                    && (5.0..if case == "gnss-spike" {
+                        5.2
+                    } else if case == "gnss-burst" {
+                        8.0
+                    } else {
+                        30.0
+                    })
+                        .contains(&tick.input.time)
+                {
+                    assert_eq!(
+                        diagnostic.last_decision,
+                        Some(rustdrive_core::GnssDecision::RejectedInnovation)
+                    );
+                    assert!(diagnostic.last_accepted_stamp.unwrap() < 5.0);
+                }
+            }
+            if case == "gnss-burst" {
+                assert!(
+                    result
+                        .frames
+                        .iter()
+                        .any(|f| (7.0..8.0).contains(&f.time) && f.truth.speed < 0.1)
+                );
+                assert!(log.ticks.iter().any(|t| {
+                    t.input.time >= 8.0
+                        && t.expected
+                            .localization
+                            .unwrap()
+                            .last_accepted_stamp
+                            .is_some_and(|s| s >= 8.0)
+                }));
+            }
+            if case == "gnss-persistent-bias" {
+                assert!(
+                    log.ticks
+                        .last()
+                        .unwrap()
+                        .expected
+                        .health
+                        .contains(&rustdrive_pipeline::HealthIssue::StaleGnss)
+                );
+            }
+            let mut bytes = Vec::new();
+            log.write(&mut bytes).unwrap();
+            assert_eq!(
+                rustdrive_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink())
+                    .unwrap()
+                    .ticks,
+                result.summary.steps
+            );
+        }
+    }
+}
 
 #[test]
 fn actual_collision_fails_acceptance() {

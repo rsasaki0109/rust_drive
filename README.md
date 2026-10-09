@@ -54,11 +54,13 @@ The integration has its own lockfile and does not enlarge the default workspace 
 bash scripts/check-hazards.sh
 ```
 
-After RNE setup, this CPU-only command runs occlusion, lateral crossings, multiple blocked alternatives, low-friction avoidance and low-friction stopping across seeds 1, 7 and 42. It checks physical outcomes and recomputes every sensor log. All 72 local reference/RNE runs pass, including 24 live-navigation runs. Fixed minimum-clearance floors also guard the fixtures. The planner computes bounded acceleration profiles, uses their arrival times for circular sweeps, and rechecks retimed stops and stationary holds. The suite also checks profile kinematics independently. [Current avoidance results and model boundaries](docs/avoidance-continuity.md); [tracking improvements](docs/tracking.md); [earlier swept-check regressions](docs/swept-planning.md).
+After RNE setup, this CPU-only command runs occlusion, lateral crossings, multiple blocked alternatives, low-friction avoidance and low-friction stopping across seeds 1, 7 and 42. It checks physical outcomes and recomputes every sensor log. All 90 positive local reference/RNE scenario runs pass, including 24 live-navigation and 18 GNSS-fault runs. Fixed minimum-clearance floors also guard the fixtures. The planner computes bounded acceleration profiles, uses their arrival times for circular sweeps, and rechecks retimed stops and stationary holds. The suite also checks profile kinematics independently. [Current GNSS results and retained traffic counterexample](docs/gnss-robustness.md); [tracking improvements](docs/tracking.md); [earlier swept-check regressions](docs/swept-planning.md).
+
+A separate GNSS burst with scheduled traffic still fails physical acceptance after recovery; its colliding episode is preserved and excluded from the positive count. [Actual outcomes and reproduction](docs/gnss-robustness.md).
 
 ![Initially occluded actor and crossing on an RNE run](assets/hazard-demo.gif)
 
-Low-friction tracking now produces 9/8/7 emergency ticks across the three seeds, compared with 73/83/80 in the preceding implementation. Both the scenario and physical acceptance criteria are unchanged. See the [measured comparison and RNE demo](docs/tracking.md).
+The tracking baseline produced 9/8/7 emergency ticks across the three seeds, compared with 73/83/80 in the preceding implementation. Both the scenario and physical acceptance criteria are unchanged. See the [measured comparison and RNE demo](docs/tracking.md).
 
 ## Mapped destinations and closure detours
 
@@ -77,7 +79,7 @@ cargo run --release --locked --bin rustdrive -- run \
 | Component | Implementation |
 |---|---|
 | Perception | Unlabeled first-return planar LiDAR, range-adaptive clustering, bounded circle fitting, alpha-beta tracking |
-| Localization | Three-state extended Kalman filter with wheel-speed / gyro prediction and gated GNSS correction |
+| Localization | Three-state extended Kalman filter with wheel-speed / gyro prediction, joint GNSS innovation gate, Joseph covariance correction and acceptance diagnostics |
 | Mapping / navigation | Validated directed road graph, deterministic Dijkstra, live closure snapshots, stopped detour handover and destination selection; ray-updated log-odds occupancy grid |
 | Prediction | Constant-velocity trajectories with a low-speed deadband; planning adds a time-dependent margin |
 | Planning | Three lateral candidates, smooth route geometry and quintic maneuvers joined from the estimated position / heading, synchronized circular sweeps, reachable acceleration / local curvature speed profiles, retimed stop/wait/resume and goal behavior |
@@ -117,12 +119,13 @@ cargo run --release --locked --bin rustdrive -- run \
   --scenario scenarios/lidar-fault.json --seed 7 --output artifacts/lidar-fault
 ```
 
-CI checks formatting, Clippy, the workspace test suite, release builds, and the closed-loop demo on Linux, macOS, and Windows, plus GIF generation and the pinned CPU-only RNE integration on Linux. All five jobs passed for the preceding live-handover revision in [run 37860843074](https://github.com/rsasaki0109/rust_drive/actions/runs/37860843074). See [validation and limitations](docs/validation.md) for the checks actually executed and the initial infrastructure/toolchain failures.
+CI checks formatting, Clippy, the workspace test suite, release builds, and the closed-loop demo on Linux, macOS, and Windows, plus GIF generation and the pinned CPU-only RNE integration on Linux. All five jobs passed for the preceding avoidance revision in [run 37864100417](https://github.com/rsasaki0109/rust_drive/actions/runs/37864100417). See [validation and limitations](docs/validation.md) for the checks actually executed and the initial infrastructure/toolchain failures.
 
 ## Architecture and contributing
 
 Ten small Cargo crates share transport-independent, serializable contracts. Algorithm implementations are ordinary synchronous Rust libraries. No custom executor or networking middleware is required. The optional RNE adapter and future ROS 2/CARLA bridges translate at the boundaries rather than become dependencies of the algorithms.
 
+- [GNSS rejection, stopping/recovery and retained traffic failure](docs/gnss-robustness.md)
 - [Avoidance continuity and the repaired 6 m/s regression](docs/avoidance-continuity.md)
 - [Live closure handover, baseline results and retained failures](docs/handover.md)
 - [Road networks, closure detours and regression results](docs/routing.md)

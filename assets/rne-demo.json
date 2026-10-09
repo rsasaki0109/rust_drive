@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "backend": "rne-dynamic-rapier-lidar",
-  "input_trace": "artifacts/rne-dynamic/run.json",
+  "input_trace": "artifacts/gnss-verified/rne-dynamic/route-handover-fast/seed-7/run.json",
   "scenario": {
     "name": "Live closure: 6 m/s detour",
     "duration": 70.0,
@@ -1023,26 +1023,26 @@
   "summary": {
     "scenario": "Live closure: 6 m/s detour",
     "seed": 7,
-    "simulated_seconds": 40.25,
-    "steps": 806,
+    "simulated_seconds": 40.35,
+    "steps": 808,
     "reached_goal": true,
     "collisions": 0,
     "road_violations": 0,
-    "min_clearance": 1.484657801048443,
-    "localization_rmse": 0.0776475467324817,
-    "localization_max_error": 0.25275358396280506,
-    "final_speed": 0.15717252211171656,
-    "progress": 208.54467191108625,
-    "emergency_steps": 5,
+    "min_clearance": 1.4846578020515193,
+    "localization_rmse": 0.0775709821188698,
+    "localization_max_error": 0.25275359162817823,
+    "final_speed": 0.09214303850709352,
+    "progress": 208.57181322312073,
+    "emergency_steps": 8,
     "avoidance_steps": 114,
     "max_tracks": 1,
     "passed": true,
     "failures": [],
     "navigation_switches": 1
   },
-  "gif_frames": 135,
+  "gif_frames": 136,
   "playback_speed": 3,
-  "renderer_command": "python3 scripts/render_demo.py artifacts/rne-dynamic/run.json --output assets/rne-demo.gif",
+  "renderer_command": "python3 scripts/render_demo.py artifacts/gnss-verified/rne-dynamic/route-handover-fast/seed-7/run.json --output assets/rne-demo.gif",
   "navigation": {
     "node_ids": [
       "start",
@@ -2634,5 +2634,5 @@
     }
   ],
   "rne_expected_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
-  "command": "cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- --scenario scenarios/route-handover-fast.json --plant dynamic --seed 7 --output artifacts/rne-dynamic"
+  "command": "cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- --scenario scenarios/route-handover-fast.json --plant dynamic --seed 7 --output artifacts/gnss-verified/rne-dynamic/route-handover-fast/seed-7"
 }

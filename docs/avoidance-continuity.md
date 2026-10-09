@@ -1,5 +1,7 @@
 # Completing an avoidance shift without premature center return
 
+This page records the `e851c2a` avoidance baseline. The [GNSS extension](gnss-robustness.md) adds correction/health diagnostics, expands the current suite and regenerates the opening GIF; its counts supersede this baseline.
+
 The previously retained 6 m/s RNE detour mission now reaches its destination without an optional curvature cap. The world, closure notification, speed, duration and acceptance criteria are unchanged. `route-handover-fast` preserves that configuration as a positive regression; only its display name differs. The opening README GIF is the actual seed-7 CPU RNE dynamic run, rendered from telemetry at 3× speed.
 
 ## Failure and repair

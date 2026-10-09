@@ -68,6 +68,24 @@ pub struct Gnss {
     pub position: Vec2,
     pub variance: f64,
 }
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum GnssDecision {
+    Accepted,
+    RejectedInnovation,
+    Invalid,
+    IgnoredTimestamp,
+}
+/// GNSS correction diagnostics. Observation receipt is distinct from acceptance.
+#[derive(Clone, Copy, Debug, Default, Serialize, Deserialize)]
+pub struct LocalizationDiagnostics {
+    pub last_observed_stamp: Option<f64>,
+    pub last_accepted_stamp: Option<f64>,
+    pub last_decision: Option<GnssDecision>,
+    /// Joint two-dimensional normalized innovation; None for numeric overflow.
+    pub last_nis: Option<f64>,
+    pub accepted_fixes: u64,
+    pub rejected_fixes: u64,
+}
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Detection {
     pub center: Vec2,

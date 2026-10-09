@@ -20,6 +20,11 @@ impl PurePursuit {
     pub fn reset_route_state(&mut self) {
         self.integral = 0.0;
     }
+    /// Align feedback with the zero-steering emergency command actually emitted.
+    pub fn reset_emergency_state(&mut self) {
+        self.integral = 0.0;
+        self.steering = 0.0;
+    }
 }
 impl Controller for PurePursuit {
     fn control(&mut self, ego: EgoState, path: &Trajectory, dt: f64) -> ControlCommand {
@@ -35,8 +40,7 @@ impl Controller for PurePursuit {
                 .iter()
                 .any(|p| !p.position.finite() || !p.speed.is_finite() || !p.time.is_finite())
         {
-            self.integral = 0.0;
-            self.steering = 0.0;
+            self.reset_emergency_state();
             return ControlCommand::emergency();
         }
         // Shorter preview follows the smooth lateral maneuver more closely.
@@ -44,6 +48,7 @@ impl Controller for PurePursuit {
         let lookahead = (3.0 + ego.speed * 0.45).clamp(3.0, 8.0);
         let target = pursuit_target(path, ego.pose.position, lookahead);
         if !target.finite() {
+            self.reset_emergency_state();
             return ControlCommand::emergency();
         }
         let delta = target.minus(ego.pose.position);

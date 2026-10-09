@@ -5,13 +5,14 @@
 | Capability | Status | Boundary |
 |---|---|---|
 | Closed-loop perception → prediction → planning → control | Implemented / tested | Reference and optional CPU RNE plants |
-| Noisy GNSS + speed / gyro EKF | Implemented / tested | Configured initial heading; no bias state |
+| Noisy GNSS + speed / gyro EKF | Implemented / tested | Full x/y innovation gate, Joseph covariance updates, observed/accepted diagnostics; configured initial heading, no bias state |
 | Unlabeled LiDAR and occlusion | Implemented / tested | 720 rays, 45 m range, circular targets |
 | Clustering / circle fitting / alpha-beta tracking | Implemented / tested | No semantic classes; nearest-neighbor association |
 | Log-odds occupancy map | Implemented / tested | Exported diagnostic; not a planner input; no SLAM |
 | Static obstacle avoidance | Implemented / tested | Wide supplied road, three candidate offsets |
 | Moving lead / crossing object sensing | Implemented / tested in mission | CV forecast; no actor interaction model |
 | Blocked road stop | Implemented / tested | Narrow-road scenario |
+| GNSS spike / burst / persistent-bias response | Implemented / tested | 18 physical fault runs with bounded error, accepted-age braking and recovery; compound scheduled-traffic counterexample still fails |
 | LiDAR / GNSS dropout braking | Implemented / tested | Timestamp freshness and numeric checks |
 | Swept collision and road boundary evaluation | Implemented / tested | Circular bodies and planar route corridor |
 | Seeded repeatability and telemetry GIF | Implemented / tested | Same build/platform; Python optional |

@@ -47,6 +47,14 @@ pub struct NavigationSpec {
     #[serde(default)]
     pub closed_edges: Vec<String>,
 }
+/// Simulator-only GNSS position fault; never supplied as pipeline calibration.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct GnssBiasWindow {
+    pub from: f64,
+    pub until: f64,
+    pub offset: Vec2,
+}
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Scenario {
@@ -61,6 +69,8 @@ pub struct Scenario {
     pub lidar_dropout: Option<f64>,
     #[serde(default)]
     pub gnss_dropout: Option<f64>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub gnss_bias_windows: Vec<GnssBiasWindow>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub dynamics: Option<DynamicsSpec>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -111,6 +121,21 @@ impl Scenario {
             return Err("cruise speed must be within 0.1..=8.0 m/s".into());
         }
         let selected = self.navigation_plan()?;
+        let mut previous_end = 0.0;
+        for window in &self.gnss_bias_windows {
+            if !window.from.is_finite()
+                || !window.until.is_finite()
+                || window.from < previous_end
+                || window.until <= window.from
+                || window.from >= self.duration
+                || window.until > 300.0
+                || !window.offset.finite()
+                || window.offset.x.hypot(window.offset.y) > 1000.0
+            {
+                return Err("invalid or overlapping GNSS bias window".into());
+            }
+            previous_end = window.until;
+        }
         let mut last_stamp = -1.0;
         let mut last_revision = 0;
         for update in &self.navigation_updates {
@@ -252,6 +277,8 @@ pub struct Frame {
     pub clearance: f64,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub navigation: Option<NavigationStatus>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub localization: Option<LocalizationDiagnostics>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Summary {
@@ -539,6 +566,15 @@ pub fn simulate_with_backend(
         let truth = backend.state();
         let objects = backend.objects(time);
         let mut input = backend.observe(time, i)?;
+        // Fault injection changes observations only, using the acquisition clock.
+        // The pipeline/replay header does not contain the scheduled fault labels.
+        if let Some(fix) = &mut input.gnss {
+            for window in &scenario.gnss_bias_windows {
+                if fix.stamp + 1e-9 >= window.from && fix.stamp < window.until - 1e-9 {
+                    fix.position = fix.position.plus(window.offset);
+                }
+            }
+        }
         if let Some(update) = scenario.navigation_updates.get(update_index)
             && update.stamp <= time + 1e-9
         {
@@ -557,6 +593,7 @@ pub fn simulate_with_backend(
         let command = result.command;
         let emergency = result.emergency;
         let navigation_status = result.navigation.clone();
+        let localization_status = result.localization;
         if let Some(status) = &navigation_status
             && status.switches > navigation_switches
         {
@@ -625,6 +662,7 @@ pub fn simulate_with_backend(
                 progress,
                 clearance,
                 navigation: navigation_status,
+                localization: localization_status,
             });
         }
         let at_map_goal = navigation.as_ref().is_none_or(|plan| {

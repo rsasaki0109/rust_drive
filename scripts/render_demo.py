@@ -100,8 +100,8 @@ def render(run, frame, index):
         p=world(f['truth']['pose']['position']);c.ellipse((p[0]-1,p[1]-1,p[0]+1,p[1]+1), fill=BLUE)
     trajectory = [world(p['position']) for p in frame['trajectory']['points']]
     if len(trajectory)>1:
-        c.line(trajectory, fill='#1c6c67', width=9, joint='curve')
-        c.line(trajectory, fill=TEAL, width=3, joint='curve')
+        c.line(trajectory, fill='#223246' if frame['emergency'] else '#1c6c67', width=9, joint='curve')
+        c.line(trajectory, fill=MUTED if frame['emergency'] else TEAL, width=3, joint='curve')
     for prediction in frame['predictions']:
         for p in prediction['positions'][::4]:
             px,py=world(p);c.ellipse((px-2,py-2,px+2,py+2), fill=PURPLE)
@@ -179,6 +179,15 @@ def render(run, frame, index):
         d.text((904,y),label,fill=MUTED,font=font(11,True))
         d.text((904,y+18),value,fill=TEXT,font=font(29,True))
         d.text((1076,y+32),unit,fill=MUTED,font=font(13))
+    diagnostic=frame.get('localization')
+    if diagnostic:
+        accepted=diagnostic.get('last_accepted_stamp')
+        age=frame['time']-accepted if accepted is not None else math.inf
+        status='STALE / BRAKING' if age>0.75+1e-9 else ('REJECTED FIX' if diagnostic.get('last_decision')=='RejectedInnovation' else 'ACCEPTED FIX')
+        color=ORANGE if status!='ACCEPTED FIX' else TEAL
+        d.text((904,469),f"GNSS: {status}",fill=color,font=font(11,True))
+        age_text=f'{age:.1f}s' if math.isfinite(age) else '--'
+        d.text((904,487),f"Accepted age {age_text} / rejected {diagnostic['rejected_fixes']}",fill=MUTED,font=font(10))
     d.rounded_rectangle((24,528,1176,622),14,fill=PANEL)
     d.text((44,540),'MISSION PROGRESS',fill=MUTED,font=font(11,True))
     length=selected_route['lengths'][-1];progress=min(1,frame['progress']/length)

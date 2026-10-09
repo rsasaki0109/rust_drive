@@ -1,0 +1,26 @@
+{
+  "name": "gnss-burst",
+  "duration": 65,
+  "road_length": 220,
+  "half_width": 5.5,
+  "curve_amplitude": 3,
+  "expected": "goal",
+  "objects": [
+    {
+      "s": 58,
+      "lateral": 0,
+      "radius": 1.0
+    }
+  ],
+  "gnss_bias_windows": [
+    {
+      "from": 5.0,
+      "until": 8.0,
+      "offset": {
+        "x": 30.0,
+        "y": -25.0
+      }
+    }
+  ],
+  "min_clearance_m": 0.5
+}

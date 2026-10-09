@@ -10,12 +10,13 @@ import sys
 
 ROOT = Path(__file__).resolve().parent.parent
 CASES = {
-    'reference': ['occluded-crossing', 'cut-in', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen'],
-    'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen'],
+    'reference': ['occluded-crossing', 'cut-in', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias'],
+    'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias'],
 }
 # Fixed regression floors, chosen against the preceding measured fixture results.
 # They are simulation test constraints, not a universal safe-distance specification.
 CLEARANCE_FLOORS_M = {
+    'gnss-spike': 0.5, 'gnss-burst': 0.5, 'gnss-persistent-bias': 4.0,
     'occluded-crossing': 1.0, 'cut-in': 0.7, 'multiple-blocked': 3.0,
     'opposing-crossings': 0.7, 'low-friction': 0.4, 'low-friction-stop': 4.0,
     'route-direct': 0.5, 'route-detour': 0.5, 'route-south': 0.5,
@@ -79,6 +80,86 @@ def check_navigation(run, case):
 
 def xy(point):
     return point['x'], point['y']
+
+
+def check_gnss_fault(run, log, case):
+    """Verify actual biased observations, accepted-age braking and physical recovery."""
+    with log.open() as stream:
+        header = json.loads(next(stream))['header']
+        ticks = [r['tick'] for line in stream if (r := json.loads(line))['kind'] == 'tick']
+    if 'gnss_bias_windows' in header['config']:
+        raise ValueError('simulator fault labels entered pipeline configuration')
+    windows = run['scenario']['gnss_bias_windows']
+    frames = {round(f['time']*20): f for f in run['frames']}
+    accepted_stamp = observed_stamp = None
+    accepted = rejected = biased = 0
+    stale_times = []
+    recovery = None
+    previous = None
+    for tick in ticks:
+        inp, out = tick['input'], tick['expected']
+        diagnostic = out['localization']
+        fix = inp.get('gnss')
+        if fix:
+            observed_stamp = fix['stamp']
+            offset = next((w['offset'] for w in windows if w['from']-1e-9 <= fix['stamp'] < w['until']-1e-9), {'x': 0.0, 'y': 0.0})
+            truth = frames[round(fix['stamp']*20)]['truth']['pose']['position']
+            if any(abs(fix['position'][axis]-truth[axis]-offset[axis]) > 0.14+1e-8 for axis in ['x', 'y']):
+                raise ValueError('recorded GNSS does not contain the scheduled bias and bounded sensor noise')
+            is_biased = math.hypot(*xy(offset)) > 0
+            if is_biased:
+                biased += 1
+                if diagnostic['last_decision'] != 'RejectedInnovation' or diagnostic['last_nis'] <= 36:
+                    raise ValueError('biased fix was not rejected by the innovation gate')
+                # Rejected GNSS cannot shift the state beyond wheel/gyro prediction.
+                pose = previous['estimate']['pose']
+                dt = out['time']-previous['time']
+                speed = max(0.0, inp['odometry']['speed'])
+                predicted = (pose['position']['x']+math.cos(pose['yaw'])*speed*dt,
+                             pose['position']['y']+math.sin(pose['yaw'])*speed*dt)
+                if math.dist(xy(out['estimate']['pose']['position']), predicted) > 1e-8:
+                    raise ValueError('rejected GNSS mutated the predicted position')
+            if diagnostic['last_decision'] == 'Accepted':
+                accepted += 1
+                accepted_stamp = fix['stamp']
+                if case == 'gnss-burst' and recovery is None and fix['stamp'] >= windows[-1]['until']:
+                    recovery = out['time']
+            elif diagnostic['last_decision'] == 'RejectedInnovation':
+                rejected += 1
+            else:
+                raise ValueError('new finite GNSS has an unexpected correction decision')
+        if (diagnostic['last_observed_stamp'] != observed_stamp
+                or diagnostic['last_accepted_stamp'] != accepted_stamp
+                or diagnostic['accepted_fixes'] != accepted or diagnostic['rejected_fixes'] != rejected):
+            raise ValueError('GNSS receipt/acceptance diagnostics disagree with observations')
+        stale = accepted_stamp is None or out['time']-accepted_stamp > 0.75+1e-9
+        if ('StaleGnss' in out['health']) != stale:
+            raise ValueError('GNSS health refreshed from an unaccepted fix')
+        if stale:
+            stale_times.append(out['time'])
+            if not out['emergency'] or out['command'] != {'acceleration': -6.0, 'steering': 0.0}:
+                raise ValueError('stale GNSS did not emit the defined emergency command')
+        if previous and previous['emergency'] and not out['emergency']:
+            if abs(out['command']['steering']) > 0.7*(out['time']-previous['time'])+1e-8:
+                raise ValueError('recovery steering did not start from the emitted zero command')
+        previous = out
+    if biased != rejected or not biased or run['summary']['localization_max_error'] > 0.5:
+        raise ValueError('GNSS rejection or bounded localization regression failed')
+    if case == 'gnss-spike' and (biased != 1 or stale_times):
+        raise ValueError('single rejected fix caused unintended GNSS-stale braking')
+    if case == 'gnss-burst':
+        if not stale_times or recovery is None or recovery > windows[-1]['until']+0.4:
+            raise ValueError('burst did not brake and accept a good fix after the window')
+        held = [f for f in run['frames'] if 7.0 <= f['time'] < 8.0 and f['truth']['speed'] < 0.1]
+        if not held or not run['summary']['reached_goal']:
+            raise ValueError('burst did not physically stop and resume to the goal')
+    if case == 'gnss-persistent-bias' and (not stale_times or 'StaleGnss' not in ticks[-1]['expected']['health']
+            or run['summary']['final_speed'] > 0.1 or run['summary']['reached_goal']):
+        raise ValueError('persistent fault did not remain stopped with stale accepted GNSS')
+    return {'biased_fixes': biased, 'rejected_fixes': rejected, 'accepted_fixes': accepted,
+            'first_stale_s': stale_times[0] if stale_times else None,
+            'first_recovered_fix_s': recovery, 'max_localization_error_m': run['summary']['localization_max_error'],
+            'max_error_limit_m': 0.5, 'fault_labels_absent_from_pipeline': True, 'passed': True}
 
 
 def check_live_navigation(run, log, case):
@@ -298,6 +379,8 @@ def main():
                         row['tracking_regression_passed'] = summary['emergency_steps'] <= 20
                         ok &= row['tracking_regression_passed']
                     run = json.loads((output/'run.json').read_text())
+                    if case.startswith('gnss-'):
+                        row['gnss_fault'] = check_gnss_fault(run, output/'sensors.jsonl', case)
                     if case in EXPECTED_EDGES:
                         row['navigation'] = check_navigation(run, case)
                     if case in ['route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen']:
@@ -315,6 +398,25 @@ def main():
                 report['runs'].append(row)
                 report['passed'] &= row['passed']
                 print(f"{backend:11s} {case:20s} seed {seed:3d}: {'PASS' if row['passed'] else 'FAIL'}", flush=True)
+    # This compound-traffic counterexample is never counted as a successful run.
+    if 'rne-dynamic' in backends:
+        output = args.output/'known-failure/gnss-burst-traffic/seed-7'
+        output.mkdir(parents=True, exist_ok=True)
+        (output/'summary.json').unlink(missing_ok=True)
+        (output/'replay/replay.json').unlink(missing_ok=True)
+        code, error = invoke([rne, '--plant', 'dynamic', '--scenario', ROOT/'scenarios/gnss-burst-traffic.json', '--seed', 7, '--output', output])
+        summary = json.loads((output/'summary.json').read_text())
+        replay_code, replay_error = invoke([cli, 'replay', '--log', output/'sensors.jsonl', '--output', output/'replay'])
+        replay = json.loads((output/'replay/replay.json').read_text())
+        rejected = (code == 1 and not summary['passed'] and summary['collisions'] > 0
+                    and not summary['reached_goal'] and replay_code == 0 and replay['verified']
+                    and replay['ticks'] == summary['steps'])
+        report['known_failures'] = [{'backend': 'rne-dynamic', 'scenario': 'gnss-burst-traffic', 'seed': 7,
+                                    'exit_code': code, 'summary': summary, 'replay': replay,
+                                    'acceptance_rejection_verified': bool(rejected),
+                                    'stderr': error, 'replay_stderr': replay_error}]
+        report['passed'] &= bool(rejected)
+        print(f"rne-dynamic gnss-burst-traffic seed 7: physical failure retained; acceptance rejection verified={rejected}", flush=True)
     report_file.write_text(json.dumps(report, indent=2)+'\n')
     print(f'{report_file}: {len(report["runs"])} runs; passed={report["passed"]}')
     return 0 if report['passed'] else 1

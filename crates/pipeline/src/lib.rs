@@ -141,6 +141,8 @@ pub struct PipelineOutput {
     pub health: Vec<HealthIssue>,
     pub position_variance: f64,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub localization: Option<LocalizationDiagnostics>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub navigation: Option<NavigationStatus>,
 }
 /// Owns algorithm state; adapters supply observations and apply resulting commands.
@@ -264,7 +266,7 @@ impl DrivingPipeline {
                 || fix.variance <= 0.0
             {
                 health.push(HealthIssue::InvalidGnss);
-            } else if fix.stamp > self.ekf.last_gnss {
+            } else {
                 self.ekf.update(fix);
             }
         }
@@ -359,6 +361,7 @@ impl DrivingPipeline {
             || trajectory.mode == DrivingMode::Emergency
             || command.acceleration <= -5.99;
         if emergency {
+            self.controller.reset_emergency_state();
             trajectory.mode = DrivingMode::Emergency;
         }
         self.previous_time = Some(input.time);
@@ -372,6 +375,7 @@ impl DrivingPipeline {
             emergency,
             health,
             position_variance: variance,
+            localization: Some(self.ekf.diagnostics()),
             navigation: self.navigator.as_ref().map(Navigator::status),
         })
     }
@@ -429,6 +433,53 @@ mod tests {
         let out = p.step(&f).unwrap();
         assert!(out.health.contains(&HealthIssue::AcquisitionFailed));
         assert_eq!(out.command.acceleration, -6.0);
+    }
+    #[test]
+    fn received_outliers_do_not_refresh_health_and_a_new_good_fix_recovers() {
+        let route = Route::new(
+            vec![
+                Vec2::default(),
+                Vec2::new(20.0, 10.0),
+                Vec2::new(100.0, 10.0),
+            ],
+            5.5,
+        )
+        .unwrap();
+        let mut p = DrivingPipeline::new(PipelineConfig::new(
+            route,
+            Pose::default(),
+            VehicleConfig::default(),
+        ))
+        .unwrap();
+        let mut previous_steering = 0.0_f64;
+        for i in 0..=10 {
+            let out = p.step(&healthy(i as f64 * 0.05)).unwrap();
+            previous_steering = out.command.steering;
+        }
+        assert!(previous_steering.abs() > 0.035);
+        for i in 11..=40 {
+            let time = i as f64 * 0.05;
+            let mut f = healthy(time);
+            f.gnss.as_mut().unwrap().position = Vec2::new(30.0, -25.0);
+            let out = p.step(&f).unwrap();
+            let diagnostic = out.localization.unwrap();
+            assert_eq!(diagnostic.last_accepted_stamp, Some(0.5));
+            assert_eq!(diagnostic.last_observed_stamp, Some(time));
+            assert_eq!(
+                diagnostic.last_decision,
+                Some(GnssDecision::RejectedInnovation)
+            );
+            assert_eq!(out.estimate.pose.position, Vec2::default());
+            if time > 1.25 + 1e-9 {
+                assert!(out.health.contains(&HealthIssue::StaleGnss));
+                assert_eq!(out.command.acceleration, -6.0);
+                assert_eq!(out.command.steering, 0.0);
+            }
+        }
+        let out = p.step(&healthy(2.05)).unwrap();
+        assert!(out.health.is_empty());
+        assert_eq!(out.localization.unwrap().last_accepted_stamp, Some(2.05));
+        assert!(out.command.steering.abs() <= 0.7 * 0.05 + 1e-12);
     }
     #[test]
     fn invalid_navigation_latches_braking_and_does_not_reset_localization() {

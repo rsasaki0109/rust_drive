@@ -406,6 +406,67 @@ mod tests {
         assert!(result.summary.min_clearance >= 0.5);
     }
     #[test]
+    fn gnss_spike_burst_recovery_and_persistent_fault_use_native_dynamics() {
+        for case in ["gnss-spike", "gnss-burst", "gnss-persistent-bias"] {
+            let result = run(scenario(case), 7, Plant::Dynamic).unwrap();
+            assert!(result.summary.passed, "{case}: {:?}", result.summary);
+            assert!(result.summary.localization_max_error < 0.5);
+            assert!(
+                result
+                    .sensor_log
+                    .as_ref()
+                    .unwrap()
+                    .ticks
+                    .last()
+                    .unwrap()
+                    .expected
+                    .localization
+                    .unwrap()
+                    .rejected_fixes
+                    > 0
+            );
+            if case == "gnss-burst" {
+                assert!(
+                    result
+                        .frames
+                        .iter()
+                        .any(|f| (7.0..8.0).contains(&f.time) && f.truth.speed < 0.1)
+                );
+                assert!(result.summary.reached_goal);
+            }
+            if case == "gnss-persistent-bias" {
+                assert!(
+                    result
+                        .sensor_log
+                        .as_ref()
+                        .unwrap()
+                        .ticks
+                        .last()
+                        .unwrap()
+                        .expected
+                        .health
+                        .contains(&rustdrive_pipeline::HealthIssue::StaleGnss)
+                );
+                assert_eq!(result.summary.final_speed, 0.0);
+            }
+        }
+    }
+    #[test]
+    fn retained_traffic_counterexample_is_rejected_by_physical_acceptance() {
+        let result = run(scenario("gnss-burst-traffic"), 7, Plant::Dynamic).unwrap();
+        assert!(!result.summary.passed);
+        assert!(result.summary.collisions > 0);
+        assert!(!result.summary.reached_goal);
+        assert!(result.summary.localization_max_error < 0.5);
+        assert!(
+            result
+                .summary
+                .failures
+                .iter()
+                .any(|s| s.contains("colliding"))
+        );
+    }
+    #[test]
     fn acquisition_error_reaches_braking_guard() {
         let mut s = scenario("lidar-fault");
         s.lidar_dropout = None;

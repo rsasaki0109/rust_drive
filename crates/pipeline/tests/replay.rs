@@ -71,6 +71,31 @@ fn changed_command_is_detected() {
             .contains("mismatch")
     );
 }
+#[test]
+fn gnss_input_and_correction_diagnostics_are_both_recomputed() {
+    for edit_input in [true, false] {
+        let lines = String::from_utf8(log()).unwrap();
+        let mut records: Vec<serde_json::Value> = lines
+            .lines()
+            .map(|s| serde_json::from_str(s).unwrap())
+            .collect();
+        if edit_input {
+            records[2]["tick"]["input"]["gnss"]["position"]["x"] = serde_json::json!(30.0);
+        } else {
+            records[2]["tick"]["expected"]["localization"]["accepted_fixes"] =
+                serde_json::json!(999);
+        }
+        let edited = records
+            .iter()
+            .map(|r| serde_json::to_string(r).unwrap() + "\n")
+            .collect::<String>();
+        assert!(
+            verify(Cursor::new(edited), std::io::sink())
+                .unwrap_err()
+                .contains("mismatch")
+        );
+    }
+}
 
 #[test]
 fn changing_a_map_snapshot_is_detected_by_full_recomputation() {

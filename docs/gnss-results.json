@@ -1,0 +1,5546 @@
+{
+  "schema_version": 1,
+  "source_fingerprint_sha256": "2ccd91d73279752ed744c37222ab8f6eaa488d2aefd76583635c04419d3795b8",
+  "rne_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
+  "seeds": [
+    1,
+    7,
+    42
+  ],
+  "runs": [
+    {
+      "backend": "reference",
+      "scenario": "occluded-crossing",
+      "seed": 1,
+      "summary": {
+        "scenario": "Crossing object emerges from geometric occlusion",
+        "seed": 1,
+        "simulated_seconds": 21.35,
+        "steps": 428,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.8210460143513596,
+        "localization_rmse": 0.06204362210525794,
+        "localization_max_error": 0.18237925206265732,
+        "final_speed": 0.10536094676026622,
+        "progress": 138.99868923089159,
+        "emergency_steps": 3,
+        "avoidance_steps": 76,
+        "max_tracks": 2,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 428,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 425,
+        "stationary_holds": 136,
+        "max_acceleration_m_s2": 2.0000000000000306,
+        "max_deceleration_m_s2": 2.5000000000000484
+      },
+      "control_metrics": {
+        "ticks": 428,
+        "emergency_ticks": 3,
+        "emergency_fraction": 0.007009345794392523,
+        "commanded_acceleration_change_rms_m_s3": 22.169522576236602,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 1.0,
+        "measured_m": 1.8210460143513596,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "occluded-crossing",
+      "seed": 7,
+      "summary": {
+        "scenario": "Crossing object emerges from geometric occlusion",
+        "seed": 7,
+        "simulated_seconds": 21.400000000000002,
+        "steps": 429,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.7148309489287832,
+        "localization_rmse": 0.062004286100063255,
+        "localization_max_error": 0.1804787697821251,
+        "final_speed": 0.18264967290718806,
+        "progress": 138.96322831409972,
+        "emergency_steps": 2,
+        "avoidance_steps": 74,
+        "max_tracks": 2,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 429,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 427,
+        "stationary_holds": 141,
+        "max_acceleration_m_s2": 2.0000000000000235,
+        "max_deceleration_m_s2": 2.5000000000000493
+      },
+      "control_metrics": {
+        "ticks": 429,
+        "emergency_ticks": 2,
+        "emergency_fraction": 0.004662004662004662,
+        "commanded_acceleration_change_rms_m_s3": 18.398784980178267,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 1.0,
+        "measured_m": 1.7148309489287832,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "occluded-crossing",
+      "seed": 42,
+      "summary": {
+        "scenario": "Crossing object emerges from geometric occlusion",
+        "seed": 42,
+        "simulated_seconds": 21.35,
+        "steps": 428,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.7747680879978707,
+        "localization_rmse": 0.06142510241117543,
+        "localization_max_error": 0.14170792809567037,
+        "final_speed": 0.10120728083972795,
+        "progress": 138.9937646685705,
+        "emergency_steps": 2,
+        "avoidance_steps": 76,
+        "max_tracks": 2,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 428,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 426,
+        "stationary_holds": 137,
+        "max_acceleration_m_s2": 2.0000000000000258,
+        "max_deceleration_m_s2": 2.500000000000047
+      },
+      "control_metrics": {
+        "ticks": 428,
+        "emergency_ticks": 2,
+        "emergency_fraction": 0.004672897196261682,
+        "commanded_acceleration_change_rms_m_s3": 19.70953242764293,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 1.0,
+        "measured_m": 1.7747680879978707,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "cut-in",
+      "seed": 1,
+      "summary": {
+        "scenario": "Late lateral crossing on a narrow road",
+        "seed": 1,
+        "simulated_seconds": 20.75,
+        "steps": 416,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.8850978154468507,
+        "localization_rmse": 0.0686061283262975,
+        "localization_max_error": 0.18237925206265732,
+        "final_speed": 0.18757309759045032,
+        "progress": 118.99174830673694,
+        "emergency_steps": 24,
+        "avoidance_steps": 0,
+        "max_tracks": 2,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 416,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 392,
+        "stationary_holds": 144,
+        "max_acceleration_m_s2": 2.000000000000014,
+        "max_deceleration_m_s2": 2.500000000000048
+      },
+      "control_metrics": {
+        "ticks": 416,
+        "emergency_ticks": 24,
+        "emergency_fraction": 0.057692307692307696,
+        "commanded_acceleration_change_rms_m_s3": 20.275990364613982,
+        "max_normal_commanded_steering_rate_rad_s": 0.7
+      },
+      "clearance_regression": {
+        "floor_m": 0.7,
+        "measured_m": 0.8850978154468507,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "cut-in",
+      "seed": 7,
+      "summary": {
+        "scenario": "Late lateral crossing on a narrow road",
+        "seed": 7,
+        "simulated_seconds": 20.85,
+        "steps": 418,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.0734805120610857,
+        "localization_rmse": 0.06040517180015065,
+        "localization_max_error": 0.13978134638011364,
+        "final_speed": 0.11763851021873065,
+        "progress": 119.00801490775811,
+        "emergency_steps": 27,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 418,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 391,
+        "stationary_holds": 148,
+        "max_acceleration_m_s2": 2.000000000000021,
+        "max_deceleration_m_s2": 2.50000000000005
+      },
+      "control_metrics": {
+        "ticks": 418,
+        "emergency_ticks": 27,
+        "emergency_fraction": 0.0645933014354067,
+        "commanded_acceleration_change_rms_m_s3": 27.101515212702797,
+        "max_normal_commanded_steering_rate_rad_s": 0.7
+      },
+      "clearance_regression": {
+        "floor_m": 0.7,
+        "measured_m": 1.0734805120610857,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "cut-in",
+      "seed": 42,
+      "summary": {
+        "scenario": "Late lateral crossing on a narrow road",
+        "seed": 42,
+        "simulated_seconds": 20.650000000000002,
+        "steps": 414,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.8193025363263218,
+        "localization_rmse": 0.05863065084716143,
+        "localization_max_error": 0.14148995820988391,
+        "final_speed": 0.19414153259872524,
+        "progress": 119.00297424159754,
+        "emergency_steps": 22,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 414,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 392,
+        "stationary_holds": 146,
+        "max_acceleration_m_s2": 2.000000000000014,
+        "max_deceleration_m_s2": 2.500000000000047
+      },
+      "control_metrics": {
+        "ticks": 414,
+        "emergency_ticks": 22,
+        "emergency_fraction": 0.05314009661835749,
+        "commanded_acceleration_change_rms_m_s3": 20.009259465202106,
+        "max_normal_commanded_steering_rate_rad_s": 0.7
+      },
+      "clearance_regression": {
+        "floor_m": 0.7,
+        "measured_m": 0.8193025363263218,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "multiple-blocked",
+      "seed": 1,
+      "summary": {
+        "scenario": "Three obstacles block every lateral candidate",
+        "seed": 1,
+        "simulated_seconds": 25.0,
+        "steps": 501,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 4.257265443841433,
+        "localization_rmse": 0.056223281533383226,
+        "localization_max_error": 0.18278694910952675,
+        "final_speed": 0.0,
+        "progress": 33.607099430642315,
+        "emergency_steps": 2,
+        "avoidance_steps": 10,
+        "max_tracks": 4,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 501,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 499,
+        "stationary_holds": 457,
+        "max_acceleration_m_s2": 2.0000000000000138,
+        "max_deceleration_m_s2": 2.5000000000000004
+      },
+      "control_metrics": {
+        "ticks": 501,
+        "emergency_ticks": 2,
+        "emergency_fraction": 0.003992015968063872,
+        "commanded_acceleration_change_rms_m_s3": 29.21903790191434,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000011
+      },
+      "clearance_regression": {
+        "floor_m": 3.0,
+        "measured_m": 4.257265443841433,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "multiple-blocked",
+      "seed": 7,
+      "summary": {
+        "scenario": "Three obstacles block every lateral candidate",
+        "seed": 7,
+        "simulated_seconds": 25.0,
+        "steps": 501,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 4.044563818210258,
+        "localization_rmse": 0.05689391305937996,
+        "localization_max_error": 0.13832212613882636,
+        "final_speed": 0.0,
+        "progress": 33.79908852738555,
+        "emergency_steps": 2,
+        "avoidance_steps": 17,
+        "max_tracks": 4,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 501,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 499,
+        "stationary_holds": 449,
+        "max_acceleration_m_s2": 2.0000000000000138,
+        "max_deceleration_m_s2": 2.5000000000000004
+      },
+      "control_metrics": {
+        "ticks": 501,
+        "emergency_ticks": 2,
+        "emergency_fraction": 0.003992015968063872,
+        "commanded_acceleration_change_rms_m_s3": 29.534104572309168,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000006
+      },
+      "clearance_regression": {
+        "floor_m": 3.0,
+        "measured_m": 4.044563818210258,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "multiple-blocked",
+      "seed": 42,
+      "summary": {
+        "scenario": "Three obstacles block every lateral candidate",
+        "seed": 42,
+        "simulated_seconds": 25.0,
+        "steps": 501,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 3.592950210614534,
+        "localization_rmse": 0.055081488766735354,
+        "localization_max_error": 0.15639533207427664,
+        "final_speed": 0.0,
+        "progress": 34.157478183265845,
+        "emergency_steps": 0,
+        "avoidance_steps": 18,
+        "max_tracks": 3,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 501,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 501,
+        "stationary_holds": 463,
+        "max_acceleration_m_s2": 2.000000000000014,
+        "max_deceleration_m_s2": 2.5000000000000004
+      },
+      "control_metrics": {
+        "ticks": 501,
+        "emergency_ticks": 0,
+        "emergency_fraction": 0.0,
+        "commanded_acceleration_change_rms_m_s3": 29.52060090503348,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000008
+      },
+      "clearance_regression": {
+        "floor_m": 3.0,
+        "measured_m": 3.592950210614534,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "opposing-crossings",
+      "seed": 1,
+      "summary": {
+        "scenario": "Successive crossings from opposite sides",
+        "seed": 1,
+        "simulated_seconds": 23.400000000000002,
+        "steps": 469,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.1391786500377206,
+        "localization_rmse": 0.06919879745072047,
+        "localization_max_error": 0.18237925206265732,
+        "final_speed": 0.19845550532066358,
+        "progress": 138.9925103476279,
+        "emergency_steps": 26,
+        "avoidance_steps": 0,
+        "max_tracks": 2,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 469,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 443,
+        "stationary_holds": 161,
+        "max_acceleration_m_s2": 2.0000000000000338,
+        "max_deceleration_m_s2": 2.5000000000000537
+      },
+      "control_metrics": {
+        "ticks": 469,
+        "emergency_ticks": 26,
+        "emergency_fraction": 0.05543710021321962,
+        "commanded_acceleration_change_rms_m_s3": 25.870641789412065,
+        "max_normal_commanded_steering_rate_rad_s": 0.7
+      },
+      "clearance_regression": {
+        "floor_m": 0.7,
+        "measured_m": 1.1391786500377206,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "opposing-crossings",
+      "seed": 7,
+      "summary": {
+        "scenario": "Successive crossings from opposite sides",
+        "seed": 7,
+        "simulated_seconds": 23.35,
+        "steps": 468,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.9620112188392078,
+        "localization_rmse": 0.0531535015954081,
+        "localization_max_error": 0.13864365127126707,
+        "final_speed": 0.1354719703785791,
+        "progress": 138.97689320969386,
+        "emergency_steps": 26,
+        "avoidance_steps": 0,
+        "max_tracks": 2,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 468,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 442,
+        "stationary_holds": 172,
+        "max_acceleration_m_s2": 2.000000000000017,
+        "max_deceleration_m_s2": 2.5000000000000586
+      },
+      "control_metrics": {
+        "ticks": 468,
+        "emergency_ticks": 26,
+        "emergency_fraction": 0.05555555555555555,
+        "commanded_acceleration_change_rms_m_s3": 25.395474467317445,
+        "max_normal_commanded_steering_rate_rad_s": 0.7
+      },
+      "clearance_regression": {
+        "floor_m": 0.7,
+        "measured_m": 0.9620112188392078,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "opposing-crossings",
+      "seed": 42,
+      "summary": {
+        "scenario": "Successive crossings from opposite sides",
+        "seed": 42,
+        "simulated_seconds": 23.150000000000002,
+        "steps": 464,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.8733176276983159,
+        "localization_rmse": 0.062103779812584504,
+        "localization_max_error": 0.14148995820988391,
+        "final_speed": 0.15859059272935536,
+        "progress": 139.0186408034747,
+        "emergency_steps": 23,
+        "avoidance_steps": 0,
+        "max_tracks": 2,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 464,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 441,
+        "stationary_holds": 165,
+        "max_acceleration_m_s2": 2.000000000000018,
+        "max_deceleration_m_s2": 2.500000000000047
+      },
+      "control_metrics": {
+        "ticks": 464,
+        "emergency_ticks": 23,
+        "emergency_fraction": 0.04956896551724138,
+        "commanded_acceleration_change_rms_m_s3": 20.0132982552892,
+        "max_normal_commanded_steering_rate_rad_s": 0.7
+      },
+      "clearance_regression": {
+        "floor_m": 0.7,
+        "measured_m": 0.8733176276983159,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "route-direct",
+      "seed": 1,
+      "summary": {
+        "scenario": "route-direct",
+        "seed": 1,
+        "simulated_seconds": 28.8,
+        "steps": 577,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.7827658613523618,
+        "localization_rmse": 0.06545219173994793,
+        "localization_max_error": 0.18237925206265732,
+        "final_speed": 0.1788343811956759,
+        "progress": 198.98992255184672,
+        "emergency_steps": 2,
+        "avoidance_steps": 92,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 577,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 575,
+        "stationary_holds": 136,
+        "max_acceleration_m_s2": 2.000000000000024,
+        "max_deceleration_m_s2": 2.5000000000000595
+      },
+      "control_metrics": {
+        "ticks": 577,
+        "emergency_ticks": 2,
+        "emergency_fraction": 0.0034662045060658577,
+        "commanded_acceleration_change_rms_m_s3": 16.94695627522807,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.7827658613523618,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "main",
+          "east-exit"
+        ],
+        "distance_m": 200.0,
+        "goal_distance_m": 1.0100971384785875,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "route-direct",
+      "seed": 7,
+      "summary": {
+        "scenario": "route-direct",
+        "seed": 7,
+        "simulated_seconds": 28.85,
+        "steps": 578,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.838532393727565,
+        "localization_rmse": 0.058185343077213195,
+        "localization_max_error": 0.1383241650546419,
+        "final_speed": 0.18531572209479258,
+        "progress": 199.00180946358887,
+        "emergency_steps": 4,
+        "avoidance_steps": 92,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 578,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 574,
+        "stationary_holds": 135,
+        "max_acceleration_m_s2": 2.000000000000033,
+        "max_deceleration_m_s2": 2.5000000000000515
+      },
+      "control_metrics": {
+        "ticks": 578,
+        "emergency_ticks": 4,
+        "emergency_fraction": 0.006920415224913495,
+        "commanded_acceleration_change_rms_m_s3": 21.022522743496236,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.838532393727565,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "main",
+          "east-exit"
+        ],
+        "distance_m": 200.0,
+        "goal_distance_m": 1.0074718482061875,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "route-direct",
+      "seed": 42,
+      "summary": {
+        "scenario": "route-direct",
+        "seed": 42,
+        "simulated_seconds": 28.950000000000003,
+        "steps": 580,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.8351285535893607,
+        "localization_rmse": 0.06124300253529307,
+        "localization_max_error": 0.14170792809567037,
+        "final_speed": 0.0943859982238017,
+        "progress": 199.00730289211236,
+        "emergency_steps": 2,
+        "avoidance_steps": 97,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 580,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 578,
+        "stationary_holds": 139,
+        "max_acceleration_m_s2": 2.000000000000026,
+        "max_deceleration_m_s2": 2.5000000000000546
+      },
+      "control_metrics": {
+        "ticks": 580,
+        "emergency_ticks": 2,
+        "emergency_fraction": 0.0034482758620689655,
+        "commanded_acceleration_change_rms_m_s3": 18.263922251412176,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.8351285535893607,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "main",
+          "east-exit"
+        ],
+        "distance_m": 200.0,
+        "goal_distance_m": 0.9991275646688137,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "route-detour",
+      "seed": 1,
+      "summary": {
+        "scenario": "route-detour",
+        "seed": 1,
+        "simulated_seconds": 30.3,
+        "steps": 607,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.5968147611958314,
+        "localization_rmse": 0.06286662034121354,
+        "localization_max_error": 0.18237925206265732,
+        "final_speed": 0.15813972042499935,
+        "progress": 208.55874826263278,
+        "emergency_steps": 1,
+        "avoidance_steps": 93,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 607,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 606,
+        "stationary_holds": 139,
+        "max_acceleration_m_s2": 2.0000000000000235,
+        "max_deceleration_m_s2": 2.500000000000052
+      },
+      "control_metrics": {
+        "ticks": 607,
+        "emergency_ticks": 1,
+        "emergency_fraction": 0.0016474464579901153,
+        "commanded_acceleration_change_rms_m_s3": 15.959144299916838,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.5968147611958314,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "detour",
+          "east-exit"
+        ],
+        "distance_m": 209.53013247932833,
+        "goal_distance_m": 0.9713915172240501,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "route-detour",
+      "seed": 7,
+      "summary": {
+        "scenario": "route-detour",
+        "seed": 7,
+        "simulated_seconds": 30.3,
+        "steps": 607,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.6548835284597745,
+        "localization_rmse": 0.06248099936027667,
+        "localization_max_error": 0.1383241650546419,
+        "final_speed": 0.14170789565190972,
+        "progress": 208.56694953722962,
+        "emergency_steps": 0,
+        "avoidance_steps": 95,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 607,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 607,
+        "stationary_holds": 141,
+        "max_acceleration_m_s2": 2.000000000000037,
+        "max_deceleration_m_s2": 2.5000000000000537
+      },
+      "control_metrics": {
+        "ticks": 607,
+        "emergency_ticks": 0,
+        "emergency_fraction": 0.0,
+        "commanded_acceleration_change_rms_m_s3": 13.426008050787173,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000005
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.6548835284597745,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "detour",
+          "east-exit"
+        ],
+        "distance_m": 209.53013247932833,
+        "goal_distance_m": 0.9632105724645696,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "route-detour",
+      "seed": 42,
+      "summary": {
+        "scenario": "route-detour",
+        "seed": 42,
+        "simulated_seconds": 30.150000000000002,
+        "steps": 604,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.610276372975918,
+        "localization_rmse": 0.0624153832942699,
+        "localization_max_error": 0.14170792809567037,
+        "final_speed": 0.1582057710285896,
+        "progress": 208.4296012925628,
+        "emergency_steps": 4,
+        "avoidance_steps": 91,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 604,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 600,
+        "stationary_holds": 133,
+        "max_acceleration_m_s2": 2.000000000000014,
+        "max_deceleration_m_s2": 2.5000000000000506
+      },
+      "control_metrics": {
+        "ticks": 604,
+        "emergency_ticks": 4,
+        "emergency_fraction": 0.006622516556291391,
+        "commanded_acceleration_change_rms_m_s3": 19.548274258725044,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000005
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.610276372975918,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "detour",
+          "east-exit"
+        ],
+        "distance_m": 209.53013247932833,
+        "goal_distance_m": 1.1104228970397656,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "route-south",
+      "seed": 1,
+      "summary": {
+        "scenario": "route-south",
+        "seed": 1,
+        "simulated_seconds": 24.5,
+        "steps": 491,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.8717212637468355,
+        "localization_rmse": 0.061497669915812236,
+        "localization_max_error": 0.18237925206265732,
+        "final_speed": 0.17608412529165046,
+        "progress": 162.68223356149983,
+        "emergency_steps": 3,
+        "avoidance_steps": 99,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 491,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 488,
+        "stationary_holds": 138,
+        "max_acceleration_m_s2": 2.0000000000000346,
+        "max_deceleration_m_s2": 2.5000000000000506
+      },
+      "control_metrics": {
+        "ticks": 491,
+        "emergency_ticks": 3,
+        "emergency_fraction": 0.006109979633401222,
+        "commanded_acceleration_change_rms_m_s3": 22.49018735686656,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.8717212637468355,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "south-branch"
+        ],
+        "distance_m": 163.62076698453805,
+        "goal_distance_m": 0.9404677754502216,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "route-south",
+      "seed": 7,
+      "summary": {
+        "scenario": "route-south",
+        "seed": 7,
+        "simulated_seconds": 24.35,
+        "steps": 488,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.8360744403790914,
+        "localization_rmse": 0.06177834052910685,
+        "localization_max_error": 0.14640771845404837,
+        "final_speed": 0.15164822235400924,
+        "progress": 162.57518684318745,
+        "emergency_steps": 5,
+        "avoidance_steps": 93,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 488,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 483,
+        "stationary_holds": 133,
+        "max_acceleration_m_s2": 2.000000000000018,
+        "max_deceleration_m_s2": 2.500000000000046
+      },
+      "control_metrics": {
+        "ticks": 488,
+        "emergency_ticks": 5,
+        "emergency_fraction": 0.010245901639344262,
+        "commanded_acceleration_change_rms_m_s3": 25.168935376869086,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.8360744403790914,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "south-branch"
+        ],
+        "distance_m": 163.62076698453805,
+        "goal_distance_m": 1.053163179892607,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "route-south",
+      "seed": 42,
+      "summary": {
+        "scenario": "route-south",
+        "seed": 42,
+        "simulated_seconds": 24.5,
+        "steps": 491,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.9167004785070798,
+        "localization_rmse": 0.061548617022033056,
+        "localization_max_error": 0.14170792809567037,
+        "final_speed": 0.1709660413747393,
+        "progress": 162.6794374095647,
+        "emergency_steps": 3,
+        "avoidance_steps": 95,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 491,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 488,
+        "stationary_holds": 138,
+        "max_acceleration_m_s2": 2.0000000000000235,
+        "max_deceleration_m_s2": 2.500000000000053
+      },
+      "control_metrics": {
+        "ticks": 491,
+        "emergency_ticks": 3,
+        "emergency_fraction": 0.006109979633401222,
+        "commanded_acceleration_change_rms_m_s3": 22.128197398804208,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.9167004785070798,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "south-branch"
+        ],
+        "distance_m": 163.62076698453805,
+        "goal_distance_m": 0.9414795287612793,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "route-handover",
+      "seed": 1,
+      "summary": {
+        "scenario": "Live closure: stop and detour",
+        "seed": 1,
+        "simulated_seconds": 55.900000000000006,
+        "steps": 1119,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.12423667708764,
+        "localization_rmse": 0.059191569405113935,
+        "localization_max_error": 0.18237925206265732,
+        "final_speed": 0.11804871289406207,
+        "progress": 208.53968305921026,
+        "emergency_steps": 6,
+        "avoidance_steps": 214,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1119,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1113,
+        "stationary_holds": 383,
+        "max_acceleration_m_s2": 2.000000000000027,
+        "max_deceleration_m_s2": 2.500000000000052
+      },
+      "control_metrics": {
+        "ticks": 1119,
+        "emergency_ticks": 6,
+        "emergency_fraction": 0.005361930294906166,
+        "commanded_acceleration_change_rms_m_s3": 22.82681699542006,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 1.12423667708764,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "detour",
+          "east-exit"
+        ],
+        "distance_m": 209.53013247932833,
+        "goal_distance_m": 0.99077164046316,
+        "passed": true
+      },
+      "live_navigation": {
+        "switches": 1,
+        "history": [
+          {
+            "time": 0.0,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "main",
+              "east-exit"
+            ]
+          },
+          {
+            "time": 11.3,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "detour",
+              "east-exit"
+            ]
+          }
+        ],
+        "stationary_world_verified": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "route-handover",
+      "seed": 7,
+      "summary": {
+        "scenario": "Live closure: stop and detour",
+        "seed": 7,
+        "simulated_seconds": 55.6,
+        "steps": 1113,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.3946069150360358,
+        "localization_rmse": 0.057170418674807336,
+        "localization_max_error": 0.1383241650546419,
+        "final_speed": 0.19822800221528242,
+        "progress": 208.47322930378272,
+        "emergency_steps": 6,
+        "avoidance_steps": 203,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1113,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1107,
+        "stationary_holds": 381,
+        "max_acceleration_m_s2": 2.000000000000028,
+        "max_deceleration_m_s2": 2.5000000000000466
+      },
+      "control_metrics": {
+        "ticks": 1113,
+        "emergency_ticks": 6,
+        "emergency_fraction": 0.005390835579514825,
+        "commanded_acceleration_change_rms_m_s3": 23.87370494003068,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 1.3946069150360358,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "detour",
+          "east-exit"
+        ],
+        "distance_m": 209.53013247932833,
+        "goal_distance_m": 1.0569968307846664,
+        "passed": true
+      },
+      "live_navigation": {
+        "switches": 1,
+        "history": [
+          {
+            "time": 0.0,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "main",
+              "east-exit"
+            ]
+          },
+          {
+            "time": 11.4,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "detour",
+              "east-exit"
+            ]
+          }
+        ],
+        "stationary_world_verified": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "route-handover",
+      "seed": 42,
+      "summary": {
+        "scenario": "Live closure: stop and detour",
+        "seed": 42,
+        "simulated_seconds": 56.1,
+        "steps": 1123,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.7812144180302512,
+        "localization_rmse": 0.056791931589737665,
+        "localization_max_error": 0.14170792809567037,
+        "final_speed": 0.15303803605130714,
+        "progress": 208.58313110969013,
+        "emergency_steps": 8,
+        "avoidance_steps": 175,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1123,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1115,
+        "stationary_holds": 383,
+        "max_acceleration_m_s2": 2.000000000000028,
+        "max_deceleration_m_s2": 2.5000000000000497
+      },
+      "control_metrics": {
+        "ticks": 1123,
+        "emergency_ticks": 8,
+        "emergency_fraction": 0.007123775601068566,
+        "commanded_acceleration_change_rms_m_s3": 24.322886553510326,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.7812144180302512,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "detour",
+          "east-exit"
+        ],
+        "distance_m": 209.53013247932833,
+        "goal_distance_m": 0.9488226630277028,
+        "passed": true
+      },
+      "live_navigation": {
+        "switches": 1,
+        "history": [
+          {
+            "time": 0.0,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "main",
+              "east-exit"
+            ]
+          },
+          {
+            "time": 11.4,
+            "estimated_speed": 0.010703112281200881,
+            "true_speed": 0.0028485963809915214,
+            "edge_ids": [
+              "approach",
+              "detour",
+              "east-exit"
+            ]
+          }
+        ],
+        "stationary_world_verified": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "route-handover-fast",
+      "seed": 1,
+      "summary": {
+        "scenario": "Live closure: 6 m/s detour",
+        "seed": 1,
+        "simulated_seconds": 41.7,
+        "steps": 835,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.8094627847516618,
+        "localization_rmse": 0.06121057023997621,
+        "localization_max_error": 0.18237925206265732,
+        "final_speed": 0.16438973927196832,
+        "progress": 208.5821265302702,
+        "emergency_steps": 8,
+        "avoidance_steps": 137,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 835,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 827,
+        "stationary_holds": 287,
+        "max_acceleration_m_s2": 2.0000000000000364,
+        "max_deceleration_m_s2": 2.500000000000056
+      },
+      "control_metrics": {
+        "ticks": 835,
+        "emergency_ticks": 8,
+        "emergency_fraction": 0.009580838323353293,
+        "commanded_acceleration_change_rms_m_s3": 28.5433707372469,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.8094627847516618,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "detour",
+          "east-exit"
+        ],
+        "distance_m": 209.53013247932833,
+        "goal_distance_m": 0.948644294298248,
+        "passed": true
+      },
+      "live_navigation": {
+        "switches": 1,
+        "history": [
+          {
+            "time": 0.0,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "main",
+              "east-exit"
+            ]
+          },
+          {
+            "time": 9.55,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "detour",
+              "east-exit"
+            ]
+          }
+        ],
+        "stationary_world_verified": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "route-handover-fast",
+      "seed": 7,
+      "summary": {
+        "scenario": "Live closure: 6 m/s detour",
+        "seed": 7,
+        "simulated_seconds": 41.150000000000006,
+        "steps": 824,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.810805805446869,
+        "localization_rmse": 0.061788892358922154,
+        "localization_max_error": 0.15038253279015606,
+        "final_speed": 0.1393592812192577,
+        "progress": 208.45614256267132,
+        "emergency_steps": 8,
+        "avoidance_steps": 127,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 824,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 816,
+        "stationary_holds": 275,
+        "max_acceleration_m_s2": 2.0000000000000453,
+        "max_deceleration_m_s2": 2.5000000000000466
+      },
+      "control_metrics": {
+        "ticks": 824,
+        "emergency_ticks": 8,
+        "emergency_fraction": 0.009708737864077669,
+        "commanded_acceleration_change_rms_m_s3": 25.66055319681372,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000005
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.810805805446869,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "detour",
+          "east-exit"
+        ],
+        "distance_m": 209.53013247932833,
+        "goal_distance_m": 1.080995628612514,
+        "passed": true
+      },
+      "live_navigation": {
+        "switches": 1,
+        "history": [
+          {
+            "time": 0.0,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "main",
+              "east-exit"
+            ]
+          },
+          {
+            "time": 9.1,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "detour",
+              "east-exit"
+            ]
+          }
+        ],
+        "stationary_world_verified": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "route-handover-fast",
+      "seed": 42,
+      "summary": {
+        "scenario": "Live closure: 6 m/s detour",
+        "seed": 42,
+        "simulated_seconds": 41.45,
+        "steps": 830,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.1514708735990409,
+        "localization_rmse": 0.062127827494721635,
+        "localization_max_error": 0.14376543627493826,
+        "final_speed": 0.10880885451416591,
+        "progress": 208.56982731176996,
+        "emergency_steps": 3,
+        "avoidance_steps": 157,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 830,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 827,
+        "stationary_holds": 285,
+        "max_acceleration_m_s2": 2.000000000000039,
+        "max_deceleration_m_s2": 2.500000000000045
+      },
+      "control_metrics": {
+        "ticks": 830,
+        "emergency_ticks": 3,
+        "emergency_fraction": 0.0036144578313253013,
+        "commanded_acceleration_change_rms_m_s3": 20.785209851270473,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000005
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 1.1514708735990409,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "detour",
+          "east-exit"
+        ],
+        "distance_m": 209.53013247932833,
+        "goal_distance_m": 0.9660411907124156,
+        "passed": true
+      },
+      "live_navigation": {
+        "switches": 1,
+        "history": [
+          {
+            "time": 0.0,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "main",
+              "east-exit"
+            ]
+          },
+          {
+            "time": 9.25,
+            "estimated_speed": 0.010241760404212381,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "detour",
+              "east-exit"
+            ]
+          }
+        ],
+        "stationary_world_verified": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "route-no-path",
+      "seed": 1,
+      "summary": {
+        "scenario": "Live closure: no route remains",
+        "seed": 1,
+        "simulated_seconds": 20.0,
+        "steps": 401,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 64.0285627181564,
+        "localization_rmse": 0.05896951499255467,
+        "localization_max_error": 0.18237925206265732,
+        "final_speed": 0.0,
+        "progress": 36.81601652013373,
+        "emergency_steps": 1,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 401,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 400,
+        "stationary_holds": 340,
+        "max_acceleration_m_s2": 2.00000000000003,
+        "max_deceleration_m_s2": 2.5000000000000484
+      },
+      "control_metrics": {
+        "ticks": 401,
+        "emergency_ticks": 1,
+        "emergency_fraction": 0.0024937655860349127,
+        "commanded_acceleration_change_rms_m_s3": 31.78820609063477,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000002
+      },
+      "clearance_regression": {
+        "floor_m": 4.0,
+        "measured_m": 64.0285627181564,
+        "passed": true
+      },
+      "live_navigation": {
+        "switches": 0,
+        "history": [
+          {
+            "time": 0.0,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "main",
+              "east-exit"
+            ]
+          }
+        ],
+        "stationary_world_verified": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "route-no-path",
+      "seed": 7,
+      "summary": {
+        "scenario": "Live closure: no route remains",
+        "seed": 7,
+        "simulated_seconds": 20.0,
+        "steps": 401,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 64.01526061809378,
+        "localization_rmse": 0.05316955986592818,
+        "localization_max_error": 0.1383241650546419,
+        "final_speed": 0.0,
+        "progress": 36.802864649660876,
+        "emergency_steps": 3,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 401,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 398,
+        "stationary_holds": 338,
+        "max_acceleration_m_s2": 2.0000000000000275,
+        "max_deceleration_m_s2": 2.5000000000000453
+      },
+      "control_metrics": {
+        "ticks": 401,
+        "emergency_ticks": 3,
+        "emergency_fraction": 0.007481296758104738,
+        "commanded_acceleration_change_rms_m_s3": 36.26324332901478,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000002
+      },
+      "clearance_regression": {
+        "floor_m": 4.0,
+        "measured_m": 64.01526061809378,
+        "passed": true
+      },
+      "live_navigation": {
+        "switches": 0,
+        "history": [
+          {
+            "time": 0.0,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "main",
+              "east-exit"
+            ]
+          }
+        ],
+        "stationary_world_verified": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "route-no-path",
+      "seed": 42,
+      "summary": {
+        "scenario": "Live closure: no route remains",
+        "seed": 42,
+        "simulated_seconds": 20.0,
+        "steps": 401,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 64.00726065113112,
+        "localization_rmse": 0.059019661801740606,
+        "localization_max_error": 0.14170792809567037,
+        "final_speed": 0.0,
+        "progress": 36.83324532151029,
+        "emergency_steps": 3,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 401,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 398,
+        "stationary_holds": 338,
+        "max_acceleration_m_s2": 2.000000000000018,
+        "max_deceleration_m_s2": 2.5000000000000497
+      },
+      "control_metrics": {
+        "ticks": 401,
+        "emergency_ticks": 3,
+        "emergency_fraction": 0.007481296758104738,
+        "commanded_acceleration_change_rms_m_s3": 27.243146130254953,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000002
+      },
+      "clearance_regression": {
+        "floor_m": 4.0,
+        "measured_m": 64.00726065113112,
+        "passed": true
+      },
+      "live_navigation": {
+        "switches": 0,
+        "history": [
+          {
+            "time": 0.0,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "main",
+              "east-exit"
+            ]
+          }
+        ],
+        "stationary_world_verified": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "route-reopen",
+      "seed": 1,
+      "summary": {
+        "scenario": "Live closure: hold then reopened detour",
+        "seed": 1,
+        "simulated_seconds": 59.75,
+        "steps": 1196,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.6737504743573064,
+        "localization_rmse": 0.060054319261451564,
+        "localization_max_error": 0.18237925206265732,
+        "final_speed": 0.11298610966611661,
+        "progress": 208.50526787899847,
+        "emergency_steps": 5,
+        "avoidance_steps": 181,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1196,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1191,
+        "stationary_holds": 460,
+        "max_acceleration_m_s2": 2.00000000000003,
+        "max_deceleration_m_s2": 2.5000000000000484
+      },
+      "control_metrics": {
+        "ticks": 1196,
+        "emergency_ticks": 5,
+        "emergency_fraction": 0.004180602006688963,
+        "commanded_acceleration_change_rms_m_s3": 24.409957306452135,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000002
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.6737504743573064,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "detour",
+          "east-exit"
+        ],
+        "distance_m": 209.53013247932833,
+        "goal_distance_m": 1.0307359206239466,
+        "passed": true
+      },
+      "live_navigation": {
+        "switches": 1,
+        "history": [
+          {
+            "time": 0.0,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "main",
+              "east-exit"
+            ]
+          },
+          {
+            "time": 15.100000000000001,
+            "estimated_speed": 0.011462835473658938,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "detour",
+              "east-exit"
+            ]
+          }
+        ],
+        "stationary_world_verified": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "route-reopen",
+      "seed": 7,
+      "summary": {
+        "scenario": "Live closure: hold then reopened detour",
+        "seed": 7,
+        "simulated_seconds": 59.75,
+        "steps": 1196,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.7638549578850071,
+        "localization_rmse": 0.05491240683549209,
+        "localization_max_error": 0.1383241650546419,
+        "final_speed": 0.15559938146099528,
+        "progress": 208.544244387778,
+        "emergency_steps": 8,
+        "avoidance_steps": 175,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1196,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1188,
+        "stationary_holds": 457,
+        "max_acceleration_m_s2": 2.0000000000000275,
+        "max_deceleration_m_s2": 2.5000000000000497
+      },
+      "control_metrics": {
+        "ticks": 1196,
+        "emergency_ticks": 8,
+        "emergency_fraction": 0.006688963210702341,
+        "commanded_acceleration_change_rms_m_s3": 26.906055974995446,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000002
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.7638549578850071,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "detour",
+          "east-exit"
+        ],
+        "distance_m": 209.53013247932833,
+        "goal_distance_m": 0.9948992883881558,
+        "passed": true
+      },
+      "live_navigation": {
+        "switches": 1,
+        "history": [
+          {
+            "time": 0.0,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "main",
+              "east-exit"
+            ]
+          },
+          {
+            "time": 15.100000000000001,
+            "estimated_speed": 0.0148107000502912,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "detour",
+              "east-exit"
+            ]
+          }
+        ],
+        "stationary_world_verified": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "route-reopen",
+      "seed": 42,
+      "summary": {
+        "scenario": "Live closure: hold then reopened detour",
+        "seed": 42,
+        "simulated_seconds": 59.800000000000004,
+        "steps": 1197,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.6679523177117508,
+        "localization_rmse": 0.058431743424139336,
+        "localization_max_error": 0.14170792809567037,
+        "final_speed": 0.0871057501489316,
+        "progress": 208.55487684595332,
+        "emergency_steps": 8,
+        "avoidance_steps": 181,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1197,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1189,
+        "stationary_holds": 458,
+        "max_acceleration_m_s2": 2.0000000000000244,
+        "max_deceleration_m_s2": 2.500000000000051
+      },
+      "control_metrics": {
+        "ticks": 1197,
+        "emergency_ticks": 8,
+        "emergency_fraction": 0.006683375104427736,
+        "commanded_acceleration_change_rms_m_s3": 23.294623950802155,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000002
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.6679523177117508,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "detour",
+          "east-exit"
+        ],
+        "distance_m": 209.53013247932833,
+        "goal_distance_m": 0.9752607497465863,
+        "passed": true
+      },
+      "live_navigation": {
+        "switches": 1,
+        "history": [
+          {
+            "time": 0.0,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "main",
+              "east-exit"
+            ]
+          },
+          {
+            "time": 15.100000000000001,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "detour",
+              "east-exit"
+            ]
+          }
+        ],
+        "stationary_world_verified": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "gnss-spike",
+      "seed": 1,
+      "summary": {
+        "scenario": "gnss-spike",
+        "seed": 1,
+        "simulated_seconds": 31.55,
+        "steps": 632,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.865211973984815,
+        "localization_rmse": 0.06193625882960708,
+        "localization_max_error": 0.18237925206265732,
+        "final_speed": 0.1516851606522089,
+        "progress": 219.6532834202584,
+        "emergency_steps": 3,
+        "avoidance_steps": 94,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 632,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 629,
+        "stationary_holds": 137,
+        "max_acceleration_m_s2": 2.000000000000025,
+        "max_deceleration_m_s2": 2.5000000000000746
+      },
+      "control_metrics": {
+        "ticks": 632,
+        "emergency_ticks": 3,
+        "emergency_fraction": 0.004746835443037975,
+        "commanded_acceleration_change_rms_m_s3": 19.90643874412133,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.865211973984815,
+        "passed": true
+      },
+      "gnss_fault": {
+        "biased_fixes": 1,
+        "rejected_fixes": 1,
+        "accepted_fixes": 157,
+        "first_stale_s": null,
+        "first_recovered_fix_s": null,
+        "max_localization_error_m": 0.18237925206265732,
+        "max_error_limit_m": 0.5,
+        "fault_labels_absent_from_pipeline": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "gnss-spike",
+      "seed": 7,
+      "summary": {
+        "scenario": "gnss-spike",
+        "seed": 7,
+        "simulated_seconds": 31.5,
+        "steps": 631,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.831930635323165,
+        "localization_rmse": 0.06070520601795215,
+        "localization_max_error": 0.13832419250728542,
+        "final_speed": 0.15636997901407973,
+        "progress": 219.64251906911025,
+        "emergency_steps": 3,
+        "avoidance_steps": 90,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 631,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 628,
+        "stationary_holds": 136,
+        "max_acceleration_m_s2": 2.0000000000000284,
+        "max_deceleration_m_s2": 2.500000000000055
+      },
+      "control_metrics": {
+        "ticks": 631,
+        "emergency_ticks": 3,
+        "emergency_fraction": 0.004754358161648178,
+        "commanded_acceleration_change_rms_m_s3": 18.623918272999703,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.831930635323165,
+        "passed": true
+      },
+      "gnss_fault": {
+        "biased_fixes": 1,
+        "rejected_fixes": 1,
+        "accepted_fixes": 157,
+        "first_stale_s": null,
+        "first_recovered_fix_s": null,
+        "max_localization_error_m": 0.13832419250728542,
+        "max_error_limit_m": 0.5,
+        "fault_labels_absent_from_pipeline": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "gnss-spike",
+      "seed": 42,
+      "summary": {
+        "scenario": "gnss-spike",
+        "seed": 42,
+        "simulated_seconds": 31.6,
+        "steps": 633,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.8639970995519914,
+        "localization_rmse": 0.06652831058501227,
+        "localization_max_error": 0.1441704003040796,
+        "final_speed": 0.15735355619135105,
+        "progress": 219.63994378782266,
+        "emergency_steps": 2,
+        "avoidance_steps": 91,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 633,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 631,
+        "stationary_holds": 139,
+        "max_acceleration_m_s2": 2.0000000000000306,
+        "max_deceleration_m_s2": 2.500000000000051
+      },
+      "control_metrics": {
+        "ticks": 633,
+        "emergency_ticks": 2,
+        "emergency_fraction": 0.00315955766192733,
+        "commanded_acceleration_change_rms_m_s3": 17.520565685294127,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.8639970995519914,
+        "passed": true
+      },
+      "gnss_fault": {
+        "biased_fixes": 1,
+        "rejected_fixes": 1,
+        "accepted_fixes": 158,
+        "first_stale_s": null,
+        "first_recovered_fix_s": null,
+        "max_localization_error_m": 0.1441704003040796,
+        "max_error_limit_m": 0.5,
+        "fault_labels_absent_from_pipeline": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "gnss-burst",
+      "seed": 1,
+      "summary": {
+        "scenario": "gnss-burst",
+        "seed": 1,
+        "simulated_seconds": 35.35,
+        "steps": 708,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.8421083232642004,
+        "localization_rmse": 0.06054227068055476,
+        "localization_max_error": 0.18237925206265732,
+        "final_speed": 0.15316338729706003,
+        "progress": 219.67958671438916,
+        "emergency_steps": 52,
+        "avoidance_steps": 121,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 708,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 656,
+        "stationary_holds": 137,
+        "max_acceleration_m_s2": 2.0000000000000395,
+        "max_deceleration_m_s2": 2.500000000000043
+      },
+      "control_metrics": {
+        "ticks": 708,
+        "emergency_ticks": 52,
+        "emergency_fraction": 0.07344632768361582,
+        "commanded_acceleration_change_rms_m_s3": 21.918559703141625,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.8421083232642004,
+        "passed": true
+      },
+      "gnss_fault": {
+        "biased_fixes": 15,
+        "rejected_fixes": 15,
+        "accepted_fixes": 162,
+        "first_stale_s": 5.6000000000000005,
+        "first_recovered_fix_s": 8.0,
+        "max_localization_error_m": 0.18237925206265732,
+        "max_error_limit_m": 0.5,
+        "fault_labels_absent_from_pipeline": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "gnss-burst",
+      "seed": 7,
+      "summary": {
+        "scenario": "gnss-burst",
+        "seed": 7,
+        "simulated_seconds": 35.4,
+        "steps": 709,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.7214086961840187,
+        "localization_rmse": 0.06150607827140594,
+        "localization_max_error": 0.13832419250728542,
+        "final_speed": 0.15651489531989898,
+        "progress": 219.6795316368978,
+        "emergency_steps": 52,
+        "avoidance_steps": 114,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 709,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 657,
+        "stationary_holds": 142,
+        "max_acceleration_m_s2": 2.0000000000000284,
+        "max_deceleration_m_s2": 2.500000000000058
+      },
+      "control_metrics": {
+        "ticks": 709,
+        "emergency_ticks": 52,
+        "emergency_fraction": 0.07334273624823695,
+        "commanded_acceleration_change_rms_m_s3": 21.090063026823586,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000002
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.7214086961840187,
+        "passed": true
+      },
+      "gnss_fault": {
+        "biased_fixes": 15,
+        "rejected_fixes": 15,
+        "accepted_fixes": 163,
+        "first_stale_s": 5.6000000000000005,
+        "first_recovered_fix_s": 8.0,
+        "max_localization_error_m": 0.13832419250728542,
+        "max_error_limit_m": 0.5,
+        "fault_labels_absent_from_pipeline": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "gnss-burst",
+      "seed": 42,
+      "summary": {
+        "scenario": "gnss-burst",
+        "seed": 42,
+        "simulated_seconds": 35.300000000000004,
+        "steps": 707,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.8214867742229273,
+        "localization_rmse": 0.06568861188007534,
+        "localization_max_error": 0.14170087368024353,
+        "final_speed": 0.14872185895116322,
+        "progress": 219.60790843771935,
+        "emergency_steps": 52,
+        "avoidance_steps": 113,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 707,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 655,
+        "stationary_holds": 140,
+        "max_acceleration_m_s2": 2.000000000000021,
+        "max_deceleration_m_s2": 2.500000000000049
+      },
+      "control_metrics": {
+        "ticks": 707,
+        "emergency_ticks": 52,
+        "emergency_fraction": 0.07355021216407355,
+        "commanded_acceleration_change_rms_m_s3": 22.42261142478415,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.8214867742229273,
+        "passed": true
+      },
+      "gnss_fault": {
+        "biased_fixes": 15,
+        "rejected_fixes": 15,
+        "accepted_fixes": 162,
+        "first_stale_s": 5.6000000000000005,
+        "first_recovered_fix_s": 8.0,
+        "max_localization_error_m": 0.14170087368024353,
+        "max_error_limit_m": 0.5,
+        "fault_labels_absent_from_pipeline": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "gnss-persistent-bias",
+      "seed": 1,
+      "summary": {
+        "scenario": "gnss-persistent-bias",
+        "seed": 1,
+        "simulated_seconds": 20.0,
+        "steps": 401,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 22.325745889865342,
+        "localization_rmse": 0.06643418939329496,
+        "localization_max_error": 0.18237925206265732,
+        "final_speed": 0.0,
+        "progress": 33.744286418636975,
+        "emergency_steps": 289,
+        "avoidance_steps": 30,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 401,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 112,
+        "stationary_holds": 0,
+        "max_acceleration_m_s2": 2.0000000000000155,
+        "max_deceleration_m_s2": 0.28445180426162586
+      },
+      "control_metrics": {
+        "ticks": 401,
+        "emergency_ticks": 289,
+        "emergency_fraction": 0.7206982543640897,
+        "commanded_acceleration_change_rms_m_s3": 6.209139830891987,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 4.0,
+        "measured_m": 22.325745889865342,
+        "passed": true
+      },
+      "gnss_fault": {
+        "biased_fixes": 76,
+        "rejected_fixes": 76,
+        "accepted_fixes": 25,
+        "first_stale_s": 5.6000000000000005,
+        "first_recovered_fix_s": null,
+        "max_localization_error_m": 0.18237925206265732,
+        "max_error_limit_m": 0.5,
+        "fault_labels_absent_from_pipeline": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "gnss-persistent-bias",
+      "seed": 7,
+      "summary": {
+        "scenario": "gnss-persistent-bias",
+        "seed": 7,
+        "simulated_seconds": 20.0,
+        "steps": 401,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 22.585635789441227,
+        "localization_rmse": 0.04012401871844284,
+        "localization_max_error": 0.13832419250728542,
+        "final_speed": 0.0,
+        "progress": 33.58549183753588,
+        "emergency_steps": 289,
+        "avoidance_steps": 26,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 401,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 112,
+        "stationary_holds": 0,
+        "max_acceleration_m_s2": 2.000000000000014,
+        "max_deceleration_m_s2": 0.30119814474562506
+      },
+      "control_metrics": {
+        "ticks": 401,
+        "emergency_ticks": 289,
+        "emergency_fraction": 0.7206982543640897,
+        "commanded_acceleration_change_rms_m_s3": 6.198197779701696,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 4.0,
+        "measured_m": 22.585635789441227,
+        "passed": true
+      },
+      "gnss_fault": {
+        "biased_fixes": 76,
+        "rejected_fixes": 76,
+        "accepted_fixes": 25,
+        "first_stale_s": 5.6000000000000005,
+        "first_recovered_fix_s": null,
+        "max_localization_error_m": 0.13832419250728542,
+        "max_error_limit_m": 0.5,
+        "fault_labels_absent_from_pipeline": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "gnss-persistent-bias",
+      "seed": 42,
+      "summary": {
+        "scenario": "gnss-persistent-bias",
+        "seed": 42,
+        "simulated_seconds": 20.0,
+        "steps": 401,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 22.568848181765016,
+        "localization_rmse": 0.05579120817641737,
+        "localization_max_error": 0.14170087368024353,
+        "final_speed": 0.0,
+        "progress": 33.602064297174756,
+        "emergency_steps": 289,
+        "avoidance_steps": 26,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 401,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 112,
+        "stationary_holds": 0,
+        "max_acceleration_m_s2": 2.0000000000000138,
+        "max_deceleration_m_s2": 0.3662624268495001
+      },
+      "control_metrics": {
+        "ticks": 401,
+        "emergency_ticks": 289,
+        "emergency_fraction": 0.7206982543640897,
+        "commanded_acceleration_change_rms_m_s3": 6.3975422558259325,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 4.0,
+        "measured_m": 22.568848181765016,
+        "passed": true
+      },
+      "gnss_fault": {
+        "biased_fixes": 76,
+        "rejected_fixes": 76,
+        "accepted_fixes": 25,
+        "first_stale_s": 5.6000000000000005,
+        "first_recovered_fix_s": null,
+        "max_localization_error_m": 0.14170087368024353,
+        "max_error_limit_m": 0.5,
+        "fault_labels_absent_from_pipeline": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "occluded-crossing",
+      "seed": 1,
+      "summary": {
+        "scenario": "Crossing object emerges from geometric occlusion",
+        "seed": 1,
+        "simulated_seconds": 26.200000000000003,
+        "steps": 525,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.338859187837997,
+        "localization_rmse": 0.10191149022163745,
+        "localization_max_error": 0.3131652290207064,
+        "final_speed": 0.12965777044977794,
+        "progress": 139.01549982121603,
+        "emergency_steps": 3,
+        "avoidance_steps": 89,
+        "max_tracks": 2,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 525,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 522,
+        "stationary_holds": 169,
+        "max_acceleration_m_s2": 2.0000000000000306,
+        "max_deceleration_m_s2": 2.500000000000058
+      },
+      "control_metrics": {
+        "ticks": 525,
+        "emergency_ticks": 3,
+        "emergency_fraction": 0.005714285714285714,
+        "commanded_acceleration_change_rms_m_s3": 22.233764413208327,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000003
+      },
+      "clearance_regression": {
+        "floor_m": 1.0,
+        "measured_m": 1.338859187837997,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "occluded-crossing",
+      "seed": 7,
+      "summary": {
+        "scenario": "Crossing object emerges from geometric occlusion",
+        "seed": 7,
+        "simulated_seconds": 26.150000000000002,
+        "steps": 524,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.3838593581916818,
+        "localization_rmse": 0.11099998173150935,
+        "localization_max_error": 0.38908612103606544,
+        "final_speed": 0.151123571792112,
+        "progress": 138.99766391995388,
+        "emergency_steps": 4,
+        "avoidance_steps": 104,
+        "max_tracks": 2,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 524,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 520,
+        "stationary_holds": 160,
+        "max_acceleration_m_s2": 2.0000000000000266,
+        "max_deceleration_m_s2": 2.5000000000000604
+      },
+      "control_metrics": {
+        "ticks": 524,
+        "emergency_ticks": 4,
+        "emergency_fraction": 0.007633587786259542,
+        "commanded_acceleration_change_rms_m_s3": 20.918303553272455,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 1.0,
+        "measured_m": 1.3838593581916818,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "occluded-crossing",
+      "seed": 42,
+      "summary": {
+        "scenario": "Crossing object emerges from geometric occlusion",
+        "seed": 42,
+        "simulated_seconds": 26.150000000000002,
+        "steps": 524,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.4561279166121173,
+        "localization_rmse": 0.087324107207229,
+        "localization_max_error": 0.23863273489828443,
+        "final_speed": 0.19920483939236763,
+        "progress": 139.0154970837686,
+        "emergency_steps": 4,
+        "avoidance_steps": 128,
+        "max_tracks": 2,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 524,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 520,
+        "stationary_holds": 159,
+        "max_acceleration_m_s2": 2.0000000000000275,
+        "max_deceleration_m_s2": 2.5000000000000497
+      },
+      "control_metrics": {
+        "ticks": 524,
+        "emergency_ticks": 4,
+        "emergency_fraction": 0.007633587786259542,
+        "commanded_acceleration_change_rms_m_s3": 24.34586716783772,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 1.0,
+        "measured_m": 1.4561279166121173,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "cut-in",
+      "seed": 1,
+      "summary": {
+        "scenario": "Late lateral crossing on a narrow road",
+        "seed": 1,
+        "simulated_seconds": 23.200000000000003,
+        "steps": 465,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.9340542692574807,
+        "localization_rmse": 0.06385386364859473,
+        "localization_max_error": 0.1592909053312587,
+        "final_speed": 0.14391206836981763,
+        "progress": 119.02375889558938,
+        "emergency_steps": 8,
+        "avoidance_steps": 0,
+        "max_tracks": 2,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 465,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 457,
+        "stationary_holds": 183,
+        "max_acceleration_m_s2": 2.0000000000000147,
+        "max_deceleration_m_s2": 2.5000000000000693
+      },
+      "control_metrics": {
+        "ticks": 465,
+        "emergency_ticks": 8,
+        "emergency_fraction": 0.017204301075268817,
+        "commanded_acceleration_change_rms_m_s3": 28.346546174904173,
+        "max_normal_commanded_steering_rate_rad_s": 0.7
+      },
+      "clearance_regression": {
+        "floor_m": 0.7,
+        "measured_m": 0.9340542692574807,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "cut-in",
+      "seed": 7,
+      "summary": {
+        "scenario": "Late lateral crossing on a narrow road",
+        "seed": 7,
+        "simulated_seconds": 23.25,
+        "steps": 466,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.185349243704209,
+        "localization_rmse": 0.07692197087563064,
+        "localization_max_error": 0.20512748149352236,
+        "final_speed": 0.1535567354133685,
+        "progress": 119.01305574684376,
+        "emergency_steps": 1,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 466,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 465,
+        "stationary_holds": 198,
+        "max_acceleration_m_s2": 2.00000000000001,
+        "max_deceleration_m_s2": 2.500000000000049
+      },
+      "control_metrics": {
+        "ticks": 466,
+        "emergency_ticks": 1,
+        "emergency_fraction": 0.002145922746781116,
+        "commanded_acceleration_change_rms_m_s3": 18.0216181438286,
+        "max_normal_commanded_steering_rate_rad_s": 0.7
+      },
+      "clearance_regression": {
+        "floor_m": 0.7,
+        "measured_m": 1.185349243704209,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "cut-in",
+      "seed": 42,
+      "summary": {
+        "scenario": "Late lateral crossing on a narrow road",
+        "seed": 42,
+        "simulated_seconds": 23.25,
+        "steps": 466,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.8091333117626938,
+        "localization_rmse": 0.06929890518860518,
+        "localization_max_error": 0.18079567389637546,
+        "final_speed": 0.0760657792638999,
+        "progress": 119.06693848435778,
+        "emergency_steps": 3,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 466,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 463,
+        "stationary_holds": 189,
+        "max_acceleration_m_s2": 2.0000000000000338,
+        "max_deceleration_m_s2": 2.5000000000000453
+      },
+      "control_metrics": {
+        "ticks": 466,
+        "emergency_ticks": 3,
+        "emergency_fraction": 0.006437768240343348,
+        "commanded_acceleration_change_rms_m_s3": 25.207108397193764,
+        "max_normal_commanded_steering_rate_rad_s": 0.7
+      },
+      "clearance_regression": {
+        "floor_m": 0.7,
+        "measured_m": 0.8091333117626938,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "low-friction",
+      "seed": 1,
+      "summary": {
+        "scenario": "Low-friction curved-road obstacle avoidance",
+        "seed": 1,
+        "simulated_seconds": 29.25,
+        "steps": 586,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.44268022717955224,
+        "localization_rmse": 0.06708657206526726,
+        "localization_max_error": 0.15801575459665443,
+        "final_speed": 0.18420657557258188,
+        "progress": 140.54615921688813,
+        "emergency_steps": 9,
+        "avoidance_steps": 87,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 586,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 577,
+        "stationary_holds": 209,
+        "max_acceleration_m_s2": 1.177200000000014,
+        "max_deceleration_m_s2": 1.177200000000022
+      },
+      "control_metrics": {
+        "ticks": 586,
+        "emergency_ticks": 9,
+        "emergency_fraction": 0.015358361774744027,
+        "commanded_acceleration_change_rms_m_s3": 22.904468238952255,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 0.4,
+        "measured_m": 0.44268022717955224,
+        "passed": true
+      },
+      "tracking_regression_passed": true,
+      "max_measured_abs_longitudinal_acceleration_m_s2": 1.1772000000000322
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "low-friction",
+      "seed": 7,
+      "summary": {
+        "scenario": "Low-friction curved-road obstacle avoidance",
+        "seed": 7,
+        "simulated_seconds": 29.3,
+        "steps": 587,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.43517054746437456,
+        "localization_rmse": 0.06719849249428925,
+        "localization_max_error": 0.16331694039195005,
+        "final_speed": 0.14981939031247735,
+        "progress": 140.55479216519294,
+        "emergency_steps": 8,
+        "avoidance_steps": 96,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 587,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 579,
+        "stationary_holds": 199,
+        "max_acceleration_m_s2": 1.1772000000000153,
+        "max_deceleration_m_s2": 1.177200000000029
+      },
+      "control_metrics": {
+        "ticks": 587,
+        "emergency_ticks": 8,
+        "emergency_fraction": 0.013628620102214651,
+        "commanded_acceleration_change_rms_m_s3": 19.380907215863953,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000002
+      },
+      "clearance_regression": {
+        "floor_m": 0.4,
+        "measured_m": 0.43517054746437456,
+        "passed": true
+      },
+      "tracking_regression_passed": true,
+      "max_measured_abs_longitudinal_acceleration_m_s2": 1.961999999999969
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "low-friction",
+      "seed": 42,
+      "summary": {
+        "scenario": "Low-friction curved-road obstacle avoidance",
+        "seed": 42,
+        "simulated_seconds": 29.35,
+        "steps": 588,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.140132702131861,
+        "localization_rmse": 0.06695049930835904,
+        "localization_max_error": 0.17651073698107933,
+        "final_speed": 0.16627834925482696,
+        "progress": 140.54586532867924,
+        "emergency_steps": 6,
+        "avoidance_steps": 125,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 588,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 582,
+        "stationary_holds": 202,
+        "max_acceleration_m_s2": 1.1772000000000107,
+        "max_deceleration_m_s2": 1.1772000000000233
+      },
+      "control_metrics": {
+        "ticks": 588,
+        "emergency_ticks": 6,
+        "emergency_fraction": 0.01020408163265306,
+        "commanded_acceleration_change_rms_m_s3": 20.014407522220996,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000002
+      },
+      "clearance_regression": {
+        "floor_m": 0.4,
+        "measured_m": 1.140132702131861,
+        "passed": true
+      },
+      "tracking_regression_passed": true,
+      "max_measured_abs_longitudinal_acceleration_m_s2": 1.5696000000000245
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "low-friction-stop",
+      "seed": 1,
+      "summary": {
+        "scenario": "Low-friction narrow-road braking",
+        "seed": 1,
+        "simulated_seconds": 40.0,
+        "steps": 801,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 4.5883107988298555,
+        "localization_rmse": 0.05677503494795025,
+        "localization_max_error": 0.1346553187930022,
+        "final_speed": 0.0,
+        "progress": 53.161747489814445,
+        "emergency_steps": 3,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 801,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 798,
+        "stationary_holds": 684,
+        "max_acceleration_m_s2": 1.1772000000000111,
+        "max_deceleration_m_s2": 1.1772000000000002
+      },
+      "control_metrics": {
+        "ticks": 801,
+        "emergency_ticks": 3,
+        "emergency_fraction": 0.003745318352059925,
+        "commanded_acceleration_change_rms_m_s3": 15.347235501101341,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000005
+      },
+      "clearance_regression": {
+        "floor_m": 4.0,
+        "measured_m": 4.5883107988298555,
+        "passed": true
+      },
+      "max_measured_abs_longitudinal_acceleration_m_s2": 1.9620000000000057
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "low-friction-stop",
+      "seed": 7,
+      "summary": {
+        "scenario": "Low-friction narrow-road braking",
+        "seed": 7,
+        "simulated_seconds": 40.0,
+        "steps": 801,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 4.58198330117787,
+        "localization_rmse": 0.06079287952721004,
+        "localization_max_error": 0.16495098268771302,
+        "final_speed": 0.0,
+        "progress": 53.16801761275105,
+        "emergency_steps": 8,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 801,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 793,
+        "stationary_holds": 685,
+        "max_acceleration_m_s2": 1.1772000000000113,
+        "max_deceleration_m_s2": 1.1772000000000002
+      },
+      "control_metrics": {
+        "ticks": 801,
+        "emergency_ticks": 8,
+        "emergency_fraction": 0.009987515605493134,
+        "commanded_acceleration_change_rms_m_s3": 18.31251981105495,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000002
+      },
+      "clearance_regression": {
+        "floor_m": 4.0,
+        "measured_m": 4.58198330117787,
+        "passed": true
+      },
+      "max_measured_abs_longitudinal_acceleration_m_s2": 1.4159308408356097
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "low-friction-stop",
+      "seed": 42,
+      "summary": {
+        "scenario": "Low-friction narrow-road braking",
+        "seed": 42,
+        "simulated_seconds": 40.0,
+        "steps": 801,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 4.572384197377834,
+        "localization_rmse": 0.05465783517963251,
+        "localization_max_error": 0.17151372257311598,
+        "final_speed": 0.0,
+        "progress": 53.17761585756192,
+        "emergency_steps": 11,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 801,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 790,
+        "stationary_holds": 680,
+        "max_acceleration_m_s2": 1.1772000000000116,
+        "max_deceleration_m_s2": 1.1772000000000002
+      },
+      "control_metrics": {
+        "ticks": 801,
+        "emergency_ticks": 11,
+        "emergency_fraction": 0.01373283395755306,
+        "commanded_acceleration_change_rms_m_s3": 17.915724888946453,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000004
+      },
+      "clearance_regression": {
+        "floor_m": 4.0,
+        "measured_m": 4.572384197377834,
+        "passed": true
+      },
+      "max_measured_abs_longitudinal_acceleration_m_s2": 1.177200000000007
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "multiple-blocked",
+      "seed": 1,
+      "summary": {
+        "scenario": "Three obstacles block every lateral candidate",
+        "seed": 1,
+        "simulated_seconds": 25.0,
+        "steps": 501,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 3.7636640299011344,
+        "localization_rmse": 0.07833987564444592,
+        "localization_max_error": 0.322399789906073,
+        "final_speed": 0.0,
+        "progress": 33.996990673927456,
+        "emergency_steps": 3,
+        "avoidance_steps": 16,
+        "max_tracks": 4,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 501,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 498,
+        "stationary_holds": 464,
+        "max_acceleration_m_s2": 2.00000000000001,
+        "max_deceleration_m_s2": 2.5000000000000004
+      },
+      "control_metrics": {
+        "ticks": 501,
+        "emergency_ticks": 3,
+        "emergency_fraction": 0.005988023952095809,
+        "commanded_acceleration_change_rms_m_s3": 30.809461588931683,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000011
+      },
+      "clearance_regression": {
+        "floor_m": 3.0,
+        "measured_m": 3.7636640299011344,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "multiple-blocked",
+      "seed": 7,
+      "summary": {
+        "scenario": "Three obstacles block every lateral candidate",
+        "seed": 7,
+        "simulated_seconds": 25.0,
+        "steps": 501,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 3.602415510998693,
+        "localization_rmse": 0.08756323261211207,
+        "localization_max_error": 0.3415746492976683,
+        "final_speed": 0.0,
+        "progress": 34.14817536080727,
+        "emergency_steps": 4,
+        "avoidance_steps": 50,
+        "max_tracks": 4,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 501,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 497,
+        "stationary_holds": 433,
+        "max_acceleration_m_s2": 2.00000000000001,
+        "max_deceleration_m_s2": 2.5000000000000004
+      },
+      "control_metrics": {
+        "ticks": 501,
+        "emergency_ticks": 4,
+        "emergency_fraction": 0.007984031936127744,
+        "commanded_acceleration_change_rms_m_s3": 33.20302764190885,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000011
+      },
+      "clearance_regression": {
+        "floor_m": 3.0,
+        "measured_m": 3.602415510998693,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "multiple-blocked",
+      "seed": 42,
+      "summary": {
+        "scenario": "Three obstacles block every lateral candidate",
+        "seed": 42,
+        "simulated_seconds": 25.0,
+        "steps": 501,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 4.361630874341825,
+        "localization_rmse": 0.10004897490684747,
+        "localization_max_error": 0.3638987999675744,
+        "final_speed": 0.0,
+        "progress": 33.596605697024756,
+        "emergency_steps": 5,
+        "avoidance_steps": 26,
+        "max_tracks": 4,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 501,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 496,
+        "stationary_holds": 430,
+        "max_acceleration_m_s2": 2.00000000000001,
+        "max_deceleration_m_s2": 2.5000000000000004
+      },
+      "control_metrics": {
+        "ticks": 501,
+        "emergency_ticks": 5,
+        "emergency_fraction": 0.00998003992015968,
+        "commanded_acceleration_change_rms_m_s3": 32.996622678842144,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000011
+      },
+      "clearance_regression": {
+        "floor_m": 3.0,
+        "measured_m": 4.361630874341825,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "opposing-crossings",
+      "seed": 1,
+      "summary": {
+        "scenario": "Successive crossings from opposite sides",
+        "seed": 1,
+        "simulated_seconds": 26.55,
+        "steps": 532,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.9340542692574807,
+        "localization_rmse": 0.0640132416699545,
+        "localization_max_error": 0.1592909053312587,
+        "final_speed": 0.08663389126422102,
+        "progress": 138.9843033972697,
+        "emergency_steps": 7,
+        "avoidance_steps": 0,
+        "max_tracks": 2,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 532,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 525,
+        "stationary_holds": 199,
+        "max_acceleration_m_s2": 2.000000000000024,
+        "max_deceleration_m_s2": 2.500000000000051
+      },
+      "control_metrics": {
+        "ticks": 532,
+        "emergency_ticks": 7,
+        "emergency_fraction": 0.013157894736842105,
+        "commanded_acceleration_change_rms_m_s3": 24.550348199207292,
+        "max_normal_commanded_steering_rate_rad_s": 0.7
+      },
+      "clearance_regression": {
+        "floor_m": 0.7,
+        "measured_m": 0.9340542692574807,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "opposing-crossings",
+      "seed": 7,
+      "summary": {
+        "scenario": "Successive crossings from opposite sides",
+        "seed": 7,
+        "simulated_seconds": 26.650000000000002,
+        "steps": 534,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.185349243704209,
+        "localization_rmse": 0.0744445556457217,
+        "localization_max_error": 0.20512748149352236,
+        "final_speed": 0.1600542476601316,
+        "progress": 139.05618735941988,
+        "emergency_steps": 4,
+        "avoidance_steps": 0,
+        "max_tracks": 2,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 534,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 530,
+        "stationary_holds": 214,
+        "max_acceleration_m_s2": 2.000000000000012,
+        "max_deceleration_m_s2": 2.500000000000045
+      },
+      "control_metrics": {
+        "ticks": 534,
+        "emergency_ticks": 4,
+        "emergency_fraction": 0.00749063670411985,
+        "commanded_acceleration_change_rms_m_s3": 23.99577102227677,
+        "max_normal_commanded_steering_rate_rad_s": 0.7
+      },
+      "clearance_regression": {
+        "floor_m": 0.7,
+        "measured_m": 1.185349243704209,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "opposing-crossings",
+      "seed": 42,
+      "summary": {
+        "scenario": "Successive crossings from opposite sides",
+        "seed": 42,
+        "simulated_seconds": 26.55,
+        "steps": 532,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.8091333117626938,
+        "localization_rmse": 0.06661473068914965,
+        "localization_max_error": 0.18079567389637546,
+        "final_speed": 0.10600833302119916,
+        "progress": 139.05354982186154,
+        "emergency_steps": 5,
+        "avoidance_steps": 0,
+        "max_tracks": 2,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 532,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 527,
+        "stationary_holds": 201,
+        "max_acceleration_m_s2": 2.000000000000026,
+        "max_deceleration_m_s2": 2.50000000000005
+      },
+      "control_metrics": {
+        "ticks": 532,
+        "emergency_ticks": 5,
+        "emergency_fraction": 0.009398496240601503,
+        "commanded_acceleration_change_rms_m_s3": 26.99972928629577,
+        "max_normal_commanded_steering_rate_rad_s": 0.7
+      },
+      "clearance_regression": {
+        "floor_m": 0.7,
+        "measured_m": 0.8091333117626938,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "route-direct",
+      "seed": 1,
+      "summary": {
+        "scenario": "route-direct",
+        "seed": 1,
+        "simulated_seconds": 36.25,
+        "steps": 726,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.8536897581996907,
+        "localization_rmse": 0.08739453092434898,
+        "localization_max_error": 0.3350321893104038,
+        "final_speed": 0.09197294094971378,
+        "progress": 199.01445878165978,
+        "emergency_steps": 3,
+        "avoidance_steps": 111,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 726,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 723,
+        "stationary_holds": 164,
+        "max_acceleration_m_s2": 2.0000000000000155,
+        "max_deceleration_m_s2": 2.5000000000000497
+      },
+      "control_metrics": {
+        "ticks": 726,
+        "emergency_ticks": 3,
+        "emergency_fraction": 0.004132231404958678,
+        "commanded_acceleration_change_rms_m_s3": 16.957662070717834,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000002
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.8536897581996907,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "main",
+          "east-exit"
+        ],
+        "distance_m": 200.0,
+        "goal_distance_m": 0.9932501998715473,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "route-direct",
+      "seed": 7,
+      "summary": {
+        "scenario": "route-direct",
+        "seed": 7,
+        "simulated_seconds": 36.1,
+        "steps": 723,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.9948637679790839,
+        "localization_rmse": 0.07786407243045147,
+        "localization_max_error": 0.2722635093648834,
+        "final_speed": 0.1560987193010933,
+        "progress": 198.97442415988937,
+        "emergency_steps": 0,
+        "avoidance_steps": 126,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 723,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 723,
+        "stationary_holds": 167,
+        "max_acceleration_m_s2": 2.00000000000001,
+        "max_deceleration_m_s2": 2.500000000000053
+      },
+      "control_metrics": {
+        "ticks": 723,
+        "emergency_ticks": 0,
+        "emergency_fraction": 0.0,
+        "commanded_acceleration_change_rms_m_s3": 10.95140325747101,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.9948637679790839,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "main",
+          "east-exit"
+        ],
+        "distance_m": 200.0,
+        "goal_distance_m": 1.0272841348050372,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "route-direct",
+      "seed": 42,
+      "summary": {
+        "scenario": "route-direct",
+        "seed": 42,
+        "simulated_seconds": 36.15,
+        "steps": 724,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.9884517066979686,
+        "localization_rmse": 0.07793510360890729,
+        "localization_max_error": 0.2581305616910106,
+        "final_speed": 0.11584138984313785,
+        "progress": 199.02749055240687,
+        "emergency_steps": 3,
+        "avoidance_steps": 100,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 724,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 721,
+        "stationary_holds": 180,
+        "max_acceleration_m_s2": 2.000000000000018,
+        "max_deceleration_m_s2": 2.500000000000045
+      },
+      "control_metrics": {
+        "ticks": 724,
+        "emergency_ticks": 3,
+        "emergency_fraction": 0.004143646408839779,
+        "commanded_acceleration_change_rms_m_s3": 18.617683909625853,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000004
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.9884517066979686,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "main",
+          "east-exit"
+        ],
+        "distance_m": 200.0,
+        "goal_distance_m": 0.9811169257136103,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "route-detour",
+      "seed": 1,
+      "summary": {
+        "scenario": "route-detour",
+        "seed": 1,
+        "simulated_seconds": 37.300000000000004,
+        "steps": 747,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.4011289712649195,
+        "localization_rmse": 0.0785182532741044,
+        "localization_max_error": 0.22027843163175004,
+        "final_speed": 0.1728718005102568,
+        "progress": 208.54207015120699,
+        "emergency_steps": 4,
+        "avoidance_steps": 112,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 747,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 743,
+        "stationary_holds": 156,
+        "max_acceleration_m_s2": 2.000000000000022,
+        "max_deceleration_m_s2": 2.500000000000052
+      },
+      "control_metrics": {
+        "ticks": 747,
+        "emergency_ticks": 4,
+        "emergency_fraction": 0.00535475234270415,
+        "commanded_acceleration_change_rms_m_s3": 19.201342314138532,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 1.4011289712649195,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "detour",
+          "east-exit"
+        ],
+        "distance_m": 209.53013247932833,
+        "goal_distance_m": 0.9893983695115093,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "route-detour",
+      "seed": 7,
+      "summary": {
+        "scenario": "route-detour",
+        "seed": 7,
+        "simulated_seconds": 37.45,
+        "steps": 750,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.4532569884335107,
+        "localization_rmse": 0.07869619359262758,
+        "localization_max_error": 0.20735683671356545,
+        "final_speed": 0.1619699055398065,
+        "progress": 208.59085912129305,
+        "emergency_steps": 4,
+        "avoidance_steps": 117,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 750,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 746,
+        "stationary_holds": 160,
+        "max_acceleration_m_s2": 2.00000000000002,
+        "max_deceleration_m_s2": 2.5000000000000533
+      },
+      "control_metrics": {
+        "ticks": 750,
+        "emergency_ticks": 4,
+        "emergency_fraction": 0.005333333333333333,
+        "commanded_acceleration_change_rms_m_s3": 20.820902226240566,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000005
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 1.4532569884335107,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "detour",
+          "east-exit"
+        ],
+        "distance_m": 209.53013247932833,
+        "goal_distance_m": 0.9506608602312364,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "route-detour",
+      "seed": 42,
+      "summary": {
+        "scenario": "route-detour",
+        "seed": 42,
+        "simulated_seconds": 37.45,
+        "steps": 750,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.4420610465768746,
+        "localization_rmse": 0.07824870281373929,
+        "localization_max_error": 0.2549838924743313,
+        "final_speed": 0.18579132570895046,
+        "progress": 208.56179290495507,
+        "emergency_steps": 3,
+        "avoidance_steps": 112,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 750,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 747,
+        "stationary_holds": 158,
+        "max_acceleration_m_s2": 2.0000000000000204,
+        "max_deceleration_m_s2": 2.5000000000000426
+      },
+      "control_metrics": {
+        "ticks": 750,
+        "emergency_ticks": 3,
+        "emergency_fraction": 0.004,
+        "commanded_acceleration_change_rms_m_s3": 18.549677808986353,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 1.4420610465768746,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "detour",
+          "east-exit"
+        ],
+        "distance_m": 209.53013247932833,
+        "goal_distance_m": 0.9805167199536128,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "route-south",
+      "seed": 1,
+      "summary": {
+        "scenario": "route-south",
+        "seed": 1,
+        "simulated_seconds": 30.25,
+        "steps": 606,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.9711707849695577,
+        "localization_rmse": 0.07967728128567965,
+        "localization_max_error": 0.25082284979981717,
+        "final_speed": 0.1454649481642208,
+        "progress": 162.67920903063327,
+        "emergency_steps": 5,
+        "avoidance_steps": 119,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 606,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 601,
+        "stationary_holds": 164,
+        "max_acceleration_m_s2": 2.0000000000000164,
+        "max_deceleration_m_s2": 2.5000000000000475
+      },
+      "control_metrics": {
+        "ticks": 606,
+        "emergency_ticks": 5,
+        "emergency_fraction": 0.00825082508250825,
+        "commanded_acceleration_change_rms_m_s3": 22.526192055659408,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000004
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.9711707849695577,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "south-branch"
+        ],
+        "distance_m": 163.62076698453805,
+        "goal_distance_m": 0.9557769052710183,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "route-south",
+      "seed": 7,
+      "summary": {
+        "scenario": "route-south",
+        "seed": 7,
+        "simulated_seconds": 30.200000000000003,
+        "steps": 605,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.971897305770419,
+        "localization_rmse": 0.07981859175826206,
+        "localization_max_error": 0.23818538210176193,
+        "final_speed": 0.13346779461563457,
+        "progress": 162.6564047488921,
+        "emergency_steps": 6,
+        "avoidance_steps": 134,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 605,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 599,
+        "stationary_holds": 155,
+        "max_acceleration_m_s2": 2.0000000000000218,
+        "max_deceleration_m_s2": 2.500000000000042
+      },
+      "control_metrics": {
+        "ticks": 605,
+        "emergency_ticks": 6,
+        "emergency_fraction": 0.009917355371900827,
+        "commanded_acceleration_change_rms_m_s3": 24.331162577024198,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000004
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.971897305770419,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "south-branch"
+        ],
+        "distance_m": 163.62076698453805,
+        "goal_distance_m": 0.966030982798337,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "route-south",
+      "seed": 42,
+      "summary": {
+        "scenario": "route-south",
+        "seed": 42,
+        "simulated_seconds": 30.150000000000002,
+        "steps": 604,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.9543113612129854,
+        "localization_rmse": 0.07597534213697371,
+        "localization_max_error": 0.18561803405536023,
+        "final_speed": 0.07969859616759781,
+        "progress": 162.62891139535304,
+        "emergency_steps": 2,
+        "avoidance_steps": 119,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 604,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 602,
+        "stationary_holds": 170,
+        "max_acceleration_m_s2": 2.0000000000000213,
+        "max_deceleration_m_s2": 2.5000000000000635
+      },
+      "control_metrics": {
+        "ticks": 604,
+        "emergency_ticks": 2,
+        "emergency_fraction": 0.0033112582781456954,
+        "commanded_acceleration_change_rms_m_s3": 15.047938775165273,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000004
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.9543113612129854,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "south-branch"
+        ],
+        "distance_m": 163.62076698453805,
+        "goal_distance_m": 1.0050688047264464,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "route-handover",
+      "seed": 1,
+      "summary": {
+        "scenario": "Live closure: stop and detour",
+        "seed": 1,
+        "simulated_seconds": 55.900000000000006,
+        "steps": 1119,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.699091617839219,
+        "localization_rmse": 0.06865258769190048,
+        "localization_max_error": 0.19771992090543894,
+        "final_speed": 0.1784335399730022,
+        "progress": 208.51867347538445,
+        "emergency_steps": 8,
+        "avoidance_steps": 196,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1119,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1111,
+        "stationary_holds": 384,
+        "max_acceleration_m_s2": 2.0000000000000324,
+        "max_deceleration_m_s2": 2.500000000000052
+      },
+      "control_metrics": {
+        "ticks": 1119,
+        "emergency_ticks": 8,
+        "emergency_fraction": 0.0071492403932082215,
+        "commanded_acceleration_change_rms_m_s3": 24.88446797472747,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 1.699091617839219,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "detour",
+          "east-exit"
+        ],
+        "distance_m": 209.53013247932833,
+        "goal_distance_m": 1.0116899185851893,
+        "passed": true
+      },
+      "live_navigation": {
+        "switches": 1,
+        "history": [
+          {
+            "time": 0.0,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "main",
+              "east-exit"
+            ]
+          },
+          {
+            "time": 11.600000000000001,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "detour",
+              "east-exit"
+            ]
+          }
+        ],
+        "stationary_world_verified": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "route-handover",
+      "seed": 7,
+      "summary": {
+        "scenario": "Live closure: stop and detour",
+        "seed": 7,
+        "simulated_seconds": 55.900000000000006,
+        "steps": 1119,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.7191723228391025,
+        "localization_rmse": 0.06994765332677096,
+        "localization_max_error": 0.20512748149352236,
+        "final_speed": 0.17624390684519775,
+        "progress": 208.6002950434193,
+        "emergency_steps": 5,
+        "avoidance_steps": 184,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1119,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1114,
+        "stationary_holds": 384,
+        "max_acceleration_m_s2": 2.0000000000000213,
+        "max_deceleration_m_s2": 2.500000000000052
+      },
+      "control_metrics": {
+        "ticks": 1119,
+        "emergency_ticks": 5,
+        "emergency_fraction": 0.004468275245755138,
+        "commanded_acceleration_change_rms_m_s3": 20.1396834580335,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.7191723228391025,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "detour",
+          "east-exit"
+        ],
+        "distance_m": 209.53013247932833,
+        "goal_distance_m": 0.9299077517794812,
+        "passed": true
+      },
+      "live_navigation": {
+        "switches": 1,
+        "history": [
+          {
+            "time": 0.0,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "main",
+              "east-exit"
+            ]
+          },
+          {
+            "time": 11.3,
+            "estimated_speed": 0.014198828211414733,
+            "true_speed": 0.010827008612801933,
+            "edge_ids": [
+              "approach",
+              "detour",
+              "east-exit"
+            ]
+          }
+        ],
+        "stationary_world_verified": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "route-handover",
+      "seed": 42,
+      "summary": {
+        "scenario": "Live closure: stop and detour",
+        "seed": 42,
+        "simulated_seconds": 56.2,
+        "steps": 1125,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.855348067658861,
+        "localization_rmse": 0.06279193853672449,
+        "localization_max_error": 0.1879031582741131,
+        "final_speed": 0.1172421905380334,
+        "progress": 208.64002104276173,
+        "emergency_steps": 9,
+        "avoidance_steps": 173,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1125,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1116,
+        "stationary_holds": 386,
+        "max_acceleration_m_s2": 2.000000000000024,
+        "max_deceleration_m_s2": 2.5000000000000595
+      },
+      "control_metrics": {
+        "ticks": 1125,
+        "emergency_ticks": 9,
+        "emergency_fraction": 0.008,
+        "commanded_acceleration_change_rms_m_s3": 25.226104285594662,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000002
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.855348067658861,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "detour",
+          "east-exit"
+        ],
+        "distance_m": 209.53013247932833,
+        "goal_distance_m": 0.8902343877847614,
+        "passed": true
+      },
+      "live_navigation": {
+        "switches": 1,
+        "history": [
+          {
+            "time": 0.0,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "main",
+              "east-exit"
+            ]
+          },
+          {
+            "time": 11.55,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "detour",
+              "east-exit"
+            ]
+          }
+        ],
+        "stationary_world_verified": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "route-handover-fast",
+      "seed": 1,
+      "summary": {
+        "scenario": "Live closure: 6 m/s detour",
+        "seed": 1,
+        "simulated_seconds": 40.400000000000006,
+        "steps": 809,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.4581822047946766,
+        "localization_rmse": 0.07516467969200437,
+        "localization_max_error": 0.316651904963449,
+        "final_speed": 0.11452213847536495,
+        "progress": 208.5810934424875,
+        "emergency_steps": 7,
+        "avoidance_steps": 99,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 809,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 802,
+        "stationary_holds": 281,
+        "max_acceleration_m_s2": 2.0000000000000253,
+        "max_deceleration_m_s2": 2.5000000000000466
+      },
+      "control_metrics": {
+        "ticks": 809,
+        "emergency_ticks": 7,
+        "emergency_fraction": 0.00865265760197775,
+        "commanded_acceleration_change_rms_m_s3": 26.60346672474701,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000004
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 1.4581822047946766,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "detour",
+          "east-exit"
+        ],
+        "distance_m": 209.53013247932833,
+        "goal_distance_m": 0.9490473574785246,
+        "passed": true
+      },
+      "live_navigation": {
+        "switches": 1,
+        "history": [
+          {
+            "time": 0.0,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "main",
+              "east-exit"
+            ]
+          },
+          {
+            "time": 9.25,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "detour",
+              "east-exit"
+            ]
+          }
+        ],
+        "stationary_world_verified": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "route-handover-fast",
+      "seed": 7,
+      "summary": {
+        "scenario": "Live closure: 6 m/s detour",
+        "seed": 7,
+        "simulated_seconds": 40.35,
+        "steps": 808,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.4846578020515193,
+        "localization_rmse": 0.0775709821188698,
+        "localization_max_error": 0.25275359162817823,
+        "final_speed": 0.09214303850709352,
+        "progress": 208.57181322312073,
+        "emergency_steps": 8,
+        "avoidance_steps": 114,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 808,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 800,
+        "stationary_holds": 278,
+        "max_acceleration_m_s2": 2.00000000000003,
+        "max_deceleration_m_s2": 2.500000000000046
+      },
+      "control_metrics": {
+        "ticks": 808,
+        "emergency_ticks": 8,
+        "emergency_fraction": 0.009900990099009901,
+        "commanded_acceleration_change_rms_m_s3": 26.95610335221376,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 1.4846578020515193,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "detour",
+          "east-exit"
+        ],
+        "distance_m": 209.53013247932833,
+        "goal_distance_m": 0.9657414022767234,
+        "passed": true
+      },
+      "live_navigation": {
+        "switches": 1,
+        "history": [
+          {
+            "time": 0.0,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "main",
+              "east-exit"
+            ]
+          },
+          {
+            "time": 9.15,
+            "estimated_speed": 0.013875892047582414,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "detour",
+              "east-exit"
+            ]
+          }
+        ],
+        "stationary_world_verified": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "route-handover-fast",
+      "seed": 42,
+      "summary": {
+        "scenario": "Live closure: 6 m/s detour",
+        "seed": 42,
+        "simulated_seconds": 40.2,
+        "steps": 805,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.5010698529834117,
+        "localization_rmse": 0.06736153269490555,
+        "localization_max_error": 0.18079567389637546,
+        "final_speed": 0.11465997629503816,
+        "progress": 208.56782015403635,
+        "emergency_steps": 3,
+        "avoidance_steps": 109,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 805,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 802,
+        "stationary_holds": 282,
+        "max_acceleration_m_s2": 2.0000000000000466,
+        "max_deceleration_m_s2": 2.500000000000055
+      },
+      "control_metrics": {
+        "ticks": 805,
+        "emergency_ticks": 3,
+        "emergency_fraction": 0.0037267080745341614,
+        "commanded_acceleration_change_rms_m_s3": 18.955834895637274,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 1.5010698529834117,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "detour",
+          "east-exit"
+        ],
+        "distance_m": 209.53013247932833,
+        "goal_distance_m": 0.9628359516117959,
+        "passed": true
+      },
+      "live_navigation": {
+        "switches": 1,
+        "history": [
+          {
+            "time": 0.0,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "main",
+              "east-exit"
+            ]
+          },
+          {
+            "time": 9.1,
+            "estimated_speed": 0.012656569711910981,
+            "true_speed": 2.384786709113025e-06,
+            "edge_ids": [
+              "approach",
+              "detour",
+              "east-exit"
+            ]
+          }
+        ],
+        "stationary_world_verified": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "route-no-path",
+      "seed": 1,
+      "summary": {
+        "scenario": "Live closure: no route remains",
+        "seed": 1,
+        "simulated_seconds": 20.0,
+        "steps": 401,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 64.02696691861908,
+        "localization_rmse": 0.05910758432838725,
+        "localization_max_error": 0.1592909053312587,
+        "final_speed": 0.0,
+        "progress": 36.80680758734971,
+        "emergency_steps": 5,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 401,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 396,
+        "stationary_holds": 336,
+        "max_acceleration_m_s2": 2.0000000000000324,
+        "max_deceleration_m_s2": 2.500000000000052
+      },
+      "control_metrics": {
+        "ticks": 401,
+        "emergency_ticks": 5,
+        "emergency_fraction": 0.012468827930174564,
+        "commanded_acceleration_change_rms_m_s3": 36.11736218226856,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000002
+      },
+      "clearance_regression": {
+        "floor_m": 4.0,
+        "measured_m": 64.02696691861908,
+        "passed": true
+      },
+      "live_navigation": {
+        "switches": 0,
+        "history": [
+          {
+            "time": 0.0,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "main",
+              "east-exit"
+            ]
+          }
+        ],
+        "stationary_world_verified": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "route-no-path",
+      "seed": 7,
+      "summary": {
+        "scenario": "Live closure: no route remains",
+        "seed": 7,
+        "simulated_seconds": 20.0,
+        "steps": 401,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 64.01532323691806,
+        "localization_rmse": 0.06964670299742028,
+        "localization_max_error": 0.20512748149352236,
+        "final_speed": 0.0,
+        "progress": 36.81395289922839,
+        "emergency_steps": 2,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 401,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 399,
+        "stationary_holds": 339,
+        "max_acceleration_m_s2": 2.0000000000000213,
+        "max_deceleration_m_s2": 2.500000000000052
+      },
+      "control_metrics": {
+        "ticks": 401,
+        "emergency_ticks": 2,
+        "emergency_fraction": 0.004987531172069825,
+        "commanded_acceleration_change_rms_m_s3": 22.6657459205225,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000002
+      },
+      "clearance_regression": {
+        "floor_m": 4.0,
+        "measured_m": 64.01532323691806,
+        "passed": true
+      },
+      "live_navigation": {
+        "switches": 0,
+        "history": [
+          {
+            "time": 0.0,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "main",
+              "east-exit"
+            ]
+          }
+        ],
+        "stationary_world_verified": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "route-no-path",
+      "seed": 42,
+      "summary": {
+        "scenario": "Live closure: no route remains",
+        "seed": 42,
+        "simulated_seconds": 20.0,
+        "steps": 401,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 64.05480141091654,
+        "localization_rmse": 0.06370026661843561,
+        "localization_max_error": 0.18079567389637546,
+        "final_speed": 0.0,
+        "progress": 36.79544833677105,
+        "emergency_steps": 2,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 401,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 399,
+        "stationary_holds": 339,
+        "max_acceleration_m_s2": 2.00000000000003,
+        "max_deceleration_m_s2": 2.5000000000000595
+      },
+      "control_metrics": {
+        "ticks": 401,
+        "emergency_ticks": 2,
+        "emergency_fraction": 0.004987531172069825,
+        "commanded_acceleration_change_rms_m_s3": 31.046871438061203,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000004
+      },
+      "clearance_regression": {
+        "floor_m": 4.0,
+        "measured_m": 64.05480141091654,
+        "passed": true
+      },
+      "live_navigation": {
+        "switches": 0,
+        "history": [
+          {
+            "time": 0.0,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "main",
+              "east-exit"
+            ]
+          }
+        ],
+        "stationary_world_verified": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "route-reopen",
+      "seed": 1,
+      "summary": {
+        "scenario": "Live closure: hold then reopened detour",
+        "seed": 1,
+        "simulated_seconds": 59.800000000000004,
+        "steps": 1197,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.7794313783009081,
+        "localization_rmse": 0.06301401968842467,
+        "localization_max_error": 0.17654427891989333,
+        "final_speed": 0.14841863031359667,
+        "progress": 208.60090089461076,
+        "emergency_steps": 12,
+        "avoidance_steps": 172,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1197,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1185,
+        "stationary_holds": 455,
+        "max_acceleration_m_s2": 2.0000000000000324,
+        "max_deceleration_m_s2": 2.500000000000052
+      },
+      "control_metrics": {
+        "ticks": 1197,
+        "emergency_ticks": 12,
+        "emergency_fraction": 0.010025062656641603,
+        "commanded_acceleration_change_rms_m_s3": 27.345757361341654,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000002
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.7794313783009081,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "detour",
+          "east-exit"
+        ],
+        "distance_m": 209.53013247932833,
+        "goal_distance_m": 0.929233052302833,
+        "passed": true
+      },
+      "live_navigation": {
+        "switches": 1,
+        "history": [
+          {
+            "time": 0.0,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "main",
+              "east-exit"
+            ]
+          },
+          {
+            "time": 15.100000000000001,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "detour",
+              "east-exit"
+            ]
+          }
+        ],
+        "stationary_world_verified": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "route-reopen",
+      "seed": 7,
+      "summary": {
+        "scenario": "Live closure: hold then reopened detour",
+        "seed": 7,
+        "simulated_seconds": 59.75,
+        "steps": 1196,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.7945202467075161,
+        "localization_rmse": 0.06997208442923745,
+        "localization_max_error": 0.20512748149352236,
+        "final_speed": 0.10374887636935161,
+        "progress": 208.5280957588837,
+        "emergency_steps": 8,
+        "avoidance_steps": 167,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1196,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1188,
+        "stationary_holds": 461,
+        "max_acceleration_m_s2": 2.0000000000000213,
+        "max_deceleration_m_s2": 2.500000000000052
+      },
+      "control_metrics": {
+        "ticks": 1196,
+        "emergency_ticks": 8,
+        "emergency_fraction": 0.006688963210702341,
+        "commanded_acceleration_change_rms_m_s3": 22.661926129189133,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000002
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.7945202467075161,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "detour",
+          "east-exit"
+        ],
+        "distance_m": 209.53013247932833,
+        "goal_distance_m": 1.0100444276776863,
+        "passed": true
+      },
+      "live_navigation": {
+        "switches": 1,
+        "history": [
+          {
+            "time": 0.0,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "main",
+              "east-exit"
+            ]
+          },
+          {
+            "time": 15.100000000000001,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "detour",
+              "east-exit"
+            ]
+          }
+        ],
+        "stationary_world_verified": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "route-reopen",
+      "seed": 42,
+      "summary": {
+        "scenario": "Live closure: hold then reopened detour",
+        "seed": 42,
+        "simulated_seconds": 59.25,
+        "steps": 1186,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.6711013288500927,
+        "localization_rmse": 0.06287975497558995,
+        "localization_max_error": 0.1829849678889259,
+        "final_speed": 0.12371580333445178,
+        "progress": 208.4890010628642,
+        "emergency_steps": 4,
+        "avoidance_steps": 202,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1186,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1182,
+        "stationary_holds": 457,
+        "max_acceleration_m_s2": 2.0000000000000258,
+        "max_deceleration_m_s2": 2.5000000000000595
+      },
+      "control_metrics": {
+        "ticks": 1186,
+        "emergency_ticks": 4,
+        "emergency_fraction": 0.003372681281618887,
+        "commanded_acceleration_change_rms_m_s3": 22.10452378964215,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000002
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 1.6711013288500927,
+        "passed": true
+      },
+      "navigation": {
+        "edge_ids": [
+          "approach",
+          "detour",
+          "east-exit"
+        ],
+        "distance_m": 209.53013247932833,
+        "goal_distance_m": 1.0502511863362072,
+        "passed": true
+      },
+      "live_navigation": {
+        "switches": 1,
+        "history": [
+          {
+            "time": 0.0,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "main",
+              "east-exit"
+            ]
+          },
+          {
+            "time": 15.100000000000001,
+            "estimated_speed": 0.0,
+            "true_speed": 0.0,
+            "edge_ids": [
+              "approach",
+              "detour",
+              "east-exit"
+            ]
+          }
+        ],
+        "stationary_world_verified": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "gnss-spike",
+      "seed": 1,
+      "summary": {
+        "scenario": "gnss-spike",
+        "seed": 1,
+        "simulated_seconds": 39.7,
+        "steps": 795,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.9578274043967108,
+        "localization_rmse": 0.07461060690947688,
+        "localization_max_error": 0.2280777778225118,
+        "final_speed": 0.14355794609822684,
+        "progress": 219.67148866078136,
+        "emergency_steps": 5,
+        "avoidance_steps": 104,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 795,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 790,
+        "stationary_holds": 173,
+        "max_acceleration_m_s2": 2.000000000000033,
+        "max_deceleration_m_s2": 2.500000000000049
+      },
+      "control_metrics": {
+        "ticks": 795,
+        "emergency_ticks": 5,
+        "emergency_fraction": 0.006289308176100629,
+        "commanded_acceleration_change_rms_m_s3": 20.340861641990834,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000003
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.9578274043967108,
+        "passed": true
+      },
+      "gnss_fault": {
+        "biased_fixes": 1,
+        "rejected_fixes": 1,
+        "accepted_fixes": 198,
+        "first_stale_s": null,
+        "first_recovered_fix_s": null,
+        "max_localization_error_m": 0.2280777778225118,
+        "max_error_limit_m": 0.5,
+        "fault_labels_absent_from_pipeline": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "gnss-spike",
+      "seed": 7,
+      "summary": {
+        "scenario": "gnss-spike",
+        "seed": 7,
+        "simulated_seconds": 39.75,
+        "steps": 796,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.9501040503805669,
+        "localization_rmse": 0.08068108230248792,
+        "localization_max_error": 0.24612343013132884,
+        "final_speed": 0.07632662571377294,
+        "progress": 219.66068274140162,
+        "emergency_steps": 3,
+        "avoidance_steps": 107,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 796,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 793,
+        "stationary_holds": 170,
+        "max_acceleration_m_s2": 2.0000000000000386,
+        "max_deceleration_m_s2": 2.500000000000044
+      },
+      "control_metrics": {
+        "ticks": 796,
+        "emergency_ticks": 3,
+        "emergency_fraction": 0.0037688442211055275,
+        "commanded_acceleration_change_rms_m_s3": 17.55286975288682,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.9501040503805669,
+        "passed": true
+      },
+      "gnss_fault": {
+        "biased_fixes": 1,
+        "rejected_fixes": 1,
+        "accepted_fixes": 198,
+        "first_stale_s": null,
+        "first_recovered_fix_s": null,
+        "max_localization_error_m": 0.24612343013132884,
+        "max_error_limit_m": 0.5,
+        "fault_labels_absent_from_pipeline": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "gnss-spike",
+      "seed": 42,
+      "summary": {
+        "scenario": "gnss-spike",
+        "seed": 42,
+        "simulated_seconds": 39.75,
+        "steps": 796,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.930232107071256,
+        "localization_rmse": 0.07867211417758052,
+        "localization_max_error": 0.23373786967315233,
+        "final_speed": 0.11660870162767575,
+        "progress": 219.72144838615503,
+        "emergency_steps": 1,
+        "avoidance_steps": 91,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 796,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 795,
+        "stationary_holds": 170,
+        "max_acceleration_m_s2": 2.000000000000022,
+        "max_deceleration_m_s2": 2.500000000000054
+      },
+      "control_metrics": {
+        "ticks": 796,
+        "emergency_ticks": 1,
+        "emergency_fraction": 0.001256281407035176,
+        "commanded_acceleration_change_rms_m_s3": 14.969379981774555,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000003
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.930232107071256,
+        "passed": true
+      },
+      "gnss_fault": {
+        "biased_fixes": 1,
+        "rejected_fixes": 1,
+        "accepted_fixes": 198,
+        "first_stale_s": null,
+        "first_recovered_fix_s": null,
+        "max_localization_error_m": 0.23373786967315233,
+        "max_error_limit_m": 0.5,
+        "fault_labels_absent_from_pipeline": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "gnss-burst",
+      "seed": 1,
+      "summary": {
+        "scenario": "gnss-burst",
+        "seed": 1,
+        "simulated_seconds": 43.050000000000004,
+        "steps": 862,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.9590686709404537,
+        "localization_rmse": 0.0994097930440282,
+        "localization_max_error": 0.33338035322234777,
+        "final_speed": 0.18757020970679716,
+        "progress": 219.63708179946687,
+        "emergency_steps": 52,
+        "avoidance_steps": 127,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 862,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 810,
+        "stationary_holds": 171,
+        "max_acceleration_m_s2": 2.0000000000000324,
+        "max_deceleration_m_s2": 2.5000000000000484
+      },
+      "control_metrics": {
+        "ticks": 862,
+        "emergency_ticks": 52,
+        "emergency_fraction": 0.060324825986078884,
+        "commanded_acceleration_change_rms_m_s3": 19.120737366771863,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.9590686709404537,
+        "passed": true
+      },
+      "gnss_fault": {
+        "biased_fixes": 15,
+        "rejected_fixes": 15,
+        "accepted_fixes": 201,
+        "first_stale_s": 5.6000000000000005,
+        "first_recovered_fix_s": 8.0,
+        "max_localization_error_m": 0.33338035322234777,
+        "max_error_limit_m": 0.5,
+        "fault_labels_absent_from_pipeline": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "gnss-burst",
+      "seed": 7,
+      "summary": {
+        "scenario": "gnss-burst",
+        "seed": 7,
+        "simulated_seconds": 43.050000000000004,
+        "steps": 862,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.9528653722058076,
+        "localization_rmse": 0.10017027044560968,
+        "localization_max_error": 0.3009145213967077,
+        "final_speed": 0.19066960383596293,
+        "progress": 219.68388522183656,
+        "emergency_steps": 50,
+        "avoidance_steps": 130,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 862,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 812,
+        "stationary_holds": 167,
+        "max_acceleration_m_s2": 2.000000000000023,
+        "max_deceleration_m_s2": 2.500000000000043
+      },
+      "control_metrics": {
+        "ticks": 862,
+        "emergency_ticks": 50,
+        "emergency_fraction": 0.058004640371229696,
+        "commanded_acceleration_change_rms_m_s3": 16.501468542720556,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 0.9528653722058076,
+        "passed": true
+      },
+      "gnss_fault": {
+        "biased_fixes": 15,
+        "rejected_fixes": 15,
+        "accepted_fixes": 201,
+        "first_stale_s": 5.6000000000000005,
+        "first_recovered_fix_s": 8.0,
+        "max_localization_error_m": 0.3009145213967077,
+        "max_error_limit_m": 0.5,
+        "fault_labels_absent_from_pipeline": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "gnss-burst",
+      "seed": 42,
+      "summary": {
+        "scenario": "gnss-burst",
+        "seed": 42,
+        "simulated_seconds": 43.150000000000006,
+        "steps": 864,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.009991175458048,
+        "localization_rmse": 0.12251583973833706,
+        "localization_max_error": 0.4154739825276243,
+        "final_speed": 0.11951857524085018,
+        "progress": 219.68349411466087,
+        "emergency_steps": 51,
+        "avoidance_steps": 142,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 864,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 813,
+        "stationary_holds": 164,
+        "max_acceleration_m_s2": 2.000000000000025,
+        "max_deceleration_m_s2": 2.5000000000000506
+      },
+      "control_metrics": {
+        "ticks": 864,
+        "emergency_ticks": 51,
+        "emergency_fraction": 0.059027777777777776,
+        "commanded_acceleration_change_rms_m_s3": 20.27745219092613,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000003
+      },
+      "clearance_regression": {
+        "floor_m": 0.5,
+        "measured_m": 1.009991175458048,
+        "passed": true
+      },
+      "gnss_fault": {
+        "biased_fixes": 15,
+        "rejected_fixes": 15,
+        "accepted_fixes": 201,
+        "first_stale_s": 5.6000000000000005,
+        "first_recovered_fix_s": 8.0,
+        "max_localization_error_m": 0.4154739825276243,
+        "max_error_limit_m": 0.5,
+        "fault_labels_absent_from_pipeline": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "gnss-persistent-bias",
+      "seed": 1,
+      "summary": {
+        "scenario": "gnss-persistent-bias",
+        "seed": 1,
+        "simulated_seconds": 20.0,
+        "steps": 401,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 28.774618437804197,
+        "localization_rmse": 0.2753344839859001,
+        "localization_max_error": 0.33338035322234777,
+        "final_speed": 0.0,
+        "progress": 27.210522715959634,
+        "emergency_steps": 289,
+        "avoidance_steps": 21,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 401,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 112,
+        "stationary_holds": 10,
+        "max_acceleration_m_s2": 2.00000000000001,
+        "max_deceleration_m_s2": 2.00000000000001
+      },
+      "control_metrics": {
+        "ticks": 401,
+        "emergency_ticks": 289,
+        "emergency_fraction": 0.7206982543640897,
+        "commanded_acceleration_change_rms_m_s3": 6.243922975386751,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 4.0,
+        "measured_m": 28.774618437804197,
+        "passed": true
+      },
+      "gnss_fault": {
+        "biased_fixes": 76,
+        "rejected_fixes": 76,
+        "accepted_fixes": 25,
+        "first_stale_s": 5.6000000000000005,
+        "first_recovered_fix_s": null,
+        "max_localization_error_m": 0.33338035322234777,
+        "max_error_limit_m": 0.5,
+        "fault_labels_absent_from_pipeline": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "gnss-persistent-bias",
+      "seed": 7,
+      "summary": {
+        "scenario": "gnss-persistent-bias",
+        "seed": 7,
+        "simulated_seconds": 20.0,
+        "steps": 401,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 28.63384565124595,
+        "localization_rmse": 0.25178189139352136,
+        "localization_max_error": 0.3009145213967077,
+        "final_speed": 0.0,
+        "progress": 27.286757170688563,
+        "emergency_steps": 289,
+        "avoidance_steps": 18,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 401,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 112,
+        "stationary_holds": 0,
+        "max_acceleration_m_s2": 2.00000000000001,
+        "max_deceleration_m_s2": 0.17214319857788318
+      },
+      "control_metrics": {
+        "ticks": 401,
+        "emergency_ticks": 289,
+        "emergency_fraction": 0.7206982543640897,
+        "commanded_acceleration_change_rms_m_s3": 6.278463445994533,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 4.0,
+        "measured_m": 28.63384565124595,
+        "passed": true
+      },
+      "gnss_fault": {
+        "biased_fixes": 76,
+        "rejected_fixes": 76,
+        "accepted_fixes": 25,
+        "first_stale_s": 5.6000000000000005,
+        "first_recovered_fix_s": null,
+        "max_localization_error_m": 0.3009145213967077,
+        "max_error_limit_m": 0.5,
+        "fault_labels_absent_from_pipeline": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "gnss-persistent-bias",
+      "seed": 42,
+      "summary": {
+        "scenario": "gnss-persistent-bias",
+        "seed": 42,
+        "simulated_seconds": 20.0,
+        "steps": 401,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 28.730576163037487,
+        "localization_rmse": 0.3459882462308054,
+        "localization_max_error": 0.4154739825276243,
+        "final_speed": 0.0,
+        "progress": 27.227825260594457,
+        "emergency_steps": 289,
+        "avoidance_steps": 25,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 401,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 112,
+        "stationary_holds": 0,
+        "max_acceleration_m_s2": 2.0000000000000107,
+        "max_deceleration_m_s2": 0.21482827736413268
+      },
+      "control_metrics": {
+        "ticks": 401,
+        "emergency_ticks": 289,
+        "emergency_fraction": 0.7206982543640897,
+        "commanded_acceleration_change_rms_m_s3": 6.364829412049146,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000003
+      },
+      "clearance_regression": {
+        "floor_m": 4.0,
+        "measured_m": 28.730576163037487,
+        "passed": true
+      },
+      "gnss_fault": {
+        "biased_fixes": 76,
+        "rejected_fixes": 76,
+        "accepted_fixes": 25,
+        "first_stale_s": 5.6000000000000005,
+        "first_recovered_fix_s": null,
+        "max_localization_error_m": 0.4154739825276243,
+        "max_error_limit_m": 0.5,
+        "fault_labels_absent_from_pipeline": true,
+        "passed": true
+      }
+    }
+  ],
+  "passed": true,
+  "known_failures": [
+    {
+      "backend": "rne-dynamic",
+      "scenario": "gnss-burst-traffic",
+      "seed": 7,
+      "exit_code": 1,
+      "summary": {
+        "scenario": "GNSS burst with scheduled traffic",
+        "seed": 7,
+        "simulated_seconds": 65.0,
+        "steps": 1301,
+        "reached_goal": false,
+        "collisions": 32,
+        "road_violations": 0,
+        "min_clearance": -1.049489666834838,
+        "localization_rmse": 0.09089003702242046,
+        "localization_max_error": 0.3009145213967077,
+        "final_speed": 0.0,
+        "progress": 218.16445944874425,
+        "emergency_steps": 504,
+        "avoidance_steps": 268,
+        "max_tracks": 2,
+        "passed": false,
+        "failures": [
+          "32 colliding integration steps",
+          "minimum swept clearance -1.049 m is below 0.500 m",
+          "goal not reached within duration"
+        ]
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1301,
+        "verified": true
+      },
+      "acceptance_rejection_verified": true,
+      "stderr": "",
+      "replay_stderr": ""
+    }
+  ],
+  "baseline": {
+    "commit": "e851c2ac3eb9a0bab7f995c97fa0fb7489400cc5",
+    "source_fingerprint_sha256": "4ed80b19b1a027947ca311911107f7cd9329919bf8b4f26d28523879586cd94e",
+    "diagonal_gate_nis": 1.9607843137254901,
+    "joint_gate_nis": 66.66666666666667,
+    "threshold_nis": 36.0
+  }
+}
