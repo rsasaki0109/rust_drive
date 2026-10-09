@@ -10,9 +10,12 @@
 | Clustering / circle fitting / alpha-beta tracking | Implemented / tested | No semantic classes; nearest-neighbor association |
 | Log-odds occupancy map | Implemented / tested | Exported diagnostic; not a planner input; no SLAM |
 | Static obstacle avoidance | Implemented / tested | Wide supplied road, three candidate offsets |
-| Moving lead / crossing object sensing | Implemented / tested in mission | CV forecast; no actor interaction model |
+| Moving lead / crossing object sensing | Implemented / tested in mission | CV ego forecast; optional simulator actors react to scalar proximity observations |
+| Reactive traffic following / stopped lead / queue | Implemented / tested | 18 seeded positive runs; ideal route proximity sensing and bounded 1D actors, no steering, priority or interaction-aware ego forecast |
+| Traffic-pair collision and endpoint acceptance | Implemented / tested | Reactive actor pairs swept independently; negative collisions/overruns fail; scheduled-only pairs retain earlier criteria |
+| Narrow-corridor follower goal deadline | Retained limitation | Two RNE 65 s cases fail required residence; repeated conservative emergency stops remain |
 | Blocked road stop | Implemented / tested | Narrow-road scenario |
-| GNSS spike / burst / persistent-bias response | Implemented / tested | 30 physical fault runs with bounded error, accepted-age braking and recovery; scheduled traffic and post-arrival hold regressions |
+| GNSS spike / burst / persistent-bias response | Implemented / tested | 36 physical fault runs with bounded error, accepted-age braking and recovery; scheduled traffic and post-arrival hold regressions |
 | Terminal stopping-place preference / physical residence | Implemented / tested | Route-relative observed forward traffic, feasible lateral candidates; 16-second truth hold in two plants/three seeds, no general parking or escape planner |
 | LiDAR / GNSS dropout braking | Implemented / tested | Timestamp freshness and numeric checks |
 | Swept collision and road boundary evaluation | Implemented / tested | Circular bodies and planar route corridor |

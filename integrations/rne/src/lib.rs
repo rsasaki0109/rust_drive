@@ -12,6 +12,7 @@ use rne_sensor::{LidarRaycaster, LidarSpec, SensorNoiseKey, sample_lidar_checked
 use rne_world::Transform3;
 use rustdrive_core::{ControlCommand, EgoState, Gnss, LidarScan, Odometry, Pose, Vec2};
 use rustdrive_pipeline::{MotionLimits, PipelineConfig, SensorFrame};
+use rustdrive_sim::traffic::{TrafficTelemetry, TrafficWorld};
 use rustdrive_sim::{
     Run, Scenario, SimulationBackend, WorldObject, pipeline_config, simulate_with_backend,
 };
@@ -57,6 +58,7 @@ pub struct RneBackend {
     noise: KeyedRandom,
     seed: u64,
     plant: Plant,
+    traffic: TrafficWorld,
     /// Test/diagnostic injection; a checked raycast against an unknown world must brake.
     pub fail_lidar_from: Option<f64>,
 }
@@ -136,7 +138,9 @@ impl RneBackend {
         let physics_world = physics
             .create_world(PhysicsWorldDesc::default())
             .map_err(|e| e.to_string())?;
+        let traffic = TrafficWorld::new(scenario.clone(), config.route.clone());
         Ok(Self {
+            traffic,
             scenario,
             config,
             world,
@@ -195,7 +199,10 @@ impl SimulationBackend for RneBackend {
         }
     }
     fn objects(&self, time: f64) -> Vec<WorldObject> {
-        self.scenario.world_objects(&self.config.route, time)
+        self.traffic.objects(time)
+    }
+    fn traffic(&self) -> Vec<TrafficTelemetry> {
+        self.traffic.telemetry()
     }
     fn observe(&mut self, time: f64, tick: usize) -> Result<SensorFrame, String> {
         let truth = self.state();
@@ -275,6 +282,8 @@ impl SimulationBackend for RneBackend {
         if !command.finite() || !dt.is_finite() || dt <= 0.0 {
             return Err("invalid RNE actuation".into());
         }
+        self.traffic
+            .advance(self.state(), self.config.vehicle, dt)?;
         // RNE limits lateral tire force but shapes forward speed independently.
         // This adapter separately bounds longitudinal acceleration by mu*g.
         // A combined longitudinal/lateral friction ellipse is not modeled.
@@ -482,6 +491,40 @@ mod tests {
                     .unwrap();
                 assert!(lead.position.distance(*result.route.points.last().unwrap()) < 1e-8);
             }
+        }
+    }
+    #[test]
+    fn reactive_traffic_models_run_with_native_ego_dynamics() {
+        for name in [
+            "traffic-lead-stop",
+            "traffic-follower-brake",
+            "traffic-queue",
+        ] {
+            let r = run(scenario(name), 7, Plant::Dynamic).unwrap();
+            assert!(r.summary.passed, "{name}: {:?}", r.summary);
+            assert_eq!(
+                r.summary.collisions
+                    + r.summary.traffic_collisions
+                    + r.summary.traffic_road_violations,
+                0
+            );
+            assert!(r.summary.min_clearance >= 1.0);
+            assert!(r.frames.iter().any(|f| !f.traffic.is_empty()));
+        }
+    }
+    #[test]
+    fn conservative_follower_goal_deadline_is_explicitly_rejected() {
+        for seed in [1, 42] {
+            let r = run(scenario("traffic-follower-deadline"), seed, Plant::Dynamic).unwrap();
+            assert!(!r.summary.passed);
+            assert!(!r.summary.reached_goal);
+            assert_eq!(r.summary.collisions + r.summary.traffic_collisions, 0);
+            assert!(
+                r.summary
+                    .failures
+                    .iter()
+                    .any(|f| f.contains("goal not reached"))
+            );
         }
     }
     #[test]

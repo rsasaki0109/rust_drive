@@ -54,13 +54,24 @@ The integration has its own lockfile and does not enlarge the default workspace 
 bash scripts/check-hazards.sh
 ```
 
-After RNE setup, this CPU-only command runs occlusion, lateral crossings, multiple blocked alternatives, low-friction avoidance and low-friction stopping across seeds 1, 7 and 42. It checks physical outcomes and recomputes every sensor log. All 102 positive local reference/RNE scenario runs pass, including 24 live-navigation and 30 GNSS-fault runs. Fixed minimum-clearance floors also guard the fixtures. The planner computes bounded acceleration profiles, uses their arrival times for circular sweeps, and rechecks retimed stops and stationary holds. The suite also checks profile kinematics independently. [Current terminal-stop results](docs/terminal-stopping.md); [GNSS gating baseline](docs/gnss-robustness.md); [tracking improvements](docs/tracking.md); [earlier swept-check regressions](docs/swept-planning.md).
+After RNE setup, this CPU-only command runs occlusion, lateral crossings, multiple blocked alternatives, low-friction avoidance and low-friction stopping across seeds 1, 7 and 42. It checks physical outcomes and recomputes every sensor log. All 120 positive local reference/RNE scenario runs pass, including 24 live-navigation, 36 GNSS-fault and 18 reactive-traffic runs. Fixed minimum-clearance floors also guard the fixtures. The planner computes bounded acceleration profiles, uses their arrival times for circular sweeps, and rechecks retimed stops and stationary holds. The suite also checks profile kinematics independently. [Current reactive-traffic results and retained deadline failures](docs/reactive-traffic.md); [terminal-stop baseline](docs/terminal-stopping.md); [GNSS gating baseline](docs/gnss-robustness.md); [tracking improvements](docs/tracking.md); [earlier swept-check regressions](docs/swept-planning.md).
+
+Two additional short RNE follower episodes remain collision-free but miss their 65 s goal-residence deadline; they are recorded separately and excluded from the positive count. [Outcome details](docs/reactive-traffic.md).
 
 The previously failing GNSS burst with scheduled traffic now reaches the goal without collisions. An additional fixture keeps evaluation running for 16 seconds after arrival, while the lead actor catches up to the endpoint. [Actual RNE recording, measurements and limits](docs/terminal-stopping.md).
 
 ![Initially occluded actor and crossing on an RNE run](assets/hazard-demo.gif)
 
 The tracking baseline produced 9/8/7 emergency ticks across the three seeds, compared with 73/83/80 in the preceding implementation. Both the scenario and physical acceptance criteria are unchanged. See the [measured comparison and RNE demo](docs/tracking.md).
+
+## Reactive traffic and stopped leads
+
+Optional simulator actors now follow their route with bounded acceleration, braking and finite-range proximity observations. Both plants exercise waiting for a stopped lead, resuming, braking behind ego during a GNSS outage and forming a stopped queue. The ego stack still uses constant-velocity prediction; conservative repeated stops near a narrow-road goal remain visible. [Actual RNE GIF, actor sensing boundary, measurements and failures](docs/reactive-traffic.md).
+
+```sh
+cargo run --release --locked --bin rustdrive -- run \
+  --scenario scenarios/traffic-lead-stop.json --seed 7 --output artifacts/traffic
+```
 
 ## Mapped destinations and closure detours
 
@@ -85,7 +96,7 @@ cargo run --release --locked --bin rustdrive -- run \
 | Planning | Three lateral candidates, smooth route geometry and quintic maneuvers joined from the estimated position / heading, synchronized circular sweeps, reachable acceleration / local curvature speed profiles, retimed stop/wait/resume and goal behavior |
 | Control | Interpolated pure pursuit, acceleration feedforward with bounded PI speed feedback, steering-rate limit, independent freshness / numeric guard |
 | Pipeline / replay | Transport-independent timestamped observations, health checks, full-output JSONL verification |
-| Simulation | Reference bicycle or optional RNE native Ackermann plants; noisy LiDAR/GNSS/odometry, swept collision evaluation |
+| Simulation | Reference bicycle or optional RNE native Ackermann ego plants; noisy sensing, optional reactive route-following traffic, swept ego/traffic acceptance |
 
 The occupancy grid is built and exported for inspection; the current planner uses the supplied route and tracked obstacles, not the occupancy grid. Initial heading and route are supplied calibration / navigation inputs. Runtime simulator obstacle labels and ground-truth poses are used by sensing, rendering, and evaluation, never by planning.
 
@@ -119,12 +130,13 @@ cargo run --release --locked --bin rustdrive -- run \
   --scenario scenarios/lidar-fault.json --seed 7 --output artifacts/lidar-fault
 ```
 
-CI checks formatting, Clippy, the workspace test suite, release builds, and the closed-loop demo on Linux, macOS, and Windows, plus GIF generation and the pinned CPU-only RNE integration on Linux. All five jobs passed for the preceding GNSS revision in [run 37871189925](https://github.com/rsasaki0109/rust_drive/actions/runs/37871189925). See [validation and limitations](docs/validation.md) for the checks actually executed and the initial infrastructure/toolchain failures.
+CI checks formatting, Clippy, the workspace test suite, release builds, and the closed-loop demo on Linux, macOS, and Windows, plus GIF generation and the pinned CPU-only RNE integration on Linux. All five jobs passed for the preceding terminal-stopping revision in [run 37875855573](https://github.com/rsasaki0109/rust_drive/actions/runs/37875855573). See [validation and limitations](docs/validation.md) for the checks actually executed and the initial infrastructure/toolchain failures.
 
 ## Architecture and contributing
 
 Ten small Cargo crates share transport-independent, serializable contracts. Algorithm implementations are ordinary synchronous Rust libraries. No custom executor or networking middleware is required. The optional RNE adapter and future ROS 2/CARLA bridges translate at the boundaries rather than become dependencies of the algorithms.
 
+- [Reactive traffic, stop/resume and retained deadline failures](docs/reactive-traffic.md)
 - [Terminal stopping, post-arrival evaluation and repaired traffic regression](docs/terminal-stopping.md)
 - [GNSS rejection, stopping/recovery and historical traffic failure](docs/gnss-robustness.md)
 - [Avoidance continuity and the repaired 6 m/s regression](docs/avoidance-continuity.md)

@@ -10,12 +10,13 @@ import sys
 
 ROOT = Path(__file__).resolve().parent.parent
 CASES = {
-    'reference': ['occluded-crossing', 'cut-in', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold'],
-    'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold'],
+    'reference': ['occluded-crossing', 'cut-in', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue'],
+    'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue'],
 }
 # Fixed regression floors, chosen against the preceding measured fixture results.
 # They are simulation test constraints, not a universal safe-distance specification.
 CLEARANCE_FLOORS_M = {
+    'traffic-lead-stop': 1.0, 'traffic-follower-brake': 1.0, 'traffic-queue': 1.0,
     'gnss-burst-traffic': 0.5, 'gnss-burst-traffic-hold': 0.5, 'gnss-spike': 0.5, 'gnss-burst': 0.5, 'gnss-persistent-bias': 4.0,
     'occluded-crossing': 1.0, 'cut-in': 0.7, 'multiple-blocked': 3.0,
     'opposing-crossings': 0.7, 'low-friction': 0.4, 'low-friction-stop': 4.0,
@@ -201,6 +202,141 @@ def check_goal_hold(run, log):
     return {'required_seconds': hold, 'observed_seconds': end-held[0]['time'],
             'maximum_excursion_m': excursion, 'minimum_sampled_clearance_m': clearance,
             'lead_reached_endpoint': True, 'acceptance_absent_from_pipeline': True, 'passed': True}
+
+
+def check_traffic(run, log, case):
+    """Independent fixture truth, measured ranges, actor kinematics and stop/resume checks."""
+    with log.open() as stream:
+        header = json.loads(next(stream))['header']
+        ticks = [record['tick'] for line in stream if (record := json.loads(line))['kind'] == 'tick']
+    if any(key in header['config'] for key in ['objects', 'following', 'traffic', 'stop_windows']):
+        raise ValueError('traffic truth/configuration entered the ego pipeline')
+    frames = run['frames']
+    specs = run['scenario']['objects']
+    length = sum(math.dist(xy(a), xy(b)) for a, b in zip(run['route']['points'], run['route']['points'][1:]))
+    if any(abs(p['y']) > 1e-9 for p in run['route']['points']):
+        raise ValueError('these independent traffic fixture checks require their straight route')
+    reactive = {i: s for i, s in enumerate(specs) if s.get('following')}
+    previous = None
+    minimum_pair = math.inf
+    max_acceleration = 0.0
+    sensor_samples = 0
+    for frame in frames:
+        objects = {o['id']: o for o in frame['objects']}
+        states = {a['id']: a for a in frame.get('traffic', [])}
+        for id, actor in states.items():
+            if id not in reactive or id not in objects:
+                raise ValueError('actor state lacks its physical body')
+            p, config = objects[id]['position'], reactive[id]['following']
+            if (abs(p['x']-actor['route_s_m']) > 1e-8 or abs(p['y']-reactive[id]['lateral']) > 1e-8
+                    or not math.isfinite(actor['speed_m_s']) or actor['speed_m_s'] < 0
+                    or abs(p['y'])+objects[id]['radius'] > run['route']['half_width']
+                    or p['x']+objects[id]['radius'] > length+1e-8):
+                raise ValueError('actor truth violates its route/finite-state bounds')
+            a = actor['acceleration_m_s2']
+            if not -config['max_deceleration_m_s2']-1e-8 <= a <= config['max_acceleration_m_s2']+1e-8:
+                raise ValueError('actor command exceeds calibrated acceleration bounds')
+            if previous:
+                old = next((s for s in previous.get('traffic', []) if s['id'] == id), None)
+                if old:
+                    dt = frame['time']-previous['time']
+                    if abs(dt-0.05) > 1e-8:
+                        raise ValueError('reactive actor evidence is missing a control tick')
+                    expected_speed = max(0.0, old['speed_m_s']+a*dt)
+                    if (abs(actor['speed_m_s']-expected_speed) > 1e-8
+                            or abs(actor['route_s_m']-old['route_s_m']-(old['speed_m_s']+expected_speed)*0.5*dt) > 1e-8):
+                        raise ValueError('actor was clamped/teleported instead of physically integrated')
+                    max_acceleration = max(max_acceleration, abs((actor['speed_m_s']-old['speed_m_s'])/dt))
+                    # Reconstruct the pre-step ideal route-aligned proximity sensor.
+                    candidates = [max(0.0, length-reactive[id]['radius']-old['route_s_m'])]
+                    scene = [o for o in previous['objects'] if o['id'] != id]
+                    scene += [{'position': previous['truth']['pose']['position'], 'radius': run['vehicle']['radius']}]
+                    for o in scene:
+                        dx = o['position']['x']-old['route_s_m']
+                        side = o['position']['y']-reactive[id]['lateral']
+                        radius = reactive[id]['radius']+o['radius']
+                        if dx >= 0 and abs(side) < radius:
+                            candidates.append(dx-math.sqrt(radius*radius-side*side))
+                    visible = [g for g in candidates if g <= config['sensor_range_m']]
+                    measured = min(visible) if visible else None
+                    observation = actor['observation']
+                    if abs(observation['stamp']-previous['time']) > 1e-8:
+                        raise ValueError('actor proximity observation is not from the pre-step scene')
+                    actual = observation['gap_m']
+                    if (actual is None) != (measured is None) or actual is not None and abs(actual-measured) > 1e-8:
+                        raise ValueError('actor gap differs from independently reconstructed sensing')
+                    old_gap = old['observation']['gap_m']
+                    closing = (max(-12.0, min(12.0, (old_gap-measured)/dt)) if old_gap is not None
+                               else old['speed_m_s']) if measured is not None else None
+                    if (closing is None) != (observation['closing_speed_m_s'] is None) or closing is not None and abs(closing-observation['closing_speed_m_s']) > 1e-8:
+                        raise ValueError('actor closing speed is not a measured range difference')
+                    sensor_samples += 1
+        for i, a in enumerate(frame['objects']):
+            for b in frame['objects'][i+1:]:
+                if a['id'] not in reactive and b['id'] not in reactive:
+                    continue
+                separation = math.dist(xy(a['position']), xy(b['position']))-a['radius']-b['radius']
+                if previous:
+                    old_objects = {o['id']: o for o in previous['objects']}
+                    if a['id'] in old_objects and b['id'] in old_objects:
+                        pa, pb = old_objects[a['id']]['position'], old_objects[b['id']]['position']
+                        x, y = pa['x']-pb['x'], pa['y']-pb['y']
+                        dx, dy = a['position']['x']-b['position']['x']-x, a['position']['y']-b['position']['y']-y
+                        u = max(0.0, min(1.0, -(x*dx+y*dy)/(dx*dx+dy*dy))) if dx*dx+dy*dy else 0.0
+                        separation = min(separation, math.hypot(x+u*dx, y+u*dy)-a['radius']-b['radius'])
+                minimum_pair = min(minimum_pair, separation)
+        previous = frame
+    if sensor_samples == 0 or run['summary'].get('traffic_collisions', 0) or run['summary'].get('traffic_road_violations', 0):
+        raise ValueError('reactive traffic was untested or violated physical acceptance')
+    if math.isfinite(minimum_pair):
+        if minimum_pair < 1.0 or abs(minimum_pair-run['summary']['traffic_min_clearance']) > 1e-8:
+            raise ValueError('independent actor-pair sweep differs from physical acceptance')
+    def hold_duration(predicate):
+        start = None
+        longest = 0.0
+        for f in frames:
+            if predicate(f):
+                if start is None: start = f['time']
+                longest = max(longest, f['time']-start)
+            else: start = None
+        return longest
+    if case == 'traffic-lead-stop':
+        ego_hold = hold_duration(lambda f: 17 <= f['time'] < 24 and f['truth']['speed'] < 0.1)
+        if ego_hold < 2.0 or not any(f['time'] > 26 and f['time'] < 42 and f['truth']['speed'] > 2 and f['truth']['pose']['position']['x'] > 100 for f in frames):
+            raise ValueError('ego did not wait for and resume behind the stopped lead')
+        if not all(f['traffic'][0]['speed_m_s'] < 0.1 for f in frames if 11 <= f['time'] < 23.9):
+            raise ValueError('lead did not physically stop in its requested window')
+    elif case == 'traffic-queue':
+        if any(a['speed_m_s'] > 0.05 for a in frames[-1]['traffic']) or not math.isfinite(minimum_pair):
+            raise ValueError('queue did not stop with measured actor-pair separation')
+        if any(a['route_s_m'] < reactive[a['id']]['s']+15 for a in frames[-1]['traffic']):
+            raise ValueError('queue fixture never exercised traffic motion')
+    elif case.startswith('traffic-follower'):
+        fault_end = run['scenario']['gnss_bias_windows'][0]['until']
+        ego_hold = hold_duration(lambda f: 11 <= f['time'] < fault_end and f['truth']['speed'] < 0.1)
+        actor_hold = hold_duration(lambda f: 12 <= f['time'] < fault_end and f.get('traffic') and f['traffic'][0]['speed_m_s'] < 0.1)
+        minimum_fault_speed = min(f['traffic'][0]['speed_m_s'] for f in frames if 12 <= f['time'] < fault_end)
+        if ego_hold < 1.0 or (case == 'traffic-follower-brake' and actor_hold < 0.25) or minimum_fault_speed >= 2.0:
+            raise ValueError('ego/follower did not physically stop during the GNSS fault')
+        if not any(16 < f['time'] < 30 and f['traffic'][0]['speed_m_s'] > 2.0 and f['truth']['speed'] > 2.0 for f in frames):
+            raise ValueError('reactive follower and ego never resumed')
+        if not any('StaleGnss' in t['expected']['health'] for t in ticks):
+            raise ValueError('ego braking fixture did not exercise accepted-GNSS expiry')
+        for t in ticks:
+            fix = t['input'].get('gnss')
+            if fix and 10 <= fix['stamp'] < fault_end and t['expected']['localization']['last_decision'] != 'RejectedInnovation':
+                raise ValueError('follower fixture did not reject the actual GNSS burst')
+        residence = 0.0
+        for f in reversed(frames):
+            if f['truth']['speed'] >= 0.2 or f['truth']['pose']['position']['x'] < length-2.0:
+                break
+            residence = frames[-1]['time']-f['time']
+        if case == 'traffic-follower-brake' and (residence < 8.0-1e-8 or not run['summary']['reached_goal']):
+            raise ValueError('ego did not remain at the goal for the complete physical hold')
+    return {'sensor_samples': sensor_samples, 'max_measured_actor_acceleration_m_s2': max_acceleration,
+            'minimum_actor_pair_clearance_m': minimum_pair if math.isfinite(minimum_pair) else None,
+            'actor_kinematics_verified': True, 'sensor_reconstruction_verified': True,
+            'traffic_labels_absent_from_pipeline': True, 'passed': True}
 
 
 def check_live_navigation(run, log, case):
@@ -408,6 +544,7 @@ def main():
                         row['replay'] = json.loads(replay_file.read_text())
                     ok = (code == 0 and summary['passed'] and summary['collisions'] == 0
                           and summary['road_violations'] == 0 and code_replay == 0
+                          and summary.get('traffic_collisions', 0) == 0 and summary.get('traffic_road_violations', 0) == 0
                           and summary.get('closure_violations', 0) == 0
                           and row.get('replay', {}).get('verified') is True
                           and row['replay']['ticks'] == summary['steps'])
@@ -422,7 +559,9 @@ def main():
                     run = json.loads((output/'run.json').read_text())
                     if case.startswith('gnss-'):
                         row['gnss_fault'] = check_gnss_fault(run, output/'sensors.jsonl', case)
-                    if run['scenario'].get('goal_hold_seconds'):
+                    if case.startswith('traffic-'):
+                        row['traffic'] = check_traffic(run, output/'sensors.jsonl', case)
+                    if case == 'gnss-burst-traffic-hold':
                         row['goal_hold'] = check_goal_hold(run, output/'sensors.jsonl')
                     if case in EXPECTED_EDGES:
                         row['navigation'] = check_navigation(run, case)
@@ -441,6 +580,29 @@ def main():
                 report['runs'].append(row)
                 report['passed'] &= row['passed']
                 print(f"{backend:11s} {case:20s} seed {seed:3d}: {'PASS' if row['passed'] else 'FAIL'}", flush=True)
+    if 'rne-dynamic' in backends:
+        report['known_failures'] = []
+        for seed in [1, 42]:
+            output = args.output/'known-failure/traffic-follower-deadline'/f'seed-{seed}'
+            output.mkdir(parents=True, exist_ok=True)
+            (output/'summary.json').unlink(missing_ok=True)
+            (output/'replay/replay.json').unlink(missing_ok=True)
+            code, error = invoke([rne, '--plant', 'dynamic', '--scenario', ROOT/'scenarios/traffic-follower-deadline.json', '--seed', seed, '--output', output])
+            summary = json.loads((output/'summary.json').read_text())
+            replay_code, replay_error = invoke([cli, 'replay', '--log', output/'sensors.jsonl', '--output', output/'replay'])
+            replay = json.loads((output/'replay/replay.json').read_text())
+            run = json.loads((output/'run.json').read_text())
+            traffic = check_traffic(run, output/'sensors.jsonl', 'traffic-follower-deadline')
+            rejected = (code == 1 and not summary['passed'] and not summary['reached_goal']
+                        and summary['collisions'] == 0 and summary['road_violations'] == 0
+                        and summary.get('traffic_collisions', 0) == 0 and summary.get('traffic_road_violations', 0) == 0
+                        and summary['min_clearance'] >= 1.0 and replay_code == 0 and replay['verified']
+                        and replay['ticks'] == summary['steps'] and summary['failures'] == ['goal not reached within duration'])
+            report['known_failures'].append({'backend': 'rne-dynamic', 'scenario': 'traffic-follower-deadline',
+                'seed': seed, 'exit_code': code, 'summary': summary, 'replay': replay,
+                'traffic': traffic, 'acceptance_rejection_verified': bool(rejected)})
+            report['passed'] &= bool(rejected)
+            print(f'rne-dynamic traffic-follower-deadline seed {seed}: deadline failure retained; rejection verified={rejected}', flush=True)
     report_file.write_text(json.dumps(report, indent=2)+'\n')
     print(f'{report_file}: {len(report["runs"])} runs; passed={report["passed"]}')
     return 0 if report['passed'] else 1

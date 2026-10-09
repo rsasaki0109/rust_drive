@@ -293,13 +293,13 @@ fn actors_exist_before_motion_begins() {
     let s = scenario("cut-in");
     let road = s.route();
     assert_eq!(
-        s.world_objects(&road, 0.0)[0].position,
-        s.world_objects(&road, 4.9)[0].position
+        s.scheduled_objects(&road, 0.0)[0].position,
+        s.scheduled_objects(&road, 4.9)[0].position
     );
     assert!(
-        s.world_objects(&road, 5.1)[0]
+        s.scheduled_objects(&road, 5.1)[0]
             .position
-            .distance(s.world_objects(&road, 0.0)[0].position)
+            .distance(s.scheduled_objects(&road, 0.0)[0].position)
             > 0.2
     );
 }
@@ -518,4 +518,100 @@ fn invalid_goal_residence_and_insufficient_episode_time_are_rejected() {
     let result = simulate(short, 7).unwrap();
     assert!(!result.summary.reached_goal);
     assert!(!result.summary.passed);
+}
+
+#[test]
+fn reactive_traffic_stops_resumes_and_replays_from_ego_observations() {
+    for name in [
+        "traffic-lead-stop",
+        "traffic-follower-brake",
+        "traffic-queue",
+    ] {
+        let result = simulate(scenario(name), 7).unwrap();
+        assert!(result.summary.passed, "{name}: {:?}", result.summary);
+        assert_eq!(result.summary.traffic_collisions, 0);
+        assert_eq!(result.summary.traffic_road_violations, 0);
+        assert!(result.summary.min_clearance >= 1.0);
+        assert!(result.frames.iter().any(|f| !f.traffic.is_empty()));
+        let mut bytes = Vec::new();
+        result
+            .sensor_log
+            .as_ref()
+            .unwrap()
+            .write(&mut bytes)
+            .unwrap();
+        assert_eq!(
+            rustdrive_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink())
+                .unwrap()
+                .ticks,
+            result.summary.steps
+        );
+    }
+}
+#[test]
+fn traffic_collisions_and_endpoint_overrun_fail_physical_acceptance() {
+    let mut s = scenario("traffic-queue");
+    s.objects = serde_json::from_value(serde_json::json!([
+        {"s":10,"lateral":0,"radius":1,"speed":10,"following":{"initial_speed_m_s":10,"sensor_range_m":5}},
+        {"s":30,"lateral":0,"radius":1}
+    ])).unwrap();
+    let r = simulate(s.clone(), 7).unwrap();
+    assert!(!r.summary.passed);
+    assert!(r.summary.traffic_collisions > 0);
+    s.objects.truncate(1);
+    s.objects[0].s = 137.0;
+    let r = simulate(s, 7).unwrap();
+    assert!(!r.summary.passed);
+    assert!(r.summary.traffic_road_violations > 0);
+    assert!(
+        r.frames
+            .iter()
+            .any(|f| f.objects[0].position.x > r.route.length())
+    );
+}
+#[test]
+fn malformed_following_parameters_and_stop_windows_are_rejected() {
+    let s = scenario("traffic-lead-stop");
+    for key in [
+        "minimum_gap_m",
+        "time_headway_s",
+        "max_acceleration_m_s2",
+        "comfortable_deceleration_m_s2",
+        "max_deceleration_m_s2",
+        "sensor_range_m",
+    ] {
+        let mut value = serde_json::to_value(&s).unwrap();
+        value["objects"][0]["following"][key] = serde_json::json!(-1.0);
+        assert!(
+            serde_json::from_value::<Scenario>(value)
+                .unwrap()
+                .validate()
+                .is_err()
+        );
+    }
+    let mut s = s;
+    s.objects[0].following.as_mut().unwrap().stop_windows.push(
+        rustdrive_sim::traffic::StopWindow {
+            from: 9.0,
+            until: 12.0,
+        },
+    );
+    assert!(s.validate().is_err());
+    s.objects[0]
+        .following
+        .as_mut()
+        .unwrap()
+        .stop_windows
+        .clear();
+    s.objects[0].lateral_speed = 1.0;
+    assert!(s.validate().is_err());
+    s.objects[0].lateral_speed = 0.0;
+    s.objects[0].moving_from = 2.0;
+    assert!(s.validate().is_err());
+    s.objects[0].moving_from = 0.0;
+    s.objects[0].speed = 0.001;
+    assert!(s.validate().is_err());
+    s.objects[0].speed = 4.0;
+    s.objects[0].following.as_mut().unwrap().initial_speed_m_s = f64::NAN;
+    assert!(s.validate().is_err());
 }

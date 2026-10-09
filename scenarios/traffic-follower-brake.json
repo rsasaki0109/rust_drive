@@ -1,0 +1,32 @@
+{
+  "name": "Reactive follower during ego GNSS braking and recovery",
+  "duration": 80,
+  "road_length": 160,
+  "half_width": 2.0,
+  "expected": "goal",
+  "cruise_speed": 4,
+  "min_clearance_m": 1.0,
+  "goal_hold_seconds": 8,
+  "gnss_bias_windows": [
+    {
+      "from": 10,
+      "until": 20,
+      "offset": {
+        "x": 30,
+        "y": -25
+      }
+    }
+  ],
+  "objects": [
+    {
+      "s": 0,
+      "lateral": 0,
+      "radius": 1,
+      "speed": 6,
+      "active_from": 6,
+      "following": {
+        "initial_speed_m_s": 4
+      }
+    }
+  ]
+}

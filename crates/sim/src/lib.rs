@@ -1,4 +1,5 @@
 //! Deterministic closed-loop simulator. Only sensor observations enter the stack.
+pub mod traffic;
 use rustdrive_core::*;
 use rustdrive_pipeline::navigation::{NavigationConfig, NavigationStatus, NavigationUpdate};
 use rustdrive_pipeline::replay::SensorLog;
@@ -6,6 +7,7 @@ use rustdrive_pipeline::{DrivingPipeline, PipelineConfig, SensorFrame};
 use rustdrive_routing::{RoadNetwork, RoadNetworkSpec, RoutePlan};
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
+use traffic::{FollowingSpec, TrafficTelemetry, TrafficWorld};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -22,6 +24,8 @@ pub struct ObjectSpec {
     /// Motion starts at this time; the object already exists at active_from.
     #[serde(default)]
     pub moving_from: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub following: Option<FollowingSpec>,
 }
 /// Plant calibration, supported only by the native dynamic RNE adapter.
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
@@ -187,6 +191,9 @@ impl Scenario {
             }
         }
         for o in &self.objects {
+            if let Some(following) = &o.following {
+                following.validate(o)?;
+            }
             if ![
                 o.s,
                 o.lateral,
@@ -244,11 +251,11 @@ impl Scenario {
             })
             .transpose()
     }
-    pub fn world_objects(&self, route: &Route, t: f64) -> Vec<WorldObject> {
+    pub fn scheduled_objects(&self, route: &Route, t: f64) -> Vec<WorldObject> {
         self.objects
             .iter()
             .enumerate()
-            .filter(|(_, o)| t >= o.active_from)
+            .filter(|(_, o)| o.following.is_none() && t >= o.active_from)
             .map(|(id, o)| {
                 let elapsed = (t - o.active_from.max(o.moving_from)).max(0.0);
                 WorldObject {
@@ -285,6 +292,8 @@ pub struct Frame {
     pub emergency: bool,
     pub progress: f64,
     pub clearance: f64,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub traffic: Vec<TrafficTelemetry>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub navigation: Option<NavigationStatus>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -299,6 +308,12 @@ pub struct Summary {
     pub reached_goal: bool,
     pub collisions: usize,
     pub road_violations: usize,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub traffic_collisions: usize,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub traffic_road_violations: usize,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub traffic_min_clearance: Option<f64>,
     pub min_clearance: f64,
     pub localization_rmse: f64,
     pub localization_max_error: f64,
@@ -409,12 +424,15 @@ fn swept_distance(a: Vec2, b: Vec2) -> f64 {
 pub trait SimulationBackend {
     fn state(&self) -> EgoState;
     fn objects(&self, time: f64) -> Vec<WorldObject>;
+    fn traffic(&self) -> Vec<TrafficTelemetry> {
+        vec![]
+    }
     fn observe(&mut self, time: f64, tick: usize) -> Result<SensorFrame, String>;
     fn advance(&mut self, command: ControlCommand, dt: f64) -> Result<(), String>;
 }
 struct ReferenceBackend {
     scenario: Scenario,
-    route: Route,
+    traffic: TrafficWorld,
     truth: EgoState,
     vehicle: VehicleConfig,
     rng: Rng,
@@ -425,7 +443,10 @@ impl SimulationBackend for ReferenceBackend {
         self.truth
     }
     fn objects(&self, time: f64) -> Vec<WorldObject> {
-        self.scenario.world_objects(&self.route, time)
+        self.traffic.objects(time)
+    }
+    fn traffic(&self) -> Vec<TrafficTelemetry> {
+        self.traffic.telemetry()
     }
     fn observe(&mut self, time: f64, tick: usize) -> Result<SensorFrame, String> {
         let odometry = Some(if tick == 0 {
@@ -477,6 +498,7 @@ impl SimulationBackend for ReferenceBackend {
         })
     }
     fn advance(&mut self, command: ControlCommand, dt: f64) -> Result<(), String> {
+        self.traffic.advance(self.truth, self.vehicle, dt)?;
         self.command = command;
         step_vehicle(&mut self.truth, command, self.vehicle, dt);
         Ok(())
@@ -509,7 +531,7 @@ pub fn simulate(scenario: Scenario, seed: u64) -> Result<Run, String> {
     let config = pipeline_config(&scenario);
     let backend = ReferenceBackend {
         scenario: scenario.clone(),
-        route: config.route.clone(),
+        traffic: TrafficWorld::new(scenario.clone(), config.route.clone()),
         truth: EgoState {
             pose: config.initial_pose,
             speed: 0.0,
@@ -547,6 +569,10 @@ pub fn simulate_with_backend(
     let mut frames = Vec::new();
     let mut collisions = 0;
     let mut road_violations = 0;
+    let mut traffic_collisions = 0;
+    let mut traffic_road_violations = 0;
+    let traffic_route = scenario.route();
+    let mut traffic_minimum: Option<f64> = None;
     let mut minimum = 1000.0_f64;
     let mut error_sum = 0.0;
     let mut error_max = 0.0_f64;
@@ -576,6 +602,19 @@ pub fn simulate_with_backend(
         let time = i as f64 * dt;
         let truth = backend.state();
         let objects = backend.objects(time);
+        let mut traffic_collided = false;
+        for (i, a) in objects.iter().enumerate() {
+            for b in &objects[i + 1..] {
+                if scenario.objects[a.id as usize].following.is_none()
+                    && scenario.objects[b.id as usize].following.is_none()
+                {
+                    continue;
+                }
+                let separation = a.position.distance(b.position) - a.radius - b.radius;
+                traffic_minimum = Some(traffic_minimum.map_or(separation, |v| v.min(separation)));
+                traffic_collided |= separation < 0.0;
+            }
+        }
         let mut input = backend.observe(time, i)?;
         // Fault injection changes observations only, using the acquisition clock.
         // The pipeline/replay header does not contain the scheduled fault labels.
@@ -672,7 +711,17 @@ pub fn simulate_with_backend(
             goal_since = None;
         }
         let finished = reached_goal || time >= scenario.duration;
-        if i.is_multiple_of(2) || finished || goal_since == Some(time) {
+        let traffic = backend.traffic();
+        for actor in &traffic {
+            let object = objects.iter().find(|o| o.id == actor.id).unwrap();
+            if traffic_route.project(object.position).1.abs() + object.radius
+                > traffic_route.half_width
+                || actor.route_s_m + object.radius > traffic_route.length() + 1e-8
+            {
+                traffic_road_violations += 1;
+            }
+        }
+        if !traffic.is_empty() || i.is_multiple_of(2) || finished || goal_since == Some(time) {
             frames.push(Frame {
                 time,
                 truth,
@@ -686,11 +735,13 @@ pub fn simulate_with_backend(
                 emergency,
                 progress,
                 clearance,
+                traffic,
                 navigation: navigation_status,
                 localization: localization_status,
             });
         }
         if finished {
+            traffic_collisions += usize::from(traffic_collided);
             collisions += usize::from(clearance < 0.0);
             break;
         }
@@ -698,6 +749,30 @@ pub fn simulate_with_backend(
         backend.advance(command, dt)?;
         let next_truth = backend.state();
         let next_objects = backend.objects(time + dt);
+        for (i, a) in next_objects.iter().enumerate() {
+            for b in &next_objects[i + 1..] {
+                if scenario.objects[a.id as usize].following.is_none()
+                    && scenario.objects[b.id as usize].following.is_none()
+                {
+                    continue;
+                }
+                let separation = if let (Some(old_a), Some(old_b)) = (
+                    objects.iter().find(|o| o.id == a.id),
+                    objects.iter().find(|o| o.id == b.id),
+                ) {
+                    swept_distance(
+                        old_a.position.minus(old_b.position),
+                        a.position.minus(b.position),
+                    )
+                } else {
+                    a.position.distance(b.position)
+                } - a.radius
+                    - b.radius;
+                traffic_minimum = Some(traffic_minimum.map_or(separation, |v| v.min(separation)));
+                traffic_collided |= separation < 0.0;
+            }
+        }
+        traffic_collisions += usize::from(traffic_collided);
         let mut collided = clearance < 0.0;
         for next in &next_objects {
             let separation = if let Some(object) = objects.iter().find(|o| o.id == next.id) {
@@ -721,6 +796,16 @@ pub fn simulate_with_backend(
     if collisions > 0 {
         failures.push(format!("{collisions} colliding integration steps"));
     }
+    if traffic_road_violations > 0 {
+        failures.push(format!(
+            "{traffic_road_violations} traffic road boundary violations"
+        ));
+    }
+    if traffic_collisions > 0 {
+        failures.push(format!(
+            "{traffic_collisions} colliding traffic integration steps"
+        ));
+    }
     if road_violations > 0 {
         failures.push(format!("{road_violations} road boundary violations"));
     }
@@ -732,6 +817,13 @@ pub fn simulate_with_backend(
     {
         failures.push(format!(
             "minimum swept clearance {minimum:.3} m is below {required:.3} m"
+        ));
+    }
+    if let (Some(required), Some(measured)) = (scenario.min_clearance_m, traffic_minimum)
+        && measured < required
+    {
+        failures.push(format!(
+            "traffic swept clearance {measured:.3} m is below {required:.3} m"
         ));
     }
     if error_max > 1.0 {
@@ -757,6 +849,9 @@ pub fn simulate_with_backend(
         reached_goal,
         collisions,
         road_violations,
+        traffic_collisions,
+        traffic_road_violations,
+        traffic_min_clearance: traffic_minimum,
         min_clearance: minimum,
         localization_rmse: (error_sum / steps as f64).sqrt(),
         localization_max_error: error_max,

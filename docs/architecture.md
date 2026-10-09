@@ -9,6 +9,9 @@ RustDrive aims to become an independent Rust autonomous driving stack. Version 0
 ```mermaid
 flowchart LR
   W[Simulator world] --> S[Ray-cast LiDAR / noisy GNSS / wheel speed + gyro]
+  W --> AS[Simulator-only route proximity sensing]
+  AS --> AC[Optional traffic following policy]
+  AC --> W
   S --> L[Localization EKF]
   S --> P[LiDAR clustering + circle fit]
   L --> P
@@ -90,6 +93,12 @@ For accelerated segments, the circular sweep additionally covers the deviation f
 **Control.** Pure pursuit uses a shorter speed-dependent preview, an interpolated lookahead-circle intersection, bounded steering and a steering-rate limit. Emergency recovery starts from the emitted zero steering command, including commands substituted by pipeline health checks; longitudinal feedback resets as well. Longitudinal control uses the first segment's acceleration as feedforward plus bounded PI feedback on its initial speed; a stationary hold does not command forward acceleration. The pipeline health checks and control guard substitute a −6 m/s² command for non-finite output, missing/stale/invalid sensors, acquisition errors or excessive position variance. A planner emergency also brakes. The simulation adapters enforce actual authority; infeasible states can trigger repeated emergency fallback. This guards a simulation workflow; it is not a certified safety mechanism or redundant vehicle controller.
 
 **Simulation and evaluation.** A kinematic bicycle with bounded speed, acceleration and steering is integrated every 0.05 s. The ego and obstacles have circular collision footprints; relative swept segments test collision between integration endpoints. Current and terminal overlaps are also scored, and newly active actors receive endpoint checks. Each evaluated tick counts at most one collision; exact continuous activation-time checking remains absent. Road containment uses the ego center plus circular radius against route half-width. Tire friction and actuator lag are outside the reference model. The optional RNE dynamic plant adds a friction limit and steering lag; road elevation, suspension, rectangular collision evaluation, weather, camera imagery and traffic laws remain outside the demonstrated operating domain. See the [adapter boundaries](../integrations/rne/README.md). Optional `goal_hold_seconds` keeps the entire loop and independent physical evaluator running after first arrival; leaving the goal or exceeding its speed threshold resets residence. The final truth frame is retained at termination. The 16-second traffic regression observes the lead reaching the endpoint after ego stops. No throughput or real-time guarantee is claimed.
+
+## Simulator traffic boundary
+
+`TrafficWorld` owns optional route-following actors and is shared by both backends. Actors consume ideal finite-range scalar gap/range-change observations and their own speed/target calibration; IDM-style bounded acceleration integrates speed and route distance at 20 Hz. Each reads the same pre-step scene. Ego truth is used in simulator sensor synthesis, never as an ego planner/localization input. Traffic sensing is ideal route-aligned geometry, not native actor LiDAR or interaction-aware ego prediction. Scheduled actors retain analytic timing and existing endpoint behavior; reactive actors do not clamp to obstacle gaps or hide endpoint overrun. Native RNE dynamics remain the ego plant; actor motion is the common one-dimensional integrator.
+
+Evaluation adds circular sweeps and clearance floors for actor pairs involving a reactive actor, plus reactive road/endpoint bounds. Reactive truth telemetry is retained at 20 Hz only in `run.json`; it never enters the sensor-log header or observations. [Implementation, stops/queues, independent checks and narrow-road deadline failures](reactive-traffic.md).
 
 ## Map navigation
 

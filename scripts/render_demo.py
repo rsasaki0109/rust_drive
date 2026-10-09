@@ -217,7 +217,9 @@ def main():
     run=json.loads(args.run.read_text())
     if run.get('schema_version')!=1 or not run['summary']['passed']:
         raise SystemExit('Refusing to render a success demo from an unsupported or failing run')
-    frames=run['frames'];indices=list(range(0,len(frames),3))
+    frames=run['frames'];indices=[0]
+    for i,frame in enumerate(frames[1:],1):
+        if frame['time']-frames[indices[-1]]['time']>=0.3-1e-9:indices.append(i)
     if indices[-1]!=len(frames)-1:indices.append(len(frames)-1)
     images=[render(run,frames[i],i) for i in indices]
     args.output.parent.mkdir(parents=True,exist_ok=True)
@@ -243,6 +245,11 @@ def main():
         for obj in scenario['objects']:
             for key in ['speed','lateral_speed','active_from','moving_from']:
                 obj.setdefault(key,0)
+            if obj.get('following') is not None:
+                defaults={'initial_speed_m_s':0.0,'minimum_gap_m':3.0,'time_headway_s':1.5,
+                          'max_acceleration_m_s2':2.0,'comfortable_deceleration_m_s2':2.0,
+                          'max_deceleration_m_s2':4.0,'sensor_range_m':45.0}
+                for key,value in defaults.items():obj['following'].setdefault(key,value)
         if run['scenario']!=scenario:
             continue
         seed=run['summary']['seed']
