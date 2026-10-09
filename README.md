@@ -64,6 +64,17 @@ cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml
   --multi-height --plant dynamic --seed 7 --output artifacts/multi-height
 ```
 
+The opt-in `--lidar-3d` mode acquires actual native XYZ returns from 720 azimuth columns and 16 inclined elevation rings. Validated beam ordinals, ranges and directions precede height selection and projection into the existing planar pipeline. This observes a beam between the earlier horizontal scan heights; finite elevation coverage still leaves blind zones. [Contract, independent checks and limitations](docs/lidar-3d.md).
+
+![Actual inclined 3D LiDAR sensing stopping before an elevated RNE beam](assets/lidar-3d-demo.gif)
+
+```sh
+cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- \
+  --scenario scenarios/native-scene-mid-stop.json --scene scenes/midbeam-barrier.json \
+  --lidar-3d --plant dynamic --seed 7 --output artifacts/lidar-3d-mid
+bash scripts/check-lidar-3d.sh --output artifacts/lidar-3d --compact
+```
+
 ```sh
 bash scripts/setup-rne.sh        # Fetch pinned RNE beside this checkout; Rust 1.95.0
 # Activate the Pillow venv below; install Blender for the opening 3D GIF.
@@ -73,7 +84,7 @@ bash scripts/rne-demo.sh dynamic
 # Or: bash scripts/rne-demo.sh kinematic
 ```
 
-The integration has its own lockfile and does not enlarge the default workspace dependencies. It uses RNE's native vehicle integrator and Rapier as a ray-query scene; independent circular/swept evaluation scores collisions. It does not use Rapier contact response or establish full 3D driving support. Setup preserves existing checkouts and stops if their revision differs. Detailed commands, coordinate conversion and engine fixes: [RNE integration](integrations/rne/README.md).
+The integration has its own lockfile and does not enlarge the default workspace dependencies. It uses RNE's native vehicle integrator and Rapier as a ray-query scene; independent circular/swept evaluation scores collisions, with a separate height-aware capsule guard for opt-in cuboids. It does not use Rapier contact response or establish full 3D driving support. Setup preserves existing checkouts and stops if their revision differs. Detailed commands, coordinate conversion and engine fixes: [RNE integration](integrations/rne/README.md).
 
 ## Hazard scenario regression suite
 

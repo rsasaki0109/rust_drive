@@ -14,6 +14,55 @@ from render_demo import font
 ROOT = Path(__file__).resolve().parent.parent
 
 
+def verify_recorded_lidar3d(evidence, calibration):
+    """Audit recorded XYZ/ordinal consistency; physical ray acceptance is separate."""
+    acquisitions = evidence.get('acquisitions')
+    if not isinstance(acquisitions, list) or not acquisitions:
+        raise ValueError('Inclined LiDAR evidence requires recorded acquisitions')
+    columns, rings = calibration['azimuth_columns'], calibration['elevation_rings']
+    ray_count = columns*rings
+    total, failed = 0, 0
+    for acquisition in acquisitions:
+        cloud = acquisition.get('cloud_3d')
+        if cloud is None and acquisition.get('cloud_3d_failed') is True:
+            failed += 1
+            continue
+        if not isinstance(cloud, dict):
+            raise ValueError('Inclined LiDAR acquisition has neither recorded cloud nor explicit failure')
+        ranges, returns = cloud.get('ranges_m'), cloud.get('returns')
+        if (not isinstance(ranges, list) or len(ranges) != ray_count or
+                not isinstance(returns, list) or len(returns) > ray_count):
+            raise ValueError('Inclined LiDAR cloud dimensions differ from calibrated firing ordinals')
+        slots = set()
+        for measured in returns:
+            index, point = measured['ray_index'], measured['point']
+            if type(index) is not int or not 0 <= index < ray_count or index in slots:
+                raise ValueError('Inclined LiDAR return has an invalid or duplicate firing ordinal')
+            slots.add(index)
+            coordinates = [point['x'], point['y'], point['z']]
+            if any(type(v) not in (int, float) or not math.isfinite(v) for v in coordinates):
+                raise ValueError('Inclined LiDAR XYZ coordinates must be finite')
+            vector = [coordinates[0], coordinates[1], coordinates[2]-calibration['mount_height_m']]
+            distance = math.sqrt(sum(v*v for v in vector))
+            observed = ranges[index]
+            if (type(observed) not in (int, float) or not math.isfinite(observed) or
+                    not calibration['min_range_m']-1e-7 <= distance <= calibration['max_range_m']+1e-7 or
+                    abs(observed-distance) > 1e-7):
+                raise ValueError('Inclined LiDAR XYZ range differs from its recorded ray range')
+            azimuth = -math.pi+2*math.pi*(index//rings)/(columns-1)
+            elevation = calibration['min_elevation_rad']+(calibration['max_elevation_rad']-
+                calibration['min_elevation_rad'])*(index % rings)/(rings-1)
+            expected = [math.cos(elevation)*math.cos(azimuth),
+                        -math.cos(elevation)*math.sin(azimuth), math.sin(elevation)]
+            if any(abs(actual/distance-wanted) > 1e-4 for actual, wanted in zip(vector, expected)):
+                raise ValueError('Inclined LiDAR return direction differs from its calibrated beam')
+        if {index for index, value in enumerate(ranges) if value is not None} != slots:
+            raise ValueError('Inclined LiDAR firing ranges and XYZ return identities differ')
+        total += len(returns)
+    return {'acquisitions': len(acquisitions), 'failed_acquisitions': failed,
+            'returns_verified': total, 'ray_ordinals_per_acquisition': ray_count}
+
+
 def load_native_scene(path, run):
     """Validate a successful simulator sidecar against the displayed timeline."""
     evidence = json.loads(path.read_text())
@@ -26,24 +75,41 @@ def load_native_scene(path, run):
             evidence['seed'] != run['summary']['seed']):
         raise ValueError('Native scene evidence requires a u64 seed matching the recording summary')
     if 'operating_mode' in evidence:
-        if evidence['operating_mode'] != 'multi_height_lidar':
+        mode = evidence['operating_mode']
+        if mode not in ['multi_height_lidar', 'lidar3d']:
             raise ValueError('Unsupported native scene operating mode')
-        calibration = evidence.get('multi_height_lidar', {})
-        if not isinstance(calibration, dict) or set(calibration) != {
-                'heights_m', 'collision_bottom_m', 'collision_top_m'}:
-            raise ValueError('Native multi-height evidence requires complete calibrated sensor metadata')
-        heights = calibration['heights_m']
-        if (not isinstance(heights, list) or len(heights) != 3 or
-                any(type(h) not in (int, float) or not math.isfinite(h) for h in heights) or
-                any(abs(actual-expected) > 1e-9 for actual, expected in
-                    zip(sorted(heights), [0.15, 0.6, 3.7]))):
-            raise ValueError('Native multi-height evidence must use the three measured calibrated planes')
+        calibration = evidence.get('multi_height_lidar' if mode == 'multi_height_lidar' else 'lidar3d', {})
+        if mode == 'multi_height_lidar':
+            if not isinstance(calibration, dict) or set(calibration) != {
+                    'heights_m', 'collision_bottom_m', 'collision_top_m'}:
+                raise ValueError('Native multi-height evidence requires complete calibrated sensor metadata')
+            heights = calibration['heights_m']
+            if (not isinstance(heights, list) or len(heights) != 3 or
+                    any(type(h) not in (int, float) or not math.isfinite(h) for h in heights) or
+                    any(abs(actual-expected) > 1e-9 for actual, expected in
+                        zip(sorted(heights), [0.15, 0.6, 3.7]))):
+                raise ValueError('Native multi-height evidence must use the three measured calibrated planes')
+        else:
+            expected = {'azimuth_columns': 720, 'elevation_rings': 16,
+                        'min_elevation_rad': -math.pi/12, 'max_elevation_rad': math.pi/12,
+                        'mount_height_m': 0.6, 'min_range_m': 0.2, 'max_range_m': 45.0}
+            if not isinstance(calibration, dict) or set(calibration) != set(expected) | {
+                    'collision_bottom_m', 'collision_top_m'}:
+                raise ValueError('Native inclined LiDAR evidence requires complete calibrated sensor metadata')
+            for field, wanted in expected.items():
+                value = calibration[field]
+                if (type(value) not in (int, float) or not math.isfinite(value) or
+                        abs(value-wanted) > 1e-9 or
+                        (field in ['azimuth_columns', 'elevation_rings'] and type(value) is not int)):
+                    raise ValueError('Inclined LiDAR metadata differs from the supported native beam calibration')
         radius = run['vehicle']['radius']
         for field, expected in [('collision_bottom_m', 0.1-radius),
                                 ('collision_top_m', 1.1+radius)]:
             value = calibration[field]
             if type(value) not in (int, float) or not math.isfinite(value) or abs(value-expected) > 1e-9:
                 raise ValueError('Native height gate must match the recorded ego capsule')
+        if mode == 'lidar3d':
+            verify_recorded_lidar3d(evidence, calibration)
     scene = evidence.get('scene', {})
     boxes = scene.get('static_cuboids')
     if (scene.get('schema_version') != 1 or not isinstance(scene.get('name'), str) or
@@ -213,8 +279,9 @@ def main():
             draw.text((22, 10), 'RustDrive', font=font(28, True), fill='#edf4ff')
             draw.text((204, 20), 'RNE NATIVE DYNAMICS  /  BLENDER 3D REPLAY', font=font(12, True), fill='#46e3c2')
             if native_evidence:
-                label = ('MULTI-HEIGHT / PLANAR EGO' if native_evidence.get('operating_mode') == 'multi_height_lidar'
-                         else 'PHYSICAL CUBOIDS / PLANAR EGO')
+                label = {'multi_height_lidar': 'MULTI-HEIGHT / PLANAR EGO',
+                         'lidar3d': 'INCLINED LIDAR / PLANAR EGO'}.get(
+                             native_evidence.get('operating_mode'), 'PHYSICAL CUBOIDS / PLANAR EGO')
                 draw.text((610, 36), label, font=font(11, True), fill='#ffb46e')
             phase = (frame.get('navigation') or {}).get('phase', frame['trajectory']['mode'])
             draw.text((22, 606), f"{phase.upper()}   |   {frame['truth']['speed']*3.6:.1f} km/h   |   t = {frame['time']:.1f} s", font=font(15, True), fill='#edf4ff')
@@ -275,6 +342,19 @@ def main():
                         if calibration['collision_bottom_m'] <= h <= calibration['collision_top_m']),
                     'collision_height_interval_m': [calibration['collision_bottom_m'], calibration['collision_top_m']],
                     'projection': 'calibrated height gate, then 5 cm body-XY first-point voxels'})
+            elif native_evidence.get('operating_mode') == 'lidar3d':
+                calibration = native_evidence['lidar3d']
+                details = provenance['native_scene']
+                del details['operational_lidar_height_m']
+                del details['diagnostic_lidar_heights_m']
+                details.update({
+                    'operating_mode': 'lidar3d', 'lidar3d_calibration': calibration,
+                    'cloud_frame': 'body forward/left, road-datum up',
+                    'recorded_cloud_audit': verify_recorded_lidar3d(native_evidence, calibration),
+                    'diagnostic_horizontal_heights_m': [0.6, 0.15, 3.7],
+                    'collision_height_interval_m': [calibration['collision_bottom_m'], calibration['collision_top_m']],
+                    'projection': 'measured Z gate, firing-ordinal order, then 5 cm body-XY first-return voxels',
+                    'instantaneous_scan': True, 'deskew': False})
         args.output.with_suffix('.json').write_text(json.dumps(provenance, indent=2)+'\n')
         print(f'{args.output}: {count} frames, 960x640, {args.output.stat().st_size:,} bytes')
 

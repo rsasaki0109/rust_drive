@@ -74,6 +74,8 @@ The new sub-low cuboid is 0.1 m high, with center height 0.05 m. Its top lies be
 
 These are authored flat-road simulation fixtures, not coverage of arbitrary 3D obstacles, road elevations, weather or real sensors. The next extension needs additional measured coverage and an explicit independent acceptance case for any claimed blind-zone improvement.
 
+A separate opt-in [inclined XYZ acquisition](lidar-3d.md) now supplies actual 16-ring native measurements and repairs authored between-plane and sub-low cases through validated planar projection. It preserves this horizontal mode and its existing failures; finite inclined elevation coverage and ground segmentation remain separate limitations. The matrix above records this preceding horizontal implementation, rather than the newer XYZ matrix.
+
 ## Audited 3D replay
 
 ![Actual RNE multi-height run detecting a 0.2 m high physical slab and stopping before it](../assets/multi-height-demo.gif)

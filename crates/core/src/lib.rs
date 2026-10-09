@@ -72,6 +72,37 @@ pub struct MultiHeightLidarScan {
     pub stamp: f64,
     pub planes: Vec<LidarPlane>,
 }
+/// Measured XYZ: body forward/left and up above the calibrated road datum.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Vec3 {
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
+}
+impl Vec3 {
+    pub fn new(x: f64, y: f64, z: f64) -> Self {
+        Self { x, y, z }
+    }
+    pub fn finite(self) -> bool {
+        self.x.is_finite() && self.y.is_finite() && self.z.is_finite()
+    }
+}
+/// One first return from a calibrated column/ring ordinal.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Lidar3dReturn {
+    pub ray_index: usize,
+    pub point: Vec3,
+}
+/// One instantaneous full sweep. Missing returns mean misses, while adapter
+/// acquisition errors must set the explicit failure flag in SensorFrame.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Lidar3dScan {
+    pub stamp: f64,
+    pub returns: Vec<Lidar3dReturn>,
+}
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct Odometry {
     pub stamp: f64,

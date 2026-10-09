@@ -12,10 +12,12 @@ use rne_robot::{AckermannDrive, VehicleDynamics, ackermann_kinematics, vehicle_d
 use rne_sensor::{LidarRaycaster, LidarSpec, SensorNoiseKey, sample_lidar_checked};
 use rne_world::Transform3;
 use rustdrive_core::{
-    ControlCommand, EgoState, Gnss, LidarPlane, LidarScan, MultiHeightLidarScan, Odometry, Pose,
-    Vec2,
+    ControlCommand, EgoState, Gnss, Lidar3dReturn, Lidar3dScan, LidarPlane, LidarScan,
+    MultiHeightLidarScan, Odometry, Pose, Vec2, Vec3 as BodyPoint3,
 };
-use rustdrive_pipeline::{MotionLimits, MultiHeightLidarConfig, PipelineConfig, SensorFrame};
+use rustdrive_pipeline::{
+    Lidar3dConfig, MotionLimits, MultiHeightLidarConfig, PipelineConfig, SensorFrame,
+};
 use rustdrive_sim::traffic::{TrafficTelemetry, TrafficWorld};
 use rustdrive_sim::{
     Run, Scenario, SimulationBackend, WorldObject, pipeline_config, simulate_with_backend,
@@ -68,15 +70,18 @@ pub struct RneBackend {
     traffic: TrafficWorld,
     scene: Option<Arc<Mutex<SceneCapture>>>,
     multi_height: bool,
+    lidar_3d: bool,
     /// Test/diagnostic injection; a checked raycast against an unknown world must brake.
     pub fail_lidar_from: Option<f64>,
     /// Test/diagnostic injection for an auxiliary operational plane only.
     pub fail_aux_lidar_from: Option<f64>,
+    /// Test/diagnostic injection affecting the inclined operational cloud only.
+    pub fail_lidar_3d_from: Option<f64>,
 }
 impl RneBackend {
     /// Creates a headless native vehicle with a CPU Rapier query scene.
     pub fn new(scenario: Scenario, seed: u64, plant: Plant) -> Result<Self, String> {
-        Self::create(scenario, seed, plant, None, false)
+        Self::create(scenario, seed, plant, None, false, false)
     }
     /// Adds simulator-only native sensing geometry; operational calibration is unchanged.
     pub fn new_with_scene(
@@ -88,7 +93,7 @@ impl RneBackend {
         if scenario.duration > 120.0 {
             return Err("native scene evidence requires duration <=120 seconds".into());
         }
-        Self::create(scenario, seed, plant, Some(scene), false)
+        Self::create(scenario, seed, plant, Some(scene), false, false)
     }
     /// Enables synchronized measured height planes without exposing scene labels.
     pub fn new_with_scene_multi_height(
@@ -100,7 +105,19 @@ impl RneBackend {
         if scenario.duration > 120.0 {
             return Err("native scene evidence requires duration <=120 seconds".into());
         }
-        Self::create(scenario, seed, plant, Some(scene), true)
+        Self::create(scenario, seed, plant, Some(scene), true, false)
+    }
+    /// Enables an actual inclined native LiDAR cloud, preserving raw return ordinals.
+    pub fn new_with_scene_lidar_3d(
+        scenario: Scenario,
+        seed: u64,
+        plant: Plant,
+        scene: Scene,
+    ) -> Result<Self, String> {
+        if scenario.duration > 120.0 {
+            return Err("native scene evidence requires duration <=120 seconds".into());
+        }
+        Self::create(scenario, seed, plant, Some(scene), false, true)
     }
     fn create(
         scenario: Scenario,
@@ -108,6 +125,7 @@ impl RneBackend {
         plant: Plant,
         scene: Option<Scene>,
         multi_height: bool,
+        lidar_3d: bool,
     ) -> Result<Self, String> {
         scenario.validate()?;
         if scenario.dynamics.is_some() && plant != Plant::Dynamic {
@@ -117,6 +135,19 @@ impl RneBackend {
         if multi_height {
             config.multi_height_lidar = Some(MultiHeightLidarConfig {
                 heights_m: vec![0.6, 0.15, 3.7],
+                collision_bottom_m: 0.1 - config.vehicle.radius,
+                collision_top_m: 1.1 + config.vehicle.radius,
+            });
+        }
+        if lidar_3d {
+            config.lidar3d = Some(Lidar3dConfig {
+                azimuth_columns: 720,
+                elevation_rings: 16,
+                min_elevation_rad: -std::f64::consts::PI / 12.0,
+                max_elevation_rad: std::f64::consts::PI / 12.0,
+                mount_height_m: 0.6,
+                min_range_m: 0.2,
+                max_range_m: 45.0,
                 collision_bottom_m: 0.1 - config.vehicle.radius,
                 collision_top_m: 1.1 + config.vehicle.radius,
             });
@@ -233,8 +264,10 @@ impl RneBackend {
             plant,
             scene,
             multi_height,
+            lidar_3d,
             fail_lidar_from: None,
             fail_aux_lidar_from: None,
+            fail_lidar_3d_from: None,
         })
     }
     /// The exact stack configuration used by this plant, included in its replay header.
@@ -317,6 +350,7 @@ impl SimulationBackend for RneBackend {
         };
         let mut lidar = None;
         let mut multi_height_lidar = None;
+        let mut lidar_3d = None;
         let mut lidar_failed = false;
         if tick.is_multiple_of(2) && self.scenario.lidar_dropout.is_none_or(|t| time < t) {
             self.sync_scene(time)?;
@@ -386,7 +420,7 @@ impl SimulationBackend for RneBackend {
                             );
                             let diagnostic = match diagnostic {
                                 Ok(cloud) => cloud,
-                                Err(_) if self.multi_height => {
+                                Err(_) if self.multi_height || self.lidar_3d => {
                                     lidar_failed = true;
                                     failed_heights.push(height);
                                     continue;
@@ -425,7 +459,7 @@ impl SimulationBackend for RneBackend {
                                 planes,
                             });
                         }
-                    } else {
+                    } else if !self.lidar_3d {
                         lidar = Some(LidarScan {
                             stamp: time,
                             points: cloud
@@ -438,6 +472,98 @@ impl SimulationBackend for RneBackend {
                 }
                 Err(_) => lidar_failed = true,
             }
+            if self.lidar_3d {
+                if let Some(scene) = &self.scene {
+                    let mut scene = scene.lock().map_err(|_| "native scene capture poisoned")?;
+                    if scene
+                        .acquisitions
+                        .last()
+                        .is_none_or(|a| a["time"].as_f64() != Some(time))
+                    {
+                        scene.acquisitions.push(json!({"time":time,"pose":pose_json(truth.pose),"objects":self.objects(time),"channels":[],"diagnostic_failed":true}));
+                    }
+                }
+                let spec_3d = LidarSpec {
+                    channel_count: 16,
+                    min_elevation_rad: -std::f64::consts::PI / 12.0,
+                    max_elevation_rad: std::f64::consts::PI / 12.0,
+                    ..spec
+                };
+                let cloud_world = if self.fail_lidar_3d_from.is_some_and(|t| time >= t) {
+                    PhysicsWorldId(u32::MAX)
+                } else {
+                    world
+                };
+                match sample_lidar_checked(
+                    &raycaster,
+                    cloud_world,
+                    &mount,
+                    &spec_3d,
+                    SensorNoiseKey::new(self.seed, 1, 4, tick as u64),
+                ) {
+                    Ok(cloud) => {
+                        let mut ranges: Vec<Option<f64>> = vec![None; 720 * 16];
+                        let mut returns = Vec::with_capacity(cloud.points_m.len());
+                        let inverse = mount.rotation.conjugate();
+                        for ((&point, &column), &ring) in cloud
+                            .points_m
+                            .iter()
+                            .zip(&cloud.ray_indices)
+                            .zip(&cloud.channel_indices)
+                        {
+                            let ray_index = column as usize * 16 + ring as usize;
+                            let range = (point - mount.translation).length();
+                            let slot = ranges
+                                .get_mut(ray_index)
+                                .ok_or("native 3D firing ordinal exceeds calibration")?;
+                            if slot.is_some() || !range.is_finite() {
+                                return Err(
+                                    "native 3D cloud has invalid or duplicate return".into()
+                                );
+                            }
+                            *slot = Some(range);
+                            let local = inverse * (point - mount.translation);
+                            returns.push(Lidar3dReturn {
+                                ray_index,
+                                point: BodyPoint3 {
+                                    x: local.x,
+                                    y: -local.z,
+                                    z: 0.6 + local.y,
+                                },
+                            });
+                        }
+                        if cloud.points_m.len() != cloud.ray_indices.len()
+                            || cloud.points_m.len() != cloud.channel_indices.len()
+                        {
+                            return Err("native 3D return attributes are not aligned".into());
+                        }
+                        if let Some(scene) = &self.scene {
+                            let mut scene =
+                                scene.lock().map_err(|_| "native scene capture poisoned")?;
+                            if let Some(acquisition) = scene.acquisitions.last_mut() {
+                                acquisition["cloud_3d"] =
+                                    json!({"ranges_m":ranges,"returns":returns});
+                            }
+                        }
+                        if !lidar_failed {
+                            lidar_3d = Some(Lidar3dScan {
+                                stamp: time,
+                                returns,
+                            });
+                        }
+                    }
+                    Err(_) => {
+                        lidar_failed = true;
+                        if let Some(scene) = &self.scene {
+                            let mut scene =
+                                scene.lock().map_err(|_| "native scene capture poisoned")?;
+                            if let Some(acquisition) = scene.acquisitions.last_mut() {
+                                acquisition["cloud_3d_failed"] = json!(true);
+                            }
+                        }
+                    }
+                }
+            }
         }
         Ok(SensorFrame {
             navigation_update: None,
@@ -447,6 +573,7 @@ impl SimulationBackend for RneBackend {
             gnss,
             lidar,
             multi_height_lidar,
+            lidar3d: lidar_3d,
             lidar_failed,
         })
     }
@@ -527,7 +654,7 @@ pub fn run_with_scene(
     plant: Plant,
     scene: Scene,
 ) -> Result<(Run, serde_json::Value), String> {
-    run_scene_mode(scenario, seed, plant, scene, false)
+    run_scene_mode(scenario, seed, plant, scene, false, false)
 }
 /// Execute the shared height-aware sensing path with simulator-only evidence.
 pub fn run_with_scene_multi_height(
@@ -536,7 +663,16 @@ pub fn run_with_scene_multi_height(
     plant: Plant,
     scene: Scene,
 ) -> Result<(Run, serde_json::Value), String> {
-    run_scene_mode(scenario, seed, plant, scene, true)
+    run_scene_mode(scenario, seed, plant, scene, true, false)
+}
+/// Execute with actual inclined native 3D sensing and simulator-only scene evidence.
+pub fn run_with_scene_lidar_3d(
+    scenario: Scenario,
+    seed: u64,
+    plant: Plant,
+    scene: Scene,
+) -> Result<(Run, serde_json::Value), String> {
+    run_scene_mode(scenario, seed, plant, scene, false, true)
 }
 fn run_scene_mode(
     scenario: Scenario,
@@ -544,8 +680,11 @@ fn run_scene_mode(
     plant: Plant,
     scene: Scene,
     multi_height: bool,
+    lidar_3d: bool,
 ) -> Result<(Run, serde_json::Value), String> {
-    let backend = if multi_height {
+    let backend = if lidar_3d {
+        RneBackend::new_with_scene_lidar_3d(scenario.clone(), seed, plant, scene)?
+    } else if multi_height {
         RneBackend::new_with_scene_multi_height(scenario.clone(), seed, plant, scene)?
     } else {
         RneBackend::new_with_scene(scenario.clone(), seed, plant, scene)?
@@ -553,6 +692,7 @@ fn run_scene_mode(
     let capture = backend.scene.as_ref().unwrap().clone();
     let config = backend.config();
     let calibration = config.multi_height_lidar.clone();
+    let calibration_3d = config.lidar3d.clone();
     let mut run = simulate_with_backend(
         scenario,
         seed,
@@ -573,6 +713,10 @@ fn run_scene_mode(
     if multi_height {
         evidence["operating_mode"] = json!("multi_height_lidar");
         evidence["multi_height_lidar"] = json!(calibration.unwrap());
+    }
+    if lidar_3d {
+        evidence["operating_mode"] = json!("lidar3d");
+        evidence["lidar3d"] = json!(calibration_3d.unwrap());
     }
     if evidence["summary"]["passed"] != json!(true) {
         run.summary.passed = false;
@@ -685,6 +829,158 @@ mod tests {
                 })
             }));
         }
+    }
+    #[test]
+    fn inclined_lidar_3d_detects_and_stops_a_barrier_between_all_horizontal_planes() {
+        let mut s = scenario("native-scene-ground-stop");
+        s.name = "Native inclined LiDAR: mid-height thin barrier".into();
+        let (run, evidence) = run_with_scene_lidar_3d(
+            s,
+            7,
+            Plant::Dynamic,
+            static_scene([35.0, 0.0, 1.5], [0.5, 3.0, 0.1]),
+        )
+        .unwrap();
+        assert!(run.summary.passed, "{:?}", run.summary);
+        assert!(!run.summary.reached_goal);
+        assert!(evidence["summary"]["min_clearance_m"].as_f64().unwrap() >= 1.0);
+        assert!(run.sensor_log.as_ref().unwrap().ticks.iter().any(|t| {
+            t.input.lidar3d.as_ref().is_some_and(|scan| {
+                scan.returns
+                    .iter()
+                    .any(|r| r.point.z > 1.35 && r.point.z < 1.65 && r.ray_index % 16 >= 8)
+            })
+        }));
+        assert!(
+            evidence["acquisitions"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .all(|a| a["channels"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .all(|c| c["ranges_m"]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .all(serde_json::Value::is_null)))
+        );
+        let mut bytes = vec![];
+        run.sensor_log.as_ref().unwrap().write(&mut bytes).unwrap();
+        rustdrive_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink()).unwrap();
+    }
+    #[test]
+    fn inclined_lidar_3d_stops_the_slab_below_every_old_plane() {
+        let (run, evidence) = run_with_scene_lidar_3d(
+            scenario("native-scene-low-stop"),
+            7,
+            Plant::Dynamic,
+            static_scene([35.0, 0.0, 0.05], [0.5, 3.0, 0.05]),
+        )
+        .unwrap();
+        assert!(run.summary.passed, "{:?}", run.summary);
+        assert!(run.summary.max_tracks > 0);
+        assert!(evidence["summary"]["min_clearance_m"].as_f64().unwrap() >= 1.0);
+        assert_eq!(evidence["operating_mode"], json!("lidar3d"));
+        assert!(
+            run.sensor_log
+                .as_ref()
+                .unwrap()
+                .ticks
+                .iter()
+                .all(|t| t.input.lidar.is_none() && t.input.multi_height_lidar.is_none())
+        );
+    }
+    #[test]
+    fn inclined_lidar_3d_preserves_overhead_clearance() {
+        let (run, evidence) = run_with_scene_lidar_3d(
+            scenario("native-scene-raised-goal"),
+            7,
+            Plant::Dynamic,
+            static_scene([35.0, 0.0, 4.5], [0.5, 3.0, 1.0]),
+        )
+        .unwrap();
+        assert!(run.summary.passed, "{:?}", run.summary);
+        assert!(run.summary.reached_goal);
+        assert_eq!(run.summary.max_tracks, 0);
+        assert!((evidence["summary"]["min_clearance_m"].as_f64().unwrap() - 1.15).abs() < 1e-10);
+        assert!(run.sensor_log.as_ref().unwrap().ticks.iter().any(|t| {
+            t.input
+                .lidar3d
+                .as_ref()
+                .is_some_and(|scan| !scan.returns.is_empty())
+        }));
+    }
+    #[test]
+    fn inclined_lidar_3d_keeps_close_objects_outside_vertical_fov_as_failures() {
+        let mut backend = RneBackend::new_with_scene_lidar_3d(
+            scenario("native-scene-raised-goal"),
+            7,
+            Plant::Dynamic,
+            static_scene([5.0, 0.0, 2.25], [0.5, 2.0, 0.05]),
+        )
+        .unwrap();
+        let first = backend.observe(0.0, 0).unwrap();
+        assert!(first.lidar3d.unwrap().returns.is_empty());
+        let (run, evidence) = run_with_scene_lidar_3d(
+            scenario("native-scene-raised-goal"),
+            7,
+            Plant::Dynamic,
+            static_scene([5.0, 0.0, 2.25], [0.5, 2.0, 0.05]),
+        )
+        .unwrap();
+        assert!(!run.summary.passed);
+        assert_eq!(evidence["summary"]["min_clearance_m"], json!(0.0));
+    }
+    #[test]
+    fn inclined_lidar_3d_acquisition_failure_latches_until_complete_new_cloud() {
+        let mut backend = RneBackend::new_with_scene_lidar_3d(
+            scenario("native-scene-raised-goal"),
+            7,
+            Plant::Dynamic,
+            static_scene([35.0, 0.0, 4.5], [0.5, 3.0, 1.0]),
+        )
+        .unwrap();
+        let mut pipeline = rustdrive_pipeline::DrivingPipeline::new(backend.config()).unwrap();
+        pipeline.step(&backend.observe(0.0, 0).unwrap()).unwrap();
+        pipeline.step(&backend.observe(0.05, 1).unwrap()).unwrap();
+        backend.fail_lidar_3d_from = Some(0.1);
+        let failed = backend.observe(0.1, 2).unwrap();
+        assert!(failed.lidar_failed && failed.lidar3d.is_none());
+        let output = pipeline.step(&failed).unwrap();
+        assert!(
+            output
+                .health
+                .contains(&rustdrive_pipeline::HealthIssue::AcquisitionFailed)
+        );
+        assert_eq!(output.command.acceleration, -6.0);
+        let held = pipeline.step(&backend.observe(0.15, 3).unwrap()).unwrap();
+        assert_eq!(held.command.acceleration, -6.0);
+        backend.fail_lidar_3d_from = None;
+        let healthy = pipeline.step(&backend.observe(0.2, 4).unwrap()).unwrap();
+        assert!(
+            !healthy
+                .health
+                .contains(&rustdrive_pipeline::HealthIssue::AcquisitionFailed)
+        );
+        let mut s = scenario("lidar-fault");
+        s.lidar_dropout = None;
+        let mut backend = RneBackend::new_with_scene_lidar_3d(
+            s.clone(),
+            7,
+            Plant::Dynamic,
+            static_scene([35.0, 0.0, 4.5], [0.5, 3.0, 1.0]),
+        )
+        .unwrap();
+        backend.fail_lidar_3d_from = Some(6.0);
+        let config = backend.config();
+        let run =
+            simulate_with_backend(s, 7, backend, config, "rne-inclined-injected-failure").unwrap();
+        assert!(run.summary.passed, "{:?}", run.summary);
+        let mut bytes = vec![];
+        run.sensor_log.as_ref().unwrap().write(&mut bytes).unwrap();
+        rustdrive_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink()).unwrap();
     }
     #[test]
     fn multi_height_lidar_validates_overhead_returns_without_false_ground_obstacles() {

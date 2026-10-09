@@ -1,4 +1,6 @@
-use rustdrive_rne::{Plant, run, run_with_scene, run_with_scene_multi_height, scene::Scene};
+use rustdrive_rne::{
+    Plant, run, run_with_scene, run_with_scene_lidar_3d, run_with_scene_multi_height, scene::Scene,
+};
 use rustdrive_sim::Scenario;
 use std::{env, error::Error, fs, io::BufWriter, path::PathBuf, process};
 fn main() {
@@ -11,13 +13,14 @@ fn execute() -> Result<(), Box<dyn Error>> {
     let args: Vec<_> = env::args().skip(1).collect();
     if args.is_empty() || args[0] == "--help" {
         println!(
-            "rustdrive-rne --scenario FILE [--scene FILE] [--multi-height] [--plant kinematic|dynamic] [--seed N] [--output DIR]"
+            "rustdrive-rne --scenario FILE [--scene FILE] [--multi-height | --lidar-3d] [--plant kinematic|dynamic] [--seed N] [--output DIR]"
         );
         return Ok(());
     }
     let mut input = None;
     let mut scene_input = None;
     let mut multi_height = false;
+    let mut lidar_3d = false;
     let mut plant = Plant::Kinematic;
     let mut seed = 7;
     let mut output = PathBuf::from("artifacts/rne");
@@ -26,6 +29,11 @@ fn execute() -> Result<(), Box<dyn Error>> {
         let option = &args[index];
         if option == "--multi-height" {
             multi_height = true;
+            index += 1;
+            continue;
+        }
+        if option == "--lidar-3d" {
+            lidar_3d = true;
             index += 1;
             continue;
         }
@@ -49,11 +57,19 @@ fn execute() -> Result<(), Box<dyn Error>> {
     if multi_height && scene_input.is_none() {
         return Err("--multi-height requires --scene".into());
     }
+    if lidar_3d && scene_input.is_none() {
+        return Err("--lidar-3d requires --scene".into());
+    }
+    if multi_height && lidar_3d {
+        return Err("--multi-height and --lidar-3d are mutually exclusive".into());
+    }
     let scenario: Scenario =
         serde_json::from_str(&fs::read_to_string(input.ok_or("--scenario required")?)?)?;
     let (result, scene_evidence) = if let Some(path) = scene_input {
         let scene = Scene::from_json(&fs::read_to_string(path)?)?;
-        let (result, evidence) = if multi_height {
+        let (result, evidence) = if lidar_3d {
+            run_with_scene_lidar_3d(scenario, seed, plant, scene)?
+        } else if multi_height {
             run_with_scene_multi_height(scenario, seed, plant, scene)?
         } else {
             run_with_scene(scenario, seed, plant, scene)?

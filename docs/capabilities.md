@@ -30,10 +30,12 @@
 | Versioned sensor-log replay | Implemented / tested | Full recomputation; exact comparison on this build/platform; no physical acceptance inference |
 | RNE kinematic/dynamic closed loop | Implemented / tested | CPU-only native plant, planar LiDAR in 3D query scene, friction/steering-lag dynamic model |
 | RNE raycast acquisition failure | Implemented / tested | Explicit error causes braking; healthy empty scan is distinct |
-| Opt-in native static 3D cuboids | Implemented / tested | Actual yaw-rotated Rapier query geometry, three horizontal acquisition heights; only the existing 0.6 m scan drives perception; no contact-response plant |
+| Opt-in native static 3D cuboids | Implemented / tested | Actual yaw-rotated Rapier query geometry; default 0.6 m operational scan, opt-in multi-height or inclined XYZ modes; no contact-response plant |
 | Native scene capsule clearance | Implemented / independently checked | Recorded 200 Hz native positions and conservative speed-bound guard; fixed 1 m floor; low blind slabs rejected; separate simulator-only evidence |
 | Operational multi-height LiDAR projection | Implemented / tested | Explicit mode; bounded synchronized body-XY planes, calibrated vehicle-height selection, 5 cm duplicate cells and historical EKF pose; sparse coverage, planar detection/tracking |
 | Multi-height fault recovery and replay | Implemented / tested | Atomic timing/failure transport; malformed or partial bundles hold braking until a new complete post-fault acquisition; raw measured planes and calibration in sensor-only logs |
+| Native inclined 3D LiDAR acquisition | Implemented / tested | Opt-in 720 × 16 actual Rapier beams, ±15° elevation, instantaneous measured XYZ and firing ordinal; yaw-only flat-road mounting; finite vertical coverage; no physical road collider or ground segmentation |
+| Validated XYZ projection and replay | Implemented / tested | Bounded calibration, unique beam ordinals, range/direction validation before height gating and 5 cm XY deduplication; atomic timing and post-fault latch; downstream perception/map/planning remain planar |
 | Initially occluded / late lateral crossing fixtures | Implemented / tested | Reference/RNE across 3 seeds; circular scheduled actors, no semantics |
 | Low-friction avoidance and stopping | Implemented / tested | RNE dynamic mu=0.2, 0.15 s steering lag, separate longitudinal/lateral limits |
 | Calibrated braking / curvature speed limits | Implemented / tested | Fixed known limits; sampled curvature; no combined-friction optimization |
@@ -46,7 +48,7 @@
 | Multiple blocked alternatives / opposing crossings | Implemented / tested | Scheduled circular actors; independent physical acceptance and full replay |
 | Linux build/test | Verified locally | Rust 1.90.0; optional RNE uses 1.95.0 |
 | macOS / Windows | Remote checks observed on recorded revisions | Results and runner failures in [validation](validation.md); no local hosts |
-| Camera, radar, volumetric operational LiDAR, learned detection | Planned | Native multi-height horizontal scans are diagnostics; no placeholder inference implementation |
+| Camera, radar, volumetric perception, learned detection | Planned | Actual native XYZ acquisition projects into a planar obstacle pipeline; no 3D object semantics, camera/radar inference or placeholder implementation |
 | Learned prediction and training | Planned | No model/data/runtime packaged |
 | 3D mapping / SLAM / map localization | Planned | No truth-as-localization substitution |
 | Directed road graph / shortest-distance routing | Implemented / tested | Authored planar maps, deterministic Dijkstra, known pre-departure closure detours, 3 route fixtures × 2 plants × 3 seeds |

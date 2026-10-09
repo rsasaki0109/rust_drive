@@ -99,4 +99,6 @@ Omitting `--native-scene` preserves the existing cosmetic replay path and does n
 
 Implemented: optional native static cuboid query geometry, height-specific native ray evidence, simulator-side conservative capsule acceptance, an independent geometric checker, sensor-only replay, and audited visualization of those same cuboids.
 
-Not implemented: volumetric operational perception, 3D object tracking, a calibrated rectangular vehicle body, tire/road contact response, suspension, elevation changes, general mesh scenes, cameras, semantic recognition, real-vehicle safety validation or real-time guarantees. The next perception step must use measured multi-height returns with an explicit sensor contract and independent blind-obstacle acceptance, rather than feeding scene labels or simulator geometry to the driver.
+Subsequent explicit [multi-height projection](multi-height-lidar.md) and [inclined XYZ acquisition](lidar-3d.md) now feed measured returns through validated sensor contracts and independent blind-obstacle acceptance. Omitting those options retains the default mode described here, including its low-slab rejection.
+
+Not implemented: volumetric operational perception, 3D object tracking, a calibrated rectangular vehicle body, tire/road contact response, suspension, elevation changes, general mesh scenes, cameras, semantic recognition, real-vehicle safety validation or real-time guarantees. The inclined mode has finite ring coverage and no ground segmentation; scene labels and simulator geometry remain outside the driver.

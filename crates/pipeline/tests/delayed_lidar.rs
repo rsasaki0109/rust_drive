@@ -24,6 +24,7 @@ fn frame(time: f64) -> SensorFrame {
         }),
         lidar: None,
         multi_height_lidar: None,
+        lidar3d: None,
         lidar_failed: false,
         navigation_update: None,
         traffic_signal: None,
