@@ -56,6 +56,53 @@ pub struct LidarScan {
     pub stamp: f64,
     pub points: Vec<Vec2>,
 }
+/// A horizontal measured plane. XY points are body forward/left; height is
+/// meters above the calibrated road datum, not an inferred object label.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct LidarPlane {
+    pub height_m: f64,
+    pub points: Vec<Vec2>,
+}
+/// Synchronized horizontal sweeps with one acquisition timestamp. Adapters
+/// must report acquisition failure rather than substitute a missing plane.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MultiHeightLidarScan {
+    pub stamp: f64,
+    pub planes: Vec<LidarPlane>,
+}
+/// Measured XYZ: body forward/left and up above the calibrated road datum.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Vec3 {
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
+}
+impl Vec3 {
+    pub fn new(x: f64, y: f64, z: f64) -> Self {
+        Self { x, y, z }
+    }
+    pub fn finite(self) -> bool {
+        self.x.is_finite() && self.y.is_finite() && self.z.is_finite()
+    }
+}
+/// One first return from a calibrated column/ring ordinal.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Lidar3dReturn {
+    pub ray_index: usize,
+    pub point: Vec3,
+}
+/// One instantaneous full sweep. Missing returns mean misses, while adapter
+/// acquisition errors must set the explicit failure flag in SensorFrame.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Lidar3dScan {
+    pub stamp: f64,
+    pub returns: Vec<Lidar3dReturn>,
+}
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct Odometry {
     pub stamp: f64,
@@ -67,6 +114,24 @@ pub struct Gnss {
     pub stamp: f64,
     pub position: Vec2,
     pub variance: f64,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum GnssDecision {
+    Accepted,
+    RejectedInnovation,
+    Invalid,
+    IgnoredTimestamp,
+}
+/// GNSS correction diagnostics. Observation receipt is distinct from acceptance.
+#[derive(Clone, Copy, Debug, Default, Serialize, Deserialize)]
+pub struct LocalizationDiagnostics {
+    pub last_observed_stamp: Option<f64>,
+    pub last_accepted_stamp: Option<f64>,
+    pub last_decision: Option<GnssDecision>,
+    /// Joint two-dimensional normalized innovation; None for numeric overflow.
+    pub last_nis: Option<f64>,
+    pub accepted_fixes: u64,
+    pub rejected_fixes: u64,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Detection {
@@ -91,7 +156,9 @@ pub struct Prediction {
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct TrajectoryPoint {
     pub position: Vec2,
+    /// Planned speed in m/s at this position and relative time.
     pub speed: f64,
+    /// Seconds from the current sensor frame; segment speed varies linearly in time.
     pub time: f64,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]

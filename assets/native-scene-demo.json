@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "backend": "rne-dynamic-rapier-lidar",
+  "renderer": "Blender Cycles CPU",
+  "blender_version": "Blender 4.3.2",
+  "input_trace": "/tmp/rustdrive-native-scenes-final/dynamic/ground-barrier/seed-7/run.json",
+  "input_sha256": "76ab0039fe5e04e83589caf57ca20b7ecfb31cfb188ec23efef2fb3f69424688",
+  "rne_expected_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
+  "scenario": {
+    "name": "Native 3D scene: ground barrier stops the vehicle",
+    "duration": 35.0,
+    "road_length": 80.0,
+    "half_width": 2.1,
+    "curve_amplitude": 0.0,
+    "expected": "stop",
+    "lidar_dropout": null,
+    "gnss_dropout": null,
+    "cruise_speed": 4.0,
+    "objects": []
+  },
+  "summary": {
+    "scenario": "Native 3D scene: ground barrier stops the vehicle",
+    "seed": 7,
+    "simulated_seconds": 35.0,
+    "steps": 701,
+    "reached_goal": false,
+    "collisions": 0,
+    "road_violations": 0,
+    "min_clearance": 1000.0,
+    "localization_rmse": 0.06072012263969686,
+    "localization_max_error": 0.20512748149352236,
+    "final_speed": 0.0,
+    "progress": 25.828988453157343,
+    "emergency_steps": 9,
+    "avoidance_steps": 0,
+    "max_tracks": 1,
+    "passed": true,
+    "failures": []
+  },
+  "gif_frames": 118,
+  "sampled_frames": 118,
+  "playback_speed": 3,
+  "scene_states_verified": 118,
+  "samples": 8,
+  "physics_domain": "planar",
+  "scene": {
+    "style": "suburban-test-road-v2",
+    "seed": 1729,
+    "scenery_counts": {
+      "trees": 4,
+      "buildings": 2,
+      "lamps": 3,
+      "sidewalk_sections": 160
+    },
+    "ego_model": "hatchback",
+    "traffic_models": [],
+    "camera": "ego",
+    "mapped_signal_ids": [],
+    "mapped_stop_sign_ids": [],
+    "mapped_intersection_ids": [],
+    "native_scene_name": "Ground-level physical road barrier",
+    "native_cuboids": [
+      {
+        "id": "barrier",
+        "center_m": [
+          35.0,
+          0.0,
+          1.0
+        ],
+        "yaw_rad": 0.0,
+        "world_corners_m": [
+          [
+            34.5,
+            -3.0,
+            0.0
+          ],
+          [
+            35.5,
+            -3.0,
+            0.0
+          ],
+          [
+            35.5,
+            3.0,
+            0.0
+          ],
+          [
+            34.5,
+            3.0,
+            0.0
+          ],
+          [
+            34.5,
+            -3.0,
+            2.0
+          ],
+          [
+            35.5,
+            -3.0,
+            2.0
+          ],
+          [
+            35.5,
+            3.0,
+            2.0
+          ],
+          [
+            34.5,
+            3.0,
+            2.0
+          ]
+        ]
+      }
+    ]
+  },
+  "renderer_source_sha256": "0499798a01d26248794a913734d7f51dcc68f705c721aff8b273e76e8075ce0d",
+  "gif_palette_colors": 192,
+  "gif_dither": false,
+  "spatial_filter": "3x3 median, viewport only",
+  "renderer_command": "python3 scripts/render_demo_3d.py /tmp/rustdrive-native-scenes-final/dynamic/ground-barrier/seed-7/run.json --output assets/native-scene-demo.gif --samples 8 --threads 3 --camera ego --traffic-models hatchback --native-scene /tmp/rustdrive-native-scenes-final/dynamic/ground-barrier/seed-7/scene.json",
+  "native_scene": {
+    "input": "/tmp/rustdrive-native-scenes-final/dynamic/ground-barrier/seed-7/scene.json",
+    "input_sha256": "7fbfb29eaa2a846455ea205c7b5c3beddd0166e30b33b962f5c2639a0311a723",
+    "scene": {
+      "name": "Ground-level physical road barrier",
+      "schema_version": 1,
+      "static_cuboids": [
+        {
+          "center_m": [
+            35.0,
+            0.0,
+            1.0
+          ],
+          "half_extents_m": [
+            0.5,
+            3.0,
+            1.0
+          ],
+          "id": "barrier",
+          "yaw_rad": 0.0
+        }
+      ]
+    },
+    "summary": {
+      "checks": 14001,
+      "failures": [],
+      "guard_overlap_intervals": 0,
+      "min_clearance_m": 7.3910115468425985,
+      "passed": true
+    },
+    "seed": 7,
+    "body_pose_states_verified": 351,
+    "cuboid_mesh_states_verified": 118,
+    "operational_lidar_height_m": 0.6,
+    "diagnostic_lidar_heights_m": [
+      0.15,
+      3.7
+    ],
+    "contact_response": false
+  }
+}

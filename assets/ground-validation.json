@@ -1,0 +1,79 @@
+{
+  "source_fingerprint_sha256": "690f83645f0e4ca1cf888f52186d48c7e07c1332886b040350fd5fdc24f4a35f",
+  "workspace_check": {
+    "command": "CARGO_INCREMENTAL=0 bash scripts/check.sh",
+    "exit_code": 0,
+    "tests_passed": 233,
+    "scenario_replay_pairs": 49,
+    "log_sha256": "87aca84e8bad3e5a8d9d589eeb145dc51ae50639e8b4578030ff9966c55582c2"
+  },
+  "native_check": {
+    "toolchain": "1.95.0",
+    "profile": "release",
+    "fmt_passed": true,
+    "clippy_warnings_denied_passed": true,
+    "tests_passed": 46,
+    "test_log_sha256": "c7627b66a93a4fd25657b7fade5afb524146b5c222729705c555fa43d971b06e",
+    "clippy_log_sha256": "99f9552b1b84b91b0f76daa2570a97f11e5bc8a90ae3b59bb07d5551b9418a8b"
+  },
+  "new_ground_matrix": "assets/ground-results.json",
+  "external_map_matrix": "assets/osm-ground-results.json",
+  "corner_provenance": "assets/local-corner-results.json retains its pre-ground-refinement physical-run source fingerprint; these opt-in reference runs do not enable ground fitting.",
+  "legacy_byte_comparison": "assets/ground-legacy-results.json",
+  "render_proof": {
+    "gif_sha256": "3e8fa58a55d41b707ae37be99e83cc086d9e31f6616bae334806f958a585a7a0",
+    "bytes": 1488458,
+    "decoded_frames": 75,
+    "duration_ms": 8800,
+    "recorded_body_poses": 441,
+    "road_mesh_states": 75,
+    "body_mesh_states": 75,
+    "renderer_sha256": "7d4946749a97e8c574570ad64adbaa46a86ad60582737ad644f5826f1d2a3b30",
+    "source_hashes": {
+      "run.json": "59afd56d92ef44eb3d7f4e2a217dbb86a4e1c2a33cc8013394a852b737ff4dcc",
+      "scene.json": "2ed02bb84130b82069ce381d6dd738e20272dc883de19f83cf20fd328592d4c7",
+      "sensors.jsonl": "dfddfa39149ecebe6deb32da60e0345be089af8051bb195cdf9a7963901c06af"
+    },
+    "raw_cloud": {
+      "acquisitions": 221,
+      "failed_acquisitions": 0,
+      "returns_verified": 302290,
+      "ray_ordinals_per_acquisition": 2880
+    },
+    "ground": {
+      "observations_verified": 221,
+      "confident_fits": 221,
+      "removed_returns": 294135,
+      "preserved_returns": 8155,
+      "audit_scope": "recorded support/count/plane consistency; independent ground oracle is separate"
+    },
+    "body_guard": {
+      "calibration": {
+        "bottom_m": 0.15,
+        "calibration_kind": "authored_research_dimensions",
+        "center_offset_body_m": [
+          0.0,
+          0.0
+        ],
+        "clearance_floor_m": 1.0,
+        "height_m": 1.5,
+        "length_m": 4.2,
+        "pose_reference": "native_planar_plant_reference",
+        "speed_bound_m_s": 12.0,
+        "width_m": 1.8
+      },
+      "summary": {
+        "checks": 0,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": null,
+        "native_overlap_samples": 0,
+        "passed": true
+      },
+      "mesh_states_verified": 75,
+      "visualization": "separate wire envelope; cosmetic car dimensions are not calibrated",
+      "guard_scope": "upright body versus static obstacle cuboids; explicit road excluded",
+      "traffic_geometry": "native capsule proxies; circumscribed circular planar clearance"
+    }
+  }
+}

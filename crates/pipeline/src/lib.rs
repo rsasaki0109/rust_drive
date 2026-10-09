@@ -1,0 +1,1212 @@
+//! Shared sensor-to-command stack. No simulator, truth objects or physical world types.
+mod ground;
+pub mod intersections;
+pub use ground::{GroundConfig, GroundDiagnostics, GroundPlane};
+mod lidar3d;
+pub use lidar3d::Lidar3dConfig;
+mod multi_height;
+pub use multi_height::MultiHeightLidarConfig;
+mod map_localization;
+use map_localization::MapLocalization;
+pub use map_localization::{
+    MapLocalizationConfig, MapLocalizationDecision, MapLocalizationDiagnostics,
+};
+mod perception_3d;
+pub use perception_3d::{
+    AdaptiveTerrainSupportDiagnostics, MeasuredObject3d, Perception3dConfig,
+    Perception3dDiagnostics, TerrainSupportDiagnostics,
+};
+pub mod navigation;
+pub mod replay;
+mod scan_pose;
+pub mod stop_signs;
+pub mod traffic_controls;
+use intersections::{IntersectionStatus, YieldIntersection, YieldIntersections};
+use navigation::{
+    NavigationConfig, NavigationPhase, NavigationStatus, NavigationUpdate, Navigator,
+};
+use rustdrive_control::{PurePursuit, guard};
+use rustdrive_core::*;
+use rustdrive_localization::Ekf;
+use rustdrive_mapping::OccupancyGrid;
+use rustdrive_perception::{LidarClusters, Tracker};
+use rustdrive_planning::LatticePlanner;
+use rustdrive_prediction::ObservedBraking;
+use serde::{Deserialize, Serialize};
+use stop_signs::{StopSignStatus, StopSigns};
+use traffic_controls::{
+    SignalObservation, StopLine, TrafficControlStatus, TrafficControls, validate_stop_lines,
+};
+
+/// Conservative, externally calibrated planning limits, independent of simulator truth.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MotionLimits {
+    #[serde(default = "default_acceleration")]
+    pub max_acceleration_m_s2: f64,
+    pub max_deceleration_m_s2: f64,
+    pub max_lateral_acceleration_m_s2: f64,
+}
+fn is_false(value: &bool) -> bool {
+    !*value
+}
+fn default_acceleration() -> f64 {
+    2.0
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PipelineConfig {
+    pub route: Route,
+    pub initial_pose: Pose,
+    pub vehicle: VehicleConfig,
+    pub nominal_dt: f64,
+    pub cruise_speed: f64,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub local_route_geometry: bool,
+    /// Optional chassis-to-rear-axle distance for low-speed no-slip motion.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rear_axle_offset_m: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub motion_limits: Option<MotionLimits>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub multi_height_lidar: Option<MultiHeightLidarConfig>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub lidar3d: Option<Lidar3dConfig>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub localization_map: Option<MapLocalizationConfig>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub perception3d: Option<Perception3dConfig>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub navigation: Option<NavigationConfig>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub stop_lines: Vec<StopLine>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub stop_signs: Vec<StopLine>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub yield_intersections: Vec<YieldIntersection>,
+}
+impl PipelineConfig {
+    pub fn new(route: Route, initial_pose: Pose, vehicle: VehicleConfig) -> Self {
+        Self {
+            route,
+            initial_pose,
+            vehicle,
+            nominal_dt: 0.05,
+            cruise_speed: 8.0,
+            local_route_geometry: false,
+            rear_axle_offset_m: None,
+            motion_limits: None,
+            multi_height_lidar: None,
+            lidar3d: None,
+            localization_map: None,
+            perception3d: None,
+            navigation: None,
+            stop_lines: vec![],
+            stop_signs: vec![],
+            yield_intersections: vec![],
+        }
+    }
+    pub fn validate(&self) -> Result<(), String> {
+        if let Some(map) = &self.localization_map {
+            map.validate()?;
+        }
+        if let Some(perception) = &self.perception3d {
+            perception.validate(
+                self.lidar3d
+                    .as_ref()
+                    .ok_or("XYZ perception requires calibrated 3D LiDAR")?,
+            )?;
+        }
+        if self.multi_height_lidar.is_some() && self.lidar3d.is_some() {
+            return Err("LiDAR input modes must be exclusive".into());
+        }
+        if let Some(calibration) = &self.lidar3d {
+            calibration.validate()?;
+        }
+        if let Some(calibration) = &self.multi_height_lidar {
+            calibration.validate()?;
+        }
+        if self.route.points.len() > 5000 {
+            return Err("route exceeds 5000 points".into());
+        }
+        let canonical = Route::new(self.route.points.clone(), self.route.half_width)?;
+        if let Some(nav) = &self.navigation {
+            let plan = nav.initial_plan()?;
+            if plan.route.points != self.route.points
+                || plan.route.half_width != self.route.half_width
+            {
+                return Err("navigation map does not match configured initial route".into());
+            }
+        }
+        if canonical.lengths != self.route.lengths || canonical.length() > 1500.0 {
+            return Err("invalid route arc-length metadata or excessive route length".into());
+        }
+        if self.motion_limits.is_some_and(|limits| {
+            !limits.max_acceleration_m_s2.is_finite()
+                || !(0.1..=2.0).contains(&limits.max_acceleration_m_s2)
+                || !limits.max_deceleration_m_s2.is_finite()
+                || !(0.1..=6.0).contains(&limits.max_deceleration_m_s2)
+                || !limits.max_lateral_acceleration_m_s2.is_finite()
+                || !(0.1..=6.0).contains(&limits.max_lateral_acceleration_m_s2)
+        }) {
+            return Err("invalid calibrated motion limits".into());
+        }
+        if self.rear_axle_offset_m.is_some_and(|offset| {
+            !offset.is_finite()
+                || offset <= 0.0
+                || offset >= self.vehicle.wheelbase
+                || !self.local_route_geometry
+        }) {
+            return Err(
+                "chassis reference requires a bounded rear-axle offset and local route geometry"
+                    .into(),
+            );
+        }
+        if self.local_route_geometry {
+            if self.motion_limits.is_none() {
+                return Err(
+                    "local route geometry requires explicit lateral motion calibration".into(),
+                );
+            }
+            rustdrive_planning::validate_local_route_geometry(&self.route, self.vehicle)?;
+            if !self.stop_lines.is_empty()
+                || !self.stop_signs.is_empty()
+                || !self.yield_intersections.is_empty()
+            {
+                return Err(
+                    "local route geometry currently excludes mapped traffic-rule coordinates"
+                        .into(),
+                );
+            }
+        }
+        let controls: Vec<_> = self
+            .stop_lines
+            .iter()
+            .chain(&self.stop_signs)
+            .chain(self.yield_intersections.iter().map(|z| &z.stop_line))
+            .cloned()
+            .collect();
+        validate_stop_lines(&controls, &self.route, self.vehicle.radius)?;
+        intersections::validate(&self.yield_intersections, &self.route, self.vehicle.radius)?;
+        if self.stop_signs.iter().enumerate().any(|(i, line)| {
+            self.stop_signs[..i]
+                .iter()
+                .any(|old| (old.route_s_m - line.route_s_m).abs() < 8.0)
+        }) {
+            return Err("mapped stop signs must be at least 8 m apart".into());
+        }
+        if !controls.is_empty() && self.navigation.is_some() {
+            return Err(
+                "mapped traffic controls currently require a fixed route without live handover"
+                    .into(),
+            );
+        }
+        let v = self.vehicle;
+        if !self.initial_pose.position.finite()
+            || !self.initial_pose.yaw.is_finite()
+            || ![
+                v.wheelbase,
+                v.radius,
+                v.max_steer,
+                self.nominal_dt,
+                self.cruise_speed,
+            ]
+            .iter()
+            .all(|x| x.is_finite())
+            || !(0.5..=8.0).contains(&v.wheelbase)
+            || !(0.2..=3.0).contains(&v.radius)
+            || !(0.05..=0.55).contains(&v.max_steer)
+            || v.radius >= self.route.half_width
+            || !(0.01..=0.1).contains(&self.nominal_dt)
+            || !(0.1..=8.0).contains(&self.cruise_speed)
+        {
+            return Err("invalid pipeline calibration or limits".into());
+        }
+        Ok(())
+    }
+}
+/// New samples only; None means no new observation, not an empty healthy scan.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SensorFrame {
+    pub time: f64,
+    pub odometry: Option<Odometry>,
+    pub gnss: Option<Gnss>,
+    pub lidar: Option<LidarScan>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub multi_height_lidar: Option<MultiHeightLidarScan>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub lidar3d: Option<Lidar3dScan>,
+    /// Explicit adapter acquisition failure. Empty returns are otherwise valid.
+    #[serde(default)]
+    pub lidar_failed: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub navigation_update: Option<NavigationUpdate>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub traffic_signal: Option<SignalObservation>,
+}
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub enum HealthIssue {
+    MissingOdometry,
+    StaleOdometry,
+    StaleLidar,
+    StaleGnss,
+    GnssInnovationHold,
+    InvalidOdometry,
+    InvalidLidar,
+    InvalidGnss,
+    LocalizationUncertain,
+    AcquisitionFailed,
+    ClockGap,
+    InvalidNavigation,
+    InvalidTrafficSignal,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PipelineOutput {
+    pub time: f64,
+    pub estimate: EgoState,
+    pub tracks: Vec<Track>,
+    pub predictions: Vec<Prediction>,
+    pub trajectory: Trajectory,
+    pub command: ControlCommand,
+    pub emergency: bool,
+    pub health: Vec<HealthIssue>,
+    pub position_variance: f64,
+    /// Measured plane fit for this acquisition, absent on frames without one.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ground: Option<GroundDiagnostics>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub localization: Option<LocalizationDiagnostics>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub map_localization: Option<MapLocalizationDiagnostics>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub perception3d: Option<Perception3dDiagnostics>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub navigation: Option<NavigationStatus>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub traffic_controls: Option<TrafficControlStatus>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stop_signs: Option<StopSignStatus>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub intersections: Option<IntersectionStatus>,
+}
+/// Owns algorithm state; adapters supply observations and apply resulting commands.
+pub struct DrivingPipeline {
+    config: PipelineConfig,
+    ekf: Ekf,
+    perception: LidarClusters,
+    tracker: Tracker,
+    predictor: ObservedBraking,
+    planner: LatticePlanner,
+    controller: PurePursuit,
+    grid: OccupancyGrid,
+    previous_time: Option<f64>,
+    last_odom: Option<Odometry>,
+    last_lidar: Option<f64>,
+    advanced_lidar_fault: Option<f64>,
+    rejected_gnss_streak: u8,
+    map_localization: Option<MapLocalization>,
+    scan_poses: scan_pose::ScanPoseHistory,
+    tracks: Vec<Track>,
+    navigator: Option<Navigator>,
+    traffic_controls: Option<TrafficControls>,
+    stop_signs: Option<StopSigns>,
+    intersections: Option<YieldIntersections>,
+}
+impl DrivingPipeline {
+    pub fn new(config: PipelineConfig) -> Result<Self, String> {
+        config.validate()?;
+        let traffic_controls = (!config.stop_lines.is_empty())
+            .then(|| TrafficControls::new(config.stop_lines.clone()));
+        let stop_signs =
+            (!config.stop_signs.is_empty()).then(|| StopSigns::new(config.stop_signs.clone()));
+        let intersections = (!config.yield_intersections.is_empty()).then(|| {
+            YieldIntersections::new(config.yield_intersections.clone(), config.route.clone())
+        });
+        let mut planner = LatticePlanner::default();
+        planner.cruise_speed = config.cruise_speed;
+        planner.local_route_geometry = config.local_route_geometry;
+        planner.vehicle = config.vehicle;
+        if let Some(limits) = config.motion_limits {
+            planner.max_acceleration_m_s2 = limits.max_acceleration_m_s2;
+            planner.max_deceleration_m_s2 = limits.max_deceleration_m_s2;
+            planner.max_lateral_acceleration_m_s2 = Some(limits.max_lateral_acceleration_m_s2);
+        }
+        let mut controller = PurePursuit::with_vehicle(config.vehicle);
+        controller.local_route_geometry = config.local_route_geometry;
+        controller.rear_axle_offset_m = config.rear_axle_offset_m.unwrap_or(0.0);
+        let mut map_points = config.route.points.clone();
+        if let Some(nav) = &config.navigation {
+            map_points.extend(
+                nav.network
+                    .edges
+                    .iter()
+                    .flat_map(|e| e.points.iter())
+                    .copied(),
+            );
+        }
+        let min_x = map_points.iter().map(|p| p.x).fold(f64::INFINITY, f64::min) - 10.0;
+        let min_y = map_points.iter().map(|p| p.y).fold(f64::INFINITY, f64::min) - 20.0;
+        let max_x = map_points
+            .iter()
+            .map(|p| p.x)
+            .fold(f64::NEG_INFINITY, f64::max)
+            + 20.0;
+        let max_y = map_points
+            .iter()
+            .map(|p| p.y)
+            .fold(f64::NEG_INFINITY, f64::max)
+            + 20.0;
+        let width = ((max_x - min_x) / 0.5).ceil() as usize;
+        let height = ((max_y - min_y) / 0.5).ceil() as usize;
+        if width
+            .checked_mul(height)
+            .is_none_or(|cells| cells > 4_000_000)
+        {
+            return Err("map exceeds the occupancy allocation bound".into());
+        }
+        let grid = OccupancyGrid::new(Vec2::new(min_x, min_y), width, height, 0.5);
+        let ekf = Ekf::new(config.initial_pose);
+        let map_localization = config.localization_map.clone().map(MapLocalization::new);
+        let navigator = config.navigation.clone().map(Navigator::new).transpose()?;
+        Ok(Self {
+            config,
+            ekf,
+            perception: LidarClusters,
+            tracker: Tracker::default(),
+            predictor: ObservedBraking::default(),
+            planner,
+            controller,
+            grid,
+            previous_time: None,
+            last_odom: None,
+            last_lidar: None,
+            advanced_lidar_fault: None,
+            rejected_gnss_streak: 0,
+            map_localization,
+            scan_poses: scan_pose::ScanPoseHistory::default(),
+            tracks: vec![],
+            navigator,
+            traffic_controls,
+            stop_signs,
+            intersections,
+        })
+    }
+    /// Clock errors return Err before mutation; callers must apply emergency braking on Err.
+    /// Invalid or missing sensor data produces a finite emergency command with diagnostics.
+    pub fn step(&mut self, input: &SensorFrame) -> Result<PipelineOutput, String> {
+        if !input.time.is_finite()
+            || input.time < 0.0
+            || self.previous_time.is_some_and(|t| input.time <= t)
+        {
+            return Err("frame time must be finite, nonnegative and strictly increasing".into());
+        }
+        let dt = self
+            .previous_time
+            .map_or(self.config.nominal_dt, |t| input.time - t);
+        let first = self.previous_time.is_none();
+        let mut health = Vec::new();
+        if dt > 0.25 {
+            health.push(HealthIssue::ClockGap);
+        }
+        if let Some(odom) = input.odometry {
+            if !stamp_valid(odom.stamp, input.time)
+                || !odom.speed.is_finite()
+                || !odom.yaw_rate.is_finite()
+                || !(-0.1..=20.0).contains(&odom.speed)
+                || odom.yaw_rate.abs() > 3.0
+            {
+                health.push(HealthIssue::InvalidOdometry);
+            } else if self.last_odom.is_none_or(|last| odom.stamp > last.stamp) {
+                self.last_odom = Some(odom);
+            }
+        }
+        match self.last_odom {
+            None => health.push(HealthIssue::MissingOdometry),
+            Some(odom) if input.time - odom.stamp > 0.15 + 1e-9 => {
+                health.push(HealthIssue::StaleOdometry)
+            }
+            Some(odom) if !first && dt <= 0.25 => {
+                if let Some(offset) = self.config.rear_axle_offset_m {
+                    self.ekf.predict_chassis(odom, dt, offset);
+                } else {
+                    self.ekf.predict(odom, dt);
+                }
+            }
+            _ => {}
+        }
+        if let Some(fix) = input.gnss {
+            if !stamp_valid(fix.stamp, input.time)
+                || !fix.position.finite()
+                || !fix.variance.is_finite()
+                || fix.variance <= 0.0
+            {
+                health.push(HealthIssue::InvalidGnss);
+            } else {
+                match self.ekf.correct(fix) {
+                    GnssDecision::RejectedInnovation => {
+                        self.rejected_gnss_streak = self.rejected_gnss_streak.saturating_add(1);
+                    }
+                    GnssDecision::Accepted => self.rejected_gnss_streak = 0,
+                    GnssDecision::IgnoredTimestamp | GnssDecision::Invalid => {}
+                }
+            }
+        }
+        if self.rejected_gnss_streak >= 2 {
+            health.push(HealthIssue::GnssInnovationHold);
+        }
+        if input.lidar_failed {
+            health.push(HealthIssue::AcquisitionFailed);
+            if self.config.multi_height_lidar.is_some() || self.config.lidar3d.is_some() {
+                self.advanced_lidar_fault = Some(input.time);
+            }
+        }
+        let fused;
+        let mut ground = None;
+        let mut perception3d = None;
+        let mut measured_acquisition = None;
+        let scan = match (
+            &self.config.multi_height_lidar,
+            &self.config.lidar3d,
+            &input.multi_height_lidar,
+            &input.lidar3d,
+        ) {
+            (Some(calibration), None, Some(layered), None) if input.lidar.is_none() => {
+                match calibration.fuse(layered) {
+                    Ok(scan) => {
+                        fused = scan;
+                        Some(&fused)
+                    }
+                    Err(()) => {
+                        health.push(HealthIssue::InvalidLidar);
+                        self.advanced_lidar_fault = Some(input.time);
+                        None
+                    }
+                }
+            }
+            (None, Some(calibration), None, Some(cloud)) if input.lidar.is_none() => {
+                let projected = if (calibration.ground.is_some()
+                    || self.config.perception3d.is_some())
+                    && (input.lidar_failed || !stamp_valid(cloud.stamp, input.time))
+                {
+                    Err(None)
+                } else if let Some(config) = &self.config.perception3d {
+                    match perception_3d::process(calibration, config, cloud) {
+                        Ok(acquisition) => {
+                            let scan = acquisition.scan.clone();
+                            perception3d = Some(acquisition.diagnostics.clone());
+                            measured_acquisition = Some(acquisition);
+                            Ok((scan, None))
+                        }
+                        Err(diagnostic) => {
+                            perception3d = Some(*diagnostic);
+                            Err(None)
+                        }
+                    }
+                } else {
+                    calibration.project(cloud)
+                };
+                match projected {
+                    Ok((scan, diagnostics)) => {
+                        ground = diagnostics;
+                        fused = scan;
+                        Some(&fused)
+                    }
+                    Err(diagnostics) => {
+                        ground = diagnostics.map(|diagnostic| *diagnostic);
+                        health.push(HealthIssue::InvalidLidar);
+                        self.advanced_lidar_fault = Some(input.time);
+                        None
+                    }
+                }
+            }
+            (Some(_), None, None, None) | (None, Some(_), None, None) if input.lidar.is_none() => {
+                None
+            }
+            (None, None, None, None) => input.lidar.as_ref(),
+            _ => {
+                health.push(HealthIssue::InvalidLidar);
+                if self.config.multi_height_lidar.is_some() || self.config.lidar3d.is_some() {
+                    self.advanced_lidar_fault = Some(input.time);
+                }
+                None
+            }
+        };
+        if let Some(map) = &mut self.map_localization {
+            let eligible = !input.lidar_failed
+                && !health.contains(&HealthIssue::InvalidLidar)
+                && scan.is_none_or(|scan| {
+                    stamp_valid(scan.stamp, input.time)
+                        && scan.points.len() <= 20_000
+                        && scan
+                            .points
+                            .iter()
+                            .all(|p| p.finite() && p.x.hypot(p.y) <= 200.0)
+                        && self.last_lidar.is_none_or(|last| scan.stamp > last)
+                        && self
+                            .advanced_lidar_fault
+                            .is_none_or(|fault_time| scan.stamp > fault_time)
+                });
+            map.update(scan, input.time, eligible, &mut self.ekf);
+        }
+        let estimate = self.ekf.state();
+        self.scan_poses.record(input.time, estimate.pose);
+        if let Some(scan) = scan {
+            if input.lidar_failed
+                || !stamp_valid(scan.stamp, input.time)
+                || scan.points.len() > 20_000
+                || scan
+                    .points
+                    .iter()
+                    .any(|p| !p.finite() || p.x.hypot(p.y) > 200.0)
+            {
+                health.push(HealthIssue::InvalidLidar);
+                if self.config.multi_height_lidar.is_some() || self.config.lidar3d.is_some() {
+                    self.advanced_lidar_fault = Some(input.time);
+                }
+            } else if self.last_lidar.is_none_or(|last| scan.stamp > last)
+                && self
+                    .advanced_lidar_fault
+                    .is_none_or(|fault_time| scan.stamp > fault_time)
+            {
+                if let Some(acquisition_pose) = self.scan_poses.at(scan.stamp, input.time) {
+                    let detections = if let Some(acquisition) = &measured_acquisition {
+                        acquisition.detections_at(acquisition_pose)
+                    } else {
+                        self.perception.detect(scan, acquisition_pose)
+                    };
+                    self.tracks = self.tracker.update(&detections, scan.stamp);
+                    self.grid.update(scan, acquisition_pose);
+                    self.last_lidar = Some(scan.stamp);
+                    self.advanced_lidar_fault = None;
+                } else {
+                    health.push(HealthIssue::InvalidLidar);
+                    if self.config.multi_height_lidar.is_some() || self.config.lidar3d.is_some() {
+                        self.advanced_lidar_fault = Some(input.time);
+                    }
+                }
+            }
+        }
+        if self.advanced_lidar_fault.is_some() && !health.contains(&HealthIssue::InvalidLidar) {
+            health.push(HealthIssue::InvalidLidar);
+        }
+        if self.last_lidar.is_none_or(|t| input.time - t > 0.35 + 1e-9) {
+            health.push(HealthIssue::StaleLidar);
+        }
+        let effective_fix_stamp = self
+            .map_localization
+            .as_ref()
+            .map_or(self.ekf.last_gnss, |map| {
+                map.effective_fix_stamp(self.ekf.last_gnss)
+            });
+        if !effective_fix_stamp.is_finite() || input.time - effective_fix_stamp > 0.75 + 1e-9 {
+            health.push(HealthIssue::StaleGnss);
+        }
+        let variance = self.ekf.position_variance();
+        if !variance.is_finite() || !(0.0..=4.0).contains(&variance) {
+            health.push(HealthIssue::LocalizationUncertain);
+        }
+        let predictions = self.predictor.predict(&self.tracks, input.time);
+        let mut switched = false;
+        if let Some(nav) = &mut self.navigator {
+            switched = nav.step(
+                input.navigation_update.as_ref(),
+                input.time,
+                estimate,
+                health.is_empty(),
+                self.config.vehicle.radius,
+                self.planner.max_deceleration_m_s2,
+            );
+            if nav.status().phase == NavigationPhase::Fault {
+                health.push(HealthIssue::InvalidNavigation);
+            }
+        } else if input.navigation_update.is_some() {
+            health.push(HealthIssue::InvalidNavigation);
+        }
+        if switched {
+            self.config.route = self.navigator.as_ref().unwrap().plan().route.clone();
+            // Keep EKF, sensor ages, tracks and occupancy. Reset only route-dependent actuation state.
+            let mut planner = LatticePlanner::default();
+            planner.cruise_speed = self.planner.cruise_speed;
+            planner.local_route_geometry = self.planner.local_route_geometry;
+            planner.vehicle = self.planner.vehicle;
+            planner.max_acceleration_m_s2 = self.planner.max_acceleration_m_s2;
+            planner.max_deceleration_m_s2 = self.planner.max_deceleration_m_s2;
+            planner.max_lateral_acceleration_m_s2 = self.planner.max_lateral_acceleration_m_s2;
+            self.planner = planner;
+            self.controller.reset_route_state();
+        }
+        if let Some(controls) = &mut self.traffic_controls {
+            controls.step(
+                input.traffic_signal.as_ref(),
+                input.time,
+                self.config.route.project(estimate.pose.position).0,
+                self.config.vehicle.radius,
+                health.is_empty(),
+            );
+            if controls.status().fault {
+                health.push(HealthIssue::InvalidTrafficSignal);
+            }
+        } else if input.traffic_signal.is_some() {
+            health.push(HealthIssue::InvalidTrafficSignal);
+        }
+        if let Some(stops) = &mut self.stop_signs {
+            let measured_speed = self
+                .last_odom
+                .filter(|o| input.time - o.stamp <= 0.05 + 1e-9)
+                .map(|o| o.speed);
+            stops.step(
+                &self.config.route,
+                input.time,
+                estimate,
+                self.config.vehicle.radius,
+                measured_speed,
+                health.is_empty(),
+            );
+        }
+        if let Some(zones) = &mut self.intersections {
+            zones.step(
+                input.time,
+                estimate,
+                self.config.vehicle.radius,
+                &predictions,
+                self.last_lidar,
+                health.is_empty(),
+            );
+        }
+        let stop_route = self
+            .navigator
+            .as_ref()
+            .and_then(Navigator::planning_route)
+            .or_else(|| {
+                let signal_route = self
+                    .traffic_controls
+                    .as_ref()
+                    .and_then(|c| c.planning_route(&self.config.route));
+                let sign_route = self
+                    .stop_signs
+                    .as_ref()
+                    .and_then(|c| c.planning_route(&self.config.route));
+                let intersection_route = self
+                    .intersections
+                    .as_ref()
+                    .and_then(|c| c.planning_route(&self.config.route));
+                [signal_route, sign_route, intersection_route]
+                    .into_iter()
+                    .flatten()
+                    .min_by(|a, b| a.length().total_cmp(&b.length()))
+            });
+        let configured_cruise = self.planner.cruise_speed;
+        if let Some(zones) = &self.intersections {
+            self.planner.cruise_speed = configured_cruise.min(zones.approach_speed_limit(
+                estimate,
+                self.config.vehicle.radius,
+                self.planner.max_deceleration_m_s2,
+            ));
+        }
+        // The recorded pose remains body heading for sensing. Only local path
+        // joining and pursuit use no-slip velocity course at the calibrated chassis.
+        let mut motion_estimate = estimate;
+        if let (Some(offset), Some(odom)) = (self.config.rear_axle_offset_m, self.last_odom)
+            && odom.speed > 0.1
+        {
+            motion_estimate.pose.yaw =
+                wrap_angle(estimate.pose.yaw + (offset * odom.yaw_rate).atan2(odom.speed));
+        }
+        let mut trajectory = self.planner.plan(
+            motion_estimate,
+            stop_route.as_ref().unwrap_or(&self.config.route),
+            &predictions,
+        );
+        self.planner.cruise_speed = configured_cruise;
+        if self.navigator.as_ref().is_some_and(|nav| {
+            matches!(
+                nav.status().phase,
+                NavigationPhase::Braking | NavigationPhase::Blocked
+            )
+        }) && trajectory.mode != DrivingMode::Emergency
+        {
+            trajectory.mode = DrivingMode::Yield;
+        }
+        if self
+            .traffic_controls
+            .as_ref()
+            .is_some_and(|c| c.status().stop_s_m.is_some())
+            && trajectory.mode != DrivingMode::Emergency
+        {
+            trajectory.mode = DrivingMode::Yield;
+        }
+        if self
+            .stop_signs
+            .as_ref()
+            .is_some_and(|s| s.endpoint().is_some())
+            && trajectory.mode != DrivingMode::Emergency
+        {
+            trajectory.mode = DrivingMode::Yield;
+        }
+        if self
+            .intersections
+            .as_ref()
+            .is_some_and(|s| s.endpoint().is_some())
+            && trajectory.mode != DrivingMode::Emergency
+        {
+            trajectory.mode = DrivingMode::Yield;
+        }
+        let command = if health.is_empty() {
+            let mut requested = self.controller.control(motion_estimate, &trajectory, dt);
+            if self
+                .stop_signs
+                .as_ref()
+                .is_some_and(|s| s.holding_brake(&self.config.route, estimate))
+                || self
+                    .intersections
+                    .as_ref()
+                    .is_some_and(|s| s.holding_brake(&self.config.route, estimate))
+            {
+                // Keep requesting braking while waiting. A noisy
+                // low-speed feedback correction must not creep through the hold.
+                requested.acceleration = requested.acceleration.min(-0.5);
+            }
+            guard(
+                requested,
+                input.time,
+                self.last_lidar.unwrap(),
+                effective_fix_stamp,
+                variance,
+            )
+        } else {
+            ControlCommand::emergency()
+        };
+        let emergency = !health.is_empty()
+            || trajectory.mode == DrivingMode::Emergency
+            || command.acceleration <= -5.99;
+        if emergency {
+            self.controller.reset_emergency_state();
+            trajectory.mode = DrivingMode::Emergency;
+        }
+        self.previous_time = Some(input.time);
+        Ok(PipelineOutput {
+            time: input.time,
+            estimate,
+            tracks: self.tracks.clone(),
+            predictions,
+            trajectory,
+            command,
+            emergency,
+            health,
+            position_variance: variance,
+            ground,
+            localization: Some(self.ekf.diagnostics()),
+            map_localization: self
+                .map_localization
+                .as_ref()
+                .map(MapLocalization::diagnostics),
+            perception3d,
+            navigation: self.navigator.as_ref().map(Navigator::status),
+            traffic_controls: self.traffic_controls.as_ref().map(TrafficControls::status),
+            stop_signs: self.stop_signs.as_ref().map(StopSigns::status),
+            intersections: self.intersections.as_ref().map(YieldIntersections::status),
+        })
+    }
+    pub fn occupied_cells(&self) -> Vec<Vec2> {
+        self.grid.occupied_cells()
+    }
+    pub fn active_route(&self) -> &Route {
+        &self.config.route
+    }
+    pub fn navigation_plan(&self) -> Option<&rustdrive_routing::RoutePlan> {
+        self.navigator.as_ref().map(Navigator::plan)
+    }
+}
+fn stamp_valid(stamp: f64, now: f64) -> bool {
+    stamp.is_finite() && stamp >= 0.0 && stamp <= now + 1e-9
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    fn pipeline() -> DrivingPipeline {
+        DrivingPipeline::new(PipelineConfig::new(
+            Route::new(vec![Vec2::default(), Vec2::new(100.0, 0.0)], 5.5).unwrap(),
+            Pose::default(),
+            VehicleConfig::default(),
+        ))
+        .unwrap()
+    }
+    fn healthy(time: f64) -> SensorFrame {
+        SensorFrame {
+            time,
+            odometry: Some(Odometry {
+                stamp: time,
+                speed: 0.0,
+                yaw_rate: 0.0,
+            }),
+            gnss: Some(Gnss {
+                stamp: time,
+                position: Vec2::default(),
+                variance: 0.02,
+            }),
+            lidar: Some(LidarScan {
+                stamp: time,
+                points: vec![],
+            }),
+            multi_height_lidar: None,
+            lidar3d: None,
+            lidar_failed: false,
+            navigation_update: None,
+            traffic_signal: None,
+        }
+    }
+    #[test]
+    fn chassis_reference_is_explicit_bounded_and_replayable() {
+        let route = Route::new(vec![Vec2::default(), Vec2::new(100.0, 0.0)], 3.0).unwrap();
+        let mut config = PipelineConfig::new(route, Pose::default(), VehicleConfig::default());
+        assert!(
+            serde_json::to_value(&config)
+                .unwrap()
+                .get("rear_axle_offset_m")
+                .is_none()
+        );
+        config.rear_axle_offset_m = Some(1.5);
+        assert!(config.validate().unwrap_err().contains("chassis reference"));
+        config.local_route_geometry = true;
+        config.motion_limits = Some(MotionLimits {
+            max_acceleration_m_s2: 1.0,
+            max_deceleration_m_s2: 2.5,
+            max_lateral_acceleration_m_s2: 1.0,
+        });
+        assert!(config.validate().is_ok());
+        let decoded: PipelineConfig =
+            serde_json::from_value(serde_json::to_value(&config).unwrap()).unwrap();
+        assert_eq!(decoded.rear_axle_offset_m, Some(1.5));
+        for offset in [0.0, -1.0, 2.7, f64::NAN, f64::INFINITY] {
+            config.rear_axle_offset_m = Some(offset);
+            assert!(config.validate().unwrap_err().contains("chassis reference"));
+        }
+    }
+    #[test]
+    fn local_route_geometry_is_opt_in_and_rejects_incompatible_coordinates() {
+        let route = Route::new(vec![Vec2::default(), Vec2::new(100.0, 0.0)], 3.0).unwrap();
+        let mut config = PipelineConfig::new(route, Pose::default(), VehicleConfig::default());
+        assert!(
+            serde_json::to_value(&config)
+                .unwrap()
+                .get("local_route_geometry")
+                .is_none()
+        );
+        config.local_route_geometry = true;
+        assert!(
+            config
+                .validate()
+                .unwrap_err()
+                .contains("lateral motion calibration")
+        );
+        config.motion_limits = Some(MotionLimits {
+            max_acceleration_m_s2: 1.0,
+            max_deceleration_m_s2: 2.5,
+            max_lateral_acceleration_m_s2: 1.0,
+        });
+        assert!(config.validate().is_ok());
+        let encoded = serde_json::to_value(&config).unwrap();
+        assert_eq!(encoded["local_route_geometry"], true);
+        config.stop_lines.push(StopLine {
+            id: "signal".into(),
+            route_s_m: 30.0,
+        });
+        assert!(
+            config
+                .validate()
+                .unwrap_err()
+                .contains("excludes mapped traffic-rule")
+        );
+        config.stop_lines.clear();
+        config.route = Route::new(
+            vec![Vec2::default(), Vec2::new(3.0, 0.0), Vec2::new(3.0, 3.0)],
+            3.0,
+        )
+        .unwrap();
+        assert!(config.validate().unwrap_err().contains("fillets overlap"));
+    }
+    #[test]
+    fn empty_scan_is_healthy_but_failed_acquisition_brakes() {
+        let mut p = pipeline();
+        assert!(!p.step(&healthy(0.0)).unwrap().emergency);
+        let mut f = healthy(0.05);
+        f.lidar_failed = true;
+        let out = p.step(&f).unwrap();
+        assert!(out.health.contains(&HealthIssue::AcquisitionFailed));
+        assert_eq!(out.command.acceleration, -6.0);
+    }
+    #[test]
+    fn received_outliers_do_not_refresh_health_and_a_new_good_fix_recovers() {
+        let route = Route::new(
+            vec![
+                Vec2::default(),
+                Vec2::new(20.0, 10.0),
+                Vec2::new(100.0, 10.0),
+            ],
+            5.5,
+        )
+        .unwrap();
+        let mut p = DrivingPipeline::new(PipelineConfig::new(
+            route,
+            Pose::default(),
+            VehicleConfig::default(),
+        ))
+        .unwrap();
+        let mut previous_steering = 0.0_f64;
+        for i in 0..=10 {
+            let out = p.step(&healthy(i as f64 * 0.05)).unwrap();
+            previous_steering = out.command.steering;
+        }
+        assert!(previous_steering.abs() > 0.035);
+        for i in 11..=40 {
+            let time = i as f64 * 0.05;
+            let mut f = healthy(time);
+            f.gnss.as_mut().unwrap().position = Vec2::new(30.0, -25.0);
+            let out = p.step(&f).unwrap();
+            let diagnostic = out.localization.unwrap();
+            assert_eq!(diagnostic.last_accepted_stamp, Some(0.5));
+            assert_eq!(diagnostic.last_observed_stamp, Some(time));
+            assert_eq!(
+                diagnostic.last_decision,
+                Some(GnssDecision::RejectedInnovation)
+            );
+            assert_eq!(out.estimate.pose.position, Vec2::default());
+            if time > 1.25 + 1e-9 {
+                assert!(out.health.contains(&HealthIssue::StaleGnss));
+                assert_eq!(out.command.acceleration, -6.0);
+                assert_eq!(out.command.steering, 0.0);
+            }
+        }
+        let out = p.step(&healthy(2.05)).unwrap();
+        assert!(out.health.is_empty());
+        assert_eq!(out.localization.unwrap().last_accepted_stamp, Some(2.05));
+        assert!(out.command.steering.abs() <= 0.7 * 0.05 + 1e-12);
+    }
+    #[test]
+    fn repeated_new_gnss_outliers_hold_until_a_new_accepted_fix() {
+        let mut p = pipeline();
+        assert!(p.step(&healthy(0.0)).unwrap().health.is_empty());
+        let mut first = healthy(0.05);
+        first.gnss.as_mut().unwrap().position = Vec2::new(30.0, -25.0);
+        let first_fix = first.gnss;
+        let out = p.step(&first).unwrap();
+        assert_eq!(
+            out.localization.unwrap().last_decision,
+            Some(GnssDecision::RejectedInnovation)
+        );
+        assert!(!out.emergency);
+        let mut duplicate = healthy(0.1);
+        duplicate.gnss = first_fix;
+        let out = p.step(&duplicate).unwrap();
+        assert!(out.health.is_empty());
+        assert_eq!(p.rejected_gnss_streak, 1);
+        let mut second = healthy(0.15);
+        second.gnss.as_mut().unwrap().position = Vec2::new(30.0, -25.0);
+        let out = p.step(&second).unwrap();
+        assert_eq!(out.health, vec![HealthIssue::GnssInnovationHold]);
+        assert!(out.emergency);
+        assert_eq!(out.command.acceleration, -6.0);
+        let mut absent = healthy(0.2);
+        absent.gnss = None;
+        assert!(
+            p.step(&absent)
+                .unwrap()
+                .health
+                .contains(&HealthIssue::GnssInnovationHold)
+        );
+        // An old fix that would have been good cannot clear the hold.
+        let mut old_good = healthy(0.25);
+        old_good.gnss.as_mut().unwrap().stamp = 0.0;
+        assert!(
+            p.step(&old_good)
+                .unwrap()
+                .health
+                .contains(&HealthIssue::GnssInnovationHold)
+        );
+        let mut invalid = healthy(0.3);
+        invalid.gnss.as_mut().unwrap().variance = -1.0;
+        let out = p.step(&invalid).unwrap();
+        assert!(out.health.contains(&HealthIssue::InvalidGnss));
+        assert!(out.health.contains(&HealthIssue::GnssInnovationHold));
+        assert_eq!(p.rejected_gnss_streak, 2);
+        let recovered = p.step(&healthy(0.35)).unwrap();
+        assert!(recovered.health.is_empty());
+        assert!(!recovered.emergency);
+        assert_eq!(p.rejected_gnss_streak, 0);
+        let mut isolated = healthy(0.4);
+        isolated.gnss.as_mut().unwrap().position = Vec2::new(30.0, -25.0);
+        assert!(p.step(&isolated).unwrap().health.is_empty());
+        assert_eq!(p.rejected_gnss_streak, 1);
+    }
+    #[test]
+    fn invalid_navigation_latches_braking_and_does_not_reset_localization() {
+        let value: serde_json::Value =
+            serde_json::from_str(include_str!("../../../scenarios/route-direct.json")).unwrap();
+        let nav: NavigationConfig = serde_json::from_value(value["navigation"].clone()).unwrap();
+        let mut config = PipelineConfig::new(
+            nav.initial_plan().unwrap().route,
+            Pose::default(),
+            VehicleConfig::default(),
+        );
+        config.navigation = Some(nav);
+        let mut p = DrivingPipeline::new(config).unwrap();
+        for i in 0..=200 {
+            let time = i as f64 * 0.05;
+            let mut f = healthy(time);
+            f.odometry.as_mut().unwrap().speed = 1.0;
+            f.gnss.as_mut().unwrap().position = Vec2::new(time, 0.0);
+            p.step(&f).unwrap();
+        }
+        let mut f = healthy(10.05);
+        f.gnss = None;
+        f.navigation_update = Some(NavigationUpdate {
+            stamp: 10.05,
+            revision: 1,
+            closed_edges: vec!["typo".into()],
+        });
+        let out = p.step(&f).unwrap();
+        assert!(out.health.contains(&HealthIssue::InvalidNavigation));
+        assert_eq!(out.command.acceleration, -6.0);
+        assert!(out.estimate.pose.position.x > 9.0);
+        let mut f = healthy(10.1);
+        f.gnss = None;
+        assert!(
+            p.step(&f)
+                .unwrap()
+                .health
+                .contains(&HealthIssue::InvalidNavigation)
+        );
+        f.time = 10.15;
+        f.odometry.as_mut().unwrap().stamp = 10.15;
+        f.lidar.as_mut().unwrap().stamp = 10.15;
+        f.navigation_update = Some(NavigationUpdate {
+            stamp: 10.15,
+            revision: 1,
+            closed_edges: vec![],
+        });
+        let out = p.step(&f).unwrap();
+        assert!(!out.emergency);
+        assert!(out.estimate.pose.position.x > 9.0);
+    }
+    #[test]
+    fn map_route_mismatch_and_excessive_grid_extent_are_rejected() {
+        let value: serde_json::Value =
+            serde_json::from_str(include_str!("../../../scenarios/route-direct.json")).unwrap();
+        let nav: NavigationConfig = serde_json::from_value(value["navigation"].clone()).unwrap();
+        let mut c = PipelineConfig::new(
+            nav.initial_plan().unwrap().route,
+            Pose::default(),
+            VehicleConfig::default(),
+        );
+        c.navigation = Some(nav);
+        let mut mismatch = c.clone();
+        mismatch.route.half_width = 4.0;
+        assert!(DrivingPipeline::new(mismatch).is_err());
+        // An unused remote branch must not turn grid allocation into an overflow or OOM.
+        let map = &mut c.navigation.as_mut().unwrap().network;
+        map.nodes.push(rustdrive_routing::RoadNode {
+            id: "remote".into(),
+            position: Vec2::new(100000.0, 0.0),
+        });
+        map.edges.push(rustdrive_routing::RoadEdge {
+            id: "remote-edge".into(),
+            from: "east".into(),
+            to: "remote".into(),
+            points: vec![Vec2::new(200.0, 0.0), Vec2::new(100000.0, 0.0)],
+            half_width: 5.5,
+        });
+        assert!(DrivingPipeline::new(c).is_err());
+    }
+    #[test]
+    fn duplicate_and_delayed_scans_cannot_refresh_health() {
+        let mut p = pipeline();
+        p.step(&healthy(0.0)).unwrap();
+        for i in 1..=8 {
+            let mut f = healthy(i as f64 * 0.05);
+            f.lidar.as_mut().unwrap().stamp = 0.0;
+            let out = p.step(&f).unwrap();
+            if i == 8 {
+                assert!(out.health.contains(&HealthIssue::StaleLidar));
+                assert!(out.emergency);
+            }
+        }
+    }
+    #[test]
+    fn invalid_and_future_sensor_samples_brake() {
+        for sensor in [0, 1, 2] {
+            let mut p = pipeline();
+            let mut f = healthy(0.0);
+            match sensor {
+                0 => f.odometry.as_mut().unwrap().speed = f64::NAN,
+                1 => f.gnss.as_mut().unwrap().stamp = 1.0,
+                _ => f
+                    .lidar
+                    .as_mut()
+                    .unwrap()
+                    .points
+                    .push(Vec2::new(f64::INFINITY, 0.0)),
+            };
+            let out = p.step(&f).unwrap();
+            assert!(out.emergency);
+            assert!(out.command.finite());
+        }
+    }
+    #[test]
+    fn clock_rejection_does_not_mutate_and_gap_brakes() {
+        let mut p = pipeline();
+        p.step(&healthy(0.0)).unwrap();
+        assert!(p.step(&healthy(0.0)).is_err());
+        assert!(p.step(&healthy(f64::NAN)).is_err());
+        assert!(!p.step(&healthy(0.05)).unwrap().emergency);
+        assert!(
+            p.step(&healthy(0.5))
+                .unwrap()
+                .health
+                .contains(&HealthIssue::ClockGap)
+        );
+    }
+    #[test]
+    fn missing_odometry_stops_even_with_other_sensors() {
+        let mut p = pipeline();
+        p.step(&healthy(0.0)).unwrap();
+        for i in 1..=4 {
+            let mut f = healthy(i as f64 * 0.05);
+            f.odometry = None;
+            let out = p.step(&f).unwrap();
+            if i == 4 {
+                assert!(out.health.contains(&HealthIssue::StaleOdometry));
+            }
+        }
+    }
+    #[test]
+    fn old_motion_limit_calibration_defaults_only_the_new_acceleration_field() {
+        let limits: MotionLimits = serde_json::from_str(
+            r#"{"max_deceleration_m_s2":1.2,"max_lateral_acceleration_m_s2":1.0}"#,
+        )
+        .unwrap();
+        assert_eq!(limits.max_acceleration_m_s2, 2.0);
+        assert_eq!(limits.max_deceleration_m_s2, 1.2);
+        assert_eq!(limits.max_lateral_acceleration_m_s2, 1.0);
+    }
+    #[test]
+    fn invalid_calibration_is_rejected_before_execution() {
+        let mut config = PipelineConfig::new(
+            Route::new(vec![Vec2::default(), Vec2::new(100.0, 0.0)], 5.5).unwrap(),
+            Pose::default(),
+            VehicleConfig::default(),
+        );
+        config.motion_limits = Some(MotionLimits {
+            max_acceleration_m_s2: 2.0,
+            max_deceleration_m_s2: 0.0,
+            max_lateral_acceleration_m_s2: 1.0,
+        });
+        assert!(DrivingPipeline::new(config.clone()).is_err());
+        config.motion_limits.as_mut().unwrap().max_deceleration_m_s2 = 2.5;
+        for acceleration in [0.0, f64::NAN, 3.0] {
+            config.motion_limits.as_mut().unwrap().max_acceleration_m_s2 = acceleration;
+            assert!(DrivingPipeline::new(config.clone()).is_err());
+        }
+    }
+}

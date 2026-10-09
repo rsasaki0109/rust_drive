@@ -2,6 +2,8 @@
 
 RustDrive's long-term target is a practical independent autonomous driving OSS. Milestones are capability gates, not release dates or claims of parity with Autoware, Apollo or openpilot.
 
+The near-term user goal is a **50% engineering maturity estimate**. [Capability waypoints and evidence requirements](maturity.md) define the development direction; the percentage is subjective and does not imply road safety or parity. The current estimate is about 15%; measured-ground/body processing and the integrated attributed external-map runs support the change, with general sharp-route and planar/terrain limits retained.
+
 ## M0 — Executable Rust baseline (implemented)
 
 - Cargo workspace with independent algorithm crates and no mandatory ROS.
@@ -10,12 +12,25 @@ RustDrive's long-term target is a practical independent autonomous driving OSS. 
 - Actual-run GIF, English design and capability documentation, lockfile and CI definition.
 - Local build/test/Clippy and acceptance runs pass. Publication, remote CI and external platform results remain separate.
 
-## M1 — Broader validated simulation
+## M1 — Broader validated simulation (in progress)
 
-- Sensor-stream replay and versioned trace contracts; covariance and latency propagation.
-- Parameterized road graphs, Dijkstra/A* route search, continuous lateral offsets, time-dependent longitudinal profiles and swept trajectory validation.
-- Rectangular collision shapes, actuator delay, friction-limited dynamics and longitudinal/lateral feasibility constraints.
-- Wider seeded scenario sweeps: occlusion, intersecting actors, stopped lead, localization outliers, delayed/out-of-order sensing and multiple blocked alternatives.
+Implemented: shared sensor-only pipeline; versioned JSONL input/output replay with truncation/mismatch detection; CPU-only RNE adapter using native kinematic/dynamic vehicles and Rapier ray queries; native friction limits/steering lag; explicit acquisition-failure braking and out-of-order freshness regressions. Both plants pass the supplied mission locally. Hazard fixtures, delayed actor motion and calibrated braking/curvature speed limits are implemented ([initial evidence](hazard-validation.md)). The planner now sweeps synchronized trajectory/forecast polylines, joins lagging maneuvers from the current estimate, and stops and waits for blocked candidates. Multiple blocked alternatives and opposing scheduled crossings extend the suite ([details](swept-planning.md)). Acceleration-aware longitudinal profiles, curvature-dependent local speed caps, retimed collision checks and acceleration feedforward are also implemented ([current evidence](speed-planning.md)). Smooth route interpolation, estimated-heading joins, braking headroom and interpolated pursuit targets reduce emergency fallback in the seeded low-friction fixture ([tracking evidence](tracking.md)). Directed road graphs, deterministic Dijkstra, destination selection and pre-departure closure detours now run in both backends, with minimum-clearance regression floors ([routing evidence](routing.md)). Stopped route handover after live closure snapshots, no-route holding and reopening are now exercised with preserved localization/tracking state and complete map-aware replay ([handover results](handover.md)). A center-return preference based on observed centerline occupancy discourages premature abandonment of unfinished lateral shifts and repairs the seeded 6 m/s detour deadlock ([evidence](avoidance-continuity.md)). Joint GNSS innovation gating, Joseph updates, accepted/observed diagnostics and bounded spike/burst/persistent-fault validation are implemented ([GNSS baseline](gnss-robustness.md)). Candidate-arc-length goal stopping, a terminal side preference for observed approaching traffic and post-arrival physical residence repair that baseline traffic failure ([terminal evidence](terminal-stopping.md)). Optional reactive traffic now follows scalar proximity measurements with bounded one-dimensional motion; stopped leads, resumption, follower braking and traffic queues run in both plants, with independent actor-pair acceptance ([evidence and deadline failures](reactive-traffic.md)). Sustained observed-braking prediction also repairs the unchanged short follower deadline ([current evidence](observed-braking.md)); repeated conservative stopping remains. Mapped stop-line control from timestamped infrastructure signal snapshots is also implemented, with red/yellow/unknown holding, green release, stale-feed recovery, independent physical crossing checks and complete replay ([evidence](traffic-signals.md)). Mapped stop signs now add continuous healthy standstill, brake retention, multiple signs, mixed controls and GNSS-fault recovery with independent physical checks ([evidence](stop-signs.md)). Fixed-route priority crossings additionally use observed predicted zone occupancy, fresh-scan clear dwell, brake retention and independent physical temporal separation ([contract and evidence](intersections.md)). This does not complete M1.
+
+Bounded acquisition-time LiDAR reprojection uses EKF history for delayed body-frame returns and map rays. Authored straight crossings vary road width/length, cruise speed, scan delivery cadence, delay and explicit acquisition failure. Motion prediction now advances acquired tracks to the current control clock while retaining original observations and an acquisition-anchored braking budget. An approach-speed envelope while uncommitted and `Proceeding` repairs the authored late second-crossing waiting-margin regression without changing its actors, map geometry or physical gates; `Waiting` keeps its existing bounded stopping prefix. This does not implement full delayed-sensor fusion, uncertainty growth or arbitrary late-threat guarantees. [Timing contract](sensor-replay.md) and [physical before/after evidence](intersections.md#repaired-late-conflict).
+
+The same verified revision adds earlier braking after sustained GNSS innovation rejection and an empirical collision reserve for observed motion across the candidate direction, using estimated heading during stationary holds. Static/parallel objects retain the preceding reserve. The complete 276-run sweep retains the original localization, clearance, low-friction tracking and follower deadline gates, with two short-range follower failures still explicitly rejected. [Current evidence and recorded candidate failures](../assets/prediction-epoch-results.json).
+
+Physical road query surfaces and optional measured local ground removal now extend native XYZ sensing. An explicit research body adds swept upright-box clearance and force-free native overlap witnesses. A bounded importer converts a pinned genuine OpenStreetMap extract into the ordinary ENU road graph, preserving source attribution and explicit simulation width calibration. These steps still retain planar driving and perception after projection. [Ground/body boundaries](ground-lidar.md); [map import and actual route limitations](osm-import.md). The tested native sharp branch now completes with explicit chassis-reference odometry and course-based steering, while retaining original widths/deadlines and default output bytes. [Repair and scope](chassis-reference.md).
+
+Remaining:
+
+- Covariance/forecast uncertainty propagation, delayed odometry/GNSS fusion, per-point LiDAR deskew and trace migrations. Bounded acquisition-time LiDAR reprojection and current-time motion extrapolation are narrower implemented steps, not complete delayed-sensor fusion.
+- Continuous moving-route handover, routing from arbitrary mid-edge positions, general external map/lane import, variable-width/lane topology, turn/speed restrictions and A* for larger maps. Bounded OSM road-graph import is implemented.
+- Continuous lateral offsets and controller-feasibility validation.
+- Oriented-body planning, measured vehicle/actuator calibration, combined longitudinal/lateral friction feasibility and optimized speed profiles. An authored rectangular evaluation body and conservative planar envelope are implemented.
+- General goal-area stopping/escape, constrained destinations and blocked lateral refuges; the authored GNSS-burst traffic regression is repaired.
+- Reduce conservative terminal stop/hold behavior for a following vehicle in a narrow corridor; the authored 65-second deadline now passes, but repeated stops and short-range clearance failures remain.
+- Add interaction-aware ego forecasts, richer traffic sensing/steering/priority, slowly varying localization biases and broader sensing-latency acceptance.
 - Gate: independent collision/rule evaluators, documented failure cases and regression fixtures; no relaxation of constraints to mask failures.
 
 ## M2 — CARLA end-to-end integration
@@ -28,7 +43,13 @@ RustDrive's long-term target is a practical independent autonomous driving OSS. 
 
 ## M3 — Maps and multi-sensor understanding
 
-- 3D point processing, ground removal, richer shape tracking and data association.
+Bounded XYZ terrain/components, measured-data acquisition/evaluation and optional local fixed-map EKF corrections now execute. Reference/native five-second GNSS-denied runs and failure controls are replayed. This milestone remains incomplete: the frozen terrain baseline has held-out F1 0.2592 with six failed sites; apartment successes use imposed transforms and warm seeds, while natural alignment is rejected. Sparse native object acquisition also exposes ground false positives and missed actor clusters. [Measurements](datasets.md); [local matching](map-localization.md).
+
+A density-aware classifier now raises the original calibration/regression scores, while one new thinned Autzen environment fails its frozen acceptance gates. Optional recorded RGB-D registration and CPU learned inference also execute, with explicit temporal-protocol and single-image limits. [Adaptive terrain](adaptive-ground.md); [recorded motion](recorded-rgbd.md); [offline inference](../integrations/onnx/README.md).
+
+Next: establish reliable independent automotive perception, natural-motion localization across multiple recorded environments, measured extrinsics and camera/geometry integration before claiming the 30% planning waypoint. Preserve all observed failures as regression evidence.
+
+- General 3D point processing and terrain classification, richer shape tracking and data association. Bounded local measured-ground removal is implemented for near-flat native query scenes.
 - Map formats and map localization, inertial bias estimation and bounded GNSS-denied tests.
 - Camera/radar fusion and optional learned models behind established contracts.
 - Gate: versioned datasets, calibration validation, license review and measured accuracy/latency. Publish classical baselines as comparisons.

@@ -1,0 +1,37 @@
+{
+  "name": "Fast Wide Priority Crossing",
+  "duration": 85,
+  "road_length": 130,
+  "half_width": 2.5,
+  "expected": "goal",
+  "cruise_speed": 6,
+  "min_clearance_m": 1.0,
+  "objects": [
+    {
+      "s": 59,
+      "lateral": 48,
+      "radius": 1,
+      "lateral_speed": -4,
+      "moving_from": 0
+    }
+  ],
+  "yield_intersections": [
+    {
+      "stop_line": {
+        "id": "yield-fast",
+        "route_s_m": 45
+      },
+      "conflict_bounds": {
+        "min": {
+          "x": 54,
+          "y": -2.5
+        },
+        "max": {
+          "x": 64,
+          "y": 2.5
+        }
+      },
+      "exit_s_m": 64
+    }
+  ]
+}

@@ -1,5 +1,7 @@
 # Third-party licensing
 
+The optional packaged OpenStreetMap extract and derived ENU road database are © OpenStreetMap contributors, under ODbL 1.0, separately from RustDrive's Apache-2.0 code. [Pinned source, attribution, conversion and redistribution terms](maps/osm/SOURCE.md). No OSMnx implementation is copied or required at runtime. The extract is historical and cropped; its presence does not establish current physical map accuracy.
+
 RustDrive code is original Apache-2.0. No Autoware, Apollo or openpilot implementation is vendored. This is the dependency inventory for the committed Cargo.lock, recorded on 2026-10-08 from Cargo metadata.
 
 | Package | Locked version | SPDX expression |
@@ -20,4 +22,8 @@ For dual MIT/Apache-2.0 crates, preserve the applicable license when redistribut
 
 Optional visualization uses Pillow 12.3.0, MIT-CMU. It is a development tool, not linked into the Rust executable. The renderer prefers system DejaVu fonts (Bitstream Vera / DejaVu terms) and does not vendor the font files. GIF/PNG output is generated from original simulated data; the README contains no images from reference projects.
 
+Optional 3D visualization invokes the separately installed Blender executable (GPL-3.0-or-later) as an external rendering tool. Blender is not vendored or linked into the Rust executable. The procedural road, hatchback, sedan, van, pickup, traffic-light, stop-sign, yield-sign, perpendicular crossing-road, tree, streetlight and building meshes are original; no external model or texture assets are packaged. The optional editable `.blend` snapshot contains these generated meshes and materials. Preserve Blender's own license and notices if distributing its binaries. Local capture uses Blender 4.3.2 with the Cycles CPU backend.
+
 Autoware and Apollo root licenses are Apache-2.0; openpilot is MIT at the researched revisions. These projects are architectural references rather than dependencies. See [research](docs/research.md) for source links and artifact-specific licensing restrictions.
+
+The optional standalone RNE adapter has a separate lockfile and [dependency inventory](integrations/rne/THIRD_PARTY.md). RNE is MIT OR Apache-2.0; no RNE source is vendored into the default RustDrive workspace.

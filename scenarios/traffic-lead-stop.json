@@ -1,0 +1,26 @@
+{
+  "name": "Following a stopped lead and resuming",
+  "duration": 65,
+  "road_length": 140,
+  "half_width": 2.0,
+  "expected": "stop",
+  "cruise_speed": 4,
+  "min_clearance_m": 1.0,
+  "objects": [
+    {
+      "s": 35,
+      "lateral": 0,
+      "radius": 1,
+      "speed": 4,
+      "following": {
+        "initial_speed_m_s": 4,
+        "stop_windows": [
+          {
+            "from": 8,
+            "until": 24
+          }
+        ]
+      }
+    }
+  ]
+}

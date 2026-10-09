@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "dataset": "pdal-autzen",
+  "repository": "PDAL/PDAL",
+  "revision": "64c11506cccdf790b9677458d5ee884bdf4e754b",
+  "redistribute_raw": false,
+  "upstream_license": "PDAL BSD-3-Clause all-files grant; retained notice; original scan acquisition terms not separately established",
+  "held_out_samples": [
+    "autzen"
+  ],
+  "split_independence": "Autzen Stadium Oregon is a new physical environment independent of the 15 viewed ISPRS sites; one thinned scan, not multiple independent sites",
+  "ground_class": 2,
+  "label_policy": {
+    "positive": [
+      2
+    ],
+    "negative": [
+      3,
+      4,
+      5,
+      6,
+      9,
+      10,
+      11
+    ],
+    "exclude_classes": [
+      0,
+      1,
+      7,
+      8,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31
+    ],
+    "exclude_withheld": true
+  },
+  "label_provenance": "Embedded pre-existing TerraScan/LAS classification; reference labels, not independently established manual ground truth",
+  "coordinate_units": "international_foot",
+  "unit_to_m": 0.3048,
+  "files": [
+    {
+      "file": "autzen-thin-srs.las",
+      "source_path": "test/data/autzen/autzen-thin-srs.las",
+      "bytes": 363585,
+      "sha256": "47413416b846dd10d03549179d79dab65a81bdf7d039a2e70f189f7625cbcde6",
+      "sample": "autzen",
+      "role": "input_cloud",
+      "split": "held_out",
+      "points": 10653,
+      "encoding": "LAS 1.2 uncompressed point format 3",
+      "coordinate_units": "international_foot",
+      "unit_to_m": 0.3048
+    }
+  ]
+}

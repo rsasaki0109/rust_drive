@@ -1,0 +1,195 @@
+{
+  "source_fingerprint_sha256": "a23b7932f9ac32ec1d6af0227bb3dc634fe860e8489a2a3220a105c76aec2b9f",
+  "workspace": {
+    "command": "CARGO_INCREMENTAL=0 bash scripts/check.sh",
+    "exit_code": 0,
+    "tests_passed": 240,
+    "scenario_replay_pairs": 49,
+    "log_sha256": "c4aba92791d723c46095a3dc64a6b2829880ab2ca7136755998b8299c981c241"
+  },
+  "native": {
+    "toolchain": "1.95.0",
+    "profile": "release",
+    "tests_passed": 46,
+    "fmt_passed": true,
+    "clippy_warnings_denied_passed": true,
+    "test_log_sha256": "93544605a5c2896b94c0e026a6d9cc1ee26da84b030c6f49e4fd6c30c8543a37",
+    "clippy_log_sha256": "a86fef8d41574a282ce0d33be8e201dc9d564b2b0ba02d1033649a6fcd75f0fc"
+  },
+  "default_regressions": {
+    "source_fingerprint_sha256": "a23b7932f9ac32ec1d6af0227bb3dc634fe860e8489a2a3220a105c76aec2b9f",
+    "passed": true,
+    "runs": [
+      {
+        "backend": "reference",
+        "scenario": "opposing-crossings",
+        "seed": 7,
+        "byte_identical": true,
+        "raw_sha256": {
+          "run.json": "80e28b58bd3c2c796c5e6107a118d862af5a4a7407d93f36924a940fb767bcd2",
+          "sensors.jsonl": "0e3218884988d82e7503fcd7bbbc64176a3ea6f8b44d94343d3d9a850063faf1",
+          "summary.json": "921a07c7e87887d7814950a65dfca019d6c01551baa449ace082caa24862278f"
+        },
+        "replay": {
+          "source": "reference-2d",
+          "ticks": 470,
+          "verified": true
+        }
+      },
+      {
+        "backend": "reference",
+        "scenario": "intersection-late-conflict",
+        "seed": 7,
+        "byte_identical": true,
+        "raw_sha256": {
+          "run.json": "5596bb444ab1850c9e209b8195b00321a967606c4ae7d49f2993018a6eab820f",
+          "sensors.jsonl": "5abb5c6beed00713c381f7992e960628bdd7c4a69c962ba737ad611820dc4284",
+          "summary.json": "8653eac22c221989031a5e6c8f3d2bfe67a3e308afa6a2d1e597d44097c1b92f"
+        },
+        "replay": {
+          "source": "reference-2d",
+          "ticks": 1201,
+          "verified": true
+        }
+      },
+      {
+        "backend": "reference",
+        "scenario": "traffic-follower-deadline",
+        "seed": 7,
+        "byte_identical": true,
+        "raw_sha256": {
+          "run.json": "bb1f7affed6c6426b39d3cd77c6d495364ce8255f058cc334bcdb92928b879db",
+          "sensors.jsonl": "c6fa3e8dc57d5da5fb1cee036b5840524defdb4625789f17a2b34a0d67b2dbe1",
+          "summary.json": "f8ca2675bd99607975962853a5b139ce48c255bb04af13547eca268089909d20"
+        },
+        "replay": {
+          "source": "reference-2d",
+          "ticks": 1284,
+          "verified": true
+        }
+      },
+      {
+        "backend": "reference",
+        "scenario": "gnss-burst",
+        "seed": 7,
+        "byte_identical": true,
+        "raw_sha256": {
+          "run.json": "29af11830fa38c61f62c485b1ba30e61593796a3ce4cfb8a2eaa9e382cd8cfd9",
+          "sensors.jsonl": "511eeb9162591a58cb69c8982bd1e9bd838bc955936457b3d1edab35502a7b57",
+          "summary.json": "039176c1b8288e8f034586cb5227d0a560b4e8c3a29e08874f19b5f64af13fe6"
+        },
+        "replay": {
+          "source": "reference-2d",
+          "ticks": 715,
+          "verified": true
+        }
+      },
+      {
+        "backend": "rne-dynamic",
+        "scenario": "opposing-crossings",
+        "seed": 7,
+        "byte_identical": true,
+        "raw_sha256": {
+          "run.json": "a6f2218f9e224170dc87fd293b4597c0b3c3b11915bab6822aad94ca20756c00",
+          "sensors.jsonl": "dfd09673516e28ba4bbbd1d9c970c17def71740f2a32322f64770bcdcebb5aeb",
+          "summary.json": "a5a7745414d59b0df67435874725fe8d7aa49762351eb3c43a6ee754cd1b6e6b"
+        },
+        "replay": {
+          "source": "rne-dynamic-rapier-lidar",
+          "ticks": 538,
+          "verified": true
+        }
+      },
+      {
+        "backend": "rne-dynamic",
+        "scenario": "intersection-late-conflict",
+        "seed": 7,
+        "byte_identical": true,
+        "raw_sha256": {
+          "run.json": "0081892e809d776ecc8351dfdf2abf13c1fa769d5490b373172376ad3b1643da",
+          "sensors.jsonl": "b9b260ecb9ab85c96ca75c184f4ce0199b9af01aa749550eecd254a54663866d",
+          "summary.json": "8ff8da09428f44a76c4ebaae71132208eff6244ebde2e0783f4855b394d25441"
+        },
+        "replay": {
+          "source": "rne-dynamic-rapier-lidar",
+          "ticks": 1199,
+          "verified": true
+        }
+      },
+      {
+        "backend": "rne-dynamic",
+        "scenario": "traffic-follower-deadline",
+        "seed": 7,
+        "byte_identical": true,
+        "raw_sha256": {
+          "run.json": "948cc1d7c39c2054ceacbe5211bb92e39242c571ea3ba620a79afc425f9abbae",
+          "sensors.jsonl": "9835b6ecfe5632dbb11ee3b58e1f25c70783078dc27dad604d9c26037b54f15f",
+          "summary.json": "d2627ee4ba8316b6e2bd03852eeb203b658ee70fc70ce14c383e03b1b632d1a7"
+        },
+        "replay": {
+          "source": "rne-dynamic-rapier-lidar",
+          "ticks": 1294,
+          "verified": true
+        }
+      },
+      {
+        "backend": "rne-dynamic",
+        "scenario": "gnss-burst",
+        "seed": 7,
+        "byte_identical": true,
+        "raw_sha256": {
+          "run.json": "361a1a8771d50bdb0dbc442ff345c11e8d0b8de06423207469c201a74e165236",
+          "sensors.jsonl": "b50a4f3764d2e114657aac06de098eed588b5cf4a1575bf831f810ce9ec563ff",
+          "summary.json": "c9764348dc81e24519ca9d95110f95cbb950e833d0e3e82e46805a477799df43"
+        },
+        "replay": {
+          "source": "rne-dynamic-rapier-lidar",
+          "ticks": 870,
+          "verified": true
+        }
+      },
+      {
+        "backend": "rne-dynamic",
+        "scenario": "native-body-traffic-stop",
+        "seed": 7,
+        "byte_identical": true,
+        "raw_sha256": {
+          "run.json": "59afd56d92ef44eb3d7f4e2a217dbb86a4e1c2a33cc8013394a852b737ff4dcc",
+          "scene.json": "2ed02bb84130b82069ce381d6dd738e20272dc883de19f83cf20fd328592d4c7",
+          "sensors.jsonl": "dfddfa39149ecebe6deb32da60e0345be089af8051bb195cdf9a7963901c06af"
+        },
+        "replay": {
+          "source": "rne-dynamic-rapier-lidar",
+          "ticks": 441,
+          "verified": true
+        }
+      }
+    ]
+  },
+  "opening_gif": {
+    "changed": false,
+    "sha256": "3e8fa58a55d41b707ae37be99e83cc086d9e31f6616bae334806f958a585a7a0",
+    "bytes": 1488458
+  },
+  "historical_failure": {
+    "report": "assets/local-corner-results.json",
+    "fresh_baseline_commit": "547a5d295d552312af479d5173e8c1892f9f87f0",
+    "raw_sha256": {
+      "run.json": "a348a318fa833377f91309ba84c064c0787394655ea4ba6e38c38cc46e66f4d6",
+      "sensors.jsonl": "08de8b212f55c819df12d8ccebce85eac3c821ed9e634ac9d9390306c16a4723"
+    },
+    "fresh_baseline_byte_identical": true
+  },
+  "previous_ci": {
+    "url": "https://github.com/rsasaki0109/rust_drive/actions/runs/37960627401",
+    "conclusion": "failure",
+    "native_full_job": "success",
+    "windows_failure": "core.autocrlf checkout altered strict pinned OSM source hashes; narrow -text attributes and a real checkout/tamper test preserve the gates."
+  },
+  "portability_regression": {
+    "command": "python3 scripts/test-checker-portability.py",
+    "passed": true,
+    "scope": "Actual Linux-hosted Git autocrlf=true checkout and tamper tests; does not claim fresh Windows remote CI success."
+  },
+  "scope": "Low-speed no-slip course at an authored 1.5m chassis-to-rear-axle distance; 12 clear circular-footprint fixture goals; no general tire-slip, terrain, rectangular sharp-corner or real-vehicle acceptance claim."
+}

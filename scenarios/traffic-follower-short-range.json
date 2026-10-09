@@ -1,0 +1,30 @@
+{
+  "name": "Follower with insufficient sensing range for the clearance floor",
+  "duration": 65,
+  "road_length": 160,
+  "half_width": 2.0,
+  "expected": "goal",
+  "cruise_speed": 4,
+  "min_clearance_m": 1.0,
+  "goal_hold_seconds": 8,
+  "gnss_bias_windows": [
+    {
+      "from": 10,
+      "until": 14,
+      "offset": { "x": 30, "y": -25 }
+    }
+  ],
+  "objects": [
+    {
+      "s": 0,
+      "lateral": 0,
+      "radius": 1,
+      "speed": 6,
+      "active_from": 6,
+      "following": {
+        "initial_speed_m_s": 4,
+        "sensor_range_m": 5
+      }
+    }
+  ]
+}

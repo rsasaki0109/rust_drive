@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "backend": "rne-dynamic-rapier-lidar",
+  "input_trace": "artifacts/gnss-verified/rne-dynamic/gnss-burst/seed-7/run.json",
+  "scenario": {
+    "name": "gnss-burst",
+    "duration": 65.0,
+    "road_length": 220.0,
+    "half_width": 5.5,
+    "curve_amplitude": 3.0,
+    "expected": "goal",
+    "lidar_dropout": null,
+    "gnss_dropout": null,
+    "gnss_bias_windows": [
+      {
+        "from": 5.0,
+        "until": 8.0,
+        "offset": {
+          "x": 30.0,
+          "y": -25.0
+        }
+      }
+    ],
+    "min_clearance_m": 0.5,
+    "objects": [
+      {
+        "s": 58.0,
+        "lateral": 0.0,
+        "radius": 1.0,
+        "speed": 0.0,
+        "lateral_speed": 0.0,
+        "active_from": 0.0,
+        "moving_from": 0.0
+      }
+    ]
+  },
+  "summary": {
+    "scenario": "gnss-burst",
+    "seed": 7,
+    "simulated_seconds": 43.050000000000004,
+    "steps": 862,
+    "reached_goal": true,
+    "collisions": 0,
+    "road_violations": 0,
+    "min_clearance": 0.9528653722058076,
+    "localization_rmse": 0.10017027044560968,
+    "localization_max_error": 0.3009145213967077,
+    "final_speed": 0.19066960383596293,
+    "progress": 219.68388522183656,
+    "emergency_steps": 50,
+    "avoidance_steps": 130,
+    "max_tracks": 1,
+    "passed": true,
+    "failures": []
+  },
+  "gif_frames": 145,
+  "playback_speed": 3,
+  "renderer_command": "python3 scripts/render_demo.py artifacts/gnss-verified/rne-dynamic/gnss-burst/seed-7/run.json --output assets/gnss-demo.gif",
+  "rne_expected_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
+  "command": "cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- --scenario scenarios/gnss-burst.json --plant dynamic --seed 7 --output artifacts/gnss-verified/rne-dynamic/gnss-burst/seed-7"
+}

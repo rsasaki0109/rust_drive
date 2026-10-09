@@ -1,0 +1,72 @@
+{
+  "generator": "RustDrive authored deterministic junction fixture; not an OSM extract",
+  "elements": [
+    {
+      "type": "node",
+      "id": 1,
+      "lat": 0.0,
+      "lon": 0.0
+    },
+    {
+      "type": "node",
+      "id": 2,
+      "lat": 0.0,
+      "lon": 0.001
+    },
+    {
+      "type": "node",
+      "id": 3,
+      "lat": 0.0,
+      "lon": 0.002
+    },
+    {
+      "type": "node",
+      "id": 4,
+      "lat": 0.001,
+      "lon": 0.001
+    },
+    {
+      "type": "node",
+      "id": 5,
+      "lat": 0.0,
+      "lon": 0.0005
+    },
+    {
+      "type": "way",
+      "id": 10,
+      "nodes": [
+        1,
+        5,
+        2,
+        3
+      ],
+      "tags": {
+        "highway": "residential"
+      }
+    },
+    {
+      "type": "way",
+      "id": 20,
+      "nodes": [
+        2,
+        4
+      ],
+      "tags": {
+        "highway": "residential"
+      }
+    },
+    {
+      "type": "way",
+      "id": 30,
+      "nodes": [
+        1,
+        4,
+        3
+      ],
+      "tags": {
+        "highway": "residential",
+        "oneway": "yes"
+      }
+    }
+  ]
+}

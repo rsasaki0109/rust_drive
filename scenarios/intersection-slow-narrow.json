@@ -1,0 +1,37 @@
+{
+  "name": "Slow Narrow Priority Crossing",
+  "duration": 85,
+  "road_length": 80,
+  "half_width": 1.8,
+  "expected": "goal",
+  "cruise_speed": 3,
+  "min_clearance_m": 1.0,
+  "objects": [
+    {
+      "s": 37,
+      "lateral": 36,
+      "radius": 1,
+      "lateral_speed": -3,
+      "moving_from": 0
+    }
+  ],
+  "yield_intersections": [
+    {
+      "stop_line": {
+        "id": "yield-slow",
+        "route_s_m": 25
+      },
+      "conflict_bounds": {
+        "min": {
+          "x": 34,
+          "y": -1.8
+        },
+        "max": {
+          "x": 40,
+          "y": 1.8
+        }
+      },
+      "exit_s_m": 40
+    }
+  ]
+}

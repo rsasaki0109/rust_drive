@@ -1,0 +1,187 @@
+{
+  "schema_version": 1,
+  "backend": "rne-dynamic-rapier-lidar",
+  "renderer": "Blender Cycles CPU",
+  "blender_version": "Blender 4.3.2",
+  "input_trace": "/tmp/rustdrive-lidar3d-final/lidar3d/dynamic/midbeam-barrier/seed-7/run.json",
+  "input_sha256": "572de74838f3b5cbbc1b10400ec839d9816c3c6c3462a7070a761afbdee947da",
+  "rne_expected_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
+  "scenario": {
+    "name": "Measured 3D LiDAR stops before a barrier between legacy horizontal planes",
+    "duration": 35.0,
+    "road_length": 80.0,
+    "half_width": 2.1,
+    "curve_amplitude": 0.0,
+    "expected": "stop",
+    "lidar_dropout": null,
+    "gnss_dropout": null,
+    "cruise_speed": 4.0,
+    "objects": []
+  },
+  "summary": {
+    "scenario": "Measured 3D LiDAR stops before a barrier between legacy horizontal planes",
+    "seed": 7,
+    "simulated_seconds": 35.0,
+    "steps": 701,
+    "reached_goal": false,
+    "collisions": 0,
+    "road_violations": 0,
+    "min_clearance": 1000.0,
+    "localization_rmse": 0.0606906533521131,
+    "localization_max_error": 0.20512748149352236,
+    "final_speed": 0.0,
+    "progress": 26.45507451307966,
+    "emergency_steps": 20,
+    "avoidance_steps": 0,
+    "max_tracks": 3,
+    "passed": true,
+    "failures": []
+  },
+  "gif_frames": 118,
+  "sampled_frames": 118,
+  "playback_speed": 3,
+  "scene_states_verified": 118,
+  "samples": 8,
+  "physics_domain": "planar",
+  "scene": {
+    "style": "suburban-test-road-v2",
+    "seed": 1729,
+    "scenery_counts": {
+      "trees": 4,
+      "buildings": 2,
+      "lamps": 3,
+      "sidewalk_sections": 160
+    },
+    "ego_model": "hatchback",
+    "traffic_models": [],
+    "camera": "ego",
+    "mapped_signal_ids": [],
+    "mapped_stop_sign_ids": [],
+    "mapped_intersection_ids": [],
+    "native_scene_name": "Physical barrier between the three legacy horizontal scan planes",
+    "native_cuboids": [
+      {
+        "id": "barrier",
+        "center_m": [
+          35.0,
+          0.0,
+          1.5
+        ],
+        "yaw_rad": 0.0,
+        "world_corners_m": [
+          [
+            34.5,
+            -3.0,
+            1.399999976158142
+          ],
+          [
+            35.5,
+            -3.0,
+            1.399999976158142
+          ],
+          [
+            35.5,
+            3.0,
+            1.399999976158142
+          ],
+          [
+            34.5,
+            3.0,
+            1.399999976158142
+          ],
+          [
+            34.5,
+            -3.0,
+            1.600000023841858
+          ],
+          [
+            35.5,
+            -3.0,
+            1.600000023841858
+          ],
+          [
+            35.5,
+            3.0,
+            1.600000023841858
+          ],
+          [
+            34.5,
+            3.0,
+            1.600000023841858
+          ]
+        ]
+      }
+    ]
+  },
+  "renderer_source_sha256": "d3fe48add631dffdcf6b1dcb95a627cc689e55b1deb03d6fcd436ffc13c06c1a",
+  "gif_palette_colors": 192,
+  "gif_dither": false,
+  "spatial_filter": "3x3 median, viewport only",
+  "renderer_command": "python3 scripts/render_demo_3d.py /tmp/rustdrive-lidar3d-final/lidar3d/dynamic/midbeam-barrier/seed-7/run.json --output assets/lidar-3d-demo.gif --samples 8 --threads 3 --camera ego --traffic-models hatchback --native-scene /tmp/rustdrive-lidar3d-final/lidar3d/dynamic/midbeam-barrier/seed-7/scene.json",
+  "native_scene": {
+    "input": "/tmp/rustdrive-lidar3d-final/lidar3d/dynamic/midbeam-barrier/seed-7/scene.json",
+    "input_sha256": "36fb643ddb8fe77c4a3719bdeb4e8aefe137c05927a34dafba47ca33304b9ea2",
+    "scene": {
+      "name": "Physical barrier between the three legacy horizontal scan planes",
+      "schema_version": 1,
+      "static_cuboids": [
+        {
+          "center_m": [
+            35.0,
+            0.0,
+            1.5
+          ],
+          "half_extents_m": [
+            0.5,
+            3.0,
+            0.1
+          ],
+          "id": "barrier",
+          "yaw_rad": 0.0
+        }
+      ]
+    },
+    "summary": {
+      "checks": 14001,
+      "failures": [],
+      "guard_overlap_intervals": 0,
+      "min_clearance_m": 6.770538046844759,
+      "passed": true
+    },
+    "seed": 7,
+    "body_pose_states_verified": 351,
+    "cuboid_mesh_states_verified": 118,
+    "contact_response": false,
+    "operating_mode": "lidar3d",
+    "lidar3d_calibration": {
+      "azimuth_columns": 720,
+      "collision_bottom_m": -1.15,
+      "collision_top_m": 2.35,
+      "elevation_rings": 16,
+      "max_elevation_rad": 0.2617993877991494,
+      "max_range_m": 45.0,
+      "min_elevation_rad": -0.2617993877991494,
+      "min_range_m": 0.2,
+      "mount_height_m": 0.6
+    },
+    "cloud_frame": "body forward/left, road-datum up",
+    "recorded_cloud_audit": {
+      "acquisitions": 351,
+      "failed_acquisitions": 0,
+      "returns_verified": 22690,
+      "ray_ordinals_per_acquisition": 11520
+    },
+    "diagnostic_horizontal_heights_m": [
+      0.6,
+      0.15,
+      3.7
+    ],
+    "collision_height_interval_m": [
+      -1.15,
+      2.35
+    ],
+    "projection": "measured Z gate, firing-ordinal order, then 5 cm body-XY first-return voxels",
+    "instantaneous_scan": true,
+    "deskew": false
+  }
+}

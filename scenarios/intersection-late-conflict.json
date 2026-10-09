@@ -1,0 +1,61 @@
+{
+  "name": "Known Failure: Late Observed Second Priority Crossing",
+  "duration": 100,
+  "road_length": 140,
+  "half_width": 2.1,
+  "expected": "goal",
+  "cruise_speed": 4,
+  "min_clearance_m": 1.0,
+  "objects": [
+    {
+      "s": 41,
+      "lateral": 30,
+      "radius": 1,
+      "lateral_speed": -3,
+      "moving_from": 0
+    },
+    {
+      "s": 92,
+      "lateral": 105,
+      "radius": 1,
+      "lateral_speed": -3,
+      "moving_from": 0
+    }
+  ],
+  "yield_intersections": [
+    {
+      "stop_line": {
+        "id": "yield-first",
+        "route_s_m": 30
+      },
+      "conflict_bounds": {
+        "min": {
+          "x": 38,
+          "y": -2.1
+        },
+        "max": {
+          "x": 44,
+          "y": 2.1
+        }
+      },
+      "exit_s_m": 44
+    },
+    {
+      "stop_line": {
+        "id": "yield-second",
+        "route_s_m": 78
+      },
+      "conflict_bounds": {
+        "min": {
+          "x": 88,
+          "y": -2.1
+        },
+        "max": {
+          "x": 96,
+          "y": 2.1
+        }
+      },
+      "exit_s_m": 96
+    }
+  ]
+}

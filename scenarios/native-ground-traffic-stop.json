@@ -1,0 +1,13 @@
+{
+  "name": "Ground-separated inclined LiDAR follows a moving lead into a stop",
+  "duration": 22,
+  "road_length": 60,
+  "half_width": 2.1,
+  "expected": "stop",
+  "cruise_speed": 4,
+  "min_clearance_m": 1,
+  "objects": [
+    {"s": 22, "lateral": 0, "radius": 1, "speed": 2,
+     "following": {"initial_speed_m_s": 2, "stop_windows": [{"from": 4, "until": 24}]}}
+  ]
+}

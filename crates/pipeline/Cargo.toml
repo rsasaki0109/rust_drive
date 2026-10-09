@@ -1,0 +1,22 @@
+[package]
+name = "rustdrive-pipeline"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+rustdrive-core = { path = "../core" }
+rustdrive-localization = { path = "../localization" }
+rustdrive-perception = { path = "../perception" }
+rustdrive-mapping = { path = "../mapping" }
+rustdrive-prediction = { path = "../prediction" }
+rustdrive-planning = { path = "../planning" }
+rustdrive-control = { path = "../control" }
+rustdrive-routing = { path = "../routing" }
+
+[lints]
+workspace = true

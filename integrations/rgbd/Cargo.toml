@@ -1,0 +1,24 @@
+[package]
+name = "rustdrive-rgbd-evaluate"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.90"
+license = "Apache-2.0"
+
+[workspace]
+
+[dependencies]
+rustdrive-core = { path = "../../crates/core" }
+rustdrive-localization = { path = "../../crates/localization" }
+png = "=0.18.1"
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = "=1.0.151"
+sha2 = "=0.10.9"
+
+[profile.release]
+opt-level = 2
+lto = false
+debug = false
+
+[lints.rust]
+unsafe_code = "forbid"

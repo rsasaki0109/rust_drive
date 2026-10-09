@@ -1,0 +1,37 @@
+{
+  "name": "Intersection Crossing",
+  "duration": 85,
+  "road_length": 100,
+  "half_width": 2.1,
+  "expected": "goal",
+  "cruise_speed": 4,
+  "min_clearance_m": 1.0,
+  "objects": [
+    {
+      "s": 45,
+      "lateral": 30,
+      "radius": 1,
+      "lateral_speed": -2.5,
+      "moving_from": 0
+    }
+  ],
+  "yield_intersections": [
+    {
+      "stop_line": {
+        "id": "yield-a",
+        "route_s_m": 35
+      },
+      "conflict_bounds": {
+        "min": {
+          "x": 42,
+          "y": -2.1
+        },
+        "max": {
+          "x": 48,
+          "y": 2.1
+        }
+      },
+      "exit_s_m": 48
+    }
+  ]
+}

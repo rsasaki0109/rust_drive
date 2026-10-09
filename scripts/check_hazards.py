@@ -1,0 +1,1310 @@
+#!/usr/bin/env python3
+"""Run real hazard scenarios, verify sensor recomputation, and retain acceptance evidence."""
+import argparse
+import hashlib
+import json
+import math
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+CASES = {
+    'reference': ['occluded-crossing', 'cut-in', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue', 'traffic-follower-deadline', 'traffic-fleet-queue', 'signal-red-green', 'signal-red-stop', 'signal-stale-stop', 'signal-stale-recovery', 'signal-two-stops', 'signal-approach-change', 'stop-sign-single', 'stop-sign-two', 'stop-sign-signal', 'stop-sign-obstacle', 'stop-sign-gnss-recovery'],
+    'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue', 'traffic-follower-deadline', 'traffic-fleet-queue', 'signal-red-green', 'signal-red-stop', 'signal-stale-stop', 'signal-stale-recovery', 'signal-two-stops', 'signal-approach-change', 'stop-sign-single', 'stop-sign-two', 'stop-sign-signal', 'stop-sign-obstacle', 'stop-sign-gnss-recovery'],
+}
+INTERSECTION_CASES = ['intersection-crossing', 'intersection-successive', 'intersection-blocked', 'intersection-gnss-recovery', 'intersection-stop-sign', 'intersection-fast-wide', 'intersection-slow-narrow', 'intersection-two-zones', 'intersection-delay-two', 'intersection-lidar-recovery', 'intersection-cadence-five-hz', 'intersection-late-conflict', 'intersection-late-delayed']
+for cases in CASES.values():
+    cases.extend(INTERSECTION_CASES)
+
+# Fixed regression floors, chosen against the preceding measured fixture results.
+# They are simulation test constraints, not a universal safe-distance specification.
+CLEARANCE_FLOORS_M = {
+    **dict.fromkeys(INTERSECTION_CASES, 1.0),
+    **dict.fromkeys(['stop-sign-single', 'stop-sign-two', 'stop-sign-signal', 'stop-sign-obstacle', 'stop-sign-gnss-recovery'],1.0),
+    **dict.fromkeys(['signal-red-green','signal-red-stop','signal-stale-stop','signal-stale-recovery','signal-two-stops','signal-approach-change', 'stop-sign-single', 'stop-sign-two', 'stop-sign-signal', 'stop-sign-obstacle', 'stop-sign-gnss-recovery'],1.0),
+    'traffic-lead-stop': 1.0, 'traffic-follower-brake': 1.0, 'traffic-queue': 1.0, 'traffic-follower-deadline': 1.0, 'traffic-fleet-queue': 1.0,
+    'gnss-burst-traffic': 0.5, 'gnss-burst-traffic-hold': 0.5, 'gnss-spike': 0.5, 'gnss-burst': 0.5, 'gnss-persistent-bias': 4.0,
+    'occluded-crossing': 1.0, 'cut-in': 0.7, 'multiple-blocked': 3.0,
+    'opposing-crossings': 0.7, 'low-friction': 0.4, 'low-friction-stop': 4.0,
+    'route-direct': 0.5, 'route-detour': 0.5, 'route-south': 0.5,
+    'route-handover': 0.5, 'route-handover-fast': 0.5, 'route-no-path': 4.0, 'route-reopen': 0.5,
+}
+EXPECTED_EDGES = {
+    'route-direct': ['approach', 'main', 'east-exit'],
+    'route-detour': ['approach', 'detour', 'east-exit'],
+    'route-south': ['approach', 'south-branch'],
+    'route-handover': ['approach', 'detour', 'east-exit'],
+    'route-handover-fast': ['approach', 'detour', 'east-exit'],
+    'route-reopen': ['approach', 'detour', 'east-exit'],
+}
+
+
+def clearance_regression(summary, case):
+    floor = CLEARANCE_FLOORS_M[case]
+    value = summary['min_clearance']
+    return {'floor_m': floor, 'measured_m': value,
+            'passed': math.isfinite(value) and value >= floor}
+
+
+def check_signals(run, log):
+    """Reconstruct observations, true front crossings and continuous close-line holds."""
+    with log.open() as stream:
+        header = json.loads(next(stream))['header']
+        ticks = [r['tick'] for line in stream if (r := json.loads(line))['kind'] == 'tick']
+    specs = run['scenario']['traffic_signals']
+    config = header['config']
+    if config['stop_lines'] != [s['stop_line'] for s in specs] or any(k in config for k in ['traffic_signals','phases','signal_dropout_windows']):
+        raise ValueError('signal schedule/fault truth entered the operational configuration')
+    if any(abs(p['y']) > 1e-9 for p in run['route']['points']):
+        raise ValueError('these independent signal fixture checks require a straight route')
+    frames = run['frames']
+    if len(frames) != len(ticks) or len(ticks) != run['summary']['steps']:
+        raise ValueError('signal evidence lacks a physical/control tick')
+    latest = None
+    accepted = 0
+    crossed = set()
+    crossings = []
+    previous_front = None
+    truth_margin = unknown_margin = math.inf
+    hold_start = {s['stop_line']['id']: None for s in specs}
+    hold_longest = dict.fromkeys(hold_start, 0.0)
+    radius = run['vehicle']['radius']
+    def phase(spec, now):
+        return next(p['color'] for p in reversed(spec['phases']) if p['from'] <= now+1e-9)
+    for index, (frame, tick) in enumerate(zip(frames, ticks)):
+        inp, out = tick['input'], tick['expected']
+        now = frame['time']
+        if abs(now-index*.05) > 1e-8 or abs(inp['time']-now) > 1e-8:
+            raise ValueError('signal evidence changed the control/acquisition clock')
+        dropout = any(w['from']-1e-9 <= now < w['until']-1e-9 for w in run['scenario'].get('signal_dropout_windows', []))
+        sample = inp.get('traffic_signal')
+        if bool(sample) != (index%4 == 0 and not dropout):
+            raise ValueError('signal acquisition does not match the declared sampling/dropout')
+        if sample:
+            expected = [{'id':s['stop_line']['id'], 'color':phase(s,now)} for s in specs]
+            if sample['stamp'] != now or sample['states'] != expected:
+                raise ValueError('signal observation differs from acquired infrastructure state')
+            latest = sample
+            accepted += 1
+        fresh = latest is not None and now-latest['stamp'] <= .5+1e-9
+        status = out['traffic_controls']
+        if status['fault'] or status['last_accepted_stamp'] != (latest['stamp'] if latest else None):
+            raise ValueError('valid signal evidence changed the accepted-age diagnostics')
+        if frame['traffic_controls'] != status:
+            raise ValueError('physical telemetry has inconsistent signal diagnostics')
+        front = frame['truth']['pose']['position']['x']+radius
+        for spec in specs:
+            id, line = spec['stop_line']['id'], spec['stop_line']['route_s_m']
+            real = phase(spec,now)
+            color = next(s['color'] for s in latest['states'] if s['id']==id) if fresh else 'Unknown'
+            actual = next(s for s in status['signals'] if s['id']==id)
+            if actual['color'] != color:
+                raise ValueError('green was released without a fresh accepted observation')
+            if real != 'Green' and (previous_front is None or previous_front < line):
+                truth_margin = min(truth_margin,line-front)
+            if id not in crossed and color != 'Green':
+                unknown_margin = min(unknown_margin,line-front)
+            crossing = (previous_front is None or previous_front < line) and front >= line
+            if crossing:
+                if id in crossed or real != 'Green' or color != 'Green':
+                    raise ValueError('physical front crossed without true AND freshly observed green')
+                crossed.add(id)
+                crossings.append({'id':id,'time':now,'observed_color':color})
+            holding = id not in crossed and color != 'Green' and 0 <= line-front <= 3.5 and frame['truth']['speed'] < .1
+            if holding:
+                if hold_start[id] is None: hold_start[id] = now
+                hold_longest[id] = max(hold_longest[id],now-hold_start[id])
+            else: hold_start[id] = None
+        previous_front = front
+    if (not accepted or any(d < 2.0-1e-8 for d in hold_longest.values())
+            or unknown_margin < 1.0 or truth_margin < 1.0
+            or run['summary'].get('signal_violations',0) != 0):
+        raise ValueError('signal stopping violated hold, clearance or crossing acceptance')
+    moving_change = False
+    for spec in specs:
+        yellow = next((p['from'] for p in spec['phases'] if p['color']=='Yellow' and p['from']>0),None)
+        if spec['phases'][0]['color']=='Green' and yellow is not None:
+            if not any(f['time']<yellow and f['truth']['speed']>2.0 for f in frames):
+                raise ValueError('approach-change fixture never drove before the signal changed')
+            moving_change = True
+    reported = run['summary'].get('signal_min_stopline_margin_m')
+    if (reported is None) != (not math.isfinite(truth_margin)) or (reported is not None and abs(reported-truth_margin)>1e-8):
+        raise ValueError('independent physical stop-line margin differs from summary')
+    if run['scenario']['expected']=='goal' and len(crossed) != len(specs):
+        raise ValueError('goal scenario did not cross every signal after its physical hold')
+    if run['scenario']['expected']=='stop' and crossed:
+        raise ValueError('permanent red/stale fixture crossed its stop line')
+    return {'signals':len(specs),'accepted_snapshots':accepted,'control_ticks':len(ticks),
+            'stopline_crossings':crossings,'continuous_close_line_holds_s':hold_longest,
+            'min_true_nonpermissive_margin_m':truth_margin if math.isfinite(truth_margin) else None,
+            'min_observed_nonpermissive_margin_m':unknown_margin,
+            'snapshot_reconstruction_verified':True,'moving_phase_change_exercised':moving_change,
+            'schedule_labels_absent_from_pipeline':True,'passed':True}
+
+
+def check_stop_signs(run, log):
+    """Independently require a real continuous near-line hold before every crossing."""
+    with log.open() as stream:
+        config = json.loads(next(stream))['header']['config']
+        ticks = [r['tick'] for line in stream if (r := json.loads(line))['kind'] == 'tick']
+    lines = run['scenario']['stop_signs']
+    if config.get('stop_signs') != lines or 'gnss_bias_windows' in config:
+        raise ValueError('stop map or sensor-only replay boundary changed')
+    if any(abs(p['y']) > 1e-9 for p in run['route']['points']):
+        raise ValueError('stop-sign fixture evidence requires a straight route')
+    if len(run['frames']) != len(ticks) or len(ticks) != run['summary']['steps']:
+        raise ValueError('stop-sign evidence lacks a physical/control tick')
+    starts = dict.fromkeys(line['id'] for line in lines)
+    longest = dict.fromkeys(starts, 0.0)
+    satisfied, crossed, completed, crossings = set(), set(), {}, []
+    minimum = math.inf
+    releases = {}
+    fault_reset = False
+    previous = None
+    for index,(frame,tick) in enumerate(zip(run['frames'],ticks)):
+        now = frame['time']
+        if abs(now-index*.05)>1e-8 or tick['input']['time'] != now:
+            raise ValueError('stop-sign evidence changed the control clock')
+        out = tick['expected']
+        status = out['stop_signs']
+        if status != frame['stop_signs'] or [s['id'] for s in status['stops']] != [s['id'] for s in lines]:
+            raise ValueError('stop-sign diagnostics disagree with physical telemetry or map')
+        front = frame['truth']['pose']['position']['x']+run['vehicle']['radius']
+        for line,state in zip(lines,status['stops']):
+            id = line['id']; margin = line['route_s_m']-front
+            if id in crossed: continue
+            if id not in satisfied: minimum = min(minimum,margin)
+            holding = 0 <= margin <= 3.5 and abs(frame['truth']['speed']) <= .1
+            if holding:
+                if starts[id] is None: starts[id]=now
+                duration=now-starts[id]
+                longest[id]=max(longest[id],duration)
+                if duration+1e-9 >= 2 and id not in satisfied:
+                    satisfied.add(id); completed[id]=now
+            else: starts[id]=None
+            if state['phase']=='Released' and id not in releases:
+                if out['health'] or state['held_s']+1e-9<2:
+                    raise ValueError('driver released without healthy continuous measured stopping')
+                releases[id]=now
+            if previous and out['health'] and previous['stop_signs']['stops'][lines.index(line)]['phase']=='Holding':
+                if state['held_s'] != 0 or state['phase'] != 'Approaching':
+                    raise ValueError('sensor fault did not reset the driver stop timer')
+                fault_reset=True
+            if front >= line['route_s_m']:
+                if id not in satisfied or id not in releases:
+                    raise ValueError('physical front crossed before a complete physical AND measured stop')
+                crossed.add(id);crossings.append({'id':id,'time':now})
+        previous=out
+    if len(crossed)!=len(lines) or minimum<1.0 or run['summary'].get('stop_sign_violations',0):
+        raise ValueError('stop-sign fixture failed crossing/hold/margin acceptance')
+    if abs(minimum-run['summary']['stop_sign_min_margin_m'])>1e-8:
+        raise ValueError('independent physical stop-sign margin differs from summary')
+    fault=run['scenario'].get('gnss_bias_windows')
+    if fault and (not fault_reset or not any(t['expected']['emergency'] for t in ticks)
+                  or any(time<fault[-1]['until']+2-1e-8 for time in releases.values())):
+        raise ValueError('GNSS recovery did not exercise reset and a new complete healthy hold')
+    return {'stops':len(lines),'control_ticks':len(ticks),'physical_hold_completed_s':completed,
+            'continuous_close_line_holds_s':longest,'driver_releases_s':releases,
+            'stopline_crossings':crossings,'min_unreleased_margin_m':minimum,
+            'sensor_fault_timer_reset_exercised':fault_reset,'passed':True}
+
+
+def segment_rectangle_distance_squared(a, b, bounds):
+    """Minimize point-to-rectangle distance along each linear path segment exactly."""
+    lower, upper = xy(bounds['min']), xy(bounds['max'])
+    start, finish = xy(a), xy(b)
+    delta = [finish[i]-start[i] for i in range(2)]
+    split = [0.0, 1.0]
+    for axis in range(2):
+        if delta[axis]:
+            split.extend(t for edge in [lower[axis], upper[axis]]
+                         if 0 < (t := (edge-start[axis])/delta[axis]) < 1)
+    split = sorted(set(split))
+    def distance(t):
+        return sum(max(lower[i]-(start[i]+delta[i]*t), 0,
+                       start[i]+delta[i]*t-upper[i])**2 for i in range(2))
+    result = min(map(distance, split))
+    for left, right in zip(split, split[1:]):
+        middle = (left+right)/2
+        terms = [(start[i]-edge, delta[i]) for i in range(2)
+                 if (edge := lower[i] if start[i]+delta[i]*middle < lower[i]
+                     else upper[i] if start[i]+delta[i]*middle > upper[i] else None) is not None]
+        quadratic = sum(slope*slope for _, slope in terms)
+        if quadratic:
+            optimum = -sum(offset*slope for offset, slope in terms)/quadratic
+            result = min(result, distance(min(right, max(left, optimum))))
+    return result
+
+
+def check_intersections(run, log):
+    """Separate physical right-of-way evidence from sensor-derived permission evidence."""
+    with log.open() as stream:
+        config = json.loads(next(stream))['header']['config']
+        ticks = [r['tick'] for line in stream if (r := json.loads(line))['kind'] == 'tick']
+    zones = run['scenario']['yield_intersections']
+    frames = run['frames']
+    if config.get('yield_intersections') != zones:
+        raise ValueError('operational yield map differs from declared map geometry')
+    forbidden = {'objects', 'traffic', 'traffic_signals', 'gnss_bias_windows',
+                 'sensor_timing', 'lidar_failure_windows', 'signal_dropout_windows', 'schedule', 'phases'}
+    if forbidden.intersection(config):
+        raise ValueError('actor/schedule/fault truth entered the operational yield configuration')
+    if (any(abs(p['y']) > 1e-9 for p in run['route']['points'])
+            or len(frames) != len(ticks) or len(ticks) != run['summary']['steps']):
+        raise ValueError('yield evidence lacks the declared straight route or full physical ticks')
+    radius = run['vehicle']['radius']
+    physical = {z['stop_line']['id']: {'ego': [], 'actors': {}, 'open': {}} for z in zones}
+    clear_since = dict.fromkeys(physical)
+    clear_scans = {id: set() for id in physical}
+    hold_since = dict.fromkeys(physical)
+    longest_hold = dict.fromkeys(physical, 0.0)
+    releases = {id: [] for id in physical}
+    committed = set()
+    passed = set()
+    crossed = set()
+    crossings = []
+    blocked_ticks = 0
+    accepted_scans = 0
+    fault_reset = False
+    last_scan = None
+    minimum_margin = math.inf
+    previous_status = {}
+    approach_profiles = approach_points = approach_creep_ticks = waiting_prefix_profiles = 0
+    approach_phase_ticks = {'Waiting': 0, 'Proceeding': 0}
+    min_approach_cap = math.inf
+    full_braking = (config.get('motion_limits') or {}).get('max_deceleration_m_s2', 2.5)
+    configured_cruise = config['cruise_speed']
+    timing_evidence = check_lidar_timing(run, ticks, config) if run['scenario'].get('sensor_timing') else None
+    def overlaps(position, r, bounds):
+        return segment_rectangle_distance_squared(position, position, bounds) <= r*r+1e-12
+    for index, (frame, tick) in enumerate(zip(frames, ticks)):
+        now, inp, out = frame['time'], tick['input'], tick['expected']
+        if abs(now-index*.05) > 1e-8 or abs(inp['time']-now) > 1e-8 or out['time'] != inp['time']:
+            raise ValueError('yield evidence changed the physical/control acquisition clock')
+        if any(frame[key] != out[key] for key in ['estimate', 'tracks', 'predictions', 'trajectory', 'command', 'emergency']):
+            raise ValueError('yield physical/control frames do not retain the same sensor-derived output')
+        status = out['intersections']
+        if frame['intersections'] != status or [s['id'] for s in status['zones']] != list(physical):
+            raise ValueError('yield diagnostics disagree with the map or physical telemetry')
+        scan = inp.get('lidar')
+        new_scan = bool(scan and not inp['lidar_failed'] and math.isfinite(scan['stamp'])
+                        and 0 <= scan['stamp'] <= now and (last_scan is None or scan['stamp'] > last_scan)
+                        and now-scan['stamp'] <= .35+1e-9
+                        and len(scan['points']) <= 20_000
+                        and all(all(math.isfinite(v) for v in xy(p)) and math.hypot(*xy(p)) <= 200
+                                for p in scan['points']))
+        if new_scan:
+            last_scan = scan['stamp']
+            accepted_scans += 1
+        pose = out['estimate']['pose']
+        aligned = abs(math.remainder(pose['yaw'], 2*math.pi)) < .2 and abs(pose['position']['y'])+radius <= run['route']['half_width']
+        healthy = not out['health'] and last_scan is not None and now-last_scan <= .15+1e-9 and aligned
+        front = frame['truth']['pose']['position']['x']+radius
+        estimated_front = out['estimate']['pose']['position']['x']+radius
+        waiting_zones = [z for z, s in zip(zones, status['zones'])
+                         if not s['committed'] and s['phase'] == 'Waiting']
+        if waiting_zones and out['trajectory']['mode'] != 'Emergency':
+            endpoint = min(z['stop_line']['route_s_m'] for z in waiting_zones)-radius-1.0
+            if any(p['position']['x'] > endpoint+1e-7 for p in out['trajectory']['points']):
+                raise ValueError('Waiting profile extends beyond its mapped stop-line route prefix')
+            waiting_prefix_profiles += 1
+        active_zones = [(z, s) for z, s in zip(zones, status['zones'])
+                        if not s['committed'] and s['phase'] == 'Proceeding']
+        if active_zones:
+            # Solve the independent reaction-distance + stopping-distance budget.
+            # The 0.5 m/s floor is deliberate creep, not guaranteed stop reserve.
+            caps = []
+            for zone, state in active_zones:
+                available = max(0.0, zone['stop_line']['route_s_m']-estimated_front-2.0)
+                authority = .5*full_braking
+                def required_distance(speed):
+                    return .25*speed+speed*speed/(2*authority)
+                lo, hi = 0.0, configured_cruise
+                for _ in range(64):
+                    mid = (lo+hi)/2
+                    if required_distance(mid) <= available:
+                        lo = mid
+                    else:
+                        hi = mid
+                caps.append(min(configured_cruise, max(.5, lo)))
+                approach_phase_ticks[state['phase']] += 1
+            cap = min(caps)
+            min_approach_cap = min(min_approach_cap, cap)
+            approach_creep_ticks += int(cap <= .5+1e-9)
+            path = out['trajectory']['points']
+            if out['trajectory']['mode'] != 'Emergency' and path:
+                approach_profiles += 1
+                distance = 0.0
+                initial_speed = max(0.0, out['estimate']['speed'])
+                for i, point in enumerate(path):
+                    if i:
+                        distance += math.dist(xy(path[i-1]['position']), xy(point['position']))
+                    reachable = math.sqrt(max(0.0, initial_speed*initial_speed-2*full_braking*distance))
+                    if point['speed'] > max(cap, reachable)+1e-7:
+                        raise ValueError('uncommitted approach profile exceeds the mapped stopping envelope')
+                    approach_points += 1
+        for zone, state in zip(zones, status['zones']):
+            id, bounds = state['id'], zone['conflict_bounds']
+            line = zone['stop_line']['route_s_m']
+            evidence = physical[id]
+            occupants = {'ego': (frame['truth']['pose']['position'], radius)}
+            occupants.update({o['id']: (o['position'], o['radius']) for o in frame['objects']})
+            active = {body for body, (position, r) in occupants.items() if overlaps(position, r, bounds)}
+            for body in active:
+                evidence['open'].setdefault(body, now)
+            for body in list(evidence['open']):
+                if body not in active:
+                    interval = [evidence['open'].pop(body), now]
+                    if body == 'ego': evidence['ego'].append(interval)
+                    else: evidence['actors'].setdefault(body, []).append(interval)
+            blockers = []
+            for prediction in out['predictions']:
+                dt = prediction['dt']
+                points = prediction['positions']
+                horizon = min(len(points)-1, math.floor((8.0+1e-9)/dt))
+                inflation = prediction['radius']+.5
+                conservative = {'min': {axis: bounds['min'][axis]-inflation for axis in ['x', 'y']},
+                                'max': {axis: bounds['max'][axis]+inflation for axis in ['x', 'y']}}
+                if any(segment_rectangle_distance_squared(a, b, conservative) <= 1e-12
+                       for a, b in zip(points[:horizon+1], points[1:horizon+1])):
+                    blockers.append(prediction['id'])
+            blockers.sort()
+            if not state['committed']:
+                if sorted(state['blocking_tracks']) != blockers:
+                    raise ValueError('yield blocker diagnostics do not match observed swept forecasts')
+                if not healthy or blockers:
+                    if not healthy:
+                        fault_reset = True
+                    clear_since[id] = None
+                    clear_scans[id].clear()
+                    if state['clear_since'] is not None or state['phase'] != 'Waiting':
+                        raise ValueError('fault/conflict did not revoke uncommitted yield permission')
+                else:
+                    if new_scan:
+                        if clear_since[id] is None: clear_since[id] = last_scan
+                        clear_scans[id].add(last_scan)
+                    if state['clear_since'] != clear_since[id]:
+                        raise ValueError('clear permission timer was refreshed without continuous evidence')
+                    ready = (clear_since[id] is not None and last_scan-clear_since[id]+1e-9 >= 1.0
+                             and len(clear_scans[id]) >= 3)
+                    if (state['phase'] == 'Proceeding') != ready:
+                        raise ValueError('yield permission bypassed or ignored the clear scan confirmation gate')
+                blocked_ticks += bool(blockers)
+                if state['phase'] == 'Waiting':
+                    minimum_margin = min(minimum_margin, line-front)
+                holding = (state['phase'] == 'Waiting' and 0 <= line-front <= 3.5
+                           and abs(frame['truth']['speed']) < .1)
+                if holding:
+                    if hold_since[id] is None: hold_since[id] = now
+                    longest_hold[id] = max(longest_hold[id], now-hold_since[id])
+                else: hold_since[id] = None
+            if state['phase'] == 'Proceeding' and previous_status.get(id, {}).get('phase') != 'Proceeding':
+                releases[id].append(now)
+            if state['committed'] and id not in committed:
+                if (not healthy or blockers or estimated_front < line-1e-9
+                        or clear_since[id] is None or now-clear_since[id]+1e-9 < 1
+                        or len(clear_scans[id]) < 3):
+                    raise ValueError('intersection entry committed without healthy confirmed permission')
+                committed.add(id)
+            if id in committed and not state['committed']:
+                raise ValueError('intersection commitment reversed after observed front entry')
+            if state['phase'] == 'Passed':
+                if id not in committed or out['estimate']['pose']['position']['x']-radius < zone['exit_s_m']-1e-9:
+                    raise ValueError('yield zone marked passed before estimated rear cleared its exit')
+                passed.add(id)
+            if id in passed and state['phase'] != 'Passed':
+                raise ValueError('passed yield zone became active again')
+            if id not in crossed and front >= line:
+                if state['phase'] not in ['Proceeding', 'Passed'] or not healthy:
+                    raise ValueError('physical front crossed the yield line without healthy permission')
+                crossed.add(id)
+                crossings.append({'id': id, 'time': now})
+            previous_status[id] = state
+    gaps = []
+    occupancies = {}
+    for zone in zones:
+        id = zone['stop_line']['id']
+        evidence = physical[id]
+        for body, start in evidence['open'].items():
+            if body == 'ego': evidence['ego'].append([start, frames[-1]['time']])
+            else: evidence['actors'].setdefault(body, []).append([start, frames[-1]['time']])
+        for ego in evidence['ego']:
+            for intervals in evidence['actors'].values():
+                for actor in intervals:
+                    gap = (actor[0]-ego[1] if ego[1] <= actor[0] else ego[0]-actor[1]
+                           if actor[1] <= ego[0] else -(min(ego[1], actor[1])-max(ego[0], actor[0])))
+                    gaps.append(gap)
+        occupancies[id] = {'ego': evidence['ego'], 'actors': evidence['actors']}
+    min_gap = min(gaps) if gaps else None
+    reported = run['summary'].get('intersection_min_gap_s')
+    if ((reported is None) != (min_gap is None)
+            or (reported is not None and abs(reported-min_gap) > 1e-8)
+            or any(gap+1e-9 < 2.0 for gap in gaps)
+            or run['summary'].get('intersection_violations', 0) != 0):
+        raise ValueError('physical intersection occupancy violates the unchanged two-second gap')
+    if not accepted_scans or not blocked_ticks:
+        raise ValueError('yield run lacks sensed conflicts')
+    if minimum_margin < 1.0:
+        raise ValueError('physical waiting stop-line margin is below the unchanged one-meter floor')
+    if run['scenario']['expected'] == 'goal':
+        if len(crossed) != len(zones) or len(passed) != len(zones) or not all(e['ego'] for e in physical.values()):
+            raise ValueError('goal run did not actually cross and clear every conflict zone')
+    elif crossed or any(e['ego'] for e in physical.values()):
+        raise ValueError('blocked fixture entered its occupied conflict zone')
+    if any(duration < 2.0-1e-8 for duration in longest_hold.values()):
+        raise ValueError('fixture did not exercise a real sustained near-line yield')
+    if run['scenario'].get('gnss_bias_windows') and not fault_reset:
+        raise ValueError('GNSS fixture did not exercise revoked uncommitted permission during a sensor fault')
+    return {'control_ticks': len(ticks), 'accepted_lidar_scans': accepted_scans,
+            'observed_blocked_ticks': blocked_ticks, 'permission_releases_s': releases,
+            'continuous_near_line_holds_s': longest_hold, 'min_waiting_stopline_margin_m': minimum_margin,
+            'stopline_crossings': crossings, 'physical_occupancies_s': occupancies,
+            'min_physical_gap_s': min_gap, 'sensor_fault_permission_reset_exercised': fault_reset,
+            'lidar_timing': timing_evidence,
+            'approach_envelope': {'verified': True, 'profiles': approach_profiles,
+                                  'points': approach_points, 'phase_ticks': approach_phase_ticks,
+                                  'creep_floor_ticks': approach_creep_ticks,
+                                  'min_planned_cruise_cap_m_s': min_approach_cap if math.isfinite(min_approach_cap) else None,
+                                  'waiting_prefix_profiles': waiting_prefix_profiles},
+            'truth_labels_absent_from_pipeline': True, 'passed': True}
+
+
+def check_lidar_timing(run, ticks, config):
+    """Reconstruct delivery from acquisition ticks, independently of driver diagnostics."""
+    timing = run['scenario']['sensor_timing']
+    if 'sensor_timing' in config or 'lidar_failure_windows' in config:
+        raise ValueError('sensor scheduling/failure truth entered the operational configuration')
+    period = timing.get('lidar_period_ticks', 2)
+    delay = timing.get('lidar_delay_ticks', 0)
+    windows = timing.get('lidar_failure_windows', [])
+    pending = []
+    acquired = delivered = failed = discarded = delayed_moving = 0
+    ages = []
+    failed_clear_dwell = False
+    last_failure = None
+    for index, (frame, tick) in enumerate(zip(run['frames'], ticks)):
+        now, inp, out = frame['time'], tick['input'], tick['expected']
+        failure = any(w['from']-1e-9 <= now < w['until']-1e-9 for w in windows)
+        if inp['lidar_failed'] != failure:
+            raise ValueError('LiDAR acquisition failure differs from declared simulator window')
+        expected_stamp = None
+        if failure:
+            failed += 1
+            discarded += len(pending)
+            pending.clear()
+            last_failure = now
+            if not out['emergency'] or 'AcquisitionFailed' not in out['health']:
+                raise ValueError('LiDAR acquisition failure did not immediately request emergency braking')
+            if index and any(s['clear_since'] is not None and s['phase'] == 'Waiting' and not s['committed']
+                             for s in ticks[index-1]['expected']['intersections']['zones']):
+                failed_clear_dwell = True
+            if any(not s['committed'] and (s['phase'] != 'Waiting' or s['clear_since'] is not None)
+                   for s in out['intersections']['zones']):
+                raise ValueError('LiDAR acquisition failure retained uncommitted clear permission')
+        else:
+            if index % period == 0 and (run['scenario'].get('lidar_dropout') is None
+                                        or now < run['scenario']['lidar_dropout']):
+                pending.append((index+delay, now))
+                acquired += 1
+            while pending and pending[0][0] <= index:
+                _, expected_stamp = pending.pop(0)
+        scan = inp.get('lidar')
+        if bool(scan) != (expected_stamp is not None) or (scan and abs(scan['stamp']-expected_stamp) > 1e-9):
+            raise ValueError('LiDAR body-frame acquisition stamp/cadence/delivery or failure flush changed')
+        if scan:
+            age = now-scan['stamp']
+            if abs(age-delay*.05) > 1e-8:
+                raise ValueError('LiDAR delivered age differs from the configured delay')
+            delivered += 1
+            ages.append(age)
+            acquired_frame = run['frames'][round(scan['stamp']*20)]
+            delayed_moving += bool(age > 0 and acquired_frame['truth']['speed'] > 1)
+        if last_failure is not None:
+            for state in out['intersections']['zones']:
+                if not state['committed'] and state['phase'] == 'Proceeding':
+                    if state['clear_since'] is None or state['clear_since'] <= last_failure:
+                        raise ValueError('LiDAR recovery resumed using pre-failure confirmation evidence')
+    if not delivered or (delay and not delayed_moving):
+        raise ValueError('timing fixture never delivered delayed scans while ego was moving')
+    if windows and (not failed or not failed_clear_dwell):
+        raise ValueError('timing fault fixture did not reset an active clear dwell')
+    return {'period_ticks': period, 'delay_ticks': delay, 'acquired_scans': acquired,
+            'delivered_scans': delivered, 'failed_ticks': failed, 'discarded_pending_scans': discarded,
+            'max_delivered_age_s': max(ages), 'delayed_moving_scans': delayed_moving,
+            'active_clear_dwell_reset_exercised': failed_clear_dwell,
+            'acquisition_delivery_reconstruction_verified': True, 'passed': True}
+
+
+def check_navigation(run, case):
+    """Check selected topology/geometry against fixture expectations independently."""
+    nav = dict(run['scenario']['navigation'])
+    if run['scenario'].get('navigation_updates'):
+        nav['closed_edges'] = run['scenario']['navigation_updates'][-1]['closed_edges']
+    plan = run['navigation']
+    edges = {edge['id']: edge for edge in nav['network']['edges']}
+    nodes = {node['id']: node['position'] for node in nav['network']['nodes']}
+    at = nav['start']
+    points = []
+    distance = 0.0
+    half_width = math.inf
+    node_ids = [at]
+    for id in plan['edge_ids']:
+        edge = edges[id]
+        if id in nav['closed_edges'] or edge['from'] != at:
+            raise ValueError('selected path violates closure or connectivity')
+        geometry = edge['points']
+        if (math.dist(xy(geometry[0]), xy(nodes[edge['from']])) > 1e-6
+                or math.dist(xy(geometry[-1]), xy(nodes[edge['to']])) > 1e-6):
+            raise ValueError('edge geometry disagrees with its map endpoints')
+        half_width = min(half_width, edge['half_width'])
+        distance += sum(math.dist(xy(a), xy(b)) for a, b in zip(geometry, geometry[1:]))
+        points.extend(geometry[1:] if points else geometry)
+        at = edge['to']
+        node_ids.append(at)
+    if (at != nav['goal'] or plan['edge_ids'] != EXPECTED_EDGES[case]
+            or plan['node_ids'] != node_ids or points != run['route']['points']
+            or points != plan['route']['points'] or abs(distance - plan['distance_m']) > 1e-7
+            or abs(distance - run['route']['lengths'][-1]) > 1e-7
+            or half_width != run['route']['half_width'] or half_width != plan['route']['half_width']):
+        raise ValueError('selected route differs from the expected mapped destination')
+    end_distance = math.dist(xy(run['frames'][-1]['truth']['pose']['position']), xy(nodes[nav['goal']]))
+    if end_distance > 2.0:
+        raise ValueError('vehicle did not stop within 2 m of the mapped destination')
+    return {'edge_ids': plan['edge_ids'], 'distance_m': distance,
+            'goal_distance_m': end_distance, 'passed': True}
+
+
+def xy(point):
+    return point['x'], point['y']
+
+
+def check_gnss_innovation_hold(log):
+    """Reconstruct latched innovation braking from unique correction evidence only."""
+    accepted = rejected = consecutive = max_consecutive = 0
+    observed_stamp = None
+    held = False
+    hold_ticks = 0
+    starts = []
+    releases = []
+    with log.open() as stream:
+        next(stream)
+        for line in stream:
+            record = json.loads(line)
+            if record.get('kind') != 'tick':
+                continue
+            inp, out = record['tick']['input'], record['tick']['expected']
+            diagnostic = out['localization']
+            accepted_delta = diagnostic['accepted_fixes']-accepted
+            rejected_delta = diagnostic['rejected_fixes']-rejected
+            if accepted_delta not in [0, 1] or rejected_delta not in [0, 1] or accepted_delta+rejected_delta > 1:
+                raise ValueError('GNSS correction counts do not describe at most one new observation')
+            if accepted_delta or rejected_delta:
+                fix = inp.get('gnss')
+                if (not fix or not math.isfinite(fix['stamp'])
+                        or not 0 <= fix['stamp'] <= inp['time']+1e-9
+                        or (observed_stamp is not None and fix['stamp'] <= observed_stamp)
+                        or diagnostic['last_observed_stamp'] != fix['stamp']):
+                    raise ValueError('GNSS integrity state advanced without a strictly new valid observation')
+                if accepted_delta:
+                    if diagnostic['last_decision'] != 'Accepted' or diagnostic['last_accepted_stamp'] != fix['stamp']:
+                        raise ValueError('GNSS hold recovery lacks an accepted correction')
+                    consecutive = 0
+                    if held:
+                        releases.append({'time': out['time'], 'accepted_stamp': fix['stamp']})
+                    held = False
+                else:
+                    if diagnostic['last_decision'] != 'RejectedInnovation':
+                        raise ValueError('GNSS innovation count advanced without an innovation rejection')
+                    consecutive += 1
+                    max_consecutive = max(max_consecutive, consecutive)
+                    if consecutive >= 2 and not held:
+                        starts.append({'time': out['time'], 'rejected_stamp': fix['stamp']})
+                        held = True
+                observed_stamp = fix['stamp']
+            elif diagnostic['last_observed_stamp'] != observed_stamp:
+                raise ValueError('GNSS observation diagnostics changed without a new correction')
+            if ('GnssInnovationHold' in out['health']) != held:
+                raise ValueError('GNSS innovation hold did not latch after two rejections until acceptance')
+            if held:
+                hold_ticks += 1
+                if not out['emergency'] or out['command'] != {'acceleration': -6.0, 'steering': 0.0}:
+                    raise ValueError('latched GNSS innovation hold did not emit defined emergency braking')
+            accepted, rejected = diagnostic['accepted_fixes'], diagnostic['rejected_fixes']
+    return {'verified': True, 'holding_ticks': hold_ticks,
+            'max_consecutive_rejections': max_consecutive,
+            'hold_starts': starts, 'accepted_releases': releases,
+            'held_at_end': held, 'sensor_only_reconstruction_verified': True}
+
+
+def check_gnss_fault(run, log, case):
+    """Verify actual biased observations, accepted-age braking and physical recovery."""
+    with log.open() as stream:
+        header = json.loads(next(stream))['header']
+        ticks = [r['tick'] for line in stream if (r := json.loads(line))['kind'] == 'tick']
+    if 'gnss_bias_windows' in header['config']:
+        raise ValueError('simulator fault labels entered pipeline configuration')
+    integrity = check_gnss_innovation_hold(log)
+    windows = run['scenario']['gnss_bias_windows']
+    frames = {round(f['time']*20): f for f in run['frames']}
+    accepted_stamp = observed_stamp = None
+    accepted = rejected = biased = 0
+    stale_times = []
+    recovery = None
+    previous = None
+    for tick in ticks:
+        inp, out = tick['input'], tick['expected']
+        diagnostic = out['localization']
+        fix = inp.get('gnss')
+        if fix:
+            observed_stamp = fix['stamp']
+            offset = next((w['offset'] for w in windows if w['from']-1e-9 <= fix['stamp'] < w['until']-1e-9), {'x': 0.0, 'y': 0.0})
+            truth = frames[round(fix['stamp']*20)]['truth']['pose']['position']
+            if any(abs(fix['position'][axis]-truth[axis]-offset[axis]) > 0.14+1e-8 for axis in ['x', 'y']):
+                raise ValueError('recorded GNSS does not contain the scheduled bias and bounded sensor noise')
+            is_biased = math.hypot(*xy(offset)) > 0
+            if is_biased:
+                biased += 1
+                if diagnostic['last_decision'] != 'RejectedInnovation' or diagnostic['last_nis'] <= 36:
+                    raise ValueError('biased fix was not rejected by the innovation gate')
+                # Rejected GNSS cannot shift the state beyond wheel/gyro prediction.
+                pose = previous['estimate']['pose']
+                dt = out['time']-previous['time']
+                speed = max(0.0, inp['odometry']['speed'])
+                predicted = (pose['position']['x']+math.cos(pose['yaw'])*speed*dt,
+                             pose['position']['y']+math.sin(pose['yaw'])*speed*dt)
+                if math.dist(xy(out['estimate']['pose']['position']), predicted) > 1e-8:
+                    raise ValueError('rejected GNSS mutated the predicted position')
+            if diagnostic['last_decision'] == 'Accepted':
+                accepted += 1
+                accepted_stamp = fix['stamp']
+                if case.startswith('gnss-burst') and recovery is None and fix['stamp'] >= windows[-1]['until']:
+                    recovery = out['time']
+            elif diagnostic['last_decision'] == 'RejectedInnovation':
+                rejected += 1
+            else:
+                raise ValueError('new finite GNSS has an unexpected correction decision')
+        if (diagnostic['last_observed_stamp'] != observed_stamp
+                or diagnostic['last_accepted_stamp'] != accepted_stamp
+                or diagnostic['accepted_fixes'] != accepted or diagnostic['rejected_fixes'] != rejected):
+            raise ValueError('GNSS receipt/acceptance diagnostics disagree with observations')
+        stale = accepted_stamp is None or out['time']-accepted_stamp > 0.75+1e-9
+        if ('StaleGnss' in out['health']) != stale:
+            raise ValueError('GNSS health refreshed from an unaccepted fix')
+        if stale:
+            stale_times.append(out['time'])
+            if not out['emergency'] or out['command'] != {'acceleration': -6.0, 'steering': 0.0}:
+                raise ValueError('stale GNSS did not emit the defined emergency command')
+        if previous and previous['emergency'] and not out['emergency']:
+            if abs(out['command']['steering']) > 0.7*(out['time']-previous['time'])+1e-8:
+                raise ValueError('recovery steering did not start from the emitted zero command')
+        previous = out
+    if biased != rejected or not biased or run['summary']['localization_max_error'] > 0.5:
+        raise ValueError('GNSS rejection or bounded localization regression failed')
+    if case == 'gnss-spike' and (biased != 1 or stale_times or integrity['holding_ticks']):
+        raise ValueError('single rejected fix caused unintended GNSS-stale braking')
+    if case.startswith('gnss-burst'):
+        if (not stale_times or not integrity['holding_ticks'] or recovery is None
+                or recovery > windows[-1]['until']+0.4):
+            raise ValueError('burst did not brake and accept a good fix after the window')
+        held = [f for f in run['frames'] if 7.0 <= f['time'] < 8.0 and f['truth']['speed'] < 0.1]
+        if not held or not run['summary']['reached_goal']:
+            raise ValueError('burst did not physically stop and resume to the goal')
+    if case == 'gnss-persistent-bias' and (not stale_times or 'StaleGnss' not in ticks[-1]['expected']['health']
+            or run['summary']['final_speed'] > 0.1 or run['summary']['reached_goal']):
+        raise ValueError('persistent fault did not remain stopped with stale accepted GNSS')
+    return {'biased_fixes': biased, 'rejected_fixes': rejected, 'accepted_fixes': accepted,
+            'first_stale_s': stale_times[0] if stale_times else None,
+            'first_recovered_fix_s': recovery, 'max_localization_error_m': run['summary']['localization_max_error'],
+            'max_error_limit_m': 0.5, 'innovation_hold': integrity,
+            'fault_labels_absent_from_pipeline': True, 'passed': True}
+
+
+def check_goal_hold(run, log):
+    with log.open() as stream:
+        header = json.loads(next(stream))['header']
+    if 'goal_hold_seconds' in header['config']:
+        raise ValueError('physical goal residence acceptance entered pipeline configuration')
+    hold = run['scenario']['goal_hold_seconds']
+    frames = run['frames']
+    end = frames[-1]['time']
+    held = [f for f in frames if f['time'] >= end-hold-1e-9]
+    if not held or held[0]['time'] > end-hold+1e-9:
+        raise ValueError('recording does not cover the required terminal residence')
+    # Recompute polyline projection from truth, independently of reported progress.
+    route = run['route']['points']
+    segments = list(zip(route, route[1:]))
+    def progress(position):
+        best = (math.inf, 0.0)
+        accumulated = 0.0
+        for a, b in segments:
+            dx, dy = b['x']-a['x'], b['y']-a['y']
+            length = math.hypot(dx, dy)
+            u = max(0.0, min(1.0, ((position['x']-a['x'])*dx+(position['y']-a['y'])*dy)/(length*length)))
+            d = math.dist(xy(position), (a['x']+u*dx, a['y']+u*dy))
+            if d < best[0]:
+                best = d, accumulated+u*length
+            accumulated += length
+        return best[1], accumulated
+    positions = [f['truth']['pose']['position'] for f in held]
+    excursion = max(math.dist(xy(p), xy(positions[0])) for p in positions)
+    clearance = min(math.dist(xy(f['truth']['pose']['position']), xy(o['position']))
+                    -run['vehicle']['radius']-o['radius'] for f in held for o in f['objects'])
+    if (any(f['truth']['speed'] >= 0.2 or progress(p)[0] < progress(p)[1]-2.0-1e-8
+            for f, p in zip(held, positions)) or excursion > 0.5 or clearance < 0.5):
+        raise ValueError('truth did not remain stopped and clear at the goal for the complete hold')
+    lead = next(o for o in frames[-1]['objects'] if o['id'] == 1)
+    if math.dist(xy(lead['position']), xy(route[-1])) > 1e-8:
+        raise ValueError('evaluation ended before the scripted lead reached the endpoint')
+    return {'required_seconds': hold, 'observed_seconds': end-held[0]['time'],
+            'maximum_excursion_m': excursion, 'minimum_sampled_clearance_m': clearance,
+            'lead_reached_endpoint': True, 'acceptance_absent_from_pipeline': True, 'passed': True}
+
+
+def check_traffic(run, log, case):
+    """Independent fixture truth, measured ranges, actor kinematics and stop/resume checks."""
+    with log.open() as stream:
+        header = json.loads(next(stream))['header']
+        ticks = [record['tick'] for line in stream if (record := json.loads(line))['kind'] == 'tick']
+    if any(key in header['config'] for key in ['objects', 'following', 'traffic', 'stop_windows']):
+        raise ValueError('traffic truth/configuration entered the ego pipeline')
+    frames = run['frames']
+    specs = run['scenario']['objects']
+    length = sum(math.dist(xy(a), xy(b)) for a, b in zip(run['route']['points'], run['route']['points'][1:]))
+    if any(abs(p['y']) > 1e-9 for p in run['route']['points']):
+        raise ValueError('these independent traffic fixture checks require their straight route')
+    reactive = {i: s for i, s in enumerate(specs) if s.get('following')}
+    previous = None
+    minimum_pair = math.inf
+    max_acceleration = 0.0
+    sensor_samples = 0
+    for frame in frames:
+        objects = {o['id']: o for o in frame['objects']}
+        states = {a['id']: a for a in frame.get('traffic', [])}
+        for id, actor in states.items():
+            if id not in reactive or id not in objects:
+                raise ValueError('actor state lacks its physical body')
+            p, config = objects[id]['position'], reactive[id]['following']
+            if (abs(p['x']-actor['route_s_m']) > 1e-8 or abs(p['y']-reactive[id]['lateral']) > 1e-8
+                    or not math.isfinite(actor['speed_m_s']) or actor['speed_m_s'] < 0
+                    or abs(p['y'])+objects[id]['radius'] > run['route']['half_width']
+                    or p['x']+objects[id]['radius'] > length+1e-8):
+                raise ValueError('actor truth violates its route/finite-state bounds')
+            a = actor['acceleration_m_s2']
+            if not -config['max_deceleration_m_s2']-1e-8 <= a <= config['max_acceleration_m_s2']+1e-8:
+                raise ValueError('actor command exceeds calibrated acceleration bounds')
+            if previous:
+                old = next((s for s in previous.get('traffic', []) if s['id'] == id), None)
+                if old:
+                    dt = frame['time']-previous['time']
+                    if abs(dt-0.05) > 1e-8:
+                        raise ValueError('reactive actor evidence is missing a control tick')
+                    expected_speed = max(0.0, old['speed_m_s']+a*dt)
+                    if (abs(actor['speed_m_s']-expected_speed) > 1e-8
+                            or abs(actor['route_s_m']-old['route_s_m']-(old['speed_m_s']+expected_speed)*0.5*dt) > 1e-8):
+                        raise ValueError('actor was clamped/teleported instead of physically integrated')
+                    max_acceleration = max(max_acceleration, abs((actor['speed_m_s']-old['speed_m_s'])/dt))
+                    # Reconstruct the pre-step ideal route-aligned proximity sensor.
+                    candidates = [max(0.0, length-reactive[id]['radius']-old['route_s_m'])]
+                    scene = [o for o in previous['objects'] if o['id'] != id]
+                    scene += [{'position': previous['truth']['pose']['position'], 'radius': run['vehicle']['radius']}]
+                    for o in scene:
+                        dx = o['position']['x']-old['route_s_m']
+                        side = o['position']['y']-reactive[id]['lateral']
+                        radius = reactive[id]['radius']+o['radius']
+                        if dx >= 0 and abs(side) < radius:
+                            candidates.append(dx-math.sqrt(radius*radius-side*side))
+                    visible = [g for g in candidates if g <= config['sensor_range_m']]
+                    measured = min(visible) if visible else None
+                    observation = actor['observation']
+                    if abs(observation['stamp']-previous['time']) > 1e-8:
+                        raise ValueError('actor proximity observation is not from the pre-step scene')
+                    actual = observation['gap_m']
+                    if (actual is None) != (measured is None) or actual is not None and abs(actual-measured) > 1e-8:
+                        raise ValueError('actor gap differs from independently reconstructed sensing')
+                    old_gap = old['observation']['gap_m']
+                    closing = (max(-12.0, min(12.0, (old_gap-measured)/dt)) if old_gap is not None
+                               else old['speed_m_s']) if measured is not None else None
+                    if (closing is None) != (observation['closing_speed_m_s'] is None) or closing is not None and abs(closing-observation['closing_speed_m_s']) > 1e-8:
+                        raise ValueError('actor closing speed is not a measured range difference')
+                    sensor_samples += 1
+        for i, a in enumerate(frame['objects']):
+            for b in frame['objects'][i+1:]:
+                if a['id'] not in reactive and b['id'] not in reactive:
+                    continue
+                separation = math.dist(xy(a['position']), xy(b['position']))-a['radius']-b['radius']
+                if previous:
+                    old_objects = {o['id']: o for o in previous['objects']}
+                    if a['id'] in old_objects and b['id'] in old_objects:
+                        pa, pb = old_objects[a['id']]['position'], old_objects[b['id']]['position']
+                        x, y = pa['x']-pb['x'], pa['y']-pb['y']
+                        dx, dy = a['position']['x']-b['position']['x']-x, a['position']['y']-b['position']['y']-y
+                        u = max(0.0, min(1.0, -(x*dx+y*dy)/(dx*dx+dy*dy))) if dx*dx+dy*dy else 0.0
+                        separation = min(separation, math.hypot(x+u*dx, y+u*dy)-a['radius']-b['radius'])
+                minimum_pair = min(minimum_pair, separation)
+        previous = frame
+    if sensor_samples == 0 or run['summary'].get('traffic_collisions', 0) or run['summary'].get('traffic_road_violations', 0):
+        raise ValueError('reactive traffic was untested or violated physical acceptance')
+    if math.isfinite(minimum_pair):
+        if minimum_pair < 1.0 or abs(minimum_pair-run['summary']['traffic_min_clearance']) > 1e-8:
+            raise ValueError('independent actor-pair sweep differs from physical acceptance')
+    def hold_duration(predicate):
+        start = None
+        longest = 0.0
+        for f in frames:
+            if predicate(f):
+                if start is None: start = f['time']
+                longest = max(longest, f['time']-start)
+            else: start = None
+        return longest
+    if case == 'traffic-lead-stop':
+        ego_hold = hold_duration(lambda f: 17 <= f['time'] < 24 and f['truth']['speed'] < 0.1)
+        if ego_hold < 2.0 or not any(f['time'] > 26 and f['time'] < 42 and f['truth']['speed'] > 2 and f['truth']['pose']['position']['x'] > 100 for f in frames):
+            raise ValueError('ego did not wait for and resume behind the stopped lead')
+        if not all(f['traffic'][0]['speed_m_s'] < 0.1 for f in frames if 11 <= f['time'] < 23.9):
+            raise ValueError('lead did not physically stop in its requested window')
+    elif case in ['traffic-queue', 'traffic-fleet-queue']:
+        if any(a['speed_m_s'] > 0.05 for a in frames[-1]['traffic']) or not math.isfinite(minimum_pair):
+            raise ValueError('queue did not stop with measured actor-pair separation')
+        if any(a['route_s_m'] < reactive[a['id']]['s']+15 for a in frames[-1]['traffic']):
+            raise ValueError('queue fixture never exercised traffic motion')
+        if case == 'traffic-fleet-queue':
+            if len(reactive) != 3 or any(len(f.get('traffic', [])) != 3
+                    or {a['id'] for a in f['traffic']} != set(reactive) for f in frames):
+                raise ValueError('fleet evidence must retain all three reactive vehicles at every tick')
+            order = sorted(reactive, key=lambda id: reactive[id]['s'])
+            for f in frames:
+                positions = {a['id']: a['route_s_m'] for a in f['traffic']}
+                if any(positions[a] >= positions[b] for a, b in zip(order, order[1:])):
+                    raise ValueError('fleet vehicle order changed on a single-lane queue')
+            # Require a continuous terminal hold, rather than a lucky final frame.
+            fleet_hold = 0.0
+            for f in reversed(frames):
+                if f['truth']['speed'] >= 0.1 or any(a['speed_m_s'] >= 0.05 for a in f['traffic']):
+                    break
+                fleet_hold = frames[-1]['time']-f['time']
+            if fleet_hold < 5.0-1e-8:
+                raise ValueError('ego and fleet did not remain stopped together for five seconds')
+    elif case.startswith('traffic-follower'):
+        fault_end = run['scenario']['gnss_bias_windows'][0]['until']
+        ego_hold = hold_duration(lambda f: 11 <= f['time'] < fault_end and f['truth']['speed'] < 0.1)
+        actor_hold = hold_duration(lambda f: 12 <= f['time'] < fault_end and f.get('traffic') and f['traffic'][0]['speed_m_s'] < 0.1)
+        minimum_fault_speed = min(f['traffic'][0]['speed_m_s'] for f in frames if 12 <= f['time'] < fault_end)
+        if ego_hold < 1.0 or (case == 'traffic-follower-brake' and actor_hold < 0.25) or minimum_fault_speed >= 2.0:
+            raise ValueError('ego/follower did not physically stop during the GNSS fault')
+        if case != 'traffic-follower-short-range' and not any(16 < f['time'] < 30 and f['traffic'][0]['speed_m_s'] > 2.0 and f['truth']['speed'] > 2.0 for f in frames):
+            raise ValueError('reactive follower and ego never resumed')
+        if not any('StaleGnss' in t['expected']['health'] for t in ticks):
+            raise ValueError('ego braking fixture did not exercise accepted-GNSS expiry')
+        for t in ticks:
+            fix = t['input'].get('gnss')
+            if fix and 10 <= fix['stamp'] < fault_end and t['expected']['localization']['last_decision'] != 'RejectedInnovation':
+                raise ValueError('follower fixture did not reject the actual GNSS burst')
+        residence = 0.0
+        for f in reversed(frames):
+            if f['truth']['speed'] >= 0.2 or f['truth']['pose']['position']['x'] < length-2.0:
+                break
+            residence = frames[-1]['time']-f['time']
+        if case in ['traffic-follower-brake', 'traffic-follower-deadline'] and (residence < 8.0-1e-8 or not run['summary']['reached_goal']):
+            raise ValueError('ego did not remain at the goal for the complete physical hold')
+    return {**({'reactive_vehicle_count': 3, 'terminal_queue_hold_seconds': fleet_hold}
+               if case == 'traffic-fleet-queue' else {}),
+            'sensor_samples': sensor_samples, 'max_measured_actor_acceleration_m_s2': max_acceleration,
+            'minimum_actor_pair_clearance_m': minimum_pair if math.isfinite(minimum_pair) else None,
+            'actor_kinematics_verified': True, 'sensor_reconstruction_verified': True,
+            'traffic_labels_absent_from_pipeline': True, 'passed': True}
+
+
+def check_live_navigation(run, log, case):
+    """Check stop-before-switch, update replay state and stationary world objects."""
+    ticks = []
+    with log.open() as stream:
+        for line in stream:
+            record = json.loads(line)
+            if record['kind'] == 'tick':
+                ticks.append(record['tick'])
+    updates = [t['input']['navigation_update'] for t in ticks if t['input'].get('navigation_update')]
+    if updates != run['scenario']['navigation_updates']:
+        raise ValueError('recorded map snapshots differ from the scheduled inputs')
+    observed_switches = 0
+    revision = 0
+    closures = run['scenario']['navigation']['closed_edges']
+    for i, tick in enumerate(ticks):
+        out = tick['expected']
+        nav = out['navigation']
+        snapshot = tick['input'].get('navigation_update')
+        if snapshot:
+            revision, closures = snapshot['revision'], snapshot['closed_edges']
+        if nav['revision'] != revision or nav['closed_edges'] != closures:
+            raise ValueError('navigation state did not apply the delivered closure snapshot')
+        if ((nav['phase'] == 'Following' and set(nav['active_edges']) & set(closures))
+                or set(nav['pending_edges']) & set(closures)):
+            raise ValueError('following or pending path includes a closed edge')
+        if nav['switches'] > observed_switches:
+            if nav['switches'] != observed_switches + 1 or i < 2:
+                raise ValueError('invalid handover count')
+            for prior in ticks[i-2:i+1]:
+                state = prior['expected']
+                if state['health'] or abs(state['estimate']['speed']) > 0.05:
+                    raise ValueError('handover lacks three healthy stopped estimates')
+            observed_switches += 1
+    history = run['route_history']
+    if len(history) != observed_switches + 1:
+        raise ValueError('route history differs from the replayed switch count')
+    for change in history[1:]:
+        if change['true_speed'] > 0.1 or abs(change['estimated_speed']) > 0.05:
+            raise ValueError('moving vehicle changed routes')
+        if change['time'] <= updates[0]['stamp']:
+            raise ValueError('route changed before the closure was delivered')
+    # Both fixtures contain a stationary object; route changes must not move it.
+    positions = [f['objects'][0]['position'] for f in run['frames']]
+    if any(p != positions[0] for p in positions):
+        raise ValueError('world object teleported during navigation')
+    if run['summary'].get('closure_violations', 0):
+        raise ValueError('truth entered a closed edge')
+    if case in ['route-handover', 'route-handover-fast', 'route-reopen']:
+        if observed_switches != 1 or ticks[-1]['expected']['navigation']['phase'] != 'Following':
+            raise ValueError('detour handover did not complete')
+    else:
+        if (observed_switches or ticks[-1]['expected']['navigation']['phase'] != 'Blocked'
+                or run['summary']['progress'] + run['vehicle']['radius'] >= 40.0
+                or run['summary']['final_speed'] >= 0.2):
+            raise ValueError('unreachable route did not hold before the closed fork')
+    return {'switches': observed_switches, 'history': [{k: h[k] for k in ['time', 'estimated_speed', 'true_speed']} | {'edge_ids': h['plan']['edge_ids']} for h in history],
+            'stationary_world_verified': True, 'passed': True}
+
+
+def invoke(args):
+    result = subprocess.run([str(a) for a in args], cwd=ROOT, capture_output=True, text=True)
+    return result.returncode, result.stderr[-2000:]
+
+
+def source_fingerprint():
+    files = [ROOT/'Cargo.toml', ROOT/'Cargo.lock', ROOT/'rust-toolchain.toml']
+    files += list((ROOT/'crates').glob('*/Cargo.toml')) + list((ROOT/'crates').glob('**/*.rs'))
+    files += list((ROOT/'scenarios').glob('*.json'))
+    files += [ROOT/'integrations/rne'/p for p in ['Cargo.toml', 'Cargo.lock', 'rust-toolchain.toml', 'rne-revision.txt']]
+    files += list((ROOT/'integrations/rne/src').glob('*.rs'))
+    digest = hashlib.sha256()
+    for file in sorted(set(files)):
+        digest.update(str(file.relative_to(ROOT)).encode()+b'\0'+file.read_bytes()+b'\0')
+    return digest.hexdigest()
+
+
+def check_speed_profiles(log):
+    """Check distance, speed and time kinematics independently of planner code."""
+    active = holds = 0
+    max_acceleration = max_deceleration = 0.0
+    with log.open() as stream:
+        header = json.loads(next(stream))
+        limits = header['header']['config'].get('motion_limits') or {}
+        forward = limits.get('max_acceleration_m_s2', 2.0)
+        braking = limits.get('max_deceleration_m_s2', 2.5)
+        for line in stream:
+            record = json.loads(line)
+            if record.get('kind') != 'tick':
+                continue
+            expected = record['tick']['expected']
+            path = expected['trajectory']['points']
+            if expected['trajectory']['mode'] == 'Emergency':
+                continue
+            if not path or path[0]['time'] != 0.0:
+                raise ValueError('trajectory must start at relative time zero')
+            if abs(path[0]['speed'] - max(0.0, expected['estimate']['speed'])) > 1e-8:
+                raise ValueError('profile initial speed differs from the estimated state')
+            active += 1
+            for point in path:
+                values = [point['time'], point['speed'], *point['position'].values()]
+                if not all(math.isfinite(value) for value in values) or point['speed'] < 0:
+                    raise ValueError('non-finite or negative profile state')
+            for a, b in zip(path, path[1:]):
+                duration = b['time'] - a['time']
+                if duration <= 0:
+                    raise ValueError('profile time must increase')
+                distance = math.hypot(b['position']['x'] - a['position']['x'], b['position']['y'] - a['position']['y'])
+                integrated_distance = 0.5 * (a['speed'] + b['speed']) * duration
+                if abs(distance - integrated_distance) > 1e-7 * max(1.0, distance):
+                    raise ValueError('speed integral disagrees with segment distance')
+                acceleration = (b['speed'] - a['speed']) / duration
+                if acceleration > forward + 1e-7 or acceleration < -braking - 1e-7:
+                    raise ValueError('profile exceeds calibrated longitudinal authority')
+                max_acceleration = max(max_acceleration, acceleration)
+                max_deceleration = max(max_deceleration, -acceleration)
+                if distance < 1e-10:
+                    if a['speed'] != 0 or b['speed'] != 0:
+                        raise ValueError('stationary segment has nonzero speed')
+                    holds += 1
+    if not active:
+        raise ValueError('no active speed profiles checked')
+    return {'verified': True, 'active_trajectories': active, 'stationary_holds': holds,
+            'max_acceleration_m_s2': max_acceleration,
+            'max_deceleration_m_s2': max_deceleration}
+
+
+def check_motion_predictions(log):
+    """Reconstruct current-epoch forecasts from timestamped measured tracks only."""
+    history = {}
+    forecasts = braking_forecasts = stale_fallbacks = reacceleration_fallbacks = 0
+    aged_forecasts = rebased_moving_forecasts = 0
+    max_deceleration = max_epoch_age = 0.0
+    with log.open() as stream:
+        next(stream)
+        for line in stream:
+            record = json.loads(line)
+            if record.get('kind') != 'tick':
+                continue
+            tick = record['tick']
+            now = tick['input']['time']
+            tracks = {t['id']: t for t in tick['expected']['tracks']}
+            prediction_ids = [p['id'] for p in tick['expected']['predictions']]
+            if sorted(prediction_ids) != sorted(tracks):
+                raise ValueError('motion forecasts dropped, duplicated or invented a track identity')
+            history = {id: samples for id, samples in history.items() if id in tracks}
+            for forecast in tick['expected']['predictions']:
+                track = tracks[forecast['id']]
+                samples = history.setdefault(track['id'], [])
+                if samples and track['last_seen'] < samples[-1]['last_seen']:
+                    samples.clear()
+                if not samples or track['last_seen'] > samples[-1]['last_seen']:
+                    samples.append(track)
+                samples[:] = [s for s in samples if track['last_seen']-s['last_seen'] <= 0.8+1e-9][-32:]
+                speed = math.hypot(*xy(track['velocity']))
+                dt = forecast['dt']
+                positions = list(map(xy, forecast['positions']))
+                origin = xy(track['position'])
+                age = now-track['last_seen']
+                valid = (all(math.isfinite(v) for v in [now, age, speed, track['radius'], *origin])
+                         and age >= 0 and track['last_seen'] >= 0 and track['radius'] > 0)
+                forecasts += 1
+                if not valid:
+                    if positions:
+                        raise ValueError('invalid/future acquired track fabricated forecast positions')
+                    samples.clear()
+                    continue
+                if len(positions) != 41 or abs(dt-0.2) > 1e-9:
+                    raise ValueError('forecast horizon or spacing changed')
+                aged_forecasts += int(age > 1e-9)
+                rebased_moving_forecasts += int(age > 1e-9 and speed >= .7)
+                max_epoch_age = max(max_epoch_age, age)
+                stale = age > .15+1e-9
+                reaccelerating = len(samples) >= 2 and speed >= math.hypot(*xy(samples[-2]['velocity']))
+                braking = None
+                if not stale and not reaccelerating and speed >= .7 and len(samples) >= 2:
+                    direction = (track['velocity']['x']/speed, track['velocity']['y']/speed)
+                    previous = track
+                    supported = []
+                    for offset in [.2, .4, .6]:
+                        target = track['last_seen']-offset
+                        old = min(samples, key=lambda s: abs(s['last_seen']-target))
+                        old_speed = math.hypot(*xy(old['velocity']))
+                        elapsed = previous['last_seen']-old['last_seen']
+                        if abs(old['last_seen']-target) > .025 or elapsed <= 0:
+                            break
+                        alignment = sum(v*d for v, d in zip(xy(old['velocity']), direction))/max(old_speed, 1e-9)
+                        deceleration = (old_speed-math.hypot(*xy(previous['velocity'])))/elapsed
+                        if alignment < .98 or not math.isfinite(deceleration) or deceleration < .3:
+                            break
+                        supported.append(deceleration)
+                        previous = old
+                    if len(supported) == 3:
+                        braking = min(2.0, .5*min(supported))
+                stale_fallbacks += int(stale)
+                reacceleration_fallbacks += int(reaccelerating)
+                braking_forecasts += int(braking is not None)
+                direction = (track['velocity']['x']/speed, track['velocity']['y']/speed) if speed >= .7 else (0.0, 0.0)
+                def displacement(elapsed):
+                    if speed < .7:
+                        return 0.0
+                    if braking is None:
+                        return speed*elapsed
+                    # Acquisition anchors the whole hypothesis: delivery age consumes
+                    # its one-second braking allowance; another tick cannot renew it.
+                    q = min(elapsed, 1.0, speed/braking)
+                    return speed*q-.5*braking*q*q+max(0.0, speed-braking*q)*(elapsed-q)
+                expected = [(origin[0]+direction[0]*displacement(age+i*dt),
+                             origin[1]+direction[1]*displacement(age+i*dt)) for i in range(41)]
+                if any(not all(math.isfinite(v) for v in p) or math.dist(p, e) > 1e-8
+                       for p, e in zip(positions, expected)):
+                    raise ValueError('forecast differs from acquisition-anchored motion at the current epoch')
+                if braking is None:
+                    continue
+                means = [math.dist(a, b)/dt for a, b in zip(positions, positions[1:])]
+                for a, b in zip(means, means[1:]):
+                    deceleration = (a-b)/dt
+                    if not -1e-8 <= deceleration <= 2.0+1e-8:
+                        raise ValueError('forecast exceeds bounded deceleration')
+                    max_deceleration = max(max_deceleration, deceleration)
+                coast = [m for i, m in enumerate(means) if age+i*dt >= 1.0-1e-9]
+                if coast and max(coast)-min(coast) > 1e-8:
+                    raise ValueError('braking assumption persisted beyond acquisition plus one second')
+    return {'verified': True, 'forecasts': forecasts, 'braking_forecasts': braking_forecasts,
+            'stale_fallbacks': stale_fallbacks, 'reacceleration_fallbacks': reacceleration_fallbacks,
+            'max_forecast_deceleration_m_s2': max_deceleration,
+            'aged_forecasts': aged_forecasts, 'rebased_moving_forecasts': rebased_moving_forecasts,
+            'max_epoch_age_s': max_epoch_age, 'current_epoch_reconstruction_verified': True}
+
+
+def control_metrics(log):
+    """Measure actual emitted commands, including emergency transitions."""
+    count = emergency = pairs = 0
+    squared_acceleration_changes = max_normal_steering_rate = 0.0
+    previous = None
+    with log.open() as stream:
+        for line in stream:
+            record = json.loads(line)
+            if record.get('kind') != 'tick':
+                continue
+            current = record['tick']['expected']
+            count += 1
+            emergency += int(current['emergency'])
+            if previous:
+                duration = current['time'] - previous['time']
+                if duration <= 0:
+                    raise ValueError('command clock must increase')
+                acceleration_change = (current['command']['acceleration'] - previous['command']['acceleration']) / duration
+                squared_acceleration_changes += acceleration_change**2
+                pairs += 1
+                if not current['emergency'] and not previous['emergency']:
+                    rate = abs(current['command']['steering'] - previous['command']['steering']) / duration
+                    max_normal_steering_rate = max(max_normal_steering_rate, rate)
+            previous = current
+    if not count or not pairs:
+        raise ValueError('insufficient command samples')
+    return {'ticks': count, 'emergency_ticks': emergency, 'emergency_fraction': emergency / count,
+            'commanded_acceleration_change_rms_m_s3': math.sqrt(squared_acceleration_changes / pairs),
+            'max_normal_commanded_steering_rate_rad_s': max_normal_steering_rate}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--backend', choices=['all', *CASES], default='all')
+    parser.add_argument('--seeds', nargs='+', type=int, default=[1, 7, 42])
+    parser.add_argument('--output', type=Path, default=ROOT/'artifacts/hazards')
+    args = parser.parse_args()
+    if any(seed < 0 or seed > 2**64-1 for seed in args.seeds) or len(set(args.seeds)) != len(args.seeds):
+        parser.error('seeds must be distinct unsigned 64-bit integers')
+    args.output.mkdir(parents=True, exist_ok=True)
+    report_file = args.output/'report.json'
+    report_file.unlink(missing_ok=True)
+    backends = list(CASES) if args.backend == 'all' else [args.backend]
+    cli = ROOT/'target/release/rustdrive'
+    rne = ROOT/'integrations/rne/target/release/rustdrive-rne'
+    if not cli.is_file() or ('rne-dynamic' in backends and not rne.is_file()):
+        raise SystemExit('Build release binaries first: bash scripts/check-hazards.sh')
+    revision = (ROOT/'integrations/rne/rne-revision.txt').read_text().strip()
+    if 'rne-dynamic' in backends:
+        head = subprocess.run(['git', '-C', str(ROOT.parent/'RobotNativeEngine'), 'rev-parse', 'HEAD'], capture_output=True, text=True, check=True).stdout.strip()
+        if head != revision:
+            raise SystemExit('RNE revision differs from the committed pin; existing checkout is preserved')
+    report = {'schema_version': 1, 'source_fingerprint_sha256': source_fingerprint(),
+              'rne_revision': revision if 'rne-dynamic' in backends else None,
+              'seeds': args.seeds, 'runs': [], 'passed': True}
+    for backend in backends:
+        for case in CASES[backend]:
+            for seed in args.seeds:
+                output = args.output/backend/case/f'seed-{seed}'
+                output.mkdir(parents=True, exist_ok=True)
+                # Remove previous success evidence before invoking a fresh run.
+                summary_file = output/'summary.json'
+                summary_file.unlink(missing_ok=True)
+                replay_file = output/'replay/replay.json'
+                replay_file.unlink(missing_ok=True)
+                command = [cli, 'run'] if backend == 'reference' else [rne, '--plant', 'dynamic']
+                command += ['--scenario', ROOT/'scenarios'/f'{case}.json', '--seed', seed, '--output', output]
+                code, error = invoke(command)
+                row = {'backend': backend, 'scenario': case, 'seed': seed, 'exit_code': code,
+                       'output': str(output), 'passed': False}
+                if summary_file.exists():
+                    summary = json.loads(summary_file.read_text())
+                    row['summary'] = summary
+                    code_replay, replay_error = invoke([cli, 'replay', '--log', output/'sensors.jsonl', '--output', output/'replay'])
+                    row['replay_exit_code'] = code_replay
+                    if replay_file.exists():
+                        row['replay'] = json.loads(replay_file.read_text())
+                    ok = (code == 0 and summary['passed'] and summary['collisions'] == 0
+                          and summary['road_violations'] == 0 and code_replay == 0
+                          and summary.get('traffic_collisions', 0) == 0 and summary.get('traffic_road_violations', 0) == 0
+                          and summary.get('closure_violations', 0) == 0 and summary.get('signal_violations', 0) == 0
+                          and summary.get('stop_sign_violations', 0) == 0
+                          and summary.get('intersection_violations', 0) == 0
+                          and row.get('replay', {}).get('verified') is True
+                          and row['replay']['ticks'] == summary['steps'])
+                    row['gnss_integrity'] = check_gnss_innovation_hold(output/'sensors.jsonl')
+                    row['speed_profiles'] = check_speed_profiles(output/'sensors.jsonl')
+                    row['motion_predictions'] = check_motion_predictions(output/'sensors.jsonl')
+                    if case == 'traffic-follower-deadline' and not row['motion_predictions']['braking_forecasts']:
+                        raise ValueError('deadline regression did not exercise observed-braking forecasts')
+                    row['control_metrics'] = control_metrics(output/'sensors.jsonl')
+                    row['clearance_regression'] = clearance_regression(summary, case)
+                    ok &= row['clearance_regression']['passed']
+                    ok &= row['control_metrics']['max_normal_commanded_steering_rate_rad_s'] <= 0.7 + 1e-8
+                    if backend == 'rne-dynamic' and case == 'low-friction':
+                        row['tracking_regression_passed'] = summary['emergency_steps'] <= 20
+                        ok &= row['tracking_regression_passed']
+                    run = json.loads((output/'run.json').read_text())
+                    if run['scenario'].get('yield_intersections'):
+                        row['intersections'] = check_intersections(run, output/'sensors.jsonl')
+                    if run['scenario'].get('stop_signs'):
+                        row['stop_signs'] = check_stop_signs(run, output/'sensors.jsonl')
+                    if run['scenario'].get('traffic_signals'):
+                        row['traffic_controls'] = check_signals(run, output/'sensors.jsonl')
+                    if case.startswith('gnss-'):
+                        row['gnss_fault'] = check_gnss_fault(run, output/'sensors.jsonl', case)
+                    if case.startswith('traffic-'):
+                        row['traffic'] = check_traffic(run, output/'sensors.jsonl', case)
+                    if case == 'gnss-burst-traffic-hold':
+                        row['goal_hold'] = check_goal_hold(run, output/'sensors.jsonl')
+                    if case in EXPECTED_EDGES:
+                        row['navigation'] = check_navigation(run, case)
+                    if case in ['route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen']:
+                        row['live_navigation'] = check_live_navigation(run, output/'sensors.jsonl', case)
+                    if run['scenario'].get('dynamics'):
+                        frames = run['frames']
+                        acceleration = max(abs((b['truth']['speed']-a['truth']['speed'])/(b['time']-a['time'])) for a,b in zip(frames, frames[1:]))
+                        row['max_measured_abs_longitudinal_acceleration_m_s2'] = acceleration
+                        ok &= acceleration <= run['scenario']['dynamics']['friction_coefficient']*9.81+1e-8
+                    row['passed'] = bool(ok)
+                    if replay_error:
+                        row['replay_stderr'] = replay_error
+                if error:
+                    row['stderr'] = error
+                report['runs'].append(row)
+                report['passed'] &= row['passed']
+                print(f"{backend:11s} {case:20s} seed {seed:3d}: {'PASS' if row['passed'] else 'FAIL'}", flush=True)
+    report['known_failures'] = []
+    if 'rne-dynamic' in backends:
+        for seed in [1, 42]:
+            output = args.output/'known-failure/traffic-follower-short-range'/f'seed-{seed}'
+            output.mkdir(parents=True, exist_ok=True)
+            (output/'summary.json').unlink(missing_ok=True)
+            (output/'replay/replay.json').unlink(missing_ok=True)
+            code, error = invoke([rne, '--plant', 'dynamic', '--scenario', ROOT/'scenarios/traffic-follower-short-range.json', '--seed', seed, '--output', output])
+            summary = json.loads((output/'summary.json').read_text())
+            replay_code, replay_error = invoke([cli, 'replay', '--log', output/'sensors.jsonl', '--output', output/'replay'])
+            replay = json.loads((output/'replay/replay.json').read_text())
+            run = json.loads((output/'run.json').read_text())
+            traffic = check_traffic(run, output/'sensors.jsonl', 'traffic-follower-short-range')
+            predictions = check_motion_predictions(output/'sensors.jsonl')
+            integrity = check_gnss_innovation_hold(output/'sensors.jsonl')
+            rejected = (code == 1 and not summary['passed'] and not summary['reached_goal']
+                        and summary['collisions'] == 0 and summary['road_violations'] == 0
+                        and summary.get('traffic_collisions', 0) == 0 and summary.get('traffic_road_violations', 0) == 0
+                        and summary['min_clearance'] < 1.0 and replay_code == 0 and replay['verified']
+                        and replay['ticks'] == summary['steps'] and any(f.startswith('minimum swept clearance') for f in summary['failures']))
+            report['known_failures'].append({'backend': 'rne-dynamic', 'scenario': 'traffic-follower-short-range',
+                'seed': seed, 'exit_code': code, 'summary': summary, 'replay': replay,
+                'traffic': traffic, 'motion_predictions': predictions, 'gnss_integrity': integrity,
+                'acceptance_rejection_verified': bool(rejected)})
+            report['passed'] &= bool(rejected)
+            print(f'rne-dynamic traffic-follower-short-range seed {seed}: short-range clearance failure; rejection verified={rejected}', flush=True)
+    report_file.write_text(json.dumps(report, indent=2)+'\n')
+    print(f'{report_file}: {len(report["runs"])} runs; passed={report["passed"]}')
+    return 0 if report['passed'] else 1
+
+
+if __name__ == '__main__':
+    try:
+        sys.exit(main())
+    except (OSError, ValueError, subprocess.CalledProcessError) as error:
+        print(f'hazard check: {error}', file=sys.stderr)
+        sys.exit(2)

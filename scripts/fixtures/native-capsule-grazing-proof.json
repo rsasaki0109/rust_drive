@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "description": "Isolated actual pinned RNE f32 Rapier capsule ray; empirical GJK grazing ambiguity, not a certified error bound",
+  "capsule": {
+    "center_m": [
+      30.851637857146244,
+      0.0,
+      0.6
+    ],
+    "axis_bottom_m": 0.1,
+    "axis_top_m": 1.1,
+    "radius_m": 1.0
+  },
+  "origin_m": [
+    21.206407390617414,
+    0.036761813449073345,
+    0.6
+  ],
+  "direction_enu": [
+    0.9948469160371359,
+    0.09987505775191116,
+    -0.017452406437283508
+  ],
+  "native_noise_free_toi_m": 9.590109825134277,
+  "native_positive_50um_perpendicular_shift": "miss",
+  "standalone_rust_source": "use rne_ecs::{World,spawn_named}; use rne_math::{Vec3,Quat}; use rne_world::Transform3; use rne_physics::{RigidBody,RigidBodyType,Collider,ColliderShape,PhysicsBackend,PhysicsWorldDesc,RaycastQuery}; use rne_physics_rapier::RapierBackend;\nfn main(){ let mut ecs=World::new(); let actor=spawn_named(&mut ecs,\"actor\"); ecs.entity_mut(actor).insert((Transform3::from_translation_rotation(Vec3::new(30.851637857146244,0.6,-0.0),Quat::IDENTITY),RigidBody{body_type:RigidBodyType::Fixed,..RigidBody::default()},Collider{shape:ColliderShape::Capsule{half_height_m:0.5,radius_m:1.0},..Collider::default()})); let mut backend=RapierBackend::new(); let world=backend.create_world(PhysicsWorldDesc::default()).unwrap(); backend.sync_from_ecs(&mut ecs,world).unwrap(); let direction=Vec3::new(0.9948469160371359,-0.017452406437283508,-0.09987505775191116); for delta in [-0.001_f64,-0.0001,-0.00005,0.0,0.00005,0.0001,0.001]{let origin=Vec3::new(21.206407390617414+delta*direction.z,0.6,-0.036761813449073345-delta*direction.x); let hits=backend.raycast(world,RaycastQuery{origin_m:origin,direction,max_distance_m:45.0}).unwrap(); println!(\"{delta:.9} {:?}\",hits.iter().map(|h|h.distance_m).collect::<Vec<_>>());}}\n",
+  "standalone_rust_source_sha256": "a66b57720efe7a2e1b18905e5d71cafe188f3c4692552612cb767c978361a616",
+  "native_stdout": "-0.001000000 [9.551025390625]\n-0.000100000 [9.580188751220703]\n-0.000050000 [9.586750984191895]\n0.000000000 [9.590109825134277]\n0.000050000 []\n0.000100000 []\n0.001000000 []\n"
+}

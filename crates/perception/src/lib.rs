@@ -1,4 +1,14 @@
 //! Range-adaptive Euclidean clustering and nearest-neighbor alpha-beta tracking.
+pub mod ground3d;
+pub mod objects3d;
+pub mod terrain_adaptive;
+pub use ground3d::{GroundClassification, TerrainConfig, TerrainDiagnostics, classify_ground};
+pub use objects3d::{ObjectAabb, ObjectClassification, ObjectClusterConfig, cluster_objects};
+pub use terrain_adaptive::{
+    AdaptiveGroundClassification, AdaptiveTerrainConfig, AdaptiveTerrainDiagnostics,
+    classify_ground_adaptive,
+};
+
 use rustdrive_core::{Detection, LidarScan, Perception, Pose, Track, Vec2};
 #[derive(Default)]
 pub struct LidarClusters;

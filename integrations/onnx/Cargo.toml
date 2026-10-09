@@ -1,0 +1,23 @@
+[package]
+name = "rustdrive-camera-detect"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.90"
+license = "Apache-2.0"
+
+[workspace]
+
+[dependencies]
+tract-onnx = "=0.21.13"
+image = { version = "=0.25.10", default-features = false, features = ["jpeg", "png"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+sha2 = "=0.10.9"
+
+[profile.release]
+opt-level = 2
+lto = false
+debug = false
+
+[lints.rust]
+unsafe_code = "forbid"

@@ -47,6 +47,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "rustdrive-dataset-eval"
+version = "0.1.0"
+dependencies = [
+ "rustdrive-core",
+ "rustdrive-localization",
+ "rustdrive-perception",
+ "serde_json",
+]
+
+[[package]]
 name = "rustdrive-localization"
 version = "0.1.0"
 dependencies = [
@@ -68,6 +78,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "rustdrive-pipeline"
+version = "0.1.0"
+dependencies = [
+ "rustdrive-control",
+ "rustdrive-core",
+ "rustdrive-localization",
+ "rustdrive-mapping",
+ "rustdrive-perception",
+ "rustdrive-planning",
+ "rustdrive-prediction",
+ "rustdrive-routing",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "rustdrive-planning"
 version = "0.1.0"
 dependencies = [
@@ -82,16 +108,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "rustdrive-routing"
+version = "0.1.0"
+dependencies = [
+ "rustdrive-core",
+ "serde",
+]
+
+[[package]]
 name = "rustdrive-sim"
 version = "0.1.0"
 dependencies = [
- "rustdrive-control",
  "rustdrive-core",
- "rustdrive-localization",
- "rustdrive-mapping",
- "rustdrive-perception",
- "rustdrive-planning",
- "rustdrive-prediction",
+ "rustdrive-pipeline",
+ "rustdrive-routing",
  "serde",
  "serde_json",
 ]

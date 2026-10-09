@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "backend": "rne-dynamic-rapier-lidar",
+  "input_trace": "artifacts/traffic-verified/rne-dynamic/traffic-lead-stop/seed-7/run.json",
+  "scenario": {
+    "name": "Following a stopped lead and resuming",
+    "duration": 65.0,
+    "road_length": 140.0,
+    "half_width": 2.0,
+    "curve_amplitude": 0.0,
+    "expected": "stop",
+    "lidar_dropout": null,
+    "gnss_dropout": null,
+    "cruise_speed": 4.0,
+    "min_clearance_m": 1.0,
+    "objects": [
+      {
+        "s": 35.0,
+        "lateral": 0.0,
+        "radius": 1.0,
+        "speed": 4.0,
+        "lateral_speed": 0.0,
+        "active_from": 0.0,
+        "moving_from": 0.0,
+        "following": {
+          "initial_speed_m_s": 4.0,
+          "minimum_gap_m": 3.0,
+          "time_headway_s": 1.5,
+          "max_acceleration_m_s2": 2.0,
+          "comfortable_deceleration_m_s2": 2.0,
+          "max_deceleration_m_s2": 4.0,
+          "sensor_range_m": 45.0,
+          "stop_windows": [
+            {
+              "from": 8.0,
+              "until": 24.0
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "summary": {
+    "scenario": "Following a stopped lead and resuming",
+    "seed": 7,
+    "simulated_seconds": 65.0,
+    "steps": 1301,
+    "reached_goal": false,
+    "collisions": 0,
+    "road_violations": 0,
+    "min_clearance": 4.260912401650003,
+    "localization_rmse": 0.059363126670019264,
+    "localization_max_error": 0.20512748149352236,
+    "final_speed": 0.0,
+    "progress": 129.23857625523056,
+    "emergency_steps": 19,
+    "avoidance_steps": 0,
+    "max_tracks": 1,
+    "passed": true,
+    "failures": []
+  },
+  "gif_frames": 218,
+  "playback_speed": 3,
+  "renderer_command": "python3 scripts/render_demo.py artifacts/traffic-verified/rne-dynamic/traffic-lead-stop/seed-7/run.json --output assets/traffic-demo.gif",
+  "rne_expected_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
+  "command": "cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- --scenario scenarios/traffic-lead-stop.json --plant dynamic --seed 7 --output artifacts/traffic-verified/rne-dynamic/traffic-lead-stop/seed-7"
+}

@@ -1,0 +1,9 @@
+# Preserve the exact upstream/converted OSM bytes checked by the source oracle.
+maps/osm/german-road-extract.osm -text
+maps/osm/german-road-extract.json -text
+# Frozen evaluation hashes must survive Windows checkout newline conversion.
+data/**/manifest.json text eol=lf
+assets/*freeze.json text eol=lf
+crates/perception/src/terrain_adaptive.rs text eol=lf
+crates/localization/src/registration3d.rs text eol=lf
+integrations/rgbd/** text eol=lf

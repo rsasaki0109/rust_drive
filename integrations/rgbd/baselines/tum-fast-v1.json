@@ -1,0 +1,613 @@
+{
+  "accuracy_gates": {
+    "rotation_rad": 0.1,
+    "translation_m": 0.1
+  },
+  "cargo_lock_sha256": "d9e092be3a8bfc69e07eed3610f17f49b289edac6cea3878f0fa80d4bce11461",
+  "dataset": "tum-fr1-xyz-fast",
+  "evaluator_source_sha256": "4b0fa1414ea7761be6a84784dda3803e9f540443b14f1632fc7f292a349169a2",
+  "files": [
+    {
+      "bytes": 36783,
+      "file": "depth.txt",
+      "role": "depth_index",
+      "sha256": "d5abcc12d67cd2f5ae6f405ab1459a416ab2c1cdfb16d9bbd137d5f77d3285df"
+    },
+    {
+      "bytes": 201100,
+      "file": "groundtruth.txt",
+      "role": "evaluation_only_mocap_ground_truth",
+      "sha256": "aac0319a6ef4e1cdf61e779d2152b95aa7e9f7b1749d6d18717b43ddabffede2"
+    },
+    {
+      "bytes": 122825,
+      "file": "1305031106.166330.png",
+      "role": "depth_frame",
+      "sha256": "079d484572f7c3c2affc7b3856a51185989536073a653d5f0ef80c04e46a2b72"
+    },
+    {
+      "bytes": 123130,
+      "file": "1305031106.195074.png",
+      "role": "depth_frame",
+      "sha256": "2c6a11fb2e7569f44d22ba6504fb70609df7138e2ebe4337391754e41d9bf202"
+    },
+    {
+      "bytes": 122058,
+      "file": "1305031106.230058.png",
+      "role": "depth_frame",
+      "sha256": "3605319acce9b731693025650c7a43f7e3a1c58eac6003e45f0e76e4ec3c32b8"
+    },
+    {
+      "bytes": 122556,
+      "file": "1305031106.265976.png",
+      "role": "depth_frame",
+      "sha256": "878ccaa46dc35ba46dd46c0d794303ec47aec2a44783ea8678914e957fe09416"
+    },
+    {
+      "bytes": 122490,
+      "file": "1305031106.298174.png",
+      "role": "depth_frame",
+      "sha256": "a8b88fdcb2b0c08fb6707bec5291833832c8ba8719478ab5d0a148d9b2685f13"
+    },
+    {
+      "bytes": 121953,
+      "file": "1305031106.330215.png",
+      "role": "depth_frame",
+      "sha256": "9e177f323ab6e472377f178c82acceb44f3ceb589f059406ed14e68c769b7def"
+    },
+    {
+      "bytes": 122822,
+      "file": "1305031106.366158.png",
+      "role": "depth_frame",
+      "sha256": "09bbb808ac3f19c901830de7b6db63d010e1eb88087034a0c1ed31cbe20592ec"
+    },
+    {
+      "bytes": 120822,
+      "file": "1305031106.398281.png",
+      "role": "depth_frame",
+      "sha256": "eac907bac6eb48d8741ab2f36e8dcad205214cd7e4976f8e7dec1dfd380e5b43"
+    },
+    {
+      "bytes": 119425,
+      "file": "1305031106.430639.png",
+      "role": "depth_frame",
+      "sha256": "4906c93f23d7f2ea2a5cebb553f1fc7b18d1ad2a3638bdec835f7f7a3c61f8cb"
+    },
+    {
+      "bytes": 119624,
+      "file": "1305031106.466046.png",
+      "role": "depth_frame",
+      "sha256": "af1fe9cc9ed129302e0635ce98a3627e2ba418eb0a3c333abefaacf5985afb39"
+    },
+    {
+      "bytes": 120684,
+      "file": "1305031106.498096.png",
+      "role": "depth_frame",
+      "sha256": "7ec1a134cb59196e09046112f1dea963ca85ad353e37675f407937f07cb56c89"
+    },
+    {
+      "bytes": 120809,
+      "file": "1305031106.528267.png",
+      "role": "depth_frame",
+      "sha256": "c5ceb31384e281cceee52d83463538c0731fee618694aac41afe62cded92593b"
+    }
+  ],
+  "freeze_json": {
+    "accuracy_gates": {
+      "rotation_rad": 0.1,
+      "translation_m": 0.1
+    },
+    "cargo_lock_sha256": "d9e092be3a8bfc69e07eed3610f17f49b289edac6cea3878f0fa80d4bce11461",
+    "dataset": "tum-fr1-xyz-fast",
+    "evaluator_source_sha256": "4b0fa1414ea7761be6a84784dda3803e9f540443b14f1632fc7f292a349169a2",
+    "frames": [
+      {
+        "file": "1305031106.166330.png",
+        "source_index": 120,
+        "split": "calibration",
+        "timestamp": 1305031106.16633
+      },
+      {
+        "file": "1305031106.195074.png",
+        "source_index": 121,
+        "split": "calibration",
+        "timestamp": 1305031106.195074
+      },
+      {
+        "file": "1305031106.230058.png",
+        "source_index": 122,
+        "split": "calibration",
+        "timestamp": 1305031106.230058
+      },
+      {
+        "file": "1305031106.265976.png",
+        "source_index": 123,
+        "split": "held_out",
+        "timestamp": 1305031106.265976
+      },
+      {
+        "file": "1305031106.298174.png",
+        "source_index": 124,
+        "split": "held_out",
+        "timestamp": 1305031106.298174
+      },
+      {
+        "file": "1305031106.330215.png",
+        "source_index": 125,
+        "split": "held_out",
+        "timestamp": 1305031106.330215
+      },
+      {
+        "file": "1305031106.366158.png",
+        "source_index": 126,
+        "split": "held_out",
+        "timestamp": 1305031106.366158
+      },
+      {
+        "file": "1305031106.398281.png",
+        "source_index": 127,
+        "split": "held_out",
+        "timestamp": 1305031106.398281
+      },
+      {
+        "file": "1305031106.430639.png",
+        "source_index": 128,
+        "split": "held_out",
+        "timestamp": 1305031106.430639
+      },
+      {
+        "file": "1305031106.466046.png",
+        "source_index": 129,
+        "split": "held_out",
+        "timestamp": 1305031106.466046
+      },
+      {
+        "file": "1305031106.498096.png",
+        "source_index": 130,
+        "split": "held_out",
+        "timestamp": 1305031106.498096
+      },
+      {
+        "file": "1305031106.528267.png",
+        "source_index": 131,
+        "split": "held_out",
+        "timestamp": 1305031106.528267
+      }
+    ],
+    "freeze_preparation": "metadata only; raw depth and mocap are not read and registration is not invoked",
+    "ground_truth_interpolation": {
+      "extrapolation": false,
+      "max_bracket_s": 0.02,
+      "method": "linear translation and shortest-arc quaternion SLERP"
+    },
+    "kind": "preregistered_temporal",
+    "manifest_sha256": "d90226b70b9769e4f076f713e54fc2bc08386e166a2cb0860dd8e6ec65652599",
+    "matcher_source_sha256": "7ad5c6f11df62509ae5e3d9fe704646c8415a4b6c536970cc9e242b7800f222e",
+    "preprocessing": {
+      "cx": 319.5,
+      "cy": 239.5,
+      "fx": 525.0,
+      "fy": 525.0,
+      "height": 480,
+      "max_depth_m": 5.0,
+      "maximum_sampled_pixels": 4800,
+      "min_depth_m": 0.3,
+      "pixel_step": 8,
+      "point_order": "lexicographic voxel key",
+      "sample_origin_pixel": [
+        0,
+        0
+      ],
+      "units_per_metre": 5000,
+      "voxel_m": 0.03,
+      "voxel_representative": "first row-major sampled valid pixel",
+      "width": 640
+    },
+    "preprocessing_sha256": "4e728cc5375476636af4080d54eb974bb343bf9d019462e1c6a36c4561bf73b5",
+    "protocol_version": 2,
+    "registration_config": {
+      "ambiguity_rms_ratio": 1.05,
+      "ambiguity_rotation_probe_rad": 0.07,
+      "ambiguity_translation_probe_m": 0.15,
+      "max_condition_number": 10000.0,
+      "max_correspondence_m": 0.3,
+      "max_iterations": 30,
+      "max_map_points": 20000,
+      "max_neighbor_checks": 20000000,
+      "max_position_variance_m2": 0.25,
+      "max_rms_m": 0.08,
+      "max_rotation_jump_rad": 0.35,
+      "max_rotation_variance_rad2": 0.01,
+      "max_scan_points": 5000,
+      "max_translation_jump_m": 0.5,
+      "min_geometry_ratio": 0.005,
+      "min_overlap": 0.4,
+      "min_pairs": 30,
+      "rotation_tolerance_rad": 0.0001,
+      "translation_tolerance_m": 0.0001,
+      "trim_fraction": 0.2
+    },
+    "registration_config_sha256": "801a8d5c46ab0228a866f7a15cde22f21124c9262407290054b1e1db65b17ebf",
+    "schema_version": 1
+  },
+  "freeze_sha256": "d7871c778b3c8015c47ff3d34a16b41ea845a1a4e3337f5a55533b0e8a783c2c",
+  "ground_truth_interpolation": {
+    "extrapolation": false,
+    "max_bracket_s": 0.02,
+    "method": "linear translation and shortest-arc quaternion SLERP"
+  },
+  "limitations": [
+    "Temporal held-out frames share one room and acquisition; no independent-scene generalization.",
+    "Calibration is the upstream registered-depth teaching reader model, not measured vehicle sensor calibration.",
+    "Local point-to-point pair registration only; no camera AI, global localization, loop closure, SLAM, driving or covariance calibration.",
+    "Conditional covariance excludes map error, depth correlation and association uncertainty.",
+    "Recorded mocap is evaluation-only; failed pairs remain in the report."
+  ],
+  "manifest_sha256": "d90226b70b9769e4f076f713e54fc2bc08386e166a2cb0860dd8e6ec65652599",
+  "matcher_source_sha256": "7ad5c6f11df62509ae5e3d9fe704646c8415a4b6c536970cc9e242b7800f222e",
+  "pairs": [
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 0.588192708,
+      "current_file": "1305031106.195074.png",
+      "current_timestamp": 1305031106.195074,
+      "evaluation_only_relative_truth": {
+        "quaternion_wxyz": [
+          0.9999934868007292,
+          -0.003078664114320173,
+          -0.0017703625439491888,
+          -0.0006434282043356054
+        ],
+        "translation_m": [
+          -0.0011164732609876271,
+          0.002246174475306062,
+          0.007861120371299046
+        ]
+      },
+      "initial_pose": "identity; no current motion-capture pose supplied",
+      "interval_s": 0.028743982315063477,
+      "map_points": 1143,
+      "previous_file": "1305031106.166330.png",
+      "previous_timestamp": 1305031106.16633,
+      "rejection": "registration distance budget exhausted",
+      "scan_points": 1127,
+      "split": "calibration",
+      "within_accuracy_gates": false
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 0.545412773,
+      "current_file": "1305031106.230058.png",
+      "current_timestamp": 1305031106.230058,
+      "evaluation_only_relative_truth": {
+        "quaternion_wxyz": [
+          0.9999936287368386,
+          0.00023606054280686517,
+          -0.0013464114245797243,
+          0.003297565378568054
+        ],
+        "translation_m": [
+          -0.0010870756932992443,
+          0.0027301777479952216,
+          0.008444898084930985
+        ]
+      },
+      "initial_pose": "identity; no current motion-capture pose supplied",
+      "interval_s": 0.03498387336730957,
+      "map_points": 1127,
+      "previous_file": "1305031106.195074.png",
+      "previous_timestamp": 1305031106.195074,
+      "rejection": "registration distance budget exhausted",
+      "scan_points": 1084,
+      "split": "calibration",
+      "within_accuracy_gates": false
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 0.55343616,
+      "current_file": "1305031106.265976.png",
+      "current_timestamp": 1305031106.265976,
+      "evaluation_only_relative_truth": {
+        "quaternion_wxyz": [
+          0.9999947218496874,
+          -0.0019213495229144228,
+          -0.0018924055098830384,
+          0.0018120403315562278
+        ],
+        "translation_m": [
+          -0.001137477599215564,
+          0.0026895543868228344,
+          0.007883202008743595
+        ]
+      },
+      "initial_pose": "identity; no current motion-capture pose supplied",
+      "interval_s": 0.03591799736022949,
+      "map_points": 1084,
+      "previous_file": "1305031106.230058.png",
+      "previous_timestamp": 1305031106.230058,
+      "rejection": "registration distance budget exhausted",
+      "scan_points": 1082,
+      "split": "held_out",
+      "within_accuracy_gates": false
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 0.526236219,
+      "current_file": "1305031106.298174.png",
+      "current_timestamp": 1305031106.298174,
+      "evaluation_only_relative_truth": {
+        "quaternion_wxyz": [
+          0.9999940553388803,
+          -0.0024753266907066585,
+          -0.0014785548596679132,
+          0.0018910103653740212
+        ],
+        "translation_m": [
+          -0.0004226345073735649,
+          0.0020872045889539503,
+          0.006655087905306889
+        ]
+      },
+      "initial_pose": "identity; no current motion-capture pose supplied",
+      "interval_s": 0.03219795227050781,
+      "map_points": 1082,
+      "previous_file": "1305031106.265976.png",
+      "previous_timestamp": 1305031106.265976,
+      "rejection": "registration distance budget exhausted",
+      "scan_points": 1069,
+      "split": "held_out",
+      "within_accuracy_gates": false
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 0.536005345,
+      "current_file": "1305031106.330215.png",
+      "current_timestamp": 1305031106.330215,
+      "evaluation_only_relative_truth": {
+        "quaternion_wxyz": [
+          0.9999788919210225,
+          -0.006065391235895001,
+          -0.0015650595366736575,
+          0.0017254941918632971
+        ],
+        "translation_m": [
+          -0.0006134656961765961,
+          0.0018530506622167486,
+          0.005072866357685557
+        ]
+      },
+      "initial_pose": "identity; no current motion-capture pose supplied",
+      "interval_s": 0.032041072845458984,
+      "map_points": 1069,
+      "previous_file": "1305031106.298174.png",
+      "previous_timestamp": 1305031106.298174,
+      "rejection": "registration distance budget exhausted",
+      "scan_points": 1045,
+      "split": "held_out",
+      "within_accuracy_gates": false
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 0.528801452,
+      "current_file": "1305031106.366158.png",
+      "current_timestamp": 1305031106.366158,
+      "evaluation_only_relative_truth": {
+        "quaternion_wxyz": [
+          0.9999440332418077,
+          -0.008802865341421384,
+          0.0008113662198023508,
+          -0.00581219672278406
+        ],
+        "translation_m": [
+          -0.0009071653004945057,
+          0.0017026493011051969,
+          0.003971859213189655
+        ]
+      },
+      "initial_pose": "identity; no current motion-capture pose supplied",
+      "interval_s": 0.035943031311035156,
+      "map_points": 1045,
+      "previous_file": "1305031106.330215.png",
+      "previous_timestamp": 1305031106.330215,
+      "rejection": "registration distance budget exhausted",
+      "scan_points": 1015,
+      "split": "held_out",
+      "within_accuracy_gates": false
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 0.530525813,
+      "current_file": "1305031106.398281.png",
+      "current_timestamp": 1305031106.398281,
+      "evaluation_only_relative_truth": {
+        "quaternion_wxyz": [
+          0.9999548857021288,
+          -0.005746154598996744,
+          0.005574205261567267,
+          -0.005112387257333734
+        ],
+        "translation_m": [
+          -0.00019375306720159635,
+          0.0006365911493189103,
+          0.0005867837731485803
+        ]
+      },
+      "initial_pose": "identity; no current motion-capture pose supplied",
+      "interval_s": 0.03212308883666992,
+      "map_points": 1015,
+      "previous_file": "1305031106.366158.png",
+      "previous_timestamp": 1305031106.366158,
+      "rejection": "registration distance budget exhausted",
+      "scan_points": 973,
+      "split": "held_out",
+      "within_accuracy_gates": false
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 0.529209413,
+      "current_file": "1305031106.430639.png",
+      "current_timestamp": 1305031106.430639,
+      "evaluation_only_relative_truth": {
+        "quaternion_wxyz": [
+          0.9999798924154704,
+          0.0005120447633275571,
+          0.0042950963915396045,
+          -0.004637318394543871
+        ],
+        "translation_m": [
+          -0.0001115099959819732,
+          0.00003540758027265056,
+          -0.0017777927189444043
+        ]
+      },
+      "initial_pose": "identity; no current motion-capture pose supplied",
+      "interval_s": 0.03235793113708496,
+      "map_points": 973,
+      "previous_file": "1305031106.398281.png",
+      "previous_timestamp": 1305031106.398281,
+      "rejection": "registration distance budget exhausted",
+      "scan_points": 942,
+      "split": "held_out",
+      "within_accuracy_gates": false
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 0.531170863,
+      "current_file": "1305031106.466046.png",
+      "current_timestamp": 1305031106.466046,
+      "evaluation_only_relative_truth": {
+        "quaternion_wxyz": [
+          0.9999960046183194,
+          0.0006659227558609149,
+          -0.0003957248089339893,
+          -0.002718583483600899
+        ],
+        "translation_m": [
+          -0.00006481087490906035,
+          -0.00041420556657845164,
+          -0.004515404644051868
+        ]
+      },
+      "initial_pose": "identity; no current motion-capture pose supplied",
+      "interval_s": 0.035407066345214844,
+      "map_points": 942,
+      "previous_file": "1305031106.430639.png",
+      "previous_timestamp": 1305031106.430639,
+      "rejection": "registration distance budget exhausted",
+      "scan_points": 891,
+      "split": "held_out",
+      "within_accuracy_gates": false
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 0.528286319,
+      "current_file": "1305031106.498096.png",
+      "current_timestamp": 1305031106.498096,
+      "evaluation_only_relative_truth": {
+        "quaternion_wxyz": [
+          0.9999907748192394,
+          0.0022160108922949784,
+          -0.0036726875556960803,
+          -0.0002256950605547814
+        ],
+        "translation_m": [
+          0.00009382669666202492,
+          -0.0011776280715047882,
+          -0.0060235324797668355
+        ]
+      },
+      "initial_pose": "identity; no current motion-capture pose supplied",
+      "interval_s": 0.03204989433288574,
+      "map_points": 891,
+      "previous_file": "1305031106.466046.png",
+      "previous_timestamp": 1305031106.466046,
+      "rejection": "registration distance budget exhausted",
+      "scan_points": 949,
+      "split": "held_out",
+      "within_accuracy_gates": false
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 0.533494917,
+      "current_file": "1305031106.528267.png",
+      "current_timestamp": 1305031106.528267,
+      "evaluation_only_relative_truth": {
+        "quaternion_wxyz": [
+          0.9999878382014399,
+          0.0025863849644805204,
+          -0.003941216935961389,
+          -0.0014494381980219712
+        ],
+        "translation_m": [
+          -0.00029423352953505955,
+          -0.001370894538650358,
+          -0.00762532373621605
+        ]
+      },
+      "initial_pose": "identity; no current motion-capture pose supplied",
+      "interval_s": 0.030170917510986328,
+      "map_points": 949,
+      "previous_file": "1305031106.498096.png",
+      "previous_timestamp": 1305031106.498096,
+      "rejection": "registration distance budget exhausted",
+      "scan_points": 989,
+      "split": "held_out",
+      "within_accuracy_gates": false
+    }
+  ],
+  "preprocessing": {
+    "cx": 319.5,
+    "cy": 239.5,
+    "fx": 525.0,
+    "fy": 525.0,
+    "height": 480,
+    "max_depth_m": 5.0,
+    "maximum_sampled_pixels": 4800,
+    "min_depth_m": 0.3,
+    "pixel_step": 8,
+    "point_order": "lexicographic voxel key",
+    "sample_origin_pixel": [
+      0,
+      0
+    ],
+    "units_per_metre": 5000,
+    "voxel_m": 0.03,
+    "voxel_representative": "first row-major sampled valid pixel",
+    "width": 640
+  },
+  "registration_config": {
+    "ambiguity_rms_ratio": 1.05,
+    "ambiguity_rotation_probe_rad": 0.07,
+    "ambiguity_translation_probe_m": 0.15,
+    "max_condition_number": 10000.0,
+    "max_correspondence_m": 0.3,
+    "max_iterations": 30,
+    "max_map_points": 20000,
+    "max_neighbor_checks": 20000000,
+    "max_position_variance_m2": 0.25,
+    "max_rms_m": 0.08,
+    "max_rotation_jump_rad": 0.35,
+    "max_rotation_variance_rad2": 0.01,
+    "max_scan_points": 5000,
+    "max_translation_jump_m": 0.5,
+    "min_geometry_ratio": 0.005,
+    "min_overlap": 0.4,
+    "min_pairs": 30,
+    "rotation_tolerance_rad": 0.0001,
+    "translation_tolerance_m": 0.0001,
+    "trim_fraction": 0.2
+  },
+  "repository": "MarcelBruckner-TUMProjects/3D-Scanning-Motion-Capture",
+  "revision": "f367047ee71f5304c6d7deaec55c4874bb8b035e",
+  "schema_version": 1,
+  "selection": "all 11 consecutive pairs from the 12 preregistered depth frames; no pair omission; current frame determines split",
+  "summary": {
+    "accepted": 0,
+    "all_pairs_passed": false,
+    "heldout_pairs": 9,
+    "heldout_passed": 0,
+    "pairs": 11,
+    "passed": 0,
+    "rejected": 11
+  }
+}

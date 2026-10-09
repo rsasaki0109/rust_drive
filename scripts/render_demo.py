@@ -37,7 +37,8 @@ def render(run, frame, index):
     d.text((28, 16), 'RustDrive', fill=TEXT, font=font(34, True))
     d.text((232, 31), 'A RUST-NATIVE AUTONOMOUS DRIVING STACK', fill=MUTED, font=font(13, True))
     d.rounded_rectangle((963, 23, 1172, 57), 16, fill='#19352f')
-    d.text((980, 31), '2D SIMULATION  /  3x', fill=TEAL, font=font(13, True))
+    badge = 'RNE CPU  /  3x' if run.get('backend', '').startswith('rne-') else '2D SIMULATION  /  3x'
+    d.text((980, 31), badge, fill=TEAL, font=font(13, True))
     d.rounded_rectangle((24, 82, 862, 510), 16, fill=PANEL)
     # Render to a separate layer so off-screen geometry cannot overwrite the HUD.
     canvas = Image.new('RGB', (838, 428), PANEL)
@@ -53,7 +54,18 @@ def render(run, frame, index):
         c.line([(x-offset, 0), (x-offset, 428)], fill='#172739')
     for y in range(0, 428, 56):
         c.line([(0, y), (838, y)], fill='#172739')
-    route = run['route']['points']
+    selected_route = run['route']
+    for change in run.get('route_history', []):
+        if change['time'] <= frame['time']:
+            selected_route = change['plan']['route']
+    route = selected_route['points']
+    navigation = run.get('navigation')
+    if navigation:
+        nav = run['scenario']['navigation']
+        closed_edges = (frame.get('navigation') or nav)['closed_edges']
+        for edge in nav['network']['edges']:
+            c.line([world(p) for p in edge['points']], fill='#182638',
+                   width=int(2*edge['half_width']*scale), joint='curve')
     center = [world(p) for p in route]
     boundaries=[]
     for side in [-1,1]:
@@ -61,8 +73,8 @@ def render(run, frame, index):
         for i, point in enumerate(route):
             a=route[max(0,i-1)];b=route[min(len(route)-1,i+1)]
             dx=b['x']-a['x'];dy=b['y']-a['y'];length=math.hypot(dx,dy)
-            boundary.append(world({'x':point['x']-dy/length*side*run['route']['half_width'],
-                                   'y':point['y']+dx/length*side*run['route']['half_width']}))
+            boundary.append(world({'x':point['x']-dy/length*side*selected_route['half_width'],
+                                   'y':point['y']+dx/length*side*selected_route['half_width']}))
         boundaries.append(boundary)
     c.polygon(boundaries[0]+list(reversed(boundaries[1])),fill='#1b2b3f')
     for i in range(0, len(center)-2, 6):
@@ -73,15 +85,23 @@ def render(run, frame, index):
         for i, point in enumerate(route):
             a=route[max(0, i-1)]; b=route[min(len(route)-1, i+1)]
             dx=b['x']-a['x']; dy=b['y']-a['y']; length=math.hypot(dx, dy)
-            edge.append(world({'x':point['x']-dy/length*side*run['route']['half_width'],
-                               'y':point['y']+dx/length*side*run['route']['half_width']}))
+            edge.append(world({'x':point['x']-dy/length*side*selected_route['half_width'],
+                               'y':point['y']+dx/length*side*selected_route['half_width']}))
         c.line(edge, fill='#68809d', width=2, joint='curve')
+    if navigation:
+        for edge in nav['network']['edges']:
+            if edge['id'] in closed_edges:
+                geometry = [world(p) for p in edge['points']]
+                for j in range(0, len(geometry)-1, 4):
+                    c.line(geometry[j:j+2], fill=ORANGE, width=3)
+                cx,cy=geometry[len(geometry)//2]
+                c.text((cx-28,cy+8),'CLOSED',fill=ORANGE,font=font(11,True))
     for f in run['frames'][max(0,index-100):index:3]:
         p=world(f['truth']['pose']['position']);c.ellipse((p[0]-1,p[1]-1,p[0]+1,p[1]+1), fill=BLUE)
     trajectory = [world(p['position']) for p in frame['trajectory']['points']]
     if len(trajectory)>1:
-        c.line(trajectory, fill='#1c6c67', width=9, joint='curve')
-        c.line(trajectory, fill=TEAL, width=3, joint='curve')
+        c.line(trajectory, fill='#223246' if frame['emergency'] else '#1c6c67', width=9, joint='curve')
+        c.line(trajectory, fill=MUTED if frame['emergency'] else TEAL, width=3, joint='curve')
     for prediction in frame['predictions']:
         for p in prediction['positions'][::4]:
             px,py=world(p);c.ellipse((px-2,py-2,px+2,py+2), fill=PURPLE)
@@ -111,6 +131,38 @@ def render(run, frame, index):
     c.text((18,16),'LIVE WORLD  /  SENSOR-DRIVEN CLOSED LOOP',fill=MUTED,font=font(12,True))
     c.text((18,401),'10 m',fill=MUTED,font=font(11))
     c.line((66,409,66+113,409),fill=MUTED,width=2)
+    if navigation:
+        # The inset displays supplied map topology, closures and selected route.
+        # Its moving ego marker comes from recorded truth solely for visualization.
+        c.rounded_rectangle((526,266,820,410),10,fill='#0d1928',outline='#34506b')
+        phase=(frame.get('navigation') or {}).get('phase','Following')
+        c.text((540,275),f"TO {nav['goal'].upper()} / {phase.upper()}",fill=TEAL,font=font(12,True))
+        positions=[node['position'] for node in nav['network']['nodes']]
+        positions += [p for edge in nav['network']['edges'] for p in edge['points']]
+        xmin=min(p['x'] for p in positions);xmax=max(p['x'] for p in positions)
+        ymin=min(p['y'] for p in positions);ymax=max(p['y'] for p in positions)
+        factor=min(256/max(1,xmax-xmin),74/max(1,ymax-ymin))
+        def mini(p):
+            return 546+(p['x']-xmin)*factor,381-(p['y']-ymin)*factor
+        for edge in nav['network']['edges']:
+            color=ORANGE if edge['id'] in closed_edges else '#40536d'
+            c.line([mini(p) for p in edge['points']],fill=color,width=2)
+        c.line([mini(p) for p in route],fill=TEAL,width=3)
+        for edge in nav['network']['edges']:
+            if edge['id'] in (frame.get('navigation') or {}).get('pending_edges', []):
+                pending=[mini(p) for p in edge['points']]
+                for j in range(0,len(pending)-1,4):
+                    c.line(pending[j:j+2],fill=PURPLE,width=2)
+            if edge['id'] in closed_edges:
+                c.line([mini(p) for p in edge['points']],fill=ORANGE,width=2)
+        for node in nav['network']['nodes']:
+            mx,my=mini(node['position'])
+            color=ORANGE if node['id']==nav['goal'] else MUTED
+            c.ellipse((mx-3,my-3,mx+3,my+3),fill=color)
+        mx,my=mini(frame['truth']['pose']['position'])
+        c.ellipse((mx-4,my-4,mx+4,my+4),fill=BLUE,outline=TEXT)
+        closure=', '.join(closed_edges) or 'none'
+        c.text((540,392),f'Known closures: {closure}',fill=MUTED,font=font(10))
     im.paste(canvas,(24,82))
     d=ImageDraw.Draw(im)
     d.rounded_rectangle((882,82,1176,510),16,fill=PANEL)
@@ -127,9 +179,18 @@ def render(run, frame, index):
         d.text((904,y),label,fill=MUTED,font=font(11,True))
         d.text((904,y+18),value,fill=TEXT,font=font(29,True))
         d.text((1076,y+32),unit,fill=MUTED,font=font(13))
+    diagnostic=frame.get('localization')
+    if diagnostic:
+        accepted=diagnostic.get('last_accepted_stamp')
+        age=frame['time']-accepted if accepted is not None else math.inf
+        status='STALE / BRAKING' if age>0.75+1e-9 else ('REJECTED FIX' if diagnostic.get('last_decision')=='RejectedInnovation' else 'ACCEPTED FIX')
+        color=ORANGE if status!='ACCEPTED FIX' else TEAL
+        d.text((904,469),f"GNSS: {status}",fill=color,font=font(11,True))
+        age_text=f'{age:.1f}s' if math.isfinite(age) else '--'
+        d.text((904,487),f"Accepted age {age_text} / rejected {diagnostic['rejected_fixes']}",fill=MUTED,font=font(10))
     d.rounded_rectangle((24,528,1176,622),14,fill=PANEL)
     d.text((44,540),'MISSION PROGRESS',fill=MUTED,font=font(11,True))
-    length=run['route']['lengths'][-1];progress=min(1,frame['progress']/length)
+    length=selected_route['lengths'][-1];progress=min(1,frame['progress']/length)
     d.text((994,540),f"{frame['progress']:.0f} / {length:.0f} m",fill=TEXT,font=font(13,True))
     d.rounded_rectangle((44,574,1156,581),3,fill='#2b4058')
     d.rounded_rectangle((44,574,max(47,44+1112*progress),581),3,fill=TEAL)
@@ -156,17 +217,62 @@ def main():
     run=json.loads(args.run.read_text())
     if run.get('schema_version')!=1 or not run['summary']['passed']:
         raise SystemExit('Refusing to render a success demo from an unsupported or failing run')
-    frames=run['frames'];indices=list(range(0,len(frames),3))
+    frames=run['frames'];indices=[0]
+    for i,frame in enumerate(frames[1:],1):
+        if frame['time']-frames[indices[-1]]['time']>=0.3-1e-9:indices.append(i)
     if indices[-1]!=len(frames)-1:indices.append(len(frames)-1)
     images=[render(run,frames[i],i) for i in indices]
     args.output.parent.mkdir(parents=True,exist_ok=True)
     images[0].save(args.output,save_all=True,append_images=images[1:],duration=[100]*(len(images)-1)+[1400],loop=0,optimize=False)
+    # Pillow merges identical adjacent frames (e.g. the final stopped sample).
+    # Verify the encoded timeline and report its actual frame count.
+    with Image.open(args.output) as image:
+        assert image.size==(WIDTH,HEIGHT) and 0<image.n_frames<=len(images)
+        gif_frames=image.n_frames
+        gif_duration_ms=0
+        for index in range(gif_frames):
+            image.seek(index)
+            gif_duration_ms+=image.info['duration']
+        assert gif_duration_ms==(len(images)-1)*100+1400
     preview_index=next((j for j,i in enumerate(indices) if frames[i]['time']>=7.5),len(images)//3)
     images[preview_index].save(args.output.with_suffix('.png'))
-    args.output.with_suffix('.json').write_text(json.dumps({'schema_version':1,'command':f"cargo run --release --locked --bin rustdrive -- run --scenario scenarios/mission.json --seed {run['summary']['seed']} --output artifacts/demo",'summary':run['summary'],'gif_frames':len(images),'playback_speed':3},indent=2)+'\n')
-    with Image.open(args.output) as image:
-        assert image.n_frames==len(images) and image.size==(WIDTH,HEIGHT)
-    print(f'{args.output}: {len(images)} frames, {WIDTH}x{HEIGHT}, {args.output.stat().st_size:,} bytes')
+    backend=run.get('backend', 'reference-bicycle')
+    provenance={'schema_version':1,'backend':backend,'input_trace':str(args.run),
+                'scenario':run['scenario'],'summary':run['summary'],
+                'gif_frames':gif_frames,'playback_speed':3,
+                'renderer_command':f'python3 scripts/render_demo.py {args.run} --output {args.output}'}
+    if run.get('navigation'):
+        provenance['navigation']=run['navigation']
+    if run.get('route_history'):
+        provenance['route_history']=run['route_history']
+    # Match the full normalized configuration, never infer a recipe from the name.
+    scenario_dir=Path(__file__).resolve().parent.parent/'scenarios'
+    for scenario_path in sorted(scenario_dir.glob('*.json')):
+        scenario=json.loads(scenario_path.read_text())
+        scenario.setdefault('curve_amplitude',0)
+        scenario.setdefault('lidar_dropout',None)
+        scenario.setdefault('gnss_dropout',None)
+        for obj in scenario['objects']:
+            for key in ['speed','lateral_speed','active_from','moving_from']:
+                obj.setdefault(key,0)
+            if obj.get('following') is not None:
+                defaults={'initial_speed_m_s':0.0,'minimum_gap_m':3.0,'time_headway_s':1.5,
+                          'max_acceleration_m_s2':2.0,'comfortable_deceleration_m_s2':2.0,
+                          'max_deceleration_m_s2':4.0,'sensor_range_m':45.0}
+                for key,value in defaults.items():obj['following'].setdefault(key,value)
+        if run['scenario']!=scenario:
+            continue
+        seed=run['summary']['seed']
+        source_path=f'scenarios/{scenario_path.name}'
+        if backend.startswith('rne-'):
+            plant='dynamic' if backend.startswith('rne-dynamic') else 'kinematic'
+            provenance['rne_expected_revision']=(scenario_dir.parent/'integrations/rne/rne-revision.txt').read_text().strip()
+            provenance['command']=f'cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- --scenario {source_path} --plant {plant} --seed {seed} --output {args.run.parent}'
+        else:
+            provenance['command']=f'cargo run --release --locked --bin rustdrive -- run --scenario {source_path} --seed {seed} --output {args.run.parent}'
+        break
+    args.output.with_suffix('.json').write_text(json.dumps(provenance,indent=2)+'\n')
+    print(f'{args.output}: {gif_frames} frames, {WIDTH}x{HEIGHT}, {args.output.stat().st_size:,} bytes')
 
 
 if __name__=='__main__':main()

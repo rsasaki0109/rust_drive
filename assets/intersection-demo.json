@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "backend": "rne-dynamic-rapier-lidar",
+  "renderer": "Blender Cycles CPU",
+  "blender_version": "Blender 4.3.2",
+  "input_trace": "/tmp/rustdrive-intersections-probe/rne-dynamic/intersection-crossing/run.json",
+  "input_sha256": "a1a1e500ba748094595e95970caae7f8c569109cbba8f9149e83b62f4b4737c8",
+  "rne_expected_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
+  "scenario": {
+    "name": "Intersection Crossing",
+    "duration": 85.0,
+    "road_length": 100.0,
+    "half_width": 2.1,
+    "curve_amplitude": 0.0,
+    "expected": "goal",
+    "lidar_dropout": null,
+    "gnss_dropout": null,
+    "cruise_speed": 4.0,
+    "min_clearance_m": 1.0,
+    "objects": [
+      {
+        "s": 45.0,
+        "lateral": 30.0,
+        "radius": 1.0,
+        "speed": 0.0,
+        "lateral_speed": -2.5,
+        "active_from": 0.0,
+        "moving_from": 0.0
+      }
+    ],
+    "yield_intersections": [
+      {
+        "stop_line": {
+          "id": "yield-a",
+          "route_s_m": 35.0
+        },
+        "conflict_bounds": {
+          "min": {
+            "x": 42.0,
+            "y": -2.1
+          },
+          "max": {
+            "x": 48.0,
+            "y": 2.1
+          }
+        },
+        "exit_s_m": 48.0
+      }
+    ]
+  },
+  "summary": {
+    "scenario": "Intersection Crossing",
+    "seed": 7,
+    "simulated_seconds": 33.2,
+    "steps": 665,
+    "reached_goal": true,
+    "collisions": 0,
+    "road_violations": 0,
+    "min_clearance": 11.02824052170589,
+    "localization_rmse": 0.06579277413692419,
+    "localization_max_error": 0.20513483205764746,
+    "final_speed": 0.10506320677668843,
+    "progress": 98.97630545188392,
+    "emergency_steps": 2,
+    "avoidance_steps": 0,
+    "max_tracks": 1,
+    "passed": true,
+    "failures": [],
+    "intersection_min_gap_s": 4.550000000000001
+  },
+  "gif_frames": 112,
+  "sampled_frames": 112,
+  "playback_speed": 3,
+  "scene_states_verified": 112,
+  "samples": 16,
+  "physics_domain": "planar",
+  "scene": {
+    "style": "suburban-test-road-v2",
+    "seed": 1729,
+    "scenery_counts": {
+      "trees": 7,
+      "buildings": 3,
+      "lamps": 7,
+      "sidewalk_sections": 244
+    },
+    "ego_model": "hatchback",
+    "traffic_models": [
+      {
+        "id": 0,
+        "model": "hatchback",
+        "color": [
+          0.949999988079071,
+          0.30000001192092896,
+          0.03500000014901161
+        ]
+      }
+    ],
+    "camera": "ego",
+    "mapped_signal_ids": [],
+    "mapped_stop_sign_ids": [],
+    "mapped_intersection_ids": [
+      "yield-a"
+    ]
+  },
+  "renderer_source_sha256": "ebe1fb3e0ee7d48045435ec4c7e8098f3dc36e49fa6373b6db6841b7013b4ddf",
+  "gif_palette_colors": 192,
+  "gif_dither": false,
+  "spatial_filter": "3x3 median, viewport only",
+  "renderer_command": "python3 scripts/render_demo_3d.py /tmp/rustdrive-intersections-probe/rne-dynamic/intersection-crossing/run.json --output assets/intersection-demo.gif --samples 16 --threads 4 --camera ego --traffic-models hatchback"
+}

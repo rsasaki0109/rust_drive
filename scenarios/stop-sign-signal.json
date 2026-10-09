@@ -1,0 +1,34 @@
+{
+  "duration": 85,
+  "road_length": 100,
+  "half_width": 2.1,
+  "expected": "goal",
+  "cruise_speed": 4,
+  "min_clearance_m": 1.0,
+  "objects": [],
+  "stop_signs": [
+    {
+      "id": "stop-a",
+      "route_s_m": 35
+    }
+  ],
+  "name": "Stop Sign Then Signal",
+  "traffic_signals": [
+    {
+      "stop_line": {
+        "id": "signal-b",
+        "route_s_m": 70
+      },
+      "phases": [
+        {
+          "from": 0,
+          "color": "Red"
+        },
+        {
+          "from": 32,
+          "color": "Green"
+        }
+      ]
+    }
+  ]
+}

@@ -1,13 +1,25 @@
 //! Deterministic closed-loop simulator. Only sensor observations enter the stack.
-use rustdrive_control::{PurePursuit, guard};
+pub mod intersections;
+pub mod sensor_timing;
+pub mod signals;
+pub mod stop_signs;
+pub mod traffic;
+use intersections::IntersectionRuleEvaluator;
 use rustdrive_core::*;
-use rustdrive_localization::Ekf;
-use rustdrive_mapping::OccupancyGrid;
-use rustdrive_perception::{LidarClusters, Tracker};
-use rustdrive_planning::LatticePlanner;
-use rustdrive_prediction::ConstantVelocity;
+use rustdrive_pipeline::intersections::{IntersectionStatus, YieldIntersection};
+use rustdrive_pipeline::navigation::{NavigationConfig, NavigationStatus, NavigationUpdate};
+use rustdrive_pipeline::replay::SensorLog;
+use rustdrive_pipeline::stop_signs::StopSignStatus;
+use rustdrive_pipeline::traffic_controls::StopLine;
+use rustdrive_pipeline::traffic_controls::TrafficControlStatus;
+use rustdrive_pipeline::{DrivingPipeline, MapLocalizationConfig, PipelineConfig, SensorFrame};
+use rustdrive_routing::{RoadNetwork, RoadNetworkSpec, RoutePlan};
+use sensor_timing::{SensorDelivery, SensorTiming};
 use serde::{Deserialize, Serialize};
+use signals::{RuleEvaluator, SignalDropout, SignalSpec};
 use std::f64::consts::PI;
+use stop_signs::StopRuleEvaluator;
+use traffic::{FollowingSpec, TrafficTelemetry, TrafficWorld};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -21,6 +33,18 @@ pub struct ObjectSpec {
     pub lateral_speed: f64,
     #[serde(default)]
     pub active_from: f64,
+    /// Motion starts at this time; the object already exists at active_from.
+    #[serde(default)]
+    pub moving_from: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub following: Option<FollowingSpec>,
+}
+/// Plant calibration, supported only by the native dynamic RNE adapter.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DynamicsSpec {
+    pub friction_coefficient: f64,
+    pub steering_lag_s: f64,
 }
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "snake_case")]
@@ -29,10 +53,40 @@ pub enum Expected {
     Stop,
     Fault,
 }
+/// Known map and pre-departure closure information, not sensed obstacle labels.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct NavigationSpec {
+    pub network: RoadNetworkSpec,
+    pub start: String,
+    pub goal: String,
+    #[serde(default)]
+    pub closed_edges: Vec<String>,
+}
+/// Simulator-only GNSS position fault; never supplied as pipeline calibration.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct GnssBiasWindow {
+    pub from: f64,
+    pub until: f64,
+    pub offset: Vec2,
+}
+/// Simulator-only acquisition outage, never supplied to the driving pipeline.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct GnssDropoutWindow {
+    pub from: f64,
+    pub until: f64,
+}
+fn is_false(value: &bool) -> bool {
+    !*value
+}
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Scenario {
     pub name: String,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub local_route_geometry: bool,
     pub duration: f64,
     pub road_length: f64,
     pub half_width: f64,
@@ -43,7 +97,42 @@ pub struct Scenario {
     pub lidar_dropout: Option<f64>,
     #[serde(default)]
     pub gnss_dropout: Option<f64>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub gnss_bias_windows: Vec<GnssBiasWindow>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub gnss_dropout_windows: Vec<GnssDropoutWindow>,
+    /// Explicit offline surveyed point map; never constructed from runtime truth.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub localization_map: Option<MapLocalizationConfig>,
+    /// Simulator-only acquisition/delivery schedule; never supplied as pipeline calibration.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sensor_timing: Option<SensorTiming>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub dynamics: Option<DynamicsSpec>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub navigation: Option<NavigationSpec>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub navigation_updates: Vec<NavigationUpdate>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cruise_speed: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub motion_limits: Option<rustdrive_pipeline::MotionLimits>,
+    /// Independent swept-circle acceptance floor in meters; never a planner input.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub min_clearance_m: Option<f64>,
+    /// Continuous physical residence at the goal before ending evaluation.
+    /// This acceptance setting is never supplied to the driving pipeline.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub goal_hold_seconds: Option<f64>,
     pub objects: Vec<ObjectSpec>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub traffic_signals: Vec<SignalSpec>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub signal_dropout_windows: Vec<SignalDropout>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub stop_signs: Vec<StopLine>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub yield_intersections: Vec<YieldIntersection>,
 }
 impl Scenario {
     pub fn validate(&self) -> Result<(), String> {
@@ -59,6 +148,103 @@ impl Scenario {
         {
             return Err("invalid scenario geometry or duration".into());
         }
+        if self.dynamics.is_some_and(|d| {
+            !d.friction_coefficient.is_finite()
+                || !(0.1..=1.2).contains(&d.friction_coefficient)
+                || !d.steering_lag_s.is_finite()
+                || !(0.0..=1.0).contains(&d.steering_lag_s)
+        }) {
+            return Err("invalid dynamic plant calibration".into());
+        }
+        if let Some(timing) = &self.sensor_timing {
+            timing.validate(self.duration)?;
+        }
+        if self
+            .min_clearance_m
+            .is_some_and(|d| !d.is_finite() || d < 0.0)
+        {
+            return Err("minimum clearance must be finite and nonnegative".into());
+        }
+        if self
+            .cruise_speed
+            .is_some_and(|s| !s.is_finite() || !(0.1..=8.0).contains(&s))
+        {
+            return Err("cruise speed must be within 0.1..=8.0 m/s".into());
+        }
+        if self
+            .goal_hold_seconds
+            .is_some_and(|hold| !hold.is_finite() || hold < 0.0 || hold > self.duration)
+        {
+            return Err("goal hold must be finite, nonnegative and within duration".into());
+        }
+        let selected = self.navigation_plan()?;
+        signals::validate(self)?;
+        let c = pipeline_config(self);
+        c.validate()?;
+        let mut previous_end = 0.0;
+        for window in &self.gnss_bias_windows {
+            if !window.from.is_finite()
+                || !window.until.is_finite()
+                || window.from < previous_end
+                || window.until <= window.from
+                || window.from >= self.duration
+                || window.until > 300.0
+                || !window.offset.finite()
+                || window.offset.x.hypot(window.offset.y) > 1000.0
+            {
+                return Err("invalid or overlapping GNSS bias window".into());
+            }
+            previous_end = window.until;
+        }
+        if self.gnss_dropout_windows.len() > 64 {
+            return Err("at most 64 GNSS acquisition dropout windows are supported".into());
+        }
+        let mut previous_end = 0.0;
+        for window in &self.gnss_dropout_windows {
+            if !window.from.is_finite()
+                || !window.until.is_finite()
+                || window.from < previous_end
+                || window.from < 0.0
+                || window.until <= window.from
+                || window.from >= self.duration
+                || window.until > self.duration
+            {
+                return Err("invalid or overlapping GNSS acquisition dropout window".into());
+            }
+            previous_end = window.until;
+        }
+        let mut last_stamp = -1.0;
+        let mut last_revision = 0;
+        for update in &self.navigation_updates {
+            let nav = self
+                .navigation
+                .as_ref()
+                .ok_or("map updates require navigation configuration")?;
+            if !update.stamp.is_finite()
+                || update.stamp <= last_stamp
+                || update.stamp < 0.0
+                || update.stamp >= self.duration
+                || update.revision <= last_revision
+                || update
+                    .closed_edges
+                    .iter()
+                    .any(|id| !nav.network.edges.iter().any(|e| &e.id == id))
+            {
+                return Err("invalid scheduled map snapshot".into());
+            }
+            last_stamp = update.stamp;
+            last_revision = update.revision;
+        }
+        let object_limit = if let Some(plan) = &selected {
+            if !(20.0..=1000.0).contains(&plan.route.length())
+                || !(1.5..=10.0).contains(&plan.route.half_width)
+            {
+                return Err("selected map route is outside simulation geometry bounds".into());
+            }
+            plan.route.length()
+        } else {
+            self.road_length
+        };
         for time in [self.lidar_dropout, self.gnss_dropout]
             .into_iter()
             .flatten()
@@ -68,6 +254,9 @@ impl Scenario {
             }
         }
         for o in &self.objects {
+            if let Some(following) = &o.following {
+                following.validate(o)?;
+            }
             if ![
                 o.s,
                 o.lateral,
@@ -75,22 +264,32 @@ impl Scenario {
                 o.speed,
                 o.lateral_speed,
                 o.active_from,
+                o.moving_from,
             ]
             .iter()
             .all(|x| x.is_finite())
                 || o.s < 0.0
-                || o.s > self.road_length
+                || o.s > object_limit
                 || !(0.2..=3.0).contains(&o.radius)
                 || o.speed.abs() > 12.0
                 || o.lateral_speed.abs() > 4.0
                 || o.active_from < 0.0
+                || o.moving_from < 0.0
             {
                 return Err("invalid object parameters".into());
             }
         }
+        pipeline_config(self).validate()?;
         Ok(())
     }
     pub fn route(&self) -> Route {
+        if self.navigation.is_some() {
+            return self
+                .navigation_plan()
+                .expect("validate scenario before building its route")
+                .unwrap()
+                .route;
+        }
         let n = self.road_length.ceil() as usize;
         Route::new(
             (0..=n)
@@ -103,13 +302,33 @@ impl Scenario {
         )
         .unwrap()
     }
-    fn world_objects(&self, route: &Route, t: f64) -> Vec<WorldObject> {
+    /// Acquisition-time availability shared by the reference and native plants.
+    pub fn gnss_available(&self, time: f64) -> bool {
+        self.gnss_dropout.is_none_or(|from| time < from)
+            && !self
+                .gnss_dropout_windows
+                .iter()
+                .any(|window| time + 1e-9 >= window.from && time < window.until - 1e-9)
+    }
+    pub fn navigation_plan(&self) -> Result<Option<RoutePlan>, String> {
+        self.navigation
+            .as_ref()
+            .map(|nav| {
+                RoadNetwork::new(nav.network.clone())?.shortest_route(
+                    &nav.start,
+                    &nav.goal,
+                    &nav.closed_edges,
+                )
+            })
+            .transpose()
+    }
+    pub fn scheduled_objects(&self, route: &Route, t: f64) -> Vec<WorldObject> {
         self.objects
             .iter()
             .enumerate()
-            .filter(|(_, o)| t >= o.active_from)
+            .filter(|(_, o)| o.following.is_none() && t >= o.active_from)
             .map(|(id, o)| {
-                let elapsed = t - o.active_from;
+                let elapsed = (t - o.active_from.max(o.moving_from)).max(0.0);
                 WorldObject {
                     id: id as u64,
                     position: route
@@ -126,6 +345,7 @@ impl Scenario {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct WorldObject {
+    /// Opaque body identity, stable across frames; not a scenario array index.
     pub id: u64,
     pub position: Vec2,
     pub radius: f64,
@@ -144,6 +364,18 @@ pub struct Frame {
     pub emergency: bool,
     pub progress: f64,
     pub clearance: f64,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub traffic: Vec<TrafficTelemetry>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub navigation: Option<NavigationStatus>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub localization: Option<LocalizationDiagnostics>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub traffic_controls: Option<TrafficControlStatus>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stop_signs: Option<StopSignStatus>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub intersections: Option<IntersectionStatus>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Summary {
@@ -154,6 +386,12 @@ pub struct Summary {
     pub reached_goal: bool,
     pub collisions: usize,
     pub road_violations: usize,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub traffic_collisions: usize,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub traffic_road_violations: usize,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub traffic_min_clearance: Option<f64>,
     pub min_clearance: f64,
     pub localization_rmse: f64,
     pub localization_max_error: f64,
@@ -164,12 +402,46 @@ pub struct Summary {
     pub max_tracks: usize,
     pub passed: bool,
     pub failures: Vec<String>,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub navigation_switches: usize,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub closure_violations: usize,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub signal_violations: usize,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub signal_min_stopline_margin_m: Option<f64>,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub stop_sign_violations: usize,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stop_sign_min_margin_m: Option<f64>,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub intersection_violations: usize,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub intersection_min_gap_s: Option<f64>,
+}
+fn is_zero(n: &usize) -> bool {
+    *n == 0
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct RouteTransition {
+    pub time: f64,
+    pub plan: RoutePlan,
+    pub estimated_speed: f64,
+    pub true_speed: f64,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Run {
+    #[serde(default)]
+    pub backend: String,
+    #[serde(skip)]
+    pub sensor_log: Option<SensorLog>,
     pub schema_version: u32,
     pub scenario: Scenario,
     pub route: Route,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub navigation: Option<RoutePlan>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub route_history: Vec<RouteTransition>,
     pub vehicle: VehicleConfig,
     pub frames: Vec<Frame>,
     pub occupied_cells: Vec<Vec2>,
@@ -238,41 +510,173 @@ fn swept_distance(a: Vec2, b: Vec2) -> f64 {
     let nearest = a.plus(d.scaled(t));
     nearest.x.hypot(nearest.y)
 }
+/// Physics/sensor adapter boundary. The evaluator observes truth; the pipeline cannot.
+pub trait SimulationBackend {
+    fn state(&self) -> EgoState;
+    fn objects(&self, time: f64) -> Vec<WorldObject>;
+    fn traffic(&self) -> Vec<TrafficTelemetry> {
+        vec![]
+    }
+    fn observe(&mut self, time: f64, tick: usize) -> Result<SensorFrame, String>;
+    fn advance(&mut self, command: ControlCommand, dt: f64) -> Result<(), String>;
+}
+struct ReferenceBackend {
+    scenario: Scenario,
+    traffic: TrafficWorld,
+    truth: EgoState,
+    vehicle: VehicleConfig,
+    rng: Rng,
+    command: ControlCommand,
+}
+impl SimulationBackend for ReferenceBackend {
+    fn state(&self) -> EgoState {
+        self.truth
+    }
+    fn objects(&self, time: f64) -> Vec<WorldObject> {
+        self.traffic.objects(time)
+    }
+    fn traffic(&self) -> Vec<TrafficTelemetry> {
+        self.traffic.telemetry()
+    }
+    fn observe(&mut self, time: f64, tick: usize) -> Result<SensorFrame, String> {
+        let odometry = Some(if tick == 0 {
+            Odometry {
+                stamp: time,
+                speed: 0.0,
+                yaw_rate: 0.0,
+            }
+        } else {
+            Odometry {
+                stamp: time,
+                speed: self.truth.speed + self.rng.noise(0.015),
+                yaw_rate: self.truth.speed / self.vehicle.wheelbase * self.command.steering.tan()
+                    + self.rng.noise(0.001),
+            }
+        });
+        let gnss = if tick.is_multiple_of(4) && self.scenario.gnss_available(time) {
+            Some(Gnss {
+                stamp: time,
+                position: self
+                    .truth
+                    .pose
+                    .position
+                    .plus(Vec2::new(self.rng.noise(0.14), self.rng.noise(0.14))),
+                variance: 0.02,
+            })
+        } else {
+            None
+        };
+        let lidar =
+            if tick.is_multiple_of(2) && self.scenario.lidar_dropout.is_none_or(|t| time < t) {
+                Some(lidar(
+                    self.truth.pose,
+                    &self.objects(time),
+                    time,
+                    &mut self.rng,
+                ))
+            } else {
+                None
+            };
+        Ok(SensorFrame {
+            time,
+            odometry,
+            gnss,
+            lidar,
+            multi_height_lidar: None,
+            lidar3d: None,
+            lidar_failed: false,
+            navigation_update: None,
+            traffic_signal: None,
+        })
+    }
+    fn advance(&mut self, command: ControlCommand, dt: f64) -> Result<(), String> {
+        self.traffic.advance(self.truth, self.vehicle, dt)?;
+        self.command = command;
+        step_vehicle(&mut self.truth, command, self.vehicle, dt);
+        Ok(())
+    }
+}
+pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
+    let route = scenario.route();
+    let (position, yaw) = route.sample(0.0, 0.0);
+    let mut config = PipelineConfig::new(route, Pose { position, yaw }, VehicleConfig::default());
+    if let Some(speed) = scenario.cruise_speed {
+        config.cruise_speed = speed;
+    }
+    config.motion_limits = scenario.motion_limits;
+    config.local_route_geometry = scenario.local_route_geometry;
+    config.localization_map = scenario.localization_map.clone();
+    config.stop_signs = scenario.stop_signs.clone();
+    config.yield_intersections = scenario.yield_intersections.clone();
+    config.stop_lines = scenario
+        .traffic_signals
+        .iter()
+        .map(|s| s.stop_line.clone())
+        .collect();
+    // Existing static fixtures retain resolved-route replay; live-update fixtures also record the map.
+    if !scenario.navigation_updates.is_empty() {
+        config.navigation = scenario.navigation.as_ref().map(|nav| NavigationConfig {
+            network: nav.network.clone(),
+            start: nav.start.clone(),
+            goal: nav.goal.clone(),
+            closed_edges: nav.closed_edges.clone(),
+        });
+    }
+    config
+}
 pub fn simulate(scenario: Scenario, seed: u64) -> Result<Run, String> {
     scenario.validate()?;
-    let dt = 0.05;
-    let route = scenario.route();
-    let vehicle = VehicleConfig::default();
-    let (spawn, yaw) = route.sample(0.0, 0.0);
-    let mut truth = EgoState {
-        pose: Pose {
-            position: spawn,
-            yaw,
+    if scenario.dynamics.is_some() {
+        return Err("dynamic plant calibration requires RNE --plant dynamic".into());
+    }
+    let config = pipeline_config(&scenario);
+    let backend = ReferenceBackend {
+        scenario: scenario.clone(),
+        traffic: TrafficWorld::new(scenario.clone(), config.route.clone()),
+        truth: EgoState {
+            pose: config.initial_pose,
+            speed: 0.0,
         },
-        speed: 0.0,
+        vehicle: config.vehicle,
+        rng: Rng::new(seed),
+        command: ControlCommand::default(),
     };
-    let mut ekf = Ekf::new(truth.pose);
-    let mut rng = Rng::new(seed);
-    let mut perception = LidarClusters;
-    let mut tracker = Tracker::default();
-    let predictor = ConstantVelocity::default();
-    let mut planner = LatticePlanner::default();
-    let mut controller = PurePursuit::default();
-    let mut grid = OccupancyGrid::new(
-        Vec2::new(-10.0, -20.0),
-        ((scenario.road_length + 30.0) / 0.5) as usize,
-        80,
-        0.5,
-    );
-    let mut command = ControlCommand::default();
+    simulate_with_backend(scenario, seed, backend, config, "reference-2d")
+}
+/// Score any backend through the exact same sensor-only stack and acceptance evaluator.
+pub fn simulate_with_backend(
+    scenario: Scenario,
+    seed: u64,
+    mut backend: impl SimulationBackend,
+    config: PipelineConfig,
+    source: &str,
+) -> Result<Run, String> {
+    scenario.validate()?;
+    let dt = config.nominal_dt;
+    if scenario.sensor_timing.is_some() && (dt - 0.05).abs() > 1e-9 {
+        return Err("sensor timing requires the 20 Hz simulation clock".into());
+    }
+    let mut route = config.route.clone();
+    let mut navigation = scenario.navigation_plan()?;
+    if let Some(plan) = &navigation
+        && (plan.route.points != route.points || plan.route.half_width != route.half_width)
+    {
+        return Err("backend route differs from the selected navigation route".into());
+    }
+    let vehicle = config.vehicle;
+    let mut pipeline = DrivingPipeline::new(config.clone())?;
+    let mut sensor_log = SensorLog::new(source, config);
     let mut scan = LidarScan {
-        stamp: f64::NEG_INFINITY,
+        stamp: 0.0,
         points: vec![],
     };
-    let mut tracks = Vec::new();
     let mut frames = Vec::new();
     let mut collisions = 0;
     let mut road_violations = 0;
+    let mut traffic_collisions = 0;
+    let mut traffic_road_violations = 0;
+    let traffic_route = scenario.route();
+    let mut traffic_minimum: Option<f64> = None;
     let mut minimum = 1000.0_f64;
     let mut error_sum = 0.0;
     let mut error_max = 0.0_f64;
@@ -281,50 +685,134 @@ pub fn simulate(scenario: Scenario, seed: u64) -> Result<Run, String> {
     let mut max_tracks = 0;
     let mut steps = 0;
     let mut reached_goal = false;
+    let mut goal_since = None;
+    let mut update_index = 0;
+    let mut route_history = Vec::new();
+    let mut navigation_switches = 0;
+    let mut closure_violations = 0;
+    let mut signal_rules = RuleEvaluator::default();
+    let mut stop_rules = StopRuleEvaluator::new(scenario.stop_signs.len());
+    let mut intersection_rules = IntersectionRuleEvaluator::new(scenario.yield_intersections.len());
+    let mut sensor_delivery = SensorDelivery::default();
+    let mut evaluation_closures = scenario
+        .navigation
+        .as_ref()
+        .map_or_else(Vec::new, |nav| nav.closed_edges.clone());
+    if !scenario.navigation_updates.is_empty() {
+        route_history.push(RouteTransition {
+            time: 0.0,
+            plan: navigation.clone().unwrap(),
+            estimated_speed: 0.0,
+            true_speed: backend.state().speed,
+        });
+    }
     for i in 0..=(scenario.duration / dt).round() as usize {
         let time = i as f64 * dt;
-        if i > 0 {
-            ekf.predict(
-                Odometry {
-                    stamp: time,
-                    speed: truth.speed + rng.noise(0.015),
-                    yaw_rate: truth.speed / vehicle.wheelbase * command.steering.tan()
-                        + rng.noise(0.001),
-                },
-                dt,
-            );
+        let truth = backend.state();
+        let objects = backend.objects(time);
+        let traffic = backend.traffic();
+        let reactive_ids: Vec<_> = traffic.iter().map(|actor| actor.id).collect();
+        let mut traffic_collided = false;
+        for (i, a) in objects.iter().enumerate() {
+            for b in &objects[i + 1..] {
+                if !reactive_ids.contains(&a.id) && !reactive_ids.contains(&b.id) {
+                    continue;
+                }
+                let separation = a.position.distance(b.position) - a.radius - b.radius;
+                traffic_minimum = Some(traffic_minimum.map_or(separation, |v| v.min(separation)));
+                traffic_collided |= separation < 0.0;
+            }
         }
-        let objects = scenario.world_objects(&route, time);
-        if i % 4 == 0 && scenario.gnss_dropout.is_none_or(|t| time < t) {
-            ekf.update(Gnss {
-                stamp: time,
-                position: truth
-                    .pose
-                    .position
-                    .plus(Vec2::new(rng.noise(0.14), rng.noise(0.14))),
-                variance: 0.02,
-            });
-        }
-        let estimate = ekf.state();
-        if i % 2 == 0 && scenario.lidar_dropout.is_none_or(|t| time < t) {
-            scan = lidar(truth.pose, &objects, time, &mut rng);
-            let detections = perception.detect(&scan, estimate.pose);
-            tracks = tracker.update(&detections, time);
-            grid.update(&scan, estimate.pose);
-        }
-        let predictions = predictor.predict(&tracks);
-        let mut trajectory = planner.plan(estimate, &route, &predictions);
-        let requested = controller.control(estimate, &trajectory, dt);
-        command = guard(
-            requested,
+        // Evaluate true physical crossings against the external phase schedule.
+        // Neither this evaluator nor its phase schedule enters the driver.
+        signal_rules.observe(
+            &scenario.traffic_signals,
             time,
-            scan.stamp,
-            ekf.last_gnss,
-            ekf.position_variance(),
+            traffic_route.project(truth.pose.position).0 + vehicle.radius,
         );
-        let emergency = command.acceleration <= -5.99;
+        stop_rules.observe(
+            &scenario.stop_signs,
+            time,
+            traffic_route.project(truth.pose.position).0 + vehicle.radius,
+            truth.speed,
+        );
+        intersection_rules.observe(
+            &scenario.yield_intersections,
+            time,
+            truth.pose.position,
+            vehicle.radius,
+            &objects,
+        );
+        let mut input = backend.observe(time, i)?;
+        if let Some(timing) = &scenario.sensor_timing {
+            sensor_delivery.apply(timing, i, &mut input);
+        }
+        input.traffic_signal = signals::observe(&scenario, time, i);
+        // Fault injection changes observations only, using the acquisition clock.
+        // The pipeline/replay header does not contain the scheduled fault labels.
+        if let Some(fix) = &mut input.gnss {
+            for window in &scenario.gnss_bias_windows {
+                if fix.stamp + 1e-9 >= window.from && fix.stamp < window.until - 1e-9 {
+                    fix.position = fix.position.plus(window.offset);
+                }
+            }
+        }
+        if let Some(update) = scenario.navigation_updates.get(update_index)
+            && update.stamp <= time + 1e-9
+        {
+            input.navigation_update = Some(update.clone());
+            evaluation_closures = update.closed_edges.clone();
+            update_index += 1;
+        }
+        if let Some(new_scan) = &input.lidar {
+            scan = new_scan.clone();
+        }
+        let result = pipeline.step(&input)?;
+        let estimate = result.estimate;
+        let tracks = result.tracks.clone();
+        let predictions = result.predictions.clone();
+        let trajectory = result.trajectory.clone();
+        let command = result.command;
+        let emergency = result.emergency;
+        let navigation_status = result.navigation.clone();
+        let localization_status = result.localization;
+        let traffic_control_status = result.traffic_controls.clone();
+        let stop_sign_status = result.stop_signs.clone();
+        let intersection_status = result.intersections.clone();
+        if let Some(status) = &navigation_status
+            && status.switches > navigation_switches
+        {
+            route = pipeline.active_route().clone();
+            navigation = pipeline.navigation_plan().cloned();
+            route_history.push(RouteTransition {
+                time,
+                plan: navigation.clone().unwrap(),
+                estimated_speed: estimate.speed,
+                true_speed: truth.speed,
+            });
+            navigation_switches = status.switches;
+        }
+        // Score external closures independently of the navigator's reported closure state.
+        if !scenario.navigation_updates.is_empty()
+            && let (Some(plan), Some(nav)) = (&navigation, &scenario.navigation)
+        {
+            let progress = route.project(truth.pose.position).0;
+            let mut start_s = 0.0;
+            for id in &plan.edge_ids {
+                let edge = nav.network.edges.iter().find(|e| &e.id == id).unwrap();
+                if evaluation_closures.contains(id) && progress + vehicle.radius >= start_s {
+                    closure_violations += 1;
+                    break;
+                }
+                start_s += edge
+                    .points
+                    .windows(2)
+                    .map(|p| p[0].distance(p[1]))
+                    .sum::<f64>();
+            }
+        }
+        sensor_log.record(input, result);
         if emergency {
-            trajectory.mode = DrivingMode::Emergency;
             emergency_steps += 1;
         }
         if trajectory.mode == DrivingMode::Avoid {
@@ -344,7 +832,42 @@ pub fn simulate(scenario: Scenario, seed: u64) -> Result<Run, String> {
             .map(|o| truth.pose.position.distance(o.position) - vehicle.radius - o.radius)
             .fold(1000.0, f64::min);
         minimum = minimum.min(clearance);
-        if i % 2 == 0 {
+        let at_map_goal = navigation.as_ref().is_none_or(|plan| {
+            truth
+                .pose
+                .position
+                .distance(*plan.route.points.last().unwrap())
+                <= 2.0
+        });
+        if progress >= route.length() - 2.0 && truth.speed < 0.2 && at_map_goal {
+            let since = *goal_since.get_or_insert(time);
+            reached_goal = time - since + 1e-9 >= scenario.goal_hold_seconds.unwrap_or(0.0);
+        } else {
+            goal_since = None;
+        }
+        let finished = reached_goal || time >= scenario.duration;
+        for actor in &traffic {
+            let object = objects
+                .iter()
+                .find(|o| o.id == actor.id)
+                .ok_or("traffic telemetry has no corresponding physical body")?;
+            if traffic_route.project(object.position).1.abs() + object.radius
+                > traffic_route.half_width
+                || actor.route_s_m + object.radius > traffic_route.length() + 1e-8
+            {
+                traffic_road_violations += 1;
+            }
+        }
+        if !traffic.is_empty()
+            || !scenario.traffic_signals.is_empty()
+            || !scenario.stop_signs.is_empty()
+            || !scenario.yield_intersections.is_empty()
+            || scenario.localization_map.is_some()
+            || !scenario.gnss_dropout_windows.is_empty()
+            || i.is_multiple_of(2)
+            || finished
+            || goal_since == Some(time)
+        {
             frames.push(Frame {
                 time,
                 truth,
@@ -358,43 +881,121 @@ pub fn simulate(scenario: Scenario, seed: u64) -> Result<Run, String> {
                 emergency,
                 progress,
                 clearance,
+                traffic,
+                navigation: navigation_status,
+                localization: localization_status,
+                traffic_controls: traffic_control_status,
+                stop_signs: stop_sign_status,
+                intersections: intersection_status,
             });
         }
-        if progress >= route.length() - 2.0 && truth.speed < 0.2 {
-            reached_goal = true;
-            break;
-        }
-        if time >= scenario.duration {
+        if finished {
+            traffic_collisions += usize::from(traffic_collided);
+            collisions += usize::from(clearance < 0.0);
             break;
         }
         let previous = truth.pose.position;
-        step_vehicle(&mut truth, command, vehicle, dt);
-        let next_objects = scenario.world_objects(&route, time + dt);
-        for object in &objects {
-            if let Some(next) = next_objects.iter().find(|n| n.id == object.id) {
-                let clearance = swept_distance(
-                    previous.minus(object.position),
-                    truth.pose.position.minus(next.position),
-                ) - vehicle.radius
-                    - object.radius;
-                minimum = minimum.min(clearance);
-                if clearance < 0.0 {
-                    collisions += 1;
+        backend.advance(command, dt)?;
+        let next_truth = backend.state();
+        let next_objects = backend.objects(time + dt);
+        let next_reactive_ids: Vec<_> = backend.traffic().iter().map(|actor| actor.id).collect();
+        for (i, a) in next_objects.iter().enumerate() {
+            for b in &next_objects[i + 1..] {
+                if !next_reactive_ids.contains(&a.id) && !next_reactive_ids.contains(&b.id) {
+                    continue;
                 }
+                let separation = if let (Some(old_a), Some(old_b)) = (
+                    objects.iter().find(|o| o.id == a.id),
+                    objects.iter().find(|o| o.id == b.id),
+                ) {
+                    swept_distance(
+                        old_a.position.minus(old_b.position),
+                        a.position.minus(b.position),
+                    )
+                } else {
+                    a.position.distance(b.position)
+                } - a.radius
+                    - b.radius;
+                traffic_minimum = Some(traffic_minimum.map_or(separation, |v| v.min(separation)));
+                traffic_collided |= separation < 0.0;
             }
         }
+        traffic_collisions += usize::from(traffic_collided);
+        let mut collided = clearance < 0.0;
+        for next in &next_objects {
+            let separation = if let Some(object) = objects.iter().find(|o| o.id == next.id) {
+                swept_distance(
+                    previous.minus(object.position),
+                    next_truth.pose.position.minus(next.position),
+                )
+            } else {
+                // Newly active actor: never interpolate it backward before existence.
+                next_truth.pose.position.distance(next.position)
+            } - vehicle.radius
+                - next.radius;
+            minimum = minimum.min(separation);
+            collided |= separation < 0.0;
+        }
+        collisions += usize::from(collided);
     }
+    let truth = backend.state();
     let progress = route.project(truth.pose.position).0;
     let mut failures = Vec::new();
     if collisions > 0 {
         failures.push(format!("{collisions} colliding integration steps"));
     }
+    if traffic_road_violations > 0 {
+        failures.push(format!(
+            "{traffic_road_violations} traffic road boundary violations"
+        ));
+    }
+    if traffic_collisions > 0 {
+        failures.push(format!(
+            "{traffic_collisions} colliding traffic integration steps"
+        ));
+    }
     if road_violations > 0 {
         failures.push(format!("{road_violations} road boundary violations"));
+    }
+    if closure_violations > 0 {
+        failures.push(format!("{closure_violations} closed-edge entry violations"));
+    }
+    if let Some(required) = scenario.min_clearance_m
+        && minimum < required
+    {
+        failures.push(format!(
+            "minimum swept clearance {minimum:.3} m is below {required:.3} m"
+        ));
+    }
+    if let (Some(required), Some(measured)) = (scenario.min_clearance_m, traffic_minimum)
+        && measured < required
+    {
+        failures.push(format!(
+            "traffic swept clearance {measured:.3} m is below {required:.3} m"
+        ));
     }
     if error_max > 1.0 {
         failures.push(format!(
             "localization max error {error_max:.3} m exceeds 1 m"
+        ));
+    }
+    intersection_rules.finish((steps - 1) as f64 * dt);
+    if intersection_rules.violations != 0 {
+        failures.push(format!(
+            "{} physical intersection priority violations (required temporal gap 2.0 s)",
+            intersection_rules.violations
+        ));
+    }
+    if signal_rules.violations != 0 {
+        failures.push(format!(
+            "{} nonpermissive physical stop-line crossings",
+            signal_rules.violations
+        ));
+    }
+    if stop_rules.violations != 0 {
+        failures.push(format!(
+            "{} physical stop-sign crossings without a complete stop",
+            stop_rules.violations
         ));
     }
     match scenario.expected {
@@ -415,6 +1016,9 @@ pub fn simulate(scenario: Scenario, seed: u64) -> Result<Run, String> {
         reached_goal,
         collisions,
         road_violations,
+        traffic_collisions,
+        traffic_road_violations,
+        traffic_min_clearance: traffic_minimum,
         min_clearance: minimum,
         localization_rmse: (error_sum / steps as f64).sqrt(),
         localization_max_error: error_max,
@@ -425,20 +1029,139 @@ pub fn simulate(scenario: Scenario, seed: u64) -> Result<Run, String> {
         max_tracks,
         passed: failures.is_empty(),
         failures,
+        navigation_switches,
+        closure_violations,
+        signal_violations: signal_rules.violations,
+        signal_min_stopline_margin_m: signal_rules.minimum_nonpermissive_margin_m,
+        stop_sign_violations: stop_rules.violations,
+        stop_sign_min_margin_m: stop_rules.minimum_unreleased_margin_m,
+        intersection_violations: intersection_rules.violations,
+        intersection_min_gap_s: intersection_rules.minimum_gap_s,
     };
     Ok(Run {
+        backend: source.to_string(),
+        sensor_log: Some(sensor_log),
         schema_version: 1,
         scenario,
         route,
+        navigation,
+        route_history,
         vehicle,
         frames,
-        occupied_cells: grid.occupied_cells(),
+        occupied_cells: pipeline.occupied_cells(),
         summary,
     })
 }
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn gnss_acquisition_windows_are_bounded_and_recover_at_the_end_boundary() {
+        let mut s: Scenario =
+            serde_json::from_str(include_str!("../../../scenarios/mission.json")).unwrap();
+        let original = serde_json::to_value(&s).unwrap();
+        assert!(original.get("gnss_dropout_windows").is_none());
+        assert!(original.get("localization_map").is_none());
+        s.gnss_dropout_windows = vec![GnssDropoutWindow {
+            from: 3.0,
+            until: 8.0,
+        }];
+        assert!(s.validate().is_ok());
+        assert!(s.gnss_available(2.8));
+        assert!(!s.gnss_available(3.0));
+        assert!(!s.gnss_available(7.8));
+        assert!(s.gnss_available(8.0));
+        for window in [
+            GnssDropoutWindow {
+                from: -1.0,
+                until: 1.0,
+            },
+            GnssDropoutWindow {
+                from: 3.0,
+                until: 3.0,
+            },
+            GnssDropoutWindow {
+                from: f64::NAN,
+                until: 8.0,
+            },
+            GnssDropoutWindow {
+                from: 3.0,
+                until: s.duration + 1.0,
+            },
+        ] {
+            s.gnss_dropout_windows = vec![window];
+            assert!(s.validate().is_err());
+        }
+        s.gnss_dropout_windows = vec![
+            GnssDropoutWindow {
+                from: 3.0,
+                until: 8.0,
+            },
+            GnssDropoutWindow {
+                from: 7.0,
+                until: 9.0,
+            },
+        ];
+        assert!(s.validate().is_err());
+    }
+    #[test]
+    fn opaque_adapter_body_ids_preserve_traffic_acceptance() {
+        struct Renamed(ReferenceBackend);
+        impl SimulationBackend for Renamed {
+            fn state(&self) -> EgoState {
+                self.0.state()
+            }
+            fn objects(&self, time: f64) -> Vec<WorldObject> {
+                self.0
+                    .objects(time)
+                    .into_iter()
+                    .map(|mut o| {
+                        o.id += 100;
+                        o
+                    })
+                    .collect()
+            }
+            fn traffic(&self) -> Vec<TrafficTelemetry> {
+                self.0
+                    .traffic()
+                    .into_iter()
+                    .map(|mut a| {
+                        a.id += 100;
+                        a
+                    })
+                    .collect()
+            }
+            fn observe(&mut self, time: f64, tick: usize) -> Result<SensorFrame, String> {
+                self.0.observe(time, tick)
+            }
+            fn advance(&mut self, command: ControlCommand, dt: f64) -> Result<(), String> {
+                self.0.advance(command, dt)
+            }
+        }
+        let scenario: Scenario =
+            serde_json::from_str(include_str!("../../../scenarios/traffic-queue.json")).unwrap();
+        let original = simulate(scenario.clone(), 7).unwrap();
+        let config = pipeline_config(&scenario);
+        let backend = ReferenceBackend {
+            scenario: scenario.clone(),
+            traffic: TrafficWorld::new(scenario.clone(), config.route.clone()),
+            truth: EgoState {
+                pose: config.initial_pose,
+                speed: 0.0,
+            },
+            vehicle: config.vehicle,
+            rng: Rng::new(7),
+            command: ControlCommand::default(),
+        };
+        let renamed =
+            simulate_with_backend(scenario, 7, Renamed(backend), config, "renamed-reference")
+                .unwrap();
+        assert!(renamed.summary.passed);
+        assert_eq!(
+            serde_json::to_value(original.summary).unwrap(),
+            serde_json::to_value(renamed.summary).unwrap()
+        );
+    }
     #[test]
     fn sensor_has_occlusion_and_no_labels() {
         let objects = vec![

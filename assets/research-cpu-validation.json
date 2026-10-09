@@ -1,0 +1,45 @@
+{
+  "source_fingerprint_sha256": "2a875f36eaf5981204031522eb3f00e5026fa24457fbda5eb78ae3f537349643",
+  "workspace_check": {
+    "command": "CARGO_INCREMENTAL=0 bash scripts/check.sh",
+    "exit_code": 0,
+    "tests_passed": 301,
+    "scenario_replay_pairs": 49,
+    "log_sha256": "f618fc3288a6d27700a663776575a2122e3a41e19522ec0f2874755144434523"
+  },
+  "native_check": {
+    "toolchain": "1.95.0",
+    "profile": "release",
+    "fmt_passed": true,
+    "clippy_warnings_denied_passed": true,
+    "tests_passed": 46,
+    "test_log_sha256": "f316d4c23617e1fafb57e515b3cb894b8170fea5ecd3698de7ad3fe52edb4d3d"
+  },
+  "default_reference_byte_comparison": {
+    "baseline_head": "2d3312c84dfa2e1947329b8f7c339a223c477eaf",
+    "scenario_replay_pairs": 49,
+    "files_sha256_verified": 245,
+    "changed": []
+  },
+  "opening_native_byte_comparison": {
+    "full_replay_ticks": 441,
+    "files_sha256_verified": 6,
+    "byteidentical": true
+  },
+  "opening_gif_sha256": "3e8fa58a55d41b707ae37be99e83cc086d9e31f6616bae334806f958a585a7a0",
+  "optional_cpu_inference": {
+    "rust_tests": 4,
+    "actual_measured_images": 1,
+    "model": "YOLOX nano ONNX/tract-onnx",
+    "box_iou": 0.9486495011563861
+  },
+  "optional_recorded_depth": {
+    "rust_tests": 6,
+    "original_accepted_pairs": "0/11",
+    "original_fast_accepted_pairs": "0/11",
+    "optimized_viewed_regression_accepted_pairs": "10/11",
+    "later_temporal_accepted_pairs": "7/11",
+    "conditional_covariance_calibrated": false
+  },
+  "publication_ci": "Reported separately; local checks do not establish remote success."
+}

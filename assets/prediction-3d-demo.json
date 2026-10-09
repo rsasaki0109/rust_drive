@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "backend": "rne-dynamic-rapier-lidar",
+  "renderer": "Blender Cycles CPU",
+  "blender_version": "Blender 4.3.2",
+  "input_trace": "artifacts/braking-verified/rne-dynamic/traffic-follower-deadline/seed-1/run.json",
+  "input_sha256": "55e38980cc0b9f0396baf75ddf6619a5edfaf407be000d7de7bc244008dcbf26",
+  "rne_expected_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
+  "scenario": {
+    "name": "Reactive follower with a retained 65-second deadline",
+    "duration": 65.0,
+    "road_length": 160.0,
+    "half_width": 2.0,
+    "curve_amplitude": 0.0,
+    "expected": "goal",
+    "lidar_dropout": null,
+    "gnss_dropout": null,
+    "gnss_bias_windows": [
+      {
+        "from": 10.0,
+        "until": 14.0,
+        "offset": {
+          "x": 30.0,
+          "y": -25.0
+        }
+      }
+    ],
+    "cruise_speed": 4.0,
+    "min_clearance_m": 1.0,
+    "goal_hold_seconds": 8.0,
+    "objects": [
+      {
+        "s": 0.0,
+        "lateral": 0.0,
+        "radius": 1.0,
+        "speed": 6.0,
+        "lateral_speed": 0.0,
+        "active_from": 6.0,
+        "moving_from": 0.0,
+        "following": {
+          "initial_speed_m_s": 4.0,
+          "minimum_gap_m": 3.0,
+          "time_headway_s": 1.5,
+          "max_acceleration_m_s2": 2.0,
+          "comfortable_deceleration_m_s2": 2.0,
+          "max_deceleration_m_s2": 4.0,
+          "sensor_range_m": 45.0
+        }
+      }
+    ]
+  },
+  "summary": {
+    "scenario": "Reactive follower with a retained 65-second deadline",
+    "seed": 1,
+    "simulated_seconds": 64.25,
+    "steps": 1286,
+    "reached_goal": true,
+    "collisions": 0,
+    "road_violations": 0,
+    "min_clearance": 3.00032224049418,
+    "localization_rmse": 0.06870640472546245,
+    "localization_max_error": 0.1592909053312587,
+    "final_speed": 0.0,
+    "progress": 159.04267222583883,
+    "emergency_steps": 237,
+    "avoidance_steps": 0,
+    "max_tracks": 1,
+    "passed": true,
+    "failures": []
+  },
+  "gif_frames": 216,
+  "sampled_frames": 216,
+  "playback_speed": 3,
+  "scene_states_verified": 216,
+  "samples": 16,
+  "physics_domain": "planar",
+  "scene": {
+    "style": "suburban-test-road-v2",
+    "seed": 1729,
+    "scenery_counts": {
+      "trees": 6,
+      "buildings": 4,
+      "lamps": 7,
+      "sidewalk_sections": 320
+    }
+  },
+  "renderer_source_sha256": "fa16ef2be51c5ea174f33f8881a30b3cbe09228ff307bb98b7bf18bb82c336b0",
+  "gif_palette_colors": 192,
+  "gif_dither": false,
+  "spatial_filter": "3x3 median, viewport only",
+  "renderer_command": "python3 scripts/render_demo_3d.py artifacts/braking-verified/rne-dynamic/traffic-follower-deadline/seed-1/run.json --output assets/prediction-3d-demo.gif --samples 16 --threads 4"
+}

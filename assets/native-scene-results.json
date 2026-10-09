@@ -1,0 +1,2655 @@
+{
+  "schema_version": 1,
+  "source_fingerprint_sha256": "02e5b7d8d1a9147da8118a5c9c00d4d4dd05560cc0f008c1b73cde25449ee079",
+  "checker_sha256": "16958eb1c9ecc4d8429ad438976fd13b444274f4a51b94775f9d1632dc021dff",
+  "rne_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
+  "seeds": [
+    1,
+    7,
+    42
+  ],
+  "plants": [
+    "kinematic",
+    "dynamic"
+  ],
+  "runs": [
+    {
+      "plant": "kinematic",
+      "scene": "ground-barrier",
+      "scenario": "native-scene-ground-stop",
+      "seed": 1,
+      "exit_code": 0,
+      "output": "kinematic/ground-barrier/seed-1",
+      "summary": {
+        "scenario": "Native 3D scene: ground barrier stops the vehicle",
+        "seed": 1,
+        "simulated_seconds": 35.0,
+        "steps": 701,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.058056770832830826,
+        "localization_max_error": 0.1519278600802255,
+        "final_speed": 0.0,
+        "progress": 25.82870328480739,
+        "emergency_steps": 4,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "scene_summary": {
+        "checks": 14001,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": 7.391296715192553,
+        "passed": true
+      },
+      "independent_scene": {
+        "passed": true,
+        "min_clearance_m": 7.391296715192553,
+        "guard_overlap_intervals": 0,
+        "motion_samples": 7001,
+        "acquisitions": 351,
+        "ray_returns_reconstructed": 46958,
+        "static_hits_by_plane": {
+          "0.6": 23479,
+          "0.15": 23479,
+          "3.7": 0
+        },
+        "maximum_range_residual_m": 0.03422116122642116,
+        "range_tolerance_m": 0.06,
+        "full_sensor_cloud_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "replay": {
+        "source": "rne-kinematic-rapier-lidar",
+        "ticks": 701,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 697,
+        "stationary_holds": 669,
+        "max_acceleration_m_s2": 2.000000000000003,
+        "max_deceleration_m_s2": 2.5000000000000004
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 701,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 329,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 350,
+        "rebased_moving_forecasts": 14,
+        "max_epoch_age_s": 0.05000000000000426,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 701,
+        "emergency_ticks": 4,
+        "emergency_fraction": 0.005706134094151213,
+        "commanded_acceleration_change_rms_m_s3": 32.17214928892263,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000005
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "204854b03350293196b175107e29769f2e0f514d0366ea8a7875befe392fcd92",
+        "sensors.jsonl": "389fe48b4121beb3ea490ccfa81a1d6f94989646e791b345763414f463b2d471",
+        "scene.json": "f1ef0cbc2bc1c0d0f51c83c82c63ab250c9a9b8e29c1bd1c1430448bea92c8e9"
+      },
+      "mutation_rejections": [
+        {
+          "mutation": "removed-collider",
+          "rejected": true,
+          "reason": "native scene check count is incomplete"
+        },
+        {
+          "mutation": "changed-height",
+          "rejected": true,
+          "reason": "native capsule/box clearance differs from edge-distance oracle"
+        },
+        {
+          "mutation": "forged-clearance",
+          "rejected": true,
+          "reason": "native capsule/box clearance differs from edge-distance oracle"
+        },
+        {
+          "mutation": "changed-ray-return",
+          "rejected": true,
+          "reason": "ray range differs from nearest independent physical intersection"
+        }
+      ]
+    },
+    {
+      "plant": "kinematic",
+      "scene": "ground-barrier",
+      "scenario": "native-scene-ground-stop",
+      "seed": 7,
+      "exit_code": 0,
+      "output": "kinematic/ground-barrier/seed-7",
+      "summary": {
+        "scenario": "Native 3D scene: ground barrier stops the vehicle",
+        "seed": 7,
+        "simulated_seconds": 35.0,
+        "steps": 701,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05863646180171409,
+        "localization_max_error": 0.1863555419043485,
+        "final_speed": 0.0,
+        "progress": 25.828926630329494,
+        "emergency_steps": 9,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "scene_summary": {
+        "checks": 14001,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": 7.391073369670448,
+        "passed": true
+      },
+      "independent_scene": {
+        "passed": true,
+        "min_clearance_m": 7.391073369670448,
+        "guard_overlap_intervals": 0,
+        "motion_samples": 7001,
+        "acquisitions": 351,
+        "ray_returns_reconstructed": 46950,
+        "static_hits_by_plane": {
+          "0.6": 23475,
+          "0.15": 23475,
+          "3.7": 0
+        },
+        "maximum_range_residual_m": 0.03829945595797213,
+        "range_tolerance_m": 0.06,
+        "full_sensor_cloud_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "replay": {
+        "source": "rne-kinematic-rapier-lidar",
+        "ticks": 701,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 692,
+        "stationary_holds": 646,
+        "max_acceleration_m_s2": 2.0000000000000036,
+        "max_deceleration_m_s2": 2.5000000000000004
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 701,
+        "braking_forecasts": 2,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 347,
+        "max_forecast_deceleration_m_s2": 0.2068304093281803,
+        "aged_forecasts": 350,
+        "rebased_moving_forecasts": 24,
+        "max_epoch_age_s": 0.05000000000000426,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 701,
+        "emergency_ticks": 9,
+        "emergency_fraction": 0.012838801711840228,
+        "commanded_acceleration_change_rms_m_s3": 33.94175510681953,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000002
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "901aeed30e72988625ad0067c60031c3b3bdd5225950ed21527b7c061a7e1084",
+        "sensors.jsonl": "73fc2669036d820149f5b776afd5e3ccc62bf7b59eed76354706f33784a4acd1",
+        "scene.json": "c9d0fefe6e7dbe62c9ef0171622cbc3d986d997a9188e47099c7be40513cddb2"
+      }
+    },
+    {
+      "plant": "kinematic",
+      "scene": "ground-barrier",
+      "scenario": "native-scene-ground-stop",
+      "seed": 42,
+      "exit_code": 0,
+      "output": "kinematic/ground-barrier/seed-42",
+      "summary": {
+        "scenario": "Native 3D scene: ground barrier stops the vehicle",
+        "seed": 42,
+        "simulated_seconds": 35.0,
+        "steps": 701,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.055207617015952025,
+        "localization_max_error": 0.17151372257311598,
+        "final_speed": 0.0,
+        "progress": 25.823139900416244,
+        "emergency_steps": 11,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "scene_summary": {
+        "checks": 14001,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": 7.396860099583698,
+        "passed": true
+      },
+      "independent_scene": {
+        "passed": true,
+        "min_clearance_m": 7.396860099583698,
+        "guard_overlap_intervals": 0,
+        "motion_samples": 7001,
+        "acquisitions": 351,
+        "ray_returns_reconstructed": 46956,
+        "static_hits_by_plane": {
+          "0.6": 23478,
+          "0.15": 23478,
+          "3.7": 0
+        },
+        "maximum_range_residual_m": 0.033098160223456574,
+        "range_tolerance_m": 0.06,
+        "full_sensor_cloud_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "replay": {
+        "source": "rne-kinematic-rapier-lidar",
+        "ticks": 701,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 690,
+        "stationary_holds": 640,
+        "max_acceleration_m_s2": 2.0000000000000036,
+        "max_deceleration_m_s2": 2.5000000000000004
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 701,
+        "braking_forecasts": 4,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 350,
+        "max_forecast_deceleration_m_s2": 0.5267681419546738,
+        "aged_forecasts": 350,
+        "rebased_moving_forecasts": 26,
+        "max_epoch_age_s": 0.05000000000000426,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 701,
+        "emergency_ticks": 11,
+        "emergency_fraction": 0.015691868758915834,
+        "commanded_acceleration_change_rms_m_s3": 35.54253719758596,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000002
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "84a084745177f49cbf5a31eecd8ec71259e86ddf02ed88456aa1bff002109eaa",
+        "sensors.jsonl": "81834aa713d7f6b2562bf6f5c195828798b185dd6316cd618341b88c0168ed56",
+        "scene.json": "76a92432a72f26008e442067e6088c4d58652b8132ca10bbca0fd584b1203dfc"
+      }
+    },
+    {
+      "plant": "kinematic",
+      "scene": "raised-barrier",
+      "scenario": "native-scene-raised-goal",
+      "seed": 1,
+      "exit_code": 0,
+      "output": "kinematic/raised-barrier/seed-1",
+      "summary": {
+        "scenario": "Native 3D scene: raised barrier permits planar driving",
+        "seed": 1,
+        "simulated_seconds": 21.700000000000003,
+        "steps": 435,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.06153819551568335,
+        "localization_max_error": 0.1519278600802255,
+        "final_speed": 0.09580189666768918,
+        "progress": 79.00550558209605,
+        "emergency_steps": 3,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "scene_summary": {
+        "checks": 8681,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": 1.15,
+        "passed": true
+      },
+      "independent_scene": {
+        "passed": true,
+        "min_clearance_m": 1.15,
+        "guard_overlap_intervals": 0,
+        "motion_samples": 4341,
+        "acquisitions": 218,
+        "ray_returns_reconstructed": 12397,
+        "static_hits_by_plane": {
+          "0.6": 0,
+          "0.15": 0,
+          "3.7": 12397
+        },
+        "maximum_range_residual_m": 0.031885508598811896,
+        "range_tolerance_m": 0.06,
+        "full_sensor_cloud_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "replay": {
+        "source": "rne-kinematic-rapier-lidar",
+        "ticks": 435,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 432,
+        "stationary_holds": 217,
+        "max_acceleration_m_s2": 2.0000000000000213,
+        "max_deceleration_m_s2": 2.50000000000004
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 0,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 0,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 0,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.0,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 435,
+        "emergency_ticks": 3,
+        "emergency_fraction": 0.006896551724137931,
+        "commanded_acceleration_change_rms_m_s3": 25.01345457743576,
+        "max_normal_commanded_steering_rate_rad_s": 0.7
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "ceab3309feddcd82993036d4db0cc2579a7566925c98f6662c3d932939bd761e",
+        "sensors.jsonl": "c705f93c43c49d2089d0175512004fc2365007359119eac6166dd0195001202c",
+        "scene.json": "81e70a7c27bf8321f24a422436d8aeafea5f1117fc55ac845329446ded5ab9c4"
+      },
+      "mutation_rejections": [
+        {
+          "mutation": "removed-collider",
+          "rejected": true,
+          "reason": "native scene check count is incomplete"
+        },
+        {
+          "mutation": "changed-height",
+          "rejected": true,
+          "reason": "native capsule/box clearance differs from edge-distance oracle"
+        },
+        {
+          "mutation": "forged-clearance",
+          "rejected": true,
+          "reason": "native capsule/box clearance differs from edge-distance oracle"
+        },
+        {
+          "mutation": "changed-ray-return",
+          "rejected": true,
+          "reason": "ray range differs from nearest independent physical intersection"
+        }
+      ]
+    },
+    {
+      "plant": "kinematic",
+      "scene": "raised-barrier",
+      "scenario": "native-scene-raised-goal",
+      "seed": 7,
+      "exit_code": 0,
+      "output": "kinematic/raised-barrier/seed-7",
+      "summary": {
+        "scenario": "Native 3D scene: raised barrier permits planar driving",
+        "seed": 7,
+        "simulated_seconds": 21.650000000000002,
+        "steps": 434,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.0689430571512895,
+        "localization_max_error": 0.1863555419043485,
+        "final_speed": 0.17703512663251741,
+        "progress": 78.99172392026021,
+        "emergency_steps": 2,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "scene_summary": {
+        "checks": 8661,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": 1.15,
+        "passed": true
+      },
+      "independent_scene": {
+        "passed": true,
+        "min_clearance_m": 1.15,
+        "guard_overlap_intervals": 0,
+        "motion_samples": 4331,
+        "acquisitions": 217,
+        "ray_returns_reconstructed": 12385,
+        "static_hits_by_plane": {
+          "0.6": 0,
+          "0.15": 0,
+          "3.7": 12385
+        },
+        "maximum_range_residual_m": 0.03704475963768772,
+        "range_tolerance_m": 0.06,
+        "full_sensor_cloud_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "replay": {
+        "source": "rne-kinematic-rapier-lidar",
+        "ticks": 434,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 432,
+        "stationary_holds": 216,
+        "max_acceleration_m_s2": 2.0000000000000333,
+        "max_deceleration_m_s2": 2.500000000000056
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 0,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 0,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 0,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.0,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 434,
+        "emergency_ticks": 2,
+        "emergency_fraction": 0.004608294930875576,
+        "commanded_acceleration_change_rms_m_s3": 25.1720612781187,
+        "max_normal_commanded_steering_rate_rad_s": 0.7
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "367292e9ebbb1b8c78dd332b192bfd0e396edd05bd55139d49f943bb518d938a",
+        "sensors.jsonl": "6e50ed6fa525a938fd5c3f097900b771a63dda2887ff73e55878494771b852a5",
+        "scene.json": "b979c89390eac80c5ad38734571c2c1ec45a40338813f3ec0cbcd1fa9b902fcb"
+      }
+    },
+    {
+      "plant": "kinematic",
+      "scene": "raised-barrier",
+      "scenario": "native-scene-raised-goal",
+      "seed": 42,
+      "exit_code": 0,
+      "output": "kinematic/raised-barrier/seed-42",
+      "summary": {
+        "scenario": "Native 3D scene: raised barrier permits planar driving",
+        "seed": 42,
+        "simulated_seconds": 21.700000000000003,
+        "steps": 435,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.0653643333399398,
+        "localization_max_error": 0.17151372257311598,
+        "final_speed": 0.11570208419858495,
+        "progress": 79.066389368656,
+        "emergency_steps": 3,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "scene_summary": {
+        "checks": 8681,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": 1.15,
+        "passed": true
+      },
+      "independent_scene": {
+        "passed": true,
+        "min_clearance_m": 1.15,
+        "guard_overlap_intervals": 0,
+        "motion_samples": 4341,
+        "acquisitions": 218,
+        "ray_returns_reconstructed": 12399,
+        "static_hits_by_plane": {
+          "0.6": 0,
+          "0.15": 0,
+          "3.7": 12399
+        },
+        "maximum_range_residual_m": 0.03802661647512107,
+        "range_tolerance_m": 0.06,
+        "full_sensor_cloud_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "replay": {
+        "source": "rne-kinematic-rapier-lidar",
+        "ticks": 435,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 432,
+        "stationary_holds": 217,
+        "max_acceleration_m_s2": 2.000000000000025,
+        "max_deceleration_m_s2": 2.500000000000048
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 0,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 0,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 0,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.0,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 435,
+        "emergency_ticks": 3,
+        "emergency_fraction": 0.006896551724137931,
+        "commanded_acceleration_change_rms_m_s3": 26.762541204644968,
+        "max_normal_commanded_steering_rate_rad_s": 0.7
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "c13a642c7dd729eb8c29123ceaf2c4df2df04c5e209def29efe9ac0fc72dc76e",
+        "sensors.jsonl": "b0ab5261251f4f92993c793412ea935375b91b5ae6cd3c158b5a0f86aadaf7de",
+        "scene.json": "8965aae9d826efc07c523d06441520b04ad91b2dc9f8f7a2054422284917c422"
+      }
+    },
+    {
+      "plant": "kinematic",
+      "scene": "rotated-barrier",
+      "scenario": "native-scene-ground-stop",
+      "seed": 1,
+      "exit_code": 0,
+      "output": "kinematic/rotated-barrier/seed-1",
+      "summary": {
+        "scenario": "Native 3D scene: ground barrier stops the vehicle",
+        "seed": 1,
+        "simulated_seconds": 35.0,
+        "steps": 701,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05805793015233939,
+        "localization_max_error": 0.1519278600802255,
+        "final_speed": 0.0,
+        "progress": 25.80611299642815,
+        "emergency_steps": 4,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "scene_summary": {
+        "checks": 14001,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": 7.132955096403874,
+        "passed": true
+      },
+      "independent_scene": {
+        "passed": true,
+        "min_clearance_m": 7.132955096403874,
+        "guard_overlap_intervals": 0,
+        "motion_samples": 7001,
+        "acquisitions": 351,
+        "ray_returns_reconstructed": 45770,
+        "static_hits_by_plane": {
+          "0.6": 22885,
+          "0.15": 22885,
+          "3.7": 0
+        },
+        "maximum_range_residual_m": 0.03422254473517761,
+        "range_tolerance_m": 0.06,
+        "full_sensor_cloud_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "replay": {
+        "source": "rne-kinematic-rapier-lidar",
+        "ticks": 701,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 697,
+        "stationary_holds": 669,
+        "max_acceleration_m_s2": 2.000000000000003,
+        "max_deceleration_m_s2": 2.5000000000000004
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 701,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 333,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 350,
+        "rebased_moving_forecasts": 14,
+        "max_epoch_age_s": 0.05000000000000426,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 701,
+        "emergency_ticks": 4,
+        "emergency_fraction": 0.005706134094151213,
+        "commanded_acceleration_change_rms_m_s3": 32.17485699674429,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000005
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "2bffa80fd345998c96a9b1aff4b1c0802ea674ae6d97b1e9baf7ca618c877de1",
+        "sensors.jsonl": "a8951d9f7bbcc6675bb7f7fa9fdf800af53addc52e6c17e1e8073f399fd624ec",
+        "scene.json": "0df95367e03bba9db4884829aabf23eec88c5ffadd3e8f0637f1e517b91308bb"
+      },
+      "mutation_rejections": [
+        {
+          "mutation": "removed-collider",
+          "rejected": true,
+          "reason": "native scene check count is incomplete"
+        },
+        {
+          "mutation": "changed-height",
+          "rejected": true,
+          "reason": "native capsule/box clearance differs from edge-distance oracle"
+        },
+        {
+          "mutation": "forged-clearance",
+          "rejected": true,
+          "reason": "native capsule/box clearance differs from edge-distance oracle"
+        },
+        {
+          "mutation": "changed-ray-return",
+          "rejected": true,
+          "reason": "ray range differs from nearest independent physical intersection"
+        }
+      ]
+    },
+    {
+      "plant": "kinematic",
+      "scene": "rotated-barrier",
+      "scenario": "native-scene-ground-stop",
+      "seed": 7,
+      "exit_code": 0,
+      "output": "kinematic/rotated-barrier/seed-7",
+      "summary": {
+        "scenario": "Native 3D scene: ground barrier stops the vehicle",
+        "seed": 7,
+        "simulated_seconds": 35.0,
+        "steps": 701,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05863231495580614,
+        "localization_max_error": 0.1863555419043485,
+        "final_speed": 0.0,
+        "progress": 25.8043504643821,
+        "emergency_steps": 14,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "scene_summary": {
+        "checks": 14001,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": 7.117713331446669,
+        "passed": true
+      },
+      "independent_scene": {
+        "passed": true,
+        "min_clearance_m": 7.117713331446669,
+        "guard_overlap_intervals": 0,
+        "motion_samples": 7001,
+        "acquisitions": 351,
+        "ray_returns_reconstructed": 45758,
+        "static_hits_by_plane": {
+          "0.6": 22879,
+          "0.15": 22879,
+          "3.7": 0
+        },
+        "maximum_range_residual_m": 0.03830035176071789,
+        "range_tolerance_m": 0.06,
+        "full_sensor_cloud_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "replay": {
+        "source": "rne-kinematic-rapier-lidar",
+        "ticks": 701,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 687,
+        "stationary_holds": 645,
+        "max_acceleration_m_s2": 2.0000000000000036,
+        "max_deceleration_m_s2": 2.5000000000000004
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 701,
+        "braking_forecasts": 4,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 347,
+        "max_forecast_deceleration_m_s2": 0.7142638563805759,
+        "aged_forecasts": 350,
+        "rebased_moving_forecasts": 24,
+        "max_epoch_age_s": 0.05000000000000426,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 701,
+        "emergency_ticks": 14,
+        "emergency_fraction": 0.019971469329529243,
+        "commanded_acceleration_change_rms_m_s3": 33.84387425687337,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000002
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "c229d24a449b7df9fb274715992dd3cbe5161de721cb098e5de837ecacaeb93d",
+        "sensors.jsonl": "60067fc6b4bc91a6b3aaf83efc03ac70ea1d7fd323447e189458b04dd5cd60fd",
+        "scene.json": "b8fa96b5577e906108d3b25e94c2f9ae35ff8709f084e1c89d35091642c5c13a"
+      }
+    },
+    {
+      "plant": "kinematic",
+      "scene": "rotated-barrier",
+      "scenario": "native-scene-ground-stop",
+      "seed": 42,
+      "exit_code": 0,
+      "output": "kinematic/rotated-barrier/seed-42",
+      "summary": {
+        "scenario": "Native 3D scene: ground barrier stops the vehicle",
+        "seed": 42,
+        "simulated_seconds": 35.0,
+        "steps": 701,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.055209985895605086,
+        "localization_max_error": 0.17151372257311598,
+        "final_speed": 0.0,
+        "progress": 25.799572374333803,
+        "emergency_steps": 10,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "scene_summary": {
+        "checks": 14001,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": 7.129966125714599,
+        "passed": true
+      },
+      "independent_scene": {
+        "passed": true,
+        "min_clearance_m": 7.129966125714599,
+        "guard_overlap_intervals": 0,
+        "motion_samples": 7001,
+        "acquisitions": 351,
+        "ray_returns_reconstructed": 45756,
+        "static_hits_by_plane": {
+          "0.6": 22878,
+          "0.15": 22878,
+          "3.7": 0
+        },
+        "maximum_range_residual_m": 0.03309727807620533,
+        "range_tolerance_m": 0.06,
+        "full_sensor_cloud_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "replay": {
+        "source": "rne-kinematic-rapier-lidar",
+        "ticks": 701,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 691,
+        "stationary_holds": 641,
+        "max_acceleration_m_s2": 2.0000000000000036,
+        "max_deceleration_m_s2": 2.5000000000000004
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 701,
+        "braking_forecasts": 4,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 360,
+        "max_forecast_deceleration_m_s2": 0.1920403175619112,
+        "aged_forecasts": 350,
+        "rebased_moving_forecasts": 26,
+        "max_epoch_age_s": 0.05000000000000426,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 701,
+        "emergency_ticks": 10,
+        "emergency_fraction": 0.014265335235378032,
+        "commanded_acceleration_change_rms_m_s3": 35.54424852528624,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000002
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "42a214e73879f153d13949373d96aaf1cd3c4ec76a4cfa064b73fdc192734a36",
+        "sensors.jsonl": "6a04c16b7ea4a6aeffc5bfd1bf582e646c96acb51f96098a3e11edd233bae0e1",
+        "scene.json": "9b3e2540eecf5257b14bb6366029e263cbb4eaf328caf405a8f1cb96c26511d5"
+      }
+    },
+    {
+      "plant": "dynamic",
+      "scene": "ground-barrier",
+      "scenario": "native-scene-ground-stop",
+      "seed": 1,
+      "exit_code": 0,
+      "output": "dynamic/ground-barrier/seed-1",
+      "summary": {
+        "scenario": "Native 3D scene: ground barrier stops the vehicle",
+        "seed": 1,
+        "simulated_seconds": 35.0,
+        "steps": 701,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.057936759924241535,
+        "localization_max_error": 0.1592909053312587,
+        "final_speed": 0.0,
+        "progress": 25.828792325698007,
+        "emergency_steps": 4,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "scene_summary": {
+        "checks": 14001,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": 7.391207674301935,
+        "passed": true
+      },
+      "independent_scene": {
+        "passed": true,
+        "min_clearance_m": 7.391207674301935,
+        "guard_overlap_intervals": 0,
+        "motion_samples": 7001,
+        "acquisitions": 351,
+        "ray_returns_reconstructed": 46962,
+        "static_hits_by_plane": {
+          "0.6": 23481,
+          "0.15": 23481,
+          "3.7": 0
+        },
+        "maximum_range_residual_m": 0.034221465024243614,
+        "range_tolerance_m": 0.06,
+        "full_sensor_cloud_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 701,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 697,
+        "stationary_holds": 669,
+        "max_acceleration_m_s2": 2.000000000000003,
+        "max_deceleration_m_s2": 2.5000000000000004
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 701,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 323,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 350,
+        "rebased_moving_forecasts": 14,
+        "max_epoch_age_s": 0.05000000000000426,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 701,
+        "emergency_ticks": 4,
+        "emergency_fraction": 0.005706134094151213,
+        "commanded_acceleration_change_rms_m_s3": 32.17173460331008,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000005
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "2b3079b263157b3e6c19fda672d4d2cd72882f2f683fbcc905d2185e235ae1f6",
+        "sensors.jsonl": "ffea4f1fd5d8f170277665ad4862e4c2420f1d28711d259b1d65bd004b013abf",
+        "scene.json": "98ae65b122f1a6975ed0fc3be9cc6dc8f1eec99f9623782fb93c0ca50d7b8d07"
+      },
+      "mutation_rejections": [
+        {
+          "mutation": "removed-collider",
+          "rejected": true,
+          "reason": "native scene check count is incomplete"
+        },
+        {
+          "mutation": "changed-height",
+          "rejected": true,
+          "reason": "native capsule/box clearance differs from edge-distance oracle"
+        },
+        {
+          "mutation": "forged-clearance",
+          "rejected": true,
+          "reason": "native capsule/box clearance differs from edge-distance oracle"
+        },
+        {
+          "mutation": "changed-ray-return",
+          "rejected": true,
+          "reason": "ray range differs from nearest independent physical intersection"
+        }
+      ]
+    },
+    {
+      "plant": "dynamic",
+      "scene": "ground-barrier",
+      "scenario": "native-scene-ground-stop",
+      "seed": 7,
+      "exit_code": 0,
+      "output": "dynamic/ground-barrier/seed-7",
+      "summary": {
+        "scenario": "Native 3D scene: ground barrier stops the vehicle",
+        "seed": 7,
+        "simulated_seconds": 35.0,
+        "steps": 701,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.06072012263969686,
+        "localization_max_error": 0.20512748149352236,
+        "final_speed": 0.0,
+        "progress": 25.828988453157343,
+        "emergency_steps": 9,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "scene_summary": {
+        "checks": 14001,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": 7.3910115468425985,
+        "passed": true
+      },
+      "independent_scene": {
+        "passed": true,
+        "min_clearance_m": 7.3910115468425985,
+        "guard_overlap_intervals": 0,
+        "motion_samples": 7001,
+        "acquisitions": 351,
+        "ray_returns_reconstructed": 46948,
+        "static_hits_by_plane": {
+          "0.6": 23474,
+          "0.15": 23474,
+          "3.7": 0
+        },
+        "maximum_range_residual_m": 0.03830175445815165,
+        "range_tolerance_m": 0.06,
+        "full_sensor_cloud_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 701,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 692,
+        "stationary_holds": 650,
+        "max_acceleration_m_s2": 2.0000000000000036,
+        "max_deceleration_m_s2": 2.5000000000000004
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 701,
+        "braking_forecasts": 4,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 341,
+        "max_forecast_deceleration_m_s2": 0.522863471747812,
+        "aged_forecasts": 350,
+        "rebased_moving_forecasts": 22,
+        "max_epoch_age_s": 0.05000000000000426,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 701,
+        "emergency_ticks": 9,
+        "emergency_fraction": 0.012838801711840228,
+        "commanded_acceleration_change_rms_m_s3": 33.94193005107449,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000002
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "76ab0039fe5e04e83589caf57ca20b7ecfb31cfb188ec23efef2fb3f69424688",
+        "sensors.jsonl": "34490092a405b7744546d8328d4a1b790c9b436e9d11cd9f10f62639c7b76526",
+        "scene.json": "7fbfb29eaa2a846455ea205c7b5c3beddd0166e30b33b962f5c2639a0311a723"
+      }
+    },
+    {
+      "plant": "dynamic",
+      "scene": "ground-barrier",
+      "scenario": "native-scene-ground-stop",
+      "seed": 42,
+      "exit_code": 0,
+      "output": "dynamic/ground-barrier/seed-42",
+      "summary": {
+        "scenario": "Native 3D scene: ground barrier stops the vehicle",
+        "seed": 42,
+        "simulated_seconds": 35.0,
+        "steps": 701,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05617258532321487,
+        "localization_max_error": 0.18079567389637546,
+        "final_speed": 0.0,
+        "progress": 25.823257177618054,
+        "emergency_steps": 11,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "scene_summary": {
+        "checks": 14001,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": 7.3967428223818885,
+        "passed": true
+      },
+      "independent_scene": {
+        "passed": true,
+        "min_clearance_m": 7.3967428223818885,
+        "guard_overlap_intervals": 0,
+        "motion_samples": 7001,
+        "acquisitions": 351,
+        "ray_returns_reconstructed": 46948,
+        "static_hits_by_plane": {
+          "0.6": 23474,
+          "0.15": 23474,
+          "3.7": 0
+        },
+        "maximum_range_residual_m": 0.033098044194401766,
+        "range_tolerance_m": 0.06,
+        "full_sensor_cloud_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 701,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 690,
+        "stationary_holds": 646,
+        "max_acceleration_m_s2": 2.000000000000003,
+        "max_deceleration_m_s2": 2.5000000000000004
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 701,
+        "braking_forecasts": 4,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 356,
+        "max_forecast_deceleration_m_s2": 0.5685548936696705,
+        "aged_forecasts": 350,
+        "rebased_moving_forecasts": 24,
+        "max_epoch_age_s": 0.05000000000000426,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 701,
+        "emergency_ticks": 11,
+        "emergency_fraction": 0.015691868758915834,
+        "commanded_acceleration_change_rms_m_s3": 35.54236621675861,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000002
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "e1237c48218443ea33dd1461d79e5a7de65b28502af9cce94c76171ebee0826b",
+        "sensors.jsonl": "a5dd19e4b6062e6af4707fe6e8fc937b6fed78970098c9757b72f721941c0b96",
+        "scene.json": "a05f86d3726d796c3087d76e55a1b846924543d40b2bdd8fe89e7f3225e78702"
+      }
+    },
+    {
+      "plant": "dynamic",
+      "scene": "raised-barrier",
+      "scenario": "native-scene-raised-goal",
+      "seed": 1,
+      "exit_code": 0,
+      "output": "dynamic/raised-barrier/seed-1",
+      "summary": {
+        "scenario": "Native 3D scene: raised barrier permits planar driving",
+        "seed": 1,
+        "simulated_seconds": 21.650000000000002,
+        "steps": 434,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.06242546446668002,
+        "localization_max_error": 0.1592909053312587,
+        "final_speed": 0.12569833557961696,
+        "progress": 78.98123486817683,
+        "emergency_steps": 4,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "scene_summary": {
+        "checks": 8661,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": 1.15,
+        "passed": true
+      },
+      "independent_scene": {
+        "passed": true,
+        "min_clearance_m": 1.15,
+        "guard_overlap_intervals": 0,
+        "motion_samples": 4331,
+        "acquisitions": 217,
+        "ray_returns_reconstructed": 12392,
+        "static_hits_by_plane": {
+          "0.6": 0,
+          "0.15": 0,
+          "3.7": 12392
+        },
+        "maximum_range_residual_m": 0.031887335949932094,
+        "range_tolerance_m": 0.06,
+        "full_sensor_cloud_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 434,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 430,
+        "stationary_holds": 215,
+        "max_acceleration_m_s2": 2.000000000000022,
+        "max_deceleration_m_s2": 2.500000000000031
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 0,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 0,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 0,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.0,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 434,
+        "emergency_ticks": 4,
+        "emergency_fraction": 0.009216589861751152,
+        "commanded_acceleration_change_rms_m_s3": 25.093594288228456,
+        "max_normal_commanded_steering_rate_rad_s": 0.7
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "daecf9d194a9a69529287e1b71d0a8bcdf6fbcd2342dd76f5a415ad5c6255607",
+        "sensors.jsonl": "079e18f447f620134e86212e453454f49851ec1eef801dec9d958da157643d76",
+        "scene.json": "08138cd7e352f8b3eb27115a34d2cc050f814547c4ef7377d240ebb430921fb8"
+      },
+      "mutation_rejections": [
+        {
+          "mutation": "removed-collider",
+          "rejected": true,
+          "reason": "native scene check count is incomplete"
+        },
+        {
+          "mutation": "changed-height",
+          "rejected": true,
+          "reason": "native capsule/box clearance differs from edge-distance oracle"
+        },
+        {
+          "mutation": "forged-clearance",
+          "rejected": true,
+          "reason": "native capsule/box clearance differs from edge-distance oracle"
+        },
+        {
+          "mutation": "changed-ray-return",
+          "rejected": true,
+          "reason": "ray range differs from nearest independent physical intersection"
+        }
+      ]
+    },
+    {
+      "plant": "dynamic",
+      "scene": "raised-barrier",
+      "scenario": "native-scene-raised-goal",
+      "seed": 7,
+      "exit_code": 0,
+      "output": "dynamic/raised-barrier/seed-7",
+      "summary": {
+        "scenario": "Native 3D scene: raised barrier permits planar driving",
+        "seed": 7,
+        "simulated_seconds": 21.700000000000003,
+        "steps": 435,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.07323669059732507,
+        "localization_max_error": 0.20512748149352236,
+        "final_speed": 0.14472246770272287,
+        "progress": 79.00297770805173,
+        "emergency_steps": 4,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "scene_summary": {
+        "checks": 8681,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": 1.15,
+        "passed": true
+      },
+      "independent_scene": {
+        "passed": true,
+        "min_clearance_m": 1.15,
+        "guard_overlap_intervals": 0,
+        "motion_samples": 4341,
+        "acquisitions": 218,
+        "ray_returns_reconstructed": 12406,
+        "static_hits_by_plane": {
+          "0.6": 0,
+          "0.15": 0,
+          "3.7": 12406
+        },
+        "maximum_range_residual_m": 0.037044661882504215,
+        "range_tolerance_m": 0.06,
+        "full_sensor_cloud_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 435,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 431,
+        "stationary_holds": 215,
+        "max_acceleration_m_s2": 2.000000000000034,
+        "max_deceleration_m_s2": 2.5000000000000413
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 0,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 0,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 0,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.0,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 435,
+        "emergency_ticks": 4,
+        "emergency_fraction": 0.009195402298850575,
+        "commanded_acceleration_change_rms_m_s3": 29.323063578751547,
+        "max_normal_commanded_steering_rate_rad_s": 0.7
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "8b5a638acf2c44f4e0059042c58df4e4c73560a685f0655d810a779c37a36dbd",
+        "sensors.jsonl": "490f16a27b44813c077dd183e5236d8b07ae2a5fce91d72b9e5351b5fc603454",
+        "scene.json": "bf840a4ce6b541431d1a4da3cadb5c617d23474e2e1ba0a6d276cda90ece10fd"
+      }
+    },
+    {
+      "plant": "dynamic",
+      "scene": "raised-barrier",
+      "scenario": "native-scene-raised-goal",
+      "seed": 42,
+      "exit_code": 0,
+      "output": "dynamic/raised-barrier/seed-42",
+      "summary": {
+        "scenario": "Native 3D scene: raised barrier permits planar driving",
+        "seed": 42,
+        "simulated_seconds": 21.75,
+        "steps": 436,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.0675869424702818,
+        "localization_max_error": 0.18079567389637546,
+        "final_speed": 0.1278283686650808,
+        "progress": 79.10727306149163,
+        "emergency_steps": 4,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "scene_summary": {
+        "checks": 8701,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": 1.15,
+        "passed": true
+      },
+      "independent_scene": {
+        "passed": true,
+        "min_clearance_m": 1.15,
+        "guard_overlap_intervals": 0,
+        "motion_samples": 4351,
+        "acquisitions": 218,
+        "ray_returns_reconstructed": 12418,
+        "static_hits_by_plane": {
+          "0.6": 0,
+          "0.15": 0,
+          "3.7": 12418
+        },
+        "maximum_range_residual_m": 0.038024711545944,
+        "range_tolerance_m": 0.06,
+        "full_sensor_cloud_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 436,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 432,
+        "stationary_holds": 217,
+        "max_acceleration_m_s2": 2.0000000000000093,
+        "max_deceleration_m_s2": 2.5000000000000617
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 0,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 0,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 0,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.0,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 436,
+        "emergency_ticks": 4,
+        "emergency_fraction": 0.009174311926605505,
+        "commanded_acceleration_change_rms_m_s3": 29.61760376550596,
+        "max_normal_commanded_steering_rate_rad_s": 0.7
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "ff3f2273c356b4f2eaea72a0887941b6eaad70428e68f32fbaee095e3a2beb87",
+        "sensors.jsonl": "5b9def9fd2a08e23171da6b2afddcc3237fb3e43cf1753a9e1c3cc8ab4985001",
+        "scene.json": "4d160e8f712d7ef3194215ff54f7cce784fb4137b4ed5fcca33a4a11f70c6a51"
+      }
+    },
+    {
+      "plant": "dynamic",
+      "scene": "rotated-barrier",
+      "scenario": "native-scene-ground-stop",
+      "seed": 1,
+      "exit_code": 0,
+      "output": "dynamic/rotated-barrier/seed-1",
+      "summary": {
+        "scenario": "Native 3D scene: ground barrier stops the vehicle",
+        "seed": 1,
+        "simulated_seconds": 35.0,
+        "steps": 701,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05793811794228777,
+        "localization_max_error": 0.1592909053312587,
+        "final_speed": 0.0,
+        "progress": 25.80584824447234,
+        "emergency_steps": 4,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "scene_summary": {
+        "checks": 14001,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": 7.13293384293981,
+        "passed": true
+      },
+      "independent_scene": {
+        "passed": true,
+        "min_clearance_m": 7.13293384293981,
+        "guard_overlap_intervals": 0,
+        "motion_samples": 7001,
+        "acquisitions": 351,
+        "ray_returns_reconstructed": 45768,
+        "static_hits_by_plane": {
+          "0.6": 22884,
+          "0.15": 22884,
+          "3.7": 0
+        },
+        "maximum_range_residual_m": 0.034220474405112,
+        "range_tolerance_m": 0.06,
+        "full_sensor_cloud_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 701,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 697,
+        "stationary_holds": 669,
+        "max_acceleration_m_s2": 2.000000000000003,
+        "max_deceleration_m_s2": 2.5000000000000004
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 701,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 339,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 350,
+        "rebased_moving_forecasts": 14,
+        "max_epoch_age_s": 0.05000000000000426,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 701,
+        "emergency_ticks": 4,
+        "emergency_fraction": 0.005706134094151213,
+        "commanded_acceleration_change_rms_m_s3": 32.16054586561359,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000005
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "23ce0e90803a99819a22761f1cc00e59e7ed59691f4ae5db497b4a6f8403131e",
+        "sensors.jsonl": "83deec077926c59883c1bda7bee7652f29d72ad3eebb2bd8bb09c86670784b49",
+        "scene.json": "15732e91d874e6461e6e6f646c5362c7a8501f04b8eb25a237de6d420f78ecc5"
+      },
+      "mutation_rejections": [
+        {
+          "mutation": "removed-collider",
+          "rejected": true,
+          "reason": "native scene check count is incomplete"
+        },
+        {
+          "mutation": "changed-height",
+          "rejected": true,
+          "reason": "native capsule/box clearance differs from edge-distance oracle"
+        },
+        {
+          "mutation": "forged-clearance",
+          "rejected": true,
+          "reason": "native capsule/box clearance differs from edge-distance oracle"
+        },
+        {
+          "mutation": "changed-ray-return",
+          "rejected": true,
+          "reason": "ray range differs from nearest independent physical intersection"
+        }
+      ]
+    },
+    {
+      "plant": "dynamic",
+      "scene": "rotated-barrier",
+      "scenario": "native-scene-ground-stop",
+      "seed": 7,
+      "exit_code": 0,
+      "output": "dynamic/rotated-barrier/seed-7",
+      "summary": {
+        "scenario": "Native 3D scene: ground barrier stops the vehicle",
+        "seed": 7,
+        "simulated_seconds": 35.0,
+        "steps": 701,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.06071559162109476,
+        "localization_max_error": 0.20512748149352236,
+        "final_speed": 0.0,
+        "progress": 25.804688793370396,
+        "emergency_steps": 9,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "scene_summary": {
+        "checks": 14001,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": 7.1165774540557205,
+        "passed": true
+      },
+      "independent_scene": {
+        "passed": true,
+        "min_clearance_m": 7.1165774540557205,
+        "guard_overlap_intervals": 0,
+        "motion_samples": 7001,
+        "acquisitions": 351,
+        "ray_returns_reconstructed": 45748,
+        "static_hits_by_plane": {
+          "0.6": 22874,
+          "0.15": 22874,
+          "3.7": 0
+        },
+        "maximum_range_residual_m": 0.038300857958997625,
+        "range_tolerance_m": 0.06,
+        "full_sensor_cloud_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 701,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 692,
+        "stationary_holds": 648,
+        "max_acceleration_m_s2": 2.0000000000000036,
+        "max_deceleration_m_s2": 2.5000000000000004
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 701,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 343,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 350,
+        "rebased_moving_forecasts": 24,
+        "max_epoch_age_s": 0.05000000000000426,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 701,
+        "emergency_ticks": 9,
+        "emergency_fraction": 0.012838801711840228,
+        "commanded_acceleration_change_rms_m_s3": 33.9341433294158,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000002
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "79a1ee8d66abf0eba0f74d30351e46639fb6d4a077cbe917bb4de999ec37ce80",
+        "sensors.jsonl": "2aacb81cf697e9d968a9f666cb90ad4fd5431f5f762126457e05a10b1e6fec3a",
+        "scene.json": "ad300d6fb0f63f08ab2a93e294b3736cbc0dcc6755ad518a9d771f99d4c48d6c"
+      }
+    },
+    {
+      "plant": "dynamic",
+      "scene": "rotated-barrier",
+      "scenario": "native-scene-ground-stop",
+      "seed": 42,
+      "exit_code": 0,
+      "output": "dynamic/rotated-barrier/seed-42",
+      "summary": {
+        "scenario": "Native 3D scene: ground barrier stops the vehicle",
+        "seed": 42,
+        "simulated_seconds": 35.0,
+        "steps": 701,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.056174735770191164,
+        "localization_max_error": 0.18079567389637546,
+        "final_speed": 0.0,
+        "progress": 25.798663001371935,
+        "emergency_steps": 11,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "scene_summary": {
+        "checks": 14001,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": 7.127379404778026,
+        "passed": true
+      },
+      "independent_scene": {
+        "passed": true,
+        "min_clearance_m": 7.127379404778026,
+        "guard_overlap_intervals": 0,
+        "motion_samples": 7001,
+        "acquisitions": 351,
+        "ray_returns_reconstructed": 45764,
+        "static_hits_by_plane": {
+          "0.6": 22882,
+          "0.15": 22882,
+          "3.7": 0
+        },
+        "maximum_range_residual_m": 0.033097993865506936,
+        "range_tolerance_m": 0.06,
+        "full_sensor_cloud_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 701,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 690,
+        "stationary_holds": 646,
+        "max_acceleration_m_s2": 2.000000000000003,
+        "max_deceleration_m_s2": 2.5000000000000004
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 701,
+        "braking_forecasts": 4,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 360,
+        "max_forecast_deceleration_m_s2": 0.49681135206005533,
+        "aged_forecasts": 350,
+        "rebased_moving_forecasts": 24,
+        "max_epoch_age_s": 0.05000000000000426,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 701,
+        "emergency_ticks": 11,
+        "emergency_fraction": 0.015691868758915834,
+        "commanded_acceleration_change_rms_m_s3": 35.539303920461826,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000002
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "eb63165fb610dfb8420babec297e3bffb968de09077b3575bffc17de4f075764",
+        "sensors.jsonl": "7ab006d3cef791e363da21e9a34fc0a03206956bf00d80069ee711befc50dcc4",
+        "scene.json": "e386b2403390067fda4e4eb48666d42ca83cbc53be7fceecc0a9bc7ff242ec0d"
+      }
+    }
+  ],
+  "known_failures": [
+    {
+      "plant": "kinematic",
+      "scene": "blind-low-slab",
+      "scenario": "native-scene-blind-low",
+      "seed": 1,
+      "exit_code": 1,
+      "output": "kinematic/blind-low-slab/seed-1",
+      "summary": {
+        "scenario": "Known scene failure: low slab lies below the driving LiDAR plane",
+        "seed": 1,
+        "simulated_seconds": 21.700000000000003,
+        "steps": 435,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.06153819551568335,
+        "localization_max_error": 0.1519278600802255,
+        "final_speed": 0.09580189666768918,
+        "progress": 79.00550558209605,
+        "emergency_steps": 3,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": false,
+        "failures": [
+          "179 native scene conservative capsule guard overlaps",
+          "native scene capsule clearance 0.000000 m is below fixed 1 m floor"
+        ]
+      },
+      "scene_summary": {
+        "checks": 8681,
+        "failures": [
+          "179 native scene conservative capsule guard overlaps",
+          "native scene capsule clearance 0.000000 m is below fixed 1 m floor"
+        ],
+        "guard_overlap_intervals": 179,
+        "min_clearance_m": 0.0,
+        "passed": false
+      },
+      "independent_scene": {
+        "passed": false,
+        "min_clearance_m": 0.0,
+        "guard_overlap_intervals": 179,
+        "motion_samples": 4341,
+        "acquisitions": 218,
+        "ray_returns_reconstructed": 12397,
+        "static_hits_by_plane": {
+          "0.6": 0,
+          "0.15": 12397,
+          "3.7": 0
+        },
+        "maximum_range_residual_m": 0.032141302271353034,
+        "range_tolerance_m": 0.06,
+        "full_sensor_cloud_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "replay": {
+        "source": "rne-kinematic-rapier-lidar",
+        "ticks": 435,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 432,
+        "stationary_holds": 217,
+        "max_acceleration_m_s2": 2.0000000000000213,
+        "max_deceleration_m_s2": 2.50000000000004
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 0,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 0,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 0,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.0,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 435,
+        "emergency_ticks": 3,
+        "emergency_fraction": 0.006896551724137931,
+        "commanded_acceleration_change_rms_m_s3": 25.01345457743576,
+        "max_normal_commanded_steering_rate_rad_s": 0.7
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "9decba73e3dcbb9343eb4161ce4bcae0e3dfe078c7ddf6b43d14b96d6a75c9ae",
+        "sensors.jsonl": "c705f93c43c49d2089d0175512004fc2365007359119eac6166dd0195001202c",
+        "scene.json": "203944c8b825fd2150bffcd0fabe444ca1b99b860a788e7402a3f87dd8716dcf"
+      },
+      "mutation_rejections": [
+        {
+          "mutation": "removed-collider",
+          "rejected": true,
+          "reason": "native scene check count is incomplete"
+        },
+        {
+          "mutation": "changed-height",
+          "rejected": true,
+          "reason": "native capsule/box clearance differs from edge-distance oracle"
+        },
+        {
+          "mutation": "forged-clearance",
+          "rejected": true,
+          "reason": "native capsule/box clearance differs from edge-distance oracle"
+        },
+        {
+          "mutation": "changed-ray-return",
+          "rejected": true,
+          "reason": "ray range differs from nearest independent physical intersection"
+        }
+      ],
+      "acceptance_rejection_verified": true
+    },
+    {
+      "plant": "kinematic",
+      "scene": "blind-low-slab",
+      "scenario": "native-scene-blind-low",
+      "seed": 7,
+      "exit_code": 1,
+      "output": "kinematic/blind-low-slab/seed-7",
+      "summary": {
+        "scenario": "Known scene failure: low slab lies below the driving LiDAR plane",
+        "seed": 7,
+        "simulated_seconds": 21.650000000000002,
+        "steps": 434,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.0689430571512895,
+        "localization_max_error": 0.1863555419043485,
+        "final_speed": 0.17703512663251741,
+        "progress": 78.99172392026021,
+        "emergency_steps": 2,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": false,
+        "failures": [
+          "179 native scene conservative capsule guard overlaps",
+          "native scene capsule clearance 0.000000 m is below fixed 1 m floor"
+        ]
+      },
+      "scene_summary": {
+        "checks": 8661,
+        "failures": [
+          "179 native scene conservative capsule guard overlaps",
+          "native scene capsule clearance 0.000000 m is below fixed 1 m floor"
+        ],
+        "guard_overlap_intervals": 179,
+        "min_clearance_m": 0.0,
+        "passed": false
+      },
+      "independent_scene": {
+        "passed": false,
+        "min_clearance_m": 0.0,
+        "guard_overlap_intervals": 179,
+        "motion_samples": 4331,
+        "acquisitions": 217,
+        "ray_returns_reconstructed": 12385,
+        "static_hits_by_plane": {
+          "0.6": 0,
+          "0.15": 12385,
+          "3.7": 0
+        },
+        "maximum_range_residual_m": 0.03197377088722675,
+        "range_tolerance_m": 0.06,
+        "full_sensor_cloud_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "replay": {
+        "source": "rne-kinematic-rapier-lidar",
+        "ticks": 434,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 432,
+        "stationary_holds": 216,
+        "max_acceleration_m_s2": 2.0000000000000333,
+        "max_deceleration_m_s2": 2.500000000000056
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 0,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 0,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 0,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.0,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 434,
+        "emergency_ticks": 2,
+        "emergency_fraction": 0.004608294930875576,
+        "commanded_acceleration_change_rms_m_s3": 25.1720612781187,
+        "max_normal_commanded_steering_rate_rad_s": 0.7
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "611966a885adefbbabf8e879ac24fee46c155da964949e267f91c6050196662c",
+        "sensors.jsonl": "6e50ed6fa525a938fd5c3f097900b771a63dda2887ff73e55878494771b852a5",
+        "scene.json": "1eb1a616fb9a5e828f057366edbcdaed9d6674d74a9383334dc41599865d6fbc"
+      },
+      "acceptance_rejection_verified": true
+    },
+    {
+      "plant": "kinematic",
+      "scene": "blind-low-slab",
+      "scenario": "native-scene-blind-low",
+      "seed": 42,
+      "exit_code": 1,
+      "output": "kinematic/blind-low-slab/seed-42",
+      "summary": {
+        "scenario": "Known scene failure: low slab lies below the driving LiDAR plane",
+        "seed": 42,
+        "simulated_seconds": 21.700000000000003,
+        "steps": 435,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.0653643333399398,
+        "localization_max_error": 0.17151372257311598,
+        "final_speed": 0.11570208419858495,
+        "progress": 79.066389368656,
+        "emergency_steps": 3,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": false,
+        "failures": [
+          "179 native scene conservative capsule guard overlaps",
+          "native scene capsule clearance 0.000000 m is below fixed 1 m floor"
+        ]
+      },
+      "scene_summary": {
+        "checks": 8681,
+        "failures": [
+          "179 native scene conservative capsule guard overlaps",
+          "native scene capsule clearance 0.000000 m is below fixed 1 m floor"
+        ],
+        "guard_overlap_intervals": 179,
+        "min_clearance_m": 0.0,
+        "passed": false
+      },
+      "independent_scene": {
+        "passed": false,
+        "min_clearance_m": 0.0,
+        "guard_overlap_intervals": 179,
+        "motion_samples": 4341,
+        "acquisitions": 218,
+        "ray_returns_reconstructed": 12399,
+        "static_hits_by_plane": {
+          "0.6": 0,
+          "0.15": 12399,
+          "3.7": 0
+        },
+        "maximum_range_residual_m": 0.030332751062377206,
+        "range_tolerance_m": 0.06,
+        "full_sensor_cloud_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "replay": {
+        "source": "rne-kinematic-rapier-lidar",
+        "ticks": 435,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 432,
+        "stationary_holds": 217,
+        "max_acceleration_m_s2": 2.000000000000025,
+        "max_deceleration_m_s2": 2.500000000000048
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 0,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 0,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 0,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.0,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 435,
+        "emergency_ticks": 3,
+        "emergency_fraction": 0.006896551724137931,
+        "commanded_acceleration_change_rms_m_s3": 26.762541204644968,
+        "max_normal_commanded_steering_rate_rad_s": 0.7
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "8ce346830b90e2b383a47b9610e938c8e471028aaae1df03e431849bd0db729e",
+        "sensors.jsonl": "b0ab5261251f4f92993c793412ea935375b91b5ae6cd3c158b5a0f86aadaf7de",
+        "scene.json": "50a789c75684725f9cd5984f415ea1b8a6ead4d437185dbed42e416240a41117"
+      },
+      "acceptance_rejection_verified": true
+    },
+    {
+      "plant": "dynamic",
+      "scene": "blind-low-slab",
+      "scenario": "native-scene-blind-low",
+      "seed": 1,
+      "exit_code": 1,
+      "output": "dynamic/blind-low-slab/seed-1",
+      "summary": {
+        "scenario": "Known scene failure: low slab lies below the driving LiDAR plane",
+        "seed": 1,
+        "simulated_seconds": 21.650000000000002,
+        "steps": 434,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.06242546446668002,
+        "localization_max_error": 0.1592909053312587,
+        "final_speed": 0.12569833557961696,
+        "progress": 78.98123486817683,
+        "emergency_steps": 4,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": false,
+        "failures": [
+          "180 native scene conservative capsule guard overlaps",
+          "native scene capsule clearance 0.000000 m is below fixed 1 m floor"
+        ]
+      },
+      "scene_summary": {
+        "checks": 8661,
+        "failures": [
+          "180 native scene conservative capsule guard overlaps",
+          "native scene capsule clearance 0.000000 m is below fixed 1 m floor"
+        ],
+        "guard_overlap_intervals": 180,
+        "min_clearance_m": 0.0,
+        "passed": false
+      },
+      "independent_scene": {
+        "passed": false,
+        "min_clearance_m": 0.0,
+        "guard_overlap_intervals": 180,
+        "motion_samples": 4331,
+        "acquisitions": 217,
+        "ray_returns_reconstructed": 12392,
+        "static_hits_by_plane": {
+          "0.6": 0,
+          "0.15": 12392,
+          "3.7": 0
+        },
+        "maximum_range_residual_m": 0.03214318002732064,
+        "range_tolerance_m": 0.06,
+        "full_sensor_cloud_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 434,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 430,
+        "stationary_holds": 215,
+        "max_acceleration_m_s2": 2.000000000000022,
+        "max_deceleration_m_s2": 2.500000000000031
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 0,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 0,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 0,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.0,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 434,
+        "emergency_ticks": 4,
+        "emergency_fraction": 0.009216589861751152,
+        "commanded_acceleration_change_rms_m_s3": 25.093594288228456,
+        "max_normal_commanded_steering_rate_rad_s": 0.7
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "f87ce1b5f8791ef52cb86025e0883ebba2cf72ce2af9876994b6f17142f93994",
+        "sensors.jsonl": "079e18f447f620134e86212e453454f49851ec1eef801dec9d958da157643d76",
+        "scene.json": "e30a018601006d320009260a27492f4609023bcb075f55ef04a5c06796754a50"
+      },
+      "mutation_rejections": [
+        {
+          "mutation": "removed-collider",
+          "rejected": true,
+          "reason": "native scene check count is incomplete"
+        },
+        {
+          "mutation": "changed-height",
+          "rejected": true,
+          "reason": "native capsule/box clearance differs from edge-distance oracle"
+        },
+        {
+          "mutation": "forged-clearance",
+          "rejected": true,
+          "reason": "native capsule/box clearance differs from edge-distance oracle"
+        },
+        {
+          "mutation": "changed-ray-return",
+          "rejected": true,
+          "reason": "ray range differs from nearest independent physical intersection"
+        }
+      ],
+      "acceptance_rejection_verified": true
+    },
+    {
+      "plant": "dynamic",
+      "scene": "blind-low-slab",
+      "scenario": "native-scene-blind-low",
+      "seed": 7,
+      "exit_code": 1,
+      "output": "dynamic/blind-low-slab/seed-7",
+      "summary": {
+        "scenario": "Known scene failure: low slab lies below the driving LiDAR plane",
+        "seed": 7,
+        "simulated_seconds": 21.700000000000003,
+        "steps": 435,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.07323669059732507,
+        "localization_max_error": 0.20512748149352236,
+        "final_speed": 0.14472246770272287,
+        "progress": 79.00297770805173,
+        "emergency_steps": 4,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": false,
+        "failures": [
+          "179 native scene conservative capsule guard overlaps",
+          "native scene capsule clearance 0.000000 m is below fixed 1 m floor"
+        ]
+      },
+      "scene_summary": {
+        "checks": 8681,
+        "failures": [
+          "179 native scene conservative capsule guard overlaps",
+          "native scene capsule clearance 0.000000 m is below fixed 1 m floor"
+        ],
+        "guard_overlap_intervals": 179,
+        "min_clearance_m": 0.0,
+        "passed": false
+      },
+      "independent_scene": {
+        "passed": false,
+        "min_clearance_m": 0.0,
+        "guard_overlap_intervals": 179,
+        "motion_samples": 4341,
+        "acquisitions": 218,
+        "ray_returns_reconstructed": 12406,
+        "static_hits_by_plane": {
+          "0.6": 0,
+          "0.15": 12406,
+          "3.7": 0
+        },
+        "maximum_range_residual_m": 0.031974120114393045,
+        "range_tolerance_m": 0.06,
+        "full_sensor_cloud_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 435,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 431,
+        "stationary_holds": 215,
+        "max_acceleration_m_s2": 2.000000000000034,
+        "max_deceleration_m_s2": 2.5000000000000413
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 0,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 0,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 0,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.0,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 435,
+        "emergency_ticks": 4,
+        "emergency_fraction": 0.009195402298850575,
+        "commanded_acceleration_change_rms_m_s3": 29.323063578751547,
+        "max_normal_commanded_steering_rate_rad_s": 0.7
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "d47f4a3a42fdd1e7e75fece51b0b6e67a74486d9ba80a98ed8581c7259bd79eb",
+        "sensors.jsonl": "490f16a27b44813c077dd183e5236d8b07ae2a5fce91d72b9e5351b5fc603454",
+        "scene.json": "b76d010675dc773a3f21d9fde9bd971f8d27ecf7e825178528e8d044b313b5ed"
+      },
+      "acceptance_rejection_verified": true
+    },
+    {
+      "plant": "dynamic",
+      "scene": "blind-low-slab",
+      "scenario": "native-scene-blind-low",
+      "seed": 42,
+      "exit_code": 1,
+      "output": "dynamic/blind-low-slab/seed-42",
+      "summary": {
+        "scenario": "Known scene failure: low slab lies below the driving LiDAR plane",
+        "seed": 42,
+        "simulated_seconds": 21.75,
+        "steps": 436,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.0675869424702818,
+        "localization_max_error": 0.18079567389637546,
+        "final_speed": 0.1278283686650808,
+        "progress": 79.10727306149163,
+        "emergency_steps": 4,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": false,
+        "failures": [
+          "179 native scene conservative capsule guard overlaps",
+          "native scene capsule clearance 0.000000 m is below fixed 1 m floor"
+        ]
+      },
+      "scene_summary": {
+        "checks": 8701,
+        "failures": [
+          "179 native scene conservative capsule guard overlaps",
+          "native scene capsule clearance 0.000000 m is below fixed 1 m floor"
+        ],
+        "guard_overlap_intervals": 179,
+        "min_clearance_m": 0.0,
+        "passed": false
+      },
+      "independent_scene": {
+        "passed": false,
+        "min_clearance_m": 0.0,
+        "guard_overlap_intervals": 179,
+        "motion_samples": 4351,
+        "acquisitions": 218,
+        "ray_returns_reconstructed": 12418,
+        "static_hits_by_plane": {
+          "0.6": 0,
+          "0.15": 12418,
+          "3.7": 0
+        },
+        "maximum_range_residual_m": 0.030335184365106294,
+        "range_tolerance_m": 0.06,
+        "full_sensor_cloud_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 436,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 432,
+        "stationary_holds": 217,
+        "max_acceleration_m_s2": 2.0000000000000093,
+        "max_deceleration_m_s2": 2.5000000000000617
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 0,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 0,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 0,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.0,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 436,
+        "emergency_ticks": 4,
+        "emergency_fraction": 0.009174311926605505,
+        "commanded_acceleration_change_rms_m_s3": 29.61760376550596,
+        "max_normal_commanded_steering_rate_rad_s": 0.7
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "cd3130c72a4e593c059e73ae4cd76c166f644d2ae9d83fcdee5556152095466c",
+        "sensors.jsonl": "5b9def9fd2a08e23171da6b2afddcc3237fb3e43cf1753a9e1c3cc8ab4985001",
+        "scene.json": "71799ce05dbba3e60fae6cce44846c757c3c1a62e215294206f4f1f9ec1d5774"
+      },
+      "acceptance_rejection_verified": true
+    }
+  ],
+  "scene_inputs_sha256": {
+    "scenes/blind-low-slab.json": "7c2681e10c4421cdf0b82f8e668f9acfada01dd184ef43f1c438a7a144da412b",
+    "scenes/ground-barrier.json": "c0e0463be061a4dbebdbcf32820f19fa216a26e24cdf98ac79210285b24e7715",
+    "scenes/raised-barrier.json": "a4f4c165d5617603673bf9eb4427e04b59313eec25e798347b7b02db798667d9",
+    "scenes/rotated-barrier.json": "ad2effb028ee0004350ea35514a5a8408621e56479adcf5114c6ab1e7f0e5145"
+  },
+  "passed": true,
+  "complete": true,
+  "command": "bash scripts/check-native-scenes.sh --output /tmp/rustdrive-native-scenes-final",
+  "output_root": "/tmp/rustdrive-native-scenes-final",
+  "positive_run_count": 18,
+  "required_rejection_count": 6,
+  "workspace_tests": 181,
+  "reference_run_replay_pairs": 49,
+  "minimum_positive_clearance_m": 1.15,
+  "full_sensor_replay_ticks": 13630,
+  "motion_sample_count": 136084,
+  "scan_acquisition_count": 6824,
+  "ray_ordinals_checked": 14739840,
+  "ray_return_count": 705080,
+  "mutation_rejections": 32,
+  "baseline_compatibility": {
+    "passed": true,
+    "runs": [
+      {
+        "backend": "reference",
+        "scenario": "opposing-crossings",
+        "seed": 7,
+        "baseline_commit": "d06d9cb0ac474ffffdc22caf48236c38240472fd",
+        "byte_identical": true,
+        "sha256": {
+          "run.json": "80e28b58bd3c2c796c5e6107a118d862af5a4a7407d93f36924a940fb767bcd2",
+          "sensors.jsonl": "0e3218884988d82e7503fcd7bbbc64176a3ea6f8b44d94343d3d9a850063faf1",
+          "summary.json": "921a07c7e87887d7814950a65dfca019d6c01551baa449ace082caa24862278f"
+        }
+      },
+      {
+        "backend": "reference",
+        "scenario": "intersection-late-conflict",
+        "seed": 7,
+        "baseline_commit": "d06d9cb0ac474ffffdc22caf48236c38240472fd",
+        "byte_identical": true,
+        "sha256": {
+          "run.json": "5596bb444ab1850c9e209b8195b00321a967606c4ae7d49f2993018a6eab820f",
+          "sensors.jsonl": "5abb5c6beed00713c381f7992e960628bdd7c4a69c962ba737ad611820dc4284",
+          "summary.json": "8653eac22c221989031a5e6c8f3d2bfe67a3e308afa6a2d1e597d44097c1b92f"
+        }
+      },
+      {
+        "backend": "reference",
+        "scenario": "traffic-follower-deadline",
+        "seed": 7,
+        "baseline_commit": "d06d9cb0ac474ffffdc22caf48236c38240472fd",
+        "byte_identical": true,
+        "sha256": {
+          "run.json": "bb1f7affed6c6426b39d3cd77c6d495364ce8255f058cc334bcdb92928b879db",
+          "sensors.jsonl": "c6fa3e8dc57d5da5fb1cee036b5840524defdb4625789f17a2b34a0d67b2dbe1",
+          "summary.json": "f8ca2675bd99607975962853a5b139ce48c255bb04af13547eca268089909d20"
+        }
+      },
+      {
+        "backend": "reference",
+        "scenario": "gnss-burst",
+        "seed": 7,
+        "baseline_commit": "d06d9cb0ac474ffffdc22caf48236c38240472fd",
+        "byte_identical": true,
+        "sha256": {
+          "run.json": "29af11830fa38c61f62c485b1ba30e61593796a3ce4cfb8a2eaa9e382cd8cfd9",
+          "sensors.jsonl": "511eeb9162591a58cb69c8982bd1e9bd838bc955936457b3d1edab35502a7b57",
+          "summary.json": "039176c1b8288e8f034586cb5227d0a560b4e8c3a29e08874f19b5f64af13fe6"
+        }
+      },
+      {
+        "backend": "rne-dynamic",
+        "scenario": "opposing-crossings",
+        "seed": 7,
+        "baseline_commit": "d06d9cb0ac474ffffdc22caf48236c38240472fd",
+        "byte_identical": true,
+        "sha256": {
+          "run.json": "a6f2218f9e224170dc87fd293b4597c0b3c3b11915bab6822aad94ca20756c00",
+          "sensors.jsonl": "dfd09673516e28ba4bbbd1d9c970c17def71740f2a32322f64770bcdcebb5aeb",
+          "summary.json": "a5a7745414d59b0df67435874725fe8d7aa49762351eb3c43a6ee754cd1b6e6b"
+        }
+      },
+      {
+        "backend": "rne-dynamic",
+        "scenario": "intersection-late-conflict",
+        "seed": 7,
+        "baseline_commit": "d06d9cb0ac474ffffdc22caf48236c38240472fd",
+        "byte_identical": true,
+        "sha256": {
+          "run.json": "0081892e809d776ecc8351dfdf2abf13c1fa769d5490b373172376ad3b1643da",
+          "sensors.jsonl": "b9b260ecb9ab85c96ca75c184f4ce0199b9af01aa749550eecd254a54663866d",
+          "summary.json": "8ff8da09428f44a76c4ebaae71132208eff6244ebde2e0783f4855b394d25441"
+        }
+      },
+      {
+        "backend": "rne-dynamic",
+        "scenario": "traffic-follower-deadline",
+        "seed": 7,
+        "baseline_commit": "d06d9cb0ac474ffffdc22caf48236c38240472fd",
+        "byte_identical": true,
+        "sha256": {
+          "run.json": "948cc1d7c39c2054ceacbe5211bb92e39242c571ea3ba620a79afc425f9abbae",
+          "sensors.jsonl": "9835b6ecfe5632dbb11ee3b58e1f25c70783078dc27dad604d9c26037b54f15f",
+          "summary.json": "d2627ee4ba8316b6e2bd03852eeb203b658ee70fc70ce14c383e03b1b632d1a7"
+        }
+      },
+      {
+        "backend": "rne-dynamic",
+        "scenario": "gnss-burst",
+        "seed": 7,
+        "baseline_commit": "d06d9cb0ac474ffffdc22caf48236c38240472fd",
+        "byte_identical": true,
+        "sha256": {
+          "run.json": "361a1a8771d50bdb0dbc442ff345c11e8d0b8de06423207469c201a74e165236",
+          "sensors.jsonl": "b50a4f3764d2e114657aac06de098eed588b5cf4a1575bf831f810ce9ec563ff",
+          "summary.json": "c9764348dc81e24519ca9d95110f95cbb950e833d0e3e82e46805a477799df43"
+        }
+      }
+    ],
+    "native_binary_sha256": "bfc452a4ad926d995e772061521d0f7dd47d574bf52f729d8a07c0c439429f53"
+  },
+  "historical_full_hazard_suite": {
+    "commit": "d06d9cb0ac474ffffdc22caf48236c38240472fd",
+    "positive_runs": 276,
+    "known_short_range_failures": 2,
+    "evidence": "assets/prediction-epoch-results.json",
+    "fresh_full_sweep_this_revision": false
+  },
+  "limits": [
+    "Operational perception and native ego motion remain planar",
+    "Auxiliary heights are diagnostic only",
+    "Capsule is not a calibrated rectangular vehicle body",
+    "Conservative offline overlap guard; no contact-response plant",
+    "Six low slabs remain failed physical runs, outside positive count"
+  ],
+  "maturity_estimate_percent": 8,
+  "maturity_is_subjective": true,
+  "native_tests": 23,
+  "format_clippy_locked_build_verified": true,
+  "python_shell_workflow_checks_verified": true,
+  "demo": {
+    "schema_version": 1,
+    "backend": "rne-dynamic-rapier-lidar",
+    "renderer": "Blender Cycles CPU",
+    "blender_version": "Blender 4.3.2",
+    "input_trace": "/tmp/rustdrive-native-scenes-final/dynamic/ground-barrier/seed-7/run.json",
+    "input_sha256": "76ab0039fe5e04e83589caf57ca20b7ecfb31cfb188ec23efef2fb3f69424688",
+    "rne_expected_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
+    "scenario": {
+      "name": "Native 3D scene: ground barrier stops the vehicle",
+      "duration": 35.0,
+      "road_length": 80.0,
+      "half_width": 2.1,
+      "curve_amplitude": 0.0,
+      "expected": "stop",
+      "lidar_dropout": null,
+      "gnss_dropout": null,
+      "cruise_speed": 4.0,
+      "objects": []
+    },
+    "summary": {
+      "scenario": "Native 3D scene: ground barrier stops the vehicle",
+      "seed": 7,
+      "simulated_seconds": 35.0,
+      "steps": 701,
+      "reached_goal": false,
+      "collisions": 0,
+      "road_violations": 0,
+      "min_clearance": 1000.0,
+      "localization_rmse": 0.06072012263969686,
+      "localization_max_error": 0.20512748149352236,
+      "final_speed": 0.0,
+      "progress": 25.828988453157343,
+      "emergency_steps": 9,
+      "avoidance_steps": 0,
+      "max_tracks": 1,
+      "passed": true,
+      "failures": []
+    },
+    "gif_frames": 118,
+    "sampled_frames": 118,
+    "playback_speed": 3,
+    "scene_states_verified": 118,
+    "samples": 8,
+    "physics_domain": "planar",
+    "scene": {
+      "style": "suburban-test-road-v2",
+      "seed": 1729,
+      "scenery_counts": {
+        "trees": 4,
+        "buildings": 2,
+        "lamps": 3,
+        "sidewalk_sections": 160
+      },
+      "ego_model": "hatchback",
+      "traffic_models": [],
+      "camera": "ego",
+      "mapped_signal_ids": [],
+      "mapped_stop_sign_ids": [],
+      "mapped_intersection_ids": [],
+      "native_scene_name": "Ground-level physical road barrier",
+      "native_cuboids": [
+        {
+          "id": "barrier",
+          "center_m": [
+            35.0,
+            0.0,
+            1.0
+          ],
+          "yaw_rad": 0.0,
+          "world_corners_m": [
+            [
+              34.5,
+              -3.0,
+              0.0
+            ],
+            [
+              35.5,
+              -3.0,
+              0.0
+            ],
+            [
+              35.5,
+              3.0,
+              0.0
+            ],
+            [
+              34.5,
+              3.0,
+              0.0
+            ],
+            [
+              34.5,
+              -3.0,
+              2.0
+            ],
+            [
+              35.5,
+              -3.0,
+              2.0
+            ],
+            [
+              35.5,
+              3.0,
+              2.0
+            ],
+            [
+              34.5,
+              3.0,
+              2.0
+            ]
+          ]
+        }
+      ]
+    },
+    "renderer_source_sha256": "0499798a01d26248794a913734d7f51dcc68f705c721aff8b273e76e8075ce0d",
+    "gif_palette_colors": 192,
+    "gif_dither": false,
+    "spatial_filter": "3x3 median, viewport only",
+    "renderer_command": "python3 scripts/render_demo_3d.py /tmp/rustdrive-native-scenes-final/dynamic/ground-barrier/seed-7/run.json --output assets/native-scene-demo.gif --samples 8 --threads 3 --camera ego --traffic-models hatchback --native-scene /tmp/rustdrive-native-scenes-final/dynamic/ground-barrier/seed-7/scene.json",
+    "native_scene": {
+      "input": "/tmp/rustdrive-native-scenes-final/dynamic/ground-barrier/seed-7/scene.json",
+      "input_sha256": "7fbfb29eaa2a846455ea205c7b5c3beddd0166e30b33b962f5c2639a0311a723",
+      "scene": {
+        "name": "Ground-level physical road barrier",
+        "schema_version": 1,
+        "static_cuboids": [
+          {
+            "center_m": [
+              35.0,
+              0.0,
+              1.0
+            ],
+            "half_extents_m": [
+              0.5,
+              3.0,
+              1.0
+            ],
+            "id": "barrier",
+            "yaw_rad": 0.0
+          }
+        ]
+      },
+      "summary": {
+        "checks": 14001,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": 7.3910115468425985,
+        "passed": true
+      },
+      "seed": 7,
+      "body_pose_states_verified": 351,
+      "cuboid_mesh_states_verified": 118,
+      "operational_lidar_height_m": 0.6,
+      "diagnostic_lidar_heights_m": [
+        0.15,
+        3.7
+      ],
+      "contact_response": false
+    },
+    "gif_sha256": "dada71d52e5fa15a24926d23f480a349b00508bff35958eef4a66979478bf008",
+    "gif_size_bytes": 1668647,
+    "gif_duration_ms": 13100
+  }
+}

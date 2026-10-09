@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "backend": "rne-dynamic-rapier-lidar",
+  "renderer": "Blender Cycles CPU",
+  "blender_version": "Blender 4.3.2",
+  "input_trace": "/tmp/rustdrive-multi-height-final/multi-height/dynamic/blind-low-slab/seed-7/run.json",
+  "input_sha256": "fb6912d10cbe47841738e5b2320460838e0932895a0275af40e6592a7a664334",
+  "rne_expected_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
+  "scenario": {
+    "name": "Measured multi-height LiDAR stops before the low physical slab",
+    "duration": 35.0,
+    "road_length": 80.0,
+    "half_width": 2.1,
+    "curve_amplitude": 0.0,
+    "expected": "stop",
+    "lidar_dropout": null,
+    "gnss_dropout": null,
+    "cruise_speed": 4.0,
+    "objects": []
+  },
+  "summary": {
+    "scenario": "Measured multi-height LiDAR stops before the low physical slab",
+    "seed": 7,
+    "simulated_seconds": 35.0,
+    "steps": 701,
+    "reached_goal": false,
+    "collisions": 0,
+    "road_violations": 0,
+    "min_clearance": 1000.0,
+    "localization_rmse": 0.060719914213103875,
+    "localization_max_error": 0.20512748149352236,
+    "final_speed": 0.0,
+    "progress": 25.828498091861867,
+    "emergency_steps": 9,
+    "avoidance_steps": 0,
+    "max_tracks": 1,
+    "passed": true,
+    "failures": []
+  },
+  "gif_frames": 118,
+  "sampled_frames": 118,
+  "playback_speed": 3,
+  "scene_states_verified": 118,
+  "samples": 8,
+  "physics_domain": "planar",
+  "scene": {
+    "style": "suburban-test-road-v2",
+    "seed": 1729,
+    "scenery_counts": {
+      "trees": 4,
+      "buildings": 2,
+      "lamps": 3,
+      "sidewalk_sections": 160
+    },
+    "ego_model": "hatchback",
+    "traffic_models": [],
+    "camera": "ego",
+    "mapped_signal_ids": [],
+    "mapped_stop_sign_ids": [],
+    "mapped_intersection_ids": [],
+    "native_scene_name": "Low physical slab invisible to the single driving LiDAR plane",
+    "native_cuboids": [
+      {
+        "id": "barrier",
+        "center_m": [
+          35.0,
+          0.0,
+          0.10000000149011612
+        ],
+        "yaw_rad": 0.0,
+        "world_corners_m": [
+          [
+            34.5,
+            -3.0,
+            0.0
+          ],
+          [
+            35.5,
+            -3.0,
+            0.0
+          ],
+          [
+            35.5,
+            3.0,
+            0.0
+          ],
+          [
+            34.5,
+            3.0,
+            0.0
+          ],
+          [
+            34.5,
+            -3.0,
+            0.20000000298023224
+          ],
+          [
+            35.5,
+            -3.0,
+            0.20000000298023224
+          ],
+          [
+            35.5,
+            3.0,
+            0.20000000298023224
+          ],
+          [
+            34.5,
+            3.0,
+            0.20000000298023224
+          ]
+        ]
+      }
+    ]
+  },
+  "renderer_source_sha256": "4b68c7f7723a087a0401f8714053c365d43dfd5337c8fe783d1ab483d87162d1",
+  "gif_palette_colors": 192,
+  "gif_dither": false,
+  "spatial_filter": "3x3 median, viewport only",
+  "renderer_command": "python3 scripts/render_demo_3d.py /tmp/rustdrive-multi-height-final/multi-height/dynamic/blind-low-slab/seed-7/run.json --output assets/multi-height-demo.gif --samples 8 --threads 3 --camera ego --traffic-models hatchback --native-scene /tmp/rustdrive-multi-height-final/multi-height/dynamic/blind-low-slab/seed-7/scene.json",
+  "native_scene": {
+    "input": "/tmp/rustdrive-multi-height-final/multi-height/dynamic/blind-low-slab/seed-7/scene.json",
+    "input_sha256": "eaecfdc2290683dcf5e137ede0b4f8f1af78249da9521648e4ca04c2935cdcfa",
+    "scene": {
+      "name": "Low physical slab invisible to the single driving LiDAR plane",
+      "schema_version": 1,
+      "static_cuboids": [
+        {
+          "center_m": [
+            35.0,
+            0.0,
+            0.1
+          ],
+          "half_extents_m": [
+            0.5,
+            3.0,
+            0.1
+          ],
+          "id": "barrier",
+          "yaw_rad": 0.0
+        }
+      ]
+    },
+    "summary": {
+      "checks": 14001,
+      "failures": [],
+      "guard_overlap_intervals": 0,
+      "min_clearance_m": 7.391501908138075,
+      "passed": true
+    },
+    "seed": 7,
+    "body_pose_states_verified": 351,
+    "cuboid_mesh_states_verified": 118,
+    "contact_response": false,
+    "operating_mode": "multi_height_lidar",
+    "measured_lidar_heights_m": [
+      0.6,
+      0.15,
+      3.7
+    ],
+    "projected_lidar_heights_m": [
+      0.15,
+      0.6
+    ],
+    "collision_height_interval_m": [
+      -1.15,
+      2.35
+    ],
+    "projection": "calibrated height gate, then 5 cm body-XY first-point voxels"
+  }
+}

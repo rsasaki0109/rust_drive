@@ -4,34 +4,136 @@ on:
   pull_request:
 permissions:
   contents: read
+env:
+  CARGO_INCREMENTAL: '0'
 jobs:
   rust:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        # The observed macos-latest ARM pool repeatedly failed to acquire a runner.
+        os: [ubuntu-latest, macos-15-intel, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+      - name: Isolate Rust toolchains
+        shell: bash
+        run: echo "RUSTUP_HOME=$RUNNER_TEMP/rustdrive-rustup" >> "$GITHUB_ENV"
       - name: Install pinned Rust
         run: rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - run: cargo fmt --all --check
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - run: cargo test --workspace --locked
       - run: cargo build --workspace --release --locked
+      - name: Evaluate pinned measured clouds and independently reconstruct scores
+        shell: bash
+        run: |
+          python scripts/test-fetch-datasets.py
+          python scripts/fetch-datasets.py
+          cargo run --release --locked --bin rustdrive-dataset-eval -- --python python --output artifacts/datasets/report.json
+          python scripts/check-datasets.py --report artifacts/datasets/report.json --output artifacts/datasets/oracle.json
+      - name: Verify bounded GNSS-denied reference driving and fail-closed controls
+        shell: bash
+        run: python scripts/check-map-localization.py --backend reference --output artifacts/map-localization
       - name: Run closed-loop acceptance demo
         run: cargo run --release --locked --bin rustdrive -- run --scenario scenarios/mission.json --seed 7 --output artifacts/demo
+      - name: Recompute sensor log
+        run: cargo run --release --locked --bin rustdrive -- replay --log artifacts/demo/sensors.jsonl --output artifacts/demo/replay
+      - name: Import attributed OSM roads and drive the resulting graph
+        shell: bash
+        run: |
+          target/release/rustdrive import-osm --input maps/osm/german-road-extract.json --output artifacts/osm/map.json --origin-lat 48.136 --origin-lon 10.0695 --default-half-width 3 --scenario-output artifacts/osm/scenario.json --start osm-node-7119017425 --goal osm-node-274969423
+          target/release/rustdrive run --scenario artifacts/osm/scenario.json --seed 7 --output artifacts/osm/run
+          target/release/rustdrive replay --log artifacts/osm/run/sensors.jsonl --output artifacts/osm/replay
+      - name: Independently check opt-in sparse-road corners in the reference plant
+        shell: bash
+        run: |
+          python scripts/test-checker-portability.py
+          python scripts/check-local-corners.py --output artifacts/local-corners
+      - name: Drive mapped destinations, closure detour and mapped road rules
+        shell: bash
+        run: |
+          for case in route-direct route-detour route-south route-handover route-no-path route-reopen signal-red-green signal-red-stop signal-stale-stop signal-stale-recovery signal-two-stops signal-approach-change stop-sign-single stop-sign-two stop-sign-signal stop-sign-obstacle stop-sign-gnss-recovery intersection-crossing intersection-successive intersection-blocked intersection-gnss-recovery intersection-stop-sign intersection-fast-wide intersection-slow-narrow intersection-two-zones intersection-delay-two intersection-lidar-recovery intersection-cadence-five-hz intersection-late-conflict intersection-late-delayed; do
+            cargo run --release --locked --bin rustdrive -- run --scenario "scenarios/$case.json" --seed 7 --output "artifacts/routing/$case"
+            cargo run --release --locked --bin rustdrive -- replay --log "artifacts/routing/$case/sensors.jsonl" --output "artifacts/routing/$case/replay"
+          done
       - uses: actions/upload-artifact@v4
         with:
           name: telemetry-${{ matrix.os }}
-          path: artifacts/demo/
-  visual:
+          path: |
+            artifacts/demo/
+            artifacts/routing/
+            artifacts/osm/
+            artifacts/local-corners/
+            artifacts/datasets/*.json
+            artifacts/map-localization/
+  research-cpu:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: rustup toolchain install 1.90.0 --profile minimal
+      - name: Install pinned Rust
+        run: rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
+      - name: Verify optional Rust CPU image detector
+        run: |
+          cargo fmt --manifest-path integrations/onnx/Cargo.toml --check
+          cargo clippy --release --manifest-path integrations/onnx/Cargo.toml --all-targets --locked -- -D warnings
+          cargo test --release --manifest-path integrations/onnx/Cargo.toml --locked
+          cargo build --release --manifest-path integrations/onnx/Cargo.toml --locked
+          python integrations/onnx/check.py --binary integrations/onnx/target/release/rustdrive-camera-detect --summary artifacts/camera-model/summary.json
+      - name: Validate additional measured-data acquisition
+        run: |
+          python scripts/test-fetch-additional-datasets.py
+          python scripts/fetch-additional-datasets.py
+      - name: Check frozen adaptive terrain scores and retained failed acceptance
+        run: |
+          python scripts/fetch-datasets.py --dataset isprs-terrain
+          cargo build --release --locked --bin rustdrive-dataset-eval
+          for split in calibration_original regression; do
+            target/release/rustdrive-dataset-eval adaptive-ground --split "$split" --output "artifacts/adaptive/$split.json"
+            python scripts/check-adaptive-ground.py --report "artifacts/adaptive/$split.json" --output "artifacts/adaptive/$split-oracle.json"
+          done
+          target/release/rustdrive-dataset-eval adaptive-ground --dataset pdal-autzen --split fresh_heldout --freeze assets/adaptive-ground-freeze.json --output artifacts/adaptive/fresh.json
+          python scripts/check-adaptive-ground.py --report artifacts/adaptive/fresh.json --freeze assets/adaptive-ground-freeze.json --output artifacts/adaptive/fresh-oracle.json
+      - name: Check recorded natural-motion registration and retained failures
+        run: |
+          python -m pip install -r scripts/requirements-demo.txt
+          cargo fmt --manifest-path integrations/rgbd/Cargo.toml --check
+          cargo clippy --release --manifest-path integrations/rgbd/Cargo.toml --all-targets --locked -- -D warnings
+          cargo test --release --manifest-path integrations/rgbd/Cargo.toml --locked
+          cargo build --release --manifest-path integrations/rgbd/Cargo.toml --locked
+          python scripts/check-recorded-rgbd.py --report integrations/rgbd/baselines/tum-first-v1.json --manifest integrations/rgbd/baselines/manifest-v1.json --evaluator-source integrations/rgbd/baselines/evaluator-v1.rs --matcher-source integrations/rgbd/baselines/matcher-v1.rs --freeze integrations/rgbd/baselines/tum-first-v1.freeze.json --output artifacts/rgbd/original-oracle.json
+          python scripts/check-recorded-rgbd.py --report integrations/rgbd/baselines/tum-fast-v1.json --manifest integrations/rgbd/baselines/manifest-fast-v1.json --raw data/tum-fr1-xyz-fast/raw --evaluator-source integrations/rgbd/baselines/evaluator-v2.rs --matcher-source integrations/rgbd/baselines/matcher-v1.rs --freeze integrations/rgbd/baselines/freeze-fast-v1.json --output artifacts/rgbd/fast-failure-oracle.json
+          mkdir -p artifacts/rgbd
+          integrations/rgbd/target/release/rustdrive-rgbd-evaluate --manifest data/tum-fr1-xyz-tight/manifest.json --prepare-freeze artifacts/rgbd/tight-freeze.json
+          python -c 'import subprocess; result=subprocess.run(["integrations/rgbd/target/release/rustdrive-rgbd-evaluate", "--manifest", "data/tum-fr1-xyz-tight/manifest.json", "--raw", "data/tum-fr1-xyz-tight/raw", "--freeze", "artifacts/rgbd/tight-freeze.json", "--output", "artifacts/rgbd/tight.json"]); assert result.returncode == 1, "expected partial benchmark acceptance (exit 1), not invalid input (exit 2)"'
+          python scripts/check-recorded-rgbd.py --report artifacts/rgbd/tight.json --manifest data/tum-fr1-xyz-tight/manifest.json --raw data/tum-fr1-xyz-tight/raw --freeze artifacts/rgbd/tight-freeze.json --output artifacts/rgbd/tight-oracle.json
+          python -c 'import json; r=json.load(open("artifacts/rgbd/tight.json")); assert (r["summary"]["accepted"],r["summary"]["rejected"],r["summary"]["heldout_passed"]) == (7,4,5), "recorded temporal baseline changed; inspect every failure"'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: research-cpu-evidence
+          path: |
+            artifacts/camera-model/check/
+            artifacts/camera-model/summary.json
+            artifacts/adaptive/
+            artifacts/rgbd/
+
+  visual:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Isolate Rust toolchains
+        shell: bash
+        run: echo "RUSTUP_HOME=$RUNNER_TEMP/rustdrive-rustup" >> "$GITHUB_ENV"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
       - run: python -m pip install -r scripts/requirements-demo.txt
       - name: Regenerate the actual demo
         run: bash scripts/demo.sh
@@ -39,3 +141,104 @@ jobs:
         with:
           name: demo-gif
           path: artifacts/demo/demo.*
+
+  rne-cpu:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: rust_drive
+      - uses: actions/checkout@v4
+        with:
+          repository: rsasaki0109/RobotNativeEngine
+          ref: df6007aa40315e81d12ae00fc1f60369e393a178
+          path: RobotNativeEngine
+          sparse-checkout: |
+            crates
+            third_party
+      - name: Isolate Rust toolchains
+        shell: bash
+        run: echo "RUSTUP_HOME=$RUNNER_TEMP/rustdrive-rustup" >> "$GITHUB_ENV"
+      - name: Install pinned toolchains
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
+          rustup toolchain install 1.95.0 --profile minimal --component rustfmt --component clippy
+      - name: Verify engine pin and CPU adapter
+        working-directory: rust_drive
+        run: |
+          test "$(git -C ../RobotNativeEngine rev-parse HEAD)" = "$(cat integrations/rne/rne-revision.txt)"
+          cargo +1.95.0 fmt --manifest-path integrations/rne/Cargo.toml --check
+          cargo +1.95.0 clippy --release --manifest-path integrations/rne/Cargo.toml --all-targets --locked -- -D warnings
+          cargo +1.95.0 test --release --manifest-path integrations/rne/Cargo.toml --locked
+      - name: Run both native plants and verify logs
+        working-directory: rust_drive
+        run: |
+          for plant in kinematic dynamic; do
+            cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- --scenario scenarios/mission.json --plant "$plant" --seed 7 --output "artifacts/rne-$plant"
+            cargo run --release --locked --bin rustdrive -- replay --log "artifacts/rne-$plant/sensors.jsonl" --output "artifacts/rne-$plant/replay"
+          done
+      - name: Run multi-seed hazard acceptance and full replay
+        working-directory: rust_drive
+        run: python3 scripts/check_hazards.py
+      - name: Independently check native scenes, multi-height sensing and remaining blind slabs
+        working-directory: rust_drive
+        run: python3 scripts/check-native-scenes.py --output artifacts/native-scenes
+      - name: Independently check inclined 3D returns, projection and remaining field-of-view failures
+        working-directory: rust_drive
+        run: python3 scripts/check-lidar-3d.py --output artifacts/lidar-3d --compact
+      - name: Independently check measured ground removal and rectangular-body clearance
+        working-directory: rust_drive
+        run: python3 scripts/check-ground-scenes.py --output artifacts/ground-scenes --compact
+      - name: Drive imported OSM roads with physical ground and the research body
+        working-directory: rust_drive
+        run: python3 scripts/check-osm-scenes.py --output artifacts/osm-scenes --compact
+      - name: Drive unchanged sparse bends in both plants with calibrated chassis motion
+        working-directory: rust_drive
+        run: python3 scripts/check-local-corners.py --backend all --compact --output artifacts/local-corners
+      - name: Verify native GNSS-denied driving, expiry and sensor-loss controls
+        working-directory: rust_drive
+        run: python3 scripts/check-map-localization.py --backend rne-dynamic --output artifacts/map-localization
+      - name: Independently verify experimental XYZ terrain and measured actor AABBs
+        working-directory: rust_drive
+        run: python3 scripts/check-terrain-objects.py --compact --output artifacts/terrain-objects
+      - name: Independently verify optional adaptive terrain driving
+        working-directory: rust_drive
+        run: python3 scripts/check-adaptive-native.py --compact --output artifacts/adaptive-native
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Render a real RNE frame in 3D on CPU
+        working-directory: rust_drive
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends blender
+          python -m pip install -r scripts/requirements-demo.txt
+          python scripts/render_demo_3d.py artifacts/rne-dynamic/run.json --preview-time 7.5 --output artifacts/rne-dynamic/preview-3d.gif --samples 4 --threads 2 --scene-output artifacts/rne-dynamic/scene-3d.blend
+          python scripts/render_demo_3d.py artifacts/hazards/rne-dynamic/traffic-fleet-queue/seed-7/run.json --preview-time 30 --traffic-models sedan van pickup --camera traffic --output artifacts/rne-fleet/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-fleet/scene.blend
+          python scripts/render_demo_3d.py artifacts/hazards/rne-dynamic/signal-red-green/seed-7/run.json --preview-time 15 --output artifacts/rne-signals/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-signals/scene.blend
+          python scripts/render_demo_3d.py artifacts/hazards/rne-dynamic/stop-sign-single/seed-7/run.json --preview-time 10.5 --output artifacts/rne-stop-signs/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-stop-signs/scene.blend
+          python scripts/render_demo_3d.py artifacts/hazards/rne-dynamic/intersection-crossing/seed-7/run.json --preview-time 11 --output artifacts/rne-intersection/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-intersection/scene.blend
+          python scripts/render_demo_3d.py artifacts/hazards/rne-dynamic/intersection-lidar-recovery/seed-7/run.json --preview-time 14.1 --output artifacts/rne-timing/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-timing/scene.blend
+          python scripts/render_demo_3d.py artifacts/hazards/rne-dynamic/intersection-late-conflict/seed-7/run.json --preview-time 30 --output artifacts/rne-late-crossing/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-late-crossing/scene.blend
+          python scripts/render_demo_3d.py artifacts/native-scenes/dynamic/ground-barrier/seed-7/run.json --native-scene artifacts/native-scenes/dynamic/ground-barrier/seed-7/scene.json --preview-time 15 --output artifacts/rne-native-scene/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-native-scene/scene.blend
+          python scripts/render_demo_3d.py artifacts/native-scenes/multi-height/dynamic/blind-low-slab/seed-7/run.json --native-scene artifacts/native-scenes/multi-height/dynamic/blind-low-slab/seed-7/scene.json --preview-time 15 --output artifacts/rne-multi-height/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-multi-height/scene.blend
+          python scripts/render_demo_3d.py artifacts/lidar-3d/lidar3d/dynamic/midbeam-barrier/seed-7/run.json --native-scene artifacts/lidar-3d/lidar3d/dynamic/midbeam-barrier/seed-7/scene.json --preview-time 15 --output artifacts/rne-lidar-3d/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-lidar-3d/scene.blend
+          python scripts/render_demo_3d.py artifacts/ground-scenes/lidar3d_ground_body/dynamic/ground-moving-traffic/seed-7/run.json --native-scene artifacts/ground-scenes/lidar3d_ground_body/dynamic/ground-moving-traffic/seed-7/scene.json --preview-time 15 --camera traffic --traffic-models sedan --output artifacts/rne-ground-body/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-ground-body/scene.blend
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rne-hazard-evidence
+          path: |
+            rust_drive/artifacts/hazards/
+            rust_drive/artifacts/native-scenes/
+            rust_drive/artifacts/lidar-3d/
+            rust_drive/artifacts/ground-scenes/
+            rust_drive/artifacts/osm-scenes/
+            rust_drive/artifacts/local-corners/
+            rust_drive/artifacts/map-localization/
+            rust_drive/artifacts/terrain-objects/
+            rust_drive/artifacts/adaptive-native/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rne-cpu-telemetry
+          path: rust_drive/artifacts/rne-*/
