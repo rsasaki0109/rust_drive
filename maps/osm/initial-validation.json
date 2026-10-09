@@ -1,0 +1,190 @@
+{
+  "runs": [
+    {
+      "backend": "reference",
+      "seed": 1,
+      "exit_code": 0,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "OSM imported road route",
+        "seed": 1,
+        "simulated_seconds": 57.5,
+        "steps": 1151,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05827319827251333,
+        "localization_max_error": 0.18237925206265782,
+        "final_speed": 0.10276109977155996,
+        "progress": 112.05856270099237,
+        "emergency_steps": 1,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1151,
+        "verified": true
+      }
+    },
+    {
+      "backend": "reference",
+      "seed": 7,
+      "exit_code": 0,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "OSM imported road route",
+        "seed": 7,
+        "simulated_seconds": 57.550000000000004,
+        "steps": 1152,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05370475085313846,
+        "localization_max_error": 0.13832336547580007,
+        "final_speed": 0.13142567144585418,
+        "progress": 112.11078949806536,
+        "emergency_steps": 1,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1152,
+        "verified": true
+      }
+    },
+    {
+      "backend": "reference",
+      "seed": 42,
+      "exit_code": 0,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "OSM imported road route",
+        "seed": 42,
+        "simulated_seconds": 57.550000000000004,
+        "steps": 1152,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.052402479329400994,
+        "localization_max_error": 0.1415014139993806,
+        "final_speed": 0.14369961040339427,
+        "progress": 112.09205757028802,
+        "emergency_steps": 2,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1152,
+        "verified": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "seed": 1,
+      "exit_code": 0,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "OSM imported road route",
+        "seed": 1,
+        "simulated_seconds": 57.5,
+        "steps": 1151,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05628692680351968,
+        "localization_max_error": 0.12067470967042732,
+        "final_speed": 0.18060643147664812,
+        "progress": 112.09658107004662,
+        "emergency_steps": 2,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1151,
+        "verified": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "seed": 7,
+      "exit_code": 0,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "OSM imported road route",
+        "seed": 7,
+        "simulated_seconds": 57.550000000000004,
+        "steps": 1152,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05837575459760826,
+        "localization_max_error": 0.14948065101803182,
+        "final_speed": 0.175703390888244,
+        "progress": 112.14501760990994,
+        "emergency_steps": 0,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1152,
+        "verified": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "seed": 42,
+      "exit_code": 0,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "OSM imported road route",
+        "seed": 42,
+        "simulated_seconds": 57.6,
+        "steps": 1153,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05318805137740078,
+        "localization_max_error": 0.1737264503099475,
+        "final_speed": 0.081928486113656,
+        "progress": 112.11456470852139,
+        "emergency_steps": 0,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1153,
+        "verified": true
+      }
+    }
+  ],
+  "passed": true,
+  "map_sha256": "9c38157f69af9072cd9d99046284ccbbb30dce3fbf987db0f12243139f634acf",
+  "scenario_sha256": "adfae37bffdb44dde79e87564a8402bd4e084d81c236880e05bc44c2c995cba7",
+  "scope": "Local targeted probes, six actual empty-road physical runs plus exact sensor replay. Final frozen-source acceptance is separate.",
+  "attribution": "\u00a9 OpenStreetMap contributors; ODbL 1.0; see SOURCE.md",
+  "runtime_simulation_only": true
+}

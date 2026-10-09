@@ -1,0 +1,329 @@
+{
+  "schema_version": 1,
+  "backend": "rne-dynamic-rapier-lidar",
+  "renderer": "Blender Cycles CPU",
+  "blender_version": "Blender 4.3.2",
+  "input_trace": "/tmp/rustdrive-ground-final-v2/body-dynamic/lidar3d_ground_body/dynamic/ground-moving-traffic/seed-7/run.json",
+  "input_sha256": "59afd56d92ef44eb3d7f4e2a217dbb86a4e1c2a33cc8013394a852b737ff4dcc",
+  "rne_expected_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
+  "scenario": {
+    "name": "Ground-separated inclined LiDAR follows a moving lead into a stop",
+    "duration": 22.0,
+    "road_length": 60.0,
+    "half_width": 3.0,
+    "curve_amplitude": 0.0,
+    "expected": "stop",
+    "lidar_dropout": null,
+    "gnss_dropout": null,
+    "cruise_speed": 4.0,
+    "min_clearance_m": 1.0,
+    "objects": [
+      {
+        "s": 22.0,
+        "lateral": 0.0,
+        "radius": 1.0,
+        "speed": 2.0,
+        "lateral_speed": 0.0,
+        "active_from": 0.0,
+        "moving_from": 0.0,
+        "following": {
+          "initial_speed_m_s": 2.0,
+          "minimum_gap_m": 3.0,
+          "time_headway_s": 1.5,
+          "max_acceleration_m_s2": 2.0,
+          "comfortable_deceleration_m_s2": 2.0,
+          "max_deceleration_m_s2": 4.0,
+          "sensor_range_m": 45.0,
+          "stop_windows": [
+            {
+              "from": 4.0,
+              "until": 24.0
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "summary": {
+    "scenario": "Ground-separated inclined LiDAR follows a moving lead into a stop",
+    "seed": 7,
+    "simulated_seconds": 22.0,
+    "steps": 441,
+    "reached_goal": false,
+    "collisions": 0,
+    "road_violations": 0,
+    "min_clearance": 5.715013608453201,
+    "localization_rmse": 0.06816080972862157,
+    "localization_max_error": 0.20512748149352236,
+    "final_speed": 0.0,
+    "progress": 21.851987038687863,
+    "emergency_steps": 11,
+    "avoidance_steps": 0,
+    "max_tracks": 2,
+    "passed": true,
+    "failures": []
+  },
+  "gif_frames": 75,
+  "sampled_frames": 75,
+  "playback_speed": 3,
+  "scene_states_verified": 75,
+  "samples": 8,
+  "physics_domain": "planar",
+  "scene": {
+    "style": "suburban-test-road-v2",
+    "seed": 1729,
+    "scenery_counts": {
+      "trees": 3,
+      "buildings": 1,
+      "lamps": 3,
+      "sidewalk_sections": 120
+    },
+    "ego_model": "hatchback",
+    "traffic_models": [
+      {
+        "id": 0,
+        "model": "sedan",
+        "color": [
+          0.949999988079071,
+          0.30000001192092896,
+          0.03500000014901161
+        ]
+      }
+    ],
+    "camera": "traffic",
+    "mapped_signal_ids": [],
+    "mapped_stop_sign_ids": [],
+    "mapped_intersection_ids": [],
+    "native_scene_name": "Real inclined rays measure moving traffic over physical ground",
+    "native_cuboids": [],
+    "native_ground_cuboids": [
+      {
+        "id": "road",
+        "center_m": [
+          30.0,
+          0.0,
+          -0.5
+        ],
+        "yaw_rad": 0.0,
+        "world_corners_m": [
+          [
+            -20.0,
+            -25.0,
+            -1.0
+          ],
+          [
+            80.0,
+            -25.0,
+            -1.0
+          ],
+          [
+            80.0,
+            25.0,
+            -1.0
+          ],
+          [
+            -20.0,
+            25.0,
+            -1.0
+          ],
+          [
+            -20.0,
+            -25.0,
+            0.0
+          ],
+          [
+            80.0,
+            -25.0,
+            0.0
+          ],
+          [
+            80.0,
+            25.0,
+            0.0
+          ],
+          [
+            -20.0,
+            25.0,
+            0.0
+          ]
+        ]
+      }
+    ],
+    "road_surface": "actual SceneV2 ground cuboids; top at flat datum 0 m",
+    "scenery_physical": false,
+    "body_envelope": {
+      "id": "research-body-envelope",
+      "center_m": [
+        21.851987838745117,
+        0.041290849447250366,
+        0.8999999761581421
+      ],
+      "yaw_rad": 0.0109237295395143,
+      "world_corners_m": [
+        [
+          19.761943817138672,
+          -0.8815947771072388,
+          0.1499999761581421
+        ],
+        [
+          23.961692810058594,
+          -0.8357160687446594,
+          0.1499999761581421
+        ],
+        [
+          23.942031860351562,
+          0.9641764760017395,
+          0.1499999761581421
+        ],
+        [
+          19.74228286743164,
+          0.9182977676391602,
+          0.1499999761581421
+        ],
+        [
+          19.761943817138672,
+          -0.8815947771072388,
+          1.649999976158142
+        ],
+        [
+          23.961692810058594,
+          -0.8357160687446594,
+          1.649999976158142
+        ],
+        [
+          23.942031860351562,
+          0.9641764760017395,
+          1.649999976158142
+        ],
+        [
+          19.74228286743164,
+          0.9182977676391602,
+          1.649999976158142
+        ]
+      ]
+    }
+  },
+  "renderer_source_sha256": "7d4946749a97e8c574570ad64adbaa46a86ad60582737ad644f5826f1d2a3b30",
+  "gif_palette_colors": 192,
+  "gif_dither": false,
+  "spatial_filter": "3x3 median, viewport only",
+  "renderer_command": "python3 scripts/render_demo_3d.py /tmp/rustdrive-ground-final-v2/body-dynamic/lidar3d_ground_body/dynamic/ground-moving-traffic/seed-7/run.json --output assets/ground-demo.gif --samples 8 --threads 3 --camera traffic --traffic-models sedan --native-scene /tmp/rustdrive-ground-final-v2/body-dynamic/lidar3d_ground_body/dynamic/ground-moving-traffic/seed-7/scene.json",
+  "native_scene": {
+    "input": "/tmp/rustdrive-ground-final-v2/body-dynamic/lidar3d_ground_body/dynamic/ground-moving-traffic/seed-7/scene.json",
+    "input_sha256": "2ed02bb84130b82069ce381d6dd738e20272dc883de19f83cf20fd328592d4c7",
+    "scene": {
+      "ground_cuboids": [
+        {
+          "center_m": [
+            30.0,
+            0.0,
+            -0.5
+          ],
+          "half_extents_m": [
+            50.0,
+            25.0,
+            0.5
+          ],
+          "id": "road",
+          "yaw_rad": 0.0
+        }
+      ],
+      "name": "Real inclined rays measure moving traffic over physical ground",
+      "schema_version": 2,
+      "static_cuboids": []
+    },
+    "summary": {
+      "checks": 0,
+      "failures": [],
+      "guard_overlap_intervals": 0,
+      "min_clearance_m": null,
+      "native_overlap_samples": 0,
+      "passed": true
+    },
+    "seed": 7,
+    "body_pose_states_verified": 441,
+    "cuboid_mesh_states_verified": 75,
+    "contact_response": false,
+    "operating_mode": "lidar3d_ground_body",
+    "lidar3d_calibration": {
+      "azimuth_columns": 180,
+      "collision_bottom_m": -0.85,
+      "collision_top_m": 2.65,
+      "elevation_rings": 16,
+      "ground": {
+        "fit_radius_m": 8.0,
+        "max_height_offset_m": 0.03,
+        "max_slope": 0.05,
+        "min_cell_inliers": 6,
+        "min_inliers": 200,
+        "min_sector_inliers": 20,
+        "reference_height_m": 0.0,
+        "residual_threshold_m": 0.02
+      },
+      "max_elevation_rad": 0.2617993877991494,
+      "max_range_m": 45.0,
+      "min_elevation_rad": -0.2617993877991494,
+      "min_range_m": 0.2,
+      "mount_height_m": 0.6
+    },
+    "cloud_frame": "body forward/left, road-datum up",
+    "recorded_cloud_audit": {
+      "acquisitions": 221,
+      "failed_acquisitions": 0,
+      "returns_verified": 302290,
+      "ray_ordinals_per_acquisition": 2880
+    },
+    "diagnostic_horizontal_heights_m": [
+      0.6,
+      0.15,
+      3.7
+    ],
+    "collision_height_interval_m": [
+      -0.85,
+      2.65
+    ],
+    "projection": "measured supported ground removal, measured Z gate, ordinal-order 5 cm body-XY voxels",
+    "instantaneous_scan": true,
+    "deskew": false,
+    "ground_diagnostics_audit": {
+      "observations_verified": 221,
+      "confident_fits": 221,
+      "removed_returns": 294135,
+      "preserved_returns": 8155,
+      "audit_scope": "recorded support/count/plane consistency; independent ground oracle is separate"
+    },
+    "ground_mesh_states_verified": 75,
+    "physical_road_top_m": 0.0,
+    "ground_contact_response": false,
+    "gif_sha256": "3e8fa58a55d41b707ae37be99e83cc086d9e31f6616bae334806f958a585a7a0",
+    "encoded_duration_ms": 8800,
+    "body_guard": {
+      "calibration": {
+        "bottom_m": 0.15,
+        "calibration_kind": "authored_research_dimensions",
+        "center_offset_body_m": [
+          0.0,
+          0.0
+        ],
+        "clearance_floor_m": 1.0,
+        "height_m": 1.5,
+        "length_m": 4.2,
+        "pose_reference": "native_planar_plant_reference",
+        "speed_bound_m_s": 12.0,
+        "width_m": 1.8
+      },
+      "summary": {
+        "checks": 0,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": null,
+        "native_overlap_samples": 0,
+        "passed": true
+      },
+      "mesh_states_verified": 75,
+      "visualization": "separate wire envelope; cosmetic car dimensions are not calibrated",
+      "guard_scope": "upright body versus static obstacle cuboids; explicit road excluded",
+      "traffic_geometry": "native capsule proxies; circumscribed circular planar clearance"
+    }
+  }
+}

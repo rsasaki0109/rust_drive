@@ -34,7 +34,9 @@
 | Native scene capsule clearance | Implemented / independently checked | Recorded 200 Hz native positions and conservative speed-bound guard; fixed 1 m floor; low blind slabs rejected; separate simulator-only evidence |
 | Operational multi-height LiDAR projection | Implemented / tested | Explicit mode; bounded synchronized body-XY planes, calibrated vehicle-height selection, 5 cm duplicate cells and historical EKF pose; sparse coverage, planar detection/tracking |
 | Multi-height fault recovery and replay | Implemented / tested | Atomic timing/failure transport; malformed or partial bundles hold braking until a new complete post-fault acquisition; raw measured planes and calibration in sensor-only logs |
-| Native inclined 3D LiDAR acquisition | Implemented / tested | Opt-in 720 × 16 actual Rapier beams, ±15° elevation, instantaneous measured XYZ and firing ordinal; yaw-only flat-road mounting; finite vertical coverage; no physical road collider or ground segmentation |
+| Native inclined 3D LiDAR acquisition | Implemented / tested | Opt-in 720 × 16 actual Rapier beams, ±15° elevation, instantaneous measured XYZ and firing ordinal; yaw-only flat-road mounting; finite vertical coverage |
+| Physical road query surfaces / measured ground removal | Implemented / tested | Separate opt-in 180 × 16 mode; bounded measured plane fitting, global angular and local residual support, confidence braking; broad near-flat physical support fixtures, no general terrain classification |
+| Research rectangular body / native overlap witnesses | Implemented / tested | Explicit 4.2 × 1.8 × 1.5 m upright body, conservative swept translation/rotation and fixed 1 m floor; actual force-free Rapier sensor overlaps; circumscribed planar driver envelope, no contact response or measured real-vehicle calibration |
 | Validated XYZ projection and replay | Implemented / tested | Bounded calibration, unique beam ordinals, range/direction validation before height gating and 5 cm XY deduplication; atomic timing and post-fault latch; downstream perception/map/planning remain planar |
 | Initially occluded / late lateral crossing fixtures | Implemented / tested | Reference/RNE across 3 seeds; circular scheduled actors, no semantics |
 | Low-friction avoidance and stopping | Implemented / tested | RNE dynamic mu=0.2, 0.15 s steering lag, separate longitudinal/lateral limits |
@@ -42,6 +44,7 @@
 | Continuous candidate collision checks | Implemented / tested | Synchronized circular sweeps; accelerated-segment chord bound, observed transverse-motion reserve and retiming revalidation; empirical margin, no certified error bound |
 | Reachable longitudinal speed profiles | Implemented / tested | Forward/backward acceleration bounds, local curvature caps, finite arrival times; no joint tire-force or jerk optimization |
 | Smooth route interpolation / heading join | Implemented / tested | C2 centerline segments and estimated-heading correction; sampled corridor containment, no joint geometry/control optimization |
+| Local sparse-road corner geometry | Implemented / reference tested | Explicit opt-in steering-radius fillets and short pursuit preview; original supplied corridor and fixed gates retained; impossible turns rejected, mapped traffic-rule coordinates excluded; the tight external branch still deadlocks safely in native dynamics |
 | Low-friction tracking regression gate | Implemented / tested | Fixed RNE calibration, 3 seeds, at most 20 emergency ticks in the specified fixture; no universal bound |
 | Acceleration feedforward control | Implemented / tested | First-segment acceleration with PI feedback; steering still pure pursuit |
 | Stop and wait on blocked candidates | Implemented / tested | Feasible stopping profile and eight-second forecast hold, release on a clear candidate; no semantic priority rules |
@@ -52,11 +55,12 @@
 | Learned prediction and training | Planned | No model/data/runtime packaged |
 | 3D mapping / SLAM / map localization | Planned | No truth-as-localization substitution |
 | Directed road graph / shortest-distance routing | Implemented / tested | Authored planar maps, deterministic Dijkstra, known pre-departure closure detours, 3 route fixtures × 2 plants × 3 seeds |
+| Bounded OpenStreetMap import | Implemented / tested | Versioned real ODbL extract, local WGS84/ENU, shared junctions and directed motor-road graph; explicit simulation widths, no lanes/elevation/turn-restriction interpretation |
 | Minimum-clearance regression conditions | Implemented / tested | Fixed swept-circle fixture floors; no real-driving clearance specification |
 | Live closures / stopped route handover | Implemented / tested | Common-prefix policy, three healthy stopped estimates, no-route hold/reopening, 4 m/s fixtures with conservative curvature limits and a 6 m/s fixture without an optional curvature cap |
 | Avoidance continuity | Implemented / tested | Observed centerline occupancy discourages premature center return; seeded 6 m/s detour regression, swept feasibility remains mandatory |
 | Map-update fault handling and replay | Implemented / tested | Revision/stamp checks, latched malformed-update braking, full map-search and handover recomputation when configured |
-| Lane topology / traffic-rule routing / continuous moving handover | Planned | No map importer, lane-change graph or turn penalties; fixed-route yielding is separate from routing |
+| Lane topology / traffic-rule routing / continuous moving handover | Planned | No lane-change graph or turn penalties; OSM import is a bounded road-graph baseline; fixed-route yielding is separate from routing |
 | Mapped traffic signals / stop-line holds | Implemented / tested | 36 dedicated physical/replay runs plus 6 stop-sign combinations in two plants; 5 Hz infrastructure snapshots, red/yellow/unknown stops, freshness and green release; no camera signal recognition |
 | Mapped stop signs | Implemented / tested | 30 physical/replay episodes; continuous healthy two-second hold, brake retention, multiple signs, mixed signal/obstacle constraints and GNSS reset/recovery; no camera sign detector |
 | Mapped priority crossing yield | Implemented / tested | 78 physical/replay episodes in two plants, varied authored widths/speeds/two zones and 24 timing episodes; fixed-route rectangles, eight-second current-time forecasts, healthy distinct-scan dwell and independent sampled separation |

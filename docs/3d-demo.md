@@ -1,6 +1,6 @@
 # 3D replay of actual RNE driving
 
-The README opening GIF and follower GIF now show a perspective 3D scene rendered from successful RNE dynamic recordings. Blender Cycles runs on CPU, with no GPU, display server, ROS or CARLA requirement. Simulation and sensor replay remain renderer-independent.
+The README opening GIF shows measured ground removal and a moving lead with the research body envelope; its [commands, audits and limitations](ground-lidar.md#audited-replay-rendering) accompany the recording. The closure-detour and follower GIFs below show successful RNE dynamic recordings. Blender Cycles runs on CPU, with no GPU, display server, ROS or CARLA requirement. Simulation and sensor replay remain renderer-independent.
 
 ![Actual RNE closure-detour run rendered in 3D](../assets/rne-3d-demo.gif)
 
@@ -29,14 +29,14 @@ blender artifacts/3d/suburban-scene.blend
 
 The preview is a PNG. `--scene-output` saves editable objects at the last rendered state; it is a snapshot, not a baked animation or simulator project. Export is optional and does not affect Rust dependencies. Full GIF regeneration continues to use the recorded timeline. CI exports a CPU-rendered native scene as an artifact.
 
-## Reproduce the opening GIF
+## Reproduce the closure-detour GIF
 
 Install Blender and activate the Pillow environment from the README. Blender **4.3.2** with Cycles CPU is verified locally. Rendering uses 16 samples per pixel and four CPU threads by default. No OpenImageDenoise or graphics driver is required.
 
 ```sh
 bash scripts/setup-rne.sh
 bash scripts/rne-3d-demo.sh
-# Intentional README asset regeneration:
+# Intentional historical closure-detour asset regeneration:
 bash scripts/rne-3d-demo.sh assets/rne-3d-demo.gif
 ```
 

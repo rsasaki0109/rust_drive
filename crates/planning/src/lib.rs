@@ -1,5 +1,6 @@
 //! Receding-horizon lateral lattice with time-indexed collision envelopes.
 mod collision;
+mod corners;
 mod geometry;
 mod speed;
 use rustdrive_core::{
@@ -7,6 +8,8 @@ use rustdrive_core::{
 };
 pub struct LatticePlanner {
     pub cruise_speed: f64,
+    /// Opt-in locally bounded fillets for sparse imported road polylines.
+    pub local_route_geometry: bool,
     pub vehicle: VehicleConfig,
     /// Forward acceleration authority used for reachable speed profiles.
     pub max_acceleration_m_s2: f64,
@@ -23,6 +26,7 @@ impl Default for LatticePlanner {
     fn default() -> Self {
         Self {
             cruise_speed: 8.0,
+            local_route_geometry: false,
             vehicle: VehicleConfig::default(),
             max_acceleration_m_s2: 2.0,
             max_deceleration_m_s2: 2.5,
@@ -64,6 +68,25 @@ impl Planner for LatticePlanner {
                 lateral_target: 0.0,
             };
         }
+        let supplied_route = route;
+        let local_route;
+        let route = if self.local_route_geometry {
+            match corners::fit(route, self.vehicle) {
+                Ok(fitted) => {
+                    local_route = fitted;
+                    &local_route
+                }
+                Err(_) => {
+                    return Trajectory {
+                        points: vec![],
+                        mode: DrivingMode::Emergency,
+                        lateral_target: 0.0,
+                    };
+                }
+            }
+        } else {
+            route
+        };
         let (s, lateral) = route.project(ego.pose.position);
         let remaining = (route.length() - s).max(0.0);
         let cruise = self.cruise_speed;
@@ -120,7 +143,13 @@ impl Planner for LatticePlanner {
                 start_lateral
                     + (target - start_lateral) * quintic((s + distance - start_s) / transition)
             };
-            let base = |distance| geometry::sample(route, s + distance, anchored_offset(distance));
+            let base = |distance| {
+                if self.local_route_geometry {
+                    route.sample(s + distance, anchored_offset(distance)).0
+                } else {
+                    geometry::sample(route, s + distance, anchored_offset(distance))
+                }
+            };
             let base_initial = base(0.0);
             let base_tangent = base(0.01).minus(base_initial).scaled(100.0);
             let position_error = ego.pose.position.minus(base_initial);
@@ -144,9 +173,9 @@ impl Planner for LatticePlanner {
                 // Distance to any point on the centerline is an upper bound on
                 // nearest-centerline distance. Most samples can be accepted with
                 // this bound; ambiguous ones still use the full corridor projection.
-                let reference = route.sample(s + ds, 0.0).0;
+                let reference = supplied_route.sample(s + ds, 0.0).0;
                 if position.distance(reference) > corridor_radius
-                    && route.project(position).1.abs() > corridor_radius
+                    && supplied_route.project(position).1.abs() > corridor_radius
                 {
                     contained = false;
                     break;
@@ -296,6 +325,10 @@ impl Planner for LatticePlanner {
         };
         trajectory
     }
+}
+/// Validate the optional planner-local geometry without changing map/evaluation coordinates.
+pub fn validate_local_route_geometry(route: &Route, vehicle: VehicleConfig) -> Result<(), String> {
+    corners::fit(route, vehicle).map(|_| ())
 }
 fn transition_distance(speed: f64, shift: f64, lateral_limit: Option<f64>) -> f64 {
     let baseline = (speed * 1.7).clamp(10.0, 16.0);

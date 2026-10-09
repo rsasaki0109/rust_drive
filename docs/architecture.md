@@ -14,7 +14,9 @@ flowchart LR
   AC --> W
   S --> L[Localization EKF]
   S -->|Single plane| P[LiDAR clustering + circle fit]
-  S --> HP[Optional calibrated height selection + XY projection]
+  S --> GP[Optional measured ground-plane fit / support check]
+  GP --> HP[Optional calibrated height selection + XY projection]
+  S --> HP
   HP --> P
   HP --> M
   L --> H[Bounded EKF acquisition-pose history]
@@ -23,7 +25,8 @@ flowchart LR
   T --> F[Observed braking / constant-velocity prediction]
   S --> M[Log-odds occupancy map]
   H --> M
-  N[Supplied road graph + destination + closure snapshots] --> D[Dijkstra routing]
+  O[Optional OSM data / bounded WGS84 to ENU import] --> N[Supplied road graph + destination + closure snapshots]
+  N --> D[Dijkstra routing]
   D --> R[Resolved route]
   R --> A[Lateral lattice planning]
   L --> A
@@ -47,10 +50,18 @@ With the additional explicit `--multi-height` option, all three measured horizon
 
 ## Crates and ownership
 
+The additional `--lidar-3d --ground-segmentation` mode installs physical road surfaces in the native query world and fits a bounded local plane from validated measured XYZ returns. Global angular support and local residual-cell support determine removal; insufficient support holds braking. Scene ground labels stay outside operational sensing. The 180 × 16 acquisition grid is specific to this mode; the earlier 720 × 16 mode is unchanged. The accepted fixtures assume broad near-flat support surfaces. [Ground contract and limits](ground-lidar.md).
+
+With `--vehicle-body`, an authored rectangular research body adds actual force-free Rapier overlap witnesses and a separate swept upright-box evaluator. The driver uses its circumscribed planar radius and a calibrated vertical clearance interval. Native Ackermann dynamics remain the sole motion integrator; this does not add tire contact response, suspension or six-degree-of-freedom motion. Recorded road and obstacle geometry remain simulator-only evaluation inputs.
+
+The optional OSM importer resolves bounded WGS84 coordinates to local ENU, retains shared junctions and directed way geometry, and emits the ordinary road graph. Imported road widths are explicit simulation calibration, not measured lane boundaries. Dataset attribution and ODbL terms are separate from the Rust implementation's license. [Import contract and provenance](osm-import.md).
+
+Optional `local_route_geometry` uses bounded steering-radius corner fillets and a shorter pursuit preview for sparse external roads. Its internal planning arc differs from the original map arc; candidate containment and physical evaluation still use the supplied unchanged corridor. Impossible/overlapping fillets fail validation. Mapped signal, sign and priority-zone coordinates are currently excluded from this mode; their existing route-coordinate behavior remains separate.
+
 | Crate | Responsibility | Depends on |
 |---|---|---|
 | `rustdrive-core` | SI contracts, planar transforms, route interpolation and projection, algorithm traits | serde |
-| `rustdrive-routing` | Validated directed maps, shortest-distance routing and edge closures | core, serde |
+| `rustdrive-routing` | Validated directed maps, shortest-distance routing, edge closures and bounded OSM import | core, serde |
 | `rustdrive-localization` | State and covariance estimation, innovation gating | core |
 | `rustdrive-perception` | Point clustering, circular-object fitting, track identity and velocity | core |
 | `rustdrive-mapping` | Bounded occupancy grid and ray updates | core |

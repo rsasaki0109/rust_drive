@@ -83,6 +83,10 @@ Optional traffic actors are owned by the shared simulator `TrafficWorld`: the RN
 
 ## Native static cuboid scenes
 
+The additional `--lidar-3d --ground-segmentation` mode installs actual flat road cuboids and removes supported measured local ground before the existing planar detector. `--vehicle-body` additionally installs an explicit rectangular research body, records force-free native Rapier overlaps and uses independent swept-box clearance with a fixed 1 m floor. Both remain planar native driving modes. Their new 180 × 16 sensing grid is separate from the earlier 720 × 16 mode. [Calibration, confidence braking and operating limits](../../docs/ground-lidar.md).
+
+Bounded OSM import supplies the ordinary local ENU graph without changing the sensor-only driver contract. The packaged genuine extract retains its source attribution and ODbL terms; road widths are explicit simulation calibration. [Data and reproduction](../../docs/osm-import.md).
+
 Pass `--scene scenes/ground-barrier.json` with `--scenario scenarios/native-scene-ground-stop.json` to install actual upright boxes in Rapier queries. The existing operational scan remains at 0.6 m; additional horizontal scans and native substep poses are recorded separately in `scene.json`. The offline capsule guard fails runs with unsafe scene clearance. It adds no contact-force response and does not supply geometry labels to the driver.
 
 `bash scripts/check-native-scenes.sh` builds the locked binaries and runs the independent 42-positive / 12-required-rejection matrix for single-height and multi-height modes, with full sensor replay. The default low blind slabs and multi-height sub-low slabs remain physical failures. [Scene schema and preceding single-height results](../../docs/native-scenes.md); [combined matrix](../../docs/multi-height-lidar.md).

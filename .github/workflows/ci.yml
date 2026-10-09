@@ -4,6 +4,8 @@ on:
   pull_request:
 permissions:
   contents: read
+env:
+  CARGO_INCREMENTAL: '0'
 jobs:
   rust:
     strategy:
@@ -18,6 +20,9 @@ jobs:
         run: echo "RUSTUP_HOME=$RUNNER_TEMP/rustdrive-rustup" >> "$GITHUB_ENV"
       - name: Install pinned Rust
         run: rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - run: cargo fmt --all --check
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - run: cargo test --workspace --locked
@@ -26,6 +31,15 @@ jobs:
         run: cargo run --release --locked --bin rustdrive -- run --scenario scenarios/mission.json --seed 7 --output artifacts/demo
       - name: Recompute sensor log
         run: cargo run --release --locked --bin rustdrive -- replay --log artifacts/demo/sensors.jsonl --output artifacts/demo/replay
+      - name: Import attributed OSM roads and drive the resulting graph
+        shell: bash
+        run: |
+          target/release/rustdrive import-osm --input maps/osm/german-road-extract.json --output artifacts/osm/map.json --origin-lat 48.136 --origin-lon 10.0695 --default-half-width 3 --scenario-output artifacts/osm/scenario.json --start osm-node-7119017425 --goal osm-node-274969423
+          target/release/rustdrive run --scenario artifacts/osm/scenario.json --seed 7 --output artifacts/osm/run
+          target/release/rustdrive replay --log artifacts/osm/run/sensors.jsonl --output artifacts/osm/replay
+      - name: Independently check opt-in sparse-road corners in the reference plant
+        shell: bash
+        run: python scripts/check-local-corners.py --output artifacts/local-corners
       - name: Drive mapped destinations, closure detour and mapped road rules
         shell: bash
         run: |
@@ -39,6 +53,8 @@ jobs:
           path: |
             artifacts/demo/
             artifacts/routing/
+            artifacts/osm/
+            artifacts/local-corners/
   visual:
     runs-on: ubuntu-latest
     steps:
@@ -84,8 +100,8 @@ jobs:
         run: |
           test "$(git -C ../RobotNativeEngine rev-parse HEAD)" = "$(cat integrations/rne/rne-revision.txt)"
           cargo +1.95.0 fmt --manifest-path integrations/rne/Cargo.toml --check
-          cargo +1.95.0 clippy --manifest-path integrations/rne/Cargo.toml --all-targets --locked -- -D warnings
-          cargo +1.95.0 test --manifest-path integrations/rne/Cargo.toml --locked
+          cargo +1.95.0 clippy --release --manifest-path integrations/rne/Cargo.toml --all-targets --locked -- -D warnings
+          cargo +1.95.0 test --release --manifest-path integrations/rne/Cargo.toml --locked
       - name: Run both native plants and verify logs
         working-directory: rust_drive
         run: |
@@ -102,6 +118,15 @@ jobs:
       - name: Independently check inclined 3D returns, projection and remaining field-of-view failures
         working-directory: rust_drive
         run: python3 scripts/check-lidar-3d.py --output artifacts/lidar-3d --compact
+      - name: Independently check measured ground removal and rectangular-body clearance
+        working-directory: rust_drive
+        run: python3 scripts/check-ground-scenes.py --output artifacts/ground-scenes --compact
+      - name: Drive imported OSM roads with physical ground and the research body
+        working-directory: rust_drive
+        run: python3 scripts/check-osm-scenes.py --output artifacts/osm-scenes --compact
+      - name: Preserve reference corner acceptance and the known native sharp-turn limitation
+        working-directory: rust_drive
+        run: python3 scripts/check-local-corners.py --check-known-native-limit --output artifacts/local-corners
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -121,6 +146,7 @@ jobs:
           python scripts/render_demo_3d.py artifacts/native-scenes/dynamic/ground-barrier/seed-7/run.json --native-scene artifacts/native-scenes/dynamic/ground-barrier/seed-7/scene.json --preview-time 15 --output artifacts/rne-native-scene/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-native-scene/scene.blend
           python scripts/render_demo_3d.py artifacts/native-scenes/multi-height/dynamic/blind-low-slab/seed-7/run.json --native-scene artifacts/native-scenes/multi-height/dynamic/blind-low-slab/seed-7/scene.json --preview-time 15 --output artifacts/rne-multi-height/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-multi-height/scene.blend
           python scripts/render_demo_3d.py artifacts/lidar-3d/lidar3d/dynamic/midbeam-barrier/seed-7/run.json --native-scene artifacts/lidar-3d/lidar3d/dynamic/midbeam-barrier/seed-7/scene.json --preview-time 15 --output artifacts/rne-lidar-3d/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-lidar-3d/scene.blend
+          python scripts/render_demo_3d.py artifacts/ground-scenes/lidar3d_ground_body/dynamic/ground-moving-traffic/seed-7/run.json --native-scene artifacts/ground-scenes/lidar3d_ground_body/dynamic/ground-moving-traffic/seed-7/scene.json --preview-time 15 --camera traffic --traffic-models sedan --output artifacts/rne-ground-body/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-ground-body/scene.blend
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -129,6 +155,9 @@ jobs:
             rust_drive/artifacts/hazards/
             rust_drive/artifacts/native-scenes/
             rust_drive/artifacts/lidar-3d/
+            rust_drive/artifacts/ground-scenes/
+            rust_drive/artifacts/osm-scenes/
+            rust_drive/artifacts/local-corners/
       - uses: actions/upload-artifact@v4
         with:
           name: rne-cpu-telemetry

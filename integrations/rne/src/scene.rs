@@ -14,8 +14,10 @@ pub struct StaticCuboid {
 }
 #[derive(Clone, Debug)]
 pub struct Scene {
+    schema_version: u64,
     name: String,
     pub(crate) static_cuboids: Vec<StaticCuboid>,
+    pub(crate) ground_cuboids: Vec<StaticCuboid>,
 }
 fn fields(value: &Value, expected: &[&str]) -> Result<(), String> {
     let object = value.as_object().ok_or("scene field must be an object")?;
@@ -51,19 +53,52 @@ impl Scene {
     /// Parse a strict, bounded schema without adding dependency or lock-file changes.
     pub fn from_json(input: &str) -> Result<Self, String> {
         let value: Value = serde_json::from_str(input).map_err(|error| error.to_string())?;
-        fields(&value, &["schema_version", "name", "static_cuboids"])?;
-        if value["schema_version"].as_u64() != Some(1) {
-            return Err("scene schema_version must be 1".into());
+        let schema_version = value["schema_version"]
+            .as_u64()
+            .ok_or("scene schema_version must be 1 or 2")?;
+        match schema_version {
+            1 => fields(&value, &["schema_version", "name", "static_cuboids"])?,
+            2 => fields(
+                &value,
+                &["schema_version", "name", "static_cuboids", "ground_cuboids"],
+            )?,
+            _ => return Err("scene schema_version must be 1 or 2".into()),
         }
         let name = label(&value["name"])?;
-        let boxes = value["static_cuboids"]
-            .as_array()
-            .ok_or("static_cuboids must be an array")?;
-        if boxes.is_empty() || boxes.len() > 128 {
-            return Err("scene requires 1..128 static cuboids".into());
-        }
         let mut ids = BTreeSet::new();
-        let mut static_cuboids = Vec::with_capacity(boxes.len());
+        let static_cuboids = Self::parse_cuboids(&value["static_cuboids"], &mut ids)?;
+        let ground_cuboids = if schema_version == 2 {
+            Self::parse_cuboids(&value["ground_cuboids"], &mut ids)?
+        } else {
+            vec![]
+        };
+        if static_cuboids.len() + ground_cuboids.len() == 0
+            || static_cuboids.len() + ground_cuboids.len() > 128
+        {
+            return Err("scene requires 1..128 total cuboids".into());
+        }
+        if ground_cuboids
+            .iter()
+            .any(|box_| (box_.center_m[2] + box_.half_extents_m[2]).abs() > 1e-9)
+        {
+            return Err("ground cuboid top must lie at the flat road datum 0 m".into());
+        }
+        Ok(Self {
+            schema_version,
+            name,
+            static_cuboids,
+            ground_cuboids,
+        })
+    }
+    fn parse_cuboids(
+        value: &Value,
+        ids: &mut BTreeSet<String>,
+    ) -> Result<Vec<StaticCuboid>, String> {
+        let boxes = value.as_array().ok_or("scene cuboids must be an array")?;
+        if boxes.len() > 128 {
+            return Err("scene requires at most 128 cuboids".into());
+        }
+        let mut cuboids = Vec::with_capacity(boxes.len());
         for object in boxes {
             fields(object, &["id", "center_m", "half_extents_m", "yaw_rad"])?;
             let id = label(&object["id"])?;
@@ -76,20 +111,24 @@ impl Scene {
             if !yaw_rad.is_finite() || yaw_rad.abs() > std::f64::consts::PI {
                 return Err("yaw_rad must be finite within [-pi, pi]".into());
             }
-            static_cuboids.push(StaticCuboid {
+            cuboids.push(StaticCuboid {
                 id,
                 center_m: triple(&object["center_m"], false)?,
                 half_extents_m: triple(&object["half_extents_m"], true)?,
                 yaw_rad,
             });
         }
-        Ok(Self {
-            name,
-            static_cuboids,
-        })
+        Ok(cuboids)
     }
     pub fn to_json(&self) -> Value {
-        json!({"schema_version": 1, "name": self.name, "static_cuboids": self.static_cuboids.iter().map(|b| json!({"id": b.id,"center_m": b.center_m,"half_extents_m": b.half_extents_m,"yaw_rad": b.yaw_rad})).collect::<Vec<_>>()})
+        let boxes = |cuboids: &[StaticCuboid]| {
+            cuboids.iter().map(|b| json!({"id": b.id,"center_m": b.center_m,"half_extents_m": b.half_extents_m,"yaw_rad": b.yaw_rad})).collect::<Vec<_>>()
+        };
+        let mut value = json!({"schema_version": self.schema_version, "name": self.name, "static_cuboids": boxes(&self.static_cuboids)});
+        if self.schema_version == 2 {
+            value["ground_cuboids"] = json!(boxes(&self.ground_cuboids));
+        }
+        value
     }
 }
 
@@ -104,6 +143,7 @@ pub(crate) struct SceneCapture {
     pub observations: Vec<Value>,
     pub acquisitions: Vec<Value>,
     pub clock: f64,
+    pub body: Option<crate::body::BodyCapture>,
 }
 impl SceneCapture {
     pub fn new(scene: Scene, position: Vec2) -> Self {
@@ -116,6 +156,7 @@ impl SceneCapture {
             observations: vec![],
             acquisitions: vec![],
             clock: 0.0,
+            body: None,
         }
     }
     pub fn evidence(&self, radius: f64) -> Value {
@@ -168,6 +209,8 @@ impl SceneCapture {
                 "native scene capsule clearance {minimum:.6} m is below fixed 1 m floor"
             ));
         }
+        // Ground-only scenes have no obstacle clearance to measure.
+        let minimum = minimum.is_finite().then_some(minimum);
         json!({"schema_version":1,"scene":self.scene.to_json(),"ego_capsule":{"axis_bottom_m":0.1,"axis_top_m":1.1,"radius_m":radius,"speed_bound_m_s":12.0,"clearance_floor_m":1.0},"motion_samples":self.motion_samples.iter().map(|s|json!({"time":s.time,"position":[s.position.x,s.position.y]})).collect::<Vec<_>>(),"observations":self.observations,"acquisitions":self.acquisitions,"summary":{"passed":failures.is_empty(),"min_clearance_m":minimum,"guard_overlap_intervals":overlaps,"checks":checks,"failures":failures}})
     }
 }
@@ -306,5 +349,21 @@ mod tests {
         let mut invalid = valid;
         invalid["static_cuboids"][0]["half_extents_m"][0] = json!(0);
         assert!(Scene::from_json(&invalid.to_string()).is_err());
+    }
+    #[test]
+    fn scene_v2_ground_roles_are_strict_and_v1_serialization_is_preserved() {
+        let v1 = json!({"schema_version":1,"name":"old scene","static_cuboids":[{"id":"a","center_m":[1.0,2.0,3.0],"half_extents_m":[1.0,1.0,1.0],"yaw_rad":0.0}]});
+        assert_eq!(Scene::from_json(&v1.to_string()).unwrap().to_json(), v1);
+        let clear = json!({"schema_version":2,"name":"flat native road","static_cuboids":[],"ground_cuboids":[{"id":"road","center_m":[40.0,0.0,-0.5],"half_extents_m":[60.0,25.0,0.5],"yaw_rad":0.0}]});
+        assert_eq!(
+            Scene::from_json(&clear.to_string()).unwrap().to_json(),
+            clear
+        );
+        let mut invalid = clear.clone();
+        invalid["ground_cuboids"][0]["center_m"][2] = json!(-0.49);
+        assert!(Scene::from_json(&invalid.to_string()).is_err());
+        let mut duplicate = clear;
+        duplicate["static_cuboids"] = json!([duplicate["ground_cuboids"][0].clone()]);
+        assert!(Scene::from_json(&duplicate.to_string()).is_err());
     }
 }

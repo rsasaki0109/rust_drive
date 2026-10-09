@@ -5,6 +5,8 @@ use rustdrive_core::{
 #[derive(Default)]
 pub struct PurePursuit {
     pub vehicle: VehicleConfig,
+    /// Short preview for opt-in local imported-route geometry.
+    pub local_route_geometry: bool,
     integral: f64,
     steering: f64,
 }
@@ -45,7 +47,11 @@ impl Controller for PurePursuit {
         }
         // Shorter preview follows the smooth lateral maneuver more closely.
         // Interpolate its circle intersection to avoid sample-index steering jumps.
-        let lookahead = (3.0 + ego.speed * 0.45).clamp(3.0, 8.0);
+        let lookahead = if self.local_route_geometry {
+            (0.8 + ego.speed * 0.15).clamp(0.8, 1.5)
+        } else {
+            (3.0 + ego.speed * 0.45).clamp(3.0, 8.0)
+        };
         let target = pursuit_target(path, ego.pose.position, lookahead);
         if !target.finite() {
             self.reset_emergency_state();
@@ -138,6 +144,34 @@ pub fn guard(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn local_preview_keeps_heading_on_the_straight_before_a_tight_turn() {
+        let mut path = profile(2.0, 2.0, 1.0);
+        path.points[1].position = rustdrive_core::Vec2::new(2.0, 0.0);
+        path.points.push(rustdrive_core::TrajectoryPoint {
+            position: rustdrive_core::Vec2::new(3.0, 0.5),
+            speed: 2.0,
+            time: 1.6,
+        });
+        path.points.push(rustdrive_core::TrajectoryPoint {
+            position: rustdrive_core::Vec2::new(4.0, 1.5),
+            speed: 2.0,
+            time: 2.4,
+        });
+        let ego = EgoState {
+            speed: 2.0,
+            ..EgoState::default()
+        };
+        let baseline = PurePursuit::default().control(ego, &path, 0.05);
+        let mut local = PurePursuit {
+            local_route_geometry: true,
+            ..PurePursuit::default()
+        };
+        let command = local.control(ego, &path, 0.05);
+        assert!(baseline.steering > 0.0);
+        assert_eq!(command.steering, 0.0);
+        assert!(command.finite());
+    }
     fn profile(initial: f64, next: f64, duration: f64) -> Trajectory {
         Trajectory {
             points: vec![

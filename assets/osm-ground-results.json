@@ -1,0 +1,1415 @@
+{
+  "schema_version": 1,
+  "source_fingerprint_sha256": "690f83645f0e4ca1cf888f52186d48c7e07c1332886b040350fd5fdc24f4a35f",
+  "checker_dependency_sha256": {
+    "scripts/check-osm-scenes.py": "33a15dde3aa0b9dc29025ae15b6e4684a0fc19ed8dcb902c5308164f92d37c6a",
+    "scripts/check-ground-scenes.py": "1ae0699607d7417ba787da1f8000cd7253a3de8b6ff88ba5cbacec671ab652b6",
+    "scripts/check-lidar-3d.py": "915e2818b5d23c7307b047771380316be2b36f22c08786b3c19e01dff76a0e90",
+    "scripts/check-native-scenes.py": "66877b2a74e045f221899fc1edf03b8fee2aa88e5bf7833672149b6cba0f26cb",
+    "scripts/check_hazards.py": "e31bba2b36062768345a3f8300e5d28f910e4fa549818f0198df36799d6ea046"
+  },
+  "data_fixture_sha256": {
+    "maps/osm/german-road-scenario.json": "adfae37bffdb44dde79e87564a8402bd4e084d81c236880e05bc44c2c995cba7",
+    "maps/osm/german-road-extract.json": "77189ddb7f66915817d11b83765851709b409713487e5d2b9d8f357f665680c6",
+    "maps/osm/german-road-network.import.json": "60f68815860fb547f4dc6022332479f03a82f7293f17ceb7c147d4ee6128aee7",
+    "maps/osm/german-road-network.json": "9c38157f69af9072cd9d99046284ccbbb30dce3fbf987db0f12243139f634acf",
+    "maps/osm/german-road-ground-scenario.json": "f8c4a02afdd4a709383345ad49997724ca727656cd7580974b274d272ab736ec",
+    "maps/osm/german-road-ground-stop-scenario.json": "af55419d2c6fa8cdd0f914fc42621c55e1d5a212c9842f73a5d1936a24313dd2",
+    "maps/osm/german-road-extract.osm": "280febb5b8b084cd4f29c138f5f65f8b219efdca7070bc7233a85ef972fab2a9",
+    "scenes/osm-ground-clear.json": "dcd1a5176fc8ef97b32080223c092dd38fa907bbf0c3f8c2b6f8b49a24b03016",
+    "scenes/osm-ground-midbeam.json": "c2c831ec3af549b1d5ddb4861ff66f4ee480ba40bdd7a938762e79cecdff7630"
+  },
+  "rne_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
+  "license": "OSM geographic data ODbL 1.0; simulator geometry authored research calibration",
+  "attribution": "\u00a9 OpenStreetMap contributors; maps/osm/SOURCE.md",
+  "plants": [
+    "kinematic",
+    "dynamic"
+  ],
+  "seeds": [
+    1,
+    7,
+    42
+  ],
+  "cases": [
+    "clear",
+    "midbeam"
+  ],
+  "runs": [
+    {
+      "plant": "kinematic",
+      "case": "clear",
+      "seed": 1,
+      "output": "/tmp/rustdrive-osm-ground-final/kinematic/clear/seed-1",
+      "exit_code": 0,
+      "summary": {
+        "scenario": "Imported historical OSM road with measured ground and native cuboid body",
+        "seed": 1,
+        "simulated_seconds": 57.45,
+        "steps": 1150,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.055188703643151565,
+        "localization_max_error": 0.11670410422012763,
+        "final_speed": 0.15594894023345907,
+        "progress": 112.07619291442595,
+        "emergency_steps": 2,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "scene_summary": {
+        "checks": 0,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": null,
+        "native_overlap_samples": 0,
+        "passed": true
+      },
+      "replay": {
+        "source": "rne-kinematic-rapier-lidar",
+        "ticks": 1150,
+        "verified": true
+      },
+      "imported_map": {
+        "source_coordinates_verified": true,
+        "way_geometry_preserved": true,
+        "imported_route_verified": true,
+        "sensor_only_boundary_verified": true,
+        "map_search_replay": false,
+        "resolved_route_replay": true,
+        "body_corridor_motion_samples": 11491,
+        "minimum_body_corridor_reserve_m": 0.09614953576534016
+      },
+      "independent_ground_body": {
+        "passed": true,
+        "min_clearance_m": null,
+        "guard_overlap_intervals": 0,
+        "native_overlap_samples": 0,
+        "motion_samples": 11491,
+        "body_geometry_verified": true,
+        "rapier_sensor_witnesses_verified": true,
+        "scope": "upright static cuboids; moving traffic uses conservative circumscribed-circle sweeps",
+        "ray_grid_entries_verified": 1656000,
+        "xyz_returns_verified": 828000,
+        "ground_removed_points": 828000,
+        "preserved_points": 0,
+        "height_eligible_preserved_points": 0,
+        "expected_5cm_voxel_returns": 0,
+        "confident_acquisitions": 575,
+        "unconfident_acquisitions": 0,
+        "actual_ground_returns": 828000,
+        "removed_actual_ground_returns": 828000,
+        "actual_static_returns": 0,
+        "removed_actual_static_returns": 0,
+        "height_eligible_static_returns": 0,
+        "actual_actor_returns": 0,
+        "preserved_actual_actor_returns": 0,
+        "empirical_capsule_boundary_hits": 0,
+        "acquisitions": 575,
+        "maximum_range_residual_m": 0.04108921828133516,
+        "maximum_fitted_plane_reconstruction_error_m": 1.2886065409965461e-18,
+        "range_tolerance_m": 0.06,
+        "empirical_capsule_boundary_band_m": 0.0001,
+        "maximum_empirical_boundary_surface_gap_m": 0.0,
+        "exact_presence_beams_verified": 1656000,
+        "capsule_boundary_scope": "empirical pinned f32/GJK ambiguity, not a certified floating-point error bound",
+        "raw_ground_geometry_verified": true,
+        "ground_classification_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1148,
+        "stationary_holds": 406,
+        "max_acceleration_m_s2": 1.0000000000000222,
+        "max_deceleration_m_s2": 2.5000000000000377
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 0,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 0,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 0,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.0,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 1150,
+        "emergency_ticks": 2,
+        "emergency_fraction": 0.0017391304347826088,
+        "commanded_acceleration_change_rms_m_s3": 11.44063978230555,
+        "max_normal_commanded_steering_rate_rad_s": 0.5808231317366778
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "8dfd29aa0430825d3e6343a2d25592942e9aa40130a0367fccc5ac4525ac4f82",
+        "scene.json": "659f50386006c4dc306639414e9228c1da8cde2d2649b5728f9d385892340300",
+        "sensors.jsonl": "7b7da562341ea91c96f9cb0db33cbf836e9f193efa4535d72e31a9c615964951"
+      },
+      "archive": {
+        "path": "/tmp/rustdrive-osm-ground-final/kinematic/clear/seed-1.tar.gz",
+        "sha256": "dcd2e60ebab96c9fe3aee92640c24bb9d6000f75ce0087932bdb335162f80f7e",
+        "bytes": 72956632,
+        "files_sha256": {
+          "summary.json": "02521f599de5ac9510a631d147f7e14d6b373a556e4bf8479f55f0bf4da60af0",
+          "sensors.jsonl": "7b7da562341ea91c96f9cb0db33cbf836e9f193efa4535d72e31a9c615964951",
+          "run.json": "8dfd29aa0430825d3e6343a2d25592942e9aa40130a0367fccc5ac4525ac4f82",
+          "scene.json": "659f50386006c4dc306639414e9228c1da8cde2d2649b5728f9d385892340300",
+          "replay/replay.json": "079e1949e77bcaa577e4d0f4d2ef65b0c089668afd9ea352a1f223e45895674a",
+          "replay/outputs.jsonl": "f06a3e417529e1714a4673bba0d4146080ef5f61dad07d6af4274ea19c0eeab6"
+        },
+        "gzip_crc_verified": true,
+        "raw_preserved": false
+      }
+    },
+    {
+      "plant": "kinematic",
+      "case": "clear",
+      "seed": 7,
+      "output": "/tmp/rustdrive-osm-ground-final/kinematic/clear/seed-7",
+      "exit_code": 0,
+      "summary": {
+        "scenario": "Imported historical OSM road with measured ground and native cuboid body",
+        "seed": 7,
+        "simulated_seconds": 57.6,
+        "steps": 1153,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.057006822248349485,
+        "localization_max_error": 0.14952391233719045,
+        "final_speed": 0.07937514774833881,
+        "progress": 112.14715409855165,
+        "emergency_steps": 0,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "scene_summary": {
+        "checks": 0,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": null,
+        "native_overlap_samples": 0,
+        "passed": true
+      },
+      "replay": {
+        "source": "rne-kinematic-rapier-lidar",
+        "ticks": 1153,
+        "verified": true
+      },
+      "imported_map": {
+        "source_coordinates_verified": true,
+        "way_geometry_preserved": true,
+        "imported_route_verified": true,
+        "sensor_only_boundary_verified": true,
+        "map_search_replay": false,
+        "resolved_route_replay": true,
+        "body_corridor_motion_samples": 11521,
+        "minimum_body_corridor_reserve_m": 0.06502387999834372
+      },
+      "independent_ground_body": {
+        "passed": true,
+        "min_clearance_m": null,
+        "guard_overlap_intervals": 0,
+        "native_overlap_samples": 0,
+        "motion_samples": 11521,
+        "body_geometry_verified": true,
+        "rapier_sensor_witnesses_verified": true,
+        "scope": "upright static cuboids; moving traffic uses conservative circumscribed-circle sweeps",
+        "ray_grid_entries_verified": 1661760,
+        "xyz_returns_verified": 830880,
+        "ground_removed_points": 830880,
+        "preserved_points": 0,
+        "height_eligible_preserved_points": 0,
+        "expected_5cm_voxel_returns": 0,
+        "confident_acquisitions": 577,
+        "unconfident_acquisitions": 0,
+        "actual_ground_returns": 830880,
+        "removed_actual_ground_returns": 830880,
+        "actual_static_returns": 0,
+        "removed_actual_static_returns": 0,
+        "height_eligible_static_returns": 0,
+        "actual_actor_returns": 0,
+        "preserved_actual_actor_returns": 0,
+        "empirical_capsule_boundary_hits": 0,
+        "acquisitions": 577,
+        "maximum_range_residual_m": 0.03868639158149367,
+        "maximum_fitted_plane_reconstruction_error_m": 7.709925503209011e-19,
+        "range_tolerance_m": 0.06,
+        "empirical_capsule_boundary_band_m": 0.0001,
+        "maximum_empirical_boundary_surface_gap_m": 0.0,
+        "exact_presence_beams_verified": 1661760,
+        "capsule_boundary_scope": "empirical pinned f32/GJK ambiguity, not a certified floating-point error bound",
+        "raw_ground_geometry_verified": true,
+        "ground_classification_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1153,
+        "stationary_holds": 411,
+        "max_acceleration_m_s2": 1.0000000000000344,
+        "max_deceleration_m_s2": 2.500000000000038
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 0,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 0,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 0,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.0,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 1153,
+        "emergency_ticks": 0,
+        "emergency_fraction": 0.0,
+        "commanded_acceleration_change_rms_m_s3": 8.910684289540258,
+        "max_normal_commanded_steering_rate_rad_s": 0.6999999999999998
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "96d04b3397283fec0d79b45ee04bd5a43b49afd8a60302cbf3bf4c863608cac5",
+        "scene.json": "90dda900a5fc581b88bff9862c7779514a76f9f093d3987b9be59eded1a467b5",
+        "sensors.jsonl": "0eec4778b96e223fa1944de941f148dfa20f5379d32b46af70771b42398c76b2"
+      },
+      "archive": {
+        "path": "/tmp/rustdrive-osm-ground-final/kinematic/clear/seed-7.tar.gz",
+        "sha256": "633593842cb126f21227efc0afcd3f93273c0bf6dfdd4e99f5ca52ba0fc6331d",
+        "bytes": 73218057,
+        "files_sha256": {
+          "summary.json": "137ed62f0313b9e034e1851a31b6ac893a7ecfccde44bb889e236906714f4e34",
+          "sensors.jsonl": "0eec4778b96e223fa1944de941f148dfa20f5379d32b46af70771b42398c76b2",
+          "run.json": "96d04b3397283fec0d79b45ee04bd5a43b49afd8a60302cbf3bf4c863608cac5",
+          "scene.json": "90dda900a5fc581b88bff9862c7779514a76f9f093d3987b9be59eded1a467b5",
+          "replay/replay.json": "ffd1664b9c1a952a1f5f45d56c7b665a6d4952d248fc0af87df8829c169abc27",
+          "replay/outputs.jsonl": "5ab25eec875a98f49f9ff7fcfc45d90d073c3db3914dcadffd9312f3c1c2a7fe"
+        },
+        "gzip_crc_verified": true,
+        "raw_preserved": false
+      }
+    },
+    {
+      "plant": "kinematic",
+      "case": "clear",
+      "seed": 42,
+      "output": "/tmp/rustdrive-osm-ground-final/kinematic/clear/seed-42",
+      "exit_code": 0,
+      "summary": {
+        "scenario": "Imported historical OSM road with measured ground and native cuboid body",
+        "seed": 42,
+        "simulated_seconds": 57.550000000000004,
+        "steps": 1152,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.052470625264442204,
+        "localization_max_error": 0.17360576629780014,
+        "final_speed": 0.1484022128692811,
+        "progress": 112.08803307398684,
+        "emergency_steps": 3,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "scene_summary": {
+        "checks": 0,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": null,
+        "native_overlap_samples": 0,
+        "passed": true
+      },
+      "replay": {
+        "source": "rne-kinematic-rapier-lidar",
+        "ticks": 1152,
+        "verified": true
+      },
+      "imported_map": {
+        "source_coordinates_verified": true,
+        "way_geometry_preserved": true,
+        "imported_route_verified": true,
+        "sensor_only_boundary_verified": true,
+        "map_search_replay": false,
+        "resolved_route_replay": true,
+        "body_corridor_motion_samples": 11511,
+        "minimum_body_corridor_reserve_m": 0.06895852665863214
+      },
+      "independent_ground_body": {
+        "passed": true,
+        "min_clearance_m": null,
+        "guard_overlap_intervals": 0,
+        "native_overlap_samples": 0,
+        "motion_samples": 11511,
+        "body_geometry_verified": true,
+        "rapier_sensor_witnesses_verified": true,
+        "scope": "upright static cuboids; moving traffic uses conservative circumscribed-circle sweeps",
+        "ray_grid_entries_verified": 1658880,
+        "xyz_returns_verified": 829440,
+        "ground_removed_points": 829440,
+        "preserved_points": 0,
+        "height_eligible_preserved_points": 0,
+        "expected_5cm_voxel_returns": 0,
+        "confident_acquisitions": 576,
+        "unconfident_acquisitions": 0,
+        "actual_ground_returns": 829440,
+        "removed_actual_ground_returns": 829440,
+        "actual_static_returns": 0,
+        "removed_actual_static_returns": 0,
+        "height_eligible_static_returns": 0,
+        "actual_actor_returns": 0,
+        "preserved_actual_actor_returns": 0,
+        "empirical_capsule_boundary_hits": 0,
+        "acquisitions": 576,
+        "maximum_range_residual_m": 0.04144963553857561,
+        "maximum_fitted_plane_reconstruction_error_m": 9.713939157018048e-19,
+        "range_tolerance_m": 0.06,
+        "empirical_capsule_boundary_band_m": 0.0001,
+        "maximum_empirical_boundary_surface_gap_m": 0.0,
+        "exact_presence_beams_verified": 1658880,
+        "capsule_boundary_scope": "empirical pinned f32/GJK ambiguity, not a certified floating-point error bound",
+        "raw_ground_geometry_verified": true,
+        "ground_classification_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1149,
+        "stationary_holds": 408,
+        "max_acceleration_m_s2": 1.0000000000000342,
+        "max_deceleration_m_s2": 2.500000000000038
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 0,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 0,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 0,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.0,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 1152,
+        "emergency_ticks": 3,
+        "emergency_fraction": 0.0026041666666666665,
+        "commanded_acceleration_change_rms_m_s3": 13.669209174768037,
+        "max_normal_commanded_steering_rate_rad_s": 0.7
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "ab35f4981368942544df33c6ea41ede47d55c9f86099fa282882691a4d2be5c7",
+        "scene.json": "c96ecabe25e2589e0a0277191fe232e8fbe17eea0806da11ec0bb27a74a0032a",
+        "sensors.jsonl": "0b7fb9ea5e6e4f625d18bb0921287e6b63080819e7aeaca338a7ec2afa1d76c0"
+      },
+      "archive": {
+        "path": "/tmp/rustdrive-osm-ground-final/kinematic/clear/seed-42.tar.gz",
+        "sha256": "0194d2c47f6e6b97d4e2eaf50f90e44c12816543c6d5b12e0e17d97659046dc4",
+        "bytes": 73076382,
+        "files_sha256": {
+          "summary.json": "a5628b8c098dd1e09c817d165696e75f16dc39bb0cdf064727b83c19781fd214",
+          "sensors.jsonl": "0b7fb9ea5e6e4f625d18bb0921287e6b63080819e7aeaca338a7ec2afa1d76c0",
+          "run.json": "ab35f4981368942544df33c6ea41ede47d55c9f86099fa282882691a4d2be5c7",
+          "scene.json": "c96ecabe25e2589e0a0277191fe232e8fbe17eea0806da11ec0bb27a74a0032a",
+          "replay/replay.json": "42ab2b6b89600e83bec1f3c5af2f91bac5dfe965171401cb186c78003cf330fe",
+          "replay/outputs.jsonl": "17c0f82861db7f374465601988f95d682733a36787c364837d0e5a860f5fc8c4"
+        },
+        "gzip_crc_verified": true,
+        "raw_preserved": false
+      }
+    },
+    {
+      "plant": "dynamic",
+      "case": "clear",
+      "seed": 1,
+      "output": "/tmp/rustdrive-osm-ground-final/dynamic/clear/seed-1",
+      "exit_code": 0,
+      "summary": {
+        "scenario": "Imported historical OSM road with measured ground and native cuboid body",
+        "seed": 1,
+        "simulated_seconds": 57.5,
+        "steps": 1151,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05628692680351968,
+        "localization_max_error": 0.12067470967042732,
+        "final_speed": 0.18060643147664812,
+        "progress": 112.09658107004662,
+        "emergency_steps": 2,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "scene_summary": {
+        "checks": 0,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": null,
+        "native_overlap_samples": 0,
+        "passed": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1151,
+        "verified": true
+      },
+      "imported_map": {
+        "source_coordinates_verified": true,
+        "way_geometry_preserved": true,
+        "imported_route_verified": true,
+        "sensor_only_boundary_verified": true,
+        "map_search_replay": false,
+        "resolved_route_replay": true,
+        "body_corridor_motion_samples": 11501,
+        "minimum_body_corridor_reserve_m": 0.1062376481163825
+      },
+      "independent_ground_body": {
+        "passed": true,
+        "min_clearance_m": null,
+        "guard_overlap_intervals": 0,
+        "native_overlap_samples": 0,
+        "motion_samples": 11501,
+        "body_geometry_verified": true,
+        "rapier_sensor_witnesses_verified": true,
+        "scope": "upright static cuboids; moving traffic uses conservative circumscribed-circle sweeps",
+        "ray_grid_entries_verified": 1658880,
+        "xyz_returns_verified": 829440,
+        "ground_removed_points": 829440,
+        "preserved_points": 0,
+        "height_eligible_preserved_points": 0,
+        "expected_5cm_voxel_returns": 0,
+        "confident_acquisitions": 576,
+        "unconfident_acquisitions": 0,
+        "actual_ground_returns": 829440,
+        "removed_actual_ground_returns": 829440,
+        "actual_static_returns": 0,
+        "removed_actual_static_returns": 0,
+        "height_eligible_static_returns": 0,
+        "actual_actor_returns": 0,
+        "preserved_actual_actor_returns": 0,
+        "empirical_capsule_boundary_hits": 0,
+        "acquisitions": 576,
+        "maximum_range_residual_m": 0.04108921828133605,
+        "maximum_fitted_plane_reconstruction_error_m": 9.904867080617855e-19,
+        "range_tolerance_m": 0.06,
+        "empirical_capsule_boundary_band_m": 0.0001,
+        "maximum_empirical_boundary_surface_gap_m": 0.0,
+        "exact_presence_beams_verified": 1658880,
+        "capsule_boundary_scope": "empirical pinned f32/GJK ambiguity, not a certified floating-point error bound",
+        "raw_ground_geometry_verified": true,
+        "ground_classification_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1149,
+        "stationary_holds": 408,
+        "max_acceleration_m_s2": 1.0000000000000246,
+        "max_deceleration_m_s2": 2.500000000000032
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 0,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 0,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 0,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.0,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 1151,
+        "emergency_ticks": 2,
+        "emergency_fraction": 0.0017376194613379669,
+        "commanded_acceleration_change_rms_m_s3": 12.117144274079969,
+        "max_normal_commanded_steering_rate_rad_s": 0.5749330375927206
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "363d917ff3b98574c7628767629aa770acda94e10719709fc0cece9d8e76c265",
+        "scene.json": "8f3500eae5ee1fc5e81544c1d45b87c4cfb40e197901b919b67fc21c4ad24070",
+        "sensors.jsonl": "0c467437a6146c46de09cddf3621c8199091b0cb30a7b44ac604c4b59e993e58"
+      },
+      "archive": {
+        "path": "/tmp/rustdrive-osm-ground-final/dynamic/clear/seed-1.tar.gz",
+        "sha256": "e2c5c9775aff83d14568c8c854be35031ec5bf21cf252b1339aaac4fe0d56d3d",
+        "bytes": 73075559,
+        "files_sha256": {
+          "summary.json": "a22eec1056da39c00a032b726ddcf2768ecbb4fc0fe2da284aee2bfe6b68da55",
+          "sensors.jsonl": "0c467437a6146c46de09cddf3621c8199091b0cb30a7b44ac604c4b59e993e58",
+          "run.json": "363d917ff3b98574c7628767629aa770acda94e10719709fc0cece9d8e76c265",
+          "scene.json": "8f3500eae5ee1fc5e81544c1d45b87c4cfb40e197901b919b67fc21c4ad24070",
+          "replay/replay.json": "21f0766af547bbe15d72bc9633a8b36acc1bdaa890c94c407be243948cc1e0f2",
+          "replay/outputs.jsonl": "dadf177879b3ed7ad1b16439966c290e491fae0e715687e1b00b6418ebe5503e"
+        },
+        "gzip_crc_verified": true,
+        "raw_preserved": false
+      }
+    },
+    {
+      "plant": "dynamic",
+      "case": "clear",
+      "seed": 7,
+      "output": "/tmp/rustdrive-osm-ground-final/dynamic/clear/seed-7",
+      "exit_code": 0,
+      "summary": {
+        "scenario": "Imported historical OSM road with measured ground and native cuboid body",
+        "seed": 7,
+        "simulated_seconds": 57.550000000000004,
+        "steps": 1152,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05837575459760826,
+        "localization_max_error": 0.14948065101803182,
+        "final_speed": 0.175703390888244,
+        "progress": 112.14501760990994,
+        "emergency_steps": 0,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "scene_summary": {
+        "checks": 0,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": null,
+        "native_overlap_samples": 0,
+        "passed": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1152,
+        "verified": true
+      },
+      "imported_map": {
+        "source_coordinates_verified": true,
+        "way_geometry_preserved": true,
+        "imported_route_verified": true,
+        "sensor_only_boundary_verified": true,
+        "map_search_replay": false,
+        "resolved_route_replay": true,
+        "body_corridor_motion_samples": 11511,
+        "minimum_body_corridor_reserve_m": 0.09276910438669653
+      },
+      "independent_ground_body": {
+        "passed": true,
+        "min_clearance_m": null,
+        "guard_overlap_intervals": 0,
+        "native_overlap_samples": 0,
+        "motion_samples": 11511,
+        "body_geometry_verified": true,
+        "rapier_sensor_witnesses_verified": true,
+        "scope": "upright static cuboids; moving traffic uses conservative circumscribed-circle sweeps",
+        "ray_grid_entries_verified": 1658880,
+        "xyz_returns_verified": 829440,
+        "ground_removed_points": 829440,
+        "preserved_points": 0,
+        "height_eligible_preserved_points": 0,
+        "expected_5cm_voxel_returns": 0,
+        "confident_acquisitions": 576,
+        "unconfident_acquisitions": 0,
+        "actual_ground_returns": 829440,
+        "removed_actual_ground_returns": 829440,
+        "actual_static_returns": 0,
+        "removed_actual_static_returns": 0,
+        "height_eligible_static_returns": 0,
+        "actual_actor_returns": 0,
+        "preserved_actual_actor_returns": 0,
+        "empirical_capsule_boundary_hits": 0,
+        "acquisitions": 576,
+        "maximum_range_residual_m": 0.03868639158149678,
+        "maximum_fitted_plane_reconstruction_error_m": 7.480229049162923e-19,
+        "range_tolerance_m": 0.06,
+        "empirical_capsule_boundary_band_m": 0.0001,
+        "maximum_empirical_boundary_surface_gap_m": 0.0,
+        "exact_presence_beams_verified": 1658880,
+        "capsule_boundary_scope": "empirical pinned f32/GJK ambiguity, not a certified floating-point error bound",
+        "raw_ground_geometry_verified": true,
+        "ground_classification_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1152,
+        "stationary_holds": 411,
+        "max_acceleration_m_s2": 1.0000000000000258,
+        "max_deceleration_m_s2": 2.500000000000046
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 0,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 0,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 0,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.0,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 1152,
+        "emergency_ticks": 0,
+        "emergency_fraction": 0.0,
+        "commanded_acceleration_change_rms_m_s3": 9.339934457220105,
+        "max_normal_commanded_steering_rate_rad_s": 0.6999999999999998
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "aa1b73a3c33276083fe830090420efd16d52ab25102663c69e42004b7b76eae4",
+        "scene.json": "363bb79900a55d6c1d0feb599acd27a3276b31f3753535cb5bc70b70115d7892",
+        "sensors.jsonl": "161e4566d5ae1b99543cba976a3db5e799281a81aa2c71d913e39f1662299bc7"
+      },
+      "archive": {
+        "path": "/tmp/rustdrive-osm-ground-final/dynamic/clear/seed-7.tar.gz",
+        "sha256": "1968d9d2a693e3bbda48a1e92e6ad40be0bebab2d506273c0f2ad73cd28208d1",
+        "bytes": 73107910,
+        "files_sha256": {
+          "summary.json": "61c718f75cea1cb279fd34d8e58f9b6c9e780027ef7a21561b39fb14c8da7860",
+          "sensors.jsonl": "161e4566d5ae1b99543cba976a3db5e799281a81aa2c71d913e39f1662299bc7",
+          "run.json": "aa1b73a3c33276083fe830090420efd16d52ab25102663c69e42004b7b76eae4",
+          "scene.json": "363bb79900a55d6c1d0feb599acd27a3276b31f3753535cb5bc70b70115d7892",
+          "replay/replay.json": "858edcf90165e1e63161a953add93bc01717cdbd78d1f80befe87550c44aefb8",
+          "replay/outputs.jsonl": "f850f19efd29ff1fe30ef5a6caa501e38c95042e34d0690f58c28ccca3f60e78"
+        },
+        "gzip_crc_verified": true,
+        "raw_preserved": true
+      }
+    },
+    {
+      "plant": "dynamic",
+      "case": "clear",
+      "seed": 42,
+      "output": "/tmp/rustdrive-osm-ground-final/dynamic/clear/seed-42",
+      "exit_code": 0,
+      "summary": {
+        "scenario": "Imported historical OSM road with measured ground and native cuboid body",
+        "seed": 42,
+        "simulated_seconds": 57.6,
+        "steps": 1153,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05318805137740078,
+        "localization_max_error": 0.1737264503099475,
+        "final_speed": 0.081928486113656,
+        "progress": 112.11456470852139,
+        "emergency_steps": 0,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "scene_summary": {
+        "checks": 0,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": null,
+        "native_overlap_samples": 0,
+        "passed": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1153,
+        "verified": true
+      },
+      "imported_map": {
+        "source_coordinates_verified": true,
+        "way_geometry_preserved": true,
+        "imported_route_verified": true,
+        "sensor_only_boundary_verified": true,
+        "map_search_replay": false,
+        "resolved_route_replay": true,
+        "body_corridor_motion_samples": 11521,
+        "minimum_body_corridor_reserve_m": 0.10098398258391908
+      },
+      "independent_ground_body": {
+        "passed": true,
+        "min_clearance_m": null,
+        "guard_overlap_intervals": 0,
+        "native_overlap_samples": 0,
+        "motion_samples": 11521,
+        "body_geometry_verified": true,
+        "rapier_sensor_witnesses_verified": true,
+        "scope": "upright static cuboids; moving traffic uses conservative circumscribed-circle sweeps",
+        "ray_grid_entries_verified": 1661760,
+        "xyz_returns_verified": 830880,
+        "ground_removed_points": 830880,
+        "preserved_points": 0,
+        "height_eligible_preserved_points": 0,
+        "expected_5cm_voxel_returns": 0,
+        "confident_acquisitions": 577,
+        "unconfident_acquisitions": 0,
+        "actual_ground_returns": 830880,
+        "removed_actual_ground_returns": 830880,
+        "actual_static_returns": 0,
+        "removed_actual_static_returns": 0,
+        "height_eligible_static_returns": 0,
+        "actual_actor_returns": 0,
+        "preserved_actual_actor_returns": 0,
+        "empirical_capsule_boundary_hits": 0,
+        "acquisitions": 577,
+        "maximum_range_residual_m": 0.041449635538581386,
+        "maximum_fitted_plane_reconstruction_error_m": 8.037938661622867e-19,
+        "range_tolerance_m": 0.06,
+        "empirical_capsule_boundary_band_m": 0.0001,
+        "maximum_empirical_boundary_surface_gap_m": 0.0,
+        "exact_presence_beams_verified": 1661760,
+        "capsule_boundary_scope": "empirical pinned f32/GJK ambiguity, not a certified floating-point error bound",
+        "raw_ground_geometry_verified": true,
+        "ground_classification_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1153,
+        "stationary_holds": 412,
+        "max_acceleration_m_s2": 1.000000000000029,
+        "max_deceleration_m_s2": 2.5000000000000426
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 0,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 0,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 0,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.0,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 1153,
+        "emergency_ticks": 0,
+        "emergency_fraction": 0.0,
+        "commanded_acceleration_change_rms_m_s3": 9.537737030347559,
+        "max_normal_commanded_steering_rate_rad_s": 0.7
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "a34544f04058c3a28c0007c1ce1131c2ad08fcaebdfee92b0f5e3d4a16729c47",
+        "scene.json": "f33584384c821b7b8c7953a3a2e776c48ead143eaff0849222c92be5adf4ac86",
+        "sensors.jsonl": "ce64b1864633bd5a4ce4c6bc054fd4cf4f8b5368c94b2e0a814e3da381a0eef0"
+      },
+      "archive": {
+        "path": "/tmp/rustdrive-osm-ground-final/dynamic/clear/seed-42.tar.gz",
+        "sha256": "b9e8274170ae719d4a65fc9e5da5dd6613dd3d7af94ba3ae552eaa558c7ff911",
+        "bytes": 73222847,
+        "files_sha256": {
+          "summary.json": "ca15aa062290479c2d307de1690c73d394d1eab4e1bd4c462170b0790b3b73af",
+          "sensors.jsonl": "ce64b1864633bd5a4ce4c6bc054fd4cf4f8b5368c94b2e0a814e3da381a0eef0",
+          "run.json": "a34544f04058c3a28c0007c1ce1131c2ad08fcaebdfee92b0f5e3d4a16729c47",
+          "scene.json": "f33584384c821b7b8c7953a3a2e776c48ead143eaff0849222c92be5adf4ac86",
+          "replay/replay.json": "3add00eb9d44f176e9265f08536503e1a9333d20789c1cb19868a0917e5903c1",
+          "replay/outputs.jsonl": "e7b1bb10e45093bace918e441070bf7e417cb7d28124ba382cfb4f42208aebca"
+        },
+        "gzip_crc_verified": true,
+        "raw_preserved": false
+      }
+    },
+    {
+      "plant": "dynamic",
+      "case": "midbeam",
+      "seed": 1,
+      "output": "/tmp/rustdrive-osm-ground-final/dynamic/midbeam/seed-1",
+      "exit_code": 0,
+      "summary": {
+        "scenario": "Imported historical OSM road with measured ground and sensed cuboid stop",
+        "seed": 1,
+        "simulated_seconds": 100.0,
+        "steps": 2001,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05070572708874656,
+        "localization_max_error": 0.12067470967042732,
+        "final_speed": 0.0,
+        "progress": 24.8190369046816,
+        "emergency_steps": 19,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "scene_summary": {
+        "checks": 40001,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": 7.540254540024344,
+        "native_overlap_samples": 0,
+        "passed": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 2001,
+        "verified": true
+      },
+      "imported_map": {
+        "source_coordinates_verified": true,
+        "way_geometry_preserved": true,
+        "imported_route_verified": true,
+        "sensor_only_boundary_verified": true,
+        "map_search_replay": false,
+        "resolved_route_replay": true,
+        "body_corridor_motion_samples": 20001,
+        "minimum_body_corridor_reserve_m": 0.42708376988138197
+      },
+      "independent_ground_body": {
+        "passed": true,
+        "min_clearance_m": 7.540254540024344,
+        "guard_overlap_intervals": 0,
+        "native_overlap_samples": 0,
+        "motion_samples": 20001,
+        "body_geometry_verified": true,
+        "rapier_sensor_witnesses_verified": true,
+        "scope": "upright static cuboids; moving traffic uses conservative circumscribed-circle sweeps",
+        "ray_grid_entries_verified": 2882880,
+        "xyz_returns_verified": 1460995,
+        "ground_removed_points": 1441440,
+        "preserved_points": 19555,
+        "height_eligible_preserved_points": 19555,
+        "expected_5cm_voxel_returns": 19555,
+        "confident_acquisitions": 1001,
+        "unconfident_acquisitions": 0,
+        "actual_ground_returns": 1441440,
+        "removed_actual_ground_returns": 1441440,
+        "actual_static_returns": 19555,
+        "removed_actual_static_returns": 0,
+        "height_eligible_static_returns": 19555,
+        "actual_actor_returns": 0,
+        "preserved_actual_actor_returns": 0,
+        "empirical_capsule_boundary_hits": 0,
+        "acquisitions": 1001,
+        "maximum_range_residual_m": 0.04108921828133738,
+        "maximum_fitted_plane_reconstruction_error_m": 8.454498157536735e-19,
+        "range_tolerance_m": 0.06,
+        "empirical_capsule_boundary_band_m": 0.0001,
+        "maximum_empirical_boundary_surface_gap_m": 0.0,
+        "exact_presence_beams_verified": 2882880,
+        "capsule_boundary_scope": "empirical pinned f32/GJK ambiguity, not a certified floating-point error bound",
+        "raw_ground_geometry_verified": true,
+        "ground_classification_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1982,
+        "stationary_holds": 1730,
+        "max_acceleration_m_s2": 1.0000000000000007,
+        "max_deceleration_m_s2": 2.5000000000000004
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 1749,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 867,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 874,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.05000000000001137,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 2001,
+        "emergency_ticks": 19,
+        "emergency_fraction": 0.009495252373813094,
+        "commanded_acceleration_change_rms_m_s3": 34.15049215481741,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000008
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "8487be6337e674cdbc0b744649d33d072ff4989c252f542a91c45eb8ec463e38",
+        "scene.json": "97d873ad75771b5dcfce395f4f441adaa61a69050934943139938699760a5769",
+        "sensors.jsonl": "0eca8e381f97278055c58647e07767fa1ed71d35a9c0fb2de3fafbb8aa1ce67a"
+      },
+      "archive": {
+        "path": "/tmp/rustdrive-osm-ground-final/dynamic/midbeam/seed-1.tar.gz",
+        "sha256": "246ba6cce952b5c548dfffdc82a8e5fa1b512f158da11c2e4f891e4cafb528b4",
+        "bytes": 117180943,
+        "files_sha256": {
+          "summary.json": "6f3696b1bc5c90751a3649fbf54e9dbeb3de1b5920ab49a49129b9fb90566375",
+          "sensors.jsonl": "0eca8e381f97278055c58647e07767fa1ed71d35a9c0fb2de3fafbb8aa1ce67a",
+          "run.json": "8487be6337e674cdbc0b744649d33d072ff4989c252f542a91c45eb8ec463e38",
+          "scene.json": "97d873ad75771b5dcfce395f4f441adaa61a69050934943139938699760a5769",
+          "replay/replay.json": "2b53af652a2d2e9dbafae1a7a543ddd6ece4800d1ba205b78f9c3a8fad037f54",
+          "replay/outputs.jsonl": "26dc43316074ed2287885d34276b2f8d6ec498eda4f950e49310f9baee600d76"
+        },
+        "gzip_crc_verified": true,
+        "raw_preserved": false
+      }
+    },
+    {
+      "plant": "dynamic",
+      "case": "midbeam",
+      "seed": 7,
+      "output": "/tmp/rustdrive-osm-ground-final/dynamic/midbeam/seed-7",
+      "exit_code": 0,
+      "summary": {
+        "scenario": "Imported historical OSM road with measured ground and sensed cuboid stop",
+        "seed": 7,
+        "simulated_seconds": 100.0,
+        "steps": 2001,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05168396942609344,
+        "localization_max_error": 0.14948065101803182,
+        "final_speed": 0.0,
+        "progress": 24.85171964255639,
+        "emergency_steps": 24,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "scene_summary": {
+        "checks": 40001,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": 7.516490920471008,
+        "native_overlap_samples": 0,
+        "passed": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 2001,
+        "verified": true
+      },
+      "imported_map": {
+        "source_coordinates_verified": true,
+        "way_geometry_preserved": true,
+        "imported_route_verified": true,
+        "sensor_only_boundary_verified": true,
+        "map_search_replay": false,
+        "resolved_route_replay": true,
+        "body_corridor_motion_samples": 20001,
+        "minimum_body_corridor_reserve_m": 0.4780199533799261
+      },
+      "independent_ground_body": {
+        "passed": true,
+        "min_clearance_m": 7.516490920470993,
+        "guard_overlap_intervals": 0,
+        "native_overlap_samples": 0,
+        "motion_samples": 20001,
+        "body_geometry_verified": true,
+        "rapier_sensor_witnesses_verified": true,
+        "scope": "upright static cuboids; moving traffic uses conservative circumscribed-circle sweeps",
+        "ray_grid_entries_verified": 2882880,
+        "xyz_returns_verified": 1460986,
+        "ground_removed_points": 1441440,
+        "preserved_points": 19546,
+        "height_eligible_preserved_points": 19546,
+        "expected_5cm_voxel_returns": 19546,
+        "confident_acquisitions": 1001,
+        "unconfident_acquisitions": 0,
+        "actual_ground_returns": 1441440,
+        "removed_actual_ground_returns": 1441440,
+        "actual_static_returns": 19546,
+        "removed_actual_static_returns": 0,
+        "height_eligible_static_returns": 19546,
+        "actual_actor_returns": 0,
+        "preserved_actual_actor_returns": 0,
+        "empirical_capsule_boundary_hits": 0,
+        "acquisitions": 1001,
+        "maximum_range_residual_m": 0.039734702070944206,
+        "maximum_fitted_plane_reconstruction_error_m": 9.924700101158807e-19,
+        "range_tolerance_m": 0.06,
+        "empirical_capsule_boundary_band_m": 0.0001,
+        "maximum_empirical_boundary_surface_gap_m": 0.0,
+        "exact_presence_beams_verified": 2882880,
+        "capsule_boundary_scope": "empirical pinned f32/GJK ambiguity, not a certified floating-point error bound",
+        "raw_ground_geometry_verified": true,
+        "ground_classification_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1977,
+        "stationary_holds": 1725,
+        "max_acceleration_m_s2": 1.0000000000000009,
+        "max_deceleration_m_s2": 2.5000000000000004
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 1749,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 875,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 874,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.05000000000001137,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 2001,
+        "emergency_ticks": 24,
+        "emergency_fraction": 0.01199400299850075,
+        "commanded_acceleration_change_rms_m_s3": 34.20144383439604,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000008
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "d703a96d48ab2e2759a7793268f69674b4bebe197307a8cd1d6d0364906f3882",
+        "scene.json": "b5a328ba5b3337d3b8acaf2d1bbf885db7dccc9275ab39ce1dab387151d8d45e",
+        "sensors.jsonl": "be5ea8366121f7e9dd37872a922a2e3a661357ca4eacd8a3262a3a0c01934f8c"
+      },
+      "archive": {
+        "path": "/tmp/rustdrive-osm-ground-final/dynamic/midbeam/seed-7.tar.gz",
+        "sha256": "7b47ba3792ccfad11d432e2d9a3b2206d7a1e431424155dfb65e3eeb6238c9ea",
+        "bytes": 117182345,
+        "files_sha256": {
+          "summary.json": "5bef5cf15f9f9868fb0eca8b410901305cea46953d4248f3048e212ee5678242",
+          "sensors.jsonl": "be5ea8366121f7e9dd37872a922a2e3a661357ca4eacd8a3262a3a0c01934f8c",
+          "run.json": "d703a96d48ab2e2759a7793268f69674b4bebe197307a8cd1d6d0364906f3882",
+          "scene.json": "b5a328ba5b3337d3b8acaf2d1bbf885db7dccc9275ab39ce1dab387151d8d45e",
+          "replay/replay.json": "2b53af652a2d2e9dbafae1a7a543ddd6ece4800d1ba205b78f9c3a8fad037f54",
+          "replay/outputs.jsonl": "d04b89447a863dc7ce520a30f290d772eab64a0fde6a792946c40543b5ba650b"
+        },
+        "gzip_crc_verified": true,
+        "raw_preserved": true
+      }
+    },
+    {
+      "plant": "dynamic",
+      "case": "midbeam",
+      "seed": 42,
+      "output": "/tmp/rustdrive-osm-ground-final/dynamic/midbeam/seed-42",
+      "exit_code": 0,
+      "summary": {
+        "scenario": "Imported historical OSM road with measured ground and sensed cuboid stop",
+        "seed": 42,
+        "simulated_seconds": 100.0,
+        "steps": 2001,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.050925650603558116,
+        "localization_max_error": 0.1737264503099475,
+        "final_speed": 0.0,
+        "progress": 24.822637374342182,
+        "emergency_steps": 26,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "scene_summary": {
+        "checks": 40001,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": 7.535770987792149,
+        "native_overlap_samples": 0,
+        "passed": true
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 2001,
+        "verified": true
+      },
+      "imported_map": {
+        "source_coordinates_verified": true,
+        "way_geometry_preserved": true,
+        "imported_route_verified": true,
+        "sensor_only_boundary_verified": true,
+        "map_search_replay": false,
+        "resolved_route_replay": true,
+        "body_corridor_motion_samples": 20001,
+        "minimum_body_corridor_reserve_m": 0.42892629634800894
+      },
+      "independent_ground_body": {
+        "passed": true,
+        "min_clearance_m": 7.5357709877921435,
+        "guard_overlap_intervals": 0,
+        "native_overlap_samples": 0,
+        "motion_samples": 20001,
+        "body_geometry_verified": true,
+        "rapier_sensor_witnesses_verified": true,
+        "scope": "upright static cuboids; moving traffic uses conservative circumscribed-circle sweeps",
+        "ray_grid_entries_verified": 2882880,
+        "xyz_returns_verified": 1461849,
+        "ground_removed_points": 1441440,
+        "preserved_points": 20409,
+        "height_eligible_preserved_points": 20409,
+        "expected_5cm_voxel_returns": 20409,
+        "confident_acquisitions": 1001,
+        "unconfident_acquisitions": 0,
+        "actual_ground_returns": 1441440,
+        "removed_actual_ground_returns": 1441440,
+        "actual_static_returns": 20409,
+        "removed_actual_static_returns": 0,
+        "height_eligible_static_returns": 20409,
+        "actual_actor_returns": 0,
+        "preserved_actual_actor_returns": 0,
+        "empirical_capsule_boundary_hits": 0,
+        "acquisitions": 1001,
+        "maximum_range_residual_m": 0.041449635538574725,
+        "maximum_fitted_plane_reconstruction_error_m": 8.015559964559264e-19,
+        "range_tolerance_m": 0.06,
+        "empirical_capsule_boundary_band_m": 0.0001,
+        "maximum_empirical_boundary_surface_gap_m": 0.0,
+        "exact_presence_beams_verified": 2882880,
+        "capsule_boundary_scope": "empirical pinned f32/GJK ambiguity, not a certified floating-point error bound",
+        "raw_ground_geometry_verified": true,
+        "ground_classification_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1975,
+        "stationary_holds": 1723,
+        "max_acceleration_m_s2": 1.0000000000000007,
+        "max_deceleration_m_s2": 2.5000000000000004
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 1749,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 899,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 874,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.05000000000001137,
+        "current_epoch_reconstruction_verified": true
+      },
+      "control_metrics": {
+        "ticks": 2001,
+        "emergency_ticks": 26,
+        "emergency_fraction": 0.012993503248375811,
+        "commanded_acceleration_change_rms_m_s3": 35.34571552435725,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000008
+      },
+      "passed": true,
+      "raw_sha256": {
+        "run.json": "ad11a09eeb2399fb96b2ab804a44e950a78175f28784159ffced812680bfe229",
+        "scene.json": "855cfa86dfcb0496d29a280bd09434c4b98480bddbf50a124f56fe33bd8e1a3d",
+        "sensors.jsonl": "85f9aad892fab57a48cf9a9029fb0ba4d7262998d93e97aaec7a94b4357529a4"
+      },
+      "archive": {
+        "path": "/tmp/rustdrive-osm-ground-final/dynamic/midbeam/seed-42.tar.gz",
+        "sha256": "231b6bbb91fd78c957c3f2337d6c1e7b50cd49e47dd7758c18700bc8097b02e8",
+        "bytes": 117259848,
+        "files_sha256": {
+          "summary.json": "539c3e8a8f361a66f2fab57e4dc104b108233704c0b45d388a490e4b450df72f",
+          "sensors.jsonl": "85f9aad892fab57a48cf9a9029fb0ba4d7262998d93e97aaec7a94b4357529a4",
+          "run.json": "ad11a09eeb2399fb96b2ab804a44e950a78175f28784159ffced812680bfe229",
+          "scene.json": "855cfa86dfcb0496d29a280bd09434c4b98480bddbf50a124f56fe33bd8e1a3d",
+          "replay/replay.json": "2b53af652a2d2e9dbafae1a7a543ddd6ece4800d1ba205b78f9c3a8fad037f54",
+          "replay/outputs.jsonl": "53166673726f589a391a7aed42d64a9a737bf0e7578fdd62b132b64b54b06121"
+        },
+        "gzip_crc_verified": true,
+        "raw_preserved": false
+      }
+    }
+  ],
+  "passed": true,
+  "compact": true,
+  "complete": true,
+  "positive_run_count": 9,
+  "independent_physical_oracle_source_fingerprint_sha256": "8c1459719798bb96644835d896aceeeddf4de8967f5714b3da4053fc9ac7accc",
+  "final_source_revalidation": {
+    "source_fingerprint_sha256": "690f83645f0e4ca1cf888f52186d48c7e07c1332886b040350fd5fdc24f4a35f",
+    "physical_oracle_source_fingerprint_sha256": "8c1459719798bb96644835d896aceeeddf4de8967f5714b3da4053fc9ac7accc",
+    "prior_report_sha256": "dce6ac039b854086baf1fa1d7fc8c568968f3d16f36636ad3b793588a050b5f2",
+    "method": "Fresh native episodes and complete sensor replay; byte-identical run, scene, sensors and recomputed outputs permit reuse of prior independent physical/map/ray oracle proof.",
+    "runs": [
+      {
+        "plant": "kinematic",
+        "case": "clear",
+        "seed": 1,
+        "byte_identical": true,
+        "raw_sha256": {
+          "run.json": "8dfd29aa0430825d3e6343a2d25592942e9aa40130a0367fccc5ac4525ac4f82",
+          "scene.json": "659f50386006c4dc306639414e9228c1da8cde2d2649b5728f9d385892340300",
+          "sensors.jsonl": "7b7da562341ea91c96f9cb0db33cbf836e9f193efa4535d72e31a9c615964951"
+        },
+        "replay": {
+          "source": "rne-kinematic-rapier-lidar",
+          "ticks": 1150,
+          "verified": true
+        },
+        "recomputed_outputs_sha256": "f06a3e417529e1714a4673bba0d4146080ef5f61dad07d6af4274ea19c0eeab6"
+      },
+      {
+        "plant": "kinematic",
+        "case": "clear",
+        "seed": 7,
+        "byte_identical": true,
+        "raw_sha256": {
+          "run.json": "96d04b3397283fec0d79b45ee04bd5a43b49afd8a60302cbf3bf4c863608cac5",
+          "scene.json": "90dda900a5fc581b88bff9862c7779514a76f9f093d3987b9be59eded1a467b5",
+          "sensors.jsonl": "0eec4778b96e223fa1944de941f148dfa20f5379d32b46af70771b42398c76b2"
+        },
+        "replay": {
+          "source": "rne-kinematic-rapier-lidar",
+          "ticks": 1153,
+          "verified": true
+        },
+        "recomputed_outputs_sha256": "5ab25eec875a98f49f9ff7fcfc45d90d073c3db3914dcadffd9312f3c1c2a7fe"
+      },
+      {
+        "plant": "kinematic",
+        "case": "clear",
+        "seed": 42,
+        "byte_identical": true,
+        "raw_sha256": {
+          "run.json": "ab35f4981368942544df33c6ea41ede47d55c9f86099fa282882691a4d2be5c7",
+          "scene.json": "c96ecabe25e2589e0a0277191fe232e8fbe17eea0806da11ec0bb27a74a0032a",
+          "sensors.jsonl": "0b7fb9ea5e6e4f625d18bb0921287e6b63080819e7aeaca338a7ec2afa1d76c0"
+        },
+        "replay": {
+          "source": "rne-kinematic-rapier-lidar",
+          "ticks": 1152,
+          "verified": true
+        },
+        "recomputed_outputs_sha256": "17c0f82861db7f374465601988f95d682733a36787c364837d0e5a860f5fc8c4"
+      },
+      {
+        "plant": "dynamic",
+        "case": "clear",
+        "seed": 1,
+        "byte_identical": true,
+        "raw_sha256": {
+          "run.json": "363d917ff3b98574c7628767629aa770acda94e10719709fc0cece9d8e76c265",
+          "scene.json": "8f3500eae5ee1fc5e81544c1d45b87c4cfb40e197901b919b67fc21c4ad24070",
+          "sensors.jsonl": "0c467437a6146c46de09cddf3621c8199091b0cb30a7b44ac604c4b59e993e58"
+        },
+        "replay": {
+          "source": "rne-dynamic-rapier-lidar",
+          "ticks": 1151,
+          "verified": true
+        },
+        "recomputed_outputs_sha256": "dadf177879b3ed7ad1b16439966c290e491fae0e715687e1b00b6418ebe5503e"
+      },
+      {
+        "plant": "dynamic",
+        "case": "clear",
+        "seed": 7,
+        "byte_identical": true,
+        "raw_sha256": {
+          "run.json": "aa1b73a3c33276083fe830090420efd16d52ab25102663c69e42004b7b76eae4",
+          "scene.json": "363bb79900a55d6c1d0feb599acd27a3276b31f3753535cb5bc70b70115d7892",
+          "sensors.jsonl": "161e4566d5ae1b99543cba976a3db5e799281a81aa2c71d913e39f1662299bc7"
+        },
+        "replay": {
+          "source": "rne-dynamic-rapier-lidar",
+          "ticks": 1152,
+          "verified": true
+        },
+        "recomputed_outputs_sha256": "f850f19efd29ff1fe30ef5a6caa501e38c95042e34d0690f58c28ccca3f60e78"
+      },
+      {
+        "plant": "dynamic",
+        "case": "clear",
+        "seed": 42,
+        "byte_identical": true,
+        "raw_sha256": {
+          "run.json": "a34544f04058c3a28c0007c1ce1131c2ad08fcaebdfee92b0f5e3d4a16729c47",
+          "scene.json": "f33584384c821b7b8c7953a3a2e776c48ead143eaff0849222c92be5adf4ac86",
+          "sensors.jsonl": "ce64b1864633bd5a4ce4c6bc054fd4cf4f8b5368c94b2e0a814e3da381a0eef0"
+        },
+        "replay": {
+          "source": "rne-dynamic-rapier-lidar",
+          "ticks": 1153,
+          "verified": true
+        },
+        "recomputed_outputs_sha256": "e7b1bb10e45093bace918e441070bf7e417cb7d28124ba382cfb4f42208aebca"
+      },
+      {
+        "plant": "dynamic",
+        "case": "midbeam",
+        "seed": 1,
+        "byte_identical": true,
+        "raw_sha256": {
+          "run.json": "8487be6337e674cdbc0b744649d33d072ff4989c252f542a91c45eb8ec463e38",
+          "scene.json": "97d873ad75771b5dcfce395f4f441adaa61a69050934943139938699760a5769",
+          "sensors.jsonl": "0eca8e381f97278055c58647e07767fa1ed71d35a9c0fb2de3fafbb8aa1ce67a"
+        },
+        "replay": {
+          "source": "rne-dynamic-rapier-lidar",
+          "ticks": 2001,
+          "verified": true
+        },
+        "recomputed_outputs_sha256": "26dc43316074ed2287885d34276b2f8d6ec498eda4f950e49310f9baee600d76"
+      },
+      {
+        "plant": "dynamic",
+        "case": "midbeam",
+        "seed": 7,
+        "byte_identical": true,
+        "raw_sha256": {
+          "run.json": "d703a96d48ab2e2759a7793268f69674b4bebe197307a8cd1d6d0364906f3882",
+          "scene.json": "b5a328ba5b3337d3b8acaf2d1bbf885db7dccc9275ab39ce1dab387151d8d45e",
+          "sensors.jsonl": "be5ea8366121f7e9dd37872a922a2e3a661357ca4eacd8a3262a3a0c01934f8c"
+        },
+        "replay": {
+          "source": "rne-dynamic-rapier-lidar",
+          "ticks": 2001,
+          "verified": true
+        },
+        "recomputed_outputs_sha256": "d04b89447a863dc7ce520a30f290d772eab64a0fde6a792946c40543b5ba650b"
+      },
+      {
+        "plant": "dynamic",
+        "case": "midbeam",
+        "seed": 42,
+        "byte_identical": true,
+        "raw_sha256": {
+          "run.json": "ad11a09eeb2399fb96b2ab804a44e950a78175f28784159ffced812680bfe229",
+          "scene.json": "855cfa86dfcb0496d29a280bd09434c4b98480bddbf50a124f56fe33bd8e1a3d",
+          "sensors.jsonl": "85f9aad892fab57a48cf9a9029fb0ba4d7262998d93e97aaec7a94b4357529a4"
+        },
+        "replay": {
+          "source": "rne-dynamic-rapier-lidar",
+          "ticks": 2001,
+          "verified": true
+        },
+        "recomputed_outputs_sha256": "53166673726f589a391a7aed42d64a9a737bf0e7578fdd62b132b64b54b06121"
+      }
+    ],
+    "passed": true,
+    "complete": true
+  },
+  "metrics": {
+    "replay_ticks": 12914,
+    "minimum_body_corridor_reserve_m": 0.06502387999834372,
+    "ray_grid_entries_verified": 18604800,
+    "xyz_returns_verified": 9361910,
+    "actual_ground_returns": 9302400,
+    "removed_actual_ground_returns": 9302400,
+    "actual_static_returns": 59510,
+    "removed_actual_static_returns": 0
+  }
+}

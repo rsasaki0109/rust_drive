@@ -135,7 +135,14 @@ def main():
         bpy.ops.object.modifier_apply(modifier=union.name)
         bpy.data.objects.remove(surface, do_unlink=True)
     scenery = environment(edges)
+    ground_mode = request.get('ground_mode', False)
+    if ground_mode:
+        # Only physical road tiles supply the new-mode asphalt surface.
+        # Decorative markings and suburban scenery remain visual overlays.
+        for surface in roads[:1]:
+            bpy.data.objects.remove(surface, do_unlink=True)
     native_models = {}
+    ground_models = {}
     if request.get('native_scene'):
         physical = material('Native physical cuboid orange', (.98, .25, .025), roughness=.55)
         for box in request['native_scene']['static_cuboids']:
@@ -145,6 +152,14 @@ def main():
             obj['native_scene_id'] = box['id']
             obj['native_scene_physical_geometry'] = True
             native_models[box['id']] = obj
+        if ground_mode:
+            for box in request['native_scene']['ground_cuboids']:
+                obj = cube('Native physical road '+box['id'], box['center_m'],
+                           [2*half for half in box['half_extents_m']], asphalt)
+                obj.rotation_euler.z = box['yaw_rad']
+                obj['native_scene_id'] = box['id']
+                obj['native_scene_physical_ground_geometry'] = True
+                ground_models[box['id']] = obj
     signal_specs = run['scenario'].get('traffic_signals', [])
     signal_models = {}
     stop_specs = run['scenario'].get('stop_signs', [])
@@ -197,6 +212,17 @@ def main():
     camera.data.clip_end = 1000
     scene.camera = camera
     ego = car('Recorded ego', run['vehicle']['radius'], blue, glass, tire, headlight, ego=True)
+    body_envelope = None
+    if ground_mode and request.get('body_calibration'):
+        calibration = request['body_calibration']
+        body_envelope = cube('Research physical body envelope', (0, 0, 0),
+                             (calibration['length_m'], calibration['width_m'], calibration['height_m']), teal)
+        body_envelope['research_body_envelope'] = True
+        wire = body_envelope.modifiers.new('Research envelope wire', 'WIREFRAME')
+        wire.thickness = .018
+        wire.use_replace = True
+        # Audit original eight vertices; the render-only wire modifier does
+        # not change the calibration corners or pretend to be a cosmetic car.
     dynamic_ids = {s['id'] for f in run['frames'] for s in f.get('traffic', [])}
     if intersection_specs:
         first_positions = {}
@@ -237,6 +263,15 @@ def main():
         pose = frame['truth']['pose']
         x, y = pose['position']['x'], pose['position']['y']
         ego.location, ego.rotation_euler = (x, y, .02), (0, 0, pose['yaw'])
+        if ground_mode:
+            ego.location.z = 0
+        if body_envelope is not None:
+            calibration = request['body_calibration']
+            ox, oy = calibration['center_offset_body_m']
+            c, s = math.cos(pose['yaw']), math.sin(pose['yaw'])
+            body_envelope.location = (x+c*ox-s*oy, y+s*ox+c*oy,
+                                      calibration['bottom_m']+calibration['height_m']/2)
+            body_envelope.rotation_euler.z = pose['yaw']
         camera.location = (x-11, y-16, 16)
         target = (x+4, y, 0)
         if request.get('camera') == 'traffic':
@@ -313,8 +348,12 @@ def main():
         state = {'frame_index': index, 'time': frame['time'], 'ego_pose': rendered_pose,
                  'objects': rendered_objects, 'closed_edges': closed,
                  'camera_position': list(camera.location)}
-        if native_models:
+        if native_models or ground_mode:
             state['native_cuboids'] = native_cuboid_audit(native_models)
+        if ground_mode:
+            state['native_ground_cuboids'] = native_cuboid_audit(ground_models)
+            if body_envelope is not None:
+                state['body_envelope'] = native_cuboid_audit({'research-body-envelope': body_envelope})[0]
         audit.append(state)
         for spec in signal_specs:
             color=next(p['color'] for p in reversed(spec['phases']) if p['from']<=frame['time']+1e-9)
@@ -329,9 +368,15 @@ def main():
                   'mapped_signal_ids': list(signal_models),
                   'mapped_stop_sign_ids': [s['id'] for s in stop_specs],
                   'mapped_intersection_ids': [s['stop_line']['id'] for s in intersection_specs]}
-    if native_models:
+    if native_models or ground_mode:
         scene_info['native_scene_name'] = request['native_scene']['name']
         scene_info['native_cuboids'] = native_cuboid_audit(native_models)
+    if ground_mode:
+        scene_info['native_ground_cuboids'] = native_cuboid_audit(ground_models)
+        scene_info['road_surface'] = 'actual SceneV2 ground cuboids; top at flat datum 0 m'
+        scene_info['scenery_physical'] = False
+        if body_envelope is not None:
+            scene_info['body_envelope'] = native_cuboid_audit({'research-body-envelope': body_envelope})[0]
     (output/'scene-info.json').write_text(json.dumps(scene_info, indent=2)+'\n')
     if request.get('scene_output'):
         bpy.ops.wm.save_as_mainfile(filepath=request['scene_output'])

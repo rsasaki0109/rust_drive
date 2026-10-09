@@ -78,7 +78,7 @@ The low-slab rejection is deliberately retained. A low obstacle can intersect th
 
 The published dynamic-plant recording uses seed 7 and runs for **35 seconds / 701 sensor ticks**. Ego stops before the barrier with **7.391012 m** minimum capsule-guard clearance. The full recording is rendered as **118 audited states / 118 GIF frames**, 960 × 640 pixels, using eight Cycles CPU samples and three threads. The 1.67 MB GIF plays at 3× speed with a final pause; all 351 recorded display poses and each rendered cuboid's corners are checked. [GIF provenance](../assets/native-scene-demo.json).
 
-Install Blender and activate the Pillow environment described in [3D replay setup](3d-demo.md#reproduce-the-opening-gif). Rendering is opt-in: `--native-scene` takes the **generated evidence sidecar**, not the original scene fixture.
+Install Blender and activate the Pillow environment described in [3D replay setup](3d-demo.md#reproduce-the-closure-detour-gif). Rendering is opt-in: `--native-scene` takes the **generated evidence sidecar**, not the original scene fixture.
 
 ```sh
 python3 scripts/render_demo_3d.py artifacts/native-ground/run.json \

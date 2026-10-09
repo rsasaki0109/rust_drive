@@ -71,10 +71,15 @@ pub struct GnssBiasWindow {
     pub until: f64,
     pub offset: Vec2,
 }
+fn is_false(value: &bool) -> bool {
+    !*value
+}
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Scenario {
     pub name: String,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub local_route_geometry: bool,
     pub duration: f64,
     pub road_length: f64,
     pub half_width: f64,
@@ -563,6 +568,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
         config.cruise_speed = speed;
     }
     config.motion_limits = scenario.motion_limits;
+    config.local_route_geometry = scenario.local_route_geometry;
     config.stop_signs = scenario.stop_signs.clone();
     config.yield_intersections = scenario.yield_intersections.clone();
     config.stop_lines = scenario

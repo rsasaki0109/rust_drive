@@ -1,5 +1,9 @@
 //! CPU-only RNE plant and Rapier LiDAR adapter for the shared RustDrive pipeline.
+pub mod body;
+#[cfg(test)]
+mod grazing;
 pub mod scene;
+use body::{BodyCalibration, BodyCapture};
 use rne_core::{KeyedRandom, SimDuration};
 use rne_ecs::{Entity, World, spawn_named};
 use rne_math::{Quat, Seconds, Vec3, yaw_rad};
@@ -16,7 +20,7 @@ use rustdrive_core::{
     MultiHeightLidarScan, Odometry, Pose, Vec2, Vec3 as BodyPoint3,
 };
 use rustdrive_pipeline::{
-    Lidar3dConfig, MotionLimits, MultiHeightLidarConfig, PipelineConfig, SensorFrame,
+    GroundConfig, Lidar3dConfig, MotionLimits, MultiHeightLidarConfig, PipelineConfig, SensorFrame,
 };
 use rustdrive_sim::traffic::{TrafficTelemetry, TrafficWorld};
 use rustdrive_sim::{
@@ -31,6 +35,12 @@ use std::sync::{Arc, Mutex};
 pub enum Plant {
     Kinematic,
     Dynamic,
+}
+#[derive(Clone, Copy, PartialEq)]
+enum GroundMode {
+    Disabled,
+    Segmentation,
+    VehicleBody,
 }
 /// ENU planar coordinate to RNE Y-up world; north corresponds to negative Z.
 pub fn to_rne(point: Vec2) -> Vec3 {
@@ -71,6 +81,9 @@ pub struct RneBackend {
     scene: Option<Arc<Mutex<SceneCapture>>>,
     multi_height: bool,
     lidar_3d: bool,
+    ground_segmentation: bool,
+    vehicle_body: bool,
+    scene_obstacles: Vec<(Entity, String)>,
     /// Test/diagnostic injection; a checked raycast against an unknown world must brake.
     pub fail_lidar_from: Option<f64>,
     /// Test/diagnostic injection for an auxiliary operational plane only.
@@ -81,7 +94,15 @@ pub struct RneBackend {
 impl RneBackend {
     /// Creates a headless native vehicle with a CPU Rapier query scene.
     pub fn new(scenario: Scenario, seed: u64, plant: Plant) -> Result<Self, String> {
-        Self::create(scenario, seed, plant, None, false, false)
+        Self::create(
+            scenario,
+            seed,
+            plant,
+            None,
+            false,
+            false,
+            GroundMode::Disabled,
+        )
     }
     /// Adds simulator-only native sensing geometry; operational calibration is unchanged.
     pub fn new_with_scene(
@@ -93,7 +114,15 @@ impl RneBackend {
         if scenario.duration > 120.0 {
             return Err("native scene evidence requires duration <=120 seconds".into());
         }
-        Self::create(scenario, seed, plant, Some(scene), false, false)
+        Self::create(
+            scenario,
+            seed,
+            plant,
+            Some(scene),
+            false,
+            false,
+            GroundMode::Disabled,
+        )
     }
     /// Enables synchronized measured height planes without exposing scene labels.
     pub fn new_with_scene_multi_height(
@@ -105,7 +134,15 @@ impl RneBackend {
         if scenario.duration > 120.0 {
             return Err("native scene evidence requires duration <=120 seconds".into());
         }
-        Self::create(scenario, seed, plant, Some(scene), true, false)
+        Self::create(
+            scenario,
+            seed,
+            plant,
+            Some(scene),
+            true,
+            false,
+            GroundMode::Disabled,
+        )
     }
     /// Enables an actual inclined native LiDAR cloud, preserving raw return ordinals.
     pub fn new_with_scene_lidar_3d(
@@ -117,7 +154,55 @@ impl RneBackend {
         if scenario.duration > 120.0 {
             return Err("native scene evidence requires duration <=120 seconds".into());
         }
-        Self::create(scenario, seed, plant, Some(scene), false, true)
+        Self::create(
+            scenario,
+            seed,
+            plant,
+            Some(scene),
+            false,
+            true,
+            GroundMode::Disabled,
+        )
+    }
+    /// Enables measured ground fitting over native road geometry without point-role labels.
+    pub fn new_with_scene_ground(
+        scenario: Scenario,
+        seed: u64,
+        plant: Plant,
+        scene: Scene,
+    ) -> Result<Self, String> {
+        if scenario.duration > 120.0 {
+            return Err("native scene evidence requires duration <=120 seconds".into());
+        }
+        Self::create(
+            scenario,
+            seed,
+            plant,
+            Some(scene),
+            false,
+            true,
+            GroundMode::Segmentation,
+        )
+    }
+    /// Opt-in authored research car envelope with native force-free sensor overlap evidence.
+    pub fn new_with_scene_ground_body(
+        scenario: Scenario,
+        seed: u64,
+        plant: Plant,
+        scene: Scene,
+    ) -> Result<Self, String> {
+        if scenario.duration > 120.0 {
+            return Err("native scene evidence requires duration <=120 seconds".into());
+        }
+        Self::create(
+            scenario,
+            seed,
+            plant,
+            Some(scene),
+            false,
+            true,
+            GroundMode::VehicleBody,
+        )
     }
     fn create(
         scenario: Scenario,
@@ -126,30 +211,70 @@ impl RneBackend {
         scene: Option<Scene>,
         multi_height: bool,
         lidar_3d: bool,
+        ground_mode: GroundMode,
     ) -> Result<Self, String> {
         scenario.validate()?;
         if scenario.dynamics.is_some() && plant != Plant::Dynamic {
             return Err("friction/lag calibration requires --plant dynamic".into());
         }
         let mut config = pipeline_config(&scenario);
+        let ground_segmentation = ground_mode != GroundMode::Disabled;
+        let vehicle_body = ground_mode == GroundMode::VehicleBody;
+        let body_calibration = BodyCalibration::default();
+        if vehicle_body {
+            if config.route.half_width < 3.0 {
+                return Err("authored vehicle-body mode requires road half width >=3 m".into());
+            }
+            config.vehicle.radius = body_calibration.corner_radius_m();
+        }
         if multi_height {
             config.multi_height_lidar = Some(MultiHeightLidarConfig {
                 heights_m: vec![0.6, 0.15, 3.7],
-                collision_bottom_m: 0.1 - config.vehicle.radius,
-                collision_top_m: 1.1 + config.vehicle.radius,
+                collision_bottom_m: if vehicle_body {
+                    body_calibration.bottom_m - 1.0
+                } else {
+                    0.1 - config.vehicle.radius
+                },
+                collision_top_m: if vehicle_body {
+                    body_calibration.bottom_m + body_calibration.height_m + 1.0
+                } else {
+                    1.1 + config.vehicle.radius
+                },
             });
         }
         if lidar_3d {
             config.lidar3d = Some(Lidar3dConfig {
-                azimuth_columns: 720,
+                azimuth_columns: if ground_segmentation { 180 } else { 720 },
                 elevation_rings: 16,
                 min_elevation_rad: -std::f64::consts::PI / 12.0,
                 max_elevation_rad: std::f64::consts::PI / 12.0,
                 mount_height_m: 0.6,
                 min_range_m: 0.2,
                 max_range_m: 45.0,
-                collision_bottom_m: 0.1 - config.vehicle.radius,
-                collision_top_m: 1.1 + config.vehicle.radius,
+                collision_bottom_m: if vehicle_body {
+                    body_calibration.bottom_m - 1.0
+                } else {
+                    0.1 - config.vehicle.radius
+                },
+                collision_top_m: if vehicle_body {
+                    body_calibration.bottom_m + body_calibration.height_m + 1.0
+                } else {
+                    1.1 + config.vehicle.radius
+                },
+                ground: if ground_segmentation {
+                    Some(GroundConfig {
+                        reference_height_m: 0.0,
+                        max_slope: 0.05,
+                        max_height_offset_m: 0.03,
+                        residual_threshold_m: 0.02,
+                        fit_radius_m: 8.0,
+                        min_inliers: 200,
+                        min_sector_inliers: 20,
+                        min_cell_inliers: 6,
+                    })
+                } else {
+                    None
+                },
             });
         }
         config.validate()?;
@@ -175,6 +300,19 @@ impl RneBackend {
         let mut world = World::new();
         let ego = spawn_named(&mut world, "rustdrive_ego");
         let pose = config.initial_pose;
+        let ego_collider = if vehicle_body {
+            let mut collider = body_calibration.collider();
+            collider.sensor = true;
+            collider
+        } else {
+            Collider {
+                shape: ColliderShape::Capsule {
+                    half_height_m: 0.5,
+                    radius_m: config.vehicle.radius,
+                },
+                ..Collider::default()
+            }
+        };
         world.entity_mut(ego).insert((
             Transform3::from_translation_rotation(
                 to_rne(pose.position),
@@ -189,19 +327,17 @@ impl RneBackend {
                 max_steering_rate_rad_s: 0.7,
                 ..AckermannDrive::default()
             },
-            // Fixed query geometry follows the separately integrated native RNE plant.
+            // Query geometry follows the separately integrated native RNE plant.
             // Rapier supplies sensing geometry; it does not integrate the vehicle a second time.
             RigidBody {
-                body_type: RigidBodyType::Fixed,
+                body_type: if vehicle_body {
+                    RigidBodyType::Dynamic
+                } else {
+                    RigidBodyType::Fixed
+                },
                 ..RigidBody::default()
             },
-            Collider {
-                shape: ColliderShape::Capsule {
-                    half_height_m: 0.5,
-                    radius_m: config.vehicle.radius,
-                },
-                ..Collider::default()
-            },
+            ego_collider,
         ));
         if plant == Plant::Dynamic {
             world.entity_mut(ego).insert(VehicleDynamics {
@@ -218,9 +354,13 @@ impl RneBackend {
             .collect();
         // Fixed boxes take part in the same native Rapier queries as dynamic
         // actor capsules, while their labels remain entirely on the simulator side.
+        let mut scene_obstacles = Vec::new();
         if let Some(scene) = &scene {
-            for cuboid in &scene.static_cuboids {
+            for cuboid in scene.static_cuboids.iter().chain(&scene.ground_cuboids) {
                 let entity = spawn_named(&mut world, format!("scene_{}", cuboid.id));
+                if scene.static_cuboids.iter().any(|b| b.id == cuboid.id) {
+                    scene_obstacles.push((entity, cuboid.id.clone()));
+                }
                 world.entity_mut(entity).insert((
                     Transform3::from_translation_rotation(
                         Vec3::new(cuboid.center_m[0], cuboid.center_m[2], -cuboid.center_m[1]),
@@ -243,14 +383,29 @@ impl RneBackend {
                 ));
             }
         }
-        let scene =
-            scene.map(|scene| Arc::new(Mutex::new(SceneCapture::new(scene, pose.position))));
+        let scene = scene.map(|scene| {
+            let mut capture = SceneCapture::new(scene, pose.position);
+            if vehicle_body {
+                capture.body = Some(
+                    BodyCapture::new(body_calibration, pose)
+                        .expect("validated body calibration and initial pose"),
+                );
+            }
+            Arc::new(Mutex::new(capture))
+        });
         let mut physics = RapierBackend::new();
         let physics_world = physics
-            .create_world(PhysicsWorldDesc::default())
+            .create_world(if vehicle_body {
+                PhysicsWorldDesc {
+                    gravity_m_s2: Vec3::ZERO,
+                    ..PhysicsWorldDesc::default()
+                }
+            } else {
+                PhysicsWorldDesc::default()
+            })
             .map_err(|e| e.to_string())?;
         let traffic = TrafficWorld::new(scenario.clone(), config.route.clone());
-        Ok(Self {
+        let mut backend = Self {
             traffic,
             scenario,
             config,
@@ -265,14 +420,44 @@ impl RneBackend {
             scene,
             multi_height,
             lidar_3d,
+            ground_segmentation,
+            vehicle_body,
+            scene_obstacles,
             fail_lidar_from: None,
             fail_aux_lidar_from: None,
             fail_lidar_3d_from: None,
-        })
+        };
+        if vehicle_body {
+            backend.capture_body_witness(0.0, SimDuration::from_seconds(Seconds::new(0.005)))?;
+        }
+        Ok(backend)
     }
     /// The exact stack configuration used by this plant, included in its replay header.
     pub fn config(&self) -> PipelineConfig {
         self.config.clone()
+    }
+    fn capture_body_witness(&mut self, time: f64, dt: SimDuration) -> Result<(), String> {
+        self.sync_scene(time)?;
+        let witness = body::sensor_witness(
+            &mut self.physics,
+            self.physics_world,
+            &mut self.world,
+            self.ego,
+            &self.scene_obstacles,
+            time,
+            dt,
+        )?;
+        self.scene
+            .as_ref()
+            .unwrap()
+            .lock()
+            .map_err(|_| "native scene capture poisoned")?
+            .body
+            .as_mut()
+            .unwrap()
+            .witnesses
+            .push(witness);
+        Ok(())
     }
     fn sync_scene(&mut self, time: f64) -> Result<(), String> {
         for object in self.objects(time) {
@@ -484,6 +669,7 @@ impl SimulationBackend for RneBackend {
                     }
                 }
                 let spec_3d = LidarSpec {
+                    ray_count: if self.ground_segmentation { 180 } else { 720 },
                     channel_count: 16,
                     min_elevation_rad: -std::f64::consts::PI / 12.0,
                     max_elevation_rad: std::f64::consts::PI / 12.0,
@@ -502,7 +688,8 @@ impl SimulationBackend for RneBackend {
                     SensorNoiseKey::new(self.seed, 1, 4, tick as u64),
                 ) {
                     Ok(cloud) => {
-                        let mut ranges: Vec<Option<f64>> = vec![None; 720 * 16];
+                        let mut ranges: Vec<Option<f64>> =
+                            vec![None; spec_3d.ray_count as usize * 16];
                         let mut returns = Vec::with_capacity(cloud.points_m.len());
                         let inverse = mount.rotation.conjugate();
                         for ((&point, &column), &ring) in cloud
@@ -610,9 +797,10 @@ impl SimulationBackend for RneBackend {
                 Plant::Kinematic => ackermann_kinematics(&mut self.world, sub_dt),
                 Plant::Dynamic => vehicle_dynamics(&mut self.world, sub_dt),
             }
-            if let Some(scene) = &self.scene {
+            if let Some(scene) = self.scene.clone() {
                 let mut scene = scene.lock().map_err(|_| "native scene capture poisoned")?;
-                let position = self.state().pose.position;
+                let pose = self.state().pose;
+                let position = pose.position;
                 let previous = scene.motion_samples.last().unwrap().position;
                 let planar_speed = position.distance(previous) / (dt / substeps as f64);
                 // Native forward speed and lateral slip are integrated separately.
@@ -626,6 +814,13 @@ impl SimulationBackend for RneBackend {
                 scene.clock += dt / substeps as f64;
                 let time = scene.clock;
                 scene.motion_samples.push(MotionSample { time, position });
+                if let Some(body) = &mut scene.body {
+                    body.record(time, pose)?;
+                }
+                drop(scene);
+                if self.vehicle_body {
+                    self.capture_body_witness(time, sub_dt)?;
+                }
             }
         }
         Ok(())
@@ -654,7 +849,15 @@ pub fn run_with_scene(
     plant: Plant,
     scene: Scene,
 ) -> Result<(Run, serde_json::Value), String> {
-    run_scene_mode(scenario, seed, plant, scene, false, false)
+    run_scene_mode(
+        scenario,
+        seed,
+        plant,
+        scene,
+        false,
+        false,
+        GroundMode::Disabled,
+    )
 }
 /// Execute the shared height-aware sensing path with simulator-only evidence.
 pub fn run_with_scene_multi_height(
@@ -663,7 +866,15 @@ pub fn run_with_scene_multi_height(
     plant: Plant,
     scene: Scene,
 ) -> Result<(Run, serde_json::Value), String> {
-    run_scene_mode(scenario, seed, plant, scene, true, false)
+    run_scene_mode(
+        scenario,
+        seed,
+        plant,
+        scene,
+        true,
+        false,
+        GroundMode::Disabled,
+    )
 }
 /// Execute with actual inclined native 3D sensing and simulator-only scene evidence.
 pub fn run_with_scene_lidar_3d(
@@ -672,7 +883,49 @@ pub fn run_with_scene_lidar_3d(
     plant: Plant,
     scene: Scene,
 ) -> Result<(Run, serde_json::Value), String> {
-    run_scene_mode(scenario, seed, plant, scene, false, true)
+    run_scene_mode(
+        scenario,
+        seed,
+        plant,
+        scene,
+        false,
+        true,
+        GroundMode::Disabled,
+    )
+}
+/// Execute native road/obstacle sensing with measured-ground segmentation enabled.
+pub fn run_with_scene_ground(
+    scenario: Scenario,
+    seed: u64,
+    plant: Plant,
+    scene: Scene,
+) -> Result<(Run, serde_json::Value), String> {
+    run_scene_mode(
+        scenario,
+        seed,
+        plant,
+        scene,
+        false,
+        true,
+        GroundMode::Segmentation,
+    )
+}
+/// Execute the authored cuboid envelope, native overlap witness and independent body guard.
+pub fn run_with_scene_ground_body(
+    scenario: Scenario,
+    seed: u64,
+    plant: Plant,
+    scene: Scene,
+) -> Result<(Run, serde_json::Value), String> {
+    run_scene_mode(
+        scenario,
+        seed,
+        plant,
+        scene,
+        false,
+        true,
+        GroundMode::VehicleBody,
+    )
 }
 fn run_scene_mode(
     scenario: Scenario,
@@ -681,8 +934,15 @@ fn run_scene_mode(
     scene: Scene,
     multi_height: bool,
     lidar_3d: bool,
+    ground_mode: GroundMode,
 ) -> Result<(Run, serde_json::Value), String> {
-    let backend = if lidar_3d {
+    let ground_segmentation = ground_mode != GroundMode::Disabled;
+    let vehicle_body = ground_mode == GroundMode::VehicleBody;
+    let backend = if vehicle_body {
+        RneBackend::new_with_scene_ground_body(scenario.clone(), seed, plant, scene)?
+    } else if ground_segmentation {
+        RneBackend::new_with_scene_ground(scenario.clone(), seed, plant, scene)?
+    } else if lidar_3d {
         RneBackend::new_with_scene_lidar_3d(scenario.clone(), seed, plant, scene)?
     } else if multi_height {
         RneBackend::new_with_scene_multi_height(scenario.clone(), seed, plant, scene)?
@@ -703,10 +963,20 @@ fn run_scene_mode(
             Plant::Dynamic => "rne-dynamic-rapier-lidar",
         },
     )?;
-    let mut evidence = capture
+    let capture = capture
         .lock()
-        .map_err(|_| "native scene capture poisoned")?
-        .evidence(run.vehicle.radius);
+        .map_err(|_| "native scene capture poisoned")?;
+    let mut evidence = capture.evidence(run.vehicle.radius);
+    if let Some(body) = &capture.body {
+        let body_evidence = body.evidence(&capture.scene);
+        evidence["capsule_diagnostic"] = evidence["summary"].clone();
+        evidence["summary"] = body_evidence["summary"].clone();
+        evidence["body_guard"] = body_evidence;
+        // Main-world collision geometry is the actual cuboid in this mode.
+        // The legacy capsule calculation is a diagnostic, not acceptance.
+        evidence.as_object_mut().unwrap().remove("ego_capsule");
+    }
+    drop(capture);
     evidence["backend"] = json!(run.backend);
     evidence["seed"] = json!(seed);
     evidence["scenario"] = json!(run.scenario.name);
@@ -715,8 +985,25 @@ fn run_scene_mode(
         evidence["multi_height_lidar"] = json!(calibration.unwrap());
     }
     if lidar_3d {
-        evidence["operating_mode"] = json!("lidar3d");
+        evidence["operating_mode"] = json!(if vehicle_body {
+            "lidar3d_ground_body"
+        } else if ground_segmentation {
+            "lidar3d_ground"
+        } else {
+            "lidar3d"
+        });
         evidence["lidar3d"] = json!(calibration_3d.unwrap());
+    }
+    if ground_segmentation {
+        evidence["ground_observations"] = json!(
+            run.sensor_log
+                .as_ref()
+                .unwrap()
+                .ticks
+                .iter()
+                .filter_map(|tick| tick.expected.ground.as_ref())
+                .collect::<Vec<_>>()
+        );
     }
     if evidence["summary"]["passed"] != json!(true) {
         run.summary.passed = false;
@@ -731,6 +1018,10 @@ mod tests {
     use super::*;
     fn static_scene(center: [f64; 3], half: [f64; 3]) -> Scene {
         Scene::from_json(&json!({"schema_version":1,"name":"native test geometry","static_cuboids":[{"id":"fixture","center_m":center,"half_extents_m":half,"yaw_rad":0.0}]}).to_string()).unwrap()
+    }
+    fn road_scene(obstacle: Option<([f64; 3], [f64; 3])>) -> Scene {
+        let boxes = obstacle.map(|(center,half)|json!({"id":"barrier","center_m":center,"half_extents_m":half,"yaw_rad":0.0})).into_iter().collect::<Vec<_>>();
+        Scene::from_json(&json!({"schema_version":2,"name":"measured native ground test","static_cuboids":boxes,"ground_cuboids":[{"id":"road","center_m":[40.0,0.0,-0.5],"half_extents_m":[60.0,25.0,0.5],"yaw_rad":0.0}]}).to_string()).unwrap()
     }
     fn scenario(name: &str) -> Scenario {
         serde_json::from_str(
@@ -829,6 +1120,126 @@ mod tests {
                 })
             }));
         }
+    }
+    #[test]
+    fn actual_native_ground_returns_are_removed_before_clear_road_driving() {
+        let mut s = scenario("native-scene-raised-goal");
+        s.half_width = 3.0;
+        let (run, evidence) =
+            run_with_scene_ground(s, 7, Plant::Dynamic, road_scene(None)).unwrap();
+        assert!(run.summary.passed, "{:?}", run.summary);
+        assert!(run.summary.reached_goal);
+        assert_eq!(evidence["lidar3d"]["azimuth_columns"], json!(180));
+        assert_eq!(evidence["operating_mode"], json!("lidar3d_ground"));
+        assert!(run.sensor_log.as_ref().unwrap().ticks.iter().any(|t| {
+            t.expected
+                .ground
+                .as_ref()
+                .is_some_and(|ground| ground.confidence && ground.removed_points >= 200)
+        }));
+        assert!(
+            run.sensor_log
+                .as_ref()
+                .unwrap()
+                .ticks
+                .iter()
+                .filter_map(|t| t.input.lidar3d.as_ref())
+                .flat_map(|scan| &scan.returns)
+                .any(|r| r.point.z.abs() < 0.02)
+        );
+        let mut bytes = vec![];
+        run.sensor_log.as_ref().unwrap().write(&mut bytes).unwrap();
+        assert!(
+            !String::from_utf8_lossy(&bytes)
+                .lines()
+                .next()
+                .unwrap()
+                .contains("ground_cuboids")
+        );
+        rustdrive_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink()).unwrap();
+    }
+    #[test]
+    fn native_ground_fitting_preserves_low_middle_and_raised_obstacles() {
+        for (center, half, goal) in [
+            ([35.0, 0.0, 0.1], [0.5, 3.0, 0.1], false),
+            ([35.0, 0.0, 1.5], [0.5, 3.0, 0.1], false),
+            ([35.0, 0.0, 4.5], [0.5, 3.0, 1.0], true),
+        ] {
+            let mut s = scenario(if goal {
+                "native-scene-raised-goal"
+            } else {
+                "native-scene-low-stop"
+            });
+            s.half_width = 3.0;
+            let (run, evidence) =
+                run_with_scene_ground(s, 7, Plant::Dynamic, road_scene(Some((center, half))))
+                    .unwrap();
+            assert!(run.summary.passed, "height{}: {:?}", center[2], run.summary);
+            assert_eq!(run.summary.reached_goal, goal);
+            assert!(evidence["summary"]["min_clearance_m"].as_f64().unwrap() >= 1.0);
+            assert!(run.sensor_log.as_ref().unwrap().ticks.iter().any(|t| {
+                t.expected
+                    .ground
+                    .as_ref()
+                    .is_some_and(|g| g.confidence && g.removed_points > 0)
+            }));
+        }
+    }
+    #[test]
+    fn native_missing_or_unsupported_ground_holds_the_driver_brake() {
+        for scene in [
+            static_scene([35.0, 0.0, 4.5], [0.5, 3.0, 1.0]),
+            static_scene([40.0, 0.0, -0.44], [60.0, 25.0, 0.5]),
+        ] {
+            let mut backend = RneBackend::new_with_scene_ground(
+                scenario("native-scene-raised-goal"),
+                7,
+                Plant::Dynamic,
+                scene,
+            )
+            .unwrap();
+            let mut pipeline = rustdrive_pipeline::DrivingPipeline::new(backend.config()).unwrap();
+            for tick in 0..4 {
+                let output = pipeline
+                    .step(&backend.observe(tick as f64 * 0.05, tick).unwrap())
+                    .unwrap();
+                assert!(
+                    output
+                        .health
+                        .contains(&rustdrive_pipeline::HealthIssue::InvalidLidar)
+                );
+                assert_eq!(output.command.acceleration, -6.0);
+                if let Some(ground) = output.ground {
+                    assert!(!ground.confidence);
+                    assert_eq!(ground.removed_points, 0);
+                }
+            }
+        }
+    }
+    #[test]
+    fn native_ground_and_actual_actor_xyz_support_moving_lead_stopping() {
+        let mut s = scenario("native-ground-traffic-stop");
+        s.half_width = 3.0;
+        let (run, evidence) =
+            run_with_scene_ground(s, 7, Plant::Dynamic, road_scene(None)).unwrap();
+        assert!(run.summary.passed, "{:?}", run.summary);
+        assert!(run.summary.max_tracks > 0);
+        assert!(run.summary.min_clearance >= 1.0);
+        assert!(run.frames.iter().any(|f| !f.traffic.is_empty()));
+        assert!(run.sensor_log.as_ref().unwrap().ticks.iter().any(|t| {
+            t.input
+                .lidar3d
+                .as_ref()
+                .is_some_and(|scan| scan.returns.iter().any(|r| r.point.z > 0.1))
+                && t.expected
+                    .ground
+                    .as_ref()
+                    .is_some_and(|ground| ground.confidence && ground.removed_points > 0)
+        }));
+        assert_eq!(
+            evidence["summary"]["min_clearance_m"],
+            serde_json::Value::Null
+        );
     }
     #[test]
     fn inclined_lidar_3d_detects_and_stops_a_barrier_between_all_horizontal_planes() {

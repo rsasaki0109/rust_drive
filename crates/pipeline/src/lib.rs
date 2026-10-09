@@ -1,5 +1,7 @@
 //! Shared sensor-to-command stack. No simulator, truth objects or physical world types.
+mod ground;
 pub mod intersections;
+pub use ground::{GroundConfig, GroundDiagnostics, GroundPlane};
 mod lidar3d;
 pub use lidar3d::Lidar3dConfig;
 mod multi_height;
@@ -35,6 +37,9 @@ pub struct MotionLimits {
     pub max_deceleration_m_s2: f64,
     pub max_lateral_acceleration_m_s2: f64,
 }
+fn is_false(value: &bool) -> bool {
+    !*value
+}
 fn default_acceleration() -> f64 {
     2.0
 }
@@ -46,6 +51,8 @@ pub struct PipelineConfig {
     pub vehicle: VehicleConfig,
     pub nominal_dt: f64,
     pub cruise_speed: f64,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub local_route_geometry: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub motion_limits: Option<MotionLimits>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -69,6 +76,7 @@ impl PipelineConfig {
             vehicle,
             nominal_dt: 0.05,
             cruise_speed: 8.0,
+            local_route_geometry: false,
             motion_limits: None,
             multi_height_lidar: None,
             lidar3d: None,
@@ -112,6 +120,23 @@ impl PipelineConfig {
                 || !(0.1..=6.0).contains(&limits.max_lateral_acceleration_m_s2)
         }) {
             return Err("invalid calibrated motion limits".into());
+        }
+        if self.local_route_geometry {
+            if self.motion_limits.is_none() {
+                return Err(
+                    "local route geometry requires explicit lateral motion calibration".into(),
+                );
+            }
+            rustdrive_planning::validate_local_route_geometry(&self.route, self.vehicle)?;
+            if !self.stop_lines.is_empty()
+                || !self.stop_signs.is_empty()
+                || !self.yield_intersections.is_empty()
+            {
+                return Err(
+                    "local route geometry currently excludes mapped traffic-rule coordinates"
+                        .into(),
+                );
+            }
         }
         let controls: Vec<_> = self
             .stop_lines
@@ -207,6 +232,9 @@ pub struct PipelineOutput {
     pub emergency: bool,
     pub health: Vec<HealthIssue>,
     pub position_variance: f64,
+    /// Measured plane fit for this acquisition, absent on frames without one.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ground: Option<GroundDiagnostics>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub localization: Option<LocalizationDiagnostics>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -252,13 +280,15 @@ impl DrivingPipeline {
         });
         let mut planner = LatticePlanner::default();
         planner.cruise_speed = config.cruise_speed;
+        planner.local_route_geometry = config.local_route_geometry;
         planner.vehicle = config.vehicle;
         if let Some(limits) = config.motion_limits {
             planner.max_acceleration_m_s2 = limits.max_acceleration_m_s2;
             planner.max_deceleration_m_s2 = limits.max_deceleration_m_s2;
             planner.max_lateral_acceleration_m_s2 = Some(limits.max_lateral_acceleration_m_s2);
         }
-        let controller = PurePursuit::with_vehicle(config.vehicle);
+        let mut controller = PurePursuit::with_vehicle(config.vehicle);
+        controller.local_route_geometry = config.local_route_geometry;
         let mut map_points = config.route.points.clone();
         if let Some(nav) = &config.navigation {
             map_points.extend(
@@ -380,6 +410,7 @@ impl DrivingPipeline {
             }
         }
         let fused;
+        let mut ground = None;
         let scan = match (
             &self.config.multi_height_lidar,
             &self.config.lidar3d,
@@ -400,12 +431,21 @@ impl DrivingPipeline {
                 }
             }
             (None, Some(calibration), None, Some(cloud)) if input.lidar.is_none() => {
-                match calibration.project(cloud) {
-                    Ok(scan) => {
+                let projected = if calibration.ground.is_some()
+                    && (input.lidar_failed || !stamp_valid(cloud.stamp, input.time))
+                {
+                    Err(None)
+                } else {
+                    calibration.project(cloud)
+                };
+                match projected {
+                    Ok((scan, diagnostics)) => {
+                        ground = diagnostics;
                         fused = scan;
                         Some(&fused)
                     }
-                    Err(()) => {
+                    Err(diagnostics) => {
+                        ground = diagnostics.map(|diagnostic| *diagnostic);
                         health.push(HealthIssue::InvalidLidar);
                         self.advanced_lidar_fault = Some(input.time);
                         None
@@ -491,6 +531,7 @@ impl DrivingPipeline {
             // Keep EKF, sensor ages, tracks and occupancy. Reset only route-dependent actuation state.
             let mut planner = LatticePlanner::default();
             planner.cruise_speed = self.planner.cruise_speed;
+            planner.local_route_geometry = self.planner.local_route_geometry;
             planner.vehicle = self.planner.vehicle;
             planner.max_acceleration_m_s2 = self.planner.max_acceleration_m_s2;
             planner.max_deceleration_m_s2 = self.planner.max_deceleration_m_s2;
@@ -648,6 +689,7 @@ impl DrivingPipeline {
             emergency,
             health,
             position_variance: variance,
+            ground,
             localization: Some(self.ekf.diagnostics()),
             navigation: self.navigator.as_ref().map(Navigator::status),
             traffic_controls: self.traffic_controls.as_ref().map(TrafficControls::status),
@@ -702,6 +744,49 @@ mod tests {
             navigation_update: None,
             traffic_signal: None,
         }
+    }
+    #[test]
+    fn local_route_geometry_is_opt_in_and_rejects_incompatible_coordinates() {
+        let route = Route::new(vec![Vec2::default(), Vec2::new(100.0, 0.0)], 3.0).unwrap();
+        let mut config = PipelineConfig::new(route, Pose::default(), VehicleConfig::default());
+        assert!(
+            serde_json::to_value(&config)
+                .unwrap()
+                .get("local_route_geometry")
+                .is_none()
+        );
+        config.local_route_geometry = true;
+        assert!(
+            config
+                .validate()
+                .unwrap_err()
+                .contains("lateral motion calibration")
+        );
+        config.motion_limits = Some(MotionLimits {
+            max_acceleration_m_s2: 1.0,
+            max_deceleration_m_s2: 2.5,
+            max_lateral_acceleration_m_s2: 1.0,
+        });
+        assert!(config.validate().is_ok());
+        let encoded = serde_json::to_value(&config).unwrap();
+        assert_eq!(encoded["local_route_geometry"], true);
+        config.stop_lines.push(StopLine {
+            id: "signal".into(),
+            route_s_m: 30.0,
+        });
+        assert!(
+            config
+                .validate()
+                .unwrap_err()
+                .contains("excludes mapped traffic-rule")
+        );
+        config.stop_lines.clear();
+        config.route = Route::new(
+            vec![Vec2::default(), Vec2::new(3.0, 0.0), Vec2::new(3.0, 3.0)],
+            3.0,
+        )
+        .unwrap();
+        assert!(config.validate().unwrap_err().contains("fillets overlap"));
     }
     #[test]
     fn empty_scan_is_healthy_but_failed_acquisition_brakes() {

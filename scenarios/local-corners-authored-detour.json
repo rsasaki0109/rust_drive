@@ -1,0 +1,195 @@
+{
+  "name": "OSM imported road route",
+  "duration": 250.0,
+  "road_length": 313.80694382179684,
+  "half_width": 5.5,
+  "curve_amplitude": 0.0,
+  "expected": "goal",
+  "lidar_dropout": null,
+  "gnss_dropout": null,
+  "navigation": {
+    "network": {
+      "nodes": [
+        {
+          "id": "osm-node-1",
+          "position": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "id": "osm-node-2",
+          "position": {
+            "x": 111.31949078762194,
+            "y": 0.0
+          }
+        },
+        {
+          "id": "osm-node-3",
+          "position": {
+            "x": 222.638981541334,
+            "y": 0.0
+          }
+        },
+        {
+          "id": "osm-node-4",
+          "position": {
+            "x": 111.31949077078052,
+            "y": 110.57427581609332
+          }
+        }
+      ],
+      "edges": [
+        {
+          "id": "osm-way-10-0-forward",
+          "from": "osm-node-1",
+          "to": "osm-node-2",
+          "points": [
+            {
+              "x": 0.0,
+              "y": 0.0
+            },
+            {
+              "x": 55.65974539593034,
+              "y": 0.0
+            },
+            {
+              "x": 111.31949078762194,
+              "y": 0.0
+            }
+          ],
+          "half_width": 5.5
+        },
+        {
+          "id": "osm-way-10-0-reverse",
+          "from": "osm-node-2",
+          "to": "osm-node-1",
+          "points": [
+            {
+              "x": 111.31949078762194,
+              "y": 0.0
+            },
+            {
+              "x": 55.65974539593034,
+              "y": 0.0
+            },
+            {
+              "x": 0.0,
+              "y": 0.0
+            }
+          ],
+          "half_width": 5.5
+        },
+        {
+          "id": "osm-way-10-1-forward",
+          "from": "osm-node-2",
+          "to": "osm-node-3",
+          "points": [
+            {
+              "x": 111.31949078762194,
+              "y": 0.0
+            },
+            {
+              "x": 222.638981541334,
+              "y": 0.0
+            }
+          ],
+          "half_width": 5.5
+        },
+        {
+          "id": "osm-way-10-1-reverse",
+          "from": "osm-node-3",
+          "to": "osm-node-2",
+          "points": [
+            {
+              "x": 222.638981541334,
+              "y": 0.0
+            },
+            {
+              "x": 111.31949078762194,
+              "y": 0.0
+            }
+          ],
+          "half_width": 5.5
+        },
+        {
+          "id": "osm-way-20-0-forward",
+          "from": "osm-node-2",
+          "to": "osm-node-4",
+          "points": [
+            {
+              "x": 111.31949078762194,
+              "y": 0.0
+            },
+            {
+              "x": 111.31949077078052,
+              "y": 110.57427581609332
+            }
+          ],
+          "half_width": 5.5
+        },
+        {
+          "id": "osm-way-20-0-reverse",
+          "from": "osm-node-4",
+          "to": "osm-node-2",
+          "points": [
+            {
+              "x": 111.31949077078052,
+              "y": 110.57427581609332
+            },
+            {
+              "x": 111.31949078762194,
+              "y": 0.0
+            }
+          ],
+          "half_width": 5.5
+        },
+        {
+          "id": "osm-way-30-0-forward",
+          "from": "osm-node-1",
+          "to": "osm-node-4",
+          "points": [
+            {
+              "x": 0.0,
+              "y": 0.0
+            },
+            {
+              "x": 111.31949077078052,
+              "y": 110.57427581609332
+            }
+          ],
+          "half_width": 5.5
+        },
+        {
+          "id": "osm-way-30-1-forward",
+          "from": "osm-node-4",
+          "to": "osm-node-3",
+          "points": [
+            {
+              "x": 111.31949077078052,
+              "y": 110.57427581609332
+            },
+            {
+              "x": 222.638981541334,
+              "y": 0.0
+            }
+          ],
+          "half_width": 5.5
+        }
+      ]
+    },
+    "start": "osm-node-1",
+    "goal": "osm-node-3",
+    "closed_edges": [
+      "osm-way-10-0-forward"
+    ]
+  },
+  "cruise_speed": 2.0,
+  "motion_limits": {
+    "max_acceleration_m_s2": 1.0,
+    "max_deceleration_m_s2": 2.5,
+    "max_lateral_acceleration_m_s2": 1.0
+  },
+  "objects": [],
+  "local_route_geometry": true
+}

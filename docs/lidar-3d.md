@@ -91,7 +91,7 @@ The published dynamic-plant recording uses seed 7 and retains **35 seconds / 701
 
 The GIF contains **118 audited states / 118 encoded frames**, at 960 × 640 pixels and 3× playback with a final pause. Eight Cycles CPU samples and three threads produce a 1.81 MB asset. All 351 recorded display poses, 118 physical-cuboid mesh states and the recorded XYZ/range/ordinal consistency are checked. [GIF provenance](../assets/lidar-3d-demo.json) includes the exact native calibration, raw-cloud counts, projection rule and input/renderer SHA-256 values.
 
-Install Blender and activate the Pillow environment from [3D replay setup](3d-demo.md#reproduce-the-opening-gif), then render the accepted recording:
+Install Blender and activate the Pillow environment from [3D replay setup](3d-demo.md#reproduce-the-closure-detour-gif), then render the accepted recording:
 
 ```sh
 python3 scripts/render_demo_3d.py artifacts/lidar-3d-mid/run.json \

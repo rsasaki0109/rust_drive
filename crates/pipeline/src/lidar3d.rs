@@ -1,4 +1,5 @@
 //! Validate genuine tilted XYZ returns before bounded planar projection.
+use crate::{GroundConfig, GroundDiagnostics};
 use rustdrive_core::{Lidar3dScan, LidarScan, Vec2};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
@@ -22,9 +23,14 @@ pub struct Lidar3dConfig {
     pub max_range_m: f64,
     pub collision_bottom_m: f64,
     pub collision_top_m: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ground: Option<GroundConfig>,
 }
 impl Lidar3dConfig {
     pub(crate) fn validate(&self) -> Result<(), String> {
+        if let Some(ground) = &self.ground {
+            ground.validate(self.mount_height_m)?;
+        }
         let ray_count = self.azimuth_columns.checked_mul(self.elevation_rings);
         if !(2..=2048).contains(&self.azimuth_columns)
             || !(2..=64).contains(&self.elevation_rings)
@@ -55,20 +61,23 @@ impl Lidar3dConfig {
         }
         Ok(())
     }
-    pub(crate) fn project(&self, scan: &Lidar3dScan) -> Result<LidarScan, ()> {
+    pub(crate) fn project(
+        &self,
+        scan: &Lidar3dScan,
+    ) -> Result<(LidarScan, Option<GroundDiagnostics>), Option<Box<GroundDiagnostics>>> {
         let ray_count = self
             .azimuth_columns
             .checked_mul(self.elevation_rings)
-            .ok_or(())?;
+            .ok_or(None)?;
         if scan.returns.len() > ray_count || scan.returns.len() > 20_000 {
-            return Err(());
+            return Err(None);
         }
         let mut indices = BTreeSet::new();
         for measured in &scan.returns {
             let p = measured.point;
             if measured.ray_index >= ray_count || !indices.insert(measured.ray_index) || !p.finite()
             {
-                return Err(());
+                return Err(None);
             }
             let up = p.z - self.mount_height_m;
             let range = p.x.hypot(p.y).hypot(up);
@@ -76,7 +85,7 @@ impl Lidar3dConfig {
                 || range < self.min_range_m - 1e-7
                 || range > self.max_range_m + 1e-7
             {
-                return Err(());
+                return Err(None);
             }
             let column = measured.ray_index / self.elevation_rings;
             let ring = measured.ray_index % self.elevation_rings;
@@ -94,10 +103,23 @@ impl Lidar3dConfig {
                 .zip(expected)
                 .any(|(actual, expected)| (actual - expected).abs() > DIRECTION_TOLERANCE)
             {
-                return Err(());
+                return Err(None);
             }
         }
-        let mut returns: Vec<_> = scan.returns.iter().collect();
+        let (removed, diagnostics) = if let Some(ground) = &self.ground {
+            let (removed, diagnostics) = ground.separate(scan).map_err(Some)?;
+            (Some(removed), Some(diagnostics))
+        } else {
+            (None, None)
+        };
+        let mut returns: Vec<_> = scan
+            .returns
+            .iter()
+            .enumerate()
+            .filter_map(|(index, measured)| {
+                (!removed.as_ref().is_some_and(|mask| mask[index])).then_some(measured)
+            })
+            .collect();
         returns.sort_by_key(|r| r.ray_index);
         let mut cells = BTreeSet::new();
         let mut points = vec![];
@@ -114,9 +136,12 @@ impl Lidar3dConfig {
                 points.push(Vec2::new(p.x, p.y));
             }
         }
-        Ok(LidarScan {
-            stamp: scan.stamp,
-            points,
-        })
+        Ok((
+            LidarScan {
+                stamp: scan.stamp,
+                points,
+            },
+            diagnostics,
+        ))
     }
 }

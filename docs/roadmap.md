@@ -2,7 +2,7 @@
 
 RustDrive's long-term target is a practical independent autonomous driving OSS. Milestones are capability gates, not release dates or claims of parity with Autoware, Apollo or openpilot.
 
-The near-term user goal is a **50% engineering maturity estimate**. [Capability waypoints and evidence requirements](maturity.md) define the development direction; the percentage is subjective and does not imply road safety or parity. The current estimate is about 8%.
+The near-term user goal is a **50% engineering maturity estimate**. [Capability waypoints and evidence requirements](maturity.md) define the development direction; the percentage is subjective and does not imply road safety or parity. The current estimate is about 15%; measured-ground/body processing and the integrated attributed external-map runs support the change, with native sharp-turn and planar/terrain limits retained.
 
 ## M0 — Executable Rust baseline (implemented)
 
@@ -20,12 +20,14 @@ Bounded acquisition-time LiDAR reprojection uses EKF history for delayed body-fr
 
 The same verified revision adds earlier braking after sustained GNSS innovation rejection and an empirical collision reserve for observed motion across the candidate direction, using estimated heading during stationary holds. Static/parallel objects retain the preceding reserve. The complete 276-run sweep retains the original localization, clearance, low-friction tracking and follower deadline gates, with two short-range follower failures still explicitly rejected. [Current evidence and recorded candidate failures](../assets/prediction-epoch-results.json).
 
+Physical road query surfaces and optional measured local ground removal now extend native XYZ sensing. An explicit research body adds swept upright-box clearance and force-free native overlap witnesses. A bounded importer converts a pinned genuine OpenStreetMap extract into the ordinary ENU road graph, preserving source attribution and explicit simulation width calibration. These steps still retain planar driving and perception after projection. [Ground/body boundaries](ground-lidar.md); [map import and actual route limitations](osm-import.md).
+
 Remaining:
 
 - Covariance/forecast uncertainty propagation, delayed odometry/GNSS fusion, per-point LiDAR deskew and trace migrations. Bounded acquisition-time LiDAR reprojection and current-time motion extrapolation are narrower implemented steps, not complete delayed-sensor fusion.
-- Continuous moving-route handover, routing from arbitrary mid-edge positions, external map import, variable-width/lane topology, turn/speed restrictions and A* for larger maps.
+- Continuous moving-route handover, routing from arbitrary mid-edge positions, general external map/lane import, variable-width/lane topology, turn/speed restrictions and A* for larger maps. Bounded OSM road-graph import is implemented.
 - Continuous lateral offsets and controller-feasibility validation.
-- Rectangular collision shapes, calibrated actuator/dynamics models, combined longitudinal/lateral friction feasibility and optimized speed profiles.
+- Oriented-body planning, measured vehicle/actuator calibration, combined longitudinal/lateral friction feasibility and optimized speed profiles. An authored rectangular evaluation body and conservative planar envelope are implemented.
 - General goal-area stopping/escape, constrained destinations and blocked lateral refuges; the authored GNSS-burst traffic regression is repaired.
 - Reduce conservative terminal stop/hold behavior for a following vehicle in a narrow corridor; the authored 65-second deadline now passes, but repeated stops and short-range clearance failures remain.
 - Add interaction-aware ego forecasts, richer traffic sensing/steering/priority, slowly varying localization biases and broader sensing-latency acceptance.
@@ -41,7 +43,7 @@ Remaining:
 
 ## M3 — Maps and multi-sensor understanding
 
-- 3D point processing, ground removal, richer shape tracking and data association.
+- General 3D point processing and terrain classification, richer shape tracking and data association. Bounded local measured-ground removal is implemented for near-flat native query scenes.
 - Map formats and map localization, inertial bias estimation and bounded GNSS-denied tests.
 - Camera/radar fusion and optional learned models behind established contracts.
 - Gate: versioned datasets, calibration validation, license review and measured accuracy/latency. Publish classical baselines as comparisons.

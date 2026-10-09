@@ -2,11 +2,11 @@
 
 **A Rust-native autonomous driving stack.**
 
-![3D replay of RustDrive selecting a detour and avoiding an obstacle with RNE native dynamics](assets/rne-3d-demo.gif)
+![Actual RNE driving with measured ground removal and a moving lead vehicle, rendered in 3D](assets/ground-demo.gif)
 
-An original, modular driving stack with a working, deterministic closed-loop simulation. The vehicle processes synthetic LiDAR, fuses noisy GNSS and odometry, tracks and predicts obstacles, plans an avoidance trajectory, and steers and brakes to its destination. The opening GIF shows an actual CPU-only Robot Native Engine (RNE) run: a closure notification arrives during driving, the vehicle stops before the fork, switches to a Dijkstra detour, avoids a sensed obstacle and reaches the mapped destination using native vehicle dynamics and Rapier LiDAR queries. It is a Blender Cycles CPU rendering of the recorded RNE run in 3D at 3× playback speed, with a 6 m/s cruise setting and no optional curvature cap. Driving physics and perception remain planar; the 3D scene is a visual replay. [Reproduce this RNE demo](#reproduce-the-gif).
+An original, modular driving stack with a working, deterministic closed-loop simulation. The vehicle processes synthetic LiDAR, fuses noisy GNSS and odometry, tracks and predicts obstacles, and plans steering and braking. The opening GIF shows an actual CPU-only Robot Native Engine (RNE) run: native inclined XYZ LiDAR measures the physical road and a moving lead vehicle, measured ground removal preserves obstacle observations, and ego stops behind the lead. The teal wireframe shows a separate 4.2 × 1.8 × 1.5 m research body. Blender Cycles renders the recorded 22-second episode at 3× playback; motion and downstream object processing remain planar. Moving-traffic acceptance uses conservative circular sweeps; the static-box body guard is exercised by separate fixtures. [Measurements and limitations](docs/ground-lidar.md); [reproduce the GIF](#reproduce-the-gif).
 
-**Status: simulation research prototype, v0.1.** The verified operating domain is authored planar road corridors with circular obstacles, including a directed road-network fork, merge and stopped handover after a live closure notification. A CPU-only Robot Native Engine (RNE) adapter also runs the same pipeline with native Ackermann dynamics and Rapier LiDAR queries. This is the starting point for an independent stack, not a replacement for mature driving systems or a system for use on public roads. CARLA, ROS 2, camera AI, 3D SLAM, general intersection/priority reasoning, and real vehicle interfaces are not implemented. Mapped signal stops use timestamped infrastructure observations; camera signal recognition is not implemented. See the [capability matrix](docs/capabilities.md).
+**Status: simulation research prototype, v0.1.** The verified operating domain is known planar road corridors with circular obstacles, including a directed road-network fork, merge and stopped handover after a live closure notification. Bounded OSM import supplies external road geometry; optional native cuboid scenes add actual XYZ sensing, measured local ground removal and research-body clearance. A CPU-only Robot Native Engine (RNE) adapter runs the same pipeline with native Ackermann dynamics and Rapier queries. This is the starting point for an independent stack, not a replacement for mature driving systems or a system for use on public roads. CARLA, ROS 2, camera AI, 3D SLAM, general intersection/priority reasoning, and real vehicle interfaces are not implemented. Mapped signal stops use timestamped infrastructure observations; camera signal recognition is not implemented. See the [capability matrix](docs/capabilities.md).
 
 ## Build and run
 
@@ -37,9 +37,11 @@ Replay creates a fresh pipeline and recomputes localization, tracks, predictions
 
 ## CPU-only Robot Native Engine demo
 
-The opening 3D GIF replays an actual RNE run, with friction-limited native vehicle dynamics, steering lag, and Rapier ray queries sampled in a planar LiDAR sweep. Blender Cycles renders the road, vehicle proxies and recorded planned trajectories on CPU. The shared RustDrive pipeline drives it. No GPU, graphics context, ROS, Docker, CARLA server or pretrained model is required.
+The opening 3D GIF replays actual native vehicle dynamics, steering lag and inclined Rapier LiDAR queries against physical road support and a lead capsule. A separate closure-detour recording below uses the default planar sweep. Blender Cycles renders the road, vehicle proxies and recorded planned trajectories on CPU. The shared RustDrive pipeline drives it. No GPU, graphics context, ROS, Docker, CARLA server or pretrained model is required.
 
-Original hatchback, sedan, van and pickup display models include glazing, mirrors, lights, grilles and alloy wheels, with suburban pavements, trees, streetlights and campus buildings. [Model generation and editable Blender scenes](docs/3d-demo.md#models-and-suburban-scenery). Scenery is display-only and does not enter LiDAR or collision evaluation.
+![Actual RNE closure notification, detour and obstacle avoidance rendered in 3D](assets/rne-3d-demo.gif)
+
+Original hatchback, sedan, van and pickup display models include glazing, mirrors, lights, grilles and alloy wheels, with suburban pavements, trees, streetlights and campus buildings. [Model generation and editable Blender scenes](docs/3d-demo.md#models-and-suburban-scenery). These cosmetic models remain display-only; separately authored physical ground/obstacle cuboids enter the optional native scene's sensing and evaluation.
 
 An opt-in native scene now adds actual upright 3D cuboids to Rapier sensing. A ground barrier causes a LiDAR-driven stop; raising the same barrier allows passage underneath. Separate diagnostic scans at three heights and a conservative capsule guard distinguish these cases. The vehicle still moves on a plane, and the extra diagnostic scans do not enter planning. A low slab missed by the operational scan is explicitly rejected after the run. [Scene format, reproduction and limitations](docs/native-scenes.md).
 
@@ -77,14 +79,38 @@ bash scripts/check-lidar-3d.sh --output artifacts/lidar-3d --compact
 
 ```sh
 bash scripts/setup-rne.sh        # Fetch pinned RNE beside this checkout; Rust 1.95.0
-# Activate the Pillow venv below; install Blender for the opening 3D GIF.
-bash scripts/rne-3d-demo.sh
+# Activate the Pillow venv below; install Blender for 3D rendering.
+bash scripts/rne-3d-demo.sh      # Historical closure-detour GIF
 # The diagnostic top-down renderer remains available:
 bash scripts/rne-demo.sh dynamic
 # Or: bash scripts/rne-demo.sh kinematic
 ```
 
 The integration has its own lockfile and does not enlarge the default workspace dependencies. It uses RNE's native vehicle integrator and Rapier as a ray-query scene; independent circular/swept evaluation scores collisions, with a separate height-aware capsule guard for opt-in cuboids. It does not use Rapier contact response or establish full 3D driving support. Setup preserves existing checkouts and stops if their revision differs. Detailed commands, coordinate conversion and engine fixes: [RNE integration](integrations/rne/README.md).
+
+### Measured ground and a rectangular research body
+
+The additional ground mode installs actual road surfaces in native LiDAR queries. A bounded plane fit uses measured XYZ points and local support to remove ground; insufficient support holds braking. The optional body mode adds an authored 4.2 × 1.8 × 1.5 m cuboid, conservative swept-box clearance and actual force-free Rapier overlap witnesses. The planner retains a conservative circular envelope and planar motion. These are research dimensions and broad near-flat support fixtures, without suspension, contact response or general terrain classification. [Contracts, independent checks and remaining failures](docs/ground-lidar.md).
+
+```sh
+bash scripts/check-ground-scenes.sh --compact --output artifacts/ground-scenes
+```
+
+### Roads from OpenStreetMap
+
+The Rust importer converts bounded local Overpass JSON into the ordinary directed ENU road graph. A pinned genuine OSM extract includes attribution, ODbL terms and reproducible source conversion. Imported coordinates supply the map; noisy GNSS and odometry still supply localization. Missing width tags use explicit simulation calibration. Lane topology, legal turn restrictions and HD-map accuracy remain outside this importer. [Build, import and drive the external-data route](docs/osm-import.md).
+
+```sh
+cargo run --release --locked --bin rustdrive -- import-osm \
+  --input maps/osm/german-road-extract.json --output artifacts/osm/map.json \
+  --origin-lat 48.136 --origin-lon 10.0695 --default-half-width 3 \
+  --scenario-output artifacts/osm/scenario.json \
+  --start osm-node-7119017425 --goal osm-node-274969423
+cargo run --release --locked --bin rustdrive -- run \
+  --scenario artifacts/osm/scenario.json --seed 7 --output artifacts/osm/run
+cargo run --release --locked --bin rustdrive -- replay \
+  --log artifacts/osm/run/sensors.jsonl --output artifacts/osm/replay
+```
 
 ## Hazard scenario regression suite
 
@@ -201,23 +227,29 @@ The occupancy grid is built and exported for inspection; the current planner use
 
 ## Reproduce the GIF
 
-Python and Blender are optional and used only for visualization. Install Blender (4.3.2 verified locally; the Cycles CPU backend requires no GPU), then install Pillow in a virtual environment:
+Python and Blender are optional visualization tools. Install Blender (4.3.2 verified locally; Cycles CPU requires no GPU), then:
 
 ```sh
 python3 -m venv .venv
 . .venv/bin/activate
 python -m pip install -r scripts/requirements-demo.txt
 bash scripts/setup-rne.sh
-bash scripts/rne-3d-demo.sh
+source scripts/env.sh
+cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- \
+  --scenario scenarios/native-body-traffic-stop.json --scene scenes/ground-moving-traffic.json \
+  --lidar-3d --ground-segmentation --vehicle-body --plant dynamic --seed 7 \
+  --output artifacts/ground-moving
+cargo run --release --locked --bin rustdrive -- replay \
+  --log artifacts/ground-moving/sensors.jsonl --output artifacts/ground-moving/replay
+python3 scripts/render_demo_3d.py artifacts/ground-moving/run.json \
+  --native-scene artifacts/ground-moving/scene.json \
+  --output artifacts/ground-moving/demo.gif --samples 8 --threads 3 \
+  --camera traffic --traffic-models sedan
 ```
 
-Open `artifacts/rne-3d/demo.gif`. [3D rendering, scene verification and limits](docs/3d-demo.md). To intentionally refresh the opening README asset:
+Open `artifacts/ground-moving/demo.gif`. The renderer emits a PNG and [provenance JSON](assets/ground-demo.json), auditing recorded body poses, road/obstacle meshes and measured sensor consistency. The published GIF has 75 frames at 960 × 640 pixels. To refresh the README asset intentionally, use `--output assets/ground-demo.gif` in the render command. [Independent physical checks and ground-classification limits](docs/ground-lidar.md); [editable models and older closure-detour reproduction](docs/3d-demo.md).
 
-```sh
-bash scripts/rne-3d-demo.sh assets/rne-3d-demo.gif
-```
-
-The renderer also emits a PNG and provenance JSON. The committed [3D RNE demo metadata](assets/rne-3d-demo.json) records the engine revision, seed, simulation metrics, and regeneration command. Fonts use DejaVu when available, with a portable fallback. GIF bytes may differ between Blender/Pillow/font versions; simulation replay is deterministic on the same binary/platform. The standalone reference simulator's GIF can also be regenerated with `bash scripts/demo.sh`; its provenance is in [reference demo metadata](assets/demo.json).
+GIF bytes may differ between Blender/Pillow/font versions; sensor replay is deterministic on the same binary/platform. The reference GIF remains reproducible with `bash scripts/demo.sh`.
 
 ## Validation
 
@@ -254,4 +286,4 @@ Ten small Cargo crates share transport-independent, serializable contracts. Algo
 - [Roadmap with acceptance gates](docs/roadmap.md)
 - [Contributing](CONTRIBUTING.md)
 
-Licensed under [Apache-2.0](LICENSE). Reference projects are studied, not vendored or ported. Dependency licensing is documented in [THIRD_PARTY.md](THIRD_PARTY.md).
+RustDrive code is licensed under [Apache-2.0](LICENSE). The included OpenStreetMap data and derived road database retain [ODbL 1.0 attribution and provenance](maps/osm/SOURCE.md). Reference projects are studied, not vendored or ported. Dependency licensing is documented in [THIRD_PARTY.md](THIRD_PARTY.md).

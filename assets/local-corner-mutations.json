@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "source_fingerprint_sha256": "8c1459719798bb96644835d896aceeeddf4de8967f5714b3da4053fc9ac7accc",
+  "checker_sha256": "c4fd580be671c39ceb628ed2075fd5e42950c4873100c95a3efbb0712ef8a317",
+  "baseline_raw_sha256": {
+    "run.json": "4799768a9da91f3be69f9677d5cb8ebfa1a591e95552a4b7e25a4329f559001a",
+    "sensors.jsonl": "26f87224de2310c273d728c019f3d03d7a586400c5f9d612013df67823fb5934"
+  },
+  "baseline": {
+    "original_route_points_preserved": true,
+    "original_directed_edges": [
+      "osm-way-25216931-0-forward",
+      "osm-way-25216933-0-reverse"
+    ],
+    "original_half_width_m": 3.0,
+    "physical_samples": 787,
+    "minimum_sampled_original_corridor_margin_m": 0.08548652307316806,
+    "goal_distance_m": 1.6464689049537675,
+    "sensor_only_boundary_verified": true,
+    "body_mode": false,
+    "resolved_route_replay": true,
+    "map_search_replay": false
+  },
+  "mutations": [
+    {
+      "mutation": "changed-original-width",
+      "rejected": true,
+      "reason": "operational episode changed the supplied route, closure, width or deadline"
+    },
+    {
+      "mutation": "dropped-original-corner",
+      "rejected": true,
+      "reason": "operational episode changed the supplied route, closure, width or deadline"
+    },
+    {
+      "mutation": "physical-truth-outside-original-corridor",
+      "rejected": true,
+      "reason": "original corridor or 2 m goal acceptance failed"
+    }
+  ],
+  "passed": true
+}

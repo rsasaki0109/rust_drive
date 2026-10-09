@@ -1,0 +1,637 @@
+{
+  "schema_version": 1,
+  "source_fingerprint_sha256": "8c1459719798bb96644835d896aceeeddf4de8967f5714b3da4053fc9ac7accc",
+  "checker_dependency_sha256": {
+    "scripts/check-ground-scenes.py": "1ae0699607d7417ba787da1f8000cd7253a3de8b6ff88ba5cbacec671ab652b6",
+    "scripts/check-lidar-3d.py": "915e2818b5d23c7307b047771380316be2b36f22c08786b3c19e01dff76a0e90",
+    "scripts/check-local-corners.py": "c4fd580be671c39ceb628ed2075fd5e42950c4873100c95a3efbb0712ef8a317",
+    "scripts/check-native-scenes.py": "66877b2a74e045f221899fc1edf03b8fee2aa88e5bf7833672149b6cba0f26cb",
+    "scripts/check-osm-scenes.py": "33a15dde3aa0b9dc29025ae15b6e4684a0fc19ed8dcb902c5308164f92d37c6a",
+    "scripts/check_hazards.py": "e31bba2b36062768345a3f8300e5d28f910e4fa549818f0198df36799d6ea046"
+  },
+  "data_fixture_sha256": {
+    "maps/osm/SOURCE.md": "b85b8b1e9f229b105ec86c5b1dd2b2eec8f2d6443feee88dfc482a69d80d2983",
+    "maps/osm/german-road-extract.json": "77189ddb7f66915817d11b83765851709b409713487e5d2b9d8f357f665680c6",
+    "maps/osm/german-road-extract.osm": "280febb5b8b084cd4f29c138f5f65f8b219efdca7070bc7233a85ef972fab2a9",
+    "maps/osm/german-road-ground-scenario.json": "f8c4a02afdd4a709383345ad49997724ca727656cd7580974b274d272ab736ec",
+    "maps/osm/german-road-ground-stop-scenario.json": "af55419d2c6fa8cdd0f914fc42621c55e1d5a212c9842f73a5d1936a24313dd2",
+    "maps/osm/german-road-network.import.json": "60f68815860fb547f4dc6022332479f03a82f7293f17ceb7c147d4ee6128aee7",
+    "maps/osm/german-road-network.json": "9c38157f69af9072cd9d99046284ccbbb30dce3fbf987db0f12243139f634acf",
+    "maps/osm/german-road-scenario.json": "adfae37bffdb44dde79e87564a8402bd4e084d81c236880e05bc44c2c995cba7",
+    "scenarios/local-corners-authored-detour.json": "fb24a57fbfc2131043409c48afb07fdc110f5289cab4169ed3bf3387092985ef",
+    "scenarios/local-corners-german-branch.json": "da6e1757307579bfd7a7038d2c4cb6c057c5ad80e4c68ced827f78b6b58ff11e"
+  },
+  "rne_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
+  "attribution": "German road: \u00a9 OpenStreetMap contributors, ODbL 1.0; maps/osm/SOURCE.md. Detour: authored test map.",
+  "backends": [
+    "reference"
+  ],
+  "seeds": [
+    1,
+    7,
+    42
+  ],
+  "runs": [
+    {
+      "backend": "reference",
+      "case": "german-branch",
+      "seed": 1,
+      "output": "/tmp/rustdrive-local-corners-final/reference/german-branch/seed-1",
+      "exit_code": 0,
+      "summary": {
+        "scenario": "OSM imported road route",
+        "seed": 1,
+        "simulated_seconds": 78.45,
+        "steps": 1570,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05711712242096697,
+        "localization_max_error": 0.18237925206265782,
+        "final_speed": 0.17881593862269024,
+        "progress": 156.82920148539637,
+        "emergency_steps": 4,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "passed": true,
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1570,
+        "verified": true
+      },
+      "independent_corridor": {
+        "original_route_points_preserved": true,
+        "original_directed_edges": [
+          "osm-way-25216931-0-forward",
+          "osm-way-25216933-0-reverse"
+        ],
+        "original_half_width_m": 3.0,
+        "physical_samples": 786,
+        "minimum_sampled_original_corridor_margin_m": 0.10335252466731504,
+        "goal_distance_m": 0.9651172056259616,
+        "sensor_only_boundary_verified": true,
+        "body_mode": false,
+        "resolved_route_replay": true,
+        "map_search_replay": false
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1566,
+        "stationary_holds": 411,
+        "max_acceleration_m_s2": 1.0000000000000304,
+        "max_deceleration_m_s2": 2.500000000000045
+      },
+      "control_metrics": {
+        "ticks": 1570,
+        "emergency_ticks": 4,
+        "emergency_fraction": 0.0025477707006369425,
+        "commanded_acceleration_change_rms_m_s3": 12.214895529551836,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000008
+      },
+      "gnss_integrity": {
+        "verified": true,
+        "holding_ticks": 0,
+        "max_consecutive_rejections": 0,
+        "hold_starts": [],
+        "accepted_releases": [],
+        "held_at_end": false,
+        "sensor_only_reconstruction_verified": true
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 0,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 0,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 0,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.0,
+        "current_epoch_reconstruction_verified": true
+      },
+      "raw_sha256": {
+        "run.json": "82c9cfee535926cef259e4d365ad002d66e30b09bee1a13ea8a1272833e54461",
+        "sensors.jsonl": "027b08e0ac37714fe4f129f200ec2479020e6b358262584d28b99f5723bdac89"
+      }
+    },
+    {
+      "backend": "reference",
+      "case": "german-branch",
+      "seed": 7,
+      "output": "/tmp/rustdrive-local-corners-final/reference/german-branch/seed-7",
+      "exit_code": 0,
+      "summary": {
+        "scenario": "OSM imported road route",
+        "seed": 7,
+        "simulated_seconds": 78.60000000000001,
+        "steps": 1573,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.0549981204823922,
+        "localization_max_error": 0.1383227468705386,
+        "final_speed": 0.1210723910446252,
+        "progress": 156.80226473702265,
+        "emergency_steps": 7,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "passed": true,
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1573,
+        "verified": true
+      },
+      "independent_corridor": {
+        "original_route_points_preserved": true,
+        "original_directed_edges": [
+          "osm-way-25216931-0-forward",
+          "osm-way-25216933-0-reverse"
+        ],
+        "original_half_width_m": 3.0,
+        "physical_samples": 787,
+        "minimum_sampled_original_corridor_margin_m": 0.08548652307316806,
+        "goal_distance_m": 1.6464689049537675,
+        "sensor_only_boundary_verified": true,
+        "body_mode": false,
+        "resolved_route_replay": true,
+        "map_search_replay": false
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1566,
+        "stationary_holds": 412,
+        "max_acceleration_m_s2": 1.0000000000000289,
+        "max_deceleration_m_s2": 2.5000000000000417
+      },
+      "control_metrics": {
+        "ticks": 1573,
+        "emergency_ticks": 7,
+        "emergency_fraction": 0.004450095359186269,
+        "commanded_acceleration_change_rms_m_s3": 13.436055485771451,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000008
+      },
+      "gnss_integrity": {
+        "verified": true,
+        "holding_ticks": 0,
+        "max_consecutive_rejections": 0,
+        "hold_starts": [],
+        "accepted_releases": [],
+        "held_at_end": false,
+        "sensor_only_reconstruction_verified": true
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 0,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 0,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 0,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.0,
+        "current_epoch_reconstruction_verified": true
+      },
+      "raw_sha256": {
+        "run.json": "4799768a9da91f3be69f9677d5cb8ebfa1a591e95552a4b7e25a4329f559001a",
+        "sensors.jsonl": "26f87224de2310c273d728c019f3d03d7a586400c5f9d612013df67823fb5934"
+      }
+    },
+    {
+      "backend": "reference",
+      "case": "german-branch",
+      "seed": 42,
+      "output": "/tmp/rustdrive-local-corners-final/reference/german-branch/seed-42",
+      "exit_code": 0,
+      "summary": {
+        "scenario": "OSM imported road route",
+        "seed": 42,
+        "simulated_seconds": 78.55000000000001,
+        "steps": 1572,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.052378197506168435,
+        "localization_max_error": 0.1415013816033594,
+        "final_speed": 0.0809208109869813,
+        "progress": 156.81618685669704,
+        "emergency_steps": 4,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "passed": true,
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1572,
+        "verified": true
+      },
+      "independent_corridor": {
+        "original_route_points_preserved": true,
+        "original_directed_edges": [
+          "osm-way-25216931-0-forward",
+          "osm-way-25216933-0-reverse"
+        ],
+        "original_half_width_m": 3.0,
+        "physical_samples": 787,
+        "minimum_sampled_original_corridor_margin_m": 0.09199553590584997,
+        "goal_distance_m": 1.047525088535837,
+        "sensor_only_boundary_verified": true,
+        "body_mode": false,
+        "resolved_route_replay": true,
+        "map_search_replay": false
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1568,
+        "stationary_holds": 413,
+        "max_acceleration_m_s2": 1.0000000000000413,
+        "max_deceleration_m_s2": 2.500000000000045
+      },
+      "control_metrics": {
+        "ticks": 1572,
+        "emergency_ticks": 4,
+        "emergency_fraction": 0.002544529262086514,
+        "commanded_acceleration_change_rms_m_s3": 11.405902568061117,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000008
+      },
+      "gnss_integrity": {
+        "verified": true,
+        "holding_ticks": 0,
+        "max_consecutive_rejections": 0,
+        "hold_starts": [],
+        "accepted_releases": [],
+        "held_at_end": false,
+        "sensor_only_reconstruction_verified": true
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 0,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 0,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 0,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.0,
+        "current_epoch_reconstruction_verified": true
+      },
+      "raw_sha256": {
+        "run.json": "2e18ea43cde9a4f7e7197f680c824c89fb19f8d560bb969cb0f4f4140ab2a9d0",
+        "sensors.jsonl": "fe4e1b6ea341f91c211b3863e1a5a9035e5f6eb53d14da24a1bdddd0d03d18f1"
+      }
+    },
+    {
+      "backend": "reference",
+      "case": "authored-detour",
+      "seed": 1,
+      "output": "/tmp/rustdrive-local-corners-final/reference/authored-detour/seed-1",
+      "exit_code": 0,
+      "summary": {
+        "scenario": "OSM imported road route",
+        "seed": 1,
+        "simulated_seconds": 156.70000000000002,
+        "steps": 3135,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05438271099339389,
+        "localization_max_error": 0.18237925206265732,
+        "final_speed": 0.1649269624311146,
+        "progress": 312.7535364949686,
+        "emergency_steps": 2,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "passed": true,
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 3135,
+        "verified": true
+      },
+      "independent_corridor": {
+        "original_route_points_preserved": true,
+        "original_directed_edges": [
+          "osm-way-30-0-forward",
+          "osm-way-30-1-forward"
+        ],
+        "original_half_width_m": 5.5,
+        "physical_samples": 1568,
+        "minimum_sampled_original_corridor_margin_m": 2.9597364773060617,
+        "goal_distance_m": 1.053571135280051,
+        "sensor_only_boundary_verified": true,
+        "body_mode": false,
+        "resolved_route_replay": true,
+        "map_search_replay": false
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 3133,
+        "stationary_holds": 405,
+        "max_acceleration_m_s2": 1.0000000000000184,
+        "max_deceleration_m_s2": 2.500000000000043
+      },
+      "control_metrics": {
+        "ticks": 3135,
+        "emergency_ticks": 2,
+        "emergency_fraction": 0.0006379585326953748,
+        "commanded_acceleration_change_rms_m_s3": 6.2011149911503605,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000004
+      },
+      "gnss_integrity": {
+        "verified": true,
+        "holding_ticks": 0,
+        "max_consecutive_rejections": 0,
+        "hold_starts": [],
+        "accepted_releases": [],
+        "held_at_end": false,
+        "sensor_only_reconstruction_verified": true
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 0,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 0,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 0,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.0,
+        "current_epoch_reconstruction_verified": true
+      },
+      "raw_sha256": {
+        "run.json": "7b035159b3e334213961f8e37cbc04eeca24fb46173dedd38f5d7e76e7584ddb",
+        "sensors.jsonl": "2d0a23119d2f120c331fbb85716fe613ef6fd06e3083cf83c3e27d7564d450c9"
+      }
+    },
+    {
+      "backend": "reference",
+      "case": "authored-detour",
+      "seed": 7,
+      "output": "/tmp/rustdrive-local-corners-final/reference/authored-detour/seed-7",
+      "exit_code": 0,
+      "summary": {
+        "scenario": "OSM imported road route",
+        "seed": 7,
+        "simulated_seconds": 156.85000000000002,
+        "steps": 3138,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05389783226122638,
+        "localization_max_error": 0.13832387891902417,
+        "final_speed": 0.18237886620624916,
+        "progress": 312.80436712707717,
+        "emergency_steps": 2,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "passed": true,
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 3138,
+        "verified": true
+      },
+      "independent_corridor": {
+        "original_route_points_preserved": true,
+        "original_directed_edges": [
+          "osm-way-30-0-forward",
+          "osm-way-30-1-forward"
+        ],
+        "original_half_width_m": 5.5,
+        "physical_samples": 1570,
+        "minimum_sampled_original_corridor_margin_m": 2.984330031069283,
+        "goal_distance_m": 1.0027969127234502,
+        "sensor_only_boundary_verified": true,
+        "body_mode": false,
+        "resolved_route_replay": true,
+        "map_search_replay": false
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 3136,
+        "stationary_holds": 406,
+        "max_acceleration_m_s2": 1.000000000000026,
+        "max_deceleration_m_s2": 2.5000000000000386
+      },
+      "control_metrics": {
+        "ticks": 3138,
+        "emergency_ticks": 2,
+        "emergency_fraction": 0.0006373486297004461,
+        "commanded_acceleration_change_rms_m_s3": 7.219487075047911,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000004
+      },
+      "gnss_integrity": {
+        "verified": true,
+        "holding_ticks": 0,
+        "max_consecutive_rejections": 0,
+        "hold_starts": [],
+        "accepted_releases": [],
+        "held_at_end": false,
+        "sensor_only_reconstruction_verified": true
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 0,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 0,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 0,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.0,
+        "current_epoch_reconstruction_verified": true
+      },
+      "raw_sha256": {
+        "run.json": "a627d168b3eeb10d78e73dafd86ce5f40b8ca5b5c568e228404b261ee7f4cda8",
+        "sensors.jsonl": "727e32b4f45b2b270bad5ec0795dd24b5c716a56419ddaff6c652a0e3eea5268"
+      }
+    },
+    {
+      "backend": "reference",
+      "case": "authored-detour",
+      "seed": 42,
+      "output": "/tmp/rustdrive-local-corners-final/reference/authored-detour/seed-42",
+      "exit_code": 0,
+      "summary": {
+        "scenario": "OSM imported road route",
+        "seed": 42,
+        "simulated_seconds": 156.85000000000002,
+        "steps": 3138,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.051812001969334595,
+        "localization_max_error": 0.14160619999613122,
+        "final_speed": 0.17187584740996772,
+        "progress": 312.80026666148206,
+        "emergency_steps": 2,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "passed": true,
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 3138,
+        "verified": true
+      },
+      "independent_corridor": {
+        "original_route_points_preserved": true,
+        "original_directed_edges": [
+          "osm-way-30-0-forward",
+          "osm-way-30-1-forward"
+        ],
+        "original_half_width_m": 5.5,
+        "physical_samples": 1570,
+        "minimum_sampled_original_corridor_margin_m": 2.9613706647556617,
+        "goal_distance_m": 1.006691855213623,
+        "sensor_only_boundary_verified": true,
+        "body_mode": false,
+        "resolved_route_replay": true,
+        "map_search_replay": false
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 3136,
+        "stationary_holds": 407,
+        "max_acceleration_m_s2": 1.000000000000032,
+        "max_deceleration_m_s2": 2.5000000000000417
+      },
+      "control_metrics": {
+        "ticks": 3138,
+        "emergency_ticks": 2,
+        "emergency_fraction": 0.0006373486297004461,
+        "commanded_acceleration_change_rms_m_s3": 7.315868464026186,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000004
+      },
+      "gnss_integrity": {
+        "verified": true,
+        "holding_ticks": 0,
+        "max_consecutive_rejections": 0,
+        "hold_starts": [],
+        "accepted_releases": [],
+        "held_at_end": false,
+        "sensor_only_reconstruction_verified": true
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 0,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 0,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 0,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.0,
+        "current_epoch_reconstruction_verified": true
+      },
+      "raw_sha256": {
+        "run.json": "db286c57b69dd5c128f9e6efa53745c793440faf7e989f74d31d450d7541c141",
+        "sensors.jsonl": "364c6aee090d8eff3745e210a5f7818d70cbecc23b7136f54323c900038742fa"
+      }
+    }
+  ],
+  "known_native_limits": [
+    {
+      "backend": "rne-dynamic",
+      "case": "german-branch",
+      "seed": 1,
+      "output": "/tmp/rustdrive-local-corners-final/known-native-limit/german-branch/seed-1",
+      "exit_code": 1,
+      "summary": {
+        "scenario": "OSM imported road route",
+        "seed": 1,
+        "simulated_seconds": 180.0,
+        "steps": 3601,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05618240600068068,
+        "localization_max_error": 0.31186475713064954,
+        "final_speed": 0.0,
+        "progress": 62.63203419462384,
+        "emergency_steps": 2953,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": false,
+        "failures": [
+          "goal not reached within duration"
+        ]
+      },
+      "expected_physical_failure": true,
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 3601,
+        "verified": true
+      },
+      "independent_corridor": {
+        "original_route_points_preserved": true,
+        "original_directed_edges": [
+          "osm-way-25216931-0-forward",
+          "osm-way-25216933-0-reverse"
+        ],
+        "original_half_width_m": 3.0,
+        "physical_samples": 1801,
+        "minimum_sampled_original_corridor_margin_m": 0.3422927171666288,
+        "goal_distance_m": 73.59598996269793,
+        "sensor_only_boundary_verified": true,
+        "body_mode": false,
+        "resolved_route_replay": true,
+        "map_search_replay": false
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 648,
+        "stationary_holds": 0,
+        "max_acceleration_m_s2": 1.0000000000000007,
+        "max_deceleration_m_s2": 0.09027772792250084
+      },
+      "control_metrics": {
+        "ticks": 3601,
+        "emergency_ticks": 2953,
+        "emergency_fraction": 0.820049986114968,
+        "commanded_acceleration_change_rms_m_s3": 6.050452752117918,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000004
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 0,
+        "braking_forecasts": 0,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 0,
+        "max_forecast_deceleration_m_s2": 0.0,
+        "aged_forecasts": 0,
+        "rebased_moving_forecasts": 0,
+        "max_epoch_age_s": 0.0,
+        "current_epoch_reconstruction_verified": true
+      },
+      "raw_sha256": {
+        "run.json": "a348a318fa833377f91309ba84c064c0787394655ea4ba6e38c38cc46e66f4d6",
+        "sensors.jsonl": "08de8b212f55c819df12d8ccebce85eac3c821ed9e634ac9d9390306c16a4723"
+      },
+      "known_limit_verified": true
+    }
+  ],
+  "passed": true,
+  "complete": true,
+  "positive_run_count": 6
+}

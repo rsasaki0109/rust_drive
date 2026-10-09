@@ -17,6 +17,7 @@ fn calibration() -> Lidar3dConfig {
         max_range_m: 45.0,
         collision_bottom_m: -1.15,
         collision_top_m: 2.35,
+        ground: None,
     }
 }
 fn config() -> PipelineConfig {

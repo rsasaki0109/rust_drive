@@ -12,6 +12,7 @@ from PIL import Image, ImageDraw, ImageFilter
 from render_demo import font
 
 ROOT = Path(__file__).resolve().parent.parent
+GROUND_MODES = ('lidar3d_ground', 'lidar3d_ground_body')
 
 
 def verify_recorded_lidar3d(evidence, calibration):
@@ -63,6 +64,103 @@ def verify_recorded_lidar3d(evidence, calibration):
             'returns_verified': total, 'ray_ordinals_per_acquisition': ray_count}
 
 
+def verify_ground_diagnostics(evidence):
+    """Check recorded fit metadata consistency, not independent fit reconstruction."""
+    config = evidence['lidar3d'].get('ground')
+    fields = {'reference_height_m', 'max_slope', 'max_height_offset_m',
+              'residual_threshold_m', 'fit_radius_m', 'min_inliers',
+              'min_sector_inliers', 'min_cell_inliers'}
+    if not isinstance(config, dict) or set(config) != fields:
+        raise ValueError('Ground mode requires complete measured-fit calibration')
+    bounds = {'reference_height_m': (-1, 1), 'max_slope': (.001, .1),
+              'max_height_offset_m': (.001, .04), 'residual_threshold_m': (.002, .03),
+              'fit_radius_m': (3, 12), 'min_inliers': (32, 10000),
+              'min_sector_inliers': (3, config['min_inliers']/8), 'min_cell_inliers': (3, 256)}
+    for field, (lo, hi) in bounds.items():
+        value = config[field]
+        if (type(value) not in (int, float) or not math.isfinite(value) or not lo <= value <= hi or
+                (field.startswith('min_') and type(value) is not int)):
+            raise ValueError('Invalid measured-ground fit calibration')
+    if evidence['lidar3d']['mount_height_m']-config['reference_height_m'] < .1:
+        raise ValueError('Ground reference must lie below the calibrated LiDAR mount')
+    acquisitions = {round(a['time'], 9): a for a in evidence['acquisitions']}
+    diagnostics = evidence.get('ground_observations')
+    if not isinstance(diagnostics, list) or not diagnostics:
+        raise ValueError('Ground mode requires measured fit diagnostics')
+    removed, preserved, confident, previous = 0, 0, 0, -math.inf
+    for fit in diagnostics:
+        stamp = fit['stamp']
+        if type(stamp) not in (int, float) or not math.isfinite(stamp) or stamp <= previous:
+            raise ValueError('Ground diagnostics require increasing acquisition stamps')
+        previous = stamp
+        acquisition = acquisitions.get(round(stamp, 9))
+        if acquisition is None or abs(acquisition['time']-stamp) > 1e-8 or 'cloud_3d' not in acquisition:
+            raise ValueError('Ground diagnostics do not match a recorded raw cloud')
+        count = len(acquisition['cloud_3d']['returns'])
+        for field in ['candidate_points', 'inliers', 'removed_points', 'preserved_points', 'supported_cells']:
+            if type(fit[field]) is not int or not 0 <= fit[field] <= count:
+                raise ValueError('Ground diagnostic counts exceed measured cloud')
+        sectors = fit['sector_inliers']
+        if (not isinstance(sectors, list) or len(sectors) != 8 or
+                any(type(v) is not int or v < 0 for v in sectors) or sum(sectors) != fit['inliers'] or
+                fit['inliers'] > fit['candidate_points'] or fit['removed_points']+fit['preserved_points'] != count or
+                type(fit['confidence']) is not bool):
+            raise ValueError('Ground fit diagnostic support/counts are inconsistent')
+        for field in ['max_inlier_residual_m', 'rms_residual_m']:
+            if type(fit[field]) not in (int, float) or not math.isfinite(fit[field]) or not 0 <= fit[field] <= config['residual_threshold_m']+1e-9:
+                raise ValueError('Ground residual diagnostics exceed the configured fit band')
+        if fit['confidence']:
+            plane = fit['plane']
+            if (not isinstance(plane, dict) or set(plane) != {'a','b','c'} or
+                    any(type(v) not in (int, float) or not math.isfinite(v) for v in plane.values()) or
+                    math.hypot(plane['a'], plane['b']) > config['max_slope']+1e-9 or
+                    abs(plane['c']-config['reference_height_m']) > config['max_height_offset_m']+1e-9 or
+                    fit['inliers'] < config['min_inliers'] or min(sectors) < config['min_sector_inliers']):
+                raise ValueError('Confident ground fit lacks bounded measured support')
+            confident += 1
+        removed += fit['removed_points']
+        preserved += fit['preserved_points']
+    return {'observations_verified': len(diagnostics), 'confident_fits': confident,
+            'removed_returns': removed, 'preserved_returns': preserved,
+            'audit_scope': 'recorded support/count/plane consistency; independent ground oracle is separate'}
+
+
+def body_box(calibration, pose):
+    offset = calibration['center_offset_body_m']
+    c, s = math.cos(pose['yaw']), math.sin(pose['yaw'])
+    return {'id': 'research-body-envelope',
+            'center_m': [pose['position']['x']+c*offset[0]-s*offset[1],
+                         pose['position']['y']+s*offset[0]+c*offset[1],
+                         calibration['bottom_m']+calibration['height_m']/2],
+            'half_extents_m': [calibration['length_m']/2, calibration['width_m']/2, calibration['height_m']/2],
+            'yaw_rad': pose['yaw']}
+
+
+def verify_body_guard(guard, run):
+    if guard.get('schema_version') != 1 or guard.get('summary', {}).get('passed') is not True:
+        raise ValueError('Body envelope evidence must pass independent motion guards')
+    calibration = guard.get('calibration', {})
+    expected = {'length_m': 4.2, 'width_m': 1.8, 'height_m': 1.5, 'bottom_m': .15,
+                'speed_bound_m_s': 12, 'clearance_floor_m': 1}
+    for field, wanted in expected.items():
+        value = calibration.get(field)
+        if type(value) not in (int, float) or not math.isfinite(value) or abs(value-wanted) > 1e-9:
+            raise ValueError('Body wire overlay requires the supported research calibration')
+    if (calibration.get('center_offset_body_m') != [0,0] or
+            calibration.get('calibration_kind') != 'authored_research_dimensions' or
+            calibration.get('pose_reference') != 'native_planar_plant_reference'):
+        raise ValueError('Body calibration/reference differs from supported research geometry')
+    samples = {round(sample['time'], 9): sample for sample in guard['motion_samples']}
+    for frame in run['frames']:
+        sample = samples.get(round(frame['time'], 9))
+        expected_pose = frame['truth']['pose']
+        if (sample is None or abs(sample['time']-frame['time']) > 1e-8 or
+                math.dist([sample['pose']['position']['x'],sample['pose']['position']['y']],
+                          [expected_pose['position']['x'],expected_pose['position']['y']]) > 1e-8 or
+                abs(sample['pose']['yaw']-expected_pose['yaw']) > 1e-8):
+            raise ValueError('Research body guard poses differ from displayed recording')
+
+
 def load_native_scene(path, run):
     """Validate a successful simulator sidecar against the displayed timeline."""
     evidence = json.loads(path.read_text())
@@ -76,7 +174,7 @@ def load_native_scene(path, run):
         raise ValueError('Native scene evidence requires a u64 seed matching the recording summary')
     if 'operating_mode' in evidence:
         mode = evidence['operating_mode']
-        if mode not in ['multi_height_lidar', 'lidar3d']:
+        if mode not in ['multi_height_lidar', 'lidar3d', *GROUND_MODES]:
             raise ValueError('Unsupported native scene operating mode')
         calibration = evidence.get('multi_height_lidar' if mode == 'multi_height_lidar' else 'lidar3d', {})
         if mode == 'multi_height_lidar':
@@ -90,12 +188,14 @@ def load_native_scene(path, run):
                         zip(sorted(heights), [0.15, 0.6, 3.7]))):
                 raise ValueError('Native multi-height evidence must use the three measured calibrated planes')
         else:
-            expected = {'azimuth_columns': 720, 'elevation_rings': 16,
+            expected = {'azimuth_columns': calibration.get('azimuth_columns') if mode in GROUND_MODES else 720, 'elevation_rings': 16,
                         'min_elevation_rad': -math.pi/12, 'max_elevation_rad': math.pi/12,
                         'mount_height_m': 0.6, 'min_range_m': 0.2, 'max_range_m': 45.0}
             if not isinstance(calibration, dict) or set(calibration) != set(expected) | {
-                    'collision_bottom_m', 'collision_top_m'}:
+                    'collision_bottom_m', 'collision_top_m'} | ({'ground'} if mode in GROUND_MODES else set()):
                 raise ValueError('Native inclined LiDAR evidence requires complete calibrated sensor metadata')
+            if mode in GROUND_MODES and calibration['azimuth_columns'] not in (180, 360):
+                raise ValueError('Ground replay requires the supported 180/360-column native calibration')
             for field, wanted in expected.items():
                 value = calibration[field]
                 if (type(value) not in (int, float) or not math.isfinite(value) or
@@ -103,20 +203,28 @@ def load_native_scene(path, run):
                         (field in ['azimuth_columns', 'elevation_rings'] and type(value) is not int)):
                     raise ValueError('Inclined LiDAR metadata differs from the supported native beam calibration')
         radius = run['vehicle']['radius']
-        for field, expected in [('collision_bottom_m', 0.1-radius),
-                                ('collision_top_m', 1.1+radius)]:
+        body_mode = mode in GROUND_MODES and 'body_guard' in evidence
+        height_window = [('collision_bottom_m', -0.85), ('collision_top_m', 2.65)] if body_mode else [
+            ('collision_bottom_m', 0.1-radius), ('collision_top_m', 1.1+radius)]
+        for field, expected in height_window:
             value = calibration[field]
             if type(value) not in (int, float) or not math.isfinite(value) or abs(value-expected) > 1e-9:
-                raise ValueError('Native height gate must match the recorded ego capsule')
-        if mode == 'lidar3d':
+                raise ValueError('Native height gate must match the recorded ego envelope and clearance reserve')
+        if mode in ['lidar3d', *GROUND_MODES]:
             verify_recorded_lidar3d(evidence, calibration)
+        if mode in GROUND_MODES:
+            verify_ground_diagnostics(evidence)
     scene = evidence.get('scene', {})
     boxes = scene.get('static_cuboids')
-    if (scene.get('schema_version') != 1 or not isinstance(scene.get('name'), str) or
-            not scene['name'].strip() or not isinstance(boxes, list) or not 1 <= len(boxes) <= 128):
+    ground_mode = evidence.get('operating_mode') in GROUND_MODES
+    ground_boxes = scene.get('ground_cuboids', []) if ground_mode else []
+    if (scene.get('schema_version') != (2 if ground_mode else 1) or not isinstance(scene.get('name'), str) or
+            not scene['name'].strip() or not isinstance(boxes, list) or
+            not isinstance(ground_boxes, list) or not 1 <= len(boxes)+len(ground_boxes) <= 128 or
+            (ground_mode and not ground_boxes)):
         raise ValueError('A bounded schema-1 native cuboid scene is required')
     ids = set()
-    for box in boxes:
+    for box in boxes+ground_boxes:
         if not isinstance(box.get('id'), str) or not box['id'].strip() or box['id'] in ids:
             raise ValueError('Native cuboid IDs must be nonempty and unique')
         ids.add(box['id'])
@@ -130,6 +238,12 @@ def load_native_scene(path, run):
         yaw = box.get('yaw_rad')
         if isinstance(yaw, bool) or not isinstance(yaw, (int, float)) or not math.isfinite(yaw) or abs(yaw) > math.pi:
             raise ValueError('Native cuboid yaw must be finite within [-pi, pi]')
+    if ground_mode and any(abs(box['center_m'][2]+box['half_extents_m'][2]) > 1e-9 for box in ground_boxes):
+        raise ValueError('Physical road tops must match the flat road datum at zero meters')
+    if ground_mode and ('body_guard' in evidence) != (evidence['operating_mode'] == 'lidar3d_ground_body'):
+        raise ValueError('Ground operating mode and physical body evidence disagree')
+    if ground_mode and 'body_guard' in evidence:
+        verify_body_guard(evidence['body_guard'], run)
     observations = evidence.get('observations')
     if not isinstance(observations, list) or not observations:
         raise ValueError('Native scene evidence requires recorded body poses')
@@ -154,9 +268,9 @@ def load_native_scene(path, run):
     return evidence
 
 
-def verify_native_cuboids(rendered, scene):
+def verify_native_cuboids(rendered, scene, field='static_cuboids'):
     """Check actual world-space mesh corners, including height and yaw."""
-    expected = {box['id']: box for box in scene['static_cuboids']}
+    expected = {box['id']: box for box in scene[field]}
     if len(rendered) != len(expected) or {box['id'] for box in rendered} != set(expected):
         raise ValueError('Rendered native cuboid identities/count differ from the physical scene')
     for actual in rendered:
@@ -248,6 +362,10 @@ def main():
                    'traffic_models': args.traffic_models, 'camera': args.camera}
         if native_evidence:
             request['native_scene'] = native_evidence['scene']
+            if native_evidence.get('operating_mode') in GROUND_MODES:
+                request['ground_mode'] = True
+                if 'body_guard' in native_evidence:
+                    request['body_calibration'] = native_evidence['body_guard']['calibration']
         request_file = directory/'request.json'
         request_file.write_text(json.dumps(request))
         command = ['blender', '--background', '--factory-startup', '--threads', str(args.threads),
@@ -260,6 +378,11 @@ def main():
         audit = json.loads((directory/'audit.json').read_text())
         if native_evidence:
             verify_native_cuboids(scene_info['native_cuboids'], native_evidence['scene'])
+            if native_evidence.get('operating_mode') in GROUND_MODES:
+                verify_native_cuboids(scene_info['native_ground_cuboids'], native_evidence['scene'], 'ground_cuboids')
+                if 'body_guard' in native_evidence:
+                    verify_native_cuboids([scene_info['body_envelope']], {'static_cuboids': [body_box(
+                        native_evidence['body_guard']['calibration'], frames[indices[-1]]['truth']['pose'])]})
         images = []
         for number, index in enumerate(indices):
             frame, record = frames[index], audit[number]
@@ -272,6 +395,10 @@ def main():
                 raise SystemExit('Rendered scene state differs from the recorded simulation')
             if native_evidence:
                 verify_native_cuboids(record['native_cuboids'], native_evidence['scene'])
+                if native_evidence.get('operating_mode') in GROUND_MODES:
+                    verify_native_cuboids(record['native_ground_cuboids'], native_evidence['scene'], 'ground_cuboids')
+                    if 'body_guard' in native_evidence:
+                        verify_native_cuboids([record['body_envelope']], {'static_cuboids': [body_box(native_evidence['body_guard']['calibration'], expected_pose)]})
             with Image.open(directory/f'{number:04d}.png') as rendered:
                 image = Image.new('RGB', (960, 640), '#0a1220')
                 image.paste(rendered, (0, 54))
@@ -280,7 +407,9 @@ def main():
             draw.text((204, 20), 'RNE NATIVE DYNAMICS  /  BLENDER 3D REPLAY', font=font(12, True), fill='#46e3c2')
             if native_evidence:
                 label = {'multi_height_lidar': 'MULTI-HEIGHT / PLANAR EGO',
-                         'lidar3d': 'INCLINED LIDAR / PLANAR EGO'}.get(
+                         'lidar3d': 'INCLINED LIDAR / PLANAR EGO',
+                         'lidar3d_ground': 'MEASURED GROUND / PLANAR EGO',
+                         'lidar3d_ground_body': 'GROUND + BODY / PLANAR EGO'}.get(
                              native_evidence.get('operating_mode'), 'PHYSICAL CUBOIDS / PLANAR EGO')
                 draw.text((610, 36), label, font=font(11, True), fill='#ffb46e')
             phase = (frame.get('navigation') or {}).get('phase', frame['trajectory']['mode'])
@@ -342,19 +471,34 @@ def main():
                         if calibration['collision_bottom_m'] <= h <= calibration['collision_top_m']),
                     'collision_height_interval_m': [calibration['collision_bottom_m'], calibration['collision_top_m']],
                     'projection': 'calibrated height gate, then 5 cm body-XY first-point voxels'})
-            elif native_evidence.get('operating_mode') == 'lidar3d':
+            elif native_evidence.get('operating_mode') in ['lidar3d', *GROUND_MODES]:
                 calibration = native_evidence['lidar3d']
                 details = provenance['native_scene']
                 del details['operational_lidar_height_m']
                 del details['diagnostic_lidar_heights_m']
                 details.update({
-                    'operating_mode': 'lidar3d', 'lidar3d_calibration': calibration,
+                    'operating_mode': native_evidence['operating_mode'], 'lidar3d_calibration': calibration,
                     'cloud_frame': 'body forward/left, road-datum up',
                     'recorded_cloud_audit': verify_recorded_lidar3d(native_evidence, calibration),
                     'diagnostic_horizontal_heights_m': [0.6, 0.15, 3.7],
                     'collision_height_interval_m': [calibration['collision_bottom_m'], calibration['collision_top_m']],
                     'projection': 'measured Z gate, firing-ordinal order, then 5 cm body-XY first-return voxels',
                     'instantaneous_scan': True, 'deskew': False})
+                if native_evidence['operating_mode'] in GROUND_MODES:
+                    details.update({'ground_diagnostics_audit': verify_ground_diagnostics(native_evidence),
+                                    'ground_mesh_states_verified': len(audit),
+                                    'physical_road_top_m': 0.0,
+                                    'projection': 'measured supported ground removal, measured Z gate, ordinal-order 5 cm body-XY voxels',
+                                    'ground_contact_response': False,
+                                    'gif_sha256': hashlib.sha256(args.output.read_bytes()).hexdigest(),
+                                    'encoded_duration_ms': duration})
+                    if 'body_guard' in native_evidence:
+                        details['body_guard'] = {'calibration': native_evidence['body_guard']['calibration'],
+                                                 'summary': native_evidence['body_guard']['summary'],
+                                                 'mesh_states_verified': len(audit),
+                                                 'visualization': 'separate wire envelope; cosmetic car dimensions are not calibrated',
+                                                 'guard_scope': 'upright body versus static obstacle cuboids; explicit road excluded',
+                                                 'traffic_geometry': 'native capsule proxies; circumscribed circular planar clearance'}
         args.output.with_suffix('.json').write_text(json.dumps(provenance, indent=2)+'\n')
         print(f'{args.output}: {count} frames, 960x640, {args.output.stat().st_size:,} bytes')
 
