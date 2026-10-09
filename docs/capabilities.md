@@ -44,7 +44,7 @@
 | Continuous candidate collision checks | Implemented / tested | Synchronized circular sweeps; accelerated-segment chord bound, observed transverse-motion reserve and retiming revalidation; empirical margin, no certified error bound |
 | Reachable longitudinal speed profiles | Implemented / tested | Forward/backward acceleration bounds, local curvature caps, finite arrival times; no joint tire-force or jerk optimization |
 | Smooth route interpolation / heading join | Implemented / tested | C2 centerline segments and estimated-heading correction; sampled corridor containment, no joint geometry/control optimization |
-| Local sparse-road corner geometry | Implemented / reference tested | Explicit opt-in steering-radius fillets and short pursuit preview; original supplied corridor and fixed gates retained; impossible turns rejected, mapped traffic-rule coordinates excluded; the tight external branch still deadlocks safely in native dynamics |
+| Local sparse-road corner geometry | Implemented / bounded evidence | Original-corridor local fillets; six reference and six native dynamic goals at 2 m/s; explicit chassis reference and noisy-odometry course; general bends/obstacles and mapped-rule coordinates remain unsupported |
 | Low-friction tracking regression gate | Implemented / tested | Fixed RNE calibration, 3 seeds, at most 20 emergency ticks in the specified fixture; no universal bound |
 | Acceleration feedforward control | Implemented / tested | First-segment acceleration with PI feedback; steering still pure pursuit |
 | Stop and wait on blocked candidates | Implemented / tested | Feasible stopping profile and eight-second forecast hold, release on a clear candidate; no semantic priority rules |

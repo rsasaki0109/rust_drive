@@ -7,6 +7,9 @@ pub struct PurePursuit {
     pub vehicle: VehicleConfig,
     /// Short preview for opt-in local imported-route geometry.
     pub local_route_geometry: bool,
+    /// Opt-in low-speed no-slip chassis-to-rear-axle calibration. For positive
+    /// offset, the supplied ego yaw is course direction, not body heading.
+    pub rear_axle_offset_m: f64,
     integral: f64,
     steering: f64,
 }
@@ -37,6 +40,8 @@ impl Controller for PurePursuit {
             || !ego.speed.is_finite()
             || !dt.is_finite()
             || dt <= 0.0
+            || !self.rear_axle_offset_m.is_finite()
+            || self.rear_axle_offset_m < 0.0
             || path
                 .points
                 .iter()
@@ -60,9 +65,22 @@ impl Controller for PurePursuit {
         let delta = target.minus(ego.pose.position);
         let distance = delta.x.hypot(delta.y).max(0.1);
         let alpha = wrap_angle(delta.y.atan2(delta.x) - ego.pose.yaw);
-        let desired = (2.0 * self.vehicle.wheelbase * alpha.sin() / distance)
-            .atan()
-            .clamp(-self.vehicle.max_steer, self.vehicle.max_steer);
+        let desired = if self.rear_axle_offset_m == 0.0 {
+            // Retain the original arithmetic, including rounding, by default.
+            (2.0 * self.vehicle.wheelbase * alpha.sin() / distance)
+                .atan()
+                .clamp(-self.vehicle.max_steer, self.vehicle.max_steer)
+        } else {
+            let curvature = 2.0 * alpha.sin() / distance;
+            let radicand = 1.0 - (self.rear_axle_offset_m * curvature).powi(2);
+            if radicand <= 0.0 {
+                curvature.signum() * self.vehicle.max_steer
+            } else {
+                (self.vehicle.wheelbase * curvature / radicand.sqrt())
+                    .atan()
+                    .clamp(-self.vehicle.max_steer, self.vehicle.max_steer)
+            }
+        };
         self.steering += (desired - self.steering).clamp(-0.7 * dt, 0.7 * dt);
         let initial = &path.points[0];
         let acceleration = if let Some(next) = path.points.get(1) {
@@ -144,6 +162,70 @@ pub fn guard(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn chassis_course_circle_inverts_no_slip_rear_axle_steering_left_and_right() {
+        let radius = 6.0_f64;
+        let rear = 1.3_f64;
+        for direction in [-1.0, 1.0] {
+            let mut path = profile(4.0, 4.0, 1.0);
+            path.points = (0..=500)
+                .map(|i| {
+                    let angle = i as f64 * 0.002;
+                    rustdrive_core::TrajectoryPoint {
+                        position: rustdrive_core::Vec2::new(
+                            radius * angle.sin(),
+                            direction * radius * (1.0 - angle.cos()),
+                        ),
+                        speed: 4.0,
+                        time: radius * angle / 4.0,
+                    }
+                })
+                .collect();
+            let mut controller = PurePursuit {
+                rear_axle_offset_m: rear,
+                ..PurePursuit::default()
+            };
+            // Supplied heading is the COM course tangent, which is +x here.
+            let ego = EgoState {
+                speed: 4.0,
+                ..EgoState::default()
+            };
+            let mut command = ControlCommand::default();
+            for _ in 0..30 {
+                command = controller.control(ego, &path, 0.05);
+            }
+            let expected = direction
+                * (controller.vehicle.wheelbase / (radius * radius - rear * rear).sqrt()).atan();
+            assert!((command.steering - expected).abs() < 1e-5);
+            let rear_curvature = command.steering.tan() / controller.vehicle.wheelbase;
+            let course_curvature = rear_curvature / (1.0 + (rear * rear_curvature).powi(2)).sqrt();
+            assert!((course_curvature - direction / radius).abs() < 1e-5);
+            assert!(command.finite());
+        }
+    }
+    #[test]
+    fn chassis_unreachable_curvature_saturates_finitely_and_invalid_offsets_brake() {
+        for direction in [-1.0, 1.0] {
+            let mut path = profile(0.0, 0.0, 1.0);
+            path.points[1].position = rustdrive_core::Vec2::new(0.0, direction * 0.2);
+            let mut controller = PurePursuit {
+                rear_axle_offset_m: 1.3,
+                ..PurePursuit::default()
+            };
+            let command = controller.control(EgoState::default(), &path, 1.0);
+            assert_eq!(command.steering, direction * controller.vehicle.max_steer);
+            assert!(command.finite());
+        }
+        for offset in [-1.0, f64::NAN, f64::INFINITY] {
+            let mut controller = PurePursuit {
+                rear_axle_offset_m: offset,
+                ..PurePursuit::default()
+            };
+            let command = controller.control(EgoState::default(), &profile(0.0, 0.0, 1.0), 0.05);
+            assert_eq!(command.acceleration, -6.0);
+            assert_eq!(command.steering, 0.0);
+        }
+    }
     #[test]
     fn local_preview_keeps_heading_on_the_straight_before_a_tight_turn() {
         let mut path = profile(2.0, 2.0, 1.0);

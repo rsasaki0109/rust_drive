@@ -2,8 +2,8 @@
 """Drive unchanged sparse map bends with opt-in local geometry and exact replay.
 
 The German fixture derives from OSM (ODbL 1.0); the second map is authored.
-The default reference acceptance covers both corners. The optional native
-probe currently fails on the tight German branch; it is not a native positive.
+Reference and native dynamic acceptance cover both corners. The native local
+mode declares its chassis reference and uses measured-odometry course.
 These clear-road tests use the original circular vehicle, not native body mode.
 Recorded truth is used only by the independent corridor acceptance oracle.
 """
@@ -111,6 +111,10 @@ def check_run(run, log, scenario, case, require_goal=True):
         header = json.loads(next(stream))['header']
     require(header['config']['route'] == run['route'] and header['config']['local_route_geometry'] is True,
             'replay config differs from original physical route')
+    reference_offset = header['config'].get('rear_axle_offset_m')
+    native = run['backend'] == 'rne-dynamic-rapier-lidar'
+    require(reference_offset == 1.5 if native else reference_offset is None,
+            'corner sensing/driver chassis-reference calibration differs from the declared plant')
     forbidden = {'truth', 'objects', 'traffic', 'scene', 'body_guard', 'static_cuboids', 'ground_cuboids'}
     def keys(value):
         if isinstance(value, dict):
@@ -119,12 +123,20 @@ def check_run(run, log, scenario, case, require_goal=True):
             return set().union(*(keys(v) for v in value))
         return set()
     require(not (keys(header['config']) & forbidden), 'simulator truth leaked into operational configuration')
+    calibrated_speed_ticks = 0
     with log.open() as stream:
         next(stream)
         for line in stream:
             value = json.loads(line)
             if value['kind'] == 'tick':
                 require(not (keys(value['tick']['input']) & forbidden), 'simulator truth leaked into delivered sensors')
+                tick = value['tick']
+                if native and tick['input']['time'] > 0.0:
+                    odom = tick['input']['odometry']
+                    expected_speed = math.hypot(max(0., odom['speed']), reference_offset*odom['yaw_rate'])
+                    require(abs(tick['expected']['estimate']['speed']-expected_speed) <= 1e-12,
+                            'chassis speed does not match measured longitudinal speed and calibrated gyro motion')
+                    calibrated_speed_ticks += 1
     segments = list(zip(map(xy, points), map(xy, points[1:])))
     margins = [width-run['vehicle']['radius']-min(distance(xy(frame['truth']['pose']['position']), a, b)
                for a, b in segments) for frame in run['frames']]
@@ -136,7 +148,46 @@ def check_run(run, log, scenario, case, require_goal=True):
             'original_half_width_m': width, 'physical_samples': len(margins),
             'minimum_sampled_original_corridor_margin_m': min(margins), 'goal_distance_m': goal_distance,
             'sensor_only_boundary_verified': True, 'body_mode': False,
+            'rear_axle_offset_m': reference_offset, 'calibrated_chassis_speed_ticks': calibrated_speed_ticks,
             'resolved_route_replay': True, 'map_search_replay': False}
+
+
+def chassis_mutations(cli, output):
+    """An altered reference or measured turn rate must fail complete replay."""
+    rows = []
+    original = output/'sensors.jsonl'
+    for mutation in ['changed-chassis-offset', 'missing-chassis-offset', 'changed-turn-gyro']:
+        altered = output/(mutation+'.jsonl')
+        changed = False
+        with original.open() as source, altered.open('w') as sink:
+            header = json.loads(next(source))
+            config = header['header']['config']
+            if mutation == 'changed-chassis-offset':
+                config['rear_axle_offset_m'] = 1.0
+                changed = True
+            elif mutation == 'missing-chassis-offset':
+                config.pop('rear_axle_offset_m')
+                changed = True
+            sink.write(json.dumps(header)+'\n')
+            for line in source:
+                if not changed:
+                    value = json.loads(line)
+                    if value['kind'] == 'tick':
+                        odom = value['tick']['input']['odometry']
+                        if abs(odom['yaw_rate']) > .2:
+                            odom['yaw_rate'] += .1
+                            line = json.dumps(value)+'\n'
+                            changed = True
+                sink.write(line)
+        require(changed, 'turn-rate mutation never exercised a measured bend')
+        code, error = hazards.invoke([cli, 'replay', '--log', altered,
+                                      '--output', output/'mutations'/mutation])
+        require(code == 2 and 'replay mismatch' in error,
+                'chassis-reference or measured-gyro corruption passed exact replay')
+        rows.append({'mutation': mutation, 'rejected': True, 'replay_exit_code': code,
+                     'replay_stderr': error, 'mutated_log_sha256': sha(altered)})
+        altered.unlink()
+    return rows
 
 
 def main():
@@ -145,8 +196,6 @@ def main():
     parser.add_argument('--seeds', type=int, nargs='+', default=[1, 7, 42])
     parser.add_argument('--output', type=Path, default=ROOT/'artifacts/local-corners')
     parser.add_argument('--compact', action='store_true', help='archive verified successful raw evidence')
-    parser.add_argument('--check-known-native-limit', action='store_true',
-                        help='also verify the retained safe native German-branch deadlock at seed 1')
     args = parser.parse_args()
     require(len(set(args.seeds)) == len(args.seeds) and 0 < len(args.seeds) <= 3
             and all(0 <= n < 2**64 for n in args.seeds), 'use one to three distinct u64 seeds')
@@ -154,7 +203,7 @@ def main():
     suffix = '.exe' if sys.platform == 'win32' else ''
     cli = ROOT/'target/release'/('rustdrive'+suffix)
     native = ROOT/'integrations/rne/target/release'/('rustdrive-rne'+suffix)
-    require(cli.is_file() and (not (args.check_known_native_limit or 'rne-dynamic' in backends) or native.is_file()),
+    require(cli.is_file() and ('rne-dynamic' not in backends or native.is_file()),
             'build locked reference and selected native release binaries first')
     scenario_paths = {case: ROOT/'scenarios'/f'local-corners-{case}.json' for case in CASES}
     scenarios = {case: json.loads(path.read_text()) for case, path in scenario_paths.items()}
@@ -168,7 +217,7 @@ def main():
         'checker_dependency_sha256': hashes(dependencies), 'data_fixture_sha256': hashes(fixtures),
         'rne_revision': (ROOT/'integrations/rne/rne-revision.txt').read_text().strip(),
         'attribution': 'German road: © OpenStreetMap contributors, ODbL 1.0; maps/osm/SOURCE.md. Detour: authored test map.',
-        'backends': backends, 'seeds': args.seeds, 'runs': [], 'known_native_limits': [], 'passed': False}
+        'backends': backends, 'seeds': args.seeds, 'runs': [], 'historical_native_failure': 'assets/local-corner-results.json', 'passed': False}
     args.output.mkdir(parents=True, exist_ok=True)
     report_path = args.output/'report.json'
     report_path.unlink(missing_ok=True)
@@ -203,6 +252,8 @@ def main():
                 row.update(passed=True, raw_sha256={name: sha(output/name) for name in ['run.json', 'sensors.jsonl']})
                 if stderr or replay_error:
                     row['diagnostics'] = {'run': stderr, 'replay': replay_error}
+                if backend == 'rne-dynamic' and case == 'german-branch' and seed == 1:
+                    row['chassis_mutation_rejections'] = chassis_mutations(cli, output)
                 if args.compact:
                     spec = importlib.util.spec_from_file_location('corner_archive', ROOT/'scripts/check-lidar-3d.py')
                     archive = importlib.util.module_from_spec(spec)
@@ -210,42 +261,11 @@ def main():
                     row['archive'] = archive.compact_case(output, row, False)
                 report_path.write_text(json.dumps(report, indent=2)+'\n')
                 print(f'{backend:11s} {case:15s} seed {seed:3d}: PASS; {run["summary"]["simulated_seconds"]:.2f} s', flush=True)
-    if args.check_known_native_limit:
-        output = args.output/'known-native-limit/german-branch/seed-1'
-        output.mkdir(parents=True, exist_ok=True)
-        for name in ['run.json', 'summary.json', 'sensors.jsonl', 'replay/replay.json', 'replay/outputs.jsonl']:
-            (output/name).unlink(missing_ok=True)
-        code, stderr = hazards.invoke([native, '--plant', 'dynamic', '--scenario', scenario_paths['german-branch'],
-                                       '--seed', 1, '--output', output])
-        run = json.loads((output/'run.json').read_text())
-        summary = run['summary']
-        require(code == 1 and not summary['passed'] and not summary['reached_goal']
-                and summary['collisions'] == summary['road_violations'] == 0
-                and summary['simulated_seconds'] == scenarios['german-branch']['duration']
-                and summary['final_speed'] <= .2 and summary['emergency_steps'] > summary['steps']/2
-                and run['frames'][-1]['emergency'], 'known native limit no longer matches the safe physical deadlock')
-        replay_code, replay_error = hazards.invoke([cli, 'replay', '--log', output/'sensors.jsonl', '--output', output/'replay'])
-        replay = json.loads((output/'replay/replay.json').read_text())
-        require(replay_code == 0 and replay['verified'] and replay['ticks'] == summary['steps'],
-                'known-limit full sensor replay failed')
-        row = {'backend': 'rne-dynamic', 'case': 'german-branch', 'seed': 1, 'output': str(output),
-            'exit_code': code, 'summary': summary, 'expected_physical_failure': True,
-            'replay': replay, 'independent_corridor': check_run(run, output/'sensors.jsonl',
-                scenarios['german-branch'], 'german-branch', require_goal=False),
-            'speed_profiles': hazards.check_speed_profiles(output/'sensors.jsonl'),
-            'control_metrics': hazards.control_metrics(output/'sensors.jsonl'),
-            'motion_predictions': hazards.check_motion_predictions(output/'sensors.jsonl'),
-            'raw_sha256': {name: sha(output/name) for name in ['run.json', 'sensors.jsonl']},
-            'known_limit_verified': True}
-        if stderr or replay_error:
-            row['diagnostics'] = {'run': stderr, 'replay': replay_error}
-        report['known_native_limits'].append(row)
-        report_path.write_text(json.dumps(report, indent=2)+'\n')
-        print('rne-dynamic German branch seed 1: known safe deadlock retained; exact replay verified', flush=True)
     require(report['source_fingerprint_sha256'] == hazards.source_fingerprint()
             and report['checker_dependency_sha256'] == hashes(dependencies)
             and report['data_fixture_sha256'] == hashes(fixtures), 'source/checker/map changed during corner sweep')
-    report.update(passed=True, complete=True, positive_run_count=len(report['runs']))
+    report.update(passed=True, complete=True, positive_run_count=len(report['runs']),
+                  chassis_mutation_rejections=sum(len(r.get('chassis_mutation_rejections', [])) for r in report['runs']))
     report_path.write_text(json.dumps(report, indent=2)+'\n')
     print(f'{report_path}: {len(report["runs"])} physical corner runs and exact replays passed')
     return 0

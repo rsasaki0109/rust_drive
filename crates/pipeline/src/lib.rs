@@ -53,6 +53,9 @@ pub struct PipelineConfig {
     pub cruise_speed: f64,
     #[serde(default, skip_serializing_if = "is_false")]
     pub local_route_geometry: bool,
+    /// Optional chassis-to-rear-axle distance for low-speed no-slip motion.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rear_axle_offset_m: Option<f64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub motion_limits: Option<MotionLimits>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -77,6 +80,7 @@ impl PipelineConfig {
             nominal_dt: 0.05,
             cruise_speed: 8.0,
             local_route_geometry: false,
+            rear_axle_offset_m: None,
             motion_limits: None,
             multi_height_lidar: None,
             lidar3d: None,
@@ -120,6 +124,17 @@ impl PipelineConfig {
                 || !(0.1..=6.0).contains(&limits.max_lateral_acceleration_m_s2)
         }) {
             return Err("invalid calibrated motion limits".into());
+        }
+        if self.rear_axle_offset_m.is_some_and(|offset| {
+            !offset.is_finite()
+                || offset <= 0.0
+                || offset >= self.vehicle.wheelbase
+                || !self.local_route_geometry
+        }) {
+            return Err(
+                "chassis reference requires a bounded rear-axle offset and local route geometry"
+                    .into(),
+            );
         }
         if self.local_route_geometry {
             if self.motion_limits.is_none() {
@@ -289,6 +304,7 @@ impl DrivingPipeline {
         }
         let mut controller = PurePursuit::with_vehicle(config.vehicle);
         controller.local_route_geometry = config.local_route_geometry;
+        controller.rear_axle_offset_m = config.rear_axle_offset_m.unwrap_or(0.0);
         let mut map_points = config.route.points.clone();
         if let Some(nav) = &config.navigation {
             map_points.extend(
@@ -378,7 +394,13 @@ impl DrivingPipeline {
             Some(odom) if input.time - odom.stamp > 0.15 + 1e-9 => {
                 health.push(HealthIssue::StaleOdometry)
             }
-            Some(odom) if !first && dt <= 0.25 => self.ekf.predict(odom, dt),
+            Some(odom) if !first && dt <= 0.25 => {
+                if let Some(offset) = self.config.rear_axle_offset_m {
+                    self.ekf.predict_chassis(odom, dt, offset);
+                } else {
+                    self.ekf.predict(odom, dt);
+                }
+            }
             _ => {}
         }
         if let Some(fix) = input.gnss {
@@ -607,8 +629,17 @@ impl DrivingPipeline {
                 self.planner.max_deceleration_m_s2,
             ));
         }
+        // The recorded pose remains body heading for sensing. Only local path
+        // joining and pursuit use no-slip velocity course at the calibrated chassis.
+        let mut motion_estimate = estimate;
+        if let (Some(offset), Some(odom)) = (self.config.rear_axle_offset_m, self.last_odom)
+            && odom.speed > 0.1
+        {
+            motion_estimate.pose.yaw =
+                wrap_angle(estimate.pose.yaw + (offset * odom.yaw_rate).atan2(odom.speed));
+        }
         let mut trajectory = self.planner.plan(
-            estimate,
+            motion_estimate,
             stop_route.as_ref().unwrap_or(&self.config.route),
             &predictions,
         );
@@ -647,7 +678,7 @@ impl DrivingPipeline {
             trajectory.mode = DrivingMode::Yield;
         }
         let command = if health.is_empty() {
-            let mut requested = self.controller.control(estimate, &trajectory, dt);
+            let mut requested = self.controller.control(motion_estimate, &trajectory, dt);
             if self
                 .stop_signs
                 .as_ref()
@@ -743,6 +774,33 @@ mod tests {
             lidar_failed: false,
             navigation_update: None,
             traffic_signal: None,
+        }
+    }
+    #[test]
+    fn chassis_reference_is_explicit_bounded_and_replayable() {
+        let route = Route::new(vec![Vec2::default(), Vec2::new(100.0, 0.0)], 3.0).unwrap();
+        let mut config = PipelineConfig::new(route, Pose::default(), VehicleConfig::default());
+        assert!(
+            serde_json::to_value(&config)
+                .unwrap()
+                .get("rear_axle_offset_m")
+                .is_none()
+        );
+        config.rear_axle_offset_m = Some(1.5);
+        assert!(config.validate().unwrap_err().contains("chassis reference"));
+        config.local_route_geometry = true;
+        config.motion_limits = Some(MotionLimits {
+            max_acceleration_m_s2: 1.0,
+            max_deceleration_m_s2: 2.5,
+            max_lateral_acceleration_m_s2: 1.0,
+        });
+        assert!(config.validate().is_ok());
+        let decoded: PipelineConfig =
+            serde_json::from_value(serde_json::to_value(&config).unwrap()).unwrap();
+        assert_eq!(decoded.rear_axle_offset_m, Some(1.5));
+        for offset in [0.0, -1.0, 2.7, f64::NAN, f64::INFINITY] {
+            config.rear_axle_offset_m = Some(offset);
+            assert!(config.validate().unwrap_err().contains("chassis reference"));
         }
     }
     #[test]

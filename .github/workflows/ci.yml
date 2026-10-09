@@ -39,7 +39,9 @@ jobs:
           target/release/rustdrive replay --log artifacts/osm/run/sensors.jsonl --output artifacts/osm/replay
       - name: Independently check opt-in sparse-road corners in the reference plant
         shell: bash
-        run: python scripts/check-local-corners.py --output artifacts/local-corners
+        run: |
+          python scripts/test-checker-portability.py
+          python scripts/check-local-corners.py --output artifacts/local-corners
       - name: Drive mapped destinations, closure detour and mapped road rules
         shell: bash
         run: |
@@ -124,9 +126,9 @@ jobs:
       - name: Drive imported OSM roads with physical ground and the research body
         working-directory: rust_drive
         run: python3 scripts/check-osm-scenes.py --output artifacts/osm-scenes --compact
-      - name: Preserve reference corner acceptance and the known native sharp-turn limitation
+      - name: Drive unchanged sparse bends in both plants with calibrated chassis motion
         working-directory: rust_drive
-        run: python3 scripts/check-local-corners.py --check-known-native-limit --output artifacts/local-corners
+        run: python3 scripts/check-local-corners.py --backend all --compact --output artifacts/local-corners
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'

@@ -51,6 +51,66 @@ impl Ekf {
         }
         self.covariance = next;
     }
+    /// Low-speed no-slip chassis prediction. Wheel speed is body longitudinal
+    /// speed; lateral chassis speed is rear offset times yaw rate. Pose yaw
+    /// remains body heading; state speed is course speed. No tire-slip estimate.
+    /// Zero offset preserves the original predictor exactly.
+    pub fn predict_chassis(&mut self, odom: Odometry, dt: f64, rear_axle_offset_m: f64) {
+        if !rear_axle_offset_m.is_finite() || rear_axle_offset_m < 0.0 {
+            return;
+        }
+        if rear_axle_offset_m == 0.0 {
+            self.predict(odom, dt);
+            return;
+        }
+        if !dt.is_finite() || dt <= 0.0 || !odom.speed.is_finite() || !odom.yaw_rate.is_finite() {
+            return;
+        }
+        let yaw = self.state.pose.yaw;
+        let v = odom.speed.max(0.0);
+        let lateral = rear_axle_offset_m * odom.yaw_rate;
+        let midpoint_yaw = yaw + odom.yaw_rate * dt / 2.0;
+        let displacement = Vec2::new(
+            v * midpoint_yaw.cos() - lateral * midpoint_yaw.sin(),
+            v * midpoint_yaw.sin() + lateral * midpoint_yaw.cos(),
+        )
+        .scaled(dt);
+        let position = self.state.pose.position.plus(displacement);
+        let next_yaw = wrap_angle(yaw + odom.yaw_rate * dt);
+        let speed = v.hypot(lateral);
+        if !position.finite() || !next_yaw.is_finite() || !speed.is_finite() {
+            return;
+        }
+        let f = [
+            [1.0, 0.0, -displacement.y],
+            [0.0, 1.0, displacement.x],
+            [0.0, 0.0, 1.0],
+        ];
+        let mut next = [[0.0; 3]; 3];
+        for i in 0..3 {
+            for j in 0..3 {
+                for k in 0..3 {
+                    for l in 0..3 {
+                        next[i][j] += f[i][k] * self.covariance[k][l] * f[j][l];
+                    }
+                }
+            }
+        }
+        for (i, row) in next.iter_mut().enumerate() {
+            row[i] += [0.015, 0.015, 0.0005][i] * dt;
+        }
+        if next.iter().flatten().any(|value| !value.is_finite()) {
+            return;
+        }
+        self.state = EgoState {
+            pose: Pose {
+                position,
+                yaw: next_yaw,
+            },
+            speed,
+        };
+        self.covariance = next;
+    }
     /// Accept only strictly new fixes within the joint 2D innovation gate.
     pub fn update(&mut self, fix: Gnss) -> bool {
         self.correct(fix) == GnssDecision::Accepted
@@ -152,6 +212,142 @@ impl Ekf {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn chassis_turns_match_analytic_displacement_speed_and_covariance() {
+        for direction in [-1.0_f64, 1.0] {
+            let mut e = Ekf::new(Pose::default());
+            let dt = 0.05;
+            e.predict_chassis(
+                Odometry {
+                    stamp: 0.0,
+                    speed: 4.0,
+                    yaw_rate: direction * 0.2,
+                },
+                dt,
+                1.3,
+            );
+            let midpoint = direction * 0.005;
+            let lateral = direction * 0.26;
+            let dx = (4.0 * midpoint.cos() - lateral * midpoint.sin()) * dt;
+            let dy = (4.0 * midpoint.sin() + lateral * midpoint.cos()) * dt;
+            assert!((e.state().pose.position.x - dx).abs() < 1e-12);
+            assert!((e.state().pose.position.y - dy).abs() < 1e-12);
+            assert!((e.state().pose.yaw - direction * 0.01).abs() < 1e-12);
+            assert!((e.state().speed - 4.0_f64.hypot(0.26)).abs() < 1e-12);
+            let expected = [
+                [
+                    1.0 + 0.03 * dy * dy + 0.015 * dt,
+                    -0.03 * dx * dy,
+                    -0.03 * dy,
+                ],
+                [
+                    -0.03 * dx * dy,
+                    1.0 + 0.03 * dx * dx + 0.015 * dt,
+                    0.03 * dx,
+                ],
+                [-0.03 * dy, 0.03 * dx, 0.03 + 0.0005 * dt],
+            ];
+            for (row, expected_row) in e.covariance.iter().zip(expected) {
+                for (value, expected_value) in row.iter().zip(expected_row) {
+                    assert!((value - expected_value).abs() < 1e-12);
+                }
+            }
+        }
+    }
+    #[test]
+    fn zero_chassis_offset_preserves_existing_predictor_and_corrector_exactly() {
+        let initial = Pose {
+            position: Vec2::new(1.0, 2.0),
+            yaw: 0.4,
+        };
+        let mut baseline = Ekf::new(initial);
+        let mut chassis = Ekf::new(initial);
+        for i in 0..100 {
+            let odometry = Odometry {
+                stamp: i as f64 * 0.05,
+                speed: 3.0,
+                yaw_rate: (i as f64 * 0.1).sin() * 0.2,
+            };
+            baseline.predict(odometry, 0.05);
+            chassis.predict_chassis(odometry, 0.05, 0.0);
+            let fix = Gnss {
+                stamp: odometry.stamp,
+                position: baseline.state().pose.position.plus(Vec2::new(0.01, -0.01)),
+                variance: 0.02,
+            };
+            assert_eq!(baseline.correct(fix), chassis.correct(fix));
+            assert_eq!(
+                baseline.state().pose.position,
+                chassis.state().pose.position
+            );
+            assert_eq!(
+                baseline.state().pose.yaw.to_bits(),
+                chassis.state().pose.yaw.to_bits()
+            );
+            assert_eq!(
+                baseline.state().speed.to_bits(),
+                chassis.state().speed.to_bits()
+            );
+            assert_eq!(baseline.covariance, chassis.covariance);
+            assert_eq!(baseline.last_gnss, chassis.last_gnss);
+        }
+    }
+    #[test]
+    fn invalid_chassis_offset_and_numeric_overflow_cannot_mutate_estimate() {
+        let mut e = Ekf::new(Pose::default());
+        let before = e.covariance;
+        for rear in [-1.0, f64::NAN, f64::INFINITY] {
+            e.predict_chassis(
+                Odometry {
+                    stamp: 0.0,
+                    speed: 4.0,
+                    yaw_rate: 0.2,
+                },
+                0.05,
+                rear,
+            );
+        }
+        e.predict_chassis(
+            Odometry {
+                stamp: 0.0,
+                speed: f64::MAX,
+                yaw_rate: f64::MAX,
+            },
+            10.0,
+            1.3,
+        );
+        assert_eq!(e.state().pose.position, Vec2::default());
+        assert_eq!(e.state().pose.yaw, 0.0);
+        assert_eq!(e.state().speed, 0.0);
+        assert_eq!(e.covariance, before);
+        assert_eq!(e.last_gnss, f64::NEG_INFINITY);
+    }
+    #[test]
+    fn chassis_covariance_stays_symmetric_and_positive_under_repeated_corrections() {
+        let mut e = Ekf::new(Pose::default());
+        for i in 0..200 {
+            e.predict_chassis(
+                Odometry {
+                    stamp: i as f64 * 0.05,
+                    speed: 3.0,
+                    yaw_rate: 0.4 * (i as f64 * 0.05).sin(),
+                },
+                0.05,
+                1.3,
+            );
+            assert!(e.update(Gnss {
+                stamp: i as f64 * 0.05,
+                position: e.state().pose.position,
+                variance: 0.02
+            }));
+            for a in 0..3 {
+                assert!(e.covariance[a][a] > 0.0);
+                for b in 0..3 {
+                    assert!((e.covariance[a][b] - e.covariance[b][a]).abs() < 1e-9);
+                }
+            }
+        }
+    }
     #[test]
     fn correlated_innovation_is_rejected_without_mutation() {
         let mut e = Ekf::new(Pose::default());

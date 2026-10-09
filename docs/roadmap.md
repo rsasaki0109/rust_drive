@@ -2,7 +2,7 @@
 
 RustDrive's long-term target is a practical independent autonomous driving OSS. Milestones are capability gates, not release dates or claims of parity with Autoware, Apollo or openpilot.
 
-The near-term user goal is a **50% engineering maturity estimate**. [Capability waypoints and evidence requirements](maturity.md) define the development direction; the percentage is subjective and does not imply road safety or parity. The current estimate is about 15%; measured-ground/body processing and the integrated attributed external-map runs support the change, with native sharp-turn and planar/terrain limits retained.
+The near-term user goal is a **50% engineering maturity estimate**. [Capability waypoints and evidence requirements](maturity.md) define the development direction; the percentage is subjective and does not imply road safety or parity. The current estimate is about 15%; measured-ground/body processing and the integrated attributed external-map runs support the change, with general sharp-route and planar/terrain limits retained.
 
 ## M0 — Executable Rust baseline (implemented)
 
@@ -20,7 +20,7 @@ Bounded acquisition-time LiDAR reprojection uses EKF history for delayed body-fr
 
 The same verified revision adds earlier braking after sustained GNSS innovation rejection and an empirical collision reserve for observed motion across the candidate direction, using estimated heading during stationary holds. Static/parallel objects retain the preceding reserve. The complete 276-run sweep retains the original localization, clearance, low-friction tracking and follower deadline gates, with two short-range follower failures still explicitly rejected. [Current evidence and recorded candidate failures](../assets/prediction-epoch-results.json).
 
-Physical road query surfaces and optional measured local ground removal now extend native XYZ sensing. An explicit research body adds swept upright-box clearance and force-free native overlap witnesses. A bounded importer converts a pinned genuine OpenStreetMap extract into the ordinary ENU road graph, preserving source attribution and explicit simulation width calibration. These steps still retain planar driving and perception after projection. [Ground/body boundaries](ground-lidar.md); [map import and actual route limitations](osm-import.md).
+Physical road query surfaces and optional measured local ground removal now extend native XYZ sensing. An explicit research body adds swept upright-box clearance and force-free native overlap witnesses. A bounded importer converts a pinned genuine OpenStreetMap extract into the ordinary ENU road graph, preserving source attribution and explicit simulation width calibration. These steps still retain planar driving and perception after projection. [Ground/body boundaries](ground-lidar.md); [map import and actual route limitations](osm-import.md). The tested native sharp branch now completes with explicit chassis-reference odometry and course-based steering, while retaining original widths/deadlines and default output bytes. [Repair and scope](chassis-reference.md).
 
 Remaining:
 

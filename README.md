@@ -112,6 +112,12 @@ cargo run --release --locked --bin rustdrive -- replay \
   --log artifacts/osm/run/sensors.jsonl --output artifacts/osm/replay
 ```
 
+The opt-in local-route mode now completes the tested imported sharp branch and authored detour in both reference and native dynamic plants across three seeds. Explicit chassis-reference prediction and course-based steering repair the native turning mismatch; roads, widths and deadlines retain their original values. Short emergency interruptions and narrow sampled margins remain. [Measurements, calibration and limits](docs/chassis-reference.md).
+
+```sh
+python3 scripts/check-local-corners.py --backend all --compact --output artifacts/local-corners
+```
+
 ## Hazard scenario regression suite
 
 ```sh

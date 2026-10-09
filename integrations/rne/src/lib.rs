@@ -218,6 +218,11 @@ impl RneBackend {
             return Err("friction/lag calibration requires --plant dynamic".into());
         }
         let mut config = pipeline_config(&scenario);
+        // Dynamic RNE reports a chassis/COM pose, not a rear-axle pose. This
+        // opt-in low-speed model uses declared plant geometry and noisy odometry.
+        if scenario.local_route_geometry && plant == Plant::Dynamic {
+            config.rear_axle_offset_m = Some(VehicleDynamics::default().rear_axle_m);
+        }
         let ground_segmentation = ground_mode != GroundMode::Disabled;
         let vehicle_body = ground_mode == GroundMode::VehicleBody;
         let body_calibration = BodyCalibration::default();
