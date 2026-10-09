@@ -23,7 +23,15 @@ Fresh monotonic scans use the EKF pose estimate at acquisition, rather than the 
 
 The acquisition stamp is also retained for tracking and freshness. Priority-crossing permission still requires an accepted scan no more than 0.15 s old; the broader 0.35 s history/health bound does not relax it. A transport delay can therefore trigger withholding permission or braking even when a scan can be geometrically transformed.
 
-This is bounded reprojection through past estimates, not a full delayed-sensor estimator. Later GNSS corrections do not retroactively smooth history; delayed odometry/GNSS fusion, per-point LiDAR deskew and covariance propagation are absent. Forecasts still start at the last acquired track position instead of being propagated to delivery time. Do not infer general latency tolerance from an accepted replay or the authored timing fixtures.
+This is bounded reprojection through past estimates, not a full delayed-sensor estimator. Later GNSS corrections do not retroactively smooth history; delayed odometry/GNSS fusion, per-point LiDAR deskew and covariance propagation are absent. Current-time motion forecasts separately propagate acquired tracks to the control clock, as described below. Neither step establishes general latency tolerance from an accepted replay or the authored timing fixtures.
+
+## Forecast time origin
+
+Tracks retain their acquisition-time position, velocity and `last_seen` stamp. The shared pipeline calls `ObservedBraking` with the enclosing frame's current `time`; every returned forecast begins at that control time, with 41 positions spaced 0.2 s apart through the next eight seconds. Its samples evaluate acquired motion at `age + future_offset`, where `age = time - last_seen`. Tracks and acquisition stamps are not overwritten by extrapolated estimates. Both the collision planner and priority-zone sweeps consume these same current-time forecasts.
+
+For constant velocity, the first predicted position is `track.position + track.velocity * age`. The existing 0.7 m/s deadband still treats slower tracks as stationary, including during this propagation. A supported braking hypothesis integrates from acquisition through the elapsed age before producing the first sample. Its one-second braking budget starts at acquisition and is not renewed on intervening control ticks; any remaining forecast coasts at the reduced nonnegative speed. Braking support expires once observation age exceeds 0.15 s, selecting the current-time constant-velocity fallback instead. Invalid, non-finite or future-stamped track motion produces an empty forecast, which downstream planning rejects and brakes on; old finite tracks remain subject to existing tracking and sensor-health policies.
+
+This is a single observed-motion extrapolation, without uncertainty growth, covariance propagation, actor intent or multiple hypotheses. The public forecast fields remain unchanged: the origin is the enclosing pipeline output time, not a new serialized timestamp. The standalone `ConstantVelocity::predict` trait still returns acquisition-relative samples; the shared pipeline's `ObservedBraking::predict(tracks, time)` establishes the current-time contract. Schema 1 remains readable, but earlier acquired-origin forecast recordings can correctly mismatch when replayed by this implementation. Regenerate expected recordings for current arithmetic; historical algorithm migration is not implemented. Earlier accidental lag from acquired-origin forecasts is not retained as a clearance mechanism; empirical collision margins are separate from acquisition age and do not establish a certified prediction/control error bound.
 
 ## Simulator-only LiDAR delivery injection
 
@@ -60,7 +68,7 @@ cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml
   --output artifacts/rne-intersection-recovery
 ```
 
-The physical clearance/priority gates and replay checks are independent. [Intersection fixtures and measured acceptance](intersections.md).
+The physical clearance/priority gates and replay checks are independent. The final current-time prediction sweep passes 276 physical episodes with all 228,961 sensor ticks fully recomputed, including 24 timing-injection intersection episodes. This verifies the authored cases, not the entire supported injection range or real-time resource latency. [Intersection fixtures and measured acceptance](intersections.md#repaired-late-conflict) and [source/checker fingerprints](../assets/prediction-epoch-results.json).
 
 ## Log schema 1
 
@@ -98,6 +106,8 @@ Optional `PipelineConfig.navigation` records the known graph/start/goal/initial 
 ## GNSS acceptance diagnostics
 
 Optional output `localization` reports last observed/accepted GNSS stamps, the latest valid-new-fix decision and finite NIS, and accepted/rejected counts. Rejected fixes cannot refresh health; their receipt prevents subsequent duplicate/older observations from being processed. Invalid input continues to use health diagnostics. Replay recomputes the joint gate and all diagnostics. Changing a GNSS observation or its expected counters is covered by mismatch tests. Fault-window labels exist only in simulator configuration; recorded sensor observations contain the actual bias without labels. Schema 1 remains readable, but new correction arithmetic and output diagnostics require regenerated expected outputs. Boxed record payloads preserve JSON encoding. [GNSS baseline recovery](gnss-robustness.md) and [current terminal stopping](terminal-stopping.md).
+
+The pipeline additionally emits health issue `GnssInnovationHold` after two consecutive strictly new `RejectedInnovation` decisions. A single innovation outlier does not trigger this additional hold. A newly `Accepted` fix resets the private streak; absent, duplicate, old or invalid fixes neither increment nor clear it. This brakes on sustained rejected measurements while preserving the existing NIS threshold 36 and accepted-fix-age limit of 0.75 s. Replay reconstructs the streak from sensor inputs; no streak counter, fault label or expected decision is supplied to the driver. The added health result and its commands can require fresh expected recordings, even though JSONL schema 1 remains unchanged. The policy is conservative simulator fault handling, not a guarantee of localization integrity or GNSS-denied operation.
 
 `goal_hold_seconds` belongs to simulator acceptance and is absent from the pipeline/replay header. Replaying an extended episode recomputes all post-arrival sensor outputs and commands; it does not independently establish the physical residence or clearance. Those checks use evaluator truth. Changed goal-profile arithmetic and terminal preferences require fresh expected outputs; no sensor-log format change is introduced.
 

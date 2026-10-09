@@ -13,7 +13,7 @@ CASES = {
     'reference': ['occluded-crossing', 'cut-in', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue', 'traffic-follower-deadline', 'traffic-fleet-queue', 'signal-red-green', 'signal-red-stop', 'signal-stale-stop', 'signal-stale-recovery', 'signal-two-stops', 'signal-approach-change', 'stop-sign-single', 'stop-sign-two', 'stop-sign-signal', 'stop-sign-obstacle', 'stop-sign-gnss-recovery'],
     'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue', 'traffic-follower-deadline', 'traffic-fleet-queue', 'signal-red-green', 'signal-red-stop', 'signal-stale-stop', 'signal-stale-recovery', 'signal-two-stops', 'signal-approach-change', 'stop-sign-single', 'stop-sign-two', 'stop-sign-signal', 'stop-sign-obstacle', 'stop-sign-gnss-recovery'],
 }
-INTERSECTION_CASES = ['intersection-crossing', 'intersection-successive', 'intersection-blocked', 'intersection-gnss-recovery', 'intersection-stop-sign', 'intersection-fast-wide', 'intersection-slow-narrow', 'intersection-two-zones', 'intersection-delay-two', 'intersection-lidar-recovery', 'intersection-cadence-five-hz']
+INTERSECTION_CASES = ['intersection-crossing', 'intersection-successive', 'intersection-blocked', 'intersection-gnss-recovery', 'intersection-stop-sign', 'intersection-fast-wide', 'intersection-slow-narrow', 'intersection-two-zones', 'intersection-delay-two', 'intersection-lidar-recovery', 'intersection-cadence-five-hz', 'intersection-late-conflict', 'intersection-late-delayed']
 for cases in CASES.values():
     cases.extend(INTERSECTION_CASES)
 
@@ -270,6 +270,11 @@ def check_intersections(run, log):
     last_scan = None
     minimum_margin = math.inf
     previous_status = {}
+    approach_profiles = approach_points = approach_creep_ticks = waiting_prefix_profiles = 0
+    approach_phase_ticks = {'Waiting': 0, 'Proceeding': 0}
+    min_approach_cap = math.inf
+    full_braking = (config.get('motion_limits') or {}).get('max_deceleration_m_s2', 2.5)
+    configured_cruise = config['cruise_speed']
     timing_evidence = check_lidar_timing(run, ticks, config) if run['scenario'].get('sensor_timing') else None
     def overlaps(position, r, bounds):
         return segment_rectangle_distance_squared(position, position, bounds) <= r*r+1e-12
@@ -297,6 +302,48 @@ def check_intersections(run, log):
         healthy = not out['health'] and last_scan is not None and now-last_scan <= .15+1e-9 and aligned
         front = frame['truth']['pose']['position']['x']+radius
         estimated_front = out['estimate']['pose']['position']['x']+radius
+        waiting_zones = [z for z, s in zip(zones, status['zones'])
+                         if not s['committed'] and s['phase'] == 'Waiting']
+        if waiting_zones and out['trajectory']['mode'] != 'Emergency':
+            endpoint = min(z['stop_line']['route_s_m'] for z in waiting_zones)-radius-1.0
+            if any(p['position']['x'] > endpoint+1e-7 for p in out['trajectory']['points']):
+                raise ValueError('Waiting profile extends beyond its mapped stop-line route prefix')
+            waiting_prefix_profiles += 1
+        active_zones = [(z, s) for z, s in zip(zones, status['zones'])
+                        if not s['committed'] and s['phase'] == 'Proceeding']
+        if active_zones:
+            # Solve the independent reaction-distance + stopping-distance budget.
+            # The 0.5 m/s floor is deliberate creep, not guaranteed stop reserve.
+            caps = []
+            for zone, state in active_zones:
+                available = max(0.0, zone['stop_line']['route_s_m']-estimated_front-2.0)
+                authority = .5*full_braking
+                def required_distance(speed):
+                    return .25*speed+speed*speed/(2*authority)
+                lo, hi = 0.0, configured_cruise
+                for _ in range(64):
+                    mid = (lo+hi)/2
+                    if required_distance(mid) <= available:
+                        lo = mid
+                    else:
+                        hi = mid
+                caps.append(min(configured_cruise, max(.5, lo)))
+                approach_phase_ticks[state['phase']] += 1
+            cap = min(caps)
+            min_approach_cap = min(min_approach_cap, cap)
+            approach_creep_ticks += int(cap <= .5+1e-9)
+            path = out['trajectory']['points']
+            if out['trajectory']['mode'] != 'Emergency' and path:
+                approach_profiles += 1
+                distance = 0.0
+                initial_speed = max(0.0, out['estimate']['speed'])
+                for i, point in enumerate(path):
+                    if i:
+                        distance += math.dist(xy(path[i-1]['position']), xy(point['position']))
+                    reachable = math.sqrt(max(0.0, initial_speed*initial_speed-2*full_braking*distance))
+                    if point['speed'] > max(cap, reachable)+1e-7:
+                        raise ValueError('uncommitted approach profile exceeds the mapped stopping envelope')
+                    approach_points += 1
         for zone, state in zip(zones, status['zones']):
             id, bounds = state['id'], zone['conflict_bounds']
             line = zone['stop_line']['route_s_m']
@@ -415,6 +462,11 @@ def check_intersections(run, log):
             'stopline_crossings': crossings, 'physical_occupancies_s': occupancies,
             'min_physical_gap_s': min_gap, 'sensor_fault_permission_reset_exercised': fault_reset,
             'lidar_timing': timing_evidence,
+            'approach_envelope': {'verified': True, 'profiles': approach_profiles,
+                                  'points': approach_points, 'phase_ticks': approach_phase_ticks,
+                                  'creep_floor_ticks': approach_creep_ticks,
+                                  'min_planned_cruise_cap_m_s': min_approach_cap if math.isfinite(min_approach_cap) else None,
+                                  'waiting_prefix_profiles': waiting_prefix_profiles},
             'truth_labels_absent_from_pipeline': True, 'passed': True}
 
 
@@ -527,6 +579,64 @@ def xy(point):
     return point['x'], point['y']
 
 
+def check_gnss_innovation_hold(log):
+    """Reconstruct latched innovation braking from unique correction evidence only."""
+    accepted = rejected = consecutive = max_consecutive = 0
+    observed_stamp = None
+    held = False
+    hold_ticks = 0
+    starts = []
+    releases = []
+    with log.open() as stream:
+        next(stream)
+        for line in stream:
+            record = json.loads(line)
+            if record.get('kind') != 'tick':
+                continue
+            inp, out = record['tick']['input'], record['tick']['expected']
+            diagnostic = out['localization']
+            accepted_delta = diagnostic['accepted_fixes']-accepted
+            rejected_delta = diagnostic['rejected_fixes']-rejected
+            if accepted_delta not in [0, 1] or rejected_delta not in [0, 1] or accepted_delta+rejected_delta > 1:
+                raise ValueError('GNSS correction counts do not describe at most one new observation')
+            if accepted_delta or rejected_delta:
+                fix = inp.get('gnss')
+                if (not fix or not math.isfinite(fix['stamp'])
+                        or not 0 <= fix['stamp'] <= inp['time']+1e-9
+                        or (observed_stamp is not None and fix['stamp'] <= observed_stamp)
+                        or diagnostic['last_observed_stamp'] != fix['stamp']):
+                    raise ValueError('GNSS integrity state advanced without a strictly new valid observation')
+                if accepted_delta:
+                    if diagnostic['last_decision'] != 'Accepted' or diagnostic['last_accepted_stamp'] != fix['stamp']:
+                        raise ValueError('GNSS hold recovery lacks an accepted correction')
+                    consecutive = 0
+                    if held:
+                        releases.append({'time': out['time'], 'accepted_stamp': fix['stamp']})
+                    held = False
+                else:
+                    if diagnostic['last_decision'] != 'RejectedInnovation':
+                        raise ValueError('GNSS innovation count advanced without an innovation rejection')
+                    consecutive += 1
+                    max_consecutive = max(max_consecutive, consecutive)
+                    if consecutive >= 2 and not held:
+                        starts.append({'time': out['time'], 'rejected_stamp': fix['stamp']})
+                        held = True
+                observed_stamp = fix['stamp']
+            elif diagnostic['last_observed_stamp'] != observed_stamp:
+                raise ValueError('GNSS observation diagnostics changed without a new correction')
+            if ('GnssInnovationHold' in out['health']) != held:
+                raise ValueError('GNSS innovation hold did not latch after two rejections until acceptance')
+            if held:
+                hold_ticks += 1
+                if not out['emergency'] or out['command'] != {'acceleration': -6.0, 'steering': 0.0}:
+                    raise ValueError('latched GNSS innovation hold did not emit defined emergency braking')
+            accepted, rejected = diagnostic['accepted_fixes'], diagnostic['rejected_fixes']
+    return {'verified': True, 'holding_ticks': hold_ticks,
+            'max_consecutive_rejections': max_consecutive,
+            'hold_starts': starts, 'accepted_releases': releases,
+            'held_at_end': held, 'sensor_only_reconstruction_verified': True}
+
+
 def check_gnss_fault(run, log, case):
     """Verify actual biased observations, accepted-age braking and physical recovery."""
     with log.open() as stream:
@@ -534,6 +644,7 @@ def check_gnss_fault(run, log, case):
         ticks = [r['tick'] for line in stream if (r := json.loads(line))['kind'] == 'tick']
     if 'gnss_bias_windows' in header['config']:
         raise ValueError('simulator fault labels entered pipeline configuration')
+    integrity = check_gnss_innovation_hold(log)
     windows = run['scenario']['gnss_bias_windows']
     frames = {round(f['time']*20): f for f in run['frames']}
     accepted_stamp = observed_stamp = None
@@ -590,10 +701,11 @@ def check_gnss_fault(run, log, case):
         previous = out
     if biased != rejected or not biased or run['summary']['localization_max_error'] > 0.5:
         raise ValueError('GNSS rejection or bounded localization regression failed')
-    if case == 'gnss-spike' and (biased != 1 or stale_times):
+    if case == 'gnss-spike' and (biased != 1 or stale_times or integrity['holding_ticks']):
         raise ValueError('single rejected fix caused unintended GNSS-stale braking')
     if case.startswith('gnss-burst'):
-        if not stale_times or recovery is None or recovery > windows[-1]['until']+0.4:
+        if (not stale_times or not integrity['holding_ticks'] or recovery is None
+                or recovery > windows[-1]['until']+0.4):
             raise ValueError('burst did not brake and accept a good fix after the window')
         held = [f for f in run['frames'] if 7.0 <= f['time'] < 8.0 and f['truth']['speed'] < 0.1]
         if not held or not run['summary']['reached_goal']:
@@ -604,7 +716,8 @@ def check_gnss_fault(run, log, case):
     return {'biased_fixes': biased, 'rejected_fixes': rejected, 'accepted_fixes': accepted,
             'first_stale_s': stale_times[0] if stale_times else None,
             'first_recovered_fix_s': recovery, 'max_localization_error_m': run['summary']['localization_max_error'],
-            'max_error_limit_m': 0.5, 'fault_labels_absent_from_pipeline': True, 'passed': True}
+            'max_error_limit_m': 0.5, 'innovation_hold': integrity,
+            'fault_labels_absent_from_pipeline': True, 'passed': True}
 
 
 def check_goal_hold(run, log):
@@ -929,10 +1042,11 @@ def check_speed_profiles(log):
 
 
 def check_motion_predictions(log):
-    """Check forecast physics and observation support from the sensor log alone."""
+    """Reconstruct current-epoch forecasts from timestamped measured tracks only."""
     history = {}
     forecasts = braking_forecasts = stale_fallbacks = reacceleration_fallbacks = 0
-    max_deceleration = 0.0
+    aged_forecasts = rebased_moving_forecasts = 0
+    max_deceleration = max_epoch_age = 0.0
     with log.open() as stream:
         next(stream)
         for line in stream:
@@ -942,6 +1056,9 @@ def check_motion_predictions(log):
             tick = record['tick']
             now = tick['input']['time']
             tracks = {t['id']: t for t in tick['expected']['tracks']}
+            prediction_ids = [p['id'] for p in tick['expected']['predictions']]
+            if sorted(prediction_ids) != sorted(tracks):
+                raise ValueError('motion forecasts dropped, duplicated or invented a track identity')
             history = {id: samples for id, samples in history.items() if id in tracks}
             for forecast in tick['expected']['predictions']:
                 track = tracks[forecast['id']]
@@ -951,46 +1068,80 @@ def check_motion_predictions(log):
                 if not samples or track['last_seen'] > samples[-1]['last_seen']:
                     samples.append(track)
                 samples[:] = [s for s in samples if track['last_seen']-s['last_seen'] <= 0.8+1e-9][-32:]
-                v = math.hypot(*xy(track['velocity']))
+                speed = math.hypot(*xy(track['velocity']))
                 dt = forecast['dt']
                 positions = list(map(xy, forecast['positions']))
                 origin = xy(track['position'])
-                baseline = [(origin[0]+track['velocity']['x']*i*dt*(v >= 0.7),
-                             origin[1]+track['velocity']['y']*i*dt*(v >= 0.7)) for i in range(len(positions))]
-                changed = any(math.dist(a, b) > 1e-8 for a, b in zip(positions, baseline))
+                age = now-track['last_seen']
+                valid = (all(math.isfinite(v) for v in [now, age, speed, track['radius'], *origin])
+                         and age >= 0 and track['last_seen'] >= 0 and track['radius'] > 0)
                 forecasts += 1
-                stale = now-track['last_seen'] > 0.15+1e-9
-                reaccelerating = len(samples) >= 2 and v >= math.hypot(*xy(samples[-2]['velocity']))
-                if changed and (stale or reaccelerating or v < 0.7):
-                    raise ValueError('braking forecast lacks fresh decreasing-speed support')
-                stale_fallbacks += int(stale and not changed)
-                reacceleration_fallbacks += int(reaccelerating and not changed)
-                if not changed:
+                if not valid:
+                    if positions:
+                        raise ValueError('invalid/future acquired track fabricated forecast positions')
+                    samples.clear()
                     continue
-                braking_forecasts += 1
-                old = min(samples, key=lambda s: abs(s['last_seen']-(track['last_seen']-0.6)))
-                if abs(track['last_seen']-old['last_seen']-0.6) > 0.025 or math.hypot(*xy(old['velocity']))-v < 0.18-1e-8:
-                    raise ValueError('braking hypothesis appeared without sustained measured deceleration')
-                if len(positions) != 41 or abs(dt-0.2) > 1e-9 or math.dist(origin, positions[0]) > 1e-8:
-                    raise ValueError('forecast horizon, spacing or initial state changed')
-                direction = (track['velocity']['x']/v, track['velocity']['y']/v)
-                distance = [(p[0]-origin[0])*direction[0]+(p[1]-origin[1])*direction[1] for p in positions]
-                for p, d in zip(positions, distance):
-                    if math.dist(p, (origin[0]+direction[0]*d, origin[1]+direction[1]*d)) > 1e-8:
-                        raise ValueError('braking forecast invented lateral motion')
-                means = [(b-a)/dt for a, b in zip(distance, distance[1:])]
-                if min(means) < -1e-8 or max(means) > v+1e-8:
-                    raise ValueError('braking forecast reverses or accelerates')
+                if len(positions) != 41 or abs(dt-0.2) > 1e-9:
+                    raise ValueError('forecast horizon or spacing changed')
+                aged_forecasts += int(age > 1e-9)
+                rebased_moving_forecasts += int(age > 1e-9 and speed >= .7)
+                max_epoch_age = max(max_epoch_age, age)
+                stale = age > .15+1e-9
+                reaccelerating = len(samples) >= 2 and speed >= math.hypot(*xy(samples[-2]['velocity']))
+                braking = None
+                if not stale and not reaccelerating and speed >= .7 and len(samples) >= 2:
+                    direction = (track['velocity']['x']/speed, track['velocity']['y']/speed)
+                    previous = track
+                    supported = []
+                    for offset in [.2, .4, .6]:
+                        target = track['last_seen']-offset
+                        old = min(samples, key=lambda s: abs(s['last_seen']-target))
+                        old_speed = math.hypot(*xy(old['velocity']))
+                        elapsed = previous['last_seen']-old['last_seen']
+                        if abs(old['last_seen']-target) > .025 or elapsed <= 0:
+                            break
+                        alignment = sum(v*d for v, d in zip(xy(old['velocity']), direction))/max(old_speed, 1e-9)
+                        deceleration = (old_speed-math.hypot(*xy(previous['velocity'])))/elapsed
+                        if alignment < .98 or not math.isfinite(deceleration) or deceleration < .3:
+                            break
+                        supported.append(deceleration)
+                        previous = old
+                    if len(supported) == 3:
+                        braking = min(2.0, .5*min(supported))
+                stale_fallbacks += int(stale)
+                reacceleration_fallbacks += int(reaccelerating)
+                braking_forecasts += int(braking is not None)
+                direction = (track['velocity']['x']/speed, track['velocity']['y']/speed) if speed >= .7 else (0.0, 0.0)
+                def displacement(elapsed):
+                    if speed < .7:
+                        return 0.0
+                    if braking is None:
+                        return speed*elapsed
+                    # Acquisition anchors the whole hypothesis: delivery age consumes
+                    # its one-second braking allowance; another tick cannot renew it.
+                    q = min(elapsed, 1.0, speed/braking)
+                    return speed*q-.5*braking*q*q+max(0.0, speed-braking*q)*(elapsed-q)
+                expected = [(origin[0]+direction[0]*displacement(age+i*dt),
+                             origin[1]+direction[1]*displacement(age+i*dt)) for i in range(41)]
+                if any(not all(math.isfinite(v) for v in p) or math.dist(p, e) > 1e-8
+                       for p, e in zip(positions, expected)):
+                    raise ValueError('forecast differs from acquisition-anchored motion at the current epoch')
+                if braking is None:
+                    continue
+                means = [math.dist(a, b)/dt for a, b in zip(positions, positions[1:])]
                 for a, b in zip(means, means[1:]):
                     deceleration = (a-b)/dt
                     if not -1e-8 <= deceleration <= 2.0+1e-8:
                         raise ValueError('forecast exceeds bounded deceleration')
                     max_deceleration = max(max_deceleration, deceleration)
-                if max(means[5:])-min(means[5:]) > 1e-8:
-                    raise ValueError('braking assumption persisted beyond one second')
+                coast = [m for i, m in enumerate(means) if age+i*dt >= 1.0-1e-9]
+                if coast and max(coast)-min(coast) > 1e-8:
+                    raise ValueError('braking assumption persisted beyond acquisition plus one second')
     return {'verified': True, 'forecasts': forecasts, 'braking_forecasts': braking_forecasts,
             'stale_fallbacks': stale_fallbacks, 'reacceleration_fallbacks': reacceleration_fallbacks,
-            'max_forecast_deceleration_m_s2': max_deceleration}
+            'max_forecast_deceleration_m_s2': max_deceleration,
+            'aged_forecasts': aged_forecasts, 'rebased_moving_forecasts': rebased_moving_forecasts,
+            'max_epoch_age_s': max_epoch_age, 'current_epoch_reconstruction_verified': True}
 
 
 def control_metrics(log):
@@ -1078,6 +1229,7 @@ def main():
                           and summary.get('intersection_violations', 0) == 0
                           and row.get('replay', {}).get('verified') is True
                           and row['replay']['ticks'] == summary['steps'])
+                    row['gnss_integrity'] = check_gnss_innovation_hold(output/'sensors.jsonl')
                     row['speed_profiles'] = check_speed_profiles(output/'sensors.jsonl')
                     row['motion_predictions'] = check_motion_predictions(output/'sensors.jsonl')
                     if case == 'traffic-follower-deadline' and not row['motion_predictions']['braking_forecasts']:
@@ -1133,6 +1285,7 @@ def main():
             run = json.loads((output/'run.json').read_text())
             traffic = check_traffic(run, output/'sensors.jsonl', 'traffic-follower-short-range')
             predictions = check_motion_predictions(output/'sensors.jsonl')
+            integrity = check_gnss_innovation_hold(output/'sensors.jsonl')
             rejected = (code == 1 and not summary['passed'] and not summary['reached_goal']
                         and summary['collisions'] == 0 and summary['road_violations'] == 0
                         and summary.get('traffic_collisions', 0) == 0 and summary.get('traffic_road_violations', 0) == 0
@@ -1140,44 +1293,10 @@ def main():
                         and replay['ticks'] == summary['steps'] and any(f.startswith('minimum swept clearance') for f in summary['failures']))
             report['known_failures'].append({'backend': 'rne-dynamic', 'scenario': 'traffic-follower-short-range',
                 'seed': seed, 'exit_code': code, 'summary': summary, 'replay': replay,
-                'traffic': traffic, 'motion_predictions': predictions, 'acceptance_rejection_verified': bool(rejected)})
+                'traffic': traffic, 'motion_predictions': predictions, 'gnss_integrity': integrity,
+                'acceptance_rejection_verified': bool(rejected)})
             report['passed'] &= bool(rejected)
             print(f'rne-dynamic traffic-follower-short-range seed {seed}: short-range clearance failure; rejection verified={rejected}', flush=True)
-    if 'reference' in backends:
-        case = 'intersection-late-conflict'
-        output = args.output/'known-failure'/case/'reference/seed-7'
-        output.mkdir(parents=True, exist_ok=True)
-        (output/'summary.json').unlink(missing_ok=True)
-        (output/'replay/replay.json').unlink(missing_ok=True)
-        code, error = invoke([cli, 'run', '--scenario', ROOT/'scenarios'/f'{case}.json', '--seed', 7, '--output', output])
-        summary = json.loads((output/'summary.json').read_text())
-        replay_code, replay_error = invoke([cli, 'replay', '--log', output/'sensors.jsonl', '--output', output/'replay'])
-        replay = json.loads((output/'replay/replay.json').read_text())
-        run = json.loads((output/'run.json').read_text())
-        margins = {zone['stop_line']['id']: min(zone['stop_line']['route_s_m']
-                   -frame['truth']['pose']['position']['x']-run['vehicle']['radius']
-                   for frame in run['frames'] for state in frame['intersections']['zones']
-                   if state['id'] == zone['stop_line']['id'] and state['phase'] == 'Waiting' and not state['committed'])
-                   for zone in run['scenario']['yield_intersections']}
-        rejection = None
-        try:
-            check_intersections(run, output/'sensors.jsonl')
-        except ValueError as failure:
-            rejection = str(failure)
-        rejected = (code == 0 and summary['passed'] and summary['reached_goal']
-                    and summary['collisions'] == 0 and summary['road_violations'] == 0
-                    and summary.get('intersection_violations', 0) == 0
-                    and replay_code == 0 and replay['verified'] and replay['ticks'] == summary['steps']
-                    and 0 <= min(margins.values()) < 1
-                    and rejection == 'physical waiting stop-line margin is below the unchanged one-meter floor')
-        report['known_failures'].append({'backend': 'reference', 'scenario': case, 'seed': 7,
-            'exit_code': code, 'summary': summary, 'replay': replay,
-            'min_waiting_margins_m': margins, 'independent_checker_rejection': rejection,
-            'acceptance_rejection_verified': bool(rejected),
-            'speed_profiles': check_speed_profiles(output/'sensors.jsonl'),
-            'motion_predictions': check_motion_predictions(output/'sensors.jsonl')})
-        report['passed'] &= bool(rejected)
-        print(f'reference {case} seed 7: CLI pass but independent waiting-margin rejection verified={rejected}', flush=True)
     report_file.write_text(json.dumps(report, indent=2)+'\n')
     print(f'{report_file}: {len(report["runs"])} runs; passed={report["passed"]}')
     return 0 if report['passed'] else 1

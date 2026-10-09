@@ -8,6 +8,9 @@ pub const FORECAST_HORIZON_S: f64 = 8.0;
 pub const FORECAST_MARGIN_M: f64 = 0.5;
 pub const CLEAR_CONFIRM_S: f64 = 1.0;
 pub const MAX_SCAN_AGE_S: f64 = 0.15;
+pub const APPROACH_RESERVE_M: f64 = 2.0;
+pub const APPROACH_REACTION_S: f64 = 0.25;
+pub const APPROACH_CREEP_M_S: f64 = 0.5;
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -249,6 +252,24 @@ impl YieldIntersections {
     pub fn endpoint(&self) -> Option<f64> {
         self.status.stop_s_m
     }
+    /// Limit a clear approach before entry commitment. Waiting already uses a
+    /// bounded stop-line route prefix. The creep floor permits
+    /// passing a clear line; it does not guarantee a reserve for arbitrary late threats.
+    pub fn approach_speed_limit(&self, ego: EgoState, radius: f64, deceleration: f64) -> f64 {
+        let front = self.route.project(ego.pose.position).0 + radius;
+        let braking = deceleration * 0.5;
+        let response = braking * APPROACH_REACTION_S;
+        self.zones
+            .iter()
+            .zip(&self.status.zones)
+            .filter(|(_, s)| !s.committed && s.phase == IntersectionPhase::Proceeding)
+            .map(|(z, _)| {
+                let available = (z.stop_line.route_s_m - front - APPROACH_RESERVE_M).max(0.0);
+                ((response * response + 2.0 * braking * available).sqrt() - response)
+                    .max(APPROACH_CREEP_M_S)
+            })
+            .fold(f64::INFINITY, f64::min)
+    }
     pub fn planning_route(&self, route: &Route) -> Option<Route> {
         planning_prefix(route, self.endpoint()?)
     }
@@ -371,5 +392,21 @@ mod tests {
         )
         .unwrap();
         assert!(validate(&[zone()], &r, 1.25).is_err());
+    }
+    #[test]
+    fn approach_budget_reserves_response_and_braking_distance_until_commit() {
+        let mut y = YieldIntersections::new(vec![zone()], route());
+        assert!(y.approach_speed_limit(ego(29.0), 1.25, 6.0).is_infinite());
+        for i in 0..=20 {
+            let t = i as f64 * 0.05;
+            y.step(t, ego(33.0), 1.25, &[], Some(t), true);
+        }
+        assert_eq!(y.status().zones[0].phase, IntersectionPhase::Proceeding);
+        let limit = y.approach_speed_limit(ego(29.0), 1.25, 6.0);
+        assert!((limit * 0.25 + limit * limit / 6.0 - 4.0).abs() < 1e-12);
+        assert_eq!(y.approach_speed_limit(ego(33.0), 1.25, 6.0), 0.5);
+        y.step(1.05, ego(35.0), 1.25, &[], Some(1.05), true);
+        assert!(y.status().zones[0].committed);
+        assert!(y.approach_speed_limit(ego(35.0), 1.25, 6.0).is_infinite());
     }
 }

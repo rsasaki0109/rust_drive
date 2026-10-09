@@ -9,10 +9,21 @@ pub(super) fn first_contact_time(
     path: &[TrajectoryPoint],
     object: &Prediction,
     vehicle_radius: f64,
+    held_heading: Vec2,
 ) -> Option<f64> {
     let first = path.first()?;
+    let initial_tangent = path
+        .windows(2)
+        .map(|pair| pair[1].position.minus(pair[0].position))
+        .find(|tangent| tangent.x.hypot(tangent.y) > 1e-6)
+        .unwrap_or(held_heading);
     if first.position.distance(position_at(object, first.time))
-        <= vehicle_radius + object.radius + margin(first.time)
+        <= vehicle_radius
+            + object.radius
+            + margin(
+                first.time,
+                transverse_speed(velocity_at(object, first.time), initial_tangent),
+            )
     {
         return Some(first.time);
     }
@@ -28,21 +39,49 @@ pub(super) fn first_contact_time(
                 break;
             }
             if end > start {
-                if let Some(time) = segment_contact(a, b, object, vehicle_radius, start, end) {
+                if let Some(time) =
+                    segment_contact(a, b, object, vehicle_radius, start, end, held_heading)
+                {
                     return Some(time);
                 }
                 start = end;
             }
         }
-        if let Some(time) = segment_contact(a, b, object, vehicle_radius, start, b.time) {
+        if let Some(time) =
+            segment_contact(a, b, object, vehicle_radius, start, b.time, held_heading)
+        {
             return Some(time);
         }
     }
     None
 }
 
-fn margin(time: f64) -> f64 {
-    0.30 + 0.06 * time.min(5.0)
+fn margin(time: f64, transverse_speed: f64) -> f64 {
+    // Moving across the candidate needs more empirical clearance than static or
+    // parallel traffic. This reserve is not a certified prediction-error bound.
+    0.30 + 0.06 * time.min(5.0) + 0.40 * transverse_speed.min(1.0)
+}
+
+fn transverse_speed(velocity: Vec2, tangent: Vec2) -> f64 {
+    let length = tangent.x.hypot(tangent.y);
+    if length > 1e-6 {
+        (velocity.x * (tangent.y / length) - velocity.y * (tangent.x / length)).abs()
+    } else {
+        // A stationary hold has no segment heading. Reserve for any observed
+        // motion rather than choosing an arbitrary world-frame axis.
+        velocity.x.hypot(velocity.y)
+    }
+}
+
+fn velocity_at(object: &Prediction, time: f64) -> Vec2 {
+    let index = (time / object.dt).floor() as usize;
+    if index >= object.positions.len() - 1 {
+        Vec2::default()
+    } else {
+        object.positions[index + 1]
+            .minus(object.positions[index])
+            .scaled(1.0 / object.dt)
+    }
 }
 
 fn position_at(object: &Prediction, time: f64) -> Vec2 {
@@ -63,6 +102,7 @@ fn segment_contact(
     vehicle_radius: f64,
     start: f64,
     end: f64,
+    held_heading: Vec2,
 ) -> Option<f64> {
     let ego_at = |time| {
         let fraction = if b.time > a.time {
@@ -75,6 +115,12 @@ fn segment_contact(
     };
     let relative_start = ego_at(start).minus(position_at(object, start));
     let relative_end = ego_at(end).minus(position_at(object, end));
+    let displacement = b.position.minus(a.position);
+    let tangent = if displacement.x.hypot(displacement.y) > 1e-6 {
+        displacement
+    } else {
+        held_heading
+    };
     contact_fraction(
         relative_start,
         relative_end,
@@ -82,7 +128,10 @@ fn segment_contact(
         // by at most |delta_v| * duration / 8. Inflate the circle by this bound.
         vehicle_radius
             + object.radius
-            + margin(end)
+            + margin(
+                end,
+                transverse_speed(velocity_at(object, 0.5 * start + 0.5 * end), tangent),
+            )
             + (b.speed - a.speed).abs() * (b.time - a.time) / 8.0,
     )
     .map(|fraction| start + (end - start) * fraction)
@@ -162,10 +211,79 @@ mod tests {
             radius: 0.5,
             dt: 1.0,
         };
-        assert!(ego[0].position.distance(object.positions[0]) > 1.36);
-        assert!(ego[1].position.distance(object.positions[1]) > 1.36);
-        let time = first_contact_time(&ego, &object, 0.5).unwrap();
-        assert!((time - (0.5 - 1.36 / 200.0_f64.sqrt())).abs() < 1e-12);
+        assert!(ego[0].position.distance(object.positions[0]) > 1.76);
+        assert!(ego[1].position.distance(object.positions[1]) > 1.76);
+        let time = first_contact_time(&ego, &object, 0.5, Vec2::default()).unwrap();
+        assert!((time - (0.5 - 1.76 / 200.0_f64.sqrt())).abs() < 1e-12);
+    }
+
+    #[test]
+    fn parallel_and_static_traffic_keep_clearance_in_rotated_frames() {
+        for rotated in [false, true] {
+            let rotate = |p: Vec2| {
+                if rotated { Vec2::new(-p.y, p.x) } else { p }
+            };
+            let ego = path(
+                rotate(Vec2::default()),
+                rotate(Vec2::new(10.0, 0.0)),
+                [0.0, 1.0],
+            );
+            let parallel = Prediction {
+                id: 1,
+                positions: vec![rotate(Vec2::new(0.0, 1.5)), rotate(Vec2::new(10.0, 1.5))],
+                radius: 0.5,
+                dt: 1.0,
+            };
+            assert!(first_contact_time(&ego, &parallel, 0.5, Vec2::default()).is_none());
+            let stationary = Prediction {
+                id: 2,
+                positions: vec![rotate(Vec2::new(5.0, 1.5))],
+                radius: 0.5,
+                dt: 1.0,
+            };
+            assert!(first_contact_time(&ego, &stationary, 0.5, Vec2::default()).is_none());
+        }
+    }
+
+    #[test]
+    fn stationary_hold_reserves_for_motion_without_an_arbitrary_heading() {
+        let ego = path(Vec2::default(), Vec2::default(), [0.0, 1.0]);
+        let moving = Prediction {
+            id: 1,
+            positions: vec![Vec2::new(1.5, 5.0), Vec2::new(1.5, -5.0)],
+            radius: 0.5,
+            dt: 1.0,
+        };
+        // Actual circle separation is 0.5 m at the closest point: the baseline
+        // static reserve permits it, while a moving-object hold reserve rejects it.
+        assert!(first_contact_time(&ego, &moving, 0.5, Vec2::default()).is_some());
+        let stationary = Prediction {
+            positions: vec![Vec2::new(1.5, 0.0)],
+            ..moving
+        };
+        assert!(first_contact_time(&ego, &stationary, 0.5, Vec2::default()).is_none());
+    }
+
+    #[test]
+    fn known_held_heading_preserves_parallel_clearance_and_crossing_reserve() {
+        for rotated in [false, true] {
+            let rotate = |p: Vec2| if rotated { Vec2::new(-p.y, p.x) } else { p };
+            let ego = path(Vec2::default(), Vec2::default(), [0.0, 1.0]);
+            let heading = rotate(Vec2::new(1.0, 0.0));
+            let parallel = Prediction {
+                id: 1,
+                positions: vec![rotate(Vec2::new(-5.0, 1.5)), rotate(Vec2::new(5.0, 1.5))],
+                radius: 0.5,
+                dt: 1.0,
+            };
+            assert!(first_contact_time(&ego, &parallel, 0.5, heading).is_none());
+            assert!(first_contact_time(&ego, &parallel, 0.5, Vec2::default()).is_some());
+            let crossing = Prediction {
+                positions: vec![rotate(Vec2::new(1.5, -5.0)), rotate(Vec2::new(1.5, 5.0))],
+                ..parallel
+            };
+            assert!(first_contact_time(&ego, &crossing, 0.5, heading).is_some());
+        }
     }
 
     #[test]
@@ -177,7 +295,7 @@ mod tests {
             radius: 0.5,
             dt: 1.0,
         };
-        assert!(first_contact_time(&ego, &object, 0.5).is_none());
+        assert!(first_contact_time(&ego, &object, 0.5, Vec2::default()).is_none());
     }
 
     #[test]
@@ -189,7 +307,7 @@ mod tests {
             radius: 0.5,
             dt: 0.5,
         };
-        assert!(first_contact_time(&ego, &object, 0.2).unwrap() < 0.5);
+        assert!(first_contact_time(&ego, &object, 0.2, Vec2::default()).unwrap() < 0.5);
     }
 
     #[test]
@@ -201,8 +319,8 @@ mod tests {
             radius: 0.5,
             dt: 0.5,
         };
-        assert!(first_contact_time(&ego, &object, 0.2).is_some());
+        assert!(first_contact_time(&ego, &object, 0.2, Vec2::default()).is_some());
         object.positions = vec![Vec2::new(5.0, 0.0)];
-        assert!(first_contact_time(&ego, &object, 0.2).is_some());
+        assert!(first_contact_time(&ego, &object, 0.2, Vec2::default()).is_some());
     }
 }

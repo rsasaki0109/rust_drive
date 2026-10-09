@@ -162,6 +162,7 @@ pub enum HealthIssue {
     StaleOdometry,
     StaleLidar,
     StaleGnss,
+    GnssInnovationHold,
     InvalidOdometry,
     InvalidLidar,
     InvalidGnss,
@@ -207,6 +208,7 @@ pub struct DrivingPipeline {
     previous_time: Option<f64>,
     last_odom: Option<Odometry>,
     last_lidar: Option<f64>,
+    rejected_gnss_streak: u8,
     scan_poses: scan_pose::ScanPoseHistory,
     tracks: Vec<Track>,
     navigator: Option<Navigator>,
@@ -278,6 +280,7 @@ impl DrivingPipeline {
             previous_time: None,
             last_odom: None,
             last_lidar: None,
+            rejected_gnss_streak: 0,
             scan_poses: scan_pose::ScanPoseHistory::default(),
             tracks: vec![],
             navigator,
@@ -331,8 +334,17 @@ impl DrivingPipeline {
             {
                 health.push(HealthIssue::InvalidGnss);
             } else {
-                self.ekf.update(fix);
+                match self.ekf.correct(fix) {
+                    GnssDecision::RejectedInnovation => {
+                        self.rejected_gnss_streak = self.rejected_gnss_streak.saturating_add(1);
+                    }
+                    GnssDecision::Accepted => self.rejected_gnss_streak = 0,
+                    GnssDecision::IgnoredTimestamp | GnssDecision::Invalid => {}
+                }
             }
+        }
+        if self.rejected_gnss_streak >= 2 {
+            health.push(HealthIssue::GnssInnovationHold);
         }
         let estimate = self.ekf.state();
         self.scan_poses.record(input.time, estimate.pose);
@@ -459,11 +471,20 @@ impl DrivingPipeline {
                     .flatten()
                     .min_by(|a, b| a.length().total_cmp(&b.length()))
             });
+        let configured_cruise = self.planner.cruise_speed;
+        if let Some(zones) = &self.intersections {
+            self.planner.cruise_speed = configured_cruise.min(zones.approach_speed_limit(
+                estimate,
+                self.config.vehicle.radius,
+                self.planner.max_deceleration_m_s2,
+            ));
+        }
         let mut trajectory = self.planner.plan(
             estimate,
             stop_route.as_ref().unwrap_or(&self.config.route),
             &predictions,
         );
+        self.planner.cruise_speed = configured_cruise;
         if self.navigator.as_ref().is_some_and(|nav| {
             matches!(
                 nav.status().phase,
@@ -649,6 +670,62 @@ mod tests {
         assert!(out.health.is_empty());
         assert_eq!(out.localization.unwrap().last_accepted_stamp, Some(2.05));
         assert!(out.command.steering.abs() <= 0.7 * 0.05 + 1e-12);
+    }
+    #[test]
+    fn repeated_new_gnss_outliers_hold_until_a_new_accepted_fix() {
+        let mut p = pipeline();
+        assert!(p.step(&healthy(0.0)).unwrap().health.is_empty());
+        let mut first = healthy(0.05);
+        first.gnss.as_mut().unwrap().position = Vec2::new(30.0, -25.0);
+        let first_fix = first.gnss;
+        let out = p.step(&first).unwrap();
+        assert_eq!(
+            out.localization.unwrap().last_decision,
+            Some(GnssDecision::RejectedInnovation)
+        );
+        assert!(!out.emergency);
+        let mut duplicate = healthy(0.1);
+        duplicate.gnss = first_fix;
+        let out = p.step(&duplicate).unwrap();
+        assert!(out.health.is_empty());
+        assert_eq!(p.rejected_gnss_streak, 1);
+        let mut second = healthy(0.15);
+        second.gnss.as_mut().unwrap().position = Vec2::new(30.0, -25.0);
+        let out = p.step(&second).unwrap();
+        assert_eq!(out.health, vec![HealthIssue::GnssInnovationHold]);
+        assert!(out.emergency);
+        assert_eq!(out.command.acceleration, -6.0);
+        let mut absent = healthy(0.2);
+        absent.gnss = None;
+        assert!(
+            p.step(&absent)
+                .unwrap()
+                .health
+                .contains(&HealthIssue::GnssInnovationHold)
+        );
+        // An old fix that would have been good cannot clear the hold.
+        let mut old_good = healthy(0.25);
+        old_good.gnss.as_mut().unwrap().stamp = 0.0;
+        assert!(
+            p.step(&old_good)
+                .unwrap()
+                .health
+                .contains(&HealthIssue::GnssInnovationHold)
+        );
+        let mut invalid = healthy(0.3);
+        invalid.gnss.as_mut().unwrap().variance = -1.0;
+        let out = p.step(&invalid).unwrap();
+        assert!(out.health.contains(&HealthIssue::InvalidGnss));
+        assert!(out.health.contains(&HealthIssue::GnssInnovationHold));
+        assert_eq!(p.rejected_gnss_streak, 2);
+        let recovered = p.step(&healthy(0.35)).unwrap();
+        assert!(recovered.health.is_empty());
+        assert!(!recovered.emergency);
+        assert_eq!(p.rejected_gnss_streak, 0);
+        let mut isolated = healthy(0.4);
+        isolated.gnss.as_mut().unwrap().position = Vec2::new(30.0, -25.0);
+        assert!(p.step(&isolated).unwrap().health.is_empty());
+        assert_eq!(p.rejected_gnss_streak, 1);
     }
     #[test]
     fn invalid_navigation_latches_braking_and_does_not_reset_localization() {

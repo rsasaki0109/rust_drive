@@ -29,7 +29,7 @@ jobs:
       - name: Drive mapped destinations, closure detour and mapped road rules
         shell: bash
         run: |
-          for case in route-direct route-detour route-south route-handover route-no-path route-reopen signal-red-green signal-red-stop signal-stale-stop signal-stale-recovery signal-two-stops signal-approach-change stop-sign-single stop-sign-two stop-sign-signal stop-sign-obstacle stop-sign-gnss-recovery intersection-crossing intersection-successive intersection-blocked intersection-gnss-recovery intersection-stop-sign intersection-fast-wide intersection-slow-narrow intersection-two-zones intersection-delay-two intersection-lidar-recovery intersection-cadence-five-hz; do
+          for case in route-direct route-detour route-south route-handover route-no-path route-reopen signal-red-green signal-red-stop signal-stale-stop signal-stale-recovery signal-two-stops signal-approach-change stop-sign-single stop-sign-two stop-sign-signal stop-sign-obstacle stop-sign-gnss-recovery intersection-crossing intersection-successive intersection-blocked intersection-gnss-recovery intersection-stop-sign intersection-fast-wide intersection-slow-narrow intersection-two-zones intersection-delay-two intersection-lidar-recovery intersection-cadence-five-hz intersection-late-conflict intersection-late-delayed; do
             cargo run --release --locked --bin rustdrive -- run --scenario "scenarios/$case.json" --seed 7 --output "artifacts/routing/$case"
             cargo run --release --locked --bin rustdrive -- replay --log "artifacts/routing/$case/sensors.jsonl" --output "artifacts/routing/$case/replay"
           done
@@ -111,6 +111,7 @@ jobs:
           python scripts/render_demo_3d.py artifacts/hazards/rne-dynamic/stop-sign-single/seed-7/run.json --preview-time 10.5 --output artifacts/rne-stop-signs/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-stop-signs/scene.blend
           python scripts/render_demo_3d.py artifacts/hazards/rne-dynamic/intersection-crossing/seed-7/run.json --preview-time 11 --output artifacts/rne-intersection/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-intersection/scene.blend
           python scripts/render_demo_3d.py artifacts/hazards/rne-dynamic/intersection-lidar-recovery/seed-7/run.json --preview-time 14.1 --output artifacts/rne-timing/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-timing/scene.blend
+          python scripts/render_demo_3d.py artifacts/hazards/rne-dynamic/intersection-late-conflict/seed-7/run.json --preview-time 30 --output artifacts/rne-late-crossing/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-late-crossing/scene.blend
       - uses: actions/upload-artifact@v4
         if: always()
         with:

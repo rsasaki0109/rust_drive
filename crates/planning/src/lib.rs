@@ -170,7 +170,12 @@ impl Planner for LatticePlanner {
                 objects
                     .iter()
                     .filter_map(|object| {
-                        collision::first_contact_time(path, object, self.vehicle.radius)
+                        collision::first_contact_time(
+                            path,
+                            object,
+                            self.vehicle.radius,
+                            rustdrive_core::Vec2::new(ego.pose.yaw.cos(), ego.pose.yaw.sin()),
+                        )
                     })
                     .fold(f64::INFINITY, f64::min)
             };
@@ -364,7 +369,13 @@ mod tests {
         assert!((end.position.x - 99.0).abs() < 1e-8);
         assert!((end.position.y.abs() - 3.5).abs() < 1e-8);
         assert!(
-            collision::first_contact_time(&path.points, &traffic, planner.vehicle.radius).is_none()
+            collision::first_contact_time(
+                &path.points,
+                &traffic,
+                planner.vehicle.radius,
+                Vec2::new(ego.pose.yaw.cos(), ego.pose.yaw.sin()),
+            )
+            .is_none()
         );
         // A missed track cannot induce a late center return to the reserved stop.
         ego.pose.position = Vec2::new(85.0, path.lateral_target);
@@ -383,7 +394,8 @@ mod tests {
                 || collision::first_contact_time(
                     &rejected.points,
                     &blocked,
-                    planner.vehicle.radius
+                    planner.vehicle.radius,
+                    Vec2::new(ego.pose.yaw.cos(), ego.pose.yaw.sin()),
                 )
                 .is_none()
         );
@@ -490,8 +502,13 @@ mod tests {
         if !stopped.points.is_empty() {
             assert_eq!(stopped.points.last().unwrap().speed, 0.0);
             assert!(
-                collision::first_contact_time(&stopped.points, &blocking, planner.vehicle.radius)
-                    .is_none()
+                collision::first_contact_time(
+                    &stopped.points,
+                    &blocking,
+                    planner.vehicle.radius,
+                    Vec2::new(1.0, 0.0),
+                )
+                .is_none()
             );
         }
     }

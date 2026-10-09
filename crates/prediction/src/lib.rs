@@ -10,6 +10,9 @@ pub struct ObservedBraking {
     history: BTreeMap<u64, VecDeque<Track>>,
 }
 impl ObservedBraking {
+    /// Produces samples starting at `time`, extrapolated from each observation's
+    /// acquisition timestamp. The braking hypothesis also starts at acquisition;
+    /// repeated calls do not renew its one-second braking interval.
     pub fn predict(&mut self, tracks: &[Track], time: f64) -> Vec<Prediction> {
         assert!(time.is_finite());
         self.history
@@ -17,8 +20,38 @@ impl ObservedBraking {
         let mut predictions = self.baseline.predict(tracks);
         for (track, prediction) in tracks.iter().zip(&mut predictions) {
             let history = self.history.entry(track.id).or_default();
-            if !track.velocity.finite() || !track.last_seen.is_finite() {
+            let age = time - track.last_seen;
+            let speed = track.velocity.x.hypot(track.velocity.y);
+            if !track.position.finite()
+                || !track.velocity.finite()
+                || !speed.is_finite()
+                || !track.radius.is_finite()
+                || track.radius < 0.0
+                || !track.last_seen.is_finite()
+                || !age.is_finite()
+                || age < 0.0
+            {
                 history.clear();
+                // Empty trajectories retain the invalid track identity and cause
+                // downstream planning to brake rather than inventing motion.
+                prediction.positions.clear();
+                continue;
+            }
+            for (i, position) in prediction.positions.iter_mut().enumerate() {
+                let elapsed = if speed < 0.7 {
+                    0.0
+                } else {
+                    age + i as f64 * prediction.dt
+                };
+                *position = track.position.plus(track.velocity.scaled(elapsed));
+            }
+            if prediction
+                .positions
+                .iter()
+                .any(|position| !position.finite())
+            {
+                history.clear();
+                prediction.positions.clear();
                 continue;
             }
             if history
@@ -40,10 +73,9 @@ impl ObservedBraking {
             {
                 history.pop_front();
             }
-            if time - track.last_seen > 0.15 + 1e-9 || time < track.last_seen {
+            if age > 0.15 + 1e-9 {
                 continue;
             }
-            let speed = track.velocity.x.hypot(track.velocity.y);
             if speed < 0.7 {
                 continue;
             }
@@ -92,11 +124,19 @@ impl ObservedBraking {
             }
             if supported {
                 for (i, position) in prediction.positions.iter_mut().enumerate() {
-                    let t = i as f64 * prediction.dt;
+                    let t = age + i as f64 * prediction.dt;
                     let braking_time = t.min(1.0).min(speed / braking);
                     let distance = speed * braking_time - 0.5 * braking * braking_time.powi(2)
                         + (speed - braking * braking_time).max(0.0) * (t - braking_time);
                     *position = track.position.plus(direction.scaled(distance));
+                }
+                if prediction
+                    .positions
+                    .iter()
+                    .any(|position| !position.finite())
+                {
+                    history.clear();
+                    prediction.positions.clear();
                 }
             }
         }
@@ -177,6 +217,111 @@ mod tests {
         );
     }
     #[test]
+    fn current_epoch_constant_velocity_propagates_acquisition_age() {
+        let mut predictor = ObservedBraking::default();
+        let mut acquired = track(2.0, 3.0);
+        acquired.position = Vec2::new(1.0, -2.0);
+        acquired.velocity = Vec2::new(3.0, -4.0);
+        let forecast = predictor.predict(std::slice::from_ref(&acquired), 2.1);
+        assert!((forecast[0].positions[0].x - 1.3).abs() < 1e-12);
+        assert!((forecast[0].positions[0].y + 2.4).abs() < 1e-12);
+        assert!((forecast[0].positions[40].x - 25.3).abs() < 1e-12);
+        assert!((forecast[0].positions[40].y + 34.4).abs() < 1e-12);
+        // Forecasting does not change the acquisition-origin track or the trait
+        // baseline used by callers that have no current-time argument.
+        assert_eq!(acquired.last_seen, 2.0);
+        assert_eq!(acquired.position, Vec2::new(1.0, -2.0));
+        assert_eq!(
+            ConstantVelocity::default().predict(&[acquired])[0].positions[0],
+            Vec2::new(1.0, -2.0)
+        );
+    }
+    #[test]
+    fn delayed_duplicate_braking_does_not_renew_the_acquisition_budget() {
+        let mut predictor = ObservedBraking::default();
+        let acquired = braking_history(&mut predictor);
+        predictor.predict(std::slice::from_ref(&acquired), 0.6);
+        for _ in 0..20 {
+            let forecast = predictor.predict(std::slice::from_ref(&acquired), 0.7);
+            // Acquisition speed 2.8, supported braking 1.0: at age 0.1 the
+            // distance is 0.275; at age 1.1 it is 2.3 + 0.1 * 1.8.
+            assert!((forecast[0].positions[0].x - 10.275).abs() < 1e-10);
+            assert!((forecast[0].positions[5].x - 12.48).abs() < 1e-10);
+            assert!((forecast[0].positions[40].x - 25.08).abs() < 1e-10);
+            let coast_step = forecast[0].positions[6].x - forecast[0].positions[5].x;
+            assert!((coast_step - 0.36).abs() < 1e-10);
+        }
+        assert_eq!(predictor.history[&7].len(), 7);
+        assert_eq!(acquired.last_seen, 0.6);
+        assert_eq!(acquired.position, Vec2::new(10.0, 2.0));
+    }
+    #[test]
+    fn stale_braking_withdraws_and_propagates_valid_velocity_from_acquisition() {
+        let mut predictor = ObservedBraking::default();
+        let acquired = braking_history(&mut predictor);
+        let fresh = predictor.predict(std::slice::from_ref(&acquired), 0.75);
+        assert!((fresh[0].positions[0].x - 10.40875).abs() < 1e-10);
+        let stale = predictor.predict(std::slice::from_ref(&acquired), 0.8);
+        assert!((stale[0].positions[0].x - 10.56).abs() < 1e-10);
+        assert!((stale[0].positions[40].x - 32.96).abs() < 1e-10);
+        assert_eq!(predictor.history[&7].len(), 7);
+    }
+    #[test]
+    fn delayed_low_speed_tracks_keep_the_observed_position() {
+        let mut predictor = ObservedBraking::default();
+        let acquired = track(0.0, 0.69);
+        let forecast = predictor.predict(std::slice::from_ref(&acquired), 0.6);
+        assert!(
+            forecast[0]
+                .positions
+                .iter()
+                .all(|p| *p == acquired.position)
+        );
+        let moving = track(0.0, 0.7);
+        let forecast = predictor.predict(&[moving], 0.6);
+        assert!((forecast[0].positions[0].x - 10.42).abs() < 1e-10);
+    }
+    #[test]
+    fn invalid_or_future_tracks_are_not_fabricated_into_valid_forecasts() {
+        let valid = track(0.6, 2.8);
+        let mut invalid_tracks = Vec::new();
+        for value in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            let mut invalid = valid.clone();
+            invalid.last_seen = value;
+            invalid_tracks.push(invalid);
+            let mut invalid = valid.clone();
+            invalid.position.x = value;
+            invalid_tracks.push(invalid);
+            let mut invalid = valid.clone();
+            invalid.velocity.y = value;
+            invalid_tracks.push(invalid);
+            let mut invalid = valid.clone();
+            invalid.radius = value;
+            invalid_tracks.push(invalid);
+        }
+        let mut future = valid.clone();
+        future.last_seen = 0.61;
+        invalid_tracks.push(future);
+        let mut negative_radius = valid.clone();
+        negative_radius.radius = -1.0;
+        invalid_tracks.push(negative_radius);
+        let mut overflowing_speed = valid.clone();
+        overflowing_speed.velocity = Vec2::new(f64::MAX, f64::MAX);
+        invalid_tracks.push(overflowing_speed);
+        let mut overflowing_position = valid;
+        overflowing_position.position = Vec2::new(f64::MAX, 0.0);
+        overflowing_position.velocity = Vec2::new(f64::MAX / 2.0, 0.0);
+        invalid_tracks.push(overflowing_position);
+        for invalid in invalid_tracks {
+            let mut predictor = ObservedBraking::default();
+            braking_history(&mut predictor);
+            let forecast = predictor.predict(&[invalid], 0.6);
+            assert_eq!(forecast[0].id, 7);
+            assert!(forecast[0].positions.is_empty());
+            assert!(predictor.history[&7].is_empty());
+        }
+    }
+    #[test]
     fn a_short_braking_observation_does_not_change_constant_velocity() {
         let mut predictor = ObservedBraking::default();
         for i in 0..6 {
@@ -193,14 +338,20 @@ mod tests {
     fn stale_duplicate_and_reacquired_tracks_cannot_supply_braking_evidence() {
         let mut predictor = ObservedBraking::default();
         let latest = braking_history(&mut predictor);
-        let baseline = ConstantVelocity::default().predict(std::slice::from_ref(&latest));
+        let mut advanced = latest.clone();
+        advanced.position = advanced.position.plus(advanced.velocity.scaled(0.2));
+        let baseline = ConstantVelocity::default().predict(&[advanced]);
         for _ in 0..100 {
             predictor.predict(std::slice::from_ref(&latest), 0.6);
         }
         assert_eq!(predictor.history[&7].len(), 7);
-        assert_eq!(
-            predictor.predict(std::slice::from_ref(&latest), 0.8)[0].positions,
-            baseline[0].positions
+        let stale = predictor.predict(std::slice::from_ref(&latest), 0.8);
+        assert!(
+            stale[0]
+                .positions
+                .iter()
+                .zip(&baseline[0].positions)
+                .all(|(a, b)| (a.x - b.x).abs() < 1e-10 && a.y == b.y)
         );
         predictor.predict(&[], 0.9);
         let reacquired = track(1.0, 2.0);

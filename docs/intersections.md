@@ -4,7 +4,7 @@ The shared Rust driver now yields before a known conflict rectangle when observe
 
 ![Actual native RNE priority crossing rendered in 3D](../assets/intersection-demo.gif)
 
-The GIF displays recorded native vehicle and actor positions with original suburban scenery, a perpendicular crossing street and a triangular yield sign. Moving traffic headings come from consecutive recorded positions. All added road/sign meshes are decorative and never enter LiDAR, collision acceptance or the driving policy. [GIF provenance](../assets/intersection-demo.json) and [compact physical acceptance evidence](../assets/intersection-results.json) record the trace and renderer fingerprints. Existing opening, follower, fleet and stop-sign GIFs remain separate recordings.
+The GIF displays recorded native vehicle and actor positions from the preceding priority-crossing implementation, before forecasts were rebased to the current control time. It retains its original trace and fingerprints; rerunning the scenario with revised prediction arithmetic can produce different telemetry. The original suburban scenery, perpendicular crossing street and triangular yield sign are decorative and never enter LiDAR, collision acceptance or the driving policy. Moving traffic headings come from consecutive recorded positions. [GIF provenance](../assets/intersection-demo.json) and [baseline physical acceptance evidence](../assets/intersection-results.json) identify that recording. Existing opening, follower, fleet and stop-sign GIFs remain separate historical recordings.
 
 ## Run and reproduce
 
@@ -33,9 +33,11 @@ bash scripts/check-hazards.sh --output /tmp/rustdrive-intersections
 
 `PipelineConfig.yield_intersections` contains `YieldIntersection { stop_line, conflict_bounds, exit_s_m }`. The stop line and exit use arc length on the configured fixed route; `conflict_bounds` is a world-ENU axis-aligned rectangle with finite `min`/`max` coordinates. Map entries supply known geometry only. Live navigation handover is rejected when these controls are configured, rather than silently retaining stale arc lengths. This initial domain uses straight forward routes.
 
-For each unpassed intersection, every forecast segment in the next eight seconds is swept against a conservatively inflated axis-aligned conflict rectangle. Each rectangle face moves outward by the track radius plus 0.5 m; the square corners deliberately overapproximate a circular sweep. An intersecting prediction blocks entry and selects the existing stop-line route prefix. A stationary tracked occupant also blocks. This mechanism can yield before an actor reaches the physical crossing; it is a conservative observed-motion forecast, not an actor-intention model.
+For each unpassed intersection, every forecast segment in the next eight seconds, measured from the current control time, is swept against a conservatively inflated axis-aligned conflict rectangle. Predictions advance acquisition-time tracks through their observation age before evaluating future zone occupancy. Each rectangle face moves outward by the track radius plus 0.5 m; the square corners deliberately overapproximate a circular sweep. An intersecting prediction blocks entry and selects the existing stop-line route prefix. A stationary tracked occupant also blocks. This mechanism can yield before an actor reaches the physical crossing; it is a conservative observed-motion forecast, not an actor-intention model.
 
 Permission requires healthy sensing, accepted LiDAR age at most 0.15 s, estimated heading within 0.2 rad of the route and circular corridor containment. One continuous second of clear evidence must include distinct accepted scan acquisitions; repeated or old timestamps cannot refresh the permission timer. Unhealthy sensing clears the dwell. A low-speed brake cap retains the stopped position while constrained. A current healthy, aligned estimated front crossing with fresh-scan permission commits entry; the intersection becomes passed after the healthy aligned estimated rear clears `exit_s_m`. States are `Waiting`, `Proceeding` and `Passed`, with a separate commitment flag. Passed states retain their final diagnostics rather than re-evaluating traffic behind ego. The full collision planner remains active inside and beyond the crossing.
+
+An approach-speed envelope also applies while a zone is uncommitted and `Proceeding`, before the front crosses the original stop line. `Waiting` instead retains its bounded stop-line route prefix; applying another cruise cap there would unnecessarily slow the existing stopping profile. Let `b` be half the planner's calibrated maximum deceleration, `d = max(line - estimated_front - 2 m, 0)`, and response allowance `r = 0.25 s`. With default planner braking of 2.5 m/s², `b` is 1.25 m/s²; the emergency controller command is a separate limit. The planner's candidate cruise is bounded by `max(0.5 m/s, sqrt((b*r)^2 + 2*b*d) - b*r)` and by configured cruise speed, taking the closest restriction across zones. This leaves estimated stopping headroom while permission can still be revoked. The 0.5 m/s floor permits crossing a freshly cleared line; after commitment, that zone no longer caps approach speed. The normal planner cruise is restored after each plan. This bounds proposed cruise, not instantaneous physical speed, and feasible acceleration/braking profiles remain independently checked. It does not guarantee either the nominal two-meter reserve or the one-meter physical gate for arbitrarily late or unseen threats.
 
 Stop signs and signals can impose a shorter independent route constraint. A released yield constraint cannot override a remaining stop-sign hold, a red signal or an obstacle. The simulated priority actors continue their configured motion; they do not negotiate with ego or acquire a semantic right-of-way state.
 
@@ -69,7 +71,7 @@ That first revision passed local formatting, warnings-denied workspace/native Cl
 
 ## Acquisition timing and varied authored roads
 
-LiDAR delivery can now be delayed without replacing acquisition timestamps. The driver transforms body-frame returns and occupancy rays through its bounded acquisition-time EKF pose history. It continues checking scan age at delivery; priority permission retains the 0.15 s bound and its distinct-acquisition clear timer. Later GNSS corrections do not smooth past poses, and forecasts still start at the last acquired track position instead of being rebased to delivery time. This is a bounded reprojection improvement, not complete delayed-sensor fusion or delay-aware prediction. [Exact history bounds, injection configuration and replay commands](sensor-replay.md).
+LiDAR delivery can be delayed without replacing acquisition timestamps. The driver transforms body-frame returns and occupancy rays through its bounded acquisition-time EKF pose history. It continues checking scan age at delivery; priority permission retains the 0.15 s bound and its distinct-acquisition clear timer. Motion prediction now separately advances tracks to the current control clock. Later GNSS corrections do not smooth past poses; delayed odometry/GNSS fusion, per-point deskew and uncertainty propagation are still absent. [Exact history bounds, forecast origin, injection configuration and replay commands](sensor-replay.md).
 
 | Added fixture | Authored calibration |
 |---|---|
@@ -82,7 +84,7 @@ LiDAR delivery can now be delayed without replacing acquisition timestamps. The 
 
 The recovery window flushes queued scans and resets permission; recovery requires a new acquisition and clear confirmation. Timing/failure schedules remain simulator-only and are excluded from the replay configuration. Unit/integration tests exercise a stationary world circle during translating/turning ego motion with 100 ms delayed body-frame scans, exact sensor-only replay, uncovered/expired acquisitions, and shortest-yaw history interpolation. Supported injection ranges are broader than these particular physical calibrations.
 
-The final current sweep passes **264 positive runs** (129 reference / 135 native), including **66 intersection runs**, of which **18** exercise timing injection. All logs fully replay. Local formatting, warnings-denied workspace/native Clippy, locked builds, **171 workspace tests**, **16 native tests** and **47 reference run/replay pairs** pass. Across the 66 intersection runs, the smallest sampled physical priority gap is **4.45 s**, the smallest waiting margin is **1.900082 m**, and the shortest near-line hold is **2.40 s**. Original 2 s / 1 m gates are retained. [Current compact evidence and fingerprints](../assets/sensor-timing-results.json).
+The preceding acquisition-time reprojection sweep passed **264 positive runs** (129 reference / 135 native), including **66 intersection runs**, of which **18** exercise timing injection. All logs fully replayed. Local formatting, warnings-denied workspace/native Clippy, locked builds, **171 workspace tests**, **16 native tests** and **47 reference run/replay pairs** passed. Across those 66 intersection runs, the smallest sampled physical priority gap was **4.45 s**, the smallest waiting margin was **1.900082 m**, and the shortest near-line hold was **2.40 s**. Original 2 s / 1 m gates were retained. These are historical measurements for the acquisition-time reprojection revision. [Baseline compact evidence and fingerprints](../assets/sensor-timing-results.json).
 
 | Native RNE fixture, seed 7 | Duration / replay ticks | Physical priority gap |
 |---|---|---|
@@ -93,7 +95,7 @@ The final current sweep passes **264 positive runs** (129 reference / 135 native
 | 50 ms delivery + acquisition recovery | 34.05 s / 682 | 5.40 s |
 | 5 Hz observations | 33.35 s / 668 | 4.65 s |
 
-The native recovery case has five explicit failure ticks, discards one pending scan and resets an active clear dwell before resuming. The independent timing checker rejects changed acquisition timestamps, hidden failure reports and a removed scheduled observation even when driver outputs are left untouched. The existing GIF trace is byte-identical to the corresponding newly validated episode; the new recovery recording also renders a CPU preview and exports an editable scene.
+That native recovery case has five explicit failure ticks, discards one pending scan and resets an active clear dwell before resuming. The independent timing checker rejects changed acquisition timestamps, hidden failure reports and a removed scheduled observation even when driver outputs are left untouched. At that preceding revision, the existing GIF trace was byte-identical to the corresponding validated episode; that correspondence does not extend to revised forecast arithmetic. The recovery recording also rendered a CPU preview and exported an editable scene.
 
 ```sh
 cargo run --release --locked --bin rustdrive -- run \
@@ -104,9 +106,40 @@ cargo run --release --locked --bin rustdrive -- run \
   --output artifacts/intersection-cadence
 ```
 
-## Retained late-conflict failure
+## Repaired late conflict
 
-`intersection-late-conflict` preserves a second crossing whose actor reaches its center at 35 s, later than the 31 s positive calibration. In the reference seed-7 run, a newly observed conflict revokes uncommitted permission too late to retain the required one-meter physical front-to-line waiting margin: the measured minimum is **0.267444 m**. The CLI's collision/road/zone-separation summary passes and all **1098** sensor ticks replay, but the independent waiting-margin checker rejects the episode. It remains a known negative case, excluded from positive acceptance alongside the two prior native short-range follower failures. The positive two-zone fixture's earlier traffic does not repair this late-arrival failure, and collision-free deterministic replay cannot establish rule acceptance. General late-conflict response remains unresolved.
+![Actual native RNE late second-crossing run with current-time forecasts and an approach envelope](../assets/late-crossing-demo.gif)
+
+This current native seed-7 recording uses the unchanged original late-crossing scenario. The CPU-rendered GIF contains **201 encoded/audited scene states**, **960 × 640** pixels and **21.40 s playback** including its final pause. Recorded ego and priority traffic positions drive the display; the generated two-crossing streets and signs remain decorative. The editable scene reopens on CPU with **551 objects** and no external image references. [Trace, renderer and GIF provenance](../assets/late-crossing-demo.json) identifies the 59.90 s / 1199-tick input recording. It is separate from the historical GIF above.
+
+`intersection-late-conflict` preserves a second crossing whose actor reaches its center at 35 s, later than the 31 s positive calibration. At the preceding acquisition-time reprojection revision, the reference seed-7 run revoked uncommitted permission too late to retain the required one-meter physical front-to-line waiting margin: the measured minimum was **0.267444 m**. The CLI's collision/road/zone-separation summary passed and all **1098** sensor ticks replayed, but the independent waiting-margin checker rejected the episode. It was excluded from that revision's positive acceptance alongside the two prior native short-range follower failures. Its actor schedule, road/control geometry and one-meter gate remain the regression target for the current-time forecasts and approach envelope. Collision-free deterministic replay alone cannot establish rule acceptance.
+
+The revised driver passes this unchanged fixture in both plants across seeds 1, 7 and 42. A second fixture, `intersection-late-delayed`, retains the same actors, road/control geometry and gates while adding 100 ms LiDAR delivery delay. All twelve targeted physical runs and complete sensor replays pass. The smallest waiting margins are **1.939764 m** for the original fixture and **1.955410 m** for the delayed fixture; the smallest sampled priority gaps are **9.30 s** and **9.35 s**, respectively. The shortest continuous near-line holds are **3.60 s** and **3.45 s**. Both retain the original one-meter waiting/clearance floor and two-second zone separation, without earlier actor scheduling or relocated stop lines.
+
+| Native RNE, seed 7 | Duration / replay ticks | Physical waiting margin | Physical priority gap |
+|---|---|---|---|
+| Original late crossing | 59.90 s / 1199 | 2.003782 m | 9.30 s |
+| Same crossing with 100 ms delivery | 59.95 s / 1200 | 1.993557 m | 9.35 s |
+
+The independent checker reconstructs current-time forecasts from acquisition tracks and braking history, reconstructs the `Proceeding` approach bound with a separate braking-budget calculation, and checks reachable trajectory speeds. A changed `Proceeding` trajectory exceeding the bound is rejected. The original mixed stop-sign/priority and two-zone waiting tests also pass with their unchanged hold gates: `Waiting` keeps its existing stopping prefix, without the additional approach cruise cap. Final-source formatting, warnings-denied workspace/native Clippy, locked builds, **181 workspace tests**, **16 native tests** and **49 reference run/replay pairs** pass.
+
+The final complete sweep passes **276 positive episodes** (**135 reference / 141 native**), retaining the preceding 264 and adding the twelve original/delayed late-crossing runs. Every log fully replays, totaling **228,961 sensor ticks**. All **78 intersection episodes**, including **24 timing-injection episodes**, retain the same two-second priority gap and one-meter waiting/clearance floors. Across these 78 runs, the smallest physical gap is **8.95 s**, the smallest waiting margin is **1.900082 m**, and the shortest continuous near-line hold is **2.20 s**. Both prior native short-range follower failures remain independently rejected outside the positive count. The late-crossing fixture is now part of positive acceptance. [Final compact evidence, source/checker fingerprints and GIF trace verification](../assets/prediction-epoch-results.json).
+
+Current-time forecasting also exposed a GNSS-burst steering regression during development: native seed 1 exceeded its unchanged 0.5 m localization-error gate at **0.623638 m**. The final sustained-innovation-rejection hold brakes earlier on two new rejected fixes, without changing the NIS 36 or 0.75 s accepted-age limits. Final native burst maximum errors across seeds 1, 7 and 42 are **0.184327 / 0.222971 / 0.412726 m**; isolated GNSS-spike cases do not activate the added hold. The same compact evidence retains the candidate failure and verified final sensor-only checks. This is bounded authored fault handling, not a general localization-integrity guarantee.
+
+```sh
+cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- \
+  --plant dynamic --scenario scenarios/intersection-late-conflict.json --seed 7 \
+  --output artifacts/rne-late-crossing
+cargo run --release --locked --bin rustdrive -- replay \
+  --log artifacts/rne-late-crossing/sensors.jsonl \
+  --output artifacts/rne-late-crossing/replay
+python scripts/render_demo_3d.py artifacts/rne-late-crossing/run.json \
+  --output artifacts/rne-late-crossing/demo.gif --samples 16 --threads 3
+python scripts/render_demo_3d.py artifacts/rne-late-crossing/run.json \
+  --preview-time 34.5 --output artifacts/rne-late-crossing/preview.gif \
+  --samples 16 --threads 3 --scene-output artifacts/rne-late-crossing/scene.blend
+```
 
 ## Remaining work
 

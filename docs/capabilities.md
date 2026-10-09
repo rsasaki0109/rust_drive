@@ -5,10 +5,11 @@
 | Capability | Status | Boundary |
 |---|---|---|
 | Closed-loop perception → prediction → planning → control | Implemented / tested | Reference and optional CPU RNE plants |
-| Noisy GNSS + speed / gyro EKF | Implemented / tested | Full x/y innovation gate, Joseph covariance updates, observed/accepted diagnostics; configured initial heading, no bias state |
+| Noisy GNSS + speed / gyro EKF | Implemented / tested | Full x/y innovation gate, Joseph covariance updates, observed/accepted diagnostics; hold after two new rejected innovations until acceptance; configured initial heading, no bias state |
 | Unlabeled LiDAR and occlusion | Implemented / tested | 720 rays, 45 m range, circular targets |
 | Clustering / circle fitting / alpha-beta tracking | Implemented / tested | No semantic classes; nearest-neighbor association |
-| Acquisition-time LiDAR reprojection | Implemented / tested | At most 0.35 s / 64 EKF estimates; world detections and map rays use historical pose; no retroactive GNSS smoothing, delayed odometry/GNSS fusion, covariance propagation or delivery-time forecast rebasing |
+| Acquisition-time LiDAR reprojection | Implemented / tested | At most 0.35 s / 64 EKF estimates; world detections and map rays use historical pose; no retroactive GNSS smoothing, delayed odometry/GNSS fusion or covariance propagation |
+| Current-time motion forecasts | Implemented / tested | Acquired tracks retain stamps; CV / observed braking advances to the control clock, consuming acquisition age from the one-second braking budget; unchanged low-speed deadband, no uncertainty growth or actor intent |
 | Simulator LiDAR timing / explicit transient failure | Implemented / tested | Observation thinning, immutable acquisition stamps and queued delivery; failures flush queued scans; simulated time, no resource-latency benchmark |
 | Log-odds occupancy map | Implemented / tested | Exported diagnostic; not a planner input; no SLAM |
 | Static obstacle avoidance | Implemented / tested | Wide supplied road, three candidate offsets |
@@ -32,7 +33,7 @@
 | Initially occluded / late lateral crossing fixtures | Implemented / tested | Reference/RNE across 3 seeds; circular scheduled actors, no semantics |
 | Low-friction avoidance and stopping | Implemented / tested | RNE dynamic mu=0.2, 0.15 s steering lag, separate longitudinal/lateral limits |
 | Calibrated braking / curvature speed limits | Implemented / tested | Fixed known limits; sampled curvature; no combined-friction optimization |
-| Continuous candidate collision checks | Implemented / tested | Synchronized circular sweeps; accelerated-segment chord bound and retiming revalidation |
+| Continuous candidate collision checks | Implemented / tested | Synchronized circular sweeps; accelerated-segment chord bound, observed transverse-motion reserve and retiming revalidation; empirical margin, no certified error bound |
 | Reachable longitudinal speed profiles | Implemented / tested | Forward/backward acceleration bounds, local curvature caps, finite arrival times; no joint tire-force or jerk optimization |
 | Smooth route interpolation / heading join | Implemented / tested | C2 centerline segments and estimated-heading correction; sampled corridor containment, no joint geometry/control optimization |
 | Low-friction tracking regression gate | Implemented / tested | Fixed RNE calibration, 3 seeds, at most 20 emergency ticks in the specified fixture; no universal bound |
@@ -52,8 +53,9 @@
 | Lane topology / traffic-rule routing / continuous moving handover | Planned | No map importer, lane-change graph or turn penalties; fixed-route yielding is separate from routing |
 | Mapped traffic signals / stop-line holds | Implemented / tested | 36 dedicated physical/replay runs plus 6 stop-sign combinations in two plants; 5 Hz infrastructure snapshots, red/yellow/unknown stops, freshness and green release; no camera signal recognition |
 | Mapped stop signs | Implemented / tested | 30 physical/replay episodes; continuous healthy two-second hold, brake retention, multiple signs, mixed signal/obstacle constraints and GNSS reset/recovery; no camera sign detector |
-| Mapped priority crossing yield | Implemented / tested | 66 physical/replay episodes in two plants, varied authored widths/speeds/two zones and 18 timing episodes; fixed-route conflict rectangles, eight-second forecasts, healthy distinct-scan dwell, independent sampled separation; late-conflict failure remains |
-| Late second-crossing waiting margin | Known acceptance failure | Reference seed 7 replays and passes CLI collision/zone checks but violates the unchanged 1 m waiting-margin floor; independently rejected |
+| Mapped priority crossing yield | Implemented / tested | 78 physical/replay episodes in two plants, varied authored widths/speeds/two zones and 24 timing episodes; fixed-route rectangles, eight-second current-time forecasts, healthy distinct-scan dwell and independent sampled separation |
+| Uncommitted intersection approach envelope | Implemented / tested | Applies to `Proceeding`; `Waiting` retains its stopping prefix. Half calibrated braking authority, 0.25 s response allowance, nominal 2 m estimated reserve and 0.5 m/s creep floor; candidate cruise cap, no arbitrary-late-threat reserve guarantee |
+| Late second-crossing waiting margin | Authored regression repaired | Original actors/map/1 m gates unchanged; original and 100 ms-delayed fixtures pass twelve episodes in both plants/three seeds, included in the verified 276-run sweep |
 | General right of way / intersections / parking | Planned | Other actors do not obey controls; no all-way stop ordering, lane negotiation or parking behavior |
 | General dynamically feasible planning / MPC | Planned | Current lattice + pure pursuit baseline |
 | CARLA bridge | Planned; not implemented or validated | No CARLA server/assets installed |
