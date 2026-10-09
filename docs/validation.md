@@ -372,3 +372,14 @@ after normalizing that one metadata field, and checks unchanged release-binary
 hashes. Workspace checks and the locked native release build were rerun after
 that correction. Package names remain `rustdriving-*`; remote CI status is
 reported separately from these local results.
+
+The preceding main CI run also exposed an existing caller error in the native
+terrain checker: `--ground-segmentation` and `--terrain-objects` were passed
+together although the CLI rejects that combination. Removing only the former
+option selects the existing terrain-object pipeline. The old command's exit 2
+was reproduced; the corrected command completes the actual 22-second episode,
+441-tick exact replay and unchanged independent acceptance checks.
+[Caller-fix evidence](../assets/terrain-cli-validation.json) retains the result
+and source/fixture hashes. No perception, ray or physical acceptance gate was
+changed. Workspace checks were rerun: 306 tests, 49 scenario/replay pairs and
+245 byte-identical legacy output files. New remote CI remains a separate check.

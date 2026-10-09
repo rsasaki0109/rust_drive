@@ -180,7 +180,7 @@ def main():
         raw.mkdir(parents=True,exist_ok=True)
         for name in ['run.json','summary.json','scene.json','sensors.jsonl','replay/replay.json','replay/outputs.jsonl']:(raw/name).unlink(missing_ok=True)
         code,error=g.hazards.invoke([native,'--plant','dynamic','--scenario',SCENARIO,'--scene',SCENE,
-            '--lidar-3d','--ground-segmentation','--terrain-objects','--seed',7,'--output',raw])
+            '--lidar-3d','--terrain-objects','--seed',7,'--output',raw])
         report.update(exit_code=code,diagnostics=error)
         report_path.write_text(json.dumps(report,indent=2)+'\n')
         require(code==0,'native physical episode failed; retained raw evidence is not a positive')

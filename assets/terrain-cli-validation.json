@@ -1,0 +1,169 @@
+{
+  "schema_version": 1,
+  "passed": true,
+  "complete": true,
+  "scope": "CI caller compatibility fix; one unchanged authored native PMF/AABB lead-stop case, not an algorithm or generalization improvement",
+  "change": {
+    "file": "scripts/check-terrain-objects.py",
+    "only_change": "remove --ground-segmentation from the --lidar-3d --terrain-objects native invocation",
+    "diff_checked_against_commit": "e22c687b7337fa720a29b734e4e3eccde79a3e0f",
+    "adaptive_caller_unchanged": true,
+    "rust_sources_unchanged": true,
+    "city_fixture_checker_gif_unchanged": true
+  },
+  "prior_failure": {
+    "ci_run_id": 37987679778,
+    "step": "Independently verify experimental XYZ terrain and measured actor AABBs",
+    "kind": "incompatible CLI switches; failed before simulation or oracle",
+    "exit_code": 2,
+    "reproduced_stderr": "rustdriving-rne: --terrain-objects and --ground-segmentation are mutually exclusive",
+    "failed_switches": [
+      "--lidar-3d",
+      "--ground-segmentation",
+      "--terrain-objects"
+    ],
+    "ci_failure_log_sha256": "208ec4989a2f712c802a984719749a36fa02b86e2d0fc5479f5348a8b5328b89"
+  },
+  "validation_command": "python3 scripts/check-terrain-objects.py --compact --output artifacts/terrain-cli-fix",
+  "validation_exit_code": 0,
+  "validation_log_sha256": "d38747478542e087b09bfb15966a9c6501e20c63ef1acea4713ed93d6dfdebe8",
+  "source_fingerprint_sha256": "749cfa0587ac452ed98e6e77807b2937f5b8cade46b06e068e33628ff1ec1a9c",
+  "checker_dependency_sha256": {
+    "scripts/check-terrain-objects.py": "a4b3704fd409bc270b5946246f338eaa6f264a8f6dd1073a5e7a4006da738deb",
+    "scripts/check-ground-scenes.py": "82131f627a28b108f912b83cad5b04a48227bc28bbb08dd30399e9f2d667c98b",
+    "scripts/check-lidar-3d.py": "ca905476aafc2ed3940d6586076be121359a038be566b1c49cde06f7ede3c951",
+    "scripts/check-native-scenes.py": "fd47b32613688458b9830cd0efd61de4b331b17f28a0b703a05c55be54d93339",
+    "scripts/check_hazards.py": "b1ce0f69944b65ce0167129e1bf0f7d8b3a6cd26d8a2c8888fe065b1ee60604d"
+  },
+  "fixture_sha256": {
+    "scenario": "70b304b4b2afe305a28f70932c1137e4d2ce87e6df0be88db23017264fdfad25",
+    "scene": "f1c2e9c9493404647a23cec64a4ccefae911bdcf4a5ce9a6be3513bede515b32"
+  },
+  "rne_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
+  "native_binary_sha256": "062501f4221d802dc0e7efdafe70553a76500e5424df9c3972d60558cccb1553",
+  "reference_binary_sha256": "fa4c28a1283d332f5dd98505cebdc1d0370e33dd88d21f361574631bebfc5f88",
+  "contracts_unchanged": {
+    "scenario_duration_s": 22,
+    "seed": 7,
+    "acquisition": {
+      "azimuth_columns": 720,
+      "elevation_rings": 16,
+      "collision_bottom_m": 0.15,
+      "collision_top_m": 1.65
+    },
+    "parameters": "unchanged frozen PMF and Euclidean dictionaries asserted by existing checker; no adaptive profile",
+    "terrain_max_points": 20000,
+    "terrain_max_cells": 20000,
+    "terrain_max_candidate_work": 8000000,
+    "object_max_candidate_work": 1000000,
+    "minimum_circle_clearance_m": 1,
+    "range_tolerance_m": 0.06,
+    "capsule_boundary_band_m": 0.0001,
+    "physical_acceptance": "zero collisions/road violations, existing independent bounded 200 Hz actor clearance>=1m, final speed<=.2, unchanged22s441tick deadline",
+    "ground_only_collision_relevant_aabbs": 0,
+    "raw_budget_bytes": 402653184,
+    "archive_budget_bytes": 134217728
+  },
+  "workspace_check": {
+    "command": "scripts/check.sh",
+    "coordinating_agent_exit_code": 0,
+    "tests_passed": 306,
+    "default_replay_pairs": 49,
+    "byte_identical_files": 245,
+    "log_sha256": "477865a59128ca6450b01115e4ad18b2fbcbde01e13fa2d546b48760a4a0fd25"
+  },
+  "native_summary": {
+    "scenario": "Ground-separated inclined LiDAR follows a moving lead into a stop",
+    "seed": 7,
+    "simulated_seconds": 22.0,
+    "steps": 441,
+    "reached_goal": false,
+    "collisions": 0,
+    "road_violations": 0,
+    "min_clearance": 4.913298503332431,
+    "localization_rmse": 0.06768804581460114,
+    "localization_max_error": 0.20512748149352236,
+    "final_speed": 0.0,
+    "progress": 23.688562140208422,
+    "emergency_steps": 9,
+    "avoidance_steps": 0,
+    "max_tracks": 3,
+    "passed": true,
+    "failures": []
+  },
+  "full_replay": {
+    "source": "rne-dynamic-rapier-lidar",
+    "ticks": 441,
+    "verified": true
+  },
+  "physical": {
+    "passed": true,
+    "min_clearance_m": null,
+    "guard_overlap_intervals": 0,
+    "motion_samples": 4401,
+    "static_obstacle_checks": 0
+  },
+  "measured_xyz_aabb_provenance": {
+    "acquisitions": 221,
+    "ray_grid_entries": 2545920,
+    "xyz_returns": 1216923,
+    "confident_acquisitions": 221,
+    "aabbs": 4027,
+    "aabb_points": 202026,
+    "actor_returns": 43048,
+    "ground_returns": 1173875,
+    "actor_points_in_aabbs": 41743,
+    "ground_points_in_aabbs": 160283,
+    "maximum_range_residual_m": 0.03806723663113187,
+    "collision_relevant_actor_points": 41504,
+    "collision_relevant_ground_points": 10607,
+    "ground_only_collision_relevant_aabbs": 0,
+    "actor_collision_relevant_aabbs": 263,
+    "mixed_aabbs": 148,
+    "collision_relevant_mixed_aabbs": 148,
+    "maximum_mixed_aabb_extent_m": {
+      "x": 1.117187118034808,
+      "y": 5.97905164265581,
+      "z": 1.9780328627182304
+    },
+    "minimum_200hz_actor_clearance_bound_m": 4.7232985033324155,
+    "ground_support": {
+      "minimum_supported_fraction": 0.723463687150838,
+      "minimum_supported_cells": 214,
+      "maximum_candidate_work": 87184
+    },
+    "historical_zero_ground_member_assertion_passed": false,
+    "confident_fraction": 1.0
+  },
+  "limitations": {
+    "semantic_recognition": false,
+    "body_physics": false,
+    "ground_classification_perfect": false,
+    "actual_collision_relevant_ground_points_in_mixed_aabbs": 10607,
+    "single_authored_case": true
+  },
+  "raw_sha256": {
+    "run.json": "61cfc833fd0da8331933f519158e4928e1c3d27227f596a1fc96b8d48315383f",
+    "scene.json": "f3b65ee5175a538525c83d17e6e886b9cca00e116706d8066bde6248cb930f5e",
+    "sensors.jsonl": "a54dae9349a691c6c9adc63687ebc15abde840922ba6383f5debe32e6a170d75"
+  },
+  "archive": {
+    "path": "artifacts/terrain-cli-fix/native-terrain-objects-seed-7.tar.gz",
+    "sha256": "65c9c3a680dbba413f18782cbdc57be128eb4212b4e21d0aca70d39a56b15e09",
+    "bytes": 103457356,
+    "files_sha256": {
+      "run.json": "61cfc833fd0da8331933f519158e4928e1c3d27227f596a1fc96b8d48315383f",
+      "sensors.jsonl": "a54dae9349a691c6c9adc63687ebc15abde840922ba6383f5debe32e6a170d75",
+      "scene.json": "f3b65ee5175a538525c83d17e6e886b9cca00e116706d8066bde6248cb930f5e",
+      "summary.json": "8aea0d58db30c54c5f3012809fd030eeb74703ee6e9e9da87c235fdcd3330778",
+      "replay/outputs.jsonl": "bdd9b813622720d5b02cba639f7b63037b8b80b8c826d831d4a2be9503e8a7cb",
+      "replay/replay.json": "da4e332bcc4cf617f228a12e63639237e6454eed044eb2c15d5f7a9c875e44b0"
+    },
+    "gzip_crc_verified": true,
+    "raw_preserved": false
+  },
+  "full_checker_report": {
+    "path": "artifacts/terrain-cli-fix/report.json",
+    "sha256": "973d0315c5a91ca1d171fd4644d66e245fc5482c65f2c1df09b67702291efbb1"
+  }
+}
