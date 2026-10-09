@@ -12,7 +12,8 @@
 | Static obstacle avoidance | Implemented / tested | Wide supplied road, three candidate offsets |
 | Moving lead / crossing object sensing | Implemented / tested in mission | CV forecast; no actor interaction model |
 | Blocked road stop | Implemented / tested | Narrow-road scenario |
-| GNSS spike / burst / persistent-bias response | Implemented / tested | 18 physical fault runs with bounded error, accepted-age braking and recovery; compound scheduled-traffic counterexample still fails |
+| GNSS spike / burst / persistent-bias response | Implemented / tested | 30 physical fault runs with bounded error, accepted-age braking and recovery; scheduled traffic and post-arrival hold regressions |
+| Terminal stopping-place preference / physical residence | Implemented / tested | Route-relative observed forward traffic, feasible lateral candidates; 16-second truth hold in two plants/three seeds, no general parking or escape planner |
 | LiDAR / GNSS dropout braking | Implemented / tested | Timestamp freshness and numeric checks |
 | Swept collision and road boundary evaluation | Implemented / tested | Circular bodies and planar route corridor |
 | Seeded repeatability and telemetry GIF | Implemented / tested | Same build/platform; Python optional |

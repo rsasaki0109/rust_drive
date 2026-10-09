@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "backend": "rne-dynamic-rapier-lidar",
-  "input_trace": "artifacts/gnss-verified/rne-dynamic/route-handover-fast/seed-7/run.json",
+  "input_trace": "artifacts/goal-verified/rne-dynamic/route-handover-fast/seed-7/run.json",
   "scenario": {
     "name": "Live closure: 6 m/s detour",
     "duration": 70.0,
@@ -1023,17 +1023,17 @@
   "summary": {
     "scenario": "Live closure: 6 m/s detour",
     "seed": 7,
-    "simulated_seconds": 40.35,
-    "steps": 808,
+    "simulated_seconds": 40.400000000000006,
+    "steps": 809,
     "reached_goal": true,
     "collisions": 0,
     "road_violations": 0,
-    "min_clearance": 1.4846578020515193,
-    "localization_rmse": 0.0775709821188698,
-    "localization_max_error": 0.25275359162817823,
-    "final_speed": 0.09214303850709352,
-    "progress": 208.57181322312073,
-    "emergency_steps": 8,
+    "min_clearance": 1.4714284917702982,
+    "localization_rmse": 0.07718130763646916,
+    "localization_max_error": 0.24275813773088953,
+    "final_speed": 0.11019945346562063,
+    "progress": 208.54386700435302,
+    "emergency_steps": 5,
     "avoidance_steps": 114,
     "max_tracks": 1,
     "passed": true,
@@ -1042,7 +1042,7 @@
   },
   "gif_frames": 136,
   "playback_speed": 3,
-  "renderer_command": "python3 scripts/render_demo.py artifacts/gnss-verified/rne-dynamic/route-handover-fast/seed-7/run.json --output assets/rne-demo.gif",
+  "renderer_command": "python3 scripts/render_demo.py artifacts/goal-verified/rne-dynamic/route-handover-fast/seed-7/run.json --output assets/rne-demo.gif",
   "navigation": {
     "node_ids": [
       "start",
@@ -2102,7 +2102,7 @@
       "true_speed": 0.0
     },
     {
-      "time": 9.15,
+      "time": 9.3,
       "plan": {
         "node_ids": [
           "start",
@@ -2629,10 +2629,10 @@
           "half_width": 5.5
         }
       },
-      "estimated_speed": 0.013875892047582414,
+      "estimated_speed": 0.003987085133285032,
       "true_speed": 0.0
     }
   ],
   "rne_expected_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
-  "command": "cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- --scenario scenarios/route-handover-fast.json --plant dynamic --seed 7 --output artifacts/gnss-verified/rne-dynamic/route-handover-fast/seed-7"
+  "command": "cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- --scenario scenarios/route-handover-fast.json --plant dynamic --seed 7 --output artifacts/goal-verified/rne-dynamic/route-handover-fast/seed-7"
 }

@@ -459,3 +459,63 @@ fn late_closure_is_scored_as_failure_and_never_redirects_a_moving_vehicle() {
     assert_eq!(result.summary.navigation_switches, 0);
     assert!(result.summary.final_speed < 0.2);
 }
+
+#[test]
+fn terminal_traffic_is_avoided_through_an_extended_physical_hold() {
+    for name in ["gnss-burst-traffic", "gnss-burst-traffic-hold"] {
+        let result = simulate(scenario(name), 7).unwrap();
+        assert!(result.summary.passed, "{name}: {:?}", result.summary);
+        assert_eq!(result.summary.collisions, 0);
+        assert!(result.summary.reached_goal);
+        assert!(result.summary.min_clearance >= 0.5);
+        let mut bytes = Vec::new();
+        result
+            .sensor_log
+            .as_ref()
+            .unwrap()
+            .write(&mut bytes)
+            .unwrap();
+        assert_eq!(
+            rustdrive_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink())
+                .unwrap()
+                .ticks,
+            result.summary.steps
+        );
+    }
+}
+
+#[test]
+fn goal_hold_does_not_hide_a_collision_after_first_arrival() {
+    let mut s = scenario("gnss-spike");
+    s.goal_hold_seconds = Some(8.0);
+    s.objects.push(
+        serde_json::from_value(serde_json::json!({
+            "s": 219.0, "lateral": 0.0, "radius": 3.0, "active_from": 34.0
+        }))
+        .unwrap(),
+    );
+    let mut no_hold = s.clone();
+    no_hold.goal_hold_seconds = None;
+    let early = simulate(no_hold, 7).unwrap();
+    assert!(early.summary.passed);
+    assert!(early.summary.simulated_seconds < 34.0);
+    let result = simulate(s, 7).unwrap();
+    assert!(result.summary.simulated_seconds >= 34.0);
+    assert!(!result.summary.passed);
+    assert!(result.summary.collisions > 0);
+}
+
+#[test]
+fn invalid_goal_residence_and_insufficient_episode_time_are_rejected() {
+    let s = scenario("gnss-spike");
+    for hold in [-1.0, f64::NAN, f64::INFINITY, s.duration + 1.0] {
+        let mut invalid = s.clone();
+        invalid.goal_hold_seconds = Some(hold);
+        assert!(invalid.validate().is_err());
+    }
+    let mut short = s;
+    short.goal_hold_seconds = Some(35.0);
+    let result = simulate(short, 7).unwrap();
+    assert!(!result.summary.reached_goal);
+    assert!(!result.summary.passed);
+}

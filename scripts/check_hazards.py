@@ -10,13 +10,13 @@ import sys
 
 ROOT = Path(__file__).resolve().parent.parent
 CASES = {
-    'reference': ['occluded-crossing', 'cut-in', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias'],
-    'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias'],
+    'reference': ['occluded-crossing', 'cut-in', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold'],
+    'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold'],
 }
 # Fixed regression floors, chosen against the preceding measured fixture results.
 # They are simulation test constraints, not a universal safe-distance specification.
 CLEARANCE_FLOORS_M = {
-    'gnss-spike': 0.5, 'gnss-burst': 0.5, 'gnss-persistent-bias': 4.0,
+    'gnss-burst-traffic': 0.5, 'gnss-burst-traffic-hold': 0.5, 'gnss-spike': 0.5, 'gnss-burst': 0.5, 'gnss-persistent-bias': 4.0,
     'occluded-crossing': 1.0, 'cut-in': 0.7, 'multiple-blocked': 3.0,
     'opposing-crossings': 0.7, 'low-friction': 0.4, 'low-friction-stop': 4.0,
     'route-direct': 0.5, 'route-detour': 0.5, 'route-south': 0.5,
@@ -122,7 +122,7 @@ def check_gnss_fault(run, log, case):
             if diagnostic['last_decision'] == 'Accepted':
                 accepted += 1
                 accepted_stamp = fix['stamp']
-                if case == 'gnss-burst' and recovery is None and fix['stamp'] >= windows[-1]['until']:
+                if case.startswith('gnss-burst') and recovery is None and fix['stamp'] >= windows[-1]['until']:
                     recovery = out['time']
             elif diagnostic['last_decision'] == 'RejectedInnovation':
                 rejected += 1
@@ -147,7 +147,7 @@ def check_gnss_fault(run, log, case):
         raise ValueError('GNSS rejection or bounded localization regression failed')
     if case == 'gnss-spike' and (biased != 1 or stale_times):
         raise ValueError('single rejected fix caused unintended GNSS-stale braking')
-    if case == 'gnss-burst':
+    if case.startswith('gnss-burst'):
         if not stale_times or recovery is None or recovery > windows[-1]['until']+0.4:
             raise ValueError('burst did not brake and accept a good fix after the window')
         held = [f for f in run['frames'] if 7.0 <= f['time'] < 8.0 and f['truth']['speed'] < 0.1]
@@ -160,6 +160,47 @@ def check_gnss_fault(run, log, case):
             'first_stale_s': stale_times[0] if stale_times else None,
             'first_recovered_fix_s': recovery, 'max_localization_error_m': run['summary']['localization_max_error'],
             'max_error_limit_m': 0.5, 'fault_labels_absent_from_pipeline': True, 'passed': True}
+
+
+def check_goal_hold(run, log):
+    with log.open() as stream:
+        header = json.loads(next(stream))['header']
+    if 'goal_hold_seconds' in header['config']:
+        raise ValueError('physical goal residence acceptance entered pipeline configuration')
+    hold = run['scenario']['goal_hold_seconds']
+    frames = run['frames']
+    end = frames[-1]['time']
+    held = [f for f in frames if f['time'] >= end-hold-1e-9]
+    if not held or held[0]['time'] > end-hold+1e-9:
+        raise ValueError('recording does not cover the required terminal residence')
+    # Recompute polyline projection from truth, independently of reported progress.
+    route = run['route']['points']
+    segments = list(zip(route, route[1:]))
+    def progress(position):
+        best = (math.inf, 0.0)
+        accumulated = 0.0
+        for a, b in segments:
+            dx, dy = b['x']-a['x'], b['y']-a['y']
+            length = math.hypot(dx, dy)
+            u = max(0.0, min(1.0, ((position['x']-a['x'])*dx+(position['y']-a['y'])*dy)/(length*length)))
+            d = math.dist(xy(position), (a['x']+u*dx, a['y']+u*dy))
+            if d < best[0]:
+                best = d, accumulated+u*length
+            accumulated += length
+        return best[1], accumulated
+    positions = [f['truth']['pose']['position'] for f in held]
+    excursion = max(math.dist(xy(p), xy(positions[0])) for p in positions)
+    clearance = min(math.dist(xy(f['truth']['pose']['position']), xy(o['position']))
+                    -run['vehicle']['radius']-o['radius'] for f in held for o in f['objects'])
+    if (any(f['truth']['speed'] >= 0.2 or progress(p)[0] < progress(p)[1]-2.0-1e-8
+            for f, p in zip(held, positions)) or excursion > 0.5 or clearance < 0.5):
+        raise ValueError('truth did not remain stopped and clear at the goal for the complete hold')
+    lead = next(o for o in frames[-1]['objects'] if o['id'] == 1)
+    if math.dist(xy(lead['position']), xy(route[-1])) > 1e-8:
+        raise ValueError('evaluation ended before the scripted lead reached the endpoint')
+    return {'required_seconds': hold, 'observed_seconds': end-held[0]['time'],
+            'maximum_excursion_m': excursion, 'minimum_sampled_clearance_m': clearance,
+            'lead_reached_endpoint': True, 'acceptance_absent_from_pipeline': True, 'passed': True}
 
 
 def check_live_navigation(run, log, case):
@@ -381,6 +422,8 @@ def main():
                     run = json.loads((output/'run.json').read_text())
                     if case.startswith('gnss-'):
                         row['gnss_fault'] = check_gnss_fault(run, output/'sensors.jsonl', case)
+                    if run['scenario'].get('goal_hold_seconds'):
+                        row['goal_hold'] = check_goal_hold(run, output/'sensors.jsonl')
                     if case in EXPECTED_EDGES:
                         row['navigation'] = check_navigation(run, case)
                     if case in ['route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen']:
@@ -398,25 +441,6 @@ def main():
                 report['runs'].append(row)
                 report['passed'] &= row['passed']
                 print(f"{backend:11s} {case:20s} seed {seed:3d}: {'PASS' if row['passed'] else 'FAIL'}", flush=True)
-    # This compound-traffic counterexample is never counted as a successful run.
-    if 'rne-dynamic' in backends:
-        output = args.output/'known-failure/gnss-burst-traffic/seed-7'
-        output.mkdir(parents=True, exist_ok=True)
-        (output/'summary.json').unlink(missing_ok=True)
-        (output/'replay/replay.json').unlink(missing_ok=True)
-        code, error = invoke([rne, '--plant', 'dynamic', '--scenario', ROOT/'scenarios/gnss-burst-traffic.json', '--seed', 7, '--output', output])
-        summary = json.loads((output/'summary.json').read_text())
-        replay_code, replay_error = invoke([cli, 'replay', '--log', output/'sensors.jsonl', '--output', output/'replay'])
-        replay = json.loads((output/'replay/replay.json').read_text())
-        rejected = (code == 1 and not summary['passed'] and summary['collisions'] > 0
-                    and not summary['reached_goal'] and replay_code == 0 and replay['verified']
-                    and replay['ticks'] == summary['steps'])
-        report['known_failures'] = [{'backend': 'rne-dynamic', 'scenario': 'gnss-burst-traffic', 'seed': 7,
-                                    'exit_code': code, 'summary': summary, 'replay': replay,
-                                    'acceptance_rejection_verified': bool(rejected),
-                                    'stderr': error, 'replay_stderr': replay_error}]
-        report['passed'] &= bool(rejected)
-        print(f"rne-dynamic gnss-burst-traffic seed 7: physical failure retained; acceptance rejection verified={rejected}", flush=True)
     report_file.write_text(json.dumps(report, indent=2)+'\n')
     print(f'{report_file}: {len(report["runs"])} runs; passed={report["passed"]}')
     return 0 if report['passed'] else 1

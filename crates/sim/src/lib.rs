@@ -84,6 +84,10 @@ pub struct Scenario {
     /// Independent swept-circle acceptance floor in meters; never a planner input.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub min_clearance_m: Option<f64>,
+    /// Continuous physical residence at the goal before ending evaluation.
+    /// This acceptance setting is never supplied to the driving pipeline.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub goal_hold_seconds: Option<f64>,
     pub objects: Vec<ObjectSpec>,
 }
 impl Scenario {
@@ -119,6 +123,12 @@ impl Scenario {
             .is_some_and(|s| !s.is_finite() || !(0.1..=8.0).contains(&s))
         {
             return Err("cruise speed must be within 0.1..=8.0 m/s".into());
+        }
+        if self
+            .goal_hold_seconds
+            .is_some_and(|hold| !hold.is_finite() || hold < 0.0 || hold > self.duration)
+        {
+            return Err("goal hold must be finite, nonnegative and within duration".into());
         }
         let selected = self.navigation_plan()?;
         let mut previous_end = 0.0;
@@ -545,6 +555,7 @@ pub fn simulate_with_backend(
     let mut max_tracks = 0;
     let mut steps = 0;
     let mut reached_goal = false;
+    let mut goal_since = None;
     let mut update_index = 0;
     let mut route_history = Vec::new();
     let mut navigation_switches = 0;
@@ -647,7 +658,21 @@ pub fn simulate_with_backend(
             .map(|o| truth.pose.position.distance(o.position) - vehicle.radius - o.radius)
             .fold(1000.0, f64::min);
         minimum = minimum.min(clearance);
-        if i.is_multiple_of(2) {
+        let at_map_goal = navigation.as_ref().is_none_or(|plan| {
+            truth
+                .pose
+                .position
+                .distance(*plan.route.points.last().unwrap())
+                <= 2.0
+        });
+        if progress >= route.length() - 2.0 && truth.speed < 0.2 && at_map_goal {
+            let since = *goal_since.get_or_insert(time);
+            reached_goal = time - since + 1e-9 >= scenario.goal_hold_seconds.unwrap_or(0.0);
+        } else {
+            goal_since = None;
+        }
+        let finished = reached_goal || time >= scenario.duration;
+        if i.is_multiple_of(2) || finished || goal_since == Some(time) {
             frames.push(Frame {
                 time,
                 truth,
@@ -665,19 +690,7 @@ pub fn simulate_with_backend(
                 localization: localization_status,
             });
         }
-        let at_map_goal = navigation.as_ref().is_none_or(|plan| {
-            truth
-                .pose
-                .position
-                .distance(*plan.route.points.last().unwrap())
-                <= 2.0
-        });
-        if progress >= route.length() - 2.0 && truth.speed < 0.2 && at_map_goal {
-            collisions += usize::from(clearance < 0.0);
-            reached_goal = true;
-            break;
-        }
-        if time >= scenario.duration {
+        if finished {
             collisions += usize::from(clearance < 0.0);
             break;
         }

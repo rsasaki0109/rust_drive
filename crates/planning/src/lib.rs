@@ -17,6 +17,7 @@ pub struct LatticePlanner {
     previous_lateral: f64,
     maneuver_start: Option<(f64, f64, f64)>,
     yield_stop_s: Option<f64>,
+    terminal_side_reserved: bool,
 }
 impl Default for LatticePlanner {
     fn default() -> Self {
@@ -29,6 +30,7 @@ impl Default for LatticePlanner {
             previous_lateral: 0.0,
             maneuver_start: None,
             yield_stop_s: None,
+            terminal_side_reserved: false,
         }
     }
 }
@@ -82,6 +84,20 @@ impl Planner for LatticePlanner {
             lateral: self.max_lateral_acceleration_m_s2,
             cruise: if recovering_goal { 0.0 } else { cruise },
         };
+        // A finite constant-velocity forecast can end before traffic reaches
+        // the goal. Reserve a lateral stopping place while there is still room
+        // to finish the shift, using only observed forecast motion and the route.
+        let terminal_traffic = remaining <= 41.0
+            && objects.iter().any(|object| {
+                let (object_s, object_lateral) = route.project(object.positions[0]);
+                object_s >= s - 40.0
+                    && object_lateral.abs() < object.radius + 0.3
+                    && object
+                        .positions
+                        .get(1)
+                        .is_some_and(|next| route.project(*next).0 - object_s > 0.7 * object.dt)
+            });
+        let reserve_terminal_side = terminal_traffic || self.terminal_side_reserved;
         let mut best: Option<(f64, Trajectory)> = None;
         for target in [0.0_f64, 3.5, -3.5] {
             if target.abs() + self.vehicle.radius > route.half_width
@@ -140,7 +156,11 @@ impl Planner for LatticePlanner {
             if !contained {
                 continue;
             }
-            let goal_stop = (remaining <= 41.0).then_some(horizon);
+            // Route progress is not arc length when the candidate shifts laterally.
+            // Stop at the generated terminal position, rather than truncating a
+            // longer candidate using the route's longitudinal distance.
+            let goal_stop =
+                (remaining <= 41.0).then(|| geometry.windows(2).map(|p| p[0].distance(p[1])).sum());
             let Some(mut points) =
                 speed::profile(&geometry, ego.speed.max(0.0), &limits, goal_stop)
             else {
@@ -196,7 +216,13 @@ impl Planner for LatticePlanner {
                         && object_s <= s + horizon
                         && object_lateral.abs() < object.radius + 0.3
                 });
+            let terminal_center_cost = if reserve_terminal_side && target.abs() < 0.01 {
+                5.0
+            } else {
+                0.0
+            };
             let score = switching_penalty
+                + terminal_center_cost
                 + if abandoning_pass { 1.0 } else { 0.0 }
                 + if blocked {
                     if self.max_lateral_acceleration_m_s2.is_some() {
@@ -235,6 +261,12 @@ impl Planner for LatticePlanner {
             lateral_target: 0.0,
         });
         if trajectory.mode != DrivingMode::Emergency {
+            if terminal_traffic && trajectory.lateral_target.abs() > 0.1 {
+                // Keep the stopping-place preference through forecast jitter,
+                // missed tracks, and the actor becoming stationary. Feasibility
+                // (including the complete hold sweep) always takes precedence.
+                self.terminal_side_reserved = true;
+            }
             if (trajectory.lateral_target - self.previous_lateral).abs() > 0.01 {
                 self.maneuver_start = Some((
                     s,
@@ -288,6 +320,97 @@ mod tests {
             dt: 0.2,
         }
     }
+    #[test]
+    fn goal_stop_uses_candidate_arc_length_after_a_lateral_return() {
+        let ego = EgoState {
+            pose: rustdrive_core::Pose {
+                position: Vec2::new(70.0, 3.5),
+                yaw: 0.0,
+            },
+            speed: 2.0,
+        };
+        let path = LatticePlanner::default().plan(ego, &road(5.5), &[]);
+        assert_eq!(path.lateral_target, 0.0);
+        let end = path.points.last().unwrap();
+        assert!(end.position.distance(Vec2::new(99.0, 0.0)) < 1e-8);
+        assert_eq!(end.speed, 0.0);
+        assert!((end.time - path.points[path.points.len() - 2].time - 8.0).abs() < 1e-8);
+    }
+
+    #[test]
+    fn approaching_traffic_reserves_a_terminal_side_before_the_forecast_reaches_the_goal() {
+        let route = road(5.5);
+        let mut planner = LatticePlanner {
+            cruise_speed: 6.0,
+            ..LatticePlanner::default()
+        };
+        let mut ego = EgoState {
+            speed: 6.0,
+            ..EgoState::default()
+        };
+        ego.pose.position.x = 70.0;
+        let traffic = Prediction {
+            id: 1,
+            radius: 1.0,
+            dt: 0.2,
+            positions: (0..=40)
+                .map(|i| Vec2::new(62.0 + 0.5 * i as f64, 0.0))
+                .collect(),
+        };
+        assert!(traffic.positions.last().unwrap().x < 99.0);
+        let path = planner.plan(ego, &route, std::slice::from_ref(&traffic));
+        assert!(path.lateral_target.abs() > 3.0);
+        let end = path.points.last().unwrap();
+        assert!((end.position.x - 99.0).abs() < 1e-8);
+        assert!((end.position.y.abs() - 3.5).abs() < 1e-8);
+        assert!(
+            collision::first_contact_time(&path.points, &traffic, planner.vehicle.radius).is_none()
+        );
+        // A missed track cannot induce a late center return to the reserved stop.
+        ego.pose.position = Vec2::new(85.0, path.lateral_target);
+        let held = planner.plan(ego, &route, &[]);
+        assert_eq!(held.lateral_target, path.lateral_target);
+        // The reservation remains a preference: a new obstacle on that side
+        // must still reject its path, rather than bypass the stationary sweep.
+        let blocked = Prediction {
+            positions: vec![Vec2::new(99.0, path.lateral_target); 41],
+            radius: 2.0,
+            ..traffic
+        };
+        let rejected = planner.plan(ego, &route, std::slice::from_ref(&blocked));
+        assert!(
+            rejected.mode == DrivingMode::Emergency
+                || collision::first_contact_time(
+                    &rejected.points,
+                    &blocked,
+                    planner.vehicle.radius
+                )
+                .is_none()
+        );
+        assert!(rejected.points.last().is_none_or(|p| p.position.x < 98.0));
+    }
+
+    #[test]
+    fn terminal_reservation_ignores_stationary_departing_and_off_center_tracks() {
+        let mut ego = EgoState {
+            speed: 6.0,
+            ..EgoState::default()
+        };
+        ego.pose.position.x = 70.0;
+        for (velocity, y) in [(0.0, 0.0), (-2.5, 0.0), (2.5, 3.0)] {
+            let object = Prediction {
+                id: 1,
+                radius: 1.0,
+                dt: 0.2,
+                positions: (0..=40)
+                    .map(|i| Vec2::new(62.0 + velocity * 0.2 * i as f64, y))
+                    .collect(),
+            };
+            let path = LatticePlanner::default().plan(ego, &road(5.5), &[object]);
+            assert_eq!(path.lateral_target, 0.0);
+        }
+    }
+
     #[test]
     fn selects_avoidance_and_respects_road() {
         let t = LatticePlanner::default().plan(EgoState::default(), &road(5.5), &[obstacle()]);

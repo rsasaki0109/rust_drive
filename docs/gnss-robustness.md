@@ -30,9 +30,9 @@ The three positive fixtures share a curved 220 m road and one static circular ob
 
 The Python checker compares recorded GNSS against independent evaluation truth and the bounded ±0.14 m sensor noise, confirms each biased observation is rejected, recomputes counters and accepted age, and checks stale braking. On rejected ticks, the estimated position must equal the wheel/gyro prediction rather than jump toward the bad fix. It checks actual standstill before burst recovery, prompt new acceptance, goal completion, zero collision/road violations, complete sensor replay and first-command steering continuity. The new fixtures additionally bound maximum position error to **0.5 m**, with unchanged circular clearance floors of 0.5 m for goal cases and 4 m for persistent stopping.
 
-## Measured results (2026-10-09, Asia/Tokyo)
+## GNSS baseline results (2026-10-09, Asia/Tokyo)
 
-Formatting, Clippy with warnings denied, locked release builds, **109 workspace tests** and **13 RNE tests** pass. The RNE tests include one assertion that the separately retained traffic counterexample fails physical acceptance. The reference script passes eighteen scenario/replay pairs. The suite passes **90 positive scenario runs**, including **18 GNSS-fault runs**, across seeds 1/7/42 and both backends. All positive runs have zero collisions, road violations and closed-edge entry violations, full replay and their prior profile/clearance/normal-steering constraints. The counterexample is recorded separately and is not included in that count. [Complete results, source fingerprint and counterexample](gnss-results.json).
+The following measurements and [results JSON](gnss-results.json) record revision `e35c483fa6b9d6e33240fc4871b19648d65a768d`. The subsequent [terminal-stopping repair](terminal-stopping.md) supersedes the suite counts and resolves its traffic failure. At this baseline, formatting, Clippy with warnings denied, locked release builds, **109 workspace tests** and **13 RNE tests** pass. The RNE tests include one assertion that the separately retained traffic counterexample fails physical acceptance. The reference script passes eighteen scenario/replay pairs. The suite passes **90 positive scenario runs**, including **18 GNSS-fault runs**, across seeds 1/7/42 and both backends. All positive runs have zero collisions, road violations and closed-edge entry violations, full replay and their prior profile/clearance/normal-steering constraints. The counterexample is recorded separately and is not included in that count. [Complete results, source fingerprint and counterexample](gnss-results.json).
 
 Time and tick counts below use seed 7. Clearance is the minimum and position error the maximum across the three seeds.
 
@@ -47,11 +47,11 @@ Time and tick counts below use seed 7. Clearance is the minimum and position err
 
 Sustained faults trigger GNSS-stale braking at 5.60 s. All three burst seeds accept an unbiased fix at 8.00 s. The RNE seed-7 GIF has 862 replayed ticks and completes at 43.05 s. Its maximum position error is 0.301 m; the 0.415 m table value is the worst of the three seeds. The engine pin remains `df6007aa40315e81d12ae00fc1f60369e393a178`.
 
-## Retained traffic failure
+## Historical traffic failure at e35c483
 
-The first burst experiment used the existing three-actor mission, preserving its scheduled traffic. In RNE seed 7, GNSS rejection and recovery worked, with 0.301 m maximum position error, but the planner later held near the destination while a scheduled vehicle caught up from behind. The actors do not interact or brake in response to ego. This episode has **32 colliding integration ticks**, −1.049 m minimum clearance and no goal completion; the CLI returns **1**. All 1301 sensor ticks still replay. The current goal-area planning and traffic model do not resolve this case.
+The first burst experiment used the existing three-actor mission, preserving its scheduled traffic. In RNE seed 7, GNSS rejection and recovery worked, with 0.301 m maximum position error, but the planner later held near the destination while a scheduled vehicle caught up from behind. The actors do not interact or brake in response to ego. At that revision, this episode had **32 colliding integration ticks**, −1.049 m minimum clearance and no goal completion; the CLI returns **1**. All 1301 sensor ticks still replay. The subsequent terminal-stopping work resolves the original world and verifies an extended post-arrival hold. The historical failure evidence remains in `gnss-results.json`.
 
-The exact compound world remains reproducible as `gnss-burst-traffic`; it was not removed or relabeled successful to obtain the positive suite. The fixed-obstacle fixtures isolate GNSS behavior, and their 90-run count excludes this failing episode. The RNE regression and suite separately require that physical acceptance rejects it. The renderer refuses to turn a failing summary into a success demo.
+The exact compound world remains reproducible as `gnss-burst-traffic`; it was not removed or relabeled successful to obtain the positive suite. The fixed-obstacle fixtures isolate GNSS behavior, and their 90-run count excludes this failing episode. At that baseline the RNE regression and suite separately required that physical acceptance reject it; current tests instead require successful physical completion and post-arrival clearance. The renderer refuses to turn a failing summary into a success demo.
 
 ## Reproduce
 
@@ -63,7 +63,7 @@ bash scripts/check-hazards.sh --output artifacts/gnss-verified
 python3 scripts/render_demo.py \
   artifacts/gnss-verified/rne-dynamic/gnss-burst/seed-7/run.json \
   --output assets/gnss-demo.gif
-# The retained traffic counterexample returns 1 and writes its failure evidence:
+# The original traffic world now returns 0 after the terminal-stopping repair:
 cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- \
   --scenario scenarios/gnss-burst-traffic.json --plant dynamic --seed 7 \
   --output artifacts/gnss-burst-traffic

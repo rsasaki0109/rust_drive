@@ -452,19 +452,37 @@ mod tests {
         }
     }
     #[test]
-    fn retained_traffic_counterexample_is_rejected_by_physical_acceptance() {
-        let result = run(scenario("gnss-burst-traffic"), 7, Plant::Dynamic).unwrap();
-        assert!(!result.summary.passed);
-        assert!(result.summary.collisions > 0);
-        assert!(!result.summary.reached_goal);
-        assert!(result.summary.localization_max_error < 0.5);
-        assert!(
-            result
-                .summary
-                .failures
-                .iter()
-                .any(|s| s.contains("colliding"))
-        );
+    fn terminal_traffic_counterexample_and_physical_hold_reach_the_goal() {
+        for name in ["gnss-burst-traffic", "gnss-burst-traffic-hold"] {
+            let result = run(scenario(name), 7, Plant::Dynamic).unwrap();
+            assert!(result.summary.passed, "{name}: {:?}", result.summary);
+            assert_eq!(result.summary.collisions, 0);
+            assert_eq!(result.summary.road_violations, 0);
+            assert!(result.summary.reached_goal);
+            assert!(result.summary.min_clearance >= 0.5);
+            assert!(result.summary.localization_max_error < 0.5);
+            if name.ends_with("-hold") {
+                let end = result.frames.last().unwrap().time;
+                assert!(
+                    result
+                        .frames
+                        .iter()
+                        .filter(|f| f.time >= end - result.scenario.goal_hold_seconds.unwrap())
+                        .all(|f| f.truth.speed < 0.2 && f.progress >= result.route.length() - 2.0)
+                );
+                // The scripted lead has reached the original endpoint by now;
+                // stopping the evaluation before it catches up cannot pass.
+                let lead = result
+                    .frames
+                    .last()
+                    .unwrap()
+                    .objects
+                    .iter()
+                    .find(|o| o.id == 1)
+                    .unwrap();
+                assert!(lead.position.distance(*result.route.points.last().unwrap()) < 1e-8);
+            }
+        }
     }
     #[test]
     fn acquisition_error_reaches_braking_guard() {
