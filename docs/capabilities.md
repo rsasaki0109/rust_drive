@@ -8,6 +8,8 @@
 | Noisy GNSS + speed / gyro EKF | Implemented / tested | Full x/y innovation gate, Joseph covariance updates, observed/accepted diagnostics; configured initial heading, no bias state |
 | Unlabeled LiDAR and occlusion | Implemented / tested | 720 rays, 45 m range, circular targets |
 | Clustering / circle fitting / alpha-beta tracking | Implemented / tested | No semantic classes; nearest-neighbor association |
+| Acquisition-time LiDAR reprojection | Implemented / tested | At most 0.35 s / 64 EKF estimates; world detections and map rays use historical pose; no retroactive GNSS smoothing, delayed odometry/GNSS fusion, covariance propagation or delivery-time forecast rebasing |
+| Simulator LiDAR timing / explicit transient failure | Implemented / tested | Observation thinning, immutable acquisition stamps and queued delivery; failures flush queued scans; simulated time, no resource-latency benchmark |
 | Log-odds occupancy map | Implemented / tested | Exported diagnostic; not a planner input; no SLAM |
 | Static obstacle avoidance | Implemented / tested | Wide supplied road, three candidate offsets |
 | Moving lead / crossing object sensing | Implemented / tested in mission | CV / observed-braking ego forecast; optional simulator actors react to scalar proximity observations |
@@ -50,7 +52,8 @@
 | Lane topology / traffic-rule routing / continuous moving handover | Planned | No map importer, lane-change graph or turn penalties; fixed-route yielding is separate from routing |
 | Mapped traffic signals / stop-line holds | Implemented / tested | 36 dedicated physical/replay runs plus 6 stop-sign combinations in two plants; 5 Hz infrastructure snapshots, red/yellow/unknown stops, freshness and green release; no camera signal recognition |
 | Mapped stop signs | Implemented / tested | 30 physical/replay episodes; continuous healthy two-second hold, brake retention, multiple signs, mixed signal/obstacle constraints and GNSS reset/recovery; no camera sign detector |
-| Mapped priority crossing yield | Implemented / tested | 30 physical/replay episodes in two plants; fixed-route conflict rectangles, LiDAR-derived eight-second prediction occupancy, healthy distinct-scan clear dwell, independent sampled occupancy separation; no general negotiation or actor priority policy |
+| Mapped priority crossing yield | Implemented / tested | 66 physical/replay episodes in two plants, varied authored widths/speeds/two zones and 18 timing episodes; fixed-route conflict rectangles, eight-second forecasts, healthy distinct-scan dwell, independent sampled separation; late-conflict failure remains |
+| Late second-crossing waiting margin | Known acceptance failure | Reference seed 7 replays and passes CLI collision/zone checks but violates the unchanged 1 m waiting-margin floor; independently rejected |
 | General right of way / intersections / parking | Planned | Other actors do not obey controls; no all-way stop ordering, lane negotiation or parking behavior |
 | General dynamically feasible planning / MPC | Planned | Current lattice + pure pursuit baseline |
 | CARLA bridge | Planned; not implemented or validated | No CARLA server/assets installed |

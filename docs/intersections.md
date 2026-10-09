@@ -43,7 +43,7 @@ Stop signs and signals can impose a shorter independent route constraint. A rele
 
 The simulator evaluator samples actual circular vehicle/object positions at 20 Hz using true circle-to-rectangle distance, including rounded-corner geometry. Each occupancy interval starts at the first inside sample and ends at the first outside sample; an open interval stays occupied through the final episode timestamp. These are sampled rule intervals, with no interpolation of zone entry/exit between frames. The evaluator does not reuse the driver's conservative inflated-rectangle forecast test. Priority traffic and ego must remain separated by at least **two seconds** in time when passing the same conflict zone. Physical overlap, premature passage and initial occupancy are evaluated independently of pipeline state. This sampled rule scoring complements the separate continuous circular collision sweeps and corridor checks; collision-free passage alone cannot prove yielding.
 
-The independent Python checker reconstructs occupancy from complete 20 Hz physical frames, compares rule summaries, checks priority separation and retains the fixed **1 m** clearance floor. It also checks actual stopping/waiting where required, complete sensor-only recomputation and fault recovery. The full sweep passes **228 positive episodes** (111 reference / 117 native), retaining the preceding 198-run baseline and adding **30 intersection episodes** across seeds 1, 7 and 42. Both known short-range physical failures remain explicitly rejected outside the positive count. [Compact results and source fingerprints](../assets/intersection-results.json).
+The independent Python checker reconstructs occupancy from complete 20 Hz physical frames, compares rule summaries, checks priority separation and retains the fixed **1 m** clearance floor. It also checks actual stopping/waiting where required, complete sensor-only recomputation and fault recovery. The first priority-crossing revision passed **228 positive episodes** (111 reference / 117 native), retaining the preceding 198-run baseline and adding **30 intersection episodes** across seeds 1, 7 and 42. Both known short-range physical failures remained explicitly rejected outside the positive count. [Baseline results and source fingerprints](../assets/intersection-results.json).
 
 Across all 30 intersection episodes, the smallest sampled physical gap is **4.50 s**, the smallest physical front-to-line waiting margin is **1.926332 m**, and the shortest continuous near-line hold is **2.40 s**. Gates remain 2 s priority separation and 1 m clearance/waiting margin. These are measurements for the authored layouts and speeds, not a general traffic-safety guarantee.
 
@@ -65,7 +65,48 @@ The GNSS fixture revokes uncommitted permission during [10,14) while traffic is 
 | `intersection-gnss-recovery` | Brake and reset clear evidence during the injected [10,14) localization fault; recover from new healthy observations |
 | `intersection-stop-sign` | Satisfy the independent continuous stop requirement and priority constraint before entry |
 
-Local formatting, warnings-denied workspace/native Clippy, locked builds, **160 workspace tests**, **16 native integration tests** and **41 reference scenario/replay pairs** pass. The complete seeded reference/native suite and final 3D render are still being verified; their totals are not asserted here.
+That first revision passed local formatting, warnings-denied workspace/native Clippy, locked builds, **160 workspace tests**, **16 native integration tests** and **41 reference scenario/replay pairs**, plus the **228 positive episodes** reported above. Its native seed-7 GIF contains **112 encoded/audited scene states**, **960 × 640** pixels and **12.50 s playback** including its final pause. Its input bytes match the validated episode; trace, renderer and GIF fingerprints are recorded in the compact evidence. The editable scene reopens on CPU without external image references. The GIF remains this preceding verified recording. Publication CI is separate from local evidence. [Detailed validation](validation.md).
+
+## Acquisition timing and varied authored roads
+
+LiDAR delivery can now be delayed without replacing acquisition timestamps. The driver transforms body-frame returns and occupancy rays through its bounded acquisition-time EKF pose history. It continues checking scan age at delivery; priority permission retains the 0.15 s bound and its distinct-acquisition clear timer. Later GNSS corrections do not smooth past poses, and forecasts still start at the last acquired track position instead of being rebased to delivery time. This is a bounded reprojection improvement, not complete delayed-sensor fusion or delay-aware prediction. [Exact history bounds, injection configuration and replay commands](sensor-replay.md).
+
+| Added fixture | Authored calibration |
+|---|---|
+| `intersection-fast-wide` | 130 m road, 6 m/s cruise, 2.5 m half-width, 10 m-long conflict rectangle; cross traffic at 4 m/s |
+| `intersection-slow-narrow` | 80 m road, 3 m/s cruise, 1.8 m half-width, 6 m-long conflict rectangle; cross traffic at 3 m/s |
+| `intersection-two-zones` | 140 m road, 4 m/s cruise, two separately controlled rectangles; second actor reaches its crossing center at 31 s |
+| `intersection-delay-two` | 10 Hz delivered scans, 100 ms simulated delivery delay |
+| `intersection-lidar-recovery` | 10 Hz delivered scans, 50 ms delay, explicit acquisition failure during [14.05,14.30) |
+| `intersection-cadence-five-hz` | 5 Hz delivered observations, no delivery delay; native/reference acquisition remains 10 Hz |
+
+The recovery window flushes queued scans and resets permission; recovery requires a new acquisition and clear confirmation. Timing/failure schedules remain simulator-only and are excluded from the replay configuration. Unit/integration tests exercise a stationary world circle during translating/turning ego motion with 100 ms delayed body-frame scans, exact sensor-only replay, uncovered/expired acquisitions, and shortest-yaw history interpolation. Supported injection ranges are broader than these particular physical calibrations.
+
+The final current sweep passes **264 positive runs** (129 reference / 135 native), including **66 intersection runs**, of which **18** exercise timing injection. All logs fully replay. Local formatting, warnings-denied workspace/native Clippy, locked builds, **171 workspace tests**, **16 native tests** and **47 reference run/replay pairs** pass. Across the 66 intersection runs, the smallest sampled physical priority gap is **4.45 s**, the smallest waiting margin is **1.900082 m**, and the shortest near-line hold is **2.40 s**. Original 2 s / 1 m gates are retained. [Current compact evidence and fingerprints](../assets/sensor-timing-results.json).
+
+| Native RNE fixture, seed 7 | Duration / replay ticks | Physical priority gap |
+|---|---|---|
+| Fast / wide | 31.60 s / 633 | 4.55 s |
+| Slow / narrow | 34.75 s / 696 | 5.70 s |
+| Two zones | 51.40 s / 1029 | 4.80 s |
+| 100 ms delivery | 33.30 s / 667 | 4.65 s |
+| 50 ms delivery + acquisition recovery | 34.05 s / 682 | 5.40 s |
+| 5 Hz observations | 33.35 s / 668 | 4.65 s |
+
+The native recovery case has five explicit failure ticks, discards one pending scan and resets an active clear dwell before resuming. The independent timing checker rejects changed acquisition timestamps, hidden failure reports and a removed scheduled observation even when driver outputs are left untouched. The existing GIF trace is byte-identical to the corresponding newly validated episode; the new recovery recording also renders a CPU preview and exports an editable scene.
+
+```sh
+cargo run --release --locked --bin rustdrive -- run \
+  --scenario scenarios/intersection-fast-wide.json --seed 7 \
+  --output artifacts/intersection-fast
+cargo run --release --locked --bin rustdrive -- run \
+  --scenario scenarios/intersection-cadence-five-hz.json --seed 7 \
+  --output artifacts/intersection-cadence
+```
+
+## Retained late-conflict failure
+
+`intersection-late-conflict` preserves a second crossing whose actor reaches its center at 35 s, later than the 31 s positive calibration. In the reference seed-7 run, a newly observed conflict revokes uncommitted permission too late to retain the required one-meter physical front-to-line waiting margin: the measured minimum is **0.267444 m**. The CLI's collision/road/zone-separation summary passes and all **1098** sensor ticks replay, but the independent waiting-margin checker rejects the episode. It remains a known negative case, excluded from positive acceptance alongside the two prior native short-range follower failures. The positive two-zone fixture's earlier traffic does not repair this late-arrival failure, and collision-free deterministic replay cannot establish rule acceptance. General late-conflict response remains unresolved.
 
 ## Remaining work
 

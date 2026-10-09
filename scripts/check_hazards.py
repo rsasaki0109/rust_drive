@@ -13,7 +13,7 @@ CASES = {
     'reference': ['occluded-crossing', 'cut-in', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue', 'traffic-follower-deadline', 'traffic-fleet-queue', 'signal-red-green', 'signal-red-stop', 'signal-stale-stop', 'signal-stale-recovery', 'signal-two-stops', 'signal-approach-change', 'stop-sign-single', 'stop-sign-two', 'stop-sign-signal', 'stop-sign-obstacle', 'stop-sign-gnss-recovery'],
     'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue', 'traffic-follower-deadline', 'traffic-fleet-queue', 'signal-red-green', 'signal-red-stop', 'signal-stale-stop', 'signal-stale-recovery', 'signal-two-stops', 'signal-approach-change', 'stop-sign-single', 'stop-sign-two', 'stop-sign-signal', 'stop-sign-obstacle', 'stop-sign-gnss-recovery'],
 }
-INTERSECTION_CASES = ['intersection-crossing', 'intersection-successive', 'intersection-blocked', 'intersection-gnss-recovery', 'intersection-stop-sign']
+INTERSECTION_CASES = ['intersection-crossing', 'intersection-successive', 'intersection-blocked', 'intersection-gnss-recovery', 'intersection-stop-sign', 'intersection-fast-wide', 'intersection-slow-narrow', 'intersection-two-zones', 'intersection-delay-two', 'intersection-lidar-recovery', 'intersection-cadence-five-hz']
 for cases in CASES.values():
     cases.extend(INTERSECTION_CASES)
 
@@ -247,7 +247,7 @@ def check_intersections(run, log):
     if config.get('yield_intersections') != zones:
         raise ValueError('operational yield map differs from declared map geometry')
     forbidden = {'objects', 'traffic', 'traffic_signals', 'gnss_bias_windows',
-                 'lidar_failure_windows', 'signal_dropout_windows', 'schedule', 'phases'}
+                 'sensor_timing', 'lidar_failure_windows', 'signal_dropout_windows', 'schedule', 'phases'}
     if forbidden.intersection(config):
         raise ValueError('actor/schedule/fault truth entered the operational yield configuration')
     if (any(abs(p['y']) > 1e-9 for p in run['route']['points'])
@@ -270,6 +270,7 @@ def check_intersections(run, log):
     last_scan = None
     minimum_margin = math.inf
     previous_status = {}
+    timing_evidence = check_lidar_timing(run, ticks, config) if run['scenario'].get('sensor_timing') else None
     def overlaps(position, r, bounds):
         return segment_rectangle_distance_squared(position, position, bounds) <= r*r+1e-12
     for index, (frame, tick) in enumerate(zip(frames, ticks)):
@@ -284,6 +285,7 @@ def check_intersections(run, log):
         scan = inp.get('lidar')
         new_scan = bool(scan and not inp['lidar_failed'] and math.isfinite(scan['stamp'])
                         and 0 <= scan['stamp'] <= now and (last_scan is None or scan['stamp'] > last_scan)
+                        and now-scan['stamp'] <= .35+1e-9
                         and len(scan['points']) <= 20_000
                         and all(all(math.isfinite(v) for v in xy(p)) and math.hypot(*xy(p)) <= 200
                                 for p in scan['points']))
@@ -394,8 +396,10 @@ def check_intersections(run, log):
             or any(gap+1e-9 < 2.0 for gap in gaps)
             or run['summary'].get('intersection_violations', 0) != 0):
         raise ValueError('physical intersection occupancy violates the unchanged two-second gap')
-    if not accepted_scans or not blocked_ticks or minimum_margin < 1.0:
-        raise ValueError('yield run lacks sensed conflicts or a physical stop-line clearance')
+    if not accepted_scans or not blocked_ticks:
+        raise ValueError('yield run lacks sensed conflicts')
+    if minimum_margin < 1.0:
+        raise ValueError('physical waiting stop-line margin is below the unchanged one-meter floor')
     if run['scenario']['expected'] == 'goal':
         if len(crossed) != len(zones) or len(passed) != len(zones) or not all(e['ego'] for e in physical.values()):
             raise ValueError('goal run did not actually cross and clear every conflict zone')
@@ -410,7 +414,74 @@ def check_intersections(run, log):
             'continuous_near_line_holds_s': longest_hold, 'min_waiting_stopline_margin_m': minimum_margin,
             'stopline_crossings': crossings, 'physical_occupancies_s': occupancies,
             'min_physical_gap_s': min_gap, 'sensor_fault_permission_reset_exercised': fault_reset,
+            'lidar_timing': timing_evidence,
             'truth_labels_absent_from_pipeline': True, 'passed': True}
+
+
+def check_lidar_timing(run, ticks, config):
+    """Reconstruct delivery from acquisition ticks, independently of driver diagnostics."""
+    timing = run['scenario']['sensor_timing']
+    if 'sensor_timing' in config or 'lidar_failure_windows' in config:
+        raise ValueError('sensor scheduling/failure truth entered the operational configuration')
+    period = timing.get('lidar_period_ticks', 2)
+    delay = timing.get('lidar_delay_ticks', 0)
+    windows = timing.get('lidar_failure_windows', [])
+    pending = []
+    acquired = delivered = failed = discarded = delayed_moving = 0
+    ages = []
+    failed_clear_dwell = False
+    last_failure = None
+    for index, (frame, tick) in enumerate(zip(run['frames'], ticks)):
+        now, inp, out = frame['time'], tick['input'], tick['expected']
+        failure = any(w['from']-1e-9 <= now < w['until']-1e-9 for w in windows)
+        if inp['lidar_failed'] != failure:
+            raise ValueError('LiDAR acquisition failure differs from declared simulator window')
+        expected_stamp = None
+        if failure:
+            failed += 1
+            discarded += len(pending)
+            pending.clear()
+            last_failure = now
+            if not out['emergency'] or 'AcquisitionFailed' not in out['health']:
+                raise ValueError('LiDAR acquisition failure did not immediately request emergency braking')
+            if index and any(s['clear_since'] is not None and s['phase'] == 'Waiting' and not s['committed']
+                             for s in ticks[index-1]['expected']['intersections']['zones']):
+                failed_clear_dwell = True
+            if any(not s['committed'] and (s['phase'] != 'Waiting' or s['clear_since'] is not None)
+                   for s in out['intersections']['zones']):
+                raise ValueError('LiDAR acquisition failure retained uncommitted clear permission')
+        else:
+            if index % period == 0 and (run['scenario'].get('lidar_dropout') is None
+                                        or now < run['scenario']['lidar_dropout']):
+                pending.append((index+delay, now))
+                acquired += 1
+            while pending and pending[0][0] <= index:
+                _, expected_stamp = pending.pop(0)
+        scan = inp.get('lidar')
+        if bool(scan) != (expected_stamp is not None) or (scan and abs(scan['stamp']-expected_stamp) > 1e-9):
+            raise ValueError('LiDAR body-frame acquisition stamp/cadence/delivery or failure flush changed')
+        if scan:
+            age = now-scan['stamp']
+            if abs(age-delay*.05) > 1e-8:
+                raise ValueError('LiDAR delivered age differs from the configured delay')
+            delivered += 1
+            ages.append(age)
+            acquired_frame = run['frames'][round(scan['stamp']*20)]
+            delayed_moving += bool(age > 0 and acquired_frame['truth']['speed'] > 1)
+        if last_failure is not None:
+            for state in out['intersections']['zones']:
+                if not state['committed'] and state['phase'] == 'Proceeding':
+                    if state['clear_since'] is None or state['clear_since'] <= last_failure:
+                        raise ValueError('LiDAR recovery resumed using pre-failure confirmation evidence')
+    if not delivered or (delay and not delayed_moving):
+        raise ValueError('timing fixture never delivered delayed scans while ego was moving')
+    if windows and (not failed or not failed_clear_dwell):
+        raise ValueError('timing fault fixture did not reset an active clear dwell')
+    return {'period_ticks': period, 'delay_ticks': delay, 'acquired_scans': acquired,
+            'delivered_scans': delivered, 'failed_ticks': failed, 'discarded_pending_scans': discarded,
+            'max_delivered_age_s': max(ages), 'delayed_moving_scans': delayed_moving,
+            'active_clear_dwell_reset_exercised': failed_clear_dwell,
+            'acquisition_delivery_reconstruction_verified': True, 'passed': True}
 
 
 def check_navigation(run, case):
@@ -1048,8 +1119,8 @@ def main():
                 report['runs'].append(row)
                 report['passed'] &= row['passed']
                 print(f"{backend:11s} {case:20s} seed {seed:3d}: {'PASS' if row['passed'] else 'FAIL'}", flush=True)
+    report['known_failures'] = []
     if 'rne-dynamic' in backends:
-        report['known_failures'] = []
         for seed in [1, 42]:
             output = args.output/'known-failure/traffic-follower-short-range'/f'seed-{seed}'
             output.mkdir(parents=True, exist_ok=True)
@@ -1072,6 +1143,41 @@ def main():
                 'traffic': traffic, 'motion_predictions': predictions, 'acceptance_rejection_verified': bool(rejected)})
             report['passed'] &= bool(rejected)
             print(f'rne-dynamic traffic-follower-short-range seed {seed}: short-range clearance failure; rejection verified={rejected}', flush=True)
+    if 'reference' in backends:
+        case = 'intersection-late-conflict'
+        output = args.output/'known-failure'/case/'reference/seed-7'
+        output.mkdir(parents=True, exist_ok=True)
+        (output/'summary.json').unlink(missing_ok=True)
+        (output/'replay/replay.json').unlink(missing_ok=True)
+        code, error = invoke([cli, 'run', '--scenario', ROOT/'scenarios'/f'{case}.json', '--seed', 7, '--output', output])
+        summary = json.loads((output/'summary.json').read_text())
+        replay_code, replay_error = invoke([cli, 'replay', '--log', output/'sensors.jsonl', '--output', output/'replay'])
+        replay = json.loads((output/'replay/replay.json').read_text())
+        run = json.loads((output/'run.json').read_text())
+        margins = {zone['stop_line']['id']: min(zone['stop_line']['route_s_m']
+                   -frame['truth']['pose']['position']['x']-run['vehicle']['radius']
+                   for frame in run['frames'] for state in frame['intersections']['zones']
+                   if state['id'] == zone['stop_line']['id'] and state['phase'] == 'Waiting' and not state['committed'])
+                   for zone in run['scenario']['yield_intersections']}
+        rejection = None
+        try:
+            check_intersections(run, output/'sensors.jsonl')
+        except ValueError as failure:
+            rejection = str(failure)
+        rejected = (code == 0 and summary['passed'] and summary['reached_goal']
+                    and summary['collisions'] == 0 and summary['road_violations'] == 0
+                    and summary.get('intersection_violations', 0) == 0
+                    and replay_code == 0 and replay['verified'] and replay['ticks'] == summary['steps']
+                    and 0 <= min(margins.values()) < 1
+                    and rejection == 'physical waiting stop-line margin is below the unchanged one-meter floor')
+        report['known_failures'].append({'backend': 'reference', 'scenario': case, 'seed': 7,
+            'exit_code': code, 'summary': summary, 'replay': replay,
+            'min_waiting_margins_m': margins, 'independent_checker_rejection': rejection,
+            'acceptance_rejection_verified': bool(rejected),
+            'speed_profiles': check_speed_profiles(output/'sensors.jsonl'),
+            'motion_predictions': check_motion_predictions(output/'sensors.jsonl')})
+        report['passed'] &= bool(rejected)
+        print(f'reference {case} seed 7: CLI pass but independent waiting-margin rejection verified={rejected}', flush=True)
     report_file.write_text(json.dumps(report, indent=2)+'\n')
     print(f'{report_file}: {len(report["runs"])} runs; passed={report["passed"]}')
     return 0 if report['passed'] else 1

@@ -9,13 +9,58 @@ Configuration supplies a validated arc-length route, calibrated initial pose, ve
 - `time`: finite, nonnegative, strictly increasing seconds on one simulation clock.
 - `odometry`: optional acquisition-stamped speed and yaw rate; required at 20 Hz.
 - `gnss`: optional acquisition-stamped noisy position/variance; generated at 5 Hz.
-- `lidar`: optional acquisition-stamped **body-frame** x-forward/y-left returns; generated at 10 Hz.
+- `lidar`: optional acquisition-stamped **body-frame** x-forward/y-left returns; generated at 10 Hz by default. Delivery time is the enclosing frame's `time`, not a replacement for the scan's acquisition stamp.
 - `navigation_update`: optional external closure snapshot, with acquisition stamp, increasing revision and complete closed-edge list; configured map required for route handling.
 - `lidar_failed`: explicit acquisition failure (default false), distinct from healthy zero returns.
 
 Absent samples do not refresh last accepted timestamps. Duplicate, out-of-order, future and invalid samples cannot refresh them either. Odometry older than 0.15 s, LiDAR older than 0.35 s or accepted GNSS older than 0.75 s brakes. Clock gaps over 0.25 s and excessive localization uncertainty brake. Regressing/non-finite clocks return an error before state mutation; adapters must stop on errors. This research health policy is intentionally conservative and does not support GNSS-denied navigation.
 
 Ground-truth poses, object identities and physical collision results are not input fields. Unknown top-level fields are rejected. Synthetic sensors necessarily observe the simulator world; their noisy measurements cross this boundary.
+
+## Bounded acquisition-time LiDAR reprojection
+
+Fresh monotonic scans use the EKF pose estimate at acquisition, rather than the pose at delivery, for both detection coordinates and occupancy-grid ray origins. The private history starts at the first pipeline step, after its odometry prediction and GNSS correction; no earlier pose is fabricated. A lookup accepts at most 0.35 s of age and retains at most 64 estimates, with one predecessor for interpolation at the age boundary. An exact stored timestamp returns its original pose. Otherwise position and the shortest wrapped yaw arc interpolate between surrounding estimates whose gap is at most 0.25 s. There is no extrapolation. A new scan with expired or uncovered history adds `InvalidLidar`, brakes, and leaves tracks, map and last accepted scan stamp unchanged. Duplicate/older accepted scan stamps remain ignored without refreshing health.
+
+The acquisition stamp is also retained for tracking and freshness. Priority-crossing permission still requires an accepted scan no more than 0.15 s old; the broader 0.35 s history/health bound does not relax it. A transport delay can therefore trigger withholding permission or braking even when a scan can be geometrically transformed.
+
+This is bounded reprojection through past estimates, not a full delayed-sensor estimator. Later GNSS corrections do not retroactively smooth history; delayed odometry/GNSS fusion, per-point LiDAR deskew and covariance propagation are absent. Forecasts still start at the last acquired track position instead of being propagated to delivery time. Do not infer general latency tolerance from an accepted replay or the authored timing fixtures.
+
+## Simulator-only LiDAR delivery injection
+
+An optional scenario `sensor_timing` object configures delivery to the shared driver. Ticks are 0.05 s of simulated time:
+
+```json
+{
+  "sensor_timing": {
+    "lidar_period_ticks": 2,
+    "lidar_delay_ticks": 1,
+    "lidar_failure_windows": [{"from": 14.05, "until": 14.30}]
+  }
+}
+```
+
+`lidar_period_ticks` must be even and in 2–10: delivered observation cadence ranges from 10 Hz to 2 Hz. `lidar_delay_ticks` is 0–6, or 0–0.30 s. These are supported injection ranges, not guaranteed operating tolerances. The existing adapters continue acquiring at 10 Hz; the common simulator layer selects scans, queues their unchanged body-frame points/stamps, and delivers them later. It does not reduce native ray-query work or measure wall-clock latency. Omitting the object retains the previous transport path.
+
+At most 32 finite, sorted, nonoverlapping failure windows within the scenario duration are allowed. A `[from, until)` window immediately emits `lidar_failed`, suppresses a scan and flushes queued acquisitions. A backend acquisition error has the same queue-flushing behavior. Recovery must acquire a new scan; an old queued scan cannot restore health. This models an explicit sensor failure report rather than an undetected communications outage. Dropout and freshness tests remain separate.
+
+The scenario's timing/delay/failure schedule stays outside the operational replay header. Logs contain delivered observations with their actual acquisition stamps and explicit failure flags. Replay rebuilds acquisition-pose history from those observations and recomputes every output; neither expected history nor simulator poses are injected. Schema 1 stays readable, but changed delayed-scan arithmetic requires fresh expected recordings.
+
+```sh
+# 100 ms delayed observations, with the original acquisition stamps.
+cargo run --release --locked --bin rustdrive -- run \
+  --scenario scenarios/intersection-delay-two.json --seed 7 \
+  --output artifacts/intersection-delay
+cargo run --release --locked --bin rustdrive -- replay \
+  --log artifacts/intersection-delay/sensors.jsonl \
+  --output artifacts/intersection-delay/replay
+
+# 50 ms delay and an explicit transient acquisition failure.
+cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- \
+  --plant dynamic --scenario scenarios/intersection-lidar-recovery.json --seed 7 \
+  --output artifacts/rne-intersection-recovery
+```
+
+The physical clearance/priority gates and replay checks are independent. [Intersection fixtures and measured acceptance](intersections.md).
 
 ## Log schema 1
 

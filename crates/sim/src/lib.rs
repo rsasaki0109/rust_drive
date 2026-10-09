@@ -1,5 +1,6 @@
 //! Deterministic closed-loop simulator. Only sensor observations enter the stack.
 pub mod intersections;
+pub mod sensor_timing;
 pub mod signals;
 pub mod stop_signs;
 pub mod traffic;
@@ -13,6 +14,7 @@ use rustdrive_pipeline::traffic_controls::StopLine;
 use rustdrive_pipeline::traffic_controls::TrafficControlStatus;
 use rustdrive_pipeline::{DrivingPipeline, PipelineConfig, SensorFrame};
 use rustdrive_routing::{RoadNetwork, RoadNetworkSpec, RoutePlan};
+use sensor_timing::{SensorDelivery, SensorTiming};
 use serde::{Deserialize, Serialize};
 use signals::{RuleEvaluator, SignalDropout, SignalSpec};
 use std::f64::consts::PI;
@@ -85,6 +87,9 @@ pub struct Scenario {
     pub gnss_dropout: Option<f64>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub gnss_bias_windows: Vec<GnssBiasWindow>,
+    /// Simulator-only acquisition/delivery schedule; never supplied as pipeline calibration.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sensor_timing: Option<SensorTiming>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub dynamics: Option<DynamicsSpec>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -133,6 +138,9 @@ impl Scenario {
                 || !(0.0..=1.0).contains(&d.steering_lag_s)
         }) {
             return Err("invalid dynamic plant calibration".into());
+        }
+        if let Some(timing) = &self.sensor_timing {
+            timing.validate(self.duration)?;
         }
         if self
             .min_clearance_m
@@ -600,6 +608,9 @@ pub fn simulate_with_backend(
 ) -> Result<Run, String> {
     scenario.validate()?;
     let dt = config.nominal_dt;
+    if scenario.sensor_timing.is_some() && (dt - 0.05).abs() > 1e-9 {
+        return Err("sensor timing requires the 20 Hz simulation clock".into());
+    }
     let mut route = config.route.clone();
     let mut navigation = scenario.navigation_plan()?;
     if let Some(plan) = &navigation
@@ -637,6 +648,7 @@ pub fn simulate_with_backend(
     let mut signal_rules = RuleEvaluator::default();
     let mut stop_rules = StopRuleEvaluator::new(scenario.stop_signs.len());
     let mut intersection_rules = IntersectionRuleEvaluator::new(scenario.yield_intersections.len());
+    let mut sensor_delivery = SensorDelivery::default();
     let mut evaluation_closures = scenario
         .navigation
         .as_ref()
@@ -687,6 +699,9 @@ pub fn simulate_with_backend(
             &objects,
         );
         let mut input = backend.observe(time, i)?;
+        if let Some(timing) = &scenario.sensor_timing {
+            sensor_delivery.apply(timing, i, &mut input);
+        }
         input.traffic_signal = signals::observe(&scenario, time, i);
         // Fault injection changes observations only, using the acquisition clock.
         // The pipeline/replay header does not contain the scheduled fault labels.

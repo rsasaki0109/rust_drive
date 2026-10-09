@@ -14,11 +14,12 @@ flowchart LR
   AC --> W
   S --> L[Localization EKF]
   S --> P[LiDAR clustering + circle fit]
-  L --> P
+  L --> H[Bounded EKF acquisition-pose history]
+  H --> P
   P --> T[Alpha-beta tracking]
   T --> F[Observed braking / constant-velocity prediction]
   S --> M[Log-odds occupancy map]
-  L --> M
+  H --> M
   N[Supplied road graph + destination + closure snapshots] --> D[Dijkstra routing]
   D --> R[Resolved route]
   R --> A[Lateral lattice planning]
@@ -60,8 +61,8 @@ Unsafe Rust is forbidden at workspace level. There is no global message bus, cus
 - Length in meters, speed in m/s, acceleration in m/s², time in seconds, angles in radians.
 - World frame is planar ENU (`x` east, `y` north), right-handed yaw positive counterclockwise.
 - LiDAR points are body-frame (`x` forward, `y` left). Detections, tracks, route points, and trajectories are world-frame.
-- Timestamps refer to one monotonically advancing simulation clock. Duplicate/out-of-order observations cannot refresh health. Clock regressions fail before mutation; clock gaps over 0.25 s brake. Delayed-sensing motion compensation is absent.
-- Vehicle/control and EKF prediction: 20 Hz. LiDAR/perception/tracking/map: 10 Hz. GNSS: 5 Hz. Prediction and planning: 20 Hz.
+- Timestamps refer to one monotonically advancing simulation clock. Duplicate/out-of-order observations cannot refresh health. Clock regressions fail before mutation; clock gaps over 0.25 s brake. LiDAR detections and map rays use a bounded acquisition-time pose estimate, described below; general delayed-sensor fusion is absent.
+- Vehicle/control and EKF prediction: 20 Hz. Default LiDAR/perception/tracking/map: 10 Hz. GNSS: 5 Hz. Prediction and planning: 20 Hz. Simulator-only timing injection can thin delivered LiDAR observations and delay them without changing their acquisition stamps or body-frame points.
 - Lidar scan timestamps are checked independently of an empty scan: no returns are a valid observation, not a sensor failure.
 - `sensors.jsonl` has a separate version-1 sensor-only header/tick/count-footer contract, including calibrated route and expected outputs. Replay feeds observations to a fresh pipeline; expected outputs are comparison evidence only. [Contract and failure behavior](sensor-replay.md).
 - `run.json` has `schema_version = 1`, includes traceable inputs, output commands, estimates and evaluation truth, and is intended for developer inspection. It is not yet a stable external transport schema.
@@ -76,7 +77,11 @@ Missing/stale odometry, LiDAR or GNSS, invalid samples, excessive covariance and
 
 **Localization.** State `(x, y, yaw)` and a full 3×3 covariance. Wheel speed and gyro propagate pose and the covariance Jacobian; GNSS position first passes a joint two-dimensional NIS gate using the full x/y innovation covariance and threshold 36, then receives independent scalar corrections with Joseph covariance updates. Invalid, duplicate/older or excessive innovations are rejected. Received but rejected fixes do not refresh accepted-GNSS health; new good fixes can recover after a bounded outage without resetting estimator state. [Method, physical fault runs and limits](gnss-robustness.md). This is not a bias-estimating 3D inertial navigation filter. Initial yaw is configured rather than estimated from GNSS at rest.
 
-**Perception.** A 720-ray first-return LiDAR has a 45 m range and ±0.015 m bounded range noise. Connected components use a range-adaptive point distance. Components smaller than three returns are discarded. At least five points allow an algebraic circle fit with residual and radius bounds; other clusters use an inflated surface envelope. Circular objects are the demonstrated shape class; semantic classification is absent. Nearest-neighbor alpha-beta tracking expires observations after 0.6 s, bounds inferred velocity, and operates at 10 Hz. Association is greedy, not globally optimal, and clustering is quadratic in the number of hit points.
+**Perception.** A 720-ray first-return LiDAR has a 45 m range and ±0.015 m bounded range noise. Connected components use a range-adaptive point distance. Components smaller than three returns are discarded. At least five points allow an algebraic circle fit with residual and radius bounds; other clusters use an inflated surface envelope. Circular objects are the demonstrated shape class; semantic classification is absent. Nearest-neighbor alpha-beta tracking expires observations after 0.6 s, bounds inferred velocity, and updates on accepted scans, normally at 10 Hz. Association is greedy, not globally optimal, and clustering is quadratic in the number of hit points.
+
+**Acquisition-time LiDAR transform.** The pipeline retains at most 64 timestamped EKF poses over a 0.35 s lookup window, keeping one predecessor for interpolation at the age boundary. History begins at the first pipeline step and records the pose after that step's prediction and GNSS correction. Exact acquisition timestamps use the stored pose directly; intermediate timestamps interpolate position and the shortest wrapped yaw arc between estimates no more than 0.25 s apart. The pipeline never extrapolates before history or across an uncovered clock gap. A new scan older than 0.35 s or without a covered pose is invalid and cannot update tracks, map rays or accepted-LiDAR age. Both world-frame detections and occupancy ray origins use this acquisition pose. Acquisition timestamps remain the tracker observation times.
+
+This corrects transforming delayed body-frame returns with the latest ego pose. It does not smooth past poses after later GNSS fixes, fuse delayed odometry/GNSS at their acquisition times, deskew individual rays or propagate pose covariance. Forecasts still originate at the last acquired track position; they are not rebased to the delivery/current time. The bounded reprojection therefore does not establish complete latency compensation or general delayed-scene safety. [Sensor contract and reproduction](sensor-replay.md).
 
 **Mapping.** A 0.5 m world-aligned log-odds grid records ray free-space and hit endpoints. It exports occupied cells for debugging. No-return beams are not exported by the sensor and therefore do not clear the entire sensing horizon. Dynamic-object ghost cells and repeated discretized ray cells remain limitations. The grid does not supply the current planner's collision geometry and does not perform SLAM or route discovery.
 

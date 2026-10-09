@@ -2,6 +2,7 @@
 pub mod intersections;
 pub mod navigation;
 pub mod replay;
+mod scan_pose;
 pub mod stop_signs;
 pub mod traffic_controls;
 use intersections::{IntersectionStatus, YieldIntersection, YieldIntersections};
@@ -206,6 +207,7 @@ pub struct DrivingPipeline {
     previous_time: Option<f64>,
     last_odom: Option<Odometry>,
     last_lidar: Option<f64>,
+    scan_poses: scan_pose::ScanPoseHistory,
     tracks: Vec<Track>,
     navigator: Option<Navigator>,
     traffic_controls: Option<TrafficControls>,
@@ -276,6 +278,7 @@ impl DrivingPipeline {
             previous_time: None,
             last_odom: None,
             last_lidar: None,
+            scan_poses: scan_pose::ScanPoseHistory::default(),
             tracks: vec![],
             navigator,
             traffic_controls,
@@ -332,6 +335,7 @@ impl DrivingPipeline {
             }
         }
         let estimate = self.ekf.state();
+        self.scan_poses.record(input.time, estimate.pose);
         if input.lidar_failed {
             health.push(HealthIssue::AcquisitionFailed);
         }
@@ -346,10 +350,14 @@ impl DrivingPipeline {
             {
                 health.push(HealthIssue::InvalidLidar);
             } else if self.last_lidar.is_none_or(|last| scan.stamp > last) {
-                let detections = self.perception.detect(scan, estimate.pose);
-                self.tracks = self.tracker.update(&detections, scan.stamp);
-                self.grid.update(scan, estimate.pose);
-                self.last_lidar = Some(scan.stamp);
+                if let Some(acquisition_pose) = self.scan_poses.at(scan.stamp, input.time) {
+                    let detections = self.perception.detect(scan, acquisition_pose);
+                    self.tracks = self.tracker.update(&detections, scan.stamp);
+                    self.grid.update(scan, acquisition_pose);
+                    self.last_lidar = Some(scan.stamp);
+                } else {
+                    health.push(HealthIssue::InvalidLidar);
+                }
             }
         }
         if self.last_lidar.is_none_or(|t| input.time - t > 0.35 + 1e-9) {
