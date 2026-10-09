@@ -274,6 +274,7 @@ impl Scenario {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct WorldObject {
+    /// Opaque body identity, stable across frames; not a scenario array index.
     pub id: u64,
     pub position: Vec2,
     pub radius: f64,
@@ -602,12 +603,12 @@ pub fn simulate_with_backend(
         let time = i as f64 * dt;
         let truth = backend.state();
         let objects = backend.objects(time);
+        let traffic = backend.traffic();
+        let reactive_ids: Vec<_> = traffic.iter().map(|actor| actor.id).collect();
         let mut traffic_collided = false;
         for (i, a) in objects.iter().enumerate() {
             for b in &objects[i + 1..] {
-                if scenario.objects[a.id as usize].following.is_none()
-                    && scenario.objects[b.id as usize].following.is_none()
-                {
+                if !reactive_ids.contains(&a.id) && !reactive_ids.contains(&b.id) {
                     continue;
                 }
                 let separation = a.position.distance(b.position) - a.radius - b.radius;
@@ -711,9 +712,11 @@ pub fn simulate_with_backend(
             goal_since = None;
         }
         let finished = reached_goal || time >= scenario.duration;
-        let traffic = backend.traffic();
         for actor in &traffic {
-            let object = objects.iter().find(|o| o.id == actor.id).unwrap();
+            let object = objects
+                .iter()
+                .find(|o| o.id == actor.id)
+                .ok_or("traffic telemetry has no corresponding physical body")?;
             if traffic_route.project(object.position).1.abs() + object.radius
                 > traffic_route.half_width
                 || actor.route_s_m + object.radius > traffic_route.length() + 1e-8
@@ -749,11 +752,10 @@ pub fn simulate_with_backend(
         backend.advance(command, dt)?;
         let next_truth = backend.state();
         let next_objects = backend.objects(time + dt);
+        let next_reactive_ids: Vec<_> = backend.traffic().iter().map(|actor| actor.id).collect();
         for (i, a) in next_objects.iter().enumerate() {
             for b in &next_objects[i + 1..] {
-                if scenario.objects[a.id as usize].following.is_none()
-                    && scenario.objects[b.id as usize].following.is_none()
-                {
+                if !next_reactive_ids.contains(&a.id) && !next_reactive_ids.contains(&b.id) {
                     continue;
                 }
                 let separation = if let (Some(old_a), Some(old_b)) = (
@@ -882,6 +884,64 @@ pub fn simulate_with_backend(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn opaque_adapter_body_ids_preserve_traffic_acceptance() {
+        struct Renamed(ReferenceBackend);
+        impl SimulationBackend for Renamed {
+            fn state(&self) -> EgoState {
+                self.0.state()
+            }
+            fn objects(&self, time: f64) -> Vec<WorldObject> {
+                self.0
+                    .objects(time)
+                    .into_iter()
+                    .map(|mut o| {
+                        o.id += 100;
+                        o
+                    })
+                    .collect()
+            }
+            fn traffic(&self) -> Vec<TrafficTelemetry> {
+                self.0
+                    .traffic()
+                    .into_iter()
+                    .map(|mut a| {
+                        a.id += 100;
+                        a
+                    })
+                    .collect()
+            }
+            fn observe(&mut self, time: f64, tick: usize) -> Result<SensorFrame, String> {
+                self.0.observe(time, tick)
+            }
+            fn advance(&mut self, command: ControlCommand, dt: f64) -> Result<(), String> {
+                self.0.advance(command, dt)
+            }
+        }
+        let scenario: Scenario =
+            serde_json::from_str(include_str!("../../../scenarios/traffic-queue.json")).unwrap();
+        let original = simulate(scenario.clone(), 7).unwrap();
+        let config = pipeline_config(&scenario);
+        let backend = ReferenceBackend {
+            scenario: scenario.clone(),
+            traffic: TrafficWorld::new(scenario.clone(), config.route.clone()),
+            truth: EgoState {
+                pose: config.initial_pose,
+                speed: 0.0,
+            },
+            vehicle: config.vehicle,
+            rng: Rng::new(7),
+            command: ControlCommand::default(),
+        };
+        let renamed =
+            simulate_with_backend(scenario, 7, Renamed(backend), config, "renamed-reference")
+                .unwrap();
+        assert!(renamed.summary.passed);
+        assert_eq!(
+            serde_json::to_value(original.summary).unwrap(),
+            serde_json::to_value(renamed.summary).unwrap()
+        );
+    }
     #[test]
     fn sensor_has_occlusion_and_no_labels() {
         let objects = vec![
