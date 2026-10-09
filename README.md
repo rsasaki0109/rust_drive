@@ -54,6 +54,16 @@ cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml
 bash scripts/check-native-scenes.sh
 ```
 
+The optional `--multi-height` mode feeds synchronized measured planes into the shared pipeline. Calibrated height selection and XY projection detect the low slab missed by the default scan, while excluding overhead returns. An incomplete or invalid bundle holds braking until a new complete post-fault acquisition arrives. Sparse horizontal planes still leave gaps in height coverage. [Sensor contract, reproduction and remaining blind zones](docs/multi-height-lidar.md).
+
+![Actual multi-height RNE sensing stopping before a low physical slab](assets/multi-height-demo.gif)
+
+```sh
+cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- \
+  --scenario scenarios/native-scene-low-stop.json --scene scenes/blind-low-slab.json \
+  --multi-height --plant dynamic --seed 7 --output artifacts/multi-height
+```
+
 ```sh
 bash scripts/setup-rne.sh        # Fetch pinned RNE beside this checkout; Rust 1.95.0
 # Activate the Pillow venv below; install Blender for the opening 3D GIF.

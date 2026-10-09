@@ -56,6 +56,22 @@ pub struct LidarScan {
     pub stamp: f64,
     pub points: Vec<Vec2>,
 }
+/// A horizontal measured plane. XY points are body forward/left; height is
+/// meters above the calibrated road datum, not an inferred object label.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct LidarPlane {
+    pub height_m: f64,
+    pub points: Vec<Vec2>,
+}
+/// Synchronized horizontal sweeps with one acquisition timestamp. Adapters
+/// must report acquisition failure rather than substitute a missing plane.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MultiHeightLidarScan {
+    pub stamp: f64,
+    pub planes: Vec<LidarPlane>,
+}
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct Odometry {
     pub stamp: f64,

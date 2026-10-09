@@ -2,7 +2,9 @@
 
 RustDrive can opt into static, upright cuboids in the actual CPU-only RNE/Rapier query world. Their dimensions, height and yaw affect native LiDAR returns and a separate physical clearance guard. A ground-level barrier blocks the driving sensor; an otherwise identical raised barrier clears that sensor and the recorded ego capsule. This extends the simulator geometry beyond the preceding circular actors. Ego motion still uses the native **planar Ackermann plant**.
 
-This feature does not add 3D perception. The driving pipeline receives the existing body-frame planar scan at **0.6 m** height. Additional horizontal scans at **0.15 m** and **3.7 m** are recorded only for independent validation; they never enter localization, tracking, planning or control. Scene labels, cuboid geometry and simulator poses remain simulator/evaluation inputs. Roadside buildings, trees, pavements and the detailed vehicle display model remain cosmetic.
+This feature does not add 3D perception. By default, the driving pipeline receives the existing body-frame planar scan at **0.6 m** height. Additional horizontal scans at **0.15 m** and **3.7 m** are recorded only for independent validation; they never enter localization, tracking, planning or control. Scene labels, cuboid geometry and simulator poses remain simulator/evaluation inputs. Roadside buildings, trees, pavements and the detailed vehicle display model remain cosmetic.
+
+That is the default single-height mode. The additional explicit [`--multi-height` mode](multi-height-lidar.md) now sends the measured planes through a calibrated height-selection and XY-projection contract into the shared driver. Its separate validation includes low-slab stops and retained failures below the lowest plane. The original default-mode recordings and failures remain historical evidence; no scene labels enter the new operational input.
 
 ## Run, replay and check
 
@@ -19,14 +21,14 @@ cargo +1.95.0 run --release --locked \
 cargo run --release --locked --bin rustdrive -- replay \
   --log artifacts/native-ground/sensors.jsonl \
   --output artifacts/native-ground/replay
-bash scripts/check-native-scenes.sh
+bash scripts/check-native-scenes.sh --modes single-height
 ```
 
 The native CLI writes the usual `run.json`, `summary.json` and sensor-only `sensors.jsonl`, plus `scene.json` when `--scene` is supplied. The sidecar includes normalized geometry, native substep positions, body poses, scan acquisitions, firing-ordinal ranges and physical acceptance results. Scene guard failures also fail the run summary and CLI exit status. Reusing an output directory without `--scene` removes its stale `scene.json`.
 
 Sensor replay recomputes the driving pipeline from the logged observations. It neither reads the scene sidecar nor regenerates a physical world. A verified replay establishes repeatable pipeline computation; scene acceptance is checked separately.
 
-The independent checker defaults to seeds **1, 7 and 42**, both native **kinematic and dynamic** plants, and four fixtures:
+With `--modes single-height`, the independent checker uses seeds **1, 7 and 42**, both native **kinematic and dynamic** plants, and four fixtures:
 
 | Scene | Driving fixture | Expected result |
 | --- | --- | --- |
@@ -39,7 +41,7 @@ The complete local matrix passed: **18 positive episodes and six required low-sl
 
 ```sh
 # Faster local subset; this does not establish the full matrix:
-python3 scripts/check-native-scenes.py --plants dynamic --seeds 7 \
+python3 scripts/check-native-scenes.py --modes single-height --plants dynamic --seeds 7 \
   --output artifacts/native-scenes-subset
 ```
 

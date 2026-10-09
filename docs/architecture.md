@@ -13,7 +13,10 @@ flowchart LR
   AS --> AC[Optional traffic following policy]
   AC --> W
   S --> L[Localization EKF]
-  S --> P[LiDAR clustering + circle fit]
+  S -->|Single plane| P[LiDAR clustering + circle fit]
+  S --> HP[Optional calibrated height selection + XY projection]
+  HP --> P
+  HP --> M
   L --> H[Bounded EKF acquisition-pose history]
   H --> P
   P --> T[Alpha-beta tracking]
@@ -38,7 +41,9 @@ flowchart LR
 
 Ground truth never flows into obstacle prediction or planning. The simulator initializes heading at a known spawn calibration, exposes the configured route, and synthesizes noisy measurements from the world. Separate evaluation observes truth to detect collisions, road violations, and localization error.
 
-The optional RNE `--scene` input installs upright yaw-rotated cuboids in native Rapier queries. The existing 0.6 m horizontal LiDAR plane remains the sole operational scan. Two additional horizontal planes and 200 Hz native positions are recorded only in `scene.json`, outside the sensor-only replay contract. A post-run conservative vertical-capsule evaluator adds physical scene failures to acceptance; it cannot command the vehicle. An independent Python slab-ray and rectangle-edge oracle checks the evidence. Native ego motion remains planar, without contact forces or suspension. [Scene contract](native-scenes.md).
+The optional RNE `--scene` input installs upright yaw-rotated cuboids in native Rapier queries. By default, the existing 0.6 m horizontal LiDAR plane remains the sole operational scan. Two additional horizontal planes and 200 Hz native positions are recorded only in `scene.json`, outside the sensor-only replay contract. A post-run conservative vertical-capsule evaluator adds physical scene failures to acceptance; it cannot command the vehicle. An independent Python slab-ray and rectangle-edge oracle checks the evidence. Native ego motion remains planar, without contact forces or suspension. [Scene contract](native-scenes.md).
+
+With the additional explicit `--multi-height` option, all three measured horizontal planes enter `SensorFrame.multi_height_lidar`; the ordinary scan is absent. The sensor-only header supplies bounded plane-height calibration and the vehicle's vertical collision interval. After validating the entire synchronized bundle, the pipeline selects relevant calibrated heights, removes duplicate XY cells and uses its acquisition-time EKF pose for the existing planar perception and mapping. Malformed or failed bundles latch braking until a strictly newer complete acquisition after the fault epoch. Delay, cadence and failure injection transport the entire bundle atomically. Scene labels and geometry remain outside the driver. This is sparse measured-height projection, without volumetric object reconstruction or coverage between planes. [Contract and limits](multi-height-lidar.md).
 
 ## Crates and ownership
 

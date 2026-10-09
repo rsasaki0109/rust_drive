@@ -34,6 +34,7 @@ fn frame(time: f64) -> SensorFrame {
             stamp: time,
             points: vec![],
         }),
+        multi_height_lidar: None,
         lidar_failed: false,
         navigation_update: None,
         traffic_signal: None,

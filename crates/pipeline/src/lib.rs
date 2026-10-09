@@ -1,5 +1,7 @@
 //! Shared sensor-to-command stack. No simulator, truth objects or physical world types.
 pub mod intersections;
+mod multi_height;
+pub use multi_height::MultiHeightLidarConfig;
 pub mod navigation;
 pub mod replay;
 mod scan_pose;
@@ -45,6 +47,8 @@ pub struct PipelineConfig {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub motion_limits: Option<MotionLimits>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub multi_height_lidar: Option<MultiHeightLidarConfig>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub navigation: Option<NavigationConfig>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub stop_lines: Vec<StopLine>,
@@ -62,6 +66,7 @@ impl PipelineConfig {
             nominal_dt: 0.05,
             cruise_speed: 8.0,
             motion_limits: None,
+            multi_height_lidar: None,
             navigation: None,
             stop_lines: vec![],
             stop_signs: vec![],
@@ -69,6 +74,9 @@ impl PipelineConfig {
         }
     }
     pub fn validate(&self) -> Result<(), String> {
+        if let Some(calibration) = &self.multi_height_lidar {
+            calibration.validate()?;
+        }
         if self.route.points.len() > 5000 {
             return Err("route exceeds 5000 points".into());
         }
@@ -148,6 +156,8 @@ pub struct SensorFrame {
     pub odometry: Option<Odometry>,
     pub gnss: Option<Gnss>,
     pub lidar: Option<LidarScan>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub multi_height_lidar: Option<MultiHeightLidarScan>,
     /// Explicit adapter acquisition failure. Empty returns are otherwise valid.
     #[serde(default)]
     pub lidar_failed: bool,
@@ -208,6 +218,7 @@ pub struct DrivingPipeline {
     previous_time: Option<f64>,
     last_odom: Option<Odometry>,
     last_lidar: Option<f64>,
+    multi_height_fault: Option<f64>,
     rejected_gnss_streak: u8,
     scan_poses: scan_pose::ScanPoseHistory,
     tracks: Vec<Track>,
@@ -280,6 +291,7 @@ impl DrivingPipeline {
             previous_time: None,
             last_odom: None,
             last_lidar: None,
+            multi_height_fault: None,
             rejected_gnss_streak: 0,
             scan_poses: scan_pose::ScanPoseHistory::default(),
             tracks: vec![],
@@ -350,8 +362,36 @@ impl DrivingPipeline {
         self.scan_poses.record(input.time, estimate.pose);
         if input.lidar_failed {
             health.push(HealthIssue::AcquisitionFailed);
+            if self.config.multi_height_lidar.is_some() {
+                self.multi_height_fault = Some(input.time);
+            }
         }
-        if let Some(scan) = &input.lidar {
+        let fused;
+        let scan = match (&self.config.multi_height_lidar, &input.multi_height_lidar) {
+            (Some(calibration), Some(layered)) if input.lidar.is_none() => {
+                match calibration.fuse(layered) {
+                    Ok(scan) => {
+                        fused = scan;
+                        Some(&fused)
+                    }
+                    Err(()) => {
+                        health.push(HealthIssue::InvalidLidar);
+                        self.multi_height_fault = Some(input.time);
+                        None
+                    }
+                }
+            }
+            (Some(_), None) if input.lidar.is_none() => None,
+            (None, None) => input.lidar.as_ref(),
+            _ => {
+                health.push(HealthIssue::InvalidLidar);
+                if self.config.multi_height_lidar.is_some() {
+                    self.multi_height_fault = Some(input.time);
+                }
+                None
+            }
+        };
+        if let Some(scan) = scan {
             if input.lidar_failed
                 || !stamp_valid(scan.stamp, input.time)
                 || scan.points.len() > 20_000
@@ -361,16 +401,30 @@ impl DrivingPipeline {
                     .any(|p| !p.finite() || p.x.hypot(p.y) > 200.0)
             {
                 health.push(HealthIssue::InvalidLidar);
-            } else if self.last_lidar.is_none_or(|last| scan.stamp > last) {
+                if self.config.multi_height_lidar.is_some() {
+                    self.multi_height_fault = Some(input.time);
+                }
+            } else if self.last_lidar.is_none_or(|last| scan.stamp > last)
+                && self
+                    .multi_height_fault
+                    .is_none_or(|fault_time| scan.stamp > fault_time)
+            {
                 if let Some(acquisition_pose) = self.scan_poses.at(scan.stamp, input.time) {
                     let detections = self.perception.detect(scan, acquisition_pose);
                     self.tracks = self.tracker.update(&detections, scan.stamp);
                     self.grid.update(scan, acquisition_pose);
                     self.last_lidar = Some(scan.stamp);
+                    self.multi_height_fault = None;
                 } else {
                     health.push(HealthIssue::InvalidLidar);
+                    if self.config.multi_height_lidar.is_some() {
+                        self.multi_height_fault = Some(input.time);
+                    }
                 }
             }
+        }
+        if self.multi_height_fault.is_some() && !health.contains(&HealthIssue::InvalidLidar) {
+            health.push(HealthIssue::InvalidLidar);
         }
         if self.last_lidar.is_none_or(|t| input.time - t > 0.35 + 1e-9) {
             health.push(HealthIssue::StaleLidar);
@@ -609,6 +663,7 @@ mod tests {
                 stamp: time,
                 points: vec![],
             }),
+            multi_height_lidar: None,
             lidar_failed: false,
             navigation_update: None,
             traffic_signal: None,

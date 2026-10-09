@@ -1,4 +1,4 @@
-use rustdrive_rne::{Plant, run, run_with_scene, scene::Scene};
+use rustdrive_rne::{Plant, run, run_with_scene, run_with_scene_multi_height, scene::Scene};
 use rustdrive_sim::Scenario;
 use std::{env, error::Error, fs, io::BufWriter, path::PathBuf, process};
 fn main() {
@@ -11,39 +11,53 @@ fn execute() -> Result<(), Box<dyn Error>> {
     let args: Vec<_> = env::args().skip(1).collect();
     if args.is_empty() || args[0] == "--help" {
         println!(
-            "rustdrive-rne --scenario FILE [--scene FILE] [--plant kinematic|dynamic] [--seed N] [--output DIR]"
+            "rustdrive-rne --scenario FILE [--scene FILE] [--multi-height] [--plant kinematic|dynamic] [--seed N] [--output DIR]"
         );
         return Ok(());
     }
     let mut input = None;
     let mut scene_input = None;
+    let mut multi_height = false;
     let mut plant = Plant::Kinematic;
     let mut seed = 7;
     let mut output = PathBuf::from("artifacts/rne");
-    for pair in args.chunks(2) {
-        if pair.len() != 2 {
-            return Err("each option requires a value".into());
+    let mut index = 0;
+    while index < args.len() {
+        let option = &args[index];
+        if option == "--multi-height" {
+            multi_height = true;
+            index += 1;
+            continue;
         }
-        match pair[0].as_str() {
-            "--scenario" => input = Some(PathBuf::from(&pair[1])),
-            "--scene" => scene_input = Some(PathBuf::from(&pair[1])),
+        let value = args.get(index + 1).ok_or("each option requires a value")?;
+        match option.as_str() {
+            "--scenario" => input = Some(PathBuf::from(value)),
+            "--scene" => scene_input = Some(PathBuf::from(value)),
             "--plant" => {
-                plant = match pair[1].as_str() {
+                plant = match value.as_str() {
                     "kinematic" => Plant::Kinematic,
                     "dynamic" => Plant::Dynamic,
                     _ => return Err("unknown plant".into()),
                 }
             }
-            "--seed" => seed = pair[1].parse()?,
-            "--output" => output = PathBuf::from(&pair[1]),
+            "--seed" => seed = value.parse()?,
+            "--output" => output = PathBuf::from(value),
             _ => return Err("unknown option".into()),
         }
+        index += 2;
+    }
+    if multi_height && scene_input.is_none() {
+        return Err("--multi-height requires --scene".into());
     }
     let scenario: Scenario =
         serde_json::from_str(&fs::read_to_string(input.ok_or("--scenario required")?)?)?;
     let (result, scene_evidence) = if let Some(path) = scene_input {
         let scene = Scene::from_json(&fs::read_to_string(path)?)?;
-        let (result, evidence) = run_with_scene(scenario, seed, plant, scene)?;
+        let (result, evidence) = if multi_height {
+            run_with_scene_multi_height(scenario, seed, plant, scene)?
+        } else {
+            run_with_scene(scenario, seed, plant, scene)?
+        };
         (result, Some(evidence))
     } else {
         (run(scenario, seed, plant)?, None)

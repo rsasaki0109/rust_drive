@@ -25,6 +25,25 @@ def load_native_scene(path, run):
     if (type(evidence.get('seed')) is not int or not 0 <= evidence['seed'] < 2**64 or
             evidence['seed'] != run['summary']['seed']):
         raise ValueError('Native scene evidence requires a u64 seed matching the recording summary')
+    if 'operating_mode' in evidence:
+        if evidence['operating_mode'] != 'multi_height_lidar':
+            raise ValueError('Unsupported native scene operating mode')
+        calibration = evidence.get('multi_height_lidar', {})
+        if not isinstance(calibration, dict) or set(calibration) != {
+                'heights_m', 'collision_bottom_m', 'collision_top_m'}:
+            raise ValueError('Native multi-height evidence requires complete calibrated sensor metadata')
+        heights = calibration['heights_m']
+        if (not isinstance(heights, list) or len(heights) != 3 or
+                any(type(h) not in (int, float) or not math.isfinite(h) for h in heights) or
+                any(abs(actual-expected) > 1e-9 for actual, expected in
+                    zip(sorted(heights), [0.15, 0.6, 3.7]))):
+            raise ValueError('Native multi-height evidence must use the three measured calibrated planes')
+        radius = run['vehicle']['radius']
+        for field, expected in [('collision_bottom_m', 0.1-radius),
+                                ('collision_top_m', 1.1+radius)]:
+            value = calibration[field]
+            if type(value) not in (int, float) or not math.isfinite(value) or abs(value-expected) > 1e-9:
+                raise ValueError('Native height gate must match the recorded ego capsule')
     scene = evidence.get('scene', {})
     boxes = scene.get('static_cuboids')
     if (scene.get('schema_version') != 1 or not isinstance(scene.get('name'), str) or
@@ -194,7 +213,9 @@ def main():
             draw.text((22, 10), 'RustDrive', font=font(28, True), fill='#edf4ff')
             draw.text((204, 20), 'RNE NATIVE DYNAMICS  /  BLENDER 3D REPLAY', font=font(12, True), fill='#46e3c2')
             if native_evidence:
-                draw.text((610, 36), 'PHYSICAL CUBOIDS / PLANAR EGO', font=font(11, True), fill='#ffb46e')
+                label = ('MULTI-HEIGHT / PLANAR EGO' if native_evidence.get('operating_mode') == 'multi_height_lidar'
+                         else 'PHYSICAL CUBOIDS / PLANAR EGO')
+                draw.text((610, 36), label, font=font(11, True), fill='#ffb46e')
             phase = (frame.get('navigation') or {}).get('phase', frame['trajectory']['mode'])
             draw.text((22, 606), f"{phase.upper()}   |   {frame['truth']['speed']*3.6:.1f} km/h   |   t = {frame['time']:.1f} s", font=font(15, True), fill='#edf4ff')
             draw.text((610, 608), 'BLUE ego   TRAFFIC actors   TEAL plan   /   3x', font=font(12), fill='#8698b3')
@@ -242,6 +263,18 @@ def main():
                 'operational_lidar_height_m': 0.6,
                 'diagnostic_lidar_heights_m': [0.15, 3.7],
                 'contact_response': False}
+            if native_evidence.get('operating_mode') == 'multi_height_lidar':
+                calibration = native_evidence['multi_height_lidar']
+                details = provenance['native_scene']
+                del details['operational_lidar_height_m']
+                del details['diagnostic_lidar_heights_m']
+                details.update({
+                    'operating_mode': 'multi_height_lidar',
+                    'measured_lidar_heights_m': calibration['heights_m'],
+                    'projected_lidar_heights_m': sorted(h for h in calibration['heights_m']
+                        if calibration['collision_bottom_m'] <= h <= calibration['collision_top_m']),
+                    'collision_height_interval_m': [calibration['collision_bottom_m'], calibration['collision_top_m']],
+                    'projection': 'calibrated height gate, then 5 cm body-XY first-point voxels'})
         args.output.with_suffix('.json').write_text(json.dumps(provenance, indent=2)+'\n')
         print(f'{args.output}: {count} frames, 960x640, {args.output.stat().st_size:,} bytes')
 

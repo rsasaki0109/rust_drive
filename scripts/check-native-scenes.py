@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Independent physical-scene acceptance; diagnostics never enter driving inputs.
+"""Independent physical-scene acceptance for single- and multi-height sensing.
 
 The ray oracle uses a slab intersection, rather than Rapier. The clearance oracle
 uses distance to rectangle edges, rather than the native adapter's minimizer.
 Both inspect the same recorded simulator evidence and sensor-only replay.
+Multi-height mode also checks every typed operational layer against measured
+returns. The driver still operates on height-filtered planar measurements.
 """
 import argparse
 import copy
@@ -25,6 +27,16 @@ CASES = [
     ('rotated-barrier', 'native-scene-ground-stop', False),
     ('blind-low-slab', 'native-scene-blind-low', True),
 ]
+MODE_CASES = {
+    'single-height': CASES,
+    'multi-height': [
+        ('ground-barrier', 'native-scene-ground-stop', False),
+        ('raised-barrier', 'native-scene-raised-goal', False),
+        ('rotated-barrier', 'native-scene-ground-stop', False),
+        ('blind-low-slab', 'native-scene-low-stop', False),
+        ('sub-low-slab', 'native-scene-blind-low', True),
+    ],
+}
 HEIGHTS = [0.6, 0.15, 3.7]
 RAY_COUNT = 720
 RANGE_TOLERANCE_M = 0.06  # 7.5 times the configured 0.008 m range-noise sigma.
@@ -121,7 +133,7 @@ def vertical_gap(box):
     return max(bottom-1.1, 0.1-top, 0.0)
 
 
-def check_scene(run, scene, evidence, log):
+def check_scene(run, scene, evidence, log, multi_height=False):
     require(evidence['schema_version'] == 1 and evidence['scene'] == scene,
             'physical scene evidence differs from the authored input')
     require(evidence['backend'] == run['backend'] and evidence['seed'] == run['summary']['seed']
@@ -135,6 +147,18 @@ def check_scene(run, scene, evidence, log):
         ticks = [record['tick'] for line in stream if (record := json.loads(line))['kind'] == 'tick']
     require(len(ticks) == run['summary']['steps'], 'sensor-log count differs from physical run')
     require(header['config']['vehicle'] == run['vehicle'], 'sensor replay vehicle differs from query scene')
+    calibration = {'heights_m': HEIGHTS,
+                   'collision_bottom_m': 0.1-run['vehicle']['radius'],
+                   'collision_top_m': 1.1+run['vehicle']['radius']}
+    if multi_height:
+        require(evidence.get('operating_mode') == 'multi_height_lidar'
+                and evidence.get('multi_height_lidar') == calibration
+                and header['config'].get('multi_height_lidar') == calibration,
+                'generic multi-height calibration differs between sensor replay and native scene')
+    else:
+        require(evidence.get('operating_mode') is None and evidence.get('multi_height_lidar') is None
+                and header['config'].get('multi_height_lidar') is None,
+                'single-height run unexpectedly enables layered sensing')
     forbidden = ['scene', 'static_cuboids', 'center_m', 'half_extents_m', 'motion_samples', 'acquisitions', 'ego_capsule']
     config_text = json.dumps(header['config'])
     require(not any(f'"{key}"' in config_text for key in forbidden), 'simulator geometry leaked into driver header')
@@ -182,6 +206,7 @@ def check_scene(run, scene, evidence, log):
     acquisitions = evidence['acquisitions']
     require(len(acquisitions) == (len(ticks)+1)//2, 'scene evidence misses native acquisition clocks')
     count, static_hits, maximum_error = 0, [0, 0, 0], 0.0
+    eligible_points, expected_voxel_returns, layer_points = 0, 0, 0
     for acquisition_index, acquisition in enumerate(acquisitions):
         tick_index = acquisition_index*2
         tick = ticks[tick_index]
@@ -192,6 +217,18 @@ def check_scene(run, scene, evidence, log):
         require(pose == observations[tick_index]['pose'], 'ray mount orientation differs from its native observation')
         require([channel['height_m'] for channel in acquisition['channels']] == HEIGHTS,
                 'diagnostic planes or operational single-plane height changed')
+        if multi_height:
+            require(tick['input'].get('lidar') is None,
+                    'multi-height run contains a second uncalibrated primary scan')
+            layered = tick['input'].get('multi_height_lidar')
+            require(layered is not None and abs(layered['stamp']-acquisition['time']) < 1e-8,
+                    'layered driving acquisition stamp differs from measured native clock')
+            require([plane['height_m'] for plane in layered['planes']] == HEIGHTS,
+                    'operational layer set or height labels differ from measured native planes')
+        else:
+            require(tick['input'].get('multi_height_lidar') is None,
+                    'single-plane input unexpectedly contains operational layers')
+        measured_planes = []
         for channel_index, channel in enumerate(acquisition['channels']):
             ranges = channel['ranges_m']
             require(len(ranges) == RAY_COUNT, 'ray ordinal array must contain every native azimuth column')
@@ -216,24 +253,47 @@ def check_scene(run, scene, evidence, log):
                     count += 1
                     static_hits[channel_index] += nearest[1]
                     returned.append((value*math.cos(angle), -value*math.sin(angle)))
-            if channel_index == 0:
+            measured_planes.append((channel['height_m'], returned))
+            if multi_height:
+                plane = layered['planes'][channel_index]
+                require(len(plane['points']) == len(returned),
+                        'operational layer drops measured physical ray returns')
+                require(all(math.dist(xy(point), reconstructed) < 1e-7
+                            for point, reconstructed in zip(plane['points'], returned)),
+                        'typed operational layer differs from actual measured body-frame returns')
+                layer_points += len(returned)
+            elif channel_index == 0:
                 scan = tick['input']['lidar']
                 require(scan is not None and abs(scan['stamp']-acquisition['time']) < 1e-8,
                         'actual driving sensor does not contain the primary acquisition')
                 require(len(scan['points']) == len(returned), 'driving cloud size differs from primary physical ray returns')
                 require(all(math.dist(xy(point), reconstructed) < 1e-7 for point, reconstructed in zip(scan['points'], returned)),
                         'diagnostic primary ranges differ from the actual body-frame driving cloud')
+        if multi_height:
+            cells = set()
+            for height, returned in sorted(measured_planes):
+                if calibration['collision_bottom_m'] <= height <= calibration['collision_top_m']:
+                    eligible_points += len(returned)
+                    cells.update((math.floor(x/0.05), math.floor(y/0.05)) for x, y in returned)
+            expected_voxel_returns += len(cells)
         require(not any(key in tick['input'] for key in forbidden), 'simulator diagnostic geometry entered sensor input')
-    require(count > 0, 'no physical scene rays were reconstructed')
+    for index, tick in enumerate(ticks):
+        if index % 2:
+            require(tick['input'].get('multi_height_lidar') is None and tick['input'].get('lidar') is None,
+                    'native input invents a sensor acquisition between physical firing clocks')
     return {'passed': geometry_passed, 'min_clearance_m': minimum,
             'guard_overlap_intervals': overlap, 'motion_samples': len(samples),
             'acquisitions': len(acquisitions), 'ray_returns_reconstructed': count,
             'static_hits_by_plane': dict(zip(map(str, HEIGHTS), static_hits)),
             'maximum_range_residual_m': maximum_error, 'range_tolerance_m': RANGE_TOLERANCE_M,
+            'multi_height_operational_layers_verified': multi_height,
+            'operational_layer_points': layer_points,
+            'height_eligible_points': eligible_points,
+            'expected_5cm_voxel_returns': expected_voxel_returns,
             'full_sensor_cloud_verified': True, 'sensor_only_boundary_verified': True}
 
 
-def mutation_checks(run, scene, evidence, log):
+def mutation_checks(run, scene, evidence, log, multi_height=False):
     mutations = []
     removed = copy.deepcopy(evidence)
     removed['scene']['static_cuboids'] = []
@@ -245,12 +305,16 @@ def mutation_checks(run, scene, evidence, log):
     forged['summary']['min_clearance_m'] += 1
     mutations.append(('forged-clearance', forged))
     ray = copy.deepcopy(evidence)
+    altered_return = False
     for acquisition in ray['acquisitions']:
         channel = next((c for c in acquisition['channels'] if any(v is not None for v in c['ranges_m'])), None)
         if channel:
             index = next(i for i, value in enumerate(channel['ranges_m']) if value is not None)
             channel['ranges_m'][index] += 0.25
+            altered_return = True
             break
+    if not altered_return:
+        ray['acquisitions'][0]['channels'][0]['ranges_m'][0] = 0.5
     mutations.append(('changed-ray-return', ray))
     results = []
     for name, altered in mutations:
@@ -258,11 +322,63 @@ def mutation_checks(run, scene, evidence, log):
             # Change the oracle's authored geometry too, so geometry mutations
             # must fail physical reconstruction rather than an identity check.
             authored = altered['scene'] if name in ['removed-collider', 'changed-height'] else scene
-            check_scene(run, authored, altered, log)
+            check_scene(run, authored, altered, log, multi_height)
         except ValueError as error:
             results.append({'mutation': name, 'rejected': True, 'reason': str(error)})
         else:
             raise ValueError(f'independent scene check accepted mutation {name}')
+    return results
+
+
+def layered_mutation_checks(run, scene, evidence, log, cli):
+    """Check sensor-record mutations through both geometry and actual Rust replay."""
+    records = [json.loads(line) for line in log.read_text().splitlines()]
+    first_index = next(i for i, record in enumerate(records)
+                       if record.get('kind') == 'tick' and record['tick']['input'].get('multi_height_lidar'))
+    changed = log.parent/'mutation-sensors.jsonl'
+    replay_output = log.parent/'mutation-replay'
+    results = []
+    try:
+        for name in ['layer-point-tamper', 'omitted-low-layer', 'mislabeled-height',
+                     'inconsistent-stamp', 'changed-header-calibration']:
+            altered = copy.deepcopy(records)
+            scan = altered[first_index]['tick']['input']['multi_height_lidar']
+            if name == 'layer-point-tamper':
+                plane = next((plane for plane in scan['planes'] if plane['points']), scan['planes'][1])
+                if plane['points']:
+                    plane['points'][0]['x'] += 0.25
+                else:
+                    plane['points'].append({'x': 0.5, 'y': 0.0})
+            elif name == 'omitted-low-layer':
+                scan['planes'] = [plane for plane in scan['planes'] if plane['height_m'] != 0.15]
+            elif name == 'mislabeled-height':
+                scan['planes'][1]['height_m'] = 0.16
+            elif name == 'inconsistent-stamp':
+                scan['stamp'] += 0.05
+            else:
+                altered[0]['header']['config']['multi_height_lidar']['heights_m'][1] = 0.16
+            changed.write_text(''.join(json.dumps(record, separators=(',', ':'))+'\n' for record in altered))
+            try:
+                check_scene(run, scene, evidence, changed, True)
+            except ValueError as error:
+                reason = str(error)
+            else:
+                raise ValueError(f'physical-layer oracle accepted mutation {name}')
+            (replay_output/'replay.json').unlink(missing_ok=True)
+            replay_code, replay_error = hazards.invoke([cli, 'replay', '--log', changed, '--output', replay_output])
+            # Tampering an excluded overhead return can leave planar driving
+            # unchanged; its measured-layer integrity still must fail the oracle.
+            require(name == 'layer-point-tamper' or replay_code != 0,
+                    f'Rust sensor replay accepted incompatible layered mutation {name}')
+            results.append({'mutation': name, 'rejected': True, 'oracle_reason': reason,
+                            'replay_exit_code': replay_code, 'replay_rejected': replay_code != 0,
+                            'mutated_log_sha256': sha(changed), 'replay_stderr': replay_error[:1000]})
+    finally:
+        changed.unlink(missing_ok=True)
+        for name in ['replay.json', 'outputs.jsonl']:
+            (replay_output/name).unlink(missing_ok=True)
+        if replay_output.exists():
+            replay_output.rmdir()
     return results
 
 
@@ -277,11 +393,20 @@ def fixture_contracts():
     low = json.loads((ROOT/'scenes/blind-low-slab.json').read_text())['static_cuboids'][0]
     require(low['center_m'][2]-low['half_extents_m'][2] < 0.15 < low['center_m'][2]+low['half_extents_m'][2] < 0.6,
             'retained blind-low scene no longer lies below the operational scan')
+    sub_low = json.loads((ROOT/'scenes/sub-low-slab.json').read_text())['static_cuboids'][0]
+    require(sub_low['center_m'][2]+sub_low['half_extents_m'][2] < min(HEIGHTS)
+            and vertical_gap(sub_low) < 1.25,
+            'retained sub-low scene must be physically overlapping and below every measured plane')
     ground_scenario = json.loads((ROOT/'scenarios/native-scene-ground-stop.json').read_text())
     raised_scenario = json.loads((ROOT/'scenarios/native-scene-raised-goal.json').read_text())
     require({k: v for k, v in ground_scenario.items() if k not in ['name', 'expected']}
             == {k: v for k, v in raised_scenario.items() if k not in ['name', 'expected']},
             'paired driving fixtures must differ only in their expected outcome')
+    low_goal = json.loads((ROOT/'scenarios/native-scene-blind-low.json').read_text())
+    low_stop = json.loads((ROOT/'scenarios/native-scene-low-stop.json').read_text())
+    require({k: v for k, v in low_goal.items() if k not in ['name', 'expected']}
+            == {k: v for k, v in low_stop.items() if k not in ['name', 'expected']},
+            'paired low-slab driving fixtures change more than expected outcome')
 
 
 def main():
@@ -289,10 +414,12 @@ def main():
     parser.add_argument('--output', type=Path, default=ROOT/'artifacts/native-scenes')
     parser.add_argument('--seeds', nargs='+', type=int, default=[1, 7, 42])
     parser.add_argument('--plants', nargs='+', choices=['kinematic', 'dynamic'], default=['kinematic', 'dynamic'])
+    parser.add_argument('--modes', nargs='+', choices=list(MODE_CASES), default=list(MODE_CASES))
     args = parser.parse_args()
     require(args.seeds and len(set(args.seeds)) == len(args.seeds)
             and all(0 <= seed < 2**64 for seed in args.seeds), 'seeds must be distinct u64 values')
     require(len(set(args.plants)) == len(args.plants), 'plants must be distinct')
+    require(len(set(args.modes)) == len(args.modes), 'operating modes must be distinct')
     cli, native = ROOT/'target/release/rustdrive', ROOT/'integrations/rne/target/release/rustdrive-rne'
     require(cli.is_file() and native.is_file(), 'build the locked reference and native release binaries first')
     fixture_contracts()
@@ -304,26 +431,30 @@ def main():
     require(actual == revision, 'RNE checkout differs from the committed pin')
     report = {'schema_version': 1, 'source_fingerprint_sha256': hazards.source_fingerprint(),
               'checker_sha256': sha(Path(__file__)), 'rne_revision': revision,
-              'seeds': args.seeds, 'plants': args.plants, 'runs': [], 'known_failures': [],
+              'seeds': args.seeds, 'plants': args.plants, 'modes': args.modes, 'runs': [], 'known_failures': [],
               'scene_inputs_sha256': {str(p.relative_to(ROOT)): sha(p) for p in sorted((ROOT/'scenes').glob('*.json'))},
               'passed': False}
     for plant in args.plants:
-        for case, scenario_name, negative in CASES:
+        for mode, case, scenario_name, negative in [(mode, *entry) for mode in args.modes for entry in MODE_CASES[mode]]:
+            multi_height = mode == 'multi-height'
             scene_path = ROOT/'scenes'/f'{case}.json'
             scene = json.loads(scene_path.read_text())
             for seed in args.seeds:
-                output = args.output/plant/case/f'seed-{seed}'
+                case_root = args.output/'multi-height' if multi_height else args.output
+                output = case_root/plant/case/f'seed-{seed}'
                 output.mkdir(parents=True, exist_ok=True)
                 for name in ['run.json', 'summary.json', 'scene.json', 'sensors.jsonl', 'replay/replay.json']:
                     (output/name).unlink(missing_ok=True)
                 command = [native, '--plant', plant, '--scene', scene_path,
                            '--scenario', ROOT/'scenarios'/f'{scenario_name}.json', '--seed', seed, '--output', output]
+                if multi_height:
+                    command.append('--multi-height')
                 code, error = hazards.invoke(command)
                 run = json.loads((output/'run.json').read_text())
                 evidence = json.loads((output/'scene.json').read_text())
                 replay_code, replay_error = hazards.invoke([cli, 'replay', '--log', output/'sensors.jsonl', '--output', output/'replay'])
                 replay = json.loads((output/'replay/replay.json').read_text())
-                geometry = check_scene(run, scene, evidence, output/'sensors.jsonl')
+                geometry = check_scene(run, scene, evidence, output/'sensors.jsonl', multi_height)
                 require(replay_code == 0 and replay['verified'] and replay['ticks'] == run['summary']['steps'],
                         'scene run does not reproduce every sensor-only pipeline tick')
                 profiles = hazards.check_speed_profiles(output/'sensors.jsonl')
@@ -338,21 +469,31 @@ def main():
                 if negative:
                     require(not geometry['passed'] and geometry['guard_overlap_intervals'] > 0
                             and geometry['static_hits_by_plane']['0.6'] == 0
-                            and geometry['static_hits_by_plane']['0.15'] > 0
                             and run['summary']['reached_goal'] and not run['summary']['passed']
                             and any('native scene conservative capsule guard' in failure for failure in run['summary']['failures']),
                             'low slab no longer demonstrates rejected physical overlap beneath operational LiDAR')
+                    require(geometry['static_hits_by_plane']['0.15'] == 0 if multi_height
+                            else geometry['static_hits_by_plane']['0.15'] > 0,
+                            'retained failure no longer exercises the intended sensing blind zone')
                 else:
                     require(geometry['passed'] and run['summary']['passed'], 'positive physical scene acceptance failed')
                     if case == 'raised-barrier':
                         require(run['summary']['reached_goal'] and geometry['static_hits_by_plane']['0.6'] == 0
                                 and geometry['static_hits_by_plane']['3.7'] > 0,
                                 'raised scene did not exercise height-sensitive physical visibility and passage')
+                        if multi_height:
+                            require(run['summary']['max_tracks'] == 0 and geometry['height_eligible_points'] == 0,
+                                    'overhead-only returns entered planar collision perception')
                     else:
                         require(not run['summary']['reached_goal'] and run['summary']['final_speed'] <= 0.2
-                                and geometry['static_hits_by_plane']['0.6'] > 0,
+                                and (geometry['static_hits_by_plane']['0.15'] > 0 if case == 'blind-low-slab'
+                                     else geometry['static_hits_by_plane']['0.6'] > 0),
                                 'ground scene did not cause a sensed operational stop')
-                row = {'plant': plant, 'scene': case, 'scenario': scenario_name, 'seed': seed,
+                        if case == 'blind-low-slab':
+                            require(multi_height and geometry['static_hits_by_plane']['0.6'] == 0
+                                    and run['summary']['max_tracks'] > 0,
+                                    'repaired low-slab case did not depend on measured low-plane perception')
+                row = {'mode': mode, 'plant': plant, 'scene': case, 'scenario': scenario_name, 'seed': seed,
                        'exit_code': code, 'output': str(output), 'summary': run['summary'],
                        'scene_summary': evidence['summary'], 'independent_scene': geometry,
                        'replay': replay, 'speed_profiles': profiles, 'motion_predictions': forecasts,
@@ -363,14 +504,17 @@ def main():
                 if replay_error:
                     row['replay_stderr'] = replay_error
                 if seed == args.seeds[0]:
-                    row['mutation_rejections'] = mutation_checks(run, scene, evidence, output/'sensors.jsonl')
+                    row['mutation_rejections'] = mutation_checks(run, scene, evidence, output/'sensors.jsonl', multi_height)
+                    if multi_height:
+                        row['layered_mutation_rejections'] = layered_mutation_checks(
+                            run, scene, evidence, output/'sensors.jsonl', cli)
                 if negative:
                     row['acceptance_rejection_verified'] = True
                     report['known_failures'].append(row)
                 else:
                     report['runs'].append(row)
                 report_file.write_text(json.dumps(report, indent=2)+'\n')
-                print(f'{plant:10s} {case:18s} seed {seed:3d}: {"KNOWN FAILURE REJECTED" if negative else "PASS"}; capsule clearance {geometry["min_clearance_m"]:.6f}m', flush=True)
+                print(f'{mode:13s} {plant:10s} {case:18s} seed {seed:3d}: {"KNOWN FAILURE REJECTED" if negative else "PASS"}; capsule clearance {geometry["min_clearance_m"]:.6f}m', flush=True)
     require(report['source_fingerprint_sha256'] == hazards.source_fingerprint(), 'source changed during native scene sweep')
     require(report['checker_sha256'] == sha(Path(__file__))
             and report['scene_inputs_sha256'] == {str(p.relative_to(ROOT)): sha(p) for p in sorted((ROOT/'scenes').glob('*.json'))},

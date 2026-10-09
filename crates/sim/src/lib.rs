@@ -541,6 +541,7 @@ impl SimulationBackend for ReferenceBackend {
             odometry,
             gnss,
             lidar,
+            multi_height_lidar: None,
             lidar_failed: false,
             navigation_update: None,
             traffic_signal: None,

@@ -1,5 +1,5 @@
 //! Simulator-only LiDAR transport. Acquisition stamps and body-frame points are immutable.
-use rustdrive_core::LidarScan;
+use rustdrive_core::{LidarScan, MultiHeightLidarScan};
 use rustdrive_pipeline::SensorFrame;
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
@@ -54,7 +54,7 @@ impl SensorTiming {
 
 #[derive(Default)]
 pub(crate) struct SensorDelivery {
-    pending: VecDeque<(usize, LidarScan)>,
+    pending: VecDeque<(usize, Option<LidarScan>, Option<MultiHeightLidarScan>)>,
 }
 impl SensorDelivery {
     pub(crate) fn apply(&mut self, timing: &SensorTiming, tick: usize, input: &mut SensorFrame) {
@@ -66,23 +66,27 @@ impl SensorDelivery {
         if failure {
             input.lidar_failed = true;
             input.lidar = None;
+            input.multi_height_lidar = None;
             // A failure invalidates queued acquisitions. Recovery must acquire a new scan.
             self.pending.clear();
             return;
         }
-        if let Some(scan) = input.lidar.take()
-            && tick.is_multiple_of(timing.lidar_period_ticks)
-        {
+        let scan = input.lidar.take();
+        let layered = input.multi_height_lidar.take();
+        if (scan.is_some() || layered.is_some()) && tick.is_multiple_of(timing.lidar_period_ticks) {
             self.pending
-                .push_back((tick + timing.lidar_delay_ticks, scan));
+                .push_back((tick + timing.lidar_delay_ticks, scan, layered));
         }
         while self
             .pending
             .front()
-            .is_some_and(|(ready, _)| *ready <= tick)
+            .is_some_and(|(ready, _, _)| *ready <= tick)
         {
             // If a caller skipped delivery ticks, consume old eligible scans and emit the latest.
-            input.lidar = self.pending.pop_front().map(|(_, scan)| scan);
+            if let Some((_, scan, layered)) = self.pending.pop_front() {
+                input.lidar = scan;
+                input.multi_height_lidar = layered;
+            }
         }
     }
 }
@@ -110,6 +114,7 @@ mod tests {
                 stamp,
                 points: vec![Vec2::new(stamp, -1.0)],
             }),
+            multi_height_lidar: None,
             lidar_failed: false,
             navigation_update: None,
             traffic_signal: None,
@@ -134,6 +139,89 @@ mod tests {
             }
             assert!(!input.lidar_failed);
         }
+    }
+
+    fn layered_frame(tick: usize) -> SensorFrame {
+        let mut input = frame(tick);
+        input.multi_height_lidar = input.lidar.take().map(|scan| MultiHeightLidarScan {
+            stamp: scan.stamp,
+            planes: [0.6, 0.15, 3.7]
+                .into_iter()
+                .map(|height_m| rustdrive_core::LidarPlane {
+                    height_m,
+                    points: scan.points.clone(),
+                })
+                .collect(),
+        });
+        input
+    }
+
+    #[test]
+    fn layered_delivery_preserves_every_plane_as_one_delayed_acquisition() {
+        let mut delivery = SensorDelivery::default();
+        let timing = timing(4, 3);
+        for tick in 0..=15 {
+            let mut input = layered_frame(tick);
+            delivery.apply(&timing, tick, &mut input);
+            assert!(input.lidar.is_none());
+            if tick >= 3 && (tick - 3).is_multiple_of(4) {
+                let scan = input.multi_height_lidar.unwrap();
+                let acquired = (tick - 3) as f64 * 0.05;
+                assert_eq!(scan.stamp, acquired);
+                assert_eq!(scan.planes.len(), 3);
+                for (plane, height) in scan.planes.iter().zip([0.6, 0.15, 3.7]) {
+                    assert_eq!(plane.height_m, height);
+                    assert_eq!(plane.points, vec![Vec2::new(acquired, -1.0)]);
+                }
+            } else {
+                assert!(input.multi_height_lidar.is_none());
+            }
+        }
+    }
+
+    #[test]
+    fn partial_or_scheduled_failure_flushes_all_layers_before_fresh_recovery() {
+        for explicit in [false, true] {
+            let mut timing = timing(2, 3);
+            if !explicit {
+                timing.lidar_failure_windows.push(SensorFailureWindow {
+                    from: 0.05,
+                    until: 0.1,
+                });
+            }
+            let mut delivery = SensorDelivery::default();
+            for tick in 0..=5 {
+                let mut input = layered_frame(tick);
+                input.lidar_failed = explicit && tick == 1;
+                delivery.apply(&timing, tick, &mut input);
+                assert_eq!(input.lidar_failed, tick == 1);
+                assert!(input.lidar.is_none());
+                if tick == 5 {
+                    let scan = input.multi_height_lidar.unwrap();
+                    assert_eq!(scan.stamp, 0.1);
+                    assert_eq!(scan.planes.len(), 3);
+                } else {
+                    assert!(input.multi_height_lidar.is_none());
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn layered_queue_emits_latest_eligible_bundle_once_after_skipped_ticks() {
+        let mut delivery = SensorDelivery::default();
+        let timing = timing(2, 3);
+        for tick in [0, 2] {
+            let mut input = layered_frame(tick);
+            delivery.apply(&timing, tick, &mut input);
+            assert!(input.multi_height_lidar.is_none());
+        }
+        let mut skipped = layered_frame(7);
+        delivery.apply(&timing, 7, &mut skipped);
+        assert_eq!(skipped.multi_height_lidar.unwrap().stamp, 0.1);
+        let mut next = layered_frame(9);
+        delivery.apply(&timing, 9, &mut next);
+        assert!(next.multi_height_lidar.is_none());
     }
 
     #[test]

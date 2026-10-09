@@ -65,7 +65,7 @@ RNE is dual MIT/Apache-2.0. Optional locked dependency licenses are inventoried 
 
 Run `bash scripts/check-hazards.sh` from RustDrive for the seeded reference/RNE hazard suite and complete replay. The dynamic adapter accepts optional scenario `dynamics` calibration for friction and steering lag, adds a longitudinal `mu*g` actuation clamp, and supplies conservative fixed forward/braking/lateral limits to the shared planner. Reference/kinematic backends reject this calibration. Combined longitudinal/lateral friction coupling and online friction estimation are absent. [Measured outcomes and the repaired braking failure](../../docs/hazard-validation.md).
 
-The integration currently passes 23 tests, including multi-seed hazard runs, acquisition under real geometric occlusion, measured acceleration/braking limits, and the opt-in native cuboid scenes described below. The engine pin and standalone dependencies remain the same.
+The integration currently passes 27 tests, including multi-seed hazard runs, acquisition under real geometric occlusion, measured acceleration/braking limits, and the opt-in native cuboid scenes described below. The engine pin and standalone dependencies remain the same.
 
 The current shared planner integrates bounded acceleration to compute arrival times, checks the retimed stopping path and its stationary hold, and uses a longer persistent lateral transition where low lateral authority requires it. The dynamic adapter caps calibrated forward acceleration at 2.0 m/s² and the existing conservative friction authority. No RNE engine revision changed for this extension. [Previous speed-planning methods and results](../../docs/speed-planning.md).
 
@@ -86,3 +86,5 @@ Optional traffic actors are owned by the shared simulator `TrafficWorld`: the RN
 Pass `--scene scenes/ground-barrier.json` with `--scenario scenarios/native-scene-ground-stop.json` to install actual upright boxes in Rapier queries. The existing operational scan remains at 0.6 m; additional horizontal scans and native substep poses are recorded separately in `scene.json`. The offline capsule guard fails runs with unsafe scene clearance. It adds no contact-force response and does not supply geometry labels to the driver.
 
 `bash scripts/check-native-scenes.sh` builds the locked binaries and runs the independent 18-positive / six-required-rejection matrix, with full sensor replay. The low blind slabs remain physical failures. [Scene schema, commands, measured results and limits](../../docs/native-scenes.md).
+
+Use the additional explicit `--multi-height` option with `--scene` to send measured synchronized planes into the shared driver. Calibrated height selection repairs the low-slab blind case; sub-plane gaps remain documented failures. [Operational contract, atomic faults and replay](../../docs/multi-height-lidar.md).

@@ -32,6 +32,8 @@
 | RNE raycast acquisition failure | Implemented / tested | Explicit error causes braking; healthy empty scan is distinct |
 | Opt-in native static 3D cuboids | Implemented / tested | Actual yaw-rotated Rapier query geometry, three horizontal acquisition heights; only the existing 0.6 m scan drives perception; no contact-response plant |
 | Native scene capsule clearance | Implemented / independently checked | Recorded 200 Hz native positions and conservative speed-bound guard; fixed 1 m floor; low blind slabs rejected; separate simulator-only evidence |
+| Operational multi-height LiDAR projection | Implemented / tested | Explicit mode; bounded synchronized body-XY planes, calibrated vehicle-height selection, 5 cm duplicate cells and historical EKF pose; sparse coverage, planar detection/tracking |
+| Multi-height fault recovery and replay | Implemented / tested | Atomic timing/failure transport; malformed or partial bundles hold braking until a new complete post-fault acquisition; raw measured planes and calibration in sensor-only logs |
 | Initially occluded / late lateral crossing fixtures | Implemented / tested | Reference/RNE across 3 seeds; circular scheduled actors, no semantics |
 | Low-friction avoidance and stopping | Implemented / tested | RNE dynamic mu=0.2, 0.15 s steering lag, separate longitudinal/lateral limits |
 | Calibrated braking / curvature speed limits | Implemented / tested | Fixed known limits; sampled curvature; no combined-friction optimization |

@@ -96,7 +96,7 @@ jobs:
       - name: Run multi-seed hazard acceptance and full replay
         working-directory: rust_drive
         run: python3 scripts/check_hazards.py
-      - name: Independently check native 3D scenes and rejected blind slabs
+      - name: Independently check native scenes, multi-height sensing and remaining blind slabs
         working-directory: rust_drive
         run: python3 scripts/check-native-scenes.py --output artifacts/native-scenes
       - uses: actions/setup-python@v5
@@ -116,6 +116,7 @@ jobs:
           python scripts/render_demo_3d.py artifacts/hazards/rne-dynamic/intersection-lidar-recovery/seed-7/run.json --preview-time 14.1 --output artifacts/rne-timing/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-timing/scene.blend
           python scripts/render_demo_3d.py artifacts/hazards/rne-dynamic/intersection-late-conflict/seed-7/run.json --preview-time 30 --output artifacts/rne-late-crossing/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-late-crossing/scene.blend
           python scripts/render_demo_3d.py artifacts/native-scenes/dynamic/ground-barrier/seed-7/run.json --native-scene artifacts/native-scenes/dynamic/ground-barrier/seed-7/scene.json --preview-time 15 --output artifacts/rne-native-scene/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-native-scene/scene.blend
+          python scripts/render_demo_3d.py artifacts/native-scenes/multi-height/dynamic/blind-low-slab/seed-7/run.json --native-scene artifacts/native-scenes/multi-height/dynamic/blind-low-slab/seed-7/scene.json --preview-time 15 --output artifacts/rne-multi-height/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-multi-height/scene.blend
       - uses: actions/upload-artifact@v4
         if: always()
         with:
