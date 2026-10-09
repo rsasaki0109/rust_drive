@@ -8,13 +8,15 @@ Blue is ego, amber is a recorded obstacle or reactive follower, teal is the actu
 
 ## Models and suburban scenery
 
-The original procedural assets in [`blender_assets.py`](../scripts/blender_assets.py) now create compact hatchbacks with shaped body panels, sloped glazing, pillars, mirrors, door handles, bumpers, a grille, head/tail lights and five-spoke alloy wheels. Ego has a decorative roof sensor housing; this does not calibrate the actual LiDAR mount. Ego wheel rotation follows recorded travel distance. The meshes are scaled to the recorded circular footprint, rather than a calibrated production vehicle's dimensions. Static circular obstacles use reflective barrel meshes.
+The original procedural assets in [`blender_assets.py`](../scripts/blender_assets.py) create hatchbacks, sedans, cargo vans and pickups with shaped body panels, sloped glazing, pillars, mirrors, door handles, bumpers, a grille, head/tail lights and five-spoke alloy wheels. Vans add cargo panels and rear-door seams; pickups add an open bed, rails and a tailgate. Ego has a decorative roof sensor housing; this does not calibrate the actual LiDAR mount. Wheel rotation follows recorded travel distance. The meshes are scaled to the recorded circular footprint, rather than a calibrated production vehicle's dimensions. Static circular obstacles use reflective barrel meshes.
 
 The suburban test-road scene includes continuous raised pavement, curbs, faceted street trees, streetlights and small campus buildings with windows, sills and entrances. Placement uses the authored road corridors and a fixed scenery seed of 1729. Pavement is omitted around adjoining corridors to avoid overlapping junction surfaces. The perspective camera follows closer to the vehicle so body details remain visible. These assets are original geometry and materials, with no external model or texture downloads.
 
 Scenery is **display-only**: buildings, trees and street furniture are not added to RNE's sensor or collision world. Driving results, circular acceptance, road widths and actual recorded actor positions are unchanged.
 
 ## Edit a Blender scene
+
+`--traffic-models sedan van pickup` assigns those display types in stable actor appearance order, cycling if more actors exist. The default is `hatchback`; ego remains a blue hatchback. `--camera traffic` frames ego and active reactive vehicles together; the default `ego` camera remains available. Neither option changes simulation inputs. [A verified three-vehicle queue and complete regeneration commands](vehicle-fleet.md).
 
 Export a scene snapshot from a recorded run, then open the `.blend` file in Blender to edit vehicle meshes, materials, scenery or camera placement:
 
@@ -78,10 +80,12 @@ The Blender worker applies each sampled ego position/yaw and each active object 
 
 Provenance records the actual RNE backend, pinned engine revision, complete scenario/summary, input trace SHA-256, renderer command, Blender version, sample count, number of verified scene states and encoded GIF frames. It also records the asset style, scenery seed/counts and a SHA-256 of the worker, asset generator and packager sources. Every render uses a fresh temporary frame directory; stale frames cannot fill gaps in a new capture. Failing, non-RNE or unsupported-schema runs are rejected before rendering. GIF bytes can vary with Blender, fonts and sampling versions.
 
-The RNE CI job renders a real native mission frame with Cycles CPU after physical scenario/replay checks. Rendering remains outside Cargo's dependencies and the required Rust-only workflow. Full GIFs are generated and inspected locally; CI's 3D check is a single-frame smoke test.
+The RNE CI job renders real native mission and three-vehicle fleet frames with Cycles CPU after physical scenario/replay checks. Rendering remains outside Cargo's dependencies and the required Rust-only workflow. Full GIFs are generated and inspected locally; CI's 3D check is a single-frame smoke test.
 
 ## Limits
 
 This is **3D visualization of a planar driving simulation**, not full 3D driving physics, an RNE renderer capture, camera perception, road elevation/suspension/contact-response validation or a photorealistic sensor feed. The road and vehicle meshes do not replace the independent circular collision evaluator. RNE still integrates ego natively and uses Rapier LiDAR; the reactive follower still uses the shared one-dimensional traffic integrator. Rendering never influences a driving command.
 
 The diagnostic top-down renderer and its historical recordings remain available through `scripts/render_demo.py`. Neither rendering style establishes real-vehicle safety, traffic-rule compliance or real-time performance.
+
+The opening and follower assets retain their captures from `5df62d1`, including their historical renderer source hashes. The fleet addition uses the updated worker with vehicle selection and camera fitting; regenerating older captures with that worker can change their visual bytes.

@@ -3,6 +3,7 @@ import argparse
 import hashlib
 import json
 import math
+import shlex
 from pathlib import Path
 import subprocess
 import tempfile
@@ -43,6 +44,8 @@ def main():
     parser.add_argument('run', type=Path)
     parser.add_argument('--output', type=Path, default=Path('assets/rne-3d-demo.gif'))
     parser.add_argument('--scene-output', type=Path, help='Save an editable Blender scene at the last rendered frame')
+    parser.add_argument('--traffic-models', nargs='+', choices=['hatchback','sedan','van','pickup'], default=['hatchback'], help='Display models assigned in stable actor appearance order')
+    parser.add_argument('--camera', choices=['ego','traffic'], default='ego', help='Follow ego or frame ego and active reactive vehicles')
     parser.add_argument('--preview-time', type=float, help='Render one PNG instead of the complete GIF')
     parser.add_argument('--samples', type=int, default=16)
     parser.add_argument('--threads', type=int, default=4)
@@ -74,7 +77,8 @@ def main():
         directory = Path(temporary)
         request = {'run': str(args.run.resolve()), 'indices': indices,
                    'frames_directory': temporary, 'samples': args.samples,
-                   'scene_output': str(args.scene_output.resolve()) if args.scene_output else None}
+                   'scene_output': str(args.scene_output.resolve()) if args.scene_output else None,
+                   'traffic_models': args.traffic_models, 'camera': args.camera}
         request_file = directory/'request.json'
         request_file.write_text(json.dumps(request))
         command = ['blender', '--background', '--factory-startup', '--threads', str(args.threads),
@@ -103,7 +107,7 @@ def main():
             draw.text((204, 20), 'RNE NATIVE DYNAMICS  /  BLENDER 3D REPLAY', font=font(12, True), fill='#46e3c2')
             phase = (frame.get('navigation') or {}).get('phase', frame['trajectory']['mode'])
             draw.text((22, 606), f"{phase.upper()}   |   {frame['truth']['speed']*3.6:.1f} km/h   |   t = {frame['time']:.1f} s", font=font(15, True), fill='#edf4ff')
-            draw.text((610, 608), 'BLUE ego   AMBER actors   TEAL plan   /   3x', font=font(12), fill='#8698b3')
+            draw.text((610, 608), 'BLUE ego   TRAFFIC actors   TEAL plan   /   3x', font=font(12), fill='#8698b3')
             images.append(image)
         if args.preview_time is not None:
             images[0].save(args.output.with_suffix('.png'))
@@ -133,7 +137,9 @@ def main():
                       'samples': args.samples, 'physics_domain': 'planar', 'scene': scene_info,
                       'renderer_source_sha256': renderer_hash.hexdigest(),
                       'gif_palette_colors': 192, 'gif_dither': False, 'spatial_filter': '3x3 median, viewport only',
-                      'renderer_command': f'python3 scripts/render_demo_3d.py {args.run} --output {args.output} --samples {args.samples} --threads {args.threads}'}
+                      'renderer_command': shlex.join(['python3','scripts/render_demo_3d.py',str(args.run),'--output',str(args.output),
+                                                     '--samples',str(args.samples),'--threads',str(args.threads),'--camera',args.camera,
+                                                     '--traffic-models',*args.traffic_models]+(['--scene-output',str(args.scene_output)] if args.scene_output else []))}
         args.output.with_suffix('.json').write_text(json.dumps(provenance, indent=2)+'\n')
         print(f'{args.output}: {count} frames, 960x640, {args.output.stat().st_size:,} bytes')
 

@@ -1,0 +1,557 @@
+{
+  "schema_version": 1,
+  "source_fingerprint_sha256": "af65b8c23fa53952cbf2eff42699a2211c490609a5e49176f2faed02681c0dd1",
+  "rne_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
+  "seeds": [
+    1,
+    7,
+    42
+  ],
+  "command": "bash scripts/check-hazards.sh --output artifacts/fleet-verified",
+  "checker_sha256": "63765027850fd05cb36bcf21e313050085ee48f4449896c4fd07f0f0c993c411",
+  "scenario_sha256": "58d28632cfd016f98b1f8a9dbd97f0710fbe519bf3eadbd86bbea131a027a19c",
+  "positive_run_count": 132,
+  "positive_backend_counts": {
+    "reference": 63,
+    "rne-dynamic": 69
+  },
+  "positive_suite_passed": true,
+  "runs": [
+    {
+      "backend": "reference",
+      "scenario": "traffic-fleet-queue",
+      "seed": 1,
+      "exit_code": 0,
+      "output": "artifacts/fleet-verified/reference/traffic-fleet-queue/seed-1",
+      "passed": true,
+      "summary": {
+        "scenario": "Three reactive vehicles queue behind a static obstacle",
+        "seed": 1,
+        "simulated_seconds": 65.0,
+        "steps": 1301,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "traffic_min_clearance": 2.995975132039561,
+        "min_clearance": 4.5469136604875,
+        "localization_rmse": 0.05386534953405704,
+        "localization_max_error": 0.18237925206265732,
+        "final_speed": 0.0,
+        "progress": 88.21493952378512,
+        "emergency_steps": 3,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay_exit_code": 0,
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1301,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1298,
+        "stationary_holds": 946,
+        "max_acceleration_m_s2": 2.000000000000003,
+        "max_deceleration_m_s2": 2.5000000000000004
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 1301,
+        "braking_forecasts": 44,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 585,
+        "max_forecast_deceleration_m_s2": 0.3256476959244703
+      },
+      "control_metrics": {
+        "ticks": 1301,
+        "emergency_ticks": 3,
+        "emergency_fraction": 0.0023059185242121443,
+        "commanded_acceleration_change_rms_m_s3": 29.609236500824572,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 1.0,
+        "measured_m": 4.5469136604875,
+        "passed": true
+      },
+      "traffic": {
+        "reactive_vehicle_count": 3,
+        "terminal_queue_hold_seconds": 40.95,
+        "sensor_samples": 3900,
+        "max_measured_actor_acceleration_m_s2": 0.7865151714667883,
+        "minimum_actor_pair_clearance_m": 2.995975132039561,
+        "actor_kinematics_verified": true,
+        "sensor_reconstruction_verified": true,
+        "traffic_labels_absent_from_pipeline": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "traffic-fleet-queue",
+      "seed": 7,
+      "exit_code": 0,
+      "output": "artifacts/fleet-verified/reference/traffic-fleet-queue/seed-7",
+      "passed": true,
+      "summary": {
+        "scenario": "Three reactive vehicles queue behind a static obstacle",
+        "seed": 7,
+        "simulated_seconds": 65.0,
+        "steps": 1301,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "traffic_min_clearance": 2.995975132039561,
+        "min_clearance": 4.535781071311194,
+        "localization_rmse": 0.05238879481521838,
+        "localization_max_error": 0.13832212613882636,
+        "final_speed": 0.0,
+        "progress": 88.22618334398572,
+        "emergency_steps": 17,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay_exit_code": 0,
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1301,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1284,
+        "stationary_holds": 928,
+        "max_acceleration_m_s2": 2.0000000000000036,
+        "max_deceleration_m_s2": 2.5000000000000004
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 1301,
+        "braking_forecasts": 34,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 596,
+        "max_forecast_deceleration_m_s2": 0.4454782247873823
+      },
+      "control_metrics": {
+        "ticks": 1301,
+        "emergency_ticks": 17,
+        "emergency_fraction": 0.013066871637202153,
+        "commanded_acceleration_change_rms_m_s3": 30.752421742279953,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000002
+      },
+      "clearance_regression": {
+        "floor_m": 1.0,
+        "measured_m": 4.535781071311194,
+        "passed": true
+      },
+      "traffic": {
+        "reactive_vehicle_count": 3,
+        "terminal_queue_hold_seconds": 40.849999999999994,
+        "sensor_samples": 3900,
+        "max_measured_actor_acceleration_m_s2": 0.7865151714667883,
+        "minimum_actor_pair_clearance_m": 2.995975132039561,
+        "actor_kinematics_verified": true,
+        "sensor_reconstruction_verified": true,
+        "traffic_labels_absent_from_pipeline": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "reference",
+      "scenario": "traffic-fleet-queue",
+      "seed": 42,
+      "exit_code": 0,
+      "output": "artifacts/fleet-verified/reference/traffic-fleet-queue/seed-42",
+      "passed": true,
+      "summary": {
+        "scenario": "Three reactive vehicles queue behind a static obstacle",
+        "seed": 42,
+        "simulated_seconds": 65.0,
+        "steps": 1301,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "traffic_min_clearance": 2.995975132039561,
+        "min_clearance": 4.545534220272819,
+        "localization_rmse": 0.05126538022543048,
+        "localization_max_error": 0.14148995820988391,
+        "final_speed": 0.0,
+        "progress": 88.21634359599949,
+        "emergency_steps": 7,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay_exit_code": 0,
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1301,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1294,
+        "stationary_holds": 936,
+        "max_acceleration_m_s2": 2.0000000000000036,
+        "max_deceleration_m_s2": 2.5000000000000004
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 1301,
+        "braking_forecasts": 46,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 576,
+        "max_forecast_deceleration_m_s2": 0.39440901218532276
+      },
+      "control_metrics": {
+        "ticks": 1301,
+        "emergency_ticks": 7,
+        "emergency_fraction": 0.005380476556495004,
+        "commanded_acceleration_change_rms_m_s3": 30.36189523709142,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 1.0,
+        "measured_m": 4.545534220272819,
+        "passed": true
+      },
+      "traffic": {
+        "reactive_vehicle_count": 3,
+        "terminal_queue_hold_seconds": 40.9,
+        "sensor_samples": 3900,
+        "max_measured_actor_acceleration_m_s2": 0.7865151714667883,
+        "minimum_actor_pair_clearance_m": 2.995975132039561,
+        "actor_kinematics_verified": true,
+        "sensor_reconstruction_verified": true,
+        "traffic_labels_absent_from_pipeline": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "traffic-fleet-queue",
+      "seed": 1,
+      "exit_code": 0,
+      "output": "artifacts/fleet-verified/rne-dynamic/traffic-fleet-queue/seed-1",
+      "passed": true,
+      "summary": {
+        "scenario": "Three reactive vehicles queue behind a static obstacle",
+        "seed": 1,
+        "simulated_seconds": 65.0,
+        "steps": 1301,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "traffic_min_clearance": 2.995975132039561,
+        "min_clearance": 4.5551505283059255,
+        "localization_rmse": 0.05467907906723761,
+        "localization_max_error": 0.1592909053312587,
+        "final_speed": 0.0,
+        "progress": 88.2066149948404,
+        "emergency_steps": 3,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay_exit_code": 0,
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1301,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1298,
+        "stationary_holds": 939,
+        "max_acceleration_m_s2": 2.000000000000003,
+        "max_deceleration_m_s2": 2.5000000000000004
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 1301,
+        "braking_forecasts": 48,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 591,
+        "max_forecast_deceleration_m_s2": 0.3821969759898758
+      },
+      "control_metrics": {
+        "ticks": 1301,
+        "emergency_ticks": 3,
+        "emergency_fraction": 0.0023059185242121443,
+        "commanded_acceleration_change_rms_m_s3": 29.270079075435223,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 1.0,
+        "measured_m": 4.5551505283059255,
+        "passed": true
+      },
+      "traffic": {
+        "reactive_vehicle_count": 3,
+        "terminal_queue_hold_seconds": 41.0,
+        "sensor_samples": 3900,
+        "max_measured_actor_acceleration_m_s2": 0.7865151714667883,
+        "minimum_actor_pair_clearance_m": 2.995975132039561,
+        "actor_kinematics_verified": true,
+        "sensor_reconstruction_verified": true,
+        "traffic_labels_absent_from_pipeline": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "traffic-fleet-queue",
+      "seed": 7,
+      "exit_code": 0,
+      "output": "artifacts/fleet-verified/rne-dynamic/traffic-fleet-queue/seed-7",
+      "passed": true,
+      "summary": {
+        "scenario": "Three reactive vehicles queue behind a static obstacle",
+        "seed": 7,
+        "simulated_seconds": 65.0,
+        "steps": 1301,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "traffic_min_clearance": 2.995975132039561,
+        "min_clearance": 4.554560023671508,
+        "localization_rmse": 0.058160608150484475,
+        "localization_max_error": 0.20512748149352236,
+        "final_speed": 0.0,
+        "progress": 88.20719530744559,
+        "emergency_steps": 7,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay_exit_code": 0,
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1301,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1294,
+        "stationary_holds": 934,
+        "max_acceleration_m_s2": 2.0000000000000036,
+        "max_deceleration_m_s2": 2.5000000000000004
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 1301,
+        "braking_forecasts": 28,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 558,
+        "max_forecast_deceleration_m_s2": 0.32527166216264725
+      },
+      "control_metrics": {
+        "ticks": 1301,
+        "emergency_ticks": 7,
+        "emergency_fraction": 0.005380476556495004,
+        "commanded_acceleration_change_rms_m_s3": 29.547127347583167,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000001
+      },
+      "clearance_regression": {
+        "floor_m": 1.0,
+        "measured_m": 4.554560023671508,
+        "passed": true
+      },
+      "traffic": {
+        "reactive_vehicle_count": 3,
+        "terminal_queue_hold_seconds": 41.0,
+        "sensor_samples": 3900,
+        "max_measured_actor_acceleration_m_s2": 0.7865151714667883,
+        "minimum_actor_pair_clearance_m": 2.995975132039561,
+        "actor_kinematics_verified": true,
+        "sensor_reconstruction_verified": true,
+        "traffic_labels_absent_from_pipeline": true,
+        "passed": true
+      }
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "traffic-fleet-queue",
+      "seed": 42,
+      "exit_code": 0,
+      "output": "artifacts/fleet-verified/rne-dynamic/traffic-fleet-queue/seed-42",
+      "passed": true,
+      "summary": {
+        "scenario": "Three reactive vehicles queue behind a static obstacle",
+        "seed": 42,
+        "simulated_seconds": 65.0,
+        "steps": 1301,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "traffic_min_clearance": 2.995975132039561,
+        "min_clearance": 4.534711518680759,
+        "localization_rmse": 0.054012978427924296,
+        "localization_max_error": 0.18079567389637546,
+        "final_speed": 0.0,
+        "progress": 88.22711286638456,
+        "emergency_steps": 19,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay_exit_code": 0,
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1301,
+        "verified": true
+      },
+      "speed_profiles": {
+        "verified": true,
+        "active_trajectories": 1282,
+        "stationary_holds": 928,
+        "max_acceleration_m_s2": 2.000000000000003,
+        "max_deceleration_m_s2": 2.5000000000000004
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 1301,
+        "braking_forecasts": 38,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 581,
+        "max_forecast_deceleration_m_s2": 0.3273005311395816
+      },
+      "control_metrics": {
+        "ticks": 1301,
+        "emergency_ticks": 19,
+        "emergency_fraction": 0.014604150653343582,
+        "commanded_acceleration_change_rms_m_s3": 30.58069207603351,
+        "max_normal_commanded_steering_rate_rad_s": 0.7000000000000008
+      },
+      "clearance_regression": {
+        "floor_m": 1.0,
+        "measured_m": 4.534711518680759,
+        "passed": true
+      },
+      "traffic": {
+        "reactive_vehicle_count": 3,
+        "terminal_queue_hold_seconds": 40.95,
+        "sensor_samples": 3900,
+        "max_measured_actor_acceleration_m_s2": 0.7865151714667883,
+        "minimum_actor_pair_clearance_m": 2.995975132039561,
+        "actor_kinematics_verified": true,
+        "sensor_reconstruction_verified": true,
+        "traffic_labels_absent_from_pipeline": true,
+        "passed": true
+      }
+    }
+  ],
+  "known_failures": [
+    {
+      "backend": "rne-dynamic",
+      "scenario": "traffic-follower-short-range",
+      "seed": 1,
+      "exit_code": 1,
+      "summary": {
+        "scenario": "Follower with insufficient sensing range for the clearance floor",
+        "seed": 1,
+        "simulated_seconds": 65.0,
+        "steps": 1301,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.3920107900727845,
+        "localization_rmse": 0.05494404827642635,
+        "localization_max_error": 0.1592909053312587,
+        "final_speed": 0.0,
+        "progress": 32.52073122810878,
+        "emergency_steps": 1125,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": false,
+        "failures": [
+          "minimum swept clearance 0.392 m is below 1.000 m",
+          "goal not reached within duration"
+        ]
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1301,
+        "verified": true
+      },
+      "traffic": {
+        "sensor_samples": 1180,
+        "max_measured_actor_acceleration_m_s2": 4.000000000000089,
+        "minimum_actor_pair_clearance_m": null,
+        "actor_kinematics_verified": true,
+        "sensor_reconstruction_verified": true,
+        "traffic_labels_absent_from_pipeline": true,
+        "passed": true
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 1181,
+        "braking_forecasts": 30,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 599,
+        "max_forecast_deceleration_m_s2": 1.7286580761554482
+      },
+      "acceptance_rejection_verified": true
+    },
+    {
+      "backend": "rne-dynamic",
+      "scenario": "traffic-follower-short-range",
+      "seed": 42,
+      "exit_code": 1,
+      "summary": {
+        "scenario": "Follower with insufficient sensing range for the clearance floor",
+        "seed": 42,
+        "simulated_seconds": 65.0,
+        "steps": 1301,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.4429157621248798,
+        "localization_rmse": 0.05223072696355517,
+        "localization_max_error": 0.18079567389637546,
+        "final_speed": 0.0,
+        "progress": 31.970927941732416,
+        "emergency_steps": 1128,
+        "avoidance_steps": 0,
+        "max_tracks": 1,
+        "passed": false,
+        "failures": [
+          "minimum swept clearance 0.443 m is below 1.000 m",
+          "goal not reached within duration"
+        ]
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1301,
+        "verified": true
+      },
+      "traffic": {
+        "sensor_samples": 1180,
+        "max_measured_actor_acceleration_m_s2": 4.000000000000089,
+        "minimum_actor_pair_clearance_m": null,
+        "actor_kinematics_verified": true,
+        "sensor_reconstruction_verified": true,
+        "traffic_labels_absent_from_pipeline": true,
+        "passed": true
+      },
+      "motion_predictions": {
+        "verified": true,
+        "forecasts": 1181,
+        "braking_forecasts": 30,
+        "stale_fallbacks": 0,
+        "reacceleration_fallbacks": 605,
+        "max_forecast_deceleration_m_s2": 1.7301184301527273
+      },
+      "acceptance_rejection_verified": true
+    }
+  ]
+}

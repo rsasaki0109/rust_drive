@@ -1,0 +1,18 @@
+{
+  "name": "Three reactive vehicles queue behind a static obstacle",
+  "duration": 65,
+  "road_length": 160,
+  "half_width": 2.0,
+  "expected": "stop",
+  "cruise_speed": 4,
+  "min_clearance_m": 1.0,
+  "objects": [
+    {"s": 25, "lateral": 0, "radius": 1, "speed": 4,
+     "following": {"initial_speed_m_s": 4}},
+    {"s": 50, "lateral": 0, "radius": 1, "speed": 4,
+     "following": {"initial_speed_m_s": 4}},
+    {"s": 75, "lateral": 0, "radius": 1, "speed": 4,
+     "following": {"initial_speed_m_s": 4}},
+    {"s": 110, "lateral": 0, "radius": 1}
+  ]
+}

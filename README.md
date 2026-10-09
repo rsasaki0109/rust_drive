@@ -39,7 +39,7 @@ Replay creates a fresh pipeline and recomputes localization, tracks, predictions
 
 The opening 3D GIF replays an actual RNE run, with friction-limited native vehicle dynamics, steering lag, and Rapier ray queries sampled in a planar LiDAR sweep. Blender Cycles renders the road, vehicle proxies and recorded planned trajectories on CPU. The shared RustDrive pipeline drives it. No GPU, graphics context, ROS, Docker, CARLA server or pretrained model is required.
 
-Original hatchback models now include glazing, mirrors, lights, grilles and alloy wheels, with suburban pavements, trees, streetlights and campus buildings. [Model generation and editable Blender scenes](docs/3d-demo.md#models-and-suburban-scenery). Scenery is display-only and does not enter LiDAR or collision evaluation.
+Original hatchback, sedan, van and pickup display models include glazing, mirrors, lights, grilles and alloy wheels, with suburban pavements, trees, streetlights and campus buildings. [Model generation and editable Blender scenes](docs/3d-demo.md#models-and-suburban-scenery). Scenery is display-only and does not enter LiDAR or collision evaluation.
 
 ```sh
 bash scripts/setup-rne.sh        # Fetch pinned RNE beside this checkout; Rust 1.95.0
@@ -58,7 +58,7 @@ The integration has its own lockfile and does not enlarge the default workspace 
 bash scripts/check-hazards.sh
 ```
 
-After RNE setup, this CPU-only command runs occlusion, lateral crossings, multiple blocked alternatives, low-friction avoidance and low-friction stopping across seeds 1, 7 and 42. It checks physical outcomes and recomputes every sensor log. All 126 positive local reference/RNE scenario runs pass, including 24 live-navigation, 42 GNSS-fault and 24 reactive-traffic runs. Fixed minimum-clearance floors also guard the fixtures. The planner computes bounded acceleration profiles, uses their arrival times for circular sweeps, and rechecks retimed stops and stationary holds. The suite also checks profile kinematics independently. [Current observed-braking results](docs/observed-braking.md); [reactive-traffic baseline](docs/reactive-traffic.md); [terminal-stop baseline](docs/terminal-stopping.md); [GNSS gating baseline](docs/gnss-robustness.md); [tracking improvements](docs/tracking.md); [earlier swept-check regressions](docs/swept-planning.md).
+After RNE setup, this CPU-only command runs occlusion, lateral crossings, multiple blocked alternatives, low-friction avoidance and low-friction stopping across seeds 1, 7 and 42. It checks physical outcomes and recomputes every sensor log. All 132 positive local reference/RNE scenario runs pass, including 24 live-navigation, 42 GNSS-fault and 30 reactive-traffic runs. Fixed minimum-clearance floors also guard the fixtures. The planner computes bounded acceleration profiles, uses their arrival times for circular sweeps, and rechecks retimed stops and stationary holds. The suite also checks profile kinematics independently. [Current observed-braking results](docs/observed-braking.md); [reactive-traffic baseline](docs/reactive-traffic.md); [terminal-stop baseline](docs/terminal-stopping.md); [GNSS gating baseline](docs/gnss-robustness.md); [tracking improvements](docs/tracking.md); [earlier swept-check regressions](docs/swept-planning.md).
 
 The original short follower fixture now completes its eight-second goal residence within 65 s in both plants across all three seeds. Two additional RNE cases with a five-meter follower sensing range fail the unchanged 1 m clearance floor and remain excluded from the positive count. [Measured changes and limitations](docs/observed-braking.md).
 
@@ -79,6 +79,20 @@ Optional simulator actors now follow their route with bounded acceleration, brak
 ```sh
 cargo run --release --locked --bin rustdrive -- run \
   --scenario scenarios/traffic-lead-stop.json --seed 7 --output artifacts/traffic
+```
+
+## Multiple traffic vehicles
+
+![Three reactive traffic vehicles forming a queue in an actual RNE run, rendered in 3D](assets/traffic-fleet-demo.gif)
+
+An amber sedan, ivory van and green pickup drive ahead of blue ego, brake behind a static obstacle and form a stopped queue. This is a 3× Blender CPU replay of the complete 65-second native RNE episode, with all 1301 sensor ticks verified. The traffic camera keeps ego and the three active vehicles in view. The three traffic participants use finite-range observations and bounded acceleration in the shared route-following simulator; vehicle types select display meshes, with shared circular footprints rather than separate van/truck dynamics. [Measurements, editable scene and reproduction](docs/vehicle-fleet.md).
+
+```sh
+# Activate the Pillow environment and install Blender first.
+bash scripts/rne-3d-demo.sh artifacts/fleet/demo.gif \
+  scenarios/traffic-fleet-queue.json artifacts/fleet \
+  --traffic-models sedan van pickup --camera traffic \
+  --scene-output artifacts/fleet/scene.blend
 ```
 
 ## Mapped destinations and closure detours
@@ -138,7 +152,7 @@ cargo run --release --locked --bin rustdrive -- run \
   --scenario scenarios/lidar-fault.json --seed 7 --output artifacts/lidar-fault
 ```
 
-CI checks formatting, Clippy, the workspace test suite, release builds, and the closed-loop demo on Linux, macOS, and Windows, plus GIF generation and the pinned CPU-only RNE integration on Linux. All five jobs passed for the preceding 3D replay revision `1df32f6` in [run 37886908156](https://github.com/rsasaki0109/rust_drive/actions/runs/37886908156). The RNE job also renders a real frame in 3D on CPU and exports an editable scene. See [validation and limitations](docs/validation.md) for the checks actually executed and the initial infrastructure/toolchain failures.
+CI checks formatting, Clippy, the workspace test suite, release builds, and the closed-loop demo on Linux, macOS, and Windows, plus GIF generation and the pinned CPU-only RNE integration on Linux. All five jobs passed for the preceding suburban-model revision `5df62d1` in [run 37891284562](https://github.com/rsasaki0109/rust_drive/actions/runs/37891284562). The RNE job also renders real mission and three-vehicle fleet frames in 3D on CPU and exports editable scenes. See [validation and limitations](docs/validation.md) for the checks actually executed and the initial infrastructure/toolchain failures.
 
 ## Architecture and contributing
 

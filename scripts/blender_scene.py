@@ -5,6 +5,7 @@ from pathlib import Path
 import sys
 
 import bpy
+from bpy_extras.object_utils import world_to_camera_view
 from mathutils import Vector
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -124,12 +125,19 @@ def main():
     ego = car('Recorded ego', run['vehicle']['radius'], blue, glass, tire, headlight, ego=True)
     dynamic_ids = {s['id'] for f in run['frames'] for s in f.get('traffic', [])}
     actors = {}
+    vehicle_models = []
+    actor_paints = [orange, material('Van ivory', (.72,.75,.68), .2, .3),
+                    material('Pickup green', (.06,.36,.23), .35, .27)]
     for frame in run['frames']:
         for actor in frame['objects']:
             if actor['id'] in actors:
                 continue
             if actor['id'] in dynamic_ids:
-                actors[actor['id']] = car('Recorded reactive actor', actor['radius'], orange, glass, tire, headlight)
+                number = len(vehicle_models)
+                variant = request.get('traffic_models', ['hatchback'])[number % len(request.get('traffic_models', ['hatchback']))]
+                paint = actor_paints[number % len(actor_paints)] if len(request.get('traffic_models', ['hatchback'])) > 1 else orange
+                actors[actor['id']] = car('Recorded reactive actor', actor['radius'], paint, glass, tire, headlight, variant=variant)
+                vehicle_models.append({'id': actor['id'], 'model': variant, 'color': list(paint.diffuse_color[:3])})
             else:
                 actors[actor['id']] = barrel(actor['radius'], orange, marking)
     planned = line('Actual planned trajectory', [], teal, .075)
@@ -137,6 +145,8 @@ def main():
     audit = []
     output = Path(request['frames_directory'])
     distances = [0.0]
+    actor_distances = {}
+    last_actor_positions = {}
     for before, after in zip(run['frames'], run['frames'][1:]):
         a, b = before['truth']['pose']['position'], after['truth']['pose']['position']
         distances.append(distances[-1]+math.hypot(b['x']-a['x'], b['y']-a['y']))
@@ -146,17 +156,52 @@ def main():
         x, y = pose['position']['x'], pose['position']['y']
         ego.location, ego.rotation_euler = (x, y, .02), (0, 0, pose['yaw'])
         camera.location = (x-11, y-16, 16)
-        camera.rotation_euler = (Vector((x+4, y, 0))-camera.location).to_track_quat('-Z', 'Y').to_euler()
+        target = (x+4, y, 0)
+        if request.get('camera') == 'traffic':
+            bodies = [{'position': pose['position'], 'radius': run['vehicle']['radius']}]+[a for a in frame['objects'] if a['id'] in dynamic_ids]
+            positions = [a['position'] for a in bodies]
+            min_x,max_x = min(p['x'] for p in positions),max(p['x'] for p in positions)
+            min_y,max_y = min(p['y'] for p in positions),max(p['y'] for p in positions)
+            height = max(16, math.hypot(max_x-min_x,max_y-min_y)*.45+16)
+            center_x,center_y = (min_x+max_x)/2,(min_y+max_y)/2
+            target = (center_x,center_y,0)
+            # Fit the complete display bounds, not just the center positions:
+            # a long queue can otherwise clip ego at the start in perspective.
+            corners = [Vector((a['position']['x']+sx*(a['radius']+.5),
+                               a['position']['y']+sy*(a['radius']+.5),z))
+                       for a in bodies for sx in [-1,1] for sy in [-1,1]
+                       for z in [0,2*a['radius']]]
+            for attempt in range(32):
+                camera.location = (center_x-.7*height,center_y-height,height)
+                camera.rotation_euler = (Vector(target)-camera.location).to_track_quat('-Z','Y').to_euler()
+                bpy.context.view_layer.update()
+                projected = [world_to_camera_view(scene,camera,p) for p in corners]
+                if all(.05 <= p.x <= .95 and .05 <= p.y <= .95 and p.z > 0 for p in projected):
+                    break
+                height *= 1.1
+            else:
+                raise ValueError('Traffic camera could not fit recorded vehicle bounds')
+        camera.rotation_euler = (Vector(target)-camera.location).to_track_quat('-Z', 'Y').to_euler()
         for wheel in ego.children:
             if wheel.get('rolling_wheel'):
                 wheel.rotation_euler.y = distances[index]/ego['wheel_radius']
         for id, obj in actors.items():
             obj.hide_render = not any(a['id'] == id for a in frame['objects'])
+            obj.hide_viewport = obj.hide_render
             for child in obj.children_recursive:
                 child.hide_render = obj.hide_render
+                child.hide_viewport = obj.hide_render
         for actor in frame['objects']:
             obj = actors[actor['id']]
             obj.location.x, obj.location.y = actor['position']['x'], actor['position']['y']
+            if actor['id'] in dynamic_ids:
+                p = actor['position']
+                old = last_actor_positions.get(actor['id'], p)
+                actor_distances[actor['id']] = actor_distances.get(actor['id'], 0)+math.hypot(p['x']-old['x'],p['y']-old['y'])
+                last_actor_positions[actor['id']] = p
+                for wheel in obj.children:
+                    if wheel.get('rolling_wheel'):
+                        wheel.rotation_euler.y = actor_distances[actor['id']]/obj['wheel_radius']
             if actor['id'] in dynamic_ids and index > 0:
                 previous = next((a for a in run['frames'][index-1]['objects'] if a['id'] == actor['id']), None)
                 if previous:
@@ -179,7 +224,9 @@ def main():
         scene.render.filepath = str(output/f'{number:04d}.png')
         bpy.ops.render.render(write_still=True)
     (output/'audit.json').write_text(json.dumps(audit, indent=2)+'\n')
-    (output/'scene-info.json').write_text(json.dumps({'style': STYLE, 'seed': 1729, 'scenery_counts': scenery}, indent=2)+'\n')
+    (output/'scene-info.json').write_text(json.dumps({'style': STYLE, 'seed': 1729, 'scenery_counts': scenery,
+                                                   'ego_model': 'hatchback', 'traffic_models': vehicle_models,
+                                                   'camera': request.get('camera', 'ego')}, indent=2)+'\n')
     if request.get('scene_output'):
         bpy.ops.wm.save_as_mainfile(filepath=request['scene_output'])
 

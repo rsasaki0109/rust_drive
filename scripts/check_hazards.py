@@ -10,13 +10,13 @@ import sys
 
 ROOT = Path(__file__).resolve().parent.parent
 CASES = {
-    'reference': ['occluded-crossing', 'cut-in', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue', 'traffic-follower-deadline'],
-    'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue', 'traffic-follower-deadline'],
+    'reference': ['occluded-crossing', 'cut-in', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue', 'traffic-follower-deadline', 'traffic-fleet-queue'],
+    'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue', 'traffic-follower-deadline', 'traffic-fleet-queue'],
 }
 # Fixed regression floors, chosen against the preceding measured fixture results.
 # They are simulation test constraints, not a universal safe-distance specification.
 CLEARANCE_FLOORS_M = {
-    'traffic-lead-stop': 1.0, 'traffic-follower-brake': 1.0, 'traffic-queue': 1.0, 'traffic-follower-deadline': 1.0,
+    'traffic-lead-stop': 1.0, 'traffic-follower-brake': 1.0, 'traffic-queue': 1.0, 'traffic-follower-deadline': 1.0, 'traffic-fleet-queue': 1.0,
     'gnss-burst-traffic': 0.5, 'gnss-burst-traffic-hold': 0.5, 'gnss-spike': 0.5, 'gnss-burst': 0.5, 'gnss-persistent-bias': 4.0,
     'occluded-crossing': 1.0, 'cut-in': 0.7, 'multiple-blocked': 3.0,
     'opposing-crossings': 0.7, 'low-friction': 0.4, 'low-friction-stop': 4.0,
@@ -306,11 +306,28 @@ def check_traffic(run, log, case):
             raise ValueError('ego did not wait for and resume behind the stopped lead')
         if not all(f['traffic'][0]['speed_m_s'] < 0.1 for f in frames if 11 <= f['time'] < 23.9):
             raise ValueError('lead did not physically stop in its requested window')
-    elif case == 'traffic-queue':
+    elif case in ['traffic-queue', 'traffic-fleet-queue']:
         if any(a['speed_m_s'] > 0.05 for a in frames[-1]['traffic']) or not math.isfinite(minimum_pair):
             raise ValueError('queue did not stop with measured actor-pair separation')
         if any(a['route_s_m'] < reactive[a['id']]['s']+15 for a in frames[-1]['traffic']):
             raise ValueError('queue fixture never exercised traffic motion')
+        if case == 'traffic-fleet-queue':
+            if len(reactive) != 3 or any(len(f.get('traffic', [])) != 3
+                    or {a['id'] for a in f['traffic']} != set(reactive) for f in frames):
+                raise ValueError('fleet evidence must retain all three reactive vehicles at every tick')
+            order = sorted(reactive, key=lambda id: reactive[id]['s'])
+            for f in frames:
+                positions = {a['id']: a['route_s_m'] for a in f['traffic']}
+                if any(positions[a] >= positions[b] for a, b in zip(order, order[1:])):
+                    raise ValueError('fleet vehicle order changed on a single-lane queue')
+            # Require a continuous terminal hold, rather than a lucky final frame.
+            fleet_hold = 0.0
+            for f in reversed(frames):
+                if f['truth']['speed'] >= 0.1 or any(a['speed_m_s'] >= 0.05 for a in f['traffic']):
+                    break
+                fleet_hold = frames[-1]['time']-f['time']
+            if fleet_hold < 5.0-1e-8:
+                raise ValueError('ego and fleet did not remain stopped together for five seconds')
     elif case.startswith('traffic-follower'):
         fault_end = run['scenario']['gnss_bias_windows'][0]['until']
         ego_hold = hold_duration(lambda f: 11 <= f['time'] < fault_end and f['truth']['speed'] < 0.1)
@@ -333,7 +350,9 @@ def check_traffic(run, log, case):
             residence = frames[-1]['time']-f['time']
         if case in ['traffic-follower-brake', 'traffic-follower-deadline'] and (residence < 8.0-1e-8 or not run['summary']['reached_goal']):
             raise ValueError('ego did not remain at the goal for the complete physical hold')
-    return {'sensor_samples': sensor_samples, 'max_measured_actor_acceleration_m_s2': max_acceleration,
+    return {**({'reactive_vehicle_count': 3, 'terminal_queue_hold_seconds': fleet_hold}
+               if case == 'traffic-fleet-queue' else {}),
+            'sensor_samples': sensor_samples, 'max_measured_actor_acceleration_m_s2': max_acceleration,
             'minimum_actor_pair_clearance_m': minimum_pair if math.isfinite(minimum_pair) else None,
             'actor_kinematics_verified': True, 'sensor_reconstruction_verified': True,
             'traffic_labels_absent_from_pipeline': True, 'passed': True}

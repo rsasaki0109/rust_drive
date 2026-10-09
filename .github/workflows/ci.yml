@@ -106,6 +106,7 @@ jobs:
           sudo apt-get install -y --no-install-recommends blender
           python -m pip install -r scripts/requirements-demo.txt
           python scripts/render_demo_3d.py artifacts/rne-dynamic/run.json --preview-time 7.5 --output artifacts/rne-dynamic/preview-3d.gif --samples 4 --threads 2 --scene-output artifacts/rne-dynamic/scene-3d.blend
+          python scripts/render_demo_3d.py artifacts/hazards/rne-dynamic/traffic-fleet-queue/seed-7/run.json --preview-time 30 --traffic-models sedan van pickup --camera traffic --output artifacts/rne-fleet/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-fleet/scene.blend
       - uses: actions/upload-artifact@v4
         if: always()
         with:
