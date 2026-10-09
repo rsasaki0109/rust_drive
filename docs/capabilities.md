@@ -36,7 +36,8 @@
 | 3D mapping / SLAM / map localization | Planned | No truth-as-localization substitution |
 | Directed road graph / shortest-distance routing | Implemented / tested | Authored planar maps, deterministic Dijkstra, known pre-departure closure detours, 3 route fixtures × 2 plants × 3 seeds |
 | Minimum-clearance regression conditions | Implemented / tested | Fixed swept-circle fixture floors; no real-driving clearance specification |
-| Live closures / stopped route handover | Implemented / tested | Common-prefix policy, three healthy stopped estimates, no-route hold/reopening, 4 m/s fixtures with conservative curvature limits |
+| Live closures / stopped route handover | Implemented / tested | Common-prefix policy, three healthy stopped estimates, no-route hold/reopening, 4 m/s fixtures with conservative curvature limits and a 6 m/s fixture without an optional curvature cap |
+| Avoidance continuity | Implemented / tested | Observed centerline occupancy discourages premature center return; seeded 6 m/s detour regression, swept feasibility remains mandatory |
 | Map-update fault handling and replay | Implemented / tested | Revision/stamp checks, latched malformed-update braking, full map-search and handover recomputation when configured |
 | Lane topology / traffic-rule routing / continuous moving handover | Planned | No map importer, lane-change graph, turn penalties or intersection rules |
 | Traffic lights / signs / right of way / parking | Planned | No traffic-rule claims |

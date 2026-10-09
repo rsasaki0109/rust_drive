@@ -10,8 +10,8 @@ import sys
 
 ROOT = Path(__file__).resolve().parent.parent
 CASES = {
-    'reference': ['occluded-crossing', 'cut-in', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-no-path', 'route-reopen'],
-    'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-no-path', 'route-reopen'],
+    'reference': ['occluded-crossing', 'cut-in', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen'],
+    'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen'],
 }
 # Fixed regression floors, chosen against the preceding measured fixture results.
 # They are simulation test constraints, not a universal safe-distance specification.
@@ -19,13 +19,14 @@ CLEARANCE_FLOORS_M = {
     'occluded-crossing': 1.0, 'cut-in': 0.7, 'multiple-blocked': 3.0,
     'opposing-crossings': 0.7, 'low-friction': 0.4, 'low-friction-stop': 4.0,
     'route-direct': 0.5, 'route-detour': 0.5, 'route-south': 0.5,
-    'route-handover': 0.5, 'route-no-path': 4.0, 'route-reopen': 0.5,
+    'route-handover': 0.5, 'route-handover-fast': 0.5, 'route-no-path': 4.0, 'route-reopen': 0.5,
 }
 EXPECTED_EDGES = {
     'route-direct': ['approach', 'main', 'east-exit'],
     'route-detour': ['approach', 'detour', 'east-exit'],
     'route-south': ['approach', 'south-branch'],
     'route-handover': ['approach', 'detour', 'east-exit'],
+    'route-handover-fast': ['approach', 'detour', 'east-exit'],
     'route-reopen': ['approach', 'detour', 'east-exit'],
 }
 
@@ -127,7 +128,7 @@ def check_live_navigation(run, log, case):
         raise ValueError('world object teleported during navigation')
     if run['summary'].get('closure_violations', 0):
         raise ValueError('truth entered a closed edge')
-    if case in ['route-handover', 'route-reopen']:
+    if case in ['route-handover', 'route-handover-fast', 'route-reopen']:
         if observed_switches != 1 or ticks[-1]['expected']['navigation']['phase'] != 'Following':
             raise ValueError('detour handover did not complete')
     else:
@@ -299,7 +300,7 @@ def main():
                     run = json.loads((output/'run.json').read_text())
                     if case in EXPECTED_EDGES:
                         row['navigation'] = check_navigation(run, case)
-                    if case in ['route-handover', 'route-no-path', 'route-reopen']:
+                    if case in ['route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen']:
                         row['live_navigation'] = check_live_navigation(run, output/'sensors.jsonl', case)
                     if run['scenario'].get('dynamics'):
                         frames = run['frames']

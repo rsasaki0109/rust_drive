@@ -299,7 +299,7 @@ fn clearance_acceptance_rejects_a_collision_free_but_too_close_run() {
 
 #[test]
 fn live_map_closures_stop_then_handover_without_resetting_estimation() {
-    for case in ["route-handover", "route-reopen"] {
+    for case in ["route-handover", "route-handover-fast", "route-reopen"] {
         for seed in [1, 7, 42] {
             let result = simulate(scenario(case), seed).unwrap();
             assert!(result.summary.passed, "seed {seed}: {:?}", result.summary);

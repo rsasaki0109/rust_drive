@@ -1,6 +1,8 @@
 # Live closure updates and stopped route handover
 
-RustDrive now receives known road-closure snapshots while driving, stops before a divergent or closed edge, and switches to a detour after three healthy stopped estimates. If no route remains, it holds on the existing corridor. A later snapshot that makes the detour available permits a stopped handover and resumed driving. The opening README GIF is the actual seed-7 CPU-only RNE dynamic run, rendered from telemetry at 3× speed.
+This page records the `cc9ba4d` baseline, including its retained 6 m/s failure. The [current avoidance extension](avoidance-continuity.md) repairs that regression, expands the suite and supplies the current README GIF; its results supersede the measurements below.
+
+RustDrive now receives known road-closure snapshots while driving, stops before a divergent or closed edge, and switches to a detour after three healthy stopped estimates. If no route remains, it holds on the existing corridor. A later snapshot that makes the detour available permits a stopped handover and resumed driving. The GIF at that revision was the actual seed-7 CPU-only RNE dynamic run, rendered from telemetry at 3× speed.
 
 This is a deliberately restricted handover policy for authored planar maps. It does not implement continuous rerouting at speed, traffic-light logic, intersection priority or physical road-closure perception.
 
@@ -76,17 +78,17 @@ New tests cover stopped/healthy handover requirements, duplicate and reordered s
 bash scripts/check.sh
 bash scripts/setup-rne.sh
 bash scripts/check-hazards.sh
-# Activate a Pillow environment to regenerate the README GIF.
-bash scripts/rne-demo.sh dynamic assets/rne-demo.gif scenarios/route-handover.json
+# Activate a Pillow environment to render this baseline fixture.
+bash scripts/rne-demo.sh dynamic artifacts/handover-demo.gif scenarios/route-handover.json
 ```
 
 The map inset displays the current active route, purple pending route, accepted orange closures and navigation phase. Route history determines the displayed corridor and progress denominator for each frame; it does not draw the eventual detour before the update arrives. Map colors are known navigation information; they are not synthetic sensor detections.
 
 ## Retained failure and remaining boundaries
 
-A seed-7 RNE run at **6 m/s with `motion_limits` omitted** switches routes but stops near the curve's object until the 70 s duration ends. It has zero colliding/road-violation ticks and 0.952 m minimum clearance, but does **not** reach the goal; the CLI returns 1. Its 1401 sensor ticks replay successfully, demonstrating why replay and physical acceptance remain distinct. The snapshot preserves this failed summary and the RNE regression asserts it remains an explicit failed mission. The demonstrated 4 m/s fixtures enable conservative curvature bounds; higher-speed robustness without those bounds is unresolved.
+At `cc9ba4d`, a seed-7 RNE run at **6 m/s with `motion_limits` omitted** switched routes but stopped near the curve's object until the 70 s duration ends. It has zero colliding/road-violation ticks and 0.952 m minimum clearance, but does **not** reach the goal; the CLI returns 1. Its 1401 sensor ticks replay successfully, demonstrating why replay and physical acceptance remain distinct. The snapshot preserves this failed summary; the RNE regression at that revision asserted the physical failure. The demonstrated 4 m/s fixtures enable conservative curvature bounds; this higher-speed case was unresolved at that revision. The newer avoidance policy repairs this particular regression without changing its speed, world or acceptance conditions.
 
-Reproduce the failure without changing any acceptance condition:
+At `cc9ba4d`, reproduce the failure without changing any acceptance condition (the current planner reaches the goal):
 
 ```sh
 mkdir -p artifacts

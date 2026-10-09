@@ -182,7 +182,22 @@ impl Planner for LatticePlanner {
             } else {
                 0.0
             };
+            // Forecast jitter should not abort an unfinished lateral shift while
+            // the sensed object still spans the centerline ahead. This is a preference,
+            // not a feasibility override: every candidate remains swept/retimed.
+            let abandoning_pass = target.abs() < 0.01
+                && self.previous_lateral.abs() > 0.1
+                && self
+                    .maneuver_start
+                    .is_some_and(|(start_s, _, transition)| s < start_s + transition)
+                && objects.iter().any(|object| {
+                    let (object_s, object_lateral) = route.project(object.positions[0]);
+                    object_s + object.radius + self.vehicle.radius >= s
+                        && object_s <= s + horizon
+                        && object_lateral.abs() < object.radius + 0.3
+                });
             let score = switching_penalty
+                + if abandoning_pass { 1.0 } else { 0.0 }
                 + if blocked {
                     if self.max_lateral_acceleration_m_s2.is_some() {
                         100.0
@@ -293,6 +308,83 @@ mod tests {
             "quintic shift must not restart at every replan"
         );
         assert!((next.points[20].position.y - first.points[32].position.y).abs() < 1e-9);
+    }
+
+    #[test]
+    fn forecast_changes_do_not_abort_an_unfinished_pass() {
+        let route = road(5.5);
+        let mut planner = LatticePlanner {
+            cruise_speed: 6.0,
+            ..LatticePlanner::default()
+        };
+        let mut ego = EgoState {
+            speed: 6.0,
+            ..EgoState::default()
+        };
+        let first = planner.plan(ego, &route, &[obstacle()]);
+        assert_eq!(first.mode, DrivingMode::Avoid);
+        let side = first.lateral_target;
+        ego.pose.position = Vec2::new(6.0, side.signum() * 0.2);
+        // An apparent rapidly departing object makes the center candidate clear.
+        // A fresh planner confirms that candidate is feasible; the established
+        // pass must remain preferred while its observed position is still ahead.
+        let mut departing = obstacle();
+        for (i, p) in departing.positions.iter_mut().enumerate() {
+            p.x += 10.0 * departing.dt * i as f64;
+        }
+        let fresh = LatticePlanner {
+            cruise_speed: 6.0,
+            ..LatticePlanner::default()
+        }
+        .plan(ego, &route, &[departing.clone()]);
+        assert_eq!(fresh.lateral_target, 0.0);
+        let continued = planner.plan(ego, &route, &[departing.clone()]);
+        assert_eq!(continued.lateral_target, side);
+        assert_eq!(continued.mode, DrivingMode::Avoid);
+        // Completion releases the preference even before passing the object;
+        // it must not hold an offset indefinitely or mask a safer center return.
+        ego.pose.position = Vec2::new(16.0, side);
+        let completed = planner.plan(ego, &route, &[departing]);
+        assert_eq!(completed.lateral_target, 0.0);
+        ego.pose.position = Vec2::new(25.0, side);
+        let passed = planner.plan(ego, &route, &[obstacle()]);
+        assert_eq!(passed.lateral_target, 0.0);
+        assert_eq!(passed.mode, DrivingMode::Cruise);
+    }
+
+    #[test]
+    fn pass_preference_never_overrides_collision_feasibility() {
+        let mut planner = LatticePlanner::default();
+        let route = road(5.5);
+        planner.plan(EgoState::default(), &route, &[obstacle()]);
+        let mut blocking = obstacle();
+        blocking.radius = 8.0;
+        let stopped = planner.plan(EgoState::default(), &route, &[blocking.clone()]);
+        assert!(matches!(
+            stopped.mode,
+            DrivingMode::Yield | DrivingMode::Emergency
+        ));
+        if !stopped.points.is_empty() {
+            assert_eq!(stopped.points.last().unwrap().speed, 0.0);
+            assert!(
+                collision::first_contact_time(&stopped.points, &blocking, planner.vehicle.radius)
+                    .is_none()
+            );
+        }
+    }
+
+    #[test]
+    fn an_object_clear_of_the_centerline_does_not_keep_the_vehicle_offset() {
+        let route = road(5.5);
+        let mut planner = LatticePlanner::default();
+        let first = planner.plan(EgoState::default(), &route, &[obstacle()]);
+        let mut ego = EgoState::default();
+        ego.pose.position = Vec2::new(6.0, first.lateral_target.signum() * 0.2);
+        let mut off_center = obstacle();
+        off_center.positions.fill(Vec2::new(20.0, 3.0));
+        let clear = planner.plan(ego, &route, &[off_center]);
+        assert_eq!(clear.lateral_target, 0.0);
+        assert_eq!(clear.mode, DrivingMode::Cruise);
     }
 
     #[test]

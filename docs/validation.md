@@ -53,10 +53,16 @@ Optional `PipelineConfig.navigation` records the known graph/start/goal/initial 
 
 For road-network commit `aa766836d6f79fc58c4cde5cc6560b019a8cbac1`, [run 37856849026](https://github.com/rsasaki0109/rust_drive/actions/runs/37856849026) completed all five jobs successfully.
 
-## Live closure handover (2026-10-09, Asia/Tokyo)
+## Live closure handover baseline (2026-10-09, Asia/Tokyo)
 
 Local checks pass **97 workspace tests**, **11 RNE tests**, formatting, Clippy with warnings denied and locked release builds. The reference script passes fourteen scenario/replay pairs. The positive seeded suite passes **66 runs**, including 18 live-navigation runs, with zero collisions, road violations and closed-edge entry violations, full replay and unchanged per-fixture clearance/normal steering-rate constraints. Tests also cover protocol faults, late-notification failure, state retention, steering continuity and changed-snapshot replay detection.
 
 The live fixtures explicitly use 4 m/s cruise and a 1 m/s² planned lateral bound. A separately reproduced RNE seed-7 run at 6 m/s with curvature limits omitted fails goal acceptance while staying collision-free; its CLI returns 1 and its 1401 sensor ticks still replay. One of the eleven RNE tests asserts this retained failure; it is not a successful driving episode. [Methods, actual measurements, failed summary and limitations](handover.md).
 
-The opening README GIF is now the actual RNE live-closure run, showing braking, a pending route and stopped handover. Traffic priority and continuous moving handover remain unimplemented. Remote CI for this extension remains separate from the preceding observed runs.
+The opening README GIF is now the actual RNE live-closure run, showing braking, a pending route and stopped handover. Traffic priority and continuous moving handover remain unimplemented. For live-handover commit `cc9ba4d05c7b90685969203b7e0c8d34696e5256`, [run 37860843074](https://github.com/rsasaki0109/rust_drive/actions/runs/37860843074) completed successfully. This section records that baseline; the current extension below supersedes its counts and repairs its retained failed mission.
+
+## Avoidance continuity (2026-10-09 UTC)
+
+Local formatting, Clippy with warnings denied, locked release builds, **100 workspace tests** and **11 RNE tests** pass. The reference script passes fifteen scenario/replay pairs. The **72-run** suite includes 24 live-navigation runs and retains all prior clearance and normal steering-rate gates; collision, road-boundary and closed-edge entry counts are zero. Full logs recompute successfully. The former 6 m/s deadlock is now a positive fixture with the same world, duration, speed, update and acceptance criteria. Across three seeds, RNE completion takes 40.20–40.40 s with at least 1.458 m clearance; the corresponding reference runs also pass. [Methods, baseline comparison and complete snapshot](avoidance-continuity.md).
+
+The README opening GIF is the actual RNE seed-7 6 m/s run: 40.25 s, 806 replayed ticks, 135 frames at 1200 × 720, and recorded scenario/metrics/route history matching the validated suite. Remote CI for this new revision is reported separately from the preceding observed run. These results remain limited to the authored simulation cases.

@@ -392,23 +392,18 @@ mod tests {
         }
     }
     #[test]
-    fn known_six_meter_per_second_obstacle_deadlock_remains_an_explicit_failed_mission() {
-        let mut s = scenario("route-handover");
-        s.cruise_speed = Some(6.0);
-        s.motion_limits = None;
+    fn six_meter_per_second_handover_passes_without_a_curvature_cap() {
+        let s = scenario("route-handover-fast");
+        assert_eq!(s.cruise_speed, Some(6.0));
+        assert!(s.motion_limits.is_none());
         let result = run(s, 7, Plant::Dynamic).unwrap();
-        assert!(!result.summary.passed);
-        assert!(!result.summary.reached_goal);
+        assert!(result.summary.passed, "{:?}", result.summary);
+        assert!(result.summary.reached_goal);
         assert_eq!(result.summary.navigation_switches, 1);
         assert_eq!(result.summary.collisions, 0);
         assert_eq!(result.summary.road_violations, 0);
-        assert!(
-            result
-                .summary
-                .failures
-                .iter()
-                .any(|f| f.contains("goal not reached"))
-        );
+        assert_eq!(result.summary.closure_violations, 0);
+        assert!(result.summary.min_clearance >= 0.5);
     }
     #[test]
     fn acquisition_error_reaches_braking_guard() {
