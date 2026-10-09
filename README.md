@@ -41,6 +41,19 @@ The opening 3D GIF replays an actual RNE run, with friction-limited native vehic
 
 Original hatchback, sedan, van and pickup display models include glazing, mirrors, lights, grilles and alloy wheels, with suburban pavements, trees, streetlights and campus buildings. [Model generation and editable Blender scenes](docs/3d-demo.md#models-and-suburban-scenery). Scenery is display-only and does not enter LiDAR or collision evaluation.
 
+An opt-in native scene now adds actual upright 3D cuboids to Rapier sensing. A ground barrier causes a LiDAR-driven stop; raising the same barrier allows passage underneath. Separate diagnostic scans at three heights and a conservative capsule guard distinguish these cases. The vehicle still moves on a plane, and the extra diagnostic scans do not enter planning. A low slab missed by the operational scan is explicitly rejected after the run. [Scene format, reproduction and limitations](docs/native-scenes.md).
+
+![Actual RNE cuboid sensing and stopping, rendered from the accepted native recording](assets/native-scene-demo.gif)
+
+```sh
+bash scripts/setup-rne.sh
+source scripts/env.sh
+cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- \
+  --scenario scenarios/native-scene-ground-stop.json --scene scenes/ground-barrier.json \
+  --plant dynamic --seed 7 --output artifacts/native-scene
+bash scripts/check-native-scenes.sh
+```
+
 ```sh
 bash scripts/setup-rne.sh        # Fetch pinned RNE beside this checkout; Rust 1.95.0
 # Activate the Pillow venv below; install Blender for the opening 3D GIF.

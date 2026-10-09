@@ -1,4 +1,4 @@
-use rustdrive_rne::{Plant, run};
+use rustdrive_rne::{Plant, run, run_with_scene, scene::Scene};
 use rustdrive_sim::Scenario;
 use std::{env, error::Error, fs, io::BufWriter, path::PathBuf, process};
 fn main() {
@@ -11,11 +11,12 @@ fn execute() -> Result<(), Box<dyn Error>> {
     let args: Vec<_> = env::args().skip(1).collect();
     if args.is_empty() || args[0] == "--help" {
         println!(
-            "rustdrive-rne --scenario FILE [--plant kinematic|dynamic] [--seed N] [--output DIR]"
+            "rustdrive-rne --scenario FILE [--scene FILE] [--plant kinematic|dynamic] [--seed N] [--output DIR]"
         );
         return Ok(());
     }
     let mut input = None;
+    let mut scene_input = None;
     let mut plant = Plant::Kinematic;
     let mut seed = 7;
     let mut output = PathBuf::from("artifacts/rne");
@@ -25,6 +26,7 @@ fn execute() -> Result<(), Box<dyn Error>> {
         }
         match pair[0].as_str() {
             "--scenario" => input = Some(PathBuf::from(&pair[1])),
+            "--scene" => scene_input = Some(PathBuf::from(&pair[1])),
             "--plant" => {
                 plant = match pair[1].as_str() {
                     "kinematic" => Plant::Kinematic,
@@ -39,8 +41,21 @@ fn execute() -> Result<(), Box<dyn Error>> {
     }
     let scenario: Scenario =
         serde_json::from_str(&fs::read_to_string(input.ok_or("--scenario required")?)?)?;
-    let result = run(scenario, seed, plant)?;
+    let (result, scene_evidence) = if let Some(path) = scene_input {
+        let scene = Scene::from_json(&fs::read_to_string(path)?)?;
+        let (result, evidence) = run_with_scene(scenario, seed, plant, scene)?;
+        (result, Some(evidence))
+    } else {
+        (run(scenario, seed, plant)?, None)
+    };
     fs::create_dir_all(&output)?;
+    let scene_output = output.join("scene.json");
+    if let Some(evidence) = scene_evidence {
+        fs::write(&scene_output, serde_json::to_vec(&evidence)?)?;
+    } else if scene_output.exists() {
+        // Reusing an output directory must not leave stale scene acceptance.
+        fs::remove_file(scene_output)?;
+    }
     fs::write(output.join("run.json"), serde_json::to_vec(&result)?)?;
     result
         .sensor_log

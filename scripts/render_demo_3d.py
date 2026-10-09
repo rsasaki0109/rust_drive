@@ -14,6 +14,86 @@ from render_demo import font
 ROOT = Path(__file__).resolve().parent.parent
 
 
+def load_native_scene(path, run):
+    """Validate a successful simulator sidecar against the displayed timeline."""
+    evidence = json.loads(path.read_text())
+    if (evidence.get('schema_version') != 1 or
+            evidence.get('backend') != run['backend'] or
+            evidence.get('scenario') != run['scenario']['name'] or
+            evidence.get('summary', {}).get('passed') is not True):
+        raise ValueError('Native scene evidence must pass and match the recording backend/scenario')
+    if (type(evidence.get('seed')) is not int or not 0 <= evidence['seed'] < 2**64 or
+            evidence['seed'] != run['summary']['seed']):
+        raise ValueError('Native scene evidence requires a u64 seed matching the recording summary')
+    scene = evidence.get('scene', {})
+    boxes = scene.get('static_cuboids')
+    if (scene.get('schema_version') != 1 or not isinstance(scene.get('name'), str) or
+            not scene['name'].strip() or not isinstance(boxes, list) or not 1 <= len(boxes) <= 128):
+        raise ValueError('A bounded schema-1 native cuboid scene is required')
+    ids = set()
+    for box in boxes:
+        if not isinstance(box.get('id'), str) or not box['id'].strip() or box['id'] in ids:
+            raise ValueError('Native cuboid IDs must be nonempty and unique')
+        ids.add(box['id'])
+        for field in ['center_m', 'half_extents_m']:
+            vector = box.get(field)
+            if (not isinstance(vector, list) or len(vector) != 3 or
+                    any(isinstance(v, bool) or not isinstance(v, (int, float)) or
+                        not math.isfinite(v) or abs(v) > 2000 or
+                        (field == 'half_extents_m' and v <= 0) for v in vector)):
+                raise ValueError('Native cuboid coordinates must be finite ENU meters; extents positive')
+        yaw = box.get('yaw_rad')
+        if isinstance(yaw, bool) or not isinstance(yaw, (int, float)) or not math.isfinite(yaw) or abs(yaw) > math.pi:
+            raise ValueError('Native cuboid yaw must be finite within [-pi, pi]')
+    observations = evidence.get('observations')
+    if not isinstance(observations, list) or not observations:
+        raise ValueError('Native scene evidence requires recorded body poses')
+    poses = {}
+    previous = -math.inf
+    for observation in observations:
+        time = observation['time']
+        pose = observation['pose']
+        values = [time, pose['position']['x'], pose['position']['y'], pose['yaw']]
+        if any(not math.isfinite(v) for v in values) or time <= previous:
+            raise ValueError('Native scene observations must have finite poses and increasing timestamps')
+        previous = time
+        poses[round(time, 9)] = observation
+    for frame in run['frames']:
+        observation = poses.get(round(frame['time'], 9))
+        pose = frame['truth']['pose']
+        if (observation is None or abs(observation['time']-frame['time']) > 1e-8 or
+                abs(observation['pose']['position']['x']-pose['position']['x']) > 1e-8 or
+                abs(observation['pose']['position']['y']-pose['position']['y']) > 1e-8 or
+                abs(observation['pose']['yaw']-pose['yaw']) > 1e-8):
+            raise ValueError('Native scene body pose/time differs from the displayed recording')
+    return evidence
+
+
+def verify_native_cuboids(rendered, scene):
+    """Check actual world-space mesh corners, including height and yaw."""
+    expected = {box['id']: box for box in scene['static_cuboids']}
+    if len(rendered) != len(expected) or {box['id'] for box in rendered} != set(expected):
+        raise ValueError('Rendered native cuboid identities/count differ from the physical scene')
+    for actual in rendered:
+        box = expected[actual['id']]
+        c, s = math.cos(box['yaw_rad']), math.sin(box['yaw_rad'])
+        corners = []
+        for sx in [-1, 1]:
+            for sy in [-1, 1]:
+                for sz in [-1, 1]:
+                    x, y, z = [sign*half for sign, half in zip([sx, sy, sz], box['half_extents_m'])]
+                    corners.append([box['center_m'][0]+c*x-s*y, box['center_m'][1]+s*x+c*y,
+                                    box['center_m'][2]+z])
+        if len(actual['world_corners_m']) != 8 or any(
+                len(corner) != 3 or not all(math.isfinite(v) for v in corner)
+                for corner in actual['world_corners_m']) or any(
+                min(math.dist(corner, wanted) for wanted in corners) > 1e-4
+                for corner in actual['world_corners_m']) or any(
+                min(math.dist(wanted, corner) for corner in actual['world_corners_m']) > 1e-4
+                for wanted in corners):
+            raise ValueError('Rendered native cuboid geometry differs from the physical scene')
+
+
 def encode_gif(images, output, durations):
     """Use a shared palette and mild spatial noise reduction for README size."""
     prepared = []
@@ -44,6 +124,7 @@ def main():
     parser.add_argument('run', type=Path)
     parser.add_argument('--output', type=Path, default=Path('assets/rne-3d-demo.gif'))
     parser.add_argument('--scene-output', type=Path, help='Save an editable Blender scene at the last rendered frame')
+    parser.add_argument('--native-scene', type=Path, help='Successful native scene.json evidence; opt in to rendering physical cuboids')
     parser.add_argument('--traffic-models', nargs='+', choices=['hatchback','sedan','van','pickup'], default=['hatchback'], help='Display models assigned in stable actor appearance order')
     parser.add_argument('--camera', choices=['ego','traffic'], default='ego', help='Follow ego or frame ego and active reactive vehicles')
     parser.add_argument('--preview-time', type=float, help='Render one PNG instead of the complete GIF')
@@ -62,6 +143,7 @@ def main():
     if run.get('schema_version') != 1 or not run.get('backend', '').startswith('rne-') or not run['summary']['passed']:
         raise SystemExit('A successful schema-1 actual RNE recording is required')
     frames = run['frames']
+    native_evidence = load_native_scene(args.native_scene, run) if args.native_scene else None
     indices = [0]
     for i in range(1, len(frames)):
         if frames[i]['time']-frames[indices[-1]]['time'] >= .3-1e-9:
@@ -79,6 +161,8 @@ def main():
                    'frames_directory': temporary, 'samples': args.samples,
                    'scene_output': str(args.scene_output.resolve()) if args.scene_output else None,
                    'traffic_models': args.traffic_models, 'camera': args.camera}
+        if native_evidence:
+            request['native_scene'] = native_evidence['scene']
         request_file = directory/'request.json'
         request_file.write_text(json.dumps(request))
         command = ['blender', '--background', '--factory-startup', '--threads', str(args.threads),
@@ -89,6 +173,8 @@ def main():
             raise SystemExit((directory/'blender.log').read_text()[-5000:])
         scene_info = json.loads((directory/'scene-info.json').read_text())
         audit = json.loads((directory/'audit.json').read_text())
+        if native_evidence:
+            verify_native_cuboids(scene_info['native_cuboids'], native_evidence['scene'])
         images = []
         for number, index in enumerate(indices):
             frame, record = frames[index], audit[number]
@@ -99,12 +185,16 @@ def main():
                 a['id'] in expected_objects and math.hypot(a['position']['x']-expected_objects[a['id']]['position']['x'], a['position']['y']-expected_objects[a['id']]['position']['y']) <= 1e-4 for a in record['objects'])
             if record['time'] != frame['time'] or pose_error > 1e-4 or abs(record['ego_pose']['yaw']-expected_pose['yaw']) > 1e-5 or not objects_match:
                 raise SystemExit('Rendered scene state differs from the recorded simulation')
+            if native_evidence:
+                verify_native_cuboids(record['native_cuboids'], native_evidence['scene'])
             with Image.open(directory/f'{number:04d}.png') as rendered:
                 image = Image.new('RGB', (960, 640), '#0a1220')
                 image.paste(rendered, (0, 54))
             draw = ImageDraw.Draw(image)
             draw.text((22, 10), 'RustDrive', font=font(28, True), fill='#edf4ff')
             draw.text((204, 20), 'RNE NATIVE DYNAMICS  /  BLENDER 3D REPLAY', font=font(12, True), fill='#46e3c2')
+            if native_evidence:
+                draw.text((610, 36), 'PHYSICAL CUBOIDS / PLANAR EGO', font=font(11, True), fill='#ffb46e')
             phase = (frame.get('navigation') or {}).get('phase', frame['trajectory']['mode'])
             draw.text((22, 606), f"{phase.upper()}   |   {frame['truth']['speed']*3.6:.1f} km/h   |   t = {frame['time']:.1f} s", font=font(15, True), fill='#edf4ff')
             draw.text((610, 608), 'BLUE ego   TRAFFIC actors   TEAL plan   /   3x', font=font(12), fill='#8698b3')
@@ -139,7 +229,19 @@ def main():
                       'gif_palette_colors': 192, 'gif_dither': False, 'spatial_filter': '3x3 median, viewport only',
                       'renderer_command': shlex.join(['python3','scripts/render_demo_3d.py',str(args.run),'--output',str(args.output),
                                                      '--samples',str(args.samples),'--threads',str(args.threads),'--camera',args.camera,
-                                                     '--traffic-models',*args.traffic_models]+(['--scene-output',str(args.scene_output)] if args.scene_output else []))}
+                                                     '--traffic-models',*args.traffic_models]+(['--scene-output',str(args.scene_output)] if args.scene_output else [])+
+                                                    (['--native-scene',str(args.native_scene)] if args.native_scene else []))}
+        if native_evidence:
+            provenance['native_scene'] = {
+                'input': str(args.native_scene),
+                'input_sha256': hashlib.sha256(args.native_scene.read_bytes()).hexdigest(),
+                'scene': native_evidence['scene'], 'summary': native_evidence['summary'],
+                'seed': native_evidence['seed'],
+                'body_pose_states_verified': len(frames),
+                'cuboid_mesh_states_verified': len(audit),
+                'operational_lidar_height_m': 0.6,
+                'diagnostic_lidar_heights_m': [0.15, 3.7],
+                'contact_response': False}
         args.output.with_suffix('.json').write_text(json.dumps(provenance, indent=2)+'\n')
         print(f'{args.output}: {count} frames, 960x640, {args.output.stat().st_size:,} bytes')
 

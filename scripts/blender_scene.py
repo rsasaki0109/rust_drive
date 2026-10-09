@@ -58,6 +58,16 @@ def road(points, half_width, asphalt, marking):
     return obj
 
 
+def native_cuboid_audit(models):
+    """Read actual world mesh vertices, rather than requested fixture values."""
+    bpy.context.view_layer.update()
+    return [{'id': identifier,
+             'center_m': list(obj.matrix_world.translation),
+             'yaw_rad': math.atan2(obj.matrix_world[1][0], obj.matrix_world[0][0]),
+             'world_corners_m': [list(obj.matrix_world @ vertex.co) for vertex in obj.data.vertices]}
+            for identifier, obj in models.items()]
+
+
 def main():
     request = json.loads(Path(sys.argv[sys.argv.index('--')+1]).read_text())
     run = json.loads(Path(request['run']).read_text())
@@ -125,6 +135,16 @@ def main():
         bpy.ops.object.modifier_apply(modifier=union.name)
         bpy.data.objects.remove(surface, do_unlink=True)
     scenery = environment(edges)
+    native_models = {}
+    if request.get('native_scene'):
+        physical = material('Native physical cuboid orange', (.98, .25, .025), roughness=.55)
+        for box in request['native_scene']['static_cuboids']:
+            obj = cube('Native physical cuboid '+box['id'], box['center_m'],
+                       [2*half for half in box['half_extents_m']], physical)
+            obj.rotation_euler.z = box['yaw_rad']
+            obj['native_scene_id'] = box['id']
+            obj['native_scene_physical_geometry'] = True
+            native_models[box['id']] = obj
     signal_specs = run['scenario'].get('traffic_signals', [])
     signal_models = {}
     stop_specs = run['scenario'].get('stop_signs', [])
@@ -290,9 +310,12 @@ def main():
                          'yaw': float(ego.rotation_euler.z)}
         rendered_objects = [{'id': a['id'], 'position': {'x': float(actors[a['id']].location.x),
                                                        'y': float(actors[a['id']].location.y)}} for a in frame['objects']]
-        audit.append({'frame_index': index, 'time': frame['time'], 'ego_pose': rendered_pose,
-                      'objects': rendered_objects, 'closed_edges': closed,
-                      'camera_position': list(camera.location)})
+        state = {'frame_index': index, 'time': frame['time'], 'ego_pose': rendered_pose,
+                 'objects': rendered_objects, 'closed_edges': closed,
+                 'camera_position': list(camera.location)}
+        if native_models:
+            state['native_cuboids'] = native_cuboid_audit(native_models)
+        audit.append(state)
         for spec in signal_specs:
             color=next(p['color'] for p in reversed(spec['phases']) if p['from']<=frame['time']+1e-9)
             for lamp,obj in signal_models[spec['stop_line']['id']].items():
@@ -300,12 +323,16 @@ def main():
         scene.render.filepath = str(output/f'{number:04d}.png')
         bpy.ops.render.render(write_still=True)
     (output/'audit.json').write_text(json.dumps(audit, indent=2)+'\n')
-    (output/'scene-info.json').write_text(json.dumps({'style': STYLE, 'seed': 1729, 'scenery_counts': scenery,
-                                                   'ego_model': 'hatchback', 'traffic_models': vehicle_models,
-                                                   'camera': request.get('camera', 'ego'),
-                                                   'mapped_signal_ids': list(signal_models),
-                                                   'mapped_stop_sign_ids': [s['id'] for s in stop_specs],
-                                                   'mapped_intersection_ids': [s['stop_line']['id'] for s in intersection_specs]}, indent=2)+'\n')
+    scene_info = {'style': STYLE, 'seed': 1729, 'scenery_counts': scenery,
+                  'ego_model': 'hatchback', 'traffic_models': vehicle_models,
+                  'camera': request.get('camera', 'ego'),
+                  'mapped_signal_ids': list(signal_models),
+                  'mapped_stop_sign_ids': [s['id'] for s in stop_specs],
+                  'mapped_intersection_ids': [s['stop_line']['id'] for s in intersection_specs]}
+    if native_models:
+        scene_info['native_scene_name'] = request['native_scene']['name']
+        scene_info['native_cuboids'] = native_cuboid_audit(native_models)
+    (output/'scene-info.json').write_text(json.dumps(scene_info, indent=2)+'\n')
     if request.get('scene_output'):
         bpy.ops.wm.save_as_mainfile(filepath=request['scene_output'])
 

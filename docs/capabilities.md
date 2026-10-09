@@ -6,7 +6,7 @@
 |---|---|---|
 | Closed-loop perception → prediction → planning → control | Implemented / tested | Reference and optional CPU RNE plants |
 | Noisy GNSS + speed / gyro EKF | Implemented / tested | Full x/y innovation gate, Joseph covariance updates, observed/accepted diagnostics; hold after two new rejected innovations until acceptance; configured initial heading, no bias state |
-| Unlabeled LiDAR and occlusion | Implemented / tested | 720 rays, 45 m range, circular targets |
+| Unlabeled LiDAR and occlusion | Implemented / tested | 720 rays, 45 m range, circular targets and opt-in native cuboids |
 | Clustering / circle fitting / alpha-beta tracking | Implemented / tested | No semantic classes; nearest-neighbor association |
 | Acquisition-time LiDAR reprojection | Implemented / tested | At most 0.35 s / 64 EKF estimates; world detections and map rays use historical pose; no retroactive GNSS smoothing, delayed odometry/GNSS fusion or covariance propagation |
 | Current-time motion forecasts | Implemented / tested | Acquired tracks retain stamps; CV / observed braking advances to the control clock, consuming acquisition age from the one-second braking budget; unchanged low-speed deadband, no uncertainty growth or actor intent |
@@ -30,6 +30,8 @@
 | Versioned sensor-log replay | Implemented / tested | Full recomputation; exact comparison on this build/platform; no physical acceptance inference |
 | RNE kinematic/dynamic closed loop | Implemented / tested | CPU-only native plant, planar LiDAR in 3D query scene, friction/steering-lag dynamic model |
 | RNE raycast acquisition failure | Implemented / tested | Explicit error causes braking; healthy empty scan is distinct |
+| Opt-in native static 3D cuboids | Implemented / tested | Actual yaw-rotated Rapier query geometry, three horizontal acquisition heights; only the existing 0.6 m scan drives perception; no contact-response plant |
+| Native scene capsule clearance | Implemented / independently checked | Recorded 200 Hz native positions and conservative speed-bound guard; fixed 1 m floor; low blind slabs rejected; separate simulator-only evidence |
 | Initially occluded / late lateral crossing fixtures | Implemented / tested | Reference/RNE across 3 seeds; circular scheduled actors, no semantics |
 | Low-friction avoidance and stopping | Implemented / tested | RNE dynamic mu=0.2, 0.15 s steering lag, separate longitudinal/lateral limits |
 | Calibrated braking / curvature speed limits | Implemented / tested | Fixed known limits; sampled curvature; no combined-friction optimization |
@@ -42,7 +44,7 @@
 | Multiple blocked alternatives / opposing crossings | Implemented / tested | Scheduled circular actors; independent physical acceptance and full replay |
 | Linux build/test | Verified locally | Rust 1.90.0; optional RNE uses 1.95.0 |
 | macOS / Windows | Remote checks observed on recorded revisions | Results and runner failures in [validation](validation.md); no local hosts |
-| Camera, radar, 3D LiDAR, learned detection | Planned | No placeholder inference implementation |
+| Camera, radar, volumetric operational LiDAR, learned detection | Planned | Native multi-height horizontal scans are diagnostics; no placeholder inference implementation |
 | Learned prediction and training | Planned | No model/data/runtime packaged |
 | 3D mapping / SLAM / map localization | Planned | No truth-as-localization substitution |
 | Directed road graph / shortest-distance routing | Implemented / tested | Authored planar maps, deterministic Dijkstra, known pre-departure closure detours, 3 route fixtures × 2 plants × 3 seeds |

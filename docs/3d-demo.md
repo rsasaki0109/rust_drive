@@ -12,7 +12,7 @@ The original procedural assets in [`blender_assets.py`](../scripts/blender_asset
 
 The suburban test-road scene includes continuous raised pavement, curbs, faceted street trees, streetlights and small campus buildings with windows, sills and entrances. Placement uses the authored road corridors and a fixed scenery seed of 1729. Pavement is omitted around adjoining corridors to avoid overlapping junction surfaces. The perspective camera follows closer to the vehicle so body details remain visible. These assets are original geometry and materials, with no external model or texture downloads.
 
-Scenery is **display-only**: buildings, trees and street furniture are not added to RNE's sensor or collision world. Driving results, circular acceptance, road widths and actual recorded actor positions are unchanged.
+Scenery is **display-only**: buildings, trees and street furniture are not added to RNE's sensor or collision world. Driving results, circular acceptance, road widths and actual recorded actor positions are unchanged. The separate opt-in [native cuboid scenes](native-scenes.md) render actual Rapier query geometry when `--native-scene` supplies its accepted evidence sidecar; the renderer audits those meshes against the physical boxes.
 
 ## Edit a Blender scene
 

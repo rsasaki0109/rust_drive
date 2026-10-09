@@ -1,4 +1,5 @@
 //! CPU-only RNE plant and Rapier LiDAR adapter for the shared RustDrive pipeline.
+pub mod scene;
 use rne_core::{KeyedRandom, SimDuration};
 use rne_ecs::{Entity, World, spawn_named};
 use rne_math::{Quat, Seconds, Vec3, yaw_rad};
@@ -16,6 +17,9 @@ use rustdrive_sim::traffic::{TrafficTelemetry, TrafficWorld};
 use rustdrive_sim::{
     Run, Scenario, SimulationBackend, WorldObject, pipeline_config, simulate_with_backend,
 };
+use scene::{MotionSample, Scene, SceneCapture, pose_json, scan_channel};
+use serde_json::json;
+use std::sync::{Arc, Mutex};
 
 /// RNE plant selection. Both use native RNE systems, never RustDrive's reference integrator.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -59,12 +63,33 @@ pub struct RneBackend {
     seed: u64,
     plant: Plant,
     traffic: TrafficWorld,
+    scene: Option<Arc<Mutex<SceneCapture>>>,
     /// Test/diagnostic injection; a checked raycast against an unknown world must brake.
     pub fail_lidar_from: Option<f64>,
 }
 impl RneBackend {
     /// Creates a headless native vehicle with a CPU Rapier query scene.
     pub fn new(scenario: Scenario, seed: u64, plant: Plant) -> Result<Self, String> {
+        Self::create(scenario, seed, plant, None)
+    }
+    /// Adds simulator-only native sensing geometry; operational calibration is unchanged.
+    pub fn new_with_scene(
+        scenario: Scenario,
+        seed: u64,
+        plant: Plant,
+        scene: Scene,
+    ) -> Result<Self, String> {
+        if scenario.duration > 120.0 {
+            return Err("native scene evidence requires duration <=120 seconds".into());
+        }
+        Self::create(scenario, seed, plant, Some(scene))
+    }
+    fn create(
+        scenario: Scenario,
+        seed: u64,
+        plant: Plant,
+        scene: Option<Scene>,
+    ) -> Result<Self, String> {
         scenario.validate()?;
         if scenario.dynamics.is_some() && plant != Plant::Dynamic {
             return Err("friction/lag calibration requires --plant dynamic".into());
@@ -134,6 +159,35 @@ impl RneBackend {
             .enumerate()
             .map(|(i, _)| spawn_named(&mut world, format!("obstacle_{i}")))
             .collect();
+        // Fixed boxes take part in the same native Rapier queries as dynamic
+        // actor capsules, while their labels remain entirely on the simulator side.
+        if let Some(scene) = &scene {
+            for cuboid in &scene.static_cuboids {
+                let entity = spawn_named(&mut world, format!("scene_{}", cuboid.id));
+                world.entity_mut(entity).insert((
+                    Transform3::from_translation_rotation(
+                        Vec3::new(cuboid.center_m[0], cuboid.center_m[2], -cuboid.center_m[1]),
+                        Quat::from_rotation_y(cuboid.yaw_rad),
+                    ),
+                    RigidBody {
+                        body_type: RigidBodyType::Fixed,
+                        ..RigidBody::default()
+                    },
+                    Collider {
+                        shape: ColliderShape::Cuboid {
+                            half_extents_m: Vec3::new(
+                                cuboid.half_extents_m[0],
+                                cuboid.half_extents_m[2],
+                                cuboid.half_extents_m[1],
+                            ),
+                        },
+                        ..Collider::default()
+                    },
+                ));
+            }
+        }
+        let scene =
+            scene.map(|scene| Arc::new(Mutex::new(SceneCapture::new(scene, pose.position))));
         let mut physics = RapierBackend::new();
         let physics_world = physics
             .create_world(PhysicsWorldDesc::default())
@@ -151,6 +205,7 @@ impl RneBackend {
             noise: KeyedRandom::new(seed, 0x5255535444524956),
             seed,
             plant,
+            scene,
             fail_lidar_from: None,
         })
     }
@@ -206,6 +261,13 @@ impl SimulationBackend for RneBackend {
     }
     fn observe(&mut self, time: f64, tick: usize) -> Result<SensorFrame, String> {
         let truth = self.state();
+        if let Some(scene) = &self.scene {
+            let mut scene = scene.lock().map_err(|_| "native scene capture poisoned")?;
+            scene.clock = time;
+            scene
+                .observations
+                .push(json!({"time":time,"pose":pose_json(truth.pose)}));
+        }
         let body = self.world.get::<RigidBody>(self.ego).unwrap();
         let odometry = Some(Odometry {
             stamp: time,
@@ -255,6 +317,35 @@ impl SimulationBackend for RneBackend {
                 SensorNoiseKey::new(self.seed, 1, 1, tick as u64),
             ) {
                 Ok(cloud) => {
+                    if let Some(scene) = &self.scene {
+                        let mut channels = vec![scan_channel(
+                            &cloud.points_m,
+                            &cloud.ray_indices,
+                            mount.translation,
+                            0.6,
+                        )?];
+                        for (sensor, height) in [(2, 0.15), (3, 3.7)] {
+                            let mut diagnostic_mount = mount;
+                            diagnostic_mount.translation.y = height;
+                            let diagnostic = sample_lidar_checked(
+                                &raycaster,
+                                world,
+                                &diagnostic_mount,
+                                &spec,
+                                SensorNoiseKey::new(self.seed, 1, sensor, tick as u64),
+                            )
+                            .map_err(|error| {
+                                format!("native scene diagnostic acquisition: {error:?}")
+                            })?;
+                            channels.push(scan_channel(
+                                &diagnostic.points_m,
+                                &diagnostic.ray_indices,
+                                diagnostic_mount.translation,
+                                height,
+                            )?);
+                        }
+                        scene.lock().map_err(|_| "native scene capture poisoned")?.acquisitions.push(json!({"time":time,"pose":pose_json(truth.pose),"objects":self.objects(time),"channels":channels}));
+                    }
                     // RNE emits world-frame points; calibrate into body x-forward/y-left.
                     let inverse = mount.rotation.conjugate();
                     lidar = Some(LidarScan {
@@ -312,6 +403,23 @@ impl SimulationBackend for RneBackend {
                 Plant::Kinematic => ackermann_kinematics(&mut self.world, sub_dt),
                 Plant::Dynamic => vehicle_dynamics(&mut self.world, sub_dt),
             }
+            if let Some(scene) = &self.scene {
+                let mut scene = scene.lock().map_err(|_| "native scene capture poisoned")?;
+                let position = self.state().pose.position;
+                let previous = scene.motion_samples.last().unwrap().position;
+                let planar_speed = position.distance(previous) / (dt / substeps as f64);
+                // Native forward speed and lateral slip are integrated separately.
+                // Validate the total translation bound required by the scene guard.
+                if !planar_speed.is_finite() || planar_speed > 12.0 + 1e-8 {
+                    return Err(
+                        "native scene planar substep exceeds 12 m/s clearance-bound contract"
+                            .into(),
+                    );
+                }
+                scene.clock += dt / substeps as f64;
+                let time = scene.clock;
+                scene.motion_samples.push(MotionSample { time, position });
+            }
         }
         Ok(())
     }
@@ -331,9 +439,48 @@ pub fn run(scenario: Scenario, seed: u64, plant: Plant) -> Result<Run, String> {
         },
     )
 }
+/// Execute with actual static cuboid sensing and a separate conservative capsule evaluator.
+/// Scene geometry and auxiliary scans are never included in the operational replay header.
+pub fn run_with_scene(
+    scenario: Scenario,
+    seed: u64,
+    plant: Plant,
+    scene: Scene,
+) -> Result<(Run, serde_json::Value), String> {
+    let backend = RneBackend::new_with_scene(scenario.clone(), seed, plant, scene)?;
+    let capture = backend.scene.as_ref().unwrap().clone();
+    let config = backend.config();
+    let mut run = simulate_with_backend(
+        scenario,
+        seed,
+        backend,
+        config,
+        match plant {
+            Plant::Kinematic => "rne-kinematic-rapier-lidar",
+            Plant::Dynamic => "rne-dynamic-rapier-lidar",
+        },
+    )?;
+    let mut evidence = capture
+        .lock()
+        .map_err(|_| "native scene capture poisoned")?
+        .evidence(run.vehicle.radius);
+    evidence["backend"] = json!(run.backend);
+    evidence["seed"] = json!(seed);
+    evidence["scenario"] = json!(run.scenario.name);
+    if evidence["summary"]["passed"] != json!(true) {
+        run.summary.passed = false;
+        for failure in evidence["summary"]["failures"].as_array().unwrap() {
+            run.summary.failures.push(failure.as_str().unwrap().into());
+        }
+    }
+    Ok((run, evidence))
+}
 #[cfg(test)]
 mod tests {
     use super::*;
+    fn static_scene(center: [f64; 3], half: [f64; 3]) -> Scene {
+        Scene::from_json(&json!({"schema_version":1,"name":"native test geometry","static_cuboids":[{"id":"fixture","center_m":center,"half_extents_m":half,"yaw_rad":0.0}]}).to_string()).unwrap()
+    }
     fn scenario(name: &str) -> Scenario {
         serde_json::from_str(
             &std::fs::read_to_string(format!(
@@ -351,6 +498,196 @@ mod tests {
         let rotation = Quat::from_rotation_y(std::f64::consts::FRAC_PI_2);
         assert!((yaw_rad(rotation) - std::f64::consts::FRAC_PI_2).abs() < 1e-10);
         assert!(from_rne(rotation * Vec3::X).y > 0.99);
+    }
+    #[test]
+    fn overhead_scene_preserves_operational_trace_and_default_pipeline_header() {
+        let base = run(scenario("mission"), 7, Plant::Dynamic).unwrap();
+        let (with_scene, evidence) = run_with_scene(
+            scenario("mission"),
+            7,
+            Plant::Dynamic,
+            static_scene([30.0, 0.0, 4.5], [1.0, 3.0, 1.0]),
+        )
+        .unwrap();
+        assert!(with_scene.summary.passed, "{:?}", with_scene.summary);
+        assert_eq!(
+            serde_json::to_vec(&base).unwrap(),
+            serde_json::to_vec(&with_scene).unwrap()
+        );
+        let mut base_log = vec![];
+        let mut scene_log = vec![];
+        base.sensor_log
+            .as_ref()
+            .unwrap()
+            .write(&mut base_log)
+            .unwrap();
+        with_scene
+            .sensor_log
+            .as_ref()
+            .unwrap()
+            .write(&mut scene_log)
+            .unwrap();
+        assert_eq!(base_log, scene_log);
+        assert_eq!(
+            evidence["motion_samples"].as_array().unwrap().len(),
+            (with_scene.summary.steps - 1) * 10 + 1
+        );
+        assert_eq!(
+            evidence["observations"].as_array().unwrap().len(),
+            with_scene.summary.steps
+        );
+        assert!(
+            evidence["acquisitions"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|a| a["channels"][2]["ranges_m"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .any(|r| r.is_number()))
+        );
+    }
+    #[test]
+    fn low_blind_slab_is_diagnostic_only_and_rejected_by_capsule_evaluation() {
+        let base = run(scenario("mission"), 7, Plant::Dynamic).unwrap();
+        let (with_scene, evidence) = run_with_scene(
+            scenario("mission"),
+            7,
+            Plant::Dynamic,
+            static_scene([15.0, 0.0, 0.1], [1.0, 8.0, 0.1]),
+        )
+        .unwrap();
+        // Its top is below the existing primary plane. The unchanged pipeline
+        // reaches its goal, but the independent capsule evaluator must reject it.
+        assert_eq!(
+            serde_json::to_vec(&base.frames).unwrap(),
+            serde_json::to_vec(&with_scene.frames).unwrap()
+        );
+        assert!(with_scene.summary.reached_goal);
+        assert!(!with_scene.summary.passed);
+        assert_eq!(evidence["summary"]["passed"], json!(false));
+        assert_eq!(evidence["summary"]["min_clearance_m"], json!(0.0));
+        assert!(
+            evidence["summary"]["guard_overlap_intervals"]
+                .as_u64()
+                .unwrap()
+                > 0
+        );
+        assert!(
+            evidence["acquisitions"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|a| a["channels"][1]["ranges_m"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .any(|r| r.is_number()))
+        );
+    }
+    #[test]
+    fn cuboid_occludes_actor_in_actual_native_scan_then_reveals_after_mount_moves() {
+        let mut s = scenario("blocked");
+        s.objects[0].s = 20.0;
+        let mut backend = RneBackend::new_with_scene(
+            s,
+            7,
+            Plant::Dynamic,
+            static_scene([10.0, 0.0, 0.6], [0.3, 3.0, 0.6]),
+        )
+        .unwrap();
+        let hidden = backend.observe(0.0, 0).unwrap().lidar.unwrap();
+        assert!(
+            hidden
+                .points
+                .iter()
+                .any(|p| (p.x - 9.7).abs() < 0.03 && p.y.abs() < 0.1)
+        );
+        assert!(
+            hidden
+                .points
+                .iter()
+                .all(|p| p.distance(Vec2::new(20.0, 0.0)) > 1.05)
+        );
+        backend
+            .world
+            .get_mut::<Transform3>(backend.ego)
+            .unwrap()
+            .translation = to_rne(Vec2::new(15.0, 0.0));
+        let visible = backend.observe(0.1, 2).unwrap().lidar.unwrap();
+        assert!(
+            visible
+                .points
+                .iter()
+                .any(|p| (p.distance(Vec2::new(5.0, 0.0)) - 1.0).abs() < 0.03)
+        );
+    }
+    #[test]
+    fn ignored_sensing_cannot_pass_the_independent_native_capsule_guard() {
+        let mut backend = RneBackend::new_with_scene(
+            scenario("blocked"),
+            7,
+            Plant::Dynamic,
+            static_scene([5.0, 0.0, 0.6], [0.3, 3.0, 0.6]),
+        )
+        .unwrap();
+        for _ in 0..100 {
+            backend
+                .advance(
+                    ControlCommand {
+                        acceleration: 2.0,
+                        steering: 0.0,
+                    },
+                    0.05,
+                )
+                .unwrap();
+        }
+        assert!(backend.state().pose.position.x > 6.0);
+        let evidence = backend
+            .scene
+            .as_ref()
+            .unwrap()
+            .lock()
+            .unwrap()
+            .evidence(backend.config.vehicle.radius);
+        assert_eq!(evidence["summary"]["passed"], json!(false));
+        assert!(
+            evidence["summary"]["guard_overlap_intervals"]
+                .as_u64()
+                .unwrap()
+                > 0
+        );
+    }
+    #[test]
+    fn scene_guard_rejects_lateral_slip_exceeding_its_translation_bound() {
+        let mut backend = RneBackend::new_with_scene(
+            scenario("blocked"),
+            7,
+            Plant::Dynamic,
+            static_scene([35.0, 0.0, 0.6], [1.0, 3.0, 0.6]),
+        )
+        .unwrap();
+        backend
+            .world
+            .get_mut::<AckermannDrive>(backend.ego)
+            .unwrap()
+            .speed_m_s = 6.0;
+        backend
+            .world
+            .get_mut::<VehicleDynamics>(backend.ego)
+            .unwrap()
+            .lateral_velocity_m_s = 20.0;
+        let failure = backend
+            .advance(
+                ControlCommand {
+                    acceleration: 0.0,
+                    steering: 0.0,
+                },
+                0.05,
+            )
+            .unwrap_err();
+        assert!(failure.contains("12 m/s clearance-bound contract"));
     }
     #[test]
     fn rne_mission_and_stop_run_without_a_renderer() {
