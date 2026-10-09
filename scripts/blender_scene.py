@@ -9,7 +9,7 @@ from bpy_extras.object_utils import world_to_camera_view
 from mathutils import Vector
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from blender_assets import STYLE, barrel, car, cube, environment, material, stop_sign, traffic_signal
+from blender_assets import STYLE, barrel, car, cube, environment, material, stop_sign, traffic_signal, yield_sign
 
 
 def line(name, points, mat, width=0.04):
@@ -91,6 +91,18 @@ def main():
     cube('Ground plane', (100, 0, -.12), (1000, 1000, .2), grass)
     navigation = run['scenario'].get('navigation')
     edges = navigation['network']['edges'] if navigation else [run['route']]
+    intersection_specs = run['scenario'].get('yield_intersections', [])
+    if intersection_specs:
+        # These perpendicular streets are display geometry inferred from the
+        # known conflict rectangles, not extra simulator roads or obstacles.
+        edges = list(edges)
+        for spec in intersection_specs:
+            bounds = spec['conflict_bounds']
+            center_x = (bounds['min']['x']+bounds['max']['x'])/2
+            center_y = (bounds['min']['y']+bounds['max']['y'])/2
+            half_width = (bounds['max']['x']-bounds['min']['x'])/2
+            edges.append({'points':[{'x':center_x,'y':center_y+i*2} for i in range(-18,19)],
+                          'half_width':half_width})
     closures = {}
     roads = []
     for edge in edges:
@@ -116,7 +128,7 @@ def main():
     signal_specs = run['scenario'].get('traffic_signals', [])
     signal_models = {}
     stop_specs = run['scenario'].get('stop_signs', [])
-    if signal_specs or stop_specs:
+    if signal_specs or stop_specs or intersection_specs:
         lamp_materials = {'off':material('Inactive signal lens', (.014,.016,.018))}
         for color,rgb in [('Red',(.95,.015,.012)),('Yellow',(1,.53,.015)),('Green',(.018,.80,.10))]:
             mat = material('Active signal '+color, rgb)
@@ -148,6 +160,13 @@ def main():
             parent['stop_line_id']=mapped['id']
             a,_=route_at(mapped['route_s_m'],-width);b,_=route_at(mapped['route_s_m'],width)
             line('Mapped stop sign line '+mapped['id'],[(*a,.075),(*b,.075)],marking,.12)
+        for spec in intersection_specs:
+            mapped = spec['stop_line']; width = run['route']['half_width']
+            position,yaw = route_at(mapped['route_s_m'],width+1)
+            parent = yield_sign('Mapped yield sign '+mapped['id'],position,yaw)
+            parent['intersection_id'] = mapped['id']
+            a,_ = route_at(mapped['route_s_m'],-width); b,_ = route_at(mapped['route_s_m'],width)
+            line('Mapped yield line '+mapped['id'],[(*a,.075),(*b,.075)],marking,.10)
     bpy.ops.object.light_add(type='SUN', location=(0, 0, 20))
     sun = bpy.context.object
     sun.rotation_euler = (.5, -.4, -.35)
@@ -159,6 +178,14 @@ def main():
     scene.camera = camera
     ego = car('Recorded ego', run['vehicle']['radius'], blue, glass, tire, headlight, ego=True)
     dynamic_ids = {s['id'] for f in run['frames'] for s in f.get('traffic', [])}
+    if intersection_specs:
+        first_positions = {}
+        for frame in run['frames']:
+            for actor in frame['objects']:
+                p = actor['position']
+                first = first_positions.setdefault(actor['id'],p)
+                if math.hypot(p['x']-first['x'],p['y']-first['y']) > 1e-6:
+                    dynamic_ids.add(actor['id'])
     actors = {}
     vehicle_models = []
     actor_paints = [orange, material('Van ivory', (.72,.75,.68), .2, .3),
@@ -171,7 +198,7 @@ def main():
                 number = len(vehicle_models)
                 variant = request.get('traffic_models', ['hatchback'])[number % len(request.get('traffic_models', ['hatchback']))]
                 paint = actor_paints[number % len(actor_paints)] if len(request.get('traffic_models', ['hatchback'])) > 1 else orange
-                actors[actor['id']] = car('Recorded reactive actor', actor['radius'], paint, glass, tire, headlight, variant=variant)
+                actors[actor['id']] = car('Recorded traffic actor' if intersection_specs else 'Recorded reactive actor', actor['radius'], paint, glass, tire, headlight, variant=variant)
                 vehicle_models.append({'id': actor['id'], 'model': variant, 'color': list(paint.diffuse_color[:3])})
             else:
                 actors[actor['id']] = barrel(actor['radius'], orange, marking)
@@ -237,12 +264,22 @@ def main():
                 for wheel in obj.children:
                     if wheel.get('rolling_wheel'):
                         wheel.rotation_euler.y = actor_distances[actor['id']]/obj['wheel_radius']
-            if actor['id'] in dynamic_ids and index > 0:
-                previous = next((a for a in run['frames'][index-1]['objects'] if a['id'] == actor['id']), None)
+            if actor['id'] in dynamic_ids:
+                previous = next((a for a in run['frames'][index-1]['objects'] if a['id'] == actor['id']), None) if index > 0 else None
                 if previous:
                     dx, dy = actor['position']['x']-previous['position']['x'], actor['position']['y']-previous['position']['y']
                     if math.hypot(dx, dy) > 1e-6:
                         obj.rotation_euler.z = math.atan2(dy, dx)
+                elif intersection_specs:
+                    # First display pose uses the next actual recorded movement;
+                    # it never uses a scripted actor velocity or advances time.
+                    for later in run['frames'][index+1:]:
+                        following = next((a for a in later['objects'] if a['id'] == actor['id']),None)
+                        if following:
+                            dx,dy = following['position']['x']-actor['position']['x'],following['position']['y']-actor['position']['y']
+                            if math.hypot(dx,dy) > 1e-6:
+                                obj.rotation_euler.z = math.atan2(dy,dx)
+                                break
         set_line(planned, [(p['position']['x'], p['position']['y'], .11) for p in frame['trajectory']['points']])
         forecast = frame['predictions'][0]['positions'] if frame['predictions'] else []
         set_line(predictions, [(p['x'], p['y'], .12) for p in forecast])
@@ -267,7 +304,8 @@ def main():
                                                    'ego_model': 'hatchback', 'traffic_models': vehicle_models,
                                                    'camera': request.get('camera', 'ego'),
                                                    'mapped_signal_ids': list(signal_models),
-                                                   'mapped_stop_sign_ids': [s['id'] for s in stop_specs]}, indent=2)+'\n')
+                                                   'mapped_stop_sign_ids': [s['id'] for s in stop_specs],
+                                                   'mapped_intersection_ids': [s['stop_line']['id'] for s in intersection_specs]}, indent=2)+'\n')
     if request.get('scene_output'):
         bpy.ops.wm.save_as_mainfile(filepath=request['scene_output'])
 

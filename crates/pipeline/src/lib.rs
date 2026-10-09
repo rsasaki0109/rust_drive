@@ -1,8 +1,10 @@
 //! Shared sensor-to-command stack. No simulator, truth objects or physical world types.
+pub mod intersections;
 pub mod navigation;
 pub mod replay;
 pub mod stop_signs;
 pub mod traffic_controls;
+use intersections::{IntersectionStatus, YieldIntersection, YieldIntersections};
 use navigation::{
     NavigationConfig, NavigationPhase, NavigationStatus, NavigationUpdate, Navigator,
 };
@@ -47,6 +49,8 @@ pub struct PipelineConfig {
     pub stop_lines: Vec<StopLine>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub stop_signs: Vec<StopLine>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub yield_intersections: Vec<YieldIntersection>,
 }
 impl PipelineConfig {
     pub fn new(route: Route, initial_pose: Pose, vehicle: VehicleConfig) -> Self {
@@ -60,6 +64,7 @@ impl PipelineConfig {
             navigation: None,
             stop_lines: vec![],
             stop_signs: vec![],
+            yield_intersections: vec![],
         }
     }
     pub fn validate(&self) -> Result<(), String> {
@@ -92,9 +97,11 @@ impl PipelineConfig {
             .stop_lines
             .iter()
             .chain(&self.stop_signs)
+            .chain(self.yield_intersections.iter().map(|z| &z.stop_line))
             .cloned()
             .collect();
         validate_stop_lines(&controls, &self.route, self.vehicle.radius)?;
+        intersections::validate(&self.yield_intersections, &self.route, self.vehicle.radius)?;
         if self.stop_signs.iter().enumerate().any(|(i, line)| {
             self.stop_signs[..i]
                 .iter()
@@ -183,6 +190,8 @@ pub struct PipelineOutput {
     pub traffic_controls: Option<TrafficControlStatus>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub stop_signs: Option<StopSignStatus>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub intersections: Option<IntersectionStatus>,
 }
 /// Owns algorithm state; adapters supply observations and apply resulting commands.
 pub struct DrivingPipeline {
@@ -201,6 +210,7 @@ pub struct DrivingPipeline {
     navigator: Option<Navigator>,
     traffic_controls: Option<TrafficControls>,
     stop_signs: Option<StopSigns>,
+    intersections: Option<YieldIntersections>,
 }
 impl DrivingPipeline {
     pub fn new(config: PipelineConfig) -> Result<Self, String> {
@@ -209,6 +219,9 @@ impl DrivingPipeline {
             .then(|| TrafficControls::new(config.stop_lines.clone()));
         let stop_signs =
             (!config.stop_signs.is_empty()).then(|| StopSigns::new(config.stop_signs.clone()));
+        let intersections = (!config.yield_intersections.is_empty()).then(|| {
+            YieldIntersections::new(config.yield_intersections.clone(), config.route.clone())
+        });
         let mut planner = LatticePlanner::default();
         planner.cruise_speed = config.cruise_speed;
         planner.vehicle = config.vehicle;
@@ -267,6 +280,7 @@ impl DrivingPipeline {
             navigator,
             traffic_controls,
             stop_signs,
+            intersections,
         })
     }
     /// Clock errors return Err before mutation; callers must apply emergency braking on Err.
@@ -405,6 +419,16 @@ impl DrivingPipeline {
                 health.is_empty(),
             );
         }
+        if let Some(zones) = &mut self.intersections {
+            zones.step(
+                input.time,
+                estimate,
+                self.config.vehicle.radius,
+                &predictions,
+                self.last_lidar,
+                health.is_empty(),
+            );
+        }
         let stop_route = self
             .navigator
             .as_ref()
@@ -418,7 +442,11 @@ impl DrivingPipeline {
                     .stop_signs
                     .as_ref()
                     .and_then(|c| c.planning_route(&self.config.route));
-                [signal_route, sign_route]
+                let intersection_route = self
+                    .intersections
+                    .as_ref()
+                    .and_then(|c| c.planning_route(&self.config.route));
+                [signal_route, sign_route, intersection_route]
                     .into_iter()
                     .flatten()
                     .min_by(|a, b| a.length().total_cmp(&b.length()))
@@ -453,14 +481,26 @@ impl DrivingPipeline {
         {
             trajectory.mode = DrivingMode::Yield;
         }
+        if self
+            .intersections
+            .as_ref()
+            .is_some_and(|s| s.endpoint().is_some())
+            && trajectory.mode != DrivingMode::Emergency
+        {
+            trajectory.mode = DrivingMode::Yield;
+        }
         let command = if health.is_empty() {
             let mut requested = self.controller.control(estimate, &trajectory, dt);
             if self
                 .stop_signs
                 .as_ref()
                 .is_some_and(|s| s.holding_brake(&self.config.route, estimate))
+                || self
+                    .intersections
+                    .as_ref()
+                    .is_some_and(|s| s.holding_brake(&self.config.route, estimate))
             {
-                // Hold real brake pressure while the stop timer runs. A noisy
+                // Keep requesting braking while waiting. A noisy
                 // low-speed feedback correction must not creep through the hold.
                 requested.acceleration = requested.acceleration.min(-0.5);
             }
@@ -496,6 +536,7 @@ impl DrivingPipeline {
             navigation: self.navigator.as_ref().map(Navigator::status),
             traffic_controls: self.traffic_controls.as_ref().map(TrafficControls::status),
             stop_signs: self.stop_signs.as_ref().map(StopSigns::status),
+            intersections: self.intersections.as_ref().map(YieldIntersections::status),
         })
     }
     pub fn occupied_cells(&self) -> Vec<Vec2> {

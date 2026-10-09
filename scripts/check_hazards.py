@@ -13,9 +13,14 @@ CASES = {
     'reference': ['occluded-crossing', 'cut-in', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue', 'traffic-follower-deadline', 'traffic-fleet-queue', 'signal-red-green', 'signal-red-stop', 'signal-stale-stop', 'signal-stale-recovery', 'signal-two-stops', 'signal-approach-change', 'stop-sign-single', 'stop-sign-two', 'stop-sign-signal', 'stop-sign-obstacle', 'stop-sign-gnss-recovery'],
     'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue', 'traffic-follower-deadline', 'traffic-fleet-queue', 'signal-red-green', 'signal-red-stop', 'signal-stale-stop', 'signal-stale-recovery', 'signal-two-stops', 'signal-approach-change', 'stop-sign-single', 'stop-sign-two', 'stop-sign-signal', 'stop-sign-obstacle', 'stop-sign-gnss-recovery'],
 }
+INTERSECTION_CASES = ['intersection-crossing', 'intersection-successive', 'intersection-blocked', 'intersection-gnss-recovery', 'intersection-stop-sign']
+for cases in CASES.values():
+    cases.extend(INTERSECTION_CASES)
+
 # Fixed regression floors, chosen against the preceding measured fixture results.
 # They are simulation test constraints, not a universal safe-distance specification.
 CLEARANCE_FLOORS_M = {
+    **dict.fromkeys(INTERSECTION_CASES, 1.0),
     **dict.fromkeys(['stop-sign-single', 'stop-sign-two', 'stop-sign-signal', 'stop-sign-obstacle', 'stop-sign-gnss-recovery'],1.0),
     **dict.fromkeys(['signal-red-green','signal-red-stop','signal-stale-stop','signal-stale-recovery','signal-two-stops','signal-approach-change', 'stop-sign-single', 'stop-sign-two', 'stop-sign-signal', 'stop-sign-obstacle', 'stop-sign-gnss-recovery'],1.0),
     'traffic-lead-stop': 1.0, 'traffic-follower-brake': 1.0, 'traffic-queue': 1.0, 'traffic-follower-deadline': 1.0, 'traffic-fleet-queue': 1.0,
@@ -203,6 +208,209 @@ def check_stop_signs(run, log):
             'continuous_close_line_holds_s':longest,'driver_releases_s':releases,
             'stopline_crossings':crossings,'min_unreleased_margin_m':minimum,
             'sensor_fault_timer_reset_exercised':fault_reset,'passed':True}
+
+
+def segment_rectangle_distance_squared(a, b, bounds):
+    """Minimize point-to-rectangle distance along each linear path segment exactly."""
+    lower, upper = xy(bounds['min']), xy(bounds['max'])
+    start, finish = xy(a), xy(b)
+    delta = [finish[i]-start[i] for i in range(2)]
+    split = [0.0, 1.0]
+    for axis in range(2):
+        if delta[axis]:
+            split.extend(t for edge in [lower[axis], upper[axis]]
+                         if 0 < (t := (edge-start[axis])/delta[axis]) < 1)
+    split = sorted(set(split))
+    def distance(t):
+        return sum(max(lower[i]-(start[i]+delta[i]*t), 0,
+                       start[i]+delta[i]*t-upper[i])**2 for i in range(2))
+    result = min(map(distance, split))
+    for left, right in zip(split, split[1:]):
+        middle = (left+right)/2
+        terms = [(start[i]-edge, delta[i]) for i in range(2)
+                 if (edge := lower[i] if start[i]+delta[i]*middle < lower[i]
+                     else upper[i] if start[i]+delta[i]*middle > upper[i] else None) is not None]
+        quadratic = sum(slope*slope for _, slope in terms)
+        if quadratic:
+            optimum = -sum(offset*slope for offset, slope in terms)/quadratic
+            result = min(result, distance(min(right, max(left, optimum))))
+    return result
+
+
+def check_intersections(run, log):
+    """Separate physical right-of-way evidence from sensor-derived permission evidence."""
+    with log.open() as stream:
+        config = json.loads(next(stream))['header']['config']
+        ticks = [r['tick'] for line in stream if (r := json.loads(line))['kind'] == 'tick']
+    zones = run['scenario']['yield_intersections']
+    frames = run['frames']
+    if config.get('yield_intersections') != zones:
+        raise ValueError('operational yield map differs from declared map geometry')
+    forbidden = {'objects', 'traffic', 'traffic_signals', 'gnss_bias_windows',
+                 'lidar_failure_windows', 'signal_dropout_windows', 'schedule', 'phases'}
+    if forbidden.intersection(config):
+        raise ValueError('actor/schedule/fault truth entered the operational yield configuration')
+    if (any(abs(p['y']) > 1e-9 for p in run['route']['points'])
+            or len(frames) != len(ticks) or len(ticks) != run['summary']['steps']):
+        raise ValueError('yield evidence lacks the declared straight route or full physical ticks')
+    radius = run['vehicle']['radius']
+    physical = {z['stop_line']['id']: {'ego': [], 'actors': {}, 'open': {}} for z in zones}
+    clear_since = dict.fromkeys(physical)
+    clear_scans = {id: set() for id in physical}
+    hold_since = dict.fromkeys(physical)
+    longest_hold = dict.fromkeys(physical, 0.0)
+    releases = {id: [] for id in physical}
+    committed = set()
+    passed = set()
+    crossed = set()
+    crossings = []
+    blocked_ticks = 0
+    accepted_scans = 0
+    fault_reset = False
+    last_scan = None
+    minimum_margin = math.inf
+    previous_status = {}
+    def overlaps(position, r, bounds):
+        return segment_rectangle_distance_squared(position, position, bounds) <= r*r+1e-12
+    for index, (frame, tick) in enumerate(zip(frames, ticks)):
+        now, inp, out = frame['time'], tick['input'], tick['expected']
+        if abs(now-index*.05) > 1e-8 or abs(inp['time']-now) > 1e-8 or out['time'] != inp['time']:
+            raise ValueError('yield evidence changed the physical/control acquisition clock')
+        if any(frame[key] != out[key] for key in ['estimate', 'tracks', 'predictions', 'trajectory', 'command', 'emergency']):
+            raise ValueError('yield physical/control frames do not retain the same sensor-derived output')
+        status = out['intersections']
+        if frame['intersections'] != status or [s['id'] for s in status['zones']] != list(physical):
+            raise ValueError('yield diagnostics disagree with the map or physical telemetry')
+        scan = inp.get('lidar')
+        new_scan = bool(scan and not inp['lidar_failed'] and math.isfinite(scan['stamp'])
+                        and 0 <= scan['stamp'] <= now and (last_scan is None or scan['stamp'] > last_scan)
+                        and len(scan['points']) <= 20_000
+                        and all(all(math.isfinite(v) for v in xy(p)) and math.hypot(*xy(p)) <= 200
+                                for p in scan['points']))
+        if new_scan:
+            last_scan = scan['stamp']
+            accepted_scans += 1
+        pose = out['estimate']['pose']
+        aligned = abs(math.remainder(pose['yaw'], 2*math.pi)) < .2 and abs(pose['position']['y'])+radius <= run['route']['half_width']
+        healthy = not out['health'] and last_scan is not None and now-last_scan <= .15+1e-9 and aligned
+        front = frame['truth']['pose']['position']['x']+radius
+        estimated_front = out['estimate']['pose']['position']['x']+radius
+        for zone, state in zip(zones, status['zones']):
+            id, bounds = state['id'], zone['conflict_bounds']
+            line = zone['stop_line']['route_s_m']
+            evidence = physical[id]
+            occupants = {'ego': (frame['truth']['pose']['position'], radius)}
+            occupants.update({o['id']: (o['position'], o['radius']) for o in frame['objects']})
+            active = {body for body, (position, r) in occupants.items() if overlaps(position, r, bounds)}
+            for body in active:
+                evidence['open'].setdefault(body, now)
+            for body in list(evidence['open']):
+                if body not in active:
+                    interval = [evidence['open'].pop(body), now]
+                    if body == 'ego': evidence['ego'].append(interval)
+                    else: evidence['actors'].setdefault(body, []).append(interval)
+            blockers = []
+            for prediction in out['predictions']:
+                dt = prediction['dt']
+                points = prediction['positions']
+                horizon = min(len(points)-1, math.floor((8.0+1e-9)/dt))
+                inflation = prediction['radius']+.5
+                conservative = {'min': {axis: bounds['min'][axis]-inflation for axis in ['x', 'y']},
+                                'max': {axis: bounds['max'][axis]+inflation for axis in ['x', 'y']}}
+                if any(segment_rectangle_distance_squared(a, b, conservative) <= 1e-12
+                       for a, b in zip(points[:horizon+1], points[1:horizon+1])):
+                    blockers.append(prediction['id'])
+            blockers.sort()
+            if not state['committed']:
+                if sorted(state['blocking_tracks']) != blockers:
+                    raise ValueError('yield blocker diagnostics do not match observed swept forecasts')
+                if not healthy or blockers:
+                    if not healthy:
+                        fault_reset = True
+                    clear_since[id] = None
+                    clear_scans[id].clear()
+                    if state['clear_since'] is not None or state['phase'] != 'Waiting':
+                        raise ValueError('fault/conflict did not revoke uncommitted yield permission')
+                else:
+                    if new_scan:
+                        if clear_since[id] is None: clear_since[id] = last_scan
+                        clear_scans[id].add(last_scan)
+                    if state['clear_since'] != clear_since[id]:
+                        raise ValueError('clear permission timer was refreshed without continuous evidence')
+                    ready = (clear_since[id] is not None and last_scan-clear_since[id]+1e-9 >= 1.0
+                             and len(clear_scans[id]) >= 3)
+                    if (state['phase'] == 'Proceeding') != ready:
+                        raise ValueError('yield permission bypassed or ignored the clear scan confirmation gate')
+                blocked_ticks += bool(blockers)
+                if state['phase'] == 'Waiting':
+                    minimum_margin = min(minimum_margin, line-front)
+                holding = (state['phase'] == 'Waiting' and 0 <= line-front <= 3.5
+                           and abs(frame['truth']['speed']) < .1)
+                if holding:
+                    if hold_since[id] is None: hold_since[id] = now
+                    longest_hold[id] = max(longest_hold[id], now-hold_since[id])
+                else: hold_since[id] = None
+            if state['phase'] == 'Proceeding' and previous_status.get(id, {}).get('phase') != 'Proceeding':
+                releases[id].append(now)
+            if state['committed'] and id not in committed:
+                if (not healthy or blockers or estimated_front < line-1e-9
+                        or clear_since[id] is None or now-clear_since[id]+1e-9 < 1
+                        or len(clear_scans[id]) < 3):
+                    raise ValueError('intersection entry committed without healthy confirmed permission')
+                committed.add(id)
+            if id in committed and not state['committed']:
+                raise ValueError('intersection commitment reversed after observed front entry')
+            if state['phase'] == 'Passed':
+                if id not in committed or out['estimate']['pose']['position']['x']-radius < zone['exit_s_m']-1e-9:
+                    raise ValueError('yield zone marked passed before estimated rear cleared its exit')
+                passed.add(id)
+            if id in passed and state['phase'] != 'Passed':
+                raise ValueError('passed yield zone became active again')
+            if id not in crossed and front >= line:
+                if state['phase'] not in ['Proceeding', 'Passed'] or not healthy:
+                    raise ValueError('physical front crossed the yield line without healthy permission')
+                crossed.add(id)
+                crossings.append({'id': id, 'time': now})
+            previous_status[id] = state
+    gaps = []
+    occupancies = {}
+    for zone in zones:
+        id = zone['stop_line']['id']
+        evidence = physical[id]
+        for body, start in evidence['open'].items():
+            if body == 'ego': evidence['ego'].append([start, frames[-1]['time']])
+            else: evidence['actors'].setdefault(body, []).append([start, frames[-1]['time']])
+        for ego in evidence['ego']:
+            for intervals in evidence['actors'].values():
+                for actor in intervals:
+                    gap = (actor[0]-ego[1] if ego[1] <= actor[0] else ego[0]-actor[1]
+                           if actor[1] <= ego[0] else -(min(ego[1], actor[1])-max(ego[0], actor[0])))
+                    gaps.append(gap)
+        occupancies[id] = {'ego': evidence['ego'], 'actors': evidence['actors']}
+    min_gap = min(gaps) if gaps else None
+    reported = run['summary'].get('intersection_min_gap_s')
+    if ((reported is None) != (min_gap is None)
+            or (reported is not None and abs(reported-min_gap) > 1e-8)
+            or any(gap+1e-9 < 2.0 for gap in gaps)
+            or run['summary'].get('intersection_violations', 0) != 0):
+        raise ValueError('physical intersection occupancy violates the unchanged two-second gap')
+    if not accepted_scans or not blocked_ticks or minimum_margin < 1.0:
+        raise ValueError('yield run lacks sensed conflicts or a physical stop-line clearance')
+    if run['scenario']['expected'] == 'goal':
+        if len(crossed) != len(zones) or len(passed) != len(zones) or not all(e['ego'] for e in physical.values()):
+            raise ValueError('goal run did not actually cross and clear every conflict zone')
+    elif crossed or any(e['ego'] for e in physical.values()):
+        raise ValueError('blocked fixture entered its occupied conflict zone')
+    if any(duration < 2.0-1e-8 for duration in longest_hold.values()):
+        raise ValueError('fixture did not exercise a real sustained near-line yield')
+    if run['scenario'].get('gnss_bias_windows') and not fault_reset:
+        raise ValueError('GNSS fixture did not exercise revoked uncommitted permission during a sensor fault')
+    return {'control_ticks': len(ticks), 'accepted_lidar_scans': accepted_scans,
+            'observed_blocked_ticks': blocked_ticks, 'permission_releases_s': releases,
+            'continuous_near_line_holds_s': longest_hold, 'min_waiting_stopline_margin_m': minimum_margin,
+            'stopline_crossings': crossings, 'physical_occupancies_s': occupancies,
+            'min_physical_gap_s': min_gap, 'sensor_fault_permission_reset_exercised': fault_reset,
+            'truth_labels_absent_from_pipeline': True, 'passed': True}
 
 
 def check_navigation(run, case):
@@ -796,6 +1004,7 @@ def main():
                           and summary.get('traffic_collisions', 0) == 0 and summary.get('traffic_road_violations', 0) == 0
                           and summary.get('closure_violations', 0) == 0 and summary.get('signal_violations', 0) == 0
                           and summary.get('stop_sign_violations', 0) == 0
+                          and summary.get('intersection_violations', 0) == 0
                           and row.get('replay', {}).get('verified') is True
                           and row['replay']['ticks'] == summary['steps'])
                     row['speed_profiles'] = check_speed_profiles(output/'sensors.jsonl')
@@ -810,6 +1019,8 @@ def main():
                         row['tracking_regression_passed'] = summary['emergency_steps'] <= 20
                         ok &= row['tracking_regression_passed']
                     run = json.loads((output/'run.json').read_text())
+                    if run['scenario'].get('yield_intersections'):
+                        row['intersections'] = check_intersections(run, output/'sensors.jsonl')
                     if run['scenario'].get('stop_signs'):
                         row['stop_signs'] = check_stop_signs(run, output/'sensors.jsonl')
                     if run['scenario'].get('traffic_signals'):

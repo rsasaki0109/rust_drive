@@ -1,0 +1,35 @@
+{
+  "name": "Intersection Blocked",
+  "duration": 40,
+  "road_length": 100,
+  "half_width": 2.1,
+  "expected": "stop",
+  "cruise_speed": 4,
+  "min_clearance_m": 1.0,
+  "objects": [
+    {
+      "s": 45,
+      "lateral": 0,
+      "radius": 1
+    }
+  ],
+  "yield_intersections": [
+    {
+      "stop_line": {
+        "id": "yield-a",
+        "route_s_m": 35
+      },
+      "conflict_bounds": {
+        "min": {
+          "x": 42,
+          "y": -2.1
+        },
+        "max": {
+          "x": 48,
+          "y": 2.1
+        }
+      },
+      "exit_s_m": 48
+    }
+  ]
+}

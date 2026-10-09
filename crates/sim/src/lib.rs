@@ -1,8 +1,11 @@
 //! Deterministic closed-loop simulator. Only sensor observations enter the stack.
+pub mod intersections;
 pub mod signals;
 pub mod stop_signs;
 pub mod traffic;
+use intersections::IntersectionRuleEvaluator;
 use rustdrive_core::*;
+use rustdrive_pipeline::intersections::{IntersectionStatus, YieldIntersection};
 use rustdrive_pipeline::navigation::{NavigationConfig, NavigationStatus, NavigationUpdate};
 use rustdrive_pipeline::replay::SensorLog;
 use rustdrive_pipeline::stop_signs::StopSignStatus;
@@ -106,6 +109,8 @@ pub struct Scenario {
     pub signal_dropout_windows: Vec<SignalDropout>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub stop_signs: Vec<StopLine>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub yield_intersections: Vec<YieldIntersection>,
 }
 impl Scenario {
     pub fn validate(&self) -> Result<(), String> {
@@ -319,6 +324,8 @@ pub struct Frame {
     pub traffic_controls: Option<TrafficControlStatus>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub stop_signs: Option<StopSignStatus>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub intersections: Option<IntersectionStatus>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Summary {
@@ -357,6 +364,10 @@ pub struct Summary {
     pub stop_sign_violations: usize,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub stop_sign_min_margin_m: Option<f64>,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub intersection_violations: usize,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub intersection_min_gap_s: Option<f64>,
 }
 fn is_zero(n: &usize) -> bool {
     *n == 0
@@ -543,6 +554,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     }
     config.motion_limits = scenario.motion_limits;
     config.stop_signs = scenario.stop_signs.clone();
+    config.yield_intersections = scenario.yield_intersections.clone();
     config.stop_lines = scenario
         .traffic_signals
         .iter()
@@ -624,6 +636,7 @@ pub fn simulate_with_backend(
     let mut closure_violations = 0;
     let mut signal_rules = RuleEvaluator::default();
     let mut stop_rules = StopRuleEvaluator::new(scenario.stop_signs.len());
+    let mut intersection_rules = IntersectionRuleEvaluator::new(scenario.yield_intersections.len());
     let mut evaluation_closures = scenario
         .navigation
         .as_ref()
@@ -666,6 +679,13 @@ pub fn simulate_with_backend(
             traffic_route.project(truth.pose.position).0 + vehicle.radius,
             truth.speed,
         );
+        intersection_rules.observe(
+            &scenario.yield_intersections,
+            time,
+            truth.pose.position,
+            vehicle.radius,
+            &objects,
+        );
         let mut input = backend.observe(time, i)?;
         input.traffic_signal = signals::observe(&scenario, time, i);
         // Fault injection changes observations only, using the acquisition clock.
@@ -698,6 +718,7 @@ pub fn simulate_with_backend(
         let localization_status = result.localization;
         let traffic_control_status = result.traffic_controls.clone();
         let stop_sign_status = result.stop_signs.clone();
+        let intersection_status = result.intersections.clone();
         if let Some(status) = &navigation_status
             && status.switches > navigation_switches
         {
@@ -780,6 +801,7 @@ pub fn simulate_with_backend(
         if !traffic.is_empty()
             || !scenario.traffic_signals.is_empty()
             || !scenario.stop_signs.is_empty()
+            || !scenario.yield_intersections.is_empty()
             || i.is_multiple_of(2)
             || finished
             || goal_since == Some(time)
@@ -802,6 +824,7 @@ pub fn simulate_with_backend(
                 localization: localization_status,
                 traffic_controls: traffic_control_status,
                 stop_signs: stop_sign_status,
+                intersections: intersection_status,
             });
         }
         if finished {
@@ -894,6 +917,13 @@ pub fn simulate_with_backend(
             "localization max error {error_max:.3} m exceeds 1 m"
         ));
     }
+    intersection_rules.finish((steps - 1) as f64 * dt);
+    if intersection_rules.violations != 0 {
+        failures.push(format!(
+            "{} physical intersection priority violations (required temporal gap 2.0 s)",
+            intersection_rules.violations
+        ));
+    }
     if signal_rules.violations != 0 {
         failures.push(format!(
             "{} nonpermissive physical stop-line crossings",
@@ -943,6 +973,8 @@ pub fn simulate_with_backend(
         signal_min_stopline_margin_m: signal_rules.minimum_nonpermissive_margin_m,
         stop_sign_violations: stop_rules.violations,
         stop_sign_min_margin_m: stop_rules.minimum_unreleased_margin_m,
+        intersection_violations: intersection_rules.violations,
+        intersection_min_gap_s: intersection_rules.minimum_gap_s,
     };
     Ok(Run {
         backend: source.to_string(),

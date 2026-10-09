@@ -58,7 +58,7 @@ The integration has its own lockfile and does not enlarge the default workspace 
 bash scripts/check-hazards.sh
 ```
 
-After RNE setup, this CPU-only command runs occlusion, lateral crossings, multiple blocked alternatives, low-friction avoidance and low-friction stopping across seeds 1, 7 and 42. It checks physical outcomes and recomputes every sensor log. All 198 positive local reference/RNE scenario runs pass, retaining the preceding 168 and adding 30 stop-sign episodes. These include live navigation, GNSS faults, reactive traffic, infrastructure signals and mapped stop-sign holds. Fixed minimum-clearance floors also guard the fixtures. The planner computes bounded acceleration profiles, uses their arrival times for circular sweeps, and rechecks retimed stops and stationary holds. The suite also checks profile kinematics independently. [Current observed-braking results](docs/observed-braking.md); [reactive-traffic baseline](docs/reactive-traffic.md); [terminal-stop baseline](docs/terminal-stopping.md); [GNSS gating baseline](docs/gnss-robustness.md); [tracking improvements](docs/tracking.md); [earlier swept-check regressions](docs/swept-planning.md).
+After RNE setup, this CPU-only command runs occlusion, lateral crossings, multiple blocked alternatives, low-friction avoidance and low-friction stopping across seeds 1, 7 and 42. It checks physical outcomes and recomputes every sensor log. All **228 positive local runs** pass (111 reference / 117 native RNE), retaining the preceding 198 and adding 30 mapped priority-crossing episodes. These include live navigation, GNSS faults, reactive traffic, infrastructure signals, stop-sign holds and basic fixed-route yielding. Fixed minimum-clearance floors also guard the fixtures. The planner computes bounded acceleration profiles, uses their arrival times for circular sweeps, and rechecks retimed stops and stationary holds. The suite also checks profile kinematics independently. [Current intersection evidence](docs/intersections.md); [observed-braking results](docs/observed-braking.md); [reactive-traffic baseline](docs/reactive-traffic.md); [terminal-stop baseline](docs/terminal-stopping.md); [GNSS gating baseline](docs/gnss-robustness.md); [tracking improvements](docs/tracking.md); [earlier swept-check regressions](docs/swept-planning.md).
 
 The original short follower fixture now completes its eight-second goal residence within 65 s in both plants across all three seeds. Two additional RNE cases with a five-meter follower sensing range fail the unchanged 1 m clearance floor and remain excluded from the positive count. [Measured changes and limitations](docs/observed-braking.md).
 
@@ -108,16 +108,27 @@ cargo run --release --locked --bin rustdrive -- run \
 
 ![Actual RNE mapped stop-sign hold and restart, rendered in 3D](assets/stop-sign-demo.gif)
 
-Ego now holds near a mapped stop line for two continuous healthy seconds before restarting. Distant/rolling stops and sensor-fault time cannot satisfy the measured stop timer. Five fixtures cover one/two stops, a red signal, a sensed blockage and GNSS recovery in both plants across three seeds. Independent actual-front/actual-speed checks reject crossings without a complete physical stop. Map signs are known configuration; camera sign detection and right-of-way reasoning remain future work. [Commands, GIF provenance, measured results and limits](docs/stop-signs.md).
+Ego now holds near a mapped stop line for two continuous healthy seconds before restarting. Distant/rolling stops and sensor-fault time cannot satisfy the measured stop timer. Five fixtures cover one/two stops, a red signal, a sensed blockage and GNSS recovery in both plants across three seeds. Independent actual-front/actual-speed checks reject crossings without a complete physical stop. Map signs are known configuration; camera sign detection and general right-of-way reasoning remain future work. [Commands, GIF provenance, measured results and limits](docs/stop-signs.md).
 
 ```sh
 cargo run --release --locked --bin rustdrive -- run \
   --scenario scenarios/stop-sign-single.json --seed 7 --output artifacts/stop-signs
 ```
 
+## Yielding to priority cross traffic
+
+![Actual RNE priority-crossing episode rendered from recorded positions](assets/intersection-demo.gif)
+
+Known map conflict rectangles now constrain ego's fixed route when LiDAR-derived predictions enter the priority crossing. Fresh healthy sensing and a continuous clear interval release the constraint; predicted traffic may block entry even before it physically reaches the junction. The existing collision planner remains active after release. This is basic mapped yielding, with no arrival-order negotiation, traffic-light recognition or priority decisions by other actors. [Run, physical acceptance, GIF provenance and limitations](docs/intersections.md).
+
+```sh
+cargo run --release --locked --bin rustdrive -- run \
+  --scenario scenarios/intersection-crossing.json --seed 7 --output artifacts/intersection
+```
+
 ## Mapped destinations and closure detours
 
-The same five-node map supports an eastern destination, a southern branch and a known-closure detour. Route search supplies a centerline to local planning. Live closure snapshots can trigger a stop before the fork and a detour handover; a reopened detour can resume a no-route hold. Mapped signals and stop signs operate on fixed routes; intersection priority and control remapping during live handover remain future work.
+The same five-node map supports an eastern destination, a southern branch and a known-closure detour. Route search supplies a centerline to local planning. Live closure snapshots can trigger a stop before the fork and a detour handover; a reopened detour can resume a no-route hold. Mapped signals, stop signs and basic priority yielding operate on fixed routes; general priority negotiation and control remapping during live handover remain future work.
 
 ```sh
 cargo run --release --locked --bin rustdrive -- run \
@@ -172,7 +183,7 @@ cargo run --release --locked --bin rustdrive -- run \
   --scenario scenarios/lidar-fault.json --seed 7 --output artifacts/lidar-fault
 ```
 
-CI checks formatting, Clippy, the workspace test suite, release builds, and the closed-loop demo on Linux, macOS, and Windows, plus GIF generation and the pinned CPU-only RNE integration on Linux. All five jobs passed for the preceding signal revision `de0faac7` in [run 37914908056](https://github.com/rsasaki0109/rust_drive/actions/runs/37914908056). The RNE job also renders real mission, three-vehicle fleet, signal-stop and stop-sign frames in 3D on CPU and exports editable scenes. See [validation and limitations](docs/validation.md) for the checks actually executed and the initial infrastructure/toolchain failures.
+CI checks formatting, Clippy, the workspace test suite, release builds, and the closed-loop demo on Linux, macOS, and Windows, plus GIF generation and the pinned CPU-only RNE integration on Linux. All five jobs passed for the preceding stop-sign revision `71ada624` in [run 37918880956](https://github.com/rsasaki0109/rust_drive/actions/runs/37918880956). The RNE job also renders real mission, three-vehicle fleet, signal-stop, stop-sign and priority-crossing frames in 3D on CPU and exports editable scenes. See [validation and limitations](docs/validation.md) for the checks actually executed and the initial infrastructure/toolchain failures.
 
 ## Architecture and contributing
 
@@ -180,6 +191,8 @@ Ten small Cargo crates share transport-independent, serializable contracts. Algo
 
 - [50% maturity goal, capability waypoints and evidence requirements](docs/maturity.md)
 - [Mapped signal stops, stale-feed recovery and measured rule acceptance](docs/traffic-signals.md)
+- [Stop signs and measured healthy standstill](docs/stop-signs.md)
+- [Mapped priority crossings and independent temporal separation](docs/intersections.md)
 - [3D RNE GIFs, CPU rendering and reproduction](docs/3d-demo.md)
 - [Observed braking, repaired deadline and current regression results](docs/observed-braking.md)
 - [Reactive traffic, stop/resume and historical deadline failures](docs/reactive-traffic.md)

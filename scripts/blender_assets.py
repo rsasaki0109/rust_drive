@@ -352,3 +352,19 @@ def stop_sign(name, position, yaw):
     obj.location=(-.05,0,2.9);obj.rotation_euler=(math.pi/2,0,-math.pi/2)
     obj.data.materials.append(white)
     return parent
+
+
+def yield_sign(name, position, yaw):
+    """Original inverted-triangle display sign, outside physical sensor geometry."""
+    parent = bpy.data.objects.new(name, None)
+    bpy.context.collection.objects.link(parent)
+    parent.location, parent.rotation_euler = (*position, 0), (0, 0, yaw)
+    parent['display_only'] = True
+    steel = material(name+' steel pole', (.28,.31,.33), .65, .35)
+    red = material(name+' red border', (.68,.025,.015))
+    white = material(name+' white face', (.96,.96,.91))
+    cylinder('Yield sign pole', (0,0,1.4), .055, 2.8, steel, parent)
+    for label,x,scale,mat in [('border',-.035,1,red),('face',-.045,.77,white)]:
+        vertices = [(x,y*scale,2.95+z*scale) for y,z in [(-.53,.31),(.53,.31),(0,-.61)]]
+        mesh(name+' '+label, vertices, [(0,1,2)], mat, parent)
+    return parent
