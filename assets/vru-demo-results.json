@@ -1,0 +1,382 @@
+{
+  "schema_version": 1,
+  "passed": true,
+  "complete": true,
+  "source_fingerprint_sha256": "72e1c1db9de5128d25eb5f550e489eb631d0daae1c4dfeecb90ace00abab838b",
+  "checker_dependency_sha256": {
+    "scripts/check-vru-demo.py": "0170b5a0030769013c1e5c14bad1ee0b3b4d946e2de51b3fa67c1c027f4c65ee",
+    "scripts/check-ground-scenes.py": "1ae0699607d7417ba787da1f8000cd7253a3de8b6ff88ba5cbacec671ab652b6",
+    "scripts/check-lidar-3d.py": "915e2818b5d23c7307b047771380316be2b36f22c08786b3c19e01dff76a0e90",
+    "scripts/check-native-scenes.py": "66877b2a74e045f221899fc1edf03b8fee2aa88e5bf7833672149b6cba0f26cb",
+    "scripts/check_hazards.py": "e31bba2b36062768345a3f8300e5d28f910e4fa549818f0198df36799d6ea046"
+  },
+  "fixture_sha256": {
+    "scenario": "5b73f68ed380b93fe50d46a7e988e5242398db000331ff101d0ef03c66dfca1b",
+    "scene": "f1c2e9c9493404647a23cec64a4ccefae911bdcf4a5ce9a6be3513bede515b32"
+  },
+  "rne_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
+  "scope": "authored 22-second actual native body/ground demo with three prescribed circular actors",
+  "semantic_recognition": false,
+  "human_decision_model": false,
+  "cases": [
+    {
+      "seed": 1,
+      "summary": {
+        "scenario": "Measured LiDAR yields to a crossing pedestrian while a cyclist passes",
+        "seed": 1,
+        "simulated_seconds": 22.0,
+        "steps": 441,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "traffic_min_clearance": 3.15,
+        "min_clearance": 2.149242504596256,
+        "localization_rmse": 0.05875509421661108,
+        "localization_max_error": 0.1592909053312587,
+        "final_speed": 0.0,
+        "progress": 24.050962114076082,
+        "emergency_steps": 12,
+        "avoidance_steps": 0,
+        "max_tracks": 5,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 441,
+        "verified": true
+      },
+      "physical_xyz_ground_body": {
+        "passed": true,
+        "min_clearance_m": null,
+        "guard_overlap_intervals": 0,
+        "native_overlap_samples": 0,
+        "motion_samples": 4401,
+        "body_geometry_verified": true,
+        "rapier_sensor_witnesses_verified": true,
+        "scope": "upright static cuboids; moving traffic uses conservative circumscribed-circle sweeps",
+        "ray_grid_entries_verified": 636480,
+        "xyz_returns_verified": 301829,
+        "ground_removed_points": 292145,
+        "preserved_points": 9684,
+        "height_eligible_preserved_points": 9684,
+        "expected_5cm_voxel_returns": 5238,
+        "confident_acquisitions": 221,
+        "unconfident_acquisitions": 0,
+        "actual_ground_returns": 293006,
+        "removed_actual_ground_returns": 292100,
+        "actual_static_returns": 0,
+        "removed_actual_static_returns": 0,
+        "height_eligible_static_returns": 0,
+        "actual_actor_returns": 8823,
+        "preserved_actual_actor_returns": 8778,
+        "empirical_capsule_boundary_hits": 0,
+        "acquisitions": 221,
+        "maximum_range_residual_m": 0.0410892182813396,
+        "maximum_fitted_plane_reconstruction_error_m": 7.330083069985524e-19,
+        "range_tolerance_m": 0.06,
+        "empirical_capsule_boundary_band_m": 0.0001,
+        "maximum_empirical_boundary_surface_gap_m": 0.0,
+        "exact_presence_beams_verified": 636480,
+        "capsule_boundary_scope": "empirical pinned f32/GJK ambiguity, not a certified floating-point error bound",
+        "raw_ground_geometry_verified": true,
+        "ground_classification_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "actors": {
+        "stable_display_ids": {
+          "0": "lead_car",
+          "1": "walking_pedestrian",
+          "2": "cyclist"
+        },
+        "motion_scope": "prescribed walking lateral motion and bicycle longitudinal motion; no human decision model",
+        "per_actor_lidar_evidence": {
+          "0": {
+            "measured_returns": 4751,
+            "preserved_returns": 4746
+          },
+          "1": {
+            "measured_returns": 2305,
+            "preserved_returns": 2283
+          },
+          "2": {
+            "measured_returns": 1767,
+            "preserved_returns": 1749
+          }
+        },
+        "minimum_continuous_circle_clearance_bound_m": {
+          "0": 5.439451764508395,
+          "1": 1.8964573990178215,
+          "2": 5.9686823380834
+        },
+        "pedestrian_crossing": {
+          "time_s": 6.2,
+          "lateral_m": 0.040000000000000036,
+          "ego_x_m": 9.741759284231044
+        },
+        "body_actor_contact_physics": false,
+        "semantic_recognition": false
+      },
+      "raw_sha256": {
+        "run.json": "8c1fd2532bd1eadffe1b564428a28d49f0db9ebb30b2876e9570eb73dfff8c29",
+        "scene.json": "c5a3092438219d5de88dc796009da146dbb2312f5007f39010433a3f5ba1da3a",
+        "sensors.jsonl": "f804fd12f3ab9609b512b22909370f9a6bfd797ab2e80353d27412aecac5a19d"
+      },
+      "archive": {
+        "path": "/tmp/vru-demo/seed-1.tar.gz",
+        "sha256": "3f1cc57b03f438367555453909f781d47ea8d252ed94bbddb37559b2328834ee",
+        "bytes": 26111893,
+        "files_sha256": {
+          "summary.json": "ed1e5c573a4581e2264367927cb1d12953b95450e3e8244b9f11e6f336beefd3",
+          "sensors.jsonl": "f804fd12f3ab9609b512b22909370f9a6bfd797ab2e80353d27412aecac5a19d",
+          "run.json": "8c1fd2532bd1eadffe1b564428a28d49f0db9ebb30b2876e9570eb73dfff8c29",
+          "scene.json": "c5a3092438219d5de88dc796009da146dbb2312f5007f39010433a3f5ba1da3a",
+          "replay/replay.json": "da4e332bcc4cf617f228a12e63639237e6454eed044eb2c15d5f7a9c875e44b0",
+          "replay/outputs.jsonl": "8ad72ed7d3bf202e63cec3f084c4e0d517877b8b610d26e295a54a952efb28a3"
+        },
+        "gzip_crc_verified": true,
+        "raw_preserved": false
+      }
+    },
+    {
+      "seed": 7,
+      "summary": {
+        "scenario": "Measured LiDAR yields to a crossing pedestrian while a cyclist passes",
+        "seed": 7,
+        "simulated_seconds": 22.0,
+        "steps": 441,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "traffic_min_clearance": 3.15,
+        "min_clearance": 1.9805060709596805,
+        "localization_rmse": 0.07188280609005188,
+        "localization_max_error": 0.20512748149352236,
+        "final_speed": 0.0,
+        "progress": 24.067791715943226,
+        "emergency_steps": 13,
+        "avoidance_steps": 0,
+        "max_tracks": 5,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 441,
+        "verified": true
+      },
+      "physical_xyz_ground_body": {
+        "passed": true,
+        "min_clearance_m": null,
+        "guard_overlap_intervals": 0,
+        "native_overlap_samples": 0,
+        "motion_samples": 4401,
+        "body_geometry_verified": true,
+        "rapier_sensor_witnesses_verified": true,
+        "scope": "upright static cuboids; moving traffic uses conservative circumscribed-circle sweeps",
+        "ray_grid_entries_verified": 636480,
+        "xyz_returns_verified": 302052,
+        "ground_removed_points": 292133,
+        "preserved_points": 9919,
+        "height_eligible_preserved_points": 9919,
+        "expected_5cm_voxel_returns": 5487,
+        "confident_acquisitions": 221,
+        "unconfident_acquisitions": 0,
+        "actual_ground_returns": 292986,
+        "removed_actual_ground_returns": 292093,
+        "actual_static_returns": 0,
+        "removed_actual_static_returns": 0,
+        "height_eligible_static_returns": 0,
+        "actual_actor_returns": 9066,
+        "preserved_actual_actor_returns": 9026,
+        "empirical_capsule_boundary_hits": 0,
+        "acquisitions": 221,
+        "maximum_range_residual_m": 0.034986052883701824,
+        "maximum_fitted_plane_reconstruction_error_m": 7.38296252358507e-19,
+        "range_tolerance_m": 0.06,
+        "empirical_capsule_boundary_band_m": 0.0001,
+        "maximum_empirical_boundary_surface_gap_m": 0.0,
+        "exact_presence_beams_verified": 636480,
+        "capsule_boundary_scope": "empirical pinned f32/GJK ambiguity, not a certified floating-point error bound",
+        "raw_ground_geometry_verified": true,
+        "ground_classification_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "actors": {
+        "stable_display_ids": {
+          "0": "lead_car",
+          "1": "walking_pedestrian",
+          "2": "cyclist"
+        },
+        "motion_scope": "prescribed walking lateral motion and bicycle longitudinal motion; no human decision model",
+        "per_actor_lidar_evidence": {
+          "0": {
+            "measured_returns": 4949,
+            "preserved_returns": 4944
+          },
+          "1": {
+            "measured_returns": 2350,
+            "preserved_returns": 2327
+          },
+          "2": {
+            "measured_returns": 1767,
+            "preserved_returns": 1755
+          }
+        },
+        "minimum_continuous_circle_clearance_bound_m": {
+          "0": 5.4224978695522,
+          "1": 1.7260587934637235,
+          "2": 5.968713177958658
+        },
+        "pedestrian_crossing": {
+          "time_s": 6.2,
+          "lateral_m": 0.040000000000000036,
+          "ego_x_m": 9.620761425347895
+        },
+        "body_actor_contact_physics": false,
+        "semantic_recognition": false
+      },
+      "raw_sha256": {
+        "run.json": "d85b0f7a456e0b0f7acbe5cc5af58fb1f33b84bfd2231daf245cf4abfdeb935a",
+        "scene.json": "a5ba670d43e582470dea229ab8704dbdfe023e04fed08c00add31a5e270ac3d5",
+        "sensors.jsonl": "3fd2619004af05d10eda8589a206ce265fce8ff47d3b4ecf7e5f6c561bb53d46"
+      },
+      "archive": {
+        "path": "/tmp/vru-demo/seed-7.tar.gz",
+        "sha256": "06c926305eb95525e6b36499062aa456834fe6ba508e3cf573124050ef0aca95",
+        "bytes": 26204067,
+        "files_sha256": {
+          "summary.json": "35df5f024925413472ab18f9001fc6bc88fb06c651288ae21a25d4a70ac0d5f0",
+          "sensors.jsonl": "3fd2619004af05d10eda8589a206ce265fce8ff47d3b4ecf7e5f6c561bb53d46",
+          "run.json": "d85b0f7a456e0b0f7acbe5cc5af58fb1f33b84bfd2231daf245cf4abfdeb935a",
+          "scene.json": "a5ba670d43e582470dea229ab8704dbdfe023e04fed08c00add31a5e270ac3d5",
+          "replay/replay.json": "da4e332bcc4cf617f228a12e63639237e6454eed044eb2c15d5f7a9c875e44b0",
+          "replay/outputs.jsonl": "3a0053d2f29a3002f6bbb2285866f2e24048805a0e10b9b6873b75d716484940"
+        },
+        "gzip_crc_verified": true,
+        "raw_preserved": true
+      }
+    },
+    {
+      "seed": 42,
+      "summary": {
+        "scenario": "Measured LiDAR yields to a crossing pedestrian while a cyclist passes",
+        "seed": 42,
+        "simulated_seconds": 22.0,
+        "steps": 441,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "traffic_min_clearance": 3.15,
+        "min_clearance": 2.0382191943220014,
+        "localization_rmse": 0.062108875738842606,
+        "localization_max_error": 0.18079567389637546,
+        "final_speed": 0.0,
+        "progress": 24.035483959706223,
+        "emergency_steps": 17,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 441,
+        "verified": true
+      },
+      "physical_xyz_ground_body": {
+        "passed": true,
+        "min_clearance_m": null,
+        "guard_overlap_intervals": 0,
+        "native_overlap_samples": 0,
+        "motion_samples": 4401,
+        "body_geometry_verified": true,
+        "rapier_sensor_witnesses_verified": true,
+        "scope": "upright static cuboids; moving traffic uses conservative circumscribed-circle sweeps",
+        "ray_grid_entries_verified": 636480,
+        "xyz_returns_verified": 302134,
+        "ground_removed_points": 292218,
+        "preserved_points": 9916,
+        "height_eligible_preserved_points": 9916,
+        "expected_5cm_voxel_returns": 5494,
+        "confident_acquisitions": 221,
+        "unconfident_acquisitions": 0,
+        "actual_ground_returns": 293018,
+        "removed_actual_ground_returns": 292165,
+        "actual_static_returns": 0,
+        "removed_actual_static_returns": 0,
+        "height_eligible_static_returns": 0,
+        "actual_actor_returns": 9116,
+        "preserved_actual_actor_returns": 9063,
+        "empirical_capsule_boundary_hits": 0,
+        "acquisitions": 221,
+        "maximum_range_residual_m": 0.04113869860152475,
+        "maximum_fitted_plane_reconstruction_error_m": 6.825470552323199e-19,
+        "range_tolerance_m": 0.06,
+        "empirical_capsule_boundary_band_m": 0.0001,
+        "maximum_empirical_boundary_surface_gap_m": 0.0,
+        "exact_presence_beams_verified": 636480,
+        "capsule_boundary_scope": "empirical pinned f32/GJK ambiguity, not a certified floating-point error bound",
+        "raw_ground_geometry_verified": true,
+        "ground_classification_verified": true,
+        "sensor_only_boundary_verified": true
+      },
+      "actors": {
+        "stable_display_ids": {
+          "0": "lead_car",
+          "1": "walking_pedestrian",
+          "2": "cyclist"
+        },
+        "motion_scope": "prescribed walking lateral motion and bicycle longitudinal motion; no human decision model",
+        "per_actor_lidar_evidence": {
+          "0": {
+            "measured_returns": 4950,
+            "preserved_returns": 4945
+          },
+          "1": {
+            "measured_returns": 2399,
+            "preserved_returns": 2367
+          },
+          "2": {
+            "measured_returns": 1767,
+            "preserved_returns": 1751
+          }
+        },
+        "minimum_continuous_circle_clearance_bound_m": {
+          "0": 5.454784320486351,
+          "1": 1.7845772083118174,
+          "2": 5.968713273854484
+        },
+        "pedestrian_crossing": {
+          "time_s": 6.2,
+          "lateral_m": 0.040000000000000036,
+          "ego_x_m": 9.994883720118455
+        },
+        "body_actor_contact_physics": false,
+        "semantic_recognition": false
+      },
+      "raw_sha256": {
+        "run.json": "609ba8c677a378c61e59e01332d317f7a6f2fafcb324698002a060fe2a348aaa",
+        "scene.json": "b1d02e1299629133105cfa5159a9d2f7154d3f0be82e835d2539607ba4461055",
+        "sensors.jsonl": "57c4f6af6b525f0bca2a1ee1ccdb45c129b1fe58cde76c2a791466c2bed7c2f7"
+      },
+      "archive": {
+        "path": "/tmp/vru-demo/seed-42.tar.gz",
+        "sha256": "21255931564b7b855bd1f4d225ac50cadc4ce3849894a05f242d5e413422de5b",
+        "bytes": 26295399,
+        "files_sha256": {
+          "summary.json": "896eeec663411942de5c6a4c70b754fa7d32f22c479ab4974d48ecea4cc91d22",
+          "sensors.jsonl": "57c4f6af6b525f0bca2a1ee1ccdb45c129b1fe58cde76c2a791466c2bed7c2f7",
+          "run.json": "609ba8c677a378c61e59e01332d317f7a6f2fafcb324698002a060fe2a348aaa",
+          "scene.json": "b1d02e1299629133105cfa5159a9d2f7154d3f0be82e835d2539607ba4461055",
+          "replay/replay.json": "da4e332bcc4cf617f228a12e63639237e6454eed044eb2c15d5f7a9c875e44b0",
+          "replay/outputs.jsonl": "9bfa26a3080c2e528880167d96435bb562262a41e4c877b0f201016e4275ee92"
+        },
+        "gzip_crc_verified": true,
+        "raw_preserved": false
+      }
+    }
+  ],
+  "cases_verified": 3,
+  "replay_ticks_verified": 1323
+}

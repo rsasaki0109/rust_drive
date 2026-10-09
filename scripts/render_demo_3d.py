@@ -325,7 +325,8 @@ def main():
     parser.add_argument('--scene-output', type=Path, help='Save an editable Blender scene at the last rendered frame')
     parser.add_argument('--native-scene', type=Path, help='Successful native scene.json evidence; opt in to rendering physical cuboids')
     parser.add_argument('--traffic-models', nargs='+', choices=['hatchback','sedan','van','pickup'], default=['hatchback'], help='Display models assigned in stable actor appearance order')
-    parser.add_argument('--camera', choices=['ego','traffic'], default='ego', help='Follow ego or frame ego and active reactive vehicles')
+    parser.add_argument('--actor-models', nargs='+', default=[], help='Explicit display-only ID=model assignments, e.g. 0=sedan 1=pedestrian 2=cyclist')
+    parser.add_argument('--camera', choices=['ego','traffic','street'], default='ego', help='Follow ego or frame ego and active reactive vehicles')
     parser.add_argument('--preview-time', type=float, help='Render one PNG instead of the complete GIF')
     parser.add_argument('--samples', type=int, default=16)
     parser.add_argument('--threads', type=int, default=4)
@@ -342,6 +343,17 @@ def main():
     if run.get('schema_version') != 1 or not run.get('backend', '').startswith('rne-') or not run['summary']['passed']:
         raise SystemExit('A successful schema-1 actual RNE recording is required')
     frames = run['frames']
+    actor_models = {}
+    known_ids = {actor['id'] for frame in frames for actor in frame['objects']}
+    for assignment in args.actor_models:
+        try:
+            id_text, model = assignment.split('=', 1)
+            actor_id = int(id_text)
+        except ValueError:
+            parser.error('actor models require integer ID=model assignments')
+        if actor_id not in known_ids or actor_id in actor_models or model not in ('hatchback', 'sedan', 'van', 'pickup', 'pedestrian', 'cyclist'):
+            parser.error('actor display model must name a unique recorded ID and a supported model')
+        actor_models[actor_id] = model
     native_evidence = load_native_scene(args.native_scene, run) if args.native_scene else None
     indices = [0]
     for i in range(1, len(frames)):
@@ -359,7 +371,7 @@ def main():
         request = {'run': str(args.run.resolve()), 'indices': indices,
                    'frames_directory': temporary, 'samples': args.samples,
                    'scene_output': str(args.scene_output.resolve()) if args.scene_output else None,
-                   'traffic_models': args.traffic_models, 'camera': args.camera}
+                   'traffic_models': args.traffic_models, 'actor_models': actor_models, 'camera': args.camera}
         if native_evidence:
             request['native_scene'] = native_evidence['scene']
             if native_evidence.get('operating_mode') in GROUND_MODES:
@@ -432,7 +444,7 @@ def main():
                 duration += gif.info['duration']
             assert gif.size == (960, 640) and duration == sum(durations)
         renderer_hash = hashlib.sha256()
-        for source in ['blender_scene.py', 'blender_assets.py', 'render_demo_3d.py']:
+        for source in ['blender_scene.py', 'blender_assets.py', 'render_demo_3d.py']+(['blender_vru_assets.py'] if any(model in ('pedestrian', 'cyclist') for model in actor_models.values()) else []):
             renderer_hash.update(source.encode())
             renderer_hash.update((ROOT/'scripts'/source).read_bytes())
         provenance = {'schema_version': 1, 'backend': run['backend'],
@@ -447,7 +459,7 @@ def main():
                       'renderer_command': shlex.join(['python3','scripts/render_demo_3d.py',str(args.run),'--output',str(args.output),
                                                      '--samples',str(args.samples),'--threads',str(args.threads),'--camera',args.camera,
                                                      '--traffic-models',*args.traffic_models]+(['--scene-output',str(args.scene_output)] if args.scene_output else [])+
-                                                    (['--native-scene',str(args.native_scene)] if args.native_scene else []))}
+                                                    (['--native-scene',str(args.native_scene)] if args.native_scene else [])+(['--actor-models',*args.actor_models] if args.actor_models else []))}
         if native_evidence:
             provenance['native_scene'] = {
                 'input': str(args.native_scene),

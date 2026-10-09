@@ -1,0 +1,364 @@
+{
+  "schema_version": 1,
+  "backend": "rne-dynamic-rapier-lidar",
+  "renderer": "Blender Cycles CPU",
+  "blender_version": "Blender 4.3.2",
+  "input_trace": "/tmp/vru-demo/seed-7/run.json",
+  "input_sha256": "d85b0f7a456e0b0f7acbe5cc5af58fb1f33b84bfd2231daf245cf4abfdeb935a",
+  "rne_expected_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
+  "scenario": {
+    "name": "Measured LiDAR yields to a crossing pedestrian while a cyclist passes",
+    "duration": 22.0,
+    "road_length": 90.0,
+    "half_width": 3.0,
+    "curve_amplitude": 0.0,
+    "expected": "stop",
+    "lidar_dropout": null,
+    "gnss_dropout": null,
+    "cruise_speed": 4.0,
+    "min_clearance_m": 1.0,
+    "objects": [
+      {
+        "s": 24.0,
+        "lateral": 0.0,
+        "radius": 1.0,
+        "speed": 2.0,
+        "lateral_speed": 0.0,
+        "active_from": 0.0,
+        "moving_from": 0.0,
+        "following": {
+          "initial_speed_m_s": 2.0,
+          "minimum_gap_m": 3.0,
+          "time_headway_s": 1.5,
+          "max_acceleration_m_s2": 2.0,
+          "comfortable_deceleration_m_s2": 2.0,
+          "max_deceleration_m_s2": 4.0,
+          "sensor_range_m": 45.0,
+          "stop_windows": [
+            {
+              "from": 4.0,
+              "until": 24.0
+            }
+          ]
+        }
+      },
+      {
+        "s": 18.0,
+        "lateral": -5.0,
+        "radius": 0.4,
+        "speed": 0.0,
+        "lateral_speed": 1.2,
+        "active_from": 0.0,
+        "moving_from": 2.0
+      },
+      {
+        "s": 8.0,
+        "lateral": 5.0,
+        "radius": 0.85,
+        "speed": 3.0,
+        "lateral_speed": 0.0,
+        "active_from": 0.0,
+        "moving_from": 0.0
+      }
+    ]
+  },
+  "summary": {
+    "scenario": "Measured LiDAR yields to a crossing pedestrian while a cyclist passes",
+    "seed": 7,
+    "simulated_seconds": 22.0,
+    "steps": 441,
+    "reached_goal": false,
+    "collisions": 0,
+    "road_violations": 0,
+    "traffic_min_clearance": 3.15,
+    "min_clearance": 1.9805060709596805,
+    "localization_rmse": 0.07188280609005188,
+    "localization_max_error": 0.20512748149352236,
+    "final_speed": 0.0,
+    "progress": 24.067791715943226,
+    "emergency_steps": 13,
+    "avoidance_steps": 0,
+    "max_tracks": 5,
+    "passed": true,
+    "failures": []
+  },
+  "gif_frames": 75,
+  "sampled_frames": 75,
+  "playback_speed": 3,
+  "scene_states_verified": 75,
+  "samples": 12,
+  "physics_domain": "planar",
+  "scene": {
+    "style": "suburban-test-road-v2",
+    "seed": 1729,
+    "scenery_counts": {
+      "trees": 4,
+      "buildings": 2,
+      "lamps": 4,
+      "sidewalk_sections": 180
+    },
+    "ego_model": "hatchback",
+    "traffic_models": [
+      {
+        "id": 0,
+        "model": "sedan",
+        "color": [
+          0.949999988079071,
+          0.30000001192092896,
+          0.03500000014901161
+        ]
+      },
+      {
+        "id": 1,
+        "model": "pedestrian",
+        "display_only": true
+      },
+      {
+        "id": 2,
+        "model": "cyclist",
+        "display_only": true
+      }
+    ],
+    "camera": "street",
+    "actor_models": {
+      "0": "sedan",
+      "1": "pedestrian",
+      "2": "cyclist"
+    },
+    "road_user_meshes_display_only": true,
+    "mapped_signal_ids": [],
+    "mapped_stop_sign_ids": [],
+    "mapped_intersection_ids": [],
+    "native_scene_name": "Real inclined rays measure moving traffic over physical ground",
+    "native_cuboids": [],
+    "native_ground_cuboids": [
+      {
+        "id": "road",
+        "center_m": [
+          30.0,
+          0.0,
+          -0.5
+        ],
+        "yaw_rad": 0.0,
+        "world_corners_m": [
+          [
+            -20.0,
+            -25.0,
+            -1.0
+          ],
+          [
+            80.0,
+            -25.0,
+            -1.0
+          ],
+          [
+            80.0,
+            25.0,
+            -1.0
+          ],
+          [
+            -20.0,
+            25.0,
+            -1.0
+          ],
+          [
+            -20.0,
+            -25.0,
+            0.0
+          ],
+          [
+            80.0,
+            -25.0,
+            0.0
+          ],
+          [
+            80.0,
+            25.0,
+            0.0
+          ],
+          [
+            -20.0,
+            25.0,
+            0.0
+          ]
+        ]
+      }
+    ],
+    "road_surface": "actual SceneV2 ground cuboids; top at flat datum 0 m",
+    "scenery_physical": false,
+    "body_envelope": {
+      "id": "research-body-envelope",
+      "center_m": [
+        24.067790985107422,
+        -0.019605960696935654,
+        0.8999999761581421
+      ],
+      "yaw_rad": -0.00670379392745151,
+      "world_corners_m": [
+        [
+          21.96180534362793,
+          -0.9055078625679016,
+          0.1499999761581421
+        ],
+        [
+          26.161710739135742,
+          -0.9336636066436768,
+          0.1499999761581421
+        ],
+        [
+          26.173776626586914,
+          0.8662959337234497,
+          0.1499999761581421
+        ],
+        [
+          21.9738712310791,
+          0.8944516777992249,
+          0.1499999761581421
+        ],
+        [
+          21.96180534362793,
+          -0.9055078625679016,
+          1.649999976158142
+        ],
+        [
+          26.161710739135742,
+          -0.9336636066436768,
+          1.649999976158142
+        ],
+        [
+          26.173776626586914,
+          0.8662959337234497,
+          1.649999976158142
+        ],
+        [
+          21.9738712310791,
+          0.8944516777992249,
+          1.649999976158142
+        ]
+      ]
+    }
+  },
+  "renderer_source_sha256": "0c492317b6a63027db8786d1ab0e66fea6cc9bf32be38d10f625c573320bd923",
+  "gif_palette_colors": 192,
+  "gif_dither": false,
+  "spatial_filter": "3x3 median, viewport only",
+  "renderer_command": "python3 scripts/render_demo_3d.py /tmp/vru-demo/seed-7/run.json --output assets/vru-demo.gif --samples 12 --threads 3 --camera street --traffic-models hatchback --scene-output artifacts/vru-scene.blend --native-scene /tmp/vru-demo/seed-7/scene.json --actor-models 0=sedan 1=pedestrian 2=cyclist",
+  "native_scene": {
+    "input": "/tmp/vru-demo/seed-7/scene.json",
+    "input_sha256": "a5ba670d43e582470dea229ab8704dbdfe023e04fed08c00add31a5e270ac3d5",
+    "scene": {
+      "ground_cuboids": [
+        {
+          "center_m": [
+            30.0,
+            0.0,
+            -0.5
+          ],
+          "half_extents_m": [
+            50.0,
+            25.0,
+            0.5
+          ],
+          "id": "road",
+          "yaw_rad": 0.0
+        }
+      ],
+      "name": "Real inclined rays measure moving traffic over physical ground",
+      "schema_version": 2,
+      "static_cuboids": []
+    },
+    "summary": {
+      "checks": 0,
+      "failures": [],
+      "guard_overlap_intervals": 0,
+      "min_clearance_m": null,
+      "native_overlap_samples": 0,
+      "passed": true
+    },
+    "seed": 7,
+    "body_pose_states_verified": 441,
+    "cuboid_mesh_states_verified": 75,
+    "contact_response": false,
+    "operating_mode": "lidar3d_ground_body",
+    "lidar3d_calibration": {
+      "azimuth_columns": 180,
+      "collision_bottom_m": -0.85,
+      "collision_top_m": 2.65,
+      "elevation_rings": 16,
+      "ground": {
+        "fit_radius_m": 8.0,
+        "max_height_offset_m": 0.03,
+        "max_slope": 0.05,
+        "min_cell_inliers": 6,
+        "min_inliers": 200,
+        "min_sector_inliers": 20,
+        "reference_height_m": 0.0,
+        "residual_threshold_m": 0.02
+      },
+      "max_elevation_rad": 0.2617993877991494,
+      "max_range_m": 45.0,
+      "min_elevation_rad": -0.2617993877991494,
+      "min_range_m": 0.2,
+      "mount_height_m": 0.6
+    },
+    "cloud_frame": "body forward/left, road-datum up",
+    "recorded_cloud_audit": {
+      "acquisitions": 221,
+      "failed_acquisitions": 0,
+      "returns_verified": 302052,
+      "ray_ordinals_per_acquisition": 2880
+    },
+    "diagnostic_horizontal_heights_m": [
+      0.6,
+      0.15,
+      3.7
+    ],
+    "collision_height_interval_m": [
+      -0.85,
+      2.65
+    ],
+    "projection": "measured supported ground removal, measured Z gate, ordinal-order 5 cm body-XY voxels",
+    "instantaneous_scan": true,
+    "deskew": false,
+    "ground_diagnostics_audit": {
+      "observations_verified": 221,
+      "confident_fits": 221,
+      "removed_returns": 292133,
+      "preserved_returns": 9919,
+      "audit_scope": "recorded support/count/plane consistency; independent ground oracle is separate"
+    },
+    "ground_mesh_states_verified": 75,
+    "physical_road_top_m": 0.0,
+    "ground_contact_response": false,
+    "gif_sha256": "6b963bd7468c3e84b71c280207a862ab2431f68e8c8d553cff9dbfa1f60c68d2",
+    "encoded_duration_ms": 8800,
+    "body_guard": {
+      "calibration": {
+        "bottom_m": 0.15,
+        "calibration_kind": "authored_research_dimensions",
+        "center_offset_body_m": [
+          0.0,
+          0.0
+        ],
+        "clearance_floor_m": 1.0,
+        "height_m": 1.5,
+        "length_m": 4.2,
+        "pose_reference": "native_planar_plant_reference",
+        "speed_bound_m_s": 12.0,
+        "width_m": 1.8
+      },
+      "summary": {
+        "checks": 0,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": null,
+        "native_overlap_samples": 0,
+        "passed": true
+      },
+      "mesh_states_verified": 75,
+      "visualization": "separate wire envelope; cosmetic car dimensions are not calibrated",
+      "guard_scope": "upright body versus static obstacle cuboids; explicit road excluded",
+      "traffic_geometry": "native capsule proxies; circumscribed circular planar clearance"
+    }
+  }
+}

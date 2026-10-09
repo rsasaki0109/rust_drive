@@ -294,3 +294,32 @@ Fresh terrain accuracy, partial recorded-motion acceptance, covariance
 calibration, measured extrinsics and automotive camera evaluation remain open.
 The research CI job retains failed accuracy outcomes while checking their
 integrity; publication-run status is reported separately.
+
+
+## Main-branch 3D road users (2026-10-10, Asia/Tokyo)
+
+The previously published RNE stack and recorded 3D demos were merged into main
+in [PR #1](https://github.com/rsasaki0109/rust_drive/pull/1). The following addition
+uses actual native sensor/vehicle recordings with a lead, a crossing pedestrian
+proxy and a cyclist proxy; render-only ID/model assignments add original
+articulated human and bicycle meshes. All three seeds retain the fixed 1 m
+clearance floor, zero collisions/road violations, stopping and 1,323 full sensor
+replay ticks. Analytic ray, measured-ground, 200 Hz body/motion and actor-distance
+checks pass; the pedestrian distance lower bound is 1.726 m. No avatar mesh
+sensing, semantic classification, contact response or human intent is claimed.
+[Physical results](../assets/vru-demo-results.json); [source, meshes and commands](road-users.md).
+
+The final GIF is rendered on CPU from the seed-7 recording. All 75 scene states,
+actor root positions, native ground/body geometry and renderer/trace hashes are
+verified. The prior ground/body GIF is preserved. The required workspace check
+again passes 301 tests and all 49 default scenario/replay pairs, with all 245
+output files byte-identical to their prior baseline. Rust/RNE pins and locks are
+unchanged. Model/renderer Python compilation and workflow actionlint pass.
+
+The preceding publication's research CI failed because an archived manifest
+resolved its raw directory beneath `integrations/rgbd/baselines/`. The workflow
+now supplies `--raw data/tum-fr1-xyz/raw` explicitly. The actual failed command
+was reproduced, then both archived oracles and the later 7/11 partial benchmark
+were verified again; no pose, covariance, work or accuracy gate was relaxed.
+Remote CI for the follow-up publication is reported separately. Visual asset
+quality does not change the subjective maturity estimate of about 20%.

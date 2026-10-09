@@ -106,7 +106,7 @@ jobs:
           cargo clippy --release --manifest-path integrations/rgbd/Cargo.toml --all-targets --locked -- -D warnings
           cargo test --release --manifest-path integrations/rgbd/Cargo.toml --locked
           cargo build --release --manifest-path integrations/rgbd/Cargo.toml --locked
-          python scripts/check-recorded-rgbd.py --report integrations/rgbd/baselines/tum-first-v1.json --manifest integrations/rgbd/baselines/manifest-v1.json --evaluator-source integrations/rgbd/baselines/evaluator-v1.rs --matcher-source integrations/rgbd/baselines/matcher-v1.rs --freeze integrations/rgbd/baselines/tum-first-v1.freeze.json --output artifacts/rgbd/original-oracle.json
+          python scripts/check-recorded-rgbd.py --report integrations/rgbd/baselines/tum-first-v1.json --manifest integrations/rgbd/baselines/manifest-v1.json --raw data/tum-fr1-xyz/raw --evaluator-source integrations/rgbd/baselines/evaluator-v1.rs --matcher-source integrations/rgbd/baselines/matcher-v1.rs --freeze integrations/rgbd/baselines/tum-first-v1.freeze.json --output artifacts/rgbd/original-oracle.json
           python scripts/check-recorded-rgbd.py --report integrations/rgbd/baselines/tum-fast-v1.json --manifest integrations/rgbd/baselines/manifest-fast-v1.json --raw data/tum-fr1-xyz-fast/raw --evaluator-source integrations/rgbd/baselines/evaluator-v2.rs --matcher-source integrations/rgbd/baselines/matcher-v1.rs --freeze integrations/rgbd/baselines/freeze-fast-v1.json --output artifacts/rgbd/fast-failure-oracle.json
           mkdir -p artifacts/rgbd
           integrations/rgbd/target/release/rustdrive-rgbd-evaluate --manifest data/tum-fr1-xyz-tight/manifest.json --prepare-freeze artifacts/rgbd/tight-freeze.json
@@ -201,6 +201,9 @@ jobs:
       - name: Independently verify experimental XYZ terrain and measured actor AABBs
         working-directory: rust_drive
         run: python3 scripts/check-terrain-objects.py --compact --output artifacts/terrain-objects
+      - name: Independently verify recorded pedestrian and cyclist motion
+        working-directory: rust_drive
+        run: python3 scripts/check-vru-demo.py --compact --output artifacts/vru-demo --report artifacts/vru-demo/report.json
       - name: Independently verify optional adaptive terrain driving
         working-directory: rust_drive
         run: python3 scripts/check-adaptive-native.py --compact --output artifacts/adaptive-native
@@ -224,6 +227,7 @@ jobs:
           python scripts/render_demo_3d.py artifacts/native-scenes/multi-height/dynamic/blind-low-slab/seed-7/run.json --native-scene artifacts/native-scenes/multi-height/dynamic/blind-low-slab/seed-7/scene.json --preview-time 15 --output artifacts/rne-multi-height/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-multi-height/scene.blend
           python scripts/render_demo_3d.py artifacts/lidar-3d/lidar3d/dynamic/midbeam-barrier/seed-7/run.json --native-scene artifacts/lidar-3d/lidar3d/dynamic/midbeam-barrier/seed-7/scene.json --preview-time 15 --output artifacts/rne-lidar-3d/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-lidar-3d/scene.blend
           python scripts/render_demo_3d.py artifacts/ground-scenes/lidar3d_ground_body/dynamic/ground-moving-traffic/seed-7/run.json --native-scene artifacts/ground-scenes/lidar3d_ground_body/dynamic/ground-moving-traffic/seed-7/scene.json --preview-time 15 --camera traffic --traffic-models sedan --output artifacts/rne-ground-body/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-ground-body/scene.blend
+          python scripts/render_demo_3d.py artifacts/vru-demo/seed-7/run.json --native-scene artifacts/vru-demo/seed-7/scene.json --actor-models 0=sedan 1=pedestrian 2=cyclist --camera street --preview-time 6 --output artifacts/vru-demo/preview.gif --samples 4 --threads 2 --scene-output artifacts/vru-demo/scene.blend
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -238,6 +242,7 @@ jobs:
             rust_drive/artifacts/map-localization/
             rust_drive/artifacts/terrain-objects/
             rust_drive/artifacts/adaptive-native/
+            rust_drive/artifacts/vru-demo/
       - uses: actions/upload-artifact@v4
         with:
           name: rne-cpu-telemetry
