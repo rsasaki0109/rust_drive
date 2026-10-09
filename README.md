@@ -64,7 +64,11 @@ The previously failing GNSS burst with scheduled traffic now reaches the goal wi
 
 The tracking baseline produced 9/8/7 emergency ticks across the three seeds, compared with 73/83/80 in the preceding implementation. Both the scenario and physical acceptance criteria are unchanged. See the [measured comparison and RNE demo](docs/tracking.md).
 
-## Reactive traffic and stopped leads
+## Reactive traffic and observed braking
+
+![Actual RNE run: GNSS-fault stop, reactive follower braking, recovery and eight-second goal residence](assets/prediction-demo.gif)
+
+This actual CPU-only RNE run finishes the original follower fixture at 64.25 s, including eight seconds stopped at the goal, within its unchanged 65 s deadline. The GIF shows recorded telemetry at 3× playback speed. [Reproduce this run and GIF](docs/observed-braking.md#reproduce).
 
 Optional simulator actors now follow their route with bounded acceleration, braking and finite-range proximity observations. Both plants exercise waiting for a stopped lead, resuming, braking behind ego during a GNSS outage and forming a stopped queue. The ego stack uses sustained observed braking for at most one second, then coasts; conservative repeated stops near a narrow-road goal remain visible. [Measured prediction improvement](docs/observed-braking.md). [Actual RNE GIF, actor sensing boundary, measurements and failures](docs/reactive-traffic.md).
 
