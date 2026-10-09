@@ -33,95 +33,95 @@ dependencies = [
 ]
 
 [[package]]
-name = "rustdrive-control"
+name = "rustdriving-control"
 version = "0.1.0"
 dependencies = [
- "rustdrive-core",
+ "rustdriving-core",
 ]
 
 [[package]]
-name = "rustdrive-core"
+name = "rustdriving-core"
 version = "0.1.0"
 dependencies = [
  "serde",
 ]
 
 [[package]]
-name = "rustdrive-dataset-eval"
+name = "rustdriving-dataset-eval"
 version = "0.1.0"
 dependencies = [
- "rustdrive-core",
- "rustdrive-localization",
- "rustdrive-perception",
+ "rustdriving-core",
+ "rustdriving-localization",
+ "rustdriving-perception",
  "serde_json",
 ]
 
 [[package]]
-name = "rustdrive-localization"
+name = "rustdriving-localization"
 version = "0.1.0"
 dependencies = [
- "rustdrive-core",
+ "rustdriving-core",
 ]
 
 [[package]]
-name = "rustdrive-mapping"
+name = "rustdriving-mapping"
 version = "0.1.0"
 dependencies = [
- "rustdrive-core",
+ "rustdriving-core",
 ]
 
 [[package]]
-name = "rustdrive-perception"
+name = "rustdriving-perception"
 version = "0.1.0"
 dependencies = [
- "rustdrive-core",
+ "rustdriving-core",
 ]
 
 [[package]]
-name = "rustdrive-pipeline"
+name = "rustdriving-pipeline"
 version = "0.1.0"
 dependencies = [
- "rustdrive-control",
- "rustdrive-core",
- "rustdrive-localization",
- "rustdrive-mapping",
- "rustdrive-perception",
- "rustdrive-planning",
- "rustdrive-prediction",
- "rustdrive-routing",
+ "rustdriving-control",
+ "rustdriving-core",
+ "rustdriving-localization",
+ "rustdriving-mapping",
+ "rustdriving-perception",
+ "rustdriving-planning",
+ "rustdriving-prediction",
+ "rustdriving-routing",
  "serde",
  "serde_json",
 ]
 
 [[package]]
-name = "rustdrive-planning"
+name = "rustdriving-planning"
 version = "0.1.0"
 dependencies = [
- "rustdrive-core",
+ "rustdriving-core",
 ]
 
 [[package]]
-name = "rustdrive-prediction"
+name = "rustdriving-prediction"
 version = "0.1.0"
 dependencies = [
- "rustdrive-core",
+ "rustdriving-core",
 ]
 
 [[package]]
-name = "rustdrive-routing"
+name = "rustdriving-routing"
 version = "0.1.0"
 dependencies = [
- "rustdrive-core",
+ "rustdriving-core",
  "serde",
 ]
 
 [[package]]
-name = "rustdrive-sim"
+name = "rustdriving-sim"
 version = "0.1.0"
 dependencies = [
- "rustdrive-core",
- "rustdrive-pipeline",
- "rustdrive-routing",
+ "rustdriving-core",
+ "rustdriving-pipeline",
+ "rustdriving-routing",
  "serde",
  "serde_json",
 ]

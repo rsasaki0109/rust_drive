@@ -167,26 +167,26 @@ dependencies = [
 ]
 
 [[package]]
-name = "rustdrive-core"
+name = "rustdriving-core"
 version = "0.1.0"
 dependencies = [
  "serde",
 ]
 
 [[package]]
-name = "rustdrive-localization"
+name = "rustdriving-localization"
 version = "0.1.0"
 dependencies = [
- "rustdrive-core",
+ "rustdriving-core",
 ]
 
 [[package]]
-name = "rustdrive-rgbd-evaluate"
+name = "rustdriving-rgbd-evaluate"
 version = "0.1.0"
 dependencies = [
  "png",
- "rustdrive-core",
- "rustdrive-localization",
+ "rustdriving-core",
+ "rustdriving-localization",
  "serde",
  "serde_json",
  "sha2",

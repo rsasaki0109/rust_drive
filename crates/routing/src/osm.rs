@@ -1,6 +1,6 @@
 //! Bounded OpenStreetMap Overpass JSON import. No network or simulator truth input.
 use crate::{RoadEdge, RoadNetwork, RoadNetworkSpec, RoadNode};
-use rustdrive_core::Vec2;
+use rustdriving_core::Vec2;
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 

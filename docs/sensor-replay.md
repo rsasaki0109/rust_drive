@@ -1,6 +1,6 @@
 # Sensor contract and replay
 
-`rustdrive-pipeline` exposes `PipelineConfig`, `SensorFrame`, `DrivingPipeline` and `PipelineOutput`. Both reference simulation and RNE call the same stateful synchronous library. No executor or middleware is needed.
+`rustdriving-pipeline` exposes `PipelineConfig`, `SensorFrame`, `DrivingPipeline` and `PipelineOutput`. Both reference simulation and RNE call the same stateful synchronous library. No executor or middleware is needed.
 
 ## Input boundary
 
@@ -59,10 +59,10 @@ The scenario's timing/delay/failure schedule stays outside the operational repla
 
 ```sh
 # 100 ms delayed observations, with the original acquisition stamps.
-cargo run --release --locked --bin rustdrive -- run \
+cargo run --release --locked --bin rustdriving -- run \
   --scenario scenarios/intersection-delay-two.json --seed 7 \
   --output artifacts/intersection-delay
-cargo run --release --locked --bin rustdrive -- replay \
+cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/intersection-delay/sensors.jsonl \
   --output artifacts/intersection-delay/replay
 
@@ -85,7 +85,7 @@ The physical clearance/priority gates and replay checks are independent. The fin
 The expected record contains the complete estimate, tracks, forecasts, trajectory, command, emergency state, health, position variance and optional navigation state. It never enters the pipeline. Replay constructs fresh state from the header, feeds only inputs, and compares reserialized outputs exactly. Serde's float-roundtrip parsing preserves recorded f64 values. No tolerance or success shortcut hides differences.
 
 ```sh
-cargo run --release --locked --bin rustdrive -- replay \
+cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/demo/sensors.jsonl --output artifacts/replay
 ```
 

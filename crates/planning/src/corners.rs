@@ -1,5 +1,5 @@
 //! Optional local fillets; the supplied polyline remains the physical corridor.
-use rustdrive_core::{Route, Vec2, VehicleConfig};
+use rustdriving_core::{Route, Vec2, VehicleConfig};
 
 const STEP_M: f64 = 0.25;
 

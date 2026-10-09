@@ -6,7 +6,7 @@ It is an offline research algorithm; it does not authorize road-ground removal
 in the driving pipeline. The original progressive morphological filter (PMF)
 and its failed generalization results remain unchanged.
 
-`rustdrive_perception::terrain_adaptive::classify_ground_adaptive` receives only
+`rustdriving_perception::terrain_adaptive::classify_ground_adaptive` receives only
 XYZ in an explicit metre, Z-up frame. It builds a sparse minimum-height grid,
 screens elevated returns with a slope-limited lower envelope, gathers support
 by physical XY distance, and fits deterministic robust local planes. Unsupported
@@ -88,11 +88,11 @@ From the repository root, acquire the ignored SHA-pinned raw files:
 ```sh
 python3 scripts/fetch-datasets.py --dataset isprs-terrain
 python3 scripts/fetch-additional-datasets.py --dataset pdal-autzen
-cargo run --release --locked --bin rustdrive-dataset-eval -- adaptive-ground \
+cargo run --release --locked --bin rustdriving-dataset-eval -- adaptive-ground \
   --split calibration_original --output artifacts/adaptive/calibration.json
-cargo run --release --locked --bin rustdrive-dataset-eval -- adaptive-ground \
+cargo run --release --locked --bin rustdriving-dataset-eval -- adaptive-ground \
   --split regression --output artifacts/adaptive/regression.json
-cargo run --release --locked --bin rustdrive-dataset-eval -- adaptive-ground \
+cargo run --release --locked --bin rustdriving-dataset-eval -- adaptive-ground \
   --dataset pdal-autzen --split fresh_heldout \
   --freeze assets/adaptive-ground-freeze.json \
   --output artifacts/adaptive/autzen.json
@@ -128,7 +128,7 @@ exercised by acquisition/replay tests; this is geometric separation, not semanti
 ```sh
 bash scripts/setup-rne.sh
 cargo +1.95.0 build --release --locked --manifest-path integrations/rne/Cargo.toml
-cargo build --release --locked --bin rustdrive
+cargo build --release --locked --bin rustdriving
 python3 scripts/check-adaptive-native.py --compact --output artifacts/adaptive-native
 ```
 
@@ -140,3 +140,10 @@ All 221 acquisitions are confident in this positive run. Fault/recovery behavior
 is demonstrated by pipeline tests, not a native fault-injection claim.
 [Native evidence](../assets/adaptive-native-results.json) remains one authored
 success beside the separate failed Autzen generalization result.
+
+The frozen version-1 report schema and its algorithm identity marker retain their
+legacy `rustdrive` spelling for compatibility with published evidence. The
+current Cargo package and Rust module use `rustdriving-perception` and
+`rustdriving_perception`; this project rename does not revise the frozen
+classification parameters or historical results. Source hashes change with the
+import spelling, so new validation must record its current source fingerprint.

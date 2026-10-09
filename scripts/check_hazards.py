@@ -1187,8 +1187,8 @@ def main():
     report_file = args.output/'report.json'
     report_file.unlink(missing_ok=True)
     backends = list(CASES) if args.backend == 'all' else [args.backend]
-    cli = ROOT/'target/release/rustdrive'
-    rne = ROOT/'integrations/rne/target/release/rustdrive-rne'
+    cli = ROOT/'target/release/rustdriving'
+    rne = ROOT/'integrations/rne/target/release/rustdriving-rne'
     if not cli.is_file() or ('rne-dynamic' in backends and not rne.is_file()):
         raise SystemExit('Build release binaries first: bash scripts/check-hazards.sh')
     revision = (ROOT/'integrations/rne/rne-revision.txt').read_text().strip()

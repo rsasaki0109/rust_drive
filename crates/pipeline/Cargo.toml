@@ -1,5 +1,5 @@
 [package]
-name = "rustdrive-pipeline"
+name = "rustdriving-pipeline"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -9,14 +9,14 @@ repository.workspace = true
 [dependencies]
 serde.workspace = true
 serde_json.workspace = true
-rustdrive-core = { path = "../core" }
-rustdrive-localization = { path = "../localization" }
-rustdrive-perception = { path = "../perception" }
-rustdrive-mapping = { path = "../mapping" }
-rustdrive-prediction = { path = "../prediction" }
-rustdrive-planning = { path = "../planning" }
-rustdrive-control = { path = "../control" }
-rustdrive-routing = { path = "../routing" }
+rustdriving-core = { path = "../core" }
+rustdriving-localization = { path = "../localization" }
+rustdriving-perception = { path = "../perception" }
+rustdriving-mapping = { path = "../mapping" }
+rustdriving-prediction = { path = "../prediction" }
+rustdriving-planning = { path = "../planning" }
+rustdriving-control = { path = "../control" }
+rustdriving-routing = { path = "../routing" }
 
 [lints]
 workspace = true

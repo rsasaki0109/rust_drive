@@ -1,5 +1,6 @@
-//! CPU-only RNE plant and Rapier LiDAR adapter for the shared RustDrive pipeline.
+//! CPU-only RNE plant and Rapier LiDAR adapter for the shared RustDriving pipeline.
 pub mod body;
+mod capsule_refinement;
 #[cfg(test)]
 mod grazing;
 pub mod scene;
@@ -15,23 +16,23 @@ use rne_physics_rapier::RapierBackend;
 use rne_robot::{AckermannDrive, VehicleDynamics, ackermann_kinematics, vehicle_dynamics};
 use rne_sensor::{LidarRaycaster, LidarSpec, SensorNoiseKey, sample_lidar_checked};
 use rne_world::Transform3;
-use rustdrive_core::{
+use rustdriving_core::{
     ControlCommand, EgoState, Gnss, Lidar3dReturn, Lidar3dScan, LidarPlane, LidarScan,
     MultiHeightLidarScan, Odometry, Pose, Vec2, Vec3 as BodyPoint3,
 };
-use rustdrive_pipeline::{
+use rustdriving_pipeline::{
     GroundConfig, Lidar3dConfig, MotionLimits, MultiHeightLidarConfig, Perception3dConfig,
     PipelineConfig, SensorFrame,
 };
-use rustdrive_sim::traffic::{TrafficTelemetry, TrafficWorld};
-use rustdrive_sim::{
+use rustdriving_sim::traffic::{TrafficTelemetry, TrafficWorld};
+use rustdriving_sim::{
     Run, Scenario, SimulationBackend, WorldObject, pipeline_config, simulate_with_backend,
 };
 use scene::{MotionSample, Scene, SceneCapture, pose_json, scan_channel};
 use serde_json::json;
 use std::sync::{Arc, Mutex};
 
-/// RNE plant selection. Both use native RNE systems, never RustDrive's reference integrator.
+/// RNE plant selection. Both use native RNE systems, never RustDriving's reference integrator.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Plant {
     Kinematic,
@@ -56,6 +57,7 @@ pub fn from_rne(point: Vec3) -> Vec2 {
 struct EgoFilteredRaycaster<'a> {
     backend: &'a RapierBackend,
     ego: Entity,
+    precise_geometry: Option<&'a [capsule_refinement::PhysicalCapsule]>,
 }
 impl LidarRaycaster for EgoFilteredRaycaster<'_> {
     fn lidar_raycast(
@@ -65,6 +67,9 @@ impl LidarRaycaster for EgoFilteredRaycaster<'_> {
     ) -> Result<Vec<RaycastHit>, PhysicsError> {
         let mut hits = self.backend.raycast(world, query)?;
         hits.retain(|h| h.entity != self.ego);
+        if let Some(capsules) = self.precise_geometry {
+            hits = capsule_refinement::merge_hits(capsules, query, hits)?;
+        }
         Ok(hits)
     }
 }
@@ -85,6 +90,7 @@ pub struct RneBackend {
     multi_height: bool,
     lidar_3d: bool,
     vehicle_body: bool,
+    precise_capsule_rays: bool,
     scene_obstacles: Vec<(Entity, String)>,
     /// Test/diagnostic injection; a checked raycast against an unknown world must brake.
     pub fail_lidar_from: Option<f64>,
@@ -362,7 +368,7 @@ impl RneBackend {
             }
         }
         let mut world = World::new();
-        let ego = spawn_named(&mut world, "rustdrive_ego");
+        let ego = spawn_named(&mut world, "rustdriving_ego");
         let pose = config.initial_pose;
         let ego_collider = if vehicle_body {
             let mut collider = body_calibration.collider();
@@ -485,6 +491,7 @@ impl RneBackend {
             multi_height,
             lidar_3d,
             vehicle_body,
+            precise_capsule_rays: false,
             scene_obstacles,
             fail_lidar_from: None,
             fail_aux_lidar_from: None,
@@ -610,9 +617,18 @@ impl SimulationBackend for RneBackend {
                 range_noise_stddev_m: 0.008,
                 ..LidarSpec::default()
             };
+            let capsule_snapshot = if self.precise_capsule_rays {
+                Some(
+                    capsule_refinement::snapshot(&self.world, self.ego)
+                        .map_err(|e| e.to_string())?,
+                )
+            } else {
+                None
+            };
             let raycaster = EgoFilteredRaycaster {
                 backend: &self.physics,
                 ego: self.ego,
+                precise_geometry: capsule_snapshot.as_deref(),
             };
             let world = if self.fail_lidar_from.is_some_and(|t| time >= t) {
                 PhysicsWorldId(u32::MAX)
@@ -990,6 +1006,26 @@ pub fn run_with_scene_ground_body(
         GroundMode::VehicleBody,
     )
 }
+/// Opt-in native body mode refining returned physical capsule candidates in
+/// f64 and recovering missing physical capsule returns from the synchronized
+/// ECS collider snapshot. Other query shapes remain native and unchanged.
+pub fn run_with_scene_ground_body_precise(
+    scenario: Scenario,
+    seed: u64,
+    plant: Plant,
+    scene: Scene,
+) -> Result<(Run, serde_json::Value), String> {
+    run_scene_mode_precision(
+        scenario,
+        seed,
+        plant,
+        scene,
+        false,
+        true,
+        GroundMode::VehicleBody,
+        true,
+    )
+}
 /// Execute measured terrain/object perception without simulator semantic labels.
 pub fn run_with_scene_terrain_objects(
     scenario: Scenario,
@@ -1033,6 +1069,28 @@ fn run_scene_mode(
     lidar_3d: bool,
     ground_mode: GroundMode,
 ) -> Result<(Run, serde_json::Value), String> {
+    run_scene_mode_precision(
+        scenario,
+        seed,
+        plant,
+        scene,
+        multi_height,
+        lidar_3d,
+        ground_mode,
+        false,
+    )
+}
+#[allow(clippy::too_many_arguments)]
+fn run_scene_mode_precision(
+    scenario: Scenario,
+    seed: u64,
+    plant: Plant,
+    scene: Scene,
+    multi_height: bool,
+    lidar_3d: bool,
+    ground_mode: GroundMode,
+    precise_capsule_rays: bool,
+) -> Result<(Run, serde_json::Value), String> {
     let ground_segmentation = ground_mode != GroundMode::Disabled;
     let vehicle_body = ground_mode == GroundMode::VehicleBody;
     let adaptive_terrain = ground_mode == GroundMode::AdaptiveTerrainObjects;
@@ -1040,7 +1098,7 @@ fn run_scene_mode(
         ground_mode,
         GroundMode::TerrainObjects | GroundMode::AdaptiveTerrainObjects
     );
-    let backend = if adaptive_terrain {
+    let mut backend = if adaptive_terrain {
         RneBackend::new_with_scene_adaptive_terrain_objects(scenario.clone(), seed, plant, scene)?
     } else if terrain_objects {
         RneBackend::new_with_scene_terrain_objects(scenario.clone(), seed, plant, scene)?
@@ -1055,6 +1113,7 @@ fn run_scene_mode(
     } else {
         RneBackend::new_with_scene(scenario.clone(), seed, plant, scene)?
     };
+    backend.precise_capsule_rays = precise_capsule_rays;
     let capture = backend.scene.as_ref().unwrap().clone();
     let config = backend.config();
     let calibration = config.multi_height_lidar.clone();
@@ -1087,6 +1146,19 @@ fn run_scene_mode(
     evidence["backend"] = json!(run.backend);
     evidence["seed"] = json!(seed);
     evidence["scenario"] = json!(run.scenario.name);
+    if precise_capsule_rays {
+        evidence["precise_capsule_rays"] = json!(true);
+        evidence["capsule_query_refinement"] = json!({
+            "kind":"native_rapier_non_capsule_hits_f64_physical_capsule_recovery",
+            "geometry":"synchronized physical ECS capsule and rigid local offset",
+            "native_pin_unchanged":true,
+            "shape_expansion_m":0.0,
+            "recovers_native_false_negatives":true,
+            "maximum_capsules_per_acquisition":1024,
+            "other_shapes":"native hit distance and surface unchanged",
+            "ordering":"physical capsule and native non-capsule distance then entity index; one return per capsule"
+        });
+    }
     if multi_height {
         evidence["operating_mode"] = json!("multi_height_lidar");
         evidence["multi_height_lidar"] = json!(calibration.unwrap());
@@ -1279,7 +1351,7 @@ mod tests {
                 .unwrap()
                 .contains("ground_cuboids")
         );
-        rustdrive_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink()).unwrap();
+        rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink()).unwrap();
     }
     #[test]
     fn native_ground_fitting_preserves_low_middle_and_raised_obstacles() {
@@ -1321,7 +1393,8 @@ mod tests {
                 scene,
             )
             .unwrap();
-            let mut pipeline = rustdrive_pipeline::DrivingPipeline::new(backend.config()).unwrap();
+            let mut pipeline =
+                rustdriving_pipeline::DrivingPipeline::new(backend.config()).unwrap();
             for tick in 0..4 {
                 let output = pipeline
                     .step(&backend.observe(tick as f64 * 0.05, tick).unwrap())
@@ -1329,7 +1402,7 @@ mod tests {
                 assert!(
                     output
                         .health
-                        .contains(&rustdrive_pipeline::HealthIssue::InvalidLidar)
+                        .contains(&rustdriving_pipeline::HealthIssue::InvalidLidar)
                 );
                 assert_eq!(output.command.acceleration, -6.0);
                 if let Some(ground) = output.ground {
@@ -1402,7 +1475,7 @@ mod tests {
         );
         let mut bytes = vec![];
         run.sensor_log.as_ref().unwrap().write(&mut bytes).unwrap();
-        rustdrive_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink()).unwrap();
+        rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink()).unwrap();
     }
     #[test]
     fn inclined_lidar_3d_stops_the_slab_below_every_old_plane() {
@@ -1476,7 +1549,7 @@ mod tests {
             static_scene([35.0, 0.0, 4.5], [0.5, 3.0, 1.0]),
         )
         .unwrap();
-        let mut pipeline = rustdrive_pipeline::DrivingPipeline::new(backend.config()).unwrap();
+        let mut pipeline = rustdriving_pipeline::DrivingPipeline::new(backend.config()).unwrap();
         pipeline.step(&backend.observe(0.0, 0).unwrap()).unwrap();
         pipeline.step(&backend.observe(0.05, 1).unwrap()).unwrap();
         backend.fail_lidar_3d_from = Some(0.1);
@@ -1486,7 +1559,7 @@ mod tests {
         assert!(
             output
                 .health
-                .contains(&rustdrive_pipeline::HealthIssue::AcquisitionFailed)
+                .contains(&rustdriving_pipeline::HealthIssue::AcquisitionFailed)
         );
         assert_eq!(output.command.acceleration, -6.0);
         let held = pipeline.step(&backend.observe(0.15, 3).unwrap()).unwrap();
@@ -1496,7 +1569,7 @@ mod tests {
         assert!(
             !healthy
                 .health
-                .contains(&rustdrive_pipeline::HealthIssue::AcquisitionFailed)
+                .contains(&rustdriving_pipeline::HealthIssue::AcquisitionFailed)
         );
         let mut s = scenario("lidar-fault");
         s.lidar_dropout = None;
@@ -1514,7 +1587,7 @@ mod tests {
         assert!(run.summary.passed, "{:?}", run.summary);
         let mut bytes = vec![];
         run.sensor_log.as_ref().unwrap().write(&mut bytes).unwrap();
-        rustdrive_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink()).unwrap();
+        rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink()).unwrap();
     }
     #[test]
     fn multi_height_lidar_validates_overhead_returns_without_false_ground_obstacles() {
@@ -1537,7 +1610,7 @@ mod tests {
         }));
         let mut bytes = vec![];
         run.sensor_log.as_ref().unwrap().write(&mut bytes).unwrap();
-        rustdrive_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink()).unwrap();
+        rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink()).unwrap();
     }
     #[test]
     fn multi_height_lidar_keeps_sub_plane_blind_spots_as_physical_failures() {
@@ -1585,12 +1658,12 @@ mod tests {
                     && t.input.lidar.is_none()
                     && t.expected
                         .health
-                        .contains(&rustdrive_pipeline::HealthIssue::AcquisitionFailed)
+                        .contains(&rustdriving_pipeline::HealthIssue::AcquisitionFailed)
                     && t.expected.command.acceleration == -6.0
             }));
             let mut bytes = vec![];
             run.sensor_log.as_ref().unwrap().write(&mut bytes).unwrap();
-            rustdrive_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink())
+            rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink())
                 .unwrap();
         }
     }
@@ -1838,7 +1911,7 @@ mod tests {
                         .unwrap()
                         .expected
                         .health
-                        .contains(&rustdrive_pipeline::HealthIssue::StaleGnss)
+                        .contains(&rustdriving_pipeline::HealthIssue::StaleGnss)
                 );
                 assert_eq!(result.summary.final_speed, 0.0);
             }
@@ -1945,7 +2018,7 @@ mod tests {
             t.input.lidar_failed
                 && t.expected
                     .health
-                    .contains(&rustdrive_pipeline::HealthIssue::AcquisitionFailed)
+                    .contains(&rustdriving_pipeline::HealthIssue::AcquisitionFailed)
                 && t.expected.command.acceleration == -6.0
         }));
     }
@@ -1955,7 +2028,7 @@ mod tests {
         let mut bytes = vec![];
         result.sensor_log.unwrap().write(&mut bytes).unwrap();
         assert!(
-            rustdrive_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink())
+            rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink())
                 .unwrap()
                 .ticks
                 > 0

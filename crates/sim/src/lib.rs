@@ -5,15 +5,15 @@ pub mod signals;
 pub mod stop_signs;
 pub mod traffic;
 use intersections::IntersectionRuleEvaluator;
-use rustdrive_core::*;
-use rustdrive_pipeline::intersections::{IntersectionStatus, YieldIntersection};
-use rustdrive_pipeline::navigation::{NavigationConfig, NavigationStatus, NavigationUpdate};
-use rustdrive_pipeline::replay::SensorLog;
-use rustdrive_pipeline::stop_signs::StopSignStatus;
-use rustdrive_pipeline::traffic_controls::StopLine;
-use rustdrive_pipeline::traffic_controls::TrafficControlStatus;
-use rustdrive_pipeline::{DrivingPipeline, MapLocalizationConfig, PipelineConfig, SensorFrame};
-use rustdrive_routing::{RoadNetwork, RoadNetworkSpec, RoutePlan};
+use rustdriving_core::*;
+use rustdriving_pipeline::intersections::{IntersectionStatus, YieldIntersection};
+use rustdriving_pipeline::navigation::{NavigationConfig, NavigationStatus, NavigationUpdate};
+use rustdriving_pipeline::replay::SensorLog;
+use rustdriving_pipeline::stop_signs::StopSignStatus;
+use rustdriving_pipeline::traffic_controls::StopLine;
+use rustdriving_pipeline::traffic_controls::TrafficControlStatus;
+use rustdriving_pipeline::{DrivingPipeline, MapLocalizationConfig, PipelineConfig, SensorFrame};
+use rustdriving_routing::{RoadNetwork, RoadNetworkSpec, RoutePlan};
 use sensor_timing::{SensorDelivery, SensorTiming};
 use serde::{Deserialize, Serialize};
 use signals::{RuleEvaluator, SignalDropout, SignalSpec};
@@ -36,6 +36,9 @@ pub struct ObjectSpec {
     /// Motion starts at this time; the object already exists at active_from.
     #[serde(default)]
     pub moving_from: f64,
+    /// Prescribed non-following motion stops at this acquisition-time boundary.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub moving_until: Option<f64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub following: Option<FollowingSpec>,
 }
@@ -116,7 +119,7 @@ pub struct Scenario {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub cruise_speed: Option<f64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub motion_limits: Option<rustdrive_pipeline::MotionLimits>,
+    pub motion_limits: Option<rustdriving_pipeline::MotionLimits>,
     /// Independent swept-circle acceptance floor in meters; never a planner input.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub min_clearance_m: Option<f64>,
@@ -275,6 +278,12 @@ impl Scenario {
                 || o.lateral_speed.abs() > 4.0
                 || o.active_from < 0.0
                 || o.moving_from < 0.0
+                || o.moving_until.is_some_and(|until| {
+                    !until.is_finite()
+                        || until < o.moving_from.max(o.active_from)
+                        || until > 300.0
+                        || o.following.is_some()
+                })
             {
                 return Err("invalid object parameters".into());
             }
@@ -328,7 +337,9 @@ impl Scenario {
             .enumerate()
             .filter(|(_, o)| o.following.is_none() && t >= o.active_from)
             .map(|(id, o)| {
-                let elapsed = (t - o.active_from.max(o.moving_from)).max(0.0);
+                let elapsed = (o.moving_until.map_or(t, |until| t.min(until))
+                    - o.active_from.max(o.moving_from))
+                .max(0.0);
                 WorldObject {
                     id: id as u64,
                     position: route

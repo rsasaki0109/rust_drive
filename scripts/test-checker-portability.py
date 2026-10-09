@@ -17,7 +17,7 @@ class OsmCheckoutPortability(unittest.TestCase):
         spec = importlib.util.spec_from_file_location('portable_osm', ROOT/'scripts/check-osm-scenes.py')
         osm = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(osm)
-        with tempfile.TemporaryDirectory(prefix='rustdrive-checkout-') as directory:
+        with tempfile.TemporaryDirectory(prefix='rustdriving-checkout-') as directory:
             fixture = Path(directory)/'fixture'
             fixture.mkdir()
             shutil.copyfile(ROOT/'.gitattributes', fixture/'.gitattributes')

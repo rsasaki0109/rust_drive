@@ -1,6 +1,6 @@
 //! Simulator-only LiDAR transport. Acquisition stamps and body-frame points are immutable.
-use rustdrive_core::{Lidar3dScan, LidarScan, MultiHeightLidarScan};
-use rustdrive_pipeline::SensorFrame;
+use rustdriving_core::{Lidar3dScan, LidarScan, MultiHeightLidarScan};
+use rustdriving_pipeline::SensorFrame;
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
 
@@ -110,7 +110,7 @@ impl SensorDelivery {
 mod tests {
     use super::*;
     use crate::{Scenario, pipeline_config, simulate};
-    use rustdrive_core::Vec2;
+    use rustdriving_core::Vec2;
 
     fn timing(period: usize, delay: usize) -> SensorTiming {
         SensorTiming {
@@ -163,7 +163,7 @@ mod tests {
             stamp: scan.stamp,
             planes: [0.6, 0.15, 3.7]
                 .into_iter()
-                .map(|height_m| rustdrive_core::LidarPlane {
+                .map(|height_m| rustdriving_core::LidarPlane {
                     height_m,
                     points: scan.points.clone(),
                 })
@@ -248,9 +248,9 @@ mod tests {
             let elevation = std::f64::consts::PI / 60.0;
             Lidar3dScan {
                 stamp: scan.stamp,
-                returns: vec![rustdrive_core::Lidar3dReturn {
+                returns: vec![rustdriving_core::Lidar3dReturn {
                     ray_index: 360 * 16 + 9,
-                    point: rustdrive_core::Vec3::new(
+                    point: rustdriving_core::Vec3::new(
                         range * elevation.cos() * azimuth.cos(),
                         -range * elevation.cos() * azimuth.sin(),
                         0.6 + range * elevation.sin(),
@@ -472,7 +472,7 @@ mod tests {
         let mut bytes = Vec::new();
         log.write(&mut bytes).unwrap();
         let replay =
-            rustdrive_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink())
+            rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), std::io::sink())
                 .unwrap();
         assert!(replay.verified);
         assert_eq!(replay.ticks, run.summary.steps);

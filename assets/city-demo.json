@@ -1,0 +1,905 @@
+{
+  "schema_version": 1,
+  "backend": "rne-dynamic-rapier-lidar",
+  "renderer": "Blender Cycles CPU",
+  "blender_version": "Blender 4.3.2",
+  "input_trace": "/tmp/city-demo/seed-7/run.json",
+  "input_sha256": "7515c4607d55b23608cc4fe73b56be9474082b4e28a4b61f4b25019782999ee4",
+  "rne_expected_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
+  "scenario": {
+    "name": "Native left-hand urban traffic with signals, crossings, trucks and a walking dog",
+    "duration": 46.0,
+    "road_length": 120.0,
+    "half_width": 3.0,
+    "curve_amplitude": 0.0,
+    "expected": "stop",
+    "lidar_dropout": null,
+    "gnss_dropout": null,
+    "cruise_speed": 4.0,
+    "min_clearance_m": 1.0,
+    "objects": [
+      {
+        "s": 24.0,
+        "lateral": 0.0,
+        "radius": 1.0,
+        "speed": 2.0,
+        "lateral_speed": 0.0,
+        "active_from": 0.0,
+        "moving_from": 0.0,
+        "following": {
+          "initial_speed_m_s": 2.0,
+          "minimum_gap_m": 3.0,
+          "time_headway_s": 1.5,
+          "max_acceleration_m_s2": 2.0,
+          "comfortable_deceleration_m_s2": 2.0,
+          "max_deceleration_m_s2": 4.0,
+          "sensor_range_m": 45.0,
+          "stop_windows": [
+            {
+              "from": 34.0,
+              "until": 50.0
+            }
+          ],
+          "signal_control": {
+            "front_extent_m": 2.35,
+            "stop_margin_m": 0.5
+          }
+        }
+      },
+      {
+        "s": 18.0,
+        "lateral": -5.0,
+        "radius": 0.4,
+        "speed": 0.0,
+        "lateral_speed": 1.2,
+        "active_from": 0.0,
+        "moving_from": 2.0,
+        "moving_until": 10.666666666666668
+      },
+      {
+        "s": 8.0,
+        "lateral": 8.0,
+        "radius": 0.85,
+        "speed": 3.0,
+        "lateral_speed": 0.0,
+        "active_from": 0.0,
+        "moving_from": 0.0
+      },
+      {
+        "s": 80.0,
+        "lateral": -8.0,
+        "radius": 1.2,
+        "speed": -3.0,
+        "lateral_speed": 0.0,
+        "active_from": 0.0,
+        "moving_from": 0.0
+      },
+      {
+        "s": 38.0,
+        "lateral": 5.0,
+        "radius": 0.4,
+        "speed": 0.0,
+        "lateral_speed": -1.2,
+        "active_from": 0.0,
+        "moving_from": 14.0,
+        "moving_until": 22.666666666666668
+      },
+      {
+        "s": 85.0,
+        "lateral": 11.0,
+        "radius": 0.85,
+        "speed": -3.2,
+        "lateral_speed": 0.0,
+        "active_from": 0.0,
+        "moving_from": 0.0
+      },
+      {
+        "s": 44.0,
+        "lateral": -5.0,
+        "radius": 0.4,
+        "speed": 0.0,
+        "lateral_speed": 1.1,
+        "active_from": 0.0,
+        "moving_from": 16.0,
+        "moving_until": 25.454545454545453
+      },
+      {
+        "s": 110.0,
+        "lateral": -8.0,
+        "radius": 1.1,
+        "speed": -2.0,
+        "lateral_speed": 0.0,
+        "active_from": 0.0,
+        "moving_from": 0.0
+      },
+      {
+        "s": 60.0,
+        "lateral": 0.0,
+        "radius": 1.1,
+        "speed": 1.2,
+        "lateral_speed": 0.0,
+        "active_from": 0.0,
+        "moving_from": 0.0,
+        "following": {
+          "initial_speed_m_s": 1.2,
+          "minimum_gap_m": 3.0,
+          "time_headway_s": 1.5,
+          "max_acceleration_m_s2": 2.0,
+          "comfortable_deceleration_m_s2": 2.0,
+          "max_deceleration_m_s2": 4.0,
+          "sensor_range_m": 45.0,
+          "stop_windows": [
+            {
+              "from": 6.0,
+              "until": 40.0
+            }
+          ],
+          "signal_control": {
+            "front_extent_m": 2.15,
+            "stop_margin_m": 0.5
+          }
+        }
+      },
+      {
+        "s": 76.0,
+        "lateral": 0.0,
+        "radius": 1.1,
+        "speed": 0.8,
+        "lateral_speed": 0.0,
+        "active_from": 0.0,
+        "moving_from": 0.0,
+        "following": {
+          "initial_speed_m_s": 0.8,
+          "minimum_gap_m": 3.0,
+          "time_headway_s": 1.5,
+          "max_acceleration_m_s2": 2.0,
+          "comfortable_deceleration_m_s2": 2.0,
+          "max_deceleration_m_s2": 4.0,
+          "sensor_range_m": 45.0,
+          "stop_windows": [
+            {
+              "from": 8.0,
+              "until": 40.0
+            }
+          ],
+          "signal_control": {
+            "front_extent_m": 2.7,
+            "stop_margin_m": 0.5
+          }
+        }
+      },
+      {
+        "s": 119.0,
+        "lateral": -8.0,
+        "radius": 1.8,
+        "speed": -1.4,
+        "lateral_speed": 0.0,
+        "active_from": 0.0,
+        "moving_from": 0.0
+      },
+      {
+        "s": 32.0,
+        "lateral": 16.0,
+        "radius": 1.8,
+        "speed": 1.5,
+        "lateral_speed": 0.0,
+        "active_from": 0.0,
+        "moving_from": 0.0
+      },
+      {
+        "s": 16.0,
+        "lateral": 14.5,
+        "radius": 0.8,
+        "speed": 1.5,
+        "lateral_speed": 0.0,
+        "active_from": 0.0,
+        "moving_from": 0.0
+      },
+      {
+        "s": 90.0,
+        "lateral": 20.0,
+        "radius": 0.8,
+        "speed": -1.3,
+        "lateral_speed": 0.0,
+        "active_from": 0.0,
+        "moving_from": 0.0
+      },
+      {
+        "s": 28.0,
+        "lateral": -21.0,
+        "radius": 0.4,
+        "speed": 0.6,
+        "lateral_speed": 0.0,
+        "active_from": 0.0,
+        "moving_from": 0.0
+      },
+      {
+        "s": 36.0,
+        "lateral": -19.0,
+        "radius": 0.3,
+        "speed": 0.7,
+        "lateral_speed": 0.0,
+        "active_from": 0.0,
+        "moving_from": 0.0
+      },
+      {
+        "s": 52.0,
+        "lateral": 23.0,
+        "radius": 1.8,
+        "speed": -0.7,
+        "lateral_speed": 0.0,
+        "active_from": 0.0,
+        "moving_from": 0.0
+      },
+      {
+        "s": 12.0,
+        "lateral": -14.0,
+        "radius": 0.4,
+        "speed": 0.9,
+        "lateral_speed": 0.0,
+        "active_from": 0.0,
+        "moving_from": 0.0
+      },
+      {
+        "s": 12.0,
+        "lateral": -15.8,
+        "radius": 0.3,
+        "speed": 0.9,
+        "lateral_speed": 0.0,
+        "active_from": 0.0,
+        "moving_from": 0.0
+      }
+    ],
+    "traffic_signals": [
+      {
+        "stop_line": {
+          "id": "city-entry",
+          "route_s_m": 12.0
+        },
+        "phases": [
+          {
+            "from": 0.0,
+            "color": "Red"
+          },
+          {
+            "from": 8.0,
+            "color": "Green"
+          }
+        ]
+      },
+      {
+        "stop_line": {
+          "id": "city-crossing",
+          "route_s_m": 34.0
+        },
+        "phases": [
+          {
+            "from": 0.0,
+            "color": "Red"
+          },
+          {
+            "from": 24.0,
+            "color": "Green"
+          }
+        ]
+      }
+    ]
+  },
+  "summary": {
+    "scenario": "Native left-hand urban traffic with signals, crossings, trucks and a walking dog",
+    "seed": 7,
+    "simulated_seconds": 46.0,
+    "steps": 921,
+    "reached_goal": false,
+    "collisions": 0,
+    "road_violations": 0,
+    "traffic_min_clearance": 3.9999999999999987,
+    "min_clearance": 2.7280543673626245,
+    "localization_rmse": 0.061444996414526665,
+    "localization_max_error": 0.205084540725959,
+    "final_speed": 0.0,
+    "progress": 41.64563051729256,
+    "emergency_steps": 116,
+    "avoidance_steps": 0,
+    "max_tracks": 15,
+    "passed": true,
+    "failures": [],
+    "signal_min_stopline_margin_m": 1.885608795603181
+  },
+  "gif_frames": 155,
+  "sampled_frames": 155,
+  "playback_speed": 3,
+  "scene_states_verified": 155,
+  "samples": 12,
+  "physics_domain": "planar",
+  "scene": {
+    "style": "original-urban-display-v1",
+    "seed": 1729,
+    "scenery_counts": {
+      "trees": 0,
+      "buildings": 13,
+      "lamps": 20,
+      "sidewalk_sections": 720,
+      "display_only": true,
+      "style": "original-urban-display-v1",
+      "foreground_buildings_hidden_for_camera": 7
+    },
+    "ego_model": "hatchback",
+    "traffic_models": [
+      {
+        "id": 0,
+        "model": "sedan",
+        "color": [
+          0.949999988079071,
+          0.30000001192092896,
+          0.03500000014901161
+        ]
+      },
+      {
+        "id": 1,
+        "model": "pedestrian",
+        "display_only": true
+      },
+      {
+        "id": 2,
+        "model": "cyclist",
+        "display_only": true
+      },
+      {
+        "id": 3,
+        "model": "van",
+        "color": [
+          0.7200000286102295,
+          0.75,
+          0.6800000071525574
+        ]
+      },
+      {
+        "id": 4,
+        "model": "pedestrian",
+        "display_only": true
+      },
+      {
+        "id": 5,
+        "model": "cyclist",
+        "display_only": true
+      },
+      {
+        "id": 6,
+        "model": "pedestrian",
+        "display_only": true
+      },
+      {
+        "id": 7,
+        "model": "sedan",
+        "color": [
+          0.05999999865889549,
+          0.36000001430511475,
+          0.23000000417232513
+        ]
+      },
+      {
+        "id": 8,
+        "model": "hatchback",
+        "color": [
+          0.949999988079071,
+          0.30000001192092896,
+          0.03500000014901161
+        ]
+      },
+      {
+        "id": 9,
+        "model": "pickup",
+        "color": [
+          0.7200000286102295,
+          0.75,
+          0.6800000071525574
+        ]
+      },
+      {
+        "id": 10,
+        "model": "truck",
+        "color": [
+          0.05999999865889549,
+          0.36000001430511475,
+          0.23000000417232513
+        ]
+      },
+      {
+        "id": 11,
+        "model": "truck",
+        "color": [
+          0.949999988079071,
+          0.30000001192092896,
+          0.03500000014901161
+        ]
+      },
+      {
+        "id": 12,
+        "model": "cyclist",
+        "display_only": true
+      },
+      {
+        "id": 13,
+        "model": "cyclist",
+        "display_only": true
+      },
+      {
+        "id": 14,
+        "model": "elder",
+        "display_only": true
+      },
+      {
+        "id": 15,
+        "model": "child",
+        "display_only": true
+      },
+      {
+        "id": 16,
+        "model": "parent_stroller",
+        "display_only": true
+      },
+      {
+        "id": 17,
+        "model": "pedestrian",
+        "display_only": true
+      },
+      {
+        "id": 18,
+        "model": "dog",
+        "display_only": true
+      }
+    ],
+    "camera": "street",
+    "actor_models": {
+      "0": "sedan",
+      "1": "pedestrian",
+      "2": "cyclist",
+      "3": "van",
+      "4": "pedestrian",
+      "5": "cyclist",
+      "6": "pedestrian",
+      "7": "sedan",
+      "8": "hatchback",
+      "9": "pickup",
+      "10": "truck",
+      "11": "truck",
+      "12": "cyclist",
+      "13": "cyclist",
+      "14": "elder",
+      "15": "child",
+      "16": "parent_stroller",
+      "17": "pedestrian",
+      "18": "dog"
+    },
+    "road_user_meshes_display_only": true,
+    "mapped_signal_ids": [
+      "city-entry",
+      "city-crossing"
+    ],
+    "mapped_stop_sign_ids": [],
+    "mapped_intersection_ids": [],
+    "opposing_display_lanes": [
+      {
+        "actor_id": 3,
+        "offset_m": -8.0,
+        "display_only": true
+      }
+    ],
+    "service_display_lanes": [
+      {
+        "actor_id": 11,
+        "offset_m": 16.0,
+        "display_only": true
+      }
+    ],
+    "left_traffic_display": true,
+    "main_street_center_offset_m": -4.0,
+    "environment": "urban",
+    "painted_lane_half_width_m": 1.8,
+    "crossing_stripe_actor_ids": [
+      1,
+      4,
+      6
+    ],
+    "dog_pairs": {
+      "17": 18
+    },
+    "dog_leashes_display_only": true,
+    "display_road_extension_m": 20,
+    "scenery_excludes_recorded_actor_paths": true,
+    "camera_projection": "ORTHO",
+    "camera_orthographic_scale_m": 64.0,
+    "vehicle_display_dimensions_m": {
+      "ego": {
+        "length": 4.25,
+        "width": 1.78,
+        "height": 1.48
+      },
+      "actors": {
+        "0": {
+          "length": 4.65,
+          "width": 1.82,
+          "height": 1.46
+        },
+        "3": {
+          "length": 5.0,
+          "width": 1.95,
+          "height": 2.05
+        },
+        "7": {
+          "length": 4.65,
+          "width": 1.82,
+          "height": 1.46
+        },
+        "8": {
+          "length": 4.25,
+          "width": 1.78,
+          "height": 1.48
+        },
+        "9": {
+          "length": 5.35,
+          "width": 1.95,
+          "height": 1.82
+        },
+        "10": {
+          "length": 7.5,
+          "width": 2.45,
+          "height": 3.3
+        },
+        "11": {
+          "length": 7.5,
+          "width": 2.45,
+          "height": 3.3
+        }
+      }
+    },
+    "vehicle_display_scales": {
+      "ego": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "actors": {
+        "0": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "1": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "2": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "3": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "4": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "5": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "6": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "7": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "8": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "9": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "10": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "11": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "12": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "13": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "14": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "15": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "16": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "17": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "18": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    },
+    "native_scene_name": "Real inclined rays measure moving traffic over physical ground",
+    "native_cuboids": [],
+    "native_ground_cuboids": [
+      {
+        "id": "road",
+        "center_m": [
+          30.0,
+          0.0,
+          -0.5
+        ],
+        "yaw_rad": 0.0,
+        "world_corners_m": [
+          [
+            -20.0,
+            -25.0,
+            -1.0
+          ],
+          [
+            80.0,
+            -25.0,
+            -1.0
+          ],
+          [
+            80.0,
+            25.0,
+            -1.0
+          ],
+          [
+            -20.0,
+            25.0,
+            -1.0
+          ],
+          [
+            -20.0,
+            -25.0,
+            0.0
+          ],
+          [
+            80.0,
+            -25.0,
+            0.0
+          ],
+          [
+            80.0,
+            25.0,
+            0.0
+          ],
+          [
+            -20.0,
+            25.0,
+            0.0
+          ]
+        ]
+      }
+    ],
+    "road_surface": "actual SceneV2 support cuboids at flat datum 0 m with display-only asphalt corridor overlays",
+    "scenery_physical": false,
+    "body_envelope": {
+      "id": "research-body-envelope",
+      "center_m": [
+        41.6456298828125,
+        0.05334131047129631,
+        0.8999999761581421
+      ],
+      "yaw_rad": 0.00624980155673535,
+      "world_corners_m": [
+        [
+          39.55129623413086,
+          -0.8597655892372131,
+          0.1499999761581421
+        ],
+        [
+          43.75121307373047,
+          -0.8335165977478027,
+          0.1499999761581421
+        ],
+        [
+          43.73996353149414,
+          0.966448187828064,
+          0.1499999761581421
+        ],
+        [
+          39.54004669189453,
+          0.9401991963386536,
+          0.1499999761581421
+        ],
+        [
+          39.55129623413086,
+          -0.8597655892372131,
+          1.649999976158142
+        ],
+        [
+          43.75121307373047,
+          -0.8335165977478027,
+          1.649999976158142
+        ],
+        [
+          43.73996353149414,
+          0.966448187828064,
+          1.649999976158142
+        ],
+        [
+          39.54004669189453,
+          0.9401991963386536,
+          1.649999976158142
+        ]
+      ]
+    }
+  },
+  "renderer_source_sha256": "0b5cc20ce35cbb3801eb134a14339f799de9c0babd4315faab7bfe972c718061",
+  "vehicle_display_scale_states_verified": 155,
+  "gif_palette_colors": 192,
+  "gif_dither": false,
+  "spatial_filter": "3x3 median, viewport only",
+  "renderer_command": "python3 scripts/render_demo_3d.py /tmp/city-demo/seed-7/run.json --output assets/city-demo.gif --samples 12 --threads 3 --camera street --traffic-models hatchback --environment urban --scene-output artifacts/city-demo-final.blend --native-scene /tmp/city-demo/seed-7/scene.json --actor-models 0=sedan 1=pedestrian 2=cyclist 3=van 4=pedestrian 5=cyclist 6=pedestrian 7=sedan 8=hatchback 9=pickup 10=truck 11=truck 12=cyclist 13=cyclist 14=elder 15=child 16=parent_stroller 17=pedestrian 18=dog --dog-pairs 17=18",
+  "native_scene": {
+    "input": "/tmp/city-demo/seed-7/scene.json",
+    "input_sha256": "6319d5fe2c2f8ad3ebc262b7dd642b928ae8d2f7465b012764a6865884a0fd33",
+    "scene": {
+      "ground_cuboids": [
+        {
+          "center_m": [
+            30.0,
+            0.0,
+            -0.5
+          ],
+          "half_extents_m": [
+            50.0,
+            25.0,
+            0.5
+          ],
+          "id": "road",
+          "yaw_rad": 0.0
+        }
+      ],
+      "name": "Real inclined rays measure moving traffic over physical ground",
+      "schema_version": 2,
+      "static_cuboids": []
+    },
+    "summary": {
+      "checks": 0,
+      "failures": [],
+      "guard_overlap_intervals": 0,
+      "min_clearance_m": null,
+      "native_overlap_samples": 0,
+      "passed": true
+    },
+    "seed": 7,
+    "body_pose_states_verified": 921,
+    "cuboid_mesh_states_verified": 155,
+    "contact_response": false,
+    "precise_capsule_rays": true,
+    "capsule_query_refinement": {
+      "geometry": "synchronized physical ECS capsule and rigid local offset",
+      "kind": "native_rapier_non_capsule_hits_f64_physical_capsule_recovery",
+      "maximum_capsules_per_acquisition": 1024,
+      "native_pin_unchanged": true,
+      "ordering": "physical capsule and native non-capsule distance then entity index; one return per capsule",
+      "other_shapes": "native hit distance and surface unchanged",
+      "recovers_native_false_negatives": true,
+      "shape_expansion_m": 0.0
+    },
+    "operating_mode": "lidar3d_ground_body",
+    "lidar3d_calibration": {
+      "azimuth_columns": 180,
+      "collision_bottom_m": -0.85,
+      "collision_top_m": 2.65,
+      "elevation_rings": 16,
+      "ground": {
+        "fit_radius_m": 8.0,
+        "max_height_offset_m": 0.03,
+        "max_slope": 0.05,
+        "min_cell_inliers": 6,
+        "min_inliers": 200,
+        "min_sector_inliers": 20,
+        "reference_height_m": 0.0,
+        "residual_threshold_m": 0.02
+      },
+      "max_elevation_rad": 0.2617993877991494,
+      "max_range_m": 45.0,
+      "min_elevation_rad": -0.2617993877991494,
+      "min_range_m": 0.2,
+      "mount_height_m": 0.6
+    },
+    "cloud_frame": "body forward/left, road-datum up",
+    "recorded_cloud_audit": {
+      "acquisitions": 461,
+      "failed_acquisitions": 0,
+      "returns_verified": 656425,
+      "ray_ordinals_per_acquisition": 2880
+    },
+    "diagnostic_horizontal_heights_m": [
+      0.6,
+      0.15,
+      3.7
+    ],
+    "collision_height_interval_m": [
+      -0.85,
+      2.65
+    ],
+    "projection": "measured supported ground removal, measured Z gate, ordinal-order 5 cm body-XY voxels",
+    "instantaneous_scan": true,
+    "deskew": false,
+    "ground_diagnostics_audit": {
+      "observations_verified": 461,
+      "confident_fits": 461,
+      "removed_returns": 606021,
+      "preserved_returns": 50404,
+      "audit_scope": "recorded support/count/plane consistency; independent ground oracle is separate"
+    },
+    "ground_mesh_states_verified": 155,
+    "physical_road_top_m": 0.0,
+    "ground_contact_response": false,
+    "gif_sha256": "8777b526982e0e05f43e1add43454dab7d4c90bd633a91a322c1b855b5235e47",
+    "encoded_duration_ms": 16800,
+    "body_guard": {
+      "calibration": {
+        "bottom_m": 0.15,
+        "calibration_kind": "authored_research_dimensions",
+        "center_offset_body_m": [
+          0.0,
+          0.0
+        ],
+        "clearance_floor_m": 1.0,
+        "height_m": 1.5,
+        "length_m": 4.2,
+        "pose_reference": "native_planar_plant_reference",
+        "speed_bound_m_s": 12.0,
+        "width_m": 1.8
+      },
+      "summary": {
+        "checks": 0,
+        "failures": [],
+        "guard_overlap_intervals": 0,
+        "min_clearance_m": null,
+        "native_overlap_samples": 0,
+        "passed": true
+      },
+      "mesh_states_verified": 155,
+      "visualization": "separate wire envelope; cosmetic SI vehicle presets are independent of physical calibration",
+      "guard_scope": "upright body versus static obstacle cuboids; explicit road excluded",
+      "traffic_geometry": "native capsule proxies; circumscribed circular planar clearance"
+    }
+  }
+}

@@ -1,0 +1,639 @@
+{
+  "schema": "rustdriving-package-rename-validation-v1",
+  "created_utc": "2026-10-09T20:55:10.343404+00:00",
+  "scope": "Pure project namespace rename revalidation on previously viewed measured data. No new fresh held-out claim, parameter tuning, accuracy improvement, or maturity increase.",
+  "baseline_git_commit": "b19485378b974387254fee1f13abf858cb1b5879",
+  "algorithm": {
+    "path": "crates/perception/src/terrain_adaptive.rs",
+    "old_sha256": "a5e20db00507cb53de3ba264e948fc64a84d00ddb2febb40037f29c5b074b8d9",
+    "new_sha256": "dac01110cd1ccd36cedc8846b8c4b3767a1c1076d708171c6f38d8b89296f3e6",
+    "only_change": "use rustdrive_core::Vec3; -> use rustdriving_core::Vec3;"
+  },
+  "evaluator_source_sha256": "9c32e572575341ee8a8b3763152d608c32ca1143972d0983b563c255d99c0def",
+  "original_freeze_sha256": "829661032b781bb5b0999451137063e08c1dae114d3fa0937503da68b137c6e3",
+  "renamed_regression_freeze_sha256": "a68e7d9bbcfd3acb3b875f239c6486cbfb604cec0aed43bb58273eb7c213a3d3",
+  "original_freeze_preserved": true,
+  "all_original_gate_configuration_and_dataset_fields_preserved": true,
+  "freeze_saved_before_evaluation": "2026-10-09T20:53:51.789001+00:00",
+  "locks": {
+    "Cargo.lock": {
+      "old_sha256": "57547eda751d3d2c40dc098e4023927ccde90c40f7e16f32c8fad304832933f6",
+      "new_sha256": "de8e6afb2c8f59be7f68f0ccf8604e4d43d9951d6902314f46f16b8121dbccf7",
+      "only_project_package_names_changed": true,
+      "all_external_versions_checksums_and_dependencies_preserved": true,
+      "renamed_packages": [
+        {
+          "old": "rustdrive-control",
+          "new": "rustdriving-control",
+          "version": "0.1.0"
+        },
+        {
+          "old": "rustdrive-core",
+          "new": "rustdriving-core",
+          "version": "0.1.0"
+        },
+        {
+          "old": "rustdrive-dataset-eval",
+          "new": "rustdriving-dataset-eval",
+          "version": "0.1.0"
+        },
+        {
+          "old": "rustdrive-localization",
+          "new": "rustdriving-localization",
+          "version": "0.1.0"
+        },
+        {
+          "old": "rustdrive-mapping",
+          "new": "rustdriving-mapping",
+          "version": "0.1.0"
+        },
+        {
+          "old": "rustdrive-perception",
+          "new": "rustdriving-perception",
+          "version": "0.1.0"
+        },
+        {
+          "old": "rustdrive-pipeline",
+          "new": "rustdriving-pipeline",
+          "version": "0.1.0"
+        },
+        {
+          "old": "rustdrive-planning",
+          "new": "rustdriving-planning",
+          "version": "0.1.0"
+        },
+        {
+          "old": "rustdrive-prediction",
+          "new": "rustdriving-prediction",
+          "version": "0.1.0"
+        },
+        {
+          "old": "rustdrive-routing",
+          "new": "rustdriving-routing",
+          "version": "0.1.0"
+        },
+        {
+          "old": "rustdrive-sim",
+          "new": "rustdriving-sim",
+          "version": "0.1.0"
+        }
+      ]
+    },
+    "integrations/rne/Cargo.lock": {
+      "old_sha256": "bf8e9843d55232c8a020d2ca4cc571e82ed91bde369f9e68ecdc4bfa5b27acdc",
+      "new_sha256": "c15e499bc74ddcf213bb0ac22cb22280c68d49ead2e203b8a7213e5a9f38f2ff",
+      "only_project_package_names_changed": true,
+      "all_external_versions_checksums_and_dependencies_preserved": true,
+      "renamed_packages": [
+        {
+          "old": "rustdrive-control",
+          "new": "rustdriving-control",
+          "version": "0.1.0"
+        },
+        {
+          "old": "rustdrive-core",
+          "new": "rustdriving-core",
+          "version": "0.1.0"
+        },
+        {
+          "old": "rustdrive-localization",
+          "new": "rustdriving-localization",
+          "version": "0.1.0"
+        },
+        {
+          "old": "rustdrive-mapping",
+          "new": "rustdriving-mapping",
+          "version": "0.1.0"
+        },
+        {
+          "old": "rustdrive-perception",
+          "new": "rustdriving-perception",
+          "version": "0.1.0"
+        },
+        {
+          "old": "rustdrive-pipeline",
+          "new": "rustdriving-pipeline",
+          "version": "0.1.0"
+        },
+        {
+          "old": "rustdrive-planning",
+          "new": "rustdriving-planning",
+          "version": "0.1.0"
+        },
+        {
+          "old": "rustdrive-prediction",
+          "new": "rustdriving-prediction",
+          "version": "0.1.0"
+        },
+        {
+          "old": "rustdrive-rne",
+          "new": "rustdriving-rne",
+          "version": "0.1.0"
+        },
+        {
+          "old": "rustdrive-routing",
+          "new": "rustdriving-routing",
+          "version": "0.1.0"
+        },
+        {
+          "old": "rustdrive-sim",
+          "new": "rustdriving-sim",
+          "version": "0.1.0"
+        }
+      ]
+    },
+    "integrations/rgbd/Cargo.lock": {
+      "old_sha256": "d9e092be3a8bfc69e07eed3610f17f49b289edac6cea3878f0fa80d4bce11461",
+      "new_sha256": "66a95960e1763d7623c40dc0c659e44cb5cda758b215c99bec09606a10c8ab86",
+      "only_project_package_names_changed": true,
+      "all_external_versions_checksums_and_dependencies_preserved": true,
+      "renamed_packages": [
+        {
+          "old": "rustdrive-core",
+          "new": "rustdriving-core",
+          "version": "0.1.0"
+        },
+        {
+          "old": "rustdrive-localization",
+          "new": "rustdriving-localization",
+          "version": "0.1.0"
+        },
+        {
+          "old": "rustdrive-rgbd-evaluate",
+          "new": "rustdriving-rgbd-evaluate",
+          "version": "0.1.0"
+        }
+      ]
+    },
+    "integrations/onnx/Cargo.lock": {
+      "old_sha256": "84e7f9d7384362f4fd5f41eff588c01e05e2c0b49377e4798b0f7089c15e030c",
+      "new_sha256": "aa6f1b198ff4ad901f9547ef852dc0113b5c36624d43030a863af32b12f07a0c",
+      "only_project_package_names_changed": true,
+      "all_external_versions_checksums_and_dependencies_preserved": true,
+      "renamed_packages": [
+        {
+          "old": "rustdrive-camera-detect",
+          "new": "rustdriving-camera-detect",
+          "version": "0.1.0"
+        }
+      ]
+    }
+  },
+  "reports": {
+    "calibration_original": {
+      "dataset": "isprs-terrain",
+      "evaluation_role": "regression_on_previously_viewed_subset",
+      "legacy_cli_split": "calibration_original",
+      "original_report_sha256": "871a155ff06d292fc8c3c5dc71bcae9bac9251e05f82d9cea3d0b26c1954df5c",
+      "renamed_report_sha256": "a2877ba1bcee907ee59370f6334d085758f3c7cb3d763b9bcbf8e89eaca587d1",
+      "original_archive_sha256": "89ae079e84d4922bde92376ede35680e517425408ff1e9ea0c91207113c048d0",
+      "semantic_report_sha256": "43ac137d09e5ef7d6b02ecf67bbc1db406681da03dbe8a8991132826f09a6172",
+      "all_predictions_labels_metrics_geometry_and_objects_unchanged": true,
+      "ignored_fields": [
+        "algorithm_source_sha256",
+        "freeze",
+        "classification_ms",
+        "cluster_ms"
+      ],
+      "oracle_report_sha256": "798372ea0371b1c446fc2a5558c2d83ce4dee8265f8eab7bbd169f96fe3e8412",
+      "oracle_integrity_passed": true,
+      "oracle_mutations_rejected": [
+        "incomplete_partition",
+        "false_metrics",
+        "wrong_unit",
+        "wrong_raw_hash",
+        "wrong_scoring_exclusion",
+        "altered_frozen_parameters"
+      ],
+      "accuracy_gate_passed": null,
+      "aggregate": {
+        "confusion": {
+          "fn": 29514,
+          "fp": 1006,
+          "tn": 67643,
+          "tp": 70219
+        },
+        "metrics": {
+          "accuracy": 0.8187454716062287,
+          "f1": 0.8214766199885352,
+          "precision": 0.9858757458757459,
+          "recall": 0.7040698665436717
+        }
+      },
+      "samples": [
+        {
+          "sample": "samp11",
+          "ground_indices_sha256": "b9d3f3ec62aa0cbc065c1ec31cb588dd74a3ef1a57f27f9fba23091be9986d1e",
+          "non_ground_indices_sha256": "83cd1f8dca2f46b310d82650b22c01aa094a045cb3702cb8222aa67b2c0a1e99",
+          "independently_decoded_reference_labels_sha256": "0b694ad29fb37d8253c876eaef6e5e62ae038e257cc643989446322036bec209",
+          "reference_labels_source_identity_unchanged": true,
+          "confusion": {
+            "fn": 14105,
+            "fp": 164,
+            "tn": 16053,
+            "tp": 7688
+          },
+          "metrics": {
+            "accuracy": 0.62459878979216,
+            "f1": 0.5186709394501602,
+            "precision": 0.9791136016301579,
+            "recall": 0.352773826458037
+          },
+          "support_confident": false
+        },
+        {
+          "sample": "samp12",
+          "ground_indices_sha256": "43ac39c7be11789eee4706e711a9494840846cd8f862bdf1d22a14e3e96e1830",
+          "non_ground_indices_sha256": "423d229cfec864585111dabb7763d7f3aacef6ca50382c153873d933726f5fdf",
+          "independently_decoded_reference_labels_sha256": "7ab05f0f64b773b9a296da2a5620498d20215af52f2d5a097dab6575d79eb27a",
+          "reference_labels_source_identity_unchanged": true,
+          "confusion": {
+            "fn": 4602,
+            "fp": 248,
+            "tn": 25179,
+            "tp": 22090
+          },
+          "metrics": {
+            "accuracy": 0.906943724937163,
+            "f1": 0.9010809708341831,
+            "precision": 0.9888978422419196,
+            "recall": 0.8275887906488836
+          },
+          "support_confident": true
+        },
+        {
+          "sample": "samp21",
+          "ground_indices_sha256": "462db53c6841b24506c4482b5eb9c5315a57dbd9be1b3812a8dcae540e4590cc",
+          "non_ground_indices_sha256": "641150f72899c13d00965244f604b8e8d2f145bf064cadd3dba9d5a20ce7f104",
+          "independently_decoded_reference_labels_sha256": "701bc75653acdfa02c1b7bc2ced319bbc926fdcd8b9110503923332e6f0bc8c7",
+          "reference_labels_source_identity_unchanged": true,
+          "confusion": {
+            "fn": 1167,
+            "fp": 42,
+            "tn": 2833,
+            "tp": 8918
+          },
+          "metrics": {
+            "accuracy": 0.906712962962963,
+            "f1": 0.936518771331058,
+            "precision": 0.9953125,
+            "recall": 0.8842835894893406
+          },
+          "support_confident": true
+        },
+        {
+          "sample": "samp22",
+          "ground_indices_sha256": "0a2280dea6a41d95e481029c5dc36a6feb50f89bdf7b0c59453e429e4ff0df67",
+          "non_ground_indices_sha256": "405a8adcffde3e110a9255cf7cd9a032ade3a81b358eac14f734083cea2d9526",
+          "independently_decoded_reference_labels_sha256": "d216fbffc4f39e1c35afea6350bc5d207b4b38e512bc93d5fdcb8d1774793c07",
+          "reference_labels_source_identity_unchanged": true,
+          "confusion": {
+            "fn": 4484,
+            "fp": 239,
+            "tn": 9961,
+            "tp": 18022
+          },
+          "metrics": {
+            "accuracy": 0.8555922460710573,
+            "f1": 0.8841464910344151,
+            "precision": 0.9869119982476315,
+            "recall": 0.8007642406469386
+          },
+          "support_confident": true
+        },
+        {
+          "sample": "samp23",
+          "ground_indices_sha256": "187b44987a4defb75ae665c217cd676f9ed1ed4147b4b34b1a308811aa3d2c10",
+          "non_ground_indices_sha256": "5358b02705991cfa4b56b3174649073a1ebec2ab9bdc3f6e456ff822c92fa947",
+          "independently_decoded_reference_labels_sha256": "ab6ab541c4580f3e3c8da428620c7eebf46ec3301d9e214b1527ea5ea395042c",
+          "reference_labels_source_identity_unchanged": true,
+          "confusion": {
+            "fn": 3941,
+            "fp": 254,
+            "tn": 11618,
+            "tp": 9282
+          },
+          "metrics": {
+            "accuracy": 0.8328352261406655,
+            "f1": 0.8156773144690013,
+            "precision": 0.9733640939597316,
+            "recall": 0.7019587083112758
+          },
+          "support_confident": true
+        },
+        {
+          "sample": "samp24",
+          "ground_indices_sha256": "16943f2b1dd614b7eee154e5f7f038920c82c16c2da2f095936ffec3ee160504",
+          "non_ground_indices_sha256": "0facc929586a70f7eb872bb14a4988d447956981d2dc574aea9f8683c5489e85",
+          "independently_decoded_reference_labels_sha256": "2a33572f982c3da4fef267b8e798c2c7ddade5db4163f35c2e740977789ed54d",
+          "reference_labels_source_identity_unchanged": true,
+          "confusion": {
+            "fn": 1215,
+            "fp": 59,
+            "tn": 1999,
+            "tp": 4219
+          },
+          "metrics": {
+            "accuracy": 0.8299519487453284,
+            "f1": 0.8688220757825371,
+            "precision": 0.9862085086489013,
+            "recall": 0.7764078027235922
+          },
+          "support_confident": true
+        }
+      ]
+    },
+    "regression": {
+      "dataset": "isprs-terrain",
+      "evaluation_role": "regression_on_previously_viewed_subset",
+      "legacy_cli_split": "regression",
+      "original_report_sha256": "fc304d9ee81218010d4833a1d8b9eaab8f6bdc4686c204b9247033376eae3a8a",
+      "renamed_report_sha256": "10163e7a62fe0191e5b057a119cb0227c6443c7fee3892547586c69c6a367ad4",
+      "original_archive_sha256": "e7000c9300412096c53c1e7a07657e65ed4796329a18b392473ac7cea8cbb44a",
+      "semantic_report_sha256": "be27c873f8fcb1743c622660d06385f551b0e11e6c603fba6c664ee3457d24d5",
+      "all_predictions_labels_metrics_geometry_and_objects_unchanged": true,
+      "ignored_fields": [
+        "algorithm_source_sha256",
+        "freeze",
+        "classification_ms",
+        "cluster_ms"
+      ],
+      "oracle_report_sha256": "0ca302b295310cc48f48763dfe3c7e24a34a063f77a4330992f615e925f21567",
+      "oracle_integrity_passed": true,
+      "oracle_mutations_rejected": [
+        "incomplete_partition",
+        "false_metrics",
+        "wrong_unit",
+        "wrong_raw_hash",
+        "wrong_scoring_exclusion",
+        "altered_frozen_parameters"
+      ],
+      "accuracy_gate_passed": null,
+      "aggregate": {
+        "confusion": {
+          "fn": 45166,
+          "fp": 4048,
+          "tn": 60158,
+          "tp": 107201
+        },
+        "metrics": {
+          "accuracy": 0.7727602240353137,
+          "f1": 0.8133117868414663,
+          "precision": 0.963613156073313,
+          "recall": 0.7035709832181509
+        }
+      },
+      "samples": [
+        {
+          "sample": "samp31",
+          "ground_indices_sha256": "38cfc1ed6eb3e89ffc936140fe0fe41ecc9a05bcfe6715986d5239a347005cc4",
+          "non_ground_indices_sha256": "12e1ea56769f18c64f0cba39165ed6e41b90b2f83c4ce46a6e5d71db9ae968e9",
+          "independently_decoded_reference_labels_sha256": "07f2bd64f050e0844ecc6cd694e2c61ad72966be5cadc7c3c9f567b355344b1b",
+          "reference_labels_source_identity_unchanged": true,
+          "confusion": {
+            "fn": 689,
+            "fp": 368,
+            "tn": 12938,
+            "tp": 14867
+          },
+          "metrics": {
+            "accuracy": 0.9633774513200748,
+            "f1": 0.9656717872105486,
+            "precision": 0.9758450935346242,
+            "recall": 0.9557084083311905
+          },
+          "support_confident": true
+        },
+        {
+          "sample": "samp41",
+          "ground_indices_sha256": "4f552c0fb4ef9b727deef88485fb3ccc6b628be516236d7eba128fa6f8dd0a2a",
+          "non_ground_indices_sha256": "f41dbd67f3a4f7935bd907963213ba76aa5b26f2e8658d1b281d4f9e89dece23",
+          "independently_decoded_reference_labels_sha256": "1d523dca5f7a13016081d30a016baf462c73cbc4f31e2fcaeb48c476c489ea60",
+          "reference_labels_source_identity_unchanged": true,
+          "confusion": {
+            "fn": 1170,
+            "fp": 25,
+            "tn": 5602,
+            "tp": 4434
+          },
+          "metrics": {
+            "accuracy": 0.8935980767518475,
+            "f1": 0.8812481367385472,
+            "precision": 0.9943933617403005,
+            "recall": 0.791220556745182
+          },
+          "support_confident": true
+        },
+        {
+          "sample": "samp42",
+          "ground_indices_sha256": "0dd9209bcea5da78300888e5b47fa5b0943413cf347c4fe1dafd450df7c5fa3d",
+          "non_ground_indices_sha256": "f27163ad5cb9e94133d70a4e34412cb990349d1e7f3c2556dd37356a8f8cb4c8",
+          "independently_decoded_reference_labels_sha256": "b3daeaf599ef39bd45b8da1d42a006cb81ec67b71366eaeeffe00fa8e270675d",
+          "reference_labels_source_identity_unchanged": true,
+          "confusion": {
+            "fn": 4241,
+            "fp": 3537,
+            "tn": 26489,
+            "tp": 8203
+          },
+          "metrics": {
+            "accuracy": 0.8168589592653638,
+            "f1": 0.6783824015878267,
+            "precision": 0.6987223168654174,
+            "recall": 0.6591931854709097
+          },
+          "support_confident": true
+        },
+        {
+          "sample": "samp51",
+          "ground_indices_sha256": "e56adfa723c85d261fbd4cd08506f38703a9d83ffb9dca74950a338d9ffc0a35",
+          "non_ground_indices_sha256": "187af3bb27158e074c4f3603560fbf9eeaea50aa0ba52ef856c3187b4ee36575",
+          "independently_decoded_reference_labels_sha256": "cefb802462b4679b92b6f75cfd7ce79e19c7d8fa6244058ec247b565553646eb",
+          "reference_labels_source_identity_unchanged": true,
+          "confusion": {
+            "fn": 3200,
+            "fp": 24,
+            "tn": 3871,
+            "tp": 10750
+          },
+          "metrics": {
+            "accuracy": 0.819333146539647,
+            "f1": 0.869600388286685,
+            "precision": 0.9977724150733247,
+            "recall": 0.7706093189964157
+          },
+          "support_confident": true
+        },
+        {
+          "sample": "samp52",
+          "ground_indices_sha256": "8cf5bd267b835d18e57b9057dfc489c10dce98f38b0d13988371e6fd4c5b18b5",
+          "non_ground_indices_sha256": "655064455e55cd756d4a1aa0a8647fc1aa861e731b4bce8d6c1b901044b4906a",
+          "independently_decoded_reference_labels_sha256": "e07af834f132a5aeb656027abb8c341d80864644566b3fe641eaaf52fd0a860a",
+          "reference_labels_source_identity_unchanged": true,
+          "confusion": {
+            "fn": 10584,
+            "fp": 45,
+            "tn": 2317,
+            "tp": 9528
+          },
+          "metrics": {
+            "accuracy": 0.5270534840259856,
+            "f1": 0.6419403739262254,
+            "precision": 0.9952992792228141,
+            "recall": 0.4737470167064439
+          },
+          "support_confident": true
+        },
+        {
+          "sample": "samp53",
+          "ground_indices_sha256": "6abb98fe6aae6d1a1537dd3d5edb46d29dc6ad90e831ccebff7bb34981659845",
+          "non_ground_indices_sha256": "c9258990711e60e3505feb3f4a207351f6bf55e906d290f5a2620cae5375df06",
+          "independently_decoded_reference_labels_sha256": "bb546767d5444e6abee700433fe5546661b3b31bfb61b8d5d5f97fbf218f4445",
+          "reference_labels_source_identity_unchanged": true,
+          "confusion": {
+            "fn": 14047,
+            "fp": 4,
+            "tn": 1385,
+            "tp": 18942
+          },
+          "metrics": {
+            "accuracy": 0.591279306533248,
+            "f1": 0.7294502743814384,
+            "precision": 0.9997888736408741,
+            "recall": 0.5741913971323774
+          },
+          "support_confident": true
+        },
+        {
+          "sample": "samp54",
+          "ground_indices_sha256": "0a9b309d7fdfa3134c63a783d06b0f73611ebed30b4a7ef4e74a6a9730c957a6",
+          "non_ground_indices_sha256": "5db9a5fdf2290e397d3288282cff4c3c0c54079bb84d0d19b284ee821fcbbb2f",
+          "independently_decoded_reference_labels_sha256": "e9168963dd21b38fb10ac6c7536633fcaf9fde299109906beefa22c74bbc097c",
+          "reference_labels_source_identity_unchanged": true,
+          "confusion": {
+            "fn": 1155,
+            "fp": 36,
+            "tn": 4589,
+            "tp": 2828
+          },
+          "metrics": {
+            "accuracy": 0.8616403345724907,
+            "f1": 0.826055206659851,
+            "precision": 0.9874301675977654,
+            "recall": 0.7100175746924429
+          },
+          "support_confident": true
+        },
+        {
+          "sample": "samp61",
+          "ground_indices_sha256": "d424425637fb3901c2407f0d425e76ea54a723e45939d95a1e880ab0d91af81e",
+          "non_ground_indices_sha256": "0fa44b181c7ee07da3d567843a0f8ac5d8e9cf2c49fdbc8c1aebb0ea7f971485",
+          "independently_decoded_reference_labels_sha256": "bcd4c26e29a1fc5f6b82ef70d47f743e290ab01a85120d47b43bfb3a95688243",
+          "reference_labels_source_identity_unchanged": true,
+          "confusion": {
+            "fn": 6723,
+            "fp": 4,
+            "tn": 1202,
+            "tp": 27131
+          },
+          "metrics": {
+            "accuracy": 0.8081289218482601,
+            "f1": 0.8897014215678237,
+            "precision": 0.9998525889073153,
+            "recall": 0.8014119454126544
+          },
+          "support_confident": true
+        },
+        {
+          "sample": "samp71",
+          "ground_indices_sha256": "0ea87fbe3077f880bcb4737181c99133aabad9f54930f357dc8979f1f154fa2a",
+          "non_ground_indices_sha256": "b6fb6f675b335ec618f252cecc61705746558b683c2b2bd331176ed7431f85df",
+          "independently_decoded_reference_labels_sha256": "d91e70417c6d244bd84fd036d4080839286f311407942306fe6b4a818622b50d",
+          "reference_labels_source_identity_unchanged": true,
+          "confusion": {
+            "fn": 3357,
+            "fp": 5,
+            "tn": 1765,
+            "tp": 10518
+          },
+          "metrics": {
+            "accuracy": 0.7851070629594119,
+            "f1": 0.8622018198212968,
+            "precision": 0.9995248503278533,
+            "recall": 0.758054054054054
+          },
+          "support_confident": true
+        }
+      ]
+    },
+    "prior-heldout-regression": {
+      "dataset": "pdal-autzen",
+      "evaluation_role": "regression_on_previously_viewed_subset",
+      "legacy_cli_split": "fresh_heldout",
+      "original_report_sha256": "3c19a858861ad7b1195639871bfe9642d957421802283b1733c1b1274f7bdef2",
+      "renamed_report_sha256": "eb1ba142872523c2ece1263dc7a1c4dd1f090dcc4a67cb395f98a72be4377762",
+      "original_archive_sha256": "2830bfa7603a7a485ea564d47cbd263633b7b7d5692ae6d259d4d24a9b36008b",
+      "semantic_report_sha256": "a036a265d8b5aa2b7ac2b5c0f29ce11b59f86f2cf6c1942a255b7afdc069aa92",
+      "all_predictions_labels_metrics_geometry_and_objects_unchanged": true,
+      "ignored_fields": [
+        "algorithm_source_sha256",
+        "freeze",
+        "classification_ms",
+        "cluster_ms"
+      ],
+      "oracle_report_sha256": "566b9f0acfdecdc13a9c2cd91bad630565b185572bcbfc89f94016e2aab18afc",
+      "oracle_integrity_passed": true,
+      "oracle_mutations_rejected": [
+        "incomplete_partition",
+        "false_metrics",
+        "wrong_unit",
+        "wrong_raw_hash",
+        "wrong_scoring_exclusion",
+        "altered_frozen_parameters",
+        "altered_external_freeze"
+      ],
+      "accuracy_gate_passed": false,
+      "aggregate": {
+        "confusion": {
+          "fn": 2128,
+          "fp": 0,
+          "tn": 0,
+          "tp": 591
+        },
+        "metrics": {
+          "accuracy": 0.21735932328061788,
+          "f1": 0.35709969788519635,
+          "precision": 1.0,
+          "recall": 0.21735932328061788
+        }
+      },
+      "samples": [
+        {
+          "sample": "autzen",
+          "ground_indices_sha256": "b092f06a0144f42cab7808f45e550c88679c1170e780e319d7f618c0f28ba215",
+          "non_ground_indices_sha256": "764ea640db3ade4dd40289ca11ba18f7a6d308223a21050c690fa173f8cb1393",
+          "independently_decoded_reference_labels_sha256": "4883f6c2879f35f49781570d230fbacaa81012a6a211e7df293f26cf61036200",
+          "reference_labels_source_identity_unchanged": true,
+          "confusion": {
+            "fn": 2128,
+            "fp": 0,
+            "tn": 0,
+            "tp": 591
+          },
+          "metrics": {
+            "accuracy": 0.21735932328061788,
+            "f1": 0.35709969788519635,
+            "precision": 1.0,
+            "recall": 0.21735932328061788
+          },
+          "support_confident": false
+        }
+      ]
+    }
+  },
+  "retained_limitations": [
+    "Prior PDAL Autzen subset still fails original recall/F1/support-confidence accuracy gates.",
+    "Its scored reference labels contain no negative examples, so false-positive/specificity validation remains absent.",
+    "Source labels are thinned airborne TerraScan reference classes; no automotive accuracy or calibrated-confidence claim."
+  ]
+}

@@ -286,7 +286,7 @@ mod tests {
     #[test]
     fn pinned_model_and_image_decoding_reject_bad_assets() {
         let dir = std::env::temp_dir().join(format!(
-            "rustdrive-camera-bad-assets-{}",
+            "rustdriving-camera-bad-assets-{}",
             std::process::id()
         ));
         std::fs::create_dir_all(&dir).unwrap();

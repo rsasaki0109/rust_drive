@@ -1,5 +1,5 @@
 [package]
-name = "rustdrive-rgbd-evaluate"
+name = "rustdriving-rgbd-evaluate"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.90"
@@ -8,8 +8,8 @@ license = "Apache-2.0"
 [workspace]
 
 [dependencies]
-rustdrive-core = { path = "../../crates/core" }
-rustdrive-localization = { path = "../../crates/localization" }
+rustdriving-core = { path = "../../crates/core" }
+rustdriving-localization = { path = "../../crates/localization" }
 png = "=0.18.1"
 serde = { version = "=1.0.229", features = ["derive"] }
 serde_json = "=1.0.151"

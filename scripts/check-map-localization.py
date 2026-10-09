@@ -270,14 +270,14 @@ def main():
                   'interpretation': 'Untrusted map is a finite fail-closed braking test, not an accurate-localization claim'},
               'cases': args.cases, 'seeds': args.seeds, 'runs': [], 'replay_tamper_checks': [], 'passed': True}
     backends = ['reference', 'rne-dynamic'] if args.backend == 'all' else [args.backend]
-    cli = ROOT/'target/release/rustdrive'
+    cli = ROOT/'target/release/rustdriving'
     for backend in backends:
         for case in args.cases:
             for seed in args.seeds:
                 directory = args.output/backend/case/f'seed-{seed}'
                 directory.mkdir(parents=True, exist_ok=True)
                 command = ([str(cli), 'run'] if backend == 'reference' else
-                           [str(ROOT/'integrations/rne/target/release/rustdrive-rne'), '--plant', 'dynamic'])
+                           [str(ROOT/'integrations/rne/target/release/rustdriving-rne'), '--plant', 'dynamic'])
                 command += ['--scenario', str(ROOT/'scenarios'/f'{case}.json'), '--seed', str(seed), '--output', str(directory)]
                 start = time.perf_counter()
                 outcome = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)

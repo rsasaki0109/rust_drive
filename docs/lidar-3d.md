@@ -18,7 +18,7 @@ cargo +1.95.0 run --release --locked \
   --scenario scenarios/native-scene-mid-stop.json \
   --scene scenes/midbeam-barrier.json --lidar-3d \
   --plant dynamic --seed 7 --output artifacts/lidar-3d-mid
-cargo run --release --locked --bin rustdrive -- replay \
+cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/lidar-3d-mid/sensors.jsonl \
   --output artifacts/lidar-3d-mid/replay
 python3 scripts/check-lidar-3d.py --compact \

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render real RustDrive telemetry; never synthesize trajectories or success metrics."""
+"""Render real RustDriving telemetry; never synthesize trajectories or success metrics."""
 import argparse
 import json
 import math
@@ -34,7 +34,7 @@ def xy(p):
 def render(run, frame, index):
     im = Image.new('RGB', (WIDTH, HEIGHT), BG)
     d = ImageDraw.Draw(im)
-    d.text((28, 16), 'RustDrive', fill=TEXT, font=font(34, True))
+    d.text((28, 16), 'RustDriving', fill=TEXT, font=font(34, True))
     d.text((232, 31), 'A RUST-NATIVE AUTONOMOUS DRIVING STACK', fill=MUTED, font=font(13, True))
     d.rounded_rectangle((963, 23, 1172, 57), 16, fill='#19352f')
     badge = 'RNE CPU  /  3x' if run.get('backend', '').startswith('rne-') else '2D SIMULATION  /  3x'
@@ -269,7 +269,7 @@ def main():
             provenance['rne_expected_revision']=(scenario_dir.parent/'integrations/rne/rne-revision.txt').read_text().strip()
             provenance['command']=f'cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- --scenario {source_path} --plant {plant} --seed {seed} --output {args.run.parent}'
         else:
-            provenance['command']=f'cargo run --release --locked --bin rustdrive -- run --scenario {source_path} --seed {seed} --output {args.run.parent}'
+            provenance['command']=f'cargo run --release --locked --bin rustdriving -- run --scenario {source_path} --seed {seed} --output {args.run.parent}'
         break
     args.output.with_suffix('.json').write_text(json.dumps(provenance,indent=2)+'\n')
     print(f'{args.output}: {gif_frames} frames, {WIDTH}x{HEIGHT}, {args.output.stat().st_size:,} bytes')

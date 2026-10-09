@@ -11,7 +11,7 @@ impl Workspace {
     fn new() -> Self {
         static NEXT: AtomicU64 = AtomicU64::new(0);
         let path = std::env::temp_dir().join(format!(
-            "rustdrive-osm-cli-{}-{}",
+            "rustdriving-osm-cli-{}-{}",
             std::process::id(),
             NEXT.fetch_add(1, Ordering::Relaxed)
         ));
@@ -25,7 +25,7 @@ impl Drop for Workspace {
     }
 }
 fn cli() -> Command {
-    Command::new(env!("CARGO_BIN_EXE_rustdrive"))
+    Command::new(env!("CARGO_BIN_EXE_rustdriving"))
 }
 #[test]
 fn external_map_import_route_physical_goal_and_complete_sensor_replay() {

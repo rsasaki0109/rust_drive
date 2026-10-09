@@ -1,5 +1,5 @@
 //! Smooth interpolation of supplied route geometry; the route corridor is unchanged.
-use rustdrive_core::{Route, Vec2};
+use rustdriving_core::{Route, Vec2};
 
 fn derivatives(route: &Route, i: usize) -> (Vec2, Vec2) {
     let last = route.points.len() - 1;

@@ -1,5 +1,5 @@
 //! Arc-length speed envelopes with constant-acceleration arrival times.
-use rustdrive_core::{TrajectoryPoint, Vec2};
+use rustdriving_core::{TrajectoryPoint, Vec2};
 
 pub(super) struct Limits {
     pub acceleration: f64,

@@ -1,5 +1,5 @@
 //! Deterministic measured ground fitting, with bounded priors and local support.
-use rustdrive_core::{Lidar3dScan, Vec3};
+use rustdriving_core::{Lidar3dScan, Vec3};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::f64::consts::{PI, TAU};

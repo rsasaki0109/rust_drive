@@ -525,7 +525,7 @@ def main():
     require(len(set(args.plants)) == len(args.plants) and len(set(args.modes)) == len(args.modes)
             and len(set(args.seeds)) == len(args.seeds)
             and all(0 <= seed < 2**64 for seed in args.seeds), 'plants/seeds must be distinct with u64 seeds')
-    cli, native = ROOT/'target/release/rustdrive', ROOT/'integrations/rne/target/release/rustdrive-rne'
+    cli, native = ROOT/'target/release/rustdriving', ROOT/'integrations/rne/target/release/rustdriving-rne'
     require(cli.is_file() and native.is_file(), 'build locked reference and native release binaries first')
     pin = (ROOT/'integrations/rne/rne-revision.txt').read_text().strip()
     head = subprocess.run(['git', '-C', ROOT.parent/'RobotNativeEngine', 'rev-parse', 'HEAD'], capture_output=True, text=True, check=True).stdout.strip()

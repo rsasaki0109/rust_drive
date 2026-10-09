@@ -1,5 +1,5 @@
 //! Native bounded research point-cloud readers; labels belong to the evaluator.
-use rustdrive_core::Vec3;
+use rustdriving_core::Vec3;
 use std::collections::BTreeMap;
 use std::io::Read;
 use std::path::Path;

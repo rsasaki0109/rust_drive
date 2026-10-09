@@ -1,5 +1,5 @@
 //! Motion forecasts from tracked observations; no simulator behavior or intentions.
-use rustdrive_core::{Prediction, Predictor, Track};
+use rustdriving_core::{Prediction, Predictor, Track};
 use std::collections::{BTreeMap, VecDeque};
 
 /// Uses sustained measured braking for at most one second, then coasts.
@@ -184,7 +184,7 @@ impl Predictor for ConstantVelocity {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rustdrive_core::Vec2;
+    use rustdriving_core::Vec2;
     fn track(time: f64, speed: f64) -> Track {
         Track {
             id: 7,

@@ -1,6 +1,6 @@
 # GNSS innovation gating, accepted-age braking and recovery
 
-RustDrive now gates GNSS corrections with the full two-dimensional innovation covariance, reports observation receipt separately from acceptance, and verifies single-fix rejection, sustained-fault stopping and recovery in both CPU simulators. The existing freshness threshold remains 0.75 s since the **last accepted** fix. This is a bounded sensor-fault experiment, not GNSS-denied navigation or general relocalization.
+RustDriving now gates GNSS corrections with the full two-dimensional innovation covariance, reports observation receipt separately from acceptance, and verifies single-fix rejection, sustained-fault stopping and recovery in both CPU simulators. The existing freshness threshold remains 0.75 s since the **last accepted** fix. This is a bounded sensor-fault experiment, not GNSS-denied navigation or general relocalization.
 
 ![Actual RNE run rejecting a GNSS burst, stopping and resuming](../assets/gnss-demo.gif)
 

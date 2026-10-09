@@ -185,7 +185,7 @@ def main():
     args=parser.parse_args()
     require=g.require;sha=g.rays.sha
     require(sha(SCENARIO)==EXPECTED_SCENARIO_SHA and sha(SCENE)==EXPECTED_SCENE_SHA,'physical fixture or deadline changed')
-    cli=ROOT/'target/release/rustdrive';native=ROOT/'integrations/rne/target/release/rustdrive-rne'
+    cli=ROOT/'target/release/rustdriving';native=ROOT/'integrations/rne/target/release/rustdriving-rne'
     require(cli.is_file() and (args.verify_existing or native.is_file()),'build locked reference/native release binaries first')
     pin=(ROOT/'integrations/rne/rne-revision.txt').read_text().strip()
     checkout=subprocess.run(['git','-C',str(ROOT.parent/'RobotNativeEngine'),'rev-parse','HEAD'],capture_output=True,text=True,check=True).stdout.strip()

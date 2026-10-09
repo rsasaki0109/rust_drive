@@ -1,7 +1,9 @@
 //! Recorded RGB-D relative-motion evaluation. Motion capture enters only after
 //! the matcher has computed a pose from two depth frames and identity prior.
-use rustdrive_core::Vec3;
-use rustdrive_localization::registration3d::{Pose3, Quaternion, Registration3dConfig, match_scan};
+use rustdriving_core::Vec3;
+use rustdriving_localization::registration3d::{
+    Pose3, Quaternion, Registration3dConfig, match_scan,
+};
 use serde::Deserialize;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
@@ -680,7 +682,7 @@ mod tests {
             Path::new(env!("CARGO_MANIFEST_DIR")).join("../../data/tum-fr1-xyz/manifest.json");
         let mut value = protocol(&manifest).unwrap();
         let tmp = std::env::temp_dir().join(format!(
-            "rustdrive-rgbd-freeze-test-{}.json",
+            "rustdriving-rgbd-freeze-test-{}.json",
             std::process::id()
         ));
         fs::write(&tmp, serde_json::to_vec(&value).unwrap()).unwrap();

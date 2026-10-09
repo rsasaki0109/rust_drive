@@ -1,10 +1,10 @@
 //! Separate opt-in evaluation of the adaptive classifier; the original report
 //! and parameter defaults remain reproducible through the original command.
 use super::{Confusion, canonical_sha, entry, file_path, key, object_config};
-use rustdrive_core::Vec3;
-use rustdrive_dataset_eval::{parse_las_labels, parse_las_points, parse_pcd, read_bounded};
-use rustdrive_perception::objects3d::{ObjectClusterConfig, cluster_objects};
-use rustdrive_perception::terrain_adaptive::{AdaptiveTerrainConfig, classify_ground_adaptive};
+use rustdriving_core::Vec3;
+use rustdriving_dataset_eval::{parse_las_labels, parse_las_points, parse_pcd, read_bounded};
+use rustdriving_perception::objects3d::{ObjectClusterConfig, cluster_objects};
+use rustdriving_perception::terrain_adaptive::{AdaptiveTerrainConfig, classify_ground_adaptive};
 use serde_json::{Value, json};
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
@@ -121,7 +121,7 @@ pub(super) fn run() -> Result<(), String> {
             }
             "--help" | "-h" => {
                 println!(
-                    "rustdrive-dataset-eval adaptive-ground [--repository REPO] [--data-root RAW_BASE] [--dataset isprs-terrain|PDAL_DATASET] [--split calibration_original|regression|fresh_heldout] [--config PARAMS.json] [--freeze FREEZE.json] [--output REPORT.json] [--python PYTHON]\nNo downloads; sources must match pinned manifest hashes. Fresh held-out evaluation requires an externally recorded source/configuration freeze before invocation."
+                    "rustdriving-dataset-eval adaptive-ground [--repository REPO] [--data-root RAW_BASE] [--dataset isprs-terrain|PDAL_DATASET] [--split calibration_original|regression|fresh_heldout] [--config PARAMS.json] [--freeze FREEZE.json] [--output REPORT.json] [--python PYTHON]\nNo downloads; sources must match pinned manifest hashes. Fresh held-out evaluation requires an externally recorded source/configuration freeze before invocation."
                 );
                 return Ok(());
             }

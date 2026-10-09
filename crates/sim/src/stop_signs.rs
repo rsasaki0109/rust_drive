@@ -1,5 +1,5 @@
 //! Independent physical stop-sign rule scoring; driver diagnostics are never read.
-use rustdrive_pipeline::traffic_controls::StopLine;
+use rustdriving_pipeline::traffic_controls::StopLine;
 
 #[derive(Default)]
 struct PhysicalStop {
@@ -93,8 +93,8 @@ mod tests {
             ReferenceBackend, SimulationBackend, WorldObject, pipeline_config,
             simulate_with_backend,
         };
-        use rustdrive_core::{ControlCommand, EgoState};
-        use rustdrive_pipeline::SensorFrame;
+        use rustdriving_core::{ControlCommand, EgoState};
+        use rustdriving_pipeline::SensorFrame;
         struct IgnoreControl(ReferenceBackend);
         impl SimulationBackend for IgnoreControl {
             fn state(&self) -> EgoState {

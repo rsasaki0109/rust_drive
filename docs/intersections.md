@@ -9,9 +9,9 @@ The GIF displays recorded native vehicle and actor positions from the preceding 
 ## Run and reproduce
 
 ```sh
-cargo run --release --locked --bin rustdrive -- run \
+cargo run --release --locked --bin rustdriving -- run \
   --scenario scenarios/intersection-crossing.json --seed 7 --output artifacts/intersection
-cargo run --release --locked --bin rustdrive -- replay \
+cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/intersection/sensors.jsonl --output artifacts/intersection/replay
 
 # Requires the pinned RNE checkout and Rust 1.95.0; no GPU.
@@ -26,7 +26,7 @@ python scripts/render_demo_3d.py artifacts/rne-intersection/run.json \
   --preview-time 11 --output artifacts/intersection/preview.gif \
   --samples 16 --threads 4 --scene-output artifacts/intersection/scene.blend
 
-bash scripts/check-hazards.sh --output /tmp/rustdrive-intersections
+bash scripts/check-hazards.sh --output /tmp/rustdriving-intersections
 ```
 
 ## Driver contract
@@ -98,10 +98,10 @@ The preceding acquisition-time reprojection sweep passed **264 positive runs** (
 That native recovery case has five explicit failure ticks, discards one pending scan and resets an active clear dwell before resuming. The independent timing checker rejects changed acquisition timestamps, hidden failure reports and a removed scheduled observation even when driver outputs are left untouched. At that preceding revision, the existing GIF trace was byte-identical to the corresponding validated episode; that correspondence does not extend to revised forecast arithmetic. The recovery recording also rendered a CPU preview and exported an editable scene.
 
 ```sh
-cargo run --release --locked --bin rustdrive -- run \
+cargo run --release --locked --bin rustdriving -- run \
   --scenario scenarios/intersection-fast-wide.json --seed 7 \
   --output artifacts/intersection-fast
-cargo run --release --locked --bin rustdrive -- run \
+cargo run --release --locked --bin rustdriving -- run \
   --scenario scenarios/intersection-cadence-five-hz.json --seed 7 \
   --output artifacts/intersection-cadence
 ```
@@ -131,7 +131,7 @@ Current-time forecasting also exposed a GNSS-burst steering regression during de
 cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- \
   --plant dynamic --scenario scenarios/intersection-late-conflict.json --seed 7 \
   --output artifacts/rne-late-crossing
-cargo run --release --locked --bin rustdrive -- replay \
+cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/rne-late-crossing/sensors.jsonl \
   --output artifacts/rne-late-crossing/replay
 python scripts/render_demo_3d.py artifacts/rne-late-crossing/run.json \

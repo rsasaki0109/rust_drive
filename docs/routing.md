@@ -2,13 +2,13 @@
 
 This page records the pre-departure routing baseline `aa76683`. The later [live-closure extension](handover.md) adds stopped handover, reopening and map-aware replay; its current results supersede the counts below.
 
-RustDrive now selects a route from a directed road map before departure. The same map can send the vehicle to an eastern or southern destination; a known closure on the eastern shortcut selects a longer detour. The resolved route drives the existing sensor-only pipeline in both the reference simulator and CPU-only RNE. This is map-based navigation, with no intersection priority or traffic-light logic.
+RustDriving now selects a route from a directed road map before departure. The same map can send the vehicle to an eastern or southern destination; a known closure on the eastern shortcut selects a longer detour. The resolved route drives the existing sensor-only pipeline in both the reference simulator and CPU-only RNE. This is map-based navigation, with no intersection priority or traffic-light logic.
 
 The opening README GIF is the actual seed-7 RNE dynamic detour run, rendered from telemetry at 3× speed. The inset shows supplied map topology, known closures, the selected route and the ego position for display. The orange shortcut is a map closure; it is not a fabricated LiDAR detection or a simulated barricade. Its [metadata](../assets/rne-demo.json) contains the exact scenario, selected edges and measured outcome.
 
 ## Implementation
 
-`rustdrive-routing` is an independent library with only core contracts and serde as dependencies. Nodes have stable string IDs and world ENU positions in meters. Directed edges have IDs, from/to nodes, centerline points and positive half-widths. Edge cost is geometric arc length; reverse travel requires a separate directed edge.
+`rustdriving-routing` is an independent library with only core contracts and serde as dependencies. Nodes have stable string IDs and world ENU positions in meters. Directed edges have IDs, from/to nodes, centerline points and positive half-widths. Edge cost is geometric arc length; reverse travel requires a separate directed edge.
 
 Construction validates IDs, finite geometry, nonduplicate consecutive points, node references and endpoint agreement. Endpoint roundoff within 1 µm is canonicalized to the node position. Dijkstra uses the standard-library binary heap, sorted adjacency and deterministic tie-breaking. Closures apply to each request, without mutating the map. Unknown closures or destinations, a stationary start/goal request and unreachable destinations return errors. There is no fallback through a closed road.
 
@@ -28,9 +28,9 @@ The three fixtures use the same five-node, five-edge map. `route-direct` selects
 ## Reproduce
 
 ```sh
-cargo run --release --locked --bin rustdrive -- run \
+cargo run --release --locked --bin rustdriving -- run \
   --scenario scenarios/route-detour.json --seed 7 --output artifacts/route-detour
-cargo run --release --locked --bin rustdrive -- replay \
+cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/route-detour/sensors.jsonl --output artifacts/route-detour/replay
 
 bash scripts/setup-rne.sh

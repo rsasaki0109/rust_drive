@@ -9,7 +9,7 @@ pub use terrain_adaptive::{
     classify_ground_adaptive,
 };
 
-use rustdrive_core::{Detection, LidarScan, Perception, Pose, Track, Vec2};
+use rustdriving_core::{Detection, LidarScan, Perception, Pose, Track, Vec2};
 #[derive(Default)]
 pub struct LidarClusters;
 impl Perception for LidarClusters {

@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Isolate Rust toolchains
         shell: bash
-        run: echo "RUSTUP_HOME=$RUNNER_TEMP/rustdrive-rustup" >> "$GITHUB_ENV"
+        run: echo "RUSTUP_HOME=$RUNNER_TEMP/rustdriving-rustup" >> "$GITHUB_ENV"
       - name: Install pinned Rust
         run: rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
       - uses: actions/setup-python@v5
@@ -32,21 +32,21 @@ jobs:
         run: |
           python scripts/test-fetch-datasets.py
           python scripts/fetch-datasets.py
-          cargo run --release --locked --bin rustdrive-dataset-eval -- --python python --output artifacts/datasets/report.json
+          cargo run --release --locked --bin rustdriving-dataset-eval -- --python python --output artifacts/datasets/report.json
           python scripts/check-datasets.py --report artifacts/datasets/report.json --output artifacts/datasets/oracle.json
       - name: Verify bounded GNSS-denied reference driving and fail-closed controls
         shell: bash
         run: python scripts/check-map-localization.py --backend reference --output artifacts/map-localization
       - name: Run closed-loop acceptance demo
-        run: cargo run --release --locked --bin rustdrive -- run --scenario scenarios/mission.json --seed 7 --output artifacts/demo
+        run: cargo run --release --locked --bin rustdriving -- run --scenario scenarios/mission.json --seed 7 --output artifacts/demo
       - name: Recompute sensor log
-        run: cargo run --release --locked --bin rustdrive -- replay --log artifacts/demo/sensors.jsonl --output artifacts/demo/replay
+        run: cargo run --release --locked --bin rustdriving -- replay --log artifacts/demo/sensors.jsonl --output artifacts/demo/replay
       - name: Import attributed OSM roads and drive the resulting graph
         shell: bash
         run: |
-          target/release/rustdrive import-osm --input maps/osm/german-road-extract.json --output artifacts/osm/map.json --origin-lat 48.136 --origin-lon 10.0695 --default-half-width 3 --scenario-output artifacts/osm/scenario.json --start osm-node-7119017425 --goal osm-node-274969423
-          target/release/rustdrive run --scenario artifacts/osm/scenario.json --seed 7 --output artifacts/osm/run
-          target/release/rustdrive replay --log artifacts/osm/run/sensors.jsonl --output artifacts/osm/replay
+          target/release/rustdriving import-osm --input maps/osm/german-road-extract.json --output artifacts/osm/map.json --origin-lat 48.136 --origin-lon 10.0695 --default-half-width 3 --scenario-output artifacts/osm/scenario.json --start osm-node-7119017425 --goal osm-node-274969423
+          target/release/rustdriving run --scenario artifacts/osm/scenario.json --seed 7 --output artifacts/osm/run
+          target/release/rustdriving replay --log artifacts/osm/run/sensors.jsonl --output artifacts/osm/replay
       - name: Independently check opt-in sparse-road corners in the reference plant
         shell: bash
         run: |
@@ -56,8 +56,8 @@ jobs:
         shell: bash
         run: |
           for case in route-direct route-detour route-south route-handover route-no-path route-reopen signal-red-green signal-red-stop signal-stale-stop signal-stale-recovery signal-two-stops signal-approach-change stop-sign-single stop-sign-two stop-sign-signal stop-sign-obstacle stop-sign-gnss-recovery intersection-crossing intersection-successive intersection-blocked intersection-gnss-recovery intersection-stop-sign intersection-fast-wide intersection-slow-narrow intersection-two-zones intersection-delay-two intersection-lidar-recovery intersection-cadence-five-hz intersection-late-conflict intersection-late-delayed; do
-            cargo run --release --locked --bin rustdrive -- run --scenario "scenarios/$case.json" --seed 7 --output "artifacts/routing/$case"
-            cargo run --release --locked --bin rustdrive -- replay --log "artifacts/routing/$case/sensors.jsonl" --output "artifacts/routing/$case/replay"
+            cargo run --release --locked --bin rustdriving -- run --scenario "scenarios/$case.json" --seed 7 --output "artifacts/routing/$case"
+            cargo run --release --locked --bin rustdriving -- replay --log "artifacts/routing/$case/sensors.jsonl" --output "artifacts/routing/$case/replay"
           done
       - uses: actions/upload-artifact@v4
         with:
@@ -84,21 +84,21 @@ jobs:
           cargo clippy --release --manifest-path integrations/onnx/Cargo.toml --all-targets --locked -- -D warnings
           cargo test --release --manifest-path integrations/onnx/Cargo.toml --locked
           cargo build --release --manifest-path integrations/onnx/Cargo.toml --locked
-          python integrations/onnx/check.py --binary integrations/onnx/target/release/rustdrive-camera-detect --summary artifacts/camera-model/summary.json
+          python integrations/onnx/check.py --binary integrations/onnx/target/release/rustdriving-camera-detect --summary artifacts/camera-model/summary.json
       - name: Validate additional measured-data acquisition
         run: |
           python scripts/test-fetch-additional-datasets.py
           python scripts/fetch-additional-datasets.py
-      - name: Check frozen adaptive terrain scores and retained failed acceptance
+      - name: Check adaptive terrain scores and prior-heldout rename regression
         run: |
           python scripts/fetch-datasets.py --dataset isprs-terrain
-          cargo build --release --locked --bin rustdrive-dataset-eval
+          cargo build --release --locked --bin rustdriving-dataset-eval
           for split in calibration_original regression; do
-            target/release/rustdrive-dataset-eval adaptive-ground --split "$split" --output "artifacts/adaptive/$split.json"
+            target/release/rustdriving-dataset-eval adaptive-ground --split "$split" --output "artifacts/adaptive/$split.json"
             python scripts/check-adaptive-ground.py --report "artifacts/adaptive/$split.json" --output "artifacts/adaptive/$split-oracle.json"
           done
-          target/release/rustdrive-dataset-eval adaptive-ground --dataset pdal-autzen --split fresh_heldout --freeze assets/adaptive-ground-freeze.json --output artifacts/adaptive/fresh.json
-          python scripts/check-adaptive-ground.py --report artifacts/adaptive/fresh.json --freeze assets/adaptive-ground-freeze.json --output artifacts/adaptive/fresh-oracle.json
+          target/release/rustdriving-dataset-eval adaptive-ground --dataset pdal-autzen --split fresh_heldout --freeze assets/adaptive-ground-renamed-freeze.json --output artifacts/adaptive/fresh.json
+          python scripts/check-adaptive-ground.py --report artifacts/adaptive/fresh.json --freeze assets/adaptive-ground-renamed-freeze.json --output artifacts/adaptive/fresh-oracle.json
       - name: Check recorded natural-motion registration and retained failures
         run: |
           python -m pip install -r scripts/requirements-demo.txt
@@ -106,11 +106,11 @@ jobs:
           cargo clippy --release --manifest-path integrations/rgbd/Cargo.toml --all-targets --locked -- -D warnings
           cargo test --release --manifest-path integrations/rgbd/Cargo.toml --locked
           cargo build --release --manifest-path integrations/rgbd/Cargo.toml --locked
-          python scripts/check-recorded-rgbd.py --report integrations/rgbd/baselines/tum-first-v1.json --manifest integrations/rgbd/baselines/manifest-v1.json --raw data/tum-fr1-xyz/raw --evaluator-source integrations/rgbd/baselines/evaluator-v1.rs --matcher-source integrations/rgbd/baselines/matcher-v1.rs --freeze integrations/rgbd/baselines/tum-first-v1.freeze.json --output artifacts/rgbd/original-oracle.json
-          python scripts/check-recorded-rgbd.py --report integrations/rgbd/baselines/tum-fast-v1.json --manifest integrations/rgbd/baselines/manifest-fast-v1.json --raw data/tum-fr1-xyz-fast/raw --evaluator-source integrations/rgbd/baselines/evaluator-v2.rs --matcher-source integrations/rgbd/baselines/matcher-v1.rs --freeze integrations/rgbd/baselines/freeze-fast-v1.json --output artifacts/rgbd/fast-failure-oracle.json
+          python scripts/check-recorded-rgbd.py --report integrations/rgbd/baselines/tum-first-v1.json --cargo-lock integrations/rgbd/baselines/Cargo-v1.lock --manifest integrations/rgbd/baselines/manifest-v1.json --raw data/tum-fr1-xyz/raw --evaluator-source integrations/rgbd/baselines/evaluator-v1.rs --matcher-source integrations/rgbd/baselines/matcher-v1.rs --freeze integrations/rgbd/baselines/tum-first-v1.freeze.json --output artifacts/rgbd/original-oracle.json
+          python scripts/check-recorded-rgbd.py --report integrations/rgbd/baselines/tum-fast-v1.json --cargo-lock integrations/rgbd/baselines/Cargo-v1.lock --manifest integrations/rgbd/baselines/manifest-fast-v1.json --raw data/tum-fr1-xyz-fast/raw --evaluator-source integrations/rgbd/baselines/evaluator-v2.rs --matcher-source integrations/rgbd/baselines/matcher-v1.rs --freeze integrations/rgbd/baselines/freeze-fast-v1.json --output artifacts/rgbd/fast-failure-oracle.json
           mkdir -p artifacts/rgbd
-          integrations/rgbd/target/release/rustdrive-rgbd-evaluate --manifest data/tum-fr1-xyz-tight/manifest.json --prepare-freeze artifacts/rgbd/tight-freeze.json
-          python -c 'import subprocess; result=subprocess.run(["integrations/rgbd/target/release/rustdrive-rgbd-evaluate", "--manifest", "data/tum-fr1-xyz-tight/manifest.json", "--raw", "data/tum-fr1-xyz-tight/raw", "--freeze", "artifacts/rgbd/tight-freeze.json", "--output", "artifacts/rgbd/tight.json"]); assert result.returncode == 1, "expected partial benchmark acceptance (exit 1), not invalid input (exit 2)"'
+          integrations/rgbd/target/release/rustdriving-rgbd-evaluate --manifest data/tum-fr1-xyz-tight/manifest.json --prepare-freeze artifacts/rgbd/tight-freeze.json
+          python -c 'import subprocess; result=subprocess.run(["integrations/rgbd/target/release/rustdriving-rgbd-evaluate", "--manifest", "data/tum-fr1-xyz-tight/manifest.json", "--raw", "data/tum-fr1-xyz-tight/raw", "--freeze", "artifacts/rgbd/tight-freeze.json", "--output", "artifacts/rgbd/tight.json"]); assert result.returncode == 1, "expected partial benchmark acceptance (exit 1), not invalid input (exit 2)"'
           python scripts/check-recorded-rgbd.py --report artifacts/rgbd/tight.json --manifest data/tum-fr1-xyz-tight/manifest.json --raw data/tum-fr1-xyz-tight/raw --freeze artifacts/rgbd/tight-freeze.json --output artifacts/rgbd/tight-oracle.json
           python -c 'import json; r=json.load(open("artifacts/rgbd/tight.json")); assert (r["summary"]["accepted"],r["summary"]["rejected"],r["summary"]["heldout_passed"]) == (7,4,5), "recorded temporal baseline changed; inspect every failure"'
       - uses: actions/upload-artifact@v4
@@ -129,7 +129,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Isolate Rust toolchains
         shell: bash
-        run: echo "RUSTUP_HOME=$RUNNER_TEMP/rustdrive-rustup" >> "$GITHUB_ENV"
+        run: echo "RUSTUP_HOME=$RUNNER_TEMP/rustdriving-rustup" >> "$GITHUB_ENV"
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -158,7 +158,7 @@ jobs:
             third_party
       - name: Isolate Rust toolchains
         shell: bash
-        run: echo "RUSTUP_HOME=$RUNNER_TEMP/rustdrive-rustup" >> "$GITHUB_ENV"
+        run: echo "RUSTUP_HOME=$RUNNER_TEMP/rustdriving-rustup" >> "$GITHUB_ENV"
       - name: Install pinned toolchains
         run: |
           rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
@@ -175,7 +175,7 @@ jobs:
         run: |
           for plant in kinematic dynamic; do
             cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- --scenario scenarios/mission.json --plant "$plant" --seed 7 --output "artifacts/rne-$plant"
-            cargo run --release --locked --bin rustdrive -- replay --log "artifacts/rne-$plant/sensors.jsonl" --output "artifacts/rne-$plant/replay"
+            cargo run --release --locked --bin rustdriving -- replay --log "artifacts/rne-$plant/sensors.jsonl" --output "artifacts/rne-$plant/replay"
           done
       - name: Run multi-seed hazard acceptance and full replay
         working-directory: rust_drive
@@ -204,6 +204,9 @@ jobs:
       - name: Independently verify recorded pedestrian and cyclist motion
         working-directory: rust_drive
         run: python3 scripts/check-vru-demo.py --compact --output artifacts/vru-demo --report artifacts/vru-demo/report.json
+      - name: Independently verify urban left-side traffic, signals and recorded dog walking
+        working-directory: rust_drive
+        run: python3 scripts/check-city-demo.py --compact --output artifacts/city-demo --report artifacts/city-demo/report.json
       - name: Independently verify optional adaptive terrain driving
         working-directory: rust_drive
         run: python3 scripts/check-adaptive-native.py --compact --output artifacts/adaptive-native
@@ -228,6 +231,10 @@ jobs:
           python scripts/render_demo_3d.py artifacts/lidar-3d/lidar3d/dynamic/midbeam-barrier/seed-7/run.json --native-scene artifacts/lidar-3d/lidar3d/dynamic/midbeam-barrier/seed-7/scene.json --preview-time 15 --output artifacts/rne-lidar-3d/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-lidar-3d/scene.blend
           python scripts/render_demo_3d.py artifacts/ground-scenes/lidar3d_ground_body/dynamic/ground-moving-traffic/seed-7/run.json --native-scene artifacts/ground-scenes/lidar3d_ground_body/dynamic/ground-moving-traffic/seed-7/scene.json --preview-time 15 --camera traffic --traffic-models sedan --output artifacts/rne-ground-body/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-ground-body/scene.blend
           python scripts/render_demo_3d.py artifacts/vru-demo/seed-7/run.json --native-scene artifacts/vru-demo/seed-7/scene.json --actor-models 0=sedan 1=pedestrian 2=cyclist --camera street --preview-time 6 --output artifacts/vru-demo/preview.gif --samples 4 --threads 2 --scene-output artifacts/vru-demo/scene.blend
+          blender --background --factory-startup --threads 2 --python-exit-code 1 --python scripts/check_vehicle_display.py -- --output artifacts/city-demo/vehicle-display-audit.json
+          blender --background --factory-startup --threads 2 --python-exit-code 1 --python scripts/check_city_display.py -- --output artifacts/city-demo/city-display-audit.json
+          blender --background --factory-startup --threads 2 --python-exit-code 1 --python scripts/check_family_display.py -- --output artifacts/city-demo/family-display-audit.json
+          python scripts/render_demo_3d.py artifacts/city-demo/seed-7/run.json --native-scene artifacts/city-demo/seed-7/scene.json --actor-models 0=sedan 1=pedestrian 2=cyclist 3=van 4=pedestrian 5=cyclist 6=pedestrian 7=sedan 8=hatchback 9=pickup 10=truck 11=truck 12=cyclist 13=cyclist 14=elder 15=child 16=parent_stroller 17=pedestrian 18=dog --dog-pairs 17=18 --environment urban --camera street --preview-time 26 --output artifacts/city-demo/preview.gif --samples 4 --threads 2 --scene-output artifacts/city-demo/scene.blend
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -243,6 +250,7 @@ jobs:
             rust_drive/artifacts/terrain-objects/
             rust_drive/artifacts/adaptive-native/
             rust_drive/artifacts/vru-demo/
+            rust_drive/artifacts/city-demo/
       - uses: actions/upload-artifact@v4
         with:
           name: rne-cpu-telemetry

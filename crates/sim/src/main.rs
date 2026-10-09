@@ -1,9 +1,9 @@
-use rustdrive_pipeline::replay::verify;
-use rustdrive_routing::{
+use rustdriving_pipeline::replay::verify;
+use rustdriving_routing::{
     RoadNetwork,
     osm::{self, ImportOptions, OverpassDocument},
 };
-use rustdrive_sim::{Scenario, simulate};
+use rustdriving_sim::{Scenario, simulate};
 use std::{
     env,
     error::Error,
@@ -111,7 +111,7 @@ fn run() -> Result<bool, Box<dyn Error>> {
     let args: Vec<_> = env::args().skip(1).collect();
     if args.is_empty() || args[0] == "--help" || args[0] == "-h" {
         println!(
-            "RustDrive sensor-driven simulator\nUsage:\n  rustdrive run --scenario FILE [--seed N] [--output DIR]\n  rustdrive replay --log FILE [--output DIR]\n  rustdrive import-osm --input FILE --output MAP.json --origin-lat N --origin-lon E [--default-half-width METERS] [--scenario-output FILE --start osm-node-ID --goal osm-node-ID --closed-edge ID --cruise-speed MPS --duration SECONDS --local-route-geometry]\nExit 0: acceptance/replay/import passed; 1: scenario acceptance failed; 2: invalid input, replay mismatch or I/O failure."
+            "RustDriving sensor-driven simulator\nUsage:\n  rustdriving run --scenario FILE [--seed N] [--output DIR]\n  rustdriving replay --log FILE [--output DIR]\n  rustdriving import-osm --input FILE --output MAP.json --origin-lat N --origin-lon E [--default-half-width METERS] [--scenario-output FILE --start osm-node-ID --goal osm-node-ID --closed-edge ID --cruise-speed MPS --duration SECONDS --local-route-geometry]\nExit 0: acceptance/replay/import passed; 1: scenario acceptance failed; 2: invalid input, replay mismatch or I/O failure."
         );
         return Ok(true);
     }
@@ -178,7 +178,7 @@ fn main() {
         Ok(true) => {}
         Ok(false) => process::exit(1),
         Err(e) => {
-            eprintln!("rustdrive: {e}");
+            eprintln!("rustdriving: {e}");
             process::exit(2);
         }
     }

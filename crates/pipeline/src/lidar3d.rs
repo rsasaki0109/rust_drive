@@ -1,6 +1,6 @@
 //! Validate genuine tilted XYZ returns before bounded planar projection.
 use crate::{GroundConfig, GroundDiagnostics};
-use rustdrive_core::{Lidar3dScan, LidarScan, Vec2};
+use rustdriving_core::{Lidar3dScan, LidarScan, Vec2};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
 use std::f64::consts::{PI, TAU};

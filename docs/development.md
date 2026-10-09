@@ -54,11 +54,11 @@ Each recorded 10 Hz frame includes simulator truth (evaluation/display only), th
 python3 scripts/render_demo.py artifacts/demo/run.json --output artifacts/my-demo.gif
 ```
 
-The renderer rejects a failing run as a success demo. Simulations can still emit failing telemetry; inspect JSON to diagnose the issue. Sensor-only `sensors.jsonl` additionally records every 20 Hz input and pipeline output plus calibrated configuration. Run `cargo run --release --locked --bin rustdrive -- replay --log artifacts/demo/sensors.jsonl --output artifacts/replay`. This recomputes the algorithm outputs, not simulator truth. An unsuccessful short mission can still have a correctly reproducible sensor log; use the physical acceptance report separately. See [sensor replay](sensor-replay.md).
+The renderer rejects a failing run as a success demo. Simulations can still emit failing telemetry; inspect JSON to diagnose the issue. Sensor-only `sensors.jsonl` additionally records every 20 Hz input and pipeline output plus calibrated configuration. Run `cargo run --release --locked --bin rustdriving -- replay --log artifacts/demo/sensors.jsonl --output artifacts/replay`. This recomputes the algorithm outputs, not simulator truth. An unsuccessful short mission can still have a correctly reproducible sensor log; use the physical acceptance report separately. See [sensor replay](sensor-replay.md).
 
 ## Replace an algorithm
 
-`Perception`, `Predictor`, `Planner`, and `Controller` traits are defined in `rustdrive-core`. Build alternatives as real libraries and wire them into `rustdrive-pipeline`, so all backends and replay exercise the same implementation. Keep world/body transforms, SI units, timestamp/freshness handling, calibration and failure behavior explicit. Add a regression scenario plus independent acceptance metrics rather than a mock-only interface test. For an AI method, document model provenance and inference preprocessing, and retain a classical baseline for diagnosis.
+`Perception`, `Predictor`, `Planner`, and `Controller` traits are defined in `rustdriving-core`. Build alternatives as real libraries and wire them into `rustdriving-pipeline`, so all backends and replay exercise the same implementation. Keep world/body transforms, SI units, timestamp/freshness handling, calibration and failure behavior explicit. Add a regression scenario plus independent acceptance metrics rather than a mock-only interface test. For an AI method, document model provenance and inference preprocessing, and retain a classical baseline for diagnosis.
 
 ## External simulators
 

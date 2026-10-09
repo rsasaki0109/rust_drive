@@ -1,5 +1,5 @@
 //! Pure-pursuit steering and acceleration feedforward with bounded PI speed feedback.
-use rustdrive_core::{
+use rustdriving_core::{
     ControlCommand, Controller, DrivingMode, EgoState, Trajectory, VehicleConfig, wrap_angle,
 };
 #[derive(Default)]
@@ -110,9 +110,9 @@ impl Controller for PurePursuit {
 }
 fn pursuit_target(
     path: &Trajectory,
-    origin: rustdrive_core::Vec2,
+    origin: rustdriving_core::Vec2,
     lookahead: f64,
-) -> rustdrive_core::Vec2 {
+) -> rustdriving_core::Vec2 {
     let mut previous = path.points[0].position;
     if previous.distance(origin) >= lookahead {
         return previous;
@@ -171,8 +171,8 @@ mod tests {
             path.points = (0..=500)
                 .map(|i| {
                     let angle = i as f64 * 0.002;
-                    rustdrive_core::TrajectoryPoint {
-                        position: rustdrive_core::Vec2::new(
+                    rustdriving_core::TrajectoryPoint {
+                        position: rustdriving_core::Vec2::new(
                             radius * angle.sin(),
                             direction * radius * (1.0 - angle.cos()),
                         ),
@@ -207,7 +207,7 @@ mod tests {
     fn chassis_unreachable_curvature_saturates_finitely_and_invalid_offsets_brake() {
         for direction in [-1.0, 1.0] {
             let mut path = profile(0.0, 0.0, 1.0);
-            path.points[1].position = rustdrive_core::Vec2::new(0.0, direction * 0.2);
+            path.points[1].position = rustdriving_core::Vec2::new(0.0, direction * 0.2);
             let mut controller = PurePursuit {
                 rear_axle_offset_m: 1.3,
                 ..PurePursuit::default()
@@ -229,14 +229,14 @@ mod tests {
     #[test]
     fn local_preview_keeps_heading_on_the_straight_before_a_tight_turn() {
         let mut path = profile(2.0, 2.0, 1.0);
-        path.points[1].position = rustdrive_core::Vec2::new(2.0, 0.0);
-        path.points.push(rustdrive_core::TrajectoryPoint {
-            position: rustdrive_core::Vec2::new(3.0, 0.5),
+        path.points[1].position = rustdriving_core::Vec2::new(2.0, 0.0);
+        path.points.push(rustdriving_core::TrajectoryPoint {
+            position: rustdriving_core::Vec2::new(3.0, 0.5),
             speed: 2.0,
             time: 1.6,
         });
-        path.points.push(rustdrive_core::TrajectoryPoint {
-            position: rustdrive_core::Vec2::new(4.0, 1.5),
+        path.points.push(rustdriving_core::TrajectoryPoint {
+            position: rustdriving_core::Vec2::new(4.0, 1.5),
             speed: 2.0,
             time: 2.4,
         });
@@ -257,13 +257,13 @@ mod tests {
     fn profile(initial: f64, next: f64, duration: f64) -> Trajectory {
         Trajectory {
             points: vec![
-                rustdrive_core::TrajectoryPoint {
-                    position: rustdrive_core::Vec2::default(),
+                rustdriving_core::TrajectoryPoint {
+                    position: rustdriving_core::Vec2::default(),
                     speed: initial,
                     time: 0.0,
                 },
-                rustdrive_core::TrajectoryPoint {
-                    position: rustdrive_core::Vec2::new(3.0, 0.0),
+                rustdriving_core::TrajectoryPoint {
+                    position: rustdriving_core::Vec2::new(3.0, 0.0),
                     speed: next,
                     time: duration,
                 },
@@ -336,8 +336,8 @@ mod tests {
         path.points = (0..=80)
             .map(|i| {
                 let angle = i as f64 * 0.01;
-                rustdrive_core::TrajectoryPoint {
-                    position: rustdrive_core::Vec2::new(
+                rustdriving_core::TrajectoryPoint {
+                    position: rustdriving_core::Vec2::new(
                         radius * angle.sin(),
                         radius * (1.0 - angle.cos()),
                     ),
@@ -346,7 +346,7 @@ mod tests {
                 }
             })
             .collect();
-        let target = pursuit_target(&path, rustdrive_core::Vec2::default(), 4.8);
+        let target = pursuit_target(&path, rustdriving_core::Vec2::default(), 4.8);
         assert!((target.x.hypot(target.y) - 4.8).abs() < 1e-10);
         let mut controller = PurePursuit::default();
         let ego = EgoState {

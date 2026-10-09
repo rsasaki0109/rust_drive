@@ -1,5 +1,5 @@
 //! Local log-odds occupancy map, independent of the supplied navigation route.
-use rustdrive_core::{LidarScan, Pose, Vec2};
+use rustdriving_core::{LidarScan, Pose, Vec2};
 pub struct OccupancyGrid {
     pub origin: Vec2,
     pub resolution: f64,

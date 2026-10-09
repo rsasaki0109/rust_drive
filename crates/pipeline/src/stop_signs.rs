@@ -1,6 +1,6 @@
 //! Fixed-route stop signs. Only map geometry and healthy measured motion enter here.
 use crate::traffic_controls::{StopLine, planning_prefix};
-use rustdrive_core::{EgoState, Route};
+use rustdriving_core::{EgoState, Route};
 use serde::{Deserialize, Serialize};
 
 pub const STOP_HOLD_S: f64 = 2.0;
@@ -60,7 +60,7 @@ impl StopSigns {
     ) {
         let (progress, lateral) = route.project(ego.pose.position);
         let heading = route.sample(progress, 0.0).1;
-        let aligned = rustdrive_core::wrap_angle(ego.pose.yaw - heading).abs() < 0.2
+        let aligned = rustdriving_core::wrap_angle(ego.pose.yaw - heading).abs() < 0.2
             && lateral.abs() + radius <= route.half_width;
         self.status.stop_s_m = None;
         for ((line, state), since) in self
@@ -119,7 +119,7 @@ impl StopSigns {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rustdrive_core::{Pose, Vec2};
+    use rustdriving_core::{Pose, Vec2};
     fn route() -> Route {
         Route::new(vec![Vec2::default(), Vec2::new(100.0, 0.0)], 2.1).unwrap()
     }

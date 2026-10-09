@@ -1,10 +1,12 @@
-# RustDrive
+# RustDriving
 
 **A Rust-native autonomous driving stack.**
 
-![Actual RNE driving with a crossing pedestrian, a cyclist and a lead vehicle rendered as articulated 3D meshes](assets/vru-demo.gif)
+![Recorded left-hand urban RNE driving with traffic signals, cars, trucks, cyclists, pedestrians and a walking dog](assets/city-demo.gif)
 
-An original, modular driving stack with a working, deterministic closed-loop simulation. The vehicle processes synthetic LiDAR, fuses noisy GNSS and odometry, tracks and predicts obstacles, and plans steering and braking. The opening GIF replays an actual CPU-only Robot Native Engine (RNE) run: ego yields to a crossing pedestrian, while a cyclist travels beside the road and a lead vehicle stops ahead. Original articulated human meshes and a detailed bicycle add clothing, facial features, a helmet, tires, spokes, chain and pedals. Actor positions come from the recorded simulation; walking and pedaling are display animations. Native sensing and moving-actor collision checks use declared circular/capsule geometry, with no semantic recognition or avatar mesh collision. Blender Cycles renders the recorded 22-second episode at 3× playback. [Physical checks, mesh details and limitations](docs/road-users.md); [reproduce the GIF](#reproduce-the-gif).
+An original, modular driving stack with a working, deterministic closed-loop simulation. The vehicle processes synthetic LiDAR, fuses noisy GNSS and odometry, tracks and predicts obstacles, and plans steering and braking. The opening GIF records CPU-only Robot Native Engine (RNE) driving on the left side of an authored urban road: two signals, five passenger vehicles, two trucks, seven pedestrians (including an elder with a cane, a child and a parent pushing a stroller), four bicycles and a leashed dog. Ego waits at red, restarts after green and yields to staggered crossings. Vehicles use fixed SI display dimensions, independently of sensing/collision radii; a fixed-scale camera keeps their size consistent. Original articulated meshes and city buildings visualize actual recorded positions. Walking, pedaling and dog gait are cosmetic; physical actors remain capsule/circle proxies, with no semantic recognition or avatar contact response. Blender Cycles renders the 46-second episode at 3× playback. [Checks, mesh details and limitations](docs/road-users.md); [reproduce the GIF](#reproduce-the-gif).
+
+The project is now **RustDriving**. Cargo packages and commands use `rustdriving-*` / `rustdriving`; the GitHub repository currently remains `rsasaki0109/rust_drive`. The requested repository rename to `rust_driving` is pending; the commands below use the current repository. Historical recordings and versioned schema identifiers retain their original spelling.
 
 **Status: simulation research prototype, v0.1.** The verified operating domain is known planar road corridors with circular obstacles, including a directed road-network fork, merge and stopped handover after a live closure notification. Bounded OSM import supplies external road geometry; optional native cuboid scenes add actual XYZ sensing, measured local ground removal and research-body clearance. A CPU-only Robot Native Engine (RNE) adapter runs the same pipeline with native Ackermann dynamics and Rapier queries. This is the starting point for an independent stack, not a replacement for mature driving systems or a system for use on public roads. CARLA, ROS 2, 3D SLAM, general intersection/priority reasoning, and real vehicle interfaces are not implemented. Optional offline Rust-native CPU camera inference runs separately from driving; camera-based control is not implemented. Mapped signal stops use timestamped infrastructure observations; camera signal recognition is not implemented. See the [capability matrix](docs/capabilities.md).
 
@@ -20,7 +22,7 @@ Rust 1.90.0 is pinned in `rust-toolchain.toml`. No ROS, GPU, Docker, models, sim
 git clone https://github.com/rsasaki0109/rust_drive.git
 cd rust_drive
 cargo test --workspace --locked
-cargo run --release --locked --bin rustdrive -- run \
+cargo run --release --locked --bin rustdriving -- run \
   --scenario scenarios/mission.json --seed 7 --output artifacts/demo
 ```
 
@@ -31,7 +33,7 @@ The command prints acceptance results and writes `run.json`, `summary.json` and 
 ## Replay recorded sensors
 
 ```sh
-cargo run --release --locked --bin rustdrive -- replay \
+cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/demo/sensors.jsonl --output artifacts/replay
 ```
 
@@ -39,7 +41,7 @@ Replay creates a fresh pipeline and recomputes localization, tracks, predictions
 
 ## CPU-only Robot Native Engine demo
 
-The opening 3D GIF replays actual native vehicle dynamics, steering lag and inclined Rapier LiDAR queries against physical road support, a crossing pedestrian proxy, a cyclist proxy and a lead capsule. A separate closure-detour recording below uses the default planar sweep. Blender Cycles renders the road, vehicle proxies and recorded planned trajectories on CPU. The shared RustDrive pipeline drives it. No GPU, graphics context, ROS, Docker, CARLA server or pretrained model is required.
+The opening 3D GIF replays actual native vehicle dynamics, steering lag and inclined physical-scene LiDAR queries against native road support and nineteen road-user proxies, including crossing pedestrians, bicycles, traffic vehicles and a walking dog. A separate closure-detour recording below uses the default planar sweep. Blender Cycles renders the road, vehicle proxies and recorded planned trajectories on CPU. The shared RustDriving pipeline drives it. No GPU, graphics context, ROS, Docker, CARLA server or pretrained model is required.
 
 ![Actual RNE closure notification, detour and obstacle avoidance rendered in 3D](assets/rne-3d-demo.gif)
 
@@ -103,14 +105,14 @@ bash scripts/check-ground-scenes.sh --compact --output artifacts/ground-scenes
 The Rust importer converts bounded local Overpass JSON into the ordinary directed ENU road graph. A pinned genuine OSM extract includes attribution, ODbL terms and reproducible source conversion. Imported coordinates supply the map; noisy GNSS and odometry still supply localization. Missing width tags use explicit simulation calibration. Lane topology, legal turn restrictions and HD-map accuracy remain outside this importer. [Build, import and drive the external-data route](docs/osm-import.md).
 
 ```sh
-cargo run --release --locked --bin rustdrive -- import-osm \
+cargo run --release --locked --bin rustdriving -- import-osm \
   --input maps/osm/german-road-extract.json --output artifacts/osm/map.json \
   --origin-lat 48.136 --origin-lon 10.0695 --default-half-width 3 \
   --scenario-output artifacts/osm/scenario.json \
   --start osm-node-7119017425 --goal osm-node-274969423
-cargo run --release --locked --bin rustdrive -- run \
+cargo run --release --locked --bin rustdriving -- run \
   --scenario artifacts/osm/scenario.json --seed 7 --output artifacts/osm/run
-cargo run --release --locked --bin rustdrive -- replay \
+cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/osm/run/sensors.jsonl --output artifacts/osm/replay
 ```
 
@@ -130,7 +132,7 @@ An experimental `--lidar-3d --terrain-objects` mode clusters actual native XYZ s
 
 ```sh
 python scripts/fetch-datasets.py
-cargo run --release --locked --bin rustdrive-dataset-eval -- \
+cargo run --release --locked --bin rustdriving-dataset-eval -- \
   --python python --output artifacts/datasets/report.json
 python scripts/check-datasets.py --report artifacts/datasets/report.json
 python scripts/check-map-localization.py --backend reference --output artifacts/map-localization
@@ -163,7 +165,7 @@ This actual CPU-only RNE run finishes the original follower fixture at 64.25 s, 
 Optional simulator actors now follow their route with bounded acceleration, braking and finite-range proximity observations. Both plants exercise waiting for a stopped lead, resuming, braking behind ego during a GNSS outage and forming a stopped queue. The ego stack uses sustained observed braking for at most one second, then coasts; conservative repeated stops near a narrow-road goal remain visible. [Measured prediction improvement](docs/observed-braking.md). [Actual RNE GIF, actor sensing boundary, measurements and failures](docs/reactive-traffic.md).
 
 ```sh
-cargo run --release --locked --bin rustdrive -- run \
+cargo run --release --locked --bin rustdriving -- run \
   --scenario scenarios/traffic-lead-stop.json --seed 7 --output artifacts/traffic
 ```
 
@@ -186,7 +188,7 @@ bash scripts/rne-3d-demo.sh artifacts/fleet/demo.gif \
 Mapped signals now stop ego before red, yellow or unknown lines and release it on fresh green. Expired green observations cannot authorize crossing; a restored feed can resume driving. Six fixtures pass in reference and native RNE plants across three seeds, with independently checked physical crossings, continuous standstill and full sensor replay. The feed is synthetic infrastructure state, not camera recognition. [Commands, native 3D preview, measurements and limits](docs/traffic-signals.md).
 
 ```sh
-cargo run --release --locked --bin rustdrive -- run \
+cargo run --release --locked --bin rustdriving -- run \
   --scenario scenarios/signal-red-green.json --seed 7 --output artifacts/signals
 ```
 
@@ -197,7 +199,7 @@ cargo run --release --locked --bin rustdrive -- run \
 Ego now holds near a mapped stop line for two continuous healthy seconds before restarting. Distant/rolling stops and sensor-fault time cannot satisfy the measured stop timer. Five fixtures cover one/two stops, a red signal, a sensed blockage and GNSS recovery in both plants across three seeds. Independent actual-front/actual-speed checks reject crossings without a complete physical stop. Map signs are known configuration; camera sign detection and general right-of-way reasoning remain future work. [Commands, GIF provenance, measured results and limits](docs/stop-signs.md).
 
 ```sh
-cargo run --release --locked --bin rustdrive -- run \
+cargo run --release --locked --bin rustdriving -- run \
   --scenario scenarios/stop-sign-single.json --seed 7 --output artifacts/stop-signs
 ```
 
@@ -210,7 +212,7 @@ Known map conflict rectangles now constrain ego's fixed route when LiDAR-derived
 Delayed body-frame LiDAR now uses its acquisition-time EKF pose for detections and occupancy rays. Bounded history accepts covered scans up to 0.35 s old; the yield permission age remains 0.15 s. Motion forecasts now separately propagate acquired tracks to the current control time; the one-second observed-braking interval remains anchored at acquisition. Full delayed-sensor fusion and uncertainty propagation remain unimplemented. [Timing configuration and replay](docs/sensor-replay.md#bounded-acquisition-time-lidar-reprojection).
 
 ```sh
-cargo run --release --locked --bin rustdrive -- run \
+cargo run --release --locked --bin rustdriving -- run \
   --scenario scenarios/intersection-crossing.json --seed 7 --output artifacts/intersection
 ```
 
@@ -227,7 +229,7 @@ Repeated GNSS innovation rejection now causes a brake hold until a new fix is ac
 The same five-node map supports an eastern destination, a southern branch and a known-closure detour. Route search supplies a centerline to local planning. Live closure snapshots can trigger a stop before the fork and a detour handover; a reopened detour can resume a no-route hold. Mapped signals, stop signs and basic priority yielding operate on fixed routes; general priority negotiation and control remapping during live handover remain future work.
 
 ```sh
-cargo run --release --locked --bin rustdrive -- run \
+cargo run --release --locked --bin rustdriving -- run \
   --scenario scenarios/route-handover-fast.json --seed 7 --output artifacts/route-handover
 # Also try scenarios/route-no-path.json and scenarios/route-reopen.json.
 ```
@@ -260,18 +262,23 @@ python -m pip install -r scripts/requirements-demo.txt
 bash scripts/setup-rne.sh
 source scripts/env.sh
 cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- \
-  --scenario scenarios/native-vru-demo.json --scene scenes/ground-moving-traffic.json \
-  --lidar-3d --ground-segmentation --vehicle-body --plant dynamic --seed 7 \
-  --output artifacts/vru-demo/seed-7
-cargo run --release --locked --bin rustdrive -- replay \
-  --log artifacts/vru-demo/seed-7/sensors.jsonl --output artifacts/vru-demo/seed-7/replay
-python3 scripts/render_demo_3d.py artifacts/vru-demo/seed-7/run.json \
-  --native-scene artifacts/vru-demo/seed-7/scene.json \
-  --output artifacts/vru-demo/demo.gif --samples 12 --threads 3 \
-  --camera street --actor-models 0=sedan 1=pedestrian 2=cyclist
+  --scenario scenarios/native-city-demo.json --scene scenes/ground-moving-traffic.json \
+  --lidar-3d --ground-segmentation --vehicle-body --precise-capsule-rays \
+  --plant dynamic --seed 7 \
+  --output artifacts/city-demo/seed-7
+cargo run --release --locked --bin rustdriving -- replay \
+  --log artifacts/city-demo/seed-7/sensors.jsonl --output artifacts/city-demo/seed-7/replay
+python3 scripts/render_demo_3d.py artifacts/city-demo/seed-7/run.json \
+  --native-scene artifacts/city-demo/seed-7/scene.json \
+  --output artifacts/city-demo/demo.gif --samples 12 --threads 3 \
+  --environment urban --camera street --dog-pairs 17=18 \
+  --actor-models 0=sedan 1=pedestrian 2=cyclist 3=van 4=pedestrian \
+    5=cyclist 6=pedestrian 7=sedan 8=hatchback 9=pickup 10=truck \
+    11=truck 12=cyclist 13=cyclist 14=elder 15=child \
+    16=parent_stroller 17=pedestrian 18=dog
 ```
 
-Open `artifacts/vru-demo/demo.gif`. The renderer emits a PNG and [provenance JSON](assets/vru-demo.json), auditing recorded body and actor poses, road/obstacle meshes and measured sensor consistency. The published GIF has 75 frames at 960 × 640 pixels. To refresh the README asset intentionally, use `--output assets/vru-demo.gif` in the render command. [Independent road-user checks](docs/road-users.md); [ground-classification limits](docs/ground-lidar.md); [editable models and older demo reproduction](docs/3d-demo.md).
+Open `artifacts/city-demo/demo.gif`. The renderer emits a PNG and [provenance JSON](assets/city-demo.json), auditing recorded body and actor poses, road/obstacle meshes and measured sensor consistency. The published GIF is 960 × 640 pixels. To refresh the README asset intentionally, use `--output assets/city-demo.gif` in the render command. [Independent road-user checks](docs/road-users.md); [ground-classification limits](docs/ground-lidar.md); [editable models and older demo reproduction](docs/3d-demo.md).
 
 GIF bytes may differ between Blender/Pillow/font versions; sensor replay is deterministic on the same binary/platform. The reference GIF remains reproducible with `bash scripts/demo.sh`.
 
@@ -279,9 +286,9 @@ GIF bytes may differ between Blender/Pillow/font versions; sensor replay is dete
 
 ```sh
 bash scripts/check.sh
-cargo run --release --locked --bin rustdrive -- run \
+cargo run --release --locked --bin rustdriving -- run \
   --scenario scenarios/blocked.json --seed 7 --output artifacts/blocked
-cargo run --release --locked --bin rustdrive -- run \
+cargo run --release --locked --bin rustdriving -- run \
   --scenario scenarios/lidar-fault.json --seed 7 --output artifacts/lidar-fault
 ```
 
@@ -310,4 +317,4 @@ Ten small Cargo crates share transport-independent, serializable contracts. Algo
 - [Roadmap with acceptance gates](docs/roadmap.md)
 - [Contributing](CONTRIBUTING.md)
 
-RustDrive code is licensed under [Apache-2.0](LICENSE). The included OpenStreetMap data and derived road database retain [ODbL 1.0 attribution and provenance](maps/osm/SOURCE.md). Reference projects are studied, not vendored or ported. Dependency licensing is documented in [THIRD_PARTY.md](THIRD_PARTY.md).
+RustDriving code is licensed under [Apache-2.0](LICENSE). The included OpenStreetMap data and derived road database retain [ODbL 1.0 attribution and provenance](maps/osm/SOURCE.md). Reference projects are studied, not vendored or ported. Dependency licensing is documented in [THIRD_PARTY.md](THIRD_PARTY.md).

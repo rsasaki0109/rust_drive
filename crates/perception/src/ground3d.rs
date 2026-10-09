@@ -4,7 +4,7 @@
 //! pose, semantic label or simulator ground role is consulted. Sparse cells with
 //! inadequate neighboring terrain support are conservatively kept as non-ground.
 //! As with height-based PMF generally, an isolated broad roof can be ambiguous.
-use rustdrive_core::Vec3;
+use rustdriving_core::Vec3;
 use std::collections::BTreeMap;
 
 #[derive(Clone, Debug)]

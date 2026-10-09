@@ -4,7 +4,7 @@ This standalone workspace runs the official YOLOX nano ONNX network through
 `tract-onnx`, then decodes actual network outputs into 80-class pixel boxes and
 per-class nonmaximum suppression. It is offline perception research, separate
 from the vehicle pipeline. Boxes have image coordinates and no inferred metric
-depth. The default RustDrive build has no model, camera, or runtime dependency.
+depth. The default RustDriving build has no model, camera, or runtime dependency.
 
 ```sh
 python3 integrations/onnx/fetch.py --output artifacts/camera-model
@@ -18,7 +18,7 @@ python3 integrations/onnx/score.py --data artifacts/camera-model \
 cargo test --release --locked --manifest-path integrations/onnx/Cargo.toml
 cargo build --release --locked --manifest-path integrations/onnx/Cargo.toml
 python3 integrations/onnx/check.py \
-  --binary integrations/onnx/target/release/rustdrive-camera-detect
+  --binary integrations/onnx/target/release/rustdriving-camera-detect
 ```
 
 Python's standard library performs the explicit opt-in download and independent
@@ -58,7 +58,7 @@ malformed images, invalid probabilities, geometry and output shapes fail closed.
   `11e721e049f44f43cba66f240c249869116380a7fb17a5880dd3102512efdba9`.
 
 All downloaded assets and generated evidence stay under ignored `artifacts/`.
-RustDrive code remains Apache-2.0. The isolated lockfile records actual inference
+RustDriving code remains Apache-2.0. The isolated lockfile records actual inference
 and decoder dependency versions; existing root and RNE dependency pins stay
 unchanged. No Python inference package, GPU, ONNX Runtime shared library, or
 custom runtime is required.

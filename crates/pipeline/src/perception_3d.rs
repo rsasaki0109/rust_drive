@@ -1,8 +1,8 @@
 //! Optional terrain and measured XYZ object perception on validated raw returns.
 //! Uses acquisition-body XYZ only; no point labels, scene roles or world truth.
 use crate::Lidar3dConfig;
-use rustdrive_core::{Detection, Lidar3dScan, LidarScan, Pose, Vec2, Vec3};
-use rustdrive_perception::{
+use rustdriving_core::{Detection, Lidar3dScan, LidarScan, Pose, Vec2, Vec3};
+use rustdriving_perception::{
     AdaptiveTerrainConfig, ObjectClusterConfig, TerrainConfig, classify_ground,
     classify_ground_adaptive, cluster_objects,
 };
@@ -362,7 +362,7 @@ pub(crate) fn process(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rustdrive_core::Lidar3dReturn;
+    use rustdriving_core::Lidar3dReturn;
     use std::f64::consts::{PI, TAU};
     fn measured_patch() -> (Lidar3dConfig, Lidar3dScan) {
         let cfg = Lidar3dConfig {
@@ -675,7 +675,7 @@ mod tests {
     fn adaptive_sensor_only_replay_preserves_fault_epoch_and_recovery() {
         use crate::replay::{SensorLog, verify};
         use crate::{DrivingPipeline, HealthIssue, PipelineConfig, SensorFrame};
-        use rustdrive_core::{Route, VehicleConfig};
+        use rustdriving_core::{Route, VehicleConfig};
         let (calibration, cloud) = adaptive_acquisition(128, 16);
         let mut config = PipelineConfig::new(
             Route::new(vec![Vec2::default(), Vec2::new(80.0, 0.0)], 5.5).unwrap(),
@@ -732,7 +732,7 @@ mod tests {
     fn pipeline_measured_xyz_fault_latch_recovery_and_raw_replay() {
         use crate::replay::{SensorLog, verify};
         use crate::{DrivingPipeline, HealthIssue, PipelineConfig, SensorFrame};
-        use rustdrive_core::{Route, VehicleConfig};
+        use rustdriving_core::{Route, VehicleConfig};
         let (calibration, cloud) = measured_patch();
         let mut config = PipelineConfig::new(
             Route::new(vec![Vec2::default(), Vec2::new(80.0, 0.0)], 5.5).unwrap(),

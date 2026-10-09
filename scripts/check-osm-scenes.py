@@ -141,8 +141,8 @@ def main():
             and len(set(args.cases)) == len(args.cases) and all(0 <= n < 2**64 for n in args.seeds),
             'plants/cases/seeds must be distinct with u64 seeds')
     network, points, ids = map_contract()
-    cli, native = ROOT/'target/release/rustdrive', ROOT/'integrations/rne/target/release/rustdrive-rne'
-    require(cli.is_file() and native.is_file(), 'build locked RustDrive and native release binaries first')
+    cli, native = ROOT/'target/release/rustdriving', ROOT/'integrations/rne/target/release/rustdriving-rne'
+    require(cli.is_file() and native.is_file(), 'build locked RustDriving and native release binaries first')
     pin = (ROOT/'integrations/rne/rne-revision.txt').read_text().strip()
     actual = subprocess.run(['git', '-C', ROOT.parent/'RobotNativeEngine', 'rev-parse', 'HEAD'],
                             capture_output=True, text=True, check=True).stdout.strip()

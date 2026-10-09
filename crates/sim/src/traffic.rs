@@ -1,7 +1,19 @@
 //! Simulator-side route-following traffic. Actor policy sees only scalar proximity observations.
 use crate::{ObjectSpec, Scenario, WorldObject};
-use rustdrive_core::{EgoState, Route, Vec2, VehicleConfig};
+use rustdriving_core::{EgoState, Route, Vec2, VehicleConfig};
+use rustdriving_pipeline::traffic_controls::{SignalColor, SignalObservation};
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeSet;
+
+/// Opt-in forward-route infrastructure signal controller for simulated actors.
+/// Front extent is a declared physical/display envelope, independent of the
+/// circular proximity collider. This policy does not enter the ego pipeline.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TrafficSignalPolicy {
+    pub front_extent_m: f64,
+    pub stop_margin_m: f64,
+}
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -22,6 +34,8 @@ pub struct FollowingSpec {
     pub sensor_range_m: f64,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub stop_windows: Vec<StopWindow>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub signal_control: Option<TrafficSignalPolicy>,
 }
 impl Default for FollowingSpec {
     fn default() -> Self {
@@ -34,6 +48,7 @@ impl Default for FollowingSpec {
             max_deceleration_m_s2: 4.0,
             sensor_range_m: 45.0,
             stop_windows: vec![],
+            signal_control: None,
         }
     }
 }
@@ -58,6 +73,15 @@ impl FollowingSpec {
             || self.comfortable_deceleration_m_s2 > self.max_deceleration_m_s2
         {
             return Err("following requires bounded positive desired speed, fixed lateral offset, no delayed motion and valid braking bounds".into());
+        }
+        if let Some(policy) = &self.signal_control
+            && (!policy.front_extent_m.is_finite()
+                || !(object.radius..=12.0).contains(&policy.front_extent_m)
+                || !policy.stop_margin_m.is_finite()
+                || !(0.5..=5.0).contains(&policy.stop_margin_m)
+                || object.lateral != 0.0)
+        {
+            return Err("signal-controlled actors require a finite front extent, 0.5..=5 m stop margin and the forward route lane".into());
         }
         let mut end = 0.0;
         for window in &self.stop_windows {
@@ -118,12 +142,35 @@ pub struct TrafficTelemetry {
     pub speed_m_s: f64,
     pub acceleration_m_s2: f64,
     pub observation: ProximityObservation,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub signal_control: Option<TrafficSignalTelemetry>,
+}
+/// Last actually applied actor signal decision, simulator-side evidence only.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct TrafficSignalTelemetry {
+    pub id: String,
+    /// Simulator time at which the bounded command was chosen, before motion.
+    pub decision_stamp: f64,
+    /// Time of the integrated physical front position in this evidence record.
+    pub physical_front_stamp: f64,
+    pub observation_stamp: Option<f64>,
+    pub color: SignalColor,
+    pub fresh: bool,
+    pub permissive: bool,
+    pub stop_line_s_m: f64,
+    pub front_extent_m: f64,
+    pub stop_margin_m: f64,
+    pub physical_front_s_m: f64,
+    pub remaining_stop_distance_m: f64,
+    pub crossed_nonpermissive: bool,
 }
 struct Actor {
     s: f64,
     speed: f64,
     acceleration: f64,
     observation: ProximityObservation,
+    signal_control: Option<TrafficSignalTelemetry>,
+    passed_signals: BTreeSet<String>,
 }
 /// Stateful world shared by reference and RNE. Scheduled actors retain their analytic motion.
 pub struct TrafficWorld {
@@ -131,6 +178,8 @@ pub struct TrafficWorld {
     route: Route,
     actors: Vec<Option<Actor>>,
     time: f64,
+    tick: usize,
+    signal_observation: Option<SignalObservation>,
 }
 impl TrafficWorld {
     pub fn new(scenario: Scenario, route: Route) -> Self {
@@ -143,6 +192,17 @@ impl TrafficWorld {
                     speed: f.initial_speed_m_s,
                     acceleration: 0.0,
                     observation: ProximityObservation::default(),
+                    signal_control: None,
+                    passed_signals: scenario
+                        .traffic_signals
+                        .iter()
+                        .filter(|signal| {
+                            f.signal_control.as_ref().is_some_and(|p| {
+                                signal.stop_line.route_s_m <= o.s + p.front_extent_m
+                            })
+                        })
+                        .map(|signal| signal.stop_line.id.clone())
+                        .collect(),
                 })
             })
             .collect();
@@ -151,6 +211,8 @@ impl TrafficWorld {
             route,
             actors,
             time: 0.0,
+            tick: 0,
+            signal_observation: None,
         }
     }
     pub fn objects(&self, time: f64) -> Vec<WorldObject> {
@@ -160,7 +222,9 @@ impl TrafficWorld {
             .enumerate()
             .filter(|(_, o)| time >= o.active_from)
             .map(|(id, o)| {
-                let elapsed = (time - o.active_from.max(o.moving_from)).max(0.0);
+                let elapsed = (o.moving_until.map_or(time, |until| time.min(until))
+                    - o.active_from.max(o.moving_from))
+                .max(0.0);
                 let (s, lateral) = self.actors[id].as_ref().map_or(
                     (
                         o.s + elapsed * o.speed,
@@ -195,6 +259,7 @@ impl TrafficWorld {
                         speed_m_s: actor.speed,
                         acceleration_m_s2: actor.acceleration,
                         observation: actor.observation,
+                        signal_control: actor.signal_control.clone(),
                     },
                 )
             })
@@ -213,6 +278,16 @@ impl TrafficWorld {
         if self.actors.iter().all(Option::is_none) {
             self.time += dt;
             return Ok(());
+        }
+        if self.scenario.objects.iter().any(|object| {
+            object
+                .following
+                .as_ref()
+                .is_some_and(|f| f.signal_control.is_some())
+        }) && let Some(observation) =
+            crate::signals::observe(&self.scenario, self.time, self.tick)
+        {
+            self.signal_observation = Some(observation);
         }
         let mut scene = self.objects(self.time);
         scene.push(WorldObject {
@@ -265,15 +340,91 @@ impl TrafficWorld {
                 .stop_windows
                 .iter()
                 .any(|w| self.time + 1e-9 >= w.from && self.time + 1e-9 < w.until);
-            let acceleration =
+            let mut acceleration =
                 calibration.acceleration(actor.speed, spec.speed, stopping, observation);
+            let mut signal_decision = None;
+            if let Some(policy) = &calibration.signal_control {
+                let front = actor.s + policy.front_extent_m;
+                let signal = self
+                    .scenario
+                    .traffic_signals
+                    .iter()
+                    .filter(|s| {
+                        !actor.passed_signals.contains(&s.stop_line.id)
+                            && s.stop_line.route_s_m - front <= calibration.sensor_range_m
+                    })
+                    .min_by(|a, b| a.stop_line.route_s_m.total_cmp(&b.stop_line.route_s_m));
+                if let Some(signal) = signal {
+                    let received = self.signal_observation.as_ref();
+                    let fresh = received.is_some_and(|o| {
+                        self.time - o.stamp >= -1e-9 && self.time - o.stamp <= 0.75
+                    });
+                    let color = received
+                        .and_then(|o| o.states.iter().find(|s| s.id == signal.stop_line.id))
+                        .map_or(SignalColor::Unknown, |s| s.color);
+                    let permissive = fresh && color == SignalColor::Green;
+                    let clearance = signal.stop_line.route_s_m - front - policy.stop_margin_m;
+                    if !permissive {
+                        // Trapezoidal travel plus a remaining discrete braking
+                        // envelope: (old_v+next_v)*dt/2 + next_v²/(2*b)
+                        // + next_v*dt/2 <= gap. A 1 µm controller reserve avoids
+                        // crossing the declared margin through roundoff.
+                        // The applied acceleration remains physically bounded;
+                        // infeasible late acquisition cannot teleport the actor.
+                        let b = calibration.comfortable_deceleration_m_s2;
+                        let available = (clearance - 0.5 * actor.speed * dt - 1e-6).max(0.0);
+                        let next_cap = ((b * dt).powi(2) + 2.0 * b * available).sqrt() - b * dt;
+                        acceleration = acceleration
+                            .min((next_cap.max(0.0) - actor.speed) / dt)
+                            .clamp(
+                                -calibration.max_deceleration_m_s2,
+                                calibration.max_acceleration_m_s2,
+                            );
+                    }
+                    signal_decision = Some(TrafficSignalTelemetry {
+                        id: signal.stop_line.id.clone(),
+                        decision_stamp: self.time,
+                        physical_front_stamp: self.time + dt,
+                        observation_stamp: received.map(|o| o.stamp),
+                        color,
+                        fresh,
+                        permissive,
+                        stop_line_s_m: signal.stop_line.route_s_m,
+                        front_extent_m: policy.front_extent_m,
+                        stop_margin_m: policy.stop_margin_m,
+                        physical_front_s_m: front,
+                        remaining_stop_distance_m: clearance,
+                        crossed_nonpermissive: false,
+                    });
+                } else if self.scenario.traffic_signals.is_empty() {
+                    // A configured policy without a usable map fails closed.
+                    acceleration = acceleration
+                        .min(-calibration.comfortable_deceleration_m_s2)
+                        .clamp(
+                            -calibration.max_deceleration_m_s2,
+                            calibration.max_acceleration_m_s2,
+                        );
+                }
+            }
             let next_speed = (actor.speed + acceleration * dt).max(0.0);
             actor.s += (actor.speed + next_speed) * 0.5 * dt;
             actor.speed = next_speed;
             actor.acceleration = acceleration;
             actor.observation = observation;
+            if let Some(decision) = signal_decision.as_mut() {
+                let next_front = actor.s + decision.front_extent_m;
+                if next_front >= decision.stop_line_s_m {
+                    decision.crossed_nonpermissive = !decision.permissive;
+                    actor.passed_signals.insert(decision.id.clone());
+                }
+                decision.physical_front_s_m = next_front;
+                decision.remaining_stop_distance_m =
+                    decision.stop_line_s_m - next_front - decision.stop_margin_m;
+            }
+            actor.signal_control = signal_decision;
         }
         self.time += dt;
+        self.tick += 1;
         Ok(())
     }
 }
@@ -281,7 +432,7 @@ impl TrafficWorld {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rustdrive_core::{Pose, Vec2};
+    use rustdriving_core::{Pose, Vec2};
     fn scenario(objects: serde_json::Value) -> Scenario {
         serde_json::from_value(serde_json::json!({"name":"traffic test","duration":30,
             "road_length":200,"half_width":2,"expected":"stop","objects":objects}))
@@ -384,5 +535,185 @@ mod tests {
             ),
             -4.0
         );
+    }
+    fn signal_scenario() -> Scenario {
+        serde_json::from_value(serde_json::json!({"name":"NPC signal test","duration":30,"road_length":120,"half_width":3,"expected":"stop",
+            "objects":[{"s":24,"lateral":0,"radius":1,"speed":2,"following":{"initial_speed_m_s":2,"signal_control":{"front_extent_m":2.35,"stop_margin_m":0.5}}}],
+            "traffic_signals":[{"stop_line":{"id":"already-behind","route_s_m":12},"phases":[{"from":0,"color":"Red"}]},
+                {"stop_line":{"id":"crossing","route_s_m":34},"phases":[{"from":0,"color":"Red"},{"from":24,"color":"Green"}]}]})).unwrap()
+    }
+    #[test]
+    fn optional_actor_signal_control_stops_physical_front_on_red_and_resumes_observed_green() {
+        let scenario = signal_scenario();
+        scenario.validate().unwrap();
+        let mut traffic = TrafficWorld::new(scenario.clone(), scenario.route());
+        let mut stopped = false;
+        let mut released = false;
+        for i in 0..580 {
+            let before = traffic.telemetry()[0].clone();
+            traffic
+                .advance(ego(-100.0), VehicleConfig::default(), 0.05)
+                .unwrap();
+            let after = traffic.telemetry()[0].clone();
+            assert!(
+                (after.route_s_m - before.route_s_m - (before.speed_m_s + after.speed_m_s) * 0.025)
+                    .abs()
+                    < 1e-12,
+                "no position clamp or teleport"
+            );
+            assert!((-4.0..=2.0).contains(&after.acceleration_m_s2));
+            if i < 479 {
+                assert!(
+                    after.route_s_m + 2.35 <= 33.5 + 1e-9,
+                    "physical front respects mapped stop margin"
+                );
+                let observed = after.signal_control.as_ref().unwrap();
+                assert_eq!(observed.id, "crossing");
+                assert!(!observed.permissive && !observed.crossed_nonpermissive);
+                stopped |= i > 200 && after.speed_m_s < 0.01;
+            }
+            if i > 530 {
+                released |= after.route_s_m + 2.35 > 34.0 && after.speed_m_s > 1.0;
+            }
+        }
+        assert!(stopped && released);
+    }
+    #[test]
+    fn missing_signal_feed_stops_but_bounded_controller_cannot_repair_infeasible_initial_state() {
+        let mut scenario = signal_scenario();
+        scenario.signal_dropout_windows = vec![crate::signals::SignalDropout {
+            from: 0.0,
+            until: 25.0,
+        }];
+        let mut traffic = TrafficWorld::new(scenario.clone(), scenario.route());
+        for _ in 0..500 {
+            traffic
+                .advance(ego(-100.0), VehicleConfig::default(), 0.05)
+                .unwrap();
+        }
+        let row = &traffic.telemetry()[0];
+        assert!(row.speed_m_s < 0.01 && row.route_s_m + 2.35 <= 33.5);
+        let state = row.signal_control.as_ref().unwrap();
+        assert!(
+            !state.fresh
+                && !state.permissive
+                && state.color == SignalColor::Unknown
+                && state.observation_stamp.is_none()
+        );
+        scenario.objects[0].s = 31.64;
+        scenario.objects[0]
+            .following
+            .as_mut()
+            .unwrap()
+            .initial_speed_m_s = 6.0;
+        let mut infeasible = TrafficWorld::new(scenario.clone(), scenario.route());
+        infeasible
+            .advance(ego(-100.0), VehicleConfig::default(), 0.05)
+            .unwrap();
+        let row = &infeasible.telemetry()[0];
+        assert!(row.route_s_m + 2.35 > 34.0 && row.speed_m_s >= 5.8);
+        assert!(row.signal_control.as_ref().unwrap().crossed_nonpermissive);
+    }
+    #[test]
+    fn prescribed_motion_until_stops_on_footpath_and_defaults_do_not_add_serialized_fields() {
+        let bounded = scenario(
+            serde_json::json!([{"s":18,"lateral":-5,"radius":0.4,"lateral_speed":1.2,"moving_from":2,"moving_until":10.666666666666666}]),
+        );
+        bounded.validate().unwrap();
+        let traffic = TrafficWorld::new(bounded.clone(), bounded.route());
+        let finish = traffic.objects(10.666666666666666)[0].position;
+        assert!((finish.y - 5.4).abs() < 1e-12);
+        assert_eq!(traffic.objects(30.0)[0].position, finish);
+        assert_eq!(
+            bounded.scheduled_objects(&bounded.route(), 30.0)[0].position,
+            finish
+        );
+        let ordinary =
+            scenario(serde_json::json!([{"s":0,"lateral":0,"radius":1,"speed":2,"following":{}}]));
+        let encoded = serde_json::to_value(&ordinary).unwrap();
+        assert!(encoded["objects"][0].get("moving_until").is_none());
+        assert!(
+            encoded["objects"][0]["following"]
+                .get("signal_control")
+                .is_none()
+        );
+        let traffic = TrafficWorld::new(ordinary.clone(), ordinary.route());
+        assert!(
+            serde_json::to_value(traffic.telemetry()).unwrap()[0]
+                .get("signal_control")
+                .is_none()
+        );
+    }
+    #[test]
+    fn signal_calibration_and_motion_stop_validation_reject_incompatible_actors() {
+        let mut s = signal_scenario();
+        s.objects[0]
+            .following
+            .as_mut()
+            .unwrap()
+            .signal_control
+            .as_mut()
+            .unwrap()
+            .stop_margin_m = 0.49;
+        assert!(s.validate().is_err());
+        let mut s = signal_scenario();
+        s.objects[0].lateral = -8.0;
+        assert!(s.validate().is_err());
+        let mut s = signal_scenario();
+        s.objects[0].moving_until = Some(10.0);
+        assert!(s.validate().is_err());
+        let s = scenario(
+            serde_json::json!([{"s":18,"lateral":-5,"radius":0.4,"lateral_speed":1.2,"moving_from":2,"moving_until":1.0}]),
+        );
+        assert!(s.validate().is_err());
+    }
+    #[test]
+    fn stale_cached_green_yellow_and_unknown_cannot_authorize_forward_crossing() {
+        for color in [
+            SignalColor::Green,
+            SignalColor::Yellow,
+            SignalColor::Unknown,
+        ] {
+            let mut scenario = signal_scenario();
+            scenario.traffic_signals[1].phases = vec![
+                crate::signals::SignalPhase { from: 0.0, color },
+                crate::signals::SignalPhase {
+                    from: 0.5,
+                    color: SignalColor::Red,
+                },
+            ];
+            scenario.signal_dropout_windows = vec![crate::signals::SignalDropout {
+                from: 0.2,
+                until: 25.0,
+            }];
+            let mut traffic = TrafficWorld::new(scenario.clone(), scenario.route());
+            let mut evaluator = crate::signals::RuleEvaluator::default();
+            for _ in 0..450 {
+                traffic
+                    .advance(ego(-100.0), VehicleConfig::default(), 0.05)
+                    .unwrap();
+                let actor = &traffic.telemetry()[0];
+                evaluator.observe(
+                    &scenario.traffic_signals[1..],
+                    traffic.time,
+                    actor.route_s_m + 2.35,
+                );
+            }
+            let actor = &traffic.telemetry()[0];
+            let decision = actor.signal_control.as_ref().unwrap();
+            assert!(!decision.fresh && !decision.permissive && decision.color == color);
+            assert!(actor.speed_m_s < 0.01 && actor.route_s_m + 2.35 <= 33.5 + 1e-9);
+            assert_eq!(evaluator.violations, 0);
+        }
+        let mut missing_map = signal_scenario();
+        missing_map.traffic_signals.clear();
+        let mut traffic = TrafficWorld::new(missing_map.clone(), missing_map.route());
+        for _ in 0..60 {
+            traffic
+                .advance(ego(-100.0), VehicleConfig::default(), 0.05)
+                .unwrap();
+        }
+        assert_eq!(traffic.telemetry()[0].speed_m_s, 0.0);
+        assert!((-4.0..=2.0).contains(&traffic.telemetry()[0].acceleration_m_s2));
     }
 }

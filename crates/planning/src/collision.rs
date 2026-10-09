@@ -1,5 +1,5 @@
 //! Piecewise-linear, synchronized circular sweeps for candidate trajectory validation.
-use rustdrive_core::{Prediction, TrajectoryPoint, Vec2};
+use rustdriving_core::{Prediction, TrajectoryPoint, Vec2};
 
 /// Earliest contact under the supplied time parameterization. Inputs are validated by
 /// the planner. Prediction knots are linearly interpolated, then held at the last point.

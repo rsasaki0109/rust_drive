@@ -1,4 +1,4 @@
-# RustDrive development
+# RustDriving development
 
 Use the existing checkout; Codex cloud tasks already provide isolation. Do not create Git worktrees unless the user requests one.
 

@@ -1,6 +1,6 @@
 # Mapped traffic signals and stop-line behavior
 
-RustDrive now stops before mapped lines for red, yellow or unknown signals and resumes on a fresh green observation. This is an executable traffic-control baseline on authored, fixed, straight routes. It uses a **synthetic infrastructure state feed**, not camera recognition, simulator object labels or privileged future signal timing.
+RustDriving now stops before mapped lines for red, yellow or unknown signals and resumes on a fresh green observation. This is an executable traffic-control baseline on authored, fixed, straight routes. It uses a **synthetic infrastructure state feed**, not camera recognition, simulator object labels or privileged future signal timing.
 
 ![Actual native RNE seed-7 run stopped before a red signal at 15 s](../assets/traffic-signal-preview.png)
 
@@ -11,9 +11,9 @@ The image is a Blender Cycles CPU replay of the actual native run. The roadside 
 The reference simulator needs only Rust:
 
 ```sh
-cargo run --release --locked --bin rustdrive -- run \
+cargo run --release --locked --bin rustdriving -- run \
   --scenario scenarios/signal-red-green.json --seed 7 --output artifacts/signals
-cargo run --release --locked --bin rustdrive -- replay \
+cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/signals/sensors.jsonl --output artifacts/signals/replay
 ```
 
@@ -23,7 +23,7 @@ After `bash scripts/setup-rne.sh`, use native dynamics:
 cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- \
   --scenario scenarios/signal-red-green.json --plant dynamic --seed 7 \
   --output artifacts/signals-native/signal-red-green
-cargo run --release --locked --bin rustdrive -- replay \
+cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/signals-native/signal-red-green/sensors.jsonl \
   --output artifacts/signals-native/signal-red-green/replay
 # Optional Blender/Pillow visualization and editable snapshot:

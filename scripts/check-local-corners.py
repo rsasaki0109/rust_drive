@@ -201,8 +201,8 @@ def main():
             and all(0 <= n < 2**64 for n in args.seeds), 'use one to three distinct u64 seeds')
     backends = ['reference', 'rne-dynamic'] if args.backend == 'all' else [args.backend]
     suffix = '.exe' if sys.platform == 'win32' else ''
-    cli = ROOT/'target/release'/('rustdrive'+suffix)
-    native = ROOT/'integrations/rne/target/release'/('rustdrive-rne'+suffix)
+    cli = ROOT/'target/release'/('rustdriving'+suffix)
+    native = ROOT/'integrations/rne/target/release'/('rustdriving-rne'+suffix)
     require(cli.is_file() and ('rne-dynamic' not in backends or native.is_file()),
             'build locked reference and selected native release binaries first')
     scenario_paths = {case: ROOT/'scenarios'/f'local-corners-{case}.json' for case in CASES}

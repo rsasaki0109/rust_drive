@@ -9,9 +9,9 @@ The GIF renders a real seed-7 native episode with original suburban scenery and 
 ## Run and reproduce
 
 ```sh
-cargo run --release --locked --bin rustdrive -- run \
+cargo run --release --locked --bin rustdriving -- run \
   --scenario scenarios/stop-sign-single.json --seed 7 --output artifacts/stop-signs
-cargo run --release --locked --bin rustdrive -- replay \
+cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/stop-signs/sensors.jsonl --output artifacts/stop-signs/replay
 
 # Requires the pinned RNE checkout and Rust 1.95.0; no GPU.
@@ -26,7 +26,7 @@ python scripts/render_demo_3d.py artifacts/rne-stop-signs/run.json \
   --preview-time 10.5 --output artifacts/stop-signs/preview.gif \
   --samples 16 --threads 4 --scene-output artifacts/stop-signs/scene.blend
 
-bash scripts/check-hazards.sh --output /tmp/rustdrive-stop-signs
+bash scripts/check-hazards.sh --output /tmp/rustdriving-stop-signs
 ```
 
 ## Driver contract

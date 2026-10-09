@@ -16,7 +16,7 @@ SPEC.loader.exec_module(fetch)
 
 class AcquisitionBoundaries(unittest.TestCase):
     def setUp(self):
-        directory = tempfile.TemporaryDirectory(prefix='rustdrive-additional-data-')
+        directory = tempfile.TemporaryDirectory(prefix='rustdriving-additional-data-')
         self.addCleanup(directory.cleanup)
         self.root = Path(directory.name)
         self.path = self.root/'data/pdal-autzen/manifest.json'
