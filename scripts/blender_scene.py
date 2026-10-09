@@ -1,0 +1,226 @@
+"""Blender worker: render recorded world states, never advance a simulator."""
+import json
+import math
+from pathlib import Path
+import sys
+
+import bpy
+from mathutils import Vector
+
+
+def material(name, color, metallic=0.0):
+    mat = bpy.data.materials.new(name)
+    mat.diffuse_color = (*color, 1)
+    mat.use_nodes = True
+    shader = mat.node_tree.nodes.get('Principled BSDF')
+    shader.inputs['Base Color'].default_value = (*color, 1)
+    shader.inputs['Metallic'].default_value = metallic
+    shader.inputs['Roughness'].default_value = 0.45
+    if metallic == 0:
+        specular = shader.inputs.get('Specular IOR Level') or shader.inputs.get('Specular')
+        if specular:
+            specular.default_value = 0
+    return mat
+
+
+def cube(name, position, size, mat, parent=None, bevel=0):
+    bpy.ops.mesh.primitive_cube_add(size=1, location=position)
+    obj = bpy.context.object
+    obj.name = name
+    obj.dimensions = size
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    obj.data.materials.append(mat)
+    if parent:
+        obj.parent = parent
+    if bevel:
+        mod = obj.modifiers.new('Soft edges', 'BEVEL')
+        mod.width, mod.segments = bevel, 3
+        obj.modifiers.new('Normals', 'WEIGHTED_NORMAL')
+    return obj
+
+
+def line(name, points, mat, width=0.04):
+    curve = bpy.data.curves.new(name, 'CURVE')
+    curve.dimensions = '3D'
+    curve.bevel_depth = width
+    curve.bevel_resolution = 2
+    obj = bpy.data.objects.new(name, curve)
+    bpy.context.collection.objects.link(obj)
+    obj.data.materials.append(mat)
+    set_line(obj, points)
+    return obj
+
+
+def set_line(obj, points):
+    obj.data.splines.clear()
+    if len(points) < 2:
+        return
+    spline = obj.data.splines.new('POLY')
+    spline.points.add(len(points)-1)
+    for vertex, point in zip(spline.points, points):
+        vertex.co = (*point, 1)
+
+
+def road(points, half_width, asphalt, marking):
+    vertices, borders = [], [[], []]
+    for i, point in enumerate(points):
+        before, after = points[max(0, i-1)], points[min(len(points)-1, i+1)]
+        dx, dy = after['x']-before['x'], after['y']-before['y']
+        length = math.hypot(dx, dy)
+        nx, ny = -dy/length, dx/length
+        for side, sign in enumerate([-1, 1]):
+            x, y = point['x']+sign*nx*half_width, point['y']+sign*ny*half_width
+            vertices.append((x, y, 0.02))
+            borders[side].append((x, y, 0.055))
+    mesh = bpy.data.meshes.new('Recorded road corridor')
+    mesh.from_pydata(vertices, [], [(2*i, 2*i+2, 2*i+3, 2*i+1) for i in range(len(points)-1)])
+    obj = bpy.data.objects.new('Road', mesh)
+    bpy.context.collection.objects.link(obj)
+    obj.data.materials.append(asphalt)
+    for border in borders:
+        line('Corridor edge', border, marking, 0.045)
+    for i in range(0, len(points)-1, 3):
+        a, b = points[i:i+2]
+        line('Decorative center marking', [(a['x'], a['y'], 0.06), (b['x'], b['y'], 0.06)], marking, 0.04)
+    return obj
+
+
+def car(name, radius, body_mat, glass, tire, headlight):
+    parent = bpy.data.objects.new(name, None)
+    bpy.context.collection.objects.link(parent)
+    r = radius
+    cube('Body', (0, 0, .43*r), (1.64*r, .96*r, .48*r), body_mat, parent, .12*r)
+    cube('Windows', (-.12*r, 0, .76*r), (.82*r, .80*r, .40*r), glass, parent, .10*r)
+    cube('Roof', (-.12*r, 0, .96*r), (.69*r, .74*r, .06*r), body_mat, parent, .04*r)
+    for x in [-.51*r, .51*r]:
+        for y in [-.51*r, .51*r]:
+            bpy.ops.mesh.primitive_cylinder_add(vertices=20, radius=.19*r, depth=.12*r, location=(x, y, .24*r), rotation=(math.pi/2, 0, 0))
+            wheel = bpy.context.object
+            wheel.parent = parent
+            wheel.data.materials.append(tire)
+    for y in [-.3*r, .3*r]:
+        cube('Headlight', (.825*r, y, .45*r), (.03*r, .20*r, .09*r), headlight, parent, .02*r)
+    return parent
+
+
+def main():
+    request = json.loads(Path(sys.argv[sys.argv.index('--')+1]).read_text())
+    run = json.loads(Path(request['run']).read_text())
+    bpy.ops.object.select_all(action='SELECT')
+    bpy.ops.object.delete(use_global=False)
+    scene = bpy.context.scene
+    scene.render.engine = 'CYCLES'
+    scene.cycles.device = 'CPU'
+    scene.cycles.samples = request['samples']
+    scene.cycles.use_denoising = False
+    scene.cycles.max_bounces = 3
+    scene.render.resolution_x, scene.render.resolution_y = 960, 540
+    scene.render.resolution_percentage = 100
+    scene.render.image_settings.file_format = 'PNG'
+    scene.render.image_settings.color_mode = 'RGB'
+    scene.render.use_persistent_data = True
+    scene.world.use_nodes = True
+    scene.world.node_tree.nodes['Background'].inputs[0].default_value = (.65, .76, .95, 1)
+    scene.world.node_tree.nodes['Background'].inputs[1].default_value = .45
+    asphalt = material('Asphalt', (.065, .08, .11))
+    marking = material('Ivory marking', (.70, .77, .79))
+    grass = material('Ground', (.085, .14, .115))
+    blue = material('Ego blue', (.02, .27, .88), .3)
+    orange = material('Actor amber', (.95, .30, .035), .2)
+    glass = material('Dark windows', (.015, .035, .065), .6)
+    tire = material('Rubber', (.01, .012, .015))
+    headlight = material('Headlight', (.90, .96, 1))
+    teal = material('Planned path', (.02, .85, .55))
+    purple = material('Predicted motion', (.65, .22, .95))
+    red = material('Map closure overlay', (.88, .03, .04))
+    cube('Ground plane', (100, 0, -.12), (1000, 1000, .2), grass)
+    navigation = run['scenario'].get('navigation')
+    edges = navigation['network']['edges'] if navigation else [run['route']]
+    closures = {}
+    roads = []
+    for edge in edges:
+        surface = road(edge['points'], edge['half_width'], asphalt, marking)
+        bpy.context.view_layer.objects.active = surface
+        solid = surface.modifiers.new('Road thickness', 'SOLIDIFY')
+        solid.thickness = .04
+        solid.offset = -1
+        bpy.ops.object.modifier_apply(modifier=solid.name)
+        roads.append(surface)
+        if 'id' in edge:
+            closures[edge['id']] = line('Map closure', [(p['x'], p['y'], .09) for p in edge['points']], red, .16)
+            closures[edge['id']].hide_render = True
+    # Overlapping authored corridors become one surface, avoiding coplanar
+    # flicker at the fork and merge. This changes only decorative geometry.
+    for surface in roads[1:]:
+        bpy.context.view_layer.objects.active = roads[0]
+        union = roads[0].modifiers.new('Joined junction', 'BOOLEAN')
+        union.operation, union.solver, union.object = 'UNION', 'EXACT', surface
+        bpy.ops.object.modifier_apply(modifier=union.name)
+        bpy.data.objects.remove(surface, do_unlink=True)
+    bpy.ops.object.light_add(type='SUN', location=(0, 0, 20))
+    sun = bpy.context.object
+    sun.rotation_euler = (.5, -.4, -.35)
+    sun.data.energy, sun.data.angle = 2.5, .12
+    bpy.ops.object.camera_add()
+    camera = bpy.context.object
+    camera.data.lens = 38
+    camera.data.clip_end = 1000
+    scene.camera = camera
+    ego = car('Recorded ego', run['vehicle']['radius'], blue, glass, tire, headlight)
+    dynamic_ids = {s['id'] for f in run['frames'] for s in f.get('traffic', [])}
+    actors = {}
+    for frame in run['frames']:
+        for actor in frame['objects']:
+            if actor['id'] in actors:
+                continue
+            if actor['id'] in dynamic_ids:
+                actors[actor['id']] = car('Recorded reactive actor', actor['radius'], orange, glass, tire, headlight)
+            else:
+                bpy.ops.mesh.primitive_cylinder_add(vertices=32, radius=actor['radius'], depth=1.5, location=(0, 0, .80))
+                obj = bpy.context.object
+                obj.data.materials.append(orange)
+                actors[actor['id']] = obj
+    planned = line('Actual planned trajectory', [], teal, .075)
+    predictions = line('Actual track forecasts', [], purple, .04)
+    audit = []
+    output = Path(request['frames_directory'])
+    for number, index in enumerate(request['indices']):
+        frame = run['frames'][index]
+        pose = frame['truth']['pose']
+        x, y = pose['position']['x'], pose['position']['y']
+        ego.location, ego.rotation_euler = (x, y, .02), (0, 0, pose['yaw'])
+        camera.location = (x-16, y-22, 24)
+        camera.rotation_euler = (Vector((x+4, y, 0))-camera.location).to_track_quat('-Z', 'Y').to_euler()
+        for id, obj in actors.items():
+            obj.hide_render = not any(a['id'] == id for a in frame['objects'])
+            for child in obj.children:
+                child.hide_render = obj.hide_render
+        for actor in frame['objects']:
+            obj = actors[actor['id']]
+            obj.location.x, obj.location.y = actor['position']['x'], actor['position']['y']
+            if actor['id'] in dynamic_ids and index > 0:
+                previous = next((a for a in run['frames'][index-1]['objects'] if a['id'] == actor['id']), None)
+                if previous:
+                    dx, dy = actor['position']['x']-previous['position']['x'], actor['position']['y']-previous['position']['y']
+                    if math.hypot(dx, dy) > 1e-6:
+                        obj.rotation_euler.z = math.atan2(dy, dx)
+        set_line(planned, [(p['position']['x'], p['position']['y'], .11) for p in frame['trajectory']['points']])
+        forecast = frame['predictions'][0]['positions'] if frame['predictions'] else []
+        set_line(predictions, [(p['x'], p['y'], .12) for p in forecast])
+        closed = (frame.get('navigation') or {}).get('closed_edges', [])
+        for id, obj in closures.items():
+            obj.hide_render = id not in closed
+        rendered_pose = {'position': {'x': float(ego.location.x), 'y': float(ego.location.y)},
+                         'yaw': float(ego.rotation_euler.z)}
+        rendered_objects = [{'id': a['id'], 'position': {'x': float(actors[a['id']].location.x),
+                                                       'y': float(actors[a['id']].location.y)}} for a in frame['objects']]
+        audit.append({'frame_index': index, 'time': frame['time'], 'ego_pose': rendered_pose,
+                      'objects': rendered_objects, 'closed_edges': closed,
+                      'camera_position': list(camera.location)})
+        scene.render.filepath = str(output/f'{number:04d}.png')
+        bpy.ops.render.render(write_still=True)
+    (output/'audit.json').write_text(json.dumps(audit, indent=2)+'\n')
+
+
+if __name__ == '__main__':
+    main()

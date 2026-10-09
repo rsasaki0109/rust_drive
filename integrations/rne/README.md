@@ -43,7 +43,7 @@ After fetching/building, add `--offline` to Cargo commands to use retained depen
 - RNE entities for the ego and circular scenario obstacles carry Rapier query colliders, synchronized at each acquisition. The ego is filtered from its own rays. Rapier is used for scene queries; native RNE systems integrate the vehicle. There is no second Rapier integration or physical contact response in this adapter.
 - Checked RNE LiDAR samples 720 rays to 45 m with deterministic keyed Gaussian 0.008 m range noise. World-frame points are inverse-transformed through the acquisition mount into body x-forward/y-left. GNSS and wheel-speed/gyro remain explicit synthetic noisy measurements, not sensor-independent ground-truth estimates.
 - A failed ray query becomes `lidar_failed`, triggering emergency braking. The fault test deliberately uses an invalid physics world; healthy empty scans remain valid. Scenario dropouts additionally exercise freshness handling.
-- The evaluator scores native plant truth independently using swept circular footprints and the supplied route corridor. The GIF is a top-down Pillow visualization of actual telemetry, **not an RNE 3D renderer capture**.
+- The evaluator scores native plant truth independently using swept circular footprints and the supplied route corridor. The opening GIF uses a Blender Cycles CPU 3D replay of actual telemetry; it is **not an RNE renderer or sensor-camera capture**. The top-down Pillow renderer remains available. [3D reproduction and boundaries](../../docs/3d-demo.md).
 
 ## Engine improvements
 

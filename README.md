@@ -2,9 +2,9 @@
 
 **A Rust-native autonomous driving stack.**
 
-![RustDrive selecting a road-network detour with RNE native vehicle dynamics and Rapier LiDAR](assets/rne-demo.gif)
+![3D replay of RustDrive selecting a detour and avoiding an obstacle with RNE native dynamics](assets/rne-3d-demo.gif)
 
-An original, modular driving stack with a working, deterministic closed-loop simulation. The vehicle processes synthetic LiDAR, fuses noisy GNSS and odometry, tracks and predicts obstacles, plans an avoidance trajectory, and steers and brakes to its destination. The opening GIF shows an actual CPU-only Robot Native Engine (RNE) run: a closure notification arrives during driving, the vehicle stops before the fork, switches to a Dijkstra detour, avoids a sensed obstacle and reaches the mapped destination using native vehicle dynamics and Rapier LiDAR queries. It is a top-down rendering of recorded telemetry at 3× playback speed, with a 6 m/s cruise setting and no optional curvature cap. [Reproduce this RNE demo](#reproduce-the-gif).
+An original, modular driving stack with a working, deterministic closed-loop simulation. The vehicle processes synthetic LiDAR, fuses noisy GNSS and odometry, tracks and predicts obstacles, plans an avoidance trajectory, and steers and brakes to its destination. The opening GIF shows an actual CPU-only Robot Native Engine (RNE) run: a closure notification arrives during driving, the vehicle stops before the fork, switches to a Dijkstra detour, avoids a sensed obstacle and reaches the mapped destination using native vehicle dynamics and Rapier LiDAR queries. It is a Blender Cycles CPU rendering of the recorded RNE run in 3D at 3× playback speed, with a 6 m/s cruise setting and no optional curvature cap. Driving physics and perception remain planar; the 3D scene is a visual replay. [Reproduce this RNE demo](#reproduce-the-gif).
 
 **Status: simulation research prototype, v0.1.** The verified operating domain is authored planar road corridors with circular obstacles, including a directed road-network fork, merge and stopped handover after a live closure notification. A CPU-only Robot Native Engine (RNE) adapter also runs the same pipeline with native Ackermann dynamics and Rapier LiDAR queries. This is the starting point for an independent stack, not a replacement for mature driving systems or a system for use on public roads. CARLA, ROS 2, camera AI, 3D SLAM, traffic-rule reasoning, and real vehicle interfaces are not implemented. See the [capability matrix](docs/capabilities.md).
 
@@ -37,11 +37,13 @@ Replay creates a fresh pipeline and recomputes localization, tracks, predictions
 
 ## CPU-only Robot Native Engine demo
 
-This is a top-down rendering of an actual RNE run, with friction-limited native vehicle dynamics, steering lag, and 3D Rapier ray queries sampled in a planar LiDAR sweep. The shared RustDrive pipeline drives it. No GPU, graphics context, ROS, Docker, CARLA server or pretrained model is required.
+The opening 3D GIF replays an actual RNE run, with friction-limited native vehicle dynamics, steering lag, and Rapier ray queries sampled in a planar LiDAR sweep. Blender Cycles renders the road, vehicle proxies and recorded planned trajectories on CPU. The shared RustDrive pipeline drives it. No GPU, graphics context, ROS, Docker, CARLA server or pretrained model is required.
 
 ```sh
 bash scripts/setup-rne.sh        # Fetch pinned RNE beside this checkout; Rust 1.95.0
-# Activate the Pillow venv below to generate the GIF.
+# Activate the Pillow venv below; install Blender for the opening 3D GIF.
+bash scripts/rne-3d-demo.sh
+# The diagnostic top-down renderer remains available:
 bash scripts/rne-demo.sh dynamic
 # Or: bash scripts/rne-demo.sh kinematic
 ```
@@ -66,9 +68,9 @@ The tracking baseline produced 9/8/7 emergency ticks across the three seeds, com
 
 ## Reactive traffic and observed braking
 
-![Actual RNE run: GNSS-fault stop, reactive follower braking, recovery and eight-second goal residence](assets/prediction-demo.gif)
+![Actual RNE run: GNSS-fault stop, reactive follower braking, recovery and eight-second goal residence](assets/prediction-3d-demo.gif)
 
-This actual CPU-only RNE run finishes the original follower fixture at 64.25 s, including eight seconds stopped at the goal, within its unchanged 65 s deadline. The GIF shows recorded telemetry at 3× playback speed. [Reproduce this run and GIF](docs/observed-braking.md#reproduce).
+This actual CPU-only RNE run finishes the original follower fixture at 64.25 s, including eight seconds stopped at the goal, within its unchanged 65 s deadline. The GIF is a Blender 3D replay of recorded telemetry at 3× playback speed. Driving physics remain planar. [Reproduce this 3D run and GIF](docs/3d-demo.md#reproduce-the-follower-gif).
 
 Optional simulator actors now follow their route with bounded acceleration, braking and finite-range proximity observations. Both plants exercise waiting for a stopped lead, resuming, braking behind ego during a GNSS outage and forming a stopped queue. The ego stack uses sustained observed braking for at most one second, then coasts; conservative repeated stops near a narrow-road goal remain visible. [Measured prediction improvement](docs/observed-braking.md). [Actual RNE GIF, actor sensing boundary, measurements and failures](docs/reactive-traffic.md).
 
@@ -106,23 +108,23 @@ The occupancy grid is built and exported for inspection; the current planner use
 
 ## Reproduce the GIF
 
-Python is optional and used only for visualization. Install Pillow in a virtual environment:
+Python and Blender are optional and used only for visualization. Install Blender (4.3.2 verified locally; the Cycles CPU backend requires no GPU), then install Pillow in a virtual environment:
 
 ```sh
 python3 -m venv .venv
 . .venv/bin/activate
 python -m pip install -r scripts/requirements-demo.txt
 bash scripts/setup-rne.sh
-bash scripts/rne-demo.sh dynamic artifacts/rne-dynamic/demo.gif scenarios/route-handover-fast.json
+bash scripts/rne-3d-demo.sh
 ```
 
-Open `artifacts/rne-dynamic/demo.gif`. To intentionally refresh the opening README asset:
+Open `artifacts/rne-3d/demo.gif`. [3D rendering, scene verification and limits](docs/3d-demo.md). To intentionally refresh the opening README asset:
 
 ```sh
-bash scripts/rne-demo.sh dynamic assets/rne-demo.gif scenarios/route-handover-fast.json
+bash scripts/rne-3d-demo.sh assets/rne-3d-demo.gif
 ```
 
-The renderer also emits a PNG and provenance JSON. The committed [RNE demo metadata](assets/rne-demo.json) records the engine revision, seed, simulation metrics, and regeneration command. Fonts use DejaVu when available, with a portable fallback. GIF bytes may differ between Pillow/font versions; simulation replay is deterministic on the same binary/platform. The standalone reference simulator's GIF can also be regenerated with `bash scripts/demo.sh`; its provenance is in [reference demo metadata](assets/demo.json).
+The renderer also emits a PNG and provenance JSON. The committed [3D RNE demo metadata](assets/rne-3d-demo.json) records the engine revision, seed, simulation metrics, and regeneration command. Fonts use DejaVu when available, with a portable fallback. GIF bytes may differ between Blender/Pillow/font versions; simulation replay is deterministic on the same binary/platform. The standalone reference simulator's GIF can also be regenerated with `bash scripts/demo.sh`; its provenance is in [reference demo metadata](assets/demo.json).
 
 ## Validation
 
@@ -134,12 +136,13 @@ cargo run --release --locked --bin rustdrive -- run \
   --scenario scenarios/lidar-fault.json --seed 7 --output artifacts/lidar-fault
 ```
 
-CI checks formatting, Clippy, the workspace test suite, release builds, and the closed-loop demo on Linux, macOS, and Windows, plus GIF generation and the pinned CPU-only RNE integration on Linux. All five jobs passed for the preceding reactive-traffic revision `4620878` in [run 37879754523](https://github.com/rsasaki0109/rust_drive/actions/runs/37879754523). See [validation and limitations](docs/validation.md) for the checks actually executed and the initial infrastructure/toolchain failures.
+CI checks formatting, Clippy, the workspace test suite, release builds, and the closed-loop demo on Linux, macOS, and Windows, plus GIF generation and the pinned CPU-only RNE integration on Linux. All five jobs passed for the preceding observed-braking revision `d868bfc` in [run 37882467496](https://github.com/rsasaki0109/rust_drive/actions/runs/37882467496). The RNE job also renders a real frame in 3D on CPU. See [validation and limitations](docs/validation.md) for the checks actually executed and the initial infrastructure/toolchain failures.
 
 ## Architecture and contributing
 
 Ten small Cargo crates share transport-independent, serializable contracts. Algorithm implementations are ordinary synchronous Rust libraries. No custom executor or networking middleware is required. The optional RNE adapter and future ROS 2/CARLA bridges translate at the boundaries rather than become dependencies of the algorithms.
 
+- [3D RNE GIFs, CPU rendering and reproduction](docs/3d-demo.md)
 - [Observed braking, repaired deadline and current regression results](docs/observed-braking.md)
 - [Reactive traffic, stop/resume and historical deadline failures](docs/reactive-traffic.md)
 - [Terminal stopping, post-arrival evaluation and repaired traffic regression](docs/terminal-stopping.md)

@@ -21,6 +21,7 @@
 | Terminal stopping-place preference / physical residence | Implemented / tested | Route-relative observed forward traffic, feasible lateral candidates; 16-second truth hold in two plants/three seeds, no general parking or escape planner |
 | LiDAR / GNSS dropout braking | Implemented / tested | Timestamp freshness and numeric checks |
 | Swept collision and road boundary evaluation | Implemented / tested | Circular bodies and planar route corridor |
+| 3D visualization of recorded RNE driving | Implemented / tested | Blender Cycles CPU replay, pose/actor scene audit; planar physics, cosmetic meshes/markings, no sensor-camera feed |
 | Seeded repeatability and telemetry GIF | Implemented / tested | Same build/platform; Python optional |
 | Sensor-only shared pipeline | Implemented / tested | Configured route/spawn; no operational truth inputs |
 | Versioned sensor-log replay | Implemented / tested | Full recomputation; exact comparison on this build/platform; no physical acceptance inference |

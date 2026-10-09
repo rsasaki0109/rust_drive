@@ -96,6 +96,16 @@ jobs:
       - name: Run multi-seed hazard acceptance and full replay
         working-directory: rust_drive
         run: python3 scripts/check_hazards.py
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Render a real RNE frame in 3D on CPU
+        working-directory: rust_drive
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends blender
+          python -m pip install -r scripts/requirements-demo.txt
+          python scripts/render_demo_3d.py artifacts/rne-dynamic/run.json --preview-time 7.5 --output artifacts/rne-dynamic/preview-3d.gif --samples 4 --threads 2
       - uses: actions/upload-artifact@v4
         if: always()
         with:

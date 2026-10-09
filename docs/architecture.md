@@ -112,3 +112,7 @@ The independent routing crate resolves a directed map and known edge closures be
 4. Add learned perception/prediction behind existing traits, with explicit model provenance, licensing, preprocessing, warmup, inference failure behavior, and benchmark datasets. Classical baselines remain available.
 5. Use established channels or a mature transport only when a concrete process-distribution requirement appears. Avoid building middleware as a prerequisite to driving.
 6. Grow typed units, calibration, map/route validation, trace schema migration, deadline monitoring, and sensor health models as external adapters are introduced.
+
+## Optional 3D visualization
+
+A separate Blender Cycles CPU worker renders recorded RNE states as a perspective scene. Its scene-transform audit is checked against recorded ego/object poses before GIF packaging. Procedural vehicle meshes, markings, illumination and camera poses are decorative and never enter driving inputs, physics or acceptance. The live algorithms and planar driving domain are unchanged; this is a visual replay rather than an RNE renderer or sensor-camera integration. [Reproduction and boundaries](3d-demo.md).
