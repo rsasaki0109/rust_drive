@@ -20,7 +20,7 @@ For dual MIT/Apache-2.0 crates, preserve the applicable license when redistribut
 
 Optional visualization uses Pillow 12.3.0, MIT-CMU. It is a development tool, not linked into the Rust executable. The renderer prefers system DejaVu fonts (Bitstream Vera / DejaVu terms) and does not vendor the font files. GIF/PNG output is generated from original simulated data; the README contains no images from reference projects.
 
-Optional 3D visualization invokes the separately installed Blender executable (GPL-3.0-or-later) as an external rendering tool. Blender is not vendored or linked into the Rust executable. The procedural road and vehicle meshes are original; no external model or texture assets are packaged. Preserve Blender's own license and notices if distributing its binaries. Local capture uses Blender 4.3.2 with the Cycles CPU backend.
+Optional 3D visualization invokes the separately installed Blender executable (GPL-3.0-or-later) as an external rendering tool. Blender is not vendored or linked into the Rust executable. The procedural road, hatchback, tree, streetlight and building meshes are original; no external model or texture assets are packaged. The optional editable `.blend` snapshot contains these generated meshes and materials. Preserve Blender's own license and notices if distributing its binaries. Local capture uses Blender 4.3.2 with the Cycles CPU backend.
 
 Autoware and Apollo root licenses are Apache-2.0; openpilot is MIT at the researched revisions. These projects are architectural references rather than dependencies. See [research](docs/research.md) for source links and artifact-specific licensing restrictions.
 

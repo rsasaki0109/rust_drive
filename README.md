@@ -39,6 +39,8 @@ Replay creates a fresh pipeline and recomputes localization, tracks, predictions
 
 The opening 3D GIF replays an actual RNE run, with friction-limited native vehicle dynamics, steering lag, and Rapier ray queries sampled in a planar LiDAR sweep. Blender Cycles renders the road, vehicle proxies and recorded planned trajectories on CPU. The shared RustDrive pipeline drives it. No GPU, graphics context, ROS, Docker, CARLA server or pretrained model is required.
 
+Original hatchback models now include glazing, mirrors, lights, grilles and alloy wheels, with suburban pavements, trees, streetlights and campus buildings. [Model generation and editable Blender scenes](docs/3d-demo.md#models-and-suburban-scenery). Scenery is display-only and does not enter LiDAR or collision evaluation.
+
 ```sh
 bash scripts/setup-rne.sh        # Fetch pinned RNE beside this checkout; Rust 1.95.0
 # Activate the Pillow venv below; install Blender for the opening 3D GIF.
@@ -136,7 +138,7 @@ cargo run --release --locked --bin rustdrive -- run \
   --scenario scenarios/lidar-fault.json --seed 7 --output artifacts/lidar-fault
 ```
 
-CI checks formatting, Clippy, the workspace test suite, release builds, and the closed-loop demo on Linux, macOS, and Windows, plus GIF generation and the pinned CPU-only RNE integration on Linux. All five jobs passed for the preceding observed-braking revision `d868bfc` in [run 37882467496](https://github.com/rsasaki0109/rust_drive/actions/runs/37882467496). The RNE job also renders a real frame in 3D on CPU. See [validation and limitations](docs/validation.md) for the checks actually executed and the initial infrastructure/toolchain failures.
+CI checks formatting, Clippy, the workspace test suite, release builds, and the closed-loop demo on Linux, macOS, and Windows, plus GIF generation and the pinned CPU-only RNE integration on Linux. All five jobs passed for the preceding 3D replay revision `1df32f6` in [run 37886908156](https://github.com/rsasaki0109/rust_drive/actions/runs/37886908156). The RNE job also renders a real frame in 3D on CPU and exports an editable scene. See [validation and limitations](docs/validation.md) for the checks actually executed and the initial infrastructure/toolchain failures.
 
 ## Architecture and contributing
 

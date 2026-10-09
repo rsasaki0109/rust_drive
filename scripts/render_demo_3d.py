@@ -42,6 +42,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('run', type=Path)
     parser.add_argument('--output', type=Path, default=Path('assets/rne-3d-demo.gif'))
+    parser.add_argument('--scene-output', type=Path, help='Save an editable Blender scene at the last rendered frame')
     parser.add_argument('--preview-time', type=float, help='Render one PNG instead of the complete GIF')
     parser.add_argument('--samples', type=int, default=16)
     parser.add_argument('--threads', type=int, default=4)
@@ -50,6 +51,10 @@ def main():
         parser.error('samples must be 1–128 and threads 1–64')
     if args.preview_time is not None and not math.isfinite(args.preview_time):
         parser.error('preview time must be finite')
+    if args.scene_output:
+        if args.scene_output.suffix != '.blend':
+            parser.error('scene output must use the .blend extension')
+        args.scene_output.parent.mkdir(parents=True, exist_ok=True)
     run = json.loads(args.run.read_text())
     if run.get('schema_version') != 1 or not run.get('backend', '').startswith('rne-') or not run['summary']['passed']:
         raise SystemExit('A successful schema-1 actual RNE recording is required')
@@ -68,7 +73,8 @@ def main():
     with tempfile.TemporaryDirectory(prefix='capture-', dir=cache) as temporary:
         directory = Path(temporary)
         request = {'run': str(args.run.resolve()), 'indices': indices,
-                   'frames_directory': temporary, 'samples': args.samples}
+                   'frames_directory': temporary, 'samples': args.samples,
+                   'scene_output': str(args.scene_output.resolve()) if args.scene_output else None}
         request_file = directory/'request.json'
         request_file.write_text(json.dumps(request))
         command = ['blender', '--background', '--factory-startup', '--threads', str(args.threads),
@@ -77,6 +83,7 @@ def main():
             result = subprocess.run(command, stdout=log, stderr=subprocess.STDOUT)
         if result.returncode:
             raise SystemExit((directory/'blender.log').read_text()[-5000:])
+        scene_info = json.loads((directory/'scene-info.json').read_text())
         audit = json.loads((directory/'audit.json').read_text())
         images = []
         for number, index in enumerate(indices):
@@ -101,6 +108,8 @@ def main():
         if args.preview_time is not None:
             images[0].save(args.output.with_suffix('.png'))
             print(args.output.with_suffix('.png'))
+            if args.scene_output:
+                print(f'Editable scene: {args.scene_output}')
             return
         durations = [100]*(len(images)-1)+[1400]
         encode_gif(images, args.output, durations)
@@ -111,13 +120,18 @@ def main():
                 gif.seek(index)
                 duration += gif.info['duration']
             assert gif.size == (960, 640) and duration == sum(durations)
+        renderer_hash = hashlib.sha256()
+        for source in ['blender_scene.py', 'blender_assets.py', 'render_demo_3d.py']:
+            renderer_hash.update(source.encode())
+            renderer_hash.update((ROOT/'scripts'/source).read_bytes())
         provenance = {'schema_version': 1, 'backend': run['backend'],
                       'renderer': 'Blender Cycles CPU', 'blender_version': subprocess.check_output(['blender', '--version'], text=True).splitlines()[0],
                       'input_trace': str(args.run), 'input_sha256': hashlib.sha256(args.run.read_bytes()).hexdigest(),
                       'rne_expected_revision': (ROOT/'integrations/rne/rne-revision.txt').read_text().strip(),
                       'scenario': run['scenario'], 'summary': run['summary'], 'gif_frames': count,
                       'sampled_frames': len(images), 'playback_speed': 3, 'scene_states_verified': len(audit),
-                      'samples': args.samples, 'physics_domain': 'planar',
+                      'samples': args.samples, 'physics_domain': 'planar', 'scene': scene_info,
+                      'renderer_source_sha256': renderer_hash.hexdigest(),
                       'gif_palette_colors': 192, 'gif_dither': False, 'spatial_filter': '3x3 median, viewport only',
                       'renderer_command': f'python3 scripts/render_demo_3d.py {args.run} --output {args.output} --samples {args.samples} --threads {args.threads}'}
         args.output.with_suffix('.json').write_text(json.dumps(provenance, indent=2)+'\n')

@@ -74,8 +74,19 @@
   "scene_states_verified": 216,
   "samples": 16,
   "physics_domain": "planar",
-  "renderer_command": "python3 scripts/render_demo_3d.py artifacts/braking-verified/rne-dynamic/traffic-follower-deadline/seed-1/run.json --output assets/prediction-3d-demo.gif --samples 16 --threads 4",
+  "scene": {
+    "style": "suburban-test-road-v2",
+    "seed": 1729,
+    "scenery_counts": {
+      "trees": 6,
+      "buildings": 4,
+      "lamps": 7,
+      "sidewalk_sections": 320
+    }
+  },
+  "renderer_source_sha256": "fa16ef2be51c5ea174f33f8881a30b3cbe09228ff307bb98b7bf18bb82c336b0",
   "gif_palette_colors": 192,
   "gif_dither": false,
-  "spatial_filter": "3x3 median, viewport only"
+  "spatial_filter": "3x3 median, viewport only",
+  "renderer_command": "python3 scripts/render_demo_3d.py artifacts/braking-verified/rne-dynamic/traffic-follower-deadline/seed-1/run.json --output assets/prediction-3d-demo.gif --samples 16 --threads 4"
 }

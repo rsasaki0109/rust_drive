@@ -7,36 +7,8 @@ import sys
 import bpy
 from mathutils import Vector
 
-
-def material(name, color, metallic=0.0):
-    mat = bpy.data.materials.new(name)
-    mat.diffuse_color = (*color, 1)
-    mat.use_nodes = True
-    shader = mat.node_tree.nodes.get('Principled BSDF')
-    shader.inputs['Base Color'].default_value = (*color, 1)
-    shader.inputs['Metallic'].default_value = metallic
-    shader.inputs['Roughness'].default_value = 0.45
-    if metallic == 0:
-        specular = shader.inputs.get('Specular IOR Level') or shader.inputs.get('Specular')
-        if specular:
-            specular.default_value = 0
-    return mat
-
-
-def cube(name, position, size, mat, parent=None, bevel=0):
-    bpy.ops.mesh.primitive_cube_add(size=1, location=position)
-    obj = bpy.context.object
-    obj.name = name
-    obj.dimensions = size
-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
-    obj.data.materials.append(mat)
-    if parent:
-        obj.parent = parent
-    if bevel:
-        mod = obj.modifiers.new('Soft edges', 'BEVEL')
-        mod.width, mod.segments = bevel, 3
-        obj.modifiers.new('Normals', 'WEIGHTED_NORMAL')
-    return obj
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from blender_assets import STYLE, barrel, car, cube, environment, material
 
 
 def line(name, points, mat, width=0.04):
@@ -85,24 +57,6 @@ def road(points, half_width, asphalt, marking):
     return obj
 
 
-def car(name, radius, body_mat, glass, tire, headlight):
-    parent = bpy.data.objects.new(name, None)
-    bpy.context.collection.objects.link(parent)
-    r = radius
-    cube('Body', (0, 0, .43*r), (1.64*r, .96*r, .48*r), body_mat, parent, .12*r)
-    cube('Windows', (-.12*r, 0, .76*r), (.82*r, .80*r, .40*r), glass, parent, .10*r)
-    cube('Roof', (-.12*r, 0, .96*r), (.69*r, .74*r, .06*r), body_mat, parent, .04*r)
-    for x in [-.51*r, .51*r]:
-        for y in [-.51*r, .51*r]:
-            bpy.ops.mesh.primitive_cylinder_add(vertices=20, radius=.19*r, depth=.12*r, location=(x, y, .24*r), rotation=(math.pi/2, 0, 0))
-            wheel = bpy.context.object
-            wheel.parent = parent
-            wheel.data.materials.append(tire)
-    for y in [-.3*r, .3*r]:
-        cube('Headlight', (.825*r, y, .45*r), (.03*r, .20*r, .09*r), headlight, parent, .02*r)
-    return parent
-
-
 def main():
     request = json.loads(Path(sys.argv[sys.argv.index('--')+1]).read_text())
     run = json.loads(Path(request['run']).read_text())
@@ -125,9 +79,9 @@ def main():
     asphalt = material('Asphalt', (.065, .08, .11))
     marking = material('Ivory marking', (.70, .77, .79))
     grass = material('Ground', (.085, .14, .115))
-    blue = material('Ego blue', (.02, .27, .88), .3)
-    orange = material('Actor amber', (.95, .30, .035), .2)
-    glass = material('Dark windows', (.015, .035, .065), .6)
+    blue = material('Ego blue', (.02, .27, .88), .45, .24)
+    orange = material('Actor amber', (.95, .30, .035), .35, .27)
+    glass = material('Dark windows', (.015, .045, .075), .65, .14)
     tire = material('Rubber', (.01, .012, .015))
     headlight = material('Headlight', (.90, .96, 1))
     teal = material('Planned path', (.02, .85, .55))
@@ -157,6 +111,7 @@ def main():
         union.operation, union.solver, union.object = 'UNION', 'EXACT', surface
         bpy.ops.object.modifier_apply(modifier=union.name)
         bpy.data.objects.remove(surface, do_unlink=True)
+    scenery = environment(edges)
     bpy.ops.object.light_add(type='SUN', location=(0, 0, 20))
     sun = bpy.context.object
     sun.rotation_euler = (.5, -.4, -.35)
@@ -166,7 +121,7 @@ def main():
     camera.data.lens = 38
     camera.data.clip_end = 1000
     scene.camera = camera
-    ego = car('Recorded ego', run['vehicle']['radius'], blue, glass, tire, headlight)
+    ego = car('Recorded ego', run['vehicle']['radius'], blue, glass, tire, headlight, ego=True)
     dynamic_ids = {s['id'] for f in run['frames'] for s in f.get('traffic', [])}
     actors = {}
     for frame in run['frames']:
@@ -176,24 +131,28 @@ def main():
             if actor['id'] in dynamic_ids:
                 actors[actor['id']] = car('Recorded reactive actor', actor['radius'], orange, glass, tire, headlight)
             else:
-                bpy.ops.mesh.primitive_cylinder_add(vertices=32, radius=actor['radius'], depth=1.5, location=(0, 0, .80))
-                obj = bpy.context.object
-                obj.data.materials.append(orange)
-                actors[actor['id']] = obj
+                actors[actor['id']] = barrel(actor['radius'], orange, marking)
     planned = line('Actual planned trajectory', [], teal, .075)
     predictions = line('Actual track forecasts', [], purple, .04)
     audit = []
     output = Path(request['frames_directory'])
+    distances = [0.0]
+    for before, after in zip(run['frames'], run['frames'][1:]):
+        a, b = before['truth']['pose']['position'], after['truth']['pose']['position']
+        distances.append(distances[-1]+math.hypot(b['x']-a['x'], b['y']-a['y']))
     for number, index in enumerate(request['indices']):
         frame = run['frames'][index]
         pose = frame['truth']['pose']
         x, y = pose['position']['x'], pose['position']['y']
         ego.location, ego.rotation_euler = (x, y, .02), (0, 0, pose['yaw'])
-        camera.location = (x-16, y-22, 24)
+        camera.location = (x-11, y-16, 16)
         camera.rotation_euler = (Vector((x+4, y, 0))-camera.location).to_track_quat('-Z', 'Y').to_euler()
+        for wheel in ego.children:
+            if wheel.get('rolling_wheel'):
+                wheel.rotation_euler.y = distances[index]/ego['wheel_radius']
         for id, obj in actors.items():
             obj.hide_render = not any(a['id'] == id for a in frame['objects'])
-            for child in obj.children:
+            for child in obj.children_recursive:
                 child.hide_render = obj.hide_render
         for actor in frame['objects']:
             obj = actors[actor['id']]
@@ -220,6 +179,9 @@ def main():
         scene.render.filepath = str(output/f'{number:04d}.png')
         bpy.ops.render.render(write_still=True)
     (output/'audit.json').write_text(json.dumps(audit, indent=2)+'\n')
+    (output/'scene-info.json').write_text(json.dumps({'style': STYLE, 'seed': 1729, 'scenery_counts': scenery}, indent=2)+'\n')
+    if request.get('scene_output'):
+        bpy.ops.wm.save_as_mainfile(filepath=request['scene_output'])
 
 
 if __name__ == '__main__':

@@ -6,6 +6,27 @@ The README opening GIF and follower GIF now show a perspective 3D scene rendered
 
 Blue is ego, amber is a recorded obstacle or reactive follower, teal is the actual planned trajectory and purple is a tracked motion forecast. The red line is a **map closure overlay**, not a physical barrier. Cosmetic vehicle meshes, road markings, illumination and the camera are visualization only; they do not enter sensors or collision acceptance.
 
+## Models and suburban scenery
+
+The original procedural assets in [`blender_assets.py`](../scripts/blender_assets.py) now create compact hatchbacks with shaped body panels, sloped glazing, pillars, mirrors, door handles, bumpers, a grille, head/tail lights and five-spoke alloy wheels. Ego has a decorative roof sensor housing; this does not calibrate the actual LiDAR mount. Ego wheel rotation follows recorded travel distance. The meshes are scaled to the recorded circular footprint, rather than a calibrated production vehicle's dimensions. Static circular obstacles use reflective barrel meshes.
+
+The suburban test-road scene includes continuous raised pavement, curbs, faceted street trees, streetlights and small campus buildings with windows, sills and entrances. Placement uses the authored road corridors and a fixed scenery seed of 1729. Pavement is omitted around adjoining corridors to avoid overlapping junction surfaces. The perspective camera follows closer to the vehicle so body details remain visible. These assets are original geometry and materials, with no external model or texture downloads.
+
+Scenery is **display-only**: buildings, trees and street furniture are not added to RNE's sensor or collision world. Driving results, circular acceptance, road widths and actual recorded actor positions are unchanged.
+
+## Edit a Blender scene
+
+Export a scene snapshot from a recorded run, then open the `.blend` file in Blender to edit vehicle meshes, materials, scenery or camera placement:
+
+```sh
+python3 scripts/render_demo_3d.py artifacts/rne-3d/run.json \
+  --preview-time 7 --output artifacts/3d/suburban-preview.gif \
+  --scene-output artifacts/3d/suburban-scene.blend
+blender artifacts/3d/suburban-scene.blend
+```
+
+The preview is a PNG. `--scene-output` saves editable objects at the last rendered state; it is a snapshot, not a baked animation or simulator project. Export is optional and does not affect Rust dependencies. Full GIF regeneration continues to use the recorded timeline. CI exports a CPU-rendered native scene as an artifact.
+
 ## Reproduce the opening GIF
 
 Install Blender and activate the Pillow environment from the README. Blender **4.3.2** with Cycles CPU is verified locally. Rendering uses 16 samples per pixel and four CPU threads by default. No OpenImageDenoise or graphics driver is required.
@@ -55,7 +76,7 @@ python3 scripts/render_demo_3d.py \
 
 The Blender worker applies each sampled ego position/yaw and each active object position from the recorded truth. It exports an audit from the **actual scene transforms after application**, not a copy of the requested poses. The packager checks object identity/count, ego yaw within 10⁻⁵ rad and planar positions within 10⁻⁴ m to accommodate Blender's float32 transforms. Playback samples approximately every 0.3 simulation seconds at ten GIF frames per second, followed by a final pause. The GIF uses a shared 192-color palette, no dithering and a mild 3×3 median filter confined to the 3D viewport to reduce rendering noise and download size. HUD text and the recorded timeline are preserved. Identical encoded frames may merge; total duration and resolution are checked.
 
-Provenance records the actual RNE backend, pinned engine revision, complete scenario/summary, input trace SHA-256, renderer command, Blender version, sample count, number of verified scene states and encoded GIF frames. Every render uses a fresh temporary frame directory; stale frames cannot fill gaps in a new capture. Failing, non-RNE or unsupported-schema runs are rejected before rendering. GIF bytes can vary with Blender, fonts and sampling versions.
+Provenance records the actual RNE backend, pinned engine revision, complete scenario/summary, input trace SHA-256, renderer command, Blender version, sample count, number of verified scene states and encoded GIF frames. It also records the asset style, scenery seed/counts and a SHA-256 of the worker, asset generator and packager sources. Every render uses a fresh temporary frame directory; stale frames cannot fill gaps in a new capture. Failing, non-RNE or unsupported-schema runs are rejected before rendering. GIF bytes can vary with Blender, fonts and sampling versions.
 
 The RNE CI job renders a real native mission frame with Cycles CPU after physical scenario/replay checks. Rendering remains outside Cargo's dependencies and the required Rust-only workflow. Full GIFs are generated and inspected locally; CI's 3D check is a single-frame smoke test.
 
