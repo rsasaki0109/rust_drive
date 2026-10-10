@@ -67,3 +67,10 @@ Rust implementation of calibrated projection, Huber weighting and bounded
 Gauss–Newton optimization. It copies no ORB-SLAM or OpenCV implementation.
 Published camera numbers are documented source-model assumptions; raw calibration
 documents remain excluded from redistribution.
+
+The [metadata-qualified room subset](docs/qualified-recorded-motion.md) uses a
+separately pinned TUM FR1 room mirror and published FR1 camera profile. Raw PNGs,
+reference tables and camera YAML remain ignored and are not redistributed or
+relicensed. The source manifest retains all source identities and the unverified
+original-data licence limitation. Qualification examines timestamps and row arity
+without copying upstream algorithm code.

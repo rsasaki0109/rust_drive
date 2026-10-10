@@ -152,6 +152,11 @@ jobs:
         run: |
           python scripts/fetch-reprojection-dataset.py tum-fr2-desk-reprojection
           python scripts/check-recorded-reprojection-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-evaluate --output artifacts/recorded-reprojection
+      - name: Qualify metadata before images and reproduce the frozen room trial
+        run: |
+          python scripts/test-qualify-rgbd-metadata.py
+          python scripts/fetch-qualified-dataset.py tum-fr1-room-qualified
+          python scripts/check-recorded-qualified-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-qualified --output artifacts/recorded-qualified
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -168,6 +173,7 @@ jobs:
             artifacts/recorded-submaps/
             artifacts/recorded-visual/
             artifacts/recorded-reprojection/
+            artifacts/recorded-qualified/
 
   visual:
     runs-on: ubuntu-latest

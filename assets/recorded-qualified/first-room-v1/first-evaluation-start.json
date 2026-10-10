@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "utc": "2026-10-10T04:07:39.950939+00:00",
+  "command": [
+    "/tmp/rustdrive-rgbd-target/release/rustdriving-rgbd-qualified",
+    "--manifest",
+    "/workspace/rust_drive/data/tum-fr1-room-qualified/manifest.json",
+    "--raw",
+    "/workspace/rust_drive/data/tum-fr1-room-qualified/raw",
+    "--qualification",
+    "/workspace/rust_drive/assets/recorded-qualified/first-room-v1/qualification.json",
+    "--freeze",
+    "/workspace/rust_drive/assets/recorded-qualified/first-room-v1/freeze.json",
+    "--output",
+    "/workspace/rust_drive/assets/recorded-qualified/first-room-v1/results.json"
+  ],
+  "binary_sha256": "4df606a3dfa346ca7e702075d080bda0df9876d8ed47b5da1f18edd476f766d1",
+  "first_run_not_regression": true
+}

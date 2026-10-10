@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "declared_utc": "2026-10-10T03:51:17.206032+00:00",
+  "depth_window": [
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119,
+    120,
+    121,
+    122,
+    123,
+    124,
+    125,
+    126,
+    127,
+    128,
+    129,
+    130,
+    131,
+    132,
+    133,
+    134,
+    135
+  ],
+  "candidate_order": [
+    {
+      "order": 1,
+      "repository": "edrishakimi1/Indoor-SLAM-Floorplan-with-Gaussian-Splatting",
+      "revision": "1d5b2c3e1ee186abc1709042b739e9cd8a3b41d1",
+      "prefix": "data/rgbd_dataset_freiburg1_room/"
+    },
+    {
+      "order": 2,
+      "repository": "lmaddira/SLAM-project",
+      "revision": "880928a6860a76ba452e4ef3ea1cacff65af15c1",
+      "prefix": "seq/rgbd_dataset_freiburg3_walking_rpy/"
+    },
+    {
+      "order": 3,
+      "discovery_rule": "If needed, inspect already-known public mirror tree inventory for FR2xyz then FR2rpy; choose the first available sequence in that name order and lexicographic repository/prefix order. Pin exact commit and declare it before fetching indices/GT timestamps. No source selected by pixels or accuracy."
+    }
+  ],
+  "metadata_only": true,
+  "maximum_candidates": 3,
+  "source_file_bound": 4194304,
+  "total_byte_bound": 33554432,
+  "gt_policy": "Fullsource noncomment rows must have8tokens. Parse only timestampcolumn,finite and strictlyincreasing; anyfullsource duplicate rejects candidate regardlessselectedwindow. No numericpose parse.",
+  "association_policy": "Nearest original RGB timestamp; earlier index resolves ties; all36 selecteddepthframes must haveRGBgap<=.02s andevaluationGTbrackets<=.02s. Preserve repeats as explicitobservations.",
+  "selection_policy": "Stop at first metadataqualified candidate; no pixel/header downloads/decoding or GTposevalues/accuracyscores inspected."
+}

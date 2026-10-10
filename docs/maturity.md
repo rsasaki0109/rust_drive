@@ -60,6 +60,14 @@ on conflicting duplicate timestamps. Subsequent viewed runs retain 24 sensor
 updates, but all 35 accuracy references remain unavailable; this supplies no
 additional independent accuracy evidence.
 
+The separately frozen [metadata-qualified room trial](qualified-recorded-motion.md)
+passes all 35 updates in a 1.1684-second indoor interval with unchanged gates.
+Whole-source timestamp checks now precede image decoding, and the independent
+pixel/refinement audit and exact viewed reproduction retain the first sources.
+This is new short-sequence evidence, without automotive calibration, uncertainty,
+long-duration mapping or driving fusion. The estimate remains **about 20%**;
+the 30% waypoint and requested 50% goal remain unmet.
+
 | Area | Current evidence | Evidence needed for a credible 50% planning milestone |
 |---|---|---|
 | Sensing / localization | Native XYZ LiDAR, optional measured AABBs/terrain; failed held-out airborne PMF baseline; local fixed-map matching with bounded GNSS-denied native driving; noisy GNSS/wheel/gyro and acquisition-time reprojection | Reliable held-out automotive perception and real-motion map matching; measured extrinsics and camera observations; synchronization, covariance calibration and broader degraded-sensing measurements |
