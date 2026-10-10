@@ -1,0 +1,21 @@
+{
+  "command": [
+    "/workspace/.rustdrive-tools/demo-venv/bin/python",
+    "/workspace/rust_drive/integrations/onnx/bdd_s_replay.py",
+    "--binary",
+    "/workspace/rust_drive/artifacts/yolox-s-build/release/rustdriving-camera-detect-s",
+    "--model",
+    "/workspace/rust_drive/artifacts/camera-model-s/yolox_s.onnx",
+    "--data",
+    "/workspace/rust_drive/artifacts/bdd-camera",
+    "--output",
+    "/workspace/rust_drive/artifacts/yolox-s-bdd-v1/reproduction"
+  ],
+  "started_utc": "2026-10-10T13:34:49.151625+00:00",
+  "completed_utc": "2026-10-10T13:35:05.247393+00:00",
+  "actual_exit_code": 1,
+  "expected_physical_exit_code": 1,
+  "wrapper_sha256": "fbcc64992b9a6aab4a2144edcb4f1033fd136f6ca630c7f68ec4caf15842dd79",
+  "source_unchanged": true,
+  "log_sha256": "3048d4186d767b1af5e2068332fa4e24c32c9c030cb69cc5e8cc8ec8072c6002"
+}

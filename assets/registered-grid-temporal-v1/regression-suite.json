@@ -1,0 +1,280 @@
+{
+  "schema_version": 1,
+  "regression_integrity_passed": true,
+  "evidence_role": "viewed regression",
+  "fresh_holdout_claim": false,
+  "commands": [
+    {
+      "stage": "executable-receipt",
+      "command": [
+        "/tmp/rustdrive-rgbd-target/release/rustdriving-rgbd-registered-grid-temporal",
+        "--executable-receipt",
+        "--output",
+        "/workspace/rust_drive/artifacts/registered-grid-temporal-v1/reproduction/executable-receipt.json"
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "started_utc": "2026-10-10T13:29:56.837122+00:00",
+      "finished_utc": "2026-10-10T13:29:56.842140+00:00",
+      "log": "executable-receipt.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "stage": "room-freeze",
+      "command": [
+        "/tmp/rustdrive-rgbd-target/release/rustdriving-rgbd-registered-grid-temporal",
+        "--prepare-freeze",
+        "--manifest",
+        "/workspace/rust_drive/data/tum-fr1-room-temporal/manifest.json",
+        "--output",
+        "/workspace/rust_drive/artifacts/registered-grid-temporal-v1/reproduction/room/freeze.json"
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "started_utc": "2026-10-10T13:29:56.844045+00:00",
+      "finished_utc": "2026-10-10T13:29:56.847826+00:00",
+      "log": "room-freeze.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "stage": "room-evaluation",
+      "command": [
+        "/tmp/rustdrive-rgbd-target/release/rustdriving-rgbd-registered-grid-temporal",
+        "--manifest",
+        "/workspace/rust_drive/data/tum-fr1-room-temporal/manifest.json",
+        "--raw",
+        "/workspace/rust_drive/data/tum-fr1-room-temporal/raw",
+        "--freeze",
+        "/workspace/rust_drive/artifacts/registered-grid-temporal-v1/reproduction/room/freeze.json",
+        "--output",
+        "/workspace/rust_drive/artifacts/registered-grid-temporal-v1/reproduction/room/report.json"
+      ],
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "started_utc": "2026-10-10T13:29:56.848859+00:00",
+      "finished_utc": "2026-10-10T13:30:01.486369+00:00",
+      "log": "room-evaluation.log",
+      "log_sha256": "7d405d5e854bb2f69b6618bea0b487705d3110e2118b41f26f177a6f56df52be"
+    },
+    {
+      "stage": "room-audit",
+      "command": [
+        "/workspace/.rustdrive-tools/demo-venv/bin/python",
+        "/workspace/rust_drive/scripts/check-registered-grid-temporal.py",
+        "--report",
+        "/workspace/rust_drive/artifacts/registered-grid-temporal-v1/reproduction/room/report.json",
+        "--manifest",
+        "/workspace/rust_drive/data/tum-fr1-room-temporal/manifest.json",
+        "--raw",
+        "/workspace/rust_drive/data/tum-fr1-room-temporal/raw",
+        "--freeze",
+        "/workspace/rust_drive/artifacts/registered-grid-temporal-v1/reproduction/room/freeze.json",
+        "--output",
+        "/workspace/rust_drive/artifacts/registered-grid-temporal-v1/reproduction/room/audit.json"
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "started_utc": "2026-10-10T13:30:03.897306+00:00",
+      "finished_utc": "2026-10-10T13:31:43.163435+00:00",
+      "log": "room-audit.log",
+      "log_sha256": "102d0bc0396219820a4c672e28954b77f06b4c0bbf72df78ee20430ca24f059a"
+    },
+    {
+      "stage": "desk2-freeze",
+      "command": [
+        "/tmp/rustdrive-rgbd-target/release/rustdriving-rgbd-registered-grid-temporal",
+        "--prepare-freeze",
+        "--manifest",
+        "/workspace/rust_drive/data/tum-fr1-desk2-independent/manifest.json",
+        "--output",
+        "/workspace/rust_drive/artifacts/registered-grid-temporal-v1/reproduction/desk2/freeze.json"
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "started_utc": "2026-10-10T13:31:43.187001+00:00",
+      "finished_utc": "2026-10-10T13:31:43.191206+00:00",
+      "log": "desk2-freeze.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "stage": "desk2-evaluation",
+      "command": [
+        "/tmp/rustdrive-rgbd-target/release/rustdriving-rgbd-registered-grid-temporal",
+        "--manifest",
+        "/workspace/rust_drive/data/tum-fr1-desk2-independent/manifest.json",
+        "--raw",
+        "/workspace/rust_drive/data/tum-fr1-desk2-independent/raw",
+        "--freeze",
+        "/workspace/rust_drive/artifacts/registered-grid-temporal-v1/reproduction/desk2/freeze.json",
+        "--output",
+        "/workspace/rust_drive/artifacts/registered-grid-temporal-v1/reproduction/desk2/report.json"
+      ],
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "started_utc": "2026-10-10T13:31:43.191920+00:00",
+      "finished_utc": "2026-10-10T13:31:44.453852+00:00",
+      "log": "desk2-evaluation.log",
+      "log_sha256": "4df8e4351f83a87a780b860d6f3e23970362a2c5020ffb7336027fe18addcae8"
+    },
+    {
+      "stage": "desk2-audit",
+      "command": [
+        "/workspace/.rustdrive-tools/demo-venv/bin/python",
+        "/workspace/rust_drive/scripts/check-registered-grid-temporal.py",
+        "--report",
+        "/workspace/rust_drive/artifacts/registered-grid-temporal-v1/reproduction/desk2/report.json",
+        "--manifest",
+        "/workspace/rust_drive/data/tum-fr1-desk2-independent/manifest.json",
+        "--raw",
+        "/workspace/rust_drive/data/tum-fr1-desk2-independent/raw",
+        "--freeze",
+        "/workspace/rust_drive/artifacts/registered-grid-temporal-v1/reproduction/desk2/freeze.json",
+        "--output",
+        "/workspace/rust_drive/artifacts/registered-grid-temporal-v1/reproduction/desk2/audit.json"
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "started_utc": "2026-10-10T13:31:44.885571+00:00",
+      "finished_utc": "2026-10-10T13:32:10.694455+00:00",
+      "log": "desk2-audit.log",
+      "log_sha256": "164bcc6aed51cf3a549672a12dbd9b974b43e78b52410b21ec94df2801df3de7"
+    }
+  ],
+  "cases": [
+    {
+      "dataset": "tum-fr1-room-temporal",
+      "evaluator_exit_status": 1,
+      "physical_protocol_passed": false,
+      "summary": {
+        "multiscale": {
+          "accepted_updates": 92,
+          "accurate_root_updates": 54,
+          "all_updates_passed": false,
+          "frames": 180,
+          "initialized_frames": 1,
+          "lost": true,
+          "reference_valid_updates": 179,
+          "rejected_updates": 87,
+          "updates": 179
+        },
+        "native": {
+          "accepted_updates": 58,
+          "accurate_root_updates": 56,
+          "all_updates_passed": false,
+          "frames": 180,
+          "initialized_frames": 1,
+          "lost": true,
+          "reference_valid_updates": 179,
+          "rejected_updates": 121,
+          "updates": 179
+        }
+      },
+      "all_180_frames_and_179_updates_retained": true,
+      "independent_integrity_passed": true,
+      "full_source_protocol_and_non_timing_evidence_identical": true,
+      "freeze_sha256": "73a9336864c46e1bdc1a69b6059b154015e3e150de8b9d42ad7307fc891c84e9",
+      "report_sha256": "24554963cc82eb5f4867306423a67f7a70d874deba22f732d6b852b29b5be5c5",
+      "audit_sha256": "d9edca15a2f3a8b8c49b8e734c652f7ceeb8c4c48544f808b86cf2e2fcccfd64"
+    },
+    {
+      "dataset": "tum-fr1-desk2-independent",
+      "evaluator_exit_status": 1,
+      "physical_protocol_passed": false,
+      "summary": {
+        "multiscale": {
+          "accepted_updates": 19,
+          "accurate_root_updates": 17,
+          "all_updates_passed": false,
+          "frames": 180,
+          "initialized_frames": 1,
+          "lost": true,
+          "reference_valid_updates": 179,
+          "rejected_updates": 160,
+          "updates": 179
+        },
+        "native": {
+          "accepted_updates": 16,
+          "accurate_root_updates": 16,
+          "all_updates_passed": false,
+          "frames": 180,
+          "initialized_frames": 1,
+          "lost": true,
+          "reference_valid_updates": 179,
+          "rejected_updates": 163,
+          "updates": 179
+        }
+      },
+      "all_180_frames_and_179_updates_retained": true,
+      "independent_integrity_passed": true,
+      "full_source_protocol_and_non_timing_evidence_identical": true,
+      "freeze_sha256": "4f5d6910a5b61333b8ed3af593a2ed9c9e27a5d8228dda1aecf9a389f86d779d",
+      "report_sha256": "98336a8405dcada285fc0660042336ae7ddb4ef1bd05efa5702cf3b15f7fe6ef",
+      "audit_sha256": "193f84ef2a3ea91a0bd4090804f5bad0044051e0ee8bf8ff2a30ba3696c3f959"
+    }
+  ],
+  "first_asset_sha256": {
+    "design.json": "cfd56dd22e2aadd1f3fdaba8b3162a58d19a783d62438d4d5694bbca3ab41ac3",
+    "camera-model.json": "511cff92d365983efe40fdb90c9336ac1c122ebef6269594a07081b4eda8ecf3",
+    "room-freeze.json": "73a9336864c46e1bdc1a69b6059b154015e3e150de8b9d42ad7307fc891c84e9",
+    "room-report.json.gz": "8ca405f62ba571babe408974e3ef4d5b05fb7411096ea0169fb8676eb1f3806e",
+    "desk2-freeze.json": "4f5d6910a5b61333b8ed3af593a2ed9c9e27a5d8228dda1aecf9a389f86d779d",
+    "desk2-report.json.gz": "04e7d9be08c262ec0ad3ae334b64bf9182ef7e7d8a68b9ce41aa15c2add18492"
+  },
+  "original_source_sha256": {
+    "temporal_binary": "baf0febbd7f22d7a99cd19760d7f4d53226f805960e7f17c29f3ae897f8703fe",
+    "temporal_support": "f146418ca350f4b361e73ca1f7e6640b626920adbd0e36faf4a5e4a106c7751b",
+    "design": "d0b6a8f21ded03ce8125e30e47440d223c77567d0f2e41b6d9031c32e1ea34df",
+    "pair_binary": "abbcfbb4f58b4499f3720ba3e15dbec47a833ea86df44bb5e163c0db2f60a446",
+    "multiscale_features": "846051d2f99d07432229a456f9cc96ace6732419df7fde223d0379bfaf13a973",
+    "image_features": "5b5b103d4e798929f753a850387609405cad1a303d49ef8e81433f064e901106",
+    "registration3d": "eca9fe887f4a237dd627eb06e2793579ec4fbffd6330d120017572d734c4b715",
+    "visual_odometry3d": "718192d69b02de0a668c54e8469812b7c5f1903ab74de660e1b221e2ec874d24",
+    "reprojection3d": "2895e1c3eafefcfacdd156fd51706598521f0344f427f24edf420d159e5da486",
+    "localization_lib": "26e1a082ceedadd0de957714bd11170bf16e732e7948b01530b699214510bdf3",
+    "perception_lib": "0393a7d84176167bdfa6e242788f1f17555c2ab7abee687c845583b2b5141291",
+    "core_lib": "6cdc9459e0ae8dcccd0fa8d8d468a2adc0eee12aa3cc4bacca1b871a8b4d708e",
+    "cargo_lock": "67845fb7e4a53e15e4e3c70bba72142aff666893cf1d0c96c4654cdc16b7197b",
+    "cargo_manifest": "5a49c3a2c04951ffbf3e154d28fe1e13d2dda92b410b15ec849bfe33377e0d5f",
+    "rust_toolchain": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed",
+    "core_manifest": "87843fdea23432c48657e5f24d7b4708be278f88c799417e71ddc6794a900b61",
+    "perception_manifest": "e8f5dd659382b1ae3087f8087f2f6f4f8f9ea1836df678ff400c50b23e858e2a",
+    "localization_manifest": "deb14cd630257a08443cb05b345fb269206192fb2b04772dbc44384d27daf7cf",
+    "registered_binary": "6a1dbce255c246d1003fd94e039e49de1b30aa5d2ded6c86818137d0bbbc92a6",
+    "registered_support": "96047c6894f9b3a852e246294e9ff547aee240796c6e6906ff79da646e95cfb7",
+    "registered_grid": "7d0dd23aaae8314bb0b42f5ff49b7fd1f23d0408fe131d64fd6d7ead66d6efbf",
+    "registered_design": "cfd56dd22e2aadd1f3fdaba8b3162a58d19a783d62438d4d5694bbca3ab41ac3",
+    "camera_model": "511cff92d365983efe40fdb90c9336ac1c122ebef6269594a07081b4eda8ecf3"
+  },
+  "prior_source_sha256": {
+    "temporal_binary": "baf0febbd7f22d7a99cd19760d7f4d53226f805960e7f17c29f3ae897f8703fe",
+    "temporal_support": "f146418ca350f4b361e73ca1f7e6640b626920adbd0e36faf4a5e4a106c7751b",
+    "design": "d0b6a8f21ded03ce8125e30e47440d223c77567d0f2e41b6d9031c32e1ea34df",
+    "pair_binary": "abbcfbb4f58b4499f3720ba3e15dbec47a833ea86df44bb5e163c0db2f60a446",
+    "multiscale_features": "846051d2f99d07432229a456f9cc96ace6732419df7fde223d0379bfaf13a973",
+    "image_features": "5b5b103d4e798929f753a850387609405cad1a303d49ef8e81433f064e901106",
+    "registration3d": "eca9fe887f4a237dd627eb06e2793579ec4fbffd6330d120017572d734c4b715",
+    "visual_odometry3d": "718192d69b02de0a668c54e8469812b7c5f1903ab74de660e1b221e2ec874d24",
+    "reprojection3d": "2895e1c3eafefcfacdd156fd51706598521f0344f427f24edf420d159e5da486",
+    "localization_lib": "26e1a082ceedadd0de957714bd11170bf16e732e7948b01530b699214510bdf3",
+    "perception_lib": "0393a7d84176167bdfa6e242788f1f17555c2ab7abee687c845583b2b5141291",
+    "core_lib": "6cdc9459e0ae8dcccd0fa8d8d468a2adc0eee12aa3cc4bacca1b871a8b4d708e",
+    "cargo_lock": "67845fb7e4a53e15e4e3c70bba72142aff666893cf1d0c96c4654cdc16b7197b",
+    "cargo_manifest": "5a49c3a2c04951ffbf3e154d28fe1e13d2dda92b410b15ec849bfe33377e0d5f",
+    "rust_toolchain": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed",
+    "core_manifest": "87843fdea23432c48657e5f24d7b4708be278f88c799417e71ddc6794a900b61",
+    "perception_manifest": "e8f5dd659382b1ae3087f8087f2f6f4f8f9ea1836df678ff400c50b23e858e2a",
+    "localization_manifest": "deb14cd630257a08443cb05b345fb269206192fb2b04772dbc44384d27daf7cf"
+  },
+  "prior_asset_sha256": {
+    "evidence.json": "a240b9dd21a0af621b64502803d1d9d8bffefd40eab39f9e1eb6e8b3f0bd560e",
+    "room-freeze.json": "1f419ab2ee40bc619322c1ed27c301f07dc3b95486bd85b41563bf07c673ac93",
+    "room-report.json.gz": "1c94a810299413a60200f62f6d9c276cf7f6b8fcabda506dc6efcd0d3c7fae50",
+    "desk2-freeze.json": "da385cc0784f438893c9c8a7283487dc5baf38bd51a234ac290babc0d48b1f89",
+    "desk2-report.json.gz": "3d4dc561c280454c788a2e04d5b11c455b0cd21aecfafbbf1cfeb314c90fe6d8"
+  },
+  "binary_sha256": "990d1ce73681339042b646c1f47a7da3cb7b508cd27785fa2cde3eac99a97226",
+  "auditor_sha256": "f5d52a36f7a95a342e6f01e98c113932ea85a6a57b0a0c59a5cf4798df5e0a08",
+  "wrapper_sha256": "20059c464028ccd7d702676383db25d55443ad0801fc439f1829a230a5dc0ab6",
+  "executable_receipt_sha256": "3782e0d1399a90af8d78b6042d05d1799365715c8d55103c5cddac63aa37d025",
+  "all_physical_protocols_passed": false
+}

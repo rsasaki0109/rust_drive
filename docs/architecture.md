@@ -284,8 +284,33 @@ offline viewed regression with no calibrated uncertainty or driving fusion.
 The separate official-source independent-recording adapter reuses the original
 descriptor/depth/reprojection mathematics. A bounded archive inventory and
 complete timestamp qualification precede image decoding; an independent audit
-binds selected source members to the retained compressed archive. The prospective
+binds selected source members to the retained compressed archive. The fixed
 desk2 window keeps one camera origin across all 179 updates without recovery.
-Actual recorded-data evaluation remains pending download access. This is offline
+Official archive acquisition succeeded, and the first trial scores only 16/179
+root-accurate updates before loss. An additive calibration-schema auditor repair
+and exact viewed reproduction confirm that failed outcome while preserving the
+original reports and historical access-denial journal. This is offline
 camera-motion research, outside driving controls.
 [Protocol and provenance](independent-recorded-motion.md).
+
+The additive registered-grid camera adapter interprets pre-registered TUM
+RGB/depth pixels with the publisher-recommended ROS default 525-pixel pinhole
+intrinsics, no extra undistortion and no second depth-scale multiplier. These
+default intrinsics are explicitly uncalibrated, not measured camera/vehicle
+extrinsics. The historical secondary RGB K/D document remains provenance only.
+Viewed continuous room/desk2 results improve some root classifications, while
+all native/multiscale branches still lose tracking. Complete independent audits
+and exact non-timing regression replay confirm failed physical outcomes.
+[Model, authority and outcomes](registered-grid-camera.md).
+
+The optional YOLOX-S binary is an offline CPU model-specific adapter with pinned
+640-pixel/raw-BGR preprocessing and raw grid-head decoding. It retains nano's
+argmax/classwise-NMS policy while documenting differences from upstream resizing
+and multiclass output. Its fixed eight-frame viewed BDD comparison completes
+16 actual CPU inference runs with identical repeated detections: 55 TP, 14 FP
+and 83 FN / 138 references. Recall 39.86% fails the fixed quality gate; no
+motorcycle or traffic-light reference is matched. Complete replay reproduces
+matched reference IDs and failed gates, with raw detection agreement within
+absolute tolerance 1e-5; the wrapper retains quality exit 1 despite passing
+integrity. Neither learned adapter provides metric depth, signal
+color or vehicle controls. [Frozen profile and limits](yolox-s-camera.md).

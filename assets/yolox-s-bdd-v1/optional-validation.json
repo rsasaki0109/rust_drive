@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "scope": "Optional ONNX full workspace, release locked offline; no actual image inference by this agent.",
+  "toolchain": "Rust 1.90.0",
+  "jobs": 2,
+  "unique_test_count": 9,
+  "original_nano_test_count": 4,
+  "new_s_test_count": 5,
+  "test_names": [
+    "tests::malformed_outputs_and_budgets_fail_closed",
+    "tests::independent_box_geometry_and_classwise_nms",
+    "tests::roundoff_is_bounded_and_probability_corruption_rejected",
+    "tests::pinned_model_and_image_decoding_reject_bad_assets",
+    "yolox_s::tests::independent_three_stride_geometry_restores_original_image_coordinates",
+    "yolox_s::tests::overlapping_boxes_are_classwise_suppressed_with_deterministic_class_ties",
+    "yolox_s::tests::hidden_corruption_shape_and_image_resource_violations_fail_closed",
+    "yolox_s::tests::roundoff_threshold_and_retained_box_budget_remain_bounded",
+    "yolox_s::tests::raw_bgr_constant_pixels_and_letterbox_padding_are_not_normalized"
+  ],
+  "logs": {
+    "full-fmt.log": {
+      "path": "artifacts/camera-model-s/full-fmt.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0
+    },
+    "full-release-clippy.log": {
+      "path": "artifacts/camera-model-s/full-release-clippy.log",
+      "sha256": "474e2503462211d98eebc02b7d71c9aaee126e5b827c30def2a2226a2025700c",
+      "exit_code": 0
+    },
+    "full-release-tests.log": {
+      "path": "artifacts/camera-model-s/full-release-tests.log",
+      "sha256": "84d3697ef262ee010378c4e61f3623938dc6c4ac86d54f68bcaf25277ddd3fa9",
+      "exit_code": 0
+    }
+  },
+  "binary_sha256": "477331b09e16fd07c8a779953fd505d11b68e5c163f21a35a724c4da816233f7",
+  "compiled_sources_match_current": {
+    "integrations/onnx/Cargo.lock": true,
+    "integrations/onnx/Cargo.toml": true,
+    "integrations/onnx/fetch_s.py": true,
+    "integrations/onnx/profile-s.json": true,
+    "integrations/onnx/src/bin/rustdriving-camera-detect-s.rs": true,
+    "integrations/onnx/src/lib.rs": true,
+    "integrations/onnx/src/yolox_s.rs": true,
+    "rust-toolchain.toml": true
+  },
+  "historical_nano_source_matches": {
+    "integrations/onnx/Cargo.toml": true,
+    "integrations/onnx/Cargo.lock": true,
+    "integrations/onnx/src/lib.rs": true,
+    "integrations/onnx/src/main.rs": true,
+    "integrations/onnx/fetch.py": true,
+    "integrations/onnx/score.py": true,
+    "integrations/onnx/bdd_fetch.py": true,
+    "integrations/onnx/bdd_score.py": true,
+    "integrations/onnx/bdd_check.py": true,
+    "integrations/onnx/bdd_protocol.json": true
+  },
+  "historical_nano_first_report_unchanged": true,
+  "historical_nano_first_freeze_unchanged": true,
+  "actual_image_inference_runs_by_this_agent": 0,
+  "checker_report_schema_readonly_review": "No concrete compatibility blocker found; eight compiled source names and standard report domains match new checker."
+}

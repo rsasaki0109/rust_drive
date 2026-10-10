@@ -1,0 +1,2701 @@
+{
+  "schema": "yolox-s-bdd-viewed-replay-v1",
+  "design_sha256": "99a881e518819f0f07c2c1836d6b98ac2e37f38ef3e4a11490c9b68237e90565",
+  "checker_sha256": "35053e7a0e329df354cf694936832c05a7f502e4af7b97337cacf4f9807a25d9",
+  "wrapper_sha256": "fbcc64992b9a6aab4a2144edcb4f1033fd136f6ca630c7f68ec4caf15842dd79",
+  "first_evidence_sha256": {
+    "first/00a395fe-d60c0b47.json": "0b79538cc4cabc356466f6ff2210a7d9a95d08b59099d6bbf3ecae9092019748",
+    "first/026c7465-d54954fa.json": "18a652ccaa5ea0579f98b851af6fcdcd5db7f5df8ccf36dbb29049c56f96a076",
+    "first/0798a3a8-c4501e0f.json": "3b3976fd0aa1f372bff19061a4d6c998cf63f95087bfd3306356bd3bbcdcfb32",
+    "first/0a493f24-352f747e.json": "167488f6c68594e6576800d77952a9b5029208e6cfc302383045b847b5f7b5b6",
+    "first/17d21997-6f076249.json": "5a795b303e733896b70ccec5889dfdf3d0693771dc8cffae23495aca774b054d",
+    "first/4899be53-dcc6c017.json": "925878df18c96622091415074255960cd017fcbb201ec1833722356669f530a0",
+    "first/4dab8d2a-be9667d4.json": "2ad9a4b72a932ffd10e8c305d3b72fab17f594ab3cd9f9bd3ccb396f3ea7cdc3",
+    "first/ab2360f2-7704a1bf.json": "bcf13a21ff3bff04eb966e331d35237be2049e244a874e65a5bd83b03fe04e04",
+    "first-freeze.json": "108d0c4beb3550fc618e58fc01a255511a803636ad14acf623cad84ce99fc130",
+    "first-results.json": "55839b5884f147e6c355ab1230245f0e0c9871cf087db6784f12ae072ce36a40"
+  },
+  "integrity_and_reproduction_passed": true,
+  "actual_inference_runs": 16,
+  "actual_checker_exit_code": 1,
+  "first_physical_exit_code": 1,
+  "viewed_quality_gates_passed": false,
+  "overall": {
+    "true_positives": 55,
+    "false_positives": 14,
+    "false_negatives": 83,
+    "precision": 0.7971014492753623,
+    "recall": 0.39855072463768115,
+    "mean_matched_iou": 0.8009049551040764
+  },
+  "per_class": {
+    "person including original rider": {
+      "true_positives": 11,
+      "false_positives": 0,
+      "false_negatives": 17,
+      "precision": 1.0,
+      "recall": 0.39285714285714285,
+      "mean_matched_iou": 0.7118956800638404
+    },
+    "bicycle": {
+      "true_positives": 1,
+      "false_positives": 0,
+      "false_negatives": 2,
+      "precision": 1.0,
+      "recall": 0.3333333333333333,
+      "mean_matched_iou": 0.7459330989678713
+    },
+    "car": {
+      "true_positives": 39,
+      "false_positives": 7,
+      "false_negatives": 33,
+      "precision": 0.8478260869565217,
+      "recall": 0.5416666666666666,
+      "mean_matched_iou": 0.8140136612358282
+    },
+    "motorcycle": {
+      "true_positives": 0,
+      "false_positives": 0,
+      "false_negatives": 3,
+      "precision": null,
+      "recall": 0.0,
+      "mean_matched_iou": null
+    },
+    "bus": {
+      "true_positives": 1,
+      "false_positives": 2,
+      "false_negatives": 1,
+      "precision": 0.3333333333333333,
+      "recall": 0.5,
+      "mean_matched_iou": 0.9748623186477786
+    },
+    "train": {
+      "true_positives": 0,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "precision": null,
+      "recall": null,
+      "mean_matched_iou": null
+    },
+    "truck": {
+      "true_positives": 3,
+      "false_positives": 2,
+      "false_negatives": 3,
+      "precision": 0.6,
+      "recall": 0.5,
+      "mean_matched_iou": 0.9171972814030034
+    },
+    "traffic light": {
+      "true_positives": 0,
+      "false_positives": 3,
+      "false_negatives": 24,
+      "precision": 0.0,
+      "recall": 0.0,
+      "mean_matched_iou": null
+    }
+  },
+  "images": [
+    {
+      "image_id": "00a395fe-d60c0b47",
+      "partition": "viewed_regression",
+      "reference_count": 36,
+      "matches": [
+        {
+          "prediction_index": 0,
+          "reference_id": 26,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.7354893075203679
+        },
+        {
+          "prediction_index": 1,
+          "reference_id": 29,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.8477717992514769
+        },
+        {
+          "prediction_index": 2,
+          "reference_id": 25,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.7084304243353291
+        },
+        {
+          "prediction_index": 3,
+          "reference_id": 28,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.9354937009166058
+        },
+        {
+          "prediction_index": 5,
+          "reference_id": 27,
+          "reference_category": "truck",
+          "class_index": 7,
+          "iou": 0.8248649745580977
+        },
+        {
+          "prediction_index": 6,
+          "reference_id": 31,
+          "reference_category": "person",
+          "class_index": 0,
+          "iou": 0.8798270242379496
+        },
+        {
+          "prediction_index": 7,
+          "reference_id": 18,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.7752541626967155
+        },
+        {
+          "prediction_index": 8,
+          "reference_id": 30,
+          "reference_category": "truck",
+          "class_index": 7,
+          "iou": 0.9729332994770943
+        },
+        {
+          "prediction_index": 9,
+          "reference_id": 22,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.5831716873819113
+        },
+        {
+          "prediction_index": 10,
+          "reference_id": 32,
+          "reference_category": "person",
+          "class_index": 0,
+          "iou": 0.6473024771716941
+        },
+        {
+          "prediction_index": 11,
+          "reference_id": 16,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.6826706987584568
+        },
+        {
+          "prediction_index": 13,
+          "reference_id": 40,
+          "reference_category": "person",
+          "class_index": 0,
+          "iou": 0.7058116239987193
+        },
+        {
+          "prediction_index": 15,
+          "reference_id": 21,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.6548178511023475
+        },
+        {
+          "prediction_index": 16,
+          "reference_id": 19,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.8670308332781121
+        },
+        {
+          "prediction_index": 17,
+          "reference_id": 36,
+          "reference_category": "person",
+          "class_index": 0,
+          "iou": 0.6525586996185869
+        }
+      ],
+      "false_positives": [
+        {
+          "prediction_index": 4,
+          "class_index": 5,
+          "confidence": 0.83427453,
+          "bbox": [
+            813.0399,
+            75.08469,
+            1276.5096,
+            473.11655
+          ],
+          "best_unmatched_same_class_iou": 0.0
+        },
+        {
+          "prediction_index": 12,
+          "class_index": 2,
+          "confidence": 0.4852985,
+          "bbox": [
+            466.29898,
+            238.08351,
+            498.63943,
+            267.37778
+          ],
+          "best_unmatched_same_class_iou": 0.09104099182423467
+        },
+        {
+          "prediction_index": 14,
+          "class_index": 5,
+          "confidence": 0.43180352,
+          "bbox": [
+            660.2147,
+            234.4604,
+            710.72974,
+            291.44293
+          ],
+          "best_unmatched_same_class_iou": 0.0
+        }
+      ],
+      "false_negatives": [
+        {
+          "id": 5,
+          "category": "traffic light",
+          "bbox": [
+            474.146536,
+            162.457572,
+            481.63306,
+            183.66939
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "red"
+          },
+          "class_index": 9
+        },
+        {
+          "id": 6,
+          "category": "traffic light",
+          "bbox": [
+            606.408465,
+            182.421637,
+            612.647235,
+            192.40367
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "red"
+          },
+          "class_index": 9
+        },
+        {
+          "id": 7,
+          "category": "traffic light",
+          "bbox": [
+            728.688361,
+            232.331799,
+            741.165901,
+            243.561585
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "green"
+          },
+          "class_index": 9
+        },
+        {
+          "id": 8,
+          "category": "traffic light",
+          "bbox": [
+            828.508684,
+            236.075061,
+            845.977241,
+            248.552602
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 9
+        },
+        {
+          "id": 9,
+          "category": "traffic light",
+          "bbox": [
+            557.746057,
+            206.128964,
+            563.984827,
+            218.606504
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "red"
+          },
+          "class_index": 9
+        },
+        {
+          "id": 10,
+          "category": "car",
+          "bbox": [
+            554.002795,
+            244.809339,
+            566.480335,
+            257.286879
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 11,
+          "category": "car",
+          "bbox": [
+            534.03873,
+            242.313831,
+            560.241564,
+            256.039126
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 12,
+          "category": "truck",
+          "bbox": [
+            511.579158,
+            231.084044,
+            536.534239,
+            253.543617
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 7
+        },
+        {
+          "id": 13,
+          "category": "truck",
+          "bbox": [
+            502.844879,
+            233.579554,
+            529.047714,
+            257.286881
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 7
+        },
+        {
+          "id": 14,
+          "category": "car",
+          "bbox": [
+            491.615092,
+            244.809339,
+            521.56119,
+            262.277895
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 15,
+          "category": "truck",
+          "bbox": [
+            465.412258,
+            232.331799,
+            507.835895,
+            271.012174
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 7
+        },
+        {
+          "id": 17,
+          "category": "car",
+          "bbox": [
+            436.713915,
+            252.295864,
+            464.164504,
+            284.737469
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 20,
+          "category": "car",
+          "bbox": [
+            626.372529,
+            242.313831,
+            647.584348,
+            258.534634
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 23,
+          "category": "car",
+          "bbox": [
+            742.413655,
+            261.030142,
+            855.959273,
+            302.206024
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 24,
+          "category": "car",
+          "bbox": [
+            560.241564,
+            242.313831,
+            585.196646,
+            261.030142
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 33,
+          "category": "person",
+          "bbox": [
+            262.028349,
+            249.800356,
+            281.992414,
+            297.215009
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 0
+        },
+        {
+          "id": 34,
+          "category": "person",
+          "bbox": [
+            289.478938,
+            256.039126,
+            305.69974,
+            302.206026
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 0
+        },
+        {
+          "id": 35,
+          "category": "person",
+          "bbox": [
+            311.938511,
+            259.782388,
+            326.911559,
+            310.940305
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 0
+        },
+        {
+          "id": 37,
+          "category": "person",
+          "bbox": [
+            72.369734,
+            257.286881,
+            97.324816,
+            295.967255
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 0
+        },
+        {
+          "id": 38,
+          "category": "person",
+          "bbox": [
+            38.680375,
+            259.782388,
+            67.378717,
+            324.665598
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 0
+        },
+        {
+          "id": 39,
+          "category": "person",
+          "bbox": [
+            721.201837,
+            249.800356,
+            736.174884,
+            285.985222
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 0
+        }
+      ],
+      "excluded_original_sign_boxes": [
+        {
+          "id": 0,
+          "category": "traffic sign",
+          "bbox": [
+            173.437812,
+            221.102013,
+            190.906368,
+            232.331799
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 1,
+          "category": "traffic sign",
+          "bbox": [
+            180.924336,
+            208.624472,
+            198.392892,
+            219.854259
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 2,
+          "category": "traffic sign",
+          "bbox": [
+            824.765422,
+            187.412653,
+            849.720503,
+            193.651424
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 3,
+          "category": "traffic sign",
+          "bbox": [
+            821.02216,
+            162.457572,
+            833.499701,
+            172.439604
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 4,
+          "category": "traffic sign",
+          "bbox": [
+            330.654821,
+            209.872227,
+            346.875625,
+            218.606505
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        }
+      ],
+      "all_class_prediction_count": 18
+    },
+    {
+      "image_id": "026c7465-d54954fa",
+      "partition": "viewed_regression",
+      "reference_count": 5,
+      "matches": [
+        {
+          "prediction_index": 0,
+          "reference_id": 6,
+          "reference_category": "truck",
+          "class_index": 7,
+          "iou": 0.9537935701738183
+        },
+        {
+          "prediction_index": 1,
+          "reference_id": 5,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.9226349680198063
+        }
+      ],
+      "false_positives": [],
+      "false_negatives": [
+        {
+          "id": 3,
+          "category": "car",
+          "bbox": [
+            590.077888,
+            304.8965,
+            604.7496,
+            312.232355
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 4,
+          "category": "car",
+          "bbox": [
+            503.881586,
+            306.730464,
+            533.225007,
+            317.734248
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 8,
+          "category": "car",
+          "bbox": [
+            613.081873,
+            300.497416,
+            626.511925,
+            312.248711
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        }
+      ],
+      "excluded_original_sign_boxes": [
+        {
+          "id": 0,
+          "category": "traffic sign",
+          "bbox": [
+            549.27219,
+            226.036051,
+            566.076691,
+            255.17099
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 1,
+          "category": "traffic sign",
+          "bbox": [
+            914.23101,
+            196.69263,
+            936.238578,
+            207.696414
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 2,
+          "category": "traffic sign",
+          "bbox": [
+            785.395045,
+            248.043619,
+            801.90072,
+            275.553078
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 7,
+          "category": "traffic sign",
+          "bbox": [
+            473.745082,
+            198.093268,
+            498.92643,
+            241.740938
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        }
+      ],
+      "all_class_prediction_count": 2
+    },
+    {
+      "image_id": "0798a3a8-c4501e0f",
+      "partition": "viewed_regression",
+      "reference_count": 26,
+      "matches": [
+        {
+          "prediction_index": 0,
+          "reference_id": 1,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.7636218591308974
+        },
+        {
+          "prediction_index": 1,
+          "reference_id": 0,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.882202754647446
+        },
+        {
+          "prediction_index": 2,
+          "reference_id": 2,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.8585616659896226
+        },
+        {
+          "prediction_index": 3,
+          "reference_id": 29,
+          "reference_category": "person",
+          "class_index": 0,
+          "iou": 0.7768527183991109
+        },
+        {
+          "prediction_index": 4,
+          "reference_id": 5,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.6809845120045736
+        },
+        {
+          "prediction_index": 6,
+          "reference_id": 7,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.80794194351949
+        },
+        {
+          "prediction_index": 7,
+          "reference_id": 26,
+          "reference_category": "person",
+          "class_index": 0,
+          "iou": 0.698628856094043
+        },
+        {
+          "prediction_index": 8,
+          "reference_id": 28,
+          "reference_category": "person",
+          "class_index": 0,
+          "iou": 0.8499807650800119
+        },
+        {
+          "prediction_index": 9,
+          "reference_id": 27,
+          "reference_category": "person",
+          "class_index": 0,
+          "iou": 0.62242187945179
+        },
+        {
+          "prediction_index": 10,
+          "reference_id": 3,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.9181107407280532
+        },
+        {
+          "prediction_index": 11,
+          "reference_id": 23,
+          "reference_category": "person",
+          "class_index": 0,
+          "iou": 0.7122699321169234
+        },
+        {
+          "prediction_index": 12,
+          "reference_id": 24,
+          "reference_category": "person",
+          "class_index": 0,
+          "iou": 0.7760573707208855
+        },
+        {
+          "prediction_index": 14,
+          "reference_id": 22,
+          "reference_category": "person",
+          "class_index": 0,
+          "iou": 0.50914113381253
+        }
+      ],
+      "false_positives": [
+        {
+          "prediction_index": 5,
+          "class_index": 7,
+          "confidence": 0.8089257,
+          "bbox": [
+            236.3211,
+            360.8456,
+            375.65216,
+            500.1575
+          ],
+          "best_unmatched_same_class_iou": 0.0
+        },
+        {
+          "prediction_index": 13,
+          "class_index": 2,
+          "confidence": 0.4163679,
+          "bbox": [
+            192.47624,
+            398.96194,
+            249.31328,
+            452.0759
+          ],
+          "best_unmatched_same_class_iou": 0.46557617395115847
+        },
+        {
+          "prediction_index": 15,
+          "class_index": 9,
+          "confidence": 0.3085907,
+          "bbox": [
+            853.0531,
+            312.44443,
+            883.3898,
+            351.95956
+          ],
+          "best_unmatched_same_class_iou": 0.48270979610086057
+        }
+      ],
+      "false_negatives": [
+        {
+          "id": 4,
+          "category": "car",
+          "bbox": [
+            382.509644,
+            378.331708,
+            407.770655,
+            437.640171
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 6,
+          "category": "car",
+          "bbox": [
+            826.224813,
+            378.331708,
+            889.926496,
+            426.657122
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 8,
+          "category": "car",
+          "bbox": [
+            1044.787484,
+            379.430013,
+            1120.570521,
+            433.246952
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 9,
+          "category": "car",
+          "bbox": [
+            918.482423,
+            378.331708,
+            1031.607826,
+            406.887634
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 10,
+          "category": "car",
+          "bbox": [
+            219.960521,
+            401.39611,
+            248.516448,
+            455.21305
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 11,
+          "category": "traffic light",
+          "bbox": [
+            176.028327,
+            279.48427,
+            184.814766,
+            304.745281
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 9
+        },
+        {
+          "id": 12,
+          "category": "traffic light",
+          "bbox": [
+            501.12657,
+            246.535123,
+            515.404534,
+            278.810528
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "green"
+          },
+          "class_index": 9
+        },
+        {
+          "id": 13,
+          "category": "traffic light",
+          "bbox": [
+            424.245229,
+            353.070696,
+            431.933363,
+            364.053744
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 9
+        },
+        {
+          "id": 14,
+          "category": "traffic light",
+          "bbox": [
+            832.814643,
+            317.92494,
+            848.190911,
+            339.891036
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "red"
+          },
+          "class_index": 9
+        },
+        {
+          "id": 15,
+          "category": "traffic light",
+          "bbox": [
+            855.879045,
+            312.433415,
+            877.845142,
+            338.792731
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 9
+        },
+        {
+          "id": 20,
+          "category": "traffic light",
+          "bbox": [
+            636.218069,
+            346.480866,
+            650.496033,
+            359.660525
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "green"
+          },
+          "class_index": 9
+        },
+        {
+          "id": 21,
+          "category": "car",
+          "bbox": [
+            367.133376,
+            393.707975,
+            390.197778,
+            436.541866
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 25,
+          "category": "person",
+          "bbox": [
+            655.987558,
+            383.823232,
+            677.953655,
+            425.558818
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 0
+        }
+      ],
+      "excluded_original_sign_boxes": [
+        {
+          "id": 16,
+          "category": "traffic sign",
+          "bbox": [
+            163.946974,
+            340.989343,
+            196.89612,
+            349.775781
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 17,
+          "category": "traffic sign",
+          "bbox": [
+            926.170558,
+            301.450367,
+            962.414618,
+            313.53172
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 18,
+          "category": "traffic sign",
+          "bbox": [
+            933.858692,
+            314.630025,
+            954.726483,
+            327.809684
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 19,
+          "category": "traffic sign",
+          "bbox": [
+            616.448582,
+            333.301207,
+            637.316374,
+            343.185951
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        }
+      ],
+      "all_class_prediction_count": 16
+    },
+    {
+      "image_id": "0a493f24-352f747e",
+      "partition": "viewed_regression",
+      "reference_count": 3,
+      "matches": [
+        {
+          "prediction_index": 0,
+          "reference_id": 0,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.9480373826105486
+        },
+        {
+          "prediction_index": 1,
+          "reference_id": 1,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.6755384277837403
+        }
+      ],
+      "false_positives": [
+        {
+          "prediction_index": 2,
+          "class_index": 2,
+          "confidence": 0.31354824,
+          "bbox": [
+            853.35596,
+            354.26938,
+            886.54663,
+            377.2159
+          ],
+          "best_unmatched_same_class_iou": 0.0
+        }
+      ],
+      "false_negatives": [
+        {
+          "id": 2,
+          "category": "car",
+          "bbox": [
+            811.040128,
+            348.123378,
+            845.977244,
+            379.317229
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        }
+      ],
+      "excluded_original_sign_boxes": [
+        {
+          "id": 3,
+          "category": "traffic sign",
+          "bbox": [
+            164.703534,
+            350.618886,
+            192.154123,
+            376.821721
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        }
+      ],
+      "all_class_prediction_count": 3
+    },
+    {
+      "image_id": "17d21997-6f076249",
+      "partition": "viewed_regression",
+      "reference_count": 7,
+      "matches": [
+        {
+          "prediction_index": 0,
+          "reference_id": 0,
+          "reference_category": "bus",
+          "class_index": 5,
+          "iou": 0.9748623186477786
+        }
+      ],
+      "false_positives": [
+        {
+          "prediction_index": 1,
+          "class_index": 2,
+          "confidence": 0.3533369,
+          "bbox": [
+            1125.1833,
+            395.26315,
+            1147.8472,
+            431.254
+          ],
+          "best_unmatched_same_class_iou": 0.0
+        }
+      ],
+      "false_negatives": [
+        {
+          "id": 1,
+          "category": "motor",
+          "bbox": [
+            1216.498551,
+            398.011068,
+            1256.936176,
+            436.951003
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 3
+        },
+        {
+          "id": 2,
+          "category": "motor",
+          "bbox": [
+            1123.641783,
+            396.513378,
+            1156.590957,
+            439.946383
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 3
+        },
+        {
+          "id": 3,
+          "category": "rider",
+          "bbox": [
+            1227.62201,
+            374.422453,
+            1257.575806,
+            423.846216
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 0
+        },
+        {
+          "id": 4,
+          "category": "rider",
+          "bbox": [
+            1127.276793,
+            377.417833,
+            1154.235209,
+            422.348527
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 0
+        },
+        {
+          "id": 5,
+          "category": "person",
+          "bbox": [
+            1179.695936,
+            375.920143,
+            1202.161284,
+            429.836976
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 0
+        },
+        {
+          "id": 6,
+          "category": "person",
+          "bbox": [
+            1169.212108,
+            387.901662,
+            1182.691315,
+            419.353149
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 0
+        }
+      ],
+      "excluded_original_sign_boxes": [],
+      "all_class_prediction_count": 2
+    },
+    {
+      "image_id": "4899be53-dcc6c017",
+      "partition": "viewed_regression",
+      "reference_count": 15,
+      "matches": [
+        {
+          "prediction_index": 0,
+          "reference_id": 28,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.9182488540922739
+        },
+        {
+          "prediction_index": 1,
+          "reference_id": 26,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.897285873170074
+        },
+        {
+          "prediction_index": 2,
+          "reference_id": 27,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.7729305518342822
+        },
+        {
+          "prediction_index": 3,
+          "reference_id": 25,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.8504693364082326
+        },
+        {
+          "prediction_index": 4,
+          "reference_id": 24,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.799996980303928
+        }
+      ],
+      "false_positives": [
+        {
+          "prediction_index": 5,
+          "class_index": 9,
+          "confidence": 0.4639595,
+          "bbox": [
+            690.2543,
+            88.7863,
+            723.22314,
+            145.01587
+          ],
+          "best_unmatched_same_class_iou": 0.49394604920316515
+        },
+        {
+          "prediction_index": 6,
+          "class_index": 9,
+          "confidence": 0.4374308,
+          "bbox": [
+            629.22485,
+            179.21397,
+            656.8176,
+            225.3961
+          ],
+          "best_unmatched_same_class_iou": 0.2601739763639937
+        },
+        {
+          "prediction_index": 7,
+          "class_index": 2,
+          "confidence": 0.3820474,
+          "bbox": [
+            236.41663,
+            574.7788,
+            1272.1844,
+            710.1033
+          ],
+          "best_unmatched_same_class_iou": 0.0
+        }
+      ],
+      "false_negatives": [
+        {
+          "id": 14,
+          "category": "traffic light",
+          "bbox": [
+            330.660229,
+            209.209201,
+            351.816216,
+            238.592515
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 9
+        },
+        {
+          "id": 15,
+          "category": "traffic light",
+          "bbox": [
+            313.03024,
+            220.338131,
+            331.835563,
+            266.800497
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 9
+        },
+        {
+          "id": 16,
+          "category": "traffic light",
+          "bbox": [
+            690.591849,
+            91.843847,
+            702.345174,
+            144.733814
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 9
+        },
+        {
+          "id": 17,
+          "category": "traffic light",
+          "bbox": [
+            699.994508,
+            88.14994,
+            717.624497,
+            141.039905
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "green"
+          },
+          "class_index": 9
+        },
+        {
+          "id": 18,
+          "category": "traffic light",
+          "bbox": [
+            655.331872,
+            184.527211,
+            662.383867,
+            211.559861
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 9
+        },
+        {
+          "id": 19,
+          "category": "traffic light",
+          "bbox": [
+            640.052547,
+            189.396452,
+            651.805873,
+            217.604434
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "green"
+          },
+          "class_index": 9
+        },
+        {
+          "id": 20,
+          "category": "traffic light",
+          "bbox": [
+            966.291324,
+            190.571785,
+            973.34332,
+            222.305765
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "green"
+          },
+          "class_index": 9
+        },
+        {
+          "id": 21,
+          "category": "traffic light",
+          "bbox": [
+            988.775264,
+            193.305483,
+            1033.437902,
+            222.688797
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "yellow"
+          },
+          "class_index": 9
+        },
+        {
+          "id": 23,
+          "category": "traffic light",
+          "bbox": [
+            958.857708,
+            176.850826,
+            970.611034,
+            189.779484
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "red"
+          },
+          "class_index": 9
+        },
+        {
+          "id": 29,
+          "category": "car",
+          "bbox": [
+            1170.63126,
+            295.008479,
+            1198.839243,
+            326.74246
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        }
+      ],
+      "excluded_original_sign_boxes": [
+        {
+          "id": 0,
+          "category": "traffic sign",
+          "bbox": [
+            295.875291,
+            4.701331,
+            344.063928,
+            51.714635
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 1,
+          "category": "traffic sign",
+          "bbox": [
+            289.998628,
+            54.065299,
+            362.869248,
+            116.357926
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 2,
+          "category": "traffic sign",
+          "bbox": [
+            305.277952,
+            124.585255,
+            351.115923,
+            176.299889
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 3,
+          "category": "traffic sign",
+          "bbox": [
+            330.660229,
+            184.527218,
+            349.940591,
+            206.074981
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 4,
+          "category": "traffic sign",
+          "bbox": [
+            590.01696,
+            205.683203,
+            641.731594,
+            216.261196
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 5,
+          "category": "traffic sign",
+          "bbox": [
+            562.984311,
+            205.683203,
+            573.562304,
+            220.962527
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 6,
+          "category": "traffic sign",
+          "bbox": [
+            552.406317,
+            235.066519,
+            565.334977,
+            242.118514
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 7,
+          "category": "traffic sign",
+          "bbox": [
+            1074.253986,
+            104.604601,
+            1111.86463,
+            138.689247
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 8,
+          "category": "traffic sign",
+          "bbox": [
+            1187.085916,
+            282.079821,
+            1222.345893,
+            317.339799
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 9,
+          "category": "traffic sign",
+          "bbox": [
+            1185.910584,
+            244.469178,
+            1225.871891,
+            282.079821
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 10,
+          "category": "traffic sign",
+          "bbox": [
+            1107.163301,
+            244.469178,
+            1125.968621,
+            251.521173
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 11,
+          "category": "traffic sign",
+          "bbox": [
+            797.659075,
+            260.532062,
+            812.938398,
+            266.408725
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 12,
+          "category": "traffic sign",
+          "bbox": [
+            798.834408,
+            269.934723,
+            811.763067,
+            284.038715
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 13,
+          "category": "traffic sign",
+          "bbox": [
+            844.672378,
+            278.162052,
+            858.77637,
+            292.266044
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 22,
+          "category": "traffic sign",
+          "bbox": [
+            961.742612,
+            152.168841,
+            977.021936,
+            170.974163
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        }
+      ],
+      "all_class_prediction_count": 8
+    },
+    {
+      "image_id": "4dab8d2a-be9667d4",
+      "partition": "viewed_regression",
+      "reference_count": 19,
+      "matches": [
+        {
+          "prediction_index": 0,
+          "reference_id": 9,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.9558684538789424
+        },
+        {
+          "prediction_index": 1,
+          "reference_id": 17,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.8498384667005953
+        },
+        {
+          "prediction_index": 2,
+          "reference_id": 18,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.9835941301691526
+        },
+        {
+          "prediction_index": 3,
+          "reference_id": 14,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.9497417956714906
+        },
+        {
+          "prediction_index": 4,
+          "reference_id": 8,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.8893574302410437
+        },
+        {
+          "prediction_index": 5,
+          "reference_id": 15,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.7678848559423977
+        },
+        {
+          "prediction_index": 6,
+          "reference_id": 6,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.7253469459640919
+        },
+        {
+          "prediction_index": 9,
+          "reference_id": 12,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.5806890007263071
+        }
+      ],
+      "false_positives": [
+        {
+          "prediction_index": 7,
+          "class_index": 2,
+          "confidence": 0.5668177,
+          "bbox": [
+            510.0504,
+            290.22577,
+            540.786,
+            319.42346
+          ],
+          "best_unmatched_same_class_iou": 0.37099213032929174
+        },
+        {
+          "prediction_index": 8,
+          "class_index": 7,
+          "confidence": 0.44666976,
+          "bbox": [
+            0.36247253,
+            165.05156,
+            278.60217,
+            513.83057
+          ],
+          "best_unmatched_same_class_iou": 0.0
+        },
+        {
+          "prediction_index": 10,
+          "class_index": 2,
+          "confidence": 0.348047,
+          "bbox": [
+            475.95035,
+            280.4517,
+            511.15964,
+            322.84122
+          ],
+          "best_unmatched_same_class_iou": 0.4290840218898606
+        }
+      ],
+      "false_negatives": [
+        {
+          "id": 1,
+          "category": "car",
+          "bbox": [
+            538.169389,
+            295.444012,
+            546.955828,
+            316.311805
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 2,
+          "category": "car",
+          "bbox": [
+            528.284645,
+            292.149097,
+            535.972783,
+            318.508417
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 3,
+          "category": "car",
+          "bbox": [
+            515.104987,
+            291.050792,
+            528.284645,
+            316.311804
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 4,
+          "category": "car",
+          "bbox": [
+            503.023633,
+            287.755878,
+            515.104987,
+            319.606719
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 5,
+          "category": "car",
+          "bbox": [
+            488.74567,
+            281.166048,
+            504.121938,
+            322.901636
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 7,
+          "category": "car",
+          "bbox": [
+            418.454158,
+            278.969439,
+            472.271097,
+            336.08129
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 10,
+          "category": "car",
+          "bbox": [
+            619.44395,
+            294.345707,
+            634.820215,
+            311.918586
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 11,
+          "category": "bus",
+          "bbox": [
+            629.328694,
+            272.654186,
+            688.637156,
+            319.881294
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 5
+        },
+        {
+          "id": 13,
+          "category": "car",
+          "bbox": [
+            676.775478,
+            278.969439,
+            734.985638,
+            323.999934
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 16,
+          "category": "motor",
+          "bbox": [
+            817.413404,
+            305.054179,
+            942.620164,
+            375.345692
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 3
+        },
+        {
+          "id": 19,
+          "category": "person",
+          "bbox": [
+            650.196487,
+            292.423673,
+            669.965978,
+            323.176209
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 0
+        }
+      ],
+      "excluded_original_sign_boxes": [
+        {
+          "id": 0,
+          "category": "traffic sign",
+          "bbox": [
+            684.610051,
+            237.966062,
+            705.111735,
+            263.86775
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        }
+      ],
+      "all_class_prediction_count": 11
+    },
+    {
+      "image_id": "ab2360f2-7704a1bf",
+      "partition": "viewed_regression",
+      "reference_count": 27,
+      "matches": [
+        {
+          "prediction_index": 0,
+          "reference_id": 20,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.9073839023764705
+        },
+        {
+          "prediction_index": 1,
+          "reference_id": 18,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.8462065195335365
+        },
+        {
+          "prediction_index": 2,
+          "reference_id": 22,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.8948073320680395
+        },
+        {
+          "prediction_index": 3,
+          "reference_id": 19,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.8516650035292525
+        },
+        {
+          "prediction_index": 4,
+          "reference_id": 17,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.7471399863242308
+        },
+        {
+          "prediction_index": 5,
+          "reference_id": 21,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.6945881503311363
+        },
+        {
+          "prediction_index": 6,
+          "reference_id": 6,
+          "reference_category": "bike",
+          "class_index": 1,
+          "iou": 0.7459330989678713
+        },
+        {
+          "prediction_index": 7,
+          "reference_id": 13,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.8149834699868188
+        },
+        {
+          "prediction_index": 8,
+          "reference_id": 15,
+          "reference_category": "car",
+          "class_index": 2,
+          "iou": 0.8007410292695023
+        }
+      ],
+      "false_positives": [],
+      "false_negatives": [
+        {
+          "id": 0,
+          "category": "car",
+          "bbox": [
+            428.737134,
+            236.392736,
+            446.356468,
+            252.543791
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 1,
+          "category": "car",
+          "bbox": [
+            422.864023,
+            239.329291,
+            441.951635,
+            255.480346
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 2,
+          "category": "car",
+          "bbox": [
+            412.586078,
+            240.79757,
+            428.737132,
+            255.480347
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 3,
+          "category": "car",
+          "bbox": [
+            399.371576,
+            242.265847,
+            415.522634,
+            258.416903
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 4,
+          "category": "rider",
+          "bbox": [
+            560.88214,
+            221.709958,
+            578.501474,
+            255.480348
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 0
+        },
+        {
+          "id": 5,
+          "category": "bike",
+          "bbox": [
+            559.028445,
+            230.519624,
+            581.052612,
+            258.416903
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 1
+        },
+        {
+          "id": 7,
+          "category": "car",
+          "bbox": [
+            886.210562,
+            204.719884,
+            956.931744,
+            242.895109
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 8,
+          "category": "person",
+          "bbox": [
+            855.739045,
+            198.905765,
+            873.358379,
+            219.461655
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 0
+        },
+        {
+          "id": 9,
+          "category": "person",
+          "bbox": [
+            833.002964,
+            204.580048,
+            853.558853,
+            263.311162
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 0
+        },
+        {
+          "id": 10,
+          "category": "person",
+          "bbox": [
+            899.075467,
+            204.580048,
+            916.6948,
+            257.43805
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 0
+        },
+        {
+          "id": 11,
+          "category": "car",
+          "bbox": [
+            819.788461,
+            214.857993,
+            953.401747,
+            254.501494
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 12,
+          "category": "person",
+          "bbox": [
+            749.555845,
+            212.90029,
+            773.048291,
+            261.353459
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 0
+        },
+        {
+          "id": 14,
+          "category": "car",
+          "bbox": [
+            255.213402,
+            247.358935,
+            281.52393,
+            274.567959
+          ],
+          "attributes": {
+            "occluded": true,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 2
+        },
+        {
+          "id": 16,
+          "category": "bike",
+          "bbox": [
+            334.381932,
+            237.861014,
+            362.27921,
+            262.821738
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 1
+        },
+        {
+          "id": 25,
+          "category": "traffic light",
+          "bbox": [
+            610.41817,
+            129.208451,
+            622.164395,
+            151.232619
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "green"
+          },
+          "class_index": 9
+        },
+        {
+          "id": 26,
+          "category": "traffic light",
+          "bbox": [
+            381.366824,
+            155.637453,
+            394.581325,
+            173.256788
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "green"
+          },
+          "class_index": 9
+        },
+        {
+          "id": 33,
+          "category": "traffic light",
+          "bbox": [
+            756.702944,
+            171.85296,
+            773.200829,
+            188.350844
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 9
+        },
+        {
+          "id": 34,
+          "category": "traffic light",
+          "bbox": [
+            740.20506,
+            171.85296,
+            756.702944,
+            189.725668
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          },
+          "class_index": 9
+        }
+      ],
+      "excluded_original_sign_boxes": [
+        {
+          "id": 23,
+          "category": "traffic sign",
+          "bbox": [
+            636.84717,
+            138.018119,
+            685.30034,
+            152.700896
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 24,
+          "category": "traffic sign",
+          "bbox": [
+            698.514841,
+            170.320231,
+            716.134176,
+            180.598176
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 27,
+          "category": "traffic sign",
+          "bbox": [
+            376.961992,
+            173.256785,
+            401.922714,
+            185.003009
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "green"
+          }
+        },
+        {
+          "id": 28,
+          "category": "traffic sign",
+          "bbox": [
+            97.989198,
+            138.018119,
+            112.671977,
+            162.978841
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 29,
+          "category": "traffic sign",
+          "bbox": [
+            0,
+            142.422952,
+            51.004307,
+            164.44712
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": true,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 30,
+          "category": "traffic sign",
+          "bbox": [
+            639.783726,
+            199.68579,
+            652.998228,
+            217.305123
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 31,
+          "category": "traffic sign",
+          "bbox": [
+            307.135622,
+            153.15536,
+            329.132801,
+            173.777715
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        },
+        {
+          "id": 32,
+          "category": "traffic sign",
+          "bbox": [
+            853.765505,
+            162.779126,
+            871.638212,
+            172.402891
+          ],
+          "attributes": {
+            "occluded": false,
+            "truncated": false,
+            "trafficLightColor": "none"
+          }
+        }
+      ],
+      "all_class_prediction_count": 9
+    }
+  ],
+  "cross_host_absolute_tolerance": 1e-05,
+  "relative_tolerance": 0,
+  "exact_identity_counts_gates_sources": true,
+  "same_host_repeat_detection_identity": true,
+  "exclusions": [
+    "result.recorded_utc",
+    "result.per_image_inference_seconds",
+    "freeze.binary_sha256",
+    "prediction.model_load_seconds",
+    "prediction.inference_seconds"
+  ],
+  "fresh_holdout_claim": false,
+  "threshold_or_model_tuning_performed": false,
+  "actual_binary_sha256": "477331b09e16fd07c8a779953fd505d11b68e5c163f21a35a724c4da816233f7",
+  "offline_controls": {
+    "kind": "analytic_comparison_and_output_guards",
+    "actual_inference_runs": 0,
+    "tolerance_inside_bound_passed": true,
+    "corruptions_rejected": [
+      "detection_geometry",
+      "nonfinite_detection",
+      "wrong_class",
+      "wrong_match_identity",
+      "wrong_prediction_identity",
+      "wrong_iou",
+      "omitted_image",
+      "omitted_detection",
+      "fabricated_count",
+      "removed_miss",
+      "flipped_failed_quality",
+      "changed_source",
+      "boolean_class"
+    ],
+    "output_guards_rejected": [
+      "existing_file",
+      "existing_directory",
+      "valid_symlink",
+      "dangling_symlink",
+      "symlink_parent"
+    ],
+    "prior_evidence_preserved": true
+  }
+}

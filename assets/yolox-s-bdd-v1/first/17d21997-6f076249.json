@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "algorithm": "pinned_yolox_s_cpu_image_triangle_argmax_classwise",
+  "model_profile": "yolox-s-v1",
+  "compiled_sources": {
+    "integrations/onnx/Cargo.lock": "aa6f1b198ff4ad901f9547ef852dc0113b5c36624d43030a863af32b12f07a0c",
+    "integrations/onnx/Cargo.toml": "7459dc7d7fc0128214275703d48a4170d449edd559dc0cadab689f887d635c8d",
+    "integrations/onnx/fetch_s.py": "bbb3aa5a020e0bdf6054fc1fe1c58ccd64132547a68ab44e28a89d556a35f1ae",
+    "integrations/onnx/profile-s.json": "b6ea56bd4b6271dc4d54b379b101db7425f61adfcd184211932fd2de6160f573",
+    "integrations/onnx/src/bin/rustdriving-camera-detect-s.rs": "6d1c965968e4d7d735922b4369e6076bf9801aed081dd7e6693702b513d46138",
+    "integrations/onnx/src/lib.rs": "b379dfba4c45b535f61284ea9fc7748f6317038976b5fb61221f6a8561ad4bbc",
+    "integrations/onnx/src/yolox_s.rs": "cd23f879d840627b23aa954530e9e39ca5c5cc05cb2e927453c74178fd8142f0",
+    "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed"
+  },
+  "model_profile_sha256": "b6ea56bd4b6271dc4d54b379b101db7425f61adfcd184211932fd2de6160f573",
+  "input_shape": [
+    1,
+    3,
+    640,
+    640
+  ],
+  "output_shape": [
+    1,
+    8400,
+    85
+  ],
+  "model_sha256": "c5c2d13e59ae883e6af3b45daea64af4833a4951c92d116ec270d9ddbe998063",
+  "source_image_sha256": "1d034e796bd99e1b830fdcdeb815e30147fb673fdf1a06ef60bf674c2faf9a57",
+  "width": 1280,
+  "height": 720,
+  "score_threshold": 0.3,
+  "nms_iou_threshold": 0.45,
+  "model_load_seconds": 0.31669499,
+  "inference_seconds": 0.665980544,
+  "detections": [
+    {
+      "class_index": 5,
+      "confidence": 0.9500882,
+      "bbox": [
+        354.99088,
+        206.70453,
+        1125.0936,
+        544.82947
+      ]
+    },
+    {
+      "class_index": 2,
+      "confidence": 0.3533369,
+      "bbox": [
+        1125.1833,
+        395.26315,
+        1147.8472,
+        431.254
+      ]
+    }
+  ]
+}

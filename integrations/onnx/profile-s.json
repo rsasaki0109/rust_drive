@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "model": "YOLOX-S",
+  "role": "offline_measured_camera_research_only",
+  "selection_basis": "Official architecture capacity and 640px resolution; no BDD labels or inference used for selection.",
+  "official_release": {
+    "repository": "Megvii-BaseDetection/YOLOX",
+    "tag": "0.1.1rc0",
+    "release_id": 48035658,
+    "asset_id": 42724906,
+    "published_at": "2021-08-18T12:41:41Z",
+    "asset_created_at": "2021-08-18T12:34:07Z",
+    "asset_updated_at": "2021-08-18T12:34:15Z",
+    "url": "https://github.com/Megvii-BaseDetection/YOLOX/releases/download/0.1.1rc0/yolox_s.onnx",
+    "publisher_digest": null
+  },
+  "artifact": {
+    "file": "yolox_s.onnx",
+    "bytes": 35858002,
+    "sha256": "c5c2d13e59ae883e6af3b45daea64af4833a4951c92d116ec270d9ddbe998063"
+  },
+  "graph": {
+    "ir_version": 6,
+    "producer": "pytorch",
+    "producer_version": "1.7",
+    "opset": 11,
+    "input": {
+      "name": "images",
+      "type": "float32",
+      "shape": [
+        1,
+        3,
+        640,
+        640
+      ]
+    },
+    "output": "undecoded grid-relative box coordinates; sigmoid objectness and class probabilities; no Exp or grid coordinate decoding",
+    "node_count": 279,
+    "initializer_count": 176,
+    "operators": {
+      "Add": 7,
+      "Concat": 18,
+      "Conv": 83,
+      "MaxPool": 3,
+      "Mul": 74,
+      "Reshape": 3,
+      "Resize": 2,
+      "Sigmoid": 80,
+      "Slice": 8,
+      "Transpose": 1
+    },
+    "input_route": "8 spatial Slice nodes -> Concat -> Conv; no input normalization nodes",
+    "metadata_inspection_sha256": "ecd9d809851d9d5629d6cf4e68bf5fb1bc1351d553c90e12b3a47bbe8fa5d089",
+    "inference_run_during_inspection": false
+  },
+  "contemporary_source": {
+    "revision": "c9fe0aae2db90adccc90f7e5a16f044bf110c816",
+    "date": "2021-08-19T11:32:11Z",
+    "tag_caveat": "0.1.1rc0 Git tag points to older e1052df71842031413f6030723c3607b839c80ce with legacy normalization. Release notes and contemporary commit link the actual new nonlegacy artifacts.",
+    "files": {
+      "LICENSE": {
+        "bytes": 11352,
+        "sha256": "577c03d505ec80f667ebf96ebd0cc4f6825c817ca1088ee348c48aaabd51bd92"
+      },
+      "demo/ONNXRuntime/README.md": {
+        "bytes": 2930,
+        "sha256": "96fbc9c6f74568df5a22d82ba6d9a7e7db88e94a79a4818f0ca9fc3cebd02426"
+      },
+      "demo/ONNXRuntime/onnx_inference.py": {
+        "bytes": 2710,
+        "sha256": "110ee10de3bf8b2ee906ba2c2489be3d57bffe4f8df364b25c62b6611cf7d0ca"
+      },
+      "yolox/data/data_augment.py": {
+        "bytes": 7915,
+        "sha256": "a6adfd6e2d5bb073ede9339a30d95522077d6765c54925cd897e052ba35149f2"
+      },
+      "tools/export_onnx.py": {
+        "bytes": 3133,
+        "sha256": "1364c998e4250045b79a6453b8de5e18c0c01ca41b5ba8c74cf7ebb3957d4689"
+      },
+      "yolox/models/yolo_head.py": {
+        "bytes": 23223,
+        "sha256": "84bed77f74ce74de49f713a558729df1fac35f506a01f6b390313be9e24c9ba8"
+      },
+      "yolox/utils/demo_utils.py": {
+        "bytes": 2806,
+        "sha256": "5b9ce8dd92920c7cddb9cf645ede346af6d7b0d2833092615735fab8063c8cbd"
+      },
+      "exps/default/yolox_s.py": {
+        "bytes": 357,
+        "sha256": "f184ccc218142ef8a65edade911f45235c3330dae7f874a8593e9e6877bb9549"
+      },
+      "yolox/exp/yolox_base.py": {
+        "bytes": 8898,
+        "sha256": "15606379657a7d1802261423ad1852d229c8f268fff119db772f1401f492c00e"
+      }
+    }
+  },
+  "license": {
+    "code": "Apache-2.0",
+    "copyright": "Megvii, Inc. and its affiliates",
+    "separate_weight_license_found_in_reviewed_release_and_docs": false,
+    "raw_weights_redistributed": false,
+    "scope": "Official repository license and release publication are provenance evidence; no claim of separate publisher-signed model licensing or integrity metadata."
+  },
+  "pipeline": {
+    "input_size": 640,
+    "letterbox": "top-left, 114 padding, preserve aspect ratio",
+    "channels": "raw BGR [0,255], CHW float32; no /255, mean or std",
+    "resize": "image crate Triangle to uint8; explicitly approximate relative to upstream OpenCV INTER_LINEAR",
+    "output_decode": "strides [8,16,32], row-major grid; xy=(raw_xy+grid)*stride; wh=exp(raw_wh)*stride; divide by letterbox ratio",
+    "score": "objectness * highest class probability; lower class index breaks exact ties",
+    "score_threshold": 0.3,
+    "nms_iou_threshold": 0.45,
+    "nms": "classwise; one argmax class per row, same policy as original Rust nano; differs from upstream full per-class candidate emission",
+    "max_detections": 300,
+    "max_image_encoded_bytes": 16777216,
+    "max_image_pixels": 16000000,
+    "output_values": 714000,
+    "probability_roundoff_tolerance": 1e-06,
+    "maximum_box_log_extent": 20.0
+  },
+  "limits": [
+    "No BDD/model accuracy trial performed before comparison preregistration.",
+    "No camera-derived driving commands or inferred metric depth.",
+    "No measured real-time, automotive ODD or cross-platform claims."
+  ]
+}

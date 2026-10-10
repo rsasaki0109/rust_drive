@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "profile_id": "tum-fr1-registered-ros-default-v1",
+  "operational": {
+    "width": 640,
+    "height": 480,
+    "fx": 525.0,
+    "fy": 525.0,
+    "cx": 319.5,
+    "cy": 239.5,
+    "units_per_metre": 5000.0,
+    "invalid_depth": 0,
+    "depth_quantity": "axial_z",
+    "depth_scale_multiplier": 1.0,
+    "additional_undistortion": false,
+    "pixel_domain": "original_registered_rgb_depth_grid",
+    "lens_model": "pinhole_on_registered_grid"
+  },
+  "source_rgb_provenance": {
+    "repository": "luigifreda/pyslam",
+    "revision": "96019cfafcfc099ac9866884d7143a9ed1451a0d",
+    "source_path": "settings/TUM1.yaml",
+    "bytes": 1615,
+    "sha256": "5bd0ec559a251ac402756be7db0bd367bb364fe6a9d85e0770cd0681003602cf",
+    "role": "documentation_only_not_operational_pixel_model",
+    "fx": 517.306408,
+    "fy": 516.469215,
+    "cx": 318.64304,
+    "cy": 255.313989,
+    "distortion": {
+      "k1": 0.262383,
+      "k2": -0.953104,
+      "p1": -0.005358,
+      "p2": 0.002628,
+      "k3": 1.163314
+    }
+  },
+  "authority": {
+    "url": "https://cvg.cit.tum.de/data/datasets/rgbd-dataset/file_formats",
+    "final_url": "https://cvg.cit.tum.de/data/datasets/rgbd-dataset/file_formats",
+    "bytes": 215594,
+    "sha256": "1488258331051c28658b31ed0350f901f2a46aaedbad6483c1dd773501b34881",
+    "time_utc": "2026-10-10T13:10:41.526866+00:00"
+  },
+  "quotations": {
+    "registered_grid": "The color and depth images are already pre-registered using the OpenNI driver from PrimeSense, i.e., the pixels in the color and depth images correspond already 1:1.",
+    "recommendation": "We recommend to use the ROS default parameter set (i.e., without undistortion), as undistortion of the pre-registered depth images is not trivial.",
+    "scale_applied": "We already pre-scaled the depth images of all sequences accordingly, so that no action on your side is necessary."
+  },
+  "limitations": [
+    "The official page calls these default intrinsics uncalibrated; this is a documented registered-grid baseline, not independently measured camera calibration.",
+    "OpenNI registration and native infrared/RGB extrinsics are not independently reconstructed.",
+    "Published source RGB K/D are provenance and do not justify an additional Brown correction of registered depth.",
+    "No evidence yet establishes reduced trajectory drift; recordings are already viewed.",
+    "No vehicle extrinsics, driving integration or calibrated covariance."
+  ]
+}

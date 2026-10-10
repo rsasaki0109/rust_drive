@@ -1,0 +1,30 @@
+{
+  "auditor_sha256": "35053e7a0e329df354cf694936832c05a7f502e4af7b97337cacf4f9807a25d9",
+  "controls_passed": true,
+  "non_noop_mutations_rejected": [
+    "model",
+    "image",
+    "dimensions",
+    "score_threshold",
+    "nms_threshold",
+    "profile",
+    "profile_bytes",
+    "tensor_domain",
+    "tensor_type",
+    "compiled_source",
+    "timing",
+    "nonfinite_bbox",
+    "boolean_class",
+    "low_confidence",
+    "oversized_bbox"
+  ],
+  "duplicate_prediction_counts_one_tp_one_fp": true,
+  "output_guards": [
+    "existing",
+    "broken_link",
+    "symlink_parent"
+  ],
+  "recorded_data_read": false,
+  "model_or_image_inference_run": false,
+  "verified_old_source_count": 10
+}

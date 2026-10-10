@@ -1,0 +1,49 @@
+[
+  {
+    "name": "fmt",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--manifest-path",
+      "integrations/rgbd/Cargo.toml",
+      "--check"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--release",
+      "--all-targets",
+      "--locked",
+      "--offline",
+      "--manifest-path",
+      "integrations/rgbd/Cargo.toml",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "tests",
+    "command": [
+      "cargo",
+      "test",
+      "--release",
+      "--all-targets",
+      "--locked",
+      "--offline",
+      "--manifest-path",
+      "integrations/rgbd/Cargo.toml"
+    ],
+    "returncode": 0,
+    "passed": 108,
+    "failed": 0,
+    "ignored": 0,
+    "suite_count": 9
+  }
+]

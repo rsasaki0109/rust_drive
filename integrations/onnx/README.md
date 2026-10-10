@@ -8,7 +8,8 @@ depth. The default RustDriving build has no model, camera, or runtime dependency
 
 ```sh
 python3 integrations/onnx/fetch.py --output artifacts/camera-model
-cargo run --release --locked --manifest-path integrations/onnx/Cargo.toml -- \
+cargo run --release --locked --manifest-path integrations/onnx/Cargo.toml \
+  --bin rustdriving-camera-detect -- \
   --model artifacts/camera-model/yolox_nano.onnx \
   --image artifacts/camera-model/astronaut.jpg \
   --output artifacts/camera-model/detections.json
@@ -139,3 +140,24 @@ approximately 0.93, with IoU 0.94865 against the independent reference. The sing
 reference was matched at IoU ≥0.5, with no unmatched prediction. This is a tiny
 execution check, not an accuracy benchmark. Detailed measured timings and
 fingerprints are in `results.json`; expect timings to vary by host.
+
+## Separate YOLOX-S comparison
+
+An additive `rustdriving-camera-detect-s` binary uses the pinned official
+35,858,002-byte YOLOX-S artifact, 640 × 640 input and 8,400-row grid decoding.
+Its [explicit source profile](profile-s.json) documents contemporary nonlegacy
+raw-BGR preprocessing, Rust Triangle resizing and argmax/classwise NMS differences
+from upstream. The nano algorithm, first reports and model identity remain
+unchanged. Select `--bin rustdriving-camera-detect` explicitly for the existing
+nano `cargo run` command; Cargo now discovers a second binary.
+
+[The fixed S protocol and reproduction interfaces](../../docs/yolox-s-camera.md)
+use the same eight already viewed BDD images with unchanged thresholds. The
+first complete check runs all images twice on CPU with identical detections:
+55 TP, 14 FP and 83 FN / 138 references, precision 79.71% and recall 39.86%.
+This improves viewed matches over nano’s 35 while losing one earlier match,
+but quality acceptance exits 1 because overall and several class recall gates
+fail. Complete replay verifies detection sets within absolute tolerance 1e-5
+and exactly reproduces match IDs/counts/gates; its integrity flag is true but
+quality exit remains 1. No fresh held-out generalization, real-time performance
+or driving integration is claimed.

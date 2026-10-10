@@ -1,0 +1,29 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "case": "existing_receipt",
+      "exit_code": 2,
+      "stderr": "new executable receipt required: File exists (os error 17)",
+      "prior_receipt_sha256": "da8eb4b30c7f4ef0e15fecaf26d2a0bdc8afd837cec9802e4d92ef5944fe8df0",
+      "prior_receipt_unchanged": true,
+      "real_image_inference_requested": false
+    },
+    {
+      "case": "existing_detection_output",
+      "exit_code": 2,
+      "stderr": "new report output required: File exists (os error 17)",
+      "prior_receipt_sha256": "da8eb4b30c7f4ef0e15fecaf26d2a0bdc8afd837cec9802e4d92ef5944fe8df0",
+      "prior_receipt_unchanged": true,
+      "real_image_inference_requested": false
+    },
+    {
+      "case": "missing_detection_output",
+      "exit_code": 2,
+      "stderr": "usage: rustdriving-camera-detect-s --model yolox_s.onnx --image measured.jpg --output NEW-detections.json; or --check-model --model yolox_s.onnx",
+      "prior_receipt_sha256": "da8eb4b30c7f4ef0e15fecaf26d2a0bdc8afd837cec9802e4d92ef5944fe8df0",
+      "prior_receipt_unchanged": true,
+      "real_image_inference_requested": false
+    }
+  ]
+}

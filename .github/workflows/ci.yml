@@ -87,8 +87,8 @@ jobs:
         run: |
           cargo fmt --manifest-path integrations/onnx/Cargo.toml --check
           cargo clippy --release --manifest-path integrations/onnx/Cargo.toml --all-targets --locked -- -D warnings
-          cargo test --release --manifest-path integrations/onnx/Cargo.toml --locked
-          cargo build --release --manifest-path integrations/onnx/Cargo.toml --locked
+          cargo test --release --manifest-path integrations/onnx/Cargo.toml --all-targets --locked
+          cargo build --release --manifest-path integrations/onnx/Cargo.toml --all-targets --locked
           python integrations/onnx/check.py --binary integrations/onnx/target/release/rustdriving-camera-detect --summary artifacts/camera-model/summary.json
       - name: Reproduce independently annotated urban-camera diagnostics
         run: |
@@ -99,6 +99,33 @@ jobs:
           python integrations/onnx/bdd_check.py --binary integrations/onnx/target/release/rustdriving-camera-detect --model artifacts/camera-model/yolox_nano.onnx --prepare-freeze artifacts/bdd-camera/check/reproduction-freeze.json
           python integrations/onnx/bdd_check.py --binary integrations/onnx/target/release/rustdriving-camera-detect --model artifacts/camera-model/yolox_nano.onnx --freeze artifacts/bdd-camera/check/reproduction-freeze.json --data artifacts/bdd-camera --output artifacts/bdd-camera/check
           cp assets/recorded-bdd/LICENSE-data.txt artifacts/bdd-camera/check/LICENSE-data.txt
+      - name: Reproduce viewed YOLOX-S detections and retain the failed recall gate
+        run: |
+          python integrations/onnx/fetch_s.py --output artifacts/camera-model-s
+          python integrations/onnx/bdd_s_replay.py --self-test --output artifacts/yolox-s-bdd-v1/controls
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import subprocess
+          import sys
+          command = [sys.executable, "integrations/onnx/bdd_s_replay.py",
+                     "--binary", "integrations/onnx/target/release/rustdriving-camera-detect-s",
+                     "--model", "artifacts/camera-model-s/yolox_s.onnx",
+                     "--data", "artifacts/bdd-camera",
+                     "--output", "artifacts/yolox-s-bdd-v1/reproduction"]
+          completed = subprocess.run(command)
+          receipt = Path("artifacts/yolox-s-bdd-v1/ci-launch-receipt.json")
+          with receipt.open("x") as destination:
+              json.dump({"command": command, "actual_wrapper_exit_status": completed.returncode}, destination)
+          assert completed.returncode == 1, "expected retained physical failure, not invalid input"
+          proof = json.loads(Path("artifacts/yolox-s-bdd-v1/reproduction/results.json").read_text())
+          assert proof["integrity_and_reproduction_passed"] is True
+          assert proof["viewed_quality_gates_passed"] is False
+          assert proof["actual_checker_exit_code"] == proof["first_physical_exit_code"] == 1
+          assert proof["actual_inference_runs"] == 16
+          assert tuple(proof["overall"][key] for key in
+                       ("true_positives", "false_positives", "false_negatives")) == (55, 14, 83)
+          PY
       - name: Validate additional measured-data acquisition
         run: |
           python scripts/test-fetch-additional-datasets.py
@@ -210,6 +237,15 @@ jobs:
           python scripts/check-multiscale-temporal.py --self-test --output artifacts/multiscale-temporal/state-self-test.json
           python scripts/check-multiscale-temporal-suite.py --self-test --output artifacts/multiscale-temporal/suite-controls
           python scripts/check-multiscale-temporal-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-multiscale-temporal --output artifacts/multiscale-temporal/viewed-regression
+      - name: Audit registered-grid camera controls and reproduce viewed motion failures
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+        run: |
+          integrations/rgbd/target/release/rustdriving-rgbd-registered-grid-temporal --control --output artifacts/registered-grid-temporal/control.json
+          python scripts/check-registered-grid-temporal.py --report artifacts/registered-grid-temporal/control.json --output artifacts/registered-grid-temporal/control-oracle.json
+          python scripts/check-registered-grid-temporal.py --self-test --output artifacts/registered-grid-temporal/model-self-test.json
+          python scripts/check-registered-grid-temporal-suite.py --self-test --output artifacts/registered-grid-temporal/suite-controls
+          python scripts/check-registered-grid-temporal-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-registered-grid-temporal --output artifacts/registered-grid-temporal/viewed-regression
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -219,6 +255,9 @@ jobs:
             artifacts/camera-model/summary.json
             artifacts/road-camera/check/
             artifacts/bdd-camera/check/
+            artifacts/yolox-s-bdd-v1/controls/
+            artifacts/yolox-s-bdd-v1/reproduction/
+            artifacts/yolox-s-bdd-v1/ci-launch-receipt.json
             artifacts/adaptive/
             artifacts/rgbd/
             artifacts/recorded-motion/
@@ -233,6 +272,7 @@ jobs:
             artifacts/recorded-independent/
             artifacts/multiscale-pairs/
             artifacts/multiscale-temporal/
+            artifacts/registered-grid-temporal/
             artifacts/pyramidal-tracking-synthetic-exercises.json
 
   visual:

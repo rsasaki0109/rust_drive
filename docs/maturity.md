@@ -176,3 +176,26 @@ contribute no accurate roots, while both recordings lose accuracy on some
 previously accurate common fits. Passing 371 core and 94 optional Rust tests
 does not alter that measured regression. The estimate remains **about 20%**, with
 the **30% and 50% waypoints unmet**.
+
+The [registered-grid camera interpretation](registered-grid-camera.md) follows
+official guidance for already registered/pre-scaled TUM images, using explicitly
+uncalibrated default intrinsics rather than claiming measured calibration.
+Its first viewed continuous comparison improves room native accuracy from 52
+to 56/179, room multiscale from 49 to 54/179, and desk2 multiscale from 15 to
+17/179; desk2 native remains 16/179. Accepted counts and loss indices are
+unchanged and all branches lose tracking. Complete independent audits and exact
+non-timing regression replay confirm the failed physical outcomes. This does
+not establish sustained localization or calibrated uncertainty.
+
+The separate [YOLOX-S comparison](yolox-s-camera.md) executes the fixed official
+source/model profile on eight already viewed automotive images. Matches rise
+from 35 to 55/138 (34 retained, 21 added, one lost), but recall **39.86%** fails
+the 60% gate; person and bicycle recall remain below 50%, and no motorcycle or
+traffic light is matched. Sixteen actual CPU inference runs pass and repeated
+detections agree; quality acceptance fails. First-run inference averages
+0.606 s/image on this host, without a real-time claim. Complete replay verifies
+all eight detection sets within absolute tolerance 1e-5 and exactly reproduces
+match IDs/counts and failed gates; the wrapper still exits 1 for quality.
+Neither increment supplies a new environment, vehicle calibration or
+camera-derived driving controls. The estimate remains
+**about 20% subjectively**, with **30% and 50% unmet**.

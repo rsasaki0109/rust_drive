@@ -1,0 +1,32 @@
+{
+  "command": [
+    "/workspace/.rustdrive-tools/demo-venv/bin/python",
+    "/workspace/rust_drive/scripts/check-registered-grid-temporal.py",
+    "--report",
+    "/workspace/rust_drive/artifacts/registered-grid-temporal-v1/first/desk2-report.json",
+    "--manifest",
+    "/workspace/rust_drive/data/tum-fr1-desk2-independent/manifest.json",
+    "--raw",
+    "/workspace/rust_drive/data/tum-fr1-desk2-independent/raw",
+    "--freeze",
+    "/workspace/rust_drive/artifacts/registered-grid-temporal-v1/first/desk2-freeze.json",
+    "--output",
+    "/workspace/rust_drive/artifacts/registered-grid-temporal-v1/first/desk2-audit.json"
+  ],
+  "started_at": "2026-10-10T13:24:35.278538+00:00",
+  "auditor_sha256": "f5d52a36f7a95a342e6f01e98c113932ea85a6a57b0a0c59a5cf4798df5e0a08",
+  "inputs_sha256": {
+    "artifacts/registered-grid-temporal-v1/first/desk2-report.json": "98336a8405dcada285fc0660042336ae7ddb4ef1bd05efa5702cf3b15f7fe6ef",
+    "artifacts/registered-grid-temporal-v1/first/desk2-freeze.json": "4f5d6910a5b61333b8ed3af593a2ed9c9e27a5d8228dda1aecf9a389f86d779d",
+    "data/tum-fr1-desk2-independent/manifest.json": "f9de2bcb1037c46c70242f2c1bdbc8b09bbd06c95716d15b256b3c523ba24327"
+  },
+  "environment": {
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "exit_code": 0,
+  "completed_at": "2026-10-10T13:26:09.909615+00:00",
+  "log_sha256": "164bcc6aed51cf3a549672a12dbd9b974b43e78b52410b21ec94df2801df3de7",
+  "output_exists": true,
+  "source_unchanged": true,
+  "output_sha256": "193f84ef2a3ea91a0bd4090804f5bad0044051e0ee8bf8ff2a30ba3696c3f959"
+}
