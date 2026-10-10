@@ -1,0 +1,306 @@
+{
+  "schema_version": 1,
+  "experiment_id": "yolox-s-bdd-v1",
+  "evidence_role": "viewed automotive camera regression, not fresh holdout or BDD mAP",
+  "declared_before_new_s_image_decode_or_inference": true,
+  "created_utc": "2026-10-10T13:15:17.571088+00:00",
+  "base_commit": "a9e1a843b4335814a83180a5c7bb2aae4fc2d49c",
+  "model": {
+    "name": "YOLOX-S",
+    "release": "0.1.1rc0",
+    "asset_id": 42724906,
+    "bytes": 35858002,
+    "sha256": "c5c2d13e59ae883e6af3b45daea64af4833a4951c92d116ec270d9ddbe998063",
+    "input_shape": [
+      1,
+      3,
+      640,
+      640
+    ],
+    "output_shape": [
+      1,
+      8400,
+      85
+    ],
+    "preprocessing_source_revision": "c9fe0aae2db90adccc90f7e5a16f044bf110c816"
+  },
+  "model_selection_reason": "Chosen from official architecture, capacity and resolution before any S inference or BDD-specific model search. No trial of competing models.",
+  "images": [
+    {
+      "id": "00a395fe-d60c0b47",
+      "width": 1280,
+      "height": 720,
+      "original_split": "val",
+      "partition": "heldout",
+      "attributes": {
+        "weather": "overcast",
+        "scene": "city street",
+        "timeofday": "daytime"
+      },
+      "image": {
+        "file": "00a395fe-d60c0b47.jpg",
+        "url": "https://raw.githubusercontent.com/ViscaaBarca/MLops-City/a87c85607d023e3815ccb58bd80a62ab5a8a8dfd/bdd/images/val/00a395fe-d60c0b47.jpg",
+        "bytes": 73132,
+        "sha256": "e9d4fb9d625a6a23164dc2fe9cc62edfefe4686c8d9c34b18be6212c51d99f29",
+        "git_blob_sha1": "4ca6b9b84de20d68547c29617c06306bd1e771b7",
+        "licensed_mirror_git_blob_identical": true
+      },
+      "annotation": {
+        "file": "00a395fe-d60c0b47.json",
+        "url": "https://raw.githubusercontent.com/ViscaaBarca/MLops-City/a87c85607d023e3815ccb58bd80a62ab5a8a8dfd/bdd/json_labels/val/00a395fe-d60c0b47.json",
+        "bytes": 41384,
+        "sha256": "bb9649f34dae93ebd6a17123726a51795d1dfed3568ac657a76eac2bae99aaae",
+        "version": "original per-image legacy BDD frame timestamp10000; canonical objects/box2d, not processed mini-hack labels"
+      }
+    },
+    {
+      "id": "026c7465-d54954fa",
+      "width": 1280,
+      "height": 720,
+      "original_split": "val",
+      "partition": "heldout",
+      "attributes": {
+        "weather": "overcast",
+        "scene": "highway",
+        "timeofday": "daytime"
+      },
+      "image": {
+        "file": "026c7465-d54954fa.jpg",
+        "url": "https://raw.githubusercontent.com/ViscaaBarca/MLops-City/a87c85607d023e3815ccb58bd80a62ab5a8a8dfd/bdd/images/val/026c7465-d54954fa.jpg",
+        "bytes": 49609,
+        "sha256": "f0edf2284f6cb5dfc92823457c7587ee2db3e630906850a0c6ebc49e66ba77f2",
+        "git_blob_sha1": "905ab738513b3aa86bf40c4d04e6e2833a097e1f",
+        "licensed_mirror_git_blob_identical": true
+      },
+      "annotation": {
+        "file": "026c7465-d54954fa.json",
+        "url": "https://raw.githubusercontent.com/ViscaaBarca/MLops-City/a87c85607d023e3815ccb58bd80a62ab5a8a8dfd/bdd/json_labels/val/026c7465-d54954fa.json",
+        "bytes": 15417,
+        "sha256": "633c2638bdd6f96dde3e40df22f36c530a2c53b688bed94e37123d40593a154a",
+        "version": "original per-image legacy BDD frame timestamp10000; canonical objects/box2d, not processed mini-hack labels"
+      }
+    },
+    {
+      "id": "0798a3a8-c4501e0f",
+      "width": 1280,
+      "height": 720,
+      "original_split": "train",
+      "partition": "heldout",
+      "attributes": {
+        "weather": "snowy",
+        "scene": "city street",
+        "timeofday": "daytime"
+      },
+      "image": {
+        "file": "0798a3a8-c4501e0f.jpg",
+        "url": "https://raw.githubusercontent.com/ViscaaBarca/MLops-City/a87c85607d023e3815ccb58bd80a62ab5a8a8dfd/bdd/images/train/0798a3a8-c4501e0f.jpg",
+        "bytes": 87067,
+        "sha256": "df0ddad5b34b5defc639ae7768005f1c66e11b440727939b64840cf54552974c",
+        "git_blob_sha1": "eaa55bb0c2dcdf81e330a6123bea8a904ed2aead",
+        "licensed_mirror_git_blob_identical": true
+      },
+      "annotation": {
+        "file": "0798a3a8-c4501e0f.json",
+        "url": "https://raw.githubusercontent.com/ViscaaBarca/MLops-City/a87c85607d023e3815ccb58bd80a62ab5a8a8dfd/bdd/json_labels/train/0798a3a8-c4501e0f.json",
+        "bytes": 18402,
+        "sha256": "1bacc7e924ab8efacd37c9aa4538da5d7b6756b1160a1bf31c404be0ec429509",
+        "version": "original per-image legacy BDD frame timestamp10000; canonical objects/box2d, not processed mini-hack labels"
+      }
+    },
+    {
+      "id": "0a493f24-352f747e",
+      "width": 1280,
+      "height": 720,
+      "original_split": "train",
+      "partition": "heldout",
+      "attributes": {
+        "weather": "clear",
+        "scene": "highway",
+        "timeofday": "daytime"
+      },
+      "image": {
+        "file": "0a493f24-352f747e.jpg",
+        "url": "https://raw.githubusercontent.com/ViscaaBarca/MLops-City/a87c85607d023e3815ccb58bd80a62ab5a8a8dfd/bdd/images/train/0a493f24-352f747e.jpg",
+        "bytes": 99934,
+        "sha256": "7eff37746d7ca8977dc9e86b420e5e82e3d1b27a410e743943c72cabaf6146ba",
+        "git_blob_sha1": "8ba1d384506ccf5f318002f4caf0df463a0bdb6f",
+        "licensed_mirror_git_blob_identical": true
+      },
+      "annotation": {
+        "file": "0a493f24-352f747e.json",
+        "url": "https://raw.githubusercontent.com/ViscaaBarca/MLops-City/a87c85607d023e3815ccb58bd80a62ab5a8a8dfd/bdd/json_labels/train/0a493f24-352f747e.json",
+        "bytes": 9258,
+        "sha256": "18d53454dd6c2721a5e8f737334ea438fa94af523c65e8d22e9b664a87c4107d",
+        "version": "original per-image legacy BDD frame timestamp10000; canonical objects/box2d, not processed mini-hack labels"
+      }
+    },
+    {
+      "id": "17d21997-6f076249",
+      "width": 1280,
+      "height": 720,
+      "original_split": "train",
+      "partition": "heldout",
+      "attributes": {
+        "weather": "clear",
+        "scene": "city street",
+        "timeofday": "daytime"
+      },
+      "image": {
+        "file": "17d21997-6f076249.jpg",
+        "url": "https://raw.githubusercontent.com/ViscaaBarca/MLops-City/a87c85607d023e3815ccb58bd80a62ab5a8a8dfd/bdd/images/train/17d21997-6f076249.jpg",
+        "bytes": 74767,
+        "sha256": "1d034e796bd99e1b830fdcdeb815e30147fb673fdf1a06ef60bf674c2faf9a57",
+        "git_blob_sha1": "95a6b217dc3631a66c6870241bfb37e0d2cfb736",
+        "licensed_mirror_git_blob_identical": true
+      },
+      "annotation": {
+        "file": "17d21997-6f076249.json",
+        "url": "https://raw.githubusercontent.com/ViscaaBarca/MLops-City/a87c85607d023e3815ccb58bd80a62ab5a8a8dfd/bdd/json_labels/train/17d21997-6f076249.json",
+        "bytes": 9855,
+        "sha256": "43099e57d1e4a25903b4d54099cee0ba8c351c4358bf540a50d7bd7acb3ff9f2",
+        "version": "original per-image legacy BDD frame timestamp10000; canonical objects/box2d, not processed mini-hack labels"
+      }
+    },
+    {
+      "id": "4899be53-dcc6c017",
+      "width": 1280,
+      "height": 720,
+      "original_split": "train",
+      "partition": "heldout",
+      "attributes": {
+        "weather": "clear",
+        "scene": "city street",
+        "timeofday": "night"
+      },
+      "image": {
+        "file": "4899be53-dcc6c017.jpg",
+        "url": "https://raw.githubusercontent.com/ViscaaBarca/MLops-City/a87c85607d023e3815ccb58bd80a62ab5a8a8dfd/bdd/images/train/4899be53-dcc6c017.jpg",
+        "bytes": 51477,
+        "sha256": "233b961cb481a642454f5d5be84831ac233ab5dcb55371967b9648cdc918b2a8",
+        "git_blob_sha1": "bf6b754f7db5815cd9cdb0ee020394596b00206a",
+        "licensed_mirror_git_blob_identical": true
+      },
+      "annotation": {
+        "file": "4899be53-dcc6c017.json",
+        "url": "https://raw.githubusercontent.com/ViscaaBarca/MLops-City/a87c85607d023e3815ccb58bd80a62ab5a8a8dfd/bdd/json_labels/train/4899be53-dcc6c017.json",
+        "bytes": 33060,
+        "sha256": "62710eb05721833d9198e7c83499af9fc8ffb94a14e8521086ce69a21a511590",
+        "version": "original per-image legacy BDD frame timestamp10000; canonical objects/box2d, not processed mini-hack labels"
+      }
+    },
+    {
+      "id": "4dab8d2a-be9667d4",
+      "width": 1280,
+      "height": 720,
+      "original_split": "train",
+      "partition": "heldout",
+      "attributes": {
+        "weather": "snowy",
+        "scene": "residential",
+        "timeofday": "daytime"
+      },
+      "image": {
+        "file": "4dab8d2a-be9667d4.jpg",
+        "url": "https://raw.githubusercontent.com/ViscaaBarca/MLops-City/a87c85607d023e3815ccb58bd80a62ab5a8a8dfd/bdd/images/train/4dab8d2a-be9667d4.jpg",
+        "bytes": 72955,
+        "sha256": "415b7158822a15a697a44ef598adbee58616698477fc52ae46c4aa1b5224f68d",
+        "git_blob_sha1": "ef467dd0b278da2701010d4bf3d4cdfc31fd6a93",
+        "licensed_mirror_git_blob_identical": true
+      },
+      "annotation": {
+        "file": "4dab8d2a-be9667d4.json",
+        "url": "https://raw.githubusercontent.com/ViscaaBarca/MLops-City/a87c85607d023e3815ccb58bd80a62ab5a8a8dfd/bdd/json_labels/train/4dab8d2a-be9667d4.json",
+        "bytes": 12082,
+        "sha256": "861e496b69fecfa432695ad477e07a5875198ab65caf88d239301680d7c883f1",
+        "version": "original per-image legacy BDD frame timestamp10000; canonical objects/box2d, not processed mini-hack labels"
+      }
+    },
+    {
+      "id": "ab2360f2-7704a1bf",
+      "width": 1280,
+      "height": 720,
+      "original_split": "val",
+      "partition": "heldout",
+      "attributes": {
+        "weather": "rainy",
+        "scene": "city street",
+        "timeofday": "daytime"
+      },
+      "image": {
+        "file": "ab2360f2-7704a1bf.jpg",
+        "url": "https://raw.githubusercontent.com/ViscaaBarca/MLops-City/a87c85607d023e3815ccb58bd80a62ab5a8a8dfd/bdd/images/val/ab2360f2-7704a1bf.jpg",
+        "bytes": 58477,
+        "sha256": "f868a5ff6079620f400b79ab00df2d63e6e075bf1d4ab82e04cc97e0f6ff16c1",
+        "git_blob_sha1": "04981d8dac96cc27ec953392fe3aafdec4277c15",
+        "licensed_mirror_git_blob_identical": true
+      },
+      "annotation": {
+        "file": "ab2360f2-7704a1bf.json",
+        "url": "https://raw.githubusercontent.com/ViscaaBarca/MLops-City/a87c85607d023e3815ccb58bd80a62ab5a8a8dfd/bdd/json_labels/val/ab2360f2-7704a1bf.json",
+        "bytes": 32178,
+        "sha256": "aca2a558044c40f934678cead6e7627163124ba4ebcdee04d819c247f8b0fab7",
+        "version": "original per-image legacy BDD frame timestamp10000; canonical objects/box2d, not processed mini-hack labels"
+      }
+    }
+  ],
+  "source_bdd_protocol_sha256": "3fa34763064b3f113d4aef1671610128b886c18aa769dfca017bec96c555e830",
+  "license": {
+    "url": "https://raw.githubusercontent.com/maye-msft/ai-mini-hack/61755749e93a5e9dc2288deb04d16faa0a0984f7/MINIHACK-DATAOPS/solution/notebooks/test_data/LICENSE.txt",
+    "bytes": 1594,
+    "sha256": "64241b062f669b0b0ef8c4abe37d72f8ca00515f543a92098594ab1f04332533",
+    "file": "LICENSE-data.txt",
+    "scope": "Regents/BAIR BDD data and labels, research/educational/not-for-profit use; commercial limitations remain."
+  },
+  "class_mapping": {
+    "person": 0,
+    "rider": 0,
+    "bike": 1,
+    "car": 2,
+    "motor": 3,
+    "bus": 5,
+    "truck": 7,
+    "train": 6,
+    "traffic light": 9
+  },
+  "unscored_category_reason": {
+    "traffic sign": "BDD generic signs do not correspond to COCO stop-sign class; retained and counted separately, never treated as road-user ground truth."
+  },
+  "inference": {
+    "confidence_threshold": 0.3,
+    "nms_iou_threshold": 0.45,
+    "resize": "Rust image::Triangle into uint8, an explicit approximation of upstream OpenCV INTER_LINEAR",
+    "pixels": "raw BGR, top-left letterbox114, CHWfloat32; no mean/std or /255",
+    "decoding": "raw grid heads strides8/16/32, sigmoid objectness/classes already applied",
+    "selection": "argmax class per grid then classwise NMS; RustDriving policy, not exact upstream multiclass demo",
+    "max_detections": 300
+  },
+  "evaluation": {
+    "match_iou_threshold": 0.5,
+    "all_images_and_all_scoped_misses_retained": true,
+    "quality_gates": {
+      "minimum_overall_precision": 0.7,
+      "minimum_overall_recall": 0.6,
+      "minimum_recall_each_class_with_reference": 0.5
+    },
+    "gate_role": "Small viewed diagnostic quality gate; cannot establish independent automotive generalization even if passed."
+  },
+  "historical_nano": {
+    "result_path": "assets/recorded-bdd/first-results.json",
+    "result_sha256": "c20858d73737a8a68d1578c0816ad7f41810ad64dcc5242f98c7c37369aac35d",
+    "freeze_path": "assets/recorded-bdd/first-freeze.json",
+    "freeze_sha256": "ec0fc05e1f28333b0683110c8daab6c762ecd275dc7a999012f0837fd878be2d",
+    "true_positives": 35,
+    "false_positives": 14,
+    "false_negatives": 103,
+    "references": 138
+  },
+  "retuning_after_first_inference": false,
+  "raw_images_or_weights_redistributed": false,
+  "limits": [
+    "Same eight BDD frames were previously viewed; S model itself not selected by their scores.",
+    "COCO-pretrained artifact and upstream exposure do not establish fresh driving-domain generalization.",
+    "No metric depth, camera extrinsics, vehicle controls or signal-color inference.",
+    "CPU timings are measurements of this machine, not real-time guarantees.",
+    "Source release/Apache license provenance is retained; no separately stated weight license or publisher checksum was found."
+  ]
+}
