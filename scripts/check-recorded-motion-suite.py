@@ -7,6 +7,7 @@ regressions. Their original preregistered evidence remains immutable.
 """
 import argparse
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
 import subprocess
@@ -25,7 +26,8 @@ def preserve_original_protocol(current):
         actual=hashlib.sha256((archive/name).read_bytes()).hexdigest()
         if actual!=digest or (name in mapping and actual!=original[mapping[name]]):
             raise ValueError('historical public source archive changed: '+name)
-    for key in ['registration_config','registration_config_sha256','preprocessing','motion_preprocessing','accuracy_gates','uncertainty','map_policy','frames','manifest_sha256','cargo_lock_sha256','matcher_source_sha256','geometry_checker_sha256']:
+    spec=importlib.util.spec_from_file_location('rgbd_extension',ROOT/'scripts/check-rgbd-extension-sources.py');extension=importlib.util.module_from_spec(spec);spec.loader.exec_module(extension);extension.verify_extension()
+    for key in ['registration_config','registration_config_sha256','preprocessing','motion_preprocessing','accuracy_gates','uncertainty','map_policy','frames','manifest_sha256','matcher_source_sha256','geometry_checker_sha256']:
         if current[key]!=original[key]:raise ValueError('viewed regression changed original numerical/source gate: '+key)
     if current['kind']!='calibration_regression':raise ValueError('viewed data misrepresented as fresh')
     return hashlib.sha256(original_path.read_bytes()).hexdigest()

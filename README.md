@@ -14,6 +14,16 @@ Optional research additions include [density-aware measured terrain evaluation](
 
 The separate [measured fused-submap localizer](docs/recorded-submaps.md) now maintains bounded voxel means in a fixed camera origin, with independently reconstructed map generations. Its first desk recording accepts 29/35 updates but scores only 8/35 accurate; a separately frozen office/camera recording accepts 7/35, scores 5/35 accurate and latches loss. An [original BDD dashcam diagnostic](docs/bdd-road-evaluation.md) runs unchanged Rust CPU inference on eight new frames: 35 detections match 138 references, with 103 misses and 25.4% recall. These adapters run offline and retain their failed accuracy evidence; neither supplies driving controls.
 
+The additional [RGB-D visual odometry](docs/recorded-visual-odometry.md) uses
+original Rust image features and measured depth correspondences. Its viewed
+desk recording improves to 24/35 root-accurate updates; the office recording
+still scores only 9/35. An independent pixel reconstruction and separate SVD
+fitter verify matching, motion and rejected observations. Repeated RGB images
+cannot renew tracking. A separately frozen sitting sequence scores 31/35
+root-accurate updates, retaining three consensus rejections and one repeated
+image. This remains offline indoor research, with complete
+accuracy/availability failures retained.
+
 ## Build and run
 
 The shared pipeline, CPU RNE adapter and recorded 3D demos are available on `main`.

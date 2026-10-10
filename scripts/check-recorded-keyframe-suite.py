@@ -6,6 +6,7 @@ pass. The original temporal trial remains failed and all later uses are viewed.
 """
 import argparse
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
 import subprocess
@@ -57,7 +58,7 @@ def current_freeze(binary, manifest, baseline, target):
                         '--prepare-freeze', str(target)], check=True, cwd=ROOT)
     before = json.loads(baseline.read_text())
     after = json.loads(target.read_text())
-    allowed = {'evaluator_source_sha256'}
+    allowed = {'evaluator_source_sha256', 'cargo_lock_sha256'}
     if set(before) != set(after) or any(before[k] != after[k] for k in before if k not in allowed):
         raise ValueError('viewed keyframe algorithm or numerical freeze changed')
     if after['kind'] != 'calibration_regression':
@@ -73,6 +74,10 @@ def main():
     parser.add_argument('--binary', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
+    spec = importlib.util.spec_from_file_location('rgbd_extension', ROOT / 'scripts/check-rgbd-extension-sources.py')
+    extension = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(extension)
+    extension.verify_extension()
     binary = args.binary.resolve()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)

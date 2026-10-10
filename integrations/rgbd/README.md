@@ -106,3 +106,15 @@ updates with 8/35 accurate, while office accepted 7/35 with 5/35 accurate and
 latched loss. Their independent audits retain every failure. Protocol 8 supports
 precise pinned Freiburg 1/3 camera profiles and `--regression` for explicitly
 viewed reruns; it does not loosen registration, accuracy or expiry gates.
+
+## Measured RGB-D visual motion
+
+The separate `--visual` path extracts original Rust FAST-9/binary image features,
+matches descriptors, projects valid registered depth patches and robustly fits
+known 3D correspondences. Only accepted observations replace the reference.
+Repeated RGB acquisitions reject even when their preceding fit failed;
+accepted-pose expiry latches loss before decoding another image. This optional
+mode adds the existing local perception crate while preserving every registry
+version/checksum and the previous algorithms. The published independent audit
+reconstructs pixels, matching, depth geometry, rigid fits and clock state.
+[Results, source freezes and reproduction](../../docs/recorded-visual-odometry.md).

@@ -545,3 +545,41 @@ CI additionally reproduces these failures and integrity contracts. Pull-request
 and main-branch checks remain enabled; feature push duplicates are omitted.
 Local success does not establish remote CI success. The engineering estimate
 remains **about 20%**, and the 30% waypoint remains unmet.
+
+## Measured RGB-D image correspondences
+
+Original Rust FAST-9/oriented binary features and robust measured 3D
+correspondence fitting now execute in an optional offline evaluator. The viewed
+desk recording has **24/35** root-accurate updates, while office has **9/35**
+despite accepting 32. A separately frozen sitting sequence has **31/35**
+accurate updates with three consensus rejections and one repeated RGB image.
+All three complete protocols retain exit 1. All 105 update references are
+valid, and rejected updates stay in the denominator.
+
+An independent NumPy/Pillow implementation reconstructs pixels, FAST features,
+binary descriptors, mutual matching, registered depth points and clock state.
+Kabsch SVD independently repeats every bounded hypothesis, stable consensus
+refit and competing-model check, versus Rust Horn quaternion/Jacobi fitting.
+The three current audits reject **148** deliberate corruptions, including
+report, source/policy, hand-labelled and missing-reference checks; 39 hand
+contracts pass. The first sitting freeze, 16 source files, exact manifest and
+before/after journals remain archived. Repeats are explicitly viewed and
+reproduce every non-timing operational number.
+[Methods and complete results](recorded-visual-odometry.md).
+
+Locked local validation passes **362 workspace tests**, **21 optional RGB-D
+release tests**, and **55 native RNE tests**, with formatting and strict Clippy.
+All 49 reference episodes and replays pass; their 245 files are byte-identical
+to the preceding evidence. Nineteen preceding depth/keyframe/submap cases
+preserve every operational number and failure, with 344 report and 48 source
+corruptions rejected. The original pair baseline remains 7/11 accepted.
+[Preceding regression proof](../assets/visual-prior-regressions.json).
+
+The current native Japanese city run covers **seed 7 only**, 921 replay ticks,
+9,201 body poses, 1,327,680 beam-grid entries and 253 actor pairs. Its physical
+case and all raw recordings match the public Hero exactly; the opening GIF
+is unchanged. Seeds 1/42 are historical evidence. This visual-motion adapter
+supplies no vehicle controls and does not increase the approximately 20%
+engineering estimate. Remote CI status remains separate from local checks.
+[Native proof](../assets/japan-city-visual-regression.json);
+[sources, tests and combined validation](../assets/visual-development-validation.json).

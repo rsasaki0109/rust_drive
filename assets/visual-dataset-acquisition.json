@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "fetcher_path": "scripts/fetch-visual-datasets.py",
+  "fetcher_sha256": "b6b9e35083cc1969b4678b77b97f653de955d49aa20598dee4a575fe25c3b9c4",
+  "datasets": [
+    {
+      "dataset": "tum-fr1-desk-visual",
+      "manifest_sha256": "b5babb4d56edba4f4b1bb5ce54dc56ab14ad3ad4514caf64fe80fe53c26d2d58",
+      "source_files": 66,
+      "total_bytes": 18425659,
+      "association_audit": {
+        "depth_frames": 36,
+        "unique_rgb_frames": 26,
+        "repeated_rgb_associations": 10,
+        "maximum_pair_gap_seconds": 0.017854928970336914,
+        "association_rule": "nearest RGB timestamp, earlier index on exact tie; no resampling or interpolation",
+        "maximum_mocap_bracket_seconds": 0.010299921035766602,
+        "invalid_mocap_brackets": 0
+      },
+      "classification": "viewed_development"
+    },
+    {
+      "dataset": "tum-fr3-office-visual",
+      "manifest_sha256": "63d55519e6e909e9d87b08d7434e668a420d188d137cd459aec1b5738844840a",
+      "source_files": 76,
+      "total_bytes": 22238331,
+      "association_audit": {
+        "depth_frames": 36,
+        "unique_rgb_frames": 36,
+        "repeated_rgb_associations": 0,
+        "maximum_pair_gap_seconds": 0.0007290840148925781,
+        "association_rule": "nearest RGB timestamp, earlier index on exact tie; no resampling or interpolation",
+        "maximum_mocap_bracket_seconds": 0.014400005340576172,
+        "invalid_mocap_brackets": 0
+      },
+      "classification": "viewed_development"
+    },
+    {
+      "dataset": "tum-fr3-sitting-visual",
+      "manifest_sha256": "3111ede92d129d650bd24be94f601616c74e78749e0c134d652b63ce7b64447f",
+      "source_files": 75,
+      "total_bytes": 24434187,
+      "association_audit": {
+        "depth_frames": 36,
+        "unique_rgb_frames": 35,
+        "repeated_rgb_associations": 1,
+        "maximum_pair_gap_seconds": 0.006021976470947266,
+        "association_rule": "nearest RGB timestamp, earlier index on exact tie; no resampling or interpolation",
+        "maximum_mocap_bracket_seconds": 0.01289987564086914,
+        "invalid_mocap_brackets": 0
+      },
+      "classification": "preregistered_not_pixel_decoded"
+    }
+  ],
+  "verification": {
+    "exact_source_git_blob_identity": true,
+    "all_source_sha256_verified": true,
+    "png_header_metadata_verified": true,
+    "pixels_decoded_during_preparation": false,
+    "reference_pose_values_inspected_during_preparation": false,
+    "malformed_manifest_cases_rejected": 24,
+    "actual_isolated_remote_rgb_and_calibration_transfer": true,
+    "one_byte_rgb_corruption_rejected": true,
+    "canonical_raw_inputs_unmodified_by_transfer_test": true
+  },
+  "selection_rejections": [
+    {
+      "sequence": "rgbd_dataset_freiburg3_walking_rpy",
+      "indices": [
+        100,
+        135
+      ],
+      "maximum_nearest_rgb_clock_gap_s": 0.03183698654174805,
+      "allowed_gap_s": 0.02,
+      "reason": "timestamp_availability_only",
+      "pixels_or_reference_poses_inspected": false
+    }
+  ]
+}

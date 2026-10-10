@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "workspace": {
+    "all_original_49_reference_episodes_passed": true,
+    "all_49_sensor_replays_verified": true,
+    "all_245_files_byte_identical": true,
+    "files": 245,
+    "root_tests_passed": 362,
+    "log_sha256": "20c3ac87ea7bbf6308a305db8dbd7d0a41bc1e61b1b97f5c7a02323cc7171a4a",
+    "source_hashes": {
+      "crates/perception/src/image_features.rs": "5b5b103d4e798929f753a850387609405cad1a303d49ef8e81433f064e901106",
+      "crates/localization/src/visual_odometry3d.rs": "718192d69b02de0a668c54e8469812b7c5f1903ab74de660e1b221e2ec874d24",
+      "crates/localization/src/lib.rs": "454de7019f7997010bf2833df47a4532d805f01feb87259f93bb52156dc1d9a5",
+      "crates/perception/src/lib.rs": "0393a7d84176167bdfa6e242788f1f17555c2ab7abee687c845583b2b5141291",
+      "Cargo.lock": "de8e6afb2c8f59be7f68f0ccf8604e4d43d9951d6902314f46f16b8121dbccf7"
+    }
+  },
+  "optional_rgbd": {
+    "tests_passed": 21,
+    "release_tests": true,
+    "fmt_passed": true,
+    "strict_release_clippy_passed": true,
+    "locked_release_binary_sha256": "eb97559c6a98f6e8705f6f416727f2b9fd29ed1378439d557ba139c4292899b4",
+    "validation_log_sha256": "12d69a571ba3c18e892b05949d1718160d177e9ae1adf06e8e060dc4e9bc1463"
+  },
+  "visual_cases": [
+    {
+      "dataset": "tum-fr1-desk-visual",
+      "summary": {
+        "accepted_updates": 24,
+        "accurate_root_updates": 24,
+        "all_updates_passed": false,
+        "frames": 36,
+        "initialized_frames": 1,
+        "lost": false,
+        "reference_valid_updates": 35,
+        "rejected_updates": 11,
+        "updates": 35
+      },
+      "report_mutations_rejected": 34,
+      "source_policy_mutations_rejected": 11,
+      "hand_contracts": 13,
+      "hand_mutations_rejected": 3,
+      "missing_reference_mutations_rejected": 2,
+      "maximum_root_error_m": 0.04800704508517671,
+      "maximum_root_error_rad": 0.055847471036677185
+    },
+    {
+      "dataset": "tum-fr3-office-visual",
+      "summary": {
+        "accepted_updates": 32,
+        "accurate_root_updates": 9,
+        "all_updates_passed": false,
+        "frames": 36,
+        "initialized_frames": 1,
+        "lost": false,
+        "reference_valid_updates": 35,
+        "rejected_updates": 3,
+        "updates": 35
+      },
+      "report_mutations_rejected": 32,
+      "source_policy_mutations_rejected": 11,
+      "hand_contracts": 13,
+      "hand_mutations_rejected": 3,
+      "missing_reference_mutations_rejected": 2,
+      "maximum_root_error_m": 0.15564091959640866,
+      "maximum_root_error_rad": 0.06515791060540808
+    },
+    {
+      "dataset": "tum-fr3-sitting-visual",
+      "summary": {
+        "accepted_updates": 31,
+        "accurate_root_updates": 31,
+        "all_updates_passed": false,
+        "frames": 36,
+        "initialized_frames": 1,
+        "lost": false,
+        "reference_valid_updates": 35,
+        "rejected_updates": 4,
+        "updates": 35
+      },
+      "report_mutations_rejected": 34,
+      "source_policy_mutations_rejected": 11,
+      "hand_contracts": 13,
+      "hand_mutations_rejected": 3,
+      "missing_reference_mutations_rejected": 2,
+      "maximum_root_error_m": 0.08178293416179731,
+      "maximum_root_error_rad": 0.0285189516937798
+    }
+  ],
+  "visual_corruption_checks": {
+    "current_cases": 3,
+    "report_rejections": 100,
+    "source_and_policy_rejections": 33,
+    "hand_rejections": 9,
+    "missing_reference_rejections": 6,
+    "scope": "Counts from the three current formal audits, not unique measurements or physical accuracy passes"
+  },
+  "first_sitting": {
+    "freeze_sha256": "cb98437e063e248dc71a09ce4c6450344cc43d9c20473396f4f1d204babfbf56",
+    "report_sha256": "4e8544ca7b823955e656c7d0fbb0a64bdcac6abd33b206fc2e96b2f727b8db7a",
+    "audit_sha256": "2f3cc9cdaaa5f98450d3859b40aef019c97afcce724feef629526451eb802247",
+    "source_archive_manifest_sha256": "43a59748d19b944a9756f676c9a700abb5a212e8035b754afba80e47e2582e4e",
+    "declared_sources": 16,
+    "all_current_and_archived_sources_unchanged_after_first_decode": true,
+    "summary": {
+      "accepted_updates": 31,
+      "accurate_root_updates": 31,
+      "all_updates_passed": false,
+      "frames": 36,
+      "initialized_frames": 1,
+      "lost": false,
+      "reference_valid_updates": 35,
+      "rejected_updates": 4,
+      "updates": 35
+    }
+  },
+  "visual_regression_suite": {
+    "path": "assets/recorded-visual/visual-regression-suite.json",
+    "sha256": "1820e5f2c3ef98e8fd7011e42c38209ebe93387d1b88d8407573cad35d271205",
+    "all_nontiming_operational_numbers_unchanged": true,
+    "all_physical_protocols_passed": false
+  },
+  "prior_regressions": {
+    "path": "assets/visual-prior-regressions.json",
+    "sha256": "84a20f3a76ef3a61400fa44cdf34a90137f188af3a1f086db5abb7fe52d03634",
+    "cases": 19,
+    "report_corruptions_rejected": 344,
+    "source_corruptions_rejected": 48,
+    "all_operational_numbers_unchanged": true,
+    "plain_pair_accepted": 7,
+    "plain_pair_total": 11,
+    "original_failed_trials_preserved": true
+  },
+  "native": {
+    "path": "assets/japan-city-visual-regression.json",
+    "sha256": "12561fbcaecf07a02e34fcede6c64fa6ff290b30a22edbefbe42c3d98822941e",
+    "native_tests_passed": 55,
+    "current_seed": 7,
+    "historical_seeds": [
+      1,
+      42
+    ],
+    "full_physical_and_replay_gates_passed": true,
+    "raw_recordings_and_case_diagnostics_unchanged": true
+  },
+  "acquisition": {
+    "path": "assets/visual-dataset-acquisition.json",
+    "sha256": "806a172c8149b9c1c8c732d6f7c22e0ecf115d74dcf9754bed19f8d7f12f95c8",
+    "malformed_manifest_rejections": 24,
+    "actual_isolated_transfer_and_corruption_check": true
+  },
+  "hero_sha256": "40db0984165911a064e50cd0dc07087dd7f4b366aeeb530b66deddad202a1c0f",
+  "ci_workflow_sha256": "10fd1b54c51a17faba5e35122ae85e7cb19d4321ef0edecd1cf856f9504204b5",
+  "remote_ci_scope": "Local validation only; published exact-SHA remote status must be observed separately",
+  "maturity": {
+    "subjective_estimate_percent": 20,
+    "requested_goal_percent": 50,
+    "next_waypoint_percent": 30,
+    "goal_met": false,
+    "reason": "Office drift, automotive perception, measured calibration, uncertainty and end-to-end camera integration remain unresolved"
+  }
+}

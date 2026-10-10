@@ -37,6 +37,17 @@ The fixed-root fused-submap implementation adds atomic bounded voxel fusion and 
 
 ## Evidence used for assessment
 
+Recorded RGB-D visual motion now adds original Rust image features, measured
+depth correspondences and bounded robust fitting. Independent pixel/descriptor
+reconstruction and a separate SVD fitter reproduce the operational estimates
+and rejections. The viewed desk result improves to **24/35** accurate updates,
+but the office configuration still scores only **9/35**. Neither completeness
+nor broad accuracy is established. The separate first frozen sitting recording
+scores **31/35**, retaining three consensus rejections and one repeated image.
+This path supplies no vehicle controls.
+The estimate remains **about 20%**; the 30% waypoint and requested 50% goal
+remain unmet. [Full visual-motion evidence](recorded-visual-odometry.md).
+
 | Area | Current evidence | Evidence needed for a credible 50% planning milestone |
 |---|---|---|
 | Sensing / localization | Native XYZ LiDAR, optional measured AABBs/terrain; failed held-out airborne PMF baseline; local fixed-map matching with bounded GNSS-denied native driving; noisy GNSS/wheel/gyro and acquisition-time reprojection | Reliable held-out automotive perception and real-motion map matching; measured extrinsics and camera observations; synchronization, covariance calibration and broader degraded-sensing measurements |
