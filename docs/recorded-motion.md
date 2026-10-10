@@ -142,8 +142,18 @@ final correspondences/residuals/overlap, initializations, composed odometry and
 conditional/provisional SPD covariance/NEES. Eleven adversarial report mutations
 are rejected in the fresh trial. The oracle does **not rerun the ICP optimizer**.
 
+Since keyframe work changed the executable sources, all current motion-suite
+inputs are explicitly viewed regressions. The suite prepares current freezes
+and checks that the original 260–271 selection, matcher, preprocessing,
+uncertainty and accuracy settings remain identical. It does not replace the
+original preregistered freeze or results. Their exact executable, motion module,
+checker and suite remain in the
+[public motion-v4 source archive](../integrations/rgbd/baselines/public-motion-v4/SOURCE.json).
+Use a new output directory when an earlier run's freeze is already present;
+source mismatches fail rather than silently replacing that evidence.
+
 Suite exit0 means **integrity and known regression outcomes reproduced**; it
-explicitly records `all_physical_protocols_passed=false`. Its new temporal
+explicitly records `all_physical_protocols_passed=false`. Its original temporal
 physical protocol still exits1 because two map fits reject. The archived first
 trial check reconstructs the missing-reference timestamp witness and verifies
 exact frozen-source hashes; it does not claim to rerun the historical optimizer.

@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "recorded_utc": "2026-10-10T01:07:52.011381+00:00",
+  "published_base_commit": "33a095acd654ff55f2f269494d2f9f10fee6c1f6",
+  "scope": "Local measured keyframe and native/reference regression evidence; source-bound reports preserve failed physical protocols; remote CI assessed separately.",
+  "workspace": {
+    "command": "CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 bash scripts/check.sh",
+    "exit_status": 0,
+    "tests_passed": 337,
+    "physical_episodes_passed": 49,
+    "sensor_replays_verified": 49,
+    "historical_output_files_byte_identical": 245,
+    "log_sha256": "137b07d4d67d8fc4bfedf7fa09da286dc2c5ca6d4394c5883bb171eea2e25401"
+  },
+  "keyframes": {
+    "rust_tests_passed": 13,
+    "core_state_and_geometry_tests_passed": 6,
+    "fmt_strict_clippy_passed": true,
+    "fresh_first_accuracy_protocol_passed": false,
+    "first_freeze_sha256": "b44b0b34f22a5b10809a6f2f7f87419501fd16dd67ad6b5a204ca7ad345f42cf",
+    "fresh_first_summary": {
+      "accepted_updates": 33,
+      "accurate_root_updates": 13,
+      "all_updates_passed": false,
+      "frames": 36,
+      "initialized_frames": 1,
+      "keyframe_replacements": 10,
+      "reference_valid_updates": 35,
+      "rejected_updates": 2,
+      "updates": 35
+    },
+    "current_protocol_version": 6,
+    "current_kind": "calibration_regression",
+    "numerical_settings_and_operational_outputs_unchanged": true,
+    "root_independent_regression_integrity_passed": true,
+    "root_oracles_match_published_except_report_sha256": true,
+    "root_suite_sha256": "a92508e77e8d8f2d25c8b0f8fdc3bba38d27b487405587f15329fc79139a2ae8",
+    "published_validation_sha256": "6cd208d0d1a33df8c8e3d574f3318382113298e16306b0f715c47941fdb0b95e",
+    "cases": 6,
+    "report_mutations_rejected": 85,
+    "missing_reference_score_contract_negatives_rejected": 12,
+    "maximum_root_translation_error_m": 0.1703140484459621,
+    "maximum_root_rotation_error_rad": 0.16352771895621815,
+    "vehicle_fusion": false,
+    "root_confidence_calibration": false
+  },
+  "old_motion": {
+    "cases": 5,
+    "independent_integrity_passed": true,
+    "all_physical_protocols_passed": false,
+    "report_mutations_rejected": 52,
+    "published_suite_sha256": "6c35c4ad7adcbea62ea6870e2df59490e84d95e7c83a71ae08ff5470b64c90c4",
+    "plain_recorded_mode_accepted": 7,
+    "plain_recorded_mode_denominator": 11,
+    "plain_recorded_mode_evaluator_exit_status": 1,
+    "plain_oracle_sha256": "bd771888654ccb3a3a598f8d9cf8eae8e05ff8b14056f196be9275a69190f0d1"
+  },
+  "native_japan": {
+    "actual_episodes_passed": 3,
+    "sensor_replay_ticks_verified": 2763,
+    "native_rust_tests_passed": 55,
+    "complete_independent_physical_and_rule_checks_passed": true,
+    "report_sha256": "a1396a51d1ed87e1d214560ed1beb869b256516740636e5d7f74312470c8e59a",
+    "source_fingerprint_sha256": "4f1d87faefcce8ce8cdb93f23d7ca2d0d25504ad097f98cdbb520a7d3d265416",
+    "raw_and_physical_diagnostics_comparison": [
+      {
+        "seed": 7,
+        "physical_diagnostics_identical": true,
+        "raw_file_hashes_identical": true,
+        "raw_sha256": {
+          "run.json": "58a00d068b5bd29d100d2ca571a35eb4fd8b42a944e9ff4579f9aa0affc70222",
+          "scene.json": "323b89c39c918ef4f7ff4dc8219240d76db27881c9565cdb7546781cbb2c7d03",
+          "sensors.jsonl": "8dbfcc8e4b4835192f5ed0e4ced9bb822e4766603d6ed43d9101bb938e077a7d"
+        }
+      },
+      {
+        "seed": 1,
+        "physical_diagnostics_identical": true,
+        "raw_file_hashes_identical": true,
+        "raw_sha256": {
+          "run.json": "9e97fc7976652a000da9f64010e08aee3e20f310ca2d9dd10571da58f95e08e9",
+          "scene.json": "463688b0c7b0b1d63fe8c0c87a1b398f3321a93cfe421b6e362103be94d9b4f9",
+          "sensors.jsonl": "41465d5c7fd5fbb4d9cd1fcaa6b3e4535d0105b0fa7633aee4511156765b4b21"
+        }
+      },
+      {
+        "seed": 42,
+        "physical_diagnostics_identical": true,
+        "raw_file_hashes_identical": true,
+        "raw_sha256": {
+          "run.json": "98393654341b3bd30c17705e70665047502c1318965b5d168ba9120f815f41b6",
+          "scene.json": "e6092b3e0b8744368ec380b45ec056ba0c84df1dfb4dba714eced25222a6b776",
+          "sensors.jsonl": "565b7f5b3c507a218436e1c165e5b726e16fc6de4f0865528ded86f634962149"
+        }
+      }
+    ],
+    "native_build_log_sha256": "2fda5556bae92d3aed6b82c72057d0cb7f299e67ce8bd98f66a7d0c1ffd09c94",
+    "native_tests_log_sha256": "1b39c2ee2df908561e0a2ffdf9fe277c4b15939d33c784be8d58bd688942e476",
+    "independent_check_log_sha256": "a13c53532fbf7153e94b9dd9996550abd168ef4fa0fe30f56f148cee8832c6a1"
+  },
+  "protected_files_unchanged_sha256": {
+    "Cargo.lock": "de8e6afb2c8f59be7f68f0ccf8604e4d43d9951d6902314f46f16b8121dbccf7",
+    "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed",
+    "integrations/rne/Cargo.lock": "c15e499bc74ddcf213bb0ac22cb22280c68d49ead2e203b8a7213e5a9f38f2ff",
+    "integrations/rne/rust-toolchain.toml": "7d21c66a15f41bad66b82ed06a289f5dc8a6e3751951d2696bbf20ce296f2b0f",
+    "integrations/rne/rne-revision.txt": "18a0b41bc51d35a964f9dc922ee44cf1c485b34765c8ddfe82c93649c440404e",
+    "integrations/onnx/Cargo.lock": "aa6f1b198ff4ad901f9547ef852dc0113b5c36624d43030a863af32b12f07a0c",
+    "integrations/rgbd/Cargo.lock": "66a95960e1763d7623c40dc0c659e44cb5cda758b215c99bec09606a10c8ab86",
+    "assets/japan-city-demo.gif": "40db0984165911a064e50cd0dc07087dd7f4b366aeeb530b66deddad202a1c0f",
+    "assets/japan-city-demo.json": "6091d6c44a9122b7d5835be562b00090f9bb3ad4b0b753e4a56f774a5e6cd910",
+    "scripts/blender_scene.py": "4ce9a6a33f71377ea4c0027c049f9695e8ade5d085f0530577a2cf94cbf9ba54",
+    "scripts/blender_japan_assets.py": "f0764c0d2266af11df3e83c47ffd2562e9e8f3c227dd7e83a090abbaa4bff319",
+    "scripts/render_demo_3d.py": "7e6b181e2708da8c62c637ee0acc2915a3b7d47e03f099e12ad5924460b143c6"
+  },
+  "subjective_oss_relative_maturity_percent": 20,
+  "requested_30_percent_waypoint_reached": false,
+  "requested_50_percent_waypoint_reached": false
+}

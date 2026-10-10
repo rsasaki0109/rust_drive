@@ -1,0 +1,167 @@
+{
+  "accuracy_gates": {
+    "rotation_rad": 0.1,
+    "translation_m": 0.1
+  },
+  "acquisition_source_sha256": "51730a170eaaac7637cf1e83abd03b5344004307c1b5c0cbed03ec2f835aa187",
+  "cargo_lock_sha256": "66a95960e1763d7623c40dc0c659e44cb5cda758b215c99bec09606a10c8ab86",
+  "dataset": "tum-fr1-xyz-motion",
+  "evaluator_source_sha256": "44300c09689ae669fa827d5b42b8da4bd8a8921826b840526b256f306337f50a",
+  "frames": [
+    {
+      "file": "1305031108.835163.png",
+      "source_index": 200,
+      "split": "calibration",
+      "timestamp": 1305031108.835163
+    },
+    {
+      "file": "1305031108.867534.png",
+      "source_index": 201,
+      "split": "calibration",
+      "timestamp": 1305031108.867534
+    },
+    {
+      "file": "1305031108.903540.png",
+      "source_index": 202,
+      "split": "calibration",
+      "timestamp": 1305031108.90354
+    },
+    {
+      "file": "1305031108.935116.png",
+      "source_index": 203,
+      "split": "held_out",
+      "timestamp": 1305031108.935116
+    },
+    {
+      "file": "1305031108.967245.png",
+      "source_index": 204,
+      "split": "held_out",
+      "timestamp": 1305031108.967245
+    },
+    {
+      "file": "1305031109.003064.png",
+      "source_index": 205,
+      "split": "held_out",
+      "timestamp": 1305031109.003064
+    },
+    {
+      "file": "1305031109.034955.png",
+      "source_index": 206,
+      "split": "held_out",
+      "timestamp": 1305031109.034955
+    },
+    {
+      "file": "1305031109.067091.png",
+      "source_index": 207,
+      "split": "held_out",
+      "timestamp": 1305031109.067091
+    },
+    {
+      "file": "1305031109.103294.png",
+      "source_index": 208,
+      "split": "held_out",
+      "timestamp": 1305031109.103294
+    },
+    {
+      "file": "1305031109.134968.png",
+      "source_index": 209,
+      "split": "held_out",
+      "timestamp": 1305031109.134968
+    },
+    {
+      "file": "1305031109.165848.png",
+      "source_index": 210,
+      "split": "held_out",
+      "timestamp": 1305031109.165848
+    },
+    {
+      "file": "1305031109.203388.png",
+      "source_index": 211,
+      "split": "held_out",
+      "timestamp": 1305031109.203388
+    }
+  ],
+  "freeze_preparation": "metadata only; raw depth and mocap are not read and registration is not invoked",
+  "geometry_checker_sha256": "ab86ab67c0d46e08b89a0a47d8a59e9c95357cf41c40dbd40b1bcf5b49e6f9dc",
+  "ground_truth_interpolation": {
+    "extrapolation": false,
+    "max_bracket_s": 0.02,
+    "method": "linear translation and shortest-arc quaternion SLERP"
+  },
+  "independent_checker_sha256": "3c5ef7c2ad50b9ab015f0c6795aa955489343725d5a274ff1eaae730ecd95c01",
+  "keyframe_core_source_sha256": "cb93ba70e372e375c982e5876fd5c3d0bfa78423fd591a6130fe2e5ed85c42e6",
+  "keyframe_policy": {
+    "frame": "initial accepted depth camera is the root; each reference is a recorded depth camera frame",
+    "initialization": "first measured cloud self-registers at identity with all numerical guards",
+    "keyframe_interval_s": 0.1,
+    "max_unobserved_s": 0.2,
+    "prior": "last accepted sensor-only relative pose; identity after reference replacement",
+    "rejection": "no pose output, no map update; excessive accepted-observation gap latches lost until explicit reset; evaluation never resets",
+    "replacement": "copy accepted measured scan after minimum interval; no map union",
+    "root_chain": "root_from_reference composed with reference_from_scan"
+  },
+  "keyframe_policy_sha256": "dcad16401ca7d9413134819a70963a204e43f9953edd1c7f1fd5c4673b59d3b7",
+  "keyframe_source_sha256": "9b02051c9f17ae403d756034634becdec4e0aa11e0a013feb7c361cc3a0a62f5",
+  "kind": "calibration_regression",
+  "manifest_sha256": "6233f9663ae76613c106e246649621fcac8cd27f3f5eda887a0baf061c4296ed",
+  "matcher_source_sha256": "eca9fe887f4a237dd627eb06e2793579ec4fbffd6330d120017572d734c4b715",
+  "motion_preprocessing": {
+    "additional_voxel_m": 0.06,
+    "point_order": "lexicographic coarse voxel key",
+    "representative": "first lexicographic original voxel point"
+  },
+  "motion_preprocessing_sha256": "4c08454b356161553015119d741595e31d56bbc47a501d19ee4207403b56e786",
+  "motion_source_sha256": "c5a115039078c2e6fc1930b1c80bd96bfca7cdc21c3c4fd57a76897cd4ebc8c5",
+  "preprocessing": {
+    "cx": 319.5,
+    "cy": 239.5,
+    "fx": 525.0,
+    "fy": 525.0,
+    "height": 480,
+    "max_depth_m": 5.0,
+    "maximum_sampled_pixels": 4800,
+    "min_depth_m": 0.3,
+    "pixel_step": 8,
+    "point_order": "lexicographic voxel key",
+    "sample_origin_pixel": [
+      0,
+      0
+    ],
+    "units_per_metre": 5000,
+    "voxel_m": 0.03,
+    "voxel_representative": "first row-major sampled valid pixel",
+    "width": 640
+  },
+  "preprocessing_sha256": "4e728cc5375476636af4080d54eb974bb343bf9d019462e1c6a36c4561bf73b5",
+  "protocol_version": 6,
+  "registration_config": {
+    "ambiguity_rms_ratio": 1.05,
+    "ambiguity_rotation_probe_rad": 0.07,
+    "ambiguity_translation_probe_m": 0.15,
+    "max_condition_number": 10000.0,
+    "max_correspondence_m": 0.15,
+    "max_iterations": 30,
+    "max_map_points": 20000,
+    "max_neighbor_checks": 20000000,
+    "max_position_variance_m2": 0.25,
+    "max_rms_m": 0.08,
+    "max_rotation_jump_rad": 0.35,
+    "max_rotation_variance_rad2": 0.01,
+    "max_scan_points": 5000,
+    "max_translation_jump_m": 0.5,
+    "min_geometry_ratio": 0.005,
+    "min_overlap": 0.4,
+    "min_pairs": 30,
+    "rotation_tolerance_rad": 0.0001,
+    "translation_tolerance_m": 0.0001,
+    "trim_fraction": 0.2
+  },
+  "registration_config_sha256": "195ee7f9a32ddca53b110e7335b05b05fbda82d9fb944c98997f24be09bcf6c4",
+  "schema_version": 1,
+  "uncertainty": {
+    "calibration_data": "already viewed original, fast120..131, tight140..151 and motion-v2 260..271; all are calibration/regression here",
+    "model": "per-fit conditional covariance plus previously frozen diagonal engineering allowance only; no accumulated root-frame covariance or calibrated confidence",
+    "position_std_floor_m": 0.02,
+    "rotation_std_floor_rad": 0.03
+  }
+}

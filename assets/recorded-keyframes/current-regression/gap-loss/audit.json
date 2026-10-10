@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "passed_integrity": true,
+  "summary": {
+    "accepted_updates": 0,
+    "accurate_root_updates": 0,
+    "all_updates_passed": false,
+    "frames": 12,
+    "initialized_frames": 1,
+    "keyframe_replacements": 0,
+    "reference_valid_updates": 11,
+    "rejected_updates": 11,
+    "updates": 11
+  },
+  "report_sha256": "427406c3b7eb8fb001843b256a8f28b9bff5edc440265a3c5c11bdb2df637328",
+  "freeze_sha256": "a8e8de003e4e3197f021aeb5f7a3e2db729ff56d707b0c0412a526e173226449",
+  "manifest_sha256": "9a752f28cc6211f2e7c08adbd8d0928f4b3eae1f29bef8c994c2b68c86f98cf7",
+  "frames": [
+    {
+      "source_index": 0,
+      "accepted": true,
+      "local_fit": {
+        "translation_error_m": 0.0,
+        "rotation_error_rad": 7.850462293418877e-17,
+        "within_accuracy_gates": true
+      },
+      "root": {
+        "translation_error_m": 0.0,
+        "rotation_error_rad": 7.850462293418877e-17,
+        "within_accuracy_gates": true
+      },
+      "local_conditional_nees": 0.0,
+      "local_provisional_nees": 0.0,
+      "reference_frame_index": 0,
+      "keyframe_replaced": false
+    },
+    {
+      "source_index": 10,
+      "accepted": false,
+      "rejection": "keyframe accepted-pose age exceeded; localization lost"
+    },
+    {
+      "source_index": 20,
+      "accepted": false,
+      "rejection": "keyframe localization lost; explicit new origin required"
+    },
+    {
+      "source_index": 30,
+      "accepted": false,
+      "rejection": "keyframe localization lost; explicit new origin required"
+    },
+    {
+      "source_index": 40,
+      "accepted": false,
+      "rejection": "keyframe localization lost; explicit new origin required"
+    },
+    {
+      "source_index": 50,
+      "accepted": false,
+      "rejection": "keyframe localization lost; explicit new origin required"
+    },
+    {
+      "source_index": 60,
+      "accepted": false,
+      "rejection": "keyframe localization lost; explicit new origin required"
+    },
+    {
+      "source_index": 70,
+      "accepted": false,
+      "rejection": "keyframe localization lost; explicit new origin required"
+    },
+    {
+      "source_index": 80,
+      "accepted": false,
+      "rejection": "keyframe localization lost; explicit new origin required"
+    },
+    {
+      "source_index": 90,
+      "accepted": false,
+      "rejection": "keyframe localization lost; explicit new origin required"
+    },
+    {
+      "source_index": 100,
+      "accepted": false,
+      "rejection": "keyframe localization lost; explicit new origin required"
+    },
+    {
+      "source_index": 110,
+      "accepted": false,
+      "rejection": "keyframe localization lost; explicit new origin required"
+    }
+  ],
+  "mutations_rejected": [
+    "omit_observation",
+    "invent_summary",
+    "truth_operational",
+    "timestamp",
+    "duplicate_observation",
+    "reversed_observations",
+    "invent_rejected_pose"
+  ],
+  "raw_sha256_verified": true,
+  "missing_reference_score_mutations_rejected": [
+    "missing_reference_accepted_estimate_mismatch",
+    "missing_reference_rejected_invented_estimate"
+  ],
+  "running_checker_sha256": "3c5ef7c2ad50b9ab015f0c6795aa955489343725d5a274ff1eaae730ecd95c01",
+  "frozen_checker_sha256": "3c5ef7c2ad50b9ab015f0c6795aa955489343725d5a274ff1eaae730ecd95c01",
+  "archived_source_snapshot": false,
+  "source_freeze_verified": true,
+  "geometry_reconstructed": true,
+  "root_chain_independently_reconstructed": true,
+  "physical_pose_independently_scored": true,
+  "optimizer_independently_rerun": false,
+  "root_covariance_or_confidence_claim": false,
+  "maximum_root_translation_error_m": null,
+  "maximum_root_rotation_error_rad": null
+}

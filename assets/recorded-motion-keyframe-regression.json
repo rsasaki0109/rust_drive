@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "regression_integrity_passed": true,
+  "all_physical_protocols_passed": false,
+  "cases": [
+    {
+      "dataset": "tum-fr1-xyz",
+      "summary": {
+        "continuous_odometry_frames": 0,
+        "map_accepted": 3,
+        "map_accurate": 3,
+        "map_reference_valid": 11,
+        "pair_accepted": 4,
+        "pair_accurate": 4,
+        "pair_reference_valid": 11,
+        "pairs": 11
+      },
+      "evaluator_exit_status": 1,
+      "full_pair_and_map_protocol_passed": false,
+      "independent_integrity_passed": true,
+      "mutations_rejected": 10,
+      "report_sha256": "2d5dfe3ba531351e5189d37348ad9c37c0ca808bc1907591d62e60d25e98b1ac",
+      "oracle_sha256": "7f8a4b21b5b304726bc7efb8c50decc3e193ecf2ded3234ad0423fc70d81063f",
+      "freeze_sha256": "1b3547eed63bb60cc6b3c02f93e28fddcf3f058f0ceb55c4ccaf2a387f25bb66"
+    },
+    {
+      "dataset": "tum-fr1-xyz-fast",
+      "summary": {
+        "continuous_odometry_frames": 11,
+        "map_accepted": 11,
+        "map_accurate": 11,
+        "map_reference_valid": 11,
+        "pair_accepted": 11,
+        "pair_accurate": 11,
+        "pair_reference_valid": 11,
+        "pairs": 11
+      },
+      "evaluator_exit_status": 0,
+      "full_pair_and_map_protocol_passed": true,
+      "independent_integrity_passed": true,
+      "mutations_rejected": 10,
+      "report_sha256": "4219bdaee7b6398d76f898bca5fd4fec26ebb1c57a314b7629c4ab959a3ada5c",
+      "oracle_sha256": "d9f00adf7db7efdfbee9174b07aaaa86ac931ba78ba3c42e0223458ffdd0d5cb",
+      "freeze_sha256": "aec7f57a150c001543e8bb150069ffe66ea7b24c4c2a71728abaedfb13afe24c"
+    },
+    {
+      "dataset": "tum-fr1-xyz-tight",
+      "summary": {
+        "continuous_odometry_frames": 11,
+        "map_accepted": 9,
+        "map_accurate": 9,
+        "map_reference_valid": 11,
+        "pair_accepted": 11,
+        "pair_accurate": 11,
+        "pair_reference_valid": 11,
+        "pairs": 11
+      },
+      "evaluator_exit_status": 1,
+      "full_pair_and_map_protocol_passed": false,
+      "independent_integrity_passed": true,
+      "mutations_rejected": 11,
+      "report_sha256": "6c1dab9388e39754ea4ebecef2d1d8a2852836b2ef24ab885ebdda99dec479a0",
+      "oracle_sha256": "0f5ceb239229c95db08af893598cf8c6f8d56936183824e74f5a7379ccff365a",
+      "freeze_sha256": "fc50592a1218c6ccf0790c25c0c744df8901bcf0e4b58a5376616e68dccb174d"
+    },
+    {
+      "dataset": "tum-fr1-xyz-motion",
+      "summary": {
+        "continuous_odometry_frames": 11,
+        "map_accepted": 11,
+        "map_accurate": 8,
+        "map_reference_valid": 8,
+        "pair_accepted": 11,
+        "pair_accurate": 7,
+        "pair_reference_valid": 7,
+        "pairs": 11
+      },
+      "evaluator_exit_status": 1,
+      "full_pair_and_map_protocol_passed": false,
+      "independent_integrity_passed": true,
+      "mutations_rejected": 10,
+      "report_sha256": "53069de60200ec92c8fbb282815a8d0d38154224d6fa079276b2930b896ba9f8",
+      "oracle_sha256": "c5cea616b2c11af12bed4fc6b552858be0930e0568f0534c4633a5297dee3169",
+      "freeze_sha256": "2edbb574fb806b75184e97931b6a445fc7871746b3fdc9195d4a0d0f20097f34"
+    },
+    {
+      "dataset": "tum-fr1-xyz-motion-v2",
+      "summary": {
+        "continuous_odometry_frames": 11,
+        "map_accepted": 9,
+        "map_accurate": 9,
+        "map_reference_valid": 11,
+        "pair_accepted": 11,
+        "pair_accurate": 11,
+        "pair_reference_valid": 11,
+        "pairs": 11
+      },
+      "evaluator_exit_status": 1,
+      "full_pair_and_map_protocol_passed": false,
+      "independent_integrity_passed": true,
+      "mutations_rejected": 11,
+      "report_sha256": "f8a5a7a384cbd48cc4c759e4578a4ca4260b3cc6d6b615d03d5db1fd8804c5a6",
+      "oracle_sha256": "3f73dc2668944fc57a9bb7bac0f88eaea63a1c99fad7c48c7f58eedb68d05cfa",
+      "freeze_sha256": "2e16351a441ef215df0d6237569b3b4ae95d918b6677a00932b8079942d9d135"
+    }
+  ],
+  "scope": "viewed regressions in the same indoor Kinect room; original preregistered source/evidence preserved and numerical gates unchanged; no new holdout, automotive or confidence calibration claim"
+}

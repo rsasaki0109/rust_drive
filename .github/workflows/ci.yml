@@ -125,6 +125,10 @@ jobs:
           python scripts/fetch-recorded-motion.py --dataset tum-fr1-xyz-motion
           python scripts/fetch-recorded-motion.py --dataset tum-fr1-xyz-motion-v2
           python scripts/check-recorded-motion-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-evaluate --output artifacts/recorded-motion
+      - name: Reproduce measured keyframes, expiry and retained temporal failure
+        run: |
+          python scripts/fetch-keyframe-dataset.py
+          python scripts/check-recorded-keyframe-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-evaluate --output artifacts/recorded-keyframes
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -136,6 +140,7 @@ jobs:
             artifacts/adaptive/
             artifacts/rgbd/
             artifacts/recorded-motion/
+            artifacts/recorded-keyframes/
 
   visual:
     runs-on: ubuntu-latest

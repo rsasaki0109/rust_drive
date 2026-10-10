@@ -1,0 +1,815 @@
+{
+  "dataset": "tum-fr1-xyz",
+  "files": [
+    {
+      "bytes": 36783,
+      "file": "depth.txt",
+      "role": "depth_index",
+      "sha256": "d5abcc12d67cd2f5ae6f405ab1459a416ab2c1cdfb16d9bbd137d5f77d3285df"
+    },
+    {
+      "bytes": 201100,
+      "file": "groundtruth.txt",
+      "role": "evaluation_only_mocap_ground_truth",
+      "sha256": "aac0319a6ef4e1cdf61e779d2152b95aa7e9f7b1749d6d18717b43ddabffede2"
+    },
+    {
+      "bytes": 125530,
+      "file": "1305031102.160407.png",
+      "role": "depth_frame",
+      "sha256": "3d2b60049ced75b1c4f468ee1ff734650e4b31ca1a535698a02a1434f41eafae"
+    },
+    {
+      "bytes": 120384,
+      "file": "1305031102.494271.png",
+      "role": "depth_frame",
+      "sha256": "53232cdd3fce4bafee048ee7d2ad0417b672b8c45ecc8673c920b36c86c14d6c"
+    },
+    {
+      "bytes": 118833,
+      "file": "1305031102.828537.png",
+      "role": "depth_frame",
+      "sha256": "cc53c137bd6d292df3e93de9ce9a3f947595b7e7ce5fb7c2aab776b010333564"
+    },
+    {
+      "bytes": 122751,
+      "file": "1305031103.162795.png",
+      "role": "depth_frame",
+      "sha256": "7f931cabc8359bf8f407fd66b5f254dfa4feec8e4f94e830462f883a1fbd90ae"
+    },
+    {
+      "bytes": 123042,
+      "file": "1305031103.494472.png",
+      "role": "depth_frame",
+      "sha256": "2d210bf2617d2b40f9b2053a80fd961db9626ea6be273da0e4a0dd55de95715e"
+    },
+    {
+      "bytes": 120867,
+      "file": "1305031103.830367.png",
+      "role": "depth_frame",
+      "sha256": "471eca30fa895109f592b8a8c84446e0ba00f76dbd41a8c948b00c88d6dc9efc"
+    },
+    {
+      "bytes": 123321,
+      "file": "1305031104.163440.png",
+      "role": "depth_frame",
+      "sha256": "f80486c27a5b2911366b7667dbbf96571eeeb91e76ea96bd270692d1d92d60ac"
+    },
+    {
+      "bytes": 124766,
+      "file": "1305031104.495673.png",
+      "role": "depth_frame",
+      "sha256": "31d5ba10451b6957561b23c49aa85785797ffe81c5456e2ac20f27f52640dc39"
+    },
+    {
+      "bytes": 129688,
+      "file": "1305031104.830961.png",
+      "role": "depth_frame",
+      "sha256": "58a4e6143d49445f403e24945fcbf58c8e067e3446563496496cbb5f7e0b1b06"
+    },
+    {
+      "bytes": 130793,
+      "file": "1305031105.159979.png",
+      "role": "depth_frame",
+      "sha256": "b55505884a9b15c2484e7cf308625aa75cfd1a5253bc303b3d9e81b00728911c"
+    },
+    {
+      "bytes": 123671,
+      "file": "1305031105.497931.png",
+      "role": "depth_frame",
+      "sha256": "350fb47c2535f4a468b3b64e34bce3d889f361610971a4a36d0cf85105e82232"
+    },
+    {
+      "bytes": 120061,
+      "file": "1305031105.830008.png",
+      "role": "depth_frame",
+      "sha256": "64fd564a531ac9ec927577fba7e19c052d86ba9e72d8a0e585893b0d3566d384"
+    }
+  ],
+  "frames": [
+    {
+      "accepted": true,
+      "cpu_wall_seconds": 0.181728402,
+      "file": "1305031102.160407.png",
+      "initial_pose": {
+        "quaternion_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "translation_m": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "initialized": true,
+      "keyframe_replaced": false,
+      "reference_file": "1305031102.160407.png",
+      "reference_frame_index": 0,
+      "reference_points": 1067,
+      "reference_stamp": 1305031102.160407,
+      "registration": {
+        "accepted": true,
+        "ambiguity_probes": 12,
+        "conditional_covariance_xyz_rotation": [
+          [
+            8.094163174436352e-9,
+            -1.2949126863804103e-9,
+            1.661628451258899e-9,
+            -1.5732875990710093e-9,
+            -4.254320986440678e-9,
+            3.238422792616099e-9
+          ],
+          [
+            -1.2949126863804103e-9,
+            6.520165728505383e-9,
+            4.6352809927568717e-10,
+            3.1772054504262803e-9,
+            8.564362839985137e-10,
+            -1.0050618169172104e-9
+          ],
+          [
+            1.661628451258899e-9,
+            4.6352809927568717e-10,
+            1.6886698179680668e-9,
+            5.957791492857175e-11,
+            -1.0120920984183207e-9,
+            7.168513150724955e-10
+          ],
+          [
+            -1.5732875990710093e-9,
+            3.1772054504262803e-9,
+            5.957791492857175e-11,
+            2.2911128496582537e-9,
+            1.1738967105581634e-9,
+            -2.100301642535263e-9
+          ],
+          [
+            -4.254320986440678e-9,
+            8.564362839985137e-10,
+            -1.0120920984183207e-9,
+            1.1738967105581634e-9,
+            2.71312110613537e-9,
+            -2.638611701087477e-9
+          ],
+          [
+            3.238422792616099e-9,
+            -1.0050618169172104e-9,
+            7.168513150724955e-10,
+            -2.100301642535263e-9,
+            -2.638611701087477e-9,
+            5.788783186791776e-9
+          ]
+        ],
+        "cpu_wall_seconds": 0.181728402,
+        "estimate": {
+          "quaternion_wxyz": [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "translation_m": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "evaluation_only_truth": {
+          "quaternion_wxyz": [
+            0.9999999999999999,
+            0.0,
+            2.7755575615628914e-17,
+            2.7755575615628914e-17
+          ],
+          "translation_m": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "inlier_fraction": 0.7994376757263355,
+        "neighbor_checks": 969546,
+        "provisional_covariance_xyz_rotation": [
+          [
+            0.0004000080941631745,
+            -1.2949126863804103e-9,
+            1.661628451258899e-9,
+            -1.5732875990710093e-9,
+            -4.254320986440678e-9,
+            3.238422792616099e-9
+          ],
+          [
+            -1.2949126863804103e-9,
+            0.00040000652016572853,
+            4.6352809927568717e-10,
+            3.1772054504262803e-9,
+            8.564362839985137e-10,
+            -1.0050618169172104e-9
+          ],
+          [
+            1.661628451258899e-9,
+            4.6352809927568717e-10,
+            0.000400001688669818,
+            5.957791492857175e-11,
+            -1.0120920984183207e-9,
+            7.168513150724955e-10
+          ],
+          [
+            -1.5732875990710093e-9,
+            3.1772054504262803e-9,
+            5.957791492857175e-11,
+            0.0009000022911128497,
+            1.1738967105581634e-9,
+            -2.100301642535263e-9
+          ],
+          [
+            -4.254320986440678e-9,
+            8.564362839985137e-10,
+            -1.0120920984183207e-9,
+            1.1738967105581634e-9,
+            0.0009000027131211061,
+            -2.638611701087477e-9
+          ],
+          [
+            3.238422792616099e-9,
+            -1.0050618169172104e-9,
+            7.168513150724955e-10,
+            -2.100301642535263e-9,
+            -2.638611701087477e-9,
+            0.0009000057887831867
+          ]
+        ],
+        "reference_valid": true,
+        "rms_m": 0.0,
+        "rotation_error_rad": 7.850462293418877e-17,
+        "translation_error_m": 0.0,
+        "within_accuracy_gates": true
+      },
+      "root_accuracy": {
+        "estimate": {
+          "quaternion_wxyz": [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "translation_m": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "evaluation_only_truth": {
+          "quaternion_wxyz": [
+            0.9999999999999999,
+            0.0,
+            2.7755575615628914e-17,
+            2.7755575615628914e-17
+          ],
+          "translation_m": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "reference_valid": true,
+        "rotation_error_rad": 7.850462293418877e-17,
+        "translation_error_m": 0.0,
+        "valid": true,
+        "within_accuracy_gates": true
+      },
+      "root_estimate": {
+        "quaternion_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "translation_m": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "root_from_reference": {
+        "quaternion_wxyz": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "translation_m": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "root_origin_frame_index": 0,
+      "scan_points": 1067,
+      "source_index": 0,
+      "split": "calibration",
+      "timestamp": 1305031102.160407
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 5.91e-7,
+      "file": "1305031102.494271.png",
+      "rejection": "keyframe accepted-pose age exceeded; localization lost",
+      "root_accuracy": {
+        "evaluation_only_truth": {
+          "quaternion_wxyz": [
+            0.9988146977283694,
+            -0.04281932287818907,
+            -0.023145251895954483,
+            0.00005004710096023768
+          ],
+          "translation_m": [
+            -0.009465324237141082,
+            0.02142387908362131,
+            0.11847464697738186
+          ]
+        },
+        "reference_valid": true,
+        "valid": false,
+        "within_accuracy_gates": false
+      },
+      "scan_points": 734,
+      "source_index": 10,
+      "split": "calibration",
+      "timestamp": 1305031102.494271
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 6e-8,
+      "file": "1305031102.828537.png",
+      "rejection": "keyframe localization lost; explicit new origin required",
+      "root_accuracy": {
+        "evaluation_only_truth": {
+          "quaternion_wxyz": [
+            0.9987548697886497,
+            -0.0489981442457213,
+            -0.00935036821317159,
+            -0.0006801089699538104
+          ],
+          "translation_m": [
+            -0.01712871643843117,
+            0.0466494498893929,
+            0.2416584321262496
+          ]
+        },
+        "reference_valid": true,
+        "valid": false,
+        "within_accuracy_gates": false
+      },
+      "scan_points": 547,
+      "source_index": 20,
+      "split": "calibration",
+      "timestamp": 1305031102.828537
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 1.4e-7,
+      "file": "1305031103.162795.png",
+      "rejection": "keyframe localization lost; explicit new origin required",
+      "root_accuracy": {
+        "evaluation_only_truth": {
+          "quaternion_wxyz": [
+            0.9985326050308851,
+            -0.049051174693293814,
+            -0.02248804339081739,
+            0.0045724015457032224
+          ],
+          "translation_m": [
+            -0.02756155336720978,
+            0.07916467394748639,
+            0.345842110563906
+          ]
+        },
+        "reference_valid": true,
+        "valid": false,
+        "within_accuracy_gates": false
+      },
+      "scan_points": 441,
+      "source_index": 30,
+      "split": "held_out",
+      "timestamp": 1305031103.162795
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 1.5e-7,
+      "file": "1305031103.494472.png",
+      "rejection": "keyframe localization lost; explicit new origin required",
+      "root_accuracy": {
+        "evaluation_only_truth": {
+          "quaternion_wxyz": [
+            0.9959543426221106,
+            -0.07780318477651957,
+            -0.0436769974702923,
+            0.010673881335747301
+          ],
+          "translation_m": [
+            -0.026443740403528704,
+            0.08238580979937915,
+            0.36317934537935703
+          ]
+        },
+        "reference_valid": true,
+        "valid": false,
+        "within_accuracy_gates": false
+      },
+      "scan_points": 389,
+      "source_index": 40,
+      "split": "held_out",
+      "timestamp": 1305031103.494472
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 1.31e-7,
+      "file": "1305031103.830367.png",
+      "rejection": "keyframe localization lost; explicit new origin required",
+      "root_accuracy": {
+        "evaluation_only_truth": {
+          "quaternion_wxyz": [
+            0.9966841780932614,
+            -0.05910228575872936,
+            -0.05590268975211837,
+            0.0015678759937717418
+          ],
+          "translation_m": [
+            -0.019633077059649007,
+            0.03527994730292572,
+            0.2523667569560011
+          ]
+        },
+        "reference_valid": true,
+        "valid": false,
+        "within_accuracy_gates": false
+      },
+      "scan_points": 578,
+      "source_index": 50,
+      "split": "held_out",
+      "timestamp": 1305031103.830367
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 1e-7,
+      "file": "1305031104.163440.png",
+      "rejection": "keyframe localization lost; explicit new origin required",
+      "root_accuracy": {
+        "evaluation_only_truth": {
+          "quaternion_wxyz": [
+            0.9981266200106896,
+            -0.03724110724803642,
+            -0.04649286802061278,
+            -0.01395577228942678
+          ],
+          "translation_m": [
+            -0.007198756487076685,
+            -0.008096100076506296,
+            0.11237459869599498
+          ]
+        },
+        "reference_valid": true,
+        "valid": false,
+        "within_accuracy_gates": false
+      },
+      "scan_points": 829,
+      "source_index": 60,
+      "split": "held_out",
+      "timestamp": 1305031104.16344
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 5e-8,
+      "file": "1305031104.495673.png",
+      "rejection": "keyframe localization lost; explicit new origin required",
+      "root_accuracy": {
+        "evaluation_only_truth": {
+          "quaternion_wxyz": [
+            0.9995451680667377,
+            -0.015045070465895177,
+            -0.022740045005019888,
+            -0.012883834921436868
+          ],
+          "translation_m": [
+            -0.0048706709124810565,
+            -0.030211298231017758,
+            0.002054628953837234
+          ]
+        },
+        "reference_valid": true,
+        "valid": false,
+        "within_accuracy_gates": false
+      },
+      "scan_points": 1036,
+      "source_index": 70,
+      "split": "held_out",
+      "timestamp": 1305031104.495673
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 7e-8,
+      "file": "1305031104.830961.png",
+      "rejection": "keyframe localization lost; explicit new origin required",
+      "root_accuracy": {
+        "evaluation_only_truth": {
+          "quaternion_wxyz": [
+            0.9965698698032655,
+            0.07759586492709836,
+            0.02870760291411803,
+            0.001802742755792841
+          ],
+          "translation_m": [
+            0.007009051277744427,
+            -0.03876479287096879,
+            -0.0933149562717559
+          ]
+        },
+        "reference_valid": true,
+        "valid": false,
+        "within_accuracy_gates": false
+      },
+      "scan_points": 1686,
+      "source_index": 80,
+      "split": "held_out",
+      "timestamp": 1305031104.830961
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 1.51e-7,
+      "file": "1305031105.159979.png",
+      "rejection": "keyframe localization lost; explicit new origin required",
+      "root_accuracy": {
+        "evaluation_only_truth": {
+          "quaternion_wxyz": [
+            0.9985937434109199,
+            0.04718080471471178,
+            0.024170170429845927,
+            -0.0005569097147138935
+          ],
+          "translation_m": [
+            0.007794862750201803,
+            -0.029844491647394,
+            -0.03777993536877444
+          ]
+        },
+        "reference_valid": true,
+        "valid": false,
+        "within_accuracy_gates": false
+      },
+      "scan_points": 1457,
+      "source_index": 90,
+      "split": "held_out",
+      "timestamp": 1305031105.159979
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 5e-8,
+      "file": "1305031105.497931.png",
+      "rejection": "keyframe localization lost; explicit new origin required",
+      "root_accuracy": {
+        "evaluation_only_truth": {
+          "quaternion_wxyz": [
+            0.99928993804382,
+            -0.026104821702807673,
+            -0.02591318864680006,
+            -0.00816484307247392
+          ],
+          "translation_m": [
+            -0.01882990755153413,
+            -0.00960378686896235,
+            0.10213256979295338
+          ]
+        },
+        "reference_valid": true,
+        "valid": false,
+        "within_accuracy_gates": false
+      },
+      "scan_points": 891,
+      "source_index": 100,
+      "split": "held_out",
+      "timestamp": 1305031105.497931
+    },
+    {
+      "accepted": false,
+      "cpu_wall_seconds": 4e-8,
+      "file": "1305031105.830008.png",
+      "rejection": "keyframe localization lost; explicit new origin required",
+      "root_accuracy": {
+        "evaluation_only_truth": {
+          "quaternion_wxyz": [
+            0.9994703393137263,
+            -0.030405706995340648,
+            -0.011597861291011646,
+            -0.00015306107466457608
+          ],
+          "translation_m": [
+            -0.018073443411421475,
+            0.013171451055198569,
+            0.24305030033453745
+          ]
+        },
+        "reference_valid": true,
+        "valid": false,
+        "within_accuracy_gates": false
+      },
+      "scan_points": 643,
+      "source_index": 110,
+      "split": "held_out",
+      "timestamp": 1305031105.830008
+    }
+  ],
+  "freeze": {
+    "accuracy_gates": {
+      "rotation_rad": 0.1,
+      "translation_m": 0.1
+    },
+    "acquisition_source_sha256": "51730a170eaaac7637cf1e83abd03b5344004307c1b5c0cbed03ec2f835aa187",
+    "cargo_lock_sha256": "66a95960e1763d7623c40dc0c659e44cb5cda758b215c99bec09606a10c8ab86",
+    "dataset": "tum-fr1-xyz",
+    "evaluator_source_sha256": "44300c09689ae669fa827d5b42b8da4bd8a8921826b840526b256f306337f50a",
+    "frames": [
+      {
+        "file": "1305031102.160407.png",
+        "source_index": 0,
+        "split": "calibration",
+        "timestamp": 1305031102.160407
+      },
+      {
+        "file": "1305031102.494271.png",
+        "source_index": 10,
+        "split": "calibration",
+        "timestamp": 1305031102.494271
+      },
+      {
+        "file": "1305031102.828537.png",
+        "source_index": 20,
+        "split": "calibration",
+        "timestamp": 1305031102.828537
+      },
+      {
+        "file": "1305031103.162795.png",
+        "source_index": 30,
+        "split": "held_out",
+        "timestamp": 1305031103.162795
+      },
+      {
+        "file": "1305031103.494472.png",
+        "source_index": 40,
+        "split": "held_out",
+        "timestamp": 1305031103.494472
+      },
+      {
+        "file": "1305031103.830367.png",
+        "source_index": 50,
+        "split": "held_out",
+        "timestamp": 1305031103.830367
+      },
+      {
+        "file": "1305031104.163440.png",
+        "source_index": 60,
+        "split": "held_out",
+        "timestamp": 1305031104.16344
+      },
+      {
+        "file": "1305031104.495673.png",
+        "source_index": 70,
+        "split": "held_out",
+        "timestamp": 1305031104.495673
+      },
+      {
+        "file": "1305031104.830961.png",
+        "source_index": 80,
+        "split": "held_out",
+        "timestamp": 1305031104.830961
+      },
+      {
+        "file": "1305031105.159979.png",
+        "source_index": 90,
+        "split": "held_out",
+        "timestamp": 1305031105.159979
+      },
+      {
+        "file": "1305031105.497931.png",
+        "source_index": 100,
+        "split": "held_out",
+        "timestamp": 1305031105.497931
+      },
+      {
+        "file": "1305031105.830008.png",
+        "source_index": 110,
+        "split": "held_out",
+        "timestamp": 1305031105.830008
+      }
+    ],
+    "freeze_preparation": "metadata only; raw depth and mocap are not read and registration is not invoked",
+    "geometry_checker_sha256": "ab86ab67c0d46e08b89a0a47d8a59e9c95357cf41c40dbd40b1bcf5b49e6f9dc",
+    "ground_truth_interpolation": {
+      "extrapolation": false,
+      "max_bracket_s": 0.02,
+      "method": "linear translation and shortest-arc quaternion SLERP"
+    },
+    "independent_checker_sha256": "3c5ef7c2ad50b9ab015f0c6795aa955489343725d5a274ff1eaae730ecd95c01",
+    "keyframe_core_source_sha256": "cb93ba70e372e375c982e5876fd5c3d0bfa78423fd591a6130fe2e5ed85c42e6",
+    "keyframe_policy": {
+      "frame": "initial accepted depth camera is the root; each reference is a recorded depth camera frame",
+      "initialization": "first measured cloud self-registers at identity with all numerical guards",
+      "keyframe_interval_s": 0.1,
+      "max_unobserved_s": 0.2,
+      "prior": "last accepted sensor-only relative pose; identity after reference replacement",
+      "rejection": "no pose output, no map update; excessive accepted-observation gap latches lost until explicit reset; evaluation never resets",
+      "replacement": "copy accepted measured scan after minimum interval; no map union",
+      "root_chain": "root_from_reference composed with reference_from_scan"
+    },
+    "keyframe_policy_sha256": "dcad16401ca7d9413134819a70963a204e43f9953edd1c7f1fd5c4673b59d3b7",
+    "keyframe_source_sha256": "9b02051c9f17ae403d756034634becdec4e0aa11e0a013feb7c361cc3a0a62f5",
+    "kind": "calibration_regression",
+    "manifest_sha256": "9a752f28cc6211f2e7c08adbd8d0928f4b3eae1f29bef8c994c2b68c86f98cf7",
+    "matcher_source_sha256": "eca9fe887f4a237dd627eb06e2793579ec4fbffd6330d120017572d734c4b715",
+    "motion_preprocessing": {
+      "additional_voxel_m": 0.06,
+      "point_order": "lexicographic coarse voxel key",
+      "representative": "first lexicographic original voxel point"
+    },
+    "motion_preprocessing_sha256": "4c08454b356161553015119d741595e31d56bbc47a501d19ee4207403b56e786",
+    "motion_source_sha256": "c5a115039078c2e6fc1930b1c80bd96bfca7cdc21c3c4fd57a76897cd4ebc8c5",
+    "preprocessing": {
+      "cx": 319.5,
+      "cy": 239.5,
+      "fx": 525.0,
+      "fy": 525.0,
+      "height": 480,
+      "max_depth_m": 5.0,
+      "maximum_sampled_pixels": 4800,
+      "min_depth_m": 0.3,
+      "pixel_step": 8,
+      "point_order": "lexicographic voxel key",
+      "sample_origin_pixel": [
+        0,
+        0
+      ],
+      "units_per_metre": 5000,
+      "voxel_m": 0.03,
+      "voxel_representative": "first row-major sampled valid pixel",
+      "width": 640
+    },
+    "preprocessing_sha256": "4e728cc5375476636af4080d54eb974bb343bf9d019462e1c6a36c4561bf73b5",
+    "protocol_version": 6,
+    "registration_config": {
+      "ambiguity_rms_ratio": 1.05,
+      "ambiguity_rotation_probe_rad": 0.07,
+      "ambiguity_translation_probe_m": 0.15,
+      "max_condition_number": 10000.0,
+      "max_correspondence_m": 0.15,
+      "max_iterations": 30,
+      "max_map_points": 20000,
+      "max_neighbor_checks": 20000000,
+      "max_position_variance_m2": 0.25,
+      "max_rms_m": 0.08,
+      "max_rotation_jump_rad": 0.35,
+      "max_rotation_variance_rad2": 0.01,
+      "max_scan_points": 5000,
+      "max_translation_jump_m": 0.5,
+      "min_geometry_ratio": 0.005,
+      "min_overlap": 0.4,
+      "min_pairs": 30,
+      "rotation_tolerance_rad": 0.0001,
+      "translation_tolerance_m": 0.0001,
+      "trim_fraction": 0.2
+    },
+    "registration_config_sha256": "195ee7f9a32ddca53b110e7335b05b05fbda82d9fb944c98997f24be09bcf6c4",
+    "schema_version": 1,
+    "uncertainty": {
+      "calibration_data": "already viewed original, fast120..131, tight140..151 and motion-v2 260..271; all are calibration/regression here",
+      "model": "per-fit conditional covariance plus previously frozen diagonal engineering allowance only; no accumulated root-frame covariance or calibrated confidence",
+      "position_std_floor_m": 0.02,
+      "rotation_std_floor_rad": 0.03
+    }
+  },
+  "freeze_sha256": "a8e8de003e4e3197f021aeb5f7a3e2db729ff56d707b0c0412a526e173226449",
+  "ground_truth_operational": false,
+  "limits": [
+    "Short temporal interval in one indoor Kinect room; no independent environment or automotive validation.",
+    "Accepted measured keyframes replace one reference cloud; no map union, loop closure, SLAM or global relocalization.",
+    "Root poses compose accepted local fits; per-fit covariance is not accumulated root confidence.",
+    "Missing references and rejected observations remain in the denominator; no truth resets or interpolated operational poses."
+  ],
+  "raw_redistributed": false,
+  "repository": "MarcelBruckner-TUMProjects/3D-Scanning-Motion-Capture",
+  "revision": "f367047ee71f5304c6d7deaec55c4874bb8b035e",
+  "schema_version": 1,
+  "summary": {
+    "accepted_updates": 0,
+    "accurate_root_updates": 0,
+    "all_updates_passed": false,
+    "frames": 12,
+    "initialized_frames": 1,
+    "keyframe_replacements": 0,
+    "reference_valid_updates": 11,
+    "rejected_updates": 11,
+    "updates": 11
+  }
+}

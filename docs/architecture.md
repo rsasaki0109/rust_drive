@@ -152,6 +152,19 @@ The independent routing crate resolves a directed map and known edge closures be
 
 ## Extension decisions
 
+The optional recorded-depth evaluator now uses the reusable
+`localization::keyframes3d` library independently of the driving pipeline.
+It consumes measured camera-frame XYZ points, acquisition time and frame index;
+accepted fits replace one bounded reference cloud after 0.10 s and chain
+sensor-to-reference poses into an explicit initial-camera origin. A rejected
+fit supplies no pose or map update. Chronological malformed acquisitions still
+advance the observed clock, while only accepted fits renew the 0.20 s validity
+window. Expiry latches loss until explicit reset to a separate origin. Mocap
+labels are parsed after fitting for evaluation only. The localizer has no map
+fusion, global relocalization, loop closure, root covariance or vehicle adapter.
+Its longer temporal accuracy protocol fails because of accumulated drift.
+[Algorithm, independent audit and preserved failure](recorded-keyframes.md).
+
 1. Preserve algorithm crates and shared coordinate/clock contracts. Put frame conversions and external message schemas into adapter crates.
 2. Implement and test a CARLA synchronous bridge before claiming CARLA support: sensor callbacks → timestamped Rust inputs → controls → independent CARLA collision/route criteria.
 3. Add ROS 2 integration optionally. A bridge should own ROS dependencies; core algorithms should still run in CI without ROS.
