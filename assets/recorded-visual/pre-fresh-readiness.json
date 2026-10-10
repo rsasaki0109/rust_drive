@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-10-10T02:26:58.975794+00:00",
+  "ready_for_parent_preregistration_review": true,
+  "fresh_sequence": "tum-fr3-sitting-visual",
+  "fresh_images_decoded_by_oracle": false,
+  "fresh_first_evaluation_authorized_by_this_file": false,
+  "checker_sha256": "c138992bd5fe63a42757ff2cf5b43c7eb69272b85ea6ce7030cd298306bc0d6a",
+  "frozen_source_count": 16,
+  "scope": "Viewed desk and office only; successful integrity audits retain physical gate failures and every rejected observation. Parent must finish metadata-only fresh journal and exact source archive before authorizing first fresh evaluation.",
+  "independent_geometry_solver": "Kabsch 3x3 SVD compared with operational Horn 4x4 quaternion/Jacobi",
+  "all_hypotheses_refit_stationarity_and_competing_models_independently_reconstructed": true,
+  "calibrated_uncertainty_claim": false,
+  "json_metadata_audit": {
+    "field": "pair_gap_seconds",
+    "absolute_tolerance_s": 1e-15,
+    "scope": "source-manifest versus parsed freeze/report derived gap only; source SHA, acquisition timestamps and indices remain exact; no sensor association or fit gate change"
+  },
+  "oracle_dependencies": {
+    "numpy": "2.3.5",
+    "pillow": "12.3.0"
+  },
+  "cases": [
+    {
+      "dataset": "tum-fr1-desk-visual",
+      "freeze_sha256": "3f609932eb66c7b921908a59c0dfcd8b05a2fb687e157f0c29894e5128cd9e76",
+      "report_sha256": "398fc51760e1e8e646079795c10efbee312c85696af450593e8758ef99d1fe4d",
+      "audit_sha256": "9785fb6f35a8f31035861ee893d59fb6527411fa794606a8b4473e4d238698c7",
+      "summary": {
+        "accepted_updates": 24,
+        "accurate_root_updates": 24,
+        "all_updates_passed": false,
+        "frames": 36,
+        "initialized_frames": 1,
+        "lost": false,
+        "reference_valid_updates": 35,
+        "rejected_updates": 11,
+        "updates": 35
+      },
+      "report_mutations_rejected": 34,
+      "source_and_policy_mutations_rejected": 11,
+      "hand_contracts_passed": 13,
+      "hand_corruptions_rejected": 3,
+      "missing_ground_truth_corruptions_rejected": 2,
+      "maximum_root_translation_error_m": 0.04800704508517671,
+      "maximum_root_rotation_error_rad": 0.055847471036677185
+    },
+    {
+      "dataset": "tum-fr3-office-visual",
+      "freeze_sha256": "222880a3fb071a008037ac4bd1acf0bc896db16097e055751b87e0e33c5c30d2",
+      "report_sha256": "688791951d284efd81580a544b32db1696504b866df49c8ad5272e8806f0fcb4",
+      "audit_sha256": "9a90f683d5458cdb447b0c461778bb29a909d8ea8f512419e17938e25b3f2acf",
+      "summary": {
+        "accepted_updates": 32,
+        "accurate_root_updates": 9,
+        "all_updates_passed": false,
+        "frames": 36,
+        "initialized_frames": 1,
+        "lost": false,
+        "reference_valid_updates": 35,
+        "rejected_updates": 3,
+        "updates": 35
+      },
+      "report_mutations_rejected": 32,
+      "source_and_policy_mutations_rejected": 11,
+      "hand_contracts_passed": 13,
+      "hand_corruptions_rejected": 3,
+      "missing_ground_truth_corruptions_rejected": 2,
+      "maximum_root_translation_error_m": 0.15564091959640866,
+      "maximum_root_rotation_error_rad": 0.06515791060540808
+    }
+  ]
+}

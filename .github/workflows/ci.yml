@@ -141,6 +141,13 @@ jobs:
           python scripts/fetch-submap-datasets.py tum-fr1-desk-submaps
           python scripts/fetch-submap-datasets.py tum-fr3-office-submaps
           python scripts/check-recorded-submap-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-evaluate --output artifacts/recorded-submaps
+      - name: Reproduce measured RGB-D visual motion and explicit repeated-image rejections
+        run: |
+          python -m pip install -r scripts/requirements-visual.txt
+          python scripts/fetch-visual-datasets.py tum-fr1-desk-visual
+          python scripts/fetch-visual-datasets.py tum-fr3-office-visual
+          python scripts/fetch-visual-datasets.py tum-fr3-sitting-visual
+          python scripts/check-recorded-visual-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-evaluate --output artifacts/recorded-visual
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -155,6 +162,7 @@ jobs:
             artifacts/recorded-motion/
             artifacts/recorded-keyframes/
             artifacts/recorded-submaps/
+            artifacts/recorded-visual/
 
   visual:
     runs-on: ubuntu-latest

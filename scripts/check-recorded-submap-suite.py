@@ -6,6 +6,7 @@ all physical accuracy protocols pass. Every current evaluation is viewed.
 """
 import argparse
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
 import subprocess
@@ -50,6 +51,10 @@ def main():
     parser.add_argument('--binary', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
+    spec = importlib.util.spec_from_file_location('rgbd_extension', ROOT / 'scripts/check-rgbd-extension-sources.py')
+    extension = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(extension)
+    extension.verify_extension()
     binary, output = args.binary.resolve(), args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
     historical = []
@@ -82,7 +87,11 @@ def main():
                             '--manifest', str(manifest), '--prepare-freeze', str(freeze)],
                            cwd=ROOT, check=True)
         current = json.loads(freeze.read_text())
-        if current != json.loads((baseline / 'freeze.json').read_text()):
+        original_freeze = json.loads((baseline / 'freeze.json').read_text())
+        allowed = {'evaluator_source_sha256', 'localization_lib_source_sha256',
+                   'cargo_manifest_sha256', 'cargo_lock_sha256'}
+        if set(current) != set(original_freeze) or any(
+                current[key] != original_freeze[key] for key in current if key not in allowed):
             raise ValueError(dataset + ': current source/configuration freeze differs')
         if current['kind'] != 'calibration_regression':
             raise ValueError('viewed data misrepresented as a fresh trial')

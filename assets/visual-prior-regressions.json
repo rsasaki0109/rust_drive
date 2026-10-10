@@ -1,0 +1,524 @@
+{
+  "motion": {
+    "schema_version": 1,
+    "regression_integrity_passed": true,
+    "all_physical_protocols_passed": false,
+    "cases": [
+      {
+        "dataset": "tum-fr1-xyz",
+        "summary": {
+          "continuous_odometry_frames": 0,
+          "map_accepted": 3,
+          "map_accurate": 3,
+          "map_reference_valid": 11,
+          "pair_accepted": 4,
+          "pair_accurate": 4,
+          "pair_reference_valid": 11,
+          "pairs": 11
+        },
+        "evaluator_exit_status": 1,
+        "full_pair_and_map_protocol_passed": false,
+        "independent_integrity_passed": true,
+        "mutations_rejected": 10,
+        "report_sha256": "720c1a78d0d8501721fa90392f170cc06fb481d45064bdfb204f6e9bf3765a34",
+        "oracle_sha256": "7f8a4b21b5b304726bc7efb8c50decc3e193ecf2ded3234ad0423fc70d81063f",
+        "freeze_sha256": "d82c209192e99758e960478411c23e731785193a1be1f078afeb72e88a23208a"
+      },
+      {
+        "dataset": "tum-fr1-xyz-fast",
+        "summary": {
+          "continuous_odometry_frames": 11,
+          "map_accepted": 11,
+          "map_accurate": 11,
+          "map_reference_valid": 11,
+          "pair_accepted": 11,
+          "pair_accurate": 11,
+          "pair_reference_valid": 11,
+          "pairs": 11
+        },
+        "evaluator_exit_status": 0,
+        "full_pair_and_map_protocol_passed": true,
+        "independent_integrity_passed": true,
+        "mutations_rejected": 10,
+        "report_sha256": "7957c5dca434020cc6899547ec579d2ff4d10f7a1ac6c794cdadc61dfde14167",
+        "oracle_sha256": "d9f00adf7db7efdfbee9174b07aaaa86ac931ba78ba3c42e0223458ffdd0d5cb",
+        "freeze_sha256": "674b34334b81e1ef5d0690a09f446f9a73ca37ebb7fb2a26be6dd8546ac56f62"
+      },
+      {
+        "dataset": "tum-fr1-xyz-tight",
+        "summary": {
+          "continuous_odometry_frames": 11,
+          "map_accepted": 9,
+          "map_accurate": 9,
+          "map_reference_valid": 11,
+          "pair_accepted": 11,
+          "pair_accurate": 11,
+          "pair_reference_valid": 11,
+          "pairs": 11
+        },
+        "evaluator_exit_status": 1,
+        "full_pair_and_map_protocol_passed": false,
+        "independent_integrity_passed": true,
+        "mutations_rejected": 11,
+        "report_sha256": "796e00434d4c1c239ae31e8d8051a02fb017fb7836041fe340b1f97d7eaa0fb2",
+        "oracle_sha256": "0f5ceb239229c95db08af893598cf8c6f8d56936183824e74f5a7379ccff365a",
+        "freeze_sha256": "e940fce5a3906cd471dd1d15c600b89c60aa9064a7ab97694732e435efaa39dd"
+      },
+      {
+        "dataset": "tum-fr1-xyz-motion",
+        "summary": {
+          "continuous_odometry_frames": 11,
+          "map_accepted": 11,
+          "map_accurate": 8,
+          "map_reference_valid": 8,
+          "pair_accepted": 11,
+          "pair_accurate": 7,
+          "pair_reference_valid": 7,
+          "pairs": 11
+        },
+        "evaluator_exit_status": 1,
+        "full_pair_and_map_protocol_passed": false,
+        "independent_integrity_passed": true,
+        "mutations_rejected": 10,
+        "report_sha256": "cf5a49ffce337e191772d1fa6d6766dd5cd7a4430a3a989478a5b1cab5e3edfe",
+        "oracle_sha256": "c5cea616b2c11af12bed4fc6b552858be0930e0568f0534c4633a5297dee3169",
+        "freeze_sha256": "5a5e93877bca34499ce0070a3c655f50456b510c85303f73535995ae54713cf8"
+      },
+      {
+        "dataset": "tum-fr1-xyz-motion-v2",
+        "summary": {
+          "continuous_odometry_frames": 11,
+          "map_accepted": 9,
+          "map_accurate": 9,
+          "map_reference_valid": 11,
+          "pair_accepted": 11,
+          "pair_accurate": 11,
+          "pair_reference_valid": 11,
+          "pairs": 11
+        },
+        "evaluator_exit_status": 1,
+        "full_pair_and_map_protocol_passed": false,
+        "independent_integrity_passed": true,
+        "mutations_rejected": 11,
+        "report_sha256": "e2b9b104fbe7cf0dbf85dbf58d735bc719a642c00f041c51aa68c3a92f24c276",
+        "oracle_sha256": "3f73dc2668944fc57a9bb7bac0f88eaea63a1c99fad7c48c7f58eedb68d05cfa",
+        "freeze_sha256": "798ec3cc19ce2ce2bb022174440d67b4ad235ee5f37a1781a403b7ecd6d5cd1e"
+      }
+    ],
+    "scope": "viewed regressions in the same indoor Kinect room; original preregistered source/evidence preserved and numerical gates unchanged; no new holdout, automotive or confidence calibration claim"
+  },
+  "keyframes": {
+    "schema_version": 1,
+    "regression_integrity_passed": true,
+    "all_physical_protocols_passed": false,
+    "original_temporal_accuracy_protocol_passed": false,
+    "original_report_sha256": "b1d4fae4c15cb23f78388dd74c3a5b85104340f1b31a3821951c28c9329c03d4",
+    "original_freeze_sha256": "b44b0b34f22a5b10809a6f2f7f87419501fd16dd67ad6b5a204ca7ad345f42cf",
+    "strengthened_historical_audit_sha256": "468e501c2bf40a19d3cda36cc96f54687cd923457ebd8751355f15cb79c45d68",
+    "cases": [
+      {
+        "case": "fast",
+        "dataset": "tum-fr1-xyz-fast",
+        "summary": {
+          "accepted_updates": 11,
+          "accurate_root_updates": 11,
+          "all_updates_passed": true,
+          "frames": 12,
+          "initialized_frames": 1,
+          "keyframe_replacements": 3,
+          "reference_valid_updates": 11,
+          "rejected_updates": 0,
+          "updates": 11
+        },
+        "evaluator_exit_status": 0,
+        "independent_integrity_passed": true,
+        "mutations_rejected": 15,
+        "report_sha256": "43524e52621e3f1185922ec677d1773e74eb7de17d488e854f9997d74a9959ac",
+        "audit_sha256": "507a27931bda9f9e2ee8232a544b90bb2d918bfc51046d35c49ab4924f38d467",
+        "freeze_sha256": "ce28af5f156cd821ca30d9c7a48c0dff0fc228b0568967c30c0052554ce2e248"
+      },
+      {
+        "case": "tight",
+        "dataset": "tum-fr1-xyz-tight",
+        "summary": {
+          "accepted_updates": 11,
+          "accurate_root_updates": 11,
+          "all_updates_passed": true,
+          "frames": 12,
+          "initialized_frames": 1,
+          "keyframe_replacements": 3,
+          "reference_valid_updates": 11,
+          "rejected_updates": 0,
+          "updates": 11
+        },
+        "evaluator_exit_status": 0,
+        "independent_integrity_passed": true,
+        "mutations_rejected": 15,
+        "report_sha256": "3a03e466b8809744a7ea3980efbd0eee85525c975db748319fdfe269f1f9732d",
+        "audit_sha256": "2988cca00f4a3737427934225ad58ea4c3dcfe18ebfa14fe088f7f1619c48d3d",
+        "freeze_sha256": "832b3471bcceed2b7b6db9c8a136e1949d8544e1e471402e50ab51d5f8378471"
+      },
+      {
+        "case": "motion-v2",
+        "dataset": "tum-fr1-xyz-motion-v2",
+        "summary": {
+          "accepted_updates": 11,
+          "accurate_root_updates": 11,
+          "all_updates_passed": true,
+          "frames": 12,
+          "initialized_frames": 1,
+          "keyframe_replacements": 3,
+          "reference_valid_updates": 11,
+          "rejected_updates": 0,
+          "updates": 11
+        },
+        "evaluator_exit_status": 0,
+        "independent_integrity_passed": true,
+        "mutations_rejected": 15,
+        "report_sha256": "84d0565a2e1669f05952d77e2a5a9831ae00f984625156fdd4291bd9d51db121",
+        "audit_sha256": "fc076ac89c687bd02c2e22bcf620050b401d3e39269c1844dc5e0a18e1961956",
+        "freeze_sha256": "88431cc940414f40f6ad58490b0027295613b1ac3f1887658a4641471a108dbd"
+      },
+      {
+        "case": "gap-loss",
+        "dataset": "tum-fr1-xyz",
+        "summary": {
+          "accepted_updates": 0,
+          "accurate_root_updates": 0,
+          "all_updates_passed": false,
+          "frames": 12,
+          "initialized_frames": 1,
+          "keyframe_replacements": 0,
+          "reference_valid_updates": 11,
+          "rejected_updates": 11,
+          "updates": 11
+        },
+        "evaluator_exit_status": 1,
+        "independent_integrity_passed": true,
+        "mutations_rejected": 7,
+        "report_sha256": "0f2343c39d4171293d945a8b5b7cbd83263c5b23b94e5ef00acee7166c02324a",
+        "audit_sha256": "8c3b429b592d104f2993c9482d67e683a2e46c6a80540cce38be96ee66eefc63",
+        "freeze_sha256": "90266ab0b019a0c5713b273727dc48b6fa3d49c2d520f49388dea2fdef7411f9"
+      },
+      {
+        "case": "missing-reference",
+        "dataset": "tum-fr1-xyz-motion",
+        "summary": {
+          "accepted_updates": 10,
+          "accurate_root_updates": 7,
+          "all_updates_passed": false,
+          "frames": 12,
+          "initialized_frames": 1,
+          "keyframe_replacements": 3,
+          "reference_valid_updates": 8,
+          "rejected_updates": 1,
+          "updates": 11
+        },
+        "evaluator_exit_status": 1,
+        "independent_integrity_passed": true,
+        "mutations_rejected": 17,
+        "report_sha256": "8564b83f70f037c6214784b14e33fb2fcb1ac537d3a2ad939eec31a1ccaad39d",
+        "audit_sha256": "d270145e30020fe274354bfa65b492800e2e2c54508592d103d8c215dfc77f07",
+        "freeze_sha256": "f48fffffc7655638a5c77ec661d9c0a90d100e5920457f5cc980b41feded94fa"
+      },
+      {
+        "case": "temporal-v1",
+        "dataset": "tum-fr1-xyz-keyframes",
+        "summary": {
+          "accepted_updates": 33,
+          "accurate_root_updates": 13,
+          "all_updates_passed": false,
+          "frames": 36,
+          "initialized_frames": 1,
+          "keyframe_replacements": 10,
+          "reference_valid_updates": 35,
+          "rejected_updates": 2,
+          "updates": 35
+        },
+        "evaluator_exit_status": 1,
+        "independent_integrity_passed": true,
+        "mutations_rejected": 16,
+        "report_sha256": "591cf5b4e96c4b63656398bba98643930920bf5c31906404c9d57ca606a206ac",
+        "audit_sha256": "c17c118fa924d01c262a7e261dcc23a02ce091753fa779836e7595a6917ab56b",
+        "freeze_sha256": "1a692689d0cd486f54c1ec1f166fe08dfa66682bf205fd2e17ba7ab8a9f6efee"
+      }
+    ],
+    "scope": "Viewed same-room measured-depth regressions; no automotive, global SLAM or accumulated-confidence claim."
+  },
+  "submaps": {
+    "schema_version": 1,
+    "regression_integrity_passed": true,
+    "all_physical_protocols_passed": false,
+    "original_trials": [
+      {
+        "case": "first-desk-v7",
+        "summary": {
+          "accepted_updates": 29,
+          "accurate_root_updates": 8,
+          "all_updates_passed": false,
+          "final_map_generation": 10,
+          "final_map_points": 1433,
+          "frames": 36,
+          "initialized_frames": 1,
+          "lost": false,
+          "map_update_rejections": 0,
+          "map_updates": 10,
+          "reference_valid_updates": 35,
+          "rejected_updates": 6,
+          "updates": 35
+        },
+        "role": "immutable original protocol; no new holdout",
+        "original_report_sha256": "65adbbf5c22abee8f9694c1ddcc3621c11447cde00b53aeff6cbac13ccf4d613",
+        "original_freeze_sha256": "c290e00cafd2e8f02ae599199052c3380f16717166ebf85bf2602a7b14675fac",
+        "current_audit_sha256": "c98fa0605b157df3fb04b5491e09bfc3c3688fe854fd07fa06a13d09d30175c1"
+      },
+      {
+        "case": "first-office-v8",
+        "summary": {
+          "accepted_updates": 7,
+          "accurate_root_updates": 5,
+          "all_updates_passed": false,
+          "final_map_generation": 3,
+          "final_map_points": 3553,
+          "frames": 36,
+          "initialized_frames": 1,
+          "lost": true,
+          "map_update_rejections": 0,
+          "map_updates": 3,
+          "reference_valid_updates": 35,
+          "rejected_updates": 28,
+          "updates": 35
+        },
+        "role": "immutable original protocol; no new holdout",
+        "original_report_sha256": "2e252f22ab73f5265a7edd588fb869f10c36930e16a94d9a168834b5593ce4e7",
+        "original_freeze_sha256": "7fc0009890a52175081e65131d23eb0a6e33d1a190e54dceea80d2752b799587",
+        "current_audit_sha256": "3f085d6ab1268c97c4afe7a16bf313754877e8ae159bc7cb091aad09333868a7"
+      }
+    ],
+    "cases": [
+      {
+        "dataset": "tum-fr1-xyz",
+        "role": "viewed regression",
+        "summary": {
+          "accepted_updates": 0,
+          "accurate_root_updates": 0,
+          "all_updates_passed": false,
+          "final_map_generation": 1,
+          "final_map_points": 1067,
+          "frames": 12,
+          "initialized_frames": 1,
+          "lost": true,
+          "map_update_rejections": 0,
+          "map_updates": 1,
+          "reference_valid_updates": 11,
+          "rejected_updates": 11,
+          "updates": 11
+        },
+        "evaluator_exit_status": 1,
+        "independent_integrity_passed": true,
+        "mutations_rejected": 17,
+        "source_mutations_rejected": 6,
+        "report_sha256": "9ccb21ec191d4d58e2dcdc919b6547cd98cd0d0ef05fff14e73ab7108976ec8d",
+        "freeze_sha256": "baa70b7cd3ee8e7aa8560ef6fdb168c7d0be3afb363e2459dc42e37de79e7a7d",
+        "audit_sha256": "5163f2640bbc75dab91d184f2ab5828450606badfdf4e317c6efa706c5025968"
+      },
+      {
+        "dataset": "tum-fr1-xyz-fast",
+        "role": "viewed regression",
+        "summary": {
+          "accepted_updates": 11,
+          "accurate_root_updates": 11,
+          "all_updates_passed": true,
+          "final_map_generation": 4,
+          "final_map_points": 461,
+          "frames": 12,
+          "initialized_frames": 1,
+          "lost": false,
+          "map_update_rejections": 0,
+          "map_updates": 4,
+          "reference_valid_updates": 11,
+          "rejected_updates": 0,
+          "updates": 11
+        },
+        "evaluator_exit_status": 0,
+        "independent_integrity_passed": true,
+        "mutations_rejected": 26,
+        "source_mutations_rejected": 6,
+        "report_sha256": "5517c9df787eb8691f9984626ce5496ce64c885af7712a1fd4e93f5a1a9f66bf",
+        "freeze_sha256": "19470477842362cb15ff5633bc6fb38466472bc0ef15bdcfc19f5a1214051344",
+        "audit_sha256": "cb0648da79062e663426735af152de2d98db604deb792588da73a4cd0221867e"
+      },
+      {
+        "dataset": "tum-fr1-xyz-tight",
+        "role": "viewed regression",
+        "summary": {
+          "accepted_updates": 11,
+          "accurate_root_updates": 11,
+          "all_updates_passed": true,
+          "final_map_generation": 4,
+          "final_map_points": 835,
+          "frames": 12,
+          "initialized_frames": 1,
+          "lost": false,
+          "map_update_rejections": 0,
+          "map_updates": 4,
+          "reference_valid_updates": 11,
+          "rejected_updates": 0,
+          "updates": 11
+        },
+        "evaluator_exit_status": 0,
+        "independent_integrity_passed": true,
+        "mutations_rejected": 26,
+        "source_mutations_rejected": 6,
+        "report_sha256": "b4dabbb11adc0633eb7d449ab4b13c433de826b1eb41c1a0571dce7398ca9889",
+        "freeze_sha256": "17417465e1134cd313f467fedbd42513856fe9e638f1f1186bae2e33343e8048",
+        "audit_sha256": "9716817a1218d766e2b80089e0a45b0164b63f0899c7dbbaa2a49979433ee722"
+      },
+      {
+        "dataset": "tum-fr1-xyz-motion",
+        "role": "viewed regression",
+        "summary": {
+          "accepted_updates": 10,
+          "accurate_root_updates": 7,
+          "all_updates_passed": false,
+          "final_map_generation": 4,
+          "final_map_points": 919,
+          "frames": 12,
+          "initialized_frames": 1,
+          "lost": false,
+          "map_update_rejections": 0,
+          "map_updates": 4,
+          "reference_valid_updates": 8,
+          "rejected_updates": 1,
+          "updates": 11
+        },
+        "evaluator_exit_status": 1,
+        "independent_integrity_passed": true,
+        "mutations_rejected": 28,
+        "source_mutations_rejected": 6,
+        "report_sha256": "313c062f9e9c78ccd79c4c0bb63873c37aa174edc14ba55e393c131f7a508351",
+        "freeze_sha256": "3828ee87f2f2cec86bbc0511c2cd5758ab992471454d551baac1f3c9983180a8",
+        "audit_sha256": "b2fbe14f7c8259664b198a10da5c22a706b7de5705a3b087bb47fef32c6157cc"
+      },
+      {
+        "dataset": "tum-fr1-xyz-motion-v2",
+        "role": "viewed regression",
+        "summary": {
+          "accepted_updates": 11,
+          "accurate_root_updates": 11,
+          "all_updates_passed": true,
+          "final_map_generation": 4,
+          "final_map_points": 1578,
+          "frames": 12,
+          "initialized_frames": 1,
+          "lost": false,
+          "map_update_rejections": 0,
+          "map_updates": 4,
+          "reference_valid_updates": 11,
+          "rejected_updates": 0,
+          "updates": 11
+        },
+        "evaluator_exit_status": 0,
+        "independent_integrity_passed": true,
+        "mutations_rejected": 26,
+        "source_mutations_rejected": 6,
+        "report_sha256": "934e2a6d6ad3c18520c0da8202fd527ae2123c4c284b46200c52a3fdc4a33ac5",
+        "freeze_sha256": "6f886d5527d580c14baca7d0b51e02ce0c2303e20ad1fcab850820f615bf3afd",
+        "audit_sha256": "82ba9fd2c981d4e95cb64cecb61d9e341a995925ddb0eac6a92b92d221b7c784"
+      },
+      {
+        "dataset": "tum-fr1-xyz-keyframes",
+        "role": "viewed regression",
+        "summary": {
+          "accepted_updates": 24,
+          "accurate_root_updates": 24,
+          "all_updates_passed": false,
+          "final_map_generation": 9,
+          "final_map_points": 2677,
+          "frames": 36,
+          "initialized_frames": 1,
+          "lost": false,
+          "map_update_rejections": 0,
+          "map_updates": 9,
+          "reference_valid_updates": 35,
+          "rejected_updates": 11,
+          "updates": 35
+        },
+        "evaluator_exit_status": 1,
+        "independent_integrity_passed": true,
+        "mutations_rejected": 28,
+        "source_mutations_rejected": 6,
+        "report_sha256": "8c94832586f484122b068a3702b7820340c57b48a87c1e5698bb1d9a7cb5f014",
+        "freeze_sha256": "6cfe6381b9999fffd6a05025034ddeffd5a672e2a76085105d5c016488ddc598",
+        "audit_sha256": "6182aa8b05ae0af0db480f2c51c8cba4fa7115504258a0129ae15bfc6844f5b5"
+      },
+      {
+        "dataset": "tum-fr1-desk-submaps",
+        "role": "viewed regression",
+        "summary": {
+          "accepted_updates": 29,
+          "accurate_root_updates": 8,
+          "all_updates_passed": false,
+          "final_map_generation": 10,
+          "final_map_points": 1433,
+          "frames": 36,
+          "initialized_frames": 1,
+          "lost": false,
+          "map_update_rejections": 0,
+          "map_updates": 10,
+          "reference_valid_updates": 35,
+          "rejected_updates": 6,
+          "updates": 35
+        },
+        "evaluator_exit_status": 1,
+        "independent_integrity_passed": true,
+        "mutations_rejected": 28,
+        "source_mutations_rejected": 6,
+        "report_sha256": "06ce61be466c85b79462355d668d121584d88bdff54ddb520e4ba1f73c5801b6",
+        "freeze_sha256": "d55627b3b0256efe7a8f1635b044543e47c1d5797a7278f2f8ae863a68989ba4",
+        "audit_sha256": "24bc982bda448429f065b87ecf50a1db795e5b171eefe3d1d5f572beaf853e64"
+      },
+      {
+        "dataset": "tum-fr3-office-submaps",
+        "role": "viewed regression",
+        "summary": {
+          "accepted_updates": 7,
+          "accurate_root_updates": 5,
+          "all_updates_passed": false,
+          "final_map_generation": 3,
+          "final_map_points": 3553,
+          "frames": 36,
+          "initialized_frames": 1,
+          "lost": true,
+          "map_update_rejections": 0,
+          "map_updates": 3,
+          "reference_valid_updates": 35,
+          "rejected_updates": 28,
+          "updates": 35
+        },
+        "evaluator_exit_status": 1,
+        "independent_integrity_passed": true,
+        "mutations_rejected": 28,
+        "source_mutations_rejected": 6,
+        "report_sha256": "4a7b452d4b2eeea46114e41da197504b0bffabdc3f74bc0faa8d0029a5ecdaf1",
+        "freeze_sha256": "85b8836e536eb01b63d3c63737a191fc9ed7c466ee76022e61e27988e7c6c3d3",
+        "audit_sha256": "cc8e620217d8296b7535b94f0c7d12b4066e63a4058eb06c5bdd16a1ed523001"
+      }
+    ],
+    "scope": "Offline measured indoor cameras; no vehicle fusion, calibrated map confidence, automotive accuracy or new holdout on repeated inputs."
+  },
+  "plain_pair": {
+    "plain_pair_all_operational_numbers_unchanged": true,
+    "source_identity_changes_independently_verified": {
+      "historical_algorithm_bytes_unchanged": true,
+      "registry_versions_and_checksums_unchanged": true,
+      "allowed_local_dependency": "rustdriving-perception 0.1.0",
+      "original_optional_lock_sha256": "66a95960e1763d7623c40dc0c659e44cb5cda758b215c99bec09606a10c8ab86",
+      "current_optional_lock_sha256": "67845fb7e4a53e15e4e3c70bba72142aff666893cf1d0c96c4654cdc16b7197b"
+    },
+    "accepted": 7,
+    "total": 11,
+    "role": "viewed regression; unchanged legacy protocol label is historical, not a new first trial"
+  },
+  "motion_all_operational_numbers_compared": true
+}

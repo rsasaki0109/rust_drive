@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "regression_integrity_passed": true,
+  "all_physical_protocols_passed": false,
+  "first_trial_summary": {
+    "accepted_updates": 31,
+    "accurate_root_updates": 31,
+    "all_updates_passed": false,
+    "frames": 36,
+    "initialized_frames": 1,
+    "lost": false,
+    "reference_valid_updates": 35,
+    "rejected_updates": 4,
+    "updates": 35
+  },
+  "original_report_sha256": "4e8544ca7b823955e656c7d0fbb0a64bdcac6abd33b206fc2e96b2f727b8db7a",
+  "original_freeze_sha256": "cb98437e063e248dc71a09ce4c6450344cc43d9c20473396f4f1d204babfbf56",
+  "historical_audit_sha256": "059a5321badd13695bd0c3f679fbed005e61ef5e41b50b4db7e8ea05d656e04d",
+  "historical_algorithms": {
+    "historical_algorithm_bytes_unchanged": true,
+    "registry_versions_and_checksums_unchanged": true,
+    "allowed_local_dependency": "rustdriving-perception 0.1.0",
+    "original_optional_lock_sha256": "66a95960e1763d7623c40dc0c659e44cb5cda758b215c99bec09606a10c8ab86",
+    "current_optional_lock_sha256": "67845fb7e4a53e15e4e3c70bba72142aff666893cf1d0c96c4654cdc16b7197b"
+  },
+  "cases": [
+    {
+      "dataset": "tum-fr1-desk-visual",
+      "role": "viewed numerical regression",
+      "summary": {
+        "accepted_updates": 24,
+        "accurate_root_updates": 24,
+        "all_updates_passed": false,
+        "frames": 36,
+        "initialized_frames": 1,
+        "lost": false,
+        "reference_valid_updates": 35,
+        "rejected_updates": 11,
+        "updates": 35
+      },
+      "evaluator_exit_status": 1,
+      "independent_integrity_passed": true,
+      "report_sha256": "0d288345334e9362dfdb500a04eb889a818fc8053be5a7db690ee6de083a7904",
+      "audit_sha256": "f70c5f668f3dd616eb2810f1f5249c81afd11d3fee0dc6aeeeece0f8c787db1b",
+      "freeze_sha256": "3f609932eb66c7b921908a59c0dfcd8b05a2fb687e157f0c29894e5128cd9e76"
+    },
+    {
+      "dataset": "tum-fr3-office-visual",
+      "role": "viewed numerical regression",
+      "summary": {
+        "accepted_updates": 32,
+        "accurate_root_updates": 9,
+        "all_updates_passed": false,
+        "frames": 36,
+        "initialized_frames": 1,
+        "lost": false,
+        "reference_valid_updates": 35,
+        "rejected_updates": 3,
+        "updates": 35
+      },
+      "evaluator_exit_status": 1,
+      "independent_integrity_passed": true,
+      "report_sha256": "96d69fec2e9c8424f6a06c9d99879e64d0a58bc81cd3781e4e3b1984458ba029",
+      "audit_sha256": "b6f8daf6a8b7bed9ce82538e1552687cd99dc75120a2d74ad3abc7d7ed8e519e",
+      "freeze_sha256": "222880a3fb071a008037ac4bd1acf0bc896db16097e055751b87e0e33c5c30d2"
+    },
+    {
+      "dataset": "tum-fr3-sitting-visual",
+      "role": "viewed numerical regression",
+      "summary": {
+        "accepted_updates": 31,
+        "accurate_root_updates": 31,
+        "all_updates_passed": false,
+        "frames": 36,
+        "initialized_frames": 1,
+        "lost": false,
+        "reference_valid_updates": 35,
+        "rejected_updates": 4,
+        "updates": 35
+      },
+      "evaluator_exit_status": 1,
+      "independent_integrity_passed": true,
+      "report_sha256": "2d50db5c86e80f4b5ccc3a00d9cd94a63117a40fdc06ddeb5a4dbcf8be1f351f",
+      "audit_sha256": "9ebd9b1862c24946b93bf320a62435aa8e5b3f2959d4436484880a811b44eb87",
+      "freeze_sha256": "267aa29d636d8c91d8cfee3f19b58fba2806e6df9fb3bd1db9328d8e64461946"
+    }
+  ],
+  "scope": "Offline indoor RGB-D measurements; no new holdout on repeat, no vehicle calibration, SLAM or driving controls"
+}

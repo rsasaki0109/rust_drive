@@ -1,0 +1,1661 @@
+{
+  "schema_version": 1,
+  "dataset": "tum-fr3-sitting-visual",
+  "repository": "yakki12345/DygeoSLAM",
+  "revision": "eae444878fc663fbd41307b1e655e762f988c714",
+  "source_prefix": "data/rgbd_dataset_freiburg3_sitting_xyz/",
+  "redistribute_raw": false,
+  "original_dataset": "TUM RGB-D rgbd_dataset_freiburg3_sitting_xyz",
+  "original_site": "https://cvg.cit.tum.de/data/datasets/rgbd-dataset",
+  "upstream_license": "Original TUM dataset licence not independently retrievable in this environment; public code/data mirrors do not establish original raw-data redistribution terms",
+  "physical_relative_pose_ground_truth": "Independent original TUM motion-capture camera poses; acquired from pinned public mirror, not independently verified against official archive",
+  "ground_truth_format": "timestamp tx ty tz qx qy qz qw; world-from-camera; metres; xyzw quaternion",
+  "depth_calibration": {
+    "width": 640,
+    "height": 480,
+    "fx": 535.4,
+    "fy": 539.2,
+    "cx": 320.1,
+    "cy": 247.6,
+    "units_per_metre": 5000.0,
+    "invalid_depth": 0,
+    "frame": "registered optical camera x-right y-down z-forward",
+    "source_path": "settings/TUM3.yaml",
+    "limitations": "Published FR3 pinhole camera calibration and zero RGB distortion coefficients; registered depth used without additional pixel undistortion or range correction. Native infrared extrinsics, in-situ calibration verification and vehicle calibration are unavailable.",
+    "source_rgb_distortion": {
+      "k1": 0.0,
+      "k2": 0.0,
+      "p1": 0.0,
+      "p2": 0.0
+    }
+  },
+  "calibration_source": {
+    "repository": "luigifreda/pyslam",
+    "revision": "96019cfafcfc099ac9866884d7143a9ed1451a0d",
+    "source_path": "settings/TUM3.yaml",
+    "file": "camera-calibration.yaml",
+    "bytes": 1520,
+    "sha256": "251e345996befa8057f5c51642bd4fe93a92907dac2e0564f400cd87eaf5785d",
+    "role": "source_calibration_documentation_only"
+  },
+  "depth_manifest_reference": null,
+  "selection_policy": "Fixed original depth indices 100..135 inclusive. Paired each depth timestamp with the nearest recorded RGB timestamp (earlier RGB index resolves exact ties), maximum absolute clock gap 0.02 seconds. All 36 depth observations are retained, including repeated RGB acquisitions; their exact repeated RGB timestamps must cause explicit operational rejection without clock renewal. No interpolation or synthetic image is provided. Fixed selection declared before any RGB/depth/mocap metadata acquisition, pixel decoding or fit scoring. Selection inspected timestamp availability only; walking_rpy candidate 100..135 failed the RGB synchronization criterion before any pixel decoding and was not selected. Sitting_xyz is a genuinely different natural recorded sequence, but physical room/camera independence from other Freiburg 3 sequences is not established. Freeze final algorithms, preprocessing, acceptance, evaluator and independent checker before first pixel decode. Initial frame 100 initializes and all 35 following observations are held out; repeated RGB rejection remains in that denominator.",
+  "frames": [
+    {
+      "file": "depth-1341845824.165759.png",
+      "timestamp": 1341845824.165759,
+      "source_index": 100,
+      "depth_file": "depth-1341845824.165759.png",
+      "depth_timestamp": 1341845824.165759,
+      "rgb_file": "rgb-1341845824.165751.png",
+      "rgb_timestamp": 1341845824.165751,
+      "rgb_source_index": 102,
+      "pair_gap_seconds": 8.106231689453125e-06,
+      "split": "initialization"
+    },
+    {
+      "file": "depth-1341845824.197941.png",
+      "timestamp": 1341845824.197941,
+      "source_index": 101,
+      "depth_file": "depth-1341845824.197941.png",
+      "depth_timestamp": 1341845824.197941,
+      "rgb_file": "rgb-1341845824.197930.png",
+      "rgb_timestamp": 1341845824.19793,
+      "rgb_source_index": 103,
+      "pair_gap_seconds": 1.0967254638671875e-05,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845824.229923.png",
+      "timestamp": 1341845824.229923,
+      "source_index": 102,
+      "depth_file": "depth-1341845824.229923.png",
+      "depth_timestamp": 1341845824.229923,
+      "rgb_file": "rgb-1341845824.229907.png",
+      "rgb_timestamp": 1341845824.229907,
+      "rgb_source_index": 104,
+      "pair_gap_seconds": 1.5974044799804688e-05,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845824.265815.png",
+      "timestamp": 1341845824.265815,
+      "source_index": 103,
+      "depth_file": "depth-1341845824.265815.png",
+      "depth_timestamp": 1341845824.265815,
+      "rgb_file": "rgb-1341845824.265800.png",
+      "rgb_timestamp": 1341845824.2658,
+      "rgb_source_index": 105,
+      "pair_gap_seconds": 1.5020370483398438e-05,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845824.298127.png",
+      "timestamp": 1341845824.298127,
+      "source_index": 104,
+      "depth_file": "depth-1341845824.298127.png",
+      "depth_timestamp": 1341845824.298127,
+      "rgb_file": "rgb-1341845824.298080.png",
+      "rgb_timestamp": 1341845824.29808,
+      "rgb_source_index": 106,
+      "pair_gap_seconds": 4.696846008300781e-05,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845824.333796.png",
+      "timestamp": 1341845824.333796,
+      "source_index": 105,
+      "depth_file": "depth-1341845824.333796.png",
+      "depth_timestamp": 1341845824.333796,
+      "rgb_file": "rgb-1341845824.333783.png",
+      "rgb_timestamp": 1341845824.333783,
+      "rgb_source_index": 107,
+      "pair_gap_seconds": 1.3113021850585938e-05,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845824.365854.png",
+      "timestamp": 1341845824.365854,
+      "source_index": 106,
+      "depth_file": "depth-1341845824.365854.png",
+      "depth_timestamp": 1341845824.365854,
+      "rgb_file": "rgb-1341845824.365821.png",
+      "rgb_timestamp": 1341845824.365821,
+      "rgb_source_index": 108,
+      "pair_gap_seconds": 3.314018249511719e-05,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845824.398061.png",
+      "timestamp": 1341845824.398061,
+      "source_index": 107,
+      "depth_file": "depth-1341845824.398061.png",
+      "depth_timestamp": 1341845824.398061,
+      "rgb_file": "rgb-1341845824.398039.png",
+      "rgb_timestamp": 1341845824.398039,
+      "rgb_source_index": 109,
+      "pair_gap_seconds": 2.193450927734375e-05,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845824.434368.png",
+      "timestamp": 1341845824.434368,
+      "source_index": 108,
+      "depth_file": "depth-1341845824.434368.png",
+      "depth_timestamp": 1341845824.434368,
+      "rgb_file": "rgb-1341845824.433843.png",
+      "rgb_timestamp": 1341845824.433843,
+      "rgb_source_index": 110,
+      "pair_gap_seconds": 0.0005249977111816406,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845824.466300.png",
+      "timestamp": 1341845824.4663,
+      "source_index": 109,
+      "depth_file": "depth-1341845824.466300.png",
+      "depth_timestamp": 1341845824.4663,
+      "rgb_file": "rgb-1341845824.465921.png",
+      "rgb_timestamp": 1341845824.465921,
+      "rgb_source_index": 111,
+      "pair_gap_seconds": 0.0003790855407714844,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845824.501815.png",
+      "timestamp": 1341845824.501815,
+      "source_index": 110,
+      "depth_file": "depth-1341845824.501815.png",
+      "depth_timestamp": 1341845824.501815,
+      "rgb_file": "rgb-1341845824.501802.png",
+      "rgb_timestamp": 1341845824.501802,
+      "rgb_source_index": 112,
+      "pair_gap_seconds": 1.3113021850585938e-05,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845824.533739.png",
+      "timestamp": 1341845824.533739,
+      "source_index": 111,
+      "depth_file": "depth-1341845824.533739.png",
+      "depth_timestamp": 1341845824.533739,
+      "rgb_file": "rgb-1341845824.533723.png",
+      "rgb_timestamp": 1341845824.533723,
+      "rgb_source_index": 113,
+      "pair_gap_seconds": 1.5974044799804688e-05,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845824.565762.png",
+      "timestamp": 1341845824.565762,
+      "source_index": 112,
+      "depth_file": "depth-1341845824.565762.png",
+      "depth_timestamp": 1341845824.565762,
+      "rgb_file": "rgb-1341845824.565735.png",
+      "rgb_timestamp": 1341845824.565735,
+      "rgb_source_index": 114,
+      "pair_gap_seconds": 2.6941299438476562e-05,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845824.601769.png",
+      "timestamp": 1341845824.601769,
+      "source_index": 113,
+      "depth_file": "depth-1341845824.601769.png",
+      "depth_timestamp": 1341845824.601769,
+      "rgb_file": "rgb-1341845824.601758.png",
+      "rgb_timestamp": 1341845824.601758,
+      "rgb_source_index": 115,
+      "pair_gap_seconds": 1.0967254638671875e-05,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845824.633870.png",
+      "timestamp": 1341845824.63387,
+      "source_index": 114,
+      "depth_file": "depth-1341845824.633870.png",
+      "depth_timestamp": 1341845824.63387,
+      "rgb_file": "rgb-1341845824.633861.png",
+      "rgb_timestamp": 1341845824.633861,
+      "rgb_source_index": 116,
+      "pair_gap_seconds": 8.821487426757812e-06,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845824.665812.png",
+      "timestamp": 1341845824.665812,
+      "source_index": 115,
+      "depth_file": "depth-1341845824.665812.png",
+      "depth_timestamp": 1341845824.665812,
+      "rgb_file": "rgb-1341845824.665789.png",
+      "rgb_timestamp": 1341845824.665789,
+      "rgb_source_index": 117,
+      "pair_gap_seconds": 2.3126602172851562e-05,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845824.701788.png",
+      "timestamp": 1341845824.701788,
+      "source_index": 116,
+      "depth_file": "depth-1341845824.701788.png",
+      "depth_timestamp": 1341845824.701788,
+      "rgb_file": "rgb-1341845824.701769.png",
+      "rgb_timestamp": 1341845824.701769,
+      "rgb_source_index": 118,
+      "pair_gap_seconds": 1.8835067749023438e-05,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845824.733637.png",
+      "timestamp": 1341845824.733637,
+      "source_index": 117,
+      "depth_file": "depth-1341845824.733637.png",
+      "depth_timestamp": 1341845824.733637,
+      "rgb_file": "rgb-1341845824.733585.png",
+      "rgb_timestamp": 1341845824.733585,
+      "rgb_source_index": 119,
+      "pair_gap_seconds": 5.221366882324219e-05,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845824.769656.png",
+      "timestamp": 1341845824.769656,
+      "source_index": 118,
+      "depth_file": "depth-1341845824.769656.png",
+      "depth_timestamp": 1341845824.769656,
+      "rgb_file": "rgb-1341845824.769643.png",
+      "rgb_timestamp": 1341845824.769643,
+      "rgb_source_index": 120,
+      "pair_gap_seconds": 1.2874603271484375e-05,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845824.801644.png",
+      "timestamp": 1341845824.801644,
+      "source_index": 119,
+      "depth_file": "depth-1341845824.801644.png",
+      "depth_timestamp": 1341845824.801644,
+      "rgb_file": "rgb-1341845824.801632.png",
+      "rgb_timestamp": 1341845824.801632,
+      "rgb_source_index": 121,
+      "pair_gap_seconds": 1.2159347534179688e-05,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845824.834105.png",
+      "timestamp": 1341845824.834105,
+      "source_index": 120,
+      "depth_file": "depth-1341845824.834105.png",
+      "depth_timestamp": 1341845824.834105,
+      "rgb_file": "rgb-1341845824.833654.png",
+      "rgb_timestamp": 1341845824.833654,
+      "rgb_source_index": 122,
+      "pair_gap_seconds": 0.00045108795166015625,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845824.869960.png",
+      "timestamp": 1341845824.86996,
+      "source_index": 121,
+      "depth_file": "depth-1341845824.869960.png",
+      "depth_timestamp": 1341845824.86996,
+      "rgb_file": "rgb-1341845824.869926.png",
+      "rgb_timestamp": 1341845824.869926,
+      "rgb_source_index": 123,
+      "pair_gap_seconds": 3.409385681152344e-05,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845824.902088.png",
+      "timestamp": 1341845824.902088,
+      "source_index": 122,
+      "depth_file": "depth-1341845824.902088.png",
+      "depth_timestamp": 1341845824.902088,
+      "rgb_file": "rgb-1341845824.902071.png",
+      "rgb_timestamp": 1341845824.902071,
+      "rgb_source_index": 124,
+      "pair_gap_seconds": 1.6927719116210938e-05,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845824.933785.png",
+      "timestamp": 1341845824.933785,
+      "source_index": 123,
+      "depth_file": "depth-1341845824.933785.png",
+      "depth_timestamp": 1341845824.933785,
+      "rgb_file": "rgb-1341845824.933752.png",
+      "rgb_timestamp": 1341845824.933752,
+      "rgb_source_index": 125,
+      "pair_gap_seconds": 3.2901763916015625e-05,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845824.969889.png",
+      "timestamp": 1341845824.969889,
+      "source_index": 124,
+      "depth_file": "depth-1341845824.969889.png",
+      "depth_timestamp": 1341845824.969889,
+      "rgb_file": "rgb-1341845824.969855.png",
+      "rgb_timestamp": 1341845824.969855,
+      "rgb_source_index": 126,
+      "pair_gap_seconds": 3.3855438232421875e-05,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845825.001796.png",
+      "timestamp": 1341845825.001796,
+      "source_index": 125,
+      "depth_file": "depth-1341845825.001796.png",
+      "depth_timestamp": 1341845825.001796,
+      "rgb_file": "rgb-1341845825.001907.png",
+      "rgb_timestamp": 1341845825.001907,
+      "rgb_source_index": 127,
+      "pair_gap_seconds": 0.00011110305786132812,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845825.038401.png",
+      "timestamp": 1341845825.038401,
+      "source_index": 126,
+      "depth_file": "depth-1341845825.038401.png",
+      "depth_timestamp": 1341845825.038401,
+      "rgb_file": "rgb-1341845825.037975.png",
+      "rgb_timestamp": 1341845825.037975,
+      "rgb_source_index": 128,
+      "pair_gap_seconds": 0.0004258155822753906,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845825.069771.png",
+      "timestamp": 1341845825.069771,
+      "source_index": 127,
+      "depth_file": "depth-1341845825.069771.png",
+      "depth_timestamp": 1341845825.069771,
+      "rgb_file": "rgb-1341845825.075793.png",
+      "rgb_timestamp": 1341845825.075793,
+      "rgb_source_index": 129,
+      "pair_gap_seconds": 0.006021976470947266,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845825.075923.png",
+      "timestamp": 1341845825.075923,
+      "source_index": 128,
+      "depth_file": "depth-1341845825.075923.png",
+      "depth_timestamp": 1341845825.075923,
+      "rgb_file": "rgb-1341845825.075793.png",
+      "rgb_timestamp": 1341845825.075793,
+      "rgb_source_index": 129,
+      "pair_gap_seconds": 0.00012993812561035156,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845825.108044.png",
+      "timestamp": 1341845825.108044,
+      "source_index": 129,
+      "depth_file": "depth-1341845825.108044.png",
+      "depth_timestamp": 1341845825.108044,
+      "rgb_file": "rgb-1341845825.107881.png",
+      "rgb_timestamp": 1341845825.107881,
+      "rgb_source_index": 130,
+      "pair_gap_seconds": 0.0001628398895263672,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845825.143687.png",
+      "timestamp": 1341845825.143687,
+      "source_index": 130,
+      "depth_file": "depth-1341845825.143687.png",
+      "depth_timestamp": 1341845825.143687,
+      "rgb_file": "rgb-1341845825.143675.png",
+      "rgb_timestamp": 1341845825.143675,
+      "rgb_source_index": 131,
+      "pair_gap_seconds": 1.1920928955078125e-05,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845825.175728.png",
+      "timestamp": 1341845825.175728,
+      "source_index": 131,
+      "depth_file": "depth-1341845825.175728.png",
+      "depth_timestamp": 1341845825.175728,
+      "rgb_file": "rgb-1341845825.175707.png",
+      "rgb_timestamp": 1341845825.175707,
+      "rgb_source_index": 132,
+      "pair_gap_seconds": 2.09808349609375e-05,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845825.211875.png",
+      "timestamp": 1341845825.211875,
+      "source_index": 132,
+      "depth_file": "depth-1341845825.211875.png",
+      "depth_timestamp": 1341845825.211875,
+      "rgb_file": "rgb-1341845825.211865.png",
+      "rgb_timestamp": 1341845825.211865,
+      "rgb_source_index": 133,
+      "pair_gap_seconds": 1.0013580322265625e-05,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845825.244797.png",
+      "timestamp": 1341845825.244797,
+      "source_index": 133,
+      "depth_file": "depth-1341845825.244797.png",
+      "depth_timestamp": 1341845825.244797,
+      "rgb_file": "rgb-1341845825.243814.png",
+      "rgb_timestamp": 1341845825.243814,
+      "rgb_source_index": 134,
+      "pair_gap_seconds": 0.0009829998016357422,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845825.275803.png",
+      "timestamp": 1341845825.275803,
+      "source_index": 134,
+      "depth_file": "depth-1341845825.275803.png",
+      "depth_timestamp": 1341845825.275803,
+      "rgb_file": "rgb-1341845825.275795.png",
+      "rgb_timestamp": 1341845825.275795,
+      "rgb_source_index": 135,
+      "pair_gap_seconds": 8.106231689453125e-06,
+      "split": "held_out"
+    },
+    {
+      "file": "depth-1341845825.311705.png",
+      "timestamp": 1341845825.311705,
+      "source_index": 135,
+      "depth_file": "depth-1341845825.311705.png",
+      "depth_timestamp": 1341845825.311705,
+      "rgb_file": "rgb-1341845825.311665.png",
+      "rgb_timestamp": 1341845825.311665,
+      "rgb_source_index": 136,
+      "pair_gap_seconds": 4.00543212890625e-05,
+      "split": "held_out"
+    }
+  ],
+  "files": [
+    {
+      "file": "depth.txt",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth.txt",
+      "bytes": 56709,
+      "sha256": "52bc36e5d60648406fc6c5641b90a9002ced5ebbd63ac7141da55f170cb59faf",
+      "git_blob_sha1": "9856fb841caf74c7bd23606b44b692ecb69c9f3f",
+      "role": "depth_index"
+    },
+    {
+      "file": "rgb.txt",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb.txt",
+      "bytes": 55569,
+      "sha256": "0858cf2c7eac2962e911e08da0388ce93697ce2aeaa3173f56af0cef1c34b38f",
+      "git_blob_sha1": "62cc2f6888799a9f5d08c3b70d2a8a374ffede51",
+      "role": "rgb_index"
+    },
+    {
+      "file": "groundtruth.txt",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/groundtruth.txt",
+      "bytes": 293334,
+      "sha256": "17bfc4d03f725c7769eef468449ef0dae68b97309714f1561eec4a89807a0066",
+      "git_blob_sha1": "6f38fd5cb80b6d5dc97d754a79ec5641202eca60",
+      "role": "evaluation_only_mocap_ground_truth"
+    },
+    {
+      "file": "depth-1341845824.165759.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845824.165759.png",
+      "bytes": 115621,
+      "sha256": "c72c71948e7c38f9d048ce4ffc0e0086831f46ff268b8af5bd89d442ddb0a6da",
+      "git_blob_sha1": "06a78c586aa58b03c30022e55d6d03e51fd1b5a8",
+      "role": "depth_frame",
+      "timestamp": 1341845824.165759,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845824.197941.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845824.197941.png",
+      "bytes": 115576,
+      "sha256": "5333239e77a1c09ad2c0c9db2cea42754783835bde784c20cd1e6bb52d5f3194",
+      "git_blob_sha1": "8c2004f4cff550e63be7a3e6508e7b0c1dfbf5fb",
+      "role": "depth_frame",
+      "timestamp": 1341845824.197941,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845824.229923.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845824.229923.png",
+      "bytes": 114394,
+      "sha256": "d74f6ed68dc5211e5ae857bec42e851aa1d12d3bf13456e4b3e7f77acf8bc64d",
+      "git_blob_sha1": "f515860045c259946b19eefb4ef2975bf81766aa",
+      "role": "depth_frame",
+      "timestamp": 1341845824.229923,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845824.265815.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845824.265815.png",
+      "bytes": 114917,
+      "sha256": "0f25d380826871a1b17ab0f6eb6ed3bfff864d6d56ac4b397249962fac6e86fa",
+      "git_blob_sha1": "498a473f45bf6851b9e52542ecf1c141e76091a2",
+      "role": "depth_frame",
+      "timestamp": 1341845824.265815,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845824.298127.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845824.298127.png",
+      "bytes": 114034,
+      "sha256": "3608bbb1afcfb85102a805bccbfe09219dc664e68b555d04cd05ed151560854b",
+      "git_blob_sha1": "5f070338ba1ebb76baef8dc095c1cf6697b61fdb",
+      "role": "depth_frame",
+      "timestamp": 1341845824.298127,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845824.333796.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845824.333796.png",
+      "bytes": 113530,
+      "sha256": "b24f04523dcf458b5ac3b9382d11e8d8e922bccef87fb67d17f11926c7570ee7",
+      "git_blob_sha1": "67fc141969d86de1b286fa91c9c5d4a11de7fab7",
+      "role": "depth_frame",
+      "timestamp": 1341845824.333796,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845824.365854.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845824.365854.png",
+      "bytes": 113728,
+      "sha256": "69b3711e00d584e82611ee36d241fafe8463bf6ea8e4a193a667296e00429942",
+      "git_blob_sha1": "2c3192a75127730ebaa6a0b44e4ef4aa06a7d538",
+      "role": "depth_frame",
+      "timestamp": 1341845824.365854,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845824.398061.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845824.398061.png",
+      "bytes": 113790,
+      "sha256": "d8d1dad33b1041238be989be952d00e5801a8b0211aa32bcbf504ba2fddf46d8",
+      "git_blob_sha1": "3f7ffa5d0e66a37d6b8379e5a91d654426d24c4e",
+      "role": "depth_frame",
+      "timestamp": 1341845824.398061,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845824.434368.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845824.434368.png",
+      "bytes": 114233,
+      "sha256": "89325b4078c8703a7b1a164acee0bcefbf8e29f530c2b178a421d7b25ebaa7f4",
+      "git_blob_sha1": "bd17a8c68588b83e3e3f69acfb65143459f85c1f",
+      "role": "depth_frame",
+      "timestamp": 1341845824.434368,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845824.466300.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845824.466300.png",
+      "bytes": 113142,
+      "sha256": "06b45fc1145d1459d76997dd9f416eba91928c9f1c1956752c51864823b6d950",
+      "git_blob_sha1": "27a150d2006c8292380824ebb2d7d63c6ee441f3",
+      "role": "depth_frame",
+      "timestamp": 1341845824.4663,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845824.501815.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845824.501815.png",
+      "bytes": 114818,
+      "sha256": "b29b4ba936c2f43dee55840a9d3cc7dd9abcd4bf03d85c6432379fad5ea2cb1f",
+      "git_blob_sha1": "3cb45818494925c4a1e2f8d781089395e2e836ec",
+      "role": "depth_frame",
+      "timestamp": 1341845824.501815,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845824.533739.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845824.533739.png",
+      "bytes": 114799,
+      "sha256": "865f8ed472821f2008f0d44eaadc8c1f11d632f0120a0e0dd9c918d9e683d466",
+      "git_blob_sha1": "ad550ffce37d886993e29dc43f28ab6a4d0116cb",
+      "role": "depth_frame",
+      "timestamp": 1341845824.533739,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845824.565762.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845824.565762.png",
+      "bytes": 115916,
+      "sha256": "0ac5bb5ff7c9014c501fc94fdc0bf31debdcf4ea3fc7c8e6675dc3942bfa0026",
+      "git_blob_sha1": "24f79a708595f63c6463c4885f81a18653137741",
+      "role": "depth_frame",
+      "timestamp": 1341845824.565762,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845824.601769.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845824.601769.png",
+      "bytes": 115361,
+      "sha256": "b3500e9f90030660531007886255904192dc68cb60ecd70bbee725d42129ad9b",
+      "git_blob_sha1": "e1e6bf47615e4aac01a83e201345959d7244dab9",
+      "role": "depth_frame",
+      "timestamp": 1341845824.601769,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845824.633870.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845824.633870.png",
+      "bytes": 114619,
+      "sha256": "0acfe5e7baee34e8291eb735dc4231084d60860eb68e347b584adbc27dc2ba6f",
+      "git_blob_sha1": "481198fc633bdf4cd704b9f656c525ad1738d81c",
+      "role": "depth_frame",
+      "timestamp": 1341845824.63387,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845824.665812.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845824.665812.png",
+      "bytes": 108199,
+      "sha256": "06eab1c8dfe8d8c83e5bd09302bc5aa76f12bfd7e053fdf842153b05d360d95a",
+      "git_blob_sha1": "32cd7e6e371fd65a654d5417543d5d074734db11",
+      "role": "depth_frame",
+      "timestamp": 1341845824.665812,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845824.701788.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845824.701788.png",
+      "bytes": 112226,
+      "sha256": "b0368269dedb4465a272aa50e2fd38e33dd47c692733d243b2d27d26b5f01835",
+      "git_blob_sha1": "0d95b72bc23aae7a35100dac03840fb52bb006c7",
+      "role": "depth_frame",
+      "timestamp": 1341845824.701788,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845824.733637.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845824.733637.png",
+      "bytes": 114937,
+      "sha256": "b787951be1fdd1dd91dc186787ac4821380844ca0e6a65e155a329c4ae0aae1d",
+      "git_blob_sha1": "b4676126aabd4c505c1a296deea63d5995ccd375",
+      "role": "depth_frame",
+      "timestamp": 1341845824.733637,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845824.769656.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845824.769656.png",
+      "bytes": 115705,
+      "sha256": "fb53f06cee3faa3d31cc6f7b93d1f1a95e649dc7c82b9cbf5dec8dff4952a1d4",
+      "git_blob_sha1": "655de07ab0d22c64fdcb259d24551eed1d7c9e93",
+      "role": "depth_frame",
+      "timestamp": 1341845824.769656,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845824.801644.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845824.801644.png",
+      "bytes": 116194,
+      "sha256": "0637bf815668c867bd5446696870c298226b0009e441ef379eddbb2fac27491d",
+      "git_blob_sha1": "f2d271df0671a03be6a538a7e1a8e3b5096dcf12",
+      "role": "depth_frame",
+      "timestamp": 1341845824.801644,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845824.834105.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845824.834105.png",
+      "bytes": 117709,
+      "sha256": "aa9a592a90cabc676ee6399954cb9748990250d9eacaa7b7c04845c263ea7c7c",
+      "git_blob_sha1": "0834ea0acd6ed974976fe91748d80d076aaa1865",
+      "role": "depth_frame",
+      "timestamp": 1341845824.834105,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845824.869960.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845824.869960.png",
+      "bytes": 118054,
+      "sha256": "f1fa11607bf2a529c7332b7db378f75931a510eff66f5a47dead172e8b0ab28d",
+      "git_blob_sha1": "cb19f73d11db060df5594711db7c3cdeb3e92d3c",
+      "role": "depth_frame",
+      "timestamp": 1341845824.86996,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845824.902088.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845824.902088.png",
+      "bytes": 117309,
+      "sha256": "155b47880484a9beb3b87aaed91ae11ac1a92e9177ed1a3f954c65b6c4b0ab2d",
+      "git_blob_sha1": "16da956c73f15a04cb94d1023d458acca2644090",
+      "role": "depth_frame",
+      "timestamp": 1341845824.902088,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845824.933785.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845824.933785.png",
+      "bytes": 117279,
+      "sha256": "63d04b8ade4249ce286c67536e92c7ebeb583d7b9746b6bd67cec8912b646589",
+      "git_blob_sha1": "cc95a83d0035f1fe4d3b4c1f0a50b727aa4e8c21",
+      "role": "depth_frame",
+      "timestamp": 1341845824.933785,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845824.969889.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845824.969889.png",
+      "bytes": 117470,
+      "sha256": "ac275921000c26c63205b95d0e0c4c20e803cf30386eca584ca71d9becdcd96b",
+      "git_blob_sha1": "fa8b804ae508504fcbf31871b0fc10c362319b68",
+      "role": "depth_frame",
+      "timestamp": 1341845824.969889,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845825.001796.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845825.001796.png",
+      "bytes": 117112,
+      "sha256": "34e42c9a2d2bdb18f9e5808997517245e4feadb31d2a90a99761e3fd9c04a844",
+      "git_blob_sha1": "7308505479b68a4eec5f4765db972d257c4bb81a",
+      "role": "depth_frame",
+      "timestamp": 1341845825.001796,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845825.038401.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845825.038401.png",
+      "bytes": 117583,
+      "sha256": "5f562ff4403a12de0c05dbbe0c6a700545d062361bea0c2f89e0d80e98109806",
+      "git_blob_sha1": "f9365624912eb41fadcb95a599ebca670f0cfd99",
+      "role": "depth_frame",
+      "timestamp": 1341845825.038401,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845825.069771.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845825.069771.png",
+      "bytes": 116722,
+      "sha256": "939524d90a2a34fa39843982f666e5b103eb086c736c6cb86930eaf0073e2f3b",
+      "git_blob_sha1": "8de59a66093fa8a7d864bff8827b01e0b5e62237",
+      "role": "depth_frame",
+      "timestamp": 1341845825.069771,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845825.075923.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845825.075923.png",
+      "bytes": 117207,
+      "sha256": "a6355a34a1ba24767fdeda54a395c163979b9235867f8905af1746eb4679774a",
+      "git_blob_sha1": "08d8d85d77415439c816627dd4c5f4edb74d1547",
+      "role": "depth_frame",
+      "timestamp": 1341845825.075923,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845825.108044.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845825.108044.png",
+      "bytes": 117054,
+      "sha256": "4bcf03b9b3defcd21b9ad632896cc930132041aa4cd8f2fbf0aa9c1cae2dc071",
+      "git_blob_sha1": "c65f767ca9e96913314f17ecd043926029be152d",
+      "role": "depth_frame",
+      "timestamp": 1341845825.108044,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845825.143687.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845825.143687.png",
+      "bytes": 116552,
+      "sha256": "55639e63016ad08c6b921b8be9beb375327422bc33256c6e7c583d688cd6d325",
+      "git_blob_sha1": "515afc67c5700e7eac92a0210e591b4f90172faa",
+      "role": "depth_frame",
+      "timestamp": 1341845825.143687,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845825.175728.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845825.175728.png",
+      "bytes": 114217,
+      "sha256": "1665f67d336a85451649488f68d4a0ae17facde525a3128c05005e04f4047f49",
+      "git_blob_sha1": "7b23beaf0801fa1525f5d7831970e2375951fd63",
+      "role": "depth_frame",
+      "timestamp": 1341845825.175728,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845825.211875.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845825.211875.png",
+      "bytes": 113666,
+      "sha256": "ae818b9353ad7919574b8ec2d1f23364fab9fd3a85fb6badc4710fba9c02ab1f",
+      "git_blob_sha1": "06ec4e97dbafe4eba87a2ff9eb3f3dba352f1446",
+      "role": "depth_frame",
+      "timestamp": 1341845825.211875,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845825.244797.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845825.244797.png",
+      "bytes": 114811,
+      "sha256": "682c8437efb4223ee8d5f867fd73499b6a11302d4f4d7c5081a94adc42ad3ab9",
+      "git_blob_sha1": "474a19ba035749ff79b8e2a08468e90686ae5a2c",
+      "role": "depth_frame",
+      "timestamp": 1341845825.244797,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845825.275803.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845825.275803.png",
+      "bytes": 112439,
+      "sha256": "e87a99fa57abb57db2ad69f21a6a3a7478f340953aadb5807abf0afda18ecaa7",
+      "git_blob_sha1": "029c2d035b2f7e0d54b3fa41d60e0d1eb96367cd",
+      "role": "depth_frame",
+      "timestamp": 1341845825.275803,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "depth-1341845825.311705.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/depth/1341845825.311705.png",
+      "bytes": 113136,
+      "sha256": "6087156604504abeaaefcf7fa419157228c19c63e9d4c13f2ab9cc00192fd2ed",
+      "git_blob_sha1": "831597c8863b16a9b34cd7bc1ec053c56de92360",
+      "role": "depth_frame",
+      "timestamp": 1341845825.311705,
+      "encoding": "PNG uint16 grayscale 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 16,
+        "color_type": 0
+      }
+    },
+    {
+      "file": "rgb-1341845824.165751.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845824.165751.png",
+      "bytes": 550157,
+      "sha256": "d0ac25cf1cadb0bb2194e85d899366e90fd7ffa97b8a6f9cb9ccebc01c69f65a",
+      "git_blob_sha1": "0e16a4b82330a6f0d377b85038356d75cc6b5121",
+      "role": "rgb_frame",
+      "timestamp": 1341845824.165751,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845824.197930.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845824.197930.png",
+      "bytes": 589111,
+      "sha256": "13455dc28cb3f796f4da0758ee522db6868f2a0b129ddf8e5a502ed5ed2f9f7d",
+      "git_blob_sha1": "561a2db66ae65c0c4b910305ca7182a538618009",
+      "role": "rgb_frame",
+      "timestamp": 1341845824.19793,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845824.229907.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845824.229907.png",
+      "bytes": 575469,
+      "sha256": "db3ce4e52df01b4ba5e8bfcd55059105ca541a543f44a44d22a1f42ccef6bc50",
+      "git_blob_sha1": "a496a06f5271b0c6042f247a5d0ac1b5415b4b06",
+      "role": "rgb_frame",
+      "timestamp": 1341845824.229907,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845824.265800.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845824.265800.png",
+      "bytes": 544252,
+      "sha256": "115cea1df25e2402545c48a6e86db8aee679b90254ecccc46ee80fbf9f3620dd",
+      "git_blob_sha1": "9dc8972d2b3e892aad22d07a9e85d1bc5f64fe10",
+      "role": "rgb_frame",
+      "timestamp": 1341845824.2658,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845824.298080.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845824.298080.png",
+      "bytes": 537339,
+      "sha256": "e7f268fda337e3859db47b4ce222ed3eb928dc5bbf9c644d17246d2c52a0ebde",
+      "git_blob_sha1": "2a2d05c83ef87b3ee329262d6314c914c11d5baa",
+      "role": "rgb_frame",
+      "timestamp": 1341845824.29808,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845824.333783.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845824.333783.png",
+      "bytes": 578941,
+      "sha256": "bd13de9c67a356989e85ac9e7dc409789a85a8769515d10687615fc482aa4bab",
+      "git_blob_sha1": "ec981afaef43ed037b72e4884bdd3d1cd739cce1",
+      "role": "rgb_frame",
+      "timestamp": 1341845824.333783,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845824.365821.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845824.365821.png",
+      "bytes": 593155,
+      "sha256": "f6afcb881471a0d2d81ef0d598007cb39dfe243ab998ffbeb9ae126dbb1d9737",
+      "git_blob_sha1": "6f2b9662ea4f44bda94df5882c9c45b563c19067",
+      "role": "rgb_frame",
+      "timestamp": 1341845824.365821,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845824.398039.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845824.398039.png",
+      "bytes": 569519,
+      "sha256": "898edc65fc5be0949695b58aaaf355b092a04fbf651f99959d58a7780cf5ff70",
+      "git_blob_sha1": "f46a1b6e4707c1c7e11e22bb01cdd8aacb1669d3",
+      "role": "rgb_frame",
+      "timestamp": 1341845824.398039,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845824.433843.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845824.433843.png",
+      "bytes": 554906,
+      "sha256": "c10cfeefbf4fc1b76da8277c614db993669ae53d6e12bf6de98b6c51fe3cf9ad",
+      "git_blob_sha1": "c828bf228610d628ccdbda10385784deef5b5b7c",
+      "role": "rgb_frame",
+      "timestamp": 1341845824.433843,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845824.465921.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845824.465921.png",
+      "bytes": 569088,
+      "sha256": "9feda7cd23990c607c8c409cd290b449fa81fbbf2107f97e99ab19e126959027",
+      "git_blob_sha1": "e59b6c037720e2fdd09e0d862df801eac3a2a4c3",
+      "role": "rgb_frame",
+      "timestamp": 1341845824.465921,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845824.501802.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845824.501802.png",
+      "bytes": 573903,
+      "sha256": "8c9dc4e7f1b75b80755396ffe2aa8b20d13d98ac3f98e66517c6ddee6797e81d",
+      "git_blob_sha1": "091447ddce1df6addb883be44e7fb32764b53757",
+      "role": "rgb_frame",
+      "timestamp": 1341845824.501802,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845824.533723.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845824.533723.png",
+      "bytes": 567254,
+      "sha256": "e4fce2a7c3f8b9ff756ccb438876d8976f37019237470c28b6064ccde8a91a09",
+      "git_blob_sha1": "9ad75773c448be1a705f3213eaef2156ebf8007b",
+      "role": "rgb_frame",
+      "timestamp": 1341845824.533723,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845824.565735.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845824.565735.png",
+      "bytes": 564860,
+      "sha256": "42d67df995e8b3919ad505b01fb11335c770b94a02645efece5a7c98e7ec21ce",
+      "git_blob_sha1": "20e07d5108f86e37b5a3eaaa9fbc6d67204f537e",
+      "role": "rgb_frame",
+      "timestamp": 1341845824.565735,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845824.601758.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845824.601758.png",
+      "bytes": 575030,
+      "sha256": "5899a74080e6b2df016a803574c4fc5dd8c1963707d6a899d0bfbcd27810c58d",
+      "git_blob_sha1": "b510a94059113d5c8868b799d38b757c0683e717",
+      "role": "rgb_frame",
+      "timestamp": 1341845824.601758,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845824.633861.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845824.633861.png",
+      "bytes": 571947,
+      "sha256": "4f94e2a3c1fecdbfe086708bdf8d5688dc3ccfb9b87e4f8bcc9dccfa653c58db",
+      "git_blob_sha1": "07c7bd586d9bb1cdb25eb9d97510a42db7692738",
+      "role": "rgb_frame",
+      "timestamp": 1341845824.633861,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845824.665789.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845824.665789.png",
+      "bytes": 568763,
+      "sha256": "a9afc5d46de2027ac37a4799ca924e2cf1d9f034ae7b82c04fa555ca2b5166e5",
+      "git_blob_sha1": "5dbb1419486694c03294540cad81177eeefdbcc0",
+      "role": "rgb_frame",
+      "timestamp": 1341845824.665789,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845824.701769.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845824.701769.png",
+      "bytes": 559786,
+      "sha256": "12406f0ba8c7097499882ffb90bb1248510b71bc8cb17d1a52ef008c566b3a2c",
+      "git_blob_sha1": "52a66da67b25cc97309755a45d89b6bbf7d16f96",
+      "role": "rgb_frame",
+      "timestamp": 1341845824.701769,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845824.733585.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845824.733585.png",
+      "bytes": 574470,
+      "sha256": "376226b781826be83687bed3614d8d9252224afc9e06a48ec2ac8a90ce8afb39",
+      "git_blob_sha1": "6cbeaead81617c459417361216e596f65ae8634e",
+      "role": "rgb_frame",
+      "timestamp": 1341845824.733585,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845824.769643.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845824.769643.png",
+      "bytes": 560433,
+      "sha256": "116e7dac7eeb52c2b6b59dca8a1bb072a84187866ae63296577e680f0fbb5d6b",
+      "git_blob_sha1": "a5ab5a528087552ab3e30d673b582c335cceab73",
+      "role": "rgb_frame",
+      "timestamp": 1341845824.769643,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845824.801632.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845824.801632.png",
+      "bytes": 543103,
+      "sha256": "7c2d91214ddb07f422392d5966b93fe3838f9f1bdde4adf12667b2dc61160204",
+      "git_blob_sha1": "66db9aac6684a730e7d80a25a14b1ec3d93a6b8c",
+      "role": "rgb_frame",
+      "timestamp": 1341845824.801632,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845824.833654.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845824.833654.png",
+      "bytes": 567135,
+      "sha256": "187646cfb0defa04875da2ff5c51d4d66b1a0b32817444c9cabe5e689cbeeda0",
+      "git_blob_sha1": "80c464a3703aaa25510f327bdd1eaf9a91d4e55d",
+      "role": "rgb_frame",
+      "timestamp": 1341845824.833654,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845824.869926.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845824.869926.png",
+      "bytes": 572293,
+      "sha256": "b0c91c0a0a6f78f80c9b5a3ab0e1efdd38e14dfb3189f56ba5203ed885955655",
+      "git_blob_sha1": "a3905cd6bf3fe6f8c9778e90b780efe934289c91",
+      "role": "rgb_frame",
+      "timestamp": 1341845824.869926,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845824.902071.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845824.902071.png",
+      "bytes": 570810,
+      "sha256": "93dfa44b23117af4f7597c37e895b8bf958aa519f1baba3071f8a906b082fdea",
+      "git_blob_sha1": "6e01dbb892084c93b08f8311462ee3f4319fdcae",
+      "role": "rgb_frame",
+      "timestamp": 1341845824.902071,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845824.933752.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845824.933752.png",
+      "bytes": 577614,
+      "sha256": "f6bed84917218313a2418bee745ff43dd99160475bbb451c35fd29ce6fd4b738",
+      "git_blob_sha1": "6864f72b86936a5a427e89b013bdcfa197671efa",
+      "role": "rgb_frame",
+      "timestamp": 1341845824.933752,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845824.969855.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845824.969855.png",
+      "bytes": 568498,
+      "sha256": "a21927475b8cce895d58911aebe95f520df6badbe43c6b74c36c716710352a73",
+      "git_blob_sha1": "b8726390a6c4ca749afad473b8714bc2f63f7b0e",
+      "role": "rgb_frame",
+      "timestamp": 1341845824.969855,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845825.001907.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845825.001907.png",
+      "bytes": 560123,
+      "sha256": "336b4e7d95ec8ea4f7f71bae53cc0dfad8387dfdd6e5f2fb8bb5ea15728cd40c",
+      "git_blob_sha1": "19796244e794d837f48c8bf650c48fd67fc7042e",
+      "role": "rgb_frame",
+      "timestamp": 1341845825.001907,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845825.037975.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845825.037975.png",
+      "bytes": 571130,
+      "sha256": "93da7ee9ddb3f2fca024bc687c291586bebf3be74cd62a0b3b8ba86115f7e5f7",
+      "git_blob_sha1": "677f13deac53408853abe2fe3c67d3c4018da0ca",
+      "role": "rgb_frame",
+      "timestamp": 1341845825.037975,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845825.075793.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845825.075793.png",
+      "bytes": 561241,
+      "sha256": "912ca35377ad27dace0abda076b06bcba3efaecd4bfc5bb83d051677d344f129",
+      "git_blob_sha1": "16840e216022e3103bb4a47888659bf377da54d5",
+      "role": "rgb_frame",
+      "timestamp": 1341845825.075793,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845825.107881.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845825.107881.png",
+      "bytes": 559582,
+      "sha256": "3d0b00e3dfe62e6495e170341a524f3a82035caa7540d4d8085c1eb11acf9cb7",
+      "git_blob_sha1": "571301f4f9ea6c9031220351f47085878eb97b1a",
+      "role": "rgb_frame",
+      "timestamp": 1341845825.107881,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845825.143675.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845825.143675.png",
+      "bytes": 572205,
+      "sha256": "3d1873d397085580537de36a2206b6517130ac98c30da9870b5ae101c93192c6",
+      "git_blob_sha1": "24196c7900fa717b44f5b2defbf2a19deb0ac940",
+      "role": "rgb_frame",
+      "timestamp": 1341845825.143675,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845825.175707.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845825.175707.png",
+      "bytes": 583916,
+      "sha256": "e2afe9aff562c900e995ee6aeb90e0f4ccf702d1f5ec58166ec7909a5045fda3",
+      "git_blob_sha1": "a5be6e278df87de4c52d56b98ff51a3db52b4eea",
+      "role": "rgb_frame",
+      "timestamp": 1341845825.175707,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845825.211865.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845825.211865.png",
+      "bytes": 585882,
+      "sha256": "43128af9eac1cc9e2630eef9d3718ab88804bc3b94bf33b36c783463fa71042b",
+      "git_blob_sha1": "5b0e705e66bffdd5d9e216e8597cfd1f34e3ff2f",
+      "role": "rgb_frame",
+      "timestamp": 1341845825.211865,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845825.243814.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845825.243814.png",
+      "bytes": 561650,
+      "sha256": "562c6c26521058345ccccab71774a07329e684656231ed5f4ad77ba5b6e41c8e",
+      "git_blob_sha1": "bd38479833a189f232eada4add6c90abd28b8873",
+      "role": "rgb_frame",
+      "timestamp": 1341845825.243814,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845825.275795.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845825.275795.png",
+      "bytes": 581437,
+      "sha256": "42d6708d6d97e58e2fad658d18bbeacaf61d76403784e1866ab384dc5b35e42e",
+      "git_blob_sha1": "7c30267dcfc9991ac810ae363015c2648ec81ea5",
+      "role": "rgb_frame",
+      "timestamp": 1341845825.275795,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    },
+    {
+      "file": "rgb-1341845825.311665.png",
+      "source_path": "data/rgbd_dataset_freiburg3_sitting_xyz/rgb/1341845825.311665.png",
+      "bytes": 567994,
+      "sha256": "ad68e79c1b6b74c7a471aa2d148325e94e3882dd8617b2f531ac5a7e069effab",
+      "git_blob_sha1": "097ab0feb31de0a64c5610b22fe5191abc4c2ed4",
+      "role": "rgb_frame",
+      "timestamp": 1341845825.311665,
+      "encoding": "PNG uint8 RGB 640x480",
+      "png_header_metadata": {
+        "width": 640,
+        "height": 480,
+        "bit_depth": 8,
+        "color_type": 2
+      }
+    }
+  ],
+  "association_audit": {
+    "depth_frames": 36,
+    "unique_rgb_frames": 35,
+    "repeated_rgb_associations": 1,
+    "maximum_pair_gap_seconds": 0.006021976470947266,
+    "association_rule": "nearest RGB timestamp, earlier index on exact tie; no resampling or interpolation",
+    "maximum_mocap_bracket_seconds": 0.01289987564086914,
+    "invalid_mocap_brackets": 0
+  },
+  "acquisition_audit": {
+    "pre_first_visual_pixel_decode": true,
+    "rgb_pixels_decoded": false,
+    "depth_pixels_decoded_during_preparation": false,
+    "reference_pose_values_inspected_during_preparation": false,
+    "png_ihdr_metadata_only": true,
+    "total_bytes": 24434187,
+    "manifest_created_utc": "2026-10-10T02:04:15.242881+00:00"
+  },
+  "transfer_bounds": {
+    "total_bytes": 33554432,
+    "file_bytes": 4194304
+  }
+}

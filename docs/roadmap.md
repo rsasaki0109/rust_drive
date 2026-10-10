@@ -65,7 +65,23 @@ viewed regressions. [Implementation and retained drift](recorded-keyframes.md).
 
 Fixed-root bounded measured submaps now fuse accepted scans with atomic voxel updates, but the first desk trial passes root accuracy on only 8/35 updates, while a separate office/camera trial scores 5/35 and latches loss. Eight separately frozen original BDD dashcam frames also expose low automotive recall (35/138 objects). [Submap evidence](recorded-submaps.md); [BDD evidence](bdd-road-evaluation.md).
 
-Next: diagnose measured-map drift and reject misleading locally accepted fits; develop on viewed recordings and preregister another independent accuracy trial. Improve distant road-user detection, set explicit per-class acceptance gates and evaluate a frozen model on new road images. Validate uncertainty, measured extrinsics and camera/geometry integration before claiming the 30% planning waypoint. Preserve all observed failures as regression evidence.
+An additional RGB-D visual path now associates original Rust image features
+with registered depth before bounded robust rigid fitting. It improves the
+viewed desk recording to 24/35 root-accurate updates, but the unchanged office
+configuration still scores only 9/35. An independent pixel/descriptor/depth
+reconstruction and separate SVD fitter verify both results. Repeated RGB images
+cannot renew tracking, and accepted-pose expiry latches loss.
+The separate first frozen sitting trial scores 31/35, with four retained
+rejections; it also fails complete availability acceptance.
+[Visual-motion protocol and full outcomes](recorded-visual-odometry.md).
+
+Next: diagnose remaining measured-motion drift and validate camera/depth
+calibration and timing; keep development on viewed recordings and freeze each
+new accuracy trial before its first evaluation. Improve distant road-user
+detection, set explicit per-class acceptance gates and evaluate a frozen model
+on new road images. Validate uncertainty, measured extrinsics and
+camera/geometry integration before claiming the 30% planning waypoint. Preserve
+all observed failures as regression evidence.
 
 - General 3D point processing and terrain classification, richer shape tracking and data association. Bounded local measured-ground removal is implemented for near-flat native query scenes.
 - Map formats and map localization, inertial bias estimation and bounded GNSS-denied tests.

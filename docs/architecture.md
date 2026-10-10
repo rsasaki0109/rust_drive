@@ -178,6 +178,27 @@ relocalization and calibrated map uncertainty are absent. Mocap remains
 post-fit evaluation data, and this adapter supplies no vehicle controls.
 [Fusion, independent environments and failure evidence](recorded-submaps.md).
 
+The independent RGB-D visual path associates measured image features before
+fitting metric motion. `perception::image_features` extracts bounded FAST-9
+corners and original oriented binary descriptors; mutual Hamming matching uses
+a strict ratio test. The optional recorded adapter projects each matched pixel
+using its corresponding registered depth, rejecting invalid or discontinuous
+3×3 patches. `localization::visual_odometry3d` then fits a proper rigid transform
+with deterministic bounded triple hypotheses, consensus refitting, geometric
+rank checks and competing-model rejection. Known noncollinear planar
+correspondences can determine rigid motion; collinear support cannot.
+
+Only accepted measurements replace the reference and renew its 0.20-second
+clock. Repeated RGB timestamps are rejected against the last observed image,
+including images whose previous fit failed. Every original depth observation
+remains in the evaluation denominator. Accepted-pose expiry latches loss;
+motion-capture labels are parsed only after operational fitting. This offline
+adapter has no loop closure, moving-object segmentation, map fusion,
+calibrated covariance or driving-pipeline integration. Source RGB/depth
+registration and short time associations are assumptions, without an
+independently measured camera/vehicle calibration.
+[Recorded visual-motion evidence](recorded-visual-odometry.md).
+
 The unchanged optional Rust CPU detector also runs on eight original BDD
 dashcam frames. A separately pinned Python scorer matches canonical legacy
 boxes by class and IoU, retains all misses and uses the dataset's research

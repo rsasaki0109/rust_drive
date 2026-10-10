@@ -14,3 +14,16 @@ assets/recorded-bdd/LICENSE-data.txt -text whitespace=-blank-at-eol
 assets/recorded-submaps/** text eol=lf
 assets/recorded-bdd/*.json text eol=lf
 crates/localization/src/submap3d.rs text eol=lf
+# Preserve visual-motion source freezes and independent pixel evidence.
+assets/recorded-visual/** text eol=lf linguist-generated=true
+integrations/rgbd/baselines/visual-sitting-first-v1/** linguist-generated=true
+crates/perception/src/image_features.rs text eol=lf
+crates/localization/src/visual_odometry3d.rs text eol=lf
+crates/perception/src/lib.rs text eol=lf
+crates/localization/src/lib.rs text eol=lf
+crates/core/src/lib.rs text eol=lf
+Cargo.lock text eol=lf
+rust-toolchain.toml text eol=lf
+scripts/check-recorded-*.py text eol=lf
+scripts/fetch-visual-datasets.py text eol=lf
+scripts/requirements-visual.txt text eol=lf

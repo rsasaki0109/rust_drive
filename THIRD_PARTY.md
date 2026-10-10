@@ -52,3 +52,12 @@ ignored `data/*/raw/` folders. Raw depth, mocap and calibration files are not
 redistributed. The source mirrors do not establish the original data's licence;
 the official TUM terms have not been independently verified in this session.
 [Dataset provenance and limitations](docs/recorded-submaps.md).
+
+The optional [RGB-D visual-motion evaluator](docs/recorded-visual-odometry.md)
+also fetches pinned original RGB PNGs into these ignored raw directories.
+Images are not redistributed or relicensed. FAST-9, intensity-centroid
+orientation, binary intensity comparisons and Horn rigid fitting are
+implemented directly in Rust; the deterministic descriptor sampling pattern is
+original, without copied OpenCV code or its learned ORB pattern. Independent
+pixel reconstruction uses optional NumPy (BSD-3-Clause) and Pillow
+(HPND); their versions are pinned in `scripts/requirements-visual.txt`.
