@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "utc": "2026-10-10T04:34:31.885231+00:00",
+  "command": [
+    "/tmp/rustdrive-rgbd-target/release/rustdriving-rgbd-temporal",
+    "--manifest",
+    "/workspace/rust_drive/data/tum-fr1-room-temporal/manifest.json",
+    "--raw",
+    "/workspace/rust_drive/data/tum-fr1-room-temporal/raw",
+    "--qualification",
+    "/workspace/rust_drive/assets/recorded-temporal/first-room-v1/qualification.json",
+    "--freeze",
+    "/workspace/rust_drive/assets/recorded-temporal/first-room-v1/freeze.json",
+    "--output",
+    "/workspace/rust_drive/assets/recorded-temporal/first-room-v1/results.json"
+  ],
+  "binary_sha256": "089c886d59d813524183e6ffc8b896ff1ae0ee7510335b4650f1db8882facdfc",
+  "first_run_not_regression": true,
+  "evidence_role": "partly viewed temporal extension, not fresh generalization"
+}

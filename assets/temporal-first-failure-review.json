@@ -1,0 +1,124 @@
+{
+  "first36_prefix_exact_except_cpu_and_split": true,
+  "comparison_excluded_fields": [
+    "cpu_wall_seconds",
+    "split"
+  ],
+  "first_root_accuracy_failure": {
+    "source_index": 149,
+    "depth_timestamp": 1305031915.744275,
+    "accepted": true,
+    "rejection": null,
+    "last_accepted_stamp_before": 1305031915.71092,
+    "last_accepted_stamp_after": 1305031915.744275,
+    "lost_before": false,
+    "lost_after": false,
+    "root_accuracy": {
+      "estimate": {
+        "quaternion_wxyz": [
+          0.9779693040188291,
+          -0.008116485602219687,
+          -0.07217490137881405,
+          -0.1957062765200965
+        ],
+        "translation_m": [
+          0.8715368128638945,
+          0.029764760883120276,
+          -0.2783912449061627
+        ]
+      },
+      "evaluation_only_truth": {
+        "quaternion_wxyz": [
+          0.9719471082620413,
+          -0.0036943477828653704,
+          -0.12282031835078158,
+          -0.20055009333263185
+        ],
+        "translation_m": [
+          0.953152835328686,
+          0.0037532756342023577,
+          -0.24355988394064254
+        ]
+      },
+      "reference_valid": true,
+      "rotation_error_rad": 0.10285574053257113,
+      "translation_error_m": 0.09247159669075897,
+      "valid": true,
+      "within_accuracy_gates": false
+    }
+  },
+  "first_lost": {
+    "source_index": 164,
+    "depth_timestamp": 1305031916.244817,
+    "accepted": false,
+    "rejection": "visual accepted-pose age exceeded; localization lost",
+    "last_accepted_stamp_before": 1305031916.044257,
+    "last_accepted_stamp_after": 1305031916.044257,
+    "lost_before": false,
+    "lost_after": true,
+    "root_accuracy": {
+      "evaluation_only_truth": {
+        "quaternion_wxyz": [
+          0.9016341064271638,
+          0.06135144122332082,
+          -0.32332733690274107,
+          -0.2806267485442053
+        ],
+        "translation_m": [
+          1.20187937510283,
+          -0.09564622707142245,
+          -0.18189164060597052
+        ]
+      },
+      "reference_valid": true,
+      "valid": false,
+      "within_accuracy_gates": false
+    }
+  },
+  "grouped_metrics": {
+    "viewed_prefix": {
+      "updates": 35,
+      "accepted": 35,
+      "accurate": 35,
+      "valid_references": 35,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "maximum_accepted_translation_error_m": 0.07569978445767217,
+      "maximum_accepted_rotation_error_rad": 0.08466065788201566
+    },
+    "unviewed_extension": {
+      "updates": 144,
+      "accepted": 23,
+      "accurate": 17,
+      "valid_references": 144,
+      "rejected": 121,
+      "rejection_reasons": {
+        "no bounded visual correspondence consensus": 1,
+        "invalid or oversized visual correspondences": 4,
+        "visual accepted-pose age exceeded; localization lost": 1,
+        "visual odometry lost; explicit new origin required": 115
+      },
+      "maximum_accepted_translation_error_m": 0.09884618627335028,
+      "maximum_accepted_rotation_error_rad": 0.11037314331801358
+    },
+    "all_updates": {
+      "updates": 179,
+      "accepted": 58,
+      "accurate": 52,
+      "valid_references": 179,
+      "rejected": 121,
+      "rejection_reasons": {
+        "no bounded visual correspondence consensus": 1,
+        "invalid or oversized visual correspondences": 4,
+        "visual accepted-pose age exceeded; localization lost": 1,
+        "visual odometry lost; explicit new origin required": 115
+      },
+      "maximum_accepted_translation_error_m": 0.09884618627335028,
+      "maximum_accepted_rotation_error_rad": 0.11037314331801358
+    }
+  },
+  "all_initialization_indices": [
+    100
+  ],
+  "evidence_scope": "same previously evaluated room recording; tail images extend observed horizon; full GT numerical source already evaluated; no new-recording or fresh-generalization claim"
+}

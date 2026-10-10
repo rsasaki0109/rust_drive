@@ -39,6 +39,12 @@ passes all 35 updates (maximum root errors 0.075700 m / 0.084661 rad).
 The source archive, independent pixel audit and exact viewed reproduction are
 retained. Longer-duration and automotive localization remain unverified.
 
+The [continuous room extension](docs/temporal-recorded-motion.md) retains that
+same prefix and runs 180 frames without a reset. Over 5.973 seconds it accepts
+58/179 updates, meets root accuracy on 52/179, and then loses tracking. The
+failed first result, independent audit and error plot are retained; passing a
+short interval does not establish reliable sustained localization.
+
 ## Build and run
 
 The shared pipeline, CPU RNE adapter and recorded 3D demos are available on `main`.

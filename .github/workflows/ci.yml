@@ -157,6 +157,11 @@ jobs:
           python scripts/test-qualify-rgbd-metadata.py
           python scripts/fetch-qualified-dataset.py tum-fr1-room-qualified
           python scripts/check-recorded-qualified-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-qualified --output artifacts/recorded-qualified
+      - name: Reproduce continuous room motion with a partly viewed prefix
+        run: |
+          python scripts/test-qualify-rgbd-temporal.py
+          python scripts/fetch-temporal-dataset.py tum-fr1-room-temporal
+          python scripts/check-recorded-temporal-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-temporal --output artifacts/recorded-temporal
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -174,6 +179,7 @@ jobs:
             artifacts/recorded-visual/
             artifacts/recorded-reprojection/
             artifacts/recorded-qualified/
+            artifacts/recorded-temporal/
 
   visual:
     runs-on: ubuntu-latest

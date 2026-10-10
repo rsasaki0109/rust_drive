@@ -82,6 +82,7 @@
 | General right of way / intersections / parking | Planned | Other actors do not obey controls; no all-way stop ordering, lane negotiation or parking behavior |
 | General dynamically feasible planning / MPC | Planned | Current lattice + pure pursuit baseline |
 | CARLA bridge | Planned; not implemented or validated | No CARLA server/assets installed |
+| Continuous recorded camera motion | Implemented offline; protocol fails | Same-room 180-frame extension with one origin and all 179 updates retained; 58 accepted / 52 accurate, then loss; [evidence](temporal-recorded-motion.md) |
 | Metadata-qualified recorded camera motion | Implemented offline research | Whole-source timestamps checked before image decoding; first fixed indoor room interval passes 35/35 with unchanged 0.1 m / 0.1 rad gates; no long-duration or driving integration; [evidence](qualified-recorded-motion.md) |
 | ROS 2 bridge | Planned; optional | No ROS dependency in algorithms |
 | Real vehicle / CAN actuation | Out of initial scope | Simulator commands only |

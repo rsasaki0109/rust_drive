@@ -68,6 +68,13 @@ This is new short-sequence evidence, without automotive calibration, uncertainty
 long-duration mapping or driving fusion. The estimate remains **about 20%**;
 the 30% waypoint and requested 50% goal remain unmet.
 
+The [same-room continuous extension](temporal-recorded-motion.md) retains the
+passing prefix but scores only **52/179** root-accurate updates over 5.973 seconds.
+Orientation error exceeds the unchanged gate and insufficient measured matches
+lead to latched tracking loss. This failure limits the preceding short result;
+one origin, all failures and exact prefix reproduction are retained. The
+estimate remains **about 20%**, with the 30% and 50% goals unmet.
+
 | Area | Current evidence | Evidence needed for a credible 50% planning milestone |
 |---|---|---|
 | Sensing / localization | Native XYZ LiDAR, optional measured AABBs/terrain; failed held-out airborne PMF baseline; local fixed-map matching with bounded GNSS-denied native driving; noisy GNSS/wheel/gyro and acquisition-time reprojection | Reliable held-out automotive perception and real-motion map matching; measured extrinsics and camera observations; synchronization, covariance calibration and broader degraded-sensing measurements |

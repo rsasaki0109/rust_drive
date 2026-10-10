@@ -251,3 +251,12 @@ opening any image bytes. It then runs the unchanged measured feature, robust 3D
 consensus and bounded pixel-refinement algorithms. Numeric reference poses enter
 scoring only after every operational sensor fit. This is offline indoor research,
 without driving integration. [Protocol and first result](qualified-recorded-motion.md).
+
+## Continuous recorded camera motion
+
+The separate temporal binary keeps one accepted reference/root and both clocks
+across all 180 measured frames. The viewing-history boundary is metadata only;
+it cannot initialize or reset tracking. Accepted-pose expiry latches loss and
+all later acquisitions remain rejected in the report. The frozen first extension
+fails after orientation error and insufficient depth-supported matches. This
+path remains offline, outside driving control. [Evidence](temporal-recorded-motion.md).

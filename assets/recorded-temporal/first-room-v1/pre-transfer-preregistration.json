@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "recorded_utc": "2026-10-10T04:21:45.732354+00:00",
+  "dataset": "tum-fr1-room-temporal",
+  "repository": "edrishakimi1/Indoor-SLAM-Floorplan-with-Gaussian-Splatting",
+  "revision": "1d5b2c3e1ee186abc1709042b739e9cd8a3b41d1",
+  "source_prefix": "data/rgbd_dataset_freiburg1_room/",
+  "fixed_original_depth_indices": {
+    "first": 100,
+    "last": 279,
+    "frames": 180,
+    "updates": 179
+  },
+  "evidence_role": "Partly viewed temporal extension of the same FR1 room sequence; overlaps 36 previously viewed frames. Not a fresh environment or generalization trial.",
+  "association_gate_seconds": 0.02,
+  "ground_truth_bracket_gate_seconds": 0.02,
+  "total_bound_bytes": 134217728,
+  "file_bound_bytes": 4194304,
+  "camera_profile": "Exact previously pinned TUM1.yaml; 5000 units/metre; no changes",
+  "algorithm_policy": "All estimator defaults and gates unchanged; root owns final algorithm/source freeze before first continuous run.",
+  "selection_policy": "One fixed window only. Stop if full timestamp/arity qualification or any association/bracket/budget/source identity check fails; no accuracy-based window search.",
+  "inspection_policy": "Timestamp columns and row arity only; no numeric GT pose columns, image signatures, headers, dimensions or pixels; no features or fits. Reuse old verified cached opaque bytes, acquire missing image bytes opaquely.",
+  "extension_pixels_inspected": false,
+  "extension_gt_pose_values_parsed": false
+}
