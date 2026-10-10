@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "phase": 1,
+  "started_utc": "2026-10-10T03:26:17.539743+00:00",
+  "finished_utc": "2026-10-10T03:26:18.125924+00:00",
+  "command": [
+    "/tmp/rustdrive-rgbd-target/release/rustdriving-rgbd-evaluate",
+    "--visual-reprojection",
+    "--manifest",
+    "data/tum-fr2-desk-reprojection/manifest.json",
+    "--raw",
+    "data/tum-fr2-desk-reprojection/raw",
+    "--freeze",
+    "/workspace/rust_drive/artifacts/reprojection-first-fr2-v1/freeze.json",
+    "--output",
+    "/workspace/rust_drive/artifacts/reprojection-first-fr2-v1/results.json"
+  ],
+  "evaluator_exit_status": 2,
+  "regression_requested": false,
+  "first_trial_retained": true,
+  "no_post_fit_retuning": true,
+  "run.log_sha256": "d98cf8c1935148a83aae2fe9b5f74cd6dc0752ea7a13890f42093f7d31d56d38"
+}

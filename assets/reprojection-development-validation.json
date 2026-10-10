@@ -1,0 +1,411 @@
+{
+  "schema_version": 1,
+  "verified_utc": "2026-10-10T03:41:03.838145+00:00",
+  "role": "Current viewed RGB-D development and regression verification",
+  "root_workspace": {
+    "root_tests_passed": 371,
+    "root_tests_failed": 0,
+    "all_original_49_reference_episodes_passed": true,
+    "all_49_sensor_replays_verified": true,
+    "all_245_files_byte_identical": true,
+    "files": 245,
+    "comparison_source_head": "2d3312c84dfa2e1947329b8f7c339a223c477eaf",
+    "log_sha256": "80a708945a5aeff650e5d5af70928c5f862568eae835d4125ccb6450e578d4d3",
+    "source_hashes": {
+      "crates/localization/src/reprojection3d.rs": "2895e1c3eafefcfacdd156fd51706598521f0344f427f24edf420d159e5da486",
+      "crates/localization/src/lib.rs": "26e1a082ceedadd0de957714bd11170bf16e732e7948b01530b699214510bdf3",
+      "crates/localization/src/visual_odometry3d.rs": "718192d69b02de0a668c54e8469812b7c5f1903ab74de660e1b221e2ec874d24",
+      "crates/perception/src/image_features.rs": "5b5b103d4e798929f753a850387609405cad1a303d49ef8e81433f064e901106",
+      "Cargo.lock": "de8e6afb2c8f59be7f68f0ccf8604e4d43d9951d6902314f46f16b8121dbccf7"
+    }
+  },
+  "optional_rgbd": {
+    "tests_passed": 25,
+    "release_clippy_passed": true,
+    "format_passed": true,
+    "binary_sha256": "a6e968e5af75f44be26dda5263de6cb008f89668af1950c7ab6a5df2e590c5b1",
+    "adapter_sha256": "ff77f6038c65c9c27361291a0b9997c99e714ae2996803adf7e7b044e92fde2a",
+    "checker_sha256": "fd1425f9c73c21b104d9453a7c2b298c21fa22effd6ecb5f0015bbc41f79cef7"
+  },
+  "original_first_trial": {
+    "evaluator_exit_status": 2,
+    "summary": null,
+    "accuracy_claim": false,
+    "source_count": 20,
+    "input_count": 65,
+    "source_replay": {
+      "source_rebuilt_replay": true,
+      "exact_original_freeze_reproduced": true,
+      "evaluator_exit_status": 2,
+      "original_error_log_identical": true,
+      "original_no_report_outcome_reproduced": true,
+      "binary_sha256": "729d682bcb22793024b86104f2d2214f7342b732a13140ee1f37223dc8344936",
+      "first_binary_sha256": "17870d9524b09f9342924556a4bb92a79aba8509c7ea6a5fd032acdc3c1ed800",
+      "binary_identical_to_first_executable": false,
+      "accuracy_claim": false
+    },
+    "phase0_sha256": "5604f486c0c2dd37472553e044f467c1f456e7274afd43519369c34386458dfe",
+    "phase1_sha256": "0ca895ba9a5428d3a716226da25a75eafe6176c55e9693ee23daeb9788bfd25e",
+    "original_error_log_sha256": "d98cf8c1935148a83aae2fe9b5f74cd6dc0752ea7a13890f42093f7d31d56d38",
+    "original_freeze_sha256": "ef2647e6ba986651cdd5f0096ea784fd3a73757d637ef73d1f274c4f5a1897a3",
+    "input_failure_audit": {
+      "schema_version": 1,
+      "passed_integrity": true,
+      "source_freeze_verified": true,
+      "input_failure": true,
+      "evaluation_label_failure": {
+        "file": "groundtruth.txt",
+        "source_sha256": "0d8e0119a4e9592b886c5ca954472c3270c01814dd2059fbe196d5c24c8f3d17",
+        "reason": "invalid GT quaternion or nonmonotonic timestamps"
+      },
+      "evaluator_exit_status": 2,
+      "no_first_sensor_trace_available": true,
+      "pixel_features_or_fits_reconstructed": false,
+      "raw_sha256_verified": true,
+      "frozen_source_count": 20,
+      "verified_input_files": 65,
+      "freeze_sha256": "ef2647e6ba986651cdd5f0096ea784fd3a73757d637ef73d1f274c4f5a1897a3",
+      "manifest_sha256": "407dd54344b6792ae8582295a60ec37799e8272d1847889ab76b74808b0300aa",
+      "expected_error_log_sha256": "d98cf8c1935148a83aae2fe9b5f74cd6dc0752ea7a13890f42093f7d31d56d38",
+      "running_checker_sha256": "fd1425f9c73c21b104d9453a7c2b298c21fa22effd6ecb5f0015bbc41f79cef7",
+      "frozen_checker_sha256": "9850129eca6093e8a773e4285eed13992e860681be8bbb6cb561d60039b88c19",
+      "archived_source_snapshot": true,
+      "mutations_rejected": [
+        "changed_archived_first_checker",
+        "changed_original_failure_log",
+        "changed_failed_GT_source_bytes",
+        "invented_success_log"
+      ],
+      "evidence_role": "immutable first CLI2 input failure; subsequent trials are viewed",
+      "accuracy_claim": false,
+      "observed_sensor_update_count": null,
+      "prior_archive_scope_note_correction": "Original scored_pose returns None for unavailable truth and already excludes it from error maxima; the new helper explicitly tests that behavior, without changing a previously broken aggregate.",
+      "scope": "All pinned inputs and the original strict label rejection are independently verified; no missing original sensor report or pose trace is fabricated."
+    }
+  },
+  "current_cases": [
+    {
+      "dataset": "tum-fr1-desk-visual",
+      "summary": {
+        "accepted_updates": 24,
+        "accurate_root_updates": 24,
+        "all_updates_passed": false,
+        "frames": 36,
+        "initialized_frames": 1,
+        "lost": false,
+        "reference_valid_updates": 35,
+        "rejected_updates": 11,
+        "updates": 35
+      },
+      "evaluator_exit_status": 1,
+      "evaluation_label_failure": null,
+      "independent_integrity_passed": true,
+      "source_freeze_verified": true,
+      "physical_pose_independently_scored": true,
+      "unscorable_updates": 0,
+      "maximum_root_translation_error_m": 0.04136047324691307,
+      "maximum_root_rotation_error_rad": 0.05188533031470977,
+      "report_mutations_rejected": 57,
+      "provenance_mutations_rejected": 23,
+      "positive_hand_contracts": 25,
+      "negative_hand_contracts": 15,
+      "missing_reference_mutations_rejected": 2,
+      "published_baseline_sha256": {
+        "freeze.json": "542e2c2c334a19eac7a922ea07ccf7ceda157c6eb050a8bb05dee3a318e0d7fc",
+        "results.json": "90c045bd0c8e423c55a18c2055766f7f45bb4fbbeae7cc1ffc2cb2dadbe11f9e",
+        "status.json": "a5fdc90c684173918f3ca9405fe86d2c884c9782a94c649238dc84884a14ab40"
+      },
+      "reproduced_full_non_timing_evidence_identical": true,
+      "reproduction": {
+        "dataset": "tum-fr1-desk-visual",
+        "role": "viewed numerical regression",
+        "summary": {
+          "accepted_updates": 24,
+          "accurate_root_updates": 24,
+          "all_updates_passed": false,
+          "frames": 36,
+          "initialized_frames": 1,
+          "lost": false,
+          "reference_valid_updates": 35,
+          "rejected_updates": 11,
+          "updates": 35
+        },
+        "evaluator_exit_status": 1,
+        "evaluation_label_failure": null,
+        "independent_integrity_passed": true,
+        "report_sha256": "3957ef7ab778b45d1b9c0d5727bafcf0e16799681607ce61fb07ae6b0181adc2",
+        "freeze_sha256": "542e2c2c334a19eac7a922ea07ccf7ceda157c6eb050a8bb05dee3a318e0d7fc",
+        "audit_sha256": "efaeab2ee363b87afe13e26f952900774eb365df9953875cf77ef37443a245ec"
+      }
+    },
+    {
+      "dataset": "tum-fr3-office-visual",
+      "summary": {
+        "accepted_updates": 32,
+        "accurate_root_updates": 32,
+        "all_updates_passed": false,
+        "frames": 36,
+        "initialized_frames": 1,
+        "lost": false,
+        "reference_valid_updates": 35,
+        "rejected_updates": 3,
+        "updates": 35
+      },
+      "evaluator_exit_status": 1,
+      "evaluation_label_failure": null,
+      "independent_integrity_passed": true,
+      "source_freeze_verified": true,
+      "physical_pose_independently_scored": true,
+      "unscorable_updates": 0,
+      "maximum_root_translation_error_m": 0.0423676160112848,
+      "maximum_root_rotation_error_rad": 0.015501206665852066,
+      "report_mutations_rejected": 54,
+      "provenance_mutations_rejected": 23,
+      "positive_hand_contracts": 25,
+      "negative_hand_contracts": 15,
+      "missing_reference_mutations_rejected": 2,
+      "published_baseline_sha256": {
+        "freeze.json": "066a83d17f2c0c168bb0cc662031832d02a23853adff4b161e214de5c8109541",
+        "results.json": "9895fa9d30cda83c5415864d19d98cf35f24032c3fc9c929da910bf193c6ee42",
+        "status.json": "a5fdc90c684173918f3ca9405fe86d2c884c9782a94c649238dc84884a14ab40"
+      },
+      "reproduced_full_non_timing_evidence_identical": true,
+      "reproduction": {
+        "dataset": "tum-fr3-office-visual",
+        "role": "viewed numerical regression",
+        "summary": {
+          "accepted_updates": 32,
+          "accurate_root_updates": 32,
+          "all_updates_passed": false,
+          "frames": 36,
+          "initialized_frames": 1,
+          "lost": false,
+          "reference_valid_updates": 35,
+          "rejected_updates": 3,
+          "updates": 35
+        },
+        "evaluator_exit_status": 1,
+        "evaluation_label_failure": null,
+        "independent_integrity_passed": true,
+        "report_sha256": "7483189604f4baa718bd2900fb31610124f17d7d28c68567e9932bc8bc194d7f",
+        "freeze_sha256": "066a83d17f2c0c168bb0cc662031832d02a23853adff4b161e214de5c8109541",
+        "audit_sha256": "3bc13aba79dcf805f4bf735529bb343d944014cc62885f52f74c29349e565e46"
+      }
+    },
+    {
+      "dataset": "tum-fr3-sitting-visual",
+      "summary": {
+        "accepted_updates": 31,
+        "accurate_root_updates": 31,
+        "all_updates_passed": false,
+        "frames": 36,
+        "initialized_frames": 1,
+        "lost": false,
+        "reference_valid_updates": 35,
+        "rejected_updates": 4,
+        "updates": 35
+      },
+      "evaluator_exit_status": 1,
+      "evaluation_label_failure": null,
+      "independent_integrity_passed": true,
+      "source_freeze_verified": true,
+      "physical_pose_independently_scored": true,
+      "unscorable_updates": 0,
+      "maximum_root_translation_error_m": 0.03439992820648846,
+      "maximum_root_rotation_error_rad": 0.014817614480688274,
+      "report_mutations_rejected": 57,
+      "provenance_mutations_rejected": 23,
+      "positive_hand_contracts": 25,
+      "negative_hand_contracts": 15,
+      "missing_reference_mutations_rejected": 2,
+      "published_baseline_sha256": {
+        "freeze.json": "cac5e3059cadf2cc0c420b5f80a651db092a7487a33fee072526937cfca0e2da",
+        "results.json": "c327952d73859e07d7139e7b2a47499e2d4960a930ff95d2dff40739a4a2cedd",
+        "status.json": "a5fdc90c684173918f3ca9405fe86d2c884c9782a94c649238dc84884a14ab40"
+      },
+      "reproduced_full_non_timing_evidence_identical": true,
+      "reproduction": {
+        "dataset": "tum-fr3-sitting-visual",
+        "role": "viewed numerical regression",
+        "summary": {
+          "accepted_updates": 31,
+          "accurate_root_updates": 31,
+          "all_updates_passed": false,
+          "frames": 36,
+          "initialized_frames": 1,
+          "lost": false,
+          "reference_valid_updates": 35,
+          "rejected_updates": 4,
+          "updates": 35
+        },
+        "evaluator_exit_status": 1,
+        "evaluation_label_failure": null,
+        "independent_integrity_passed": true,
+        "report_sha256": "cde11d85d71641a2e07c80b5135dcfa4a9af39ad60d8c7cfc9796c5c6290764e",
+        "freeze_sha256": "cac5e3059cadf2cc0c420b5f80a651db092a7487a33fee072526937cfca0e2da",
+        "audit_sha256": "1239fc8217c588da64b4ae2ff9908714dedfa80c2c234516f7f622135f5702a7"
+      }
+    },
+    {
+      "dataset": "tum-fr2-desk-reprojection",
+      "summary": {
+        "accepted_updates": 24,
+        "accurate_root_updates": 0,
+        "all_updates_passed": false,
+        "frames": 36,
+        "initialized_frames": 1,
+        "lost": false,
+        "reference_valid_updates": 0,
+        "rejected_updates": 11,
+        "updates": 35
+      },
+      "evaluator_exit_status": 2,
+      "evaluation_label_failure": {
+        "file": "groundtruth.txt",
+        "reason": "invalid GT quaternion or nonmonotonic timestamps",
+        "source_sha256": "0d8e0119a4e9592b886c5ca954472c3270c01814dd2059fbe196d5c24c8f3d17"
+      },
+      "independent_integrity_passed": true,
+      "source_freeze_verified": true,
+      "physical_pose_independently_scored": false,
+      "unscorable_updates": 35,
+      "maximum_root_translation_error_m": null,
+      "maximum_root_rotation_error_rad": null,
+      "report_mutations_rejected": 61,
+      "provenance_mutations_rejected": 23,
+      "positive_hand_contracts": 25,
+      "negative_hand_contracts": 15,
+      "missing_reference_mutations_rejected": 2,
+      "published_baseline_sha256": {
+        "freeze.json": "345156690e2a087df5670b9480d302f29dc7721be9203aa96319f8539144bf2f",
+        "results.json": "7f6bbcbde6b7812c91a9d064ba50860d7c64036ae30eb536bf1cac0793d4b897",
+        "status.json": "fe71ae41ba6ec633f4c0bf563ec8585776896c30a7f9056f04f6af1f5a49fd93"
+      },
+      "reproduced_full_non_timing_evidence_identical": true,
+      "reproduction": {
+        "dataset": "tum-fr2-desk-reprojection",
+        "role": "viewed numerical regression",
+        "summary": {
+          "accepted_updates": 24,
+          "accurate_root_updates": 0,
+          "all_updates_passed": false,
+          "frames": 36,
+          "initialized_frames": 1,
+          "lost": false,
+          "reference_valid_updates": 0,
+          "rejected_updates": 11,
+          "updates": 35
+        },
+        "evaluator_exit_status": 2,
+        "evaluation_label_failure": {
+          "file": "groundtruth.txt",
+          "reason": "invalid GT quaternion or nonmonotonic timestamps",
+          "source_sha256": "0d8e0119a4e9592b886c5ca954472c3270c01814dd2059fbe196d5c24c8f3d17"
+        },
+        "independent_integrity_passed": true,
+        "report_sha256": "458e4ab4a321a2ce484cbec0303cd59715143eb474fff2a3c514dc9a03d1979d",
+        "freeze_sha256": "345156690e2a087df5670b9480d302f29dc7721be9203aa96319f8539144bf2f",
+        "audit_sha256": "1731febebe941606bda6fdd205303b0dc429f76f06e9cfa16195e0e9a70d4d76"
+      }
+    }
+  ],
+  "original_visual_regression": {
+    "schema_version": 1,
+    "regression_integrity_passed": true,
+    "all_physical_protocols_passed": false,
+    "first_trial_summary": {
+      "accepted_updates": 31,
+      "accurate_root_updates": 31,
+      "all_updates_passed": false,
+      "frames": 36,
+      "initialized_frames": 1,
+      "lost": false,
+      "reference_valid_updates": 35,
+      "rejected_updates": 4,
+      "updates": 35
+    },
+    "original_report_sha256": "4e8544ca7b823955e656c7d0fbb0a64bdcac6abd33b206fc2e96b2f727b8db7a",
+    "original_freeze_sha256": "cb98437e063e248dc71a09ce4c6450344cc43d9c20473396f4f1d204babfbf56",
+    "historical_audit_sha256": "059a5321badd13695bd0c3f679fbed005e61ef5e41b50b4db7e8ea05d656e04d",
+    "historical_algorithms": {
+      "historical_algorithm_bytes_unchanged": true,
+      "registry_versions_and_checksums_unchanged": true,
+      "allowed_local_dependency": "rustdriving-perception 0.1.0",
+      "original_optional_lock_sha256": "66a95960e1763d7623c40dc0c659e44cb5cda758b215c99bec09606a10c8ab86",
+      "current_optional_lock_sha256": "67845fb7e4a53e15e4e3c70bba72142aff666893cf1d0c96c4654cdc16b7197b"
+    },
+    "cases": [
+      {
+        "dataset": "tum-fr1-desk-visual",
+        "role": "viewed numerical regression",
+        "summary": {
+          "accepted_updates": 24,
+          "accurate_root_updates": 24,
+          "all_updates_passed": false,
+          "frames": 36,
+          "initialized_frames": 1,
+          "lost": false,
+          "reference_valid_updates": 35,
+          "rejected_updates": 11,
+          "updates": 35
+        },
+        "evaluator_exit_status": 1,
+        "independent_integrity_passed": true,
+        "report_sha256": "9d30a0c15b905f94217181dbe43b10564f9e60ad4222f08c194f8aa5548f2c02",
+        "audit_sha256": "851314f0588ad5ba447aad59d5e71dbe7e58b4952eeaff540f406c8f4e83c93d",
+        "freeze_sha256": "3ceb8ce972e09e96545de4d9960cb467a6ffd3f085b5ac58b1c9ff5acf6fb78a"
+      },
+      {
+        "dataset": "tum-fr3-office-visual",
+        "role": "viewed numerical regression",
+        "summary": {
+          "accepted_updates": 32,
+          "accurate_root_updates": 9,
+          "all_updates_passed": false,
+          "frames": 36,
+          "initialized_frames": 1,
+          "lost": false,
+          "reference_valid_updates": 35,
+          "rejected_updates": 3,
+          "updates": 35
+        },
+        "evaluator_exit_status": 1,
+        "independent_integrity_passed": true,
+        "report_sha256": "58a934182e66b1e253cdccd8dce55bde9fd4d933a365066289bc31773920315e",
+        "audit_sha256": "39844f37e7edab7361280388e99edcd7b0431c67c42edb31cf4ecad7c43f8b03",
+        "freeze_sha256": "965888ede982efc718e7963681dba67fdc73581fe399ef08cd12a9dbd8650cf2"
+      },
+      {
+        "dataset": "tum-fr3-sitting-visual",
+        "role": "viewed numerical regression",
+        "summary": {
+          "accepted_updates": 31,
+          "accurate_root_updates": 31,
+          "all_updates_passed": false,
+          "frames": 36,
+          "initialized_frames": 1,
+          "lost": false,
+          "reference_valid_updates": 35,
+          "rejected_updates": 4,
+          "updates": 35
+        },
+        "evaluator_exit_status": 1,
+        "independent_integrity_passed": true,
+        "report_sha256": "7dd0b2fa36dbf99c363b496a6203a6b9d7f9891a4a40c2ac44ae6fdfc854ec10",
+        "audit_sha256": "31f7c879a73f68786fdc24d2e2c9a4d899df96e60d5c5776fb75d62b6a02f395",
+        "freeze_sha256": "fa60e7cbe6cc70f20228250364782acfa12ca7cb123ac8e460eb867f7025353e"
+      }
+    ],
+    "scope": "Offline indoor RGB-D measurements; no new holdout on repeat, no vehicle calibration, SLAM or driving controls"
+  },
+  "prior_depth_keyframe_submap_regressions_sha256": "1b747421f47273eadc0122b8c4d55c3a0561e85b05e475d4456df0d4e928c260",
+  "native_hero_proof_sha256": "786f50d21b99f54ddaf23b9ee4e6daf136db053709f642f15e6110c8f872eecd",
+  "reporting_repair_proof_sha256": "0186b26c6ab5b484597e9bc0b43ab9b6c0a6905ff0b053f6d8734eb5b5cc0bf0",
+  "all_reproduction_integrity_passed": true,
+  "all_physical_protocols_passed": false,
+  "raw_data_redistributed": false,
+  "automotive_or_driving_integration_claim": false,
+  "calibrated_uncertainty_claim": false,
+  "engineering_maturity_estimate_percent": 20,
+  "thirty_and_fifty_percent_goals_met": false
+}

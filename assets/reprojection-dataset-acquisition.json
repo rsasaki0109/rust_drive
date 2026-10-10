@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "dataset": "tum-fr2-desk-reprojection",
+  "manifest_sha256": "407dd54344b6792ae8582295a60ec37799e8272d1847889ab76b74808b0300aa",
+  "fetcher_sha256": "252adbcb9cdcb943ddd9bd44f39d780b16d28ee33a14606235b801df00b448dc",
+  "pre_transfer_journal_sha256": "013573864b20d2af7496d793fa108021d2bdd2f29b31cc61ffecdaba7ec51501",
+  "source_files": 65,
+  "total_bytes": 19363239,
+  "association_audit": {
+    "depth_frames": 36,
+    "unique_rgb_frames": 25,
+    "repeated_rgb_associations": 11,
+    "maximum_pair_gap_seconds": 0.01763010025024414,
+    "association_rule": "nearest RGB timestamp, earlier RGB index on exact tie; no resampling or interpolation",
+    "maximum_mocap_bracket_seconds": 0.0034999847412109375,
+    "invalid_mocap_brackets": 0
+  },
+  "verification": {
+    "all_source_sha256_verified": true,
+    "all_primary_source_git_blob_verified": true,
+    "metadata_preregistration_preceded_opaque_transfer": true,
+    "opaque_pixel_acquisition_only": true,
+    "png_headers_inspected": false,
+    "pixels_inspected_or_decoded": false,
+    "reference_numeric_pose_values_parsed": false,
+    "unsafe_manifest_cases_rejected": 22,
+    "actual_isolated_rgb_and_calibration_fetch_passed": true,
+    "one_byte_rgb_corruption_rejected": true
+  },
+  "final_algorithm_freeze_and_first_fit": "Owned by root/evaluator/oracle; not executed during acquisition preparation"
+}

@@ -48,6 +48,18 @@ This path supplies no vehicle controls.
 The estimate remains **about 20%**; the 30% waypoint and requested 50% goal
 remain unmet. [Full visual-motion evidence](recorded-visual-odometry.md).
 
+The additive [pixel refinement](recorded-reprojection.md) repairs the viewed
+office accuracy failure to **32/35**, with maximum accepted position error
+**0.042368 m**. This is a useful measured localization improvement. Repeated
+images and coarse failures remain in all denominators; the method remains
+offline indoor odometry without vehicle calibration, calibrated uncertainty,
+automotive perception accuracy or driving integration. The estimate therefore
+remains **about 20%**; neither the 30% waypoint nor the 50% goal is complete.
+The separate first Freiburg 2 attempt fails strict whole-source label validation
+on conflicting duplicate timestamps. Subsequent viewed runs retain 24 sensor
+updates, but all 35 accuracy references remain unavailable; this supplies no
+additional independent accuracy evidence.
+
 | Area | Current evidence | Evidence needed for a credible 50% planning milestone |
 |---|---|---|
 | Sensing / localization | Native XYZ LiDAR, optional measured AABBs/terrain; failed held-out airborne PMF baseline; local fixed-map matching with bounded GNSS-denied native driving; noisy GNSS/wheel/gyro and acquisition-time reprojection | Reliable held-out automotive perception and real-motion map matching; measured extrinsics and camera observations; synchronization, covariance calibration and broader degraded-sensing measurements |

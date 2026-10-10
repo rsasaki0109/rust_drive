@@ -61,3 +61,9 @@ implemented directly in Rust; the deterministic descriptor sampling pattern is
 original, without copied OpenCV code or its learned ORB pattern. Independent
 pixel reconstruction uses optional NumPy (BSD-3-Clause) and Pillow
 (HPND); their versions are pinned in `scripts/requirements-visual.txt`.
+
+The [pixel reprojection refinement](docs/recorded-reprojection.md) is an original
+Rust implementation of calibrated projection, Huber weighting and bounded
+Gauss–Newton optimization. It copies no ORB-SLAM or OpenCV implementation.
+Published camera numbers are documented source-model assumptions; raw calibration
+documents remain excluded from redistribution.
