@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "evidence_scope": "Viewed adjacent RGB-D pair diagnostics only, not continuous root odometry or driving permission.",
+  "fresh_holdout_evidence": false,
+  "raw_recordings_redistributed": false,
+  "source_calibration_attribution": "docs/tum-source-provenance.md",
+  "final_checker_sha256": "78e9466da3c30605b1f25a8037a6c51fcfb2198c8caacbacde85a6eb9ccb3737",
+  "compiled_prototype_sources": {
+    "cargo_lock": "67845fb7e4a53e15e4e3c70bba72142aff666893cf1d0c96c4654cdc16b7197b",
+    "cargo_manifest": "5a49c3a2c04951ffbf3e154d28fe1e13d2dda92b410b15ec849bfe33377e0d5f",
+    "core_lib": "6cdc9459e0ae8dcccd0fa8d8d468a2adc0eee12aa3cc4bacca1b871a8b4d708e",
+    "image_features": "5b5b103d4e798929f753a850387609405cad1a303d49ef8e81433f064e901106",
+    "localization_lib": "26e1a082ceedadd0de957714bd11170bf16e732e7948b01530b699214510bdf3",
+    "multiscale_features": "846051d2f99d07432229a456f9cc96ace6732419df7fde223d0379bfaf13a973",
+    "pair_binary": "abbcfbb4f58b4499f3720ba3e15dbec47a833ea86df44bb5e163c0db2f60a446",
+    "perception_lib": "0393a7d84176167bdfa6e242788f1f17555c2ab7abee687c845583b2b5141291",
+    "registration3d": "eca9fe887f4a237dd627eb06e2793579ec4fbffd6330d120017572d734c4b715",
+    "reprojection3d": "2895e1c3eafefcfacdd156fd51706598521f0344f427f24edf420d159e5da486",
+    "rust_toolchain": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed",
+    "visual_odometry3d": "718192d69b02de0a668c54e8469812b7c5f1903ab74de660e1b221e2ec874d24"
+  },
+  "recordings": {
+    "room": {
+      "summary": {
+        "multiscale": {
+          "accurate": 165,
+          "fitted": 165,
+          "scorable": 179
+        },
+        "native": {
+          "accurate": 138,
+          "fitted": 138,
+          "scorable": 179
+        },
+        "total_pairs": 179
+      },
+      "non_noop_mutations_rejected": 20,
+      "all_native_fits_retained": true,
+      "max_fitted_pair_errors": {
+        "native": {
+          "translation_m": 0.025707767383733645,
+          "rotation_rad": 0.027947955144320687
+        },
+        "multiscale": {
+          "translation_m": 0.08503113994848992,
+          "rotation_rad": 0.041194710165447124
+        }
+      }
+    },
+    "desk2": {
+      "summary": {
+        "multiscale": {
+          "accurate": 154,
+          "fitted": 154,
+          "scorable": 179
+        },
+        "native": {
+          "accurate": 124,
+          "fitted": 124,
+          "scorable": 179
+        },
+        "total_pairs": 179
+      },
+      "non_noop_mutations_rejected": 20,
+      "all_native_fits_retained": true,
+      "max_fitted_pair_errors": {
+        "native": {
+          "translation_m": 0.042108127200449284,
+          "rotation_rad": 0.042571353428187804
+        },
+        "multiscale": {
+          "translation_m": 0.05411296602567095,
+          "rotation_rad": 0.050373043503561775
+        }
+      }
+    }
+  },
+  "analytic_control_mutations_rejected": 17,
+  "files": {
+    "room-freeze.json": {
+      "bytes": 2097,
+      "sha256": "c9b9cc2be0d8168dfc1e9e3aa81eeb1b5b4c45a0c160d0139774c2ade8ee0a5c"
+    },
+    "desk2-freeze.json": {
+      "bytes": 2097,
+      "sha256": "06c291a70ef378a0e10956144d3d9c7bb95039653e065ea79793481bbeae4a0f"
+    },
+    "control.json": {
+      "bytes": 461380,
+      "sha256": "3543a896edfbf7287e4b24511808540e71988c843b27ac3277ad7e800623b92e"
+    },
+    "repeat-source-check.json": {
+      "bytes": 571,
+      "sha256": "55b095b1076dc370096b3c06be3f7bc605cd4cccd7266067a1c0e2062fa91b53"
+    },
+    "room-report.json.gz": {
+      "bytes": 10795163,
+      "sha256": "5ad1b33fd3201f0df55ea614429c28c7b996d3e6031be5a6045b1485b6d6ddf0",
+      "uncompressed_bytes": 41732252,
+      "uncompressed_sha256": "02069347538ff9149f5caf7574b0f1ce5ae5baaa04a902506df641006c14e07d"
+    },
+    "desk2-report.json.gz": {
+      "bytes": 8739953,
+      "sha256": "bd2b9ebcdb8242a3aad4646e06d0481819016f411ea2e1d1cd63aa4d56abb5c8",
+      "uncompressed_bytes": 33574715,
+      "uncompressed_sha256": "018a05cb4724022a8adb47821d0f75b23741981966cd3d78c5dc15921ca61f86"
+    },
+    "room-oracle.json": {
+      "bytes": 69378,
+      "sha256": "bd985a7c8c799334128bf7a4273d43cfce1327ee6d64b4bec2aa5b8229e9d6b0"
+    },
+    "desk2-oracle.json": {
+      "bytes": 69078,
+      "sha256": "6c544b42dc9ee3b655957a38e3948d38b36584a780df69fd943ab09c0f1c0dc2"
+    },
+    "control-oracle.json": {
+      "bytes": 2352,
+      "sha256": "fd6e0c3f92b2c80887f96144b658542a152724a0ac51bc7564a4b6fe37df3f36"
+    },
+    "output-guards.json": {
+      "bytes": 290,
+      "sha256": "13eae7b67664eb8aa1d1d3c69531103be07b86d26eb3749625094274b70dcd12"
+    },
+    "checker-provenance.json": {
+      "bytes": 942,
+      "sha256": "e54558dccc1344a03bd8932ad213c427cdbc2ec916ed2b7e3939109926552e0e"
+    }
+  },
+  "unchanged_continuous_root_accurate_updates": {
+    "room": 52,
+    "desk2": 16
+  },
+  "limitations": [
+    "Maximum fitted pair errors increase in both recordings.",
+    "Seven false matches remain in the multiscale 90-degree rotation control.",
+    "No composed trajectory, accepted-reference state, pose expiry, confidence calibration or vehicle integration evaluated."
+  ],
+  "maturity": {
+    "subjective_comparison_percent": 20,
+    "thirty_percent_goal_met": false,
+    "fifty_percent_goal_met": false
+  }
+}

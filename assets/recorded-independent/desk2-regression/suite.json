@@ -1,0 +1,217 @@
+{
+  "schema_version": 1,
+  "regression_integrity_passed": true,
+  "evidence_role": "viewed regression of the preserved first independent-recording failure",
+  "fresh_holdout_evidence": false,
+  "physical_protocol_passed": false,
+  "commands": [
+    {
+      "stage": "qualification",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/rust_drive/scripts/qualify-rgbd-independent.py",
+        "--manifest",
+        "/workspace/rust_drive/data/tum-fr1-desk2-independent/manifest.json",
+        "--raw",
+        "/workspace/rust_drive/data/tum-fr1-desk2-independent/raw",
+        "--output",
+        "/workspace/rust_drive/artifacts/recorded-independent/viewed-suite-1/qualification.json"
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "log": "qualification.log",
+      "log_sha256": "bea922669bd854c3975e543ebb1138393b05247d1d56d6146d5258a845afff7f"
+    },
+    {
+      "stage": "freeze",
+      "command": [
+        "/workspace/rust_drive/integrations/rgbd/target/release/rustdriving-rgbd-independent",
+        "--regression",
+        "--manifest",
+        "/workspace/rust_drive/data/tum-fr1-desk2-independent/manifest.json",
+        "--qualification",
+        "/workspace/rust_drive/artifacts/recorded-independent/viewed-suite-1/qualification.json",
+        "--prepare-freeze",
+        "/workspace/rust_drive/artifacts/recorded-independent/viewed-suite-1/freeze.json"
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "log": "freeze.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "stage": "evaluation",
+      "command": [
+        "/workspace/rust_drive/integrations/rgbd/target/release/rustdriving-rgbd-independent",
+        "--regression",
+        "--manifest",
+        "/workspace/rust_drive/data/tum-fr1-desk2-independent/manifest.json",
+        "--raw",
+        "/workspace/rust_drive/data/tum-fr1-desk2-independent/raw",
+        "--qualification",
+        "/workspace/rust_drive/artifacts/recorded-independent/viewed-suite-1/qualification.json",
+        "--freeze",
+        "/workspace/rust_drive/artifacts/recorded-independent/viewed-suite-1/freeze.json",
+        "--output",
+        "/workspace/rust_drive/artifacts/recorded-independent/viewed-suite-1/results.json"
+      ],
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "log": "evaluation.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "stage": "audit",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/rust_drive/scripts/check-recorded-independent-v2.py",
+        "--manifest",
+        "/workspace/rust_drive/data/tum-fr1-desk2-independent/manifest.json",
+        "--raw",
+        "/workspace/rust_drive/data/tum-fr1-desk2-independent/raw",
+        "--freeze",
+        "/workspace/rust_drive/artifacts/recorded-independent/viewed-suite-1/freeze.json",
+        "--qualification",
+        "/workspace/rust_drive/artifacts/recorded-independent/viewed-suite-1/qualification.json",
+        "--archive",
+        "/workspace/rust_drive/artifacts/recorded-independent/desk2-source.tgz",
+        "--source-snapshot",
+        "/workspace/rust_drive/artifacts/recorded-independent/viewed-suite-1/source-snapshot",
+        "--report",
+        "/workspace/rust_drive/artifacts/recorded-independent/viewed-suite-1/results.json",
+        "--output",
+        "/workspace/rust_drive/artifacts/recorded-independent/viewed-suite-1/audit-v2.json"
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "log": "audit.log",
+      "log_sha256": "57a4edb8bf5051dc41de75aba69371523a5ecbf1e7d20746e5907d7999db4390"
+    }
+  ],
+  "first_asset_sha256": {
+    "manifest.json": "f9de2bcb1037c46c70242f2c1bdbc8b09bbd06c95716d15b256b3c523ba24327",
+    "freeze.json": "d1d813c0d953a4ae4cd27abbc00dee4c817ee39f4e1ecd854c8457477074f9bf",
+    "qualification.json": "783eb5ea1c54c642bea63b01430694bd55ca658c91c4b92e45526040d133f2d9",
+    "results.json": "2e621c78e2986539c386ff4a86be47b95774db929f6460373adc5b4549ac4e68",
+    "pre-pixel-preservation.json": "e8a9371e55dadae3d763880015a402d9387c757488e005bf9d37dbf9a216d21d",
+    "design.json": "6fa44837d27f6f1f4f69285780ccd5e4883d7b59ace15500699914aca323797a",
+    "source-snapshot.tar.gz": "4564b37cd4d02fa603fb10854ffb952cf0602585913ecf90ab81aa1e46e1c3c4"
+  },
+  "archive_receipt": {
+    "bytes": 349445005,
+    "sha256": "a569e4cb453a3cd9285bc985fcb109e65f055c75b33a4b155acd9a68d96b77d2",
+    "md5": "9250a26b897f770a6f9b5f4380020784"
+  },
+  "current_manifest_identical_to_first": true,
+  "original_code_bindings": {
+    "evaluator_source_sha256": {
+      "path": "integrations/rgbd/src/bin/rustdriving-rgbd-independent.rs",
+      "sha256": "a1896bf9a7522632cd52a10ebb49a9b9bb679727912c4429672ec37f7a621a52"
+    },
+    "independent_source_sha256": {
+      "path": "integrations/rgbd/src/independent.rs",
+      "sha256": "503d798b481fb937ae304649d9a78e01a69f81399d7bb4474acfb7738bacef26"
+    },
+    "temporal_checker_sha256": {
+      "path": "scripts/check-recorded-temporal.py",
+      "sha256": "70cb0837aff6882e1d5d13798e4d7d52b6969c79d7ae49f5d3debc66404e06de"
+    },
+    "reprojection_pose_source_sha256": {
+      "path": "crates/localization/src/reprojection3d.rs",
+      "sha256": "2895e1c3eafefcfacdd156fd51706598521f0344f427f24edf420d159e5da486"
+    },
+    "feature_source_sha256": {
+      "path": "crates/perception/src/image_features.rs",
+      "sha256": "5b5b103d4e798929f753a850387609405cad1a303d49ef8e81433f064e901106"
+    },
+    "visual_pose_source_sha256": {
+      "path": "crates/localization/src/visual_odometry3d.rs",
+      "sha256": "718192d69b02de0a668c54e8469812b7c5f1903ab74de660e1b221e2ec874d24"
+    },
+    "pose_source_sha256": {
+      "path": "crates/localization/src/registration3d.rs",
+      "sha256": "eca9fe887f4a237dd627eb06e2793579ec4fbffd6330d120017572d734c4b715"
+    },
+    "localization_lib_source_sha256": {
+      "path": "crates/localization/src/lib.rs",
+      "sha256": "26e1a082ceedadd0de957714bd11170bf16e732e7948b01530b699214510bdf3"
+    },
+    "perception_lib_source_sha256": {
+      "path": "crates/perception/src/lib.rs",
+      "sha256": "0393a7d84176167bdfa6e242788f1f17555c2ab7abee687c845583b2b5141291"
+    },
+    "core_lib_source_sha256": {
+      "path": "crates/core/src/lib.rs",
+      "sha256": "6cdc9459e0ae8dcccd0fa8d8d468a2adc0eee12aa3cc4bacca1b871a8b4d708e"
+    },
+    "cargo_lock_sha256": {
+      "path": "integrations/rgbd/Cargo.lock",
+      "sha256": "67845fb7e4a53e15e4e3c70bba72142aff666893cf1d0c96c4654cdc16b7197b"
+    },
+    "cargo_manifest_sha256": {
+      "path": "integrations/rgbd/Cargo.toml",
+      "sha256": "5a49c3a2c04951ffbf3e154d28fe1e13d2dda92b410b15ec849bfe33377e0d5f"
+    },
+    "rust_toolchain_sha256": {
+      "path": "rust-toolchain.toml",
+      "sha256": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed"
+    },
+    "independent_checker_sha256": {
+      "path": "scripts/check-recorded-independent.py",
+      "sha256": "0a4696936103eda71824899607d6799c0f529deb036614bbab4053838d2e7af8"
+    },
+    "reprojection_checker_sha256": {
+      "path": "scripts/check-recorded-reprojection.py",
+      "sha256": "fd1425f9c73c21b104d9453a7c2b298c21fa22effd6ecb5f0015bbc41f79cef7"
+    },
+    "visual_checker_sha256": {
+      "path": "scripts/check-recorded-visual.py",
+      "sha256": "c138992bd5fe63a42757ff2cf5b43c7eb69272b85ea6ce7030cd298306bc0d6a"
+    },
+    "geometry_checker_sha256": {
+      "path": "scripts/check-recorded-rgbd.py",
+      "sha256": "ab86ab67c0d46e08b89a0a47d8a59e9c95357cf41c40dbd40b1bcf5b49e6f9dc"
+    },
+    "keyframe_checker_sha256": {
+      "path": "scripts/check-recorded-keyframes.py",
+      "sha256": "3c5ef7c2ad50b9ab015f0c6795aa955489343725d5a274ff1eaae730ecd95c01"
+    },
+    "checker_requirements_sha256": {
+      "path": "scripts/requirements-visual.txt",
+      "sha256": "d8d4e85e0aa1f30325cb3fb9d39834a37e2e0894ecf2153d585e0631ed74d155"
+    },
+    "acquisition_source_sha256": {
+      "path": "scripts/fetch-independent-dataset.py",
+      "sha256": "32f6cd90afcc26d5b88464e490cf139741d5bc7414370d5d37374a9c15ca3308"
+    },
+    "qualification_source_sha256": {
+      "path": "scripts/qualify-rgbd-independent.py",
+      "sha256": "f1fbebaf08d86dd0d271b4c8325d8089ce4b850d27c3800651f640c9696e6f28"
+    }
+  },
+  "frozen_source_count": 21,
+  "source_snapshot_bytes": 638288,
+  "running_checker_sha256": "c7a17be66d6a122503240037563978db87b04954dfab26e2d4354e45209b3ac0",
+  "formal_auditor_sha256": "8c4e96b63cdd4f2c59907d8a71dbb43be972d4290547ae2495e10214fc34ce70",
+  "binary_sha256": "939041fddbcd5a64b051f8b08b40dd70ee29b85914e71ec4a92ae365badb9849",
+  "summary": {
+    "accepted_updates": 16,
+    "accurate_root_updates": 16,
+    "all_updates_passed": false,
+    "frames": 180,
+    "initialized_frames": 1,
+    "lost": true,
+    "reference_valid_updates": 179,
+    "rejected_updates": 163,
+    "updates": 179
+  },
+  "non_timing_continuous_evidence_identical": true,
+  "original_gates_unchanged": true,
+  "all_179_updates_audited_continuously": true,
+  "output_sha256": {
+    "qualification.json": "783eb5ea1c54c642bea63b01430694bd55ca658c91c4b92e45526040d133f2d9",
+    "freeze.json": "b6d8a358c02059527c6ef340dda58cec49a5f444bb2bf18cd0592b299582dc7a",
+    "results.json": "756c7f654e4c2efdfafb59f3d1731dbcfbf7047809a076450b8d1bdeaa412f11",
+    "audit-v2.json": "536e255201ccfe669e31fc1aa55d63dba6d9eb68c6bf9a4b377a3615b8b76721"
+  }
+}

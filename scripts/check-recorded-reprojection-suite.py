@@ -67,6 +67,7 @@ def replay_original_input_failure(first, output):
         target = output / 'first-v2-build-target'
         with (output / 'first-v2-build.log').open('w') as stream:
             subprocess.run(['cargo', 'build', '--release', '--locked', '--offline',
+                            '--bin', 'rustdriving-rgbd-evaluate',
                             '--manifest-path', str(integration / 'Cargo.toml'),
                             '--target-dir', str(target)], cwd=ROOT, check=True,
                            stdout=stream, stderr=subprocess.STDOUT)

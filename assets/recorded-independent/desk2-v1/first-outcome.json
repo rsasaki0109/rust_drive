@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "dataset": "tum-fr1-desk2-independent",
+  "evaluator_exit_code": 1,
+  "physical_complete_criterion_passed": false,
+  "summary": {
+    "accepted_updates": 16,
+    "accurate_root_updates": 16,
+    "all_updates_passed": false,
+    "frames": 180,
+    "initialized_frames": 1,
+    "lost": true,
+    "reference_valid_updates": 179,
+    "rejected_updates": 163,
+    "updates": 179
+  },
+  "duration_s": 5.974762916564941,
+  "first_tracking_loss_depth_index": 127,
+  "first_fit_rejection": {
+    "index": 121,
+    "reason": "invalid or oversized visual correspondences",
+    "feature_count": 236,
+    "matches": 10,
+    "depth_correspondences": 4
+  },
+  "rejection_reasons": {
+    "duplicate or stale RGB acquisition; no pose permission renewal": 6,
+    "invalid or oversized visual correspondences": 3,
+    "no bounded visual correspondence consensus": 1,
+    "visual accepted-pose age exceeded; localization lost": 1,
+    "visual odometry lost; explicit new origin required": 152
+  },
+  "maximum_accepted_translation_error_m": 0.08769042283767553,
+  "maximum_accepted_rotation_error_rad": 0.09250872159426188,
+  "original_auditor_exit_code": 1,
+  "original_auditor_failure": "KeyError source_rgb_distortion: legacy calibration schema incompatible with preregistered eight-fieldFR1 profile",
+  "corrected_independent_integrity_pending": false,
+  "automotive_or_new_room_generalization": false,
+  "corrected_independent_integrity_passed": true,
+  "original_audit_failed_preserved": true,
+  "auditor_only_repair": true,
+  "corrected_audit_path": "assets/recorded-independent/desk2-audit-v2/audit-v2.json",
+  "corrected_audit_sha256": "59773d67017fdb998bc41dd3137049e74d6013531b5852dfd74b5ef72e61c1a0",
+  "corrected_checker_sha256": "8c4e96b63cdd4f2c59907d8a71dbb43be972d4290547ae2495e10214fc34ce70",
+  "source_snapshot_sha256": "4564b37cd4d02fa603fb10854ffb952cf0602585913ecf90ab81aa1e46e1c3c4",
+  "raw_data_redistributed": false,
+  "maturity_subjective_percent": 20,
+  "maturity_30_percent_goal_met": false
+}

@@ -112,6 +112,51 @@ and accurate updates. Repeated-texture controls accept incorrect endpoints;
 rotation controls expose substantial accepted errors. First outcomes, source
 archives, auditor-only repairs and every failure remain preserved. This does
 not justify a maturity increase: the estimate stays **about 20%**, with 30%
-and 50% unmet. Separate-recording validation is additionally blocked by the
-specific official-source proxy denial and absent complete image inventories in
-the bounded mirror search; this is not proof of global data unavailability.
+and 50% unmet. The separate-recording acquisition blocker was subsequently
+resolved for official FR1 desk2; the historical proxy-denial journal remains
+preserved, and does not describe current source availability.
+
+
+The separately preregistered [official desk2 recording](independent-recorded-motion.md)
+now has an acquired archive, whole-source timestamp qualification and a source
+freeze verified before recorded pixels. Its original continuous trial retains
+all 179 updates over 5.974763 s: **16 are accepted and root-accurate, 163 are
+rejected**, and accepted-pose expiry latches tracking loss at depth index 127.
+Maximum accepted errors of 0.087690 m / 0.092509 rad satisfy the unchanged local
+gates, but limited conditional accuracy does not satisfy continuous availability.
+The original formal checker fails on an inherited calibration-schema expectation;
+a separate additive audit repair now passes integrity and independently scores
+all 179 outcomes, without changing original sources or results. Twelve
+calibration/inventory, 44 source and 73 sensor/state corruptions are rejected.
+Integrity success and failed physical acceptance are distinct outcomes.
+
+Desk2 is a second recording of the same four desks, not a new physical
+room or automotive environment. It is now viewed regression data. This failed
+trial broadens measurement evidence but does not justify a maturity increase:
+**about 20%** remains a subjective assessment; the **30% and 50% waypoints
+remain unmet**. Automotive perception accuracy, sustained real-motion localization,
+measured extrinsics, calibrated uncertainty and vehicle-pipeline integration
+remain material gates. No proposed multiscale front end is claimed implemented
+or validated by this trial.
+
+
+The [completed desk2 viewed regression suite](../assets/recorded-independent/desk2-regression/suite.json)
+reproduces every first-trial non-timing outcome, with successful qualification,
+freeze preparation and independent integrity audit while preserving evaluator
+exit 1. Separate output-admission controls and a historical CI build-target
+repair improve reproducibility without changing measured motion accuracy.
+They do not increase the subjective estimate above **about 20%** or close the
+**30%** waypoint.
+
+The additive [multiscale feature diagnostic](multiscale-features.md) improves
+viewed independent adjacent-pair accuracy from 138 to 165 of 179 room pairs and
+124 to 154 of 179 desk2 pairs. Maximum fitted translation and rotation errors
+increase in both recordings, and the analytic rotation control retains seven
+false matches. Final-source independent mathematical audits verify all 179 pairs
+in each recording and reject 20 report corruptions each. Output-admission guards
+are separate evidence, with no estimator retuning. This frontend has no
+continuous root trajectory, tracking-permission state or vehicle integration;
+the original room 52/179 and desk2 16/179 continuous failures remain unchanged.
+Viewed pair support and byte-identical repeats do not close calibrated
+uncertainty, sustained localization or automotive perception gates. The
+subjective estimate remains **about 20%**, with **30% and 50% unmet**.

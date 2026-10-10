@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "running_checker_version": 2,
+  "running_checker_sha256": "8c4e96b63cdd4f2c59907d8a71dbb43be972d4290547ae2495e10214fc34ce70",
+  "frozen_checker_sha256": "0a4696936103eda71824899607d6799c0f529deb036614bbab4053838d2e7af8",
+  "original_checker_sha256": "0a4696936103eda71824899607d6799c0f529deb036614bbab4053838d2e7af8",
+  "auditor_repair_reason": "Original v1 invoked the legacy visual calibration validator, which requires source_rgb_distortion; the prospectively frozen independent manifest intentionally has the exact eight-field FR1 projection/depth profile. V2 validates that contract and the pinned camera documentation without adding distortion fields or applying undistortion.",
+  "auditor_only_repair": true,
+  "estimator_or_math_changed": false,
+  "calibration_contract_checks": {
+    "baseline": {
+      "passed": true,
+      "exact_eight_field_profile": true,
+      "document_sha256": "5bd0ec559a251ac402756be7db0bd367bb364fe6a9d85e0770cd0681003602cf",
+      "document_bytes": 1615,
+      "yaml_projection_and_depth_scale_verified": true,
+      "invalid_depth": 0,
+      "distortion_documentation_only": true,
+      "undistortion_applied": false,
+      "imported_checker_globals_modified": false
+    },
+    "actual_calibration_document_checked": true,
+    "mutations_rejected": [
+      "wrong_pinned_document_hash",
+      "wrong_pinned_document_size",
+      "wrong_manifest_fx",
+      "wrong_invalid_depth_sentinel",
+      "wrong_freeze_fx",
+      "unverified_report_flag",
+      "wrong_report_document",
+      "invent_distortion_field",
+      "changed_report_inventory",
+      "changed_manifest_inventory",
+      "wrong_actual_document_bytes_same_size",
+      "extra_actual_raw_file"
+    ],
+    "operational_report_or_source_modified": false
+  },
+  "source_freeze_verified": true,
+  "frozen_source_count": 21,
+  "archived_source_snapshot": true,
+  "manifest_sha256": "f9de2bcb1037c46c70242f2c1bdbc8b09bbd06c95716d15b256b3c523ba24327",
+  "freeze_sha256": "d1d813c0d953a4ae4cd27abbc00dee4c817ee39f4e1ecd854c8457477074f9bf",
+  "qualification_sha256": "783eb5ea1c54c642bea63b01430694bd55ca658c91c4b92e45526040d133f2d9",
+  "report_sha256": "2e621c78e2986539c386ff4a86be47b95774db929f6460373adc5b4549ac4e68",
+  "dataset": "tum-fr1-desk2-independent",
+  "kind": "preregistered_independent_recording",
+  "preregistration_source_sha256": "6fa44837d27f6f1f4f69285780ccd5e4883d7b59ace15500699914aca323797a",
+  "passed_integrity": true,
+  "calibration_only": true,
+  "motion_audit_performed": false
+}

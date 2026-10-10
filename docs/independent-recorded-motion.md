@@ -12,17 +12,25 @@ The [prospective design](../assets/recorded-independent/desk2-v1/design.json)
 fixes the source, window, estimator, gates and resource bounds before new
 timestamp-table contents or archive acquisition. Source discovery is recorded
 in [the provenance journal](../assets/recorded-independent/desk2-v1/source-discovery.json).
-The archive request redirects to `webshare.cvg.cit.tum.de`, where the observed
-proxy CONNECT request was denied. A supported environment configuration draft
-has been saved; saving it does not publish or apply the change.
+Official archive acquisition now works through the redirect to
+`webshare.cvg.cit.tum.de`. The discovery journal's CONNECT 403 is historical,
+rather than a current acquisition blocker. Acquisition, timestamp qualification
+and the archived-source preflight completed before the first pixel decode.
+The first continuous sensor trial then **failed**: 16 of 179 updates were
+accepted and root-accurate, while 163 were rejected.
 
-No desk2 raw archive, timestamp qualification, sealed pre-pixel source freeze,
-sensor fit or accuracy result is claimed here. Code or build checks establish
-development readiness separately from an actual recorded-data evaluation.
-The Rust implementation, bounded acquisition controls and independent synthetic
-audit have been executed locally; official-source reproduction remains pending.
-Previous trials, source archives and their historical license statements remain
-unchanged.
+The original formal motion auditor also failed with
+`KeyError: source_rgb_distortion`: its inherited calibration-schema expectation
+did not match this manifest. This checker defect is separate from the failed
+estimator criterion. The original checker, source snapshot and result remain
+byte-exact. An additive `scripts/check-recorded-independent-v2.py` repairs the
+audit schema; its full motion audit now **passes integrity, exit 0**, independently
+scoring all 179 continuous outcomes. It confirms the estimator's failed physical
+criterion. Build and synthetic checks remain separate.
+
+Desk2 is now **viewed data**. Later execution is a regression, not a new first
+trial or fresh generalization claim. Earlier source archives and historical
+license statements remain unchanged.
 
 ## Fixed selection and exposure order
 
@@ -70,7 +78,7 @@ bounded 3D consensus and robust pixel reprojection refinement. It does not
 select the depth-supported matching or Lucas–Kanade alternatives. The original
 `ImageFeatureConfig`, `VisualOdometry3dConfig` and `ReprojectionConfig3d`
 defaults remain fixed; their source hashes are in the prospective design and
-their full values belong in the eventual source freeze.
+their full values are recorded in the preserved source freeze.
 
 All nine integer-nearest depth-patch samples must be valid, within **0.3–5 m**,
 and have spread at most **0.05 m**. Depth uses **5,000 units/m** and zero is
@@ -90,7 +98,67 @@ The fixed criterion requires **all 179 updates** to be accepted and within
 **0.1 m translation / 0.1 rad rotation** root-error gates. Rejected, repeated
 and unscorable updates stay in the denominator. Duplicate source associations
 may make that complete criterion unattainable; their existence is not a reason
-to change it. No pose-accuracy or acceptance counts are available yet.
+to change it.
+
+## First recorded outcome and preserved evidence
+
+The fixed window spans **5.974762916564941 s**, with **162 distinct RGB
+acquisitions and 18 repeated associations**. All 180 frames and 179 update
+references remain selected, with one initialization and no restart.
+
+| First estimator result | Updates |
+| --- | ---: |
+| Accepted and within both root-error gates | 16 |
+| Rejected | 163 |
+| Full denominator | 179 |
+
+Maximum accepted errors are **0.08769042283767553 m translation** and
+**0.09250872159426188 rad rotation**, below the unchanged gates. This conditional
+accuracy does not establish continuous localization: the full criterion fails,
+and the evaluator exits 1. The first rejection at index **102** is a repeated
+RGB acquisition. The first geometric fit rejection at **121** has ten descriptor
+matches but only four valid-depth correspondences, below the unchanged minimum
+of twelve; no pixel refinement runs. Accepted-pose expiry latches loss at
+**127**. All subsequent frames remain selected without recovery or a reset.
+
+The complete source tables have **639 depth entries, 640 RGB entries and 2,428
+ground-truth rows**. Timestamp qualification passes. Rounded summaries record
+maximum association gap **17,030 µs** and reference bracket **11,400 µs**;
+qualification uses unrounded source timestamps.
+
+The [first freeze](../assets/recorded-independent/desk2-v1/freeze.json) has SHA-256
+`d1d813c0d953a4ae4cd27abbc00dee4c817ee39f4e1ecd854c8457477074f9bf`.
+[Pre-pixel preservation](../assets/recorded-independent/desk2-v1/pre-pixel-preservation.json)
+archives 21 bound sources before official image decoding or numerical reference
+parsing. The [metadata/archive preflight](../assets/recorded-independent/desk2-v1/preflight.json)
+passes independently reconstructed qualification and source binding before
+recorded pixels. Its synthetic image controls are disclosed separately.
+
+[Manifest](../assets/recorded-independent/desk2-v1/manifest.json),
+[acquisition](../assets/recorded-independent/desk2-v1/acquisition.json),
+[qualification](../assets/recorded-independent/desk2-v1/qualification.json),
+[full result](../assets/recorded-independent/desk2-v1/results.json),
+[evaluator status](../assets/recorded-independent/desk2-v1/evaluation-status.json),
+[original auditor status](../assets/recorded-independent/desk2-v1/audit-status.json)
+and [original source snapshot](../assets/recorded-independent/desk2-v1/source-snapshot.tar.gz)
+retain the first-trial evidence. Raw recordings are not redistributed. A passed
+preflight is separate from the subsequently completed motion audit; integrity
+success does not convert the estimator failure into success.
+
+[The additive v2 audit](../assets/recorded-independent/desk2-audit-v2/audit-v2.json)
+and [calibration proof](../assets/recorded-independent/desk2-audit-v2/calibration-v2.json)
+verify the original report without changing estimator math or source history.
+The audit rejects **12 calibration/inventory**, **44 source/provenance** and
+**73 sensor/state** corruptions. It reconstructs measured features, descriptors,
+associations, bounded consensus, reprojection refinement, continuous root/clock
+state and physical errors. Its SHA-256 is
+`59773d67017fdb998bc41dd3137049e74d6013531b5852dfd74b5ef72e61c1a0`;
+the running v2 checker SHA-256 is
+`8c4e96b63cdd4f2c59907d8a71dbb43be972d4290547ae2495e10214fc34ce70`.
+Both the running v2 and original frozen checker identities remain explicit.
+[The first-outcome record](../assets/recorded-independent/desk2-v1/first-outcome.json)
+retains the estimator failure and corrected integrity success together with
+[the original audit error](../assets/recorded-independent/desk2-v1/audit-error.log).
 
 ## Bounded acquisition and evidence
 
@@ -123,64 +191,85 @@ acquisition helper and qualification helper, and can be reconstructed from
 actual metadata. A later result must bind the sealed source/configuration freeze;
 an integrity audit passing is separate from physical accuracy passing.
 
-## Reproduction interfaces
+## Regression reproduction
 
-Run from the repository root. The preregistered interfaces are:
+Run from the repository root, using Python with the pinned
+`scripts/requirements-visual.txt` dependencies. The first history is reproduced
+from its preserved freeze, report and source snapshot. Do not replace them.
+Later sensor executions need new evidence paths and explicit `--regression`
+during both freeze preparation and evaluation; they cannot restore unviewed
+status. Acquisition remains explicit opt-in and preserves proxy/TLS checks.
 
-| Stage | New interface |
-| --- | --- |
-| Official archive acquisition | `scripts/fetch-independent-dataset.py` |
-| Timestamp-only qualification | `scripts/qualify-rgbd-independent.py` |
-| Standalone evaluator | `rustdriving-rgbd-independent` in `integrations/rgbd` |
-| Independent evidence audit | `scripts/check-recorded-independent.py` |
+On a fresh checkout, set `desk2_archive` to an ignored local archive path
+outside any directory uploaded as CI evidence. CI uses `$RUNNER_TEMP` for the
+archive. Create only the acquisition-log parent and explicitly fetch:
 
-The following official-source sequence is **not yet executed**. Run it only
-after the actual redirect host is available, using Python with the pinned
-`scripts/requirements-visual.txt` dependencies. Every evidence path must be new.
+```sh
+mkdir -p artifacts/recorded-independent/acquisition
+python3 scripts/fetch-independent-dataset.py tum-fr1-desk2-independent \
+  --archive "$desk2_archive" \
+  --preregistration assets/recorded-independent/desk2-v1/design.json \
+  --acquisition-log artifacts/recorded-independent/acquisition/acquisition.json
+```
+
+For a retained dataset, use verification instead of reacquisition:
+
+```sh
+python3 scripts/fetch-independent-dataset.py tum-fr1-desk2-independent \
+  --archive "$desk2_archive" \
+  --preregistration assets/recorded-independent/desk2-v1/design.json --verify-only
+```
+
+The following wrapper is locally **tested**. It qualifies metadata, preserves a
+source snapshot, prepares an explicit regression freeze, runs the continuous
+sensor trial and executes the repaired full independent audit. Choose a new
+output directory; the wrapper creates it itself.
 
 ```sh
 source scripts/env.sh
-cargo build --release --locked --manifest-path integrations/rgbd/Cargo.toml
-mkdir -p artifacts/recorded-independent/desk2-first
-python3 scripts/fetch-independent-dataset.py tum-fr1-desk2-independent \
-  --archive artifacts/recorded-independent/desk2-source.tgz \
-  --preregistration assets/recorded-independent/desk2-v1/design.json \
-  --acquisition-log artifacts/recorded-independent/desk2-first/acquisition.json
-python3 scripts/qualify-rgbd-independent.py \
+cargo build --release --locked --manifest-path integrations/rgbd/Cargo.toml \
+  --bin rustdriving-rgbd-independent
+python3 scripts/check-recorded-independent-suite.py \
+  --binary integrations/rgbd/target/release/rustdriving-rgbd-independent \
+  --archive "$desk2_archive" \
   --manifest data/tum-fr1-desk2-independent/manifest.json \
   --raw data/tum-fr1-desk2-independent/raw \
-  --output artifacts/recorded-independent/desk2-first/qualification.json
-integrations/rgbd/target/release/rustdriving-rgbd-independent \
-  --manifest data/tum-fr1-desk2-independent/manifest.json \
-  --qualification artifacts/recorded-independent/desk2-first/qualification.json \
-  --prepare-freeze artifacts/recorded-independent/desk2-first/freeze.json
-python3 scripts/check-recorded-independent.py \
-  --manifest data/tum-fr1-desk2-independent/manifest.json \
-  --raw data/tum-fr1-desk2-independent/raw \
-  --archive artifacts/recorded-independent/desk2-source.tgz \
-  --qualification artifacts/recorded-independent/desk2-first/qualification.json \
-  --freeze artifacts/recorded-independent/desk2-first/freeze.json \
-  --preregister-only --output artifacts/recorded-independent/desk2-first/preflight.json
-integrations/rgbd/target/release/rustdriving-rgbd-independent \
-  --manifest data/tum-fr1-desk2-independent/manifest.json \
-  --raw data/tum-fr1-desk2-independent/raw \
-  --qualification artifacts/recorded-independent/desk2-first/qualification.json \
-  --freeze artifacts/recorded-independent/desk2-first/freeze.json \
-  --output artifacts/recorded-independent/desk2-first/results.json
+  --output artifacts/recorded-independent/local-regression
 ```
 
-Keep the evaluator's real exit status: **0** means the complete physical
-criterion passed, **1** retains a valid but failed physical trial, and **2** is
-an input or execution failure. If a result was produced, run the same audit
-command without `--preregister-only`, adding `--report .../results.json` and a
-new `--output .../audit.json`. Archive the first code sources and artifacts
-without overwriting them. Later runs require `--regression` in both freeze
-preparation and evaluation and cannot recreate a first unviewed trial.
+Use the actual binary path when `CARGO_TARGET_DIR` is configured. The
+[completed regression suite](../assets/recorded-independent/desk2-regression/suite.json)
+records qualification **0**, freeze preparation **0**, evaluator **1** (expected
+physical failure), and independent audit **0**. It retains all 179 updates and
+matches the first result's non-timing evidence. Wrapper exit **0** means the
+preserved failed physical result was correctly reproduced and audited; it does
+not mean the physical criterion passed or provide fresh generalization evidence.
+Standalone evaluator exit **0** means complete physical acceptance, **1** means
+a valid failed physical trial, and **2** means an input or execution failure.
 
-The evaluator reserves a new report destination before sensor work. Existing
-files, directories and broken symlinks cannot consume a new sequence or be
-overwritten. An execution failure can leave an empty or partial new report;
-that is failed evidence, never a successful result.
+[Output guards](../assets/recorded-independent/desk2-regression/output-guards.json)
+separately reject an existing directory and a broken symlink before work,
+preserving earlier output. The final wrapper adds that fresh-output admission
+check before resolving paths; the full numerical suite and the subsequent
+guard-only verification are distinct evidence. The wrapper SHA-256 is
+`649c23544145a7be7a6f23007ea946d67c17e60785e40f516e7e0a98f103519b`.
+A manifest-tamper rejection also guards the bound source inventory. Existing
+files, directories and broken symlinks cannot consume a sequence or be
+overwritten. An execution failure can leave an empty or partial report; that
+is failed evidence, never a successful result.
+
+The frozen original `scripts/check-recorded-independent.py` passes the preserved
+metadata preflight but fails the formal motion audit on the calibration schema.
+The additive `scripts/check-recorded-independent-v2.py` audit passes integrity
+on that original failed trial. Its proof binds both the running checker and
+original frozen checker without changing estimator math, calibration or results.
+
+[The historical CI repair](../assets/recorded-independent/desk2-regression/ci-repair.json)
+separately documents a build-target selection error: an archived-source rebuild
+attempted the newly added independent binary without its future preregistration
+asset. Selecting only the intended historical evaluator binary repairs that
+replay, preserving its original outcome and sources. This is a reproducibility
+repair, not a recorded-motion accuracy improvement.
 
 ## Executed synthetic validation
 
