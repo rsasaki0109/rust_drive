@@ -683,3 +683,34 @@ claimed. Remote Actions status remains separate from these local outcomes.
 [failure detail](../assets/temporal-first-failure-review.json);
 [viewed reproduction](../assets/temporal-regression.json);
 [combined proof](../assets/temporal-development-validation.json).
+
+## Depth-supported descriptor comparison
+
+The new optional binary excludes measured-depth-ineligible candidates before
+both descriptor ratio searches and preserves all original feature IDs. Exactly
+22 sources were archived and metadata-audited before candidate fitting. All
+180 images and numerical reference data are previously viewed. The outcome
+fails, exit 1: 59/179 accepted and 49/179 root-accurate, compared with 58/179
+and 52/179 in the original. The additional accepted update at 163 is inaccurate;
+loss moves from 164 to 170 rather than being repaired. Maximum accepted errors
+increase to 0.118900 m / 0.126653 rad. The gates and denominator stay unchanged.
+
+The archived-source audit verifies all pixels, eligibility IDs, matches,
+continuous references/clocks, rigid fits, refinement and physical scores. Its
+49 positive contracts and 193 negative checks include a tracked full-length
+analytic-motion fixture that passes the same auditor before report mutations.
+Exact viewed reproduction succeeds with physical exit 1 retained. Neither
+integrity success nor later loss is an accuracy-improvement claim.
+
+Workspace validation passes 371 tests and 49 executions/replays, with all
+245 generated outputs and 770 prior source/evidence files byte-identical.
+The optional release RGB-D suite passes 49 tests, including 15 in the new
+binary; fmt, release Clippy/build, Python checks and CI syntax validation pass.
+Old estimator, manifests, locks, toolchain, native pin and opening GIF remain
+unchanged. No fresh native execution or unseen-environment result is claimed.
+
+[Protocol](depth-supported-matching.md);
+[comparison](../assets/supported-comparison.json);
+[archived audit](../assets/recorded-supported/room-v1/audit.json);
+[viewed reproduction](../assets/supported-regression.json);
+[combined local proof](../assets/supported-development-validation.json).

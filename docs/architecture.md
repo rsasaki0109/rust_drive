@@ -260,3 +260,11 @@ it cannot initialize or reset tracking. Accepted-pose expiry latches loss and
 all later acquisitions remain rejected in the report. The frozen first extension
 fails after orientation error and insufficient depth-supported matches. This
 path remains offline, outside driving control. [Evidence](temporal-recorded-motion.md).
+
+The separate `rustdriving-rgbd-supported` calibration binary checks every
+original feature's measured-depth patch before both directional descriptor
+ratio searches. It retains original feature IDs and unchanged extraction,
+rigid/refinement algorithms, clocks and gates. The Python oracle reconstructs
+the candidate domains independently from pixels. This viewed variant adds one
+fit but worsens root accuracy and still loses tracking; it does not replace the
+original path. [Comparison](depth-supported-matching.md).

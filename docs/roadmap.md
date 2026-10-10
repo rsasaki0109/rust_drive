@@ -122,3 +122,9 @@ preceding short success: 52/179 updates meet root accuracy, then tracking is los
 Improved measured-feature support, rotation accuracy and independently evaluated
 relocalization are needed before sustained localization can be claimed. Origin
 resets, dropped failures and relaxed accuracy gates do not resolve this result.
+
+An opt-in [depth-supported descriptor domain](depth-supported-matching.md)
+restores one extra fit in the viewed window, but lowers root accuracy from
+52/179 to 49/179 and still loses tracking. It is not promoted to the original
+path. Descriptor stability and accumulated rotation error remain priorities;
+any recovery method must retain an independently evaluated continuous root.

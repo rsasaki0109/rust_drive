@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "scope": "Known same180frame recording; viewed calibration comparison only",
+  "original_report_sha256": "d8c117cfc898da5b595d0bd2f343f99c60f193287c1b4e31c0012121103b51a5",
+  "candidate_report_sha256": "9044cfb50c70e30143ae552226f4052f1c762af963f806e74f6854ddfbb51e7b",
+  "independent_candidate_audit_sha256": "ff4dc41134cb7043e03829ffc57891413757e30dfa6b8a99b9dfa6bfd1e61f28",
+  "original": {
+    "summary": {
+      "accepted_updates": 58,
+      "accurate_root_updates": 52,
+      "all_updates_passed": false,
+      "frames": 180,
+      "initialized_frames": 1,
+      "lost": true,
+      "reference_valid_updates": 179,
+      "rejected_updates": 121,
+      "updates": 179
+    },
+    "first_inaccurate_accepted_source_index": 149,
+    "first_lost_source_index": 164,
+    "maximum_root_translation_error_m": 0.09884618627335028,
+    "maximum_root_rotation_error_rad": 0.11037314331801358
+  },
+  "depth_supported": {
+    "summary": {
+      "accepted_updates": 59,
+      "accurate_root_updates": 49,
+      "all_updates_passed": false,
+      "frames": 180,
+      "initialized_frames": 1,
+      "lost": true,
+      "reference_valid_updates": 179,
+      "rejected_updates": 120,
+      "updates": 179
+    },
+    "first_inaccurate_accepted_source_index": 149,
+    "first_lost_source_index": 170,
+    "maximum_root_translation_error_m": 0.11889958218174536,
+    "maximum_root_rotation_error_rad": 0.12665312715888508
+  },
+  "candidate_improves_root_accuracy": false,
+  "default_promoted": false,
+  "result": "One additional accepted update, three fewer accurate updates; loss deferred by six source observations, not repaired. More matched depth pairs do not establish accurate motion.",
+  "unchanged_accuracy_gates": {
+    "rotation_rad": 0.1,
+    "translation_m": 0.1
+  },
+  "all_179_updates_retained": true
+}
