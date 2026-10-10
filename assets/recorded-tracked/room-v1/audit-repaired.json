@@ -1,0 +1,2720 @@
+{
+  "schema_version": 1,
+  "passed_integrity": true,
+  "source_freeze_verified": true,
+  "synthetic_image_controls_executed": true,
+  "actual_recorded_image_pixels_read": true,
+  "frozen_source_count": 22,
+  "dataset": "tum-fr1-room-temporal",
+  "kind": "calibration_regression",
+  "manifest_sha256": "c7fcc6dbaf72110858cb9225a238d5d0f52513662fe677b1a11cf72a7b7f7c52",
+  "freeze_sha256": "64778835e9eaaeb70c4955c3764de1f16ea1bf3935cc0396599a844c69d6d5d8",
+  "qualification_sha256": "f9c31c069de1770182c6e55bb5e58d9fc4ba1cd752e6f1c89ff85ae8fe9e9172",
+  "qualification_independently_recomputed": true,
+  "qualification_method": "whole-source row arity and timestamp columns only; nearest RGB and strict brackets",
+  "temporal_timestamp_summary": {
+    "depth_rows": 1360,
+    "rgb_rows": 1362,
+    "ground_truth_rows": 4887,
+    "frame_count": 180,
+    "reference_bracketed_frames": 180,
+    "unique_rgb_frames": 173,
+    "maximum_observed_ground_truth_bracket_us": 11500,
+    "maximum_pair_gap_us": 17310,
+    "summary_time_unit": "rounded microseconds from source timestamps; qualification gates use unrounded seconds"
+  },
+  "running_checker_sha256": "4fbffce113a8791600a1cf46f25ea6ad98b6b73c3d0701e5053edcc7e75c2889",
+  "frozen_checker_sha256": "c14300078fdaa1cc78506b5bc474c0a95a08b67c505dfe74046104a7cfbd7562",
+  "archived_source_snapshot": true,
+  "frozen_provenance_and_qualification_mutations_rejected": [
+    "hide_viewed_regression",
+    "claim_unviewed_extension",
+    "source_evaluator_source_sha256",
+    "source_feature_source_sha256",
+    "source_visual_pose_source_sha256",
+    "source_pose_source_sha256",
+    "source_localization_lib_source_sha256",
+    "source_perception_lib_source_sha256",
+    "source_core_lib_source_sha256",
+    "source_cargo_lock_sha256",
+    "source_cargo_manifest_sha256",
+    "source_rust_toolchain_sha256",
+    "source_independent_checker_sha256",
+    "source_geometry_checker_sha256",
+    "source_keyframe_checker_sha256",
+    "source_acquisition_source_sha256",
+    "source_checker_requirements_sha256",
+    "source_visual_checker_sha256",
+    "source_reprojection_pose_source_sha256",
+    "source_tracked_source_sha256",
+    "source_pyramidal_tracker_source_sha256",
+    "source_temporal_checker_sha256",
+    "source_reprojection_checker_sha256",
+    "source_qualification_source_sha256",
+    "policy_refinement_config",
+    "policy_registration_config",
+    "policy_tracking_policy",
+    "policy_preprocessing",
+    "policy_feature_policy",
+    "policy_ground_truth_interpolation",
+    "policy_evaluation_label_policy",
+    "policy_optical_flow_config",
+    "policy_optical_flow_policy",
+    "hide_metadata_failure",
+    "invent_gt_row_order",
+    "invent_gt_row_count",
+    "invent_gt_bracket_stat",
+    "invent_pair_gap_stat",
+    "weaken_pair_gap_gate",
+    "invent_unique_rgb_count",
+    "invent_qualification_window",
+    "invent_qualification_metadata_hash",
+    "invent_qualification_helper",
+    "qualification_parsed_pose_values",
+    "qualification_decoded_pixels",
+    "qualification_opened_image_header",
+    "qualification_ran_features",
+    "rename_repository",
+    "rename_source_commit"
+  ],
+  "metadata_contract_checks": {
+    "passed": [
+      "opaque_pose_tokens_not_converted",
+      "earlier_rgb_index_on_exact_tie",
+      "exact_reference_timestamp_zero_bracket",
+      "all_180_rows_retained"
+    ],
+    "mutations_rejected": [
+      "duplicate_gt_timestamp",
+      "nonfinite_gt_timestamp",
+      "wrong_gt_row_arity",
+      "duplicate_depth_timestamp",
+      "oversized_gt_metadata",
+      "wrong_original_depth_index",
+      "wrong_nearest_rgb_index",
+      "invent_pair_gap",
+      "omit_observed_depth_row"
+    ]
+  },
+  "exact_solver_cache_contract_checks": {
+    "passed": [
+      "exact_cached_vs_uncached_rigid_result_including_work",
+      "exact_cached_vs_uncached_refinement_including_trace",
+      "repeated_exact_keys_hit_local_caches"
+    ],
+    "maxsize": 180,
+    "immutable_helper_globals_modified": false,
+    "actual_sensor_data_read": false
+  },
+  "continuous_contract_checks": {
+    "passed_integrity": true,
+    "hand_fixture_only": true,
+    "actual_temporal_images_or_pose_values_read": false,
+    "positive": [
+      "complete180frame179update_known_motion_passes_same_auditor",
+      "exactlyone_initialization",
+      "continuous_alternating_nonzero_known_pixel_motion",
+      "all179_physical_scores_include_tail"
+    ],
+    "mutations_rejected": [
+      "conceal_qualification_gate",
+      "conceal_report_qualification",
+      "invent_report_qualification_hash",
+      "invent_report_qualification_count",
+      "invent_report_algorithm",
+      "drop_unviewed_tail",
+      "omit_final_observation",
+      "reclassify_unviewed_tail",
+      "forge_midsequence_initialization",
+      "forge_boundary_clock_reset",
+      "forge_boundary_reference_reset",
+      "allow_chunk_resets",
+      "allow_multiple_initializations",
+      "claim_fresh_generalization",
+      "reverse_temporal_boundary",
+      "conceal_flow_invocation",
+      "drop_original_flow_attempt",
+      "invent_original_flow_ID",
+      "invent_flow_start",
+      "invent_flow_endpoint",
+      "invent_backward_endpoint",
+      "invent_forward_backward_metric",
+      "invent_flow_acceptance",
+      "invent_flow_sample_work",
+      "invent_flow_iteration_work",
+      "invent_pyramid_work",
+      "invent_level_sample_work",
+      "invent_level_eigenvalue",
+      "invent_level_condition",
+      "invent_level_photo_RMS",
+      "invent_level_convergence",
+      "invent_initialization_flow",
+      "invent_BRIEF_on_endpoint",
+      "drop_accepted_endpoint",
+      "invent_tracked_subpixel",
+      "invent_endpoint_buffer_ID",
+      "drop_selected_correspondence",
+      "weaken_forward_backward_gate",
+      "replace_measured_flow_with_truth",
+      "omit_acquisition",
+      "invent_summary",
+      "operational_truth",
+      "source_revision",
+      "RGB_clock",
+      "depth_clock",
+      "invent_derived_pair_gap",
+      "accepted_clock",
+      "observed_RGB_clock",
+      "reference_clock",
+      "weaken_consensus",
+      "weaken_ambiguity",
+      "invent_label_failure_for_valid_source",
+      "wrong_feature_pixel",
+      "wrong_FAST_score",
+      "wrong_BRIEF",
+      "wrong_orientation",
+      "invent_depth_point",
+      "invent_relative_pose",
+      "invent_root_pose",
+      "invent_reference_root",
+      "invent_inlier_membership",
+      "invent_inlier_ratio",
+      "invent_RMS",
+      "invent_hypothesis_work",
+      "invent_consensus_refits",
+      "invent_candidates",
+      "invent_competing_models",
+      "invent_accuracy",
+      "conceal_refinement_invocation",
+      "invent_refinement_rejection",
+      "invent_coarse_pose",
+      "drop_refinement_support",
+      "wrong_refinement_inlier_ID",
+      "wrong_refinement_pixel",
+      "wrong_refinement_depth_point",
+      "invent_pixel_initial_cost",
+      "invent_pixel_final_cost",
+      "invent_pixel_RMS",
+      "invent_pixel_work",
+      "invent_pixel_support",
+      "invent_pixel_convergence",
+      "weaken_pixel_Huber",
+      "weaken_pixel_workcap"
+    ],
+    "terminal_known_translation_m": -0.00289963545164513
+  },
+  "pixel_contract_checks": {
+    "passed": [
+      "known_integer_translation_and_subpixel_start",
+      "known_backward_motion",
+      "rank_zero_low_texture_sentinel",
+      "rank_one_eigen_diagnostic_and_independent_decision",
+      "attempted_border_and_masked_sample_counted",
+      "specific_FB_rejection_after_six_converged_levels",
+      "periodic_known_wrong_accepted_endpoint_preserved"
+    ],
+    "mutations_rejected": [
+      "wrong_endpoint",
+      "wrong_backward_endpoint",
+      "wrong_forward_backward_error",
+      "conceal_sample_work",
+      "conceal_iterations",
+      "conceal_pyramid_pixels",
+      "forge_level_eigen",
+      "forge_level_RMS",
+      "forge_level_work",
+      "false_border_acceptance",
+      "false_masked_acceptance",
+      "false_FB_acceptance",
+      "rank_deficient_condition_forgery",
+      "invalid_binary_mask",
+      "nonfinite_original_point",
+      "too_many_original_points"
+    ],
+    "accepted_periodic_endpoint_error_pixels": 32.0,
+    "specific_forward_backward_error_pixels": 1.4418377374923674,
+    "actual_sensor_data_read": false,
+    "calibrated_confidence_claim": false
+  },
+  "correspondence_selection_contract_checks": {
+    "passed": [
+      "300measured_endpoints_replayed",
+      "first256valid_pairs_selected_in_original_order",
+      "all44overflow_depth_witnesses_retained",
+      "mixed_invalid_first_depth_valid_later_positive",
+      "original_v1_first_depth_mutation_reproduced_as_noop"
+    ],
+    "mutations_rejected": [
+      "select_overflow_pair",
+      "drop_unselected_tail_witness",
+      "omit_overflow_reason",
+      "invent_overflow_correspondence_ID",
+      "omit_valid_selected_pair",
+      "omit_selected_pair_after_invalid_first_depth"
+    ],
+    "actual_sensor_data_read": false
+  },
+  "summary": {
+    "accepted_updates": 6,
+    "accurate_root_updates": 6,
+    "all_updates_passed": false,
+    "frames": 180,
+    "initialized_frames": 1,
+    "lost": true,
+    "reference_valid_updates": 179,
+    "rejected_updates": 173,
+    "updates": 179
+  },
+  "frames": [
+    {
+      "source_index": 100,
+      "feature_count": 191,
+      "features_computed": true,
+      "initialization_geometry_ratio": 0.19070674465562681,
+      "initialization_depth_points": 145,
+      "accepted": true,
+      "root": {
+        "translation_error_m": 0.0,
+        "rotation_error_rad": 6.206335383118183e-17,
+        "within_accuracy_gates": true
+      }
+    },
+    {
+      "source_index": 101,
+      "feature_count": 233,
+      "features_computed": true,
+      "flow_attempted": true,
+      "flow_work": {
+        "bilinear_samples": 676218,
+        "iterations": 3915,
+        "pyramid_output_pixels": 192000
+      },
+      "tracked_points": 191,
+      "accepted_endpoints": 94,
+      "valid_depth_matches": 66,
+      "refinement": {
+        "estimate": [
+          [
+            0.015534288358542899,
+            0.001956057735826319,
+            -0.006261988323098066
+          ],
+          [
+            0.9998887867657045,
+            0.00012002191983660688,
+            0.010777799624545267,
+            0.01030721738392773
+          ]
+        ],
+        "initial_rms_px": 0.6857840257671804,
+        "final_rms_px": 0.5747210233948497,
+        "initial_huber_cost": 15.284741224916827,
+        "final_huber_cost": 10.73488827879076,
+        "iterations": 3,
+        "accepted_steps": 2,
+        "point_checks": 390,
+        "valid_support": 65,
+        "converged": true,
+        "max_normal_condition_number": 147.83975429130638,
+        "trace": [
+          {
+            "current_from_previous": [
+              [
+                -0.015705878734107774,
+                -0.0016351162896157114,
+                0.005919055268872524
+              ],
+              [
+                0.9998888006292787,
+                -0.00012082530094947424,
+                -0.010775983764302628,
+                -0.010307761701788655
+              ]
+            ],
+            "huber_cost_before": 15.284741224916827,
+            "huber_cost_after": 10.734924334901343,
+            "scale": 1.0,
+            "increment": [
+              -0.0012680104494904897,
+              -0.0013621054218534393,
+              -0.002393311245205303,
+              -0.001075506632841332,
+              0.0012460668357688175,
+              -0.00046177319595082806
+            ],
+            "normal_condition_number": 147.83975429130638,
+            "line_search_trials": 1
+          },
+          {
+            "current_from_previous": [
+              [
+                -0.015702652723125772,
+                -0.0016325930284430568,
+                0.0059257161500745
+              ],
+              [
+                0.9998887867657045,
+                -0.00012002191983660688,
+                -0.010777799624545267,
+                -0.01030721738392773
+              ]
+            ],
+            "huber_cost_before": 10.734924334901343,
+            "huber_cost_after": 10.73488827879076,
+            "scale": 1.0,
+            "increment": [
+              3.245795434770905e-06,
+              2.5498499784536433e-06,
+              6.7207235803805154e-06,
+              1.5574141744525418e-06,
+              -3.6480460149477374e-06,
+              1.1059821087896551e-06
+            ],
+            "normal_condition_number": 146.81107987590738,
+            "line_search_trials": 1
+          }
+        ]
+      },
+      "fit": {
+        "rms_m": 0.008044283230323065,
+        "inlier_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          50,
+          51,
+          52,
+          53,
+          54,
+          55,
+          56,
+          57,
+          58,
+          59,
+          60,
+          61,
+          62,
+          63,
+          64,
+          65
+        ],
+        "inlier_count": 65,
+        "inlier_ratio": 0.9848484848484849,
+        "hypotheses_evaluated": 128,
+        "point_checks": 8448,
+        "refits": 2,
+        "geometry_ratio_current": 0.21810862334384282,
+        "geometry_ratio_previous": 0.21781572951590608,
+        "candidate_models": 121,
+        "competing_models": 0
+      },
+      "accepted": true,
+      "root": {
+        "translation_error_m": 0.0024487092889715107,
+        "rotation_error_rad": 0.0030089657241920433,
+        "within_accuracy_gates": true
+      }
+    },
+    {
+      "source_index": 102,
+      "feature_count": 237,
+      "features_computed": true,
+      "flow_attempted": true,
+      "flow_work": {
+        "bilinear_samples": 741591,
+        "iterations": 4377,
+        "pyramid_output_pixels": 192000
+      },
+      "tracked_points": 233,
+      "accepted_endpoints": 91,
+      "valid_depth_matches": 64,
+      "refinement": {
+        "estimate": [
+          [
+            0.01637293099223068,
+            0.003643036082125326,
+            -0.007017493639450122
+          ],
+          [
+            0.9998951941217558,
+            0.002449779775412604,
+            0.010608790229387606,
+            0.009542165432297894
+          ]
+        ],
+        "initial_rms_px": 1.042690860342161,
+        "final_rms_px": 0.8501269582298479,
+        "initial_huber_cost": 34.2097254058412,
+        "final_huber_cost": 22.747658950259435,
+        "iterations": 3,
+        "accepted_steps": 2,
+        "point_checks": 378,
+        "valid_support": 63,
+        "converged": true,
+        "max_normal_condition_number": 162.18567757499724,
+        "trace": [
+          {
+            "current_from_previous": [
+              [
+                -0.016580356427440348,
+                -0.003290518482985933,
+                0.006682115246379598
+              ],
+              [
+                0.9998952048205774,
+                -0.002447733203803015,
+                -0.010609266889281032,
+                -0.009541039516253973
+              ]
+            ],
+            "huber_cost_before": 34.2097254058412,
+            "huber_cost_after": 22.747752375054265,
+            "scale": 1.0,
+            "increment": [
+              0.0016922720523806763,
+              0.0008890093246810166,
+              -0.0021715300106140575,
+              0.0003378000501484424,
+              -0.0008966028580846726,
+              0.0004976271972447775
+            ],
+            "normal_condition_number": 162.18567757499724,
+            "line_search_trials": 1
+          },
+          {
+            "current_from_previous": [
+              [
+                -0.01658452148068146,
+                -0.003294946494059417,
+                0.006684816602558264
+              ],
+              [
+                0.9998951941217558,
+                -0.002449779775412604,
+                -0.010608790229387606,
+                -0.009542165432297894
+              ]
+            ],
+            "huber_cost_before": 22.747752375054265,
+            "huber_cost_after": 22.747658950259435,
+            "scale": 1.0,
+            "increment": [
+              -4.16408530312317e-06,
+              -4.493233404318124e-06,
+              2.671640444656225e-06,
+              -4.059780703857059e-06,
+              9.865338272585536e-07,
+              -2.2975589837765884e-06
+            ],
+            "normal_condition_number": 162.03055296270463,
+            "line_search_trials": 1
+          }
+        ]
+      },
+      "fit": {
+        "rms_m": 0.007806485078190741,
+        "inlier_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          50,
+          51,
+          52,
+          53,
+          54,
+          55,
+          56,
+          57,
+          58,
+          59,
+          60,
+          61,
+          62,
+          63
+        ],
+        "inlier_count": 63,
+        "inlier_ratio": 0.984375,
+        "hypotheses_evaluated": 128,
+        "point_checks": 7872,
+        "refits": 2,
+        "geometry_ratio_current": 0.16675973973794217,
+        "geometry_ratio_previous": 0.16748920831547953,
+        "candidate_models": 117,
+        "competing_models": 0
+      },
+      "accepted": true,
+      "root": {
+        "translation_error_m": 0.004361567665471014,
+        "rotation_error_rad": 0.003251898952303476,
+        "within_accuracy_gates": true
+      }
+    },
+    {
+      "source_index": 103,
+      "feature_count": 232,
+      "features_computed": true,
+      "flow_attempted": true,
+      "flow_work": {
+        "bilinear_samples": 749890,
+        "iterations": 4381,
+        "pyramid_output_pixels": 192000
+      },
+      "tracked_points": 237,
+      "accepted_endpoints": 99,
+      "valid_depth_matches": 61,
+      "refinement": {
+        "estimate": [
+          [
+            0.019248576226233896,
+            0.0039807326781167275,
+            -0.006035078773418401
+          ],
+          [
+            0.999932018393661,
+            0.002902010739181512,
+            0.009416242225802497,
+            0.006234685813578035
+          ]
+        ],
+        "initial_rms_px": 1.1099890218313262,
+        "final_rms_px": 0.9523310756311697,
+        "initial_huber_cost": 37.369117020232636,
+        "final_huber_cost": 27.473643594283416,
+        "iterations": 3,
+        "accepted_steps": 2,
+        "point_checks": 366,
+        "valid_support": 61,
+        "converged": true,
+        "max_normal_condition_number": 122.68457781693502,
+        "trace": [
+          {
+            "current_from_previous": [
+              [
+                -0.019406548099918573,
+                -0.0037111175942165443,
+                0.0056841981812508335
+              ],
+              [
+                0.999932019147065,
+                -0.002903373573971305,
+                -0.009416814382942448,
+                -0.006233066118762031
+              ]
+            ],
+            "huber_cost_before": 37.369117020232636,
+            "huber_cost_after": 27.473780123540763,
+            "scale": 1.0,
+            "increment": [
+              0.001855534328592265,
+              -0.003606326511730798,
+              -0.002281974950358378,
+              -0.0029369473668485542,
+              -0.001237912655938446,
+              0.001333692912773452
+            ],
+            "normal_condition_number": 122.68457781693502,
+            "line_search_trials": 1
+          },
+          {
+            "current_from_previous": [
+              [
+                -0.01940694724758471,
+                -0.0037056728457632387,
+                0.005693371802610962
+              ],
+              [
+                0.999932018393661,
+                -0.002902010739181512,
+                -0.009416242225802497,
+                -0.006234685813578035
+              ]
+            ],
+            "huber_cost_before": 27.473780123540763,
+            "huber_cost_after": 27.473643594283416,
+            "scale": 1.0,
+            "increment": [
+              -3.9356365332233797e-07,
+              5.398026921238704e-06,
+              9.162182365247928e-06,
+              2.763117228864522e-06,
+              1.1178278621581059e-06,
+              -3.216834054911394e-06
+            ],
+            "normal_condition_number": 121.88913182023788,
+            "line_search_trials": 1
+          }
+        ]
+      },
+      "fit": {
+        "rms_m": 0.007590294796169098,
+        "inlier_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          50,
+          51,
+          52,
+          53,
+          54,
+          55,
+          56,
+          57,
+          58,
+          59,
+          60
+        ],
+        "inlier_count": 61,
+        "inlier_ratio": 1.0,
+        "hypotheses_evaluated": 128,
+        "point_checks": 7564,
+        "refits": 1,
+        "geometry_ratio_current": 0.20754296819875584,
+        "geometry_ratio_previous": 0.20780784157607357,
+        "candidate_models": 115,
+        "competing_models": 0
+      },
+      "accepted": true,
+      "root": {
+        "translation_error_m": 0.0038097097807974598,
+        "rotation_error_rad": 0.003312345249833385,
+        "within_accuracy_gates": true
+      }
+    },
+    {
+      "source_index": 104,
+      "feature_count": 207,
+      "features_computed": true,
+      "flow_attempted": true,
+      "flow_work": {
+        "bilinear_samples": 509285,
+        "iterations": 3449,
+        "pyramid_output_pixels": 192000
+      },
+      "tracked_points": 232,
+      "accepted_endpoints": 19,
+      "valid_depth_matches": 12,
+      "refinement": {
+        "estimate": [
+          [
+            0.017867912310016235,
+            -0.001661635420347155,
+            -0.0008284905458391643
+          ],
+          [
+            0.9999013000486676,
+            0.004263457661601266,
+            0.011900913176659856,
+            0.006130363391658558
+          ]
+        ],
+        "initial_rms_px": 1.4528932256287357,
+        "final_rms_px": 1.0820533056241293,
+        "initial_huber_cost": 12.665392350467236,
+        "final_huber_cost": 7.025036137272632,
+        "iterations": 3,
+        "accepted_steps": 2,
+        "point_checks": 72,
+        "valid_support": 12,
+        "converged": true,
+        "max_normal_condition_number": 224.61050628757604,
+        "trace": [
+          {
+            "current_from_previous": [
+              [
+                -0.017842601922617468,
+                0.0018666785375598127,
+                0.00035080553045964066
+              ],
+              [
+                0.999901199910787,
+                -0.004270598123931195,
+                -0.011907652347301515,
+                -0.006128639670280984
+              ]
+            ],
+            "huber_cost_before": 12.665392350467236,
+            "huber_cost_after": 7.025368095951396,
+            "scale": 1.0,
+            "increment": [
+              0.0037574451052968744,
+              -0.0050907821026838,
+              -0.0052254339167505355,
+              -0.004886036541432873,
+              -0.0020002254867800854,
+              0.00285897665116062
+            ],
+            "normal_condition_number": 224.61050628757604,
+            "line_search_trials": 1
+          },
+          {
+            "current_from_previous": [
+              [
+                -0.01786064284982319,
+                0.0018858735467558133,
+                0.00038811999411699513
+              ],
+              [
+                0.9999013000486676,
+                -0.004263457661601266,
+                -0.011900913176659856,
+                -0.006130363391658558
+              ]
+            ],
+            "huber_cost_before": 7.025368095951396,
+            "huber_cost_after": 7.025036137272632,
+            "scale": 1.0,
+            "increment": [
+              -1.80518442051706e-05,
+              1.9140587911741117e-05,
+              3.704889250906534e-05,
+              1.4404023847653632e-05,
+              1.3377149152402822e-05,
+              -3.3333830225239955e-06
+            ],
+            "normal_condition_number": 221.3396790345686,
+            "line_search_trials": 1
+          }
+        ]
+      },
+      "fit": {
+        "rms_m": 0.010782705512759781,
+        "inlier_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "inlier_count": 12,
+        "inlier_ratio": 1.0,
+        "hypotheses_evaluated": 128,
+        "point_checks": 1548,
+        "refits": 1,
+        "geometry_ratio_current": 0.10107133789219687,
+        "geometry_ratio_previous": 0.10113991029183043,
+        "candidate_models": 86,
+        "competing_models": 0
+      },
+      "accepted": true,
+      "root": {
+        "translation_error_m": 0.009678699057660332,
+        "rotation_error_rad": 0.008324446884129859,
+        "within_accuracy_gates": true
+      }
+    },
+    {
+      "source_index": 105,
+      "feature_count": 224,
+      "features_computed": true,
+      "flow_attempted": true,
+      "flow_work": {
+        "bilinear_samples": 555076,
+        "iterations": 3584,
+        "pyramid_output_pixels": 192000
+      },
+      "tracked_points": 207,
+      "accepted_endpoints": 40,
+      "valid_depth_matches": 30,
+      "refinement": {
+        "estimate": [
+          [
+            0.015884225322438446,
+            0.004693260996818235,
+            -0.00629698733309409
+          ],
+          [
+            0.9998206313226864,
+            0.01144385838635591,
+            0.014600274595347167,
+            0.0038177569957212575
+          ]
+        ],
+        "initial_rms_px": 1.1778205226916674,
+        "final_rms_px": 0.9747696759775177,
+        "initial_huber_cost": 20.808917755105092,
+        "final_huber_cost": 14.252638818079726,
+        "iterations": 3,
+        "accepted_steps": 2,
+        "point_checks": 180,
+        "valid_support": 30,
+        "converged": true,
+        "max_normal_condition_number": 165.9908965805265,
+        "trace": [
+          {
+            "current_from_previous": [
+              [
+                -0.016100623884273954,
+                -0.004426546181854434,
+                0.005928213948621656
+              ],
+              [
+                0.9998206450962046,
+                -0.011438070762284076,
+                -0.014603598662532606,
+                -0.003818780269916227
+              ]
+            ],
+            "huber_cost_before": 20.808917755105092,
+            "huber_cost_after": 14.253336370736845,
+            "scale": 1.0,
+            "increment": [
+              0.003474926090265237,
+              -0.006251609521725875,
+              -0.0004051686464558644,
+              -0.005433937520262045,
+              -0.0029358483574174828,
+              0.004045847902149905
+            ],
+            "normal_condition_number": 165.9908965805265,
+            "line_search_trials": 1
+          },
+          {
+            "current_from_previous": [
+              [
+                -0.016097679913782206,
+                -0.004431140618795255,
+                0.005934396056994616
+              ],
+              [
+                0.9998206313226864,
+                -0.01144385838635591,
+                -0.014600274595347167,
+                -0.0038177569957212575
+              ]
+            ],
+            "huber_cost_before": 14.253336370736845,
+            "huber_cost_after": 14.252638818079726,
+            "scale": 1.0,
+            "increment": [
+              2.8961948820655453e-06,
+              -4.634077559131212e-06,
+              6.022756241836593e-06,
+              -1.1577986358160426e-05,
+              6.714151604096934e-06,
+              1.8009940257021128e-06
+            ],
+            "normal_condition_number": 165.13053269146656,
+            "line_search_trials": 1
+          }
+        ]
+      },
+      "fit": {
+        "rms_m": 0.00683894687730627,
+        "inlier_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29
+        ],
+        "inlier_count": 30,
+        "inlier_ratio": 1.0,
+        "hypotheses_evaluated": 128,
+        "point_checks": 3660,
+        "refits": 1,
+        "geometry_ratio_current": 0.14395227048840178,
+        "geometry_ratio_previous": 0.1444909762882191,
+        "candidate_models": 119,
+        "competing_models": 0
+      },
+      "accepted": true,
+      "root": {
+        "translation_error_m": 0.013526399664643507,
+        "rotation_error_rad": 0.011046451475091932,
+        "within_accuracy_gates": true
+      }
+    },
+    {
+      "source_index": 106,
+      "feature_count": 248,
+      "features_computed": true,
+      "flow_attempted": true,
+      "flow_work": {
+        "bilinear_samples": 554108,
+        "iterations": 3713,
+        "pyramid_output_pixels": 192000
+      },
+      "tracked_points": 224,
+      "accepted_endpoints": 34,
+      "valid_depth_matches": 20,
+      "refinement": {
+        "estimate": [
+          [
+            0.017093070413389342,
+            0.007198753463977768,
+            -0.00961696918677536
+          ],
+          [
+            0.9998912891702613,
+            0.009060351303894562,
+            0.011590550930937403,
+            0.0009894467142549344
+          ]
+        ],
+        "initial_rms_px": 2.278227512861359,
+        "final_rms_px": 2.124390946495276,
+        "initial_huber_cost": 47.87041975017611,
+        "final_huber_cost": 39.205942874481444,
+        "iterations": 5,
+        "accepted_steps": 4,
+        "point_checks": 200,
+        "valid_support": 20,
+        "converged": true,
+        "max_normal_condition_number": 130.07941009159035,
+        "trace": [
+          {
+            "current_from_previous": [
+              [
+                -0.01723372785566732,
+                -0.007094330832490687,
+                0.009319223513363738
+              ],
+              [
+                0.9998901029529932,
+                -0.009116413794628428,
+                -0.011645916190569509,
+                -0.0010225713960656116
+              ]
+            ],
+            "huber_cost_before": 47.87041975017611,
+            "huber_cost_after": 39.2174036121522,
+            "scale": 1.0,
+            "increment": [
+              -0.004225178792095834,
+              -0.003278305595160406,
+              0.0011003552865136961,
+              -0.0018784819747815294,
+              0.003031197653672029,
+              0.00039457264057390034
+            ],
+            "normal_condition_number": 130.07941009159035,
+            "line_search_trials": 1
+          },
+          {
+            "current_from_previous": [
+              [
+                -0.01731576536909465,
+                -0.007007428891316424,
+                0.009343266674251097
+              ],
+              [
+                0.9998911434197735,
+                -0.009067948372346557,
+                -0.011596959264141199,
+                -0.0009920478014195631
+              ]
+            ],
+            "huber_cost_before": 39.2174036121522,
+            "huber_cost_after": 39.20607571587842,
+            "scale": 1.0,
+            "increment": [
+              -8.33892247722652e-05,
+              8.885571654334648e-05,
+              2.3031170740232357e-05,
+              9.632833634778705e-05,
+              9.83847396138248e-05,
+              6.127883364059969e-05
+            ],
+            "normal_condition_number": 129.39787343157477,
+            "line_search_trials": 1
+          },
+          {
+            "current_from_previous": [
+              [
+                -0.01732585059676066,
+                -0.006994288462547933,
+                0.0093462513374553
+              ],
+              [
+                0.9998912749660434,
+                -0.00906109551532729,
+                -0.011591173238088203,
+                -0.0009896958153681624
+              ]
+            ],
+            "huber_cost_before": 39.20607571587842,
+            "huber_cost_after": 39.205944390359306,
+            "scale": 1.0,
+            "increment": [
+              -1.022697724549776e-05,
+              1.335047496238523e-05,
+              2.879498587766993e-06,
+              1.3663536047131511e-05,
+              1.1602902138300283e-05,
+              4.757730881260415e-06
+            ],
+            "normal_condition_number": 129.4085830207131,
+            "line_search_trials": 1
+          },
+          {
+            "current_from_previous": [
+              [
+                -0.017326935592848168,
+                -0.0069928579563250295,
+                0.009346573944262028
+              ],
+              [
+                0.9998912891702613,
+                -0.009060351303894562,
+                -0.011590550930937403,
+                -0.0009894467142549344
+              ]
+            ],
+            "huber_cost_before": 39.205944390359306,
+            "huber_cost_after": 39.205942874481444,
+            "scale": 1.0,
+            "increment": [
+              -1.1001849934516125e-06,
+              1.4531106832257713e-06,
+              3.113661326573829e-07,
+              1.4839754894299889e-06,
+              1.2478494400495526e-06,
+              5.041511733306121e-07
+            ],
+            "normal_condition_number": 129.410451939065,
+            "line_search_trials": 1
+          }
+        ]
+      },
+      "fit": {
+        "rms_m": 0.011935639637886224,
+        "inlier_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19
+        ],
+        "inlier_count": 20,
+        "inlier_ratio": 1.0,
+        "hypotheses_evaluated": 128,
+        "point_checks": 2540,
+        "refits": 1,
+        "geometry_ratio_current": 0.20557098141615587,
+        "geometry_ratio_previous": 0.20523632109573697,
+        "candidate_models": 118,
+        "competing_models": 0
+      },
+      "accepted": true,
+      "root": {
+        "translation_error_m": 0.016003633587579356,
+        "rotation_error_rad": 0.02077288552792651,
+        "within_accuracy_gates": true
+      }
+    },
+    {
+      "source_index": 107,
+      "feature_count": 265,
+      "features_computed": true,
+      "flow_attempted": true,
+      "flow_work": {
+        "bilinear_samples": 613544,
+        "iterations": 4025,
+        "pyramid_output_pixels": 192000
+      },
+      "tracked_points": 248,
+      "accepted_endpoints": 22,
+      "valid_depth_matches": 12,
+      "accepted": false,
+      "rejection": "no bounded visual correspondence consensus"
+    },
+    {
+      "source_index": 108,
+      "feature_count": 274,
+      "features_computed": true,
+      "flow_attempted": true,
+      "flow_work": {
+        "bilinear_samples": 316688,
+        "iterations": 2461,
+        "pyramid_output_pixels": 192000
+      },
+      "tracked_points": 248,
+      "accepted_endpoints": 0,
+      "valid_depth_matches": 0,
+      "accepted": false,
+      "rejection": "invalid or oversized visual correspondences"
+    },
+    {
+      "source_index": 109,
+      "feature_count": 297,
+      "features_computed": true,
+      "flow_attempted": true,
+      "flow_work": {
+        "bilinear_samples": 289788,
+        "iterations": 2312,
+        "pyramid_output_pixels": 192000
+      },
+      "tracked_points": 248,
+      "accepted_endpoints": 0,
+      "valid_depth_matches": 0,
+      "accepted": false,
+      "rejection": "invalid or oversized visual correspondences"
+    },
+    {
+      "source_index": 110,
+      "feature_count": 295,
+      "features_computed": true,
+      "flow_attempted": true,
+      "flow_work": {
+        "bilinear_samples": 284954,
+        "iterations": 2283,
+        "pyramid_output_pixels": 192000
+      },
+      "tracked_points": 248,
+      "accepted_endpoints": 0,
+      "valid_depth_matches": 0,
+      "accepted": false,
+      "rejection": "invalid or oversized visual correspondences"
+    },
+    {
+      "source_index": 111,
+      "feature_count": 277,
+      "features_computed": true,
+      "flow_attempted": true,
+      "flow_work": {
+        "bilinear_samples": 277045,
+        "iterations": 2215,
+        "pyramid_output_pixels": 192000
+      },
+      "tracked_points": 248,
+      "accepted_endpoints": 0,
+      "valid_depth_matches": 0,
+      "accepted": false,
+      "rejection": "invalid or oversized visual correspondences"
+    },
+    {
+      "source_index": 112,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual accepted-pose age exceeded; localization lost"
+    },
+    {
+      "source_index": 113,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 114,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 115,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 116,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 117,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 118,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 119,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 120,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 121,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 122,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 123,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 124,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 125,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 126,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 127,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 128,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 129,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 130,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 131,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 132,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 133,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 134,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 135,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 136,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 137,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 138,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 139,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 140,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 141,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 142,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 143,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 144,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 145,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 146,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 147,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 148,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 149,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 150,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 151,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 152,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 153,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 154,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 155,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 156,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 157,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 158,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 159,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 160,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 161,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 162,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 163,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 164,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 165,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 166,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 167,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 168,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 169,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 170,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 171,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 172,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 173,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 174,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 175,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 176,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 177,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 178,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 179,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 180,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 181,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 182,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 183,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 184,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 185,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 186,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 187,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 188,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 189,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 190,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 191,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 192,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 193,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 194,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 195,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 196,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 197,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 198,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 199,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 200,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 201,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 202,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 203,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 204,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 205,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 206,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 207,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 208,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 209,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 210,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 211,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 212,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 213,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 214,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 215,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 216,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 217,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 218,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 219,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 220,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 221,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 222,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 223,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 224,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 225,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 226,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 227,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 228,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 229,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 230,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 231,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 232,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 233,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 234,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 235,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 236,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 237,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 238,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 239,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 240,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 241,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 242,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 243,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 244,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 245,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 246,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 247,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 248,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 249,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 250,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 251,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 252,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 253,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 254,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 255,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 256,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 257,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 258,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 259,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 260,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 261,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 262,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 263,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 264,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 265,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 266,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 267,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 268,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 269,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 270,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 271,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 272,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 273,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 274,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 275,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 276,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 277,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 278,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    },
+    {
+      "source_index": 279,
+      "feature_count": 0,
+      "features_computed": false,
+      "accepted": false,
+      "rejection": "visual odometry lost; explicit new origin required"
+    }
+  ],
+  "report_sha256": "60d56a15a4502662e58499e57ea9da4fe70d953159c22dba43a6d08244408dea",
+  "raw_sha256_verified": true,
+  "evaluation_label_failure": null,
+  "physical_pose_independently_scored": true,
+  "unscorable_updates": 0,
+  "mutations_rejected": [
+    "omit_acquisition",
+    "invent_summary",
+    "operational_truth",
+    "source_revision",
+    "RGB_clock",
+    "depth_clock",
+    "invent_derived_pair_gap",
+    "accepted_clock",
+    "observed_RGB_clock",
+    "reference_clock",
+    "weaken_consensus",
+    "weaken_ambiguity",
+    "invent_label_failure_for_valid_source",
+    "wrong_feature_pixel",
+    "wrong_FAST_score",
+    "wrong_BRIEF",
+    "wrong_orientation",
+    "invent_depth_point",
+    "invent_relative_pose",
+    "invent_root_pose",
+    "invent_reference_root",
+    "invent_inlier_membership",
+    "invent_inlier_ratio",
+    "invent_RMS",
+    "invent_hypothesis_work",
+    "invent_consensus_refits",
+    "invent_candidates",
+    "invent_competing_models",
+    "invent_accuracy",
+    "invent_rejected_pose",
+    "forge_failed_coarse_witness",
+    "forge_failed_coarse_pose",
+    "forge_failed_refinement_observation",
+    "forge_blocked_coarse_witness",
+    "compute_after_duplicate_guard",
+    "renew_duplicate_accepted_clock",
+    "conceal_refinement_invocation",
+    "invent_refinement_rejection",
+    "invent_coarse_pose",
+    "drop_refinement_support",
+    "wrong_refinement_inlier_ID",
+    "wrong_refinement_pixel",
+    "wrong_refinement_depth_point",
+    "invent_pixel_initial_cost",
+    "invent_pixel_final_cost",
+    "invent_pixel_RMS",
+    "invent_pixel_work",
+    "invent_pixel_support",
+    "invent_pixel_convergence",
+    "weaken_pixel_Huber",
+    "weaken_pixel_workcap",
+    "nonmonotonic_pixel_step",
+    "invent_pixel_increment",
+    "invent_pixel_line_search",
+    "conceal_qualification_gate",
+    "conceal_report_qualification",
+    "invent_report_qualification_hash",
+    "invent_report_qualification_count",
+    "invent_report_algorithm",
+    "drop_unviewed_tail",
+    "omit_final_observation",
+    "reclassify_unviewed_tail",
+    "forge_midsequence_initialization",
+    "forge_boundary_clock_reset",
+    "forge_boundary_reference_reset",
+    "allow_chunk_resets",
+    "allow_multiple_initializations",
+    "claim_fresh_generalization",
+    "reverse_temporal_boundary",
+    "conceal_flow_invocation",
+    "drop_original_flow_attempt",
+    "invent_original_flow_ID",
+    "invent_flow_start",
+    "invent_flow_endpoint",
+    "invent_backward_endpoint",
+    "invent_forward_backward_metric",
+    "invent_flow_acceptance",
+    "invent_flow_sample_work",
+    "invent_flow_iteration_work",
+    "invent_pyramid_work",
+    "invent_level_sample_work",
+    "invent_level_eigenvalue",
+    "invent_level_condition",
+    "invent_level_photo_RMS",
+    "invent_level_convergence",
+    "invent_initialization_flow",
+    "invent_BRIEF_on_endpoint",
+    "drop_accepted_endpoint",
+    "invent_tracked_subpixel",
+    "invent_endpoint_buffer_ID",
+    "drop_selected_correspondence",
+    "weaken_forward_backward_gate",
+    "replace_measured_flow_with_truth"
+  ],
+  "mathematical_contract_checks": {
+    "passed": [
+      "hand_planar_rigid_motion",
+      "collinear_rejection",
+      "competing_model_rejection",
+      "mutual_unique_descriptor_identity",
+      "descriptor_tie_rejection",
+      "calibrated_depth_projection",
+      "invalid_stencil_rejection",
+      "depth_discontinuity_rejection",
+      "JSON_gap_1ULP_only_rounding",
+      "accepted_age_boundary",
+      "rejected_image_duplicate_block",
+      "expiry_before_duplicate",
+      "lost_latched_on_fresh_image",
+      "hand_calibrated_planar_pixel_motion",
+      "stationary_zero_step_accounting",
+      "singular_pixel_geometry_rejection",
+      "invalid_fixed_landmark_depth",
+      "hand_native_5208_depth_profile",
+      "evaluation_only_GT_30000_row_boundary",
+      "evaluation_only_GT_4MiB_byte_boundary",
+      "strict_failure_categories_preserve_rejection",
+      "strict_whole_source_duplicate_rejected",
+      "valid_whole_source_labels_retained",
+      "accepted_sensor_pose_preserved_without_labels",
+      "accepted_unscorable_error_aggregate_empty"
+    ],
+    "mutations_rejected": [
+      "hand_motion_wrong_pose",
+      "hand_motion_wrong_membership",
+      "JSON_gap_outside_1e-15s",
+      "GT_excess_rows",
+      "GT_excess_bytes",
+      "hand_pixel_wrong_cost",
+      "hand_pixel_wrong_work",
+      "hand_pixel_wrong_support",
+      "conceal_label_failure",
+      "invent_failed_label_hash",
+      "invent_failed_label_reason",
+      "invent_truth_for_unscorable",
+      "invent_accuracy_for_unscorable",
+      "invent_error_for_unscorable",
+      "invent_root_for_unscorable"
+    ]
+  },
+  "missing_reference_score_mutations_rejected": [
+    "missing_reference_accepted_estimate_mismatch",
+    "missing_reference_rejected_invented_estimate"
+  ],
+  "pixel_features_descriptors_and_associations_independently_reconstructed": true,
+  "pyramidal_tracking_endpoints_and_work_independently_reconstructed": true,
+  "endpoint_buffer_separate_from_detected_features_verified": true,
+  "rigid_fit_independently_replayed": "Kabsch SVD vs operational Horn quaternion/Jacobi",
+  "pixel_refinement_independently_replayed": "central numerical Jacobian and SVD vs analytic Jacobian and Cholesky",
+  "fixed_original_inlier_support_independently_checked": true,
+  "monotonic_search_and_terminal_step_accounting_independently_checked": true,
+  "reference_and_clock_state_independently_reconstructed": true,
+  "evidence_role": "viewed calibration regression",
+  "evidence_scope": "same previously evaluated180-frame room recording; pyramidal optical-flow tracking calibration variant; all images and reference labels viewed; no new-recording or fresh-generalization claim",
+  "all_179_updates_audited_continuously": true,
+  "maximum_initializations": 1,
+  "chunk_resets": false,
+  "lost_recovery": false,
+  "calibrated_covariance_or_root_confidence_claim": false,
+  "oracle_dependencies": {
+    "numpy": "2.3.5",
+    "pillow": "12.3.0"
+  },
+  "continuous_audit_method": "static copy of original state/physical audit with full180frame179update length; same pinned feature/3D/refinement math and no frame chunk resets",
+  "maximum_root_translation_error_m": 0.016003633587579356,
+  "maximum_root_rotation_error_rad": 0.02077288552792651
+}

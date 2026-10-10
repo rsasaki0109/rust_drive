@@ -84,6 +84,7 @@
 | CARLA bridge | Planned; not implemented or validated | No CARLA server/assets installed |
 | Continuous recorded camera motion | Implemented offline; protocol fails | Same-room 180-frame extension with one origin and all 179 updates retained; 58 accepted / 52 accurate, then loss; [evidence](temporal-recorded-motion.md) |
 | Depth-supported image matching | Implemented opt-in research; protocol fails | Depth-valid candidate domains before mutual descriptor ratio; same viewed window accepts 59/179 but scores 49/179 accurate, worse than the original; [comparison](depth-supported-matching.md) |
+| Pairwise pyramidal camera tracking | Implemented opt-in offline; protocol regresses | Original bounded bidirectional patch tracking with accepted-image FAST reseeding and measured depth; viewed room 6/179 accepted/accurate, loss 112; independent pixel/state audit, preserved first failure and auditor-only repair; periodic-texture false acceptance and rotational errors remain; [evidence](pyramidal-recorded-tracking.md) |
 | Metadata-qualified recorded camera motion | Implemented offline research | Whole-source timestamps checked before image decoding; first fixed indoor room interval passes 35/35 with unchanged 0.1 m / 0.1 rad gates; no long-duration or driving integration; [evidence](qualified-recorded-motion.md) |
 | ROS 2 bridge | Planned; optional | No ROS dependency in algorithms |
 | Real vehicle / CAN actuation | Out of initial scope | Simulator commands only |

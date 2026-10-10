@@ -103,3 +103,15 @@ this result does not justify a maturity increase. The estimate stays **about 20%
 A waypoint is not reached simply by implementing one row or generating more scenarios. Reassess the whole stack against measured capability, validation depth and practical use. Keep unresolved failures in the report, preserve preceding acceptance gates, and publish the evidence that justifies an estimate change. Reaching the 50% planning milestone would still not establish mature real-vehicle deployment or safety certification.
 
 The chronological implementation roadmap remains in [roadmap.md](roadmap.md); executable boundaries are in [capabilities.md](capabilities.md). Signal-control commands and evidence are in [traffic-signals.md](traffic-signals.md); stop-sign behavior is in [stop-signs.md](stop-signs.md); basic priority yielding is in [intersections.md](intersections.md).
+
+
+The [pairwise image-patch tracker](pyramidal-recorded-tracking.md) supplies an
+original bounded Rust implementation and independently reconstructed pixel
+measurements, but its viewed continuous result regresses to **6/179** accepted
+and accurate updates. Repeated-texture controls accept incorrect endpoints;
+rotation controls expose substantial accepted errors. First outcomes, source
+archives, auditor-only repairs and every failure remain preserved. This does
+not justify a maturity increase: the estimate stays **about 20%**, with 30%
+and 50% unmet. Separate-recording validation is additionally blocked by the
+specific official-source proxy denial and absent complete image inventories in
+the bounded mirror search; this is not proof of global data unavailability.
