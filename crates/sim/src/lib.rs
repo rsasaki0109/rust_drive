@@ -624,8 +624,14 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
         .iter()
         .map(|s| s.stop_line.clone())
         .collect();
-    // Existing static fixtures retain resolved-route replay; live-update fixtures also record the map.
-    if !scenario.navigation_updates.is_empty() {
+    // Keep legacy static logs unchanged. Restricted maps also record navigation
+    // so replay recomputes the legal route instead of trusting resolved geometry.
+    if !scenario.navigation_updates.is_empty()
+        || scenario
+            .navigation
+            .as_ref()
+            .is_some_and(|nav| !nav.network.turn_restrictions.is_empty())
+    {
         config.navigation = scenario.navigation.as_ref().map(|nav| NavigationConfig {
             network: nav.network.clone(),
             start: nav.start.clone(),

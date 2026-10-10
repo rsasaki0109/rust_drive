@@ -34,7 +34,7 @@ def set_line(obj, points):
         vertex.co = (*point, 1)
 
 
-def road(points, half_width, asphalt, marking, center_marking=True):
+def road(points, half_width, asphalt, marking, center_marking=True, marking_gaps=()):
     vertices, borders = [], [[], []]
     for i, point in enumerate(points):
         before, after = points[max(0, i-1)], points[min(len(points)-1, i+1)]
@@ -51,11 +51,55 @@ def road(points, half_width, asphalt, marking, center_marking=True):
     bpy.context.collection.objects.link(obj)
     obj.data.materials.append(asphalt)
     for border in borders:
-        line('Corridor edge', border, marking, 0.045)
+        if marking_gaps:
+            for a, b in zip(border, border[1:]):
+                for segment in outside_x_gaps(a, b, marking_gaps):
+                    line('Corridor edge', segment, marking, 0.045)
+        else:
+            line('Corridor edge', border, marking, 0.045)
     for i in (range(0, len(points)-1, 3) if center_marking else []):
         a, b = points[i:i+2]
-        line('Decorative center marking', [(a['x'], a['y'], 0.06), (b['x'], b['y'], 0.06)], marking, 0.04)
+        segment = [(a['x'], a['y'], 0.06), (b['x'], b['y'], 0.06)]
+        for visible in (outside_x_gaps(*segment, marking_gaps) if marking_gaps else [segment]):
+            line('Decorative center marking', visible, marking, 0.04)
     return obj
+
+
+def outside_x_gaps(a, b, gaps):
+    """Clip cosmetic paint only; recorded actor and physical geometry stay intact."""
+    intervals = [(0., 1.)]
+    dx = b[0]-a[0]
+    for low, high in gaps:
+        if abs(dx) < 1e-12:
+            if low <= a[0] <= high:
+                return []
+            continue
+        enter, leave = sorted(((low-a[0])/dx, (high-a[0])/dx))
+        intervals = [(left, right) for start, end in intervals
+                     for left, right in [(start, min(end, enter)), (max(start, leave), end)]
+                     if right-left > 1e-12]
+    return [[tuple(a[i]+t*(b[i]-a[i]) for i in range(3)) for t in interval]
+            for interval in intervals]
+
+
+def compress_axis_aligned_path(points):
+    """Preserve the exact polyline while removing duplicate/straight samples."""
+    result = []
+    for point in points:
+        if result and point == result[-1]:
+            continue
+        result.append(point)
+        if len(result) < 3:
+            continue
+        a, b, c = result[-3:]
+        for fixed, varying in [('x', 'y'), ('y', 'x')]:
+            if (a[fixed] == b[fixed] == c[fixed] and
+                    min(a[varying], c[varying]) <= b[varying] <= max(a[varying], c[varying])):
+                result.pop(-2)
+                break
+    # Keep a zero-length segment for stationary actors: the scenery distance
+    # helper treats it as a point exclusion, just as in the original polyline.
+    return result*2 if len(result) == 1 and len(points) >= 2 else result
 
 
 def native_cuboid_audit(models):
@@ -73,9 +117,18 @@ def main():
     run = json.loads(Path(request['run']).read_text())
     actor_models = {int(key): value for key, value in request.get('actor_models', {}).items()}
     urban = request.get('environment') == 'urban'
+    urban_japan = request.get('environment') == 'urban-japan'
+    city_style = urban or urban_japan
+    junction_layout = ((15., 3.4, False), (36., 1.35, True)) if urban_japan else ()
+    junction_centers = tuple(center for center, width, one_way in junction_layout)
+    junction_gaps = tuple((center-width-.4, center+width+.4)
+                          for center, width, one_way in junction_layout)
+    if urban_japan:
+        from blender_japan_assets import (japan_environment, cross_street, work_zone,
+                                          worker, animate_worker, horizontal_signal)
     if any(model in ('elder', 'child', 'parent_stroller') for model in actor_models.values()):
         from blender_family_assets import elder, child as family_child, parent_stroller, animate_family
-    if urban or any(model in ('truck', 'dog') for model in actor_models.values()):
+    if city_style or any(model in ('truck', 'dog') for model in actor_models.values()):
         from blender_city_assets import STYLE as CITY_STYLE, truck, dog, animate_dog, city_environment
     bpy.ops.object.select_all(action='SELECT')
     bpy.ops.object.delete(use_global=False)
@@ -146,7 +199,7 @@ def main():
             half_width = (bounds['max']['x']-bounds['min']['x'])/2
             edges.append({'points':[{'x':center_x,'y':center_y+i*2} for i in range(-18,19)],
                           'half_width':half_width})
-    if urban:
+    if city_style:
         edges = [dict(edge, half_width=1.8) for edge in edges]
     closures = {}
     roads = []
@@ -161,7 +214,8 @@ def main():
             points = [{'x': first['x']-20*dx/length, 'y': first['y']-20*dy/length}]+points+[
                 {'x': last['x']+20*ex/extent, 'y': last['y']+20*ey/extent}]
         surface = road(points, edge['half_width'], asphalt, marking,
-                       center_marking=not opposing_display_lanes)
+                       center_marking=not opposing_display_lanes,
+                       marking_gaps=junction_gaps)
         bpy.context.view_layer.objects.active = surface
         solid = surface.modifiers.new('Road thickness', 'SOLIDIFY')
         solid.thickness = .04
@@ -180,15 +234,24 @@ def main():
         bpy.ops.object.modifier_apply(modifier=union.name)
         bpy.data.objects.remove(surface, do_unlink=True)
     exclusion_paths = []
+    exclusion_source_points = 0
     if request.get('camera') == 'street':
         # Keep cosmetic trees/buildings out of the actual recorded road-user
         # sweeps. This does not add obstacles or sensing to the simulator.
         for identifier in actor_models:
             positions = [actor['position'] for frame in run['frames'] for actor in frame['objects'] if actor['id'] == identifier]
+            if urban_japan:
+                exclusion_source_points += len(positions)
+                positions = compress_axis_aligned_path(positions)
             if len(positions) >= 2:
                 exclusion_paths.append({'points': positions, 'half_width': 1.2})
-    scenery = (city_environment if urban else environment)(edges, exclusion_paths=exclusion_paths)
-    if urban:
+    scenery = (japan_environment if urban_japan else city_environment if urban else environment)(edges, exclusion_paths=exclusion_paths)
+    if urban_japan:
+        for center, width, one_way in junction_layout:
+            cross_street('Recorded cross street '+str(center), center,
+                         half_width=width, one_way=one_way)
+        work_zone('Recorded construction display', start_s=62, end_s=78, lateral=0)
+    if city_style:
         # Keep the display facades behind the recorded traffic in this fixed
         # street view. Foreground roofs otherwise hide ego and the stroller.
         # These buildings are cosmetic and never enter physical sensing.
@@ -209,15 +272,16 @@ def main():
         scenery['foreground_buildings_hidden_for_camera'] = hidden
         pavement = material('Urban public plaza paving', (.26, .30, .32))
         cycling = material('Urban cycle path', (.18, .25, .27))
-        for low, high in [(-24, -12), (19, 25)]:
-            cube('Display pedestrian plaza', (40, (low+high)/2, .025), (120, high-low, .05), pavement)
-        for low, high in [(-6.15, -1.85), (1.85, 6.2)]:
-            cube('Display crossing footpath', (40, (low+high)/2, .025), (120, high-low, .05), pavement)
-        for lateral in [8, 11]:
-            cube('Display recorded bicycle path', (40, lateral, .025), (120, 2.2, .05), cycling)
+        if urban:
+            for low, high in [(-24, -12), (19, 25)]:
+                cube('Display pedestrian plaza', (40, (low+high)/2, .025), (120, high-low, .05), pavement)
+            for low, high in [(-6.15, -1.85), (1.85, 6.2)]:
+                cube('Display crossing footpath', (40, (low+high)/2, .025), (120, high-low, .05), pavement)
+            for lateral in [8, 11]:
+                cube('Display recorded bicycle path', (40, lateral, .025), (120, 2.2, .05), cycling)
         # Original zebra paint at actual recorded crossing positions; signal
         # timing and actor yielding are checked separately in the driving log.
-        for identifier in [1, 4, 6]:
+        for identifier in ([1, 4, 6] if urban else []):
             first = next((a for frame in run['frames'] for a in frame['objects'] if a['id'] == identifier), None)
             if first:
                 for offset in [-1.2, -.6, 0, .6, 1.2]:
@@ -225,6 +289,8 @@ def main():
         for lane in [0]+[spec['offset_m'] for spec in opposing_display_lanes+service_display_lanes]:
             direction = -1 if lane < 0 else 1
             for distance in range(5, 81, 18):
+                if urban_japan and any(low-1 <= distance <= high+1 for low, high in junction_gaps):
+                    continue
                 arrow = line('Display lane direction arrow', [(distance-direction*.8, lane, .08), (distance+direction*.6, lane, .08)], marking, .065)
                 line('Display lane direction arrowhead', [(distance, lane-.35, .08), (distance+direction*.6, lane, .08), (distance, lane+.35, .08)], marking, .065)
     ground_mode = request.get('ground_mode', False)
@@ -273,7 +339,8 @@ def main():
         for spec in signal_specs:
             mapped=spec['stop_line'];width=run['route']['half_width']
             position,yaw=route_at(mapped['route_s_m'],width+1)
-            parent,lenses=traffic_signal('Mapped signal '+mapped['id'],position,yaw,lamp_materials)
+            signal_maker = horizontal_signal if urban_japan else traffic_signal
+            parent,lenses=signal_maker('Mapped signal '+mapped['id'],position,yaw,lamp_materials)
             parent['stop_line_id']=mapped['id']
             a,_=route_at(mapped['route_s_m'],-width);b,_=route_at(mapped['route_s_m'],width)
             line('Mapped stop line '+mapped['id'],[(*a,.075),(*b,.075)],marking,.12)
@@ -306,7 +373,7 @@ def main():
     # collision radii and camera depth cannot change their displayed size.
     if request.get('camera') == 'street':
         camera.data.type = 'ORTHO'
-        camera.data.ortho_scale = 64 if urban else 52
+        camera.data.ortho_scale = 64 if city_style else 52
     body_envelope = None
     if ground_mode and request.get('body_calibration'):
         calibration = request['body_calibration']
@@ -344,7 +411,10 @@ def main():
             if actor['id'] in actors:
                 continue
             selected = actor_models.get(actor['id'])
-            if selected == 'dog':
+            if selected == 'worker':
+                actors[actor['id']] = worker('Recorded worker '+str(actor['id']), actor['radius'])
+                vehicle_models.append({'id': actor['id'], 'model': selected, 'display_only': True})
+            elif selected == 'dog':
                 actors[actor['id']] = dog('Recorded dog '+str(actor['id']), actor['radius'])
                 vehicle_models.append({'id': actor['id'], 'model': selected, 'display_only': True})
             elif selected in ('pedestrian', 'cyclist', 'elder', 'child', 'parent_stroller'):
@@ -397,7 +467,7 @@ def main():
         if request.get('camera') == 'street':
             c, s = math.cos(pose['yaw']), math.sin(pose['yaw'])
             target = (x+12*c, y+12*s, 0)
-            if urban:
+            if city_style:
                 lateral = opposing_display_lanes[0]['offset_m']/2 if opposing_display_lanes else 0
                 target = (target[0]-lateral*s, target[1]+lateral*c, 0)
                 camera.location = (target[0]-18*c-32*s, target[1]-18*s+32*c, 30)
@@ -466,11 +536,11 @@ def main():
                                 break
         for actor in frame['objects']:
             obj = actors[actor['id']]
-            if obj.get('vru_kind') or obj.get('dog_kind'):
+            if obj.get('vru_kind') or obj.get('dog_kind') or actor_models.get(actor['id']) == 'worker':
                 prior = next((a for a in run['frames'][max(0, index-1)]['objects'] if a['id'] == actor['id']), None)
                 dt = frame['time']-run['frames'][max(0, index-1)]['time']
                 speed = math.hypot(actor['position']['x']-prior['position']['x'], actor['position']['y']-prior['position']['y'])/dt if prior and dt > 0 else 0
-                animator = animate_family if obj.get('avatar_kind') else animate_dog if obj.get('dog_kind') else animate_vru
+                animator = animate_worker if actor_models.get(actor['id']) == 'worker' else animate_family if obj.get('avatar_kind') else animate_dog if obj.get('dog_kind') else animate_vru
                 animator(obj, frame['time'], speed)
         bpy.context.view_layer.update()
         active = {actor['id'] for actor in frame['objects']}
@@ -513,7 +583,7 @@ def main():
         scene.render.filepath = str(output/f'{number:04d}.png')
         bpy.ops.render.render(write_still=True)
     (output/'audit.json').write_text(json.dumps(audit, indent=2)+'\n')
-    scene_info = {'style': CITY_STYLE if urban else STYLE, 'seed': 1729, 'scenery_counts': scenery,
+    scene_info = {'style': 'original-japan-urban-intersection-construction-v1' if urban_japan else CITY_STYLE if urban else STYLE, 'seed': 1729, 'scenery_counts': scenery,
                   'ego_model': 'hatchback', 'traffic_models': vehicle_models,
                   'camera': request.get('camera', 'ego'),
                   'actor_models': actor_models,
@@ -527,9 +597,25 @@ def main():
     if scene_info['left_traffic_display']:
         scene_info['main_street_center_offset_m'] = max(lane['offset_m'] for lane in opposing_display_lanes)/2
     scene_info['environment'] = request.get('environment', 'suburban')
-    if urban:
+    if city_style:
         scene_info['painted_lane_half_width_m'] = 1.8
-        scene_info['crossing_stripe_actor_ids'] = [1, 4, 6]
+        scene_info['crossing_stripe_actor_ids'] = [1, 4, 6] if urban else []
+    if urban_japan:
+        scene_info['display_junction_centers_x_m'] = list(junction_centers)
+        scene_info['display_junction_half_widths_m'] = [width for center, width, one_way in junction_layout]
+        scene_info['display_junction_one_way_positive_y'] = [one_way for center, width, one_way in junction_layout]
+        scene_info['display_junction_marking_gaps_x_m'] = list(junction_gaps)
+        scene_info['signal_head_layout'] = 'Japanese horizontal; recorded mapped phases only'
+        scene_info['construction_display_extent_x_m'] = [62, 78]
+        scene_info['construction_worker_actor_ids'] = [identifier for identifier, model in actor_models.items() if model == 'worker']
+        scene_info['japan_assets_display_only'] = True
+        scene_info['crossing_paint_source'] = 'Japanese junction module only; no actor-inferred crossing stripes'
+        scene_info['scenery_exclusion_path_point_counts'] = {
+            'recorded': exclusion_source_points,
+            'exact_polyline_compacted': sum(len(path['points']) for path in exclusion_paths)}
+        scene_info['road_user_display_dimensions_m'] = {
+            str(identifier): dict(obj['display_dimensions_m'])
+            for identifier, obj in actors.items() if obj.get('display_dimensions_m')}
     scene_info['dog_pairs'] = dog_pairs
     scene_info['dog_leashes_display_only'] = bool(dog_pairs)
     scene_info['display_road_extension_m'] = 20 if request.get('camera') == 'street' else 0

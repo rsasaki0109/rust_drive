@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "scope": "Local implementation checks, recorded native physics and display capture; CI status separate",
+  "workspace": {
+    "tests_passed": 331,
+    "scenario_replay_pairs": 49,
+    "legacy_output_files_byte_identical": 245,
+    "format_strict_clippy_locked_build": true,
+    "log_sha256": "85a59d6909f5d5f7687822b69ce7c53e3de716e7b0e8ab7fb99582ebb31f4089",
+    "recheck_after_final_paint_revision": true,
+    "development_test_profile_overrides": {
+      "CARGO_INCREMENTAL": "0",
+      "CARGO_PROFILE_DEV_DEBUG": "0",
+      "CARGO_PROFILE_TEST_DEBUG": "0"
+    },
+    "initial_recheck_capacity_failure": {
+      "exit_code": 101,
+      "kind": "No space left on device in generated debug build cache",
+      "log_sha256": "513b5a61e8d2750aa94abc50ccce6101893ab44003a36735c24b6a23f7d73685",
+      "resolved": "Only ignored target/debug cache removed; assertions/tests retained; compact debug-symbol-free profiles passed all required checks"
+    },
+    "final_rerun_environment": {
+      "CARGO_PROFILE_DEV_DEBUG": "0",
+      "CARGO_PROFILE_TEST_DEBUG": "0",
+      "CARGO_INCREMENTAL": "0",
+      "CARGO_BUILD_JOBS": "2"
+    },
+    "prior_disk_capacity_failure_log_sha256": "513b5a61e8d2750aa94abc50ccce6101893ab44003a36735c24b6a23f7d73685"
+  },
+  "native": {
+    "tests_passed": 55,
+    "format_strict_clippy_locked_build": true,
+    "log_sha256": "091400430691c68f1249eb87eb3f2ce9d85aa2c368e8db16b4dfc19c021378b1"
+  },
+  "japanese_city": {
+    "report": "assets/japan-city-demo-results.json",
+    "report_sha256": "20c2b9b1465d42db30943e621982a79871919ebe4a074dbf28eb9f0a41611e3b",
+    "seeds": [
+      7,
+      1,
+      42
+    ],
+    "cases_passed": 3,
+    "sensor_replay_ticks": 2763,
+    "oracle_beam_slots": 3983040,
+    "native_body_poses": 27603,
+    "minimum_red_standstill_s": 10.500000000000002,
+    "minimum_second_junction_body_exit_reserve_m": 1.353237187485341,
+    "construction_returns_all_seeds": 0,
+    "construction_detection_or_negotiation": false,
+    "minimum_actor_pair_clearance_bound_m": 1.0038404810405281,
+    "log_sha256": "39a1f725b752d0e9f5cd1f121a91b1944cd7adc6aac724ba36dd5c8d44eeaa2c"
+  },
+  "turn_routing": {
+    "report": "assets/turn-restriction-results.json",
+    "report_sha256": "e60313addf2d954a84831897d3087660fd4079171c531fdcaeaf5d33531659cc",
+    "cases_passed": 24,
+    "sensor_replay_ticks": 17158,
+    "corrupted_replays_rejected": 24,
+    "closed_only_turn_requests_rejected": 2
+  },
+  "display": {
+    "report": "assets/japan-display-audit.json",
+    "report_sha256": "9d05102445de9c76e781a902aa267033f2f860479b7ad91c6ea9894b71664c6a",
+    "worker_pose_cases": 10,
+    "raised_sidewalk_faces": 2436,
+    "marked_main_road_crosswalk_faces": 252,
+    "corrupted_physical_reports_rejected": 3,
+    "logical_proof_scope": "Paint mesh containment plus unchanged accepted three-seed no-stationary-body evidence; native samples were not rerun for the paint revision",
+    "negative_check_log_sha256": "f5558716585ad3cfe160f9045f1a95ee07fc36a2f905dd30c92b440e1b7dc071"
+  },
+  "gif_capture_complete": true,
+  "lockfiles_toolchains_rne_pin_unchanged": true,
+  "subjective_oss_relative_maturity_percent": 20,
+  "renderer_source_sha256": "eac957cfa677259aa2d7015d25ff8b28cb93d46b2b1525b9977ef3d1b3bdad08",
+  "gif": {
+    "file": "assets/japan-city-demo.gif",
+    "sha256": "40db0984165911a064e50cd0dc07087dd7f4b366aeeb530b66deddad202a1c0f",
+    "bytes": 7509338,
+    "decoded_frames": 155,
+    "width": 960,
+    "height": 640,
+    "encoded_duration_ms": 16800,
+    "recorded_scene_states_verified": 155,
+    "vehicle_display_scale_states_verified": 155,
+    "provenance": "assets/japan-city-demo.json",
+    "provenance_sha256": "6091d6c44a9122b7d5835be562b00090f9bb3ad4b0b753e4a56f774a5e6cd910",
+    "input_trace_sha256": "58a00d068b5bd29d100d2ca571a35eb4fd8b42a944e9ff4579f9aa0affc70222",
+    "input_native_scene_sha256": "323b89c39c918ef4f7ff4dc8219240d76db27881c9565cdb7546781cbb2c7d03",
+    "capture_log_sha256": "c0b19f6314fc56a1f42c4b53d73daa4a981590a6af6e61ecafa46cb621c3bc99"
+  },
+  "python_compile_workflow_lint_whitespace_checks_passed": true,
+  "historical_trial_snapshots": {
+    "docs/baselines/japan-city-v1/scenario.json": "5b32f317a8cdb2660b5c22039fe0bbda13d6dbc1ca28c50078d823dd179a02dd",
+    "docs/baselines/japan-city-v1/scene.json": "e1179f645bf1a21359bc0ce094dd58d473d51c85578e167e663aa2cd26e7a8b0",
+    "docs/baselines/japan-city-v2/results.json": "3d94d40c2bb3910779042208ccf417674be9873cd2188efa4ad3793a4ba5b241",
+    "docs/baselines/japan-city-v2/review.json": "ea1793643f09e941016a44c696141d71ade26db5af2afc90e754cc32dedadd26",
+    "docs/baselines/japan-city-v2/scenario.json": "c5c0f57d55efb8e56d86241f036b80a60ea618cf63125e0a077e19c936b2a276",
+    "docs/baselines/japan-city-v2/scene.json": "e1179f645bf1a21359bc0ce094dd58d473d51c85578e167e663aa2cd26e7a8b0",
+    "docs/baselines/japan-city-v3/result.json": "7040409e4e8965c708b1fdd29782a3b8e52281cd2bc478575808f6efe172ff4f",
+    "docs/baselines/japan-city-v3/scenario.json": "5c62ad696b8f9adb9064fda8d07974105e0aeaf0b665c69ce767bbc72b3bd46d",
+    "docs/baselines/japan-city-v3/scene.json": "e1179f645bf1a21359bc0ce094dd58d473d51c85578e167e663aa2cd26e7a8b0",
+    "docs/baselines/japan-display-v4/review.json": "c42ec01528d28ca1f1ceb99563970ca93a71601068717ad78d39fa457aaed98d"
+  },
+  "manual_first_mid_final_visual_review": "passed by root on actual v4 frames"
+}

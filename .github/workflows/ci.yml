@@ -52,6 +52,9 @@ jobs:
         run: |
           python scripts/test-checker-portability.py
           python scripts/check-local-corners.py --output artifacts/local-corners
+      - name: Drive legal turns and verify restricted-map sensor replay
+        shell: bash
+        run: python scripts/check-turn-restrictions.py --backend reference --seeds 7 --compact --output artifacts/turn-restrictions
       - name: Drive mapped destinations, closure detour and mapped road rules
         shell: bash
         run: |
@@ -67,6 +70,7 @@ jobs:
             artifacts/routing/
             artifacts/osm/
             artifacts/local-corners/
+            artifacts/turn-restrictions/
             artifacts/datasets/*.json
             artifacts/map-localization/
   research-cpu:
@@ -201,12 +205,18 @@ jobs:
       - name: Independently verify experimental XYZ terrain and measured actor AABBs
         working-directory: rust_drive
         run: python3 scripts/check-terrain-objects.py --compact --output artifacts/terrain-objects
+      - name: Verify legal turn routes in the native dynamic plant
+        working-directory: rust_drive
+        run: python3 scripts/check-turn-restrictions.py --backend native --seeds 7 --compact --output artifacts/turn-restrictions
       - name: Independently verify recorded pedestrian and cyclist motion
         working-directory: rust_drive
         run: python3 scripts/check-vru-demo.py --compact --output artifacts/vru-demo --report artifacts/vru-demo/report.json
       - name: Independently verify urban left-side traffic, signals and recorded dog walking
         working-directory: rust_drive
         run: python3 scripts/check-city-demo.py --compact --output artifacts/city-demo --report artifacts/city-demo/report.json
+      - name: Verify Japanese urban intersection exits and physical construction clearance
+        working-directory: rust_drive
+        run: python3 scripts/check-japan-city-demo.py --compact --output artifacts/japan-city-demo --report artifacts/japan-city-demo/report.json
       - name: Independently verify optional adaptive terrain driving
         working-directory: rust_drive
         run: python3 scripts/check-adaptive-native.py --compact --output artifacts/adaptive-native
@@ -235,6 +245,8 @@ jobs:
           blender --background --factory-startup --threads 2 --python-exit-code 1 --python scripts/check_city_display.py -- --output artifacts/city-demo/city-display-audit.json
           blender --background --factory-startup --threads 2 --python-exit-code 1 --python scripts/check_family_display.py -- --output artifacts/city-demo/family-display-audit.json
           python scripts/render_demo_3d.py artifacts/city-demo/seed-7/run.json --native-scene artifacts/city-demo/seed-7/scene.json --actor-models 0=sedan 1=pedestrian 2=cyclist 3=van 4=pedestrian 5=cyclist 6=pedestrian 7=sedan 8=hatchback 9=pickup 10=truck 11=truck 12=cyclist 13=cyclist 14=elder 15=child 16=parent_stroller 17=pedestrian 18=dog --dog-pairs 17=18 --environment urban --camera street --preview-time 26 --output artifacts/city-demo/preview.gif --samples 4 --threads 2 --scene-output artifacts/city-demo/scene.blend
+          blender --background --factory-startup --threads 2 --python-exit-code 1 --python scripts/check_japan_display.py -- --output artifacts/japan-city-demo/display-audit.json --physical-report artifacts/japan-city-demo/report.json
+          python scripts/render_demo_3d.py artifacts/japan-city-demo/seed-7/run.json --native-scene artifacts/japan-city-demo/seed-7/scene.json --actor-models 0=sedan 1=pedestrian 2=cyclist 3=van 4=pedestrian 5=cyclist 6=pedestrian 7=sedan 8=hatchback 9=pickup 10=truck 11=truck 12=cyclist 13=cyclist 14=elder 15=child 16=parent_stroller 17=pedestrian 18=dog 19=sedan 20=hatchback 21=worker 22=truck --dog-pairs 17=18 --environment urban-japan --camera street --preview-time 40 --output artifacts/japan-city-demo/preview.gif --samples 4 --threads 2 --scene-output artifacts/japan-city-demo/scene.blend
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -251,6 +263,8 @@ jobs:
             rust_drive/artifacts/adaptive-native/
             rust_drive/artifacts/vru-demo/
             rust_drive/artifacts/city-demo/
+            rust_drive/artifacts/turn-restrictions/
+            rust_drive/artifacts/japan-city-demo/
       - uses: actions/upload-artifact@v4
         with:
           name: rne-cpu-telemetry
