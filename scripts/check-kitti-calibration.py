@@ -199,7 +199,7 @@ def independently_project(directory, camera_index):
         pixel = None if metric[2] <= 0 else (pixel_h[:2] / pixel_h[2]).tolist()
         status = 'behind' if pixel is None else ('inframe' if
             0 <= pixel[0] < size[0] and 0 <= pixel[1] < size[1] else 'outside')
-        rows.append(dict(index=index, velodyne_xyz_m=point[:3].tolist(), reflectance=point[3],
+        rows.append(dict(index=index, velodyne_xyz_m=point[:3].tolist(), reflectance=float(point[3]),
                          camera_xyz_m=metric.tolist(), pixel=pixel, status=status,
                          independent_imu_xyz_m=imu_xyz.tolist()))
     return dict(camera_index=camera_index, rectified_size=size.tolist(), k=intrinsic.tolist(),
