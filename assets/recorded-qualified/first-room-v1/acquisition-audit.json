@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "dataset": "tum-fr1-room-qualified",
+  "manifest_sha256": "5a325e166209b0e9340c8fd92eee207f396190c83bc62f5dba0bf976833f0bb8",
+  "fetcher_sha256": "0ab3fb82a77407a08741b8eeb3aa5181bb6404ecaf388052dca1ec2ebc9a3ab7",
+  "metadata_qualification": {
+    "full_source_groundtruth": {
+      "data_rows": 4887,
+      "arity_checked_all_rows": true,
+      "only_timestamp_column_numeric_parsed": true,
+      "strict_increasing": true,
+      "faults": []
+    },
+    "source_metadata_sha256": "7e47f40de83609e57e2726c8370201f075f64264a032d16b3cb71b522ab71a9a",
+    "candidate_order_sha256": "b174acc78987b843436e9213c52b42b902c455b7067bc00b3ca4e588221da44a",
+    "candidate_order_selected": 1,
+    "failed_candidates_this_search": [],
+    "unattempted_candidates_reason": "Firstcandidatequalified; deterministicstop, noadditionalcandidateGT/indexreads."
+  },
+  "association_audit": {
+    "depth_frames": 36,
+    "unique_rgb_frames": 36,
+    "repeated_rgb_associations": 0,
+    "maximum_pair_gap_seconds": 0.012958049774169922,
+    "association_rule": "nearest RGB timestamp, earlier index on exact tie; no resampling or interpolation",
+    "maximum_mocap_bracket_seconds": 0.010399818420410156,
+    "invalid_mocap_brackets": 0
+  },
+  "source_files": 76,
+  "total_bytes": 21516513,
+  "pre_transfer_journal_sha256": "38151476aa74c0b30c8c39ba1b21c9f7d2f06979e950b22fc49652c31a898700",
+  "verification": {
+    "all_source_sha256_verified": true,
+    "all_primary_source_git_blob_sha1_verified": true,
+    "fullsource_timestamp_and_rowarity_qualified_before_pixel_transfer": true,
+    "source_model_profile_pinned_without_accuracy_tuning": true,
+    "opaque_pixel_transfer_only": true,
+    "png_signature_headers_dimensions_or_pixels_inspected": false,
+    "pixels_decoded": false,
+    "numeric_gt_pose_columns_parsed": false,
+    "unsafe_manifest_cases_rejected": 27,
+    "actual_isolated_rgb_and_calibration_remote_transfer_passed": true,
+    "one_byte_rgb_corruption_rejected": true,
+    "wrong_git_blob_with_matching_sha256_independently_rejected": true,
+    "canonical_raw_inputs_unmodified_by_tests": true
+  },
+  "first_algorithm_run_and_final_source_freeze": "Root/evaluator/oracle-owned, not executed by acquisition agent"
+}

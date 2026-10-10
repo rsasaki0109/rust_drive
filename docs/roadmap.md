@@ -110,3 +110,9 @@ all observed failures as regression evidence.
 - Safety engineering and applicable standards with qualified reviewers. Passing simulator tests cannot establish road safety.
 
 No real-vehicle actuator is part of the initial release. None of the planned milestones is represented as an empty implementation in the codebase.
+
+The [first metadata-qualified room trial](qualified-recorded-motion.md) passes
+35/35 updates in a fixed 1.1684-second interval with unchanged defaults. This
+closes one short indoor evaluation, while broader scenes, longer durations,
+measured vehicle calibration, uncertainty and camera-to-driving fusion remain
+future work. The earlier failed protocols remain required regressions.

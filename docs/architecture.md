@@ -241,3 +241,13 @@ Release requires healthy sensing, accepted LiDAR no more than 0.15 s old, and at
 Every uncommitted `Proceeding` zone also limits candidate cruise through an approach envelope, before new traffic revokes permission. `Waiting` retains its existing stop-line route prefix without this additional cruise cap. The bound uses half calibrated braking authority, 0.25 s response allowance and a nominal two-meter estimated-front reserve; the minimum is 0.5 m/s so cleared entries remain traversable. The original stop-line commitment condition remains unchanged, and each committed zone releases its approach cap. The planner's configured cruise is restored after planning, preventing the temporary cap from becoming persistent state. This is a bound on proposed cruise, not an actual-speed guarantee, and retains existing acceleration/braking feasibility checks. Its creep floor and imperfect sensing mean the reserve is not guaranteed for arbitrary late or unobserved threats. [Formula and measured acceptance](intersections.md#driver-contract).
 
 A separate simulation evaluator scores actual circular-body occupancy using true circle/rectangle distance at every 20 Hz tick. Each interval starts at the first inside sample and ends at the first outside sample; rule entry/exit times are not interpolated between ticks. It requires at least two seconds of separation from priority occupancy. Continuous collision sweeps remain a separate check. Rendering uses recorded positions, with cross-traffic heading derived from consecutive recorded positions; decorative perpendicular streets and yield signs do not enter the physical world or sensing. [Contracts, commands and boundaries](intersections.md).
+
+## Metadata-qualified recorded motion
+
+The separate optional `rustdriving-rgbd-qualified` binary requires a hash-bound
+qualification proof and independently reconstructs full-source timestamp order,
+row arity, original nearest RGB associations and reference brackets before
+opening any image bytes. It then runs the unchanged measured feature, robust 3D
+consensus and bounded pixel-refinement algorithms. Numeric reference poses enter
+scoring only after every operational sensor fit. This is offline indoor research,
+without driving integration. [Protocol and first result](qualified-recorded-motion.md).

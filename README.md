@@ -32,6 +32,13 @@ the new path retains bounded computation and rejects failed refinements.
 The separate first Freiburg 2 trial rejected malformed motion-capture labels;
 its input failure is archived without an accuracy claim.
 
+The separate [metadata-qualified room trial](docs/qualified-recorded-motion.md)
+checks the complete source timestamps before image decoding. With unchanged
+estimator and accuracy gates, its first frozen 1.1684-second indoor interval
+passes all 35 updates (maximum root errors 0.075700 m / 0.084661 rad).
+The source archive, independent pixel audit and exact viewed reproduction are
+retained. Longer-duration and automotive localization remain unverified.
+
 ## Build and run
 
 The shared pipeline, CPU RNE adapter and recorded 3D demos are available on `main`.

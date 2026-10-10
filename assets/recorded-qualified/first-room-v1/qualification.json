@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "dataset": "tum-fr1-room-qualified",
+  "manifest_sha256": "5a325e166209b0e9340c8fd92eee207f396190c83bc62f5dba0bf976833f0bb8",
+  "source_commit": "1d5b2c3e1ee186abc1709042b739e9cd8a3b41d1",
+  "helper_sha256": "7cc54472124edd8119dbb906d3411ba136cf99008bc8753f2b8a915074437d1a",
+  "acquisition_helper_sha256": "0ab3fb82a77407a08741b8eeb3aa5181bb6404ecaf388052dca1ec2ebc9a3ab7",
+  "passed": true,
+  "pixels_read": false,
+  "image_headers_read": false,
+  "ground_truth_pose_values_parsed": false,
+  "features_or_fits_run": false,
+  "window": {
+    "first_depth_index": 100,
+    "last_depth_index": 135,
+    "frames": 36,
+    "updates": 35
+  },
+  "metadata_files": {
+    "depth.txt": {
+      "bytes": 62636,
+      "sha256": "86757dd3c8606f940477a353915ede7143811817b2288647414fe1459ed22c14",
+      "git_blob_sha1": "6a8c4f13bdeaa5ebca5fd6a78de7230eb02d1995"
+    },
+    "rgb.txt": {
+      "bytes": 60006,
+      "sha256": "fe2f438ebe1b3d13a061e4db3b154df1136a82d95a723e4a6457b0e516c2451b",
+      "git_blob_sha1": "a8b9fe8ce86576c0353b1182546163bea569188c"
+    },
+    "groundtruth.txt": {
+      "bytes": 332920,
+      "sha256": "66b6770d887a5a3b69c94c3b186c3f76fe092ca25399772177f41aed984bd1b0",
+      "git_blob_sha1": "0adacc2b8c371eefc7f82993eb8e30128283e888"
+    }
+  },
+  "timestamps": {
+    "depth_index_rows": 1360,
+    "rgb_index_rows": 1362,
+    "ground_truth_rows": 4887,
+    "strict_depth_order": true,
+    "strict_rgb_order": true,
+    "strict_ground_truth_order": true,
+    "all_frame_brackets_valid": true,
+    "max_ground_truth_bracket_s": 0.02,
+    "max_pair_gap_s": 0.02,
+    "maximum_observed_ground_truth_bracket_us": 10400,
+    "maximum_pair_gap_us": 12958,
+    "unique_rgb_acquisitions": 36,
+    "duplicate_rgb_associations": 0,
+    "summary_time_unit": "rounded microseconds from source timestamps; qualification gates use unrounded seconds"
+  }
+}

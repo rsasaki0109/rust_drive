@@ -619,3 +619,32 @@ to the published Hero. This optional offline stage supplies no vehicle controls
 or measured extrinsic/uncertainty calibration; the estimate remains **about 20%**
 and the 30%/50% milestones remain unmet.
 [Current native proof](../assets/japan-city-reprojection-regression.json).
+
+## Metadata-qualified recorded room motion
+
+The new standalone qualified binary verifies whole-source timestamp order and
+row arity, exact nearest RGB associations and reference brackets before opening
+image bytes. A source archive and independent metadata-only preregistration
+preceded the first image decode. No numeric reference poses entered operational
+estimation. The first fixed 1.1684-second interval passes **35/35 updates**,
+with maximum root errors **0.075700 m / 0.084661 rad**, physical exit 0 and all
+35 refinements reporting convergence. An independent archived-source pixel/SVD
+audit confirms every fit, root, clock and physical score, with 29 positive
+hand contracts and 124 corruptions rejected. This remains short indoor evidence.
+
+The viewed reproduction also exits 0 and reproduces every non-timing numerical
+field exactly. The workspace check passes 371 tests and 49 episodes/replays;
+all 245 generated files match the preceding manifest. Optional RGB-D fmt,
+release Clippy and 29 tests pass, including four new preflight-order tests;
+six Python qualification tests and 27 acquisition-manifest negatives pass.
+The old estimator/checker sources, Cargo locks, native pin and opening GIF remain
+byte-identical. Native 55-test/seed-7 evidence is reused for the unchanged native
+sources, without a fresh native execution claim.
+
+[Protocol](qualified-recorded-motion.md);
+[first outcome](../assets/recorded-qualified/first-room-v1/phase1.json);
+[first independent audit](../assets/recorded-qualified/first-room-v1/audit.json);
+[viewed reproduction](../assets/qualified-regression.json);
+[prior regressions](../assets/qualified-prior-regression.json);
+[combined proof](../assets/qualified-development-validation.json).
+Remote Actions status is separate from these local checks.

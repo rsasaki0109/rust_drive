@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "passed": true,
+  "recorded_utc": "2026-10-10T04:05:36.653647+00:00",
+  "source_head": "fe9fb533c7d6b02b814ff17f12d5a3436aa32848",
+  "workspace": {
+    "command": "scripts/check.sh",
+    "exit_status": 0,
+    "exit_status_evidence": "Parent confirmed exit 0 from its completed execution session; this read-only audit independently parses the log and produced files.",
+    "log_path": "artifacts/qualified-workspace-check.log",
+    "log_sha256": "6ca5e4485b1ad49a6d508067fe40640a9c4e0a0a0dd7fc8fdd47c5b9e4ddd0ca",
+    "real_tests_passed": 371,
+    "passed_test_lines": 371,
+    "failed_tests": 0,
+    "ignored_tests": 0,
+    "filtered_tests": 0,
+    "result_groups": 36,
+    "nonzero_test_groups": 23,
+    "episodes": 49,
+    "verified_replays": 49,
+    "replay_ticks": 38638
+  },
+  "reference_artifact_comparison": {
+    "baseline_manifest_path": "artifacts/goal30-prechange-check.manifest.json",
+    "baseline_manifest_sha256": "9e337873eabe3345e5c2c72502ed788db5ae9d3c8ab2470a40de38d82f2da8a6",
+    "baseline_source_head": "2d3312c84dfa2e1947329b8f7c339a223c477eaf",
+    "files_checked": 245,
+    "exact_file_set": true,
+    "all_file_bytes_sha256_identical": true,
+    "missing": [],
+    "extra": [],
+    "mismatched": [],
+    "canonical_file_hash_map_sha256": "49b81da830fa748c3a9ea369be33632f41a854980c315fd1f0417cdc5fe3bbdd"
+  },
+  "tracked_source_comparison_to_head": {
+    "files_checked": 190,
+    "all_bytes_identical": true,
+    "mismatches": [],
+    "canonical_file_hash_map_sha256": "0f7f6bbc4379e21668dddfadfa6f57f0606604fa76fca6658289d2010b870c3d",
+    "important_sha256": {
+      "assets/japan-city-demo.gif": "40db0984165911a064e50cd0dc07087dd7f4b366aeeb530b66deddad202a1c0f",
+      "integrations/rne/rne-revision.txt": "18a0b41bc51d35a964f9dc922ee44cf1c485b34765c8ddfe82c93649c440404e",
+      "integrations/rgbd/src/main.rs": "819821995fd54c5853db55124a8875095de9cfcad30dd59548bde85cd2abf37a",
+      "integrations/rgbd/src/visual.rs": "ebd4bea1095af44d3660a7bf84c06c0f54a431667095ae1cc7128a55fb3839cc",
+      "integrations/rgbd/src/reprojection.rs": "ff77f6038c65c9c27361291a0b9997c99e714ae2996803adf7e7b044e92fde2a",
+      "crates/localization/src/visual_odometry3d.rs": "718192d69b02de0a668c54e8469812b7c5f1903ab74de660e1b221e2ec874d24",
+      "crates/localization/src/reprojection3d.rs": "2895e1c3eafefcfacdd156fd51706598521f0344f427f24edf420d159e5da486"
+    }
+  },
+  "preceding_native_evidence": {
+    "fresh_native_run_performed": false,
+    "role": "Previously executed same-source native proof retained and checked; this task did not rebuild, render or run native simulation.",
+    "public_proof_path": "assets/japan-city-reprojection-regression.json",
+    "public_proof_sha256": "786f50d21b99f54ddaf23b9ee4e6daf136db053709f642f15e6110c8f872eecd",
+    "source_fingerprint_sha256": "fbf913b2383e2f1eb5992ce0bc8411805f2093cd0f5a756e9df118645955db79",
+    "source_fingerprint_and_checker_and_protected_files_unchanged": true,
+    "rne_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
+    "pinned_checkout_verified": true,
+    "preceding_native_tests_passed": 55,
+    "preceding_current_seed": 7,
+    "preceding_replay_ticks_verified": 921,
+    "preceding_ray_grid_entries_verified": 1327680,
+    "historical_other_seeds": [
+      1,
+      42
+    ]
+  },
+  "scope": "Read-only regression verification of established simulation and existing source. New FR1 room images and qualified evaluator were not run or decoded."
+}

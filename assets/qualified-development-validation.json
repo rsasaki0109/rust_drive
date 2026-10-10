@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "scope": "Single 1.1684-second indoor recorded camera interval; no vehicle calibration, calibrated uncertainty, driving fusion or automotive generalization claim",
+  "first_trial": {
+    "evaluator_exit_status": 0,
+    "summary": {
+      "accepted_updates": 35,
+      "accurate_root_updates": 35,
+      "all_updates_passed": true,
+      "frames": 36,
+      "initialized_frames": 1,
+      "lost": false,
+      "reference_valid_updates": 35,
+      "rejected_updates": 0,
+      "updates": 35
+    },
+    "maximum_root_translation_error_m": 0.07569978445767186,
+    "maximum_root_rotation_error_rad": 0.08466065788201586,
+    "report_sha256": "5ea8af5768794797fefcf10a473e0931182ad8cf7c93c0afd51f861ef13bfdb8",
+    "freeze_sha256": "85df00d6e97d0238ec73b93e64233e324f103d0f8dfa25207f81facd00f79ff8",
+    "qualification_sha256": "6a9d434e48665b6b252e6ce4faeccd9401f0d7d78b5915eb77434d040439a8c2",
+    "independent_archived_source_audit_sha256": "24447e3edc6fc10c350cc359363d703b55e6829c7d18d1d580897dbdf14bcfd5",
+    "frozen_sources": 20,
+    "all_35_refinements_converged": true
+  },
+  "qualification": {
+    "metadata_only_before_first_pixel_decode": true,
+    "full_ground_truth_rows": 4887,
+    "all_36_frame_brackets_valid": true,
+    "unique_rgb_frames": 36,
+    "exact_gates_seconds": 0.02,
+    "raw_files": 76,
+    "raw_bytes": 21516513,
+    "root_helper_tests_passed": 6,
+    "rust_preflight_tests_passed": 4,
+    "acquisition_unsafe_mutations_rejected": 27,
+    "independent_contract_positive_checks": 29,
+    "independent_corruptions_rejected": 124
+  },
+  "regression": {
+    "suite_exit_status": 0,
+    "non_timing_evidence_identical": true,
+    "evaluator_exit_status": 0,
+    "proof_sha256": "7a3eb90be81103e999215709b288e5154bf8f389973f95d1400056bb4b87dcb8"
+  },
+  "workspace": {
+    "command": "scripts/check.sh",
+    "exit_status": 0,
+    "exit_status_evidence": "Parent confirmed exit 0 from its completed execution session; this read-only audit independently parses the log and produced files.",
+    "log_path": "artifacts/qualified-workspace-check.log",
+    "log_sha256": "6ca5e4485b1ad49a6d508067fe40640a9c4e0a0a0dd7fc8fdd47c5b9e4ddd0ca",
+    "real_tests_passed": 371,
+    "passed_test_lines": 371,
+    "failed_tests": 0,
+    "ignored_tests": 0,
+    "filtered_tests": 0,
+    "result_groups": 36,
+    "nonzero_test_groups": 23,
+    "episodes": 49,
+    "verified_replays": 49,
+    "replay_ticks": 38638
+  },
+  "prior_regressions_sha256": "b99d587510ab11bad383ceac9697e8387039ac608b612bed164d8de2ec9b18ef",
+  "optional_rgbd_tests_passed": 29,
+  "fmt_and_release_all_target_clippy_passed": true,
+  "native_evidence": "Preceding 55-test seed-7 proof reused for unchanged native sources; no fresh native execution in this increment",
+  "hero_gif_sha256": "40db0984165911a064e50cd0dc07087dd7f4b366aeeb530b66deddad202a1c0f",
+  "maturity": {
+    "subjective_engineering_estimate_percent": 20,
+    "waypoint_30_complete": false,
+    "goal_50_complete": false
+  }
+}
