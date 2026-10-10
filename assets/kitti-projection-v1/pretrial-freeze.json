@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "observed_utc": "2026-10-10T14:37:49.117180+00:00",
+  "role": "Final compiled-source, fixed analytic oracle and executable freeze before first authored fixture CLI call",
+  "design_preregistration_commit": "deda10f",
+  "actual_kitti_data": false,
+  "fixture_cli_runs_at_freeze": 0,
+  "compiled_sources": {
+    "binary": "960470e075ea3a8772d753881ce8a959b2128c2067ba2bfd56230ca037176a5d",
+    "calibration": "4871dd098459b18e95dccd6d7d574826cba092ede3a10850fc47e061bb5a622d",
+    "design": "f19310ee577bf9e77b8b2969763d5ec58f7e0cb1884671ac076f8d987a52832c",
+    "source_authority": "2eff9f3660d23430c8639f68abac8da1161d53334a3459a2c4018d6043db5fee",
+    "cargo_manifest": "5a49c3a2c04951ffbf3e154d28fe1e13d2dda92b410b15ec849bfe33377e0d5f",
+    "cargo_lock": "67845fb7e4a53e15e4e3c70bba72142aff666893cf1d0c96c4654cdc16b7197b",
+    "rust_toolchain": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed"
+  },
+  "paths": {
+    "binary": "integrations/rgbd/src/bin/rustdriving-kitti-project.rs",
+    "calibration": "integrations/rgbd/src/kitti_calibration.rs",
+    "design": "assets/kitti-projection-v1/design.json",
+    "source_authority": "assets/kitti-projection-v1/source-authority.json",
+    "cargo_manifest": "integrations/rgbd/Cargo.toml",
+    "cargo_lock": "integrations/rgbd/Cargo.lock",
+    "rust_toolchain": "rust-toolchain.toml"
+  },
+  "auditor": {
+    "path": "scripts/check-kitti-calibration.py",
+    "sha256": "75e7a765ce4b806fd12b4bcf736db2af76555749c57cfd76509beab8af17fe9f"
+  },
+  "executable": {
+    "bytes": 824168,
+    "sha256": "53251cbe738f106ef736c3ddf7df27154ac81ce443477b1118e9848526342a90",
+    "role": "Same-host build receipt, not a cross-platform binary identity requirement"
+  },
+  "tests_before_cli": {
+    "core_rust": 371,
+    "rgbd_rust": 114,
+    "core_scenario_replays": 49,
+    "baseline_files_byte_exact": 245
+  },
+  "analytic_only_controls_before_cli": {
+    "kind": "authored_analytic_matrix_and_half_open_pixel_controls",
+    "actual_rust_cli_runs": 0,
+    "hand_matrices_checked": 2,
+    "hand_binary_point_checked": true,
+    "hand_pixel_cases_checked": 16,
+    "inverse_imu_round_trips_checked": 72,
+    "summaries": [
+      {
+        "inframe": 10,
+        "outside": 6,
+        "behind": 2
+      },
+      {
+        "inframe": 8,
+        "outside": 7,
+        "behind": 3
+      },
+      {
+        "inframe": 5,
+        "outside": 10,
+        "behind": 3
+      },
+      {
+        "inframe": 12,
+        "outside": 5,
+        "behind": 1
+      }
+    ],
+    "non_noop_wrong_chain_controls": [
+      "reversed_velo_transform",
+      "wrong_multiplication_order",
+      "missing_shared_rectification",
+      "baseline_sign",
+      "discarded_yz_baseline",
+      "selected_r_rect_01",
+      "selected_r_rect_02",
+      "selected_r_rect_03"
+    ],
+    "python_output_guards": [
+      "existing_file",
+      "existing_directory",
+      "valid_symlink",
+      "dangling_symlink",
+      "symlink_parent"
+    ],
+    "auditor_sha256": "75e7a765ce4b806fd12b4bcf736db2af76555749c57cfd76509beab8af17fe9f"
+  }
+}

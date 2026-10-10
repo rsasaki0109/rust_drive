@@ -1,0 +1,166 @@
+{
+  "scope": "Pretrial readonly preservation check; old recorded/model source bytes only. No projection/inference/trial rerun.",
+  "old23_count": 23,
+  "old23_match": true,
+  "nano10_count": 10,
+  "nano10_match": true,
+  "old23": {
+    "temporal_binary": {
+      "path": "integrations/rgbd/src/bin/rustdriving-rgbd-multiscale-temporal.rs",
+      "expected_sha256": "baf0febbd7f22d7a99cd19760d7f4d53226f805960e7f17c29f3ae897f8703fe",
+      "actual_sha256": "baf0febbd7f22d7a99cd19760d7f4d53226f805960e7f17c29f3ae897f8703fe"
+    },
+    "temporal_support": {
+      "path": "integrations/rgbd/src/multiscale_temporal_support.rs",
+      "expected_sha256": "f146418ca350f4b361e73ca1f7e6640b626920adbd0e36faf4a5e4a106c7751b",
+      "actual_sha256": "f146418ca350f4b361e73ca1f7e6640b626920adbd0e36faf4a5e4a106c7751b"
+    },
+    "design": {
+      "path": "assets/multiscale-temporal-v1/design.json",
+      "expected_sha256": "d0b6a8f21ded03ce8125e30e47440d223c77567d0f2e41b6d9031c32e1ea34df",
+      "actual_sha256": "d0b6a8f21ded03ce8125e30e47440d223c77567d0f2e41b6d9031c32e1ea34df"
+    },
+    "pair_binary": {
+      "path": "integrations/rgbd/src/bin/rustdriving-rgbd-multiscale-pairs.rs",
+      "expected_sha256": "abbcfbb4f58b4499f3720ba3e15dbec47a833ea86df44bb5e163c0db2f60a446",
+      "actual_sha256": "abbcfbb4f58b4499f3720ba3e15dbec47a833ea86df44bb5e163c0db2f60a446"
+    },
+    "multiscale_features": {
+      "path": "crates/perception/src/multiscale_features.rs",
+      "expected_sha256": "846051d2f99d07432229a456f9cc96ace6732419df7fde223d0379bfaf13a973",
+      "actual_sha256": "846051d2f99d07432229a456f9cc96ace6732419df7fde223d0379bfaf13a973"
+    },
+    "image_features": {
+      "path": "crates/perception/src/image_features.rs",
+      "expected_sha256": "5b5b103d4e798929f753a850387609405cad1a303d49ef8e81433f064e901106",
+      "actual_sha256": "5b5b103d4e798929f753a850387609405cad1a303d49ef8e81433f064e901106"
+    },
+    "registration3d": {
+      "path": "crates/localization/src/registration3d.rs",
+      "expected_sha256": "eca9fe887f4a237dd627eb06e2793579ec4fbffd6330d120017572d734c4b715",
+      "actual_sha256": "eca9fe887f4a237dd627eb06e2793579ec4fbffd6330d120017572d734c4b715"
+    },
+    "visual_odometry3d": {
+      "path": "crates/localization/src/visual_odometry3d.rs",
+      "expected_sha256": "718192d69b02de0a668c54e8469812b7c5f1903ab74de660e1b221e2ec874d24",
+      "actual_sha256": "718192d69b02de0a668c54e8469812b7c5f1903ab74de660e1b221e2ec874d24"
+    },
+    "reprojection3d": {
+      "path": "crates/localization/src/reprojection3d.rs",
+      "expected_sha256": "2895e1c3eafefcfacdd156fd51706598521f0344f427f24edf420d159e5da486",
+      "actual_sha256": "2895e1c3eafefcfacdd156fd51706598521f0344f427f24edf420d159e5da486"
+    },
+    "localization_lib": {
+      "path": "crates/localization/src/lib.rs",
+      "expected_sha256": "26e1a082ceedadd0de957714bd11170bf16e732e7948b01530b699214510bdf3",
+      "actual_sha256": "26e1a082ceedadd0de957714bd11170bf16e732e7948b01530b699214510bdf3"
+    },
+    "perception_lib": {
+      "path": "crates/perception/src/lib.rs",
+      "expected_sha256": "0393a7d84176167bdfa6e242788f1f17555c2ab7abee687c845583b2b5141291",
+      "actual_sha256": "0393a7d84176167bdfa6e242788f1f17555c2ab7abee687c845583b2b5141291"
+    },
+    "core_lib": {
+      "path": "crates/core/src/lib.rs",
+      "expected_sha256": "6cdc9459e0ae8dcccd0fa8d8d468a2adc0eee12aa3cc4bacca1b871a8b4d708e",
+      "actual_sha256": "6cdc9459e0ae8dcccd0fa8d8d468a2adc0eee12aa3cc4bacca1b871a8b4d708e"
+    },
+    "cargo_lock": {
+      "path": "integrations/rgbd/Cargo.lock",
+      "expected_sha256": "67845fb7e4a53e15e4e3c70bba72142aff666893cf1d0c96c4654cdc16b7197b",
+      "actual_sha256": "67845fb7e4a53e15e4e3c70bba72142aff666893cf1d0c96c4654cdc16b7197b"
+    },
+    "cargo_manifest": {
+      "path": "integrations/rgbd/Cargo.toml",
+      "expected_sha256": "5a49c3a2c04951ffbf3e154d28fe1e13d2dda92b410b15ec849bfe33377e0d5f",
+      "actual_sha256": "5a49c3a2c04951ffbf3e154d28fe1e13d2dda92b410b15ec849bfe33377e0d5f"
+    },
+    "rust_toolchain": {
+      "path": "rust-toolchain.toml",
+      "expected_sha256": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed",
+      "actual_sha256": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed"
+    },
+    "core_manifest": {
+      "path": "crates/core/Cargo.toml",
+      "expected_sha256": "87843fdea23432c48657e5f24d7b4708be278f88c799417e71ddc6794a900b61",
+      "actual_sha256": "87843fdea23432c48657e5f24d7b4708be278f88c799417e71ddc6794a900b61"
+    },
+    "perception_manifest": {
+      "path": "crates/perception/Cargo.toml",
+      "expected_sha256": "e8f5dd659382b1ae3087f8087f2f6f4f8f9ea1836df678ff400c50b23e858e2a",
+      "actual_sha256": "e8f5dd659382b1ae3087f8087f2f6f4f8f9ea1836df678ff400c50b23e858e2a"
+    },
+    "localization_manifest": {
+      "path": "crates/localization/Cargo.toml",
+      "expected_sha256": "deb14cd630257a08443cb05b345fb269206192fb2b04772dbc44384d27daf7cf",
+      "actual_sha256": "deb14cd630257a08443cb05b345fb269206192fb2b04772dbc44384d27daf7cf"
+    },
+    "registered_binary": {
+      "path": "integrations/rgbd/src/bin/rustdriving-rgbd-registered-grid-temporal.rs",
+      "expected_sha256": "6a1dbce255c246d1003fd94e039e49de1b30aa5d2ded6c86818137d0bbbc92a6",
+      "actual_sha256": "6a1dbce255c246d1003fd94e039e49de1b30aa5d2ded6c86818137d0bbbc92a6"
+    },
+    "registered_support": {
+      "path": "integrations/rgbd/src/registered_grid_temporal_support.rs",
+      "expected_sha256": "96047c6894f9b3a852e246294e9ff547aee240796c6e6906ff79da646e95cfb7",
+      "actual_sha256": "96047c6894f9b3a852e246294e9ff547aee240796c6e6906ff79da646e95cfb7"
+    },
+    "registered_grid": {
+      "path": "integrations/rgbd/src/registered_grid.rs",
+      "expected_sha256": "7d0dd23aaae8314bb0b42f5ff49b7fd1f23d0408fe131d64fd6d7ead66d6efbf",
+      "actual_sha256": "7d0dd23aaae8314bb0b42f5ff49b7fd1f23d0408fe131d64fd6d7ead66d6efbf"
+    },
+    "registered_design": {
+      "path": "assets/registered-grid-temporal-v1/design.json",
+      "expected_sha256": "cfd56dd22e2aadd1f3fdaba8b3162a58d19a783d62438d4d5694bbca3ab41ac3",
+      "actual_sha256": "cfd56dd22e2aadd1f3fdaba8b3162a58d19a783d62438d4d5694bbca3ab41ac3"
+    },
+    "camera_model": {
+      "path": "assets/registered-grid-temporal-v1/camera-model.json",
+      "expected_sha256": "511cff92d365983efe40fdb90c9336ac1c122ebef6269594a07081b4eda8ecf3",
+      "actual_sha256": "511cff92d365983efe40fdb90c9336ac1c122ebef6269594a07081b4eda8ecf3"
+    }
+  },
+  "nano10": {
+    "integrations/onnx/Cargo.toml": {
+      "expected_sha256": "7459dc7d7fc0128214275703d48a4170d449edd559dc0cadab689f887d635c8d",
+      "actual_sha256": "7459dc7d7fc0128214275703d48a4170d449edd559dc0cadab689f887d635c8d"
+    },
+    "integrations/onnx/Cargo.lock": {
+      "expected_sha256": "aa6f1b198ff4ad901f9547ef852dc0113b5c36624d43030a863af32b12f07a0c",
+      "actual_sha256": "aa6f1b198ff4ad901f9547ef852dc0113b5c36624d43030a863af32b12f07a0c"
+    },
+    "integrations/onnx/src/lib.rs": {
+      "expected_sha256": "b379dfba4c45b535f61284ea9fc7748f6317038976b5fb61221f6a8561ad4bbc",
+      "actual_sha256": "b379dfba4c45b535f61284ea9fc7748f6317038976b5fb61221f6a8561ad4bbc"
+    },
+    "integrations/onnx/src/main.rs": {
+      "expected_sha256": "9e2b917e71a42873544694f698215ad20048eb1acfbb135e2cdd76adf0ffb5f8",
+      "actual_sha256": "9e2b917e71a42873544694f698215ad20048eb1acfbb135e2cdd76adf0ffb5f8"
+    },
+    "integrations/onnx/fetch.py": {
+      "expected_sha256": "86fc0d09ecfc24f47a94b906ace4f9b5e82c38f2945b187c6aa44c05cb3c19b4",
+      "actual_sha256": "86fc0d09ecfc24f47a94b906ace4f9b5e82c38f2945b187c6aa44c05cb3c19b4"
+    },
+    "integrations/onnx/score.py": {
+      "expected_sha256": "f5eedaa9131217d8ba88fb6a3f5b0ce6ecfd57b19dcd3aa2fd88d7e47cda7576",
+      "actual_sha256": "f5eedaa9131217d8ba88fb6a3f5b0ce6ecfd57b19dcd3aa2fd88d7e47cda7576"
+    },
+    "integrations/onnx/bdd_fetch.py": {
+      "expected_sha256": "3eace699219b8e706050f2e25365fde059b46ef6eda5d83fc6f8c5bb2069910b",
+      "actual_sha256": "3eace699219b8e706050f2e25365fde059b46ef6eda5d83fc6f8c5bb2069910b"
+    },
+    "integrations/onnx/bdd_score.py": {
+      "expected_sha256": "10033a6131b5239d411ed4c6c4f3ad9f49a45cb72f16b879e95d47366c0d53f7",
+      "actual_sha256": "10033a6131b5239d411ed4c6c4f3ad9f49a45cb72f16b879e95d47366c0d53f7"
+    },
+    "integrations/onnx/bdd_check.py": {
+      "expected_sha256": "e34108681976ab8802642a4fbaf23bedcdec13e063975a5c55005f2d150a8584",
+      "actual_sha256": "e34108681976ab8802642a4fbaf23bedcdec13e063975a5c55005f2d150a8584"
+    },
+    "integrations/onnx/bdd_protocol.json": {
+      "expected_sha256": "3fa34763064b3f113d4aef1671610128b886c18aa769dfca017bec96c555e830",
+      "actual_sha256": "3fa34763064b3f113d4aef1671610128b886c18aa769dfca017bec96c555e830"
+    }
+  }
+}

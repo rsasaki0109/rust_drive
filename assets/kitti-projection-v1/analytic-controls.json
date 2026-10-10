@@ -1,0 +1,48 @@
+{
+  "kind": "authored_analytic_matrix_and_half_open_pixel_controls",
+  "actual_rust_cli_runs": 0,
+  "hand_matrices_checked": 2,
+  "hand_binary_point_checked": true,
+  "hand_pixel_cases_checked": 16,
+  "inverse_imu_round_trips_checked": 72,
+  "summaries": [
+    {
+      "inframe": 10,
+      "outside": 6,
+      "behind": 2
+    },
+    {
+      "inframe": 8,
+      "outside": 7,
+      "behind": 3
+    },
+    {
+      "inframe": 5,
+      "outside": 10,
+      "behind": 3
+    },
+    {
+      "inframe": 12,
+      "outside": 5,
+      "behind": 1
+    }
+  ],
+  "non_noop_wrong_chain_controls": [
+    "reversed_velo_transform",
+    "wrong_multiplication_order",
+    "missing_shared_rectification",
+    "baseline_sign",
+    "discarded_yz_baseline",
+    "selected_r_rect_01",
+    "selected_r_rect_02",
+    "selected_r_rect_03"
+  ],
+  "python_output_guards": [
+    "existing_file",
+    "existing_directory",
+    "valid_symlink",
+    "dangling_symlink",
+    "symlink_parent"
+  ],
+  "auditor_sha256": "54238ee443f27795e1bda3a85960e5f1741b29afbaaa895526c928bbc9c13be8"
+}

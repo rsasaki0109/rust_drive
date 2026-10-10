@@ -314,3 +314,15 @@ matched reference IDs and failed gates, with raw detection agreement within
 absolute tolerance 1e-5; the wrapper retains quality exit 1 despite passing
 integrity. Neither learned adapter provides metric depth, signal
 color or vehicle controls. [Frozen profile and limits](yolox-s-camera.md).
+
+The optional `rustdriving-kitti-project` CLI reads provided calibration and
+Velodyne bytes, with bounded parsing and exclusive JSON output. Its projection
+chain is the full selected `P_rect · embed(R_rect_00) · T_cam0_from_velo`;
+`A⁻¹b` preserves the complete fourth column and `−A⁻¹b` gives the selected
+camera center in shared rectified coordinates. Native K/D and selected
+rectification metadata are retained without reapplying them to processed
+pixels. All 72 authored point projections across four cameras pass independent
+geometry checks and byte-identical replay; malformed source/output controls
+fail closed. These are analytic checks, with no real KITTI acquisition,
+timing/deskew or operational fusion.
+[Authority, coordinate conventions and CLI](kitti-projection.md).

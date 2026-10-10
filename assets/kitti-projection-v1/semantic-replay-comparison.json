@@ -1,0 +1,37 @@
+{
+  "schema": "authored-kitti-exact-semantic-replay-v1",
+  "passed": true,
+  "actual_positive_cli_runs": 8,
+  "actual_source_negative_cli_runs": 112,
+  "actual_output_guard_cli_runs": 56,
+  "all_four_projection_reports_byte_identical": true,
+  "projection_reports": [
+    {
+      "camera": 0,
+      "sha256": "f4580e6879512aa327b078342978aa553eaeb6dfa97c50f2d20133c36aa68f8c",
+      "bytes": 14726
+    },
+    {
+      "camera": 1,
+      "sha256": "62410c235c384efa216318aef0836c76934b13b43f5cd6b19b247fbb3a6cd9c1",
+      "bytes": 15144
+    },
+    {
+      "camera": 2,
+      "sha256": "fc80f83b0dccbbcb470ee77275f3af61e3e9b58f879fe3714961cd35546dfad5",
+      "bytes": 15173
+    },
+    {
+      "camera": 3,
+      "sha256": "7d85c34b4e1b62fe90f8458140e978d664ee079a1df9f6991c46432eccb9817c",
+      "bytes": 15181
+    }
+  ],
+  "only_exclusion": "command arrays contain output-directory-specific paths; all outcomes/loghashes/sources/geometry/rows retained",
+  "semantic_sha256": "7119d4f7b190539f48d3c373f3ab53500f6af24f2ddec857b168d5932ea3ae1f",
+  "first_proof_sha256": "cd389dff0ddd00c6ab816e01478deaa55c772a2ce6b2bb8098c199fc360588e8",
+  "replay_proof_sha256": "b05fc87ae6455f8cf72bce0555b65bb448a4ffd130c8948fa63f76d22bb8e270",
+  "auditor_sha256": "54238ee443f27795e1bda3a85960e5f1741b29afbaaa895526c928bbc9c13be8",
+  "no_recorded_kitti_data": true,
+  "no_retuning": true
+}

@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "role": "Primary-source documentation observations; source snapshots remain ignored and are not redistributed",
+  "observed_date_utc": "2026-10-10",
+  "sources": [
+    {
+      "url": "https://www.cvlibs.net/datasets/kitti/raw_data.php",
+      "bytes": 11125,
+      "sha256": "869d1212a3280ad72da79f22743353b39b29e7acf129bdb60b21e73f0bf21f83"
+    },
+    {
+      "url": "https://www.cvlibs.net/datasets/kitti/user_login.php",
+      "bytes": 9705,
+      "sha256": "dd7f1dc49283ad45bc8623ec741d0e0b61adefe9dc51b5ebe3307ca1f8d4ed8b"
+    },
+    {
+      "url": "https://www.cvlibs.net/publications/Geiger2013IJRR.pdf",
+      "bytes": 3097042,
+      "sha256": "af54d6fd1042661cd7dc01aeece435d20fc418078f6343246779f9f1b6a523f5"
+    },
+    {
+      "url": "https://www.cvlibs.net/datasets/kitti/",
+      "bytes": 19970,
+      "sha256": "828a0add3e07f8ae9156ec73bde2ebaa4db0a637ad36e000cf01670b717bcd2a"
+    }
+  ],
+  "access_observation": "You must log in to download the raw datasets!",
+  "geometry_authority": "Geiger et al., Vision meets Robotics: The KITTI Dataset, IJRR 2013, sections IV-B and IV-C, equations 5, 7 and 8, pages 4-6",
+  "geometry": "Processed synchronized images are rectified. Use shared R_rect_00 after cam0-from-Velodyne, then the full selected-camera P_rect. Preserve the complete fourth column",
+  "data_license": "KITTI homepage states Creative Commons Attribution-NonCommercial-ShareAlike 3.0 for datasets and benchmarks; this is separate from RustDriving's code license",
+  "timing_limits": "Spinning LiDAR and camera/OXTS association require explicit timing/deskew treatment; a single projection does not demonstrate simultaneous sensing or pose accuracy",
+  "current_data_access": "No dataset account configured, no raw data acquired, no alternate historical download path used to bypass the current login gate",
+  "provenance_limit": "Observed document hashes are identity receipts, not publisher signatures or authenticated calibration provenance"
+}

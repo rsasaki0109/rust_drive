@@ -246,6 +246,63 @@ jobs:
           python scripts/check-registered-grid-temporal.py --self-test --output artifacts/registered-grid-temporal/model-self-test.json
           python scripts/check-registered-grid-temporal-suite.py --self-test --output artifacts/registered-grid-temporal/suite-controls
           python scripts/check-registered-grid-temporal-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-registered-grid-temporal --output artifacts/registered-grid-temporal/viewed-regression
+      - name: Reproduce authored KITTI-format projection and input-contract controls
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+        run: |
+          cargo build --release --manifest-path integrations/rgbd/Cargo.toml --locked --bin rustdriving-kitti-project
+          python scripts/check-kitti-calibration.py --prepare-fixture --output artifacts/kitti-projection/fixture
+          python scripts/check-kitti-calibration.py --self-test --fixture artifacts/kitti-projection/fixture --output artifacts/kitti-projection/analytic
+          python scripts/check-kitti-calibration.py --binary integrations/rgbd/target/release/rustdriving-kitti-project --fixture artifacts/kitti-projection/fixture --output artifacts/kitti-projection/audit
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+          assets = Path("assets/kitti-projection-v1")
+          packet_path = assets / "evidence.json"
+          assert packet_path.is_file() and not packet_path.is_symlink()
+          packet_bytes = packet_path.read_bytes()
+          assert hashlib.sha256(packet_bytes).hexdigest() == "a65fc349faabe9fa861cb1924079b49da66612e3c048c76a44db96ba422fc5a8"
+          packet = json.loads(packet_bytes)
+          assert len(packet["bound_files"]) == 19
+          for name, pin in packet["bound_files"].items():
+              assert Path(name).name == name and name not in (".", "..")
+              path = assets / name
+              assert path.is_file() and not path.is_symlink()
+              assert path.stat().st_size == pin["bytes"] <= 4 * 1024 * 1024
+              assert hashlib.sha256(path.read_bytes()).hexdigest() == pin["sha256"]
+          identity = packet["source_and_binary_identity"]
+          assert identity["sources"].keys() == identity["paths"].keys()
+          for key, path in identity["paths"].items():
+              assert hashlib.sha256(Path(path).read_bytes()).hexdigest() == identity["sources"][key]
+          proof = json.loads(Path("artifacts/kitti-projection/audit/results.json").read_text())
+          assert proof["schema"] == "independent-authored-kitti-calibration-oracle-v1"
+          assert proof["integrity_and_actual_geometry_passed"] is True
+          assert proof["compiled_sources"] == identity["sources"]
+          assert proof["actual_positive_cli_runs"] == 4
+          assert len(proof["cameras"]) == 4
+          assert sum(camera["every_row_checked"] for camera in proof["cameras"]) == 72
+          assert all(proof[key] is False for key in
+                     ("actual_kitti_data", "camera_images", "ground_truth_labels",
+                      "calibration_physically_measured", "accuracy_claim"))
+          for camera in range(4):
+              actual = Path(f"artifacts/kitti-projection/audit/camera-{camera}.json")
+              assert actual.read_bytes() == (assets / f"first-camera-{camera}.json").read_bytes()
+          PY
+      - name: Remove generated KITTI guard symlinks before evidence upload
+        if: always()
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          root = Path("artifacts/kitti-projection")
+          assert not root.is_symlink()
+          for directory, subdirectories, files in os.walk(root, followlinks=False):
+              for name in subdirectories + files:
+                  path = Path(directory) / name
+                  if path.is_symlink():
+                      path.unlink()
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -273,6 +330,8 @@ jobs:
             artifacts/multiscale-pairs/
             artifacts/multiscale-temporal/
             artifacts/registered-grid-temporal/
+            artifacts/kitti-projection/**/*.json
+            artifacts/kitti-projection/**/*.log
             artifacts/pyramidal-tracking-synthetic-exercises.json
 
   visual:

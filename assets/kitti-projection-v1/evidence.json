@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "role": "Original authored analytic controls and complete first/replay evidence, with no measured data redistribution",
+  "first_design_commit": "deda10f",
+  "final_pretrial_commit": "24139dc",
+  "bound_files": {
+    "analytic-controls.json": {
+      "bytes": 1053,
+      "sha256": "fec6e627edb1fc5a8f7eb2a50bd8246af754799ed9a0d12aeaf78941c87fbad6"
+    },
+    "core-validation.json": {
+      "bytes": 428,
+      "sha256": "9e96ed60a5559efc11e3f24fcce844c4e2ce6e0315a23230b3436360ff195b60"
+    },
+    "design.json": {
+      "bytes": 5163,
+      "sha256": "f19310ee577bf9e77b8b2969763d5ec58f7e0cb1884671ac076f8d987a52832c"
+    },
+    "executable-receipt.json": {
+      "bytes": 1474,
+      "sha256": "987770103f4b552f506521d7e3f17ed582ba1de4a407fe4117f4d0338a86a3d4"
+    },
+    "first-audit.json.gz": {
+      "bytes": 16419,
+      "sha256": "b77995642450443014e721295648516d100ec24b31ebcc7c16bb53bfd33f3295"
+    },
+    "first-camera-0.json": {
+      "bytes": 14726,
+      "sha256": "f4580e6879512aa327b078342978aa553eaeb6dfa97c50f2d20133c36aa68f8c"
+    },
+    "first-camera-1.json": {
+      "bytes": 15144,
+      "sha256": "62410c235c384efa216318aef0836c76934b13b43f5cd6b19b247fbb3a6cd9c1"
+    },
+    "first-camera-2.json": {
+      "bytes": 15173,
+      "sha256": "fc80f83b0dccbbcb470ee77275f3af61e3e9b58f879fe3714961cd35546dfad5"
+    },
+    "first-camera-3.json": {
+      "bytes": 15181,
+      "sha256": "7d85c34b4e1b62fe90f8458140e978d664ee079a1df9f6991c46432eccb9817c"
+    },
+    "posttrial-source-stability.json": {
+      "bytes": 265,
+      "sha256": "44a5ad174c43f6eaf9c360d9e0df7d8a2f7193016db9280f8690c726847d5c41"
+    },
+    "preserved-older-sources.json": {
+      "bytes": 8822,
+      "sha256": "66a3b61e63f5d659dd608579408f68ea5a43eaa67a93d04c074c15600e565f61"
+    },
+    "pretrial-freeze-v2.json": {
+      "bytes": 4131,
+      "sha256": "9209d3e8250ade4b6aebc11e872f257ce052ee4645cd114998f1f2bbd7a4d323"
+    },
+    "pretrial-freeze.json": {
+      "bytes": 3077,
+      "sha256": "3440de6afacdaef002f29e5d7fd16356480169956784af9016f64b6732fd9054"
+    },
+    "pretrial-scalar-repair.json": {
+      "bytes": 528,
+      "sha256": "09295cf71b1a8380ad6115072067750feedc3487602e33ad5395dfce46d782ad"
+    },
+    "replay-audit.json.gz": {
+      "bytes": 16553,
+      "sha256": "7210aac7175c8e6b5f4d97a335327eedd2be03fa768f459b27e275ba47dac388"
+    },
+    "rgbd-validation.json": {
+      "bytes": 1074,
+      "sha256": "3877a4eda77e684d036de3d5e4bdcf9f3f263fe8f898a64234cf37100226d0be"
+    },
+    "semantic-replay-comparison.json": {
+      "bytes": 1373,
+      "sha256": "44ff1bf06a0c41429c45f771a6242be8ec72d59b2f1bdc388e3e7bf754e64523"
+    },
+    "source-authority.json": {
+      "bytes": 1998,
+      "sha256": "2eff9f3660d23430c8639f68abac8da1161d53334a3459a2c4018d6043db5fee"
+    },
+    "validation.json": {
+      "bytes": 742,
+      "sha256": "a523cf747b43c8145c5ff1ddf650f362b70e5ce21083e2efeb2d2cb5f009b0f2"
+    }
+  },
+  "raw_recorded_kitti_data_included": false,
+  "official_document_snapshots_included": false,
+  "source_and_binary_identity": {
+    "schema_version": 1,
+    "time_utc": "2026-10-10T14:35:52.761289+00:00",
+    "scope": "Pretrial executable/source receipt afterfmt, Clippy,114tests and releasebuild. No externalfixture CLI or KITTI recorded trial yet. Executablebytes provenance excluded from semantic result comparison.",
+    "executable_sha256": "53251cbe738f106ef736c3ddf7df27154ac81ce443477b1118e9848526342a90",
+    "executable_bytes": 824168,
+    "sources": {
+      "binary": "960470e075ea3a8772d753881ce8a959b2128c2067ba2bfd56230ca037176a5d",
+      "calibration": "4871dd098459b18e95dccd6d7d574826cba092ede3a10850fc47e061bb5a622d",
+      "design": "f19310ee577bf9e77b8b2969763d5ec58f7e0cb1884671ac076f8d987a52832c",
+      "source_authority": "2eff9f3660d23430c8639f68abac8da1161d53334a3459a2c4018d6043db5fee",
+      "cargo_manifest": "5a49c3a2c04951ffbf3e154d28fe1e13d2dda92b410b15ec849bfe33377e0d5f",
+      "cargo_lock": "67845fb7e4a53e15e4e3c70bba72142aff666893cf1d0c96c4654cdc16b7197b",
+      "rust_toolchain": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed"
+    },
+    "paths": {
+      "binary": "integrations/rgbd/src/bin/rustdriving-kitti-project.rs",
+      "calibration": "integrations/rgbd/src/kitti_calibration.rs",
+      "design": "assets/kitti-projection-v1/design.json",
+      "source_authority": "assets/kitti-projection-v1/source-authority.json",
+      "cargo_manifest": "integrations/rgbd/Cargo.toml",
+      "cargo_lock": "integrations/rgbd/Cargo.lock",
+      "rust_toolchain": "rust-toolchain.toml"
+    }
+  },
+  "maturity_claim": "About20% subjective;30%notmet"
+}
