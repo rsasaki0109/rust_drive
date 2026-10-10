@@ -130,3 +130,11 @@ when full-source label validation fails, while returning exit 2 and marking
 every accuracy reference unscorable. The original `--visual` results remain
 numerically reproducible.
 [Independent audit, results and commands](../../docs/recorded-reprojection.md).
+
+
+The separate `rustdriving-rgbd-tracked` binary implements bounded, bidirectional
+three-level measured-patch tracking with accepted-image FAST reseeding. It
+requires `--regression` and remains opt-in: the viewed continuous room result
+regresses to 6/179 accepted and accurate updates. First sources/results, an
+independent-auditor test-selection repair and exact replay are preserved.
+[Design, failures and reproduction](../../docs/pyramidal-recorded-tracking.md).

@@ -49,6 +49,13 @@ The opt-in [depth-supported matching comparison](docs/depth-supported-matching.m
 adds one accepted update but reduces root-accurate updates to 49/179. Its
 failed outcome is independently verified; it remains a viewed research variant.
 
+The opt-in [pairwise pyramidal image tracker](docs/pyramidal-recorded-tracking.md)
+performs real measured-patch tracking but regresses to **6/179** accepted and
+accurate updates in the same viewed recording. Its unchanged first failure,
+auditor-only test repair and exact replay are preserved. Synthetic controls
+also expose accepted wrong correspondences on repeated textures; this variant
+is not promoted to the original path.
+
 ## Build and run
 
 The shared pipeline, CPU RNE adapter and recorded 3D demos are available on `main`.

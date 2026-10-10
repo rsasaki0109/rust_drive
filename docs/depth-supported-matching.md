@@ -87,7 +87,8 @@ The [failure detail](../assets/supported-failure-detail.json) retains the comple
 chronology and evaluation-only pair diagnostics. Indices 155, 156 and 158 lose
 their earlier accuracy classification before the additional fit at 163. The
 next matching priority is bounded bidirectional image-patch tracking across
-scales; it remains unimplemented, and accumulated drift remains a separate problem.
+scales; an opt-in [pairwise tracker](pyramidal-recorded-tracking.md) now implements
+that comparison, while accumulated drift remains a separate problem.
 
 [Outcome](../assets/recorded-supported/room-v1/phase.json),
 [full report](../assets/recorded-supported/room-v1/results.json),

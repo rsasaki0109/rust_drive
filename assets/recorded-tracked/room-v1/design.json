@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "declared_utc": "2026-10-10T06:46:25.923501+00:00",
+  "algorithm": "bounded_visual_reprojection_pyramidal_tracked",
+  "role": "viewed calibration regression",
+  "dataset": "tum-fr1-room-temporal",
+  "window": {
+    "first_depth_index": 100,
+    "last_depth_index": 279,
+    "frames": 180,
+    "updates": 179
+  },
+  "data_exposure": "All180 room images and numerical reference source were previously evaluated. This is not an unseen generalization test.",
+  "operational_change": "Translation-only bidirectional three-level inverse-compositional patch tracking, followed by original depth/rigid consensus and pixel refinement.",
+  "reference": "Last accepted measured grayscale/depth/root; fresh FAST features are reseeded on accepted frames. Pairwise identities only; no persistent landmarks.",
+  "fixed_defaults": {
+    "levels": 3,
+    "patch_size": 9,
+    "iterations_per_level_per_direction": 10,
+    "max_points": 400,
+    "min_eigenvalue": 4.0,
+    "max_condition_number": 100.0,
+    "max_step_level_pixels": 2.0,
+    "convergence_step_level_pixels": 0.01,
+    "max_normalized_photometric_rms_gray": 15.0,
+    "max_forward_backward_original_pixels": 1.0
+  },
+  "correspondence_selection": "First maximum256 valid measured depth pairs in original previous feature order; preserve all other endpoint/depth witnesses.",
+  "unchanged": {
+    "translation_gate_m": 0.1,
+    "rotation_gate_rad": 0.1,
+    "max_accepted_age_s": 0.2,
+    "initializations": 1,
+    "whole_reference_validation": true,
+    "no_reset_or_coarse_fallback": true
+  },
+  "structural_limit": {
+    "distinct_rgb_acquisitions": 173,
+    "repeated_rgb_associations": 7,
+    "maximum_fresh_accepted_updates": 172,
+    "all_updates_passed_gate_retained": true
+  },
+  "preregistration": "Freeze executable and22sources, verify source-bound timestamp qualification and independent synthetic controls before first candidate fit.",
+  "tuning": "Helper defaults fixed using synthetic translation/negative fixtures; no recorded camera fit used to select them.",
+  "limitations": [
+    "No calibrated covariance, automotive sensor calibration or driving fusion.",
+    "Additive exposure offset only; gain, projective rotation/scale, repeated-texture uniqueness and recovery remain unsupported.",
+    "All179 attempted updates and physical/accuracy failures remain in the denominator."
+  ]
+}

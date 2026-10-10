@@ -1,0 +1,300 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-10-10T06:47:03.159168+00:00",
+  "status": "Bounded metadata-only search did not locate a complete distinct raw RGB-D mirror among 16 inspected repository trees; this does not establish global data unavailability.",
+  "prospective_fixed_window": {
+    "first_depth_index": 100,
+    "last_depth_index": 279,
+    "frames": 180,
+    "declared_before_any_new_index_table_read": true
+  },
+  "best_metadata_only_lead": {
+    "original_dataset": "TUM RGB-D rgbd_dataset_freiburg1_desk2",
+    "repository": "taiyakijz/slam-project",
+    "revision": "7337d35da1aa6a75ddc93dfbcc3a211b683d405a",
+    "prefix": "dataset_manifests/desk2/",
+    "metadata": [
+      {
+        "file": "depth.txt",
+        "bytes": 29471,
+        "git_blob_sha1": "b9d192bc73ab370ad2963920d6c757ed80681fd9"
+      },
+      {
+        "file": "rgb.txt",
+        "bytes": 28239,
+        "git_blob_sha1": "2ef56438e3bace9b36a6516b16ee108ab7e76e54"
+      },
+      {
+        "file": "groundtruth.txt",
+        "bytes": 164359,
+        "git_blob_sha1": "23a77be6d7abe428d0ceb551839cc5355318f5c4"
+      }
+    ],
+    "table_contents_read": false,
+    "whole_source_timestamp_and_arity_qualification": "pending parent preregistration; no values read",
+    "actual_image_files_available": false,
+    "provisional_raw_cap_bytes": 134217728,
+    "provisional_file_cap_bytes": 4194304,
+    "camera_profile": {
+      "source": "luigifreda/pyslam@96019cfafcfc099ac9866884d7143a9ed1451a0d/settings/TUM1.yaml",
+      "sha256": "5bd0ec559a251ac402756be7db0bd367bb364fe6a9d85e0770cd0681003602cf",
+      "fx": 517.306408,
+      "fy": 516.469215,
+      "cx": 318.64304,
+      "cy": 255.313989,
+      "depth_units_per_metre": 5000,
+      "independently_measured": false
+    }
+  },
+  "inspected_repositories": [
+    {
+      "repository": "haohaoalt/hao_datasets",
+      "revision": "b42b5c23d4d3434536af17692404380da31e9a5b",
+      "tree_entries": 80,
+      "result": "No original depth/RGB index + complete GT + actual distinct image inventory located in this Git tree.",
+      "commit_metadata_url": "https://api.github.com/repos/haohaoalt/hao_datasets/commits/HEAD",
+      "pinned_tree_url": "https://api.github.com/repos/haohaoalt/hao_datasets/git/trees/b42b5c23d4d3434536af17692404380da31e9a5b?recursive=1",
+      "saved_tree_sha256": "7ebdec66d8812b1d852e0368d3d6a087c2cb969a47af25f7c0ec2fe2378d081c",
+      "saved_tree_bytes": 23979,
+      "git_tree_truncated": false
+    },
+    {
+      "repository": "ArthurZakirov/Visual-SLAM-Paper-Implementation",
+      "revision": "e87876a1b3051aaca36441834c19b8586a02577d",
+      "tree_entries": 23,
+      "result": "No original depth/RGB index + complete GT + actual distinct image inventory located in this Git tree.",
+      "commit_metadata_url": "https://api.github.com/repos/ArthurZakirov/Visual-SLAM-Paper-Implementation/commits/HEAD",
+      "pinned_tree_url": "https://api.github.com/repos/ArthurZakirov/Visual-SLAM-Paper-Implementation/git/trees/e87876a1b3051aaca36441834c19b8586a02577d?recursive=1",
+      "saved_tree_sha256": "d4165aff86797ea30f9e46d265eaa604094903ecf2bdddc5328e2e3cab6fa759",
+      "saved_tree_bytes": 7273,
+      "git_tree_truncated": false
+    },
+    {
+      "repository": "oyejam/robust-visual-localization",
+      "revision": "b8359ce43729faf4b4252e14a72fb080c6c03f71",
+      "tree_entries": 16,
+      "result": "No original depth/RGB index + complete GT + actual distinct image inventory located in this Git tree.",
+      "commit_metadata_url": "https://api.github.com/repos/oyejam/robust-visual-localization/commits/HEAD",
+      "pinned_tree_url": "https://api.github.com/repos/oyejam/robust-visual-localization/git/trees/b8359ce43729faf4b4252e14a72fb080c6c03f71?recursive=1",
+      "saved_tree_sha256": "2ad34071d580175ae2c94812ec59ecd862c2074931dbf41520bb9c85c8fc03d9",
+      "saved_tree_bytes": 5094,
+      "git_tree_truncated": false
+    },
+    {
+      "repository": "taiyakijz/slam-project",
+      "revision": "7337d35da1aa6a75ddc93dfbcc3a211b683d405a",
+      "tree_entries": 160,
+      "result": "Distinct-recording depth/RGB/GT metadata tables present, but original image files absent.",
+      "commit_metadata_url": "https://api.github.com/repos/taiyakijz/slam-project/commits/HEAD",
+      "pinned_tree_url": "https://api.github.com/repos/taiyakijz/slam-project/git/trees/7337d35da1aa6a75ddc93dfbcc3a211b683d405a?recursive=1",
+      "saved_tree_sha256": "2de8e31921e74c0382d52d9b963e21273084d15eedfb16a7f81de94bf4f8ab07",
+      "saved_tree_bytes": 50037,
+      "git_tree_truncated": false
+    },
+    {
+      "repository": "TianQi-777/DensePointCloudVisualization_Pangolin",
+      "revision": "538d7ee078044842b63a68341d37d7981571677f",
+      "tree_entries": 8,
+      "result": "No original depth/RGB index + complete GT + actual distinct image inventory located in this Git tree.",
+      "commit_metadata_url": "https://api.github.com/repos/TianQi-777/DensePointCloudVisualization_Pangolin/commits/HEAD",
+      "pinned_tree_url": "https://api.github.com/repos/TianQi-777/DensePointCloudVisualization_Pangolin/git/trees/538d7ee078044842b63a68341d37d7981571677f?recursive=1",
+      "saved_tree_sha256": "8a75f4c24e9f65c092a0246fa8d605ec6b7292730de99dcb12e5ada7561f5a79",
+      "saved_tree_bytes": 2702,
+      "git_tree_truncated": false
+    },
+    {
+      "repository": "ISUE/relocforests",
+      "revision": "1515c55e069aae82bca52076232b5b0df660886b",
+      "tree_entries": 18,
+      "result": "No original depth/RGB index + complete GT + actual distinct image inventory located in this Git tree.",
+      "commit_metadata_url": "https://api.github.com/repos/ISUE/relocforests/commits/HEAD",
+      "pinned_tree_url": "https://api.github.com/repos/ISUE/relocforests/git/trees/1515c55e069aae82bca52076232b5b0df660886b?recursive=1",
+      "saved_tree_sha256": "cd0934253ac6123df43e18a485fe638141614f33227d8ca5dd2c06c59b0ffd38",
+      "saved_tree_bytes": 5237,
+      "git_tree_truncated": false
+    },
+    {
+      "repository": "amir-vaheb/indoor-slam-gaussian-splatting",
+      "revision": "f214fe871e76031df3313ca879ae38a451defb9b",
+      "tree_entries": 41,
+      "result": "No original depth/RGB index + complete GT + actual distinct image inventory located in this Git tree.",
+      "commit_metadata_url": "https://api.github.com/repos/amir-vaheb/indoor-slam-gaussian-splatting/commits/HEAD",
+      "pinned_tree_url": "https://api.github.com/repos/amir-vaheb/indoor-slam-gaussian-splatting/git/trees/f214fe871e76031df3313ca879ae38a451defb9b?recursive=1",
+      "saved_tree_sha256": "93192abbaf838620623f546feebc68f2dd4952a0e32a0188aa32bbbb1a70be5e",
+      "saved_tree_bytes": 12856,
+      "git_tree_truncated": false
+    },
+    {
+      "repository": "zhehan-yang/graduation_project_TYUT",
+      "revision": "79406becede66672411823fdcf3ac2bed36ccf21",
+      "tree_entries": 70,
+      "result": "No original depth/RGB index + complete GT + actual distinct image inventory located in this Git tree.",
+      "commit_metadata_url": "https://api.github.com/repos/zhehan-yang/graduation_project_TYUT/commits/HEAD",
+      "pinned_tree_url": "https://api.github.com/repos/zhehan-yang/graduation_project_TYUT/git/trees/79406becede66672411823fdcf3ac2bed36ccf21?recursive=1",
+      "saved_tree_sha256": "89af699318df2b4f7c7009e2fd7576ac6ee66807321af0c130163476f69788f5",
+      "saved_tree_bytes": 21243,
+      "git_tree_truncated": false
+    },
+    {
+      "repository": "markday275/Visual_odometry",
+      "revision": "0cfc1190acaf8af3a25edaadc6ffd8f11c3fdb45",
+      "tree_entries": 6,
+      "result": "No original depth/RGB index + complete GT + actual distinct image inventory located in this Git tree.",
+      "commit_metadata_url": "https://api.github.com/repos/markday275/Visual_odometry/commits/HEAD",
+      "pinned_tree_url": "https://api.github.com/repos/markday275/Visual_odometry/git/trees/0cfc1190acaf8af3a25edaadc6ffd8f11c3fdb45?recursive=1",
+      "saved_tree_sha256": "be01cb7a67b8f5dcfa1d5aaae5f603073c381cceab5986a36e564f961f5ddf18",
+      "saved_tree_bytes": 1971,
+      "git_tree_truncated": false
+    },
+    {
+      "repository": "doclorenzo/SLAM-Project",
+      "revision": "729e8e35c27e9cfcd86ecefa294fca86aa59e576",
+      "tree_entries": 224,
+      "result": "No original depth/RGB index + complete GT + actual distinct image inventory located in this Git tree.",
+      "commit_metadata_url": "https://api.github.com/repos/doclorenzo/SLAM-Project/commits/HEAD",
+      "pinned_tree_url": "https://api.github.com/repos/doclorenzo/SLAM-Project/git/trees/729e8e35c27e9cfcd86ecefa294fca86aa59e576?recursive=1",
+      "saved_tree_sha256": "9cd69150fef2fa1cb739185caf81f4bbe441315b95726f9b6571e8ad7660b079",
+      "saved_tree_bytes": 70187,
+      "git_tree_truncated": false
+    },
+    {
+      "repository": "Tirado/SLAM-Project",
+      "revision": "df70a8dd0d9e2a3656ac0daa3f6f41935fcc4937",
+      "tree_entries": 1,
+      "result": "No original depth/RGB index + complete GT + actual distinct image inventory located in this Git tree.",
+      "commit_metadata_url": "https://api.github.com/repos/Tirado/SLAM-Project/commits/HEAD",
+      "pinned_tree_url": "https://api.github.com/repos/Tirado/SLAM-Project/git/trees/df70a8dd0d9e2a3656ac0daa3f6f41935fcc4937?recursive=1",
+      "saved_tree_sha256": "e3abfb0f93ca3aa55b63e70c2e6f75ba0463357878288b02825f7775d4c843e9",
+      "saved_tree_bytes": 482,
+      "git_tree_truncated": false
+    },
+    {
+      "repository": "jacobpotyraj/slam-project",
+      "revision": "aa963195cd27c2d9fe68e4701e76a75c02b38621",
+      "tree_entries": 8,
+      "result": "No original depth/RGB index + complete GT + actual distinct image inventory located in this Git tree.",
+      "commit_metadata_url": "https://api.github.com/repos/jacobpotyraj/slam-project/commits/HEAD",
+      "pinned_tree_url": "https://api.github.com/repos/jacobpotyraj/slam-project/git/trees/aa963195cd27c2d9fe68e4701e76a75c02b38621?recursive=1",
+      "saved_tree_sha256": "395fc01aee38f91496462ea7dbffea1bbe3babd35c5a850b679cadfc14629efa",
+      "saved_tree_bytes": 2472,
+      "git_tree_truncated": false
+    },
+    {
+      "repository": "yuvaliloo/SLAM-Project",
+      "revision": "060321b57c40a4651f3a084a7e4687d63b836da9",
+      "tree_entries": 4090,
+      "result": "Contains room images and GT blob identical to already viewed FR1 room; not a distinct recording.",
+      "commit_metadata_url": "https://api.github.com/repos/yuvaliloo/SLAM-Project/commits/HEAD",
+      "pinned_tree_url": "https://api.github.com/repos/yuvaliloo/SLAM-Project/git/trees/060321b57c40a4651f3a084a7e4687d63b836da9?recursive=1",
+      "saved_tree_sha256": "1a905bb399c614ee7cb4056c0493a2c0fdfd5f9de4308fa3320494998ba0e369",
+      "saved_tree_bytes": 1288312,
+      "git_tree_truncated": false
+    },
+    {
+      "repository": "jaeeew/SLAM-project",
+      "revision": "6ffe93670ffeaf61e89a5f781e74d7c569e5facf",
+      "tree_entries": 6,
+      "result": "No original depth/RGB index + complete GT + actual distinct image inventory located in this Git tree.",
+      "commit_metadata_url": "https://api.github.com/repos/jaeeew/SLAM-project/commits/HEAD",
+      "pinned_tree_url": "https://api.github.com/repos/jaeeew/SLAM-project/git/trees/6ffe93670ffeaf61e89a5f781e74d7c569e5facf?recursive=1",
+      "saved_tree_sha256": "8bb14ecb87e234d6ffce8449da33db09483c6be313e18d4bc6ee7652c7afc056",
+      "saved_tree_bytes": 2001,
+      "git_tree_truncated": false
+    },
+    {
+      "repository": "howardyeh/SLAM-project",
+      "revision": "64db0f9c739dff30a4eeff5ec03462cc735401d2",
+      "tree_entries": 16,
+      "result": "No original depth/RGB index + complete GT + actual distinct image inventory located in this Git tree.",
+      "commit_metadata_url": "https://api.github.com/repos/howardyeh/SLAM-project/commits/HEAD",
+      "pinned_tree_url": "https://api.github.com/repos/howardyeh/SLAM-project/git/trees/64db0f9c739dff30a4eeff5ec03462cc735401d2?recursive=1",
+      "saved_tree_sha256": "a79b00c9a3bd3c286aa3f8433c5077bfc63eb0fe82c3d2ee9113f5f0283c07eb",
+      "saved_tree_bytes": 4745,
+      "git_tree_truncated": false
+    },
+    {
+      "repository": "WoollyAttorney/PointCloudGeneration",
+      "revision": "e742680fc1c65090b6e4dfe5bd5bfc6989039b1f",
+      "tree_entries": 7,
+      "result": "Freiburg 1 floor described; only source and rendered/point-cloud outputs, no original RGB/depth indexes or image inventory.",
+      "commit_metadata_url": "https://api.github.com/repos/WoollyAttorney/PointCloudGeneration/commits/HEAD",
+      "pinned_tree_url": "https://api.github.com/repos/WoollyAttorney/PointCloudGeneration/git/trees/e742680fc1c65090b6e4dfe5bd5bfc6989039b1f?recursive=1",
+      "saved_tree_sha256": "ea0b7ff5ebe9a921be83d7be6ae9281892e7d95e8b3f2fa940876512af6bb018",
+      "saved_tree_bytes": 2293,
+      "git_tree_truncated": false
+    }
+  ],
+  "other_failures": [
+    {
+      "repository": "WoollyAttorney/PointCloudGeneration",
+      "revision": "e742680fc1c65090b6e4dfe5bd5bfc6989039b1f",
+      "result": "Freiburg1 floor described, but tree has only source and rendered/point-cloud outputs, no source indexes or original images."
+    },
+    {
+      "repository": "lmaddira/SLAM-project",
+      "revision": "880928a6860a76ba452e4ef3ea1cacff65af15c1",
+      "recording": "FR3 walking_rpy",
+      "result": "Earlier metadata-only 100..135 audit max RGB gap exceeds .02s; this known failure retained, no replacement window selected."
+    }
+  ],
+  "network": {
+    "runtime_observations_current": true,
+    "runtime_http_policy_state": "unknown; readiness not assumed",
+    "public_html_search": "accessible through inherited proxy/TLS",
+    "public_commit_and_tree_api": "accessible",
+    "repository_search_api": "HTTP502 observed",
+    "official_original_tum_dataset_page": "Current one-shot checks of dataset and download pages fail at the configured proxy CONNECT tunnel with HTTP403; curl56, origin HTTP code000. No origin response received.",
+    "bypass_attempted": false,
+    "repository_search_api_checked_url": "https://api.github.com/search/repositories?q=TUM+RGBD+dataset&sort=stars&order=desc&per_page=15",
+    "official_organization_metadata_checked_url": "https://api.github.com/orgs/tum-vision/repos?per_page=100&type=public"
+  },
+  "license": {
+    "authoritative_original_dataset_terms_verified": false,
+    "official_tum_vision_public_repository_list_accessible": true,
+    "official_dataset_license_document_located": false,
+    "third_party_code_licenses_do_not_grant_dataset_rights": true,
+    "raw_images_redistributed": false,
+    "official_terms_current_access_blocker": "Configured proxy denied CONNECT to cvg.cit.tum.de with HTTP403, rather than a verified origin-server rejection. No authoritative license text was retrieved."
+  },
+  "images_downloaded": false,
+  "image_headers_or_pixels_inspected": false,
+  "gt_pose_numeric_values_parsed": false,
+  "tracked_files_modified": false,
+  "updated_utc": "2026-10-10T06:48:42.950190+00:00",
+  "checked_official_terms_urls": [
+    {
+      "url": "https://cvg.cit.tum.de/data/datasets/rgbd-dataset",
+      "checked_utc": "2026-10-10T06:48:42.950190+00:00",
+      "curl_exit_status": 56,
+      "curl_http_code": "000",
+      "proxy_connect_http_status": 403,
+      "origin_http_response_received": false,
+      "error": "CONNECT tunnel failed, response 403",
+      "attempt_count": 1,
+      "redirects_or_alternate_routes_attempted": false,
+      "response_body_saved": false
+    },
+    {
+      "url": "https://cvg.cit.tum.de/data/datasets/rgbd-dataset/download",
+      "checked_utc": "2026-10-10T06:48:42.950190+00:00",
+      "curl_exit_status": 56,
+      "curl_http_code": "000",
+      "proxy_connect_http_status": 403,
+      "origin_http_response_received": false,
+      "error": "CONNECT tunnel failed, response 403",
+      "attempt_count": 1,
+      "redirects_or_alternate_routes_attempted": false,
+      "response_body_saved": false
+    }
+  ],
+  "source_needed_for_next_phase": [
+    "Supported policy access to original TUM dataset/download terms and an original distinct sequence with bounded extraction, or a separately licensed complete RGB-D mirror.",
+    "Exact immutable source commit/archive identity and original RGB/depth timestamp tables, complete motion-capture ground-truth file, original image inventories and published physical-camera calibration provenance.",
+    "Parent source/window preregistration for fixed original depth indices100\u2013279 before reading new metadata tables; exact .02s associations and reference brackets plus full finite increasing timestamp/row-arity checks, no accuracy-based window replacement.",
+    "Opaque byte inventory <=128MiB total and <=4MiB/file with hashes before final algorithm/checker archive; no pixels/pose values used for selection."
+  ],
+  "qualification_limit": "Availability is tree-level only. No new candidate timestamp table contents or numerical GT poses were read; full timestamp/arity, pair gates, actual selected byte budget and image encoding remain unqualified.",
+  "no_global_unavailability_claim": true,
+  "source_discovery_scope": "Source-discovery task restricted to metadata-only; no pixel acquisition performed. User development authorization persists; inspected distinct raw inventories and authoritative original terms were unavailable in this bounded search, not blocked by missing user permission.",
+  "ignored_full_discovery_report_sha256": "9108e0ec54425d25979f9dd20f8b1f0c1914b0f28cfd764408a7fb4ceb1da6c5"
+}

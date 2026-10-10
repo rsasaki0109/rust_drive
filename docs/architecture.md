@@ -268,3 +268,15 @@ rigid/refinement algorithms, clocks and gates. The Python oracle reconstructs
 the candidate domains independently from pixels. This viewed variant adds one
 fit but worsens root accuracy and still loses tracking; it does not replace the
 original path. [Comparison](depth-supported-matching.md).
+
+
+The additive `rustdriving-rgbd-tracked` adapter follows measured grayscale patches
+with an original bounded, bidirectional three-level Lucas–Kanade implementation.
+It retains a last accepted measured image/depth/root and reseeds FAST only when
+that reference is replaced. Tracked subpixel endpoints have separate identities;
+no BRIEF descriptors or persistent landmarks are fabricated. Original depth,
+consensus, refinement and expiry gates remain. Synthetic tests expose accepted
+wrong matches on repeated textures and substantial rotational errors;
+bidirectional consistency is not a uniqueness guarantee. This remains an
+offline viewed regression with no calibrated uncertainty or driving fusion.
+[Design, full evidence and limits](pyramidal-recorded-tracking.md).

@@ -1,0 +1,437 @@
+{
+  "schema_version": 1,
+  "evaluation_kind": "synthetic_diagnostic",
+  "helper_sha256": "2118ecdd95e7788dc1937a0937209dab4f4f9f7d9b5fc0c28aaa3f2134b3ce8e",
+  "exercise_source_sha256": "43f09a1738deb76da5cec6a272402e947ebc8fb76a1e8dbc19b93e6685756372",
+  "full_report_sha256": "bcb8602c30aa1e2f9986943a5521c4c8f9d8de564622f51caaab64ca03291434",
+  "full_report_bytes": 1118842,
+  "full_report_reproduction": "source scripts/env.sh; rustc --edition 2024 -O scripts/exercise-pyramidal-tracking.rs -o artifacts/exercise-pyramidal-tracking; artifacts/exercise-pyramidal-tracking > artifacts/pyramidal-tracking-synthetic-exercises.json",
+  "actual_recorded_data_read": false,
+  "cases": [
+    {
+      "case": "translation_control",
+      "input_points": 63,
+      "accepted": 63,
+      "accepted_error_mean": 0.043261403641,
+      "accepted_error_max": 0.169602968702,
+      "rejections": {},
+      "iterations": 864,
+      "bilinear_samples": 253692,
+      "forward_backward_rejection_witnesses": []
+    },
+    {
+      "case": "exposure_gain_1_15",
+      "input_points": 63,
+      "accepted": 63,
+      "accepted_error_mean": 0.331357556768,
+      "accepted_error_max": 0.895636211335,
+      "rejections": {},
+      "iterations": 1218,
+      "bilinear_samples": 282366,
+      "forward_backward_rejection_witnesses": []
+    },
+    {
+      "case": "exposure_gain_1_35",
+      "input_points": 63,
+      "accepted": 41,
+      "accepted_error_mean": 0.451705450509,
+      "accepted_error_max": 0.986336643971,
+      "rejections": {
+        "NonConvergence": 18,
+        "Photometric": 4
+      },
+      "iterations": 1797,
+      "bilinear_samples": 305451,
+      "forward_backward_rejection_witnesses": []
+    },
+    {
+      "case": "exposure_gain_1_8",
+      "input_points": 63,
+      "accepted": 0,
+      "accepted_error_mean": null,
+      "accepted_error_max": null,
+      "rejections": {
+        "NonConvergence": 63
+      },
+      "iterations": 630,
+      "bilinear_samples": 76545,
+      "forward_backward_rejection_witnesses": []
+    },
+    {
+      "case": "rotation_0_02_rad",
+      "input_points": 63,
+      "accepted": 63,
+      "accepted_error_mean": 0.089343660543,
+      "accepted_error_max": 0.253860191097,
+      "rejections": {},
+      "iterations": 1029,
+      "bilinear_samples": 267057,
+      "forward_backward_rejection_witnesses": []
+    },
+    {
+      "case": "rotation_0_10_rad",
+      "input_points": 63,
+      "accepted": 27,
+      "accepted_error_mean": 8.902257202798,
+      "accepted_error_max": 26.289671609031,
+      "rejections": {
+        "ForwardBackward": 1,
+        "NonConvergence": 6,
+        "Photometric": 29
+      },
+      "iterations": 1178,
+      "bilinear_samples": 213030,
+      "forward_backward_rejection_witnesses": [
+        {
+          "point_index": 47,
+          "start": [
+            190,
+            370
+          ],
+          "accepted": false,
+          "rejection": "ForwardBackward",
+          "forward": [
+            198.516411181512,
+            371.451249583698
+          ],
+          "backward": [
+            188.964747454023,
+            371.003567749236
+          ],
+          "forward_backward_error": 1.441837737492,
+          "expected": [
+            177.671114349769,
+            356.372197322056
+          ],
+          "forward_error": 25.72749923939,
+          "forward_levels": [
+            {
+              "level": 2,
+              "start": [
+                47.5,
+                92.5
+              ],
+              "endpoint": [
+                50.183610770491,
+                92.93091543822
+              ],
+              "iterations": 5,
+              "bilinear_samples": 891,
+              "min_eigenvalue": 277.53381436142536,
+              "condition_number": 1.4606632144021232,
+              "photometric_rms": 11.149937876211,
+              "converged": true,
+              "rejection": null
+            },
+            {
+              "level": 1,
+              "start": [
+                100.367221540982,
+                185.861830876441
+              ],
+              "endpoint": [
+                99.674818892904,
+                185.658646394992
+              ],
+              "iterations": 4,
+              "bilinear_samples": 810,
+              "min_eigenvalue": 97.80659026339865,
+              "condition_number": 5.256955657069168,
+              "photometric_rms": 13.063502779628,
+              "converged": true,
+              "rejection": null
+            },
+            {
+              "level": 0,
+              "start": [
+                199.349637785808,
+                371.317292789984
+              ],
+              "endpoint": [
+                198.516411181512,
+                371.451249583698
+              ],
+              "iterations": 4,
+              "bilinear_samples": 810,
+              "min_eigenvalue": 6.1090647602559045,
+              "condition_number": 15.378772993502421,
+              "photometric_rms": 8.035021976763,
+              "converged": true,
+              "rejection": null
+            }
+          ],
+          "backward_levels": [
+            {
+              "level": 2,
+              "start": [
+                49.629102795378,
+                92.862812395924
+              ],
+              "endpoint": [
+                46.93420997588,
+                92.51482904637
+              ],
+              "iterations": 6,
+              "bilinear_samples": 972,
+              "min_eigenvalue": 329.55940345976325,
+              "condition_number": 1.442464294078131,
+              "photometric_rms": 11.706636983008,
+              "converged": true,
+              "rejection": null
+            },
+            {
+              "level": 1,
+              "start": [
+                93.86841995176,
+                185.02965809274
+              ],
+              "endpoint": [
+                94.473685914263,
+                185.184990068521
+              ],
+              "iterations": 4,
+              "bilinear_samples": 810,
+              "min_eigenvalue": 97.46337034803477,
+              "condition_number": 4.425396337689558,
+              "photometric_rms": 11.518472372237,
+              "converged": true,
+              "rejection": null
+            },
+            {
+              "level": 0,
+              "start": [
+                188.947371828525,
+                370.369980137042
+              ],
+              "endpoint": [
+                188.964747454023,
+                371.003567749236
+              ],
+              "iterations": 4,
+              "bilinear_samples": 810,
+              "min_eigenvalue": 4.600137167793839,
+              "condition_number": 16.791414019271507,
+              "photometric_rms": 7.885684189908,
+              "converged": true,
+              "rejection": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case": "rotation_0_30_rad",
+      "input_points": 63,
+      "accepted": 0,
+      "accepted_error_mean": null,
+      "accepted_error_max": null,
+      "rejections": {
+        "NonConvergence": 13,
+        "Photometric": 50
+      },
+      "iterations": 476,
+      "bilinear_samples": 68121,
+      "forward_backward_rejection_witnesses": []
+    },
+    {
+      "case": "repeated_texture_exact_32_pixel_translation",
+      "input_points": 63,
+      "accepted": 63,
+      "accepted_error_mean": 32.0,
+      "accepted_error_max": 32.0,
+      "rejections": {},
+      "iterations": 378,
+      "bilinear_samples": 214326,
+      "forward_backward_rejection_witnesses": []
+    },
+    {
+      "case": "nonrigid_warp_amplitude_3",
+      "input_points": 63,
+      "accepted": 60,
+      "accepted_error_mean": null,
+      "accepted_error_max": null,
+      "rejections": {
+        "LowTexture": 3
+      },
+      "iterations": 1136,
+      "bilinear_samples": 275481,
+      "forward_backward_rejection_witnesses": []
+    },
+    {
+      "case": "nonrigid_warp_amplitude_6",
+      "input_points": 63,
+      "accepted": 53,
+      "accepted_error_mean": null,
+      "accepted_error_max": null,
+      "rejections": {
+        "ForwardBackward": 1,
+        "LowTexture": 5,
+        "Photometric": 4
+      },
+      "iterations": 1364,
+      "bilinear_samples": 284553,
+      "forward_backward_rejection_witnesses": [
+        {
+          "point_index": 43,
+          "start": [
+            490,
+            310
+          ],
+          "accepted": false,
+          "rejection": "ForwardBackward",
+          "forward": [
+            486.651902310825,
+            306.827433389055
+          ],
+          "backward": [
+            488.777770826552,
+            311.412018699265
+          ],
+          "forward_backward_error": 1.867522679782,
+          "expected": null,
+          "forward_error": null,
+          "forward_levels": [
+            {
+              "level": 2,
+              "start": [
+                122.5,
+                77.5
+              ],
+              "endpoint": [
+                121.903356686875,
+                76.48179539199
+              ],
+              "iterations": 4,
+              "bilinear_samples": 810,
+              "min_eigenvalue": 276.6257198400435,
+              "condition_number": 1.4803572882847476,
+              "photometric_rms": 12.574503605724,
+              "converged": true,
+              "rejection": null
+            },
+            {
+              "level": 1,
+              "start": [
+                243.80671337375,
+                152.963590783979
+              ],
+              "endpoint": [
+                243.576255334224,
+                153.072472041635
+              ],
+              "iterations": 3,
+              "bilinear_samples": 729,
+              "min_eigenvalue": 104.75981137741923,
+              "condition_number": 4.21927833819573,
+              "photometric_rms": 11.23308042934,
+              "converged": true,
+              "rejection": null
+            },
+            {
+              "level": 0,
+              "start": [
+                487.152510668448,
+                306.14494408327
+              ],
+              "endpoint": [
+                486.651902310825,
+                306.827433389055
+              ],
+              "iterations": 6,
+              "bilinear_samples": 972,
+              "min_eigenvalue": 6.547314258514589,
+              "condition_number": 20.30224446894012,
+              "photometric_rms": 5.9380261193,
+              "converged": true,
+              "rejection": null
+            }
+          ],
+          "backward_levels": [
+            {
+              "level": 2,
+              "start": [
+                121.662975577706,
+                76.706858347264
+              ],
+              "endpoint": [
+                122.359284483206,
+                77.700990024717
+              ],
+              "iterations": 5,
+              "bilinear_samples": 891,
+              "min_eigenvalue": 308.409784252684,
+              "condition_number": 1.4608898037663633,
+              "photometric_rms": 12.058403160057,
+              "converged": true,
+              "rejection": null
+            },
+            {
+              "level": 1,
+              "start": [
+                244.718568966412,
+                155.401980049433
+              ],
+              "endpoint": [
+                244.56750378892,
+                155.553370218068
+              ],
+              "iterations": 3,
+              "bilinear_samples": 729,
+              "min_eigenvalue": 91.3825107134569,
+              "condition_number": 4.183156550020462,
+              "photometric_rms": 10.640555851672,
+              "converged": true,
+              "rejection": null
+            },
+            {
+              "level": 0,
+              "start": [
+                489.135007577839,
+                311.106740436137
+              ],
+              "endpoint": [
+                488.777770826552,
+                311.412018699265
+              ],
+              "iterations": 5,
+              "bilinear_samples": 891,
+              "min_eigenvalue": 5.039078532652034,
+              "condition_number": 25.773955946396534,
+              "photometric_rms": 5.808581830334,
+              "converged": true,
+              "rejection": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case": "nonrigid_warp_amplitude_9",
+      "input_points": 63,
+      "accepted": 24,
+      "accepted_error_mean": null,
+      "accepted_error_max": null,
+      "rejections": {
+        "LowTexture": 2,
+        "Photometric": 37
+      },
+      "iterations": 914,
+      "bilinear_samples": 169128,
+      "forward_backward_rejection_witnesses": []
+    },
+    {
+      "case": "nonrigid_warp_amplitude_12",
+      "input_points": 63,
+      "accepted": 1,
+      "accepted_error_mean": null,
+      "accepted_error_max": null,
+      "rejections": {
+        "NonConvergence": 8,
+        "Photometric": 54
+      },
+      "iterations": 603,
+      "bilinear_samples": 85131,
+      "forward_backward_rejection_witnesses": []
+    }
+  ]
+}

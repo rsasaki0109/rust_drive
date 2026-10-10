@@ -128,3 +128,10 @@ restores one extra fit in the viewed window, but lowers root accuracy from
 52/179 to 49/179 and still loses tracking. It is not promoted to the original
 path. Descriptor stability and accumulated rotation error remain priorities;
 any recovery method must retain an independently evaluated continuous root.
+
+The [pairwise pyramidal tracking comparison](pyramidal-recorded-tracking.md)
+regresses to 6/179 accepted and accurate updates, losing tracking at 112.
+Coarsest-level nonconvergence and insufficient coherent depth support dominate
+this failure. The method remains opt-in. Better sensor-only image alignment and
+independently evaluated recovery are needed; synthetic translation success and
+forward/backward agreement do not establish correspondence uniqueness.

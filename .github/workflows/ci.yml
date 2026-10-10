@@ -164,6 +164,12 @@ jobs:
           python scripts/check-recorded-temporal-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-temporal --output artifacts/recorded-temporal
       - name: Reproduce viewed depth-supported matching and preserve its physical outcome
         run: python scripts/check-recorded-supported-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-supported --output artifacts/recorded-supported
+      - name: Exercise bounded patch tracking and retain synthetic ambiguity failures
+        run: |
+          rustc --edition 2024 -O scripts/exercise-pyramidal-tracking.rs -o artifacts/exercise-pyramidal-tracking
+          artifacts/exercise-pyramidal-tracking > artifacts/pyramidal-tracking-synthetic-exercises.json
+      - name: Reproduce viewed pyramidal image tracking with all179 outcomes retained
+        run: python scripts/check-recorded-tracked-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-tracked --output artifacts/recorded-tracked
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -183,6 +189,8 @@ jobs:
             artifacts/recorded-qualified/
             artifacts/recorded-temporal/
             artifacts/recorded-supported/
+            artifacts/recorded-tracked/
+            artifacts/pyramidal-tracking-synthetic-exercises.json
 
   visual:
     runs-on: ubuntu-latest
