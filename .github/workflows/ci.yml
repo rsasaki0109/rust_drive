@@ -118,7 +118,7 @@ jobs:
           python -m pip install -r scripts/requirements-demo.txt
           cargo fmt --manifest-path integrations/rgbd/Cargo.toml --check
           cargo clippy --release --manifest-path integrations/rgbd/Cargo.toml --all-targets --locked -- -D warnings
-          cargo test --release --manifest-path integrations/rgbd/Cargo.toml --locked
+          RUSTDRIVING_INDEPENDENT_SYNTHETIC_OUTPUT="$GITHUB_WORKSPACE/artifacts/recorded-independent/rust-fixture" cargo test --release --manifest-path integrations/rgbd/Cargo.toml --locked
           cargo build --release --manifest-path integrations/rgbd/Cargo.toml --locked
           python scripts/check-recorded-rgbd.py --report integrations/rgbd/baselines/tum-first-v1.json --cargo-lock integrations/rgbd/baselines/Cargo-v1.lock --manifest integrations/rgbd/baselines/manifest-v1.json --raw data/tum-fr1-xyz/raw --evaluator-source integrations/rgbd/baselines/evaluator-v1.rs --matcher-source integrations/rgbd/baselines/matcher-v1.rs --freeze integrations/rgbd/baselines/tum-first-v1.freeze.json --output artifacts/rgbd/original-oracle.json
           python scripts/check-recorded-rgbd.py --report integrations/rgbd/baselines/tum-fast-v1.json --cargo-lock integrations/rgbd/baselines/Cargo-v1.lock --manifest integrations/rgbd/baselines/manifest-fast-v1.json --raw data/tum-fr1-xyz-fast/raw --evaluator-source integrations/rgbd/baselines/evaluator-v2.rs --matcher-source integrations/rgbd/baselines/matcher-v1.rs --freeze integrations/rgbd/baselines/freeze-fast-v1.json --output artifacts/rgbd/fast-failure-oracle.json
@@ -170,6 +170,10 @@ jobs:
           artifacts/exercise-pyramidal-tracking > artifacts/pyramidal-tracking-synthetic-exercises.json
       - name: Reproduce viewed pyramidal image tracking with all179 outcomes retained
         run: python scripts/check-recorded-tracked-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-tracked --output artifacts/recorded-tracked
+      - name: Validate bounded official-archive acquisition and independent recording controls
+        run: |
+          python scripts/test-independent-dataset.py
+          python scripts/check-recorded-independent.py --self-test --synthetic-packet artifacts/recorded-independent/rust-fixture/fixture.json --output artifacts/recorded-independent/self-test.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -190,6 +194,7 @@ jobs:
             artifacts/recorded-temporal/
             artifacts/recorded-supported/
             artifacts/recorded-tracked/
+            artifacts/recorded-independent/
             artifacts/pyramidal-tracking-synthetic-exercises.json
 
   visual:

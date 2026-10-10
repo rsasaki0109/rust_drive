@@ -1,0 +1,212 @@
+{
+  "schema_version": 1,
+  "kind": "independent_protocol_development_validation_not_recorded_result",
+  "created_utc": "2026-10-10T08:52:01.639785+00:00",
+  "baseline_commit": "1b36f83cf311750e5db2b301c4b432e48239b5d7",
+  "official_archive_acquired": false,
+  "official_manifest_qualified": false,
+  "official_pre_pixel_freeze_created": false,
+  "official_images_decoded": false,
+  "official_ground_truth_pose_values_parsed": false,
+  "official_recording_criterion_passed": null,
+  "source_blocker": "Official archive redirects to webshare.cvg.cit.tum.de; observed proxy CONNECT403. Narrow environment draft saved, not yet published/applied.",
+  "source_binding": {
+    "code_source_count": 21,
+    "sources": {
+      "evaluator_source_sha256": {
+        "path": "integrations/rgbd/src/bin/rustdriving-rgbd-independent.rs",
+        "sha256": "a1896bf9a7522632cd52a10ebb49a9b9bb679727912c4429672ec37f7a621a52"
+      },
+      "independent_source_sha256": {
+        "path": "integrations/rgbd/src/independent.rs",
+        "sha256": "503d798b481fb937ae304649d9a78e01a69f81399d7bb4474acfb7738bacef26"
+      },
+      "temporal_checker_sha256": {
+        "path": "scripts/check-recorded-temporal.py",
+        "sha256": "70cb0837aff6882e1d5d13798e4d7d52b6969c79d7ae49f5d3debc66404e06de"
+      },
+      "reprojection_pose_source_sha256": {
+        "path": "crates/localization/src/reprojection3d.rs",
+        "sha256": "2895e1c3eafefcfacdd156fd51706598521f0344f427f24edf420d159e5da486"
+      },
+      "feature_source_sha256": {
+        "path": "crates/perception/src/image_features.rs",
+        "sha256": "5b5b103d4e798929f753a850387609405cad1a303d49ef8e81433f064e901106"
+      },
+      "visual_pose_source_sha256": {
+        "path": "crates/localization/src/visual_odometry3d.rs",
+        "sha256": "718192d69b02de0a668c54e8469812b7c5f1903ab74de660e1b221e2ec874d24"
+      },
+      "pose_source_sha256": {
+        "path": "crates/localization/src/registration3d.rs",
+        "sha256": "eca9fe887f4a237dd627eb06e2793579ec4fbffd6330d120017572d734c4b715"
+      },
+      "localization_lib_source_sha256": {
+        "path": "crates/localization/src/lib.rs",
+        "sha256": "26e1a082ceedadd0de957714bd11170bf16e732e7948b01530b699214510bdf3"
+      },
+      "perception_lib_source_sha256": {
+        "path": "crates/perception/src/lib.rs",
+        "sha256": "0393a7d84176167bdfa6e242788f1f17555c2ab7abee687c845583b2b5141291"
+      },
+      "core_lib_source_sha256": {
+        "path": "crates/core/src/lib.rs",
+        "sha256": "6cdc9459e0ae8dcccd0fa8d8d468a2adc0eee12aa3cc4bacca1b871a8b4d708e"
+      },
+      "cargo_lock_sha256": {
+        "path": "integrations/rgbd/Cargo.lock",
+        "sha256": "67845fb7e4a53e15e4e3c70bba72142aff666893cf1d0c96c4654cdc16b7197b"
+      },
+      "cargo_manifest_sha256": {
+        "path": "integrations/rgbd/Cargo.toml",
+        "sha256": "5a49c3a2c04951ffbf3e154d28fe1e13d2dda92b410b15ec849bfe33377e0d5f"
+      },
+      "rust_toolchain_sha256": {
+        "path": "rust-toolchain.toml",
+        "sha256": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed"
+      },
+      "independent_checker_sha256": {
+        "path": "scripts/check-recorded-independent.py",
+        "sha256": "0a4696936103eda71824899607d6799c0f529deb036614bbab4053838d2e7af8"
+      },
+      "reprojection_checker_sha256": {
+        "path": "scripts/check-recorded-reprojection.py",
+        "sha256": "fd1425f9c73c21b104d9453a7c2b298c21fa22effd6ecb5f0015bbc41f79cef7"
+      },
+      "visual_checker_sha256": {
+        "path": "scripts/check-recorded-visual.py",
+        "sha256": "c138992bd5fe63a42757ff2cf5b43c7eb69272b85ea6ce7030cd298306bc0d6a"
+      },
+      "geometry_checker_sha256": {
+        "path": "scripts/check-recorded-rgbd.py",
+        "sha256": "ab86ab67c0d46e08b89a0a47d8a59e9c95357cf41c40dbd40b1bcf5b49e6f9dc"
+      },
+      "keyframe_checker_sha256": {
+        "path": "scripts/check-recorded-keyframes.py",
+        "sha256": "3c5ef7c2ad50b9ab015f0c6795aa955489343725d5a274ff1eaae730ecd95c01"
+      },
+      "checker_requirements_sha256": {
+        "path": "scripts/requirements-visual.txt",
+        "sha256": "d8d4e85e0aa1f30325cb3fb9d39834a37e2e0894ecf2153d585e0631ed74d155"
+      },
+      "acquisition_source_sha256": {
+        "path": "scripts/fetch-independent-dataset.py",
+        "sha256": "32f6cd90afcc26d5b88464e490cf139741d5bc7414370d5d37374a9c15ca3308"
+      },
+      "qualification_source_sha256": {
+        "path": "scripts/qualify-rgbd-independent.py",
+        "sha256": "f1fbebaf08d86dd0d271b4c8325d8089ce4b850d27c3800651f640c9696e6f28"
+      }
+    },
+    "preregistration": {
+      "path": "assets/recorded-independent/desk2-v1/design.json",
+      "sha256": "6fa44837d27f6f1f4f69285780ccd5e4883d7b59ace15500699914aca323797a"
+    }
+  },
+  "local_checks": {
+    "cargo_fmt": true,
+    "strict_clippy": true,
+    "locked_release_build": true,
+    "rust_tests": {
+      "workspace": 371,
+      "optional_rgbd": 78
+    },
+    "rust_tests_total": 449,
+    "acquisition_python_tests": 17,
+    "reference_scenario_replay_pairs": 49,
+    "unchanged_generated_files": 245,
+    "workflow_actionlint_version": "1.7.12",
+    "workflow_actionlint_passed": true,
+    "independent_integrity_passed": true,
+    "controls": {
+      "continuous_contract_checks": {
+        "positive": 8,
+        "negative_non_noop": 133
+      },
+      "pixel_feature_contract_checks": {
+        "positive": 3,
+        "negative_non_noop": 4
+      },
+      "archive_contract_checks": {
+        "positive": 5,
+        "negative_non_noop": 23
+      },
+      "source_binding_contract_checks": {
+        "positive": 3,
+        "negative_non_noop": 50
+      },
+      "metadata_contract_checks": {
+        "positive": 4,
+        "negative_non_noop": 10
+      },
+      "mathematical_contract_checks": {
+        "positive": 25,
+        "negative_non_noop": 15
+      },
+      "cache_contract_checks": {
+        "positive": 3,
+        "negative_non_noop": 0
+      },
+      "actual_rust_synthetic_sensor_contract_checks": {
+        "positive": 3,
+        "negative_non_noop": 10
+      },
+      "missing_reference_score": {
+        "positive": 0,
+        "negative_non_noop": 2
+      }
+    },
+    "positive_controls_total": 54,
+    "negative_non_noop_controls_total": 247,
+    "ci_status_at_publication": "not established by these local checks"
+  },
+  "synthetic_sensor_control": {
+    "kind": "cfg_test_synthetic_sensor_fixture",
+    "frames": 180,
+    "updates": 179,
+    "accepted_and_accurate_updates": 179,
+    "origin_resets": 0,
+    "known_motion": "1.5m textured plane, one horizontal pixel per frame",
+    "maximum_root_translation_error_m": 7.771561172376096e-16,
+    "maximum_root_rotation_error_rad": 0.0,
+    "raw_bytes": 68196826,
+    "packet_bytes": 37346705,
+    "packet_sha256": "f698d85e180fd4ef31fbe7d78683a23a98a4844c64beaff25f24188274dabace",
+    "production_source_qualification_exercised": false,
+    "ordinary_official_audit_accepts_this_packet": false,
+    "export_available_only_in_cfg_test": true,
+    "control_proof": {
+      "path": "assets/recorded-independent/desk2-v1/synthetic-controls.json",
+      "sha256": "d0ee1e9f84cb5929c3c0f8c144a9b6214e77e5606fd0f51897fc2b917831abad"
+    }
+  },
+  "preservation": {
+    "existing_tracked_files": 1075,
+    "existing_tracked_files_byte_preserved": 1071,
+    "intentional_existing_file_changes": [
+      ".github/workflows/ci.yml",
+      "README.md",
+      "docs/architecture.md",
+      "integrations/rgbd/README.md"
+    ],
+    "prior_trials_sources_archives_unchanged": true,
+    "hero_gif_unchanged": true,
+    "fresh_native_acceptance_run": false
+  },
+  "limitations": [
+    "Synthetic validation is not a desk2 result or an automotive benchmark.",
+    "Desk2 is a second recording of the same four desks, not an independent room.",
+    "No driving integration, global relocalization, calibrated accumulated uncertainty, or real-vehicle safety claim."
+  ],
+  "maturity": {
+    "subjective_percent": 20,
+    "comparison": [
+      "Autoware",
+      "Apollo",
+      "openpilot"
+    ],
+    "measured_score": false,
+    "broader_30_percent_goal_met": false,
+    "target_50_percent_goal_met": false
+  }
+}
