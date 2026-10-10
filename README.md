@@ -56,6 +56,12 @@ auditor-only test repair and exact replay are preserved. Synthetic controls
 also expose accepted wrong correspondences on repeated textures; this variant
 is not promoted to the original path.
 
+The [independent recording protocol](docs/independent-recorded-motion.md)
+fixes a separate TUM desk2 recording and the original estimator before reading
+new data. Its official archive acquisition and continuous evaluation remain
+pending download access; build and synthetic checks are separate evidence.
+[Authoritative data license and attribution](docs/tum-source-provenance.md).
+
 ## Build and run
 
 The shared pipeline, CPU RNE adapter and recorded 3D demos are available on `main`.

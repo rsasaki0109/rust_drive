@@ -138,3 +138,14 @@ requires `--regression` and remains opt-in: the viewed continuous room result
 regresses to 6/179 accepted and accurate updates. First sources/results, an
 independent-auditor test-selection repair and exact replay are preserved.
 [Design, failures and reproduction](../../docs/pyramidal-recorded-tracking.md).
+
+## Official independent recording
+
+The separate `rustdriving-rgbd-independent` binary retains the original
+descriptor/depth/reprojection estimator for the fixed, previously unevaluated
+Freiburg 1 desk2 recording. Bounded official archive acquisition, timestamp-only
+qualification and a source freeze precede image decoding. All 180 frames run
+with one camera origin; all 179 updates stay in scoring, including failures.
+Actual desk2 evaluation remains pending download access. See
+[protocol and validation status](../../docs/independent-recorded-motion.md) and
+[official source license and attribution](../../docs/tum-source-provenance.md).

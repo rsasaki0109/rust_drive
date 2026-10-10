@@ -280,3 +280,12 @@ wrong matches on repeated textures and substantial rotational errors;
 bidirectional consistency is not a uniqueness guarantee. This remains an
 offline viewed regression with no calibrated uncertainty or driving fusion.
 [Design, full evidence and limits](pyramidal-recorded-tracking.md).
+
+The separate official-source independent-recording adapter reuses the original
+descriptor/depth/reprojection mathematics. A bounded archive inventory and
+complete timestamp qualification precede image decoding; an independent audit
+binds selected source members to the retained compressed archive. The prospective
+desk2 window keeps one camera origin across all 179 updates without recovery.
+Actual recorded-data evaluation remains pending download access. This is offline
+camera-motion research, outside driving controls.
+[Protocol and provenance](independent-recorded-motion.md).
