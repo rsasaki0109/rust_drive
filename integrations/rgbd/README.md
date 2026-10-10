@@ -64,9 +64,28 @@ not redistributed; the public source mirror is not a redistribution license.
 The additional `--motion` mode preserves the original pair evaluator and its
 failure history. It uses actual recorded depth for natural 6DoF pair odometry and
 localizes each scan against the first measured depth cloud, without mocap inputs.
-The separately frozen temporal 260–271 trial accepts11/11 accurate pairs and9/11
-accurate fixed-map fits; two map ambiguities reject. Full protocol exit1 remains
-reported. The first 200–211 trial's exit 2 missing-reference failure and its exact
+The original separately frozen temporal 260–271 trial accepted 11/11 accurate
+pairs and 9/11 accurate fixed-map fits; two map ambiguities rejected, and full
+protocol exit 1 remains reported. This viewed data is now explicitly
+calibration/regression for the keyframe feature. The first 200–211 trial's exit 2 missing-reference failure and its exact
 source/freeze are retained, with a later explicit unscorable-fit regression.
 See [recorded-motion behavior, uncertainty and reproduction](../../docs/recorded-motion.md).
 No SLAM, loop closure, independent-room or automotive localization claim follows.
+
+## Bounded measured keyframe localization
+
+`--keyframes` tracks against a rolling accepted measured cloud and composes
+poses into the first depth-camera frame. It preserves registration guards,
+issues no pose on rejection and latches loss after a 0.20-second gap; recovery
+requires explicit reset. The evaluator never resets and parses mocap only after
+all sensor-only fits. Its original preregistered protocol selected 36 consecutive
+indices 340–375. Current protocol version 6 labels every supplied interval as
+viewed calibration/regression; the original first-trial freeze is retained.
+See [protocol, frame contract and reproduction](../../docs/recorded-keyframes.md).
+The first frozen held-out interval accepted 33/35 updates but only 13/35 met the
+root-frame accuracy gates; the complete trial remains **failed, exit 1**. Two
+ambiguities reject and chained error reaches 0.170314 m / 0.163528 rad. Its
+independent audit preserves this failure and rejects 16 report corruptions.
+Later reruns treat the interval as viewed calibration/regression. Per-fit
+covariance does not describe accumulated root-frame uncertainty. This is not
+map fusion, SLAM or automotive localization.

@@ -1,0 +1,39 @@
+{
+  "case": "gap-loss",
+  "dataset": "tum-fr1-xyz",
+  "evaluation_role": "calibration_regression",
+  "protocol_version": 6,
+  "started_utc": "2026-10-10T00:57:48.120557+00:00",
+  "exit": 1,
+  "frozen_protocol_sha256": "a8e8de003e4e3197f021aeb5f7a3e2db729ff56d707b0c0412a526e173226449",
+  "original_report_sha256": "ea1924d1ad2b5e5651228ef883bcb99bf917a1ddb4e107a9ee95db028128fae5",
+  "current_report_sha256": "427406c3b7eb8fb001843b256a8f28b9bff5edc440265a3c5c11bdb2df637328",
+  "deterministic_fields_identical": true,
+  "excluded_fields": [
+    "freeze",
+    "freeze_sha256",
+    "cpu_wall_seconds"
+  ],
+  "summary": {
+    "accepted_updates": 0,
+    "accurate_root_updates": 0,
+    "all_updates_passed": false,
+    "frames": 12,
+    "initialized_frames": 1,
+    "keyframe_replacements": 0,
+    "reference_valid_updates": 11,
+    "rejected_updates": 11,
+    "updates": 11
+  },
+  "fixed_input_and_numerical_policies_identical": true,
+  "compared_freeze_fields": [
+    "registration_config",
+    "preprocessing",
+    "accuracy_gates",
+    "ground_truth_interpolation",
+    "frames",
+    "motion_preprocessing",
+    "keyframe_policy",
+    "uncertainty"
+  ]
+}

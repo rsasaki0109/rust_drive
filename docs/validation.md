@@ -458,3 +458,43 @@ commands, hashes and bounded outcomes. This update preserves the **about 20%**
 subjective maturity estimate: independent automotive data, measured extrinsics,
 cross-environment localization and statistical uncertainty calibration remain
 open. Remote CI on this update must be assessed separately from local passes.
+
+## Measured keyframe localization (2026-10-10 UTC)
+
+The final workspace passes **337 tests**, formatting, warnings-denied Clippy,
+locked builds and **49 reference scenario/replay pairs**. All **245** historical
+output files remain byte identical. The optional RGB-D executable passes
+**13 tests** and strict checks; six core tests exercise independent transforms,
+reference replacement, rejected-fit recovery, degenerate initialization,
+chronological malformed inputs and latched accepted-pose expiry.
+
+The original source-frozen 36-frame trial retains **33/35 accepted updates**,
+only **13/35 root-accurate updates**, two ambiguity rejections and maximum
+accumulated error **0.170314 m / 0.163528 rad**. It exits **1**. Exact first
+sources, freeze, journal and results remain immutable. Subsequent clock/expiry
+and missing-reference audit corrections use protocol 6 and mark every repeat as
+viewed regression. All six repeats preserve the original operational numbers;
+independent root audits match the published audits apart from report digests
+containing CPU timings. **85 report mutations** and **12 missing-reference score
+contract negatives** reject. [Protocol and failure](recorded-keyframes.md).
+
+The five previous pair/fixed-map regressions retain their acceptance and
+missing-reference failures under identical numerical gates. Their original
+preregistered sources and freezes remain archived; no viewed repeat is a new
+held-out trial. The separate plain recorded-pair mode still accepts **7/11**.
+[Viewed motion regression](../assets/recorded-motion-keyframe-regression.json).
+
+A fresh locked RNE build passes **55 native tests** and reruns the Japanese
+urban fixture with seeds **7, 1 and 42**. All three episodes, **2,763 replay
+ticks** and the unchanged full-grid XYZ/body/ground, actor-pair, signal, painted
+lane and junction checks pass. All raw recording hashes and physical case
+diagnostics exactly match the published Hero evidence. The opening GIF, model
+sources, fixture, RNE revision, Rust pins and locks remain unchanged.
+[Current native proof](../assets/japan-city-keyframe-regression.json);
+[combined provenance](../assets/keyframe-development-validation.json).
+
+The localizer remains an offline single-reference-cloud experiment in one
+indoor sequence. It provides neither vehicle fusion nor accumulated-pose
+confidence. Failed longer-interval accuracy remains unresolved, and the
+subjective OSS-relative maturity estimate stays **about 20%**. Local integrity
+passes do not establish remote CI success or automotive accuracy.

@@ -1,0 +1,241 @@
+{
+  "schema_version": 1,
+  "all_deterministic_fields_identical": true,
+  "all_fixed_input_and_numerical_policies_identical": true,
+  "cases": [
+    {
+      "case": "fast",
+      "dataset": "tum-fr1-xyz-fast",
+      "evaluation_role": "calibration_regression",
+      "protocol_version": 6,
+      "started_utc": "2026-10-10T00:57:39.017707+00:00",
+      "exit": 0,
+      "frozen_protocol_sha256": "90e2b22ba87e3a2bcdfc5d5b76f385de97aa37f13d69411cbd674ed9824f8b37",
+      "original_report_sha256": "ca93256b54b28565765cf1d7ac5ae063302a90f193ec6491f547868449ea45f2",
+      "current_report_sha256": "6a1bae0f4ca1f847e26374c99bfc8e0f6f3c8bdbbece7bae12a78604f6d625cc",
+      "deterministic_fields_identical": true,
+      "excluded_fields": [
+        "freeze",
+        "freeze_sha256",
+        "cpu_wall_seconds"
+      ],
+      "summary": {
+        "accepted_updates": 11,
+        "accurate_root_updates": 11,
+        "all_updates_passed": true,
+        "frames": 12,
+        "initialized_frames": 1,
+        "keyframe_replacements": 3,
+        "reference_valid_updates": 11,
+        "rejected_updates": 0,
+        "updates": 11
+      },
+      "fixed_input_and_numerical_policies_identical": true,
+      "compared_freeze_fields": [
+        "registration_config",
+        "preprocessing",
+        "accuracy_gates",
+        "ground_truth_interpolation",
+        "frames",
+        "motion_preprocessing",
+        "keyframe_policy",
+        "uncertainty"
+      ]
+    },
+    {
+      "case": "tight",
+      "dataset": "tum-fr1-xyz-tight",
+      "evaluation_role": "calibration_regression",
+      "protocol_version": 6,
+      "started_utc": "2026-10-10T00:57:41.226289+00:00",
+      "exit": 0,
+      "frozen_protocol_sha256": "857025e123cb8788e9f259b5b16712b419236f76d8065e77de1e519a6deba15a",
+      "original_report_sha256": "6d4b836c10c08d1733e98a12b0acb9392db66276ec645c28702b76cb67a38fd5",
+      "current_report_sha256": "8a14d8ebd1281bc65a1450756be1a18b18843936ef6145d3f54e60a46264cb06",
+      "deterministic_fields_identical": true,
+      "excluded_fields": [
+        "freeze",
+        "freeze_sha256",
+        "cpu_wall_seconds"
+      ],
+      "summary": {
+        "accepted_updates": 11,
+        "accurate_root_updates": 11,
+        "all_updates_passed": true,
+        "frames": 12,
+        "initialized_frames": 1,
+        "keyframe_replacements": 3,
+        "reference_valid_updates": 11,
+        "rejected_updates": 0,
+        "updates": 11
+      },
+      "fixed_input_and_numerical_policies_identical": true,
+      "compared_freeze_fields": [
+        "registration_config",
+        "preprocessing",
+        "accuracy_gates",
+        "ground_truth_interpolation",
+        "frames",
+        "motion_preprocessing",
+        "keyframe_policy",
+        "uncertainty"
+      ]
+    },
+    {
+      "case": "motion-v2",
+      "dataset": "tum-fr1-xyz-motion-v2",
+      "evaluation_role": "calibration_regression",
+      "protocol_version": 6,
+      "started_utc": "2026-10-10T00:57:43.702840+00:00",
+      "exit": 0,
+      "frozen_protocol_sha256": "27c621588de78fdcade60d9bde1c9edca417f3c63b2147cc0b1a7124ba7b5adb",
+      "original_report_sha256": "65787396b70a9a7e061057f0de0ad8a49aa44de645bad341762446822f7edb53",
+      "current_report_sha256": "41d40bd2d2f94bef65ea51b8634fc094cb9099f441666d5dff82be4636941027",
+      "deterministic_fields_identical": true,
+      "excluded_fields": [
+        "freeze",
+        "freeze_sha256",
+        "cpu_wall_seconds"
+      ],
+      "summary": {
+        "accepted_updates": 11,
+        "accurate_root_updates": 11,
+        "all_updates_passed": true,
+        "frames": 12,
+        "initialized_frames": 1,
+        "keyframe_replacements": 3,
+        "reference_valid_updates": 11,
+        "rejected_updates": 0,
+        "updates": 11
+      },
+      "fixed_input_and_numerical_policies_identical": true,
+      "compared_freeze_fields": [
+        "registration_config",
+        "preprocessing",
+        "accuracy_gates",
+        "ground_truth_interpolation",
+        "frames",
+        "motion_preprocessing",
+        "keyframe_policy",
+        "uncertainty"
+      ]
+    },
+    {
+      "case": "gap-loss",
+      "dataset": "tum-fr1-xyz",
+      "evaluation_role": "calibration_regression",
+      "protocol_version": 6,
+      "started_utc": "2026-10-10T00:57:48.120557+00:00",
+      "exit": 1,
+      "frozen_protocol_sha256": "a8e8de003e4e3197f021aeb5f7a3e2db729ff56d707b0c0412a526e173226449",
+      "original_report_sha256": "ea1924d1ad2b5e5651228ef883bcb99bf917a1ddb4e107a9ee95db028128fae5",
+      "current_report_sha256": "427406c3b7eb8fb001843b256a8f28b9bff5edc440265a3c5c11bdb2df637328",
+      "deterministic_fields_identical": true,
+      "excluded_fields": [
+        "freeze",
+        "freeze_sha256",
+        "cpu_wall_seconds"
+      ],
+      "summary": {
+        "accepted_updates": 0,
+        "accurate_root_updates": 0,
+        "all_updates_passed": false,
+        "frames": 12,
+        "initialized_frames": 1,
+        "keyframe_replacements": 0,
+        "reference_valid_updates": 11,
+        "rejected_updates": 11,
+        "updates": 11
+      },
+      "fixed_input_and_numerical_policies_identical": true,
+      "compared_freeze_fields": [
+        "registration_config",
+        "preprocessing",
+        "accuracy_gates",
+        "ground_truth_interpolation",
+        "frames",
+        "motion_preprocessing",
+        "keyframe_policy",
+        "uncertainty"
+      ]
+    },
+    {
+      "case": "missing-reference",
+      "dataset": "tum-fr1-xyz-motion",
+      "evaluation_role": "calibration_regression",
+      "protocol_version": 6,
+      "started_utc": "2026-10-10T00:57:48.338054+00:00",
+      "exit": 1,
+      "frozen_protocol_sha256": "deaff89d1d1782b9fdd29bfef7a882eb42cb90821f9649bbfecbf80df496a442",
+      "original_report_sha256": "58a94ba2819e72a22beb76526bd1af1c1098c07ba57906f301fa575ec4f7b389",
+      "current_report_sha256": "71dc78bcd7926e647174a3fdb09a17adedcafe970ec98876a42faf9864ab8134",
+      "deterministic_fields_identical": true,
+      "excluded_fields": [
+        "freeze",
+        "freeze_sha256",
+        "cpu_wall_seconds"
+      ],
+      "summary": {
+        "accepted_updates": 10,
+        "accurate_root_updates": 7,
+        "all_updates_passed": false,
+        "frames": 12,
+        "initialized_frames": 1,
+        "keyframe_replacements": 3,
+        "reference_valid_updates": 8,
+        "rejected_updates": 1,
+        "updates": 11
+      },
+      "fixed_input_and_numerical_policies_identical": true,
+      "compared_freeze_fields": [
+        "registration_config",
+        "preprocessing",
+        "accuracy_gates",
+        "ground_truth_interpolation",
+        "frames",
+        "motion_preprocessing",
+        "keyframe_policy",
+        "uncertainty"
+      ]
+    },
+    {
+      "case": "temporal-v1",
+      "dataset": "tum-fr1-xyz-keyframes",
+      "evaluation_role": "calibration_regression",
+      "protocol_version": 6,
+      "started_utc": "2026-10-10T00:57:49.705847+00:00",
+      "exit": 1,
+      "frozen_protocol_sha256": "d92d847ff905099c86b97b17b417e847c52062066289eed03b5825cd14f16a39",
+      "original_report_sha256": "b1d4fae4c15cb23f78388dd74c3a5b85104340f1b31a3821951c28c9329c03d4",
+      "current_report_sha256": "155df5e1b3760e03bb920bd1fd20257ae958dda067ef7d6b119e5a3145068e21",
+      "deterministic_fields_identical": true,
+      "excluded_fields": [
+        "freeze",
+        "freeze_sha256",
+        "cpu_wall_seconds"
+      ],
+      "summary": {
+        "accepted_updates": 33,
+        "accurate_root_updates": 13,
+        "all_updates_passed": false,
+        "frames": 36,
+        "initialized_frames": 1,
+        "keyframe_replacements": 10,
+        "reference_valid_updates": 35,
+        "rejected_updates": 2,
+        "updates": 35
+      },
+      "fixed_input_and_numerical_policies_identical": true,
+      "compared_freeze_fields": [
+        "registration_config",
+        "preprocessing",
+        "accuracy_gates",
+        "ground_truth_interpolation",
+        "frames",
+        "motion_preprocessing",
+        "keyframe_policy",
+        "uncertainty"
+      ]
+    }
+  ]
+}

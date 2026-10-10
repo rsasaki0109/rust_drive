@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "phase": "frozen_before_first_fresh_decode",
+  "utc": "2026-10-10T00:54:08.844404+00:00",
+  "freeze_sha256": "b44b0b34f22a5b10809a6f2f7f87419501fd16dd67ad6b5a204ca7ad345f42cf",
+  "source_paths": {
+    "matcher_source_sha256": "crates/localization/src/registration3d.rs",
+    "evaluator_source_sha256": "integrations/rgbd/src/main.rs",
+    "motion_source_sha256": "integrations/rgbd/src/motion.rs",
+    "keyframe_source_sha256": "integrations/rgbd/src/keyframes.rs",
+    "keyframe_core_source_sha256": "crates/localization/src/keyframes3d.rs",
+    "cargo_lock_sha256": "integrations/rgbd/Cargo.lock",
+    "acquisition_source_sha256": "scripts/fetch-keyframe-dataset.py",
+    "independent_checker_sha256": "scripts/check-recorded-keyframes.py",
+    "geometry_checker_sha256": "scripts/check-recorded-rgbd.py",
+    "manifest_sha256": "data/tum-fr1-xyz-keyframes/manifest.json"
+  },
+  "sources": {
+    "matcher_source_sha256": "eca9fe887f4a237dd627eb06e2793579ec4fbffd6330d120017572d734c4b715",
+    "evaluator_source_sha256": "44300c09689ae669fa827d5b42b8da4bd8a8921826b840526b256f306337f50a",
+    "motion_source_sha256": "c5a115039078c2e6fc1930b1c80bd96bfca7cdc21c3c4fd57a76897cd4ebc8c5",
+    "keyframe_source_sha256": "4cbb2675beba84d007b00741cd65d4d02b4499e98929586be08d0fe260c9db3e",
+    "keyframe_core_source_sha256": "7519757b15bfcaafb21bd496c965d06aa8569f226beaddff7fb0568d9f5ebac1",
+    "cargo_lock_sha256": "66a95960e1763d7623c40dc0c659e44cb5cda758b215c99bec09606a10c8ab86",
+    "acquisition_source_sha256": "51730a170eaaac7637cf1e83abd03b5344004307c1b5c0cbed03ec2f835aa187",
+    "independent_checker_sha256": "dcc35073c79887a8f1f9465809529435c8266ac6a443b583a346845cc8c0ec22",
+    "geometry_checker_sha256": "ab86ab67c0d46e08b89a0a47d8a59e9c95357cf41c40dbd40b1bcf5b49e6f9dc",
+    "manifest_sha256": "e8f5b9d37d94fa21143809f88262fc64c704c2fa59fee37426e0d0f6bb55d56c"
+  },
+  "fresh_frames_decoded": false,
+  "calibration_audits": {
+    "fast": "b3424caf79965840d13eea825dc574c46a65074eac47e5c7e29d3b3daba2aa89",
+    "tight": "1cf82e6c3ee1641e0a74ee60728acb2caef9f0ca43ed05f7f4c2b945ea31ee4a",
+    "motion-v2": "ff8e8ecbc1fa37959d82fc105d7d63d3858f16286e6a40a507024d6ff48f9880"
+  },
+  "binary_sha256": "6ab2128d11c685250b282a64518f7ba8c95a7b49b5a6460ba49ccf31b4f1094c",
+  "fresh_manifest_indices": [
+    340,
+    375
+  ],
+  "updates": 35,
+  "no_post_score_tuning": true
+}

@@ -21,6 +21,16 @@ engineering covariance allowance is explicitly provisional, rather than a
 calibrated confidence guarantee. These additions do not increase the overall
 estimate or close the remaining independent-environment and calibration gates.
 
+Measured keyframe localization additionally replaces its reference with accepted
+recorded clouds and latches loss on expired accepted poses, including malformed
+acquisitions. It repairs the viewed short fixed-map rejection case, but the
+preregistered longer temporal trial has only **13/35 root-accurate updates** and
+two ambiguity rejections. The maximum accumulated error is 0.170314 m /
+0.163528 rad. Its original sources and failure remain immutable; subsequent
+guard fixes and repeats are explicitly viewed regressions. This does not raise
+the estimate, establish automotive localization, or close the 30% waypoint.
+[Keyframe protocol and evidence](recorded-keyframes.md).
+
 General reliable terrain, measured vehicle/extrinsics, automotive camera perception, SLAM, lane topology, broader interaction/control and real-vehicle interfaces remain unresolved. The broader 20% calibration/contact goals also remain open. The estimate recognizes working local localization and reproducible measurement capability, without calling the calibration/contact waypoint or the 30% waypoint complete.
 
 ## Evidence used for assessment

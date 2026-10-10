@@ -1,0 +1,39 @@
+{
+  "case": "tight",
+  "dataset": "tum-fr1-xyz-tight",
+  "evaluation_role": "calibration_regression",
+  "protocol_version": 6,
+  "started_utc": "2026-10-10T00:57:41.226289+00:00",
+  "exit": 0,
+  "frozen_protocol_sha256": "857025e123cb8788e9f259b5b16712b419236f76d8065e77de1e519a6deba15a",
+  "original_report_sha256": "6d4b836c10c08d1733e98a12b0acb9392db66276ec645c28702b76cb67a38fd5",
+  "current_report_sha256": "8a14d8ebd1281bc65a1450756be1a18b18843936ef6145d3f54e60a46264cb06",
+  "deterministic_fields_identical": true,
+  "excluded_fields": [
+    "freeze",
+    "freeze_sha256",
+    "cpu_wall_seconds"
+  ],
+  "summary": {
+    "accepted_updates": 11,
+    "accurate_root_updates": 11,
+    "all_updates_passed": true,
+    "frames": 12,
+    "initialized_frames": 1,
+    "keyframe_replacements": 3,
+    "reference_valid_updates": 11,
+    "rejected_updates": 0,
+    "updates": 11
+  },
+  "fixed_input_and_numerical_policies_identical": true,
+  "compared_freeze_fields": [
+    "registration_config",
+    "preprocessing",
+    "accuracy_gates",
+    "ground_truth_interpolation",
+    "frames",
+    "motion_preprocessing",
+    "keyframe_policy",
+    "uncertainty"
+  ]
+}

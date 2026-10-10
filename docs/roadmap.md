@@ -55,7 +55,19 @@ photographs extend learned inference beyond the portrait, retaining low recall
 and possible upstream COCO validation overlap. [Motion evidence](recorded-motion.md);
 [camera evidence](road-camera-evaluation.md).
 
-Next: establish reliable independent automotive perception, natural-motion localization across multiple recorded environments, measured extrinsics and camera/geometry integration before claiming the 30% planning waypoint. Preserve all observed failures as regression evidence.
+Measured keyframe localization now adds bounded reference replacement, explicit
+root-frame chaining and accepted-pose expiry. It repairs a viewed short
+fixed-map rejection case, but its first preregistered 35-update temporal trial
+accepts 33 updates and scores only 13 root-accurate. The failed original and
+exact source snapshot remain archived; chronological-malformed-input and
+missing-reference audit corrections reproduce the same numerical result as
+viewed regressions. [Implementation and retained drift](recorded-keyframes.md).
+
+Next: reduce cumulative natural-motion drift with measured map constraints and
+independent uncertainty evaluation, then test a frozen implementation in another
+recorded environment. Establish reliable independent automotive perception,
+measured extrinsics and camera/geometry integration before claiming the 30%
+planning waypoint. Preserve all observed failures as regression evidence.
 
 - General 3D point processing and terrain classification, richer shape tracking and data association. Bounded local measured-ground removal is implemented for near-flat native query scenes.
 - Map formats and map localization, inertial bias estimation and bounded GNSS-denied tests.
