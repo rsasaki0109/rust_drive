@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "passed_integrity": true,
+  "summary": {
+    "accepted_updates": 0,
+    "accurate_root_updates": 0,
+    "all_updates_passed": false,
+    "final_map_generation": 1,
+    "final_map_points": 1067,
+    "frames": 12,
+    "initialized_frames": 1,
+    "lost": true,
+    "map_update_rejections": 0,
+    "map_updates": 1,
+    "reference_valid_updates": 11,
+    "rejected_updates": 11,
+    "updates": 11
+  },
+  "frames": [
+    {
+      "source_index": 0,
+      "accepted": true,
+      "registration": {
+        "translation_error_m": 0.0,
+        "rotation_error_rad": 7.850462293418877e-17,
+        "within_accuracy_gates": true
+      },
+      "root": {
+        "translation_error_m": 0.0,
+        "rotation_error_rad": 7.850462293418877e-17,
+        "within_accuracy_gates": true
+      },
+      "map_updated": true,
+      "map_update_rejection": null
+    },
+    {
+      "source_index": 10,
+      "accepted": false,
+      "rejection": "submap accepted-pose age exceeded; localization lost"
+    },
+    {
+      "source_index": 20,
+      "accepted": false,
+      "rejection": "submap localization lost; explicit new origin required"
+    },
+    {
+      "source_index": 30,
+      "accepted": false,
+      "rejection": "submap localization lost; explicit new origin required"
+    },
+    {
+      "source_index": 40,
+      "accepted": false,
+      "rejection": "submap localization lost; explicit new origin required"
+    },
+    {
+      "source_index": 50,
+      "accepted": false,
+      "rejection": "submap localization lost; explicit new origin required"
+    },
+    {
+      "source_index": 60,
+      "accepted": false,
+      "rejection": "submap localization lost; explicit new origin required"
+    },
+    {
+      "source_index": 70,
+      "accepted": false,
+      "rejection": "submap localization lost; explicit new origin required"
+    },
+    {
+      "source_index": 80,
+      "accepted": false,
+      "rejection": "submap localization lost; explicit new origin required"
+    },
+    {
+      "source_index": 90,
+      "accepted": false,
+      "rejection": "submap localization lost; explicit new origin required"
+    },
+    {
+      "source_index": 100,
+      "accepted": false,
+      "rejection": "submap localization lost; explicit new origin required"
+    },
+    {
+      "source_index": 110,
+      "accepted": false,
+      "rejection": "submap localization lost; explicit new origin required"
+    }
+  ],
+  "report_sha256": "fd23bdc417e6a1a7f004ef67bbca326bb08b54ba144e196970dc796a7c1fc027",
+  "manifest_sha256": "9a752f28cc6211f2e7c08adbd8d0928f4b3eae1f29bef8c994c2b68c86f98cf7",
+  "freeze_sha256": "b50f8a973ed197dfd7050c57720ad6dfaa023fb28df369853dc67c356bb911a3",
+  "mutations_rejected": [
+    "omit_observation",
+    "invent_summary",
+    "operational_truth",
+    "source_identity",
+    "timestamp",
+    "duplicate_acquisition",
+    "invent_map_points",
+    "invent_map_geometry",
+    "invent_voxel_counts",
+    "invent_generation",
+    "invent_initial_fusion",
+    "conceal_expiry",
+    "invent_accepted_clock",
+    "weaken_minimum_pairs",
+    "weaken_ambiguity_ratio",
+    "invent_rejected_pose",
+    "fuse_rejected_fit"
+  ],
+  "frozen_provenance_mutations_rejected": [
+    "changed_submap_core_source_sha256",
+    "changed_evaluator_source_sha256",
+    "changed_geometry_checker_sha256",
+    "changed_independent_checker_sha256",
+    "changed_acquisition_source_sha256",
+    "changed_manifest_sha256"
+  ],
+  "running_checker_sha256": "8af01396ac87102c2440191c37b3ebe36e83997dc5f1f580795f65b02d658ef2",
+  "frozen_checker_sha256": "8af01396ac87102c2440191c37b3ebe36e83997dc5f1f580795f65b02d658ef2",
+  "archived_source_snapshot": false,
+  "fusion_contract_checks": [
+    "raw_weighted_online_mean",
+    "count_cap_atomic_rejection",
+    "point_cap_atomic_rejection",
+    "fixed_root_sensor_transform"
+  ],
+  "missing_reference_score_mutations_rejected": [
+    "missing_reference_accepted_estimate_mismatch",
+    "missing_reference_rejected_invented_estimate"
+  ],
+  "raw_sha256_verified": true,
+  "source_freeze_verified": true,
+  "geometry_reconstructed": true,
+  "every_map_generation_independently_reconstructed": true,
+  "physical_pose_independently_scored": true,
+  "optimizer_independently_rerun": false,
+  "root_confidence_or_calibrated_covariance_claim": false,
+  "maximum_root_translation_error_m": null,
+  "maximum_root_rotation_error_rad": null
+}

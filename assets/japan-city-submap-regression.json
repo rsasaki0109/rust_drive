@@ -1,0 +1,54 @@
+{
+  "passed": true,
+  "complete": true,
+  "current_seeds": [
+    7
+  ],
+  "historical_other_seeds": [
+    1,
+    42
+  ],
+  "cases_verified": 1,
+  "replay_ticks_verified": 921,
+  "native_motion_samples": 9201,
+  "ray_grid_entries_verified": 1327680,
+  "actor_pair_count": 253,
+  "native_tests_passed": 55,
+  "native_tests_failed": 0,
+  "native_build_release_locked": true,
+  "case_behavior_byte_identical": true,
+  "raw_recordings_byte_identical": true,
+  "source_fingerprint_sha256": "4d93dc0735109ebf44d36d2bfcdd2befc3a50d355b60022614e523f654c32291",
+  "rne_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
+  "fixture_sha256": {
+    "scenario": "2bc1c6e0d425c23cbb827f702cea03669a331906df11c0cdd29d76d641fbdff5",
+    "scene": "e1179f645bf1a21359bc0ce094dd58d473d51c85578e167e663aa2cd26e7a8b0"
+  },
+  "checker_dependency_sha256": {
+    "scripts/check-japan-city-demo.py": "75c32d5892a538cd8678e6db63cf6ebfc62e8ecdba3a3849f5457ec7d6d155f2",
+    "scripts/check-ground-scenes.py": "82131f627a28b108f912b83cad5b04a48227bc28bbb08dd30399e9f2d667c98b",
+    "scripts/check-lidar-3d.py": "ca905476aafc2ed3940d6586076be121359a038be566b1c49cde06f7ede3c951",
+    "scripts/check-native-scenes.py": "fd47b32613688458b9830cd0efd61de4b331b17f28a0b703a05c55be54d93339",
+    "scripts/check_hazards.py": "b1ce0f69944b65ce0167129e1bf0f7d8b3a6cd26d8a2c8888fe065b1ee60604d"
+  },
+  "protected_current_files_sha256": {
+    "assets/japan-city-demo.gif": "40db0984165911a064e50cd0dc07087dd7f4b366aeeb530b66deddad202a1c0f",
+    "assets/japan-city-demo-results.json": "20c2b9b1465d42db30943e621982a79871919ebe4a074dbf28eb9f0a41611e3b",
+    "scenarios/native-japan-city-demo.json": "2bc1c6e0d425c23cbb827f702cea03669a331906df11c0cdd29d76d641fbdff5",
+    "scenes/japan-city-construction.json": "e1179f645bf1a21359bc0ce094dd58d473d51c85578e167e663aa2cd26e7a8b0",
+    "Cargo.lock": "de8e6afb2c8f59be7f68f0ccf8604e4d43d9951d6902314f46f16b8121dbccf7",
+    "integrations/rne/Cargo.lock": "c15e499bc74ddcf213bb0ac22cb22280c68d49ead2e203b8a7213e5a9f38f2ff",
+    "integrations/rne/rne-revision.txt": "18a0b41bc51d35a964f9dc922ee44cf1c485b34765c8ddfe82c93649c440404e",
+    "scripts/check-japan-city-demo.py": "75c32d5892a538cd8678e6db63cf6ebfc62e8ecdba3a3849f5457ec7d6d155f2",
+    "crates/localization/src/lib.rs": "87ed45fe5070f1abed481bd0eeaf2b6bee68e050bea81406b6052a34a6893877",
+    "crates/localization/src/submap3d.rs": "e91d7fc0516a96dba24cfe5f7a97a0be14e22e53385629b6e74f5ce63757ec2f"
+  },
+  "report_sha256": "2cb9563eda2ac37d1909eb2188d710c8dfaa6fed86b92fa0a297f84fbe84f0c4",
+  "comparison_sha256": "5528b5fc79f1adddabd77712abd8d60f03bd5393040d6dc88df643c7c6b44962",
+  "logs_sha256": {
+    "/tmp/submap-japan-native-build.log": "249827627c470296c521c85d1de7ea673f279bd44a24e8bd93d28128c7a0fd62",
+    "/tmp/submap-japan-native-tests.log": "0e133a01df7f44b496959725041460bf97fd9ada1ae8ef548181b3c8ad36ecd1",
+    "/tmp/submap-japan-check.log": "8dc06a878ff0466f7b3d8da5f218f63c2b10254346f5a970ea7c6c3d186a82c4"
+  },
+  "scope": "Current seed7 native/replay/full independent physical gates after fused-submap module addition; seeds1/42 are explicitly historical PR7 evidence, not rerun in this task."
+}

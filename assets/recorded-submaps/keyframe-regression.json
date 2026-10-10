@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "regression_integrity_passed": true,
+  "all_physical_protocols_passed": false,
+  "original_temporal_accuracy_protocol_passed": false,
+  "original_report_sha256": "b1d4fae4c15cb23f78388dd74c3a5b85104340f1b31a3821951c28c9329c03d4",
+  "original_freeze_sha256": "b44b0b34f22a5b10809a6f2f7f87419501fd16dd67ad6b5a204ca7ad345f42cf",
+  "strengthened_historical_audit_sha256": "468e501c2bf40a19d3cda36cc96f54687cd923457ebd8751355f15cb79c45d68",
+  "cases": [
+    {
+      "case": "fast",
+      "dataset": "tum-fr1-xyz-fast",
+      "summary": {
+        "accepted_updates": 11,
+        "accurate_root_updates": 11,
+        "all_updates_passed": true,
+        "frames": 12,
+        "initialized_frames": 1,
+        "keyframe_replacements": 3,
+        "reference_valid_updates": 11,
+        "rejected_updates": 0,
+        "updates": 11
+      },
+      "evaluator_exit_status": 0,
+      "independent_integrity_passed": true,
+      "mutations_rejected": 15,
+      "report_sha256": "65c0302b9dae6c74ded295dba8c185c065a7752cc73b96f07bb579072ce0ef8f",
+      "audit_sha256": "f6294cec6e16c78312b7c73fe8dbbf3bc2d72d0e50928f6d69cf2f0d91e8a5b4",
+      "freeze_sha256": "8667f9f6bc77a066a0bc8abe9efe817c1643b656aba2649d3e01f87825a935d4"
+    },
+    {
+      "case": "tight",
+      "dataset": "tum-fr1-xyz-tight",
+      "summary": {
+        "accepted_updates": 11,
+        "accurate_root_updates": 11,
+        "all_updates_passed": true,
+        "frames": 12,
+        "initialized_frames": 1,
+        "keyframe_replacements": 3,
+        "reference_valid_updates": 11,
+        "rejected_updates": 0,
+        "updates": 11
+      },
+      "evaluator_exit_status": 0,
+      "independent_integrity_passed": true,
+      "mutations_rejected": 15,
+      "report_sha256": "4f96be2032188b08ae0dbccb3610dcd3a7452497c6522c886fca462fff860114",
+      "audit_sha256": "b2939503260a11e75692640d3ad7159682920ca4fadc4b42eebd7044c6665a26",
+      "freeze_sha256": "95eb6d410da02c21982c39b176b4cc86b07c7ec60ec0a26cdb58de82c7075c2b"
+    },
+    {
+      "case": "motion-v2",
+      "dataset": "tum-fr1-xyz-motion-v2",
+      "summary": {
+        "accepted_updates": 11,
+        "accurate_root_updates": 11,
+        "all_updates_passed": true,
+        "frames": 12,
+        "initialized_frames": 1,
+        "keyframe_replacements": 3,
+        "reference_valid_updates": 11,
+        "rejected_updates": 0,
+        "updates": 11
+      },
+      "evaluator_exit_status": 0,
+      "independent_integrity_passed": true,
+      "mutations_rejected": 15,
+      "report_sha256": "f62767d9db91995b8d4ef852583da40b16aee7fd80f67cee2237c5151759c4b4",
+      "audit_sha256": "f21e2ec80b2b0fc3ceecb36b7c617178204d5c170b3380033210e0f7ebb59340",
+      "freeze_sha256": "f6a3f2a7f5d25ba2580a23ea4d3d6a7d6923422e6c42b8b9b3a3120b5d0ee3ec"
+    },
+    {
+      "case": "gap-loss",
+      "dataset": "tum-fr1-xyz",
+      "summary": {
+        "accepted_updates": 0,
+        "accurate_root_updates": 0,
+        "all_updates_passed": false,
+        "frames": 12,
+        "initialized_frames": 1,
+        "keyframe_replacements": 0,
+        "reference_valid_updates": 11,
+        "rejected_updates": 11,
+        "updates": 11
+      },
+      "evaluator_exit_status": 1,
+      "independent_integrity_passed": true,
+      "mutations_rejected": 7,
+      "report_sha256": "0fb195d761bac5270a7caaad2499487fa7e2313fe189960c7d8f5906444b1645",
+      "audit_sha256": "342833738ccba1052a55664fafbe8cca008f9d6c3b1dd86dbdb343e88bdbfd82",
+      "freeze_sha256": "6479fb302915f5975972ebbf40e25115098f2f0853f468c8835498c9213b266c"
+    },
+    {
+      "case": "missing-reference",
+      "dataset": "tum-fr1-xyz-motion",
+      "summary": {
+        "accepted_updates": 10,
+        "accurate_root_updates": 7,
+        "all_updates_passed": false,
+        "frames": 12,
+        "initialized_frames": 1,
+        "keyframe_replacements": 3,
+        "reference_valid_updates": 8,
+        "rejected_updates": 1,
+        "updates": 11
+      },
+      "evaluator_exit_status": 1,
+      "independent_integrity_passed": true,
+      "mutations_rejected": 17,
+      "report_sha256": "74f990997d267d57455c4e5b8f2d494b32cedc1fe96c56dd9c87e815ac22c96d",
+      "audit_sha256": "c4b2e885c0e2d167408a64b306e30ff6354944bf2712a0210eb6e6516d07f3e5",
+      "freeze_sha256": "5d848a7f88295d1153959e7c825e2ad867c8d14def9945e1ebe2932d36e09c8f"
+    },
+    {
+      "case": "temporal-v1",
+      "dataset": "tum-fr1-xyz-keyframes",
+      "summary": {
+        "accepted_updates": 33,
+        "accurate_root_updates": 13,
+        "all_updates_passed": false,
+        "frames": 36,
+        "initialized_frames": 1,
+        "keyframe_replacements": 10,
+        "reference_valid_updates": 35,
+        "rejected_updates": 2,
+        "updates": 35
+      },
+      "evaluator_exit_status": 1,
+      "independent_integrity_passed": true,
+      "mutations_rejected": 16,
+      "report_sha256": "0fa9f205e52499d016b88d1367b3cd3afce9a8e07216efbe0469e7e3b1951e9e",
+      "audit_sha256": "a5a56d51225f200447242123a18f1f3e21971c0e507f1147de8872239825d028",
+      "freeze_sha256": "73aff86e067f3c5b63d8c76e5682694b3cb172f8d35c10ddebb87becce8ae047"
+    }
+  ],
+  "scope": "Viewed same-room measured-depth regressions; no automotive, global SLAM or accumulated-confidence claim."
+}

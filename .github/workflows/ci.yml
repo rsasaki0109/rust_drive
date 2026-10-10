@@ -1,6 +1,7 @@
 name: CI
 on:
   push:
+    branches: [main]
   pull_request:
 permissions:
   contents: read
@@ -92,6 +93,12 @@ jobs:
       - name: Reproduce independently annotated urban-camera diagnostics
         run: |
           python integrations/onnx/road_check.py --binary integrations/onnx/target/release/rustdriving-camera-detect --model artifacts/camera-model/yolox_nano.onnx --data artifacts/road-camera --output artifacts/road-camera/check --baseline integrations/onnx/road-results.json
+      - name: Reproduce original BDD dashcam diagnostics and retained misses
+        run: |
+          mkdir -p artifacts/bdd-camera/check
+          python integrations/onnx/bdd_check.py --binary integrations/onnx/target/release/rustdriving-camera-detect --model artifacts/camera-model/yolox_nano.onnx --prepare-freeze artifacts/bdd-camera/check/reproduction-freeze.json
+          python integrations/onnx/bdd_check.py --binary integrations/onnx/target/release/rustdriving-camera-detect --model artifacts/camera-model/yolox_nano.onnx --freeze artifacts/bdd-camera/check/reproduction-freeze.json --data artifacts/bdd-camera --output artifacts/bdd-camera/check
+          cp assets/recorded-bdd/LICENSE-data.txt artifacts/bdd-camera/check/LICENSE-data.txt
       - name: Validate additional measured-data acquisition
         run: |
           python scripts/test-fetch-additional-datasets.py
@@ -129,6 +136,11 @@ jobs:
         run: |
           python scripts/fetch-keyframe-dataset.py
           python scripts/check-recorded-keyframe-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-evaluate --output artifacts/recorded-keyframes
+      - name: Reproduce measured submap fusion and retained desk and office failures
+        run: |
+          python scripts/fetch-submap-datasets.py tum-fr1-desk-submaps
+          python scripts/fetch-submap-datasets.py tum-fr3-office-submaps
+          python scripts/check-recorded-submap-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-evaluate --output artifacts/recorded-submaps
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -137,10 +149,12 @@ jobs:
             artifacts/camera-model/check/
             artifacts/camera-model/summary.json
             artifacts/road-camera/check/
+            artifacts/bdd-camera/check/
             artifacts/adaptive/
             artifacts/rgbd/
             artifacts/recorded-motion/
             artifacts/recorded-keyframes/
+            artifacts/recorded-submaps/
 
   visual:
     runs-on: ubuntu-latest

@@ -7,3 +7,10 @@ assets/*freeze.json text eol=lf
 crates/perception/src/terrain_adaptive.rs text eol=lf
 crates/localization/src/registration3d.rs text eol=lf
 integrations/rgbd/** text eol=lf
+
+# Preserve the byte-pinned upstream data notice, including its original spacing.
+assets/recorded-bdd/LICENSE-data.txt -text whitespace=-blank-at-eol
+# Keep newly frozen measured-map evidence stable across checkout settings.
+assets/recorded-submaps/** text eol=lf
+assets/recorded-bdd/*.json text eol=lf
+crates/localization/src/submap3d.rs text eol=lf
