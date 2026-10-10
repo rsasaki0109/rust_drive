@@ -64,6 +64,9 @@ def main():
     figure.tight_layout(rect=(0, 0, 1, .93))
     args.output.parent.mkdir(parents=True, exist_ok=True)
     figure.savefig(args.output, metadata={'Date': None})
+    # SVG path coordinates allow line whitespace; normalize the generated text.
+    args.output.write_text('\n'.join(line.rstrip() for line in
+                                    args.output.read_text().splitlines()) + '\n')
     if args.preview is not None:
         args.preview.parent.mkdir(parents=True, exist_ok=True)
         figure.savefig(args.preview, format='png', dpi=120)
