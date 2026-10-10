@@ -1,0 +1,177 @@
+{
+  "accuracy_gates": {
+    "rotation_rad": 0.1,
+    "translation_m": 0.1
+  },
+  "acquisition_source_sha256": "69fbe8324384d2c9f4ecf12fefd7477f7ae358e4c0b0427aa50a5f7ecacd34fc",
+  "cargo_lock_sha256": "66a95960e1763d7623c40dc0c659e44cb5cda758b215c99bec09606a10c8ab86",
+  "cargo_manifest_sha256": "ef884f07c3927a28924614af1657f73281b47270576390ca30672c78d048a47f",
+  "core_lib_source_sha256": "6cdc9459e0ae8dcccd0fa8d8d468a2adc0eee12aa3cc4bacca1b871a8b4d708e",
+  "dataset": "tum-fr1-xyz-motion",
+  "evaluator_source_sha256": "67df39a6bb013ed2bda657690368887708da5d0519d6026d35c3364f3339a5cc",
+  "frames": [
+    {
+      "file": "1305031108.835163.png",
+      "source_index": 200,
+      "split": "calibration",
+      "timestamp": 1305031108.835163
+    },
+    {
+      "file": "1305031108.867534.png",
+      "source_index": 201,
+      "split": "calibration",
+      "timestamp": 1305031108.867534
+    },
+    {
+      "file": "1305031108.903540.png",
+      "source_index": 202,
+      "split": "calibration",
+      "timestamp": 1305031108.90354
+    },
+    {
+      "file": "1305031108.935116.png",
+      "source_index": 203,
+      "split": "held_out",
+      "timestamp": 1305031108.935116
+    },
+    {
+      "file": "1305031108.967245.png",
+      "source_index": 204,
+      "split": "held_out",
+      "timestamp": 1305031108.967245
+    },
+    {
+      "file": "1305031109.003064.png",
+      "source_index": 205,
+      "split": "held_out",
+      "timestamp": 1305031109.003064
+    },
+    {
+      "file": "1305031109.034955.png",
+      "source_index": 206,
+      "split": "held_out",
+      "timestamp": 1305031109.034955
+    },
+    {
+      "file": "1305031109.067091.png",
+      "source_index": 207,
+      "split": "held_out",
+      "timestamp": 1305031109.067091
+    },
+    {
+      "file": "1305031109.103294.png",
+      "source_index": 208,
+      "split": "held_out",
+      "timestamp": 1305031109.103294
+    },
+    {
+      "file": "1305031109.134968.png",
+      "source_index": 209,
+      "split": "held_out",
+      "timestamp": 1305031109.134968
+    },
+    {
+      "file": "1305031109.165848.png",
+      "source_index": 210,
+      "split": "held_out",
+      "timestamp": 1305031109.165848
+    },
+    {
+      "file": "1305031109.203388.png",
+      "source_index": 211,
+      "split": "held_out",
+      "timestamp": 1305031109.203388
+    }
+  ],
+  "freeze_preparation": "metadata only; raw depth and mocap are not read and registration is not invoked",
+  "geometry_checker_sha256": "ab86ab67c0d46e08b89a0a47d8a59e9c95357cf41c40dbd40b1bcf5b49e6f9dc",
+  "ground_truth_interpolation": {
+    "extrapolation": false,
+    "max_bracket_s": 0.02,
+    "method": "linear translation and shortest-arc quaternion SLERP"
+  },
+  "independent_checker_sha256": "07d1e7562a10350a679b83c51f7e0a20775b2ce7973c770b8cc3dfb80f40c566",
+  "keyframe_checker_sha256": "3c5ef7c2ad50b9ab015f0c6795aa955489343725d5a274ff1eaae730ecd95c01",
+  "kind": "calibration_regression",
+  "localization_lib_source_sha256": "87ed45fe5070f1abed481bd0eeaf2b6bee68e050bea81406b6052a34a6893877",
+  "manifest_sha256": "6233f9663ae76613c106e246649621fcac8cd27f3f5eda887a0baf061c4296ed",
+  "matcher_source_sha256": "eca9fe887f4a237dd627eb06e2793579ec4fbffd6330d120017572d734c4b715",
+  "motion_preprocessing": {
+    "additional_voxel_m": 0.06,
+    "point_order": "lexicographic coarse voxel key",
+    "representative": "first lexicographic original voxel point"
+  },
+  "motion_preprocessing_sha256": "4c08454b356161553015119d741595e31d56bbc47a501d19ee4207403b56e786",
+  "motion_source_sha256": "c5a115039078c2e6fc1930b1c80bd96bfca7cdc21c3c4fd57a76897cd4ebc8c5",
+  "preprocessing": {
+    "cx": 319.5,
+    "cy": 239.5,
+    "fx": 525.0,
+    "fy": 525.0,
+    "height": 480,
+    "max_depth_m": 5.0,
+    "maximum_sampled_pixels": 4800,
+    "min_depth_m": 0.3,
+    "pixel_step": 8,
+    "point_order": "lexicographic voxel key",
+    "sample_origin_pixel": [
+      0,
+      0
+    ],
+    "units_per_metre": 5000,
+    "voxel_m": 0.03,
+    "voxel_representative": "first row-major sampled valid pixel",
+    "width": 640
+  },
+  "preprocessing_sha256": "4e728cc5375476636af4080d54eb974bb343bf9d019462e1c6a36c4561bf73b5",
+  "protocol_version": 7,
+  "registration_config": {
+    "ambiguity_rms_ratio": 1.05,
+    "ambiguity_rotation_probe_rad": 0.07,
+    "ambiguity_translation_probe_m": 0.15,
+    "max_condition_number": 10000.0,
+    "max_correspondence_m": 0.15,
+    "max_iterations": 30,
+    "max_map_points": 5000,
+    "max_neighbor_checks": 20000000,
+    "max_position_variance_m2": 0.25,
+    "max_rms_m": 0.08,
+    "max_rotation_jump_rad": 0.35,
+    "max_rotation_variance_rad2": 0.01,
+    "max_scan_points": 5000,
+    "max_translation_jump_m": 0.5,
+    "min_geometry_ratio": 0.005,
+    "min_overlap": 0.4,
+    "min_pairs": 30,
+    "rotation_tolerance_rad": 0.0001,
+    "translation_tolerance_m": 0.0001,
+    "trim_fraction": 0.2
+  },
+  "registration_config_sha256": "ffb62973ee75b69b2fc9f80d5cfb6073cd11d1f65730cfd9a5bbcf2015d14b47",
+  "rust_toolchain_sha256": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed",
+  "schema_version": 1,
+  "submap_core_source_sha256": "e91d7fc0516a96dba24cfe5f7a97a0be14e22e53385629b6e74f5ce63757ec2f",
+  "submap_policy": {
+    "digest": "map_sha256: concatenated xyz IEEE754 f64 little endian in voxel-key order; map_statistics_sha256: each key xyz i64 LE, count u64 LE then mean xyz f64 LE",
+    "frame": "fixed initial measured depth camera; all map representatives and accepted poses remain in this root",
+    "fusion": "transform measured scan into root; floor xyz/voxel size; lexicographic voxel keys; sequential online mean and raw-observation count in input point order",
+    "initialization": "first measured cloud self-registers at identity with all numerical guards; then atomic identity fusion",
+    "map_update_interval_s": 0.1,
+    "max_points_per_voxel": 1000,
+    "max_unobserved_s": 0.2,
+    "maximum_map_points": 5000,
+    "prior": "last accepted root pose, initially identity; no velocity or mocap prior",
+    "rejection": "no pose, map update or accepted-clock renewal; elapsed accepted-pose age latches lost until explicit new origin; evaluator never resets",
+    "update": "atomic proposed copy; only accepted fits at minimum interval; any voxel, coordinate, count or capacity violation preserves entire old map; valid pose may survive skipped fusion",
+    "voxel_m": 0.06
+  },
+  "submap_policy_sha256": "d6f7a5f6e3815fe13e16e0377a62c67b1502c0aa4e6afac9833f178c2335f2b9",
+  "submap_source_sha256": "80428208c41843316e0db2a047fc0a137c46f440bf6bb36360e1444770b9bc6d",
+  "uncertainty": {
+    "calibration_data": "all previously viewed Freiburg 1 XYZ intervals; no registration or allowance threshold changes",
+    "model": "per-fit conditional covariance plus previously frozen diagonal engineering allowance only; excludes correlated fused-map errors and is not calibrated root confidence",
+    "position_std_floor_m": 0.02,
+    "rotation_std_floor_rad": 0.03
+  },
+  "workspace_cargo_lock_sha256": "de8e6afb2c8f59be7f68f0ccf8604e4d43d9951d6902314f46f16b8121dbccf7"
+}

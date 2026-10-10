@@ -498,3 +498,50 @@ indoor sequence. It provides neither vehicle fusion nor accumulated-pose
 confidence. Failed longer-interval accuracy remains unresolved, and the
 subjective OSS-relative maturity estimate stays **about 20%**. Local integrity
 passes do not establish remote CI success or automotive accuracy.
+
+## Bounded measured submaps and original dashcam evidence (2026-10-10 UTC)
+
+The reusable fixed-root `submap3d` implementation adds deterministic voxel
+means/counts, atomic bounded fusion and accepted-pose expiry. Formatting,
+warnings-denied Clippy, locked builds and **345 workspace tests** pass;
+the **49 reference episodes and complete replays** retain all 245 output-file
+hashes. The optional recorded-depth executable passes **17 tests** and strict
+Clippy. Existing five motion and six keyframe regressions preserve their
+numerical outcomes, including failed and missing-reference cases; independent
+audits reject respectively 52 and 85 report mutations. The plain pair evaluator
+still accepts 7/11 under its unchanged numerical gates.
+
+The source-frozen first desk trial accepts **29/35** updates but scores only
+**8/35** accurate; six ambiguities reject. The separately frozen office/camera
+trial accepts **7/35**, scores **5/35** accurate and latches loss: five
+ambiguities, one accepted-age expiry and 22 subsequent lost updates remain in
+the denominator. Both trials **fail physical accuracy, exit 1**. Independent
+checks reconstruct every map generation, geometry/count digest, clock and
+reference score and reject 28 report plus six source corruptions per first
+trial. Historical desk sources and first evidence remain immutable.
+[Mapping protocol and reproduction](recorded-submaps.md).
+
+The unchanged Rust CPU detector executes **16 actual inferences** on eight
+original BDD dashcam images with 138 canonical legacy reference boxes.
+The first result is **TP35/FP14/FN103**, precision 0.714 and recall 0.254;
+bicycle, motorcycle, truck and traffic-light true positives are zero. All
+eight corruption checks and five independent hand-labelled matching contracts
+pass, and repeat detections are identical. Root review independently recomputes
+the same matches and metrics from original annotations. Original image/label
+bytes are ignored; published derivatives retain Regents/BAIR research terms.
+[BDD protocol, full outcomes and licence](bdd-road-evaluation.md).
+
+A fresh native build passes **55 tests** and reruns **seed 7 only** for the
+Japanese urban Hero: 921 replay ticks, 9,201 native body samples, 1,327,680
+beam-grid entries and 253 continuous actor pairs pass the unchanged full
+physical, signal, lane and intersection checks. Raw recordings and physical
+case diagnostics are byte-identical to the public Hero. Seeds 1/42 remain
+historical preceding evidence. The opening GIF, RNE pin, Rust toolchains,
+fixtures and lockfiles remain unchanged.
+[Current native proof](../assets/japan-city-submap-regression.json).
+[Combined sources, logs and regression proof](../assets/submap-development-validation.json).
+
+CI additionally reproduces these failures and integrity contracts. Pull-request
+and main-branch checks remain enabled; feature push duplicates are omitted.
+Local success does not establish remote CI success. The engineering estimate
+remains **about 20%**, and the 30% waypoint remains unmet.

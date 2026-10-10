@@ -46,6 +46,28 @@ def audit(report, manifest, raw, freeze, output, snapshot=None):
     return json.loads(output.read_text())
 
 
+def current_freeze(binary, manifest, baseline, target):
+    """Only executable-mode additions may change the viewed protocol identity.
+
+    Matcher, keyframe algorithm, decoder contract, selection and every numeric
+    gate remain fixed. Non-timing operational evidence is compared below.
+    """
+    if not target.exists():
+        subprocess.run([str(binary), '--keyframes', '--manifest', str(manifest),
+                        '--prepare-freeze', str(target)], check=True, cwd=ROOT)
+    before = json.loads(baseline.read_text())
+    after = json.loads(target.read_text())
+    allowed = {'evaluator_source_sha256'}
+    if set(before) != set(after) or any(before[k] != after[k] for k in before if k not in allowed):
+        raise ValueError('viewed keyframe algorithm or numerical freeze changed')
+    if after['kind'] != 'calibration_regression':
+        raise ValueError('viewed keyframes mislabeled fresh')
+    if before['evaluator_source_sha256'] != after['evaluator_source_sha256']:
+        archive = ROOT / 'integrations/rgbd/baselines/public-keyframes-v6/sources/integrations/rgbd/src/main.rs'
+        if digest(archive) != before['evaluator_source_sha256']:
+            raise ValueError('original public executable source not preserved')
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--binary', type=Path, required=True)
@@ -68,11 +90,13 @@ def main():
         manifest = ROOT / 'data' / dataset / 'manifest.json'
         folder = output / name
         folder.mkdir(exist_ok=True)
+        freeze_path = folder / 'freeze.json'
+        current_freeze(binary, manifest, baseline / 'freeze.json', freeze_path)
         report_path = folder / 'results.json'
         with (folder / 'run.log').open('w') as stream:
             run = subprocess.run([str(binary), '--keyframes', '--manifest', str(manifest),
                                   '--raw', str(manifest.parent / 'raw'),
-                                  '--freeze', str(baseline / 'freeze.json'),
+                                  '--freeze', str(freeze_path),
                                   '--output', str(report_path)], cwd=ROOT,
                                  stdout=stream, stderr=subprocess.STDOUT)
         expected_rc = 0 if name in ('fast', 'tight', 'motion-v2') else 1
@@ -86,16 +110,19 @@ def main():
                        'reference_valid_updates', 'rejected_updates', 'keyframe_replacements'))
         if summary['initialized_frames'] != 1 or actual != expected:
             raise ValueError(f'{name}: changed known outcome {actual}, expected {expected}')
-        if without_timings(report) != without_timings(json.loads((baseline / 'results.json').read_text())):
+        numerical = {k: v for k, v in report.items() if k not in ('freeze', 'freeze_sha256')}
+        original = {k: v for k, v in json.loads((baseline / 'results.json').read_text()).items()
+                    if k not in ('freeze', 'freeze_sha256')}
+        if without_timings(numerical) != without_timings(original):
             raise ValueError(f'{name}: deterministic non-timing evidence changed')
         proof = audit(report_path, manifest, manifest.parent / 'raw',
-                      baseline / 'freeze.json', folder / 'audit.json')
+                      freeze_path, folder / 'audit.json')
         records.append(dict(case=name, dataset=dataset, summary=summary,
                             evaluator_exit_status=run.returncode,
                             independent_integrity_passed=proof['passed_integrity'],
                             mutations_rejected=len(proof['mutations_rejected']),
                             report_sha256=digest(report_path), audit_sha256=digest(folder / 'audit.json'),
-                            freeze_sha256=digest(baseline / 'freeze.json')))
+                            freeze_sha256=digest(freeze_path)))
     result = dict(schema_version=1, regression_integrity_passed=True,
                   all_physical_protocols_passed=False,
                   original_temporal_accuracy_protocol_passed=False,

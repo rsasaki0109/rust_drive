@@ -63,11 +63,9 @@ exact source snapshot remain archived; chronological-malformed-input and
 missing-reference audit corrections reproduce the same numerical result as
 viewed regressions. [Implementation and retained drift](recorded-keyframes.md).
 
-Next: reduce cumulative natural-motion drift with measured map constraints and
-independent uncertainty evaluation, then test a frozen implementation in another
-recorded environment. Establish reliable independent automotive perception,
-measured extrinsics and camera/geometry integration before claiming the 30%
-planning waypoint. Preserve all observed failures as regression evidence.
+Fixed-root bounded measured submaps now fuse accepted scans with atomic voxel updates, but the first desk trial passes root accuracy on only 8/35 updates, while a separate office/camera trial scores 5/35 and latches loss. Eight separately frozen original BDD dashcam frames also expose low automotive recall (35/138 objects). [Submap evidence](recorded-submaps.md); [BDD evidence](bdd-road-evaluation.md).
+
+Next: diagnose measured-map drift and reject misleading locally accepted fits; develop on viewed recordings and preregister another independent accuracy trial. Improve distant road-user detection, set explicit per-class acceptance gates and evaluate a frozen model on new road images. Validate uncertainty, measured extrinsics and camera/geometry integration before claiming the 30% planning waypoint. Preserve all observed failures as regression evidence.
 
 - General 3D point processing and terrain classification, richer shape tracking and data association. Bounded local measured-ground removal is implemented for near-flat native query scenes.
 - Map formats and map localization, inertial bias estimation and bounded GNSS-denied tests.

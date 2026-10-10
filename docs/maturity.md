@@ -33,6 +33,8 @@ the estimate, establish automotive localization, or close the 30% waypoint.
 
 General reliable terrain, measured vehicle/extrinsics, automotive camera perception, SLAM, lane topology, broader interaction/control and real-vehicle interfaces remain unresolved. The broader 20% calibration/contact goals also remain open. The estimate recognizes working local localization and reproducible measurement capability, without calling the calibration/contact waypoint or the 30% waypoint complete.
 
+The fixed-root fused-submap implementation adds atomic bounded voxel fusion and independent reconstruction of every map generation. The first desk trial still passes root accuracy on only **8/35** updates; the separate office/camera trial scores **5/35** and latches loss after accepted-pose expiry. The separately frozen original BDD dashcam diagnostic finds **35/138** reference objects (25.4% recall), with no correct bicycle, motorcycle, truck or traffic-light detection. Working implementations and broader independent measurements do not repair these failures. The estimate remains **about 20%**, and the **30% waypoint remains unmet**. [Mapping evidence](recorded-submaps.md); [automotive image evidence and data terms](bdd-road-evaluation.md).
+
 ## Evidence used for assessment
 
 | Area | Current evidence | Evidence needed for a credible 50% planning milestone |

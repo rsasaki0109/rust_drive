@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "workspace": {
+    "command": "CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 bash scripts/check.sh",
+    "exit_status": 0,
+    "tests_passed": 345,
+    "scenario_replay_pairs": 49,
+    "output_file_hashes_unchanged": 245,
+    "comparison_scope": "Against retained prechange reference outputs; no algorithm or fixture changes"
+  },
+  "recorded_depth": {
+    "tests_passed": 17,
+    "fmt_passed": true,
+    "strict_clippy_passed": true,
+    "locked_release_passed": true,
+    "current_compiled_source_sha256": {
+      "integrations/rgbd/src/main.rs": "67df39a6bb013ed2bda657690368887708da5d0519d6026d35c3364f3339a5cc",
+      "integrations/rgbd/src/submaps.rs": "3e5b5672bfa0def71684335c364d7f56ededff8719f8b2ecef93c8e6d16b7a46",
+      "crates/localization/src/submap3d.rs": "e91d7fc0516a96dba24cfe5f7a97a0be14e22e53385629b6e74f5ce63757ec2f",
+      "crates/localization/src/lib.rs": "87ed45fe5070f1abed481bd0eeaf2b6bee68e050bea81406b6052a34a6893877",
+      "scripts/check-recorded-submaps.py": "8af01396ac87102c2440191c37b3ebe36e83997dc5f1f580795f65b02d658ef2"
+    }
+  },
+  "submap_suite": {
+    "path": "assets/recorded-submaps/submap-regression-suite.json",
+    "sha256": "3b516175944f49838f0933695140b238f89e541b1250848ff6b8304afffd8a3b",
+    "cases": 8,
+    "frames": 168,
+    "updates": 160,
+    "report_mutations_rejected": 207,
+    "source_mutations_rejected": 48,
+    "all_physical_protocols_passed": false,
+    "both_first_failed_trials_preserved": true
+  },
+  "prior_keyframes": {
+    "cases": 6,
+    "report_mutations_rejected": 85,
+    "all_nontiming_operational_numbers_unchanged": true
+  },
+  "prior_motion": {
+    "cases": 5,
+    "report_mutations_rejected": 52,
+    "numerical_gates_and_outcomes_unchanged": true
+  },
+  "plain_pair": {
+    "accepted": 7,
+    "total": 11,
+    "independent_audit_passed": true
+  },
+  "bdd": {
+    "first_results": "assets/recorded-bdd/first-results.json",
+    "first_result_sha256": "c20858d73737a8a68d1578c0816ad7f41810ad64dcc5242f98c7c37369aac35d",
+    "actual_cpu_inferences": 16,
+    "references": 138,
+    "true_positives": 35,
+    "false_positives": 14,
+    "false_negatives": 103,
+    "independent_root_recomputation_agreed": true,
+    "original_dataset_terms": "assets/recorded-bdd/LICENSE-data.txt",
+    "automotive_accuracy_claim": false
+  },
+  "native": "assets/japan-city-submap-regression.json",
+  "hero_sha256": "40db0984165911a064e50cd0dc07087dd7f4b366aeeb530b66deddad202a1c0f",
+  "log_sha256": {
+    "/tmp/rustdriving-submap-workspace-check.log": "c9752ce53d5e8bf2296de082d0cda369ba1fd99ad2c99f6cc009b26170d5305f",
+    "/tmp/rustdriving-submaps-v8-pre-fresh-tests.log": "555cd8cfa43cc37cfff6ec3480a3e8a4d713717acf52fc77aedd41de3acad746",
+    "/tmp/rustdriving-submaps-v8-pre-fresh-clippy.log": "8d10eea95cabb46492de135d5ad75c65b4876e6a796825530ad671115f826c27",
+    "/tmp/rustdriving-submaps-v8-final-build.log": "9139fcb48e47c0d49211ed623d031bac7a55391342e8d39b18540d20e1bd01c1",
+    "/tmp/rustdriving-submap-final-suite.log": "b43d358c21ba021b4d7918bbc9656a2bd6c82877d72a4b4f18c88894ae1d6766",
+    "/tmp/rustdriving-keyframe-submap-regression.log": "8ed088d54c9d81a0123f9d7c26827c74fa4b360fbb39d3142eccc7b97c35d8c8",
+    "/tmp/rustdriving-motion-submap-regression.log": "9b4b00ec64b43739b332d48d05cbb99e1e5a6a1ae32c05de21721e13f9a507a3",
+    "/tmp/rustdriving-plain-submap-regression.log": "e6cd338131af5b84e58e6f14bed3366478b793a8b817c7dd64364cc0d5e4298a",
+    "/tmp/rustdriving-bdd-first-check.log": "0904ce0b84ae057976b59971022495c83ec13ac0a8f7ba237410b4fed03def38"
+  },
+  "ci_workflow_sha256": "14162d709ef5fdec55b23f8b9cd30e12e0a1d507969fb98d1c7329d9b49a23a5",
+  "ci_workflow_actionlint_passed": true,
+  "remote_ci_scope": "Not a remote CI pass; observe exact published SHA separately",
+  "maturity": {
+    "subjective_estimate_percent": 20,
+    "goal_percent": 30,
+    "goal_met": false,
+    "reason": "Independent measured-map accuracy, automotive class recall and uncertainty/calibration gates remain unmet"
+  }
+}

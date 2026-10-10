@@ -89,3 +89,20 @@ independent audit preserves this failure and rejects 16 report corruptions.
 Later reruns treat the interval as viewed calibration/regression. Per-fit
 covariance does not describe accumulated root-frame uncertainty. This is not
 map fusion, SLAM or automotive localization.
+
+## Bounded fused measured-map localization
+
+`--submaps` adds a measured voxel map in the fixed first accepted depth-camera
+frame. Accepted scans can update bounded voxel means and observation counts;
+registration rejects preserve the map and accepted-pose clock. Atomic fusion
+rejects preserve the map while allowing an otherwise valid pose. Direct root
+fits avoid composing a replacement-keyframe chain, but ambiguity, fused-map
+error and local drift remain explicit limitations. The evaluator runs every
+fit before parsing motion-capture references and never resets a lost stream.
+See [the frame, fusion, freeze and reproduction contract](../../docs/recorded-submaps.md).
+This is an optional recorded-depth experiment, separate from the driving EKF.
+Both frozen new recordings failed complete acceptance: desk accepted 29/35
+updates with 8/35 accurate, while office accepted 7/35 with 5/35 accurate and
+latched loss. Their independent audits retain every failure. Protocol 8 supports
+precise pinned Freiburg 1/3 camera profiles and `--regression` for explicitly
+viewed reruns; it does not loosen registration, accuracy or expiry gates.

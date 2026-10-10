@@ -165,6 +165,25 @@ fusion, global relocalization, loop closure, root covariance or vehicle adapter.
 Its longer temporal accuracy protocol fails because of accumulated drift.
 [Algorithm, independent audit and preserved failure](recorded-keyframes.md).
 
+The separate `localization::submap3d` implementation registers measured scans
+directly against a fused map in the fixed first-camera frame. Accepted scans
+update deterministic voxel means and observation counts every 0.10 s through
+an atomic bounded proposal; rejected fits preserve the map and supply no pose.
+The same accepted-pose expiry latches loss. Independent reconstruction checks
+every map generation and clock transition. This limits memory and avoids
+repeated reference-frame chaining, but does not guarantee accurate alignment:
+the first desk trial scores only 8/35 accurate updates. Map updates include
+unmatched measured points; dynamic-object filtering, loop closure, global
+relocalization and calibrated map uncertainty are absent. Mocap remains
+post-fit evaluation data, and this adapter supplies no vehicle controls.
+[Fusion, independent environments and failure evidence](recorded-submaps.md).
+
+The unchanged optional Rust CPU detector also runs on eight original BDD
+dashcam frames. A separately pinned Python scorer matches canonical legacy
+boxes by class and IoU, retains all misses and uses the dataset's research
+licence. Camera boxes remain image-space outputs without metric fusion or
+signal-colour inference. [Protocol and limitations](bdd-road-evaluation.md).
+
 1. Preserve algorithm crates and shared coordinate/clock contracts. Put frame conversions and external message schemas into adapter crates.
 2. Implement and test a CARLA synchronous bridge before claiming CARLA support: sensor callbacks → timestamped Rust inputs → controls → independent CARLA collision/route criteria.
 3. Add ROS 2 integration optionally. A bridge should own ROS dependencies; core algorithms should still run in CI without ROS.

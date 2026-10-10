@@ -37,3 +37,18 @@ Apache-2.0 evaluator code. [Pinned official terms, mirror and image attribution]
 Four original photographs have CC BY 2.0 metadata and two have CC BY-ND 2.0
 metadata. Optional downloads preserve original bytes under ignored artifacts;
 the repository and CI uploads contain no original or altered photographs.
+
+The optional [original BDD dashcam diagnostic](docs/bdd-road-evaluation.md)
+uses separately pinned BDD100K images and legacy annotations. Its published
+box-derived reports retain the Regents of the University of California / BAIR
+notice and research, educational and not-for-profit terms in
+[LICENSE-data.txt](assets/recorded-bdd/LICENSE-data.txt); these data and
+derivatives are not relicensed under Apache-2.0. General commercial rights are
+not granted. Raw JPEGs and original JSON are ignored and excluded from CI
+uploads. The evaluator implementation remains Apache-2.0.
+
+Optional TUM RGB-D inputs and pinned calibration documents are acquired into
+ignored `data/*/raw/` folders. Raw depth, mocap and calibration files are not
+redistributed. The source mirrors do not establish the original data's licence;
+the official TUM terms have not been independently verified in this session.
+[Dataset provenance and limitations](docs/recorded-submaps.md).

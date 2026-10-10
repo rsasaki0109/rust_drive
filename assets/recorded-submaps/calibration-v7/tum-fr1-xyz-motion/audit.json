@@ -1,0 +1,238 @@
+{
+  "schema_version": 1,
+  "passed_integrity": true,
+  "summary": {
+    "accepted_updates": 10,
+    "accurate_root_updates": 7,
+    "all_updates_passed": false,
+    "final_map_generation": 4,
+    "final_map_points": 919,
+    "frames": 12,
+    "initialized_frames": 1,
+    "lost": false,
+    "map_update_rejections": 0,
+    "map_updates": 4,
+    "reference_valid_updates": 8,
+    "rejected_updates": 1,
+    "updates": 11
+  },
+  "frames": [
+    {
+      "source_index": 200,
+      "accepted": true,
+      "registration": {
+        "translation_error_m": 0.0,
+        "rotation_error_rad": 2.7755575615628914e-17,
+        "within_accuracy_gates": true
+      },
+      "root": {
+        "translation_error_m": 0.0,
+        "rotation_error_rad": 2.7755575615628914e-17,
+        "within_accuracy_gates": true
+      },
+      "map_updated": true,
+      "map_update_rejection": null
+    },
+    {
+      "source_index": 201,
+      "accepted": true,
+      "registration": null,
+      "root": null,
+      "map_updated": false,
+      "map_update_rejection": null
+    },
+    {
+      "source_index": 202,
+      "accepted": true,
+      "registration": null,
+      "root": null,
+      "map_updated": false,
+      "map_update_rejection": null
+    },
+    {
+      "source_index": 203,
+      "accepted": true,
+      "registration": null,
+      "root": null,
+      "map_updated": false,
+      "map_update_rejection": null
+    },
+    {
+      "source_index": 204,
+      "accepted": true,
+      "registration": {
+        "translation_error_m": 0.015974045897668463,
+        "rotation_error_rad": 0.022131122641507853,
+        "within_accuracy_gates": true
+      },
+      "root": {
+        "translation_error_m": 0.015974045897668463,
+        "rotation_error_rad": 0.022131122641507853,
+        "within_accuracy_gates": true
+      },
+      "map_updated": true,
+      "map_update_rejection": null
+    },
+    {
+      "source_index": 205,
+      "accepted": true,
+      "registration": {
+        "translation_error_m": 0.03620609750491537,
+        "rotation_error_rad": 0.009872922692205775,
+        "within_accuracy_gates": true
+      },
+      "root": {
+        "translation_error_m": 0.03620609750491537,
+        "rotation_error_rad": 0.009872922692205775,
+        "within_accuracy_gates": true
+      },
+      "map_updated": false,
+      "map_update_rejection": null
+    },
+    {
+      "source_index": 206,
+      "accepted": false,
+      "rejection": "ambiguous SE3 registration: distinct comparable local fit"
+    },
+    {
+      "source_index": 207,
+      "accepted": true,
+      "registration": {
+        "translation_error_m": 0.014698328351983052,
+        "rotation_error_rad": 0.0073495488076739,
+        "within_accuracy_gates": true
+      },
+      "root": {
+        "translation_error_m": 0.014698328351983052,
+        "rotation_error_rad": 0.0073495488076739,
+        "within_accuracy_gates": true
+      },
+      "map_updated": false,
+      "map_update_rejection": null
+    },
+    {
+      "source_index": 208,
+      "accepted": true,
+      "registration": {
+        "translation_error_m": 0.02008230284969847,
+        "rotation_error_rad": 0.02150245759446261,
+        "within_accuracy_gates": true
+      },
+      "root": {
+        "translation_error_m": 0.02008230284969847,
+        "rotation_error_rad": 0.02150245759446261,
+        "within_accuracy_gates": true
+      },
+      "map_updated": true,
+      "map_update_rejection": null
+    },
+    {
+      "source_index": 209,
+      "accepted": true,
+      "registration": {
+        "translation_error_m": 0.025178507454322683,
+        "rotation_error_rad": 0.01951656004776925,
+        "within_accuracy_gates": true
+      },
+      "root": {
+        "translation_error_m": 0.025178507454322683,
+        "rotation_error_rad": 0.01951656004776925,
+        "within_accuracy_gates": true
+      },
+      "map_updated": false,
+      "map_update_rejection": null
+    },
+    {
+      "source_index": 210,
+      "accepted": true,
+      "registration": {
+        "translation_error_m": 0.04487250592869119,
+        "rotation_error_rad": 0.020091894558989912,
+        "within_accuracy_gates": true
+      },
+      "root": {
+        "translation_error_m": 0.04487250592869119,
+        "rotation_error_rad": 0.020091894558989912,
+        "within_accuracy_gates": true
+      },
+      "map_updated": false,
+      "map_update_rejection": null
+    },
+    {
+      "source_index": 211,
+      "accepted": true,
+      "registration": {
+        "translation_error_m": 0.015265061376868283,
+        "rotation_error_rad": 0.015569550475380632,
+        "within_accuracy_gates": true
+      },
+      "root": {
+        "translation_error_m": 0.015265061376868283,
+        "rotation_error_rad": 0.015569550475380632,
+        "within_accuracy_gates": true
+      },
+      "map_updated": true,
+      "map_update_rejection": null
+    }
+  ],
+  "report_sha256": "e2e52db70dd3dfb9de57d48161a32826ef4b246d22e60aa1ef570db6548af25d",
+  "manifest_sha256": "6233f9663ae76613c106e246649621fcac8cd27f3f5eda887a0baf061c4296ed",
+  "freeze_sha256": "30841d8a91f9026b26e7901c59f2b17326397c4c5b9f84adddf4b33862a07b74",
+  "mutations_rejected": [
+    "omit_observation",
+    "invent_summary",
+    "operational_truth",
+    "source_identity",
+    "timestamp",
+    "duplicate_acquisition",
+    "invent_map_points",
+    "invent_map_geometry",
+    "invent_voxel_counts",
+    "invent_generation",
+    "invent_initial_fusion",
+    "conceal_expiry",
+    "invent_accepted_clock",
+    "weaken_minimum_pairs",
+    "weaken_ambiguity_ratio",
+    "root_pose",
+    "new_root_origin",
+    "truth_prior",
+    "invent_residual",
+    "omit_ambiguity",
+    "exceed_budget",
+    "non_spd_covariance",
+    "invent_accuracy",
+    "invent_map_update",
+    "invent_transaction_rejection",
+    "invent_rejected_pose",
+    "fuse_rejected_fit",
+    "accepted_pose_after_expiry"
+  ],
+  "frozen_provenance_mutations_rejected": [
+    "changed_submap_core_source_sha256",
+    "changed_evaluator_source_sha256",
+    "changed_geometry_checker_sha256",
+    "changed_independent_checker_sha256",
+    "changed_acquisition_source_sha256",
+    "changed_manifest_sha256"
+  ],
+  "fusion_contract_checks": [
+    "raw_weighted_online_mean",
+    "count_cap_atomic_rejection",
+    "point_cap_atomic_rejection",
+    "fixed_root_sensor_transform"
+  ],
+  "missing_reference_score_mutations_rejected": [
+    "missing_reference_accepted_estimate_mismatch",
+    "missing_reference_rejected_invented_estimate"
+  ],
+  "raw_sha256_verified": true,
+  "source_freeze_verified": true,
+  "geometry_reconstructed": true,
+  "every_map_generation_independently_reconstructed": true,
+  "physical_pose_independently_scored": true,
+  "optimizer_independently_rerun": false,
+  "root_confidence_or_calibrated_covariance_claim": false,
+  "maximum_root_translation_error_m": 0.04487250592869119,
+  "maximum_root_rotation_error_rad": 0.022131122641507853
+}
