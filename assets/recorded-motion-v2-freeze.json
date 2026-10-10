@@ -1,0 +1,158 @@
+{
+  "accuracy_gates": {
+    "rotation_rad": 0.1,
+    "translation_m": 0.1
+  },
+  "cargo_lock_sha256": "66a95960e1763d7623c40dc0c659e44cb5cda758b215c99bec09606a10c8ab86",
+  "dataset": "tum-fr1-xyz-motion-v2",
+  "evaluator_source_sha256": "2d57ae3425a051d9a07dac2ea6b6b4b0ef54c31862e1fdcc3c354c00f65c2402",
+  "frames": [
+    {
+      "file": "1305031110.835248.png",
+      "source_index": 260,
+      "split": "calibration",
+      "timestamp": 1305031110.835248
+    },
+    {
+      "file": "1305031110.871293.png",
+      "source_index": 261,
+      "split": "calibration",
+      "timestamp": 1305031110.871293
+    },
+    {
+      "file": "1305031110.901900.png",
+      "source_index": 262,
+      "split": "calibration",
+      "timestamp": 1305031110.9019
+    },
+    {
+      "file": "1305031110.938668.png",
+      "source_index": 263,
+      "split": "held_out",
+      "timestamp": 1305031110.938668
+    },
+    {
+      "file": "1305031110.971316.png",
+      "source_index": 264,
+      "split": "held_out",
+      "timestamp": 1305031110.971316
+    },
+    {
+      "file": "1305031111.003669.png",
+      "source_index": 265,
+      "split": "held_out",
+      "timestamp": 1305031111.003669
+    },
+    {
+      "file": "1305031111.039669.png",
+      "source_index": 266,
+      "split": "held_out",
+      "timestamp": 1305031111.039669
+    },
+    {
+      "file": "1305031111.071605.png",
+      "source_index": 267,
+      "split": "held_out",
+      "timestamp": 1305031111.071605
+    },
+    {
+      "file": "1305031111.103658.png",
+      "source_index": 268,
+      "split": "held_out",
+      "timestamp": 1305031111.103658
+    },
+    {
+      "file": "1305031111.139211.png",
+      "source_index": 269,
+      "split": "held_out",
+      "timestamp": 1305031111.139211
+    },
+    {
+      "file": "1305031111.170937.png",
+      "source_index": 270,
+      "split": "held_out",
+      "timestamp": 1305031111.170937
+    },
+    {
+      "file": "1305031111.199395.png",
+      "source_index": 271,
+      "split": "held_out",
+      "timestamp": 1305031111.199395
+    }
+  ],
+  "freeze_preparation": "metadata only; raw depth and mocap are not read and registration is not invoked",
+  "geometry_checker_sha256": "ab86ab67c0d46e08b89a0a47d8a59e9c95357cf41c40dbd40b1bcf5b49e6f9dc",
+  "ground_truth_interpolation": {
+    "extrapolation": false,
+    "max_bracket_s": 0.02,
+    "method": "linear translation and shortest-arc quaternion SLERP"
+  },
+  "independent_checker_sha256": "fbd7d35293b459e4d4bef36c0afea1e591f04d618b80bfee1d9e168d18588387",
+  "kind": "preregistered_temporal",
+  "manifest_sha256": "26b2e05ae03fe166195f0598c55f98f3f6d4188d86ab5a7687e0dfcf7850439a",
+  "map_policy": {
+    "initialization": "last accepted sensor-only fixed-map estimate, initially identity",
+    "map": "first measured depth cloud; never mocap geometry",
+    "odometry": "compose only contiguous accepted pair transforms; first rejection invalidates continuous trajectory",
+    "rejection": "retain all failures; no map update"
+  },
+  "matcher_source_sha256": "eca9fe887f4a237dd627eb06e2793579ec4fbffd6330d120017572d734c4b715",
+  "motion_preprocessing": {
+    "additional_voxel_m": 0.06,
+    "point_order": "lexicographic coarse voxel key",
+    "representative": "first lexicographic original voxel point"
+  },
+  "motion_source_sha256": "a02cc8d9db9fbf9b8f4c008a731c8ce7b7a2fea07ae49eb1a06ad8c59492c3b5",
+  "preprocessing": {
+    "cx": 319.5,
+    "cy": 239.5,
+    "fx": 525.0,
+    "fy": 525.0,
+    "height": 480,
+    "max_depth_m": 5.0,
+    "maximum_sampled_pixels": 4800,
+    "min_depth_m": 0.3,
+    "pixel_step": 8,
+    "point_order": "lexicographic voxel key",
+    "sample_origin_pixel": [
+      0,
+      0
+    ],
+    "units_per_metre": 5000,
+    "voxel_m": 0.03,
+    "voxel_representative": "first row-major sampled valid pixel",
+    "width": 640
+  },
+  "preprocessing_sha256": "4e728cc5375476636af4080d54eb974bb343bf9d019462e1c6a36c4561bf73b5",
+  "protocol_version": 4,
+  "registration_config": {
+    "ambiguity_rms_ratio": 1.05,
+    "ambiguity_rotation_probe_rad": 0.07,
+    "ambiguity_translation_probe_m": 0.15,
+    "max_condition_number": 10000.0,
+    "max_correspondence_m": 0.15,
+    "max_iterations": 30,
+    "max_map_points": 20000,
+    "max_neighbor_checks": 20000000,
+    "max_position_variance_m2": 0.25,
+    "max_rms_m": 0.08,
+    "max_rotation_jump_rad": 0.35,
+    "max_rotation_variance_rad2": 0.01,
+    "max_scan_points": 5000,
+    "max_translation_jump_m": 0.5,
+    "min_geometry_ratio": 0.005,
+    "min_overlap": 0.4,
+    "min_pairs": 30,
+    "rotation_tolerance_rad": 0.0001,
+    "translation_tolerance_m": 0.0001,
+    "trim_fraction": 0.2
+  },
+  "registration_config_sha256": "195ee7f9a32ddca53b110e7335b05b05fbda82d9fb944c98997f24be09bcf6c4",
+  "schema_version": 1,
+  "uncertainty": {
+    "calibration_data": "original0..110/10, fast120..131 and tight140..151; motion200..211 viewed after frozen v3 but not used to tune any registration or uncertainty setting",
+    "model": "conditional covariance plus diagonal engineering systematic-error allowance; provisional, not a statistical confidence guarantee",
+    "position_std_floor_m": 0.02,
+    "rotation_std_floor_rad": 0.03
+  }
+}

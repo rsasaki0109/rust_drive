@@ -47,6 +47,14 @@ Bounded XYZ terrain/components, measured-data acquisition/evaluation and optiona
 
 A density-aware classifier now raises the original calibration/regression scores, while one new thinned Autzen environment fails its frozen acceptance gates. Optional recorded RGB-D registration and CPU learned inference also execute, with explicit temporal-protocol and single-image limits. [Adaptive terrain](adaptive-ground.md); [recorded motion](recorded-rgbd.md); [offline inference](../integrations/onnx/README.md).
 
+Recorded-depth odometry now completes eleven fresh consecutive pair estimates
+and composes their natural 6DoF motion, with nine accepted fixed-first-cloud map
+fits and two ambiguity rejections. The first missing-mocap trial is preserved;
+full pair-plus-map acceptance remains unmet. Six independently annotated urban
+photographs extend learned inference beyond the portrait, retaining low recall
+and possible upstream COCO validation overlap. [Motion evidence](recorded-motion.md);
+[camera evidence](road-camera-evaluation.md).
+
 Next: establish reliable independent automotive perception, natural-motion localization across multiple recorded environments, measured extrinsics and camera/geometry integration before claiming the 30% planning waypoint. Preserve all observed failures as regression evidence.
 
 - General 3D point processing and terrain classification, richer shape tracking and data association. Bounded local measured-ground removal is implemented for near-flat native query scenes.

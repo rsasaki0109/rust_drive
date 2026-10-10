@@ -417,3 +417,44 @@ general traffic-rule compliance, construction negotiation, automotive
 perception accuracy or real-vehicle safety. Subjective maturity relative to
 Autoware, Apollo and openpilot remains **about 20%**. CI results must be read
 from the applicable GitHub run, separately from these local checks.
+
+## Recorded-motion and urban-camera diagnostics (2026-10-10 UTC)
+
+The driving workspace retains **331 tests**, **49 physical scenario runs** and
+**49 complete sensor replays**. All **245** historical output files remain byte
+identical. The opening Japanese intersection GIF and its provenance are unchanged.
+The optional RGB-D integration passes **10 tests**, formatting and strict Clippy;
+the unchanged ONNX integration passes its existing **4 tests** and legacy portrait
+regression. Pins, locks and RNE revision remain unchanged.
+
+[Recorded-motion evidence](../assets/recorded-motion-results.json) and the
+[protocol](recorded-motion.md) distinguish regression integrity from physical
+acceptance. The preregistered 260–271 interval has **11/11 accurate accepted pair
+fits**, eleven composed poses, and **9/11 accurate accepted fixed-map fits**.
+The other two map fits reject ambiguity, so the full physical protocol exits
+**1**. Independent depth/mocap scoring and eleven adversarial mutations reproduce
+the complete outcomes. The previous 200–211 trial's **exit 2** reference-gap
+failure is archived; its corrected regression retains all sensor fits and marks
+four pair and three map references unscorable. No reference gap, rejected fit or
+overconfident conditional covariance is counted as an accuracy pass.
+
+[Urban-camera evidence](road-camera-evaluation.md) runs Rust CPU inference
+**12 times on six real images**, with **37 independent road-object annotations**.
+The four evaluator-held-out images yield TP14/FP4/FN11, precision **0.778** and
+recall **0.560**. Seven provenance/geometry mutations reject; duplicate predictions
+add only false positives. These COCO validation photographs may overlap upstream
+model selection, and no camera-derived metric/control integration is claimed.
+
+The native adaptive-terrain checker now accepts only the documented namespace
+rename while retaining the original frozen algorithm identity. A new actual
+22-second capture repeats **441 exact replay ticks**, independent native rays,
+AABBs and 4.872 m bounded actor clearance. Its physical diagnostics exactly
+match the [preserved historical report](../assets/adaptive-native-results.json).
+Parameter and unrelated-source mutations reject; no classifier settings change.
+[New capture](../assets/adaptive-native-renamed-results.json).
+
+[Local check provenance](../assets/recorded-sensor-validation.json) records
+commands, hashes and bounded outcomes. This update preserves the **about 20%**
+subjective maturity estimate: independent automotive data, measured extrinsics,
+cross-environment localization and statistical uncertainty calibration remain
+open. Remote CI on this update must be assessed separately from local passes.

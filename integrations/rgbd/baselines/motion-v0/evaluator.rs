@@ -15,8 +15,6 @@ use std::{
     time::Instant,
 };
 
-mod motion;
-
 const WIDTH: u32 = 640;
 const HEIGHT: u32 = 480;
 const PIXEL_STEP: usize = 8;
@@ -93,11 +91,7 @@ fn validate_manifest(m: &Manifest) -> Result<(), String> {
     if m.schema_version != 1
         || !matches!(
             m.dataset.as_str(),
-            "tum-fr1-xyz"
-                | "tum-fr1-xyz-fast"
-                | "tum-fr1-xyz-tight"
-                | "tum-fr1-xyz-motion"
-                | "tum-fr1-xyz-motion-v2"
+            "tum-fr1-xyz" | "tum-fr1-xyz-fast" | "tum-fr1-xyz-tight"
         )
         || m.repository.is_empty()
         || m.revision.len() != 40
@@ -120,11 +114,7 @@ fn validate_manifest(m: &Manifest) -> Result<(), String> {
                     .and_then(|s| s.parse::<f64>().ok())
                     != Some(f.timestamp)
                 || f.source_index
-                    != if m.dataset == "tum-fr1-xyz-motion-v2" {
-                        260 + i
-                    } else if m.dataset == "tum-fr1-xyz-motion" {
-                        200 + i
-                    } else if m.dataset == "tum-fr1-xyz-tight" {
+                    != if m.dataset == "tum-fr1-xyz-tight" {
                         140 + i
                     } else if m.dataset == "tum-fr1-xyz-fast" {
                         120 + i
@@ -571,11 +561,7 @@ fn run() -> Result<bool, String> {
     Ok(passed)
 }
 fn main() {
-    match if std::env::args().any(|a| a == "--motion") {
-        motion::run()
-    } else {
-        run()
-    } {
+    match run() {
         Ok(true) => {}
         Ok(false) => std::process::exit(1),
         Err(e) => {

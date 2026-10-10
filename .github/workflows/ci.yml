@@ -89,6 +89,9 @@ jobs:
           cargo test --release --manifest-path integrations/onnx/Cargo.toml --locked
           cargo build --release --manifest-path integrations/onnx/Cargo.toml --locked
           python integrations/onnx/check.py --binary integrations/onnx/target/release/rustdriving-camera-detect --summary artifacts/camera-model/summary.json
+      - name: Reproduce independently annotated urban-camera diagnostics
+        run: |
+          python integrations/onnx/road_check.py --binary integrations/onnx/target/release/rustdriving-camera-detect --model artifacts/camera-model/yolox_nano.onnx --data artifacts/road-camera --output artifacts/road-camera/check --baseline integrations/onnx/road-results.json
       - name: Validate additional measured-data acquisition
         run: |
           python scripts/test-fetch-additional-datasets.py
@@ -117,6 +120,11 @@ jobs:
           python -c 'import subprocess; result=subprocess.run(["integrations/rgbd/target/release/rustdriving-rgbd-evaluate", "--manifest", "data/tum-fr1-xyz-tight/manifest.json", "--raw", "data/tum-fr1-xyz-tight/raw", "--freeze", "artifacts/rgbd/tight-freeze.json", "--output", "artifacts/rgbd/tight.json"]); assert result.returncode == 1, "expected partial benchmark acceptance (exit 1), not invalid input (exit 2)"'
           python scripts/check-recorded-rgbd.py --report artifacts/rgbd/tight.json --manifest data/tum-fr1-xyz-tight/manifest.json --raw data/tum-fr1-xyz-tight/raw --freeze artifacts/rgbd/tight-freeze.json --output artifacts/rgbd/tight-oracle.json
           python -c 'import json; r=json.load(open("artifacts/rgbd/tight.json")); assert (r["summary"]["accepted"],r["summary"]["rejected"],r["summary"]["heldout_passed"]) == (7,4,5), "recorded temporal baseline changed; inspect every failure"'
+      - name: Reproduce recorded-depth odometry and fixed-map failure evidence
+        run: |
+          python scripts/fetch-recorded-motion.py --dataset tum-fr1-xyz-motion
+          python scripts/fetch-recorded-motion.py --dataset tum-fr1-xyz-motion-v2
+          python scripts/check-recorded-motion-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-evaluate --output artifacts/recorded-motion
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -124,8 +132,10 @@ jobs:
           path: |
             artifacts/camera-model/check/
             artifacts/camera-model/summary.json
+            artifacts/road-camera/check/
             artifacts/adaptive/
             artifacts/rgbd/
+            artifacts/recorded-motion/
 
   visual:
     runs-on: ubuntu-latest

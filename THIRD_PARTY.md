@@ -27,3 +27,13 @@ Optional 3D visualization invokes the separately installed Blender executable (G
 Autoware and Apollo root licenses are Apache-2.0; openpilot is MIT at the researched revisions. These projects are architectural references rather than dependencies. See [research](docs/research.md) for source links and artifact-specific licensing restrictions.
 
 The optional standalone RNE adapter has a separate lockfile and [dependency inventory](integrations/rne/THIRD_PARTY.md). RNE is MIT OR Apache-2.0; no RNE source is vendored into the default RustDriving workspace.
+
+The optional [urban-camera diagnostic](docs/road-camera-evaluation.md) reproduces
+reference-box metadata from the COCO Consortium, *Microsoft COCO: Common Objects
+in Context* (Lin et al., 2014), under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+The report selects seven categories, converts box coordinates and associates
+predictions; these are adaptations of annotations, separately licensed from
+Apache-2.0 evaluator code. [Pinned official terms, mirror and image attribution](integrations/onnx/README.md#urban-input-provenance-and-separate-licenses).
+Four original photographs have CC BY 2.0 metadata and two have CC BY-ND 2.0
+metadata. Optional downloads preserve original bytes under ignored artifacts;
+the repository and CI uploads contain no original or altered photographs.

@@ -147,3 +147,12 @@ current Cargo package and Rust module use `rustdriving-perception` and
 `rustdriving_perception`; this project rename does not revise the frozen
 classification parameters or historical results. Source hashes change with the
 import spelling, so new validation must record its current source fingerprint.
+
+The native checker now verifies both the exact renamed source and its original
+frozen identity after reversing only `use rustdriving_core::Vec3;`. Every other
+byte remains fixed. The [new native capture](../assets/adaptive-native-renamed-results.json)
+repeats all 441 sensor-only ticks and independent ray, actor-clearance and AABB
+checks; its physical diagnostics exactly match the preserved historical report.
+An altered slope parameter and an unrelated source edit are both rejected.
+This repairs the stale namespace guard that stopped the native CI job before
+acquisition; it does not change the classifier or its failed Autzen results.
