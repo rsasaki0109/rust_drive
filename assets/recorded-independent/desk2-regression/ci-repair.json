@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "diagnosed_head": "36a10a1773e6261bf69928d91d758187029de6c7",
+  "unmodified_suite_exit_code": 1,
+  "root_cause": "Historical-source reconstruction copied all current binary targets; cargo build without --bin attempted the newly added independent evaluator, whose include_bytes! preregistration asset is intentionally absent from historical source tree.",
+  "reproduced_build_exit_code": 101,
+  "failure_log": "artifacts/recorded-reprojection/pr15-diagnosis-unmodified/first-v2-build.log",
+  "failure_log_sha256": "7553ccaafcc88f4667c7025261048621442770d7cc46389c4be119a4771239c3",
+  "fix": "Select only --bin rustdriving-rgbd-evaluate in historical build. No future assets copied into archived-source reconstruction.",
+  "changed_source": "scripts/check-recorded-reprojection-suite.py",
+  "changed_source_sha256": "3ed00de2b37d234d103abd0c83ecc588daa2eefa8ffdde432dc061cee571f478",
+  "fixed_suite_exit_code": 0,
+  "fixed_suite_report": "artifacts/recorded-reprojection/pr15-diagnosis-fixed/reprojection-regression-suite.json",
+  "fixed_suite_report_sha256": "e222910a745278fb0719076e1d4836a4c0ad36cacb932b8c55df3d66c9846236",
+  "regression_integrity_passed": true,
+  "historical_replay": {
+    "source_rebuilt_replay": true,
+    "exact_original_freeze_reproduced": true,
+    "evaluator_exit_status": 2,
+    "original_error_log_identical": true,
+    "original_no_report_outcome_reproduced": true,
+    "binary_sha256": "4cbca755eead51f92951169bf562878559709a211105b19d539733f129150e3e",
+    "first_binary_sha256": "17870d9524b09f9342924556a4bb92a79aba8509c7ea6a5fd032acdc3c1ed800",
+    "binary_identical_to_first_executable": false,
+    "accuracy_claim": false
+  },
+  "viewed_regression_cases": 4,
+  "all_physical_protocols_passed": false,
+  "new_independent_desk2_raw_read": false,
+  "historical_and_heldout_source_files_changed": false
+}

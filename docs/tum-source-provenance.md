@@ -54,10 +54,11 @@ The following BibTeX reproduces the fields supplied on that official page:
 }
 ```
 
-RustDriving's intended modifications are a fixed original-index selection,
+RustDriving's modifications are a fixed original-index selection,
 timestamp association and derived estimator/audit reports. The protocol does
-not resize, retime or edit selected source images. Those planned modifications
-are not evidence that acquisition or evaluation has already run.
+not resize, retime or edit selected source images. The completed estimator trial
+and completed repaired motion audit are documented separately from source license
+and archive provenance.
 
 ## Page evidence and archive identity
 
@@ -83,10 +84,22 @@ host returned 403, with curl exit 56 and no final origin response. Archive
 bytes, exact length, ETag, Last-Modified and authoritative checksum were
 unavailable. No checksum link was found on the two accessible official pages;
 the redirected directory listing was also inaccessible. A configuration draft
-for the actual redirect host has been saved and still requires publication.
-The protocol preserves proxy routing and TLS verification.
+for the actual redirect host was saved during discovery. Those observations
+remain historical; acquisition subsequently succeeded through the same official
+redirect while preserving proxy routing and TLS verification.
 
-The source link is unversioned. Its eventual local SHA-256 and MD5 identify
+[The completed acquisition log](../assets/recorded-independent/desk2-v1/acquisition.json)
+records **349,445,005 compressed bytes**, **376,688,640 decompressed stream
+bytes** including archive headers/padding, **1,286 members**, and
+**96,556,033 selected raw bytes**. The selected inventory comprises 180 depth
+images, 162 distinct RGB images and three complete metadata tables, plus the
+separately pinned calibration-document sidecar.
+
+Archive SHA-256:
+`a569e4cb453a3cd9285bc985fcb109e65f055c75b33a4b155acd9a68d96b77d2`.
+Archive MD5: `9250a26b897f770a6f9b5f4380020784`.
+
+The source link is unversioned. These computed hashes identify
 the acquired archive, without proving a publisher signature or independent
 published checksum. `published_checksum` remains null in the prospective
 design. If authoritative checksum evidence becomes available, preserve it and
@@ -111,7 +124,21 @@ and 5,000 depth units per metre. This is an existing published-profile
 assumption, not independently measured camera or vehicle calibration; no
 additional undistortion is claimed.
 
-Actual archive identity, metadata qualification and post-fit accuracy remain
-pending. New authoritative license evidence changes the prospective provenance
-record only. Older “unverified” license statements describe the evidence
+Archive identity and timestamp qualification are recorded. The first estimator
+trial fails complete availability acceptance, with 16/179 accepted and accurate
+updates. [The additive motion audit](../assets/recorded-independent/desk2-audit-v2/audit-v2.json)
+now passes integrity and independently scores all 179 outcomes after repairing
+the original checker's calibration-schema defect. The original failure remains
+preserved; integrity success does not establish physical acceptance. Desk2 is
+now viewed data; later runs are regressions.
+New authoritative license evidence changes this source's provenance record only.
+Older “unverified” license statements describe the evidence
 available when those immutable artifacts were created and remain byte-exact.
+
+
+The [completed viewed regression suite](../assets/recorded-independent/desk2-regression/suite.json)
+reproduces the same first-trial non-timing evidence with all 179 outcomes and a
+passing integrity audit. [Reproduction commands](independent-recorded-motion.md#regression-reproduction)
+provide explicit acquisition or retained-byte verification and the tested
+wrapper; original raw archive bytes stay outside CI evidence uploads. This is
+reproduction evidence, not another independent recording or improved accuracy.

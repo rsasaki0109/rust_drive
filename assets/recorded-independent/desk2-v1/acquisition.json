@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "dataset": "tum-fr1-desk2-independent",
+  "passed": true,
+  "official_archive": {
+    "url": "https://cvg.cit.tum.de/rgbd/dataset/freiburg1/rgbd_dataset_freiburg1_desk2.tgz",
+    "final_url": "https://webshare.cvg.cit.tum.de/g/rgbd/dataset/freiburg1/rgbd_dataset_freiburg1_desk2.tgz",
+    "bytes": 349445005,
+    "sha256": "a569e4cb453a3cd9285bc985fcb109e65f055c75b33a4b155acd9a68d96b77d2",
+    "md5": "9250a26b897f770a6f9b5f4380020784",
+    "root": "rgbd_dataset_freiburg1_desk2/",
+    "published_checksum": null
+  },
+  "preregistration_sha256": "6fa44837d27f6f1f4f69285780ccd5e4883d7b59ace15500699914aca323797a",
+  "manifest_sha256": "f9de2bcb1037c46c70242f2c1bdbc8b09bbd06c95716d15b256b3c523ba24327",
+  "acquisition_helper_sha256": "32f6cd90afcc26d5b88464e490cf139741d5bc7414370d5d37374a9c15ca3308",
+  "qualification_helper_sha256": "f1fbebaf08d86dd0d271b4c8325d8089ce4b850d27c3800651f640c9696e6f28",
+  "compressed_acquisition_attempted": true,
+  "decompression_attempted": true,
+  "compressed_archive_bytes_observed": 349445005,
+  "compressed_images_acquired": true,
+  "archive_payload_decompressed": true,
+  "image_headers_read": false,
+  "pixels_read": false,
+  "ground_truth_pose_values_parsed": false,
+  "features_or_fits_run": false,
+  "metadata_qualified_before_selected_image_copy": true,
+  "archive_members": 1286,
+  "decompressed_bytes": 376688640,
+  "selected_raw_bytes": 96556033,
+  "files": 345,
+  "calibration_documentation_sidecar": true,
+  "manifest_was_written": true,
+  "success_manifest_retained": true,
+  "qualification": {
+    "window": {
+      "first_depth_index": 100,
+      "last_depth_index": 279,
+      "frames": 180,
+      "updates": 179
+    },
+    "metadata_files": {
+      "depth.txt": {
+        "bytes": 29471,
+        "sha256": "68c10ea495f3f942665cb0913857554b4e0734729b93ddd331e571180b7929be"
+      },
+      "rgb.txt": {
+        "bytes": 28239,
+        "sha256": "69dd8458e19acc45d7aa89ec4b0bc25ba872a7070ee049a272ac73771fa2f2ea"
+      },
+      "groundtruth.txt": {
+        "bytes": 164359,
+        "sha256": "de1c4f91685f7ce0ec5bdc644f5aec007affc4d51b3476ddc946cbf21e48b166"
+      }
+    },
+    "timestamps": {
+      "depth_index_rows": 639,
+      "rgb_index_rows": 640,
+      "ground_truth_rows": 2428,
+      "strict_depth_order": true,
+      "strict_rgb_order": true,
+      "strict_ground_truth_order": true,
+      "all_frame_brackets_valid": true,
+      "max_ground_truth_bracket_s": 0.02,
+      "max_pair_gap_s": 0.02,
+      "maximum_observed_ground_truth_bracket_us": 11400,
+      "maximum_pair_gap_us": 17030,
+      "unique_rgb_acquisitions": 162,
+      "duplicate_rgb_associations": 18,
+      "summary_time_unit": "rounded microseconds from source timestamps; qualification gates use unrounded seconds"
+    }
+  }
+}

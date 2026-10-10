@@ -174,6 +174,33 @@ jobs:
         run: |
           python scripts/test-independent-dataset.py
           python scripts/check-recorded-independent.py --self-test --synthetic-packet artifacts/recorded-independent/rust-fixture/fixture.json --output artifacts/recorded-independent/self-test.json
+      - name: Reproduce the viewed official desk2 failure and corrected independent audit
+        run: |
+          python scripts/fetch-independent-dataset.py tum-fr1-desk2-independent --archive "$RUNNER_TEMP/rustdriving-desk2-source.tgz" --preregistration assets/recorded-independent/desk2-v1/design.json --acquisition-log artifacts/recorded-independent/official-acquisition.json
+          python scripts/check-recorded-independent-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-independent --archive "$RUNNER_TEMP/rustdriving-desk2-source.tgz" --manifest data/tum-fr1-desk2-independent/manifest.json --raw data/tum-fr1-desk2-independent/raw --output artifacts/recorded-independent/viewed-regression
+      - name: Audit bounded multiscale features on analytic controls and both viewed recordings
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+        run: |
+          integrations/rgbd/target/release/rustdriving-rgbd-multiscale-pairs --control --output artifacts/multiscale-pairs/control.json
+          python scripts/check-multiscale-features.py --report artifacts/multiscale-pairs/control.json --output artifacts/multiscale-pairs/control-oracle.json
+          for dataset in tum-fr1-room-temporal tum-fr1-desk2-independent; do
+            integrations/rgbd/target/release/rustdriving-rgbd-multiscale-pairs --prepare-freeze --manifest "data/$dataset/manifest.json" --output "artifacts/multiscale-pairs/$dataset-freeze.json"
+            integrations/rgbd/target/release/rustdriving-rgbd-multiscale-pairs --manifest "data/$dataset/manifest.json" --raw "data/$dataset/raw" --freeze "artifacts/multiscale-pairs/$dataset-freeze.json" --output "artifacts/multiscale-pairs/$dataset-report.json"
+            python scripts/check-multiscale-features.py --report "artifacts/multiscale-pairs/$dataset-report.json" --manifest "data/$dataset/manifest.json" --raw "data/$dataset/raw" --freeze "artifacts/multiscale-pairs/$dataset-freeze.json" --output "artifacts/multiscale-pairs/$dataset-oracle.json"
+          done
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          expected = {"tum-fr1-room-temporal": (138, 165), "tum-fr1-desk2-independent": (124, 154)}
+          for dataset, (native, multi) in expected.items():
+              report = json.loads(Path(f"artifacts/multiscale-pairs/{dataset}-report.json").read_text())
+              assert report["summary"] == {
+                  "total_pairs": 179,
+                  "native": {"fitted": native, "accurate": native, "scorable": 179},
+                  "multiscale": {"fitted": multi, "accurate": multi, "scorable": 179},
+              }, "viewed pair result changed; retain and inspect every failure"
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -195,6 +222,7 @@ jobs:
             artifacts/recorded-supported/
             artifacts/recorded-tracked/
             artifacts/recorded-independent/
+            artifacts/multiscale-pairs/
             artifacts/pyramidal-tracking-synthetic-exercises.json
 
   visual:

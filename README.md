@@ -58,9 +58,21 @@ is not promoted to the original path.
 
 The [independent recording protocol](docs/independent-recorded-motion.md)
 fixes a separate TUM desk2 recording and the original estimator before reading
-new data. Its official archive acquisition and continuous evaluation remain
-pending download access; build and synthetic checks are separate evidence.
+new data. Its first official-source trial accepts and accurately scores only
+**16/179 updates** before tracking loss. An additive calibration-schema repair
+lets the independent auditor verify all 179 outcomes while preserving the
+original estimator, report and failed auditor. This is another recording of the
+same desks, without automotive generalization or a maturity increase.
 [Authoritative data license and attribution](docs/tum-source-provenance.md).
+
+An optional [bounded multiscale feature comparison](docs/multiscale-features.md)
+improves accurate adjacent-pair fits on the viewed room recording from 138 to
+165 of 179 and desk2 from 124 to 154 of 179, while maximum pair errors increase.
+It retains original FAST/BRIEF and pose-fitting math; continuous trajectory,
+tracking permission and vehicle integration are unimplemented for this frontend.
+The original room 52/179 and desk2 16/179 root-accuracy failures remain unchanged.
+Independent audits verify all 179 pairs in each recording; maturity remains
+about 20%, with the 30% and 50% goals unmet.
 
 ## Build and run
 

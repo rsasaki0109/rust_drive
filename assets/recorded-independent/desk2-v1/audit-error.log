@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/workspace/rust_drive/scripts/check-recorded-independent.py", line 1491, in <module>
+    main()
+  File "/workspace/rust_drive/scripts/check-recorded-independent.py", line 1452, in main
+    raw = verified_inputs(manifest, args.raw, report)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/rust_drive/scripts/check-recorded-independent.py", line 952, in verified_inputs
+    v.calibration_check(report, manifest, raw_path)
+  File "/workspace/rust_drive/scripts/check-recorded-visual.py", line 814, in calibration_check
+    for key, value in c['source_rgb_distortion'].items():
+                      ~^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'source_rgb_distortion'

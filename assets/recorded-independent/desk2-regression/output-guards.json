@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "full_numerical_audit_source_sha256": "c7a17be66d6a122503240037563978db87b04954dfab26e2d4354e45209b3ac0",
+  "final_guarded_source_sha256": "649c23544145a7be7a6f23007ea946d67c17e60785e40f516e7e0a98f103519b",
+  "scope": "Only pre-resolution fresh-output admission changed after the full numerical audit; checked separately without repeating viewed image evaluation",
+  "cases": [
+    {
+      "case": "existing_directory",
+      "exit_code": 2,
+      "diagnostic": "independent viewed regression: output already exists or is a symlink; preserve previous attempt and choose a new directory",
+      "previous_report_untouched": true,
+      "missing_symlink_target_not_created": true
+    },
+    {
+      "case": "broken_symlink",
+      "exit_code": 2,
+      "diagnostic": "independent viewed regression: output already exists or is a symlink; preserve previous attempt and choose a new directory",
+      "previous_report_untouched": true,
+      "missing_symlink_target_not_created": true
+    }
+  ]
+}
