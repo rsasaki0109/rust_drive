@@ -1,0 +1,84 @@
+{
+  "scope": "v3 actual layout trial; physical and sensor checks passed, intersection stationary-body criterion failed",
+  "accepted_final_layout": false,
+  "source_fingerprint_sha256": "fd7ea746927a7032519c31a09cc586fa4c582e8b66c8efeb17a58076730f2b88",
+  "fixture_sha256": {
+    "scenario": "5c62ad696b8f9adb9064fda8d07974105e0aeaf0b665c69ce767bbc72b3bd46d",
+    "scene": "e1179f645bf1a21359bc0ce094dd58d473d51c85578e167e663aa2cd26e7a8b0"
+  },
+  "checker_sha256": "5d65381707f91d71a3085289366bd738595ca0432c7a4951e8f623ae9a3dbb9c",
+  "summary": {
+    "scenario": "Native Japanese city: two physical crossings and construction ahead",
+    "seed": 7,
+    "simulated_seconds": 46.0,
+    "steps": 921,
+    "reached_goal": false,
+    "collisions": 0,
+    "road_violations": 0,
+    "traffic_min_clearance": 2.2500009999999953,
+    "min_clearance": 2.721514142632317,
+    "localization_rmse": 0.059815675515263594,
+    "localization_max_error": 0.16939871396244527,
+    "final_speed": 0.0,
+    "progress": 40.994875779969966,
+    "emergency_steps": 123,
+    "avoidance_steps": 0,
+    "max_tracks": 16,
+    "passed": true,
+    "failures": [],
+    "signal_min_stopline_margin_m": 1.9466847381540848
+  },
+  "raw_sha256": {
+    "run.json": "283e7970623584b2f82985882d724b7f10a00455673ab6da27ab3e4ac393c289",
+    "scene.json": "4b8b7aec5e856a5f59ac3ee9a16b068f9d07d6259f8659ee232bad73ea050a65",
+    "sensors.jsonl": "d5dff015cecd1c5027ae4b84de24d42c2d31c604ef4202aa5523c3abf9e00c31"
+  },
+  "archive": {
+    "path": "artifacts/japan-city-demo-v3/seed-7.tar.gz",
+    "sha256": "db1653566be417fab036b58a366b29a5588e018427ad5b30ef559dce5bfe1a08",
+    "bytes": 67173021,
+    "files_sha256": {
+      "run.json": "283e7970623584b2f82985882d724b7f10a00455673ab6da27ab3e4ac393c289",
+      "sensors.jsonl": "d5dff015cecd1c5027ae4b84de24d42c2d31c604ef4202aa5523c3abf9e00c31",
+      "scene.json": "4b8b7aec5e856a5f59ac3ee9a16b068f9d07d6259f8659ee232bad73ea050a65",
+      "summary.json": "86b1b15fee45815f169a5b36bcfe90b93184151ba57d6fe79ec0d7ded9b344c1",
+      "replay/outputs.jsonl": "d443517fa006a1e97b59eb0eed74897cb5fa2fb1f1e6a9383ac36cfd13617763",
+      "replay/replay.json": "357aa0770a03beaa2248e37ddc00231f8582bd47c7da11d9cfbe60f898e5e4d1"
+    },
+    "gzip_crc_verified": true,
+    "raw_preserved": false
+  },
+  "native_and_all_921_sensor_replay_ticks_passed": true,
+  "unchanged_independent_ground_ray_body_oracle_passed": true,
+  "continuous_253_actor_pair_floor_1m_signals_lane_passed": true,
+  "failure_reason": "ego <=0.1 m/s while conservative full-body envelope occupies second street",
+  "stationary_native_body_samples_inside_second_street": 240,
+  "stationary_junction_span_s": [
+    32.15,
+    33.345
+  ],
+  "ego_center_during_stationary_span_x_m": [
+    31.886793350295626,
+    31.88959034680306
+  ],
+  "planner_mode": "Emergency; forecast contact leaves no feasible candidate",
+  "ground_confident_and_health_empty_and_signal_green_during_stop": true,
+  "example_forecast": {
+    "time_s": 33,
+    "unlabeled_track_id": 108,
+    "measured_track_position_m": [
+      43.3351406324251,
+      -7.469079550950525
+    ],
+    "estimated_velocity_m_s": [
+      -1.3798995318483414,
+      0.7211042015642173
+    ],
+    "forecast_horizon_s": 8,
+    "forecast_position_m": [
+      32.29594437763837,
+      -1.7002459384367867
+    ]
+  },
+  "log_sha256": "692dc3dd688574116117b00909e372aa9220389da7150a5245ecbf651f4ed801"
+}

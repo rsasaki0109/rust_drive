@@ -2,9 +2,9 @@
 
 **A Rust-native autonomous driving stack.**
 
-![Recorded left-hand urban RNE driving with traffic signals, cars, trucks, cyclists, pedestrians and a walking dog](assets/city-demo.gif)
+![Recorded left-hand RNE driving through Japanese urban intersections with signals, roadworks and diverse road users](assets/japan-city-demo.gif)
 
-An original, modular driving stack with a working, deterministic closed-loop simulation. The vehicle processes synthetic LiDAR, fuses noisy GNSS and odometry, tracks and predicts obstacles, and plans steering and braking. The opening GIF records CPU-only Robot Native Engine (RNE) driving on the left side of an authored urban road: two signals, five passenger vehicles, two trucks, seven pedestrians (including an elder with a cane, a child and a parent pushing a stroller), four bicycles and a leashed dog. Ego waits at red, restarts after green and yields to staggered crossings. Vehicles use fixed SI display dimensions, independently of sensing/collision radii; a fixed-scale camera keeps their size consistent. Original articulated meshes and city buildings visualize actual recorded positions. Walking, pedaling and dog gait are cosmetic; physical actors remain capsule/circle proxies, with no semantic recognition or avatar contact response. Blender Cycles renders the 46-second episode at 3× playback. [Checks, mesh details and limitations](docs/road-users.md); [reproduce the GIF](#reproduce-the-gif).
+An original, modular driving stack with a working, deterministic closed-loop simulation. The vehicle processes synthetic LiDAR, fuses noisy GNSS and odometry, tracks and predicts obstacles, and plans steering and braking. The opening GIF records CPU-only Robot Native Engine (RNE) driving on the left side of an authored Japanese urban street: two intersections, horizontal signals, storefronts and a guarded construction site. Twenty-three recorded road users include seven passenger vehicles, three trucks, eight pedestrians, four bicycles and a leashed dog, with a child, parent pushing a stroller, elder with a cane and construction worker. Ego waits at red, resumes on green and completely exits both intersections. Vehicles use fixed SI display dimensions and a fixed-scale camera. Original meshes visualize recorded positions; their articulated animation is cosmetic, while physical actors use capsule/circle proxies. Blender Cycles renders the 46-second episode at 3× playback. The work-zone cuboid is physical, but is occluded by traffic in this recording; construction recognition and negotiation are unimplemented. [Checks, meshes and limitations](docs/japanese-city-demo.md); [reproduce the GIF](#reproduce-the-gif).
 
 The project is now **RustDriving**. Cargo packages and commands use `rustdriving-*` / `rustdriving`; the GitHub repository currently remains `rsasaki0109/rust_drive`. The requested repository rename to `rust_driving` is pending; the commands below use the current repository. Historical recordings and versioned schema identifiers retain their original spelling.
 
@@ -41,7 +41,7 @@ Replay creates a fresh pipeline and recomputes localization, tracks, predictions
 
 ## CPU-only Robot Native Engine demo
 
-The opening 3D GIF replays actual native vehicle dynamics, steering lag and inclined physical-scene LiDAR queries against native road support and nineteen road-user proxies, including crossing pedestrians, bicycles, traffic vehicles and a walking dog. A separate closure-detour recording below uses the default planar sweep. Blender Cycles renders the road, vehicle proxies and recorded planned trajectories on CPU. The shared RustDriving pipeline drives it. No GPU, graphics context, ROS, Docker, CARLA server or pretrained model is required.
+The opening 3D GIF replays actual native vehicle dynamics, steering lag and inclined physical-scene LiDAR queries against native road support and twenty-three road-user proxies, including crossing pedestrians, bicycles, traffic vehicles and a walking dog. A separate closure-detour recording below uses the default planar sweep. Blender Cycles renders the road, vehicle proxies and recorded planned trajectories on CPU. The shared RustDriving pipeline drives it. No GPU, graphics context, ROS, Docker, CARLA server or pretrained model is required.
 
 ![Actual RNE closure notification, detour and obstacle avoidance rendered in 3D](assets/rne-3d-demo.gif)
 
@@ -102,7 +102,7 @@ bash scripts/check-ground-scenes.sh --compact --output artifacts/ground-scenes
 
 ### Roads from OpenStreetMap
 
-The Rust importer converts bounded local Overpass JSON into the ordinary directed ENU road graph. A pinned genuine OSM extract includes attribution, ODbL terms and reproducible source conversion. Imported coordinates supply the map; noisy GNSS and odometry still supply localization. Missing width tags use explicit simulation calibration. Lane topology, legal turn restrictions and HD-map accuracy remain outside this importer. [Build, import and drive the external-data route](docs/osm-import.md).
+The Rust importer converts bounded local Overpass JSON into the ordinary directed ENU road graph. A pinned genuine OSM extract includes attribution, ODbL terms and reproducible source conversion. Imported coordinates supply the map; noisy GNSS and odometry still supply localization. Missing width tags use explicit simulation calibration. Unconditional motorcar node-via turn restrictions now constrain route search; unsupported relevant restrictions fail explicitly. Lane topology and HD-map accuracy remain outside this importer. [Legal-turn checks and limits](docs/turn-restrictions.md). [Build, import and drive the external-data route](docs/osm-import.md).
 
 ```sh
 cargo run --release --locked --bin rustdriving -- import-osm \
@@ -262,23 +262,24 @@ python -m pip install -r scripts/requirements-demo.txt
 bash scripts/setup-rne.sh
 source scripts/env.sh
 cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- \
-  --scenario scenarios/native-city-demo.json --scene scenes/ground-moving-traffic.json \
+  --scenario scenarios/native-japan-city-demo.json --scene scenes/japan-city-construction.json \
   --lidar-3d --ground-segmentation --vehicle-body --precise-capsule-rays \
   --plant dynamic --seed 7 \
-  --output artifacts/city-demo/seed-7
+  --output artifacts/japan-city-demo/seed-7
 cargo run --release --locked --bin rustdriving -- replay \
-  --log artifacts/city-demo/seed-7/sensors.jsonl --output artifacts/city-demo/seed-7/replay
-python3 scripts/render_demo_3d.py artifacts/city-demo/seed-7/run.json \
-  --native-scene artifacts/city-demo/seed-7/scene.json \
-  --output artifacts/city-demo/demo.gif --samples 12 --threads 3 \
-  --environment urban --camera street --dog-pairs 17=18 \
+  --log artifacts/japan-city-demo/seed-7/sensors.jsonl --output artifacts/japan-city-demo/seed-7/replay
+python3 scripts/render_demo_3d.py artifacts/japan-city-demo/seed-7/run.json \
+  --native-scene artifacts/japan-city-demo/seed-7/scene.json \
+  --output artifacts/japan-city-demo/demo.gif --samples 12 --threads 3 \
+  --environment urban-japan --camera street --dog-pairs 17=18 \
   --actor-models 0=sedan 1=pedestrian 2=cyclist 3=van 4=pedestrian \
     5=cyclist 6=pedestrian 7=sedan 8=hatchback 9=pickup 10=truck \
     11=truck 12=cyclist 13=cyclist 14=elder 15=child \
-    16=parent_stroller 17=pedestrian 18=dog
+    16=parent_stroller 17=pedestrian 18=dog 19=sedan 20=hatchback \
+    21=worker 22=truck
 ```
 
-Open `artifacts/city-demo/demo.gif`. The renderer emits a PNG and [provenance JSON](assets/city-demo.json), auditing recorded body and actor poses, road/obstacle meshes and measured sensor consistency. The published GIF is 960 × 640 pixels. To refresh the README asset intentionally, use `--output assets/city-demo.gif` in the render command. [Independent road-user checks](docs/road-users.md); [ground-classification limits](docs/ground-lidar.md); [editable models and older demo reproduction](docs/3d-demo.md).
+Open `artifacts/japan-city-demo/demo.gif`. The renderer emits a PNG and [provenance JSON](assets/japan-city-demo.json), auditing recorded body and actor poses, road/obstacle meshes and measured sensor consistency. The published GIF is 960 × 640 pixels. To refresh the README asset intentionally, use `--output assets/japan-city-demo.gif` in the render command. [Independent intersection and road-user checks](docs/japanese-city-demo.md); [ground-classification limits](docs/ground-lidar.md); [editable models and older demo reproduction](docs/3d-demo.md).
 
 GIF bytes may differ between Blender/Pillow/font versions; sensor replay is deterministic on the same binary/platform. The reference GIF remains reproducible with `bash scripts/demo.sh`.
 

@@ -1,0 +1,1463 @@
+{
+  "schema_version": 1,
+  "passed": true,
+  "complete": true,
+  "scope": "authored unconditional node-via turn rules; planar driving, recorded 20 Hz linear/circular physical checks",
+  "source_fingerprint_sha256": "187369e876b520dd3c363a0fac7596024b8e45df3b13d2492ec573d8e803fd46",
+  "checker_sha256": "bb3dd373733e06ce811d3e3c45839ae9cd2287bce3327baf101ee9d364a57801",
+  "source_fingerprint_scope": "Rust sources, manifests, locks, toolchains and native pin; selected fixtures hashed separately",
+  "fixture_sha256": {
+    "scenarios/turn-no-main.json": "022e579e0ac98a08c854cc9fdce6a3e1afd3d35c942dfda79d8a9db239242843",
+    "scenarios/turn-only-detour.json": "962e2aae1c702905eb79cccf809eb416cc118c5d8611d30b4163ccae2aa2e597",
+    "scenarios/turn-arrival-memory.json": "97c5b20c4247e1784e291dda885bcb61247126e9ad0524a18d013149dee2ae3a",
+    "maps/osm/turn-restriction-fixture.json": "78b85eb66ac81325c1da81ed030da5bebddb286bc3b6820faaa343ab80715f77"
+  },
+  "rne_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
+  "binary_sha256": {
+    "reference": "ac7181fa5849969bec59a9fdcfa47befe82c426fd613bbedf3f7d1d967e28ffd",
+    "native": "8ac789a5d79834bcab398f73f2840948e8e642e62d408ba8d5332383d9892f8a"
+  },
+  "cases": [
+    {
+      "backend": "reference",
+      "case": "turn-no-main",
+      "seed": 1,
+      "passed": true,
+      "summary": {
+        "scenario": "turn-no-main",
+        "seed": 1,
+        "simulated_seconds": 30.200000000000003,
+        "steps": 605,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.5968147611958314,
+        "localization_rmse": 0.06292587125963134,
+        "localization_max_error": 0.18237925206265732,
+        "final_speed": 0.16183986020305485,
+        "progress": 208.52108951584793,
+        "emergency_steps": 2,
+        "avoidance_steps": 93,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "edge_ids": [
+        "approach",
+        "detour",
+        "east-exit"
+      ],
+      "replay_ticks": 605,
+      "recorded_segment_min_clearance_m": 0.5945869218383826,
+      "clearance_floor_m": 0.5,
+      "recorded_corridor_min_reserve_m": 0.7654643562430317,
+      "goal_distance_m": 1.0090496514024538,
+      "map_search_in_replay": true,
+      "mutations": [
+        {
+          "mutation": "removed_rule",
+          "exit_code": 2,
+          "diagnostics": "rustdriving: navigation map does not match configured initial route\n",
+          "input_sha256": "354b3dc2690a7e3a580159f7718874fdd0d7f957027fd6a06373f05df6c04752"
+        },
+        {
+          "mutation": "invalid_via",
+          "exit_code": 2,
+          "diagnostics": "rustdriving: turn restriction has invalid via-node connectivity\n",
+          "input_sha256": "56e4c2a1cedfafa640062edbdf3ee4d1a0f380e1c7aa3f31adc1a419caa5c543"
+        },
+        {
+          "mutation": "expected_forbidden_path",
+          "exit_code": 2,
+          "diagnostics": "rustdriving: replay mismatch at tick 0 (time 0.000)\n",
+          "input_sha256": "4835f6efca7401df7031fec35941914d7fb5a9b58adcf347299003e072ab171e"
+        }
+      ],
+      "archive": {
+        "path": "/tmp/rustdriving-turn-matrix-v3/reference-turn-no-main-seed-1.tar.gz",
+        "sha256": "d61c9bb6d91cb1321728605fc35aff02ea9e1b9e4396dc9fbb18b54ccd76a64e",
+        "bytes": 8500558,
+        "files_sha256": {
+          "expected_forbidden_path.jsonl": "4835f6efca7401df7031fec35941914d7fb5a9b58adcf347299003e072ab171e",
+          "invalid_via.jsonl": "56e4c2a1cedfafa640062edbdf3ee4d1a0f380e1c7aa3f31adc1a419caa5c543",
+          "removed_rule.jsonl": "354b3dc2690a7e3a580159f7718874fdd0d7f957027fd6a06373f05df6c04752",
+          "summary.json": "af52e32dbb60c4e9172871933a81ae9222fdca458a67b10cfe2fa4445cf56983",
+          "sensors.jsonl": "ef9520ce82d582586c214350ed5548e1655f0b785bd5e888314dbac0bdc7e202",
+          "run.json": "fd54028d77b76e5469b3abf34919d37967296fc7f3e1057fb7488d2524ea188d",
+          "rejected-expected_forbidden_path/outputs.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "rejected-invalid_via/outputs.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "rejected-removed_rule/outputs.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "replay/replay.json": "ff0acf835d0a37f35b53e1385df5a5275ba55edf3cd661a0ed8dd6c820303b28",
+          "replay/outputs.jsonl": "60ae55407297ecd0ca45aed4d3eae449fabcaadfdcdfdf687ca91682d5991257"
+        },
+        "gzip_crc_verified": true
+      }
+    },
+    {
+      "backend": "reference",
+      "case": "turn-no-main",
+      "seed": 7,
+      "passed": true,
+      "summary": {
+        "scenario": "turn-no-main",
+        "seed": 7,
+        "simulated_seconds": 30.25,
+        "steps": 606,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.6548835284597745,
+        "localization_rmse": 0.06248563669313093,
+        "localization_max_error": 0.1383241650546419,
+        "final_speed": 0.13404806442961564,
+        "progress": 208.54905582747094,
+        "emergency_steps": 3,
+        "avoidance_steps": 95,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "edge_ids": [
+        "approach",
+        "detour",
+        "east-exit"
+      ],
+      "replay_ticks": 606,
+      "recorded_segment_min_clearance_m": 0.6522592423209685,
+      "clearance_floor_m": 0.5,
+      "recorded_corridor_min_reserve_m": 0.7958408589858608,
+      "goal_distance_m": 0.9811030499415798,
+      "map_search_in_replay": true,
+      "mutations": [],
+      "archive": {
+        "path": "/tmp/rustdriving-turn-matrix-v3/reference-turn-no-main-seed-7.tar.gz",
+        "sha256": "4af5496e83ba57d759801b955d7c80880b564d6ad8a90b0e78732712415b44e0",
+        "bytes": 3849113,
+        "files_sha256": {
+          "summary.json": "20a03305d15d99835487424b9abfc79874beb7058716b4f7a18d18332c391f8c",
+          "sensors.jsonl": "e34bad1a8d056ab622417433e9fb7173ea22174dc8b138900a23789e199b7df3",
+          "run.json": "eb1741b455074ddf7333a952d8fbd2ffca73436a8c4af0812edd9892193ce87f",
+          "replay/replay.json": "396467dcb8249c27214227fe612d1b6a4fae89e51ecc2fee9077895db70aba2e",
+          "replay/outputs.jsonl": "42bb2187ff927bb78f7595ab205fce44bdccc3898c9e7b8656e4cef2d9f59bca"
+        },
+        "gzip_crc_verified": true
+      }
+    },
+    {
+      "backend": "reference",
+      "case": "turn-no-main",
+      "seed": 42,
+      "passed": true,
+      "summary": {
+        "scenario": "turn-no-main",
+        "seed": 42,
+        "simulated_seconds": 30.25,
+        "steps": 606,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.610276372975918,
+        "localization_rmse": 0.06238812527472609,
+        "localization_max_error": 0.14170792809567037,
+        "final_speed": 0.14221374825496297,
+        "progress": 208.4646186175632,
+        "emergency_steps": 4,
+        "avoidance_steps": 91,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "edge_ids": [
+        "approach",
+        "detour",
+        "east-exit"
+      ],
+      "replay_ticks": 606,
+      "recorded_segment_min_clearance_m": 0.6086517683476487,
+      "clearance_floor_m": 0.5,
+      "recorded_corridor_min_reserve_m": 0.848320200219765,
+      "goal_distance_m": 1.0675582172539861,
+      "map_search_in_replay": true,
+      "mutations": [],
+      "archive": {
+        "path": "/tmp/rustdriving-turn-matrix-v3/reference-turn-no-main-seed-42.tar.gz",
+        "sha256": "2e2a872ba0f9e94e854bac0bc105a285de89b40b1058fd5e11254a41d1d4f47a",
+        "bytes": 3828816,
+        "files_sha256": {
+          "summary.json": "a0b02348df698ef3ec26a077ee51c6d8bcd8c97f086fcac157da384ac3132208",
+          "sensors.jsonl": "c8ec555accd7f4fe1601685c9837157ede488fa96099d475041ebf8588c29d2f",
+          "run.json": "c2d683e602730036bdd50274559fc32f53d709a45987c97faf8861591457c503",
+          "replay/replay.json": "396467dcb8249c27214227fe612d1b6a4fae89e51ecc2fee9077895db70aba2e",
+          "replay/outputs.jsonl": "09c3108395427837ad3ac74e4cecf059c1125beaf7d8fab5bf24d24241b2f721"
+        },
+        "gzip_crc_verified": true
+      }
+    },
+    {
+      "backend": "reference",
+      "case": "turn-only-detour",
+      "seed": 1,
+      "passed": true,
+      "summary": {
+        "scenario": "turn-only-detour",
+        "seed": 1,
+        "simulated_seconds": 30.200000000000003,
+        "steps": 605,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.5968147611958314,
+        "localization_rmse": 0.06292587125963134,
+        "localization_max_error": 0.18237925206265732,
+        "final_speed": 0.16183986020305485,
+        "progress": 208.52108951584793,
+        "emergency_steps": 2,
+        "avoidance_steps": 93,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "edge_ids": [
+        "approach",
+        "detour",
+        "east-exit"
+      ],
+      "replay_ticks": 605,
+      "recorded_segment_min_clearance_m": 0.5945869218383826,
+      "clearance_floor_m": 0.5,
+      "recorded_corridor_min_reserve_m": 0.7654643562430317,
+      "goal_distance_m": 1.0090496514024538,
+      "map_search_in_replay": true,
+      "mutations": [
+        {
+          "mutation": "removed_rule",
+          "exit_code": 2,
+          "diagnostics": "rustdriving: navigation map does not match configured initial route\n",
+          "input_sha256": "354b3dc2690a7e3a580159f7718874fdd0d7f957027fd6a06373f05df6c04752"
+        },
+        {
+          "mutation": "invalid_via",
+          "exit_code": 2,
+          "diagnostics": "rustdriving: turn restriction has invalid via-node connectivity\n",
+          "input_sha256": "f6712d4f5eff9546b1d5d05bcb57122574bd9e1dac954cb64438d24c083ea950"
+        },
+        {
+          "mutation": "expected_forbidden_path",
+          "exit_code": 2,
+          "diagnostics": "rustdriving: replay mismatch at tick 0 (time 0.000)\n",
+          "input_sha256": "d152508c3187d079424324811dbc173f1e05fd669198cd26c045c556a1c79a5a"
+        }
+      ],
+      "archive": {
+        "path": "/tmp/rustdriving-turn-matrix-v3/reference-turn-only-detour-seed-1.tar.gz",
+        "sha256": "aef88be32889209cd05155aaa38d89ea64162ce1d9f9938056f3646db413d9b1",
+        "bytes": 8500550,
+        "files_sha256": {
+          "expected_forbidden_path.jsonl": "d152508c3187d079424324811dbc173f1e05fd669198cd26c045c556a1c79a5a",
+          "invalid_via.jsonl": "f6712d4f5eff9546b1d5d05bcb57122574bd9e1dac954cb64438d24c083ea950",
+          "removed_rule.jsonl": "354b3dc2690a7e3a580159f7718874fdd0d7f957027fd6a06373f05df6c04752",
+          "summary.json": "11b2a9b07954a08e2780c5a0d48ee2625aeb8bb387200bfff8b9955d0ca5a811",
+          "sensors.jsonl": "ecb31b94fa36af68bb481c2457d9272afaff2e021a7b11437e7114411368ad08",
+          "run.json": "4ce51b59b62e604bdfc55e952a22994239f42b94643002a3f7bc51275a857dde",
+          "rejected-expected_forbidden_path/outputs.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "rejected-invalid_via/outputs.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "rejected-removed_rule/outputs.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "replay/replay.json": "ff0acf835d0a37f35b53e1385df5a5275ba55edf3cd661a0ed8dd6c820303b28",
+          "replay/outputs.jsonl": "60ae55407297ecd0ca45aed4d3eae449fabcaadfdcdfdf687ca91682d5991257"
+        },
+        "gzip_crc_verified": true
+      }
+    },
+    {
+      "backend": "reference",
+      "case": "turn-only-detour",
+      "seed": 7,
+      "passed": true,
+      "summary": {
+        "scenario": "turn-only-detour",
+        "seed": 7,
+        "simulated_seconds": 30.25,
+        "steps": 606,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.6548835284597745,
+        "localization_rmse": 0.06248563669313093,
+        "localization_max_error": 0.1383241650546419,
+        "final_speed": 0.13404806442961564,
+        "progress": 208.54905582747094,
+        "emergency_steps": 3,
+        "avoidance_steps": 95,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "edge_ids": [
+        "approach",
+        "detour",
+        "east-exit"
+      ],
+      "replay_ticks": 606,
+      "recorded_segment_min_clearance_m": 0.6522592423209685,
+      "clearance_floor_m": 0.5,
+      "recorded_corridor_min_reserve_m": 0.7958408589858608,
+      "goal_distance_m": 0.9811030499415798,
+      "map_search_in_replay": true,
+      "mutations": [],
+      "archive": {
+        "path": "/tmp/rustdriving-turn-matrix-v3/reference-turn-only-detour-seed-7.tar.gz",
+        "sha256": "950fe9217c7b1f22a14dffcb25b7c32d56d4a7722f5b1afedf7c7e1c0a4042d7",
+        "bytes": 3849110,
+        "files_sha256": {
+          "summary.json": "fe2be8096233170021d5c1ea0c580f4286fd3c21c11e608cf887e6c104adab76",
+          "sensors.jsonl": "f876a35e006d9ec4827486ef125659efce8e405f63f92e6cb82c827e52563083",
+          "run.json": "e2817a6b85222f50b155ef91e9f9c02e4042e9583c902dd4a111014f4d1d8a0e",
+          "replay/replay.json": "396467dcb8249c27214227fe612d1b6a4fae89e51ecc2fee9077895db70aba2e",
+          "replay/outputs.jsonl": "42bb2187ff927bb78f7595ab205fce44bdccc3898c9e7b8656e4cef2d9f59bca"
+        },
+        "gzip_crc_verified": true
+      }
+    },
+    {
+      "backend": "reference",
+      "case": "turn-only-detour",
+      "seed": 42,
+      "passed": true,
+      "summary": {
+        "scenario": "turn-only-detour",
+        "seed": 42,
+        "simulated_seconds": 30.25,
+        "steps": 606,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.610276372975918,
+        "localization_rmse": 0.06238812527472609,
+        "localization_max_error": 0.14170792809567037,
+        "final_speed": 0.14221374825496297,
+        "progress": 208.4646186175632,
+        "emergency_steps": 4,
+        "avoidance_steps": 91,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "edge_ids": [
+        "approach",
+        "detour",
+        "east-exit"
+      ],
+      "replay_ticks": 606,
+      "recorded_segment_min_clearance_m": 0.6086517683476487,
+      "clearance_floor_m": 0.5,
+      "recorded_corridor_min_reserve_m": 0.848320200219765,
+      "goal_distance_m": 1.0675582172539861,
+      "map_search_in_replay": true,
+      "mutations": [],
+      "archive": {
+        "path": "/tmp/rustdriving-turn-matrix-v3/reference-turn-only-detour-seed-42.tar.gz",
+        "sha256": "7101bfa498865cbac5968773b00932e2a225b372f5102188ae856e3c4037142e",
+        "bytes": 3828828,
+        "files_sha256": {
+          "summary.json": "12edb0170890458e229b7af22831dcfd83fdf5ae41336360ef938fafb277da09",
+          "sensors.jsonl": "62790ef858d4d0f4171ddfa22ad432338d9a68bee3707127149a0c1ac791c095",
+          "run.json": "91ced8873ac4c8a078e7586f7ef5a97425f132ab06ad241b4eaec7861289753e",
+          "replay/replay.json": "396467dcb8249c27214227fe612d1b6a4fae89e51ecc2fee9077895db70aba2e",
+          "replay/outputs.jsonl": "09c3108395427837ad3ac74e4cecf059c1125beaf7d8fab5bf24d24241b2f721"
+        },
+        "gzip_crc_verified": true
+      }
+    },
+    {
+      "backend": "reference",
+      "case": "turn-arrival-memory",
+      "seed": 1,
+      "passed": true,
+      "summary": {
+        "scenario": "turn-arrival-memory",
+        "seed": 1,
+        "simulated_seconds": 30.200000000000003,
+        "steps": 605,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.5968147611958314,
+        "localization_rmse": 0.06292587125963134,
+        "localization_max_error": 0.18237925206265732,
+        "final_speed": 0.16183986020305485,
+        "progress": 208.52108951584793,
+        "emergency_steps": 2,
+        "avoidance_steps": 93,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "edge_ids": [
+        "approach",
+        "detour",
+        "east-exit"
+      ],
+      "replay_ticks": 605,
+      "recorded_segment_min_clearance_m": 0.5945869218383826,
+      "clearance_floor_m": 0.5,
+      "recorded_corridor_min_reserve_m": 0.7654643562430317,
+      "goal_distance_m": 1.0090496514024538,
+      "map_search_in_replay": true,
+      "mutations": [
+        {
+          "mutation": "removed_rule",
+          "exit_code": 2,
+          "diagnostics": "rustdriving: navigation map does not match configured initial route\n",
+          "input_sha256": "354b3dc2690a7e3a580159f7718874fdd0d7f957027fd6a06373f05df6c04752"
+        },
+        {
+          "mutation": "invalid_via",
+          "exit_code": 2,
+          "diagnostics": "rustdriving: turn restriction has invalid via-node connectivity\n",
+          "input_sha256": "ee6f62612ceaa852e6ac5ffa94358401e8c331e7531eb8785d7fdce11a68426d"
+        },
+        {
+          "mutation": "expected_forbidden_path",
+          "exit_code": 2,
+          "diagnostics": "rustdriving: replay mismatch at tick 0 (time 0.000)\n",
+          "input_sha256": "b8710276bdd283544c4d8a7aa2c132d3c8c25e788d255008e01547f24f324845"
+        }
+      ],
+      "archive": {
+        "path": "/tmp/rustdriving-turn-matrix-v3/reference-turn-arrival-memory-seed-1.tar.gz",
+        "sha256": "cf6aea4dabde1f93102ac2f33c6a1c58918cd1c98574391717bfe47aa48a140e",
+        "bytes": 8500619,
+        "files_sha256": {
+          "expected_forbidden_path.jsonl": "b8710276bdd283544c4d8a7aa2c132d3c8c25e788d255008e01547f24f324845",
+          "invalid_via.jsonl": "ee6f62612ceaa852e6ac5ffa94358401e8c331e7531eb8785d7fdce11a68426d",
+          "removed_rule.jsonl": "354b3dc2690a7e3a580159f7718874fdd0d7f957027fd6a06373f05df6c04752",
+          "summary.json": "e4fbfb32080888ebf5a7e2fca413fe43e4173313621a61f7902af31bb5b1b8b0",
+          "sensors.jsonl": "c31c832490ab9a5b813a7d84ae64084c11fdc3f3cca0366f020c8df0416a50f0",
+          "run.json": "f1d3bbe26fbb8e8b0f2845e86b12584ad795bbda892a375fd0ccf7a95af344e4",
+          "rejected-expected_forbidden_path/outputs.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "rejected-invalid_via/outputs.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "rejected-removed_rule/outputs.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "replay/replay.json": "ff0acf835d0a37f35b53e1385df5a5275ba55edf3cd661a0ed8dd6c820303b28",
+          "replay/outputs.jsonl": "60ae55407297ecd0ca45aed4d3eae449fabcaadfdcdfdf687ca91682d5991257"
+        },
+        "gzip_crc_verified": true
+      }
+    },
+    {
+      "backend": "reference",
+      "case": "turn-arrival-memory",
+      "seed": 7,
+      "passed": true,
+      "summary": {
+        "scenario": "turn-arrival-memory",
+        "seed": 7,
+        "simulated_seconds": 30.25,
+        "steps": 606,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.6548835284597745,
+        "localization_rmse": 0.06248563669313093,
+        "localization_max_error": 0.1383241650546419,
+        "final_speed": 0.13404806442961564,
+        "progress": 208.54905582747094,
+        "emergency_steps": 3,
+        "avoidance_steps": 95,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "edge_ids": [
+        "approach",
+        "detour",
+        "east-exit"
+      ],
+      "replay_ticks": 606,
+      "recorded_segment_min_clearance_m": 0.6522592423209685,
+      "clearance_floor_m": 0.5,
+      "recorded_corridor_min_reserve_m": 0.7958408589858608,
+      "goal_distance_m": 0.9811030499415798,
+      "map_search_in_replay": true,
+      "mutations": [],
+      "archive": {
+        "path": "/tmp/rustdriving-turn-matrix-v3/reference-turn-arrival-memory-seed-7.tar.gz",
+        "sha256": "7a402b3f696cc12dc95b39af9935ad05061a35bebd0b7428463b6c3df47fbde5",
+        "bytes": 3849158,
+        "files_sha256": {
+          "summary.json": "f9d548df739ac88a8c4bea8284f646cbcd45a73f4d73fa07b6ccc9ab0fb53350",
+          "sensors.jsonl": "c6a67e7da288ef7d8e5ca5c3807be27011e5e091658ce88d6ae2ca8f88acc547",
+          "run.json": "f538a7a702a893e3a8129779a913fc2f2cab9c3069c839edd36bbdd6f81c4126",
+          "replay/replay.json": "396467dcb8249c27214227fe612d1b6a4fae89e51ecc2fee9077895db70aba2e",
+          "replay/outputs.jsonl": "42bb2187ff927bb78f7595ab205fce44bdccc3898c9e7b8656e4cef2d9f59bca"
+        },
+        "gzip_crc_verified": true
+      }
+    },
+    {
+      "backend": "reference",
+      "case": "turn-arrival-memory",
+      "seed": 42,
+      "passed": true,
+      "summary": {
+        "scenario": "turn-arrival-memory",
+        "seed": 42,
+        "simulated_seconds": 30.25,
+        "steps": 606,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 0.610276372975918,
+        "localization_rmse": 0.06238812527472609,
+        "localization_max_error": 0.14170792809567037,
+        "final_speed": 0.14221374825496297,
+        "progress": 208.4646186175632,
+        "emergency_steps": 4,
+        "avoidance_steps": 91,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "edge_ids": [
+        "approach",
+        "detour",
+        "east-exit"
+      ],
+      "replay_ticks": 606,
+      "recorded_segment_min_clearance_m": 0.6086517683476487,
+      "clearance_floor_m": 0.5,
+      "recorded_corridor_min_reserve_m": 0.848320200219765,
+      "goal_distance_m": 1.0675582172539861,
+      "map_search_in_replay": true,
+      "mutations": [],
+      "archive": {
+        "path": "/tmp/rustdriving-turn-matrix-v3/reference-turn-arrival-memory-seed-42.tar.gz",
+        "sha256": "b6ed27a0c66b54081bc63c80dbb101574293123722d7d56864131ef46f1238de",
+        "bytes": 3828862,
+        "files_sha256": {
+          "summary.json": "9b647f3604c4f66740bda94163784d67517f34775cf825a11cd34c3567a51af7",
+          "sensors.jsonl": "d5ad413c3afe7b93440724d33db5b163ee8fc7e84050b2e7316935ff772a019a",
+          "run.json": "bad88be502dfe3a9b264d3aed179e09c046026926a55a8f35e2f0d64f870b2d8",
+          "replay/replay.json": "396467dcb8249c27214227fe612d1b6a4fae89e51ecc2fee9077895db70aba2e",
+          "replay/outputs.jsonl": "09c3108395427837ad3ac74e4cecf059c1125beaf7d8fab5bf24d24241b2f721"
+        },
+        "gzip_crc_verified": true
+      }
+    },
+    {
+      "backend": "reference",
+      "case": "osm-turn",
+      "seed": 1,
+      "passed": true,
+      "summary": {
+        "scenario": "OSM imported road route",
+        "seed": 1,
+        "simulated_seconds": 41.650000000000006,
+        "steps": 834,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.062478718406007376,
+        "localization_max_error": 0.18237925206265732,
+        "final_speed": 0.14241997456358968,
+        "progress": 208.37548159300331,
+        "emergency_steps": 12,
+        "avoidance_steps": 64,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "edge_ids": [
+        "osm-way-10-0-forward",
+        "osm-way-30-0-forward",
+        "osm-way-40-0-forward"
+      ],
+      "replay_ticks": 834,
+      "recorded_segment_min_clearance_m": null,
+      "clearance_floor_m": 0.0,
+      "recorded_corridor_min_reserve_m": 0.7226165070398003,
+      "goal_distance_m": 1.0357817308260595,
+      "map_search_in_replay": true,
+      "mutations": [
+        {
+          "mutation": "removed_rule",
+          "exit_code": 2,
+          "diagnostics": "rustdriving: navigation map does not match configured initial route\n",
+          "input_sha256": "9e779ed953cbd88fa5924798d543ed5e24653faa48bfb99066d7ef55a21231e2"
+        },
+        {
+          "mutation": "invalid_via",
+          "exit_code": 2,
+          "diagnostics": "rustdriving: turn restriction has invalid via-node connectivity\n",
+          "input_sha256": "94e69726fbdb567c315d9a90321ffaac13a47689b65aecae58ad2848377524fb"
+        },
+        {
+          "mutation": "expected_forbidden_path",
+          "exit_code": 2,
+          "diagnostics": "rustdriving: replay mismatch at tick 0 (time 0.000)\n",
+          "input_sha256": "14e3b40723816b2b5195bf9cc6f19f27f0c5fd64254cb9427da275778ec0c0f8"
+        }
+      ],
+      "archive": {
+        "path": "/tmp/rustdriving-turn-matrix-v3/reference-osm-turn-seed-1.tar.gz",
+        "sha256": "bcde957b744e3ce753a3a5dbaeab4206e89169dbba805cb28f8bae546e038e57",
+        "bytes": 11541908,
+        "files_sha256": {
+          "expected_forbidden_path.jsonl": "14e3b40723816b2b5195bf9cc6f19f27f0c5fd64254cb9427da275778ec0c0f8",
+          "invalid_via.jsonl": "94e69726fbdb567c315d9a90321ffaac13a47689b65aecae58ad2848377524fb",
+          "removed_rule.jsonl": "9e779ed953cbd88fa5924798d543ed5e24653faa48bfb99066d7ef55a21231e2",
+          "summary.json": "32c7b5ff4b5c543955d0d253980f0fc814a9d6607bd4c0510316ff5276e36734",
+          "sensors.jsonl": "8784e6bd384655dbca54043d76d565652d56ad0e6cf0e480ee1219956353ca29",
+          "run.json": "67da97ab67c0c11e808a4fa31ceb327bbdf33991f53fdff15a375fc766e2af97",
+          "rejected-expected_forbidden_path/outputs.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "rejected-invalid_via/outputs.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "rejected-removed_rule/outputs.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "replay/replay.json": "7f5329c5344bbfdd8abcfe410ee243bee865a7c4e58f5ce42606f1a257fa07e7",
+          "replay/outputs.jsonl": "c1c921476a41c32d2d1f4ee372d2fdb65bd3ced2fc65f0ff31b5224ddc394aec"
+        },
+        "gzip_crc_verified": true
+      }
+    },
+    {
+      "backend": "reference",
+      "case": "osm-turn",
+      "seed": 7,
+      "passed": true,
+      "summary": {
+        "scenario": "OSM imported road route",
+        "seed": 7,
+        "simulated_seconds": 40.6,
+        "steps": 813,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.0564573137564251,
+        "localization_max_error": 0.13832417012631676,
+        "final_speed": 0.19666305362846398,
+        "progress": 208.34211184884424,
+        "emergency_steps": 13,
+        "avoidance_steps": 64,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "edge_ids": [
+        "osm-way-10-0-forward",
+        "osm-way-30-0-forward",
+        "osm-way-40-0-forward"
+      ],
+      "replay_ticks": 813,
+      "recorded_segment_min_clearance_m": null,
+      "clearance_floor_m": 0.0,
+      "recorded_corridor_min_reserve_m": 0.8543519900370375,
+      "goal_distance_m": 1.0745470121312193,
+      "map_search_in_replay": true,
+      "mutations": [],
+      "archive": {
+        "path": "/tmp/rustdriving-turn-matrix-v3/reference-osm-turn-seed-7.tar.gz",
+        "sha256": "4f3f16c92659c8b687ca6010b4d3a0045efbc0acd78b7e1faf18d01592c86e06",
+        "bytes": 5139627,
+        "files_sha256": {
+          "summary.json": "beae4784ba282b57367ae7e4a7ac755b81865fdcfea2a0ecde8488e49e563c4e",
+          "sensors.jsonl": "e6c27e33009e27beeff591b9bf07cfc7302acb26fd94da8ab2fe276fc6f49eea",
+          "run.json": "fabdaa3ac34bc9c86de33147f60a15a267ea7239e764715b7e18e2854b35f84f",
+          "replay/replay.json": "6aa5a8b2f2a1feeb798f78bad4d1c51f0e9eebe98f266ee5622b5ad96bf95f14",
+          "replay/outputs.jsonl": "1fda14605efa89df2dcca4da8df41570aa4bf1b9751bdffc2b1e462566d0d5cb"
+        },
+        "gzip_crc_verified": true
+      }
+    },
+    {
+      "backend": "reference",
+      "case": "osm-turn",
+      "seed": 42,
+      "passed": true,
+      "summary": {
+        "scenario": "OSM imported road route",
+        "seed": 42,
+        "simulated_seconds": 42.25,
+        "steps": 846,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.056870430773871286,
+        "localization_max_error": 0.14170795551147095,
+        "final_speed": 0.146741782497199,
+        "progress": 208.40383875246113,
+        "emergency_steps": 12,
+        "avoidance_steps": 71,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "edge_ids": [
+        "osm-way-10-0-forward",
+        "osm-way-30-0-forward",
+        "osm-way-40-0-forward"
+      ],
+      "replay_ticks": 846,
+      "recorded_segment_min_clearance_m": null,
+      "clearance_floor_m": 0.0,
+      "recorded_corridor_min_reserve_m": 0.8019627290014881,
+      "goal_distance_m": 1.0080011876778983,
+      "map_search_in_replay": true,
+      "mutations": [],
+      "archive": {
+        "path": "/tmp/rustdriving-turn-matrix-v3/reference-osm-turn-seed-42.tar.gz",
+        "sha256": "caf26f5e9b5e523235ff071fd57694f532294f562eb570eb22f2b3509ea4ad12",
+        "bytes": 5221087,
+        "files_sha256": {
+          "summary.json": "fe24863854ee3255aec653a4e9df23a13168a49846966805748138321ad2917c",
+          "sensors.jsonl": "9b58ae1784943bad89a0c2636d24681e62965e29661a7ae86e696c67d6a19a96",
+          "run.json": "621ecea5de99385056c55c3f0610ca760303b521178448f02137528d74672d98",
+          "replay/replay.json": "51a222d7f940587c5f17cb6513c2cfb4c22fbe2de53c381d18f3b901f5fe1414",
+          "replay/outputs.jsonl": "449bb1ab42ea7a3c9e6866eeb3280244460db223106a599cafe8d77a594b0a54"
+        },
+        "gzip_crc_verified": true
+      }
+    },
+    {
+      "backend": "native",
+      "case": "turn-no-main",
+      "seed": 1,
+      "passed": true,
+      "summary": {
+        "scenario": "turn-no-main",
+        "seed": 1,
+        "simulated_seconds": 37.300000000000004,
+        "steps": 747,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.4011289712649195,
+        "localization_rmse": 0.07853383195817261,
+        "localization_max_error": 0.22027843163175004,
+        "final_speed": 0.19623571077659546,
+        "progress": 208.5459536413183,
+        "emergency_steps": 4,
+        "avoidance_steps": 112,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "edge_ids": [
+        "approach",
+        "detour",
+        "east-exit"
+      ],
+      "replay_ticks": 747,
+      "recorded_segment_min_clearance_m": 1.400077029577639,
+      "clearance_floor_m": 0.5,
+      "recorded_corridor_min_reserve_m": 0.3762976017821851,
+      "goal_distance_m": 0.985524968041947,
+      "map_search_in_replay": true,
+      "mutations": [
+        {
+          "mutation": "removed_rule",
+          "exit_code": 2,
+          "diagnostics": "rustdriving: navigation map does not match configured initial route\n",
+          "input_sha256": "b678c7d7e2735127af8eddd25bd2945c8e76f19a6453941780b3e50d952fcf3c"
+        },
+        {
+          "mutation": "invalid_via",
+          "exit_code": 2,
+          "diagnostics": "rustdriving: turn restriction has invalid via-node connectivity\n",
+          "input_sha256": "7c5fdcc50994b2b3b609190c7e1c57fcd23ca6b570463c90701cbf5ddfda9d5d"
+        },
+        {
+          "mutation": "expected_forbidden_path",
+          "exit_code": 2,
+          "diagnostics": "rustdriving: replay mismatch at tick 0 (time 0.000)\n",
+          "input_sha256": "ef0678e8033fce70e281e408d8464f053f180063e3b22b4f67aa6eb0ddb63f43"
+        }
+      ],
+      "archive": {
+        "path": "/tmp/rustdriving-turn-matrix-v3/native-turn-no-main-seed-1.tar.gz",
+        "sha256": "d8782515d7cb8d5213a8fdcbe41d53b3668ef8f352d34edf4a847b81622b057d",
+        "bytes": 10295182,
+        "files_sha256": {
+          "expected_forbidden_path.jsonl": "ef0678e8033fce70e281e408d8464f053f180063e3b22b4f67aa6eb0ddb63f43",
+          "invalid_via.jsonl": "7c5fdcc50994b2b3b609190c7e1c57fcd23ca6b570463c90701cbf5ddfda9d5d",
+          "removed_rule.jsonl": "b678c7d7e2735127af8eddd25bd2945c8e76f19a6453941780b3e50d952fcf3c",
+          "summary.json": "8f6ec8d5ee3af1d40912f114dc5d70388e6d492693982a9a1e12c32bf14590fa",
+          "sensors.jsonl": "0d32701d0828920d61e608060a091e5da6cc11fd5db6a6a4f52a3853190a8710",
+          "run.json": "e76ccdf62177eb87519f70f3a908f2f5435639ac4e52e3399a136870bf19c711",
+          "rejected-expected_forbidden_path/outputs.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "rejected-invalid_via/outputs.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "rejected-removed_rule/outputs.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "replay/replay.json": "f0ed547e951a0dc601200f750836e30097dc203d1a598d9b45c51e5e7c3e4f05",
+          "replay/outputs.jsonl": "0644cda0113cb20441adba32312aec44029a8955f972978d80dfeca2b81dcf5f"
+        },
+        "gzip_crc_verified": true
+      }
+    },
+    {
+      "backend": "native",
+      "case": "turn-no-main",
+      "seed": 7,
+      "passed": true,
+      "summary": {
+        "scenario": "turn-no-main",
+        "seed": 7,
+        "simulated_seconds": 37.45,
+        "steps": 750,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.4532569884335107,
+        "localization_rmse": 0.07870144018984283,
+        "localization_max_error": 0.20735683671356545,
+        "final_speed": 0.1456757649100138,
+        "progress": 208.58824883363155,
+        "emergency_steps": 3,
+        "avoidance_steps": 117,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "edge_ids": [
+        "approach",
+        "detour",
+        "east-exit"
+      ],
+      "replay_ticks": 750,
+      "recorded_segment_min_clearance_m": 1.4522984389314222,
+      "clearance_floor_m": 0.5,
+      "recorded_corridor_min_reserve_m": 0.38845178816308623,
+      "goal_distance_m": 0.9423650976490572,
+      "map_search_in_replay": true,
+      "mutations": [],
+      "archive": {
+        "path": "/tmp/rustdriving-turn-matrix-v3/native-turn-no-main-seed-7.tar.gz",
+        "sha256": "48e1df05955ff863ed70a03d690c44b06d74be3b6a542047e08784672087f3df",
+        "bytes": 4638902,
+        "files_sha256": {
+          "summary.json": "7eb8fe81ef50e9ef6c90c81ff9600ad3d65db4a30f857f28e434f972c1b8413a",
+          "sensors.jsonl": "e62f7288b1c682370b97f3439ba9c3300f4114d91a91494d951e55a65e3aef07",
+          "run.json": "3670577dedd2e5d83aa408a33cfdbd0c3f821682b9007ae529afeb44e2eba6d5",
+          "replay/replay.json": "bab6791dca04098a94cb0e6ab850bc18c28fdb595da17ab345781abbae95cb25",
+          "replay/outputs.jsonl": "7d94829f4622c8394fc8dd97686986aadf66a1f3a58d82e51af86a6352892af5"
+        },
+        "gzip_crc_verified": true
+      }
+    },
+    {
+      "backend": "native",
+      "case": "turn-no-main",
+      "seed": 42,
+      "passed": true,
+      "summary": {
+        "scenario": "turn-no-main",
+        "seed": 42,
+        "simulated_seconds": 37.4,
+        "steps": 749,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.4420610465768746,
+        "localization_rmse": 0.07828852630682705,
+        "localization_max_error": 0.2549838924743313,
+        "final_speed": 0.15990127049550296,
+        "progress": 208.51881470471784,
+        "emergency_steps": 0,
+        "avoidance_steps": 112,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "edge_ids": [
+        "approach",
+        "detour",
+        "east-exit"
+      ],
+      "replay_ticks": 749,
+      "recorded_segment_min_clearance_m": 1.4402949006839845,
+      "clearance_floor_m": 0.5,
+      "recorded_corridor_min_reserve_m": 0.3086446466372026,
+      "goal_distance_m": 1.0113884419429602,
+      "map_search_in_replay": true,
+      "mutations": [],
+      "archive": {
+        "path": "/tmp/rustdriving-turn-matrix-v3/native-turn-no-main-seed-42.tar.gz",
+        "sha256": "8b513d0b7fa3d2229dad3af439947bf869c783a1c30daa2c8428206bc89494e6",
+        "bytes": 4709151,
+        "files_sha256": {
+          "summary.json": "8f30985451a5dd69af9c462072d16fefb8292e777008778f6b7299dd71d709b9",
+          "sensors.jsonl": "a2b83c455d23ca257f7af56715af8d4159c05a2deeb5f8233f31bc645207d745",
+          "run.json": "c2ef9d968bb701504df00f609baedd68de0a40d6d7d716bc60ec2ea4e949534d",
+          "replay/replay.json": "eaeadf037128e67fce3cd1e1efc7df01baa3673b5c155659ba5869887a1fc353",
+          "replay/outputs.jsonl": "94a17fd9733d1c7ea7684a017ebf3aca466a2067fef2889156a88913d1fae8de"
+        },
+        "gzip_crc_verified": true
+      }
+    },
+    {
+      "backend": "native",
+      "case": "turn-only-detour",
+      "seed": 1,
+      "passed": true,
+      "summary": {
+        "scenario": "turn-only-detour",
+        "seed": 1,
+        "simulated_seconds": 37.300000000000004,
+        "steps": 747,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.4011289712649195,
+        "localization_rmse": 0.07853383195817261,
+        "localization_max_error": 0.22027843163175004,
+        "final_speed": 0.19623571077659546,
+        "progress": 208.5459536413183,
+        "emergency_steps": 4,
+        "avoidance_steps": 112,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "edge_ids": [
+        "approach",
+        "detour",
+        "east-exit"
+      ],
+      "replay_ticks": 747,
+      "recorded_segment_min_clearance_m": 1.400077029577639,
+      "clearance_floor_m": 0.5,
+      "recorded_corridor_min_reserve_m": 0.3762976017821851,
+      "goal_distance_m": 0.985524968041947,
+      "map_search_in_replay": true,
+      "mutations": [
+        {
+          "mutation": "removed_rule",
+          "exit_code": 2,
+          "diagnostics": "rustdriving: navigation map does not match configured initial route\n",
+          "input_sha256": "b678c7d7e2735127af8eddd25bd2945c8e76f19a6453941780b3e50d952fcf3c"
+        },
+        {
+          "mutation": "invalid_via",
+          "exit_code": 2,
+          "diagnostics": "rustdriving: turn restriction has invalid via-node connectivity\n",
+          "input_sha256": "ee387bd3fc566dca4c84c4da7fa4ae001ae0794656ea28e39f00ef4456db31f7"
+        },
+        {
+          "mutation": "expected_forbidden_path",
+          "exit_code": 2,
+          "diagnostics": "rustdriving: replay mismatch at tick 0 (time 0.000)\n",
+          "input_sha256": "22b2189973d108cb1a3237123fc8c496450fc9626c62d67cacaedfc789e15e4d"
+        }
+      ],
+      "archive": {
+        "path": "/tmp/rustdriving-turn-matrix-v3/native-turn-only-detour-seed-1.tar.gz",
+        "sha256": "b9f0e1561862f1281d7955fcd286e121889908ba62dad0a0843f972f746e5817",
+        "bytes": 10295148,
+        "files_sha256": {
+          "expected_forbidden_path.jsonl": "22b2189973d108cb1a3237123fc8c496450fc9626c62d67cacaedfc789e15e4d",
+          "invalid_via.jsonl": "ee387bd3fc566dca4c84c4da7fa4ae001ae0794656ea28e39f00ef4456db31f7",
+          "removed_rule.jsonl": "b678c7d7e2735127af8eddd25bd2945c8e76f19a6453941780b3e50d952fcf3c",
+          "summary.json": "2c2a5d55d3ca79903f5fae21d05a4031598bdcc180954490ef461dea0446f98b",
+          "sensors.jsonl": "326dc09c48e0cc1f3f19e44a7feb44f9096d4d2718b2bcd9086afd686298dfe3",
+          "run.json": "aff397ddc591b3456f147a9dc1919967fec03fff1e732381452d8110607cb45d",
+          "rejected-expected_forbidden_path/outputs.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "rejected-invalid_via/outputs.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "rejected-removed_rule/outputs.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "replay/replay.json": "f0ed547e951a0dc601200f750836e30097dc203d1a598d9b45c51e5e7c3e4f05",
+          "replay/outputs.jsonl": "0644cda0113cb20441adba32312aec44029a8955f972978d80dfeca2b81dcf5f"
+        },
+        "gzip_crc_verified": true
+      }
+    },
+    {
+      "backend": "native",
+      "case": "turn-only-detour",
+      "seed": 7,
+      "passed": true,
+      "summary": {
+        "scenario": "turn-only-detour",
+        "seed": 7,
+        "simulated_seconds": 37.45,
+        "steps": 750,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.4532569884335107,
+        "localization_rmse": 0.07870144018984283,
+        "localization_max_error": 0.20735683671356545,
+        "final_speed": 0.1456757649100138,
+        "progress": 208.58824883363155,
+        "emergency_steps": 3,
+        "avoidance_steps": 117,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "edge_ids": [
+        "approach",
+        "detour",
+        "east-exit"
+      ],
+      "replay_ticks": 750,
+      "recorded_segment_min_clearance_m": 1.4522984389314222,
+      "clearance_floor_m": 0.5,
+      "recorded_corridor_min_reserve_m": 0.38845178816308623,
+      "goal_distance_m": 0.9423650976490572,
+      "map_search_in_replay": true,
+      "mutations": [],
+      "archive": {
+        "path": "/tmp/rustdriving-turn-matrix-v3/native-turn-only-detour-seed-7.tar.gz",
+        "sha256": "52f6033973897103159a49775f05749b6972ca4c279e4e3c918905bf54bc784d",
+        "bytes": 4638898,
+        "files_sha256": {
+          "summary.json": "c6677f49a79d034f5ee406538f76da1eef8165d61b9f644edec182bb32328492",
+          "sensors.jsonl": "60ad9683bde52a6628c997b1ca92af8bf367a45688ba17cc99ab3361e517143e",
+          "run.json": "1de40532008e74e69ba258913e6cde5b1df3f55ad65c5ac1cc886fd68a29f5b5",
+          "replay/replay.json": "bab6791dca04098a94cb0e6ab850bc18c28fdb595da17ab345781abbae95cb25",
+          "replay/outputs.jsonl": "7d94829f4622c8394fc8dd97686986aadf66a1f3a58d82e51af86a6352892af5"
+        },
+        "gzip_crc_verified": true
+      }
+    },
+    {
+      "backend": "native",
+      "case": "turn-only-detour",
+      "seed": 42,
+      "passed": true,
+      "summary": {
+        "scenario": "turn-only-detour",
+        "seed": 42,
+        "simulated_seconds": 37.4,
+        "steps": 749,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.4420610465768746,
+        "localization_rmse": 0.07828852630682705,
+        "localization_max_error": 0.2549838924743313,
+        "final_speed": 0.15990127049550296,
+        "progress": 208.51881470471784,
+        "emergency_steps": 0,
+        "avoidance_steps": 112,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "edge_ids": [
+        "approach",
+        "detour",
+        "east-exit"
+      ],
+      "replay_ticks": 749,
+      "recorded_segment_min_clearance_m": 1.4402949006839845,
+      "clearance_floor_m": 0.5,
+      "recorded_corridor_min_reserve_m": 0.3086446466372026,
+      "goal_distance_m": 1.0113884419429602,
+      "map_search_in_replay": true,
+      "mutations": [],
+      "archive": {
+        "path": "/tmp/rustdriving-turn-matrix-v3/native-turn-only-detour-seed-42.tar.gz",
+        "sha256": "1a1e44ac36d3dbf387716270d0960b3fc42d4f0c7e47f27405b3da294e8b0199",
+        "bytes": 4709150,
+        "files_sha256": {
+          "summary.json": "85352b3d7b5c71d4e8caa8996d2ccadabb37eb3529c009d29aa559b10dcf92c9",
+          "sensors.jsonl": "0a63f4edf9fdb4fa9f96ccdd35a086e20ef819bb4ca47f1795fe69032406db94",
+          "run.json": "04fc7aa3bf074d9c9959160b7bb521b0f6547e8c5633a5352024ae2096c29243",
+          "replay/replay.json": "eaeadf037128e67fce3cd1e1efc7df01baa3673b5c155659ba5869887a1fc353",
+          "replay/outputs.jsonl": "94a17fd9733d1c7ea7684a017ebf3aca466a2067fef2889156a88913d1fae8de"
+        },
+        "gzip_crc_verified": true
+      }
+    },
+    {
+      "backend": "native",
+      "case": "turn-arrival-memory",
+      "seed": 1,
+      "passed": true,
+      "summary": {
+        "scenario": "turn-arrival-memory",
+        "seed": 1,
+        "simulated_seconds": 37.300000000000004,
+        "steps": 747,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.4011289712649195,
+        "localization_rmse": 0.07853383195817261,
+        "localization_max_error": 0.22027843163175004,
+        "final_speed": 0.19623571077659546,
+        "progress": 208.5459536413183,
+        "emergency_steps": 4,
+        "avoidance_steps": 112,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "edge_ids": [
+        "approach",
+        "detour",
+        "east-exit"
+      ],
+      "replay_ticks": 747,
+      "recorded_segment_min_clearance_m": 1.400077029577639,
+      "clearance_floor_m": 0.5,
+      "recorded_corridor_min_reserve_m": 0.3762976017821851,
+      "goal_distance_m": 0.985524968041947,
+      "map_search_in_replay": true,
+      "mutations": [
+        {
+          "mutation": "removed_rule",
+          "exit_code": 2,
+          "diagnostics": "rustdriving: navigation map does not match configured initial route\n",
+          "input_sha256": "b678c7d7e2735127af8eddd25bd2945c8e76f19a6453941780b3e50d952fcf3c"
+        },
+        {
+          "mutation": "invalid_via",
+          "exit_code": 2,
+          "diagnostics": "rustdriving: turn restriction has invalid via-node connectivity\n",
+          "input_sha256": "a6df603baf4ba04ddd1ec7ce93f512224d66056265668d5694fd44c80360e631"
+        },
+        {
+          "mutation": "expected_forbidden_path",
+          "exit_code": 2,
+          "diagnostics": "rustdriving: replay mismatch at tick 0 (time 0.000)\n",
+          "input_sha256": "03f3d2d1db3412eb8a325d37b57c578230cfbceaafc1816c8f3c3a444fb84322"
+        }
+      ],
+      "archive": {
+        "path": "/tmp/rustdriving-turn-matrix-v3/native-turn-arrival-memory-seed-1.tar.gz",
+        "sha256": "9db80f614070a1d49c86e042fe918bdf72cf4cb149babfb18c541b2bb3670235",
+        "bytes": 10295229,
+        "files_sha256": {
+          "expected_forbidden_path.jsonl": "03f3d2d1db3412eb8a325d37b57c578230cfbceaafc1816c8f3c3a444fb84322",
+          "invalid_via.jsonl": "a6df603baf4ba04ddd1ec7ce93f512224d66056265668d5694fd44c80360e631",
+          "removed_rule.jsonl": "b678c7d7e2735127af8eddd25bd2945c8e76f19a6453941780b3e50d952fcf3c",
+          "summary.json": "a01e5d341101b61881d99b79cdf48d016cdb75e77baaae1ef0cf9ba6fadcf89c",
+          "sensors.jsonl": "996a7e106dc1b836f0ce75563fca7b58f6a0fe5685dc64af2a183cbc4246522f",
+          "run.json": "ba6d2c070e2dd9416e38faa86d4f86a71bf83606bcea7356b0d371e30c070e90",
+          "rejected-expected_forbidden_path/outputs.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "rejected-invalid_via/outputs.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "rejected-removed_rule/outputs.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "replay/replay.json": "f0ed547e951a0dc601200f750836e30097dc203d1a598d9b45c51e5e7c3e4f05",
+          "replay/outputs.jsonl": "0644cda0113cb20441adba32312aec44029a8955f972978d80dfeca2b81dcf5f"
+        },
+        "gzip_crc_verified": true
+      }
+    },
+    {
+      "backend": "native",
+      "case": "turn-arrival-memory",
+      "seed": 7,
+      "passed": true,
+      "summary": {
+        "scenario": "turn-arrival-memory",
+        "seed": 7,
+        "simulated_seconds": 37.45,
+        "steps": 750,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.4532569884335107,
+        "localization_rmse": 0.07870144018984283,
+        "localization_max_error": 0.20735683671356545,
+        "final_speed": 0.1456757649100138,
+        "progress": 208.58824883363155,
+        "emergency_steps": 3,
+        "avoidance_steps": 117,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "edge_ids": [
+        "approach",
+        "detour",
+        "east-exit"
+      ],
+      "replay_ticks": 750,
+      "recorded_segment_min_clearance_m": 1.4522984389314222,
+      "clearance_floor_m": 0.5,
+      "recorded_corridor_min_reserve_m": 0.38845178816308623,
+      "goal_distance_m": 0.9423650976490572,
+      "map_search_in_replay": true,
+      "mutations": [],
+      "archive": {
+        "path": "/tmp/rustdriving-turn-matrix-v3/native-turn-arrival-memory-seed-7.tar.gz",
+        "sha256": "0c64b16889120f7b027e81b04ed23fc873aefd3bc5f4da247201079db656d5db",
+        "bytes": 4638929,
+        "files_sha256": {
+          "summary.json": "c79e82816f8cd134b1e6cb241e262df0df44cf626ef82295b9b5484173e3bbaa",
+          "sensors.jsonl": "caca58c02ff95e3f03a4f57b4d9ef3e5f365bcecdf2ea0d461f659b75dacfc59",
+          "run.json": "3485350bd40256cbdaccd3cde1406f47c6cb934d3d7dbfe4302abd7febda20f2",
+          "replay/replay.json": "bab6791dca04098a94cb0e6ab850bc18c28fdb595da17ab345781abbae95cb25",
+          "replay/outputs.jsonl": "7d94829f4622c8394fc8dd97686986aadf66a1f3a58d82e51af86a6352892af5"
+        },
+        "gzip_crc_verified": true
+      }
+    },
+    {
+      "backend": "native",
+      "case": "turn-arrival-memory",
+      "seed": 42,
+      "passed": true,
+      "summary": {
+        "scenario": "turn-arrival-memory",
+        "seed": 42,
+        "simulated_seconds": 37.4,
+        "steps": 749,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.4420610465768746,
+        "localization_rmse": 0.07828852630682705,
+        "localization_max_error": 0.2549838924743313,
+        "final_speed": 0.15990127049550296,
+        "progress": 208.51881470471784,
+        "emergency_steps": 0,
+        "avoidance_steps": 112,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "edge_ids": [
+        "approach",
+        "detour",
+        "east-exit"
+      ],
+      "replay_ticks": 749,
+      "recorded_segment_min_clearance_m": 1.4402949006839845,
+      "clearance_floor_m": 0.5,
+      "recorded_corridor_min_reserve_m": 0.3086446466372026,
+      "goal_distance_m": 1.0113884419429602,
+      "map_search_in_replay": true,
+      "mutations": [],
+      "archive": {
+        "path": "/tmp/rustdriving-turn-matrix-v3/native-turn-arrival-memory-seed-42.tar.gz",
+        "sha256": "d58bba7041e86f37d8e49ee1741546300a26af22bca6a71424a5814d3e73a9b1",
+        "bytes": 4709180,
+        "files_sha256": {
+          "summary.json": "0203e334dfad9893afd506bfebb07f14d6d794b558c11b2a235079bba6b1cdfa",
+          "sensors.jsonl": "38e661bec046ad4e579d0cf07555f5657d5b1b9acc66ede41e9aec4e89a82217",
+          "run.json": "18e9f8d698108e1c6e309f78b525d284a35caefa4ad2d451703b1a48fa69a1f8",
+          "replay/replay.json": "eaeadf037128e67fce3cd1e1efc7df01baa3673b5c155659ba5869887a1fc353",
+          "replay/outputs.jsonl": "94a17fd9733d1c7ea7684a017ebf3aca466a2067fef2889156a88913d1fae8de"
+        },
+        "gzip_crc_verified": true
+      }
+    },
+    {
+      "backend": "native",
+      "case": "osm-turn",
+      "seed": 1,
+      "passed": true,
+      "summary": {
+        "scenario": "OSM imported road route",
+        "seed": 1,
+        "simulated_seconds": 40.2,
+        "steps": 805,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.06371588354838749,
+        "localization_max_error": 0.14056835182122573,
+        "final_speed": 0.15002069486885317,
+        "progress": 208.40617956594096,
+        "emergency_steps": 11,
+        "avoidance_steps": 59,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "edge_ids": [
+        "osm-way-10-0-forward",
+        "osm-way-30-0-forward",
+        "osm-way-40-0-forward"
+      ],
+      "replay_ticks": 805,
+      "recorded_segment_min_clearance_m": null,
+      "clearance_floor_m": 0.0,
+      "recorded_corridor_min_reserve_m": 0.7826816015609062,
+      "goal_distance_m": 1.0410404504786437,
+      "map_search_in_replay": true,
+      "mutations": [
+        {
+          "mutation": "removed_rule",
+          "exit_code": 2,
+          "diagnostics": "rustdriving: navigation map does not match configured initial route\n",
+          "input_sha256": "1623657805cecef68becc0329d80a09a641cae48450b83162358cfd648150188"
+        },
+        {
+          "mutation": "invalid_via",
+          "exit_code": 2,
+          "diagnostics": "rustdriving: turn restriction has invalid via-node connectivity\n",
+          "input_sha256": "434549a06d4c4342234fb594e8fba3fa2db27340a0858af023500fdcd6f18770"
+        },
+        {
+          "mutation": "expected_forbidden_path",
+          "exit_code": 2,
+          "diagnostics": "rustdriving: replay mismatch at tick 0 (time 0.000)\n",
+          "input_sha256": "0727f3fa6815b9ba6aac4e18f6127727508383c5419aa51751d1ac291d3b2ef2"
+        }
+      ],
+      "archive": {
+        "path": "/tmp/rustdriving-turn-matrix-v3/native-osm-turn-seed-1.tar.gz",
+        "sha256": "d12c3748173bdad2e39a43f548f74faaa64a3d36863d53ce19d69b8137be4a01",
+        "bytes": 11238404,
+        "files_sha256": {
+          "expected_forbidden_path.jsonl": "0727f3fa6815b9ba6aac4e18f6127727508383c5419aa51751d1ac291d3b2ef2",
+          "invalid_via.jsonl": "434549a06d4c4342234fb594e8fba3fa2db27340a0858af023500fdcd6f18770",
+          "removed_rule.jsonl": "1623657805cecef68becc0329d80a09a641cae48450b83162358cfd648150188",
+          "summary.json": "24e53acc42dc8ac239dba28408c8e214c0891ec344059867afd51ce656ec2ee6",
+          "sensors.jsonl": "c8f1abca1a3a2d4cbafe687a1382d1f862ee574844d588b13ac2f6fca0d14473",
+          "run.json": "adb5103bf1918a5403d5b1300fc66aa2d61a3bc29477c210709c150595cd94c1",
+          "rejected-expected_forbidden_path/outputs.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "rejected-invalid_via/outputs.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "rejected-removed_rule/outputs.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "replay/replay.json": "546a1f9c1b6ff990ab4f858a0c86bbeb0900f7866e2842ba95911b61ae327bfd",
+          "replay/outputs.jsonl": "ed715fafe8d3768e97fe86b813e86f48003d1c2a02621c83888f9db8ba99719a"
+        },
+        "gzip_crc_verified": true
+      }
+    },
+    {
+      "backend": "native",
+      "case": "osm-turn",
+      "seed": 7,
+      "passed": true,
+      "summary": {
+        "scenario": "OSM imported road route",
+        "seed": 7,
+        "simulated_seconds": 41.6,
+        "steps": 833,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.07625862814713297,
+        "localization_max_error": 0.1975663336798497,
+        "final_speed": 0.11080471835179602,
+        "progress": 208.49372570880246,
+        "emergency_steps": 12,
+        "avoidance_steps": 65,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "edge_ids": [
+        "osm-way-10-0-forward",
+        "osm-way-30-0-forward",
+        "osm-way-40-0-forward"
+      ],
+      "replay_ticks": 833,
+      "recorded_segment_min_clearance_m": null,
+      "clearance_floor_m": 0.0,
+      "recorded_corridor_min_reserve_m": 0.8314384908396093,
+      "goal_distance_m": 0.9177613687106839,
+      "map_search_in_replay": true,
+      "mutations": [],
+      "archive": {
+        "path": "/tmp/rustdriving-turn-matrix-v3/native-osm-turn-seed-7.tar.gz",
+        "sha256": "4be918f4fe08372af7fd57eaabc9b984f91398ceb6bde46a4c699c4f9361187d",
+        "bytes": 5229262,
+        "files_sha256": {
+          "summary.json": "ff12c76b7e20682c835fcdb5a4ce5d387d9fef05f087a1c79b6413caabc355a3",
+          "sensors.jsonl": "9cda1814302836c0f2bb4fa8aa982b09bf44c28a74383706feba72f3e957183a",
+          "run.json": "8bc1c957ff9e3572c6be12de4ba48880868dbd000c5617cc5a55e69350e357e9",
+          "replay/replay.json": "8805f6cd3e63a5491126c87058d8690081b3188ecacb61c016e9c349cfdfc97c",
+          "replay/outputs.jsonl": "e7d377990439365d7a03ea26f3a858da64695baf60c22210b5357ab6940bbfac"
+        },
+        "gzip_crc_verified": true
+      }
+    },
+    {
+      "backend": "native",
+      "case": "osm-turn",
+      "seed": 42,
+      "passed": true,
+      "summary": {
+        "scenario": "OSM imported road route",
+        "seed": 42,
+        "simulated_seconds": 41.85,
+        "steps": 838,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.06439147958092416,
+        "localization_max_error": 0.17151372257311598,
+        "final_speed": 0.17482103472721927,
+        "progress": 208.4205361969189,
+        "emergency_steps": 11,
+        "avoidance_steps": 72,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "edge_ids": [
+        "osm-way-10-0-forward",
+        "osm-way-30-0-forward",
+        "osm-way-40-0-forward"
+      ],
+      "replay_ticks": 838,
+      "recorded_segment_min_clearance_m": null,
+      "clearance_floor_m": 0.0,
+      "recorded_corridor_min_reserve_m": 1.1005961129531379,
+      "goal_distance_m": 0.9914460350932589,
+      "map_search_in_replay": true,
+      "mutations": [],
+      "archive": {
+        "path": "/tmp/rustdriving-turn-matrix-v3/native-osm-turn-seed-42.tar.gz",
+        "sha256": "3cd8724127fc76f652fc1f4f1a98fcb99eb885763f340ca5079ec97e3eb00bca",
+        "bytes": 5194784,
+        "files_sha256": {
+          "summary.json": "8dc84b98fa61d8b3aa65b85aa3812881a44d015d51fcc82b23023a68893ffba8",
+          "sensors.jsonl": "e7df0069585686bdff668b855f5bfa4a5cfd6533ef73f54f827023e722613227",
+          "run.json": "9abe2ab98d8d88d48c4c5f06c94b768f097ca663a6fac47aa47df0cb110f5fc5",
+          "replay/replay.json": "48bbb49a5818a537da55d6727333e00549844c2302e456ecf1cb579f4ac020a4",
+          "replay/outputs.jsonl": "1011040b6d99cbd67cb2641272e08247c3ce00588eba08f62c7861a121b22eba"
+        },
+        "gzip_crc_verified": true
+      }
+    }
+  ],
+  "negative_cases": [
+    {
+      "backend": "reference",
+      "kind": "closed_only_allowed_turn",
+      "exit_code": 2,
+      "diagnostics": "rustdriving: goal is unreachable with these closures and turn restrictions\n"
+    },
+    {
+      "backend": "native",
+      "kind": "closed_only_allowed_turn",
+      "exit_code": 2,
+      "diagnostics": "rustdriving-rne: goal is unreachable with these closures and turn restrictions\n"
+    }
+  ],
+  "cases_verified": 24,
+  "replay_ticks_verified": 17158,
+  "failed_development_trials": [
+    {
+      "kind": "checker optional serialization field handling",
+      "scope": "Authored OSM fixture has no obstacles and omits default min_clearance_m; original three driving fixtures remain explicit .5 m",
+      "diagnostics": "turn restriction check: 'min_clearance_m'",
+      "previous_checker_sha256": "0b4554340a63942bf6e739afc58aba54ae79c4ce0800802fbf2072ba47e8c5b3",
+      "partial_report_sha256": "eae77353612be667201e2d9062428f35d3659442bde533a5e92e13f2c7816caa",
+      "log_sha256": "47a9776d2eddef9bd331f1361ca35a42c708fc19f20b65e83945939927714fcf",
+      "partial_verified_cases": 9,
+      "physical_acceptance_failure": false,
+      "complete": false
+    }
+  ],
+  "workspace_validation": {
+    "tests_passed": 331,
+    "default_scenario_replay_pairs": 49,
+    "legacy_files_byte_identical": 245,
+    "log_sha256": "fc034c1178d33856440c09e793a506426b08b45ed6fb644d852bf67d790a6eba"
+  },
+  "native_validation": {
+    "tests_passed": 55,
+    "format_clippy_locked_release_passed": true,
+    "log_sha256": "091400430691c68f1249eb87eb3f2ce9d85aa2c368e8db16b4dfc19c021378b1"
+  },
+  "matrix_log_sha256": "5af2561f0830971091aa376db1da2de8eef5d80ce2519863dc992445d050f5dd"
+}

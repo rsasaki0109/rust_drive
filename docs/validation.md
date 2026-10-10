@@ -383,3 +383,37 @@ was reproduced; the corrected command completes the actual 22-second episode,
 and source/fixture hashes. No perception, ray or physical acceptance gate was
 changed. Workspace checks were rerun: 306 tests, 49 scenario/replay pairs and
 245 byte-identical legacy output files. New remote CI remains a separate check.
+
+
+## Bounded legal turns and Japanese urban replay
+
+The workspace checks pass **331 tests**, formatting, warnings-denied Clippy,
+locked release builds and **49 legacy scenario/replay pairs**. All **245** legacy
+output files are byte-identical to the preserved pre-change manifest. Native
+checks pass **55 tests**, formatting, Clippy and the locked release build.
+Toolchains, lockfiles and the RNE revision remain unchanged.
+
+The new bounded legal-turn matrix passes **24 episodes** (four cases, two
+plants, three seeds), recomputing **17,158 sensor ticks**. Independent checks
+validate transitions, incoming-edge state, fixed clearance floors and legal
+detours; **24** corrupted replay headers and two closed-only-detour CLI cases
+are rejected. An initial checker error accessing an omitted optional floor
+field is retained as development evidence; the corrected checker reads the
+existing default without weakening authored floors.
+[Measurements, source hashes and archived members](../assets/turn-restriction-results.json);
+[algorithm, OSM scope and reproduction](turn-restrictions.md).
+
+The Japanese Hero passes three native episodes with all **2,763** sensor
+replay ticks and **3,983,040** independently reconstructed beam slots. Both
+intersection envelopes are cleared by the complete conservative ego body;
+continuous red standstill is at least 10.50 seconds, and no recorded stationary
+body sample occupies either junction. Final full-body exit reserve is at least
+1.353237 m beyond the second street. The minimum actor-pair clearance bound
+is 1.00384 m against the unchanged 1 m floor. Initial layout failures remain
+reproducible; actual construction returns are zero due to lead occlusion, so
+construction detection/negotiation is not claimed. Display evidence is
+documented separately in [the Hero contract](japanese-city-demo.md). These changes do not establish
+general traffic-rule compliance, construction negotiation, automotive
+perception accuracy or real-vehicle safety. Subjective maturity relative to
+Autoware, Apollo and openpilot remains **about 20%**. CI results must be read
+from the applicable GitHub run, separately from these local checks.

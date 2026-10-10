@@ -26,7 +26,7 @@ flowchart LR
   S --> M[Log-odds occupancy map]
   H --> M
   O[Optional OSM data / bounded WGS84 to ENU import] --> N[Supplied road graph + destination + closure snapshots]
-  N --> D[Dijkstra routing]
+  N --> D[Dijkstra with incoming-edge state for restricted maps]
   D --> R[Resolved route]
   R --> A[Lateral lattice planning]
   L --> A
@@ -55,6 +55,14 @@ The additional `--lidar-3d --ground-segmentation` mode installs physical road su
 With `--vehicle-body`, an authored rectangular research body adds actual force-free Rapier overlap witnesses and a separate swept upright-box evaluator. The driver uses its circumscribed planar radius and a calibrated vertical clearance interval. Native Ackermann dynamics remain the sole motion integrator; this does not add tire contact response, suspension or six-degree-of-freedom motion. Recorded road and obstacle geometry remain simulator-only evaluation inputs.
 
 The optional OSM importer resolves bounded WGS84 coordinates to local ENU, retains shared junctions and directed way geometry, and emits the ordinary road graph. Imported road widths are explicit simulation calibration, not measured lane boundaries. Dataset attribution and ODbL terms are separate from the Rust implementation's license. [Import contract and provenance](osm-import.md).
+
+Unconditional `no` and `only` junction rules now constrain directed transitions.
+Restricted search retains the incoming edge at each node, so a shorter forbidden
+arrival does not hide a longer legal arrival. Closures remain independent;
+restricted-map sensor replay reconstructs search from the header. The OSM
+importer supports bounded motorcar node-via relations and rejects relevant
+unsupported semantics. Navigation and fixed-route mapped stop controls remain
+separate configurations. [Turn contract and evidence](turn-restrictions.md).
 
 Optional `local_route_geometry` uses bounded steering-radius corner fillets and a shorter pursuit preview for sparse external roads. Its internal planning arc differs from the original map arc; candidate containment and physical evaluation still use the supplied unchanged corridor. Impossible/overlapping fillets fail validation. Mapped signal, sign and priority-zone coordinates are currently excluded from this mode; their existing route-coordinate behavior remains separate. Optional `rear_axle_offset_m` calibrates low-speed chassis odometry prediction and temporary planning/control course while retaining body yaw for sensors. The native dynamic local mode selects its declared rear-axle distance; default/reference behavior is unchanged. [Reference contract and evidence](chassis-reference.md).
 

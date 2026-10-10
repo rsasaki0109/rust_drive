@@ -326,7 +326,7 @@ def main():
     parser.add_argument('--native-scene', type=Path, help='Successful native scene.json evidence; opt in to rendering physical cuboids')
     parser.add_argument('--traffic-models', nargs='+', choices=['hatchback','sedan','van','pickup'], default=['hatchback'], help='Display models assigned in stable actor appearance order')
     parser.add_argument('--actor-models', nargs='+', default=[], help='Explicit display-only ID=model assignments, e.g. 0=sedan 1=pedestrian 2=cyclist')
-    parser.add_argument('--environment', choices=['suburban', 'urban'], default='suburban', help='Original display scenery; does not add operational map or sensor geometry')
+    parser.add_argument('--environment', choices=['suburban', 'urban', 'urban-japan'], default='suburban', help='Original display scenery; does not add operational map or sensor geometry')
     parser.add_argument('--dog-pairs', nargs='+', default=[], help='Recorded pedestrian ID=dog ID companions; display a leash between their actual positions')
     parser.add_argument('--camera', choices=['ego','traffic','street'], default='ego', help='Follow ego, fit traffic in perspective, or use a fixed-scale orthographic local street view')
     parser.add_argument('--preview-time', type=float, help='Render one PNG instead of the complete GIF')
@@ -353,8 +353,10 @@ def main():
             actor_id = int(id_text)
         except ValueError:
             parser.error('actor models require integer ID=model assignments')
-        if actor_id not in known_ids or actor_id in actor_models or model not in ('hatchback', 'sedan', 'van', 'pickup', 'truck', 'pedestrian', 'cyclist', 'dog', 'elder', 'child', 'parent_stroller'):
+        if actor_id not in known_ids or actor_id in actor_models or model not in ('hatchback', 'sedan', 'van', 'pickup', 'truck', 'pedestrian', 'cyclist', 'dog', 'elder', 'child', 'parent_stroller', 'worker'):
             parser.error('actor display model must name a unique recorded ID and a supported model')
+        if model == 'worker' and args.environment != 'urban-japan':
+            parser.error('worker display requires the urban-japan environment')
         actor_models[actor_id] = model
     dog_pairs = {}
     for assignment in args.dog_pairs:
@@ -367,9 +369,13 @@ def main():
             parser.error('dog pairs require unique recorded pedestrians and dogs with explicit model assignments')
         dog_pairs[owner] = companion
     renderer_sources = ['blender_scene.py', 'blender_assets.py', 'render_demo_3d.py']+(
-        ['blender_vru_assets.py'] if any(model in ('pedestrian', 'cyclist', 'elder', 'child', 'parent_stroller') for model in actor_models.values()) else [])
-    if args.environment == 'urban' or any(model in ('truck', 'dog') for model in actor_models.values()):
+        ['blender_vru_assets.py'] if any(model in ('pedestrian', 'cyclist', 'elder', 'child', 'parent_stroller', 'worker') for model in actor_models.values()) else [])
+    if args.environment in ('urban', 'urban-japan') or any(model in ('truck', 'dog') for model in actor_models.values()):
         renderer_sources.append('blender_city_assets.py')
+    if args.environment == 'urban-japan':
+        if 'blender_vru_assets.py' not in renderer_sources:
+            renderer_sources.append('blender_vru_assets.py')
+        renderer_sources.append('blender_japan_assets.py')
     if any(model in ('elder', 'child', 'parent_stroller') for model in actor_models.values()):
         renderer_sources.append('blender_family_assets.py')
     def source_hash():
@@ -463,6 +469,13 @@ def main():
             if source_hash() != renderer_hash:
                 raise SystemExit('Renderer source changed during the capture')
             images[0].save(args.output.with_suffix('.png'))
+            if args.environment == 'urban-japan':
+                args.output.with_suffix('.json').write_text(json.dumps({
+                    'preview_only': True, 'scene': scene_info, 'audit': audit,
+                    'input_sha256': hashlib.sha256(args.run.read_bytes()).hexdigest(),
+                    'renderer_source_sha256': renderer_hash,
+                    'renderer_sources': {name: hashlib.sha256((ROOT/'scripts'/name).read_bytes()).hexdigest()
+                                         for name in renderer_sources}}, indent=2)+'\n')
             print(args.output.with_suffix('.png'))
             if args.scene_output:
                 print(f'Editable scene: {args.scene_output}')
@@ -493,6 +506,9 @@ def main():
                                                      '--traffic-models',*args.traffic_models,'--environment',args.environment]+(['--scene-output',str(args.scene_output)] if args.scene_output else [])+
                                                     (['--native-scene',str(args.native_scene)] if args.native_scene else [])+(['--actor-models',*args.actor_models] if args.actor_models else [])+
                                                     (['--dog-pairs',*args.dog_pairs] if args.dog_pairs else []))}
+        if args.environment == 'urban-japan':
+            provenance['renderer_sources'] = {name: hashlib.sha256((ROOT/'scripts'/name).read_bytes()).hexdigest()
+                                              for name in renderer_sources}
         if native_evidence:
             provenance['native_scene'] = {
                 'input': str(args.native_scene),
