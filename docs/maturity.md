@@ -160,3 +160,19 @@ the original room 52/179 and desk2 16/179 continuous failures remain unchanged.
 Viewed pair support and byte-identical repeats do not close calibrated
 uncertainty, sustained localization or automotive perception gates. The
 subjective estimate remains **about 20%**, with **30% and 50% unmet**.
+
+The first [continuous multiscale comparison](multiscale-temporal.md) tests that
+integration boundary with unchanged root gates and all 179 updates retained.
+The room branch accepts 92 updates versus native 58 but scores only 49 accurate
+versus 52; desk2 accepts 19 versus 16 and scores 15 versus 16 accurate. All
+branches lose tracking, and maximum accepted root errors increase. This
+preserved viewed regression demonstrates that better adjacent-pair support
+does not establish improved accumulated root accuracy. Full independent audits
+verify all 180 frames / 179 updates, rejecting 15 corruptions on room and 17 on
+desk2; complete repeat validation reproduces both source-bound non-timing reports.
+The failed estimator
+outcome is separate from integrity success. The 34 extra accepted room updates
+contribute no accurate roots, while both recordings lose accuracy on some
+previously accurate common fits. Passing 371 core and 94 optional Rust tests
+does not alter that measured regression. The estimate remains **about 20%**, with
+the **30% and 50% waypoints unmet**.

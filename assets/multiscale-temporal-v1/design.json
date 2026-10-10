@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "algorithm": "bounded_multiscale_continuous_viewed_comparison",
+  "evidence_role": "Previously viewed room and desk2 regression; no fresh holdout claim.",
+  "declared_before_new_continuous_fits": true,
+  "base_commit": "2f4f7b6995758fbb3f90350c6a50fd535d635976",
+  "created_utc": "2026-10-10T12:29:38.925851+00:00",
+  "datasets": {
+    "tum-fr1-room-temporal": {
+      "manifest_sha256": "c7fcc6dbaf72110858cb9225a238d5d0f52513662fe677b1a11cf72a7b7f7c52",
+      "original_root_accurate_updates": 52
+    },
+    "tum-fr1-desk2-independent": {
+      "manifest_sha256": "f9de2bcb1037c46c70242f2c1bdbc8b09bbd06c95716d15b256b3c523ba24327",
+      "original_root_accurate_updates": 16
+    }
+  },
+  "window": {
+    "first_depth_index": 100,
+    "last_depth_index": 279,
+    "frames": 180,
+    "updates": 179,
+    "remove_failed_rows": false
+  },
+  "frontends": {
+    "native": "Unchanged original extractor with max400 features.",
+    "multiscale": {
+      "scales": [
+        1,
+        2,
+        4
+      ],
+      "quotas": [
+        200,
+        120,
+        80
+      ],
+      "reallocate_unused_quota": false
+    },
+    "prior_frontend_sha256": "846051d2f99d07432229a456f9cc96ace6732419df7fde223d0379bfaf13a973"
+  },
+  "state": {
+    "initial_frame": 0,
+    "max_initializations": 1,
+    "initial_root": "identity after measured depth geometry validation using unchanged VisualOdometry3dConfig::default(); at most256 valid initialization points",
+    "initialization_failure": "latched loss; no later restart",
+    "reference": "last accepted measured RGB features, depth image and composed root pose",
+    "accepted_update": "compose independently refined previous_from_current into reference root, then atomically replace reference/root/accepted acquisition timestamp",
+    "rejected_update": "no root output or accepted-reference/root/timestamp renewal",
+    "rgb_observation": "accepted-pose expiry checked first; strictly newer RGB observed before geometric fitting and remains observed if fit fails",
+    "duplicate_or_stale_rgb": "reject without image decoding or permission renewal",
+    "maximum_accepted_pose_age_s": 0.2,
+    "age_comparison_tolerance_s": 1e-09,
+    "age_expiry": "latch loss before image decoding; retain every subsequent rejected frame",
+    "reset": false,
+    "lost_recovery": false
+  },
+  "geometry": {
+    "sensor_association_max_s": 0.02,
+    "depth_min_m": 0.3,
+    "depth_max_m": 5.0,
+    "depth_stencil": "All9 original measured depths valid, at most0.05m spread; nearest sample with fractional original-coordinate ray for multiscale.",
+    "max_matches": 256,
+    "registration": "unchanged VisualOdometry3dConfig::default()",
+    "refinement": "unchanged ReprojectionConfig3d::default(); no coarse-only fallback",
+    "reference_selection": "accepted reference; never compose unconditional adjacent pairs across a failed acquisition"
+  },
+  "evaluation": {
+    "numeric_reference_poses_parsed": "only after all operational fits for both independent branches",
+    "frame": "single origin fixed by first source reference; independent continuous-root composition",
+    "translation_gate_m": 0.1,
+    "rotation_gate_rad": 0.1,
+    "gt_max_bracket_s": 0.02,
+    "extrapolation": false,
+    "denominator": 179,
+    "accurate_update": "accepted and reference-valid and root errors within both unchanged gates",
+    "all_updates_passed": "Exactly one initialization and all179 updates accepted, reference-valid and root-accurate.",
+    "invalid_labels": "Retain completed sensor report, mark unavailable references and exit2."
+  },
+  "resources": {
+    "max_frames": 180,
+    "max_manifest_bytes": 524288,
+    "max_png_bytes": 4194304,
+    "max_counted_sensor_bytes": 134217728,
+    "max_report_bytes": 67108864
+  },
+  "freeze": "Metadata-only source/manifest/design binding before first new continuous run; output exclusive creation.",
+  "exit_status": {
+    "0": "Both complete physical protocols pass.",
+    "1": "Completed valid inputs with physical accuracy/availability failure.",
+    "2": "Invalid input, invalid labels or IO failure."
+  },
+  "publication": {
+    "preserve_first_reports": true,
+    "retune_after_first_outcome": false,
+    "raw_recordings_redistributed": false,
+    "continuous_rne_driving_integration": false,
+    "uncertainty_calibration_claim": false
+  }
+}

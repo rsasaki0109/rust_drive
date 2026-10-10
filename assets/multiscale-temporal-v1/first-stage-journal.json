@@ -1,0 +1,61 @@
+[
+  {
+    "stage": "receipt",
+    "exit": 0,
+    "arguments": [
+      "--executable-receipt",
+      "--output",
+      "artifacts/multiscale-temporal-v1/first/executable-receipt.json"
+    ]
+  },
+  {
+    "stage": "room-freeze",
+    "exit": 0,
+    "arguments": [
+      "--prepare-freeze",
+      "--manifest",
+      "data/tum-fr1-room-temporal/manifest.json",
+      "--output",
+      "artifacts/multiscale-temporal-v1/first/room-freeze.json"
+    ]
+  },
+  {
+    "stage": "desk2-freeze",
+    "exit": 0,
+    "arguments": [
+      "--prepare-freeze",
+      "--manifest",
+      "data/tum-fr1-desk2-independent/manifest.json",
+      "--output",
+      "artifacts/multiscale-temporal-v1/first/desk2-freeze.json"
+    ]
+  },
+  {
+    "stage": "room-first",
+    "exit": 1,
+    "arguments": [
+      "--manifest",
+      "data/tum-fr1-room-temporal/manifest.json",
+      "--raw",
+      "data/tum-fr1-room-temporal/raw",
+      "--freeze",
+      "artifacts/multiscale-temporal-v1/first/room-freeze.json",
+      "--output",
+      "artifacts/multiscale-temporal-v1/first/room-report.json"
+    ]
+  },
+  {
+    "stage": "desk2-first",
+    "exit": 1,
+    "arguments": [
+      "--manifest",
+      "data/tum-fr1-desk2-independent/manifest.json",
+      "--raw",
+      "data/tum-fr1-desk2-independent/raw",
+      "--freeze",
+      "artifacts/multiscale-temporal-v1/first/desk2-freeze.json",
+      "--output",
+      "artifacts/multiscale-temporal-v1/first/desk2-report.json"
+    ]
+  }
+]
