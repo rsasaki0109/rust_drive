@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "scope": "Partly viewed 5.973232-second extension of the same indoor recording; previously viewed numeric reference source; no new environment, driving fusion, calibrated confidence or automotive validation",
+  "first_trial": {
+    "evaluator_exit_status": 1,
+    "summary": {
+      "accepted_updates": 58,
+      "accurate_root_updates": 52,
+      "all_updates_passed": false,
+      "frames": 180,
+      "initialized_frames": 1,
+      "lost": true,
+      "reference_valid_updates": 179,
+      "rejected_updates": 121,
+      "updates": 179
+    },
+    "maximum_root_translation_error_m": 0.09884618627335014,
+    "maximum_root_rotation_error_rad": 0.11037314331801382,
+    "first_accepted_accuracy_failure_source_index": 149,
+    "first_lost_source_index": 164,
+    "report_sha256": "d8c117cfc898da5b595d0bd2f343f99c60f193287c1b4e31c0012121103b51a5",
+    "freeze_sha256": "90158d4c9773cda00310ce1e56f49e64f117cb84f475c4f7292505e081058513",
+    "qualification_sha256": "f9c31c069de1770182c6e55bb5e58d9fc4ba1cd752e6f1c89ff85ae8fe9e9172",
+    "independent_archived_source_audit_sha256": "169068641e590db871f971008f5f1aaf5287b6ce37754d6296505a94c6f492df",
+    "frozen_sources": 20,
+    "all_58_accepted_refinements_converged": true,
+    "initializations": 1
+  },
+  "viewing_history": {
+    "viewed_prefix_frames": 36,
+    "extension_frames": 144,
+    "new_unique_rgb_images": 137,
+    "new_depth_images": 144,
+    "whole_numeric_reference_source_previously_viewed": true,
+    "earlier_36_frame_prefix_exact_except_wall_time_and_split": true
+  },
+  "qualification": {
+    "full_source_gt_rows": 4887,
+    "all_180_brackets_valid": true,
+    "unique_rgb_images": 173,
+    "repeated_rgb_associations": 7,
+    "all_179_updates_retained": true,
+    "metadata_only_preflight_before_tail_decode": true,
+    "raw_files": 357,
+    "raw_bytes": 103275775,
+    "helper_tests_passed": 7,
+    "rust_temporal_tests_passed": 5,
+    "acquisition_corruptions_rejected": 29,
+    "independent_positive_contracts": 32,
+    "independent_corruptions_rejected": 141
+  },
+  "regression": {
+    "suite_exit_status": 0,
+    "physical_evaluator_exit_status": 1,
+    "non_timing_evidence_identical": true,
+    "previous_36_frame_prefix_identical": true,
+    "proof_sha256": "9b70397de1b6f8076f3c16d14b33a72e9481b6d4bfa7743fa2dbfe6a17da9a6e",
+    "earlier_qualified_suite_exit_status": 0
+  },
+  "workspace": {
+    "command": "scripts/check.sh",
+    "execution_session": 83014,
+    "exit_status": 0,
+    "exit_status_evidence": "Parent confirmed completed session 83014 exit 0. This audit independently parses its log and generated files.",
+    "log_path": "artifacts/temporal-workspace-check.log",
+    "log_sha256": "491f541e8685c373e3a5381789d2568a04f6f343c9972af158011d14fa96fa2e",
+    "real_tests_passed": 371,
+    "passed_test_lines": 371,
+    "failed_tests": 0,
+    "ignored_tests": 0,
+    "filtered_tests": 0,
+    "result_groups": 36,
+    "nonzero_test_groups": 23,
+    "episodes": 49,
+    "verified_replays": 49,
+    "replay_ticks": 38638
+  },
+  "prior_regression_proof_sha256": "8ed8291b16185e4093302ac8fb5cd32296eda5f999caea1ce9e0278accb2b26f",
+  "sensor_loop_preservation_sha256": "c788ad98103744f77518b5a8c94388fbb660e43f1f3733a75db08de6801e6468",
+  "fmt_and_release_clippy_including_temporal_tests_passed": true,
+  "native_evidence": "Preceding 55-test seed-7 native evidence reused for unchanged sources; no fresh native execution in this increment",
+  "hero_gif_sha256": "40db0984165911a064e50cd0dc07087dd7f4b366aeeb530b66deddad202a1c0f",
+  "plot_metadata_sha256": "d119bea6649bd9dea6498472cb32e8ceb453cbc67ed58652c1b6cf527b06b643",
+  "maturity": {
+    "subjective_engineering_estimate_percent": 20,
+    "waypoint_30_complete": false,
+    "goal_50_complete": false
+  }
+}

@@ -116,3 +116,9 @@ The [first metadata-qualified room trial](qualified-recorded-motion.md) passes
 closes one short indoor evaluation, while broader scenes, longer durations,
 measured vehicle calibration, uncertainty and camera-to-driving fusion remain
 future work. The earlier failed protocols remain required regressions.
+
+The [continuous same-room extension](temporal-recorded-motion.md) limits the
+preceding short success: 52/179 updates meet root accuracy, then tracking is lost.
+Improved measured-feature support, rotation accuracy and independently evaluated
+relocalization are needed before sustained localization can be claimed. Origin
+resets, dropped failures and relaxed accuracy gates do not resolve this result.

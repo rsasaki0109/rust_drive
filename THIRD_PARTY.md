@@ -74,3 +74,9 @@ reference tables and camera YAML remain ignored and are not redistributed or
 relicensed. The source manifest retains all source identities and the unverified
 original-data licence limitation. Qualification examines timestamps and row arity
 without copying upstream algorithm code.
+
+The [temporal room subset](docs/temporal-recorded-motion.md) extends the same
+pinned TUM source without redistributing raw PNGs, reference tables or camera
+YAML. Original-data terms remain unverified; the temporal source notice retains
+that limitation. The optional static error export uses Matplotlib 3.10.8
+(PSF-based licence), separately from the Rust evaluator and independent oracle.

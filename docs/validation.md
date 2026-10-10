@@ -648,3 +648,38 @@ sources, without a fresh native execution claim.
 [prior regressions](../assets/qualified-prior-regression.json);
 [combined proof](../assets/qualified-development-validation.json).
 Remote Actions status is separate from these local checks.
+
+## Continuous same-room motion and preserved failure
+
+A separate temporal binary extends original depth indices 100–135 to 100–279:
+180 frames/179 updates over 5.973232 seconds, with exactly one origin and no
+reset at the viewing-history boundary. The first 36 frames were viewed
+previously, as was the complete numeric reference source. New image acquisition
+and timestamp qualification remained separate from reference-pose scoring.
+Twenty source files and independent metadata preregistration preceded tail decode.
+
+The first continuous protocol **fails, exit 1**: 58/179 updates accepted,
+52/179 root-accurate, 121 rejected and tracking lost. Maximum accepted errors
+are 0.098846 m / 0.110373 rad. Rotation first exceeds its gate at index 149;
+insufficient consensus/depth-supported pairs at 159–163 prevent renewal and
+accepted-pose expiry latches loss at 164. All 179 references are valid, all
+failures remain selected, and all 58 accepted refinements converge. The
+previous prefix remains exactly identical except timing and history tags.
+
+The archived-source audit passes with 32 positive contracts and 141 rejected
+corruptions, including a known-motion 180-frame control and forged reset/drop-tail
+negatives. Viewed reproduction retains exit 1 and exactly reproduces non-timing
+evidence. The earlier qualified-room suite also passes unchanged. Workspace
+checks pass 371 tests, 49 episodes and 49 replays; all 245 generated files and
+all 384 protected source/evidence identities match. Five new Rust tests, seven
+Python preflight tests, release Clippy/fmt and 29 acquisition negatives pass.
+The complete operational sensor loop matches the preceding evaluator byte for
+byte. Native evidence is reused for unchanged sources; no fresh native run is
+claimed. Remote Actions status remains separate from these local outcomes.
+
+[Protocol and plot](temporal-recorded-motion.md);
+[first outcome](../assets/recorded-temporal/first-room-v1/phase1.json);
+[first independent audit](../assets/recorded-temporal/first-room-v1/audit.json);
+[failure detail](../assets/temporal-first-failure-review.json);
+[viewed reproduction](../assets/temporal-regression.json);
+[combined proof](../assets/temporal-development-validation.json).
