@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "protocol": "kitti-processed-projection-analytic-v1",
+  "role": "Frozen analytic geometry and input-contract checks before the first authored-fixture CLI projection; not recorded KITTI accuracy evaluation",
+  "parent_commit": "fd1749874010558adc2bb97f33cf13aee1a92d17",
+  "primary_authority": "source-authority.json",
+  "camera_indices": [0, 1, 2, 3],
+  "camera_names": ["left grayscale", "right grayscale", "left color", "right color"],
+  "geometry": {
+    "pixel_chain": "q = P_rect_selected * embed(R_rect_00) * T_cam0_from_velo * [X_velo,1]; pixel = q.xy / q.z",
+    "rectified_intrinsics": "A = P_rect_selected[:,0:3]; b = P_rect_selected[:,3]",
+    "rectified_offset_m": "inverse(A) * b, retaining skew and all three fourth-column entries",
+    "selected_camera_center_in_shared_rectified_cam0_m": "-inverse(A) * b",
+    "effective_camera_from_velodyne": "[I,inverse(A)*b] * embed(R_rect_00) * T_cam0_from_velo",
+    "effective_camera_from_imu": "effective_camera_from_velodyne * T_velo_from_imu",
+    "camera_axes": "right, down, forward",
+    "velodyne_and_imu_axes": "forward, left, up",
+    "units": "metres and pixels",
+    "native_K_D_R_T_and_selected_R_rect": "retained as provenance; never additionally applied to already rectified processed pixels",
+    "inframe": "camera depth > 0 and 0 <= u < width and 0 <= v < height; no inclusion epsilon",
+    "outside": "positive camera depth with a finite pixel outside the half-open canvas",
+    "behind": "nonpositive camera depth; pixel is null"
+  },
+  "input_contract": {
+    "calibration": "ASCII row-major standard raw calibration fields for all four cameras and Velodyne/IMU rigid transforms; unknown/duplicate/missing/nonfinite/wrong-cardinality fields fail",
+    "compatibility_metadata": "calib_time, corner_dist, delta_f and delta_c are nonoperational metadata where declared by the parser; literal real-file compatibility remains unverified",
+    "calibration_identity": "Input hashes identify supplied files; they do not authenticate factory calibration, a common acquisition day or archive membership. calib_time processing metadata may differ across files",
+    "points": "1..200000 little-endian float32 records, each 16 bytes containing XYZ metres and reflectance; every value finite; every row retained",
+    "max_calibration_bytes_each": 65536,
+    "max_point_bytes": 3200000,
+    "max_output_bytes": 67108864,
+    "canvas_axis_pixels": [1, 8192],
+    "max_canvas_pixels": 16777216,
+    "rotation_orthonormality_and_positive_determinant_absolute_tolerance": 0.0001,
+    "max_absolute_rigid_translation_m": 100,
+    "pinhole_focal_range_pixels": [1, 1000000],
+    "output": "Exclusive fresh output, no symlink parents or dot/parent components, admitted before calibration/point reads. Failed later input validation can retain an empty reserved output; never overwrite an earlier result",
+    "exit_codes": {"valid_projection": 0, "input_or_output_contract_error": 2}
+  },
+  "authored_fixture": {
+    "role": "Original analytical calibration and point bytes, not measured KITTI data or ground truth",
+    "point_rows": 18,
+    "files": {
+      "calib_cam_to_cam.txt": {"bytes": 1271, "sha256": "d43d84b23551dac2c3e8b083a70847b1eccdf510eb9c8c463539a6a63aa84fcb"},
+      "calib_velo_to_cam.txt": {"bytes": 124, "sha256": "bd2194e3b0244c626f28c841bbf3741f9ab862a529d0bdacd397903415bdaaee"},
+      "calib_imu_to_velo.txt": {"bytes": 100, "sha256": "ba3ffc60e382d95cb115dec9b930c224718a74b013b84ed0d143f4637118058f"},
+      "points.bin": {"bytes": 288, "sha256": "ac2c44b8a0434728f327dc3e7f53c97288666c0e017c37451e80e147deaed1e3"}
+    },
+    "coverage": "Nonidentity shared R_rect_00, distinct per-camera R_rect_i, distinct native/rectified intrinsics, intrinsic skew, nonzero x/y/z fourth column, exact image boundaries, positive/zero/negative depth and out-of-frame points",
+    "fixed_independent_tolerances": {"homogeneous_matrix_absolute": 1e-10, "point_and_pixel_absolute": 1e-8},
+    "independent_auditor": "NumPy homogeneous matrix products/inverses, reconstructed from supplied calibration and point bytes; compare every row, transforms, provenance and summaries",
+    "negative_controls": "Actual CLI input/output admission failures plus audit mutations of projection order, fourth column, calibration/source identities, units, frame metadata and retained rows",
+    "freeze": "Design committed before first fixture CLI invocation; source/fixture/executable identities retained before invocation; no post-result fixture or tolerance tuning"
+  },
+  "acquisition_status": "Official anonymous documentation acquired; raw-data page requires login. No KITTI raw calibration, Velodyne recording, camera image, OXTS pose, devkit or measured scene score acquired",
+  "not_implemented": ["Data acquisition/login", "Camera image decoding", "LiDAR deskew or motion compensation", "Timestamp association", "OXTS parsing or pose scoring", "Measured extrinsic estimation", "Automotive accuracy evaluation", "Tracking or driving integration"],
+  "maturity": "Analytic adapter checks do not establish automotive perception/localization accuracy or the 30% maturity goal"
+}
