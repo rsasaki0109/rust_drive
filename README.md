@@ -6,7 +6,7 @@
 
 An original, modular driving stack with a working, deterministic closed-loop simulation. The vehicle processes synthetic LiDAR, fuses noisy GNSS and odometry, tracks and predicts obstacles, and plans steering and braking. The opening GIF records CPU-only Robot Native Engine (RNE) driving on the left side of an authored Japanese urban street: two intersections, horizontal signals, storefronts and a guarded construction site. Twenty-three recorded road users include seven passenger vehicles, three trucks, eight pedestrians, four bicycles and a leashed dog, with a child, parent pushing a stroller, elder with a cane and construction worker. Ego waits at red, resumes on green and completely exits both intersections. Vehicles use fixed SI display dimensions and a fixed-scale camera. Original meshes visualize recorded positions; their articulated animation is cosmetic, while physical actors use capsule/circle proxies. Blender Cycles renders the 46-second episode at 3× playback. The work-zone cuboid is physical, but is occluded by traffic in this recording; construction recognition and negotiation are unimplemented. [Checks, meshes and limitations](docs/japanese-city-demo.md); [reproduce the GIF](#reproduce-the-gif).
 
-The project is now **RustDriving**. Cargo packages and commands use `rustdriving-*` / `rustdriving`; the GitHub repository currently remains `rsasaki0109/rust_drive`. The requested repository rename to `rust_driving` is pending; the commands below use the current repository. Historical recordings and versioned schema identifiers retain their original spelling.
+The project is now **RustDriving**. Cargo packages and commands use `rustdriving-*` / `rustdriving`; the GitHub repository currently remains `rsasaki0109/rust_drive`. The requested repository rename to `rust_driving` remains pending because GitHub’s administration API returned 403; the commands below use the current repository. Historical recordings and versioned schema identifiers retain their original spelling.
 
 **Status: simulation research prototype, v0.1.** The verified operating domain is known planar road corridors with circular obstacles, including a directed road-network fork, merge and stopped handover after a live closure notification. Bounded OSM import supplies external road geometry; optional native cuboid scenes add actual XYZ sensing, measured local ground removal and research-body clearance. A CPU-only Robot Native Engine (RNE) adapter runs the same pipeline with native Ackermann dynamics and Rapier queries. This is the starting point for an independent stack, not a replacement for mature driving systems or a system for use on public roads. CARLA, ROS 2, 3D SLAM, general intersection/priority reasoning, and real vehicle interfaces are not implemented. Optional offline Rust-native CPU camera inference runs separately from driving; camera-based control is not implemented. Mapped signal stops use timestamped infrastructure observations; camera signal recognition is not implemented. See the [capability matrix](docs/capabilities.md).
 
@@ -92,6 +92,12 @@ raises matches from 35 to 55/138 on the same viewed BDD frames, but recall
 **39.86%** fails the fixed 60% gate, with no motorcycle or traffic-light matches.
 Complete replay confirms detections and the failed quality outcome.
 Neither addition supplies driving integration or meets the 30% maturity goal.
+
+The optional [KITTI calibration projection tool](docs/kitti-projection.md)
+accepts provided calibration and Velodyne files, retaining the complete
+rectified projection chain for cameras 0–3. Its controls are authored analytic
+geometry, independently checked across four cameras with byte-identical
+projection replay; no real KITTI data or automotive accuracy has been evaluated.
 
 ## Build and run
 

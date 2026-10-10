@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "role": "Actual authored geometry, parser/output controls and unchanged-source replay; not measured KITTI accuracy",
+  "core_tests": 371,
+  "rgbd_tests": 114,
+  "reference_scenario_replay_pairs": 49,
+  "baseline_files_byte_exact": 245,
+  "first_and_replay": {
+    "each_positive_camera_cli": 4,
+    "each_rows_independently_checked": 72,
+    "each_report_corruptions_rejected": 99,
+    "each_invalid_source_cli_exit_2": 56,
+    "each_output_guard_cli_exit_2": 28,
+    "projection_json_byte_identical": true,
+    "audit_semantics_identical_except_fresh_output_command_paths": true
+  },
+  "actual_recorded_kitti_data": false,
+  "accuracy_claim": false,
+  "maturity_subjective_percent": 20,
+  "target_30_met": false
+}
