@@ -45,6 +45,10 @@ same prefix and runs 180 frames without a reset. Over 5.973 seconds it accepts
 failed first result, independent audit and error plot are retained; passing a
 short interval does not establish reliable sustained localization.
 
+The opt-in [depth-supported matching comparison](docs/depth-supported-matching.md)
+adds one accepted update but reduces root-accurate updates to 49/179. Its
+failed outcome is independently verified; it remains a viewed research variant.
+
 ## Build and run
 
 The shared pipeline, CPU RNE adapter and recorded 3D demos are available on `main`.

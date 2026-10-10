@@ -1,0 +1,427 @@
+{
+  "schema_version": 1,
+  "diagnostic_scope": "Previously viewed first temporal failure. Actual raw depth pixels and recorded measured image descriptors only; no RGB re-extraction, reference-pose scoring, registration/refinement runs, parameter sweep or gate changes. New candidate counts are not pose/tracking success.",
+  "baseline_report_sha256": "d8c117cfc898da5b595d0bd2f343f99c60f193287c1b4e31c0012121103b51a5",
+  "visual_checker_sha256": "c138992bd5fe63a42757ff2cf5b43c7eb69272b85ea6ce7030cd298306bc0d6a",
+  "actual_depth_source_sha256": {
+    "depth-1305031916.044257.png": "ea78e2c1d62ae6bc8f2323f5e559f7301a4e9ac64bc08a5a6e21d37cb43338a5",
+    "depth-1305031916.075852.png": "1ca1deda2e612d7ba3e005e13c6368728b4994a1a648182f296c6828ec2b83eb",
+    "depth-1305031916.107904.png": "5d8db0359a937eab9c1ef2c90a06c804787628939308c7a386b74439e1160f4d",
+    "depth-1305031916.143770.png": "8be62fd6153ac4650e2d78dc512ff3fb65eea51f1826142cfb415d69ed9c7942",
+    "depth-1305031916.175966.png": "6b2e7e2eea638ee6f711b184a923da8b1e14be387238edc0214b683963f1b8bb",
+    "depth-1305031916.213438.png": "05915543d4bd3792ed20054c8685d8ea23d6f2de20032084c151e6a33fcf3138"
+  },
+  "chosen_single_variant": "Exclude original features lacking the unchanged strict 3x3 measured depth support before both directional descriptor ratio tests; preserve original feature IDs and descriptor/ratio/consensus/expiry gates.",
+  "frames": [
+    {
+      "source_index": 159,
+      "reference_index": 158,
+      "reference_valid_depth": {
+        "features": 346,
+        "valid_depth_features": 229,
+        "valid_depth_fraction": 0.661849710982659,
+        "invalid_depth_reason_counts": {
+          "invalid or range-limited measured depth patch": 102,
+          "measured depth discontinuity exceeds patch gate": 15
+        }
+      },
+      "current_valid_depth": {
+        "features": 272,
+        "valid_depth_features": 179,
+        "valid_depth_fraction": 0.6580882352941176,
+        "invalid_depth_reason_counts": {
+          "invalid or range-limited measured depth patch": 84,
+          "measured depth discontinuity exceeds patch gate": 9
+        }
+      },
+      "original_all_descriptor_matches": 25,
+      "original_valid_depth_matches": 13,
+      "depth_supported_candidate_matches": 15,
+      "retained_original_valid_depth_pairs": 13,
+      "new_supported_pairs": 2,
+      "removed_original_supported_pairs": 0,
+      "original_rejection": "no bounded visual correspondence consensus",
+      "minimum_consensus_count_unchanged": 12,
+      "depth_supported_matches": [
+        {
+          "previous_index": 108,
+          "current_index": 92,
+          "hamming_distance": 13
+        },
+        {
+          "previous_index": 300,
+          "current_index": 100,
+          "hamming_distance": 13
+        },
+        {
+          "previous_index": 214,
+          "current_index": 13,
+          "hamming_distance": 14
+        },
+        {
+          "previous_index": 116,
+          "current_index": 197,
+          "hamming_distance": 17
+        },
+        {
+          "previous_index": 294,
+          "current_index": 183,
+          "hamming_distance": 18
+        },
+        {
+          "previous_index": 181,
+          "current_index": 189,
+          "hamming_distance": 20
+        },
+        {
+          "previous_index": 129,
+          "current_index": 155,
+          "hamming_distance": 21
+        },
+        {
+          "previous_index": 75,
+          "current_index": 65,
+          "hamming_distance": 22
+        },
+        {
+          "previous_index": 167,
+          "current_index": 80,
+          "hamming_distance": 28
+        },
+        {
+          "previous_index": 275,
+          "current_index": 201,
+          "hamming_distance": 28
+        },
+        {
+          "previous_index": 50,
+          "current_index": 225,
+          "hamming_distance": 31
+        },
+        {
+          "previous_index": 293,
+          "current_index": 1,
+          "hamming_distance": 33
+        },
+        {
+          "previous_index": 239,
+          "current_index": 229,
+          "hamming_distance": 37
+        },
+        {
+          "previous_index": 201,
+          "current_index": 129,
+          "hamming_distance": 40
+        },
+        {
+          "previous_index": 340,
+          "current_index": 57,
+          "hamming_distance": 41
+        }
+      ]
+    },
+    {
+      "source_index": 160,
+      "reference_index": 158,
+      "reference_valid_depth": {
+        "features": 346,
+        "valid_depth_features": 229,
+        "valid_depth_fraction": 0.661849710982659,
+        "invalid_depth_reason_counts": {
+          "invalid or range-limited measured depth patch": 102,
+          "measured depth discontinuity exceeds patch gate": 15
+        }
+      },
+      "current_valid_depth": {
+        "features": 227,
+        "valid_depth_features": 162,
+        "valid_depth_fraction": 0.7136563876651982,
+        "invalid_depth_reason_counts": {
+          "measured depth discontinuity exceeds patch gate": 9,
+          "invalid or range-limited measured depth patch": 56
+        }
+      },
+      "original_all_descriptor_matches": 6,
+      "original_valid_depth_matches": 4,
+      "depth_supported_candidate_matches": 6,
+      "retained_original_valid_depth_pairs": 4,
+      "new_supported_pairs": 2,
+      "removed_original_supported_pairs": 0,
+      "original_rejection": "invalid or oversized visual correspondences",
+      "minimum_consensus_count_unchanged": 12,
+      "depth_supported_matches": [
+        {
+          "previous_index": 219,
+          "current_index": 121,
+          "hamming_distance": 16
+        },
+        {
+          "previous_index": 181,
+          "current_index": 139,
+          "hamming_distance": 22
+        },
+        {
+          "previous_index": 199,
+          "current_index": 156,
+          "hamming_distance": 25
+        },
+        {
+          "previous_index": 167,
+          "current_index": 105,
+          "hamming_distance": 27
+        },
+        {
+          "previous_index": 342,
+          "current_index": 182,
+          "hamming_distance": 27
+        },
+        {
+          "previous_index": 175,
+          "current_index": 77,
+          "hamming_distance": 30
+        }
+      ]
+    },
+    {
+      "source_index": 161,
+      "reference_index": 158,
+      "reference_valid_depth": {
+        "features": 346,
+        "valid_depth_features": 229,
+        "valid_depth_fraction": 0.661849710982659,
+        "invalid_depth_reason_counts": {
+          "invalid or range-limited measured depth patch": 102,
+          "measured depth discontinuity exceeds patch gate": 15
+        }
+      },
+      "current_valid_depth": {
+        "features": 204,
+        "valid_depth_features": 145,
+        "valid_depth_fraction": 0.7107843137254902,
+        "invalid_depth_reason_counts": {
+          "measured depth discontinuity exceeds patch gate": 11,
+          "invalid or range-limited measured depth patch": 48
+        }
+      },
+      "original_all_descriptor_matches": 8,
+      "original_valid_depth_matches": 4,
+      "depth_supported_candidate_matches": 5,
+      "retained_original_valid_depth_pairs": 4,
+      "new_supported_pairs": 1,
+      "removed_original_supported_pairs": 0,
+      "original_rejection": "invalid or oversized visual correspondences",
+      "minimum_consensus_count_unchanged": 12,
+      "depth_supported_matches": [
+        {
+          "previous_index": 199,
+          "current_index": 175,
+          "hamming_distance": 21
+        },
+        {
+          "previous_index": 337,
+          "current_index": 152,
+          "hamming_distance": 22
+        },
+        {
+          "previous_index": 108,
+          "current_index": 57,
+          "hamming_distance": 25
+        },
+        {
+          "previous_index": 173,
+          "current_index": 168,
+          "hamming_distance": 38
+        },
+        {
+          "previous_index": 318,
+          "current_index": 8,
+          "hamming_distance": 47
+        }
+      ]
+    },
+    {
+      "source_index": 162,
+      "reference_index": 158,
+      "reference_valid_depth": {
+        "features": 346,
+        "valid_depth_features": 229,
+        "valid_depth_fraction": 0.661849710982659,
+        "invalid_depth_reason_counts": {
+          "invalid or range-limited measured depth patch": 102,
+          "measured depth discontinuity exceeds patch gate": 15
+        }
+      },
+      "current_valid_depth": {
+        "features": 286,
+        "valid_depth_features": 210,
+        "valid_depth_fraction": 0.7342657342657343,
+        "invalid_depth_reason_counts": {
+          "invalid or range-limited measured depth patch": 59,
+          "measured depth discontinuity exceeds patch gate": 17
+        }
+      },
+      "original_all_descriptor_matches": 13,
+      "original_valid_depth_matches": 7,
+      "depth_supported_candidate_matches": 9,
+      "retained_original_valid_depth_pairs": 7,
+      "new_supported_pairs": 2,
+      "removed_original_supported_pairs": 0,
+      "original_rejection": "invalid or oversized visual correspondences",
+      "minimum_consensus_count_unchanged": 12,
+      "depth_supported_matches": [
+        {
+          "previous_index": 332,
+          "current_index": 192,
+          "hamming_distance": 17
+        },
+        {
+          "previous_index": 142,
+          "current_index": 148,
+          "hamming_distance": 21
+        },
+        {
+          "previous_index": 75,
+          "current_index": 65,
+          "hamming_distance": 23
+        },
+        {
+          "previous_index": 117,
+          "current_index": 36,
+          "hamming_distance": 26
+        },
+        {
+          "previous_index": 159,
+          "current_index": 9,
+          "hamming_distance": 28
+        },
+        {
+          "previous_index": 211,
+          "current_index": 8,
+          "hamming_distance": 29
+        },
+        {
+          "previous_index": 173,
+          "current_index": 48,
+          "hamming_distance": 34
+        },
+        {
+          "previous_index": 82,
+          "current_index": 114,
+          "hamming_distance": 38
+        },
+        {
+          "previous_index": 63,
+          "current_index": 29,
+          "hamming_distance": 49
+        }
+      ]
+    },
+    {
+      "source_index": 163,
+      "reference_index": 158,
+      "reference_valid_depth": {
+        "features": 346,
+        "valid_depth_features": 229,
+        "valid_depth_fraction": 0.661849710982659,
+        "invalid_depth_reason_counts": {
+          "invalid or range-limited measured depth patch": 102,
+          "measured depth discontinuity exceeds patch gate": 15
+        }
+      },
+      "current_valid_depth": {
+        "features": 310,
+        "valid_depth_features": 210,
+        "valid_depth_fraction": 0.6774193548387096,
+        "invalid_depth_reason_counts": {
+          "measured depth discontinuity exceeds patch gate": 22,
+          "invalid or range-limited measured depth patch": 78
+        }
+      },
+      "original_all_descriptor_matches": 14,
+      "original_valid_depth_matches": 10,
+      "depth_supported_candidate_matches": 15,
+      "retained_original_valid_depth_pairs": 10,
+      "new_supported_pairs": 5,
+      "removed_original_supported_pairs": 0,
+      "original_rejection": "invalid or oversized visual correspondences",
+      "minimum_consensus_count_unchanged": 12,
+      "depth_supported_matches": [
+        {
+          "previous_index": 116,
+          "current_index": 41,
+          "hamming_distance": 11
+        },
+        {
+          "previous_index": 332,
+          "current_index": 218,
+          "hamming_distance": 17
+        },
+        {
+          "previous_index": 314,
+          "current_index": 237,
+          "hamming_distance": 18
+        },
+        {
+          "previous_index": 106,
+          "current_index": 251,
+          "hamming_distance": 20
+        },
+        {
+          "previous_index": 294,
+          "current_index": 138,
+          "hamming_distance": 25
+        },
+        {
+          "previous_index": 83,
+          "current_index": 11,
+          "hamming_distance": 26
+        },
+        {
+          "previous_index": 119,
+          "current_index": 156,
+          "hamming_distance": 26
+        },
+        {
+          "previous_index": 200,
+          "current_index": 125,
+          "hamming_distance": 26
+        },
+        {
+          "previous_index": 76,
+          "current_index": 206,
+          "hamming_distance": 29
+        },
+        {
+          "previous_index": 117,
+          "current_index": 14,
+          "hamming_distance": 30
+        },
+        {
+          "previous_index": 80,
+          "current_index": 12,
+          "hamming_distance": 32
+        },
+        {
+          "previous_index": 159,
+          "current_index": 5,
+          "hamming_distance": 32
+        },
+        {
+          "previous_index": 82,
+          "current_index": 97,
+          "hamming_distance": 34
+        },
+        {
+          "previous_index": 290,
+          "current_index": 254,
+          "hamming_distance": 38
+        },
+        {
+          "previous_index": 165,
+          "current_index": 40,
+          "hamming_distance": 40
+        }
+      ]
+    }
+  ]
+}

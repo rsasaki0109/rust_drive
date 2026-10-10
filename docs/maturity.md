@@ -75,6 +75,11 @@ lead to latched tracking loss. This failure limits the preceding short result;
 one origin, all failures and exact prefix reproduction are retained. The
 estimate remains **about 20%**, with the 30% and 50% goals unmet.
 
+The viewed [depth-supported matching variant](depth-supported-matching.md)
+raises accepted updates by one but lowers accurate updates from 52/179 to
+49/179. Its independent audit preserves that regression. It remains opt-in;
+this result does not justify a maturity increase. The estimate stays **about 20%**.
+
 | Area | Current evidence | Evidence needed for a credible 50% planning milestone |
 |---|---|---|
 | Sensing / localization | Native XYZ LiDAR, optional measured AABBs/terrain; failed held-out airborne PMF baseline; local fixed-map matching with bounded GNSS-denied native driving; noisy GNSS/wheel/gyro and acquisition-time reprojection | Reliable held-out automotive perception and real-motion map matching; measured extrinsics and camera observations; synchronization, covariance calibration and broader degraded-sensing measurements |
