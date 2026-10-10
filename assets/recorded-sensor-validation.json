@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "recorded_utc": "2026-10-10T00:38:58.066571+00:00",
+  "published_base_commit": "72c4d58ab7872e9f1e23fc8c8a55c629a051d3b7",
+  "scope": "Local bounded research and regression checks; remote CI and physical accuracy acceptance are separate.",
+  "workspace": {
+    "command": "CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 bash scripts/check.sh",
+    "exit_status": 0,
+    "tests_passed": 331,
+    "physical_episodes_passed": 49,
+    "sensor_replays_verified": 49,
+    "historical_output_files_byte_identical": 245,
+    "log_sha256": "8efa7e92514c99a36ed9765ab687a026c7be574839a5e3e925647253a5954ffa"
+  },
+  "camera": {
+    "actual_inference_runs": 12,
+    "independent_mutations_rejected": 7,
+    "repeat_boxes_identical": true,
+    "baseline_comparison_passed": true,
+    "root_report_sha256": "4ab32b0a935276b9615a8ea6a374f37aceb529793ddbf90c6979795554271088",
+    "published_report_sha256": "b56975809d13e4fae8c2134f3acb9c5c032aba266678eafe30dcdbce3e858e6e",
+    "heldout_overall": {
+      "true_positives": 14,
+      "false_positives": 4,
+      "false_negatives": 11,
+      "precision": 0.7777777777777778,
+      "recall": 0.56,
+      "mean_matched_iou": 0.8024282112231617
+    },
+    "automotive_accuracy_acceptance": false,
+    "model_validation_overlap_possible": true
+  },
+  "recorded_motion": {
+    "rust_tests_passed": 10,
+    "fmt_strict_clippy_passed": true,
+    "regression_integrity_passed": true,
+    "all_physical_protocols_passed": false,
+    "cases": 5,
+    "pair_and_map_fits_total": 110,
+    "report_mutations_rejected": 52,
+    "root_and_agent_independent_oracles_byte_identical": true,
+    "root_suite_sha256": "b39606232e5c964cc6fa23ed88c270434aa7ca87d5e0feaeb8293e9f8c11ddf3",
+    "published_report_sha256": "4531bba1a279c1cff4bc420e17abc5a8393f4b189419db55141bcbbb77e941a1",
+    "source_freeze_sha256": "abd8272f4e230e2964676a64ed8664e9dc794f8d8c2b88745e2d1858ef3fa503",
+    "fresh_evaluator_exit_status": 1,
+    "fresh_pair_accepted_accurate": 11,
+    "fresh_map_accepted_accurate": 9,
+    "fresh_map_denominator": 11,
+    "confidence_calibration_claim": false,
+    "vehicle_fusion": false
+  },
+  "native_adaptive": {
+    "actual_capture_and_exact_replay_passed": true,
+    "replay_ticks": 441,
+    "namespace_only_rename_verified": true,
+    "historical_physical_diagnostics_byte_equivalent": true,
+    "source_mutations_rejected": 2,
+    "report_sha256": "92daeaecb0087289455e18aff419a8a5002b1ed8ee0c531a4805334d22253092"
+  },
+  "protected_files_unchanged_sha256": {
+    "Cargo.lock": "de8e6afb2c8f59be7f68f0ccf8604e4d43d9951d6902314f46f16b8121dbccf7",
+    "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed",
+    "integrations/rne/Cargo.lock": "c15e499bc74ddcf213bb0ac22cb22280c68d49ead2e203b8a7213e5a9f38f2ff",
+    "integrations/rne/rust-toolchain.toml": "7d21c66a15f41bad66b82ed06a289f5dc8a6e3751951d2696bbf20ce296f2b0f",
+    "integrations/rne/rne-revision.txt": "18a0b41bc51d35a964f9dc922ee44cf1c485b34765c8ddfe82c93649c440404e",
+    "integrations/onnx/Cargo.lock": "aa6f1b198ff4ad901f9547ef852dc0113b5c36624d43030a863af32b12f07a0c",
+    "integrations/rgbd/Cargo.lock": "66a95960e1763d7623c40dc0c659e44cb5cda758b215c99bec09606a10c8ab86",
+    "assets/japan-city-demo.gif": "40db0984165911a064e50cd0dc07087dd7f4b366aeeb530b66deddad202a1c0f",
+    "assets/japan-city-demo.json": "6091d6c44a9122b7d5835be562b00090f9bb3ad4b0b753e4a56f774a5e6cd910",
+    "scripts/blender_scene.py": "4ce9a6a33f71377ea4c0027c049f9695e8ade5d085f0530577a2cf94cbf9ba54",
+    "scripts/blender_japan_assets.py": "f0764c0d2266af11df3e83c47ffd2562e9e8f3c227dd7e83a090abbaa4bff319",
+    "scripts/render_demo_3d.py": "7e6b181e2708da8c62c637ee0acc2915a3b7d47e03f099e12ad5924460b143c6"
+  },
+  "python_compile_actionlint_whitespace_and_doc_links_passed": true,
+  "subjective_oss_relative_maturity_percent": 20,
+  "requested_30_percent_waypoint_reached": false
+}

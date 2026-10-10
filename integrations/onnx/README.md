@@ -65,8 +65,72 @@ custom runtime is required.
 
 One measured portrait with one independently supplied reference box can verify
 execution and box geometry. It cannot establish driving-camera accuracy or
-COCO AP. Camera calibration, camera/LiDAR association, synchronization, road
-camera evaluation, and control integration are not implemented.
+COCO AP. A separate six-image urban-camera diagnostic below now measures road
+users against independent labels. Camera calibration, camera/LiDAR association,
+synchronization, general driving-camera accuracy, and control integration remain
+unimplemented or unvalidated.
+
+## Independently labelled urban-image diagnostic
+
+The optional evaluator runs this same Rust CPU detector on four real urban
+street photographs and two urban-sign hard negatives, with independently supplied
+COCO boxes. `road-protocol.json` freezes image hashes, references, class mapping,
+two calibration/four evaluator-held-out images, confidence 0.3, NMS IoU 0.45 and
+match IoU 0.5 before inference. No tuning was performed on either partition.
+The held-out partition is only held out from this evaluator: these photographs
+originate in COCO val2017, which the upstream model could have used for model
+selection. This is not evidence of unseen-scene generalization.
+
+```sh
+python3 integrations/onnx/fetch.py --output artifacts/camera-model
+cargo build --release --locked --manifest-path integrations/onnx/Cargo.toml
+python3 integrations/onnx/road_check.py \
+  --binary integrations/onnx/target/release/rustdriving-camera-detect \
+  --model artifacts/camera-model/yolox_nano.onnx \
+  --data artifacts/road-camera --output artifacts/road-camera/check \
+  --baseline integrations/onnx/road-results.json
+```
+
+The check fetches at most the pinned bytes for each input, performs twelve actual
+CPU inference runs (each image twice), checks repeat identities, independently
+matches predictions one-to-one within each class, and preserves every false
+positive and missed object. Seven changed identity/threshold/geometry/label probes
+must fail; a duplicated correct prediction must add an FP, never another TP.
+The optional baseline checks recorded counts and matching identities, with
+matched IoU tolerance 1e-5; timings are never an acceptance gate. It records a
+valid execution, **not an automotive accuracy pass**.
+
+The measured evaluator-held-out diagnostic contains 25 road-user/signal boxes:
+14 TP, 4 FP and 11 FN, precision 0.778, recall 0.560, mean matched IoU 0.802.
+Both hard negatives returned no road-user/signal predictions. Small distant
+pedestrians, occluded cars and traffic lights were missed. `road-results.json`
+contains class and image details, calibration results, source/binary fingerprints
+and actual host inference times. This is a fixed-threshold diagnostic, not COCO AP.
+
+### Urban input provenance and separate licenses
+
+Inputs come from [Deci-AI/data-gradients](https://github.com/Deci-AI/data-gradients/tree/58a9c4493aafe335d8e7656568d59de7d08bf695/example_dataset/tinycoco),
+revision `58a9c4493aafe335d8e7656568d59de7d08bf695`. Its directory says `train2017`,
+but the original `coco_url` in all six image records says **val2017**. The
+177,526-byte annotation file has SHA-256
+`760f6d57e617b32f52d687c94806c7e36220726f478564b2202c91c67559e06a`.
+Every JPEG hash, original Flickr URL, original COCO URL, dimension and license ID
+is recorded in `road-protocol.json` and checked against that file before scoring.
+
+The [official COCO terms](https://github.com/cocodataset/cocodataset.github.io/blob/5e1c4da72464b1c6f068df0c02c91e3000ea62c4/dataset/termsofuse.htm)
+state: “The annotations in this dataset along with this website belong to the
+COCO Consortium and are licensed under a Creative Commons Attribution 4.0
+License.” Credit: COCO Consortium, *Microsoft COCO: Common Objects in Context*
+(Lin et al., 2014). The reproduced reference-box metadata in the result report
+is an adaptation under CC BY 4.0; RustDriving evaluator code is Apache-2.0.
+
+Original image metadata records CC BY 2.0 for IDs 58636, 226111, 252219, 303818,
+and CC BY-ND 2.0 for IDs 174482, 322864. These licenses apply to images, separately
+from annotations and code. Only unmodified original JPEGs are opt-in downloads
+under ignored `artifacts/`; **no images or altered previews are redistributed**.
+The download is approximately 1.2 MB including annotations. The COCO128 archive
+examined during discovery was not used: its transformed metadata omitted the
+original per-image licensing information.
 
 ## Recorded check (2026-10-10 JST)
 

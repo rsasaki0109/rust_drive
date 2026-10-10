@@ -93,11 +93,7 @@ fn validate_manifest(m: &Manifest) -> Result<(), String> {
     if m.schema_version != 1
         || !matches!(
             m.dataset.as_str(),
-            "tum-fr1-xyz"
-                | "tum-fr1-xyz-fast"
-                | "tum-fr1-xyz-tight"
-                | "tum-fr1-xyz-motion"
-                | "tum-fr1-xyz-motion-v2"
+            "tum-fr1-xyz" | "tum-fr1-xyz-fast" | "tum-fr1-xyz-tight" | "tum-fr1-xyz-motion"
         )
         || m.repository.is_empty()
         || m.revision.len() != 40
@@ -120,9 +116,7 @@ fn validate_manifest(m: &Manifest) -> Result<(), String> {
                     .and_then(|s| s.parse::<f64>().ok())
                     != Some(f.timestamp)
                 || f.source_index
-                    != if m.dataset == "tum-fr1-xyz-motion-v2" {
-                        260 + i
-                    } else if m.dataset == "tum-fr1-xyz-motion" {
+                    != if m.dataset == "tum-fr1-xyz-motion" {
                         200 + i
                     } else if m.dataset == "tum-fr1-xyz-tight" {
                         140 + i

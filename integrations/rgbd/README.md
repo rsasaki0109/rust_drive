@@ -58,3 +58,15 @@ source-hash snapshot is retrospective. See
 Dependencies and the lockfile are isolated from the default workspace; no GPU,
 Python, ROS, ONNX model or custom runtime is needed. Raw data are ignored and are
 not redistributed; the public source mirror is not a redistribution license.
+
+## Recorded odometry and measured fixed-map baseline
+
+The additional `--motion` mode preserves the original pair evaluator and its
+failure history. It uses actual recorded depth for natural 6DoF pair odometry and
+localizes each scan against the first measured depth cloud, without mocap inputs.
+The separately frozen temporal 260–271 trial accepts11/11 accurate pairs and9/11
+accurate fixed-map fits; two map ambiguities reject. Full protocol exit1 remains
+reported. The first 200–211 trial's exit 2 missing-reference failure and its exact
+source/freeze are retained, with a later explicit unscorable-fit regression.
+See [recorded-motion behavior, uncertainty and reproduction](../../docs/recorded-motion.md).
+No SLAM, loop closure, independent-room or automotive localization claim follows.

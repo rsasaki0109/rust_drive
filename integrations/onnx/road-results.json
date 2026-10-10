@@ -1,0 +1,642 @@
+{
+  "schema_version": 1,
+  "evaluation": "six independently annotated urban COCO diagnostic images, fixed single-IoU threshold; not COCO AP",
+  "protocol_sha256": "dfe2eef824427ded0326ef38204753b8d8ad997af2579748d51cf6191caab558",
+  "annotation_sha256": "760f6d57e617b32f52d687c94806c7e36220726f478564b2202c91c67559e06a",
+  "score_threshold": 0.3,
+  "nms_iou_threshold": 0.45,
+  "match_iou_threshold": 0.5,
+  "partitions": {
+    "calibration": {
+      "image_count": 2,
+      "overall": {
+        "true_positives": 3,
+        "false_positives": 1,
+        "false_negatives": 9,
+        "precision": 0.75,
+        "recall": 0.25,
+        "mean_matched_iou": 0.8829412452954788
+      },
+      "per_class": {
+        "person": {
+          "true_positives": 0,
+          "false_positives": 0,
+          "false_negatives": 0,
+          "precision": null,
+          "recall": null,
+          "mean_matched_iou": null
+        },
+        "bicycle": {
+          "true_positives": 1,
+          "false_positives": 0,
+          "false_negatives": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "mean_matched_iou": 0.9029193879693076
+        },
+        "car": {
+          "true_positives": 2,
+          "false_positives": 1,
+          "false_negatives": 3,
+          "precision": 0.6666666666666666,
+          "recall": 0.4,
+          "mean_matched_iou": 0.8729521739585644
+        },
+        "motorcycle": {
+          "true_positives": 0,
+          "false_positives": 0,
+          "false_negatives": 0,
+          "precision": null,
+          "recall": null,
+          "mean_matched_iou": null
+        },
+        "bus": {
+          "true_positives": 0,
+          "false_positives": 0,
+          "false_negatives": 0,
+          "precision": null,
+          "recall": null,
+          "mean_matched_iou": null
+        },
+        "truck": {
+          "true_positives": 0,
+          "false_positives": 0,
+          "false_negatives": 3,
+          "precision": null,
+          "recall": 0.0,
+          "mean_matched_iou": null
+        },
+        "traffic light": {
+          "true_positives": 0,
+          "false_positives": 0,
+          "false_negatives": 3,
+          "precision": null,
+          "recall": 0.0,
+          "mean_matched_iou": null
+        }
+      }
+    },
+    "heldout": {
+      "image_count": 4,
+      "overall": {
+        "true_positives": 14,
+        "false_positives": 4,
+        "false_negatives": 11,
+        "precision": 0.7777777777777778,
+        "recall": 0.56,
+        "mean_matched_iou": 0.8024282112231617
+      },
+      "per_class": {
+        "person": {
+          "true_positives": 10,
+          "false_positives": 1,
+          "false_negatives": 6,
+          "precision": 0.9090909090909091,
+          "recall": 0.625,
+          "mean_matched_iou": 0.7730213347733721
+        },
+        "bicycle": {
+          "true_positives": 0,
+          "false_positives": 0,
+          "false_negatives": 0,
+          "precision": null,
+          "recall": null,
+          "mean_matched_iou": null
+        },
+        "car": {
+          "true_positives": 3,
+          "false_positives": 3,
+          "false_negatives": 4,
+          "precision": 0.5,
+          "recall": 0.42857142857142855,
+          "mean_matched_iou": 0.8951553474884637
+        },
+        "motorcycle": {
+          "true_positives": 0,
+          "false_positives": 0,
+          "false_negatives": 0,
+          "precision": null,
+          "recall": null,
+          "mean_matched_iou": null
+        },
+        "bus": {
+          "true_positives": 1,
+          "false_positives": 0,
+          "false_negatives": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "mean_matched_iou": 0.8183155669251524
+        },
+        "truck": {
+          "true_positives": 0,
+          "false_positives": 0,
+          "false_negatives": 0,
+          "precision": null,
+          "recall": null,
+          "mean_matched_iou": null
+        },
+        "traffic light": {
+          "true_positives": 0,
+          "false_positives": 0,
+          "false_negatives": 1,
+          "precision": null,
+          "recall": 0.0,
+          "mean_matched_iou": null
+        }
+      }
+    }
+  },
+  "overall": {
+    "true_positives": 17,
+    "false_positives": 5,
+    "false_negatives": 20,
+    "precision": 0.7727272727272727,
+    "recall": 0.4594594594594595,
+    "mean_matched_iou": 0.8166363937065119
+  },
+  "images": [
+    {
+      "image_id": 58636,
+      "partition": "calibration",
+      "reference_count": 0,
+      "all_class_prediction_count": 0,
+      "ignored_other_class_prediction_count": 0,
+      "matches": [],
+      "false_positives": [],
+      "false_negatives": [],
+      "prediction_sha256": "f112496bd03cdc53497bc1581ebffb96bca4ca070fd8ce2ab237b6083a4b46fb"
+    },
+    {
+      "image_id": 174482,
+      "partition": "calibration",
+      "reference_count": 12,
+      "all_class_prediction_count": 4,
+      "ignored_other_class_prediction_count": 0,
+      "matches": [
+        {
+          "prediction_index": 0,
+          "annotation_id": 128189,
+          "category_id": 2,
+          "iou": 0.9029193879693076
+        },
+        {
+          "prediction_index": 1,
+          "annotation_id": 144202,
+          "category_id": 3,
+          "iou": 0.8962543744310232
+        },
+        {
+          "prediction_index": 3,
+          "annotation_id": 135645,
+          "category_id": 3,
+          "iou": 0.8496499734861057
+        }
+      ],
+      "false_positives": [
+        {
+          "prediction_index": 2,
+          "category_id": 3,
+          "bbox": [
+            486.50067,
+            21.911358,
+            639.6838,
+            140.81953
+          ],
+          "confidence": 0.8448332,
+          "best_unmatched_same_class_iou": 0.0
+        }
+      ],
+      "false_negatives": [
+        {
+          "annotation_id": 410951,
+          "category_id": 10,
+          "bbox": [
+            109.26,
+            26.54,
+            117.85000000000001,
+            38.11
+          ]
+        },
+        {
+          "annotation_id": 411346,
+          "category_id": 10,
+          "bbox": [
+            95.07,
+            67.63,
+            101.96,
+            75.97
+          ]
+        },
+        {
+          "annotation_id": 1344072,
+          "category_id": 3,
+          "bbox": [
+            364.21,
+            86.57,
+            395.5,
+            110.24
+          ]
+        },
+        {
+          "annotation_id": 1348739,
+          "category_id": 3,
+          "bbox": [
+            81.28,
+            76.22,
+            108.09,
+            94.53
+          ]
+        },
+        {
+          "annotation_id": 1349666,
+          "category_id": 3,
+          "bbox": [
+            122.6,
+            79.2,
+            131.93,
+            94.10000000000001
+          ]
+        },
+        {
+          "annotation_id": 1370706,
+          "category_id": 8,
+          "bbox": [
+            506.05,
+            25.26,
+            640.0,
+            137.23
+          ]
+        },
+        {
+          "annotation_id": 1374126,
+          "category_id": 8,
+          "bbox": [
+            396.71,
+            80.69,
+            478.84,
+            116.25
+          ]
+        },
+        {
+          "annotation_id": 1374203,
+          "category_id": 8,
+          "bbox": [
+            476.76,
+            81.15,
+            520.4,
+            120.62
+          ]
+        },
+        {
+          "annotation_id": 1804403,
+          "category_id": 10,
+          "bbox": [
+            32.65,
+            58.41,
+            37.879999999999995,
+            61.86
+          ]
+        }
+      ],
+      "prediction_sha256": "2d20c8855d3797ce499d84209a295a70a85e2a0d6426f8c8a0e34773ea47ddb4"
+    },
+    {
+      "image_id": 226111,
+      "partition": "heldout",
+      "reference_count": 0,
+      "all_class_prediction_count": 0,
+      "ignored_other_class_prediction_count": 0,
+      "matches": [],
+      "false_positives": [],
+      "false_negatives": [],
+      "prediction_sha256": "befb78202d3dad752c1cde76b9f01d930c1fb24f93ae6fb71082f0916ea2ae0e"
+    },
+    {
+      "image_id": 252219,
+      "partition": "heldout",
+      "reference_count": 4,
+      "all_class_prediction_count": 4,
+      "ignored_other_class_prediction_count": 0,
+      "matches": [
+        {
+          "prediction_index": 0,
+          "annotation_id": 489768,
+          "category_id": 1,
+          "iou": 0.8968564793607396
+        },
+        {
+          "prediction_index": 1,
+          "annotation_id": 481918,
+          "category_id": 1,
+          "iou": 0.8775814852453656
+        },
+        {
+          "prediction_index": 2,
+          "annotation_id": 495624,
+          "category_id": 1,
+          "iou": 0.9131690188447359
+        }
+      ],
+      "false_positives": [
+        {
+          "prediction_index": 3,
+          "category_id": 1,
+          "bbox": [
+            194.99648,
+            226.5924,
+            323.74048,
+            373.03937
+          ],
+          "confidence": 0.30930862,
+          "best_unmatched_same_class_iou": 0
+        }
+      ],
+      "false_negatives": [
+        {
+          "annotation_id": 1804847,
+          "category_id": 10,
+          "bbox": [
+            337.06,
+            44.11,
+            398.42,
+            101.28
+          ]
+        }
+      ],
+      "prediction_sha256": "f3e62476f72aa01e20f459249cef988bd4cd57e0632c1ce042c03ae40862ad46"
+    },
+    {
+      "image_id": 303818,
+      "partition": "heldout",
+      "reference_count": 15,
+      "all_class_prediction_count": 10,
+      "ignored_other_class_prediction_count": 0,
+      "matches": [
+        {
+          "prediction_index": 0,
+          "annotation_id": 1191953,
+          "category_id": 3,
+          "iou": 0.9482823884367763
+        },
+        {
+          "prediction_index": 1,
+          "annotation_id": 365995,
+          "category_id": 6,
+          "iou": 0.8183155669251524
+        },
+        {
+          "prediction_index": 2,
+          "annotation_id": 1304335,
+          "category_id": 1,
+          "iou": 0.8679654485459786
+        },
+        {
+          "prediction_index": 3,
+          "annotation_id": 1289859,
+          "category_id": 1,
+          "iou": 0.707040592120482
+        },
+        {
+          "prediction_index": 4,
+          "annotation_id": 1746715,
+          "category_id": 1,
+          "iou": 0.8225349154921888
+        },
+        {
+          "prediction_index": 5,
+          "annotation_id": 1317123,
+          "category_id": 1,
+          "iou": 0.6148809695384424
+        },
+        {
+          "prediction_index": 6,
+          "annotation_id": 1214293,
+          "category_id": 1,
+          "iou": 0.7572084351082266
+        },
+        {
+          "prediction_index": 7,
+          "annotation_id": 2164900,
+          "category_id": 1,
+          "iou": 0.662885370017408
+        },
+        {
+          "prediction_index": 9,
+          "annotation_id": 1211643,
+          "category_id": 1,
+          "iou": 0.6100906334601535
+        }
+      ],
+      "false_positives": [
+        {
+          "prediction_index": 8,
+          "category_id": 3,
+          "bbox": [
+            46.693596,
+            165.52933,
+            77.848175,
+            182.33008
+          ],
+          "confidence": 0.54731804,
+          "best_unmatched_same_class_iou": 0.0
+        }
+      ],
+      "false_negatives": [
+        {
+          "annotation_id": 1221928,
+          "category_id": 1,
+          "bbox": [
+            173.39,
+            190.83,
+            196.23999999999998,
+            250.04000000000002
+          ]
+        },
+        {
+          "annotation_id": 1280494,
+          "category_id": 1,
+          "bbox": [
+            181.94,
+            180.76,
+            198.09,
+            243.75
+          ]
+        },
+        {
+          "annotation_id": 1312560,
+          "category_id": 1,
+          "bbox": [
+            268.01,
+            205.38,
+            273.98,
+            230.34
+          ]
+        },
+        {
+          "annotation_id": 1322494,
+          "category_id": 1,
+          "bbox": [
+            36.68,
+            180.68,
+            52.29,
+            199.70000000000002
+          ]
+        },
+        {
+          "annotation_id": 1324987,
+          "category_id": 1,
+          "bbox": [
+            11.78,
+            184.89,
+            25.91,
+            217.25
+          ]
+        },
+        {
+          "annotation_id": 1340949,
+          "category_id": 3,
+          "bbox": [
+            110.7,
+            169.77,
+            122.82000000000001,
+            175.60000000000002
+          ]
+        }
+      ],
+      "prediction_sha256": "63d0504daba1b2f5ac4b05c87a634c83b4d64894319c34f25d3f2566db67046a"
+    },
+    {
+      "image_id": 322864,
+      "partition": "heldout",
+      "reference_count": 6,
+      "all_class_prediction_count": 4,
+      "ignored_other_class_prediction_count": 0,
+      "matches": [
+        {
+          "prediction_index": 0,
+          "annotation_id": 1788199,
+          "category_id": 3,
+          "iou": 0.8637833453254627
+        },
+        {
+          "prediction_index": 1,
+          "annotation_id": 352337,
+          "category_id": 3,
+          "iou": 0.873400308703152
+        }
+      ],
+      "false_positives": [
+        {
+          "prediction_index": 2,
+          "category_id": 3,
+          "bbox": [
+            273.3751,
+            345.96326,
+            427.0,
+            595.99133
+          ],
+          "confidence": 0.45011428,
+          "best_unmatched_same_class_iou": 0.3402688540273668
+        },
+        {
+          "prediction_index": 3,
+          "category_id": 3,
+          "bbox": [
+            0.0,
+            370.30875,
+            97.176605,
+            534.1173
+          ],
+          "confidence": 0.30567482,
+          "best_unmatched_same_class_iou": 0.16071175092387402
+        }
+      ],
+      "false_negatives": [
+        {
+          "annotation_id": 346253,
+          "category_id": 3,
+          "bbox": [
+            0.0,
+            379.59,
+            427.0,
+            596.3
+          ]
+        },
+        {
+          "annotation_id": 361216,
+          "category_id": 3,
+          "bbox": [
+            1.29,
+            354.33,
+            23.99,
+            411.08
+          ]
+        },
+        {
+          "annotation_id": 362322,
+          "category_id": 3,
+          "bbox": [
+            12.54,
+            351.71,
+            73.08,
+            399.34
+          ]
+        },
+        {
+          "annotation_id": 481621,
+          "category_id": 1,
+          "bbox": [
+            286.64,
+            337.95,
+            301.71999999999997,
+            365.55
+          ]
+        }
+      ],
+      "prediction_sha256": "35615240969d8d4bc66ee84705105f6ea7219e3fc6ec2b5ec064c23e3a40c47c"
+    }
+  ],
+  "limitations": [
+    "All six source coco_url values refer to original COCO val2017, despite mirror train2017 directory.",
+    "Official YOLOX model used COCO; validation/training model-selection overlap cannot be ruled out.",
+    "Held-out means this evaluator partition only, not unseen-by-model data or automotive generalization.",
+    "Only seven named road-user/signal classes scored; no COCO AP, metric depth or vehicle control.",
+    "Original unmodified JPEGs are opt-in ignored research inputs; no images redistributed."
+  ],
+  "recorded_utc": "2026-10-10T00:29:36.167818+00:00",
+  "host": {
+    "os": "Linux",
+    "architecture": "x86_64",
+    "gpu_used": false
+  },
+  "actual_inference_runs": 12,
+  "repeat_detection_identity": true,
+  "independent_mutations_rejected": 7,
+  "duplicate_prediction_adds_fp_only": true,
+  "iou_hand_calculation_checks": 3,
+  "source_sha256": {
+    "integrations/onnx/Cargo.toml": "7459dc7d7fc0128214275703d48a4170d449edd559dc0cadab689f887d635c8d",
+    "integrations/onnx/Cargo.lock": "aa6f1b198ff4ad901f9547ef852dc0113b5c36624d43030a863af32b12f07a0c",
+    "integrations/onnx/src/lib.rs": "b379dfba4c45b535f61284ea9fc7748f6317038976b5fb61221f6a8561ad4bbc",
+    "integrations/onnx/src/main.rs": "9e2b917e71a42873544694f698215ad20048eb1acfbb135e2cdd76adf0ffb5f8",
+    "integrations/onnx/fetch.py": "86fc0d09ecfc24f47a94b906ace4f9b5e82c38f2945b187c6aa44c05cb3c19b4",
+    "integrations/onnx/score.py": "f5eedaa9131217d8ba88fb6a3f5b0ce6ecfd57b19dcd3aa2fd88d7e47cda7576",
+    "integrations/onnx/road_fetch.py": "60a5483d6dcdf44c4779affc7a0fe83086d98a4edfb860e1ec38703727211370",
+    "integrations/onnx/road_score.py": "e81048e3164b83cd176b8ba4659669dd2cdab1e01d0754a639349516855749f7",
+    "integrations/onnx/road_check.py": "46a64555012c3d277bf7df67fc5c747826a8526995f131126837d807db60743c",
+    "integrations/onnx/road-protocol.json": "dfe2eef824427ded0326ef38204753b8d8ad997af2579748d51cf6191caab558"
+  },
+  "binary_sha256": "95a6d1b97f9156370a23454b9f5db71ed656bbcc31d60ba836d1e406a7e87761",
+  "model_sha256": "c789161ed43c8269fcd4e67c67eeeb4e80c622da2eb296a20bc6007bd18a0b7d",
+  "per_image_inference_seconds": [
+    0.083052266,
+    0.099085365,
+    0.108720869,
+    0.102671838,
+    0.106456283,
+    0.149959711
+  ],
+  "valid_execution_and_independent_scoring": true,
+  "recorded_baseline_compared": true,
+  "automotive_accuracy_acceptance": false
+}

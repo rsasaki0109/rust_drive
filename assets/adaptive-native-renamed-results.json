@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "source_fingerprint_sha256": "182c7acd79f59023c31f421ae3f70df1b11b8b8936271325a285991516fe4199",
+  "checker_dependency_sha256": {
+    "scripts/check-adaptive-native.py": "22a14f4cf46b2917531fec9de78b62b36384496d89e69a7dc250a83987420846",
+    "scripts/check-terrain-objects.py": "a4b3704fd409bc270b5946246f338eaa6f264a8f6dd1073a5e7a4006da738deb",
+    "scripts/check-ground-scenes.py": "82131f627a28b108f912b83cad5b04a48227bc28bbb08dd30399e9f2d667c98b",
+    "scripts/check-lidar-3d.py": "ca905476aafc2ed3940d6586076be121359a038be566b1c49cde06f7ede3c951",
+    "scripts/check-native-scenes.py": "fd47b32613688458b9830cd0efd61de4b331b17f28a0b703a05c55be54d93339",
+    "scripts/check_hazards.py": "b1ce0f69944b65ce0167129e1bf0f7d8b3a6cd26d8a2c8888fe065b1ee60604d"
+  },
+  "fixture_sha256": {
+    "scenario": "70b304b4b2afe305a28f70932c1137e4d2ce87e6df0be88db23017264fdfad25",
+    "scene": "f1c2e9c9493404647a23cec64a4ccefae911bdcf4a5ce9a6be3513bede515b32"
+  },
+  "rne_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
+  "passed": true,
+  "body_physics": false,
+  "semantic_recognition": false,
+  "scope": "One authored native adaptive-terrain lead-stop episode; observed-surface AABBs. Fresh measured Autzen generalization failed separately.",
+  "real_data_generalization_claim": false,
+  "frozen_adaptive_source_sha256": "a5e20db00507cb53de3ba264e948fc64a84d00ddb2febb40037f29c5b074b8d9",
+  "current_adaptive_source_sha256": "dac01110cd1ccd36cedc8846b8c4b3767a1c1076d708171c6f38d8b89296f3e6",
+  "namespace_only_rename_verified": true,
+  "exit_code": 0,
+  "diagnostics": "",
+  "summary": {
+    "scenario": "Ground-separated inclined LiDAR follows a moving lead into a stop",
+    "seed": 7,
+    "simulated_seconds": 22.0,
+    "steps": 441,
+    "reached_goal": false,
+    "collisions": 0,
+    "road_violations": 0,
+    "min_clearance": 5.062031897768414,
+    "localization_rmse": 0.0676771861912825,
+    "localization_max_error": 0.20512748149352236,
+    "final_speed": 0.0,
+    "progress": 23.539820351044124,
+    "emergency_steps": 3,
+    "avoidance_steps": 0,
+    "max_tracks": 3,
+    "passed": true,
+    "failures": []
+  },
+  "replay": {
+    "source": "rne-dynamic-rapier-lidar",
+    "ticks": 441,
+    "verified": true
+  },
+  "physical": {
+    "passed": true,
+    "min_clearance_m": null,
+    "guard_overlap_intervals": 0,
+    "motion_samples": 4401,
+    "static_obstacle_checks": 0
+  },
+  "measured_xyz_aabb_provenance": {
+    "acquisitions": 221,
+    "ray_grid_entries": 2545920,
+    "xyz_returns": 1216230,
+    "confident_acquisitions": 221,
+    "aabbs": 1723,
+    "aabb_points": 54812,
+    "actor_returns": 41945,
+    "ground_returns": 1174285,
+    "actor_points_in_aabbs": 37478,
+    "ground_points_in_aabbs": 17334,
+    "maximum_range_residual_m": 0.03806747504971231,
+    "collision_relevant_actor_points": 37239,
+    "collision_relevant_ground_points": 111,
+    "ground_only_collision_relevant_aabbs": 0,
+    "actor_collision_relevant_aabbs": 264,
+    "mixed_aabbs": 14,
+    "collision_relevant_mixed_aabbs": 14,
+    "maximum_mixed_aabb_extent_m": {
+      "x": 0.855104658218373,
+      "y": 3.079057763782762,
+      "z": 1.979373189738826
+    },
+    "minimum_200hz_actor_clearance_bound_m": 4.872031897768398,
+    "ground_support": {
+      "minimum_supported_fraction": 0.919732441471572,
+      "minimum_supported_cells": 275,
+      "maximum_candidate_work": 487366
+    },
+    "historical_zero_ground_member_assertion_passed": false,
+    "confident_fraction": 1.0
+  },
+  "sensor_only_boundary_verified": true,
+  "raw_sha256": {
+    "run.json": "47d2063f674da00b0b0a929a8bf834beab69b3be9281c100c286b10f26159bb1",
+    "scene.json": "b8c30374d3493cc8edb5837f181f9ffff1ff2e2dceb6d7bb4a16a37403be8ae2",
+    "sensors.jsonl": "8666ddd30267c93a095f03ae775795c848ad5e86b0071c1f5782c4c815eee323"
+  },
+  "speed_profiles": {
+    "verified": true,
+    "active_trajectories": 438,
+    "stationary_holds": 394,
+    "max_acceleration_m_s2": 2.0000000000000036,
+    "max_deceleration_m_s2": 2.5000000000000004
+  },
+  "motion_predictions": {
+    "verified": true,
+    "forecasts": 555,
+    "braking_forecasts": 6,
+    "stale_fallbacks": 20,
+    "reacceleration_fallbacks": 283,
+    "max_forecast_deceleration_m_s2": 0.4418077138345766,
+    "aged_forecasts": 291,
+    "rebased_moving_forecasts": 116,
+    "max_epoch_age_s": 0.6499999999999999,
+    "current_epoch_reconstruction_verified": true
+  },
+  "control_metrics": {
+    "ticks": 441,
+    "emergency_ticks": 3,
+    "emergency_fraction": 0.006802721088435374,
+    "commanded_acceleration_change_rms_m_s3": 31.776474033210803,
+    "max_normal_commanded_steering_rate_rad_s": 0.7000000000000005
+  },
+  "gnss_integrity": {
+    "verified": true,
+    "holding_ticks": 0,
+    "max_consecutive_rejections": 0,
+    "hold_starts": [],
+    "accepted_releases": [],
+    "held_at_end": false,
+    "sensor_only_reconstruction_verified": true
+  },
+  "archive": {
+    "path": "artifacts/adaptive-native-namespace/native-adaptive-terrain-seed-7.tar.gz",
+    "sha256": "8b94d380260357e41a8dd1908438695a101f31bdd41c7c61b110ff52cec68df0",
+    "bytes": 100497457,
+    "files_sha256": {
+      "run.json": "47d2063f674da00b0b0a929a8bf834beab69b3be9281c100c286b10f26159bb1",
+      "sensors.jsonl": "8666ddd30267c93a095f03ae775795c848ad5e86b0071c1f5782c4c815eee323",
+      "scene.json": "b8c30374d3493cc8edb5837f181f9ffff1ff2e2dceb6d7bb4a16a37403be8ae2",
+      "summary.json": "8604ddf68f087c8ef5150ade9ac6025ee6b6acc8d92648116027ab34bb84b973",
+      "replay/outputs.jsonl": "16c22e7e8be97c5a80453a6d3a7bf7389111290fadbe77966ff1b7d1a0d6f281",
+      "replay/replay.json": "da4e332bcc4cf617f228a12e63639237e6454eed044eb2c15d5f7a9c875e44b0"
+    },
+    "gzip_crc_verified": true,
+    "raw_preserved": false
+  },
+  "complete": true
+}

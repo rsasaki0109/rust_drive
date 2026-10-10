@@ -1,0 +1,236 @@
+{
+  "schema_version": 1,
+  "dataset": "tum-fr1-xyz-motion",
+  "repository": "MarcelBruckner-TUMProjects/3D-Scanning-Motion-Capture",
+  "revision": "f367047ee71f5304c6d7deaec55c4874bb8b035e",
+  "redistribute_raw": false,
+  "upstream_license": "Original TUM dataset license not independently verified against the official site in this environment; public GitHub mirror is acquisition only, no redistribution grant asserted",
+  "original_dataset": "TUM RGB-D rgbd_dataset_freiburg1_xyz",
+  "original_site": "https://cvg.cit.tum.de/data/datasets/rgbd-dataset",
+  "physical_relative_pose_ground_truth": "Independent motion-capture camera poses from original TUM groundtruth.txt, cross-mirror byte identity checked",
+  "ground_truth_format": "timestamp tx ty tz qx qy qz qw; world-from-camera; metres; xyzw quaternion",
+  "depth_calibration": {
+    "width": 640,
+    "height": 480,
+    "fx": 525.0,
+    "fy": 525.0,
+    "cx": 319.5,
+    "cy": 239.5,
+    "units_per_metre": 5000.0,
+    "invalid_depth": 0,
+    "frame": "registered optical camera x-right y-down z-forward",
+    "source_path": "Exercise_1/VirtualSensor.h",
+    "limitations": "ROS/default registered-depth intrinsics used by upstream TUM teaching reader; separately measured physical native-depth-camera extrinsics and vehicle calibration are not provided"
+  },
+  "selection_policy": "Untouched original source indices200..211 inclusive, declared before any depth decoding or sensor fitting. All eleven consecutive pairs and all eleven first-cloud local-map fits retained. Earlier original0..110/10, fast120..131 and tight140..151 are viewed calibration/regression only. Same indoor room/sequence; no new-environment generalization.",
+  "frames": [
+    {
+      "file": "1305031108.835163.png",
+      "timestamp": 1305031108.835163,
+      "source_index": 200,
+      "split": "calibration"
+    },
+    {
+      "file": "1305031108.867534.png",
+      "timestamp": 1305031108.867534,
+      "source_index": 201,
+      "split": "calibration"
+    },
+    {
+      "file": "1305031108.903540.png",
+      "timestamp": 1305031108.90354,
+      "source_index": 202,
+      "split": "calibration"
+    },
+    {
+      "file": "1305031108.935116.png",
+      "timestamp": 1305031108.935116,
+      "source_index": 203,
+      "split": "held_out"
+    },
+    {
+      "file": "1305031108.967245.png",
+      "timestamp": 1305031108.967245,
+      "source_index": 204,
+      "split": "held_out"
+    },
+    {
+      "file": "1305031109.003064.png",
+      "timestamp": 1305031109.003064,
+      "source_index": 205,
+      "split": "held_out"
+    },
+    {
+      "file": "1305031109.034955.png",
+      "timestamp": 1305031109.034955,
+      "source_index": 206,
+      "split": "held_out"
+    },
+    {
+      "file": "1305031109.067091.png",
+      "timestamp": 1305031109.067091,
+      "source_index": 207,
+      "split": "held_out"
+    },
+    {
+      "file": "1305031109.103294.png",
+      "timestamp": 1305031109.103294,
+      "source_index": 208,
+      "split": "held_out"
+    },
+    {
+      "file": "1305031109.134968.png",
+      "timestamp": 1305031109.134968,
+      "source_index": 209,
+      "split": "held_out"
+    },
+    {
+      "file": "1305031109.165848.png",
+      "timestamp": 1305031109.165848,
+      "source_index": 210,
+      "split": "held_out"
+    },
+    {
+      "file": "1305031109.203388.png",
+      "timestamp": 1305031109.203388,
+      "source_index": 211,
+      "split": "held_out"
+    }
+  ],
+  "files": [
+    {
+      "file": "depth.txt",
+      "source_path": "Exercise_1/data/rgbd_dataset_freiburg1_xyz/depth.txt",
+      "bytes": 36783,
+      "sha256": "d5abcc12d67cd2f5ae6f405ab1459a416ab2c1cdfb16d9bbd137d5f77d3285df",
+      "role": "depth_index"
+    },
+    {
+      "file": "groundtruth.txt",
+      "source_path": "Exercise_1/data/rgbd_dataset_freiburg1_xyz/groundtruth.txt",
+      "bytes": 201100,
+      "sha256": "aac0319a6ef4e1cdf61e779d2152b95aa7e9f7b1749d6d18717b43ddabffede2",
+      "role": "evaluation_only_mocap_ground_truth"
+    },
+    {
+      "file": "1305031108.835163.png",
+      "source_path": "Exercise_1/data/rgbd_dataset_freiburg1_xyz/depth/1305031108.835163.png",
+      "bytes": 118275,
+      "sha256": "8aac42e7fba45a0b30e51a1c9e49b70a6d4be76241b8a9ef5e2737b7ce0cf04e",
+      "role": "depth_frame",
+      "split": "calibration",
+      "timestamp": 1305031108.835163,
+      "encoding": "PNG uint16 grayscale 640x480"
+    },
+    {
+      "file": "1305031108.867534.png",
+      "source_path": "Exercise_1/data/rgbd_dataset_freiburg1_xyz/depth/1305031108.867534.png",
+      "bytes": 119318,
+      "sha256": "287f49bef6578be4a35a192c508609c3a3591e6c71bfb0763d47bdc90c012147",
+      "role": "depth_frame",
+      "split": "calibration",
+      "timestamp": 1305031108.867534,
+      "encoding": "PNG uint16 grayscale 640x480"
+    },
+    {
+      "file": "1305031108.903540.png",
+      "source_path": "Exercise_1/data/rgbd_dataset_freiburg1_xyz/depth/1305031108.903540.png",
+      "bytes": 118753,
+      "sha256": "046ee4c6327161aa214bbf75abe1701244943703fc9926a69b66826882e3333a",
+      "role": "depth_frame",
+      "split": "calibration",
+      "timestamp": 1305031108.90354,
+      "encoding": "PNG uint16 grayscale 640x480"
+    },
+    {
+      "file": "1305031108.935116.png",
+      "source_path": "Exercise_1/data/rgbd_dataset_freiburg1_xyz/depth/1305031108.935116.png",
+      "bytes": 119783,
+      "sha256": "6488c68a0ee071451e79d4f95c3d254f5ac6ace6be257a23b44f2bad59fc6088",
+      "role": "depth_frame",
+      "split": "held_out",
+      "timestamp": 1305031108.935116,
+      "encoding": "PNG uint16 grayscale 640x480"
+    },
+    {
+      "file": "1305031108.967245.png",
+      "source_path": "Exercise_1/data/rgbd_dataset_freiburg1_xyz/depth/1305031108.967245.png",
+      "bytes": 119811,
+      "sha256": "fead09c3dce6fd9367399a06611254adbfb4c03e619566cc46676eb703039dd2",
+      "role": "depth_frame",
+      "split": "held_out",
+      "timestamp": 1305031108.967245,
+      "encoding": "PNG uint16 grayscale 640x480"
+    },
+    {
+      "file": "1305031109.003064.png",
+      "source_path": "Exercise_1/data/rgbd_dataset_freiburg1_xyz/depth/1305031109.003064.png",
+      "bytes": 119961,
+      "sha256": "3bba36b3bc7f73cfcd320f505c852d0daa9bdb21169d4bd5901434715bd9ea57",
+      "role": "depth_frame",
+      "split": "held_out",
+      "timestamp": 1305031109.003064,
+      "encoding": "PNG uint16 grayscale 640x480"
+    },
+    {
+      "file": "1305031109.034955.png",
+      "source_path": "Exercise_1/data/rgbd_dataset_freiburg1_xyz/depth/1305031109.034955.png",
+      "bytes": 120629,
+      "sha256": "c2fe4752ef23082467090003380e57c4b84a3e08ab99c43102506b99fd012ad0",
+      "role": "depth_frame",
+      "split": "held_out",
+      "timestamp": 1305031109.034955,
+      "encoding": "PNG uint16 grayscale 640x480"
+    },
+    {
+      "file": "1305031109.067091.png",
+      "source_path": "Exercise_1/data/rgbd_dataset_freiburg1_xyz/depth/1305031109.067091.png",
+      "bytes": 120836,
+      "sha256": "165a1e0341877edf3dd34a568fdb68afffae0a79080d16d724ca33f21660017b",
+      "role": "depth_frame",
+      "split": "held_out",
+      "timestamp": 1305031109.067091,
+      "encoding": "PNG uint16 grayscale 640x480"
+    },
+    {
+      "file": "1305031109.103294.png",
+      "source_path": "Exercise_1/data/rgbd_dataset_freiburg1_xyz/depth/1305031109.103294.png",
+      "bytes": 120101,
+      "sha256": "365adbac1b67078f1919e6b870e82f7bfe0f5bf0019fa770855c793111356dc6",
+      "role": "depth_frame",
+      "split": "held_out",
+      "timestamp": 1305031109.103294,
+      "encoding": "PNG uint16 grayscale 640x480"
+    },
+    {
+      "file": "1305031109.134968.png",
+      "source_path": "Exercise_1/data/rgbd_dataset_freiburg1_xyz/depth/1305031109.134968.png",
+      "bytes": 119780,
+      "sha256": "a3dd730d873d97e1b8ad378b7c15e1076b4485b231cdda4476fb30a22f337627",
+      "role": "depth_frame",
+      "split": "held_out",
+      "timestamp": 1305031109.134968,
+      "encoding": "PNG uint16 grayscale 640x480"
+    },
+    {
+      "file": "1305031109.165848.png",
+      "source_path": "Exercise_1/data/rgbd_dataset_freiburg1_xyz/depth/1305031109.165848.png",
+      "bytes": 119381,
+      "sha256": "8b246d45da9a38d53079bc09d39ec941cbf78a1f6c871c2be57dc1d1152937f8",
+      "role": "depth_frame",
+      "split": "held_out",
+      "timestamp": 1305031109.165848,
+      "encoding": "PNG uint16 grayscale 640x480"
+    },
+    {
+      "file": "1305031109.203388.png",
+      "source_path": "Exercise_1/data/rgbd_dataset_freiburg1_xyz/depth/1305031109.203388.png",
+      "bytes": 120033,
+      "sha256": "a9e222d0797f6b621c34662b4d5b156735c5fd287dc4034b0aa5b4ccc011c430",
+      "role": "depth_frame",
+      "split": "held_out",
+      "timestamp": 1305031109.203388,
+      "encoding": "PNG uint16 grayscale 640x480"
+    }
+  ]
+}

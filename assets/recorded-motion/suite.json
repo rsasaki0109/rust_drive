@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "regression_integrity_passed": true,
+  "all_physical_protocols_passed": false,
+  "cases": [
+    {
+      "dataset": "tum-fr1-xyz",
+      "summary": {
+        "continuous_odometry_frames": 0,
+        "map_accepted": 3,
+        "map_accurate": 3,
+        "map_reference_valid": 11,
+        "pair_accepted": 4,
+        "pair_accurate": 4,
+        "pair_reference_valid": 11,
+        "pairs": 11
+      },
+      "evaluator_exit_status": 1,
+      "full_pair_and_map_protocol_passed": false,
+      "independent_integrity_passed": true,
+      "mutations_rejected": 10,
+      "report_sha256": "53cc61c3e6451a7fb7ce867eaa39a2e09c40f4533d796eeb2d493b290d742e37",
+      "oracle_sha256": "7f8a4b21b5b304726bc7efb8c50decc3e193ecf2ded3234ad0423fc70d81063f",
+      "freeze_sha256": "8ce2010535a0a47f3a2a097a5e44207414907c07bfba6cbc54956494f1a8e350"
+    },
+    {
+      "dataset": "tum-fr1-xyz-fast",
+      "summary": {
+        "continuous_odometry_frames": 11,
+        "map_accepted": 11,
+        "map_accurate": 11,
+        "map_reference_valid": 11,
+        "pair_accepted": 11,
+        "pair_accurate": 11,
+        "pair_reference_valid": 11,
+        "pairs": 11
+      },
+      "evaluator_exit_status": 0,
+      "full_pair_and_map_protocol_passed": true,
+      "independent_integrity_passed": true,
+      "mutations_rejected": 10,
+      "report_sha256": "c97fc6cd48f2bc3b913f1e15534e2f55cf88d1d04971e84044b42b3410b299f8",
+      "oracle_sha256": "d9f00adf7db7efdfbee9174b07aaaa86ac931ba78ba3c42e0223458ffdd0d5cb",
+      "freeze_sha256": "d841e543ff1fcfff1dcbcc9f897cf5bc37625b7aba0686102a0cc74519334abb"
+    },
+    {
+      "dataset": "tum-fr1-xyz-tight",
+      "summary": {
+        "continuous_odometry_frames": 11,
+        "map_accepted": 9,
+        "map_accurate": 9,
+        "map_reference_valid": 11,
+        "pair_accepted": 11,
+        "pair_accurate": 11,
+        "pair_reference_valid": 11,
+        "pairs": 11
+      },
+      "evaluator_exit_status": 1,
+      "full_pair_and_map_protocol_passed": false,
+      "independent_integrity_passed": true,
+      "mutations_rejected": 11,
+      "report_sha256": "ec76f0df361a1b169490d015035e9e9b23195c78abb3ca6e404e48c37a3a6bd1",
+      "oracle_sha256": "0f5ceb239229c95db08af893598cf8c6f8d56936183824e74f5a7379ccff365a",
+      "freeze_sha256": "aaa6de05699f78fde936112d4ee8d096b73cba994f97d97cc94261cdfb42bb69"
+    },
+    {
+      "dataset": "tum-fr1-xyz-motion",
+      "summary": {
+        "continuous_odometry_frames": 11,
+        "map_accepted": 11,
+        "map_accurate": 8,
+        "map_reference_valid": 8,
+        "pair_accepted": 11,
+        "pair_accurate": 7,
+        "pair_reference_valid": 7,
+        "pairs": 11
+      },
+      "evaluator_exit_status": 1,
+      "full_pair_and_map_protocol_passed": false,
+      "independent_integrity_passed": true,
+      "mutations_rejected": 10,
+      "report_sha256": "af87618214a4ae0a7c44975496892bf0a09f309cbc0980775633f8d0b7425668",
+      "oracle_sha256": "c5cea616b2c11af12bed4fc6b552858be0930e0568f0534c4633a5297dee3169",
+      "freeze_sha256": "5651317b6a92f60e2b7360e26fdc1dac7ab36414e11a3ac9359d71f4bc57e98d"
+    },
+    {
+      "dataset": "tum-fr1-xyz-motion-v2",
+      "summary": {
+        "continuous_odometry_frames": 11,
+        "map_accepted": 9,
+        "map_accurate": 9,
+        "map_reference_valid": 11,
+        "pair_accepted": 11,
+        "pair_accurate": 11,
+        "pair_reference_valid": 11,
+        "pairs": 11
+      },
+      "evaluator_exit_status": 1,
+      "full_pair_and_map_protocol_passed": false,
+      "independent_integrity_passed": true,
+      "mutations_rejected": 11,
+      "report_sha256": "316f9d12fb781dd930790141d1da4a48fb041be5f2bd419624c866b686d1199d",
+      "oracle_sha256": "3f73dc2668944fc57a9bb7bac0f88eaea63a1c99fad7c48c7f58eedb68d05cfa",
+      "freeze_sha256": "abd8272f4e230e2964676a64ed8664e9dc794f8d8c2b88745e2d1858ef3fa503"
+    }
+  ],
+  "scope": "same indoor Kinect room; independent mocap scoring, temporalholdout only; no automotive or confidence calibration claim"
+}

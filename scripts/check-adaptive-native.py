@@ -28,6 +28,23 @@ EXPECTED_SCENARIO_SHA = '70b304b4b2afe305a28f70932c1137e4d2ce87e6df0be88db230172
 EXPECTED_SCENE_SHA = 'f1c2e9c9493404647a23cec64a4ccefae911bdcf4a5ce9a6be3513bede515b32'
 MAX_RAW_BYTES = 384*1024*1024
 MAX_ARCHIVE_BYTES = 128*1024*1024
+ORIGINAL_ADAPTIVE_SOURCE_SHA = 'a5e20db00507cb53de3ba264e948fc64a84d00ddb2febb40037f29c5b074b8d9'
+RENAMED_ADAPTIVE_SOURCE_SHA = 'dac01110cd1ccd36cedc8846b8c4b3767a1c1076d708171c6f38d8b89296f3e6'
+
+
+def verify_frozen_algorithm(source):
+    """Accept the documented namespace rename, retaining the original freeze.
+
+    Both exact bytes and the original algorithm identity must match. A changed
+    parameter, implementation or comment requires a new explicit protocol.
+    """
+    actual = hashlib.sha256(source).hexdigest()
+    g.require(actual == RENAMED_ADAPTIVE_SOURCE_SHA,
+              'adaptive source differs from the published namespace-only revision')
+    original = source.replace(b'use rustdriving_core::Vec3;', b'use rustdrive_core::Vec3;')
+    g.require(hashlib.sha256(original).hexdigest() == ORIGINAL_ADAPTIVE_SOURCE_SHA,
+              'adaptive algorithm changed beyond the documented namespace rename')
+    return actual
 
 
 def verify_geometry(p):
@@ -197,10 +214,11 @@ def main():
         'rne_revision':pin,'passed':False,'body_physics':False,'semantic_recognition':False,
         'scope':'One authored native adaptive-terrain lead-stop episode; observed-surface AABBs. Fresh measured Autzen generalization failed separately.',
         'real_data_generalization_claim':False,
-        'frozen_adaptive_source_sha256':'a5e20db00507cb53de3ba264e948fc64a84d00ddb2febb40037f29c5b074b8d9'}
+        'frozen_adaptive_source_sha256':ORIGINAL_ADAPTIVE_SOURCE_SHA,
+        'current_adaptive_source_sha256':verify_frozen_algorithm(
+            (ROOT/'crates/perception/src/terrain_adaptive.rs').read_bytes()),
+        'namespace_only_rename_verified':True}
     args.output.mkdir(parents=True,exist_ok=True);report_path=args.output/'report.json';report_path.unlink(missing_ok=True)
-    require(sha(ROOT/'crates/perception/src/terrain_adaptive.rs')==report['frozen_adaptive_source_sha256'],
-            'adaptive algorithm changed after parameter freeze')
     raw=args.verify_existing if args.verify_existing else args.output/'run'
     if not args.verify_existing:
         raw.mkdir(parents=True,exist_ok=True)

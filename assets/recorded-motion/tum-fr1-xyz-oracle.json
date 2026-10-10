@@ -1,0 +1,175 @@
+{
+  "schema_version": 1,
+  "passed_integrity": true,
+  "summary": {
+    "continuous_odometry_frames": 0,
+    "map_accepted": 3,
+    "map_accurate": 3,
+    "map_reference_valid": 11,
+    "pair_accepted": 4,
+    "pair_accurate": 4,
+    "pair_reference_valid": 11,
+    "pairs": 11
+  },
+  "frames": [
+    {
+      "index": 10,
+      "pair": {
+        "rejection": "insufficient unique registration overlap",
+        "reference_valid": true
+      },
+      "fixed_map": {
+        "rejection": "insufficient unique registration overlap",
+        "reference_valid": true
+      }
+    },
+    {
+      "index": 20,
+      "pair": {
+        "translation_error_m": 0.038689158308945155,
+        "rotation_error_rad": 0.021254092367698457,
+        "conditional_nees": 3113.697539998166,
+        "provisional_nees": 4.220347383260476,
+        "inside_nominal_95_reference": true
+      },
+      "fixed_map": {
+        "rejection": "insufficient unique registration overlap",
+        "reference_valid": true
+      }
+    },
+    {
+      "index": 30,
+      "pair": {
+        "rejection": "ambiguous SE3 registration: distinct comparable local fit",
+        "reference_valid": true
+      },
+      "fixed_map": {
+        "rejection": "insufficient unique registration overlap",
+        "reference_valid": true
+      }
+    },
+    {
+      "index": 40,
+      "pair": {
+        "translation_error_m": 0.03194895925154499,
+        "rotation_error_rad": 0.03330343969553476,
+        "conditional_nees": 1628.6860508668315,
+        "provisional_nees": 3.7545315783571365,
+        "inside_nominal_95_reference": true
+      },
+      "fixed_map": {
+        "rejection": "insufficient unique registration overlap",
+        "reference_valid": true
+      }
+    },
+    {
+      "index": 50,
+      "pair": {
+        "rejection": "insufficient unique registration overlap",
+        "reference_valid": true
+      },
+      "fixed_map": {
+        "rejection": "insufficient unique registration overlap",
+        "reference_valid": true
+      }
+    },
+    {
+      "index": 60,
+      "pair": {
+        "rejection": "insufficient unique registration overlap",
+        "reference_valid": true
+      },
+      "fixed_map": {
+        "rejection": "insufficient unique registration overlap",
+        "reference_valid": true
+      }
+    },
+    {
+      "index": 70,
+      "pair": {
+        "rejection": "insufficient unique registration overlap",
+        "reference_valid": true
+      },
+      "fixed_map": {
+        "translation_error_m": 0.028414943819127462,
+        "rotation_error_rad": 0.007012914002190455,
+        "conditional_nees": 3262.225830759425,
+        "provisional_nees": 2.070727490180029,
+        "inside_nominal_95_reference": true
+      }
+    },
+    {
+      "index": 80,
+      "pair": {
+        "rejection": "insufficient unique registration overlap",
+        "reference_valid": true
+      },
+      "fixed_map": {
+        "rejection": "insufficient unique registration overlap",
+        "reference_valid": true
+      }
+    },
+    {
+      "index": 90,
+      "pair": {
+        "translation_error_m": 0.01537953220243312,
+        "rotation_error_rad": 0.03478153597597431,
+        "conditional_nees": 36676.811192939276,
+        "provisional_nees": 1.933775683045364,
+        "inside_nominal_95_reference": true
+      },
+      "fixed_map": {
+        "rejection": "insufficient unique registration overlap",
+        "reference_valid": true
+      }
+    },
+    {
+      "index": 100,
+      "pair": {
+        "rejection": "insufficient unique registration overlap",
+        "reference_valid": true
+      },
+      "fixed_map": {
+        "translation_error_m": 0.00684007409400384,
+        "rotation_error_rad": 0.019218301574403945,
+        "conditional_nees": 3142.8381475637852,
+        "provisional_nees": 0.5261515308138839,
+        "inside_nominal_95_reference": true
+      }
+    },
+    {
+      "index": 110,
+      "pair": {
+        "translation_error_m": 0.02246630951231496,
+        "rotation_error_rad": 0.01990266629843176,
+        "conditional_nees": 6234.290881407345,
+        "provisional_nees": 1.6964594654530125,
+        "inside_nominal_95_reference": true
+      },
+      "fixed_map": {
+        "translation_error_m": 0.01860458163962522,
+        "rotation_error_rad": 0.014527975693455996,
+        "conditional_nees": 1706.8386946631479,
+        "provisional_nees": 1.0949677950382743,
+        "inside_nominal_95_reference": true
+      }
+    }
+  ],
+  "mutations_rejected": [
+    "omit_failure",
+    "invent_summary",
+    "truth_operational",
+    "timestamp",
+    "pair_position",
+    "pair_covariance",
+    "fixed_map_position",
+    "fixed_map_covariance",
+    "ground_truth_initialization",
+    "invent_rejected_estimate"
+  ],
+  "raw_sha256_verified": true,
+  "source_freeze_verified": true,
+  "physical_pose_independently_scored": true,
+  "optimizer_independently_rerun": false,
+  "confidence_coverage_claim": false
+}
