@@ -1,0 +1,28 @@
+{
+  "kind": "analytic_comparison_and_output_guards",
+  "actual_inference_runs": 0,
+  "tolerance_inside_bound_passed": true,
+  "corruptions_rejected": [
+    "detection_geometry",
+    "nonfinite_detection",
+    "wrong_class",
+    "wrong_match_identity",
+    "wrong_prediction_identity",
+    "wrong_iou",
+    "omitted_image",
+    "omitted_detection",
+    "fabricated_count",
+    "removed_miss",
+    "flipped_failed_quality",
+    "changed_source",
+    "boolean_class"
+  ],
+  "output_guards_rejected": [
+    "existing_file",
+    "existing_directory",
+    "valid_symlink",
+    "dangling_symlink",
+    "symlink_parent"
+  ],
+  "prior_evidence_preserved": true
+}

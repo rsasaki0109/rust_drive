@@ -1,0 +1,142 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-10-10T13:38:24.520566+00:00",
+  "evidence_role": "previously viewed offline comparison",
+  "base_commit": "a9e1a843b4335814a83180a5c7bb2aae4fc2d49c",
+  "fresh_holdout_claim": false,
+  "full_independent_integrity_passed": true,
+  "full_reproduction_integrity_passed": true,
+  "raw_recordings_or_weights_redistributed": false,
+  "evidence_files_sha256": {
+    "design.json": "99a881e518819f0f07c2c1836d6b98ac2e37f38ef3e4a11490c9b68237e90565",
+    "first/00a395fe-d60c0b47.json": "0b79538cc4cabc356466f6ff2210a7d9a95d08b59099d6bbf3ecae9092019748",
+    "first/026c7465-d54954fa.json": "18a652ccaa5ea0579f98b851af6fcdcd5db7f5df8ccf36dbb29049c56f96a076",
+    "first/0798a3a8-c4501e0f.json": "3b3976fd0aa1f372bff19061a4d6c998cf63f95087bfd3306356bd3bbcdcfb32",
+    "first/0a493f24-352f747e.json": "167488f6c68594e6576800d77952a9b5029208e6cfc302383045b847b5f7b5b6",
+    "first/17d21997-6f076249.json": "5a795b303e733896b70ccec5889dfdf3d0693771dc8cffae23495aca774b054d",
+    "first/4899be53-dcc6c017.json": "925878df18c96622091415074255960cd017fcbb201ec1833722356669f530a0",
+    "first/4dab8d2a-be9667d4.json": "2ad9a4b72a932ffd10e8c305d3b72fab17f594ab3cd9f9bd3ccb396f3ea7cdc3",
+    "first/ab2360f2-7704a1bf.json": "bcf13a21ff3bff04eb966e331d35237be2049e244a874e65a5bd83b03fe04e04",
+    "first-check-status.json": "16f141790a87f1aa0f7da68c156e818fc17e461bcb0326d940764843824fc7ae",
+    "first-executable-receipt.json": "da8eb4b30c7f4ef0e15fecaf26d2a0bdc8afd837cec9802e4d92ef5944fe8df0",
+    "first-freeze.json": "108d0c4beb3550fc618e58fc01a255511a803636ad14acf623cad84ce99fc130",
+    "first-results.json": "55839b5884f147e6c355ab1230245f0e0c9871cf087db6784f12ae072ce36a40",
+    "first-stage-journal.json": "20988e194cfcbba980ee259c0475f055ea7ea7543f1dd64e313f216ae27e3db9",
+    "graph-inspection.json": "ecd9d809851d9d5629d6cf4e68bf5fb1bc1351d553c90e12b3a47bbe8fa5d089",
+    "nano-comparison.json": "9c86ad44e5fef7889d21291b8c4d7c542967c95eda77c9838891540b3b6100d6",
+    "optional-validation.json": "e4899b2e6a6272eedd8bfd990931c060fbf6e4e8f269c4f5bdeb3a34c5b65631",
+    "output-admission-check.json": "d882234b935284b8bc593fbe08e570db66efeae12d9a79dfb90fc7d41ccdb4af",
+    "post-trial-preservation.json": "cdb0b43ecaa92c5d61daf6259c5c5dae8dca87085e80b9321d48dde2faf5f06e",
+    "pre-first-journal.json": "eb5e91b5a0bd3cc95f38f3aea80105f8694e567160fdb6aabc416fe41e36c58a",
+    "pretrial-checker-controls.json": "e235eeb257f8f51a5760cff7ca1b8c66f666b65307aef681d9d73e19e0d80f63",
+    "regression-suite.json": "c1f126ef69d2235fd2b2ce8902d2e0f87d0004fce3b8734398c041ad00a1c8df",
+    "replay-first-and-cli-guards.json": "11471de3b7fb1b9ea16fc3876f2b58fe30dc09a8b125c0a95597fb43cc943220",
+    "replay-self-test.json": "78b104b578736d5bcdcdb255aabb738994bbf50ff9b07a78636bc8e41f6149c4",
+    "reproduction-checker-journal.json": "4229e34f8ded065eddaea0c9941b4e5733aa86d76ea5e47e9e81c2d56ce055ba",
+    "reproduction-exit.json": "e25a0d54db2b8bdd749e67abca5f37fb5c20cf1a412d42b80dc53c120bb5c0f2",
+    "validation.json": "a8c68c3754f09d2f27ab0e20855d8db956bb9576fe6f24fcadcd67ff2b63111c",
+    "workflow-actionlint.json": "8e0573bcafa3e16e5e748b21ca5d833531453635869c7ff6b28374724e0a0995"
+  },
+  "limitations": "Viewed offline diagnostics only. No calibrated uncertainty, unseen automotive generalization, live driving integration or real-time claim.",
+  "design_commit": "5067be4f9bd5dc88061279b91fb7f44694cfd10f",
+  "source_bindings": {
+    "integrations/onnx/Cargo.toml": "7459dc7d7fc0128214275703d48a4170d449edd559dc0cadab689f887d635c8d",
+    "integrations/onnx/Cargo.lock": "aa6f1b198ff4ad901f9547ef852dc0113b5c36624d43030a863af32b12f07a0c",
+    "integrations/onnx/src/lib.rs": "b379dfba4c45b535f61284ea9fc7748f6317038976b5fb61221f6a8561ad4bbc",
+    "integrations/onnx/src/main.rs": "9e2b917e71a42873544694f698215ad20048eb1acfbb135e2cdd76adf0ffb5f8",
+    "integrations/onnx/fetch.py": "86fc0d09ecfc24f47a94b906ace4f9b5e82c38f2945b187c6aa44c05cb3c19b4",
+    "integrations/onnx/score.py": "f5eedaa9131217d8ba88fb6a3f5b0ce6ecfd57b19dcd3aa2fd88d7e47cda7576",
+    "integrations/onnx/bdd_fetch.py": "3eace699219b8e706050f2e25365fde059b46ef6eda5d83fc6f8c5bb2069910b",
+    "integrations/onnx/bdd_score.py": "10033a6131b5239d411ed4c6c4f3ad9f49a45cb72f16b879e95d47366c0d53f7",
+    "integrations/onnx/bdd_check.py": "e34108681976ab8802642a4fbaf23bedcdec13e063975a5c55005f2d150a8584",
+    "integrations/onnx/bdd_protocol.json": "3fa34763064b3f113d4aef1671610128b886c18aa769dfca017bec96c555e830",
+    "integrations/onnx/fetch_s.py": "bbb3aa5a020e0bdf6054fc1fe1c58ccd64132547a68ab44e28a89d556a35f1ae",
+    "integrations/onnx/profile-s.json": "b6ea56bd4b6271dc4d54b379b101db7425f61adfcd184211932fd2de6160f573",
+    "integrations/onnx/src/bin/rustdriving-camera-detect-s.rs": "6d1c965968e4d7d735922b4369e6076bf9801aed081dd7e6693702b513d46138",
+    "integrations/onnx/src/yolox_s.rs": "cd23f879d840627b23aa954530e9e39ca5c5cc05cb2e927453c74178fd8142f0",
+    "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed",
+    "integrations/onnx/bdd_s_check.py": "35053e7a0e329df354cf694936832c05a7f502e4af7b97337cacf4f9807a25d9",
+    "assets/yolox-s-bdd-v1/design.json": "99a881e518819f0f07c2c1836d6b98ac2e37f38ef3e4a11490c9b68237e90565"
+  },
+  "checker_sha256": "35053e7a0e329df354cf694936832c05a7f502e4af7b97337cacf4f9807a25d9",
+  "wrapper_sha256": "fbcc64992b9a6aab4a2144edcb4f1033fd136f6ca630c7f68ec4caf15842dd79",
+  "overall": {
+    "true_positives": 55,
+    "false_positives": 14,
+    "false_negatives": 83,
+    "precision": 0.7971014492753623,
+    "recall": 0.39855072463768115,
+    "mean_matched_iou": 0.8009049551040764
+  },
+  "per_class": {
+    "person including original rider": {
+      "true_positives": 11,
+      "false_positives": 0,
+      "false_negatives": 17,
+      "precision": 1.0,
+      "recall": 0.39285714285714285,
+      "mean_matched_iou": 0.7118956800638404
+    },
+    "bicycle": {
+      "true_positives": 1,
+      "false_positives": 0,
+      "false_negatives": 2,
+      "precision": 1.0,
+      "recall": 0.3333333333333333,
+      "mean_matched_iou": 0.7459330989678713
+    },
+    "car": {
+      "true_positives": 39,
+      "false_positives": 7,
+      "false_negatives": 33,
+      "precision": 0.8478260869565217,
+      "recall": 0.5416666666666666,
+      "mean_matched_iou": 0.8140136612358282
+    },
+    "motorcycle": {
+      "true_positives": 0,
+      "false_positives": 0,
+      "false_negatives": 3,
+      "precision": null,
+      "recall": 0.0,
+      "mean_matched_iou": null
+    },
+    "bus": {
+      "true_positives": 1,
+      "false_positives": 2,
+      "false_negatives": 1,
+      "precision": 0.3333333333333333,
+      "recall": 0.5,
+      "mean_matched_iou": 0.9748623186477786
+    },
+    "train": {
+      "true_positives": 0,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "precision": null,
+      "recall": null,
+      "mean_matched_iou": null
+    },
+    "truck": {
+      "true_positives": 3,
+      "false_positives": 2,
+      "false_negatives": 3,
+      "precision": 0.6,
+      "recall": 0.5,
+      "mean_matched_iou": 0.9171972814030034
+    },
+    "traffic light": {
+      "true_positives": 0,
+      "false_positives": 3,
+      "false_negatives": 24,
+      "precision": 0.0,
+      "recall": 0.0,
+      "mean_matched_iou": null
+    }
+  },
+  "image_count": 8,
+  "reference_count": 138,
+  "first_actual_inference_runs": 16,
+  "reproduction_actual_inference_runs": 16,
+  "viewed_quality_gates_passed": false
+}

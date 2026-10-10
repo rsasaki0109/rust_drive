@@ -1,0 +1,4382 @@
+{
+  "kind": "registered_grid_viewed_continuous_regression",
+  "summary": {
+    "native": {
+      "frames": 180,
+      "updates": 179,
+      "initialized_frames": 1,
+      "accepted_updates": 16,
+      "rejected_updates": 163,
+      "accurate_root_updates": 16,
+      "reference_valid_updates": 179,
+      "lost": true,
+      "all_updates_passed": false
+    },
+    "multiscale": {
+      "frames": 180,
+      "updates": 179,
+      "initialized_frames": 1,
+      "accepted_updates": 19,
+      "rejected_updates": 160,
+      "accurate_root_updates": 17,
+      "reference_valid_updates": 179,
+      "lost": true,
+      "all_updates_passed": false
+    }
+  },
+  "maximum_accepted_root_errors": {
+    "native": {
+      "translation_m": 0.08724336927696834,
+      "rotation_rad": 0.08885491882051635
+    },
+    "multiscale": {
+      "translation_m": 0.11532792013829807,
+      "rotation_rad": 0.10027462354587635
+    }
+  },
+  "frames": [
+    {
+      "index": 0,
+      "branches": {
+        "native": {
+          "clock_accepted": true,
+          "initialization": {
+            "points": 195,
+            "geometry_ratio": 0.4313956622030666
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "quaternion_wxyz": [
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "multiscale": {
+          "clock_accepted": true,
+          "initialization": {
+            "points": 256,
+            "geometry_ratio": 0.445839401450603
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "quaternion_wxyz": [
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          }
+        }
+      }
+    },
+    {
+      "index": 1,
+      "branches": {
+        "native": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 95,
+            "correspondences": 68,
+            "coarse_inliers": 68,
+            "refinement_support": 68
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.01886741166823516,
+              -0.0025979073776426762,
+              -0.002935802582771558
+            ],
+            "quaternion_wxyz": [
+              0.9999332938606084,
+              0.0003056938673341301,
+              -0.0004268447754239112,
+              0.011538292069084789
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.01886741166823516,
+              -0.0025979073776426762,
+              -0.002935802582771558
+            ],
+            "quaternion_wxyz": [
+              0.9999332938606084,
+              0.0003056938673341301,
+              -0.0004268447754239112,
+              0.011538292069084789
+            ]
+          }
+        },
+        "multiscale": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 140,
+            "correspondences": 98,
+            "coarse_inliers": 98,
+            "refinement_support": 98
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.019253405821430123,
+              -0.003534132903619841,
+              -0.0037339395874616244
+            ],
+            "quaternion_wxyz": [
+              0.999929197810682,
+              -0.0003129311264540467,
+              -0.0004057151766071454,
+              0.011888516938269606
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.019253405821430123,
+              -0.003534132903619841,
+              -0.0037339395874616244
+            ],
+            "quaternion_wxyz": [
+              0.999929197810682,
+              -0.0003129311264540467,
+              -0.0004057151766071454,
+              0.011888516938269606
+            ]
+          }
+        }
+      }
+    },
+    {
+      "index": 2,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "duplicate or stale RGB acquisition; no pose permission renewal",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "duplicate or stale RGB acquisition; no pose permission renewal",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 3,
+      "branches": {
+        "native": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 42,
+            "correspondences": 30,
+            "coarse_inliers": 26,
+            "refinement_support": 26
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.029498070657033373,
+              -0.012587250122809446,
+              -0.011542948092410063
+            ],
+            "quaternion_wxyz": [
+              0.9996869229360411,
+              0.005878019241616826,
+              -0.007421754181571532,
+              0.023160798028855227
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.048057390637421926,
+              -0.01585529476972658,
+              -0.014511704107932448
+            ],
+            "quaternion_wxyz": [
+              0.9993480368171704,
+              0.0062589736050202805,
+              -0.007787228056239931,
+              0.034694172972979144
+            ]
+          }
+        },
+        "multiscale": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 58,
+            "correspondences": 47,
+            "coarse_inliers": 46,
+            "refinement_support": 46
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.03314256208442368,
+              -0.021969070245551933,
+              -0.010391297390069705
+            ],
+            "quaternion_wxyz": [
+              0.9996425532067976,
+              -0.00018269007839878933,
+              -0.004466553245659867,
+              0.026358724260361833
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.05185576316615466,
+              -0.02629137603002257,
+              -0.01413791533115812
+            ],
+            "quaternion_wxyz": [
+              0.9992565408678037,
+              -0.0004530898543193957,
+              -0.004865730607746492,
+              0.03824244903439176
+            ]
+          }
+        }
+      }
+    },
+    {
+      "index": 4,
+      "branches": {
+        "native": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 106,
+            "correspondences": 72,
+            "coarse_inliers": 71,
+            "refinement_support": 71
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.018343594140478467,
+              -0.0046838790935382875,
+              -0.007588811273596486
+            ],
+            "quaternion_wxyz": [
+              0.9999797219668575,
+              0.003978223315029712,
+              -6.884710601841089e-05,
+              0.004972389206227508
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.06591453014363616,
+              -0.021698709763955562,
+              -0.0224485357025027
+            ],
+            "quaternion_wxyz": [
+              0.9991298233505099,
+              0.01019814380991293,
+              -0.0077489732517902485,
+              0.039693165254917534
+            ]
+          }
+        },
+        "multiscale": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 143,
+            "correspondences": 111,
+            "coarse_inliers": 110,
+            "refinement_support": 110
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.01752599155986384,
+              -0.006995733397079687,
+              -0.008671105160558135
+            ],
+            "quaternion_wxyz": [
+              0.9999830051630694,
+              0.002563450412942197,
+              -0.0007374627075118106,
+              0.005184038558139327
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.06871040227173031,
+              -0.03461082335583762,
+              -0.022969487526338407
+            ],
+            "quaternion_wxyz": [
+              0.999038881513994,
+              0.0021114406831142644,
+              -0.005502180892531297,
+              0.043434790743544616
+            ]
+          }
+        }
+      }
+    },
+    {
+      "index": 5,
+      "branches": {
+        "native": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 55,
+            "correspondences": 45,
+            "coarse_inliers": 41,
+            "refinement_support": 41
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.012985049667563678,
+              -0.012887045470411066,
+              -0.007866696014914073
+            ],
+            "quaternion_wxyz": [
+              0.9999823380523356,
+              0.0016327229255781175,
+              -0.0021513867622637442,
+              0.00529427372091064
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.07771745873987328,
+              -0.03540520144724036,
+              -0.03077892130610927
+            ],
+            "quaternion_wxyz": [
+              0.9988687085084793,
+              0.011873636023874663,
+              -0.009887534889443848,
+              0.044972842738538445
+            ]
+          }
+        },
+        "multiscale": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 91,
+            "correspondences": 76,
+            "coarse_inliers": 71,
+            "refinement_support": 71
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.013746083477838492,
+              -0.011582711426945965,
+              -0.006997831803165562
+            ],
+            "quaternion_wxyz": [
+              0.9999828597360012,
+              0.0027143192049686065,
+              -0.0016730057072655343,
+              0.004910576072747803
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.08132265077667022,
+              -0.04730951011950565,
+              -0.030163805218301133
+            ],
+            "quaternion_wxyz": [
+              0.9987935315756375,
+              0.004868762690036368,
+              -0.0070659568376698475,
+              0.048351304910024276
+            ]
+          }
+        }
+      }
+    },
+    {
+      "index": 6,
+      "branches": {
+        "native": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 91,
+            "correspondences": 77,
+            "coarse_inliers": 74,
+            "refinement_support": 74
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.018709127286324543,
+              -0.007133616309931106,
+              -0.010799462006702919
+            ],
+            "quaternion_wxyz": [
+              0.9999519207985607,
+              0.00929720231236672,
+              0.003087173193107347,
+              -0.00043299204140716436
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.09550287535732159,
+              -0.04391868658711923,
+              -0.04212563147356678
+            ],
+            "quaternion_wxyz": [
+              0.9987602895179759,
+              0.02102519188482826,
+              -0.006380115996917678,
+              0.044666760662053655
+            ]
+          }
+        },
+        "multiscale": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 130,
+            "correspondences": 105,
+            "coarse_inliers": 102,
+            "refinement_support": 102
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.0182685915217489,
+              -0.008166837054846075,
+              -0.011629257736715654
+            ],
+            "quaternion_wxyz": [
+              0.9999575218831962,
+              0.008736969851095268,
+              0.002935771970039537,
+              -3.209327460734174e-05
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.09855596603185846,
+              -0.05707995666294973,
+              -0.042131658778270936
+            ],
+            "quaternion_wxyz": [
+              0.9987308622642371,
+              0.013453263211034915,
+              -0.0037108264874754046,
+              0.04839322511145584
+            ]
+          }
+        }
+      }
+    },
+    {
+      "index": 7,
+      "branches": {
+        "native": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 105,
+            "correspondences": 87,
+            "coarse_inliers": 86,
+            "refinement_support": 86
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.019434793630514625,
+              -0.005433985074393107,
+              -0.012161810210919381
+            ],
+            "quaternion_wxyz": [
+              0.9999530178095107,
+              0.007615244911407207,
+              0.005482742188682832,
+              -0.002430999112332335
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.11424009205293076,
+              -0.05053729007298509,
+              -0.054785008364018825
+            ],
+            "quaternion_wxyz": [
+              0.9986968189729535,
+              0.028400622010936846,
+              -0.0005126105247218998,
+              0.04240053859499652
+            ]
+          }
+        },
+        "multiscale": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 136,
+            "correspondences": 114,
+            "coarse_inliers": 111,
+            "refinement_support": 111
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.019586909909876066,
+              -0.00447821842755578,
+              -0.01161199553171822
+            ],
+            "quaternion_wxyz": [
+              0.999947283690148,
+              0.008203673753636414,
+              0.005605573233625438,
+              -0.002589812031988349
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.1175463163416112,
+              -0.06311075232245322,
+              -0.054028549933414514
+            ],
+            "quaternion_wxyz": [
+              0.9987139773426312,
+              0.021384154742059045,
+              0.002319671776341692,
+              0.04591000445741641
+            ]
+          }
+        }
+      }
+    },
+    {
+      "index": 8,
+      "branches": {
+        "native": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 147,
+            "correspondences": 119,
+            "coarse_inliers": 119,
+            "refinement_support": 119
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.017746064139594855,
+              -0.007678973520391931,
+              -0.012236678795108634
+            ],
+            "quaternion_wxyz": [
+              0.9999697733120083,
+              0.005492232956978426,
+              0.00549185198223391,
+              -0.0003569331619757745
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.13128872062086383,
+              -0.0589839881283044,
+              -0.06749812327040891
+            ],
+            "quaternion_wxyz": [
+              0.9985285981830374,
+              0.033652164623154054,
+              0.005215110834005326,
+              0.042201576342399974
+            ]
+          }
+        },
+        "multiscale": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 168,
+            "correspondences": 139,
+            "coarse_inliers": 136,
+            "refinement_support": 136
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.016668888967117535,
+              -0.009108887982525592,
+              -0.012514781117546355
+            ],
+            "quaternion_wxyz": [
+              0.9999779487092177,
+              0.004552510099383967,
+              0.004834696286140065,
+              -4.958750784473641e-05
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.13339291843210233,
+              -0.07317125228442387,
+              -0.06687825766539103
+            ],
+            "quaternion_wxyz": [
+              0.9985856644840626,
+              0.025708262707303604,
+              0.0073581655276556005,
+              0.0459522939096968
+            ]
+          }
+        }
+      }
+    },
+    {
+      "index": 9,
+      "branches": {
+        "native": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 91,
+            "correspondences": 71,
+            "coarse_inliers": 67,
+            "refinement_support": 67
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.01907336603987795,
+              -0.000365724053885001,
+              -0.013189015353998567
+            ],
+            "quaternion_wxyz": [
+              0.9999347361444855,
+              0.008207211141931813,
+              0.007888899997464685,
+              -0.0009645692095311023
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.15043723973841971,
+              -0.060081193111873446,
+              -0.08053681680202465
+            ],
+            "quaternion_wxyz": [
+              0.9981868047897217,
+              0.04150714903885438,
+              0.013470879820833942,
+              0.041458349209842496
+            ]
+          }
+        },
+        "multiscale": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 123,
+            "correspondences": 102,
+            "coarse_inliers": 98,
+            "refinement_support": 98
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.01796062580788368,
+              -0.0007276905549858082,
+              -0.013603212647435175
+            ],
+            "quaternion_wxyz": [
+              0.9999410912209804,
+              0.008002230542574481,
+              0.007290901030976122,
+              -0.0007881346934181772
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.15144128602792328,
+              -0.07486079060170268,
+              -0.08027836567564753
+            ],
+            "quaternion_wxyz": [
+              0.9983036845172291,
+              0.03335682811607401,
+              0.015026303741386035,
+              0.04529112157179405
+            ]
+          }
+        }
+      }
+    },
+    {
+      "index": 10,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "duplicate or stale RGB acquisition; no pose permission renewal",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "duplicate or stale RGB acquisition; no pose permission renewal",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 11,
+      "branches": {
+        "native": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 93,
+            "correspondences": 65,
+            "coarse_inliers": 61,
+            "refinement_support": 61
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.03591330268743973,
+              -0.020565167504102234,
+              -0.022581317953114684
+            ],
+            "quaternion_wxyz": [
+              0.9998703698287768,
+              -0.0021204450475541025,
+              0.01591760469558125,
+              0.00117350416313709
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.18521994083560123,
+              -0.08167142814507353,
+              -0.10391699645245545
+            ],
+            "quaternion_wxyz": [
+              0.9978823476066371,
+              0.03874105871276449,
+              0.029221257595905527,
+              0.04331360997878837
+            ]
+          }
+        },
+        "multiscale": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 126,
+            "correspondences": 100,
+            "coarse_inliers": 95,
+            "refinement_support": 95
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.034961038721837735,
+              -0.022345927787784443,
+              -0.023488461547288658
+            ],
+            "quaternion_wxyz": [
+              0.9998769905301962,
+              -0.00264092198564093,
+              0.01534986398968357,
+              0.001846893294690221
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.18502046045831214,
+              -0.09872946685454985,
+              -0.10427936318773982
+            ],
+            "quaternion_wxyz": [
+              0.9979546769035985,
+              0.0300488221851019,
+              0.03016706432057614,
+              0.04768101678656463
+            ]
+          }
+        }
+      }
+    },
+    {
+      "index": 12,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "duplicate or stale RGB acquisition; no pose permission renewal",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "duplicate or stale RGB acquisition; no pose permission renewal",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 13,
+      "branches": {
+        "native": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 110,
+            "correspondences": 89,
+            "coarse_inliers": 89,
+            "refinement_support": 89
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.036230846002898394,
+              -0.013799793183096957,
+              -0.027766059071800787
+            ],
+            "quaternion_wxyz": [
+              0.9998358661560452,
+              0.010521521882962808,
+              0.014679960273034831,
+              0.001427267192677308
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.22180377395791895,
+              -0.09651545003459963,
+              -0.130662850310248
+            ],
+            "quaternion_wxyz": [
+              0.9968201594489392,
+              0.04863980541936968,
+              0.04426576587171091,
+              0.04499201058797345
+            ]
+          }
+        },
+        "multiscale": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 141,
+            "correspondences": 115,
+            "coarse_inliers": 112,
+            "refinement_support": 112
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.03556319774983976,
+              -0.014129584020134554,
+              -0.028332684863794907
+            ],
+            "quaternion_wxyz": [
+              0.9998421738531413,
+              0.010271131349205355,
+              0.014428462419179116,
+              0.0013966809408403464
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.22082529097950468,
+              -0.11460046779284593,
+              -0.13135800146466664
+            ],
+            "quaternion_wxyz": [
+              0.9969866786414191,
+              0.0396483732672739,
+              0.04500902408983784,
+              0.04919102417404243
+            ]
+          }
+        }
+      }
+    },
+    {
+      "index": 14,
+      "branches": {
+        "native": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 92,
+            "correspondences": 73,
+            "coarse_inliers": 73,
+            "refinement_support": 73
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.008884129012448153,
+              -0.00920085701657855,
+              -0.013467596285175352
+            ],
+            "quaternion_wxyz": [
+              0.9999748207438117,
+              0.004278087375431952,
+              0.004951657219049617,
+              0.002745348352184766
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.23107890239893247,
+              -0.10521835325648156,
+              -0.14419766230610054
+            ],
+            "quaternion_wxyz": [
+              0.996244267279998,
+              0.05280180437832924,
+              0.04925950957411423,
+              0.04777897113427851
+            ]
+          }
+        },
+        "multiscale": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 129,
+            "correspondences": 105,
+            "coarse_inliers": 104,
+            "refinement_support": 104
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.008817358271408438,
+              -0.011532871927865824,
+              -0.014373633211518735
+            ],
+            "quaternion_wxyz": [
+              0.9999797843598378,
+              0.0031451621497609757,
+              0.004952691798214607,
+              0.0024514629623864103
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.2298202605238927,
+              -0.12586489237198414,
+              -0.14583410367785385
+            ],
+            "quaternion_wxyz": [
+              0.9964983175562774,
+              0.04264996648906265,
+              0.05000339917859595,
+              0.051688911156808945
+            ]
+          }
+        }
+      }
+    },
+    {
+      "index": 15,
+      "branches": {
+        "native": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 41,
+            "correspondences": 32,
+            "coarse_inliers": 32,
+            "refinement_support": 32
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.00367611354673276,
+              -0.023104913093531753,
+              -0.012583812487227633
+            ],
+            "quaternion_wxyz": [
+              0.9999682453066229,
+              0.0023802302364684413,
+              0.007525593212133385,
+              0.0010992402925077802
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.23393959939819747,
+              -0.12719335706522655,
+              -0.1588475352361253
+            ],
+            "quaternion_wxyz": [
+              0.9956637237963512,
+              0.05486600133797184,
+              0.05681095752983234,
+              0.049152681693970364
+            ]
+          }
+        },
+        "multiscale": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 86,
+            "correspondences": 72,
+            "coarse_inliers": 72,
+            "refinement_support": 72
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.0010359617631482822,
+              -0.021829970568501056,
+              -0.013277093620047722
+            ],
+            "quaternion_wxyz": [
+              0.9999708774085719,
+              0.003099786481507352,
+              0.006727093778435319,
+              0.0018389855345081652
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.23007147435961461,
+              -0.1465499987145373,
+              -0.16086624637268776
+            ],
+            "quaternion_wxyz": [
+              0.9959056584379301,
+              0.04548189580022855,
+              0.05678727249891282,
+              0.0536518622963315
+            ]
+          }
+        }
+      }
+    },
+    {
+      "index": 16,
+      "branches": {
+        "native": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 70,
+            "correspondences": 52,
+            "coarse_inliers": 48,
+            "refinement_support": 48
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.01048318116804885,
+              -0.011810074265875116,
+              -0.017559507599576783
+            ],
+            "quaternion_wxyz": [
+              0.9997647866701814,
+              0.015365128001723818,
+              0.01526180813831795,
+              0.0011667853986757138
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.24530332475507252,
+              -0.1381462803760267,
+              -0.1764148476563124
+            ],
+            "quaternion_wxyz": [
+              0.9936621187177159,
+              0.06946772408414063,
+              0.07268444395481564,
+              0.05026729297434674
+            ]
+          }
+        },
+        "multiscale": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 114,
+            "correspondences": 87,
+            "coarse_inliers": 80,
+            "refinement_support": 80
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.009038711231527196,
+              -0.013332348039518284,
+              -0.017668527641464045
+            ],
+            "quaternion_wxyz": [
+              0.9997868966948418,
+              0.014611991762605537,
+              0.01456948809825011,
+              0.0006171795383175731
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.23972867751501323,
+              -0.15927008679941423,
+              -0.17865850481053913
+            ],
+            "quaternion_wxyz": [
+              0.9941683722413035,
+              0.05927773650878376,
+              0.07204089665551437,
+              0.05408795428320316
+            ]
+          }
+        }
+      }
+    },
+    {
+      "index": 17,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "duplicate or stale RGB acquisition; no pose permission renewal",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "duplicate or stale RGB acquisition; no pose permission renewal",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 18,
+      "branches": {
+        "native": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 40,
+            "correspondences": 26,
+            "coarse_inliers": 14,
+            "refinement_support": 14
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.016082994123388546,
+              0.011050534106071683,
+              -0.021070758041806612
+            ],
+            "quaternion_wxyz": [
+              0.9994246656731821,
+              0.025739086665183274,
+              0.02190395727146573,
+              0.0028379072465654926
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.2653182103000449,
+              -0.12627235765616882,
+              -0.19324244892099837
+            ],
+            "quaternion_wxyz": [
+              0.9895676641512406,
+              0.09410893138020364,
+              0.09550444994255981,
+              0.05270908026045035
+            ]
+          }
+        },
+        "multiscale": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 76,
+            "correspondences": 52,
+            "coarse_inliers": 34,
+            "refinement_support": 34
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.010827779895307192,
+              0.003134012351849778,
+              -0.02118414963760073
+            ],
+            "quaternion_wxyz": [
+              0.9995709348777059,
+              0.021904133233692086,
+              0.019232111304371698,
+              0.0028776708925959908
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.25386128680523795,
+              -0.15510162837971783,
+              -0.19759852476311945
+            ],
+            "quaternion_wxyz": [
+              0.9909022359541801,
+              0.08019578341619735,
+              0.0921441111496383,
+              0.056487679043413445
+            ]
+          }
+        }
+      }
+    },
+    {
+      "index": 19,
+      "branches": {
+        "native": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 47,
+            "correspondences": 31,
+            "coarse_inliers": 28,
+            "refinement_support": 28
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.011040657868322798,
+              -0.000986333049573367,
+              -0.02108182644207705
+            ],
+            "quaternion_wxyz": [
+              0.9995640104546466,
+              0.017840035106974732,
+              0.02338673976315335,
+              0.0025656489345968043
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.28020490796727626,
+              -0.12487161471543283,
+              -0.21178258206405653
+            ],
+            "quaternion_wxyz": [
+              0.9850885456429047,
+              0.11073416008622067,
+              0.11930445380315786,
+              0.05572208122348238
+            ]
+          }
+        },
+        "multiscale": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 89,
+            "correspondences": 61,
+            "coarse_inliers": 58,
+            "refinement_support": 58
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.00348230739310371,
+              -0.005499518672215942,
+              -0.01937933765747194
+            ],
+            "quaternion_wxyz": [
+              0.9996736791068447,
+              0.015491813145955073,
+              0.020028763709416916,
+              0.0033745593354487613
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.2604423301048038,
+              -0.15805834837255936,
+              -0.21672645132146856
+            ],
+            "quaternion_wxyz": [
+              0.9873003521056527,
+              0.09470005353626967,
+              0.1125650604832466,
+              0.05999184736849625
+            ]
+          }
+        }
+      }
+    },
+    {
+      "index": 20,
+      "branches": {
+        "native": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 45,
+            "correspondences": 28,
+            "coarse_inliers": 27,
+            "refinement_support": 27
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.01962040492860943,
+              -0.011979592963700946,
+              -0.024231508095077813
+            ],
+            "quaternion_wxyz": [
+              0.9994746043459316,
+              0.01364676230824844,
+              0.02934071107891132,
+              0.0018449442889971776
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.30414098561157354,
+              -0.13419110270809131,
+              -0.2331331851529916
+            ],
+            "quaternion_wxyz": [
+              0.9794565399950611,
+              0.12270443465952358,
+              0.14870109780800192,
+              0.059131138044900944
+            ]
+          }
+        },
+        "multiscale": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 79,
+            "correspondences": 52,
+            "coarse_inliers": 51,
+            "refinement_support": 51
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.01810121500308232,
+              -0.011506514727383954,
+              -0.024211577534013803
+            ],
+            "quaternion_wxyz": [
+              0.9994837196567997,
+              0.014025765890205384,
+              0.028882711817357593,
+              0.0011666148793171933
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.2824934264047349,
+              -0.16760540134872987,
+              -0.2383795638895553
+            ],
+            "quaternion_wxyz": [
+              0.9821412159759172,
+              0.1068973981975959,
+              0.1417538100172151,
+              0.06226905720769075
+            ]
+          }
+        }
+      }
+    },
+    {
+      "index": 21,
+      "branches": {
+        "native": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": false,
+            "rejection": "invalid or oversized visual correspondences",
+            "matches": 10,
+            "correspondences": 4
+          },
+          "rejection": "invalid or oversized visual correspondences",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": false,
+            "rejection": "no bounded visual correspondence consensus",
+            "matches": 32,
+            "correspondences": 20
+          },
+          "rejection": "no bounded visual correspondence consensus",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 22,
+      "branches": {
+        "native": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": false,
+            "rejection": "no bounded visual correspondence consensus",
+            "matches": 27,
+            "correspondences": 17
+          },
+          "rejection": "no bounded visual correspondence consensus",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 47,
+            "correspondences": 27,
+            "coarse_inliers": 19,
+            "refinement_support": 19
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.026949426611425277,
+              0.003241701221342461,
+              -0.05106061232471347
+            ],
+            "quaternion_wxyz": [
+              0.9952916988840544,
+              0.04817416968151463,
+              0.0798218463996496,
+              0.02649823287202761
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.3233463815665535,
+              -0.15875582678010247,
+              -0.278338135397662
+            ],
+            "quaternion_wxyz": [
+              0.959402235165068,
+              0.15249372499645344,
+              0.21964988365669372,
+              0.0897047579929773
+            ]
+          }
+        }
+      }
+    },
+    {
+      "index": 23,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "duplicate or stale RGB acquisition; no pose permission renewal",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "duplicate or stale RGB acquisition; no pose permission renewal",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 24,
+      "branches": {
+        "native": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": false,
+            "rejection": "invalid or oversized visual correspondences",
+            "matches": 8,
+            "correspondences": 2
+          },
+          "rejection": "invalid or oversized visual correspondences",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 61,
+            "correspondences": 42,
+            "coarse_inliers": 23,
+            "refinement_support": 23
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.010645077533214819,
+              0.01617748291803658,
+              -0.026988607852066446
+            ],
+            "quaternion_wxyz": [
+              0.9995348812255672,
+              0.014559703859485587,
+              0.02390162119421779,
+              0.01211398948338251
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.3466069337887254,
+              -0.13930303647116646,
+              -0.29190092429081815
+            ],
+            "quaternion_wxyz": [
+              0.9503990648874292,
+              0.1669081569638826,
+              0.24193775650008004,
+              0.10173203320355065
+            ]
+          }
+        }
+      }
+    },
+    {
+      "index": 25,
+      "branches": {
+        "native": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": false,
+            "rejection": "invalid or oversized visual correspondences",
+            "matches": 6,
+            "correspondences": 2
+          },
+          "rejection": "invalid or oversized visual correspondences",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": true,
+            "matches": 53,
+            "correspondences": 32,
+            "coarse_inliers": 25,
+            "refinement_support": 25
+          },
+          "independent_relative": {
+            "translation_m": [
+              -0.06121117567386277,
+              -0.006769500162840155,
+              -0.0435159044638489
+            ],
+            "quaternion_wxyz": [
+              0.9990202565280887,
+              -0.006967843605281053,
+              0.04055686178745984,
+              0.01628241886199003
+            ]
+          },
+          "accepted": true,
+          "root": {
+            "translation_m": [
+              -0.4201126085349133,
+              -0.15067165559339532,
+              -0.3043081149679759
+            ],
+            "quaternion_wxyz": [
+              0.9391622278142211,
+              0.15993579761981824,
+              0.27681940165993235,
+              0.12556221307136492
+            ]
+          }
+        }
+      }
+    },
+    {
+      "index": 26,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "duplicate or stale RGB acquisition; no pose permission renewal",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "duplicate or stale RGB acquisition; no pose permission renewal",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 27,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual accepted-pose age exceeded; localization lost",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": false,
+            "rejection": "no bounded visual correspondence consensus",
+            "matches": 58,
+            "correspondences": 33
+          },
+          "rejection": "no bounded visual correspondence consensus",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 28,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": false,
+            "rejection": "no bounded visual correspondence consensus",
+            "matches": 34,
+            "correspondences": 22
+          },
+          "rejection": "no bounded visual correspondence consensus",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 29,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "duplicate or stale RGB acquisition; no pose permission renewal",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 30,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": true,
+          "fit": {
+            "accepted": false,
+            "rejection": "invalid or oversized visual correspondences",
+            "matches": 8,
+            "correspondences": 4
+          },
+          "rejection": "invalid or oversized visual correspondences",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 31,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual accepted-pose age exceeded; localization lost",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 32,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 33,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 34,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 35,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 36,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 37,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 38,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 39,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 40,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 41,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 42,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 43,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 44,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 45,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 46,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 47,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 48,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 49,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 50,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 51,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 52,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 53,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 54,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 55,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 56,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 57,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 58,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 59,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 60,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 61,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 62,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 63,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 64,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 65,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 66,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 67,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 68,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 69,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 70,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 71,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 72,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 73,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 74,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 75,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 76,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 77,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 78,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 79,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 80,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 81,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 82,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 83,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 84,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 85,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 86,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 87,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 88,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 89,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 90,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 91,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 92,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 93,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 94,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 95,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 96,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 97,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 98,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 99,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 100,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 101,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 102,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 103,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 104,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 105,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 106,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 107,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 108,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 109,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 110,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 111,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 112,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 113,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 114,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 115,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 116,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 117,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 118,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 119,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 120,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 121,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 122,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 123,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 124,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 125,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 126,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 127,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 128,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 129,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 130,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 131,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 132,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 133,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 134,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 135,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 136,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 137,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 138,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 139,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 140,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 141,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 142,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 143,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 144,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 145,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 146,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 147,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 148,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 149,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 150,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 151,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 152,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 153,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 154,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 155,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 156,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 157,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 158,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 159,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 160,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 161,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 162,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 163,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 164,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 165,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 166,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 167,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 168,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 169,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 170,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 171,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 172,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 173,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 174,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 175,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 176,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 177,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 178,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    },
+    {
+      "index": 179,
+      "branches": {
+        "native": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        },
+        "multiscale": {
+          "clock_accepted": false,
+          "rejection": "visual odometry lost; explicit new origin required",
+          "accepted": false,
+          "root": null
+        }
+      }
+    }
+  ],
+  "numeric_truth_checked_after_all_sensor_fits": true,
+  "one_initial_origin": true,
+  "no_reset_or_loss_recovery": true,
+  "all_acquisitions_retained": true,
+  "source_manifest_preserved": true,
+  "effective_camera": {
+    "width": 640,
+    "height": 480,
+    "fx": 525.0,
+    "fy": 525.0,
+    "cx": 319.5,
+    "cy": 239.5,
+    "units_per_metre": 5000.0,
+    "invalid_depth": 0,
+    "depth_quantity": "axial_z",
+    "depth_scale_multiplier": 1.0,
+    "additional_undistortion": false,
+    "pixel_domain": "original_registered_rgb_depth_grid",
+    "lens_model": "pinhole_on_registered_grid"
+  },
+  "camera_model_sha256": "511cff92d365983efe40fdb90c9336ac1c122ebef6269594a07081b4eda8ecf3",
+  "source_calibration": {
+    "cx": 318.64304,
+    "cy": 255.313989,
+    "fx": 517.306408,
+    "fy": 516.469215,
+    "height": 480,
+    "invalid_depth": 0,
+    "units_per_metre": 5000.0,
+    "width": 640
+  },
+  "source_calibration_document_verified": true,
+  "drift_causality_claim": false,
+  "non_noop_model_corruptions_rejected": [
+    "legacy_k_as_registered",
+    "cross_profile_identity",
+    "extra_undistortion",
+    "unknown_brown_distortion",
+    "double_depth_scale",
+    "range_instead_of_axial_z",
+    "changed_pixel_domain",
+    "double_scaled_measured_point",
+    "source_calibration_rewritten"
+  ],
+  "non_noop_state_corruptions_rejected": [
+    "invented_root_composition",
+    "restarted_origin",
+    "omitted_failed_acquisition",
+    "wrong_accepted_reference",
+    "renewed_clock_after_failure",
+    "changed_root_at_reference",
+    "operational_truth",
+    "invented_measured_geometry",
+    "changed_descriptor",
+    "invented_refined_pose",
+    "concealed_availability_failure",
+    "unverified_raw_inventory",
+    "relative_instead_of_root_score",
+    "duplicate_accepted_clock",
+    "decoded_duplicate",
+    "reset_latched_loss",
+    "bypass_latched_loss"
+  ],
+  "schema": "rustdriving-registered-grid-continuous-oracle-v1",
+  "auditor_sha256": "f5d52a36f7a95a342e6f01e98c113932ea85a6a57b0a0c59a5cf4798df5e0a08",
+  "imported_temporal_oracle_sha256": "231d6c5fd9a56d9925d7a52ad5a1affb36170275914fb275f199fcf385040e4e",
+  "imported_pair_oracle_sha256": "78e9466da3c30605b1f25a8037a6c51fcfb2198c8caacbacde85a6eb9ccb3737",
+  "original_math_sha256": {
+    "check-recorded-visual.py": "c138992bd5fe63a42757ff2cf5b43c7eb69272b85ea6ce7030cd298306bc0d6a",
+    "check-recorded-rgbd.py": "ab86ab67c0d46e08b89a0a47d8a59e9c95357cf41c40dbd40b1bcf5b49e6f9dc",
+    "check-recorded-keyframes.py": "3c5ef7c2ad50b9ab015f0c6795aa955489343725d5a274ff1eaae730ecd95c01",
+    "check-recorded-reprojection.py": "fd1425f9c73c21b104d9453a7c2b298c21fa22effd6ecb5f0015bbc41f79cef7"
+  },
+  "compiled_sources": {
+    "pair_binary": "abbcfbb4f58b4499f3720ba3e15dbec47a833ea86df44bb5e163c0db2f60a446",
+    "multiscale_features": "846051d2f99d07432229a456f9cc96ace6732419df7fde223d0379bfaf13a973",
+    "image_features": "5b5b103d4e798929f753a850387609405cad1a303d49ef8e81433f064e901106",
+    "registration3d": "eca9fe887f4a237dd627eb06e2793579ec4fbffd6330d120017572d734c4b715",
+    "visual_odometry3d": "718192d69b02de0a668c54e8469812b7c5f1903ab74de660e1b221e2ec874d24",
+    "reprojection3d": "2895e1c3eafefcfacdd156fd51706598521f0344f427f24edf420d159e5da486",
+    "localization_lib": "26e1a082ceedadd0de957714bd11170bf16e732e7948b01530b699214510bdf3",
+    "perception_lib": "0393a7d84176167bdfa6e242788f1f17555c2ab7abee687c845583b2b5141291",
+    "core_lib": "6cdc9459e0ae8dcccd0fa8d8d468a2adc0eee12aa3cc4bacca1b871a8b4d708e",
+    "cargo_lock": "67845fb7e4a53e15e4e3c70bba72142aff666893cf1d0c96c4654cdc16b7197b",
+    "cargo_manifest": "5a49c3a2c04951ffbf3e154d28fe1e13d2dda92b410b15ec849bfe33377e0d5f",
+    "rust_toolchain": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed",
+    "temporal_binary": "baf0febbd7f22d7a99cd19760d7f4d53226f805960e7f17c29f3ae897f8703fe",
+    "temporal_support": "f146418ca350f4b361e73ca1f7e6640b626920adbd0e36faf4a5e4a106c7751b",
+    "design": "d0b6a8f21ded03ce8125e30e47440d223c77567d0f2e41b6d9031c32e1ea34df",
+    "core_manifest": "87843fdea23432c48657e5f24d7b4708be278f88c799417e71ddc6794a900b61",
+    "perception_manifest": "e8f5dd659382b1ae3087f8087f2f6f4f8f9ea1836df678ff400c50b23e858e2a",
+    "localization_manifest": "deb14cd630257a08443cb05b345fb269206192fb2b04772dbc44384d27daf7cf",
+    "registered_binary": "6a1dbce255c246d1003fd94e039e49de1b30aa5d2ded6c86818137d0bbbc92a6",
+    "registered_support": "96047c6894f9b3a852e246294e9ff547aee240796c6e6906ff79da646e95cfb7",
+    "registered_grid": "7d0dd23aaae8314bb0b42f5ff49b7fd1f23d0408fe131d64fd6d7ead66d6efbf",
+    "registered_design": "cfd56dd22e2aadd1f3fdaba8b3162a58d19a783d62438d4d5694bbca3ab41ac3",
+    "camera_model": "511cff92d365983efe40fdb90c9336ac1c122ebef6269594a07081b4eda8ecf3"
+  },
+  "prior_compiled_sources": {
+    "pair_binary": "abbcfbb4f58b4499f3720ba3e15dbec47a833ea86df44bb5e163c0db2f60a446",
+    "multiscale_features": "846051d2f99d07432229a456f9cc96ace6732419df7fde223d0379bfaf13a973",
+    "image_features": "5b5b103d4e798929f753a850387609405cad1a303d49ef8e81433f064e901106",
+    "registration3d": "eca9fe887f4a237dd627eb06e2793579ec4fbffd6330d120017572d734c4b715",
+    "visual_odometry3d": "718192d69b02de0a668c54e8469812b7c5f1903ab74de660e1b221e2ec874d24",
+    "reprojection3d": "2895e1c3eafefcfacdd156fd51706598521f0344f427f24edf420d159e5da486",
+    "localization_lib": "26e1a082ceedadd0de957714bd11170bf16e732e7948b01530b699214510bdf3",
+    "perception_lib": "0393a7d84176167bdfa6e242788f1f17555c2ab7abee687c845583b2b5141291",
+    "core_lib": "6cdc9459e0ae8dcccd0fa8d8d468a2adc0eee12aa3cc4bacca1b871a8b4d708e",
+    "cargo_lock": "67845fb7e4a53e15e4e3c70bba72142aff666893cf1d0c96c4654cdc16b7197b",
+    "cargo_manifest": "5a49c3a2c04951ffbf3e154d28fe1e13d2dda92b410b15ec849bfe33377e0d5f",
+    "rust_toolchain": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed",
+    "temporal_binary": "baf0febbd7f22d7a99cd19760d7f4d53226f805960e7f17c29f3ae897f8703fe",
+    "temporal_support": "f146418ca350f4b361e73ca1f7e6640b626920adbd0e36faf4a5e4a106c7751b",
+    "design": "d0b6a8f21ded03ce8125e30e47440d223c77567d0f2e41b6d9031c32e1ea34df",
+    "core_manifest": "87843fdea23432c48657e5f24d7b4708be278f88c799417e71ddc6794a900b61",
+    "perception_manifest": "e8f5dd659382b1ae3087f8087f2f6f4f8f9ea1836df678ff400c50b23e858e2a",
+    "localization_manifest": "deb14cd630257a08443cb05b345fb269206192fb2b04772dbc44384d27daf7cf"
+  },
+  "design_sha256": "cfd56dd22e2aadd1f3fdaba8b3162a58d19a783d62438d4d5694bbca3ab41ac3",
+  "imported_globals_overridden": false
+}

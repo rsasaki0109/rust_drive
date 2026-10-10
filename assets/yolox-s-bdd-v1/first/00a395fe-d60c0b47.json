@@ -1,0 +1,217 @@
+{
+  "schema_version": 1,
+  "algorithm": "pinned_yolox_s_cpu_image_triangle_argmax_classwise",
+  "model_profile": "yolox-s-v1",
+  "compiled_sources": {
+    "integrations/onnx/Cargo.lock": "aa6f1b198ff4ad901f9547ef852dc0113b5c36624d43030a863af32b12f07a0c",
+    "integrations/onnx/Cargo.toml": "7459dc7d7fc0128214275703d48a4170d449edd559dc0cadab689f887d635c8d",
+    "integrations/onnx/fetch_s.py": "bbb3aa5a020e0bdf6054fc1fe1c58ccd64132547a68ab44e28a89d556a35f1ae",
+    "integrations/onnx/profile-s.json": "b6ea56bd4b6271dc4d54b379b101db7425f61adfcd184211932fd2de6160f573",
+    "integrations/onnx/src/bin/rustdriving-camera-detect-s.rs": "6d1c965968e4d7d735922b4369e6076bf9801aed081dd7e6693702b513d46138",
+    "integrations/onnx/src/lib.rs": "b379dfba4c45b535f61284ea9fc7748f6317038976b5fb61221f6a8561ad4bbc",
+    "integrations/onnx/src/yolox_s.rs": "cd23f879d840627b23aa954530e9e39ca5c5cc05cb2e927453c74178fd8142f0",
+    "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed"
+  },
+  "model_profile_sha256": "b6ea56bd4b6271dc4d54b379b101db7425f61adfcd184211932fd2de6160f573",
+  "input_shape": [
+    1,
+    3,
+    640,
+    640
+  ],
+  "output_shape": [
+    1,
+    8400,
+    85
+  ],
+  "model_sha256": "c5c2d13e59ae883e6af3b45daea64af4833a4951c92d116ec270d9ddbe998063",
+  "source_image_sha256": "e9d4fb9d625a6a23164dc2fe9cc62edfefe4686c8d9c34b18be6212c51d99f29",
+  "width": 1280,
+  "height": 720,
+  "score_threshold": 0.3,
+  "nms_iou_threshold": 0.45,
+  "model_load_seconds": 0.248860153,
+  "inference_seconds": 0.575928709,
+  "detections": [
+    {
+      "class_index": 2,
+      "confidence": 0.8821668,
+      "bbox": [
+        338.01862,
+        272.41626,
+        439.69305,
+        337.30896
+      ]
+    },
+    {
+      "class_index": 2,
+      "confidence": 0.85750103,
+      "bbox": [
+        0.5931015,
+        286.9382,
+        50.90969,
+        372.34848
+      ]
+    },
+    {
+      "class_index": 2,
+      "confidence": 0.847134,
+      "bbox": [
+        459.2783,
+        276.17242,
+        548.79834,
+        340.7821
+      ]
+    },
+    {
+      "class_index": 2,
+      "confidence": 0.84648234,
+      "bbox": [
+        77.68878,
+        268.29117,
+        245.25433,
+        353.2502
+      ]
+    },
+    {
+      "class_index": 5,
+      "confidence": 0.83427453,
+      "bbox": [
+        813.0399,
+        75.08469,
+        1276.5096,
+        473.11655
+      ]
+    },
+    {
+      "class_index": 7,
+      "confidence": 0.69398165,
+      "bbox": [
+        659.6776,
+        234.34981,
+        711.0891,
+        291.41907
+      ]
+    },
+    {
+      "class_index": 0,
+      "confidence": 0.66941595,
+      "bbox": [
+        236.8237,
+        268.9857,
+        262.64282,
+        333.17966
+      ]
+    },
+    {
+      "class_index": 2,
+      "confidence": 0.62493646,
+      "bbox": [
+        401.19257,
+        253.82355,
+        448.44092,
+        288.97424
+      ]
+    },
+    {
+      "class_index": 7,
+      "confidence": 0.6248747,
+      "bbox": [
+        808.0631,
+        73.41568,
+        1277.5043,
+        477.78012
+      ]
+    },
+    {
+      "class_index": 2,
+      "confidence": 0.5989296,
+      "bbox": [
+        740.72845,
+        274.7821,
+        799.7508,
+        342.2976
+      ]
+    },
+    {
+      "class_index": 0,
+      "confidence": 0.55963016,
+      "bbox": [
+        257.94443,
+        253.77905,
+        278.8301,
+        305.04803
+      ]
+    },
+    {
+      "class_index": 2,
+      "confidence": 0.49283674,
+      "bbox": [
+        440.4574,
+        249.79149,
+        477.39166,
+        281.8032
+      ]
+    },
+    {
+      "class_index": 2,
+      "confidence": 0.4852985,
+      "bbox": [
+        466.29898,
+        238.08351,
+        498.63943,
+        267.37778
+      ]
+    },
+    {
+      "class_index": 0,
+      "confidence": 0.44445437,
+      "bbox": [
+        766.85785,
+        269.4964,
+        818.27716,
+        387.29218
+      ]
+    },
+    {
+      "class_index": 5,
+      "confidence": 0.43180352,
+      "bbox": [
+        660.2147,
+        234.4604,
+        710.72974,
+        291.44293
+      ]
+    },
+    {
+      "class_index": 2,
+      "confidence": 0.42260098,
+      "bbox": [
+        633.15234,
+        244.8387,
+        657.55725,
+        265.3865
+      ]
+    },
+    {
+      "class_index": 2,
+      "confidence": 0.39586505,
+      "bbox": [
+        330.21112,
+        257.89853,
+        385.64716,
+        290.02847
+      ]
+    },
+    {
+      "class_index": 0,
+      "confidence": 0.3665776,
+      "bbox": [
+        324.0947,
+        261.661,
+        345.65683,
+        311.29004
+      ]
+    }
+  ]
+}

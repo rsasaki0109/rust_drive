@@ -1,0 +1,163 @@
+{
+  "scope": "Previously viewed fixed8 BDD diagnostic; model and input resolution both differ, not a fresh holdout or causal ablation",
+  "original_nano_result_sha256": "c20858d73737a8a68d1578c0816ad7f41810ad64dcc5242f98c7c37369aac35d",
+  "s_result_sha256": "55839b5884f147e6c355ab1230245f0e0c9871cf087db6784f12ae072ce36a40",
+  "nano": {
+    "true_positives": 35,
+    "false_positives": 14,
+    "false_negatives": 103,
+    "precision": 0.7142857142857143,
+    "recall": 0.2536231884057971,
+    "mean_matched_iou": 0.739634252824426
+  },
+  "s": {
+    "true_positives": 55,
+    "false_positives": 14,
+    "false_negatives": 83,
+    "precision": 0.7971014492753623,
+    "recall": 0.39855072463768115,
+    "mean_matched_iou": 0.8009049551040764
+  },
+  "reference_count": 138,
+  "retained_tp": 34,
+  "new_tp": 21,
+  "lost_tp": 1,
+  "images": [
+    {
+      "image_id": "00a395fe-d60c0b47",
+      "reference_count": 36,
+      "retained_tp_ids": [
+        22,
+        25,
+        26,
+        28,
+        29,
+        31,
+        40
+      ],
+      "new_tp_ids": [
+        16,
+        18,
+        19,
+        21,
+        27,
+        30,
+        32,
+        36
+      ],
+      "lost_tp_ids": []
+    },
+    {
+      "image_id": "026c7465-d54954fa",
+      "reference_count": 5,
+      "retained_tp_ids": [
+        5
+      ],
+      "new_tp_ids": [
+        6
+      ],
+      "lost_tp_ids": []
+    },
+    {
+      "image_id": "0798a3a8-c4501e0f",
+      "reference_count": 26,
+      "retained_tp_ids": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        27,
+        29
+      ],
+      "new_tp_ids": [
+        7,
+        22,
+        23,
+        24,
+        26,
+        28
+      ],
+      "lost_tp_ids": []
+    },
+    {
+      "image_id": "0a493f24-352f747e",
+      "reference_count": 3,
+      "retained_tp_ids": [
+        0
+      ],
+      "new_tp_ids": [
+        1
+      ],
+      "lost_tp_ids": []
+    },
+    {
+      "image_id": "17d21997-6f076249",
+      "reference_count": 7,
+      "retained_tp_ids": [
+        0
+      ],
+      "new_tp_ids": [],
+      "lost_tp_ids": []
+    },
+    {
+      "image_id": "4899be53-dcc6c017",
+      "reference_count": 15,
+      "retained_tp_ids": [
+        26,
+        27,
+        28
+      ],
+      "new_tp_ids": [
+        24,
+        25
+      ],
+      "lost_tp_ids": []
+    },
+    {
+      "image_id": "4dab8d2a-be9667d4",
+      "reference_count": 19,
+      "retained_tp_ids": [
+        6,
+        8,
+        9,
+        12,
+        14,
+        15,
+        17,
+        18
+      ],
+      "new_tp_ids": [],
+      "lost_tp_ids": [
+        7
+      ]
+    },
+    {
+      "image_id": "ab2360f2-7704a1bf",
+      "reference_count": 27,
+      "retained_tp_ids": [
+        13,
+        15,
+        17,
+        18,
+        20,
+        22
+      ],
+      "new_tp_ids": [
+        6,
+        19,
+        21
+      ],
+      "lost_tp_ids": []
+    }
+  ],
+  "observed_host_inference_seconds": {
+    "nano_mean": 0.070356022375,
+    "s_mean": 0.60598847275,
+    "comparable_timing_protocol_not_established": true,
+    "real_time_claim": false
+  },
+  "both_quality_protocols_failed": true,
+  "threshold_tuning": false,
+  "fresh_holdout_claim": false
+}

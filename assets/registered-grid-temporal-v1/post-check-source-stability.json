@@ -1,0 +1,216 @@
+{
+  "scope": "After all optional fmt/Clippy/tests completed; readonly recorded review, no optimizer rerun.",
+  "all23_match": true,
+  "checks": [
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--manifest-path",
+        "integrations/rgbd/Cargo.toml",
+        "--check"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--release",
+        "--all-targets",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "integrations/rgbd/Cargo.toml",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "tests",
+      "command": [
+        "cargo",
+        "test",
+        "--release",
+        "--all-targets",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "integrations/rgbd/Cargo.toml"
+      ],
+      "returncode": 0,
+      "passed": 108,
+      "failed": 0,
+      "ignored": 0,
+      "suite_count": 9
+    }
+  ],
+  "sources": [
+    {
+      "name": "temporal_binary",
+      "path": "integrations/rgbd/src/bin/rustdriving-rgbd-multiscale-temporal.rs",
+      "actual_sha256": "baf0febbd7f22d7a99cd19760d7f4d53226f805960e7f17c29f3ae897f8703fe",
+      "frozen_sha256": "baf0febbd7f22d7a99cd19760d7f4d53226f805960e7f17c29f3ae897f8703fe",
+      "matches": true
+    },
+    {
+      "name": "temporal_support",
+      "path": "integrations/rgbd/src/multiscale_temporal_support.rs",
+      "actual_sha256": "f146418ca350f4b361e73ca1f7e6640b626920adbd0e36faf4a5e4a106c7751b",
+      "frozen_sha256": "f146418ca350f4b361e73ca1f7e6640b626920adbd0e36faf4a5e4a106c7751b",
+      "matches": true
+    },
+    {
+      "name": "design",
+      "path": "assets/multiscale-temporal-v1/design.json",
+      "actual_sha256": "d0b6a8f21ded03ce8125e30e47440d223c77567d0f2e41b6d9031c32e1ea34df",
+      "frozen_sha256": "d0b6a8f21ded03ce8125e30e47440d223c77567d0f2e41b6d9031c32e1ea34df",
+      "matches": true
+    },
+    {
+      "name": "pair_binary",
+      "path": "integrations/rgbd/src/bin/rustdriving-rgbd-multiscale-pairs.rs",
+      "actual_sha256": "abbcfbb4f58b4499f3720ba3e15dbec47a833ea86df44bb5e163c0db2f60a446",
+      "frozen_sha256": "abbcfbb4f58b4499f3720ba3e15dbec47a833ea86df44bb5e163c0db2f60a446",
+      "matches": true
+    },
+    {
+      "name": "multiscale_features",
+      "path": "crates/perception/src/multiscale_features.rs",
+      "actual_sha256": "846051d2f99d07432229a456f9cc96ace6732419df7fde223d0379bfaf13a973",
+      "frozen_sha256": "846051d2f99d07432229a456f9cc96ace6732419df7fde223d0379bfaf13a973",
+      "matches": true
+    },
+    {
+      "name": "image_features",
+      "path": "crates/perception/src/image_features.rs",
+      "actual_sha256": "5b5b103d4e798929f753a850387609405cad1a303d49ef8e81433f064e901106",
+      "frozen_sha256": "5b5b103d4e798929f753a850387609405cad1a303d49ef8e81433f064e901106",
+      "matches": true
+    },
+    {
+      "name": "registration3d",
+      "path": "crates/localization/src/registration3d.rs",
+      "actual_sha256": "eca9fe887f4a237dd627eb06e2793579ec4fbffd6330d120017572d734c4b715",
+      "frozen_sha256": "eca9fe887f4a237dd627eb06e2793579ec4fbffd6330d120017572d734c4b715",
+      "matches": true
+    },
+    {
+      "name": "visual_odometry3d",
+      "path": "crates/localization/src/visual_odometry3d.rs",
+      "actual_sha256": "718192d69b02de0a668c54e8469812b7c5f1903ab74de660e1b221e2ec874d24",
+      "frozen_sha256": "718192d69b02de0a668c54e8469812b7c5f1903ab74de660e1b221e2ec874d24",
+      "matches": true
+    },
+    {
+      "name": "reprojection3d",
+      "path": "crates/localization/src/reprojection3d.rs",
+      "actual_sha256": "2895e1c3eafefcfacdd156fd51706598521f0344f427f24edf420d159e5da486",
+      "frozen_sha256": "2895e1c3eafefcfacdd156fd51706598521f0344f427f24edf420d159e5da486",
+      "matches": true
+    },
+    {
+      "name": "localization_lib",
+      "path": "crates/localization/src/lib.rs",
+      "actual_sha256": "26e1a082ceedadd0de957714bd11170bf16e732e7948b01530b699214510bdf3",
+      "frozen_sha256": "26e1a082ceedadd0de957714bd11170bf16e732e7948b01530b699214510bdf3",
+      "matches": true
+    },
+    {
+      "name": "perception_lib",
+      "path": "crates/perception/src/lib.rs",
+      "actual_sha256": "0393a7d84176167bdfa6e242788f1f17555c2ab7abee687c845583b2b5141291",
+      "frozen_sha256": "0393a7d84176167bdfa6e242788f1f17555c2ab7abee687c845583b2b5141291",
+      "matches": true
+    },
+    {
+      "name": "core_lib",
+      "path": "crates/core/src/lib.rs",
+      "actual_sha256": "6cdc9459e0ae8dcccd0fa8d8d468a2adc0eee12aa3cc4bacca1b871a8b4d708e",
+      "frozen_sha256": "6cdc9459e0ae8dcccd0fa8d8d468a2adc0eee12aa3cc4bacca1b871a8b4d708e",
+      "matches": true
+    },
+    {
+      "name": "cargo_lock",
+      "path": "integrations/rgbd/Cargo.lock",
+      "actual_sha256": "67845fb7e4a53e15e4e3c70bba72142aff666893cf1d0c96c4654cdc16b7197b",
+      "frozen_sha256": "67845fb7e4a53e15e4e3c70bba72142aff666893cf1d0c96c4654cdc16b7197b",
+      "matches": true
+    },
+    {
+      "name": "cargo_manifest",
+      "path": "integrations/rgbd/Cargo.toml",
+      "actual_sha256": "5a49c3a2c04951ffbf3e154d28fe1e13d2dda92b410b15ec849bfe33377e0d5f",
+      "frozen_sha256": "5a49c3a2c04951ffbf3e154d28fe1e13d2dda92b410b15ec849bfe33377e0d5f",
+      "matches": true
+    },
+    {
+      "name": "rust_toolchain",
+      "path": "rust-toolchain.toml",
+      "actual_sha256": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed",
+      "frozen_sha256": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed",
+      "matches": true
+    },
+    {
+      "name": "core_manifest",
+      "path": "crates/core/Cargo.toml",
+      "actual_sha256": "87843fdea23432c48657e5f24d7b4708be278f88c799417e71ddc6794a900b61",
+      "frozen_sha256": "87843fdea23432c48657e5f24d7b4708be278f88c799417e71ddc6794a900b61",
+      "matches": true
+    },
+    {
+      "name": "perception_manifest",
+      "path": "crates/perception/Cargo.toml",
+      "actual_sha256": "e8f5dd659382b1ae3087f8087f2f6f4f8f9ea1836df678ff400c50b23e858e2a",
+      "frozen_sha256": "e8f5dd659382b1ae3087f8087f2f6f4f8f9ea1836df678ff400c50b23e858e2a",
+      "matches": true
+    },
+    {
+      "name": "localization_manifest",
+      "path": "crates/localization/Cargo.toml",
+      "actual_sha256": "deb14cd630257a08443cb05b345fb269206192fb2b04772dbc44384d27daf7cf",
+      "frozen_sha256": "deb14cd630257a08443cb05b345fb269206192fb2b04772dbc44384d27daf7cf",
+      "matches": true
+    },
+    {
+      "name": "registered_binary",
+      "path": "integrations/rgbd/src/bin/rustdriving-rgbd-registered-grid-temporal.rs",
+      "actual_sha256": "6a1dbce255c246d1003fd94e039e49de1b30aa5d2ded6c86818137d0bbbc92a6",
+      "frozen_sha256": "6a1dbce255c246d1003fd94e039e49de1b30aa5d2ded6c86818137d0bbbc92a6",
+      "matches": true
+    },
+    {
+      "name": "registered_support",
+      "path": "integrations/rgbd/src/registered_grid_temporal_support.rs",
+      "actual_sha256": "96047c6894f9b3a852e246294e9ff547aee240796c6e6906ff79da646e95cfb7",
+      "frozen_sha256": "96047c6894f9b3a852e246294e9ff547aee240796c6e6906ff79da646e95cfb7",
+      "matches": true
+    },
+    {
+      "name": "registered_grid",
+      "path": "integrations/rgbd/src/registered_grid.rs",
+      "actual_sha256": "7d0dd23aaae8314bb0b42f5ff49b7fd1f23d0408fe131d64fd6d7ead66d6efbf",
+      "frozen_sha256": "7d0dd23aaae8314bb0b42f5ff49b7fd1f23d0408fe131d64fd6d7ead66d6efbf",
+      "matches": true
+    },
+    {
+      "name": "registered_design",
+      "path": "assets/registered-grid-temporal-v1/design.json",
+      "actual_sha256": "cfd56dd22e2aadd1f3fdaba8b3162a58d19a783d62438d4d5694bbca3ab41ac3",
+      "frozen_sha256": "cfd56dd22e2aadd1f3fdaba8b3162a58d19a783d62438d4d5694bbca3ab41ac3",
+      "matches": true
+    },
+    {
+      "name": "camera_model",
+      "path": "assets/registered-grid-temporal-v1/camera-model.json",
+      "actual_sha256": "511cff92d365983efe40fdb90c9336ac1c122ebef6269594a07081b4eda8ecf3",
+      "frozen_sha256": "511cff92d365983efe40fdb90c9336ac1c122ebef6269594a07081b4eda8ecf3",
+      "matches": true
+    }
+  ]
+}

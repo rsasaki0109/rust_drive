@@ -1,0 +1,17 @@
+{
+  "actual_exit": 1,
+  "command": [
+    "python3",
+    "/workspace/rust_drive/integrations/onnx/bdd_s_check.py",
+    "--binary",
+    "/workspace/rust_drive/artifacts/yolox-s-build/release/rustdriving-camera-detect-s",
+    "--model",
+    "/workspace/rust_drive/artifacts/camera-model-s/yolox_s.onnx",
+    "--data",
+    "/workspace/rust_drive/artifacts/bdd-camera",
+    "--output",
+    "/workspace/rust_drive/artifacts/yolox-s-bdd-v1/first"
+  ],
+  "integrity_passed": true,
+  "quality_passed": false
+}

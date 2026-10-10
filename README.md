@@ -82,6 +82,17 @@ adjacent-pair improvements do not transfer to continuous accuracy. Complete
 repeat validation reproduces both failed outcomes. This offline comparison
 does not increase the about-20% maturity estimate or supply driving integration.
 
+An explicit [registered-grid camera-model comparison](docs/registered-grid-camera.md)
+uses TUM's recommended uncalibrated default intrinsics without additional
+undistortion or depth rescaling. Root-accurate counts improve to room native
+56/179, room multiscale 54/179 and desk2 multiscale 17/179; every branch still
+loses tracking. Complete independent audits and regression replay confirm those
+failed outcomes. The separate [YOLOX-S CPU camera comparison](docs/yolox-s-camera.md)
+raises matches from 35 to 55/138 on the same viewed BDD frames, but recall
+**39.86%** fails the fixed 60% gate, with no motorcycle or traffic-light matches.
+Complete replay confirms detections and the failed quality outcome.
+Neither addition supplies driving integration or meets the 30% maturity goal.
+
 ## Build and run
 
 The shared pipeline, CPU RNE adapter and recorded 3D demos are available on `main`.
