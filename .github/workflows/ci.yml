@@ -148,6 +148,10 @@ jobs:
           python scripts/fetch-visual-datasets.py tum-fr3-office-visual
           python scripts/fetch-visual-datasets.py tum-fr3-sitting-visual
           python scripts/check-recorded-visual-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-evaluate --output artifacts/recorded-visual
+      - name: Reproduce viewed pixel-refined RGB-D motion and independent reprojection checks
+        run: |
+          python scripts/fetch-reprojection-dataset.py tum-fr2-desk-reprojection
+          python scripts/check-recorded-reprojection-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-evaluate --output artifacts/recorded-reprojection
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -163,6 +167,7 @@ jobs:
             artifacts/recorded-keyframes/
             artifacts/recorded-submaps/
             artifacts/recorded-visual/
+            artifacts/recorded-reprojection/
 
   visual:
     runs-on: ubuntu-latest

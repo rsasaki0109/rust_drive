@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "role": "post-first viewed reporting repair",
+  "original_adapter_sha256": "f1b39a77d299225316a5c81175d8b9f3acf3ecae6ee8290ac506179b94e6e19d",
+  "current_adapter_sha256": "ff77f6038c65c9c27361291a0b9997c99e714ae2996803adf7e7b044e92fde2a",
+  "operational_evaluate_block_sha256": "322e3e268d2d647c72d00c5fa0bf29caa9495c15635c70d39c22605d7f0b6796",
+  "operational_evaluate_block_byte_identical": true,
+  "full_groundtruth_parser_byte_identical": true,
+  "unchanged_paths": [
+    "integrations/rgbd/src/main.rs",
+    "integrations/rgbd/src/visual.rs",
+    "integrations/rgbd/Cargo.toml",
+    "integrations/rgbd/Cargo.lock",
+    "crates/localization/src/reprojection3d.rs",
+    "crates/localization/src/visual_odometry3d.rs",
+    "crates/localization/src/registration3d.rs",
+    "crates/perception/src/image_features.rs"
+  ],
+  "label_rows_repaired_or_removed": false,
+  "physical_gates_changed": false,
+  "optional_tests_passed": 25,
+  "scope": "Reporting only after first failed-input trial; no estimator or full-source strict-label change; all later FR2 input is viewed"
+}

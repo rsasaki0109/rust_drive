@@ -24,6 +24,14 @@ root-accurate updates, retaining three consensus rejections and one repeated
 image. This remains offline indoor research, with complete
 accuracy/availability failures retained.
 
+An additive [pixel reprojection refinement](docs/recorded-reprojection.md)
+uses measured landmarks and current image pixels to refine camera motion:
+the viewed office result improves to 32/35 accurate updates with maximum
+position error 0.042368 m. The original algorithm and first trial remain reproducible;
+the new path retains bounded computation and rejects failed refinements.
+The separate first Freiburg 2 trial rejected malformed motion-capture labels;
+its input failure is archived without an accuracy claim.
+
 ## Build and run
 
 The shared pipeline, CPU RNE adapter and recorded 3D demos are available on `main`.

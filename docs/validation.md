@@ -583,3 +583,39 @@ supplies no vehicle controls and does not increase the approximately 20%
 engineering estimate. Remote CI status remains separate from local checks.
 [Native proof](../assets/japan-city-visual-regression.json);
 [sources, tests and combined validation](../assets/visual-development-validation.json).
+
+## Bounded measured pixel refinement
+
+The optional pixel-refined estimator keeps the original features and robust
+3D support while optimizing calibrated image errors. Viewed desk, office and
+sitting recordings score **24/35, 32/35 and 31/35** accurate updates, respectively.
+The office maximum accepted position error is **0.042368 m**, versus 0.155641 m
+for the original 3D-only estimator. All three complete protocols retain exit 1;
+failed and repeated acquisitions remain in their denominators.
+
+The separately preregistered first Freiburg 2 trial exits **2** because its full
+label source has conflicting duplicate timestamps. Its exact 20-source archive,
+freeze, journals and error log remain immutable. An archived-source rebuild
+reproduces the same freeze, input error and absence of a results file. Viewed
+protocol 3 subsequently preserves 24 sensor updates and 11 duplicate-image
+rejections, with all 35 accuracy references unavailable and no error maxima.
+The estimator and strict whole-source label parser are unchanged by that
+reporting correction. [Methods and evidence](recorded-reprojection.md).
+
+The four independent audits reconstruct pixels, matches, original consensus,
+fixed-support refinement, accepted references and clocks. They reject **389**
+deliberate report, source, mathematical and missing-reference corruptions;
+the first input-failure audit rejects four additional corruptions. Local locked
+validation passes **371 workspace tests**, **25 optional RGB-D tests**, and
+**55 native RNE tests**, with formatting and strict Clippy. All 49 reference
+episodes and replays preserve their 245 files byte for byte. Nineteen preceding
+depth/keyframe/submap cases, the plain pair case and three original visual
+cases preserve their full non-timing evidence.
+[Prior regressions](../assets/reprojection-prior-regressions.json);
+[combined verification](../assets/reprojection-development-validation.json).
+
+The current seed-7 native Japanese-city run and opening GIF remain byte-identical
+to the published Hero. This optional offline stage supplies no vehicle controls
+or measured extrinsic/uncertainty calibration; the estimate remains **about 20%**
+and the 30%/50% milestones remain unmet.
+[Current native proof](../assets/japan-city-reprojection-regression.json).

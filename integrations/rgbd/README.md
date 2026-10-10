@@ -118,3 +118,15 @@ mode adds the existing local perception crate while preserving every registry
 version/checksum and the previous algorithms. The published independent audit
 reconstructs pixels, matching, depth geometry, rigid fits and clock state.
 [Results, source freezes and reproduction](../../docs/recorded-visual-odometry.md).
+
+## Pixel reprojection refinement
+
+`--visual-reprojection` adds bounded Rust pixel optimization after the unchanged
+robust measured 3D consensus. Only original inlier landmarks and current feature
+pixels enter refinement. Failed refinement preserves the accepted reference
+and clock and emits no current pose. Use `--regression` for the already viewed
+desk, office, sitting and Freiburg 2 selections. Protocol 3 retains sensor traces
+when full-source label validation fails, while returning exit 2 and marking
+every accuracy reference unscorable. The original `--visual` results remain
+numerically reproducible.
+[Independent audit, results and commands](../../docs/recorded-reprojection.md).

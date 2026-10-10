@@ -199,6 +199,14 @@ registration and short time associations are assumptions, without an
 independently measured camera/vehicle calibration.
 [Recorded visual-motion evidence](recorded-visual-odometry.md).
 
+The additive `localization::reprojection3d` stage accepts measured previous-camera
+landmarks, current pixels, intrinsics and a coarse measured pose. It optimizes
+pixel residuals with fixed support, Huber weights, bounded normal solves and
+monotonic line search. The separate `--visual-reprojection` adapter chains only
+successful refined poses and preserves the reference on failure. It supplies
+no driving controls or calibrated uncertainty.
+[Pixel refinement and evidence](recorded-reprojection.md).
+
 The unchanged optional Rust CPU detector also runs on eight original BDD
 dashcam frames. A separately pinned Python scorer matches canonical legacy
 boxes by class and IoU, retains all misses and uses the dataset's research

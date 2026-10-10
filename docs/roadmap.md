@@ -75,7 +75,15 @@ The separate first frozen sitting trial scores 31/35, with four retained
 rejections; it also fails complete availability acceptance.
 [Visual-motion protocol and full outcomes](recorded-visual-odometry.md).
 
-Next: diagnose remaining measured-motion drift and validate camera/depth
+Bounded pixel reprojection now repairs the viewed office result to 32/35
+accurate updates without changing the original 3D support or tracking clocks.
+The separate first Freiburg 2 attempt correctly rejects malformed full-source
+labels; later viewed traces have no independently scorable accuracy.
+[Refinement and retained input failure](recorded-reprojection.md).
+
+Next: qualify full-source label timestamp ordering during metadata-only dataset
+preparation, then freeze a new trial without selecting on accuracy. Diagnose
+remaining measured-motion drift and validate camera/depth
 calibration and timing; keep development on viewed recordings and freeze each
 new accuracy trial before its first evaluation. Improve distant road-user
 detection, set explicit per-class acceptance gates and evaluate a frozen model

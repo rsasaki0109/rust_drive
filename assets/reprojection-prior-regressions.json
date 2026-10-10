@@ -1,0 +1,930 @@
+{
+  "schema_version": 1,
+  "regression_integrity_passed": true,
+  "source_identity_changes_independently_verified": {
+    "historical_algorithm_bytes_unchanged": true,
+    "registry_versions_and_checksums_unchanged": true,
+    "allowed_local_dependency": "rustdriving-perception 0.1.0",
+    "original_optional_lock_sha256": "66a95960e1763d7623c40dc0c659e44cb5cda758b215c99bec09606a10c8ab86",
+    "current_optional_lock_sha256": "67845fb7e4a53e15e4e3c70bba72142aff666893cf1d0c96c4654cdc16b7197b"
+  },
+  "binary_sha256": "a6e968e5af75f44be26dda5263de6cb008f89668af1950c7ab6a5df2e590c5b1",
+  "pre_run_source_and_binary_sha256": {
+    "recorded_utc": "2026-10-10T03:35:55.770708+00:00",
+    "final_binary_ack": true,
+    "binary_path": "/tmp/rustdrive-rgbd-target/release/rustdriving-rgbd-evaluate",
+    "binary_sha256": "a6e968e5af75f44be26dda5263de6cb008f89668af1950c7ab6a5df2e590c5b1",
+    "source_sha256": {
+      "integrations/rgbd/src/main.rs": "819821995fd54c5853db55124a8875095de9cfcad30dd59548bde85cd2abf37a",
+      "integrations/rgbd/src/reprojection.rs": "ff77f6038c65c9c27361291a0b9997c99e714ae2996803adf7e7b044e92fde2a",
+      "crates/localization/src/reprojection3d.rs": "2895e1c3eafefcfacdd156fd51706598521f0344f427f24edf420d159e5da486",
+      "crates/localization/src/lib.rs": "26e1a082ceedadd0de957714bd11170bf16e732e7948b01530b699214510bdf3",
+      "scripts/check-rgbd-extension-sources.py": "77e477fb9eb4fb096ff13e98e33a7b32fb70e8789e1cf5e5afd3107cd8e1831f",
+      "scripts/check-recorded-reprojection.py": "fd1425f9c73c21b104d9453a7c2b298c21fa22effd6ecb5f0015bbc41f79cef7",
+      "integrations/rgbd/Cargo.lock": "67845fb7e4a53e15e4e3c70bba72142aff666893cf1d0c96c4654cdc16b7197b"
+    },
+    "prior_public_proof_sha256": "fad829077a077779b80d4a07c5e19fa849d91569fea1646d3f7798bab780d0d2",
+    "reason": "Final report-only invalid-ground-truth repair; prior source and first-trial records remain preserved."
+  },
+  "comparisons": {
+    "motion": {
+      "cases": [
+        {
+          "report": "tum-fr1-xyz/results.json",
+          "complete_non_timing_numerical_body_identical": true,
+          "canonical_body_sha256": "af2e90765672eed1e18d2aee38493149a58c96cf5f163c6c9f5b92f895cce3d3",
+          "baseline_report_sha256": "720c1a78d0d8501721fa90392f170cc06fb481d45064bdfb204f6e9bf3765a34",
+          "current_report_sha256": "50bf943df4c39e7e50cadf81c4839a13785cd4a3c3857a3635005d5d309bd7a0"
+        },
+        {
+          "report": "tum-fr1-xyz-fast/results.json",
+          "complete_non_timing_numerical_body_identical": true,
+          "canonical_body_sha256": "9b7c612e312da26eef1746947e79215b4c6cbf319cbbd4931da8103ded8a538b",
+          "baseline_report_sha256": "7957c5dca434020cc6899547ec579d2ff4d10f7a1ac6c794cdadc61dfde14167",
+          "current_report_sha256": "4f4be856017a607b4d295bb01112eeba0a86a6baa469fba495b380f14d9387dc"
+        },
+        {
+          "report": "tum-fr1-xyz-motion/results.json",
+          "complete_non_timing_numerical_body_identical": true,
+          "canonical_body_sha256": "0b99e10c189752464852af4b5b3618a6c06cd54c4e32cae73476b7a8ebd97c2b",
+          "baseline_report_sha256": "cf5a49ffce337e191772d1fa6d6766dd5cd7a4430a3a989478a5b1cab5e3edfe",
+          "current_report_sha256": "8f3d70b8d1168cbdc9c136c52c1e42939d8f4fed74e00bfd575d31619afc0f91"
+        },
+        {
+          "report": "tum-fr1-xyz-motion-v2/results.json",
+          "complete_non_timing_numerical_body_identical": true,
+          "canonical_body_sha256": "c1f40f959885d3cc0ddabf59ab70585110d2ec43b8b80634e255eeb2f2342dcc",
+          "baseline_report_sha256": "e2b9b104fbe7cf0dbf85dbf58d735bc719a642c00f041c51aa68c3a92f24c276",
+          "current_report_sha256": "71bd7e600fc1b1b871b5975cf4be3b4e49ea19ede7a99e678011fea824a043c9"
+        },
+        {
+          "report": "tum-fr1-xyz-tight/results.json",
+          "complete_non_timing_numerical_body_identical": true,
+          "canonical_body_sha256": "803b3b054b0e05a2fa4502f4ab1a5c3a41a2640a45ccaa426e0e2a798e768f7f",
+          "baseline_report_sha256": "796e00434d4c1c239ae31e8d8051a02fb017fb7836041fe340b1f97d7eaa0fb2",
+          "current_report_sha256": "c739ead336a8b2a4146fa2d1e6265ba6855b7f46dd2799bbdcdfafe8d3dd1996"
+        }
+      ],
+      "excluded_fields": [
+        "cpu_wall_seconds",
+        "freeze",
+        "freeze_sha256"
+      ]
+    },
+    "keyframes": {
+      "cases": [
+        {
+          "report": "fast/results.json",
+          "complete_non_timing_numerical_body_identical": true,
+          "canonical_body_sha256": "3f2343cb510f0c813f8805f1aa690cfcbea244fe6357a3a6ee4a842085097186",
+          "baseline_report_sha256": "43524e52621e3f1185922ec677d1773e74eb7de17d488e854f9997d74a9959ac",
+          "current_report_sha256": "fe8fe489577ae432980062ec6bf2d858f26779a0ad6054e1563bd6b71a91846a"
+        },
+        {
+          "report": "gap-loss/results.json",
+          "complete_non_timing_numerical_body_identical": true,
+          "canonical_body_sha256": "dc7f66cf22c7b164f12d971a9983753582e03483c5126dfca8092c80531881b7",
+          "baseline_report_sha256": "0f2343c39d4171293d945a8b5b7cbd83263c5b23b94e5ef00acee7166c02324a",
+          "current_report_sha256": "ad971341a773ba4e799eb75156bcc4caed92fc8fdb4daebaed6b72b0705b7373"
+        },
+        {
+          "report": "missing-reference/results.json",
+          "complete_non_timing_numerical_body_identical": true,
+          "canonical_body_sha256": "5424da53af3f8fc5306cbef78fc446ce5f76837f9b21bb4d26afb8ddd6cd0a7a",
+          "baseline_report_sha256": "8564b83f70f037c6214784b14e33fb2fcb1ac537d3a2ad939eec31a1ccaad39d",
+          "current_report_sha256": "5203cb71fda716b6c325af669e085fa5d3f636c71f8087f60f190a0def5243cc"
+        },
+        {
+          "report": "motion-v2/results.json",
+          "complete_non_timing_numerical_body_identical": true,
+          "canonical_body_sha256": "0a7799e8150114af800653ca591a5e5db990a9bbfbf7bcc600825f06e6a6ab41",
+          "baseline_report_sha256": "84d0565a2e1669f05952d77e2a5a9831ae00f984625156fdd4291bd9d51db121",
+          "current_report_sha256": "6f39bf42ce1547b8c9d2aded5c76d88c04a7d959b6a11838c8c8fd1ec6b08411"
+        },
+        {
+          "report": "temporal-v1/results.json",
+          "complete_non_timing_numerical_body_identical": true,
+          "canonical_body_sha256": "5cffb639e1fe4dde1bc56297bb0c6e078a355d8591890d941d6839b263d8f143",
+          "baseline_report_sha256": "591cf5b4e96c4b63656398bba98643930920bf5c31906404c9d57ca606a206ac",
+          "current_report_sha256": "40f37296c3eb819900590bb83e894396cbcd28683b1633be58c3df492bbe5c0f"
+        },
+        {
+          "report": "tight/results.json",
+          "complete_non_timing_numerical_body_identical": true,
+          "canonical_body_sha256": "36dbab1647aa6b9c836a1a69d8f063648ed18f8296b2efbceb9a524cf5c2333e",
+          "baseline_report_sha256": "3a03e466b8809744a7ea3980efbd0eee85525c975db748319fdfe269f1f9732d",
+          "current_report_sha256": "1127508a6c0178a77e242392ffb0eabc61a8186a6500d1420bfcc85f1861f0ef"
+        }
+      ],
+      "excluded_fields": [
+        "cpu_wall_seconds",
+        "freeze",
+        "freeze_sha256"
+      ]
+    },
+    "submaps": {
+      "cases": [
+        {
+          "report": "tum-fr1-desk-submaps/results.json",
+          "complete_non_timing_numerical_body_identical": true,
+          "canonical_body_sha256": "12b2df62ea0f62ddf8f4f4ca15f19e504a01b8db6c8d1e3c2b298133fd715311",
+          "baseline_report_sha256": "06ce61be466c85b79462355d668d121584d88bdff54ddb520e4ba1f73c5801b6",
+          "current_report_sha256": "f2a2c50e5b603231414901e20541648b522954f7d787b2fd30cad7a3d41e7e0f"
+        },
+        {
+          "report": "tum-fr1-xyz/results.json",
+          "complete_non_timing_numerical_body_identical": true,
+          "canonical_body_sha256": "eac90f4f88eddf7b5266f12a5709c53c53085f156d49c9e62b6ca3075beff0df",
+          "baseline_report_sha256": "9ccb21ec191d4d58e2dcdc919b6547cd98cd0d0ef05fff14e73ab7108976ec8d",
+          "current_report_sha256": "e39625ecc4700bbf4ca74d5afc69ac08b09515a9b8ab1d4921bb892c27996725"
+        },
+        {
+          "report": "tum-fr1-xyz-fast/results.json",
+          "complete_non_timing_numerical_body_identical": true,
+          "canonical_body_sha256": "6d79ccea255c6078290da360ff0709f499f4541d8fa58251c7839c12063b368e",
+          "baseline_report_sha256": "5517c9df787eb8691f9984626ce5496ce64c885af7712a1fd4e93f5a1a9f66bf",
+          "current_report_sha256": "7a0866a0fba4e0d1667b1788a3f04166f8a4d5a70f820315a65fc4312f62399d"
+        },
+        {
+          "report": "tum-fr1-xyz-keyframes/results.json",
+          "complete_non_timing_numerical_body_identical": true,
+          "canonical_body_sha256": "441979a150ad0ee5766fcc88791c7c2662e2e5cbb758ad70d20065f8dc3ab4b0",
+          "baseline_report_sha256": "8c94832586f484122b068a3702b7820340c57b48a87c1e5698bb1d9a7cb5f014",
+          "current_report_sha256": "45cbd95ffe374bd720c66c17ef38670fcdf749acc09863937d595f231d8cfa07"
+        },
+        {
+          "report": "tum-fr1-xyz-motion/results.json",
+          "complete_non_timing_numerical_body_identical": true,
+          "canonical_body_sha256": "6800f4e2d6c32946361a8d43d17f97a778d1493d8bdcf2438abd98d53935098c",
+          "baseline_report_sha256": "313c062f9e9c78ccd79c4c0bb63873c37aa174edc14ba55e393c131f7a508351",
+          "current_report_sha256": "b7e1cbf4b428cfe0f92ceccb9440af1a648a0fcd5b064b899b640f223c8fb173"
+        },
+        {
+          "report": "tum-fr1-xyz-motion-v2/results.json",
+          "complete_non_timing_numerical_body_identical": true,
+          "canonical_body_sha256": "9fc94df9feac3928665d82f8c07e444bede8e45f7668a14d907456b584c98fa6",
+          "baseline_report_sha256": "934e2a6d6ad3c18520c0da8202fd527ae2123c4c284b46200c52a3fdc4a33ac5",
+          "current_report_sha256": "2b4ce111c493b2ebe13f6713e11d3b4927a39051c287e72f99cc0d5c92c143b0"
+        },
+        {
+          "report": "tum-fr1-xyz-tight/results.json",
+          "complete_non_timing_numerical_body_identical": true,
+          "canonical_body_sha256": "3a12fa2d57e5ae4571df1d6a70e73c916d51ab54e328cf2ba77054eaa346953f",
+          "baseline_report_sha256": "b4dabbb11adc0633eb7d449ab4b13c433de826b1eb41c1a0571dce7398ca9889",
+          "current_report_sha256": "e09cfc2d60b196f62d89e0b6a0267f3f0455ae3558b0c84bb75f118fc1ab3430"
+        },
+        {
+          "report": "tum-fr3-office-submaps/results.json",
+          "complete_non_timing_numerical_body_identical": true,
+          "canonical_body_sha256": "06784b45b4746f44e5940e88f00cd036671a1a380e8017d9210418c9f7cbd007",
+          "baseline_report_sha256": "4a7b452d4b2eeea46114e41da197504b0bffabdc3f74bc0faa8d0029a5ecdaf1",
+          "current_report_sha256": "8b093c4389a8a4279960ffe4de4018bc5d8395747494ed52e214e38233e36d8c"
+        }
+      ],
+      "excluded_fields": [
+        "cpu_wall_seconds",
+        "freeze",
+        "freeze_sha256"
+      ]
+    },
+    "plain": {
+      "cases": [
+        {
+          "report": "results.json",
+          "complete_non_timing_numerical_body_identical": true,
+          "canonical_body_sha256": "17c7d86b6111bda3538f26da5e321c04fb342587f8edafab7e2bd1656909c334",
+          "baseline_report_sha256": "20c079a295787120c06d1ef047d104e0e05db394f0d38cbcb8390c6b44022bd1",
+          "current_report_sha256": "5fad04135380efcbd6f94994cbe3dbcdd96019dd9bc57711231142096733a929"
+        }
+      ],
+      "excluded_fields": [
+        "cargo_lock_sha256",
+        "cpu_wall_seconds",
+        "evaluator_source_sha256",
+        "freeze",
+        "freeze_json",
+        "freeze_sha256"
+      ]
+    }
+  },
+  "suites": {
+    "motion": {
+      "schema_version": 1,
+      "regression_integrity_passed": true,
+      "all_physical_protocols_passed": false,
+      "cases": [
+        {
+          "dataset": "tum-fr1-xyz",
+          "summary": {
+            "continuous_odometry_frames": 0,
+            "map_accepted": 3,
+            "map_accurate": 3,
+            "map_reference_valid": 11,
+            "pair_accepted": 4,
+            "pair_accurate": 4,
+            "pair_reference_valid": 11,
+            "pairs": 11
+          },
+          "evaluator_exit_status": 1,
+          "full_pair_and_map_protocol_passed": false,
+          "independent_integrity_passed": true,
+          "mutations_rejected": 10,
+          "report_sha256": "50bf943df4c39e7e50cadf81c4839a13785cd4a3c3857a3635005d5d309bd7a0",
+          "oracle_sha256": "7f8a4b21b5b304726bc7efb8c50decc3e193ecf2ded3234ad0423fc70d81063f",
+          "freeze_sha256": "13688f3b038994814b59c6b523370e2e21818e7494eed7478e9cafa7cb895963"
+        },
+        {
+          "dataset": "tum-fr1-xyz-fast",
+          "summary": {
+            "continuous_odometry_frames": 11,
+            "map_accepted": 11,
+            "map_accurate": 11,
+            "map_reference_valid": 11,
+            "pair_accepted": 11,
+            "pair_accurate": 11,
+            "pair_reference_valid": 11,
+            "pairs": 11
+          },
+          "evaluator_exit_status": 0,
+          "full_pair_and_map_protocol_passed": true,
+          "independent_integrity_passed": true,
+          "mutations_rejected": 10,
+          "report_sha256": "4f4be856017a607b4d295bb01112eeba0a86a6baa469fba495b380f14d9387dc",
+          "oracle_sha256": "d9f00adf7db7efdfbee9174b07aaaa86ac931ba78ba3c42e0223458ffdd0d5cb",
+          "freeze_sha256": "63db5233ba2588ed07f453348cd6d33ff4266fec43936b83d5b67dea3c81e6b8"
+        },
+        {
+          "dataset": "tum-fr1-xyz-tight",
+          "summary": {
+            "continuous_odometry_frames": 11,
+            "map_accepted": 9,
+            "map_accurate": 9,
+            "map_reference_valid": 11,
+            "pair_accepted": 11,
+            "pair_accurate": 11,
+            "pair_reference_valid": 11,
+            "pairs": 11
+          },
+          "evaluator_exit_status": 1,
+          "full_pair_and_map_protocol_passed": false,
+          "independent_integrity_passed": true,
+          "mutations_rejected": 11,
+          "report_sha256": "c739ead336a8b2a4146fa2d1e6265ba6855b7f46dd2799bbdcdfafe8d3dd1996",
+          "oracle_sha256": "0f5ceb239229c95db08af893598cf8c6f8d56936183824e74f5a7379ccff365a",
+          "freeze_sha256": "f2dbe1e4e9c0caecb92f117bb0fdbdc81aa1eb6652f9f4de573d0c7a3f2bf24f"
+        },
+        {
+          "dataset": "tum-fr1-xyz-motion",
+          "summary": {
+            "continuous_odometry_frames": 11,
+            "map_accepted": 11,
+            "map_accurate": 8,
+            "map_reference_valid": 8,
+            "pair_accepted": 11,
+            "pair_accurate": 7,
+            "pair_reference_valid": 7,
+            "pairs": 11
+          },
+          "evaluator_exit_status": 1,
+          "full_pair_and_map_protocol_passed": false,
+          "independent_integrity_passed": true,
+          "mutations_rejected": 10,
+          "report_sha256": "8f3d70b8d1168cbdc9c136c52c1e42939d8f4fed74e00bfd575d31619afc0f91",
+          "oracle_sha256": "c5cea616b2c11af12bed4fc6b552858be0930e0568f0534c4633a5297dee3169",
+          "freeze_sha256": "1a2ecf9b7eca615e89572b023f1977ec9d9dde0f2ceb59ae02073731c60c43d5"
+        },
+        {
+          "dataset": "tum-fr1-xyz-motion-v2",
+          "summary": {
+            "continuous_odometry_frames": 11,
+            "map_accepted": 9,
+            "map_accurate": 9,
+            "map_reference_valid": 11,
+            "pair_accepted": 11,
+            "pair_accurate": 11,
+            "pair_reference_valid": 11,
+            "pairs": 11
+          },
+          "evaluator_exit_status": 1,
+          "full_pair_and_map_protocol_passed": false,
+          "independent_integrity_passed": true,
+          "mutations_rejected": 11,
+          "report_sha256": "71bd7e600fc1b1b871b5975cf4be3b4e49ea19ede7a99e678011fea824a043c9",
+          "oracle_sha256": "3f73dc2668944fc57a9bb7bac0f88eaea63a1c99fad7c48c7f58eedb68d05cfa",
+          "freeze_sha256": "e6545650d30295b804e8316676974dabb8f2bf311da58aeb03f0d9fa3145326c"
+        }
+      ],
+      "scope": "viewed regressions in the same indoor Kinect room; original preregistered source/evidence preserved and numerical gates unchanged; no new holdout, automotive or confidence calibration claim"
+    },
+    "keyframes": {
+      "schema_version": 1,
+      "regression_integrity_passed": true,
+      "all_physical_protocols_passed": false,
+      "original_temporal_accuracy_protocol_passed": false,
+      "original_report_sha256": "b1d4fae4c15cb23f78388dd74c3a5b85104340f1b31a3821951c28c9329c03d4",
+      "original_freeze_sha256": "b44b0b34f22a5b10809a6f2f7f87419501fd16dd67ad6b5a204ca7ad345f42cf",
+      "strengthened_historical_audit_sha256": "468e501c2bf40a19d3cda36cc96f54687cd923457ebd8751355f15cb79c45d68",
+      "cases": [
+        {
+          "case": "fast",
+          "dataset": "tum-fr1-xyz-fast",
+          "summary": {
+            "accepted_updates": 11,
+            "accurate_root_updates": 11,
+            "all_updates_passed": true,
+            "frames": 12,
+            "initialized_frames": 1,
+            "keyframe_replacements": 3,
+            "reference_valid_updates": 11,
+            "rejected_updates": 0,
+            "updates": 11
+          },
+          "evaluator_exit_status": 0,
+          "independent_integrity_passed": true,
+          "mutations_rejected": 15,
+          "report_sha256": "fe8fe489577ae432980062ec6bf2d858f26779a0ad6054e1563bd6b71a91846a",
+          "audit_sha256": "99ba39490fce1f6a56b48eccd29cc78de6abcc62c0a6f9855da0b22a861513ff",
+          "freeze_sha256": "7ef0b82e890f7417cd6c3d56e5bf80a9523bf231631d2b3f2656543128296f68"
+        },
+        {
+          "case": "tight",
+          "dataset": "tum-fr1-xyz-tight",
+          "summary": {
+            "accepted_updates": 11,
+            "accurate_root_updates": 11,
+            "all_updates_passed": true,
+            "frames": 12,
+            "initialized_frames": 1,
+            "keyframe_replacements": 3,
+            "reference_valid_updates": 11,
+            "rejected_updates": 0,
+            "updates": 11
+          },
+          "evaluator_exit_status": 0,
+          "independent_integrity_passed": true,
+          "mutations_rejected": 15,
+          "report_sha256": "1127508a6c0178a77e242392ffb0eabc61a8186a6500d1420bfcc85f1861f0ef",
+          "audit_sha256": "37a45cdc800f80d26bdd5b1a7dbbd70640b6f54de18b8a970ecc549544b0b0e4",
+          "freeze_sha256": "0f881a399a6a73f6bd3bf3e54baf6559f56d37483c254819ee16fed03050e91e"
+        },
+        {
+          "case": "motion-v2",
+          "dataset": "tum-fr1-xyz-motion-v2",
+          "summary": {
+            "accepted_updates": 11,
+            "accurate_root_updates": 11,
+            "all_updates_passed": true,
+            "frames": 12,
+            "initialized_frames": 1,
+            "keyframe_replacements": 3,
+            "reference_valid_updates": 11,
+            "rejected_updates": 0,
+            "updates": 11
+          },
+          "evaluator_exit_status": 0,
+          "independent_integrity_passed": true,
+          "mutations_rejected": 15,
+          "report_sha256": "6f39bf42ce1547b8c9d2aded5c76d88c04a7d959b6a11838c8c8fd1ec6b08411",
+          "audit_sha256": "efcff68be961f6fc55331f9c4da21218f60581a505140065525a904f7803c5e6",
+          "freeze_sha256": "011316e803b9e7116fc189bb99eee60534838fc4f5cc5f774b6fea5e992c8612"
+        },
+        {
+          "case": "gap-loss",
+          "dataset": "tum-fr1-xyz",
+          "summary": {
+            "accepted_updates": 0,
+            "accurate_root_updates": 0,
+            "all_updates_passed": false,
+            "frames": 12,
+            "initialized_frames": 1,
+            "keyframe_replacements": 0,
+            "reference_valid_updates": 11,
+            "rejected_updates": 11,
+            "updates": 11
+          },
+          "evaluator_exit_status": 1,
+          "independent_integrity_passed": true,
+          "mutations_rejected": 7,
+          "report_sha256": "ad971341a773ba4e799eb75156bcc4caed92fc8fdb4daebaed6b72b0705b7373",
+          "audit_sha256": "78aa659cc178762b52f3c698dba2e2cd5bc5a3a3c06bddf9f2d6beb79cef71b2",
+          "freeze_sha256": "bfd9e0e7ff2228779e8bfddd90c54d1be4d75acd7efbff83ff36f920c08ff67e"
+        },
+        {
+          "case": "missing-reference",
+          "dataset": "tum-fr1-xyz-motion",
+          "summary": {
+            "accepted_updates": 10,
+            "accurate_root_updates": 7,
+            "all_updates_passed": false,
+            "frames": 12,
+            "initialized_frames": 1,
+            "keyframe_replacements": 3,
+            "reference_valid_updates": 8,
+            "rejected_updates": 1,
+            "updates": 11
+          },
+          "evaluator_exit_status": 1,
+          "independent_integrity_passed": true,
+          "mutations_rejected": 17,
+          "report_sha256": "5203cb71fda716b6c325af669e085fa5d3f636c71f8087f60f190a0def5243cc",
+          "audit_sha256": "01fba575df24c347d25695ee32ef02700ccacde33bc5bcaf3a5f6353bdaaa167",
+          "freeze_sha256": "4628330164932f5866ec3328571095f9aa9f0a1cab04d184dfb2a36adb9056f9"
+        },
+        {
+          "case": "temporal-v1",
+          "dataset": "tum-fr1-xyz-keyframes",
+          "summary": {
+            "accepted_updates": 33,
+            "accurate_root_updates": 13,
+            "all_updates_passed": false,
+            "frames": 36,
+            "initialized_frames": 1,
+            "keyframe_replacements": 10,
+            "reference_valid_updates": 35,
+            "rejected_updates": 2,
+            "updates": 35
+          },
+          "evaluator_exit_status": 1,
+          "independent_integrity_passed": true,
+          "mutations_rejected": 16,
+          "report_sha256": "40f37296c3eb819900590bb83e894396cbcd28683b1633be58c3df492bbe5c0f",
+          "audit_sha256": "62f91f9b0e6bdfef24107f85b59ec2a5045ea7ce4ce7dbd403e0044cc103fb76",
+          "freeze_sha256": "63415cd09bf446c0e991f25e2bab25fb53a8c5a2cebfc48d1bcf3d58f57697ba"
+        }
+      ],
+      "scope": "Viewed same-room measured-depth regressions; no automotive, global SLAM or accumulated-confidence claim."
+    },
+    "submaps": {
+      "schema_version": 1,
+      "regression_integrity_passed": true,
+      "all_physical_protocols_passed": false,
+      "original_trials": [
+        {
+          "case": "first-desk-v7",
+          "summary": {
+            "accepted_updates": 29,
+            "accurate_root_updates": 8,
+            "all_updates_passed": false,
+            "final_map_generation": 10,
+            "final_map_points": 1433,
+            "frames": 36,
+            "initialized_frames": 1,
+            "lost": false,
+            "map_update_rejections": 0,
+            "map_updates": 10,
+            "reference_valid_updates": 35,
+            "rejected_updates": 6,
+            "updates": 35
+          },
+          "role": "immutable original protocol; no new holdout",
+          "original_report_sha256": "65adbbf5c22abee8f9694c1ddcc3621c11447cde00b53aeff6cbac13ccf4d613",
+          "original_freeze_sha256": "c290e00cafd2e8f02ae599199052c3380f16717166ebf85bf2602a7b14675fac",
+          "current_audit_sha256": "c98fa0605b157df3fb04b5491e09bfc3c3688fe854fd07fa06a13d09d30175c1"
+        },
+        {
+          "case": "first-office-v8",
+          "summary": {
+            "accepted_updates": 7,
+            "accurate_root_updates": 5,
+            "all_updates_passed": false,
+            "final_map_generation": 3,
+            "final_map_points": 3553,
+            "frames": 36,
+            "initialized_frames": 1,
+            "lost": true,
+            "map_update_rejections": 0,
+            "map_updates": 3,
+            "reference_valid_updates": 35,
+            "rejected_updates": 28,
+            "updates": 35
+          },
+          "role": "immutable original protocol; no new holdout",
+          "original_report_sha256": "2e252f22ab73f5265a7edd588fb869f10c36930e16a94d9a168834b5593ce4e7",
+          "original_freeze_sha256": "7fc0009890a52175081e65131d23eb0a6e33d1a190e54dceea80d2752b799587",
+          "current_audit_sha256": "3f085d6ab1268c97c4afe7a16bf313754877e8ae159bc7cb091aad09333868a7"
+        }
+      ],
+      "cases": [
+        {
+          "dataset": "tum-fr1-xyz",
+          "role": "viewed regression",
+          "summary": {
+            "accepted_updates": 0,
+            "accurate_root_updates": 0,
+            "all_updates_passed": false,
+            "final_map_generation": 1,
+            "final_map_points": 1067,
+            "frames": 12,
+            "initialized_frames": 1,
+            "lost": true,
+            "map_update_rejections": 0,
+            "map_updates": 1,
+            "reference_valid_updates": 11,
+            "rejected_updates": 11,
+            "updates": 11
+          },
+          "evaluator_exit_status": 1,
+          "independent_integrity_passed": true,
+          "mutations_rejected": 17,
+          "source_mutations_rejected": 6,
+          "report_sha256": "e39625ecc4700bbf4ca74d5afc69ac08b09515a9b8ab1d4921bb892c27996725",
+          "freeze_sha256": "d3cd89dca56a41db9b15b27860bfcdb5d2dc21d05a3f58c6e30c93187418d6dc",
+          "audit_sha256": "3dfeb21078e629cd4161dce3ba50e7d5395479411461c867bd9c25fbc9f48a2e"
+        },
+        {
+          "dataset": "tum-fr1-xyz-fast",
+          "role": "viewed regression",
+          "summary": {
+            "accepted_updates": 11,
+            "accurate_root_updates": 11,
+            "all_updates_passed": true,
+            "final_map_generation": 4,
+            "final_map_points": 461,
+            "frames": 12,
+            "initialized_frames": 1,
+            "lost": false,
+            "map_update_rejections": 0,
+            "map_updates": 4,
+            "reference_valid_updates": 11,
+            "rejected_updates": 0,
+            "updates": 11
+          },
+          "evaluator_exit_status": 0,
+          "independent_integrity_passed": true,
+          "mutations_rejected": 26,
+          "source_mutations_rejected": 6,
+          "report_sha256": "7a0866a0fba4e0d1667b1788a3f04166f8a4d5a70f820315a65fc4312f62399d",
+          "freeze_sha256": "5f9a46b5b53aff60cd2a6bde2ad72854e0ad09e2e47694469cc195ff22d72c0b",
+          "audit_sha256": "8b9f649471a1c8205fcbec900cebbf265a836b0eb17e9973782b451ccd156fd4"
+        },
+        {
+          "dataset": "tum-fr1-xyz-tight",
+          "role": "viewed regression",
+          "summary": {
+            "accepted_updates": 11,
+            "accurate_root_updates": 11,
+            "all_updates_passed": true,
+            "final_map_generation": 4,
+            "final_map_points": 835,
+            "frames": 12,
+            "initialized_frames": 1,
+            "lost": false,
+            "map_update_rejections": 0,
+            "map_updates": 4,
+            "reference_valid_updates": 11,
+            "rejected_updates": 0,
+            "updates": 11
+          },
+          "evaluator_exit_status": 0,
+          "independent_integrity_passed": true,
+          "mutations_rejected": 26,
+          "source_mutations_rejected": 6,
+          "report_sha256": "e09cfc2d60b196f62d89e0b6a0267f3f0455ae3558b0c84bb75f118fc1ab3430",
+          "freeze_sha256": "e2b47bc3a53a6ba4f9c616d72c4e2822408e4f1159b53eb6049f3277c51a37f6",
+          "audit_sha256": "3e03d73aa31ae5821e2c4d0a916c89472da71516db1e706bd70ca2e505d8003d"
+        },
+        {
+          "dataset": "tum-fr1-xyz-motion",
+          "role": "viewed regression",
+          "summary": {
+            "accepted_updates": 10,
+            "accurate_root_updates": 7,
+            "all_updates_passed": false,
+            "final_map_generation": 4,
+            "final_map_points": 919,
+            "frames": 12,
+            "initialized_frames": 1,
+            "lost": false,
+            "map_update_rejections": 0,
+            "map_updates": 4,
+            "reference_valid_updates": 8,
+            "rejected_updates": 1,
+            "updates": 11
+          },
+          "evaluator_exit_status": 1,
+          "independent_integrity_passed": true,
+          "mutations_rejected": 28,
+          "source_mutations_rejected": 6,
+          "report_sha256": "b7e1cbf4b428cfe0f92ceccb9440af1a648a0fcd5b064b899b640f223c8fb173",
+          "freeze_sha256": "0f79885dd30a98641e85d2558d447e8a36a3a38b5c5c2713ef5bb6531bcdbc63",
+          "audit_sha256": "5861d9a57de78752515d2f7c37fb42353d6732426ab234f363f1b2c8d2b9d97f"
+        },
+        {
+          "dataset": "tum-fr1-xyz-motion-v2",
+          "role": "viewed regression",
+          "summary": {
+            "accepted_updates": 11,
+            "accurate_root_updates": 11,
+            "all_updates_passed": true,
+            "final_map_generation": 4,
+            "final_map_points": 1578,
+            "frames": 12,
+            "initialized_frames": 1,
+            "lost": false,
+            "map_update_rejections": 0,
+            "map_updates": 4,
+            "reference_valid_updates": 11,
+            "rejected_updates": 0,
+            "updates": 11
+          },
+          "evaluator_exit_status": 0,
+          "independent_integrity_passed": true,
+          "mutations_rejected": 26,
+          "source_mutations_rejected": 6,
+          "report_sha256": "2b4ce111c493b2ebe13f6713e11d3b4927a39051c287e72f99cc0d5c92c143b0",
+          "freeze_sha256": "63f2ab779db1bf4ce35a7b93d25337beb947eae0b8e4cba6835655e9db38d887",
+          "audit_sha256": "049c4c933bd5c38a1e1f43b2363715301f5f5993f14f47cc8593e2159c9105dd"
+        },
+        {
+          "dataset": "tum-fr1-xyz-keyframes",
+          "role": "viewed regression",
+          "summary": {
+            "accepted_updates": 24,
+            "accurate_root_updates": 24,
+            "all_updates_passed": false,
+            "final_map_generation": 9,
+            "final_map_points": 2677,
+            "frames": 36,
+            "initialized_frames": 1,
+            "lost": false,
+            "map_update_rejections": 0,
+            "map_updates": 9,
+            "reference_valid_updates": 35,
+            "rejected_updates": 11,
+            "updates": 35
+          },
+          "evaluator_exit_status": 1,
+          "independent_integrity_passed": true,
+          "mutations_rejected": 28,
+          "source_mutations_rejected": 6,
+          "report_sha256": "45cbd95ffe374bd720c66c17ef38670fcdf749acc09863937d595f231d8cfa07",
+          "freeze_sha256": "77cfa14a4f682bd5010ae20ab6d5c10f92ba61cca31dfb3a26dbd5bc4e6d4422",
+          "audit_sha256": "1fdce8c7e3615c9a10f9f1941cb1f7f7b9abd7edfea8ad5622d75f95e117408f"
+        },
+        {
+          "dataset": "tum-fr1-desk-submaps",
+          "role": "viewed regression",
+          "summary": {
+            "accepted_updates": 29,
+            "accurate_root_updates": 8,
+            "all_updates_passed": false,
+            "final_map_generation": 10,
+            "final_map_points": 1433,
+            "frames": 36,
+            "initialized_frames": 1,
+            "lost": false,
+            "map_update_rejections": 0,
+            "map_updates": 10,
+            "reference_valid_updates": 35,
+            "rejected_updates": 6,
+            "updates": 35
+          },
+          "evaluator_exit_status": 1,
+          "independent_integrity_passed": true,
+          "mutations_rejected": 28,
+          "source_mutations_rejected": 6,
+          "report_sha256": "f2a2c50e5b603231414901e20541648b522954f7d787b2fd30cad7a3d41e7e0f",
+          "freeze_sha256": "c052ad350916b196d4fb3ca5abb6b46ba98d3611d5f9d16459c466a0544dae43",
+          "audit_sha256": "27576d34b27fcde848d282aaf1b49ae03e494bad1085b854b09ac2962bb87427"
+        },
+        {
+          "dataset": "tum-fr3-office-submaps",
+          "role": "viewed regression",
+          "summary": {
+            "accepted_updates": 7,
+            "accurate_root_updates": 5,
+            "all_updates_passed": false,
+            "final_map_generation": 3,
+            "final_map_points": 3553,
+            "frames": 36,
+            "initialized_frames": 1,
+            "lost": true,
+            "map_update_rejections": 0,
+            "map_updates": 3,
+            "reference_valid_updates": 35,
+            "rejected_updates": 28,
+            "updates": 35
+          },
+          "evaluator_exit_status": 1,
+          "independent_integrity_passed": true,
+          "mutations_rejected": 28,
+          "source_mutations_rejected": 6,
+          "report_sha256": "8b093c4389a8a4279960ffe4de4018bc5d8395747494ed52e214e38233e36d8c",
+          "freeze_sha256": "2c622df3c3ef7838318b1107ca1f56f9b7c1d0e7231d4698b73b522ced21e04e",
+          "audit_sha256": "655c308766fa830aa5333b13061baae67c72ea1a2156c3572c86ee0a750f81a7"
+        }
+      ],
+      "scope": "Offline measured indoor cameras; no vehicle fusion, calibrated map confidence, automotive accuracy or new holdout on repeated inputs."
+    }
+  },
+  "scope": "Viewed measured indoor-camera regressions. Preserved failed and unscorable protocols remain failures. No new holdout, automotive fusion or confidence calibration claim.",
+  "plain_original_label_is_historical": true,
+  "plain_pair": {
+    "summary": {
+      "accepted": 7,
+      "all_pairs_passed": false,
+      "heldout_pairs": 9,
+      "heldout_passed": 5,
+      "pairs": 11,
+      "passed": 7,
+      "rejected": 4
+    },
+    "audit": {
+      "schema": "rustdrive-recorded-rgbd-oracle-v1",
+      "summary": {
+        "pairs": 11,
+        "accepted": 7,
+        "passed": 7,
+        "rejected": 4,
+        "heldout_pairs": 9,
+        "heldout_passed": 5,
+        "all_pairs_passed": false
+      },
+      "pairs": [
+        {
+          "pair": 0,
+          "previous_gt_bracket": [
+            1305031106.8258,
+            1305031106.8358
+          ],
+          "current_gt_bracket": [
+            1305031106.8658,
+            1305031106.876
+          ],
+          "accepted": true,
+          "translation_error_m": 0.008204499763196519,
+          "rotation_error_rad": 0.019574662249158974,
+          "conditional_nees": 9350.222485642078
+        },
+        {
+          "pair": 1,
+          "previous_gt_bracket": [
+            1305031106.8658,
+            1305031106.876
+          ],
+          "current_gt_bracket": [
+            1305031106.8958,
+            1305031106.9058
+          ],
+          "accepted": true,
+          "translation_error_m": 0.003349322595110207,
+          "rotation_error_rad": 0.011070052548399947,
+          "conditional_nees": 3168.147432627254
+        },
+        {
+          "pair": 2,
+          "previous_gt_bracket": [
+            1305031106.8958,
+            1305031106.9058
+          ],
+          "current_gt_bracket": [
+            1305031106.9258,
+            1305031106.9358
+          ],
+          "accepted": false,
+          "rejection": "registration distance budget exhausted"
+        },
+        {
+          "pair": 3,
+          "previous_gt_bracket": [
+            1305031106.9258,
+            1305031106.9358
+          ],
+          "current_gt_bracket": [
+            1305031106.9658,
+            1305031106.9758
+          ],
+          "accepted": true,
+          "translation_error_m": 0.005756813502337288,
+          "rotation_error_rad": 0.020162185386842533,
+          "conditional_nees": 13286.145688867879
+        },
+        {
+          "pair": 4,
+          "previous_gt_bracket": [
+            1305031106.9658,
+            1305031106.9758
+          ],
+          "current_gt_bracket": [
+            1305031106.9958,
+            1305031107.0058
+          ],
+          "accepted": true,
+          "translation_error_m": 0.004744913437773886,
+          "rotation_error_rad": 0.007278124816026403,
+          "conditional_nees": 1733.6960585974066
+        },
+        {
+          "pair": 5,
+          "previous_gt_bracket": [
+            1305031106.9958,
+            1305031107.0058
+          ],
+          "current_gt_bracket": [
+            1305031107.0258,
+            1305031107.0358
+          ],
+          "accepted": true,
+          "translation_error_m": 0.008528302712707993,
+          "rotation_error_rad": 0.0210363801216643,
+          "conditional_nees": 15188.8583887674
+        },
+        {
+          "pair": 6,
+          "previous_gt_bracket": [
+            1305031107.0258,
+            1305031107.0358
+          ],
+          "current_gt_bracket": [
+            1305031107.0658,
+            1305031107.0759
+          ],
+          "accepted": true,
+          "translation_error_m": 0.0020205393366107367,
+          "rotation_error_rad": 0.01303352621668154,
+          "conditional_nees": 13475.124129129877
+        },
+        {
+          "pair": 7,
+          "previous_gt_bracket": [
+            1305031107.0658,
+            1305031107.0759
+          ],
+          "current_gt_bracket": [
+            1305031107.0958,
+            1305031107.1058
+          ],
+          "accepted": false,
+          "rejection": "registration distance budget exhausted"
+        },
+        {
+          "pair": 8,
+          "previous_gt_bracket": [
+            1305031107.0958,
+            1305031107.1058
+          ],
+          "current_gt_bracket": [
+            1305031107.1258,
+            1305031107.1358
+          ],
+          "accepted": false,
+          "rejection": "registration distance budget exhausted"
+        },
+        {
+          "pair": 9,
+          "previous_gt_bracket": [
+            1305031107.1258,
+            1305031107.1358
+          ],
+          "current_gt_bracket": [
+            1305031107.1658,
+            1305031107.1758
+          ],
+          "accepted": true,
+          "translation_error_m": 0.0011205075804196396,
+          "rotation_error_rad": 0.005252769865281202,
+          "conditional_nees": 1589.2468715980597
+        },
+        {
+          "pair": 10,
+          "previous_gt_bracket": [
+            1305031107.1658,
+            1305031107.1758
+          ],
+          "current_gt_bracket": [
+            1305031107.1958,
+            1305031107.2057
+          ],
+          "accepted": false,
+          "rejection": "ambiguous SE3 registration: distinct comparable local fit"
+        }
+      ],
+      "source_sha256_verified": true,
+      "depth_geometry_reconstructed": true,
+      "scope": "Independent integrity/physical relative-pose accuracy; no ICP replay, covariance calibration, independent-scene, or driving claim",
+      "mutations_rejected": [
+        "false_relative_truth",
+        "false_sensor_stamp",
+        "ground_truth_initialization",
+        "omitted_failed_pair",
+        "changed_source_manifest",
+        "changed_matcher_freeze",
+        "changed_calibration",
+        "invented_geometry_count",
+        "concealed_failure",
+        "changed_embedded_freeze",
+        "changed_freeze_byte_digest",
+        "false_pose_error",
+        "invented_estimate",
+        "invalid_covariance"
+      ],
+      "freeze_kind": "preregistered_temporal",
+      "accepted_branch_checked": true,
+      "conditional_nees_scope": "Computed only for accepted estimates; conditional least-squares model excludes depth/map/association correlation and is not calibrated uncertainty."
+    },
+    "audit_sha256": "bd771888654ccb3a3a598f8d9cf8eae8e05ff8b14056f196be9275a69190f0d1"
+  },
+  "live_suite_cases_compared": 19,
+  "plain_pair_cases_compared": 1,
+  "all_operational_numbers_identical": true
+}

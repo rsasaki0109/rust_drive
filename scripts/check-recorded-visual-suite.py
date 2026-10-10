@@ -72,7 +72,8 @@ def main():
                             '--prepare-freeze', str(freeze)], cwd=ROOT, check=True)
         original = json.loads((baseline / 'freeze.json').read_text())
         current = json.loads(freeze.read_text())
-        if current != original or current['kind'] != 'calibration_regression':
+        extension.compare_visual_freeze(original, current)
+        if current['kind'] != 'calibration_regression':
             raise ValueError(dataset + ': viewed source/configuration freeze changed')
         original_report = json.loads((baseline / 'results.json').read_text())
         report_path = folder / 'results.json'
