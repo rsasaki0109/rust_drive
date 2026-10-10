@@ -1,0 +1,281 @@
+{
+  "room": {
+    "native_full_status_pose_clock_reference_mismatches": [],
+    "old_summary": {
+      "accepted_updates": 58,
+      "accurate_root_updates": 52,
+      "all_updates_passed": false,
+      "frames": 180,
+      "initialized_frames": 1,
+      "lost": true,
+      "reference_valid_updates": 179,
+      "rejected_updates": 121,
+      "updates": 179
+    },
+    "stats": {
+      "native": {
+        "summary": {
+          "accepted_updates": 58,
+          "accurate_root_updates": 52,
+          "all_updates_passed": false,
+          "frames": 180,
+          "initialized_frames": 1,
+          "lost": true,
+          "reference_valid_updates": 179,
+          "rejected_updates": 121,
+          "updates": 179
+        },
+        "max_translation_error_m": 0.09884618627335028,
+        "max_rotation_error_rad": 0.11037314331801358,
+        "first_inaccurate": {
+          "index": 49,
+          "source_index": 149,
+          "evaluation": {
+            "estimate_present": true,
+            "evaluation_only_truth": {
+              "quaternion_wxyz": [
+                0.9719471082620413,
+                -0.0036943477828653704,
+                -0.12282031835078158,
+                -0.20055009333263185
+              ],
+              "translation_m": [
+                0.953152835328686,
+                0.0037532756342023577,
+                -0.24355988394064254
+              ]
+            },
+            "reference_valid": true,
+            "rotation_error_rad": 0.10285574053257113,
+            "translation_error_m": 0.09247159669075897,
+            "within_accuracy_gates": false
+          }
+        },
+        "first_lost": {
+          "index": 64,
+          "source_index": 164,
+          "rejection": "visual accepted-pose age exceeded; localization lost"
+        },
+        "rejection_types": {
+          "no bounded visual correspondence consensus": 1,
+          "invalid or oversized visual correspondences": 4,
+          "visual accepted-pose age exceeded; localization lost": 1,
+          "visual odometry lost; explicit new origin required": 115
+        },
+        "first_fit_rejection": {
+          "index": 59,
+          "source_index": 159,
+          "rejection": "no bounded visual correspondence consensus",
+          "matches": 25,
+          "correspondences": 13
+        }
+      },
+      "multiscale": {
+        "summary": {
+          "accepted_updates": 92,
+          "accurate_root_updates": 49,
+          "all_updates_passed": false,
+          "frames": 180,
+          "initialized_frames": 1,
+          "lost": true,
+          "reference_valid_updates": 179,
+          "rejected_updates": 87,
+          "updates": 179
+        },
+        "max_translation_error_m": 0.21486397253894426,
+        "max_rotation_error_rad": 0.14928743712003295,
+        "first_inaccurate": {
+          "index": 49,
+          "source_index": 149,
+          "evaluation": {
+            "estimate_present": true,
+            "evaluation_only_truth": {
+              "quaternion_wxyz": [
+                0.9719471082620413,
+                -0.0036943477828653704,
+                -0.12282031835078158,
+                -0.20055009333263185
+              ],
+              "translation_m": [
+                0.953152835328686,
+                0.0037532756342023577,
+                -0.24355988394064254
+              ]
+            },
+            "reference_valid": true,
+            "rotation_error_rad": 0.10815080082854037,
+            "translation_error_m": 0.09467218814842669,
+            "within_accuracy_gates": false
+          }
+        },
+        "first_lost": {
+          "index": 99,
+          "source_index": 199,
+          "rejection": "visual accepted-pose age exceeded; localization lost"
+        },
+        "rejection_types": {
+          "no bounded visual correspondence consensus": 1,
+          "invalid or oversized visual correspondences": 5,
+          "visual accepted-pose age exceeded; localization lost": 1,
+          "visual odometry lost; explicit new origin required": 80
+        },
+        "first_fit_rejection": {
+          "index": 93,
+          "source_index": 193,
+          "rejection": "no bounded visual correspondence consensus",
+          "matches": 61,
+          "correspondences": 12
+        }
+      }
+    },
+    "inventory_integrity": {
+      "all_files_verified": true,
+      "bytes_verified": 103274160,
+      "files_verified": 356,
+      "no_numeric_labels_parsed": true,
+      "no_pixels_decoded": true
+    },
+    "frames_retained": 180,
+    "first_report_sha256": "77f1f71ab181186eaba3175ddc02610c02e8cf7dda0c0b04c74667123853ba5b",
+    "common_fit_accuracy": {
+      "native": 52,
+      "multiscale": 49
+    },
+    "new_multiscale_fits": 34,
+    "new_multiscale_fits_accurate": 0,
+    "native_accurate_but_multiscale_inaccurate_source_indices": [
+      155,
+      156,
+      158
+    ]
+  },
+  "desk2": {
+    "native_full_status_pose_clock_reference_mismatches": [],
+    "old_summary": {
+      "accepted_updates": 16,
+      "accurate_root_updates": 16,
+      "all_updates_passed": false,
+      "frames": 180,
+      "initialized_frames": 1,
+      "lost": true,
+      "reference_valid_updates": 179,
+      "rejected_updates": 163,
+      "updates": 179
+    },
+    "stats": {
+      "native": {
+        "summary": {
+          "accepted_updates": 16,
+          "accurate_root_updates": 16,
+          "all_updates_passed": false,
+          "frames": 180,
+          "initialized_frames": 1,
+          "lost": true,
+          "reference_valid_updates": 179,
+          "rejected_updates": 163,
+          "updates": 179
+        },
+        "max_translation_error_m": 0.08769042283767553,
+        "max_rotation_error_rad": 0.09250872159426188,
+        "first_inaccurate": null,
+        "first_lost": {
+          "index": 27,
+          "source_index": 127,
+          "rejection": "visual accepted-pose age exceeded; localization lost"
+        },
+        "rejection_types": {
+          "duplicate or stale RGB acquisition; no pose permission renewal": 6,
+          "invalid or oversized visual correspondences": 3,
+          "no bounded visual correspondence consensus": 1,
+          "visual accepted-pose age exceeded; localization lost": 1,
+          "visual odometry lost; explicit new origin required": 152
+        },
+        "first_fit_rejection": {
+          "index": 21,
+          "source_index": 121,
+          "rejection": "invalid or oversized visual correspondences",
+          "matches": 10,
+          "correspondences": 4
+        }
+      },
+      "multiscale": {
+        "summary": {
+          "accepted_updates": 19,
+          "accurate_root_updates": 15,
+          "all_updates_passed": false,
+          "frames": 180,
+          "initialized_frames": 1,
+          "lost": true,
+          "reference_valid_updates": 179,
+          "rejected_updates": 160,
+          "updates": 179
+        },
+        "max_translation_error_m": 0.12290100245476307,
+        "max_rotation_error_rad": 0.10617091066391768,
+        "first_inaccurate": {
+          "index": 19,
+          "source_index": 119,
+          "evaluation": {
+            "estimate_present": true,
+            "evaluation_only_truth": {
+              "quaternion_wxyz": [
+                0.9799532912314913,
+                0.09956558309149789,
+                0.1617719109568039,
+                0.060067382942843986
+              ],
+              "translation_m": [
+                -0.35518085631058904,
+                -0.169473242246527,
+                -0.21094146709220385
+              ]
+            },
+            "reference_valid": true,
+            "rotation_error_rad": 0.10505711657208218,
+            "translation_error_m": 0.09704116347949583,
+            "within_accuracy_gates": false
+          }
+        },
+        "first_lost": {
+          "index": 31,
+          "source_index": 131,
+          "rejection": "visual accepted-pose age exceeded; localization lost"
+        },
+        "rejection_types": {
+          "duplicate or stale RGB acquisition; no pose permission renewal": 7,
+          "no bounded visual correspondence consensus": 3,
+          "invalid or oversized visual correspondences": 1,
+          "visual accepted-pose age exceeded; localization lost": 1,
+          "visual odometry lost; explicit new origin required": 148
+        },
+        "first_fit_rejection": {
+          "index": 21,
+          "source_index": 121,
+          "rejection": "no bounded visual correspondence consensus",
+          "matches": 32,
+          "correspondences": 20
+        }
+      }
+    },
+    "inventory_integrity": {
+      "all_files_verified": true,
+      "bytes_verified": 96554418,
+      "files_verified": 345,
+      "no_numeric_labels_parsed": true,
+      "no_pixels_decoded": true
+    },
+    "frames_retained": 180,
+    "first_report_sha256": "bd7d127abe0116712738d84a0bbfb5789004635c208d90833dd97b115dbf31f1",
+    "common_fit_accuracy": {
+      "native": 16,
+      "multiscale": 14
+    },
+    "new_multiscale_fits": 3,
+    "new_multiscale_fits_accurate": 1,
+    "native_accurate_but_multiscale_inaccurate_source_indices": [
+      119,
+      120
+    ]
+  },
+  "all18source_bindings_exact_after_full_optional_checks": true
+}

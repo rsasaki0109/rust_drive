@@ -1,0 +1,53 @@
+{
+  "rust_tests_passed": 94,
+  "commands": [
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--manifest-path",
+        "integrations/rgbd/Cargo.toml",
+        "--check"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--release",
+        "--all-targets",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "integrations/rgbd/Cargo.toml",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "tests",
+      "command": [
+        "cargo",
+        "test",
+        "--release",
+        "--all-targets",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "integrations/rgbd/Cargo.toml"
+      ],
+      "returncode": 0
+    }
+  ],
+  "logs_sha256": {
+    "fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "clippy.log": "2a85150adfb69b1097d46b7125e105ae80593e91ccb5813378f8a226ee72255e",
+    "tests.log": "2d28d876d632f78a535b1285c0f3b5ccab41468cddd72ae918fb82d7f0d2e147"
+  }
+}

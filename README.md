@@ -74,6 +74,14 @@ The original room 52/179 and desk2 16/179 root-accuracy failures remain unchange
 Independent audits verify all 179 pairs in each recording; maturity remains
 about 20%, with the 30% and 50% goals unmet.
 
+The subsequent [continuous multiscale comparison](docs/multiscale-temporal.md)
+retains one origin and all 179 updates, but root-accurate counts regress from
+52 to 49 in the viewed room and 16 to 15 in desk2 despite more accepted fits.
+All branches lose tracking. Independent audits verify every retained frame;
+adjacent-pair improvements do not transfer to continuous accuracy. Complete
+repeat validation reproduces both failed outcomes. This offline comparison
+does not increase the about-20% maturity estimate or supply driving integration.
+
 ## Build and run
 
 The shared pipeline, CPU RNE adapter and recorded 3D demos are available on `main`.

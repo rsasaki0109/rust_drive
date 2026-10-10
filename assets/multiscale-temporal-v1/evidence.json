@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-10-10T12:55:35.875910+00:00",
+  "evidence_role": "preregistered viewed continuous regression",
+  "fresh_holdout_claim": false,
+  "design_commit": "41d661424ea33ff2ef3af4de785b745ec9d18bfe",
+  "base_commit": "2f4f7b6995758fbb3f90350c6a50fd535d635976",
+  "source_bindings": {
+    "cargo_lock": "67845fb7e4a53e15e4e3c70bba72142aff666893cf1d0c96c4654cdc16b7197b",
+    "cargo_manifest": "5a49c3a2c04951ffbf3e154d28fe1e13d2dda92b410b15ec849bfe33377e0d5f",
+    "core_lib": "6cdc9459e0ae8dcccd0fa8d8d468a2adc0eee12aa3cc4bacca1b871a8b4d708e",
+    "core_manifest": "87843fdea23432c48657e5f24d7b4708be278f88c799417e71ddc6794a900b61",
+    "design": "d0b6a8f21ded03ce8125e30e47440d223c77567d0f2e41b6d9031c32e1ea34df",
+    "image_features": "5b5b103d4e798929f753a850387609405cad1a303d49ef8e81433f064e901106",
+    "localization_lib": "26e1a082ceedadd0de957714bd11170bf16e732e7948b01530b699214510bdf3",
+    "localization_manifest": "deb14cd630257a08443cb05b345fb269206192fb2b04772dbc44384d27daf7cf",
+    "multiscale_features": "846051d2f99d07432229a456f9cc96ace6732419df7fde223d0379bfaf13a973",
+    "pair_binary": "abbcfbb4f58b4499f3720ba3e15dbec47a833ea86df44bb5e163c0db2f60a446",
+    "perception_lib": "0393a7d84176167bdfa6e242788f1f17555c2ab7abee687c845583b2b5141291",
+    "perception_manifest": "e8f5dd659382b1ae3087f8087f2f6f4f8f9ea1836df678ff400c50b23e858e2a",
+    "registration3d": "eca9fe887f4a237dd627eb06e2793579ec4fbffd6330d120017572d734c4b715",
+    "reprojection3d": "2895e1c3eafefcfacdd156fd51706598521f0344f427f24edf420d159e5da486",
+    "rust_toolchain": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed",
+    "temporal_binary": "baf0febbd7f22d7a99cd19760d7f4d53226f805960e7f17c29f3ae897f8703fe",
+    "temporal_support": "f146418ca350f4b361e73ca1f7e6640b626920adbd0e36faf4a5e4a106c7751b",
+    "visual_odometry3d": "718192d69b02de0a668c54e8469812b7c5f1903ab74de660e1b221e2ec874d24"
+  },
+  "auditor_sha256": "231d6c5fd9a56d9925d7a52ad5a1affb36170275914fb275f199fcf385040e4e",
+  "wrapper_sha256": "e0221d6d5dcfbd8905e73586076c4e1d1b1588e0da318af7df1103ff67063e65",
+  "first_executable_sha256": "8a484777ab625c312d942c85b3f1214286c420d011c5b809ad5badb309bdc1e9",
+  "reproduction_executable_sha256": "8a484777ab625c312d942c85b3f1214286c420d011c5b809ad5badb309bdc1e9",
+  "first_physical_exit_status": {
+    "room": 1,
+    "desk2": 1
+  },
+  "summary": {
+    "room": {
+      "native": {
+        "frames": 180,
+        "updates": 179,
+        "initialized_frames": 1,
+        "accepted_updates": 58,
+        "rejected_updates": 121,
+        "accurate_root_updates": 52,
+        "reference_valid_updates": 179,
+        "lost": true,
+        "all_updates_passed": false
+      },
+      "multiscale": {
+        "frames": 180,
+        "updates": 179,
+        "initialized_frames": 1,
+        "accepted_updates": 92,
+        "rejected_updates": 87,
+        "accurate_root_updates": 49,
+        "reference_valid_updates": 179,
+        "lost": true,
+        "all_updates_passed": false
+      }
+    },
+    "desk2": {
+      "native": {
+        "frames": 180,
+        "updates": 179,
+        "initialized_frames": 1,
+        "accepted_updates": 16,
+        "rejected_updates": 163,
+        "accurate_root_updates": 16,
+        "reference_valid_updates": 179,
+        "lost": true,
+        "all_updates_passed": false
+      },
+      "multiscale": {
+        "frames": 180,
+        "updates": 179,
+        "initialized_frames": 1,
+        "accepted_updates": 19,
+        "rejected_updates": 160,
+        "accurate_root_updates": 15,
+        "reference_valid_updates": 179,
+        "lost": true,
+        "all_updates_passed": false
+      }
+    }
+  },
+  "all_180_frames_and_179_updates_retained": true,
+  "full_independent_integrity_passed": true,
+  "full_reproduction_integrity_passed": true,
+  "all_physical_protocols_passed": false,
+  "raw_recordings_redistributed": false,
+  "evidence_files_sha256": {
+    "auditor-self-test.json": "2725d564cae690d760e0fd7c4ea48ae024bfb753d013db986deaa8636e054753",
+    "control-audit.json": "947fb12c256af1964958eae5f85e933899878241f169807da60ce5cba9ec0dfc",
+    "control.json.gz": "48e8f4cbf11583b599371e709805c267d7c6ecc8ec6e68467df0db501e94aa46",
+    "core-validation.json": "9ad8b10288594262ff150ed2021655a8be021a88600beafd0aacdd8f2af07eb6",
+    "design.json": "d0b6a8f21ded03ce8125e30e47440d223c77567d0f2e41b6d9031c32e1ea34df",
+    "desk2-audit-journal.json": "34be42936a7a92f48f8feea8d6cd5f390b7866c1050163cb54d875226d09f0fe",
+    "desk2-audit.json": "06609642544d53e1b8272cc212ea87f2a29d4d90f7eb0d2d273c8b2f0560d0ce",
+    "desk2-freeze.json": "da385cc0784f438893c9c8a7283487dc5baf38bd51a234ac290babc0d48b1f89",
+    "desk2-report.json.gz": "3d4dc561c280454c788a2e04d5b11c455b0cd21aecfafbbf1cfeb314c90fe6d8",
+    "first-executable-receipt.json": "d2152fc946320b94f59f86415ebe1ecac3ab602ebe1a80af537abb83bab7b599",
+    "first-stage-journal.json": "e48696a83484e66cc143ae8477d07dd58f473b0355f95b1917c53dc330e18c53",
+    "inventory-preflight.json": "c0e0fbc93bb80e9cdbc5c6ab79e631cdc5741c4a983646c5ddc9e84e55201903",
+    "measurement-reuse-pretrial.json": "b9595d841a90160340f6eaf837ec7a399c00d45aaac3a3a51cb8f983994b0653",
+    "native-comparison.json": "bb34137d1cc0a3048f799dc5f590efd36478a1d2c4434bf77178f4b7f543934d",
+    "optional-validation.json": "d5ab38c06417d23682819987bc9d4e87f1385dd00fe27b43feebb7ab0c990ebd",
+    "output-guards.json": "85120567b6cf47f78c4151154828bb557dcc04c2929d622be1c1915e19b77f2d",
+    "post-trial-preservation.json": "dca98b33a19f58190aa1562d97c1da57830f66ba93d010c7af08e93519c55fda",
+    "pre-experiment-preservation.json": "1f36aa063db279305092bcfbd214c5f1ac041ab8e6723802f9ee5825bf8c450e",
+    "pre-recorded-run.json": "60af86e27c3bca0de77bda218b632fa52e6f6046b3cfca241d93dc1dde37bef5",
+    "regression-suite.json": "af04d5aeab17d775d004b70bf0ce700451cf7c608015771c195267954651db87",
+    "room-audit-journal.json": "a959315c6a64c77cbcba554fc5b12a3d4c52aad2e64db8f928f91001b5c15c5a",
+    "room-audit.json": "7f45c9e1bdb95394870066be0f7c4871a2bdcdd60473cb8694af4ae4bc885b40",
+    "room-freeze.json": "1f419ab2ee40bc619322c1ed27c301f07dc3b95486bd85b41563bf07c673ac93",
+    "room-report.json.gz": "1c94a810299413a60200f62f6d9c276cf7f6b8fcabda506dc6efcd0d3c7fae50",
+    "suite-exit-receipt.json": "35cb455d6c1de845cb33c87e3704efb7f0c1f38a10fdca8f701bcd77589ed332",
+    "suite-self-test.json": "221f0859a6f2d0fde398891f8bcba44da19050395e5798e8eab4180761992ce9",
+    "synthetic-refinement-search.json.gz": "0818cd31b2179b5b43d2e0d8f58b859290272fcd3e27bc27ecb3b0ac349a43b8",
+    "validation.json": "694966afc567bf3c106b55cccd17eb97d27dae4a15d69783e880c90b5efd7a8e",
+    "workflow-actionlint.json": "a58bd39ef05c864be1010f2ec913385e2f378a7fcb0c0ce17bb4383c332acbfb"
+  },
+  "limitations": [
+    "More accepted multiscale fits worsen continuous root accuracy on both viewed scenes.",
+    "Original native trajectories and historical failures remain unchanged.",
+    "No fresh holdout, calibrated uncertainty or automotive generalization.",
+    "No runtime sensor permission or vehicle integration; default driving stack unchanged.",
+    "Capacity limits do not establish peak memory or real-time performance."
+  ]
+}

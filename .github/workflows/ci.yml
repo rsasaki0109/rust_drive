@@ -201,6 +201,15 @@ jobs:
                   "multiscale": {"fitted": multi, "accurate": multi, "scorable": 179},
               }, "viewed pair result changed; retain and inspect every failure"
           PY
+      - name: Audit continuous multiscale state controls and reproduce viewed motion failures
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+        run: |
+          integrations/rgbd/target/release/rustdriving-rgbd-multiscale-temporal --control --output artifacts/multiscale-temporal/control.json
+          python scripts/check-multiscale-temporal.py --report artifacts/multiscale-temporal/control.json --output artifacts/multiscale-temporal/control-oracle.json
+          python scripts/check-multiscale-temporal.py --self-test --output artifacts/multiscale-temporal/state-self-test.json
+          python scripts/check-multiscale-temporal-suite.py --self-test --output artifacts/multiscale-temporal/suite-controls
+          python scripts/check-multiscale-temporal-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-multiscale-temporal --output artifacts/multiscale-temporal/viewed-regression
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -223,6 +232,7 @@ jobs:
             artifacts/recorded-tracked/
             artifacts/recorded-independent/
             artifacts/multiscale-pairs/
+            artifacts/multiscale-temporal/
             artifacts/pyramidal-tracking-synthetic-exercises.json
 
   visual:
