@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-10-10T08:02:52.239368+00:00",
+  "candidate": "TUM RGB-D rgbd_dataset_freiburg1_desk2",
+  "evidence_role": "Distinct previously unevaluated recording; original official description identifies the same four desks as FR1 desk, so no independent physical-room/camera claim.",
+  "fixed_prospective_window": {
+    "first_original_depth_index": 100,
+    "last_original_depth_index": 279,
+    "frames": 180,
+    "updates": 179,
+    "declared_prior_to_new_timestamp_table_contents": true,
+    "window_search_using_accuracy": false
+  },
+  "official_pages": [
+    {
+      "url": "https://cvg.cit.tum.de/data/datasets/rgbd-dataset",
+      "final_url": "https://cvg.cit.tum.de/data/datasets/rgbd-dataset",
+      "status": 200,
+      "bytes": 225552,
+      "sha256": "bcc8ac86593f2c0820269870c87307c57dd28bf9ac3219acc1e31fa49a8aa8a9"
+    },
+    {
+      "url": "https://cvg.cit.tum.de/data/datasets/rgbd-dataset/download",
+      "final_url": "https://cvg.cit.tum.de/data/datasets/rgbd-dataset/download",
+      "status": 200,
+      "bytes": 668959,
+      "sha256": "9734b24cec8185e7eb5c5bced21cfd16686f2c68cd30cb31c5b0071dc0f0e640"
+    }
+  ],
+  "authoritative_license": {
+    "source_url": "https://cvg.cit.tum.de/data/datasets/rgbd-dataset",
+    "section": "License",
+    "exact_visible_text_quote": "Unless stated otherwise, all data in the TUM RGB-D benchmark is licensed under a Creative Commons 4.0 Attribution License (CC BY 4.0) and the accompanying source code is licensed under a BSD-2-Clause License .",
+    "license_identifier": "CC-BY-4.0",
+    "license_link": "https://creativecommons.org/licenses/by/4.0/",
+    "scope": "All benchmark data unless stated otherwise; code BSD-2-Clause is separate.",
+    "candidate_specific_exception_found_in_download_description": false,
+    "full_creative_commons_legalcode_not_fetched": true,
+    "attribution_required": true,
+    "raw_redistribution_planned": false,
+    "page_sha256": "bcc8ac86593f2c0820269870c87307c57dd28bf9ac3219acc1e31fa49a8aa8a9"
+  },
+  "official_sequence_description": {
+    "source_url": "https://cvg.cit.tum.de/data/datasets/rgbd-dataset/download#freiburg1_desk2",
+    "quote": "This sequence contains several sweeps over four desks in a typical office environment (similar to desk, but second recording).",
+    "published_duration_seconds": 24.86,
+    "published_duration_with_ground_truth_seconds": 24.28,
+    "published_approximate_size_table": "tgz (0.37GB)",
+    "published_approximate_size_sequence_prose": "file size: approx. 0.33GB",
+    "approximate_page_sizes_are_not_exact_bytes": true
+  },
+  "source_urls": {
+    "official_archive": "https://cvg.cit.tum.de/rgbd/dataset/freiburg1/rgbd_dataset_freiburg1_desk2.tgz",
+    "observed_archive_redirect": "https://webshare.cvg.cit.tum.de/g/rgbd/dataset/freiburg1/rgbd_dataset_freiburg1_desk2.tgz",
+    "official_ground_truth_link": "https://cvg.cit.tum.de/rgbd/dataset/freiburg1/rgbd_dataset_freiburg1_desk2-groundtruth.txt",
+    "official_directory": "https://cvg.cit.tum.de/rgbd/dataset/freiburg1/",
+    "observed_directory_redirect": "https://webshare.cvg.cit.tum.de/g/rgbd/dataset/freiburg1/"
+  },
+  "archive_metadata": {
+    "request_method": "HEAD",
+    "official_response_status": 302,
+    "proxy_connect_response_status_after_redirect": 403,
+    "curl_exit_status": 56,
+    "curl_final_origin_http_code": "000",
+    "exact_content_length": null,
+    "last_modified": null,
+    "etag": null,
+    "published_checksum": null,
+    "published_checksum_url": null,
+    "checksum_links_found_on_two_accessible_official_pages": [],
+    "directory_listing_unavailable_due_to_observed_redirect_host_denial": true,
+    "archive_bytes_acquired": false
+  },
+  "remaining_actual_redirect_host": [
+    "webshare.cvg.cit.tum.de"
+  ],
+  "metadata_only_mirror_lead": {
+    "repository": "taiyakijz/slam-project",
+    "revision": "7337d35da1aa6a75ddc93dfbcc3a211b683d405a",
+    "prefix": "dataset_manifests/desk2/",
+    "depth_index": {
+      "bytes": 29471,
+      "git_blob_sha1": "b9d192bc73ab370ad2963920d6c757ed80681fd9"
+    },
+    "rgb_index": {
+      "bytes": 28239,
+      "git_blob_sha1": "2ef56438e3bace9b36a6516b16ee108ab7e76e54"
+    },
+    "complete_groundtruth": {
+      "bytes": 164359,
+      "git_blob_sha1": "23a77be6d7abe428d0ceb551839cc5355318f5c4"
+    },
+    "contents_read": false,
+    "independent_byte_agreement_with_official_source_unverified": true
+  },
+  "camera_profile": {
+    "family": "Freiburg 1 published TUM1 camera profile, unchanged existing research assumption",
+    "source": "luigifreda/pyslam@96019cfafcfc099ac9866884d7143a9ed1451a0d/settings/TUM1.yaml",
+    "sha256": "5bd0ec559a251ac402756be7db0bd367bb364fe6a9d85e0770cd0681003602cf",
+    "width": 640,
+    "height": 480,
+    "fx": 517.306408,
+    "fy": 516.469215,
+    "cx": 318.64304,
+    "cy": 255.313989,
+    "depth_units_per_metre": 5000,
+    "independently_measured": false,
+    "additional_undistortion": false
+  },
+  "pending_before_raw_acquisition": [
+    "Supported published network policy for the actually observed redirect host webshare.cvg.cit.tum.de, without bypassing proxy or TLS.",
+    "Archive HEAD/directory checksum metadata to establish exact bytes, server validators and any published checksum; the link is currently unversioned and archive identity is not frozen.",
+    "Root-owned acquisition protocol for original archive versus <=128MiB selected raw subset; the full approximately0.37GB archive exceeds the prospective selected-raw cap.",
+    "Parent source/window preregistration followed by timestamp-only full-source integrity and fixed-window association/bracket qualification; no metadata table contents have been read by this discovery task."
+  ],
+  "inspection": {
+    "source_discovery_metadata_only": true,
+    "new_timestamp_table_contents_read": false,
+    "new_gt_pose_values_parsed": false,
+    "archive_acquired": false,
+    "images_acquired": false,
+    "image_headers_inspected": false,
+    "image_pixels_decoded": false,
+    "features_or_fits_run": false,
+    "proxy_preserved": true,
+    "tls_verification": true,
+    "alternate_route_or_bypass": false
+  },
+  "old_evidence_policy": "Earlier source/algorithm/first-trial archives and historically unverified license statements remain byte-exact. This new authoritative page evidence is prospective provenance, not retroactive archive mutation."
+}

@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "kind": "prospective_independent_recording_design",
+  "created_utc": "2026-10-10T08:07:55.534739+00:00",
+  "dataset": "tum-fr1-desk2-independent",
+  "algorithm": "bounded_visual_reprojection_independent_recording",
+  "protocol_version": 1,
+  "source": {
+    "official_url": "https://cvg.cit.tum.de/rgbd/dataset/freiburg1/rgbd_dataset_freiburg1_desk2.tgz",
+    "observed_redirect_url": "https://webshare.cvg.cit.tum.de/g/rgbd/dataset/freiburg1/rgbd_dataset_freiburg1_desk2.tgz",
+    "archive_root": "rgbd_dataset_freiburg1_desk2/",
+    "license": "CC-BY-4.0",
+    "license_source": "https://cvg.cit.tum.de/data/datasets/rgbd-dataset",
+    "published_checksum": null,
+    "published_checksum_status": "No checksum link on the accessible official dataset/download pages; directory metadata remains unavailable. A locally computed hash is an acquisition identity, not a publisher checksum or signature.",
+    "evidence_role": "Previously unevaluated recording. Official description says a second recording of the same four desks; no independent physical room or automotive environment claim."
+  },
+  "window": {
+    "first_depth_index": 100,
+    "last_depth_index": 279,
+    "frames": 180,
+    "updates": 179
+  },
+  "selection": {
+    "declared_before_new_source_table_contents": true,
+    "fixed_original_depth_indices": true,
+    "rgb": "nearest timestamp over complete original RGB table; earlier original index wins an exact tie",
+    "frame_roles": "initialization then independent_recording for all remaining 179 frames",
+    "accuracy_based_window_search": false,
+    "restart_or_recovery": false,
+    "all_updates_retained": true
+  },
+  "acquisition_bounds": {
+    "max_compressed_archive_bytes": 536870912,
+    "max_decompressed_archive_bytes": 2147483648,
+    "max_archive_members": 10000,
+    "max_member_bytes": 4194304,
+    "max_selected_raw_bytes": 134217728,
+    "max_metadata_bytes": 4194304,
+    "max_index_rows": 20000,
+    "max_ground_truth_rows": 30000,
+    "allowed_member_types": "regular files and directories only; reject traversal, links, duplicate paths, foreign root, and nonfinite/negative sizes",
+    "extraction": "No blanket tar extraction. Scan bounded headers and opaque payloads; save only complete metadata first, then fixed qualified RGB/depth selection."
+  },
+  "phase_order": [
+    "Freeze source choice, window, unchanged estimator, gates and archive resource caps before new metadata or compressed archive acquisition.",
+    "Acquire official archive through inherited proxy with TLS verification. Preserve final URL and exact size, computed SHA256 and MD5; check any authoritative checksum before use, never invent one.",
+    "Inventory bounded archive and read complete depth/RGB indices plus only timestamp and arity of complete ground truth. Compressed image bytes are acquired and archive payloads decompressed, but PNG headers/pixels and numeric pose columns remain uninterpreted.",
+    "Qualify complete source ordering, finite timestamps, nearest RGB gaps <=0.02s, and all fixed-window GT brackets <=0.02s without extrapolation. Preserve failure without changing the source/window.",
+    "Only after qualification, copy fixed selected opaque image bytes. Bind per-file hashes, original source paths and archive identity in manifest; seal code/configuration/source/qualification freeze before decoding.",
+    "Run every operational fit with one camera root. Parse numeric reference poses only after all fits, then independently score and audit every update."
+  ],
+  "estimator": {
+    "basis": "Original temporal descriptor/depth/reprojection path; no depth-supported matching or Lucas-Kanade variant",
+    "feature_source_sha256": "5b5b103d4e798929f753a850387609405cad1a303d49ef8e81433f064e901106",
+    "visual_pose_source_sha256": "718192d69b02de0a668c54e8469812b7c5f1903ab74de660e1b221e2ec874d24",
+    "reprojection_pose_source_sha256": "2895e1c3eafefcfacdd156fd51706598521f0344f427f24edf420d159e5da486",
+    "defaults": "Unchanged Rust ImageFeatureConfig, VisualOdometry3dConfig and ReprojectionConfig3d defaults; fixed before new data; full values included in pre-pixel source freeze",
+    "max_unobserved_s": 0.2,
+    "repeat_guard": "Compare against last observed RGB acquisition; rejected observations cannot be retried or renew accepted pose",
+    "expiry": "Accepted-pose expiry checked before RGB freshness and latches Lost; no restart",
+    "depth": "All nine integer-nearest patch samples valid, 0.3..5 metres, spread <=0.05m, units5000/m",
+    "refinement_failure": "Reject without coarse fallback, root output, or accepted-reference/clock renewal",
+    "origin": "One measured initial camera origin; previous_from_current accepted poses composed into root"
+  },
+  "camera_profile": {
+    "width": 640,
+    "height": 480,
+    "fx": 517.306408,
+    "fy": 516.469215,
+    "cx": 318.64304,
+    "cy": 255.313989,
+    "units_per_metre": 5000,
+    "invalid_depth": 0,
+    "source": "luigifreda/pyslam@96019cfafcfc099ac9866884d7143a9ed1451a0d/settings/TUM1.yaml",
+    "sha256": "5bd0ec559a251ac402756be7db0bd367bb364fe6a9d85e0770cd0681003602cf",
+    "independently_measured": false,
+    "additional_undistortion": false
+  },
+  "accuracy": {
+    "translation_gate_m": 0.1,
+    "rotation_gate_rad": 0.1,
+    "max_ground_truth_bracket_s": 0.02,
+    "extrapolation": false,
+    "denominator": 179,
+    "criterion": "Every update accepted and root accurate; preserve criterion even if duplicate source acquisitions make it structurally unattainable"
+  },
+  "manifest_contract": {
+    "exact_top_level_keys": [
+      "schema_version",
+      "dataset",
+      "official_archive",
+      "preregistration_sha256",
+      "depth_calibration",
+      "calibration_source",
+      "frames",
+      "files"
+    ],
+    "official_archive_exact_keys": [
+      "url",
+      "final_url",
+      "bytes",
+      "sha256",
+      "md5",
+      "root",
+      "published_checksum"
+    ],
+    "official_archive_values": "URLs/root exactly source fields above; bytes positive <=compressed cap; lowercase SHA25664/MD532; published_checksum null unless explicit preregistered revision before data use",
+    "preregistration_sha256": "SHA256 of exact design.json bytes",
+    "calibration_source": "Unchanged original TUM1 descriptor: repository luigifreda/pyslam, revision96019cfafcfc099ac9866884d7143a9ed1451a0d, source_path settings/TUM1.yaml, file camera-calibration.yaml, bytes1615, sha256 as profile above, role source_calibration_documentation_only. It is documentation only, outside raw files inventory.",
+    "frame_exact_keys": [
+      "source_index",
+      "depth_file",
+      "depth_timestamp",
+      "rgb_file",
+      "rgb_timestamp",
+      "rgb_source_index",
+      "pair_gap_seconds",
+      "split"
+    ],
+    "file_exact_keys": [
+      "file",
+      "source_path",
+      "bytes",
+      "sha256",
+      "role"
+    ],
+    "file_names": "Flat depth-<original timestamp>.png/rgb-<original timestamp>.png and depth.txt/rgb.txt/groundtruth.txt; source_path is root-relative original depth/<timestamp>.png or rgb/<timestamp>.png or metadata name",
+    "file_roles": "depth_frame, rgb_frame, depth_index, rgb_index, evaluation_only_mocap_ground_truth",
+    "files": "Exact distinct selected image files plus three complete metadata files; no extra or missing raw files; no Git-source identity"
+  },
+  "qualification_contract": {
+    "exact_keys": [
+      "schema_version",
+      "dataset",
+      "manifest_sha256",
+      "official_archive",
+      "preregistration_sha256",
+      "helper_sha256",
+      "acquisition_helper_sha256",
+      "passed",
+      "pixels_read",
+      "image_headers_read",
+      "ground_truth_pose_values_parsed",
+      "features_or_fits_run",
+      "window",
+      "metadata_files",
+      "timestamps"
+    ],
+    "metadata_files": "Three exact name objects with bytes and sha256 only",
+    "timestamps": "Same exact timestamp-statistics schema as original temporal qualification; no Git hashes, no GT pose values",
+    "false_flags_scope": "Qualifier never opens selected PNG bytes; archive acquisition/decompression exposure is separately disclosed in acquisition log, not denied by these local flags"
+  },
+  "new_source_paths": {
+    "evaluator_source_sha256": "integrations/rgbd/src/bin/rustdriving-rgbd-independent.rs",
+    "independent_source_sha256": "integrations/rgbd/src/independent.rs",
+    "independent_checker_sha256": "scripts/check-recorded-independent.py",
+    "qualification_source_sha256": "scripts/qualify-rgbd-independent.py",
+    "acquisition_source_sha256": "scripts/fetch-independent-dataset.py",
+    "preregistration_source_sha256": "assets/recorded-independent/desk2-v1/design.json"
+  },
+  "initial_exposure": {
+    "new_timestamp_table_contents_read": false,
+    "archive_acquired": false,
+    "images_decoded": false,
+    "ground_truth_pose_values_parsed": false,
+    "features_or_fits_run": false
+  },
+  "limitations": "Offline indoor independent recording only; not independent physical environment, automotive confidence, calibrated uncertainty, vehicle integration, or a 30-percent maturity gate. Preserve all prior sources/archives/results byte-exact."
+}
