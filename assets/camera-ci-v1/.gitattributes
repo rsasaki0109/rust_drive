@@ -1,3 +1,12 @@
 # Preserve the byte-pinned observations and copied upstream license text.
 ** -text
 LICENSE-BDD-data.txt whitespace=-blank-at-eol
+# Keep the authored repair and verifier visible in review.
+source/** linguist-generated=true
+*-controls/** linguist-generated=true
+*-validation/** linguist-generated=true
+*.json linguist-generated=true
+*.json.gz linguist-generated=true
+checks/** linguist-generated=true
+probe/*.log linguist-generated=true
+probe/Cargo.lock linguist-generated=true
