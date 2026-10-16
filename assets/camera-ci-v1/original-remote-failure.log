@@ -1,0 +1,14 @@
+2026-10-16T14:23:08.6220058Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+2026-10-16T14:23:08.6220571Z ##[endgroup]
+2026-10-16T14:23:08.8165125Z {"pass_checks": true, "rejected_inputs": 28, "no_model_all_rejected": true}
+2026-10-16T14:23:09.1031055Z Running recorded-healthy
+2026-10-16T14:23:45.6267175Z Traceback (most recent call last):
+2026-10-16T14:23:45.6278314Z   File "/home/runner/work/rust_drive/rust_drive/integrations/onnx/camera_pipeline_check.py", line 359, in <module>
+2026-10-16T14:23:45.6279009Z     run(args)
+2026-10-16T14:23:45.6279631Z   File "/home/runner/work/rust_drive/rust_drive/integrations/onnx/camera_pipeline_check.py", line 281, in run
+2026-10-16T14:23:45.6280601Z     require([e['freshness'] for e in first['events']] == previous['results'], 'exact prior freshness decisions/projections')
+2026-10-16T14:23:45.6281608Z   File "/home/runner/work/rust_drive/rust_drive/integrations/onnx/camera_pipeline_check.py", line 29, in require
+2026-10-16T14:23:45.6282612Z     raise ValueError(message)
+2026-10-16T14:23:45.6282995Z ValueError: exact prior freshness decisions/projections
+2026-10-16T14:23:45.6373896Z ##[error]Process completed with exit code 1.
+2026-10-16T14:23:45.6470074Z ##[group]Run python - <<'PY'

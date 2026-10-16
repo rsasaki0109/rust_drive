@@ -1,0 +1,13 @@
+{
+  "hypothesis": "Decoded f32 expf may vary across system libm CPU implementations while weights, graph, clocks and policy remain fixed. This is a local probe, not a confirmed remote cause.",
+  "libc": [
+    "glibc",
+    "2.41"
+  ],
+  "tunable_addition": "glibc.cpu.hwcaps=-FMA,-AVX2,-AVX512F",
+  "existing_tunable_present": false,
+  "executable_sha256": "bc038e574f0d6ccb89c53a0584cff2eb826147783d46081a8bbb3c1554f1e62c",
+  "sequence_sha256": "660134354acff06a37eafff122fe87e67f8da09425dca7eb9deef56ab61ecaf2",
+  "reference": "artifacts/ci-camera-repair/first/recorded-healthy-first.json",
+  "expected_forwards": 32
+}

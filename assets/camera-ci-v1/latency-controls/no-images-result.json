@@ -1,0 +1,227 @@
+{
+  "schema_version": 1,
+  "algorithm": "yolox_s_measured_serial_replay_v1",
+  "compiled_sources": {
+    "integrations/camera-tracking/src/assignment.rs": "e9b7223b4a6cab91bad4c11725a4e828d21a8cb10cc4ef8fd72b60dde0b6e179",
+    "integrations/camera-tracking/src/freshness.rs": "d6995715b7c378d314b70abf595e094034b627eafce5dc0fbdaaeed80733332b",
+    "integrations/camera-tracking/src/lib.rs": "d2ef1e0649a64e16457b360e1871c81d3794cd38fef0600f1e5535200e8b2acc",
+    "integrations/onnx/Cargo.lock": "aa6f1b198ff4ad901f9547ef852dc0113b5c36624d43030a863af32b12f07a0c",
+    "integrations/onnx/Cargo.toml": "7459dc7d7fc0128214275703d48a4170d449edd559dc0cadab689f887d635c8d",
+    "integrations/onnx/fetch_s.py": "bbb3aa5a020e0bdf6054fc1fe1c58ccd64132547a68ab44e28a89d556a35f1ae",
+    "integrations/onnx/profile-analysis.json": "351bbba474b3f8efe42b2024024a4ca51d771d39098876e0d996d6cbcbc2fc2f",
+    "integrations/onnx/profile-latency.json": "730afa5d038469f7864aeac9c34737040e23263470676126e7a9188acf0afb24",
+    "integrations/onnx/profile-s.json": "b6ea56bd4b6271dc4d54b379b101db7425f61adfcd184211932fd2de6160f573",
+    "integrations/onnx/profile-sequence.json": "410be27e5d0b0161823456842bc6d830538823bde2975f215c74dfb671be37f1",
+    "integrations/onnx/profile-tiles-s.json": "005d8d0b0c06529886be51eee6e8f0de70068aa90e31865c1ef17ad5b3022a9f",
+    "integrations/onnx/profile-vehicle-consistency.json": "02d317d9b342e6385f7c73dada1c5a99a4b1f6dccb4284e2866d6688cecc3b67",
+    "integrations/onnx/profile-vehicle-context.json": "a9fd3fa5f18ba8f6ceb39c39cebed45d920f84a6de72f7ea1bf9b2b376bfdce8",
+    "integrations/onnx/profile-vehicle-vote.json": "2f13591deea2731b5736876d3e6612d92b45f6eba462e90df836e5ff15165e9d",
+    "integrations/onnx/src/bin/rustdriving-camera-analyze.rs": "4afa641ba4349033cd6700a718886f7c633b87ffb9dfeac48ee04b7280f9a42b",
+    "integrations/onnx/src/bin/rustdriving-camera-detect-s.rs": "6d1c965968e4d7d735922b4369e6076bf9801aed081dd7e6693702b513d46138",
+    "integrations/onnx/src/bin/rustdriving-camera-detect-tiled-s.rs": "bbd41c052c5b3dcd497cc9fd23d29b338b5f95046d7c36cefb6333f937899e39",
+    "integrations/onnx/src/bin/rustdriving-camera-detect-vehicle-context.rs": "e5a5f75f7caa73a3fb44a599bcfd50c002f335b0cf815f04636441c72d34a297",
+    "integrations/onnx/src/bin/rustdriving-camera-detect-vehicle-vote.rs": "bbe06b8a90b15b07d58afa50e4d22b9c239d4ef6f7610f7541a63ce0fc2d38f0",
+    "integrations/onnx/src/bin/rustdriving-camera-latency.rs": "edf13255c7ce5fd7327fe2642f4393a31e5058ebceeac7b67ac028ab3581c048",
+    "integrations/onnx/src/bin/rustdriving-camera-reconcile.rs": "337b561f1d5d4f62c98812c6fbdf038286e4b2e59fe32360010faca8fb5513f3",
+    "integrations/onnx/src/bin/rustdriving-camera-sequence.rs": "3d282c9ade24d2d00a5b08f07294a4abd9b2779be1b963710bccb9b71487b011",
+    "integrations/onnx/src/camera_analysis.rs": "4a4ae3e56662d712fec882d040ccacc6e91b919f0f0b132b69fe4c6a3c409534",
+    "integrations/onnx/src/camera_latency.rs": "8d30d058cf7959b951f24501d662647fcc1d5b7551267e4fb6ed0bd5a90f4908",
+    "integrations/onnx/src/camera_sequence.rs": "01f6b842422e9565c9ed2ce357738c12066ba8aa3579e51ad646d8cf562c28c7",
+    "integrations/onnx/src/lib.rs": "b379dfba4c45b535f61284ea9fc7748f6317038976b5fb61221f6a8561ad4bbc",
+    "integrations/onnx/src/yolox_s.rs": "cd23f879d840627b23aa954530e9e39ca5c5cc05cb2e927453c74178fd8142f0",
+    "integrations/onnx/src/yolox_tiles.rs": "0babb6b0c669c5fdbde867b9e9cdebf2ec50843bb121cf4ce3b097f084d5de28",
+    "integrations/onnx/src/yolox_vehicle_consistency.rs": "dd160d33a6a87f7b70c39630ef2b1cba039eeade61496f5551f70b866972681f",
+    "integrations/onnx/src/yolox_vehicle_context.rs": "96edb357fc8a69e9fd3f8e5ea1fb37e5fb986904ab5d663c50e9fa5b764358c5",
+    "integrations/onnx/src/yolox_vehicle_vote.rs": "34831fb00dc15d46d5a7facc0742baa30c0e8fb804b8ce8707958baf513c8a4c",
+    "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed"
+  },
+  "source_sequence_sha256": "75426fdec5286bd6d273cc95c163e176bd309654416dddd9b017bc7bfcff0751",
+  "camera_id": "no-images",
+  "width": 8,
+  "height": 6,
+  "config": {
+    "min_iou": 0.3,
+    "coast_seconds": 0.5,
+    "confirmation_hits": 2,
+    "velocity_gain": 0.5,
+    "max_tracks": 300
+  },
+  "policy": {
+    "max_age_s": 0.2,
+    "recovery_samples": 2
+  },
+  "clock": "std::time::Instant_serial_replay",
+  "control_permission": false,
+  "manifest_and_preflight_wall_s": 0.000068531,
+  "model_load_wall_s": 0.0,
+  "startup_before_schedule_wall_s": 0.000069052,
+  "schedule_wall_s": 0.000030776,
+  "model_loads": 0,
+  "preflight_image_reads": 0,
+  "inference_image_reads": 0,
+  "model_forwards": 0,
+  "summary": {
+    "image_events": 0,
+    "inferred_images": 0,
+    "skipped_images": 0,
+    "inferred_but_late_images": 0,
+    "late_at_check_images": 0,
+    "available_at_check_images": 0,
+    "maximum_source_age_at_check_s": null,
+    "deadline_gate_pass": null
+  },
+  "events": [
+    {
+      "source": {
+        "event_index": 0,
+        "source_timestamp_text": "0",
+        "source_timestamp_s": 0.0,
+        "release_offset_s": 0.0,
+        "source_image_sha256": null
+      },
+      "measured": {
+        "precheck_decision": null,
+        "analysis": null,
+        "timing": {
+          "processing_started_s": 0.000021672,
+          "sample_submitted_s": 0.000025318,
+          "checked_after_tracking_s": 0.000026549,
+          "read_analysis_and_probe_wall_s": 3.646000000000002e-6,
+          "sample_guard_wall_s": 1.2309999999999989e-6,
+          "source_age_at_start_s": null,
+          "source_age_at_check_s": null,
+          "acquisition_deadline_s": null,
+          "deadline_missed_at_check": null
+        },
+        "guard_events": [
+          {
+            "event": {
+              "now_s": 0.000025318,
+              "input": {
+                "kind": "tick"
+              }
+            },
+            "output": {
+              "now_s": 0.000025318,
+              "decision": "polled",
+              "ready": false,
+              "hold_reason": "initializing",
+              "fault_epoch_s": null,
+              "recovery_count": 0,
+              "last_accepted_acquired_s": null,
+              "result_age_s": null,
+              "backend_updates": [],
+              "tracks": []
+            }
+          },
+          {
+            "event": {
+              "now_s": 0.000026549,
+              "input": {
+                "kind": "tick"
+              }
+            },
+            "output": {
+              "now_s": 0.000026549,
+              "decision": "polled",
+              "ready": false,
+              "hold_reason": "initializing",
+              "fault_epoch_s": null,
+              "recovery_count": 0,
+              "last_accepted_acquired_s": null,
+              "result_age_s": null,
+              "backend_updates": [],
+              "tracks": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "source": {
+        "event_index": 1,
+        "source_timestamp_text": "0.00001",
+        "source_timestamp_s": 0.00001,
+        "release_offset_s": 0.00001,
+        "source_image_sha256": null
+      },
+      "measured": {
+        "precheck_decision": null,
+        "analysis": null,
+        "timing": {
+          "processing_started_s": 0.000027691,
+          "sample_submitted_s": 0.000028773,
+          "checked_after_tracking_s": 0.000030205,
+          "read_analysis_and_probe_wall_s": 1.0820000000000008e-6,
+          "sample_guard_wall_s": 1.4319999999999992e-6,
+          "source_age_at_start_s": null,
+          "source_age_at_check_s": null,
+          "acquisition_deadline_s": null,
+          "deadline_missed_at_check": null
+        },
+        "guard_events": [
+          {
+            "event": {
+              "now_s": 0.000028773,
+              "input": {
+                "kind": "failed"
+              }
+            },
+            "output": {
+              "now_s": 0.000028773,
+              "decision": "acquisition_failed",
+              "ready": false,
+              "hold_reason": "acquisition_failed",
+              "fault_epoch_s": 0.000028773,
+              "recovery_count": 0,
+              "last_accepted_acquired_s": null,
+              "result_age_s": null,
+              "backend_updates": [
+                {
+                  "trigger": "acquisition_failure",
+                  "frame": {
+                    "timestamp_s": 0.000028773,
+                    "acquisition": {
+                      "status": "failed"
+                    }
+                  },
+                  "snapshot": {
+                    "sequence_number": 1,
+                    "timestamp_s": 0.000028773,
+                    "health": "acquisition_failed",
+                    "source_image_sha256": null,
+                    "tracks": [],
+                    "retired": [],
+                    "untracked_detection_indices": [],
+                    "assignment_work": 0
+                  }
+                }
+              ],
+              "tracks": []
+            }
+          },
+          {
+            "event": {
+              "now_s": 0.000030205,
+              "input": {
+                "kind": "tick"
+              }
+            },
+            "output": {
+              "now_s": 0.000030205,
+              "decision": "polled",
+              "ready": false,
+              "hold_reason": "acquisition_failed",
+              "fault_epoch_s": 0.000028773,
+              "recovery_count": 0,
+              "last_accepted_acquired_s": null,
+              "result_age_s": null,
+              "backend_updates": [],
+              "tracks": []
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
