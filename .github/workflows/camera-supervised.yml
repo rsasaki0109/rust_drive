@@ -1,0 +1,68 @@
+name: Supervised camera experiment
+on:
+  push:
+    paths:
+      - '.github/workflows/camera-supervised.yml'
+      - 'integrations/onnx/**'
+      - 'integrations/camera-tracking/**'
+      - 'assets/camera-supervised-v1/**'
+      - 'rust-toolchain.toml'
+permissions:
+  contents: read
+env:
+  CARGO_INCREMENTAL: '0'
+jobs:
+  supervised-camera:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned tools and independent checker
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
+          python -m pip install -r scripts/requirements-visual.txt
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            integrations/onnx/target
+            integrations/camera-tracking/target
+          key: camera-supervised-${{ runner.os }}-rust-1.90-${{ hashFiles('integrations/onnx/Cargo.lock', 'integrations/camera-tracking/Cargo.lock') }}
+      - name: Check independent guard ownership and frozen observations
+        run: |
+          cargo fmt --manifest-path integrations/onnx/Cargo.toml -- --check
+          cargo clippy --release --locked --manifest-path integrations/onnx/Cargo.toml --all-targets -- -D warnings
+          cargo test --release --locked --manifest-path integrations/onnx/Cargo.toml --bin rustdriving-camera-supervised
+          cargo build --release --locked --manifest-path integrations/onnx/Cargo.toml --bin rustdriving-camera-supervised --bin rustdriving-camera-latest --bin rustdriving-camera-nano
+          cargo build --release --locked --manifest-path integrations/camera-tracking/Cargo.toml
+          python -B assets/camera-supervised-v1/verify.py
+          python -B -m unittest discover -s integrations/onnx -p test_camera_supervised.py -v
+      - name: Acquire unchanged pinned models and recording
+        run: |
+          python integrations/onnx/fetch.py --output artifacts/camera-model
+          python integrations/onnx/fetch_s.py --output artifacts/camera-model-s
+          python scripts/fetch-visual-datasets.py tum-fr3-sitting-visual
+          mkdir -p artifacts/camera-supervised-check
+          cp assets/camera-nano-v1/LICENSE-TUM-data.txt artifacts/camera-supervised-check/LICENSE-TUM-data.txt
+      - name: Observe watchdog and fault delivery without weakening any gate
+        run: |
+          python -B integrations/onnx/camera_supervised_check.py controls --output artifacts/camera-supervised-check/controls
+          python -B integrations/onnx/camera_supervised_check.py run --controls artifacts/camera-supervised-check/controls --output artifacts/camera-supervised-check/validation
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r = json.loads(Path('artifacts/camera-supervised-check/validation/summary.json').read_text())
+          assert r['pass_checks'] and r['current_serial_measurement_bits_exact']
+          assert r['actual_model_forwards'] == 32 + r['timed_model_forwards']
+          assert r['independent_guard_replays'] == 8 and r['dropped_images_counted_unavailable']
+          assert not r['new_holdout'] and not r['new_accuracy_scoring']
+          assert not r['driving_integration'] and not r['hard_real_time_guarantee']
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: camera-supervised
+          path: artifacts/camera-supervised-check/

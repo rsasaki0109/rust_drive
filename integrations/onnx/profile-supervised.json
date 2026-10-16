@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "algorithm": "yolox_nano_supervised_replay_v1",
+  "model": "Unchanged original Nano model, four fixed views and postprocessing",
+  "execution": "One scoped inference worker; the calling thread owns the original freshness guard. One in-flight image and one replaceable pending image. Standard library channels only.",
+  "poll_period_s": 0.01,
+  "source_clock": "Original acquisition offsets, without renewal. Process every released source in order before admitting a completed result or dispatching pending work.",
+  "barriers": "Every missing/failed source is delivered to the guard and discards only the pending image. Active inference is drained; its original acquisition must pass the unchanged guard after completion.",
+  "completion": "Worker errors deliver a failed event. Every admitted result is followed by an observed post-tracking tick. Monitor beyond the final source/result until its accepted acquisition expires.",
+  "limits": "Offline bounded replay, not a hard real-time scheduler. OS stalls may delay checks. Cannot cancel a hung native forward or control a vehicle. Ten-second trace budget; no partial successful output on fatal clock/channel/budget errors.",
+  "control_permission": false
+}
