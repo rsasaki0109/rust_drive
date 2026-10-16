@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "algorithm": "yolox_s_parallel_image_analysis_v1",
+  "scope": "Optional CPU optimization of the unchanged model, four-view geometry, decoding, NMS and vehicle consistency; no vehicle controls",
+  "execution": "Share one immutable tract CPU plan; one isolated per-run state per view; at most four scoped standard-library worker threads",
+  "ordering": "Join every worker before returning, including on failure; restore original view order before unchanged merge and reconciliation",
+  "model": "Same pinned YOLOX-S weights and f32 operations; score0.3, NMS0.45; no resize/profile reduction",
+  "provenance": "Distinct parallel producer algorithm/source receipt; unchanged per-view detector receipts; old serial-report admission stays pinned",
+  "measurement": "Reuse exact camera_latency.rs timing/freshness controller; actual host time, existing0.2s age limit and measurement boundary",
+  "bounds": {"view_workers": 4, "decoded_source_pixels": 16000000, "encoded_image_bytes": 16777216, "output_bytes": 4194304}
+}

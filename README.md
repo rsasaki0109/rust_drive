@@ -138,6 +138,12 @@ isolated O3/ThinLTO/native build with binary/source/CPU receipts. The same
 less processing time, but one pair regresses; a consistent speedup is not
 established and all 200 ms gates still fail. Normal release remains the default.
 
+The optional [guarded Resize optimization](docs/camera-operators.md) replaces
+two nearest-neighbor expansions with standard tract operators. Raw model
+outputs match bit for bit on 16 images twice. Parallel processing falls from
+0.65–0.67 s to 0.60–0.63 s in the latest two local pairs (7.14% less time on average).
+The 200 ms deadline and original quality gates remain unmet.
+
 The [dense-depth and OpenCV diagnostics](docs/projective-depth-diagnostics.md)
 retain six development variants and a pinned OSS reference on the same viewed
 recordings. Projective depth fusion improves desk2 to 161/179 accurate roots,

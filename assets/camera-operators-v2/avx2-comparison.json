@@ -1,0 +1,82 @@
+{
+  "pass_checks": true,
+  "actual_model_forwards": 8,
+  "current_original_and_lowered_raw_bits_exact": true,
+  "historical_exact_rejected": "historical detections exact by default",
+  "historical_comparison": {
+    "confidence_max_absolute_f32_difference": 1e-05,
+    "score_threshold_crossing_rejected": true,
+    "other_fields_exact": true,
+    "accepted_confidence_differences": [
+      {
+        "path": "views.{'x': 0, 'y': 0, 'width': 640, 'height': 480}.reference_detections[0].confidence",
+        "expected": 0.9397782683372498,
+        "actual": 0.9397783279418945,
+        "expected_f32le": "4f95703f",
+        "actual_f32le": "5095703f",
+        "absolute_f32_difference": 5.960464477539063e-08
+      },
+      {
+        "path": "views.{'x': 0, 'y': 0, 'width': 480, 'height': 480}.reference_detections[4].confidence",
+        "expected": 0.7794751524925232,
+        "actual": 0.7794750928878784,
+        "expected_f32le": "af8b473f",
+        "actual_f32le": "ae8b473f",
+        "absolute_f32_difference": 5.960464477539063e-08
+      },
+      {
+        "path": "historical original merge.detections[0].confidence",
+        "expected": 0.9397782683372498,
+        "actual": 0.9397783279418945,
+        "expected_f32le": "4f95703f",
+        "actual_f32le": "5095703f",
+        "absolute_f32_difference": 5.960464477539063e-08
+      },
+      {
+        "path": "historical original result.context_result.voting_result.base_merged.detections[0].confidence",
+        "expected": 0.93977827,
+        "actual": 0.9397783,
+        "expected_f32le": "4f95703f",
+        "actual_f32le": "5095703f",
+        "absolute_f32_difference": 5.960464477539063e-08
+      },
+      {
+        "path": "historical original result.context_result.voting_result.detections[0].confidence",
+        "expected": 0.93977827,
+        "actual": 0.9397783,
+        "expected_f32le": "4f95703f",
+        "actual_f32le": "5095703f",
+        "absolute_f32_difference": 5.960464477539063e-08
+      },
+      {
+        "path": "historical original result.context_result.detections[0].confidence",
+        "expected": 0.93977827,
+        "actual": 0.9397783,
+        "expected_f32le": "4f95703f",
+        "actual_f32le": "5095703f",
+        "absolute_f32_difference": 5.960464477539063e-08
+      },
+      {
+        "path": "historical original result.detections[0].confidence",
+        "expected": 0.93977827,
+        "actual": 0.9397783,
+        "expected_f32le": "4f95703f",
+        "actual_f32le": "5095703f",
+        "absolute_f32_difference": 5.960464477539063e-08
+      }
+    ],
+    "same_host_bitwise_equivalence_claimed": false
+  },
+  "matrix_kernel_choices": [
+    "fma_mmm_f32_16x5",
+    "fma_mmm_f32_16x6",
+    "fma_mmm_f32_24x4",
+    "fma_mmm_f32_64x1",
+    "fma_mmm_f32_8x8"
+  ],
+  "probe_receipt_differences": [
+    "integrations/onnx/Cargo.lock",
+    "integrations/onnx/Cargo.toml"
+  ],
+  "production_sources_changed": false
+}

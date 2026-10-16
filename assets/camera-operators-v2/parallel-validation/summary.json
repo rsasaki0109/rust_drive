@@ -1,0 +1,59 @@
+{
+  "pass_checks": true,
+  "order": [
+    "baseline-first",
+    "repeat2x-first",
+    "repeat2x-repeat",
+    "baseline-repeat"
+  ],
+  "baseline_processing_s": [
+    0.650532534,
+    0.674116721
+  ],
+  "repeat2x_processing_s": [
+    0.631122755,
+    0.599006855
+  ],
+  "mean_speedup": 1.07683714320152,
+  "mean_reduction_fraction": 0.07135446960259673,
+  "hardware_speedup_required_for_success": false,
+  "age_limit_s": 0.2,
+  "deadline_gates": {
+    "baseline-first": false,
+    "repeat2x-first": false,
+    "repeat2x-repeat": false,
+    "baseline-repeat": false
+  },
+  "actual_measured_parallel_replay": true,
+  "original_images": 16,
+  "repeats_per_image": 2,
+  "complete_original_measurement_and_result_parity": true,
+  "current_host_reference_exact": true,
+  "historical_comparison": {
+    "confidence_max_absolute_f32_difference": 1e-05,
+    "score_threshold_crossing_rejected": true,
+    "other_fields_exact": true,
+    "accepted_confidence_differences": [],
+    "same_host_bitwise_equivalence_claimed": false
+  },
+  "timed_actual_model_forwards": 16,
+  "parity_actual_model_forwards": 128,
+  "current_reference_model_forwards": 64,
+  "total_actual_model_forwards": 208,
+  "inherited_bdd_quality": {
+    "true_positives": 78,
+    "false_positives": 31,
+    "false_negatives": 60,
+    "precision": 0.7155963302752294,
+    "recall": 0.5652173913043478,
+    "mean_matched_iou": 0.7822587810258869
+  },
+  "inherited_quality_gates_pass": false,
+  "new_accuracy_improvement_measured": false,
+  "legacy_profile_rejection": {
+    "exit": 2,
+    "stderr": "event 0: invalid pinned camera analysis report\n"
+  },
+  "checker_sha256": "c34478ad57f2f9b1ec4dbfd4f8eb5347fba975ee6f5c1e445c8cf332b5586e2a",
+  "executable_sha256": "4e1b9d231898e539f732426e350d3ea6bcaf42a5b07e0cc0d94d7274ed5de0e8"
+}

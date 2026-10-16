@@ -1,0 +1,20 @@
+{
+  "purpose": "One-image portability check of both original and lowered plans under real AVX2/FMA dispatch; no timing comparison.",
+  "original_source": "Copied existing standalone ONNX and camera-tracking source bytes; only the probe manifest adds a local dependency patch.",
+  "library_patch": [
+    {
+      "path": "src/x86_64_fma.rs",
+      "original_sha256": "bf7a8112dd351da1da2d251edc02441f941fb4838ffc80c4867d047b61c62bed",
+      "probe_sha256": "dfac433c40024e56f2a5196e93e83a256f1deb9c55c496d89d65a510d02d4028"
+    },
+    {
+      "path": "src/x86_64_fma/mmm.rs",
+      "original_sha256": "ca44303e86fe2b952a3e7fb755a5adb9887cb19fad8633d3392e21bb75e16e89",
+      "probe_sha256": "def4172e24e4166dc9ec64a2e0d8403595584722d2dd69477885627973c176cd"
+    }
+  ],
+  "expected_model_sha256": "c5c2d13e59ae883e6af3b45daea64af4833a4951c92d116ec270d9ddbe998063",
+  "probe_manifest_sha256": "f5bf746df5e435d5a0b12a5a2468c7558cba58687e589e6476a720cfaef00489",
+  "new_model_forwards": 8,
+  "production_dependencies_changed": false
+}

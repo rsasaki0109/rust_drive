@@ -1,0 +1,30 @@
+{
+  "pass_checks": true,
+  "reused_timing_controls": 21,
+  "image_entry_rejections": [
+    {
+      "name": "missing-image",
+      "exit": 2,
+      "stderr": "read image: No such file or directory (os error 2)\n"
+    },
+    {
+      "name": "corrupt-image",
+      "exit": 2,
+      "stderr": "read image: The image format could not be determined\n"
+    },
+    {
+      "name": "missing-image-model",
+      "exit": 2,
+      "stderr": "load model: No such file or directory (os error 2)\n"
+    },
+    {
+      "name": "invalid-image-model",
+      "exit": 2,
+      "stderr": "load model: model size differs from pinned YOLOX-S artifact\n"
+    }
+  ],
+  "existing_output_protections": 2,
+  "checker_sha256": "ce3e0c50c6c2d11f952bb0e21186c3756ee232653275c80f77238071112f8574",
+  "shared_checker_sha256": "317011d9c10a6aaa4a01ce94685a97d42d2dc43f5488e512a77838ec1de2a556",
+  "executable_sha256": "4e1b9d231898e539f732426e350d3ea6bcaf42a5b07e0cc0d94d7274ed5de0e8"
+}

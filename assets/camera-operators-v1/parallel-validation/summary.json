@@ -1,0 +1,50 @@
+{
+  "pass_checks": true,
+  "order": [
+    "baseline-first",
+    "repeat2x-first",
+    "repeat2x-repeat",
+    "baseline-repeat"
+  ],
+  "baseline_processing_s": [
+    0.706519503,
+    0.640253652
+  ],
+  "repeat2x_processing_s": [
+    0.585205608,
+    0.554865371
+  ],
+  "mean_speedup": 1.1813064096950407,
+  "mean_reduction_fraction": 0.15347957837784498,
+  "hardware_speedup_required_for_success": false,
+  "age_limit_s": 0.2,
+  "deadline_gates": {
+    "baseline-first": false,
+    "repeat2x-first": false,
+    "repeat2x-repeat": false,
+    "baseline-repeat": false
+  },
+  "actual_measured_parallel_replay": true,
+  "original_images": 16,
+  "repeats_per_image": 2,
+  "complete_original_measurement_and_result_parity": true,
+  "timed_actual_model_forwards": 16,
+  "parity_actual_model_forwards": 128,
+  "total_actual_model_forwards": 144,
+  "inherited_bdd_quality": {
+    "true_positives": 78,
+    "false_positives": 31,
+    "false_negatives": 60,
+    "precision": 0.7155963302752294,
+    "recall": 0.5652173913043478,
+    "mean_matched_iou": 0.7822587810258869
+  },
+  "inherited_quality_gates_pass": false,
+  "new_accuracy_improvement_measured": false,
+  "legacy_profile_rejection": {
+    "exit": 2,
+    "stderr": "event 0: invalid pinned camera analysis report\n"
+  },
+  "checker_sha256": "aa4f1c0cd920454fef447734ad5b9d3368da25171a8c7abd440e46107250cecd",
+  "executable_sha256": "4e1b9d231898e539f732426e350d3ea6bcaf42a5b07e0cc0d94d7274ed5de0e8"
+}
