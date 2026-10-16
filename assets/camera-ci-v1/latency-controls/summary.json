@@ -1,0 +1,126 @@
+{
+  "pass_checks": true,
+  "rejected_inputs": [
+    {
+      "name": "clock-reversal",
+      "exit": 2,
+      "stderr": "event 1: clock must advance by at least one microsecond\n"
+    },
+    {
+      "name": "clock-duplicate",
+      "exit": 2,
+      "stderr": "event 1: clock must advance by at least one microsecond\n"
+    },
+    {
+      "name": "clock-too-close",
+      "exit": 2,
+      "stderr": "event 1: clock must advance by at least one microsecond\n"
+    },
+    {
+      "name": "clock-nonfinite",
+      "exit": 2,
+      "stderr": "event 1: clock must advance by at least one microsecond\n"
+    },
+    {
+      "name": "clock-type",
+      "exit": 2,
+      "stderr": "sequence JSON: invalid type: floating point `0.1`, expected a string at line 16 column 24\n"
+    },
+    {
+      "name": "clock-text-budget",
+      "exit": 2,
+      "stderr": "event 1: timestamp text exceeds bound\n"
+    },
+    {
+      "name": "schedule-span",
+      "exit": 2,
+      "stderr": "measured replay schedule exceeds 2 seconds\n"
+    },
+    {
+      "name": "reused-image",
+      "exit": 2,
+      "stderr": "event 1: invalid or reused image identity in recent 256 acquisitions\n"
+    },
+    {
+      "name": "bad-hash",
+      "exit": 2,
+      "stderr": "event 1: image SHA-256 mismatch\n"
+    },
+    {
+      "name": "bad-dimensions",
+      "exit": 2,
+      "stderr": "event 0: image dimensions differ from fixed camera dimensions\n"
+    },
+    {
+      "name": "missing-late-image",
+      "exit": 2,
+      "stderr": "event 1: No such file or directory (os error 2)\n"
+    },
+    {
+      "name": "corrupt-late-image",
+      "exit": 2,
+      "stderr": "event 1: The image format could not be determined\n"
+    },
+    {
+      "name": "image-symlink",
+      "exit": 2,
+      "stderr": "event 1: image must be a regular non-symlink file\n"
+    },
+    {
+      "name": "image-fifo",
+      "exit": 2,
+      "stderr": "event 1: image must be a regular non-symlink file\n"
+    },
+    {
+      "name": "empty-sequence",
+      "exit": 2,
+      "stderr": "invalid sequence version, camera ID or 1..32 event count\n"
+    },
+    {
+      "name": "event-budget",
+      "exit": 2,
+      "stderr": "invalid sequence version, camera ID or 1..32 event count\n"
+    },
+    {
+      "name": "bad-config",
+      "exit": 2,
+      "stderr": "invalid bounded tracker configuration\n"
+    },
+    {
+      "name": "unknown-input",
+      "exit": 2,
+      "stderr": "sequence JSON: unknown field `unexpected`, expected `path` or `sha256` at line 23 column 5\n"
+    },
+    {
+      "name": "unknown-root",
+      "exit": 2,
+      "stderr": "sequence JSON: unknown field `unexpected`, expected one of `schema_version`, `camera_id`, `width`, `height`, `config`, `events` at line 24 column 14\n"
+    },
+    {
+      "name": "sequence-budget",
+      "exit": 2,
+      "stderr": "sequence exceeds 512 KiB\n"
+    },
+    {
+      "name": "model-size",
+      "exit": 2,
+      "stderr": "load model: model size differs from pinned YOLOX-S artifact\n"
+    }
+  ],
+  "rejected_before_model_loading": 20,
+  "output_rejections": [
+    {
+      "name": "existing.txt",
+      "exit": 2,
+      "stderr": "fresh output required before input reads\n"
+    },
+    {
+      "name": "existing-link.json",
+      "exit": 2,
+      "stderr": "fresh output required before input reads\n"
+    }
+  ],
+  "model_free_non_image_trace": true,
+  "executable_sha256": "e745515bf740c8962febe6df6da412d3a2f51cb71b0f079187f563d2a2e71a19",
+  "checker_sha256": "dd57a7dde5c04d90eb927c21482b7b2bc9e3e0a3ff4e58c4d13ca86e0c7a1570"
+}

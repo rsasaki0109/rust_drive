@@ -20,7 +20,7 @@ import time
 
 HERE=Path(__file__).resolve().parent
 ROOT=HERE.parents[1]
-LATENCY_CHECK_SHA='317011d9c10a6aaa4a01ce94685a97d42d2dc43f5488e512a77838ec1de2a556'
+LATENCY_CHECK_SHA='dd57a7dde5c04d90eb927c21482b7b2bc9e3e0a3ff4e58c4d13ca86e0c7a1570'
 SOURCE_SHA='5fa15877e7d910fe102dae175af40b5ee473c6f614b0740f36127b58b77f864c'
 MODEL_SHA='c5c2d13e59ae883e6af3b45daea64af4833a4951c92d116ec270d9ddbe998063'
 ORDER=['serial-first','parallel-first','parallel-repeat','serial-repeat']
@@ -55,7 +55,7 @@ def fresh(path):
 
 def support():
     path=HERE/'camera_latency_check.py'
-    require(digest(path)==LATENCY_CHECK_SHA,'unchanged measured-replay auditor')
+    require(digest(path)==LATENCY_CHECK_SHA,'pinned measured-replay auditor')
     spec=importlib.util.spec_from_file_location('parallel_latency_support',path)
     module=importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -71,7 +71,7 @@ def stripped(value):
     return value
 
 
-def parallel_analysis(actual,serial):
+def parallel_analysis(actual,serial,historical=None):
     require(actual['schema_version']==1 and actual['algorithm']=='yolox_s_parallel_image_analysis_v1','distinct parallel producer identity')
     require(actual['source_image_sha256']==serial['source_image_sha256'],'original encoded-image identity')
     expected_keys=load(HERE/'profile-parallel.json')
@@ -80,9 +80,13 @@ def parallel_analysis(actual,serial):
         require(digest(ROOT/name)==pin,'parallel producer source receipt')
     base=actual['base_prediction']
     require(base['algorithm']=='pinned_yolox_s_parallel_fixed_views_v1' and base['compiled_sources']==actual['compiled_sources'],'parallel base provenance')
-    require(actual['result']==serial['result'],'every final hypothesis, origin, selection and work count unchanged')
     project=lambda b:{k:stripped(v) for k,v in b.items() if k not in ('algorithm','compiled_sources')}
-    require(project(base)==project(serial['base_prediction']),'all per-view pixels/model measurements/order and merge unchanged')
+    if historical is None:
+        require(actual['result']==serial['result'],'every final hypothesis, origin, selection and work count unchanged')
+        require(project(base)==project(serial['base_prediction']),'all per-view pixels/model measurements/order and merge unchanged')
+    else:
+        historical.same(serial['result'],actual['result'],'result')
+        historical.same(project(serial['base_prediction']),project(base),'base_prediction')
     execution=actual['execution']
     n=len(base['views'])
     require({k:v for k,v in execution.items() if k!='analysis_wall_s'}==dict(model_read=True,images_read=1,model_forwards=n,
@@ -212,8 +216,11 @@ def run(args):
     require(digest(source_path)==SOURCE_SHA and digest(args.model)==MODEL_SHA,'fixed source images and model')
     source=load(source_path)
     receipt,_=module.native(args.binary,['--executable-receipt'],out/'executable.json')
+    single_receipt,_=module.native(args.single_binary,['--executable-receipt'],out/'serial-image-executable.json')
+    require(single_receipt['executable_sha256']==digest(args.single_binary),'current serial image executable binding')
+    require(single_receipt['compiled_sources']==load(ROOT/'assets/camera-sequence-v1/recorded/exports/first-0.json')['compiled_sources'],'complete original serial image source receipt')
     source_pins=dict(receipt['compiled_sources'])
-    for path in [Path(__file__),HERE/'camera_latency_check.py',ROOT/'integrations/camera-tracking/freshness_check.py',ROOT/'integrations/camera-tracking/check.py']:
+    for path in [Path(__file__),HERE/'camera_history.py',HERE/'camera_latency_check.py',ROOT/'integrations/camera-tracking/freshness_check.py',ROOT/'integrations/camera-tracking/check.py']:
         source_pins[str(path.relative_to(ROOT))]=digest(path)
     selection=[]
     for index,event in enumerate(source['events']):
@@ -224,6 +231,7 @@ def run(args):
     for _,image,saved,_ in selection:
         require(digest(image)==load(saved)['source_image_sha256'],'immutable cached image bytes')
     write(out/'before-verification.json',dict(source_sha256=source_pins,executable_sha256=digest(args.binary),model_sha256=MODEL_SHA,
+        same_host_serial_image_receipt=single_receipt,planned_same_host_reference_forwards=64,
         image_selection=[dict(name=name,image_sha256=digest(image),saved_report_sha256=digest(saved),data=data) for name,image,saved,data in selection],
         original_age_limit_s=.2,thresholds_geometry_model_unchanged=True,viewed_development_data=True,independent_fresh_holdout=False))
     if args.benchmark is not None:
@@ -244,6 +252,7 @@ def run(args):
     trials=load(directory/'trials.json')
     require([r['label'] for r in trials]==ORDER,'complete benchmark order retained')
     benchmark_forwards=0
+    historical=module.camera_history.Comparison()
     for trial in trials:
         label=trial['label']
         mode=label.split('-')[0]
@@ -258,8 +267,8 @@ def run(args):
             analysis=event['measured']['analysis']
             if analysis is not None:
                 saved=load(ROOT/f"assets/camera-sequence-v1/recorded/exports/first-{event['source']['event_index']}.json")
-                if mode=='parallel':parallel_analysis(analysis,saved)
-                else:require(module.without_timing(analysis)==module.without_timing(saved),'serial analyzer baseline unchanged')
+                if mode=='parallel':parallel_analysis(analysis,saved,historical)
+                else:historical.same(module.without_timing(saved),module.without_timing(analysis),'serial.analysis')
         measured=[e['measured']['timing']['read_analysis_and_probe_wall_s'] for e in report['events'] if e['measured']['analysis'] is not None]
         require(trial['processing_s']==measured and trial['summary']==report['summary'] and trial['actual_model_forwards']==report['model_forwards'],'trial summary bound to raw output')
         path=out/(label+'-guard-input.json')
@@ -269,14 +278,20 @@ def run(args):
         benchmark_forwards+=report['model_forwards']
     reports=fresh(out/'parity')
     rows=[]
+    references=fresh(out/'current-serial')
+    reference_forwards=0
     parity_forwards=0
     for name,image,saved,data in selection:
         print('Comparing '+data+' '+name,flush=True)
         first,_=module.native(args.binary,['--model',args.model,'--image',image],reports/(name+'-first.json'))
         repeat,_=module.native(args.binary,['--model',args.model,'--image',image],reports/(name+'-repeat.json'))
         reference=load(saved)
-        parallel_analysis(first,reference)
-        parallel_analysis(repeat,reference)
+        parallel_analysis(first,reference,historical)
+        parallel_analysis(repeat,reference,historical)
+        current,_=module.native(args.single_binary,['--model',args.model,'--image',image],references/(name+'.json'))
+        parallel_analysis(first,current)
+        parallel_analysis(repeat,current)
+        reference_forwards+=current['execution']['model_forwards']
         require(stripped(first)==stripped(repeat),'repeat exact except actual durations')
         rows.append(dict(name=name,data=data,complete_per_view_and_merge_parity=True,complete_consistency_result_parity=True,repeated_measurements_identical=True))
         parity_forwards+=first['execution']['model_forwards']+repeat['execution']['model_forwards']
@@ -294,22 +309,25 @@ def run(args):
     for name,pin in source_pins.items():
         require(digest(ROOT/name)==pin,'sources unchanged during verification')
     require(digest(args.binary)==receipt['executable_sha256'],'executable unchanged during verification')
+    require(digest(args.single_binary)==single_receipt['executable_sha256'],'serial image executable unchanged during verification')
     write(out/'summary.json',dict(pass_checks=True,benchmark_order=ORDER,serial_processing_s=serial,parallel_processing_s=parallel,
         mean_speedup=ratio,mean_processing_reduction_fraction=1-statistics.mean(parallel)/statistics.mean(serial),
         observed_parallel_faster=statistics.mean(parallel)<statistics.mean(serial),age_limit_s=.2,
         observed_deadline_gates={r['label']:r['summary']['deadline_gate_pass'] for r in trials},
         timing_speedup_required_for_execution_success=False,parity=rows,original_image_count=16,
         benchmark_actual_model_forwards=benchmark_forwards,parity_actual_model_forwards=parity_forwards,
-        total_actual_model_forwards=benchmark_forwards+parity_forwards,all_view_pixels_and_detections_identical=True,
+        same_host_reference_forwards=reference_forwards,same_host_serial_parallel_exact=True,
+        total_actual_model_forwards=benchmark_forwards+parity_forwards+reference_forwards,all_view_pixels_and_detections_identical=True,
         all_merge_and_consistency_results_identical=True,legacy_serial_profile_rejection=profile_error,
         inherited_bdd_quality=quality['overall'],inherited_quality_gates_pass=quality['quality_gates']['pass'],
-        quality_metrics_inherited_from_exact_parity=True,new_accuracy_improvement_measured=False,
+        historical_comparison=historical.report(),quality_metrics_inherited_from_same_boxes_classes_and_order=True,new_accuracy_improvement_measured=False,
         source_sha256=source_pins,executable_sha256=digest(args.binary),checker_sha256=digest(__file__)))
-    print(json.dumps(dict(pass_checks=True,mean_speedup=ratio,parity_images=16,total_actual_model_forwards=benchmark_forwards+parity_forwards)),flush=True)
+    print(json.dumps(dict(pass_checks=True,mean_speedup=ratio,parity_images=16,total_actual_model_forwards=benchmark_forwards+parity_forwards+reference_forwards)),flush=True)
 
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--single-binary',type=Path,default=HERE/'target/release/rustdriving-camera-analyze')
     parser.add_argument('mode',choices=['controls','run'])
     parser.add_argument('--binary',type=Path,default=HERE/'target/release/rustdriving-camera-parallel')
     parser.add_argument('--serial',type=Path,default=HERE/'target/release/rustdriving-camera-latency')

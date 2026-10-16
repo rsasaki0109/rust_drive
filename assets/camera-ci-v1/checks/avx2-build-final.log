@@ -1,0 +1,125 @@
+warning: use of deprecated method `cc::Build::static_flag`: cc only creates static libraries, setting this does nothing
+  --> /workspace/rust_drive/artifacts/camera-ci-v1/avx2-probe/tract-linalg/build.rs:74:19
+   |
+74 |         self.cc().static_flag(true).file(filename).try_compile("dummy").is_ok()
+   |                   ^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated method `cc::Build::static_flag`: cc only creates static libraries, setting this does nothing
+   --> /workspace/rust_drive/artifacts/camera-ci-v1/avx2-probe/tract-linalg/build.rs:131:26
+    |
+131 |                         .static_flag(true)
+    |                          ^^^^^^^^^^^
+
+warning: use of deprecated method `cc::Build::static_flag`: cc only creates static libraries, setting this does nothing
+   --> /workspace/rust_drive/artifacts/camera-ci-v1/avx2-probe/tract-linalg/build.rs:143:61
+    |
+143 |                 cc::Build::new().files(files).flag("-mfma").static_flag(true).compile("x86_64_fma");
+    |                                                             ^^^^^^^^^^^
+
+warning: use of deprecated method `cc::Build::static_flag`: cc only creates static libraries, setting this does nothing
+   --> /workspace/rust_drive/artifacts/camera-ci-v1/avx2-probe/tract-linalg/build.rs:152:18
+    |
+152 |                 .static_flag(true)
+    |                  ^^^^^^^^^^^
+
+warning: use of deprecated method `cc::Build::static_flag`: cc only creates static libraries, setting this does nothing
+   --> /workspace/rust_drive/artifacts/camera-ci-v1/avx2-probe/tract-linalg/build.rs:164:18
+    |
+164 |                 .static_flag(true)
+    |                  ^^^^^^^^^^^
+
+warning: use of deprecated method `cc::Build::static_flag`: cc only creates static libraries, setting this does nothing
+   --> /workspace/rust_drive/artifacts/camera-ci-v1/avx2-probe/tract-linalg/build.rs:174:43
+    |
+174 |             cc::Build::new().files(files).static_flag(true).compile("arm64simd");
+    |                                           ^^^^^^^^^^^
+
+warning: use of deprecated method `cc::Build::static_flag`: cc only creates static libraries, setting this does nothing
+   --> /workspace/rust_drive/artifacts/camera-ci-v1/avx2-probe/tract-linalg/build.rs:177:47
+    |
+177 |                 cc::Build::new().files(files).static_flag(true).compile("appleamx");
+    |                                               ^^^^^^^^^^^
+
+warning: use of deprecated method `cc::Build::static_flag`: cc only creates static libraries, setting this does nothing
+   --> /workspace/rust_drive/artifacts/camera-ci-v1/avx2-probe/tract-linalg/build.rs:188:42
+    |
+188 |                 config.cc().files(files).static_flag(true).compile("arm64fp16")
+    |                                          ^^^^^^^^^^^
+
+warning: `tract-linalg` (build script) generated 8 warnings
+warning: hiding a lifetime that's elided elsewhere is confusing
+  --> /workspace/rust_drive/artifacts/camera-ci-v1/avx2-probe/tract-linalg/src/frame/mmm/mod.rs:96:15
+   |
+96 |     fn stores(&self) -> Cow<[DatumType]>;
+   |               ^^^^^     ---------------- the same lifetime is hidden here
+   |               |
+   |               the lifetime is elided here
+   |
+   = help: the same lifetime is referred to in inconsistent ways, making the signature confusing
+   = note: `#[warn(mismatched_lifetime_syntaxes)]` on by default
+help: use `'_` for type paths
+   |
+96 |     fn stores(&self) -> Cow<'_, [DatumType]>;
+   |                             +++
+
+warning: hiding a lifetime that's elided elsewhere is confusing
+   --> /workspace/rust_drive/artifacts/camera-ci-v1/avx2-probe/tract-linalg/src/frame/mmm/mod.rs:177:15
+    |
+177 |     fn stores(&self) -> Cow<[DatumType]> {
+    |               ^^^^^     ---------------- the same lifetime is hidden here
+    |               |
+    |               the lifetime is elided here
+    |
+    = help: the same lifetime is referred to in inconsistent ways, making the signature confusing
+help: use `'_` for type paths
+    |
+177 |     fn stores(&self) -> Cow<'_, [DatumType]> {
+    |                             +++
+
+warning: hiding a lifetime that's elided elsewhere is confusing
+  --> /workspace/rust_drive/artifacts/camera-ci-v1/avx2-probe/tract-linalg/src/frame/mmm/kernel.rs:21:15
+   |
+21 |     fn stores(&self) -> Cow<[DatumType]>;
+   |               ^^^^^     ---------------- the same lifetime is hidden here
+   |               |
+   |               the lifetime is elided here
+   |
+   = help: the same lifetime is referred to in inconsistent ways, making the signature confusing
+help: use `'_` for type paths
+   |
+21 |     fn stores(&self) -> Cow<'_, [DatumType]>;
+   |                             +++
+
+warning: hiding a lifetime that's elided elsewhere is confusing
+   --> /workspace/rust_drive/artifacts/camera-ci-v1/avx2-probe/tract-linalg/src/frame/mmm/kernel.rs:152:15
+    |
+152 |     fn stores(&self) -> Cow<[DatumType]> {
+    |               ^^^^^     ---------------- the same lifetime is hidden here
+    |               |
+    |               the lifetime is elided here
+    |
+    = help: the same lifetime is referred to in inconsistent ways, making the signature confusing
+help: use `'_` for type paths
+    |
+152 |     fn stores(&self) -> Cow<'_, [DatumType]> {
+    |                             +++
+
+warning: hiding a lifetime that's elided elsewhere is confusing
+  --> /workspace/rust_drive/artifacts/camera-ci-v1/avx2-probe/tract-linalg/src/generic/rounding.rs:32:26
+   |
+32 |     pub fn as_fused_spec(&self) -> FusedSpec {
+   |                          ^^^^^     --------- the same lifetime is hidden here
+   |                          |
+   |                          the lifetime is elided here
+   |
+   = help: the same lifetime is referred to in inconsistent ways, making the signature confusing
+help: use `'_` for type paths
+   |
+32 |     pub fn as_fused_spec(&self) -> FusedSpec<'_> {
+   |                                             ++++
+
+warning: `tract-linalg` (lib) generated 5 warnings
+   Compiling rustdriving-camera-detect v0.1.0 (/workspace/rust_drive/artifacts/camera-ci-v1/avx2-probe/onnx)
+    Finished `release` profile [optimized] target(s) in 3.45s
