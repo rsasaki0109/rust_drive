@@ -17,6 +17,9 @@ import sys
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
+history_spec = importlib.util.spec_from_file_location('pipeline_history', HERE / 'camera_history.py')
+camera_history = importlib.util.module_from_spec(history_spec)
+history_spec.loader.exec_module(camera_history)
 FRESH_CHECK_SHA = '816e6c0a2f53abf8af38cb5b1875127cd86f25fe8294cf8b6db057f3929589b7'
 SOURCE_SEQUENCE_SHA = '5fa15877e7d910fe102dae175af40b5ee473c6f614b0740f36127b58b77f864c'
 MODEL_SHA = 'c5c2d13e59ae883e6af3b45daea64af4833a4951c92d116ec270d9ddbe998063'
@@ -235,7 +238,7 @@ def run(args):
     freshness, support = oracle()
     receipt = native(args.binary, ['--executable-receipt'], out / 'executable.json')
     source_pins = dict(receipt['compiled_sources'])
-    for path in [Path(__file__), HERE/'prepare_camera_pipeline.py', ROOT/'integrations/camera-tracking/freshness_check.py',
+    for path in [Path(__file__), HERE/'camera_history.py', HERE/'prepare_camera_pipeline.py', ROOT/'integrations/camera-tracking/freshness_check.py',
                  ROOT/'integrations/camera-tracking/check.py']:
         source_pins[str(path.relative_to(ROOT))] = digest(path)
     write(out / 'before-inference.json', dict(executable_sha256=digest(args.binary), source_sha256=source_pins,
@@ -281,6 +284,7 @@ def run(args):
     write(out / 'preparation-receipt.json', json.loads(preparation.stdout))
     exports = fresh(out / 'exports')
     rows, forwards = [], 0
+    historical = camera_history.Comparison()
     for name, path, manifest in protocols:
         print('Running '+name, flush=True)
         inspected = native(args.binary, ['--inspect-sequence', path], out / (name + '-inspection.json'))
@@ -293,7 +297,9 @@ def run(args):
         require(first['algorithm'] == 'yolox_s_camera_pipeline_v1' and first['control_permission'] is False
                 and first['freshness_clock'] == 'caller_supplied_replay', 'scope and clock identity')
         previous = load(saved / (name + '-first.json'))
-        identical(previous['results'], [e['freshness'] for e in first['events']], 'exact prior freshness decisions/projections')
+        current_freshness = [e['freshness'] for e in first['events']]
+        historical.same(previous['results'], current_freshness, name + '.freshness')
+        exact_analyzer_parity = True
         require([e['admission_without_model'] for e in inspected['events']] == [e['freshness']['decision'] for e in first['events']], 'preflight/runtime decisions agree')
         guard_events, analysis_count, image_count = [], 0, 0
         for index,(event, actual) in enumerate(zip(manifest['events'], first['events'])):
@@ -308,7 +314,8 @@ def run(args):
                     require(not actual['inference_skipped'] and actual['freshness']['decision'] == 'accepted', 'inference only for admitted images')
                     old_report = next(load(saved/old['input']['report']) for old in load(saved/(name+'-input.json'))['events']
                         if old['input']['kind']=='analysis' and load(saved/old['input']['report'])['source_image_sha256']==data['sha256'])
-                    identical(without_timing(old_report), without_timing(actual['analysis']), 'complete analyzer parity with saved real inference')
+                    historical.same(without_timing(old_report), without_timing(actual['analysis']), name + f'.analysis[{index}]')
+                    exact_analyzer_parity &= without_timing(old_report) == without_timing(actual['analysis'])
                     export = exports / (name + f'-{index}.json')
                     write(export, actual['analysis'])
                     guard_input = dict(kind='analysis', acquired_s=actual['acquired_s'], report=os.path.relpath(export,out), sha256=digest(export))
@@ -338,7 +345,8 @@ def run(args):
         require(tracker_result['snapshots'] == snapshots, 'exact standalone tracking replay')
         rows.append(dict(name=name, events=len(first['events']), accepted_images=analysis_count, skipped_images=image_count-analysis_count,
             model_forwards_across_two_runs=execution['model_forwards']*2, repeat_identical_except_timing=True,
-            complete_analyzer_parity=True, prior_freshness_parity=True, guard_replay_identical=True, tracker_replay_identical=True,
+            complete_analyzer_parity=exact_analyzer_parity, prior_freshness_parity=previous['results'] == current_freshness,
+            historical_confidence_compatible=True, guard_replay_identical=True, tracker_replay_identical=True,
             final_ready=first['events'][-1]['freshness']['ready']))
         print('Verified '+name, flush=True)
     require(forwards == 216, 'fixed actual model forward count')
@@ -347,7 +355,9 @@ def run(args):
     require(digest(args.binary) == receipt['executable_sha256'], 'executable changed during inference')
     write(out/'summary.json', dict(pass_checks=True, cases=rows, recorded_unique_images=8, actual_model_forwards=forwards,
         native_pipeline_runs=8, model_loads_per_sequence=1, image_events_skipped_per_four_cases=2,
-        complete_analyzer_parity=True, prior_freshness_parity=True, standalone_guard_and_tracker_replay_identical=True,
+        complete_analyzer_parity=all(row['complete_analyzer_parity'] for row in rows),
+        prior_freshness_parity=all(row['prior_freshness_parity'] for row in rows),
+        historical_comparison=historical.report(), standalone_guard_and_tracker_replay_identical=True,
         independent_freshness_motion_lifecycle_and_flow_verified=True, flow_exhaustive_selfchecks=96,
         all_delivery_times_and_faults_injected=True, actual_execution_latency_used_for_freshness=False,
         actual_sensor_failures_measured=False, real_object_identity_accuracy_measured=False,

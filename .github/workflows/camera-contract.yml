@@ -6,6 +6,7 @@ on:
       - 'integrations/onnx/**'
       - 'integrations/camera-tracking/**'
       - 'scripts/fetch-visual-datasets.py'
+      - 'assets/camera-ci-v1/**'
       - 'rust-toolchain.toml'
 permissions:
   contents: read
@@ -33,6 +34,8 @@ jobs:
         run: |
           cargo build --release --locked --manifest-path integrations/onnx/Cargo.toml --bin rustdriving-camera-pipeline
           cargo build --release --locked --manifest-path integrations/camera-tracking/Cargo.toml
+      - name: Check recorded AVX2 confidence drift and exact native replay
+        run: python -m unittest discover -s integrations/onnx -p test_camera_history.py -v
       - name: Acquire pinned model and original indoor image cache
         run: |
           python integrations/onnx/fetch_s.py --output artifacts/camera-model-s
