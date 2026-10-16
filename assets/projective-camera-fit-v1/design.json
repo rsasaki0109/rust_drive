@@ -1,0 +1,198 @@
+{
+  "schema_version": 1,
+  "purpose": "diagnose whether one shared pinhole focal/depth-scale correction explains raw pair discrepancies before operational pose fitting",
+  "model": {
+    "parameters": [
+      "log_shared_focal_multiplier",
+      "log_axial_depth_multiplier"
+    ],
+    "bounds": [
+      -0.05,
+      0.05
+    ],
+    "base_camera": {
+      "width": 640,
+      "height": 480,
+      "fx": 525.0,
+      "fy": 525.0,
+      "cx": 319.5,
+      "cy": 239.5
+    },
+    "fixed": "principal point, focal aspect ratio, distortion, depth offset, original depth/GT clocks and qualification scorer; no second manufacturer depth correction",
+    "geometry": "p = exp(b)*diag(exp(-a),exp(-a),1)*p_base; target normal follows inverse transpose with normalization; its derivative is included"
+  },
+  "data": {
+    "training_records": [
+      "tum-fr1-room-temporal",
+      "tum-fr1-desk2-independent"
+    ],
+    "validation_records": [
+      "tum-fr1-room-temporal",
+      "tum-fr1-desk2-independent",
+      "tum-fr1-rpy-heldout"
+    ],
+    "training_pairs": [
+      [
+        0,
+        6
+      ],
+      [
+        12,
+        18
+      ],
+      [
+        24,
+        30
+      ],
+      [
+        36,
+        42
+      ],
+      [
+        48,
+        54
+      ],
+      [
+        60,
+        66
+      ],
+      [
+        72,
+        78
+      ],
+      [
+        84,
+        90
+      ],
+      [
+        96,
+        102
+      ],
+      [
+        108,
+        114
+      ],
+      [
+        120,
+        126
+      ],
+      [
+        132,
+        138
+      ],
+      [
+        144,
+        150
+      ],
+      [
+        156,
+        162
+      ],
+      [
+        168,
+        174
+      ]
+    ],
+    "validation_pairs": [
+      [
+        3,
+        9
+      ],
+      [
+        15,
+        21
+      ],
+      [
+        27,
+        33
+      ],
+      [
+        39,
+        45
+      ],
+      [
+        51,
+        57
+      ],
+      [
+        63,
+        69
+      ],
+      [
+        75,
+        81
+      ],
+      [
+        87,
+        93
+      ],
+      [
+        99,
+        105
+      ],
+      [
+        111,
+        117
+      ],
+      [
+        123,
+        129
+      ],
+      [
+        135,
+        141
+      ],
+      [
+        147,
+        153
+      ],
+      [
+        159,
+        165
+      ],
+      [
+        171,
+        177
+      ]
+    ],
+    "role": "all three are previously viewed FR1 recordings; validation endpoints differ from training endpoints, but no fresh heldout/generalization claim",
+    "correspondences": "original fine stride2 forward/normal/distance admission at original K and offline interpolated reference relative pose; keep every eighth admitted pair in row-major order; freeze pair identities and target base normals",
+    "minimum_samples_per_pair": 200
+  },
+  "solver": {
+    "loss": "Huber .01 m; each pair equal weight and both training records equal weight",
+    "iterations": 12,
+    "max_log_step": 0.02,
+    "backtracking": [
+      1,
+      0.5,
+      0.25,
+      0.125,
+      0.0625
+    ],
+    "max_parameter_information_condition": 10000.0,
+    "convergence_log_step": 1e-07,
+    "covariance_claim": false
+  },
+  "trial_eligibility": {
+    "all_training_fits_converged_without_bound": true,
+    "room_desk_parameter_agreement_log_at_most": 0.01,
+    "leave_one_pair_out_max_log_deviation_at_most": 0.01,
+    "validation_all_three": "nonincreasing fixed-support robust cost, raw RMS, median position correction and median rotation correction at reference pose",
+    "same_original_qualification_clocks": true,
+    "not_physical_calibration_certificate": true
+  },
+  "trajectory_adoption": {
+    "room_above": 64,
+    "desk2_at_least": 161,
+    "rpy_at_least": 74,
+    "all_updates_accepted": 179,
+    "no_worse_maximum_position_or_rotation_on_all_three": true,
+    "no_resets": true
+  },
+  "limitations": "two-parameter model omits image registration warp, timing, principal point, normal uncertainty, association and reference errors; per-pixel residuals are correlated; fits are development diagnostics",
+  "ground_truth_operational": false,
+  "default_changed": false,
+  "binary_sha256": "59332ed6601e8b7ff16759694f8c8fb4af1b23050efeb1982b0e065a5a47b426",
+  "subjective_maturity_percent": 20
+}

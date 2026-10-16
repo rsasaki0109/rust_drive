@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "parent": "assets/local-normal-depth-refinement-v1",
+  "motivation": "Preserved local-normal support experiments reach measured nonplanar patches whose depth remains available; compare direct inverse-depth slopes as a different measurement model",
+  "data_role": "already viewed, outcome-informed development; not held-out validation",
+  "cases": ["tum-fr1-room-temporal", "tum-fr1-desk2-independent"],
+  "sample_indices": [120, 160, 200, 240, 279],
+  "vertex_field": "Precompute inverse-axial-depth slopes from the center and four cardinal depth neighbors. All five must be strictly0.3..5m; each neighbor differs from center by strictly<0.05+0.01*center_depth metres. Preserve the two-pixel invalid field border. No one-sided slope fallback or missing-depth filling",
+  "slope_rule": "For each image axis, consecutive inverse-depth secants a,b give harmonic slope2*a*b/(a+b) if both strictly positive or both strictly negative; otherwise zero. Shared per-vertex slopes are fixed before fitting. The limiter has a one-dimensional monotone interpretation, not a certificate of two-dimensional range preservation or physical accuracy",
+  "interpolation": "Four-corner tensor bicubic Hermite inverse depth with the measured corner values, cached depth-difference slopes and zero mixed derivative at every vertex. C1 on jointly supported neighboring cells, no integer snapping, clipping or bilinear fallback. Positive finite interpolated inverse depth and finite derivatives required",
+  "sampling_admission": "Original front/image and four-depth0.05+0.01*minimum_depth continuity gates; each corner also needs its precomputed five-depth slope support. Candidate-time measured normals and plane-offset/planarity gates are not used by this distinct field model. This changes measurement slopes and domain, not just the solver",
+  "initial_population": "Unchanged original measured-normal geometric matching and nine bilinear admission probes still define initial sources and original bilinear-center normalizers. Filter once for new center support with minimum200 per factor; preserve original IDs, points, source normals and normalizers for survivors. Report retention rather than assume equality",
+  "fixed_objective": "Freeze initial sources, normalizers and per-frame slope fields for the whole attempt. Same incoming nonlinear prior and Huber0.01m loss; no reselection, source dropout or target normal manipulation during fitting",
+  "unchanged_solver": "Exact normal-Hermite solver, objective and checkpoint function bodies:30-correction GN cap,21 Armijo candidates1..2^-20 and original numerical slack, current-frame support, scaled SPD condition<=1e6, full proposal<=0.1m/0.15rad and strict full-proposal convergence1e-5m/1e-5rad; no damping",
+  "checkpoints": [10, 20, 30],
+  "independent_verification": "Stacked five-depth stencil and reciprocal-mean harmonic formula instead of operational depth slices and product formula; polynomial endpoint-constraint interpolation instead of Hermite bases; private original source/prior/matrix/spectral-solve/search/checkpoint audit. Independently recheck prior local-normal control using its own separately completed normal field",
+  "analytic_controls": "Affine inverse-depth plane, authored harmonic slopes/sign reversals, one-dimensional monotone interval samples, integer interpolation, both C1 edge derivatives, nonaffine XYZ finite differences, absent target normal sampling, missing corner/cardinal depth, allowed unused diagonal, depth discontinuity, original geometry/border preservation, corrupt slope/mask rejection, unprepared cache rejection, rendered warm/degenerate fits,12-axis nonzero-prior objective gradients and four report corruptions",
+  "followup_eligibility_rule": "Both cases converge all five new windows, improve original-discrete fresh convergence, have no local/fresh guards, pass original0.03m RMS gates and have median original-discrete fresh RMS no worse than local-normal control",
+  "scope": "A different depth interpolation/eligibility model; no claim that nonplanar measurements are physically correct or that initial normal matching is unnecessary. No numeric real reference labels, physical pose-error score, new continuous trajectory, tracker/prior/Schur commit, native/default adoption or timing evidence",
+  "subjective_maturity_percent": 20
+}

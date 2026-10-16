@@ -1,0 +1,90 @@
+{
+  "implementation_integrity_pass": true,
+  "accuracy_improvement_adopted": false,
+  "default_changed": false,
+  "complete_physical_accuracy_pass": false,
+  "default_full_outcomes_reproduced": 360,
+  "maintained_corrected_outcomes_reproduced": 360,
+  "raw_geometric_equations": 7995,
+  "raw_photometric_equations": 7383,
+  "native_rust_tests": 35,
+  "core_rust_tests": 371,
+  "core_scenarios_and_replays": 49,
+  "unchanged_core_outputs": 245,
+  "unchanged_previous_evidence_entries": 890,
+  "native_cargo_pins_unchanged": true,
+  "source_members": 47,
+  "changed_previously_pinned_sources": {
+    ".github/workflows/ci.yml": {
+      "before": "d23b3fc749ae488c66b89f215654474389f214b1ecbe2a909081369cf7a30e1a",
+      "after": "68001beb40f5314f3214a1e91f81f00ca4d43cda60437099d7ec0fe70c4ec186"
+    },
+    "docs/architecture.md": {
+      "before": "49583bd2aa6312599c96d075522d8ca788663c47fdd7968ea5add47c3b1c1f0a",
+      "after": "540163f37e3729bd1fef4614250dff4c5b3d897ce236dc5d01e993d7a61c9522"
+    },
+    "docs/capabilities.md": {
+      "before": "3bfbadb26ee7de4fe0d5d1bae662bc13bfd9937e3ac9e4e943cb3d8adde7371c",
+      "after": "44a3bdc81c52d37028eaa4916e0c69dd529cb862a70cfd2388e68bc39773cab2"
+    },
+    "docs/maturity.md": {
+      "before": "5bf14565a16b2e3f1e28f114ad8f6a5298541c40a250ee7203e26ef5939df6a5",
+      "after": "2ff8bdbb15b5609b219c8e7bff4317cd6da477c7ee78c6ac9192f473ebe0e5b6"
+    },
+    "docs/native-depth-regression.md": {
+      "before": "ffb36a6d25e2504671b4c208a4008fc3eb7bc292ba22a397fc57ad3da6b39a2e",
+      "after": "9f74c63a57f82720842e5a708bcdac40dd051dc6eec1e51b7144ad260d680147"
+    },
+    "docs/projective-depth-rust.md": {
+      "before": "513416909518db12e58cdd98620c2f73ba1fa1dfc6cd22270c12504e7ff7270d",
+      "after": "f36ba9da194a3873ac0c96d9065c4c69319ee1d30d7dc9950a1306ea789ad490"
+    },
+    "integrations/projective-depth/src/lib.rs": {
+      "before": "bebd2e5cc06f726cf743e6bbdd7d78f533f3f96a5582a3ec03a1a521d55a670e",
+      "after": "8fcd742afaf9b607a480ba07f60bdcaa85c9b3ea987a50f9c4be55ededf7d060"
+    },
+    "integrations/projective-depth/src/main.rs": {
+      "before": "5c2e758bd7271d5c4d3d5c5ef0444f5ca454f36efec21fec4daeff51c7f26bd1",
+      "after": "cfb4ee795e69c04556b5cc9e15e8dbeddf28301c1b437ef6ac1ecd18c23b9609"
+    },
+    "integrations/projective-depth/src/multireference.rs": {
+      "before": "04addf201a018ee0ac0f2a4ee80d8590bbb23e8d9f2ebcf9395401303625c6e3",
+      "after": "59d7161e00b540c27f955bd2b3036776a93c3c03d15112bcb3e38f236519d2ef"
+    },
+    "scripts/audit-projective-depth-raw.py": {
+      "before": "9946cee31e0e67110e0c7324f8a9b28f106634afe58cbde3e0c164e561dc50ad",
+      "after": "cbe397670608809f9d28f8dea7498c51d13dae659f681f2575f92836b08f1b6d"
+    },
+    "scripts/check-projective-depth.py": {
+      "before": "8614117922c155958ee5f38fa757433e9eeae12623fd46784b65ff5cce054a85",
+      "after": "f346dc777e79bf8508018bf70c81fa4ed27b54a7a9dffc5cfcf13d0522ab4211"
+    },
+    "scripts/evaluate-projective-depth.py": {
+      "before": "d2622add554c2a2e0c9664065c5029683f1dc25e86244acd3776735ddd52add6",
+      "after": "43db8d90191df9255a9c64132f3c94d7ee935f0911d152379fa334748a0de7f2"
+    },
+    "scripts/projective_depth_common.py": {
+      "before": "eeca8a3c2f4b0f2d57d70d71753a5a0d5f6a37244d13abbfa7ab1c394dcd5469",
+      "after": "c7a3eeaac9c7560e3ef5e2788b46cb040a865c0d5fa9496266e684f7aa010b48"
+    },
+    "scripts/projective_depth_raw.py": {
+      "before": "da9bac49d1244fd30719bb9cebee21de177c762dc1f52f86f6ec9373972a84a5",
+      "after": "fe9b40337994fc728b2e6f7697ffcd97b5b06024de33b804cae9f346c15a01d8"
+    }
+  },
+  "current_binary_sha256": "ce0d3a0ab42986550cf7651d9c808c939758ee68da6662d1bdf8ee79e42eaeea",
+  "transport_controls": 27,
+  "image_corruption_controls": 8,
+  "lifecycle_frames": 10,
+  "subjective_maturity_percent": 20,
+  "limits": [
+    "Desk2 accuracy and maximum errors regress; only room passes relative adoption",
+    "All physical trials reuse viewed indoor recordings; no held-out or vehicle evidence",
+    "Photometric weights and phase gating are provisional and do not compensate exposure or RGB/depth motion offsets",
+    "First strict-image attempt lacks complete raw-image auditing; all sources and first outcomes are retained",
+    "One raw color anchor only; repeated image reference changes clear it until a fresh reference is available",
+    "Reference interpolation is shared; independent atan2 verifies root rotation classifications",
+    "Maintained mode has no idle-tick RGB-D supervisor, covariance calibration or vehicle integration",
+    "Historical evidence bytes remain unchanged; maintained source versions deliberately evolve"
+  ]
+}

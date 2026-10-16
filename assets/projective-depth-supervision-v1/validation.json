@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "temporal_supervision_pass": true,
+  "core_check": {
+    "command": "bash scripts/check.sh",
+    "exit_code": 0,
+    "rust_tests": 371,
+    "scenario_runs_and_replays": 49,
+    "log_sha256": "7a994aa089e6f518f9021cadefe7487485f5113458a25af7d3c11f2ce5f153bf"
+  },
+  "optional_rust_tests": 12,
+  "added_supervision_rust_tests": 6,
+  "all_target_clippy_pass": true,
+  "release_build_pass": true,
+  "locked": true,
+  "analytic": {
+    "analytic_sequence_pass": true,
+    "clean_estimator_parity": true,
+    "rejected_protocol_cases": [
+      "tick before configuration",
+      "duplicate configuration",
+      "unknown event field",
+      "unknown failure field",
+      "unknown depth field",
+      "invalid receipt clock",
+      "duplicate receipt clock",
+      "regressing receipt clock",
+      "missing final newline",
+      "no tick",
+      "oversized request",
+      "tick cap",
+      "frame cap"
+    ]
+  },
+  "recorded": {
+    "tum-fr1-room-temporal": {
+      "healthy_acquisitions_matching_frozen_estimator": 180,
+      "healthy_ticks": 361,
+      "healthy_normal_steps": 3411,
+      "fault_prefix_source_acquisitions": 20,
+      "clean_filtered_acquisitions": 18,
+      "faulted_ticks": 23,
+      "clean_filtered_normal_steps": 317,
+      "recovered_offsets": [
+        6,
+        12
+      ],
+      "malformed_frame_excluded_from_fusion": true,
+      "pre_fault_backlog_excluded_from_estimation": true,
+      "expired_without_measurement": true,
+      "later_real_acquisition_cannot_revive": true,
+      "ground_truth_decoded": false
+    },
+    "tum-fr1-desk2-independent": {
+      "healthy_acquisitions_matching_frozen_estimator": 180,
+      "healthy_ticks": 361,
+      "healthy_normal_steps": 3450,
+      "fault_prefix_source_acquisitions": 20,
+      "clean_filtered_acquisitions": 18,
+      "faulted_ticks": 23,
+      "clean_filtered_normal_steps": 256,
+      "recovered_offsets": [
+        6,
+        12
+      ],
+      "malformed_frame_excluded_from_fusion": true,
+      "pre_fault_backlog_excluded_from_estimation": true,
+      "expired_without_measurement": true,
+      "later_real_acquisition_cannot_revive": true,
+      "ground_truth_decoded": false
+    }
+  },
+  "recorded_checker_exit_code": 0,
+  "healthy_measurements_matching_prior_immutable_outcomes": 360,
+  "healthy_fitting_steps_independently_checked": 6861,
+  "filtered_fault_branch_fitting_steps_independently_checked": 573,
+  "fault_injections": "synthetic failures/delivery clocks on viewed recorded depth; not physical transport measurements",
+  "ground_truth_decoded": false,
+  "prior_output_files_byte_identical": 245,
+  "prior_projective_evidence_files_unchanged": 17,
+  "original_icp_and_fusion_source_unchanged_except_supervision_export": true,
+  "python_compile_pass": true,
+  "actionlint_pass": true,
+  "git_diff_check_pass": true,
+  "numpy_version": "2.3.5",
+  "pillow_version": "12.3.0",
+  "source_sha256": {
+    "assets/projective-depth-supervision-v1/design.json": "da5ac9994a22b1f00b922f4a7171652eefc85c5f5a32341b24bbe0e39fec2780",
+    "integrations/projective-depth/Cargo.lock": "4537f1a8fc6aa3e2b54788ae521213abb22659d0c64252d37fafbef94ac0c2e6",
+    "integrations/projective-depth/Cargo.toml": "6a14a3298ecfa1cf78f241d119dbd0fc1377b6f5c178c3fa38a7c5173f0fb991",
+    "integrations/projective-depth/src/bin/rustdriving-projective-depth-supervised.rs": "d8abec5173bb58c7683535d47743064693c159a4a341ac8b76ea23aaa59a90ee",
+    "integrations/projective-depth/src/lib.rs": "22740a333d371b269524fd6c451f74c8af2b4931ebaff44f865b1849ebf1bb0e",
+    "integrations/projective-depth/src/main.rs": "60e574d1b7f4d5872cac858dd6ff5cfdfd07653b6ef4906071cba258c17eb78d",
+    "integrations/projective-depth/src/supervision.rs": "97da0a88b24e2d37b945a36415a048121795b5c3c55c2f8457395041a1aea09f",
+    "preserved-before-fix/first-supervised-cli.rs": "f8f7d160eb3a21743f112b3d280b5c0b7d3fbea51ee4ba40799479191acab8ac",
+    "preserved-before-fix/original-lib.rs": "c5562c7642d973b4b74ff62b5181a6ce993e012b5fdb3dea4f275535ac27ba64",
+    "preserved-before-fix/pre-change-sources.json": "2503c15fd23963a5cc6337794d0b77ced8516406139fac7fbea37bde42f768de",
+    "scripts/check-projective-depth-supervision.py": "d4fa948cf95fd8e4f0badb5092aba23fbc8d0cade096a91ef25d82e04bc2a637",
+    "scripts/check-projective-depth.py": "d38e17df85285f43bea569cd3410eabf5da9c0150f5bcab5c1802910625a87a4",
+    "scripts/projective_depth_common.py": "4d951fed622483de224666056b3fbabdd22902837cbdf8574cb500df9a86a29f",
+    "scripts/requirements-visual.txt": "d8d4e85e0aa1f30325cb3fb9d39834a37e2e0894ecf2153d585e0631ed74d155"
+  },
+  "physical_accuracy_improvement_claim": false,
+  "vehicle_integration": false,
+  "subjective_maturity_percent": 20,
+  "requested_30_percent_reached": false
+}

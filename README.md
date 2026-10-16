@@ -93,11 +93,355 @@ raises matches from 35 to 55/138 on the same viewed BDD frames, but recall
 Complete replay confirms detections and the failed quality outcome.
 Neither addition supplies driving integration or meets the 30% maturity goal.
 
+The optional [one-command image analysis tool](docs/camera-analysis.md) combines
+the tiled detector and ambiguity-preserving vehicle rule, preserving original
+proposals alongside final hypotheses. It publishes complete bounded JSON
+without overwriting output files. Its repeated eight-image regression retains
+78/138 matches and 31 false positives; accuracy gates still fail.
+
+An independent [image-space tracking library and CLI](docs/image-tracking.md)
+now associate timestamped camera detections with motion prediction, global
+one-to-one matching and explicit coasting/expiry. Synthetic crossing and
+failure controls pass; real-sequence identity accuracy remains unverified.
+
+The [recorded-image sequence CLI](docs/camera-sequence.md) now connects image
+loading, detection and tracking in one process, reusing one CPU model plan.
+An eight-frame recorded indoor slice exactly reproduces the separate tools;
+independent object-identity accuracy and driving integration remain unverified.
+
+The [camera-result freshness CLI](docs/camera-freshness.md) now separates
+acquisition time from delivery/poll time, excludes stale or pre-fault results
+and requires consecutive fresh images to recover. Synthetic controls and
+injected faults on saved real reports pass; actual sensor-fault rates and
+automotive availability remain unmeasured.
+
+The [complete offline camera pipeline](docs/camera-pipeline.md) now runs image
+analysis, tracking and freshness in one command with one CPU model plan. Clock-
+excluded images skip inference; repeated actual-image runs reproduce the
+separate tools. Delivery clocks are supplied replay metadata, with no live
+camera or measured end-to-end latency claim.
+
+The [measured camera replay](docs/camera-latency.md) now evaluates the same
+images with actual host processing time and original acquisition intervals.
+This CPU takes 2.27–2.31 seconds for the first four-view image, failing the prior
+200 ms age limit; seven queued images then skip inference and all results stay
+held. These retained local timing failures do not establish live-camera timing.
+
+The optional [parallel fixed-view camera mode](docs/camera-parallel.md) now
+reduces the same CPU processing from 2.26–2.39 s to 0.58–0.63 s, about 3.9×
+faster. Sixteen real images run twice with identical per-view and final
+detections. The 200 ms deadline and existing accuracy gates still fail.
+
+An optional [CPU-specific build comparison](docs/camera-cpu-build.md) adds an
+isolated O3/ThinLTO/native build with binary/source/CPU receipts. The same
+16 images twice retain exact detections. Two paired timings average 5.94%
+less processing time, but one pair regresses; a consistent speedup is not
+established and all 200 ms gates still fail. Normal release remains the default.
+
+The [dense-depth and OpenCV diagnostics](docs/projective-depth-diagnostics.md)
+retain six development variants and a pinned OSS reference on the same viewed
+recordings. Projective depth fusion improves desk2 to 161/179 accurate roots,
+while room reaches 64/179; complete accuracy still fails. Independent scoring
+and exact reference replay preserve both improvement and failure. The
+subjective maturity estimate remains about 20%.
+
+The optional [Rust projective-depth library](docs/projective-depth-rust.md)
+now implements that fused-depth method without OpenCV. It reproduces the
+viewed prototype's trajectories and accuracy counts, with explicit failed-fit
+atomicity, bounded work and latched expiry. Independent analytic and recorded
+checks validate the port; both recorded accuracy protocols still fail.
+
+The maintained Rust tracker now supports explicit policy configuration and a
+[continuous regression gate](docs/native-depth-regression.md). Four native
+candidate changes fail the fixed adoption criteria; default trajectories remain
+unchanged at 64/179 room and 161/179 desk2 accurate updates.
+
+The additional [explicit-clock supervisor](docs/projective-depth-supervision.md)
+expires cached depth poses during sensor silence and withholds them after faults.
+Only successful post-fault acquisitions can clear a hold; expired tracking
+cannot silently restart. These temporal checks preserve the estimator's known
+accuracy failures and remain separate from vehicle driving.
+
+The [raw-depth reconstruction audit](docs/projective-depth-raw-audit.md)
+now checks those original odometry reports against PNG-derived correspondences,
+normal equations and projective fusion. All 7,219 reported iteration/final
+equations and discrete fusion counts agree; this strengthens mathematical
+validation while retaining the known physical pose-accuracy failures.
+
+The optional [multi-reference RGB-D experiment](docs/multireference-rgbd.md)
+adds raw-keyframe fitting and phase-qualified image residuals. Independent
+synthetic pixels verify the added motion information, but neither the image
+variants nor the published-intrinsics comparison improves both viewed records.
+All failures are retained; the fused-depth default and approximately 20%
+subjective maturity estimate remain unchanged.
+
+The separate [joint-keyframe pose comparison](docs/joint-keyframe-depth.md)
+adds an optional NumPy experiment that adjusts several measured-depth camera
+poses together. Synthetic reference errors are corrected, but the viewed
+room/desk2 results score only 72/179 and 51/179 accurate updates and both lose
+tracking. Independent raw/state checks retain the failure; the Rust default
+and about-20% maturity estimate remain unchanged.
+
+The optional [marginalized keyframe comparison](docs/marginalized-keyframe-depth.md)
+adds derived quadratic factors for observations whose views leave the active
+window. Unique factor ownership avoids counting retained raw observations
+twice, and independent QR, quaternion and failure-injection checks validate
+the mathematics and atomic state updates. Both viewed recordings now accept
+all 179 updates without expiry, but accuracy remains 70/179 room and 74/179
+desk2. These physical failures remain retained; the Rust default and about-20%
+subjective maturity estimate remain unchanged.
+
+The subsequent [subpixel depth-factor comparison](docs/subpixel-keyframe-depth.md)
+tests bilinear inverse-depth interpolation with the same retained-information
+engine. It accepts every update but scores only 69/179 room and 74/179 desk2
+accurate, with larger maximum errors than the preceding retained control.
+Independent raw/state audits preserve this failed comparison; the Rust default
+and about-20% subjective maturity estimate remain unchanged.
+
+The [symmetric measured-normal comparison](docs/symmetric-keyframe-depth.md)
+adds a prior-influence diagnostic and uses both measured surface normals with
+their rotation derivatives. It accepts all 179 updates per recording, improves
+room accuracy from 70 to 72/179 and keeps desk2 at 74/179; maximum position
+errors shrink to 0.173 m and 0.240 m. Complete accuracy remains unmet, so the
+Rust default and about-20% subjective maturity estimate remain unchanged.
+
+The [Tukey depth-weight comparison](docs/robust-keyframe-depth.md) adds measured
+residual/normal-disagreement diagnostics and a minimum weight-mass check.
+It accepts every update but scores 71/179 room and 74/179 desk2 accurate.
+Desk2's maximum position error falls to 0.198 m while room worsens to 0.263 m;
+the tradeoff and independent audit are preserved, with unchanged Rust default
+and about-20% subjective maturity estimate.
+
+The [local-plane normal experiment](docs/patch-keyframe-depth.md) fits 5×5
+measured-depth patches, checked separately with centered-patch SVD. It reduces
+normal error in a fixed noisy-plane fixture, but accepts only 142/179 room and
+120/179 desk2 updates before both recordings lose tracking; physical accuracy
+is 77/179 and 75/179. The failed full tracking outcome is retained;
+the Rust default and about-20% subjective
+maturity estimate remain unchanged.
+
+The [selective depth-level comparison](docs/selective-keyframe-depth.md) advances
+past inadmissible coarse proposals while preserving strict finest-level and
+returned-pose guards. It restores 179/179 accepted updates without loss in
+both viewed recordings, from 142/179 room and 120/179 desk2 in the patch-normal
+control. Physical accuracy is 77/179 room and 76/179 desk2, so complete
+accuracy remains unmet; the Rust default and
+about-20% subjective maturity estimate remain unchanged.
+
+The [reciprocal pixel comparison](docs/reciprocal-keyframe-depth.md) checks that
+each selected target point projects back to its original sampled source pixel.
+A short known-noise control and fixed-pose image diagnostics precede the full
+recorded comparison. Both tracks remain active, with 176/179 room and 179/179
+desk2 updates accepted. Room accuracy rises from 77 to 88/179, while desk2 falls
+from 76 to 75/179; complete physical accuracy remains unmet. This optional
+experiment preserves the Rust default and about-20% subjective maturity estimate.
+
+The [finest-level continuation diagnostic](docs/depth-convergence.md) tests ten
+additional updates at ten saved reciprocal fits. None reaches the existing
+convergence thresholds; RMS decreases in only four cases, with changing sample
+populations. Independent raw-system and termination checks retain the complete
+traces. This local diagnostic supplies no new trajectory accuracy result, and
+the estimator's iteration caps remain unchanged.
+
+The [frozen-correspondence update control](docs/descent-keyframe-depth.md) adds
+bounded backtracking over the measured Huber objective and transported prior.
+An independent target-frame objective checks pixel identities, every attempted
+step length and resulting poses. This optional NumPy path retains the full
+proposal guards and convergence thresholds, with unchanged Rust defaults.
+All 7,427 recorded steps already pass at full width; states and physical scores
+remain identical to the reciprocal control, at 88/179 room and 75/179 desk2
+accurate. Both complete accuracy protocols remain unmet.
+
+The [pixel correspondence diagnostic](docs/depth-correspondence.md) replays
+100 saved continuation updates. All lower their fixed-pair cost, while fresh
+pixel selection raises the population-dependent cost above its starting value
+in 49 cases. Independent pixel-ID and cost accounting covers 960 raw pair
+transitions. This adds diagnosis without fitting new poses or changing the
+estimator, its physical accuracy evidence or the about-20% maturity estimate.
+
+The [fixed-pair local refiner](docs/fixed-depth-refinement.md) rebuilds the
+nonlinear system without changing its measured correspondences. All ten saved
+windows converge on that fixed population in 1–5 corrections; fresh associations
+leave all ten unconverged. The predeclared progression condition fails, so this
+checked research tool supplies no new full trajectory or default-estimator change.
+
+The [alternating local refiner](docs/alternating-depth-refinement.md) refreshes
+correspondences after up to three fixed-pair corrections, with ten corrections
+allowed in total. It repairs the rendered same-start convergence case, while
+all ten recorded windows still exhaust their budgets without fresh convergence.
+Independent checks cover 220 new and 20 control systems. The progression rule
+fails; tracking defaults and the about-20% maturity estimate remain unchanged.
+
+The [thirty-correction diagnostic](docs/budget-depth-refinement.md) exactly
+reproduces those first ten corrections, then extends the same local solver
+without relaxing convergence or guard thresholds. Fresh convergence remains
+**0/10** at twenty and thirty corrections; checkpoint correspondences keep
+changing. Independent checks cover 670 reported systems, including 220 replayed
+controls, and 288 pair transitions. The larger budget is not adopted by tracking.
+
+The [continuous local residual experiment](docs/continuous-depth-refinement.md)
+freezes source observations and metric weights while bilinearly sampling
+target inverse depth. It converges on a rendered warm start but fails all ten
+viewed real windows through support/search guards. Independent candidate replay
+shows that losing only 1–4 source occurrences can block the smallest search
+step. The failed comparison is retained; tracking defaults stay unchanged.
+
+The [initial-margin comparison](docs/margin-depth-refinement.md) qualifies
+source observations at nine neighboring projections before freezing them.
+The unchanged solver still converges on 0/10 viewed real windows: missing
+support rises from one to seven windows as the combined selection retains only
+10.78% of initial source occurrences. Independent checks retain this failed
+tradeoff; no tracker or driving default is changed.
+
+The [sampling-domain comparison](docs/sampling-depth-refinement.md) keeps
+geometric matching at initialization and requires interpolation support during
+the frozen attempt. Against both predecessors, local guard stops fall from
+10/10 to 5/10 and 54 tentative corrections are applied, while convergence
+remains 0/10. Original-discrete fresh checks, source populations and all failed
+outcomes are retained; the Rust default stays unchanged.
+
+The [fixed-observation budget extension](docs/long-depth-refinement.md) preserves
+the same initial sources, weights and prior for up to thirty corrections.
+All ten complete cap-10 reports exactly match the preceding control; two desk2
+windows reach continuous-objective convergence at corrections 16 and 19.
+Eight windows retain guard failures, and original-discrete fresh convergence
+remains 0/10. No new trajectory accuracy or default-estimator adoption is claimed.
+
+The [bounded-search diagnosis](docs/depth-search-diagnostic.md) replays four
+saved failures and probes smaller steps without continuing optimization.
+All four admit a decreasing step beyond the original bound: three at 1/256,
+the invalid-sampling control at 1/1024. Independent directional and domain
+checks support a deeper-search experiment; the latest convergence and physical
+trajectory results remain unchanged.
+
+The [deeper bounded-search comparison](docs/deep-search-depth-refinement.md)
+extends only the candidate range through 2^-20, preserving the thirty-correction
+cap. All old trace prefixes match exactly; search stops fall from four to one,
+but three windows exhaust their budget and convergence stays 2/10. Two tiny
+cost increases allowed by the unchanged numerical slack are retained. This
+local experiment supplies no new physical trajectory score or default adoption.
+
+The [conditional damped-direction comparison](docs/damped-depth-refinement.md)
+tries eight alternative numerical directions after a very short or exhausted
+GN search, preserving the original full-proposal guards and convergence.
+It selects 32 alternatives but keeps convergence at 2/10, retains all three
+budget stops and slightly worsens their final objectives. The failed result,
+nine slack-permitted tiny cost increases and independent checks are retained;
+this branch is not adopted by tracking.
+
+The [cell-transition slope diagnosis](docs/depth-cell-slopes.md) identifies a
+local barrier at the six budget-stopped states across those two methods.
+Each direction's slope reverses when one fixed source changes interpolation
+cell, contributing at least 99.967% of the slope jump; both methods encounter
+the same source pixel per window. Independent checks retain all 152 probes.
+This read-only result narrows the stall mechanism without granting convergence
+or identifying physical outliers.
+
+The [C1 cubic comparison and frozen margin follow-up](docs/cubic-depth-refinement.md)
+remove interpolation-derivative jumps within valid stencils. Cubic center
+support retains every initial source but converges on 0/10 viewed windows
+because of later support loss. The separately frozen initial-margin version
+converges on room source 240 after nine corrections, while retaining only 49.94%
+of sources and converging on 1/10 overall. Both failed progression results are
+retained; neither replaces the bilinear control or the native default.
+
+The [measured-normal four-corner Hermite variant](docs/normal-hermite-depth-refinement.md)
+keeps every initial observation and improves local convergence to 4/10 viewed
+windows, compared with 2/10 for bilinear. Room gains three successes while desk2
+loses one. Freshly associated convergence remains 0/10 and room fresh RMS
+regresses, so the frozen progression rule fails and the native default stays.
+
+The [local measured-normal completion experiment](docs/local-normal-depth-refinement.md)
+reconstructs absent sampling normals only from fully measured, plane-qualified
+3×3 patches. It opens 20/21 previously blocked room candidates and preserves
+all initial observations, but convergence stays 4/10. Nine entire control
+reports remain equal; the changed room window still loses support and its
+fresh residual regresses. The failed progression result is retained.
+
+The [depth-derived C1 comparison](docs/depth-slope-refinement.md) preserves its
+first failed 3/10 result, then freezes a one-sided depth-slope extension. The
+follow-up retains all initial observations and converges on 5/10 windows,
+versus 4/10 for measured-normal sampling. All 97 applied corrections are full
+steps. Freshly associated convergence remains 0/10, with four initial-support
+stops and one correction-budget stop; physical accuracy remains unscored.
+
+The [extended fixed-source correction budget](docs/extended-slope-refinement.md)
+reproduces all 97 original corrections and every complete cap 30 report, then
+converges on desk2 source 160 after 39 corrections. Local convergence reaches 6/10
+with all initial sources retained. Four selected-support guards and 0/10 fresh
+convergence remain; the changed window's fresh residual worsens. This bounded
+offline continuation adds no physical trajectory score or native default change.
+
+The [fitted-field admission experiment](docs/slope-admission-refinement.md)
+aligns initial neighborhood probes with the depth field actually used for
+fitting. It keeps all previous sources and original weights, restoring current
+support in three desk2 windows and increasing local convergence from 6/10 to 9/10.
+One room window still fails the unchanged 200-point center requirement; fresh
+convergence stays 0/10. The additional selected residuals come from existing
+frames, without new physical accuracy scoring or native/default adoption.
+
+The [terminal objective diagnosis](docs/depth-objective-bridge.md) explains the
+gap between fixed and fresh convergence at those saved poses. An independently
+checked five-term gradient bridge separates source membership, residual
+influence, Jacobians and target reassignment. Even reselection within the same
+continuous model gives 0/10 converged proposals, with no new pose updates or
+physical score. Fixed-objective convergence remains 9/10.
+
+The [bounded reselection comparison](docs/reselected-slope-refinement.md)
+then performs up to three continuous selection-and-refit rounds, with 90 total
+corrections allowed per window. Fresh convergence remains 0/10, terminal fixed
+convergence falls to 8/10, and both fresh-residual medians worsen. Every first
+round exactly reproduces the preceding control. Two unresolved exact-grid
+identity admission disagreements are retained; the failed variant is not adopted.
+
+The [conservative boundary-support variant](docs/boundary-slope-refinement.md)
+resolves those two authored admission disagreements by requiring supported cells
+around each projected query, without snapping C1 interpolation coordinates.
+Both implementations agree on 939 identity sources. On the ten recorded windows, every
+complete fit/checkpoint exactly reproduces the original 9/10 control, retaining
+all 60,288 initial source occurrences. Fresh convergence remains 0/10; physical
+trajectory accuracy and native/default adoption remain unestablished.
+
+The [fitted-center union](docs/fitted-center-refinement.md) retains all those
+observations and their original metric values while admitting 20,140 additional
+occurrences from the same frames. Local fixed-objective convergence reaches
+10/10, repairing the remaining room support stop without relaxing the 200-source
+minimum. Both fresh convergence checks remain 0/10 and desk2's median fresh RMS
+worsens, so the progression rule still fails and the variant is not adopted.
+
+The [bounded fitted-center reselection](docs/reselected-center-refinement.md)
+preserves every first-round report and then performs up to three fixed-source
+fits. Both median fresh residuals improve, but fresh convergence stays 0/10 and
+terminal fixed convergence falls from 10/10 to 7/10. A selected-support line-search
+stop and two inner-budget stops remain explicit; this variant is not adopted.
+
+The [two-pixel admission comparison](docs/interior-center-refinement.md)
+traces that support stop to one measured source crossing a missing cell after
+1.07 pixels of image motion. Wider initial probes retain 99.08% of initial
+sources, remove all unsupported trials and improve terminal fixed convergence
+to 8/10. Every fresh check remains 0/10 and both median fresh residuals worsen
+against the preceding outer control, so this variant is also not adopted.
+
 The optional [KITTI calibration projection tool](docs/kitti-projection.md)
 accepts provided calibration and Velodyne files, retaining the complete
 rectified projection chain for cameras 0–3. Its controls are authored analytic
 geometry, independently checked across four cameras with byte-identical
 projection replay; no real KITTI data or automotive accuracy has been evaluated.
+
+The separate [sparse-depth tool](docs/kitti-depth.md) turns those projected
+points into occupied camera-pixel cells, selecting the nearest axial depth
+and retaining all point assignments and winning source indices. Four-camera
+analytic checks cover raster collisions, exact ties and adjacent floating-point
+depths. Missing cells remain unobserved; image fusion and driving integration
+remain future work.
+
+The [recorded Argoverse sparse-depth experiment](docs/argoverse-sparse-depth.md)
+processes 278,790 actual points and their log's camera calibration through an
+explicit format bridge. All in-frame projections and raster selections agree
+independently; the initial all-pixel trial passes only 1/3 scans due to near-zero
+off-canvas depth conditioning, and that failure is retained. No physical depth
+reference is available. The [KITTI depth evaluator](docs/kitti-depth-evaluation.md)
+is ready for supplied authorized inputs; no real KITTI accuracy is claimed.
 
 ## Build and run
 

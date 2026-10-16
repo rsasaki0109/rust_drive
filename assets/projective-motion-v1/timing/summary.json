@@ -1,0 +1,28 @@
+{
+  "cases": {
+    "tum-fr1-room-temporal": {
+      "frames": 180,
+      "causal_probe_frames": 171,
+      "maximum_abs_association_s": 0.017310142517089844,
+      "median_frame_p95_px": 5.931812040473235,
+      "maximum_frame_p95_px": 15.188690529862837,
+      "frames_p95_over_half_pixel": 171
+    },
+    "tum-fr1-desk2-independent": {
+      "frames": 180,
+      "causal_probe_frames": 160,
+      "maximum_abs_association_s": 0.017030000686645508,
+      "median_frame_p95_px": 6.541822992534468,
+      "maximum_frame_p95_px": 23.353975809912747,
+      "frames_p95_over_half_pixel": 160
+    }
+  },
+  "numeric_truth_decoded": false,
+  "source": "prior accepted exposure-aware RGB-D estimates, viewed development recordings",
+  "scope": "model-predicted displacement under constant body motion/static scene; not measured timing error, not calibrated uncertainty, no compensation applied",
+  "source_sha256": {
+    "scripts/diagnose-projective-motion-timing.py": "a5475b0984aa7482f78c8e6c545821c6db21c94ace9e8581be4deddf4063e5e5",
+    "scripts/projective_motion_raw.py": "10b4aeb64d5e011299a6d91cc79d08a5eee7048ce61ca2d1013936de039ba868",
+    "scripts/projective_depth_common.py": "f32de54d95f37835dbf63348d7f18676cf0bfc2264723af54525b36da856bac3"
+  }
+}

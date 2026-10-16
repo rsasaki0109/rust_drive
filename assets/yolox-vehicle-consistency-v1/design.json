@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "purpose": "explicitly preserve ambiguity when the full image itself supports multiple vehicle classes",
+  "development": "third viewed-data design informed by preserved majority75TP/31FP and full-context76TP/30FP failures; no unseen-data claim",
+  "policy": "existing complete cross-view car/bus/truck conflict components; restore all full-view proposals; eligible proposal overlaps every component box with f32 IoU>.45; reconcile only if eligible full proposals support exactly one class; otherwise preserve every original global hypothesis and record all eligible full proposals",
+  "selection": "highest-ranked original global box of uniquely supported class; unchanged confidence/geometry/origin/order",
+  "thresholds": "all previous confidence .3, classwise NMS .45, matching .5, classes2/5/7 unchanged",
+  "bounds": {
+    "views": 4,
+    "per_view": 300,
+    "global_outputs": 300,
+    "comparison_work": 1400000,
+    "input_and_output_bytes": 4194304
+  },
+  "interface": "Rust postprocessor reads pinned original tiled-detector JSON and validates every original merge field and producer profile; never loads weights/images or performs inference",
+  "evaluation": "all8 viewed BDD frames/138 refs unchanged; first+repeat native parent reports retained and validated; final16 Rust postprocessing runs from those reports; independent full-support reconstruction",
+  "adoption": "retain every original78 matched reference and all per-class counts; reduce false positives below33; unchanged original quality floors .7precision/.6recall/.5presentclassrecall reported separately",
+  "calibration": "descriptive fixed5-bin Brier/ECE only; no probability aggregation, fitted calibration or fresh holdout",
+  "defaults": "previous sources and executables unchanged; new explicit report-to-report binary only",
+  "maturity": "about20%;30%unmet"
+}

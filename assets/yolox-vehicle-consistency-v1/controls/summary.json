@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "checker_sha256": "7cc786838a845a64ad9f7685718bb940003b4006144bbfe103c243bf57ce5742",
+  "executable_sha256": "1bc51f394f369cf7195a46440abc2829b28683775966844c93b4a622533da1fc",
+  "cases": [
+    {
+      "name": "0-input",
+      "retained": 1,
+      "decisions": 1,
+      "work": 8
+    },
+    {
+      "name": "1-input",
+      "retained": 1,
+      "decisions": 1,
+      "work": 12
+    },
+    {
+      "name": "2-input",
+      "retained": 2,
+      "decisions": 1,
+      "work": 6
+    },
+    {
+      "name": "3-input",
+      "retained": 2,
+      "decisions": 0,
+      "work": 3
+    },
+    {
+      "name": "4-input",
+      "retained": 2,
+      "decisions": 0,
+      "work": 1
+    },
+    {
+      "name": "5-input",
+      "retained": 3,
+      "decisions": 0,
+      "work": 6
+    },
+    {
+      "name": "6-input",
+      "retained": 3,
+      "decisions": 0,
+      "work": 5
+    },
+    {
+      "name": "7-input",
+      "retained": 299,
+      "decisions": 2,
+      "work": 83569
+    },
+    {
+      "name": "8-input",
+      "retained": 299,
+      "decisions": 1,
+      "work": 83583
+    },
+    {
+      "name": "9-input",
+      "retained": 300,
+      "decisions": 0,
+      "work": 83274
+    },
+    {
+      "name": "10-input",
+      "retained": 300,
+      "decisions": 0,
+      "work": 284038
+    },
+    {
+      "name": "11-input",
+      "retained": 1,
+      "decisions": 1,
+      "work": 14
+    },
+    {
+      "name": "full-image-is-itself-ambiguous",
+      "retained": 2,
+      "decisions": 1,
+      "work": 13
+    }
+  ],
+  "rejected_producer_corruptions": [
+    {
+      "name": "model",
+      "exit": 2,
+      "stderr": "invalid original tiled producer report\n"
+    },
+    {
+      "name": "producer-sources",
+      "exit": 2,
+      "stderr": "invalid original tiled producer report\n"
+    },
+    {
+      "name": "threshold",
+      "exit": 2,
+      "stderr": "invalid original tiled producer report\n"
+    },
+    {
+      "name": "profile",
+      "exit": 2,
+      "stderr": "invalid original tiled producer report\n"
+    },
+    {
+      "name": "tensor",
+      "exit": 2,
+      "stderr": "invalid original tiled producer report\n"
+    },
+    {
+      "name": "pixel-hash",
+      "exit": 2,
+      "stderr": "invalid original tiled producer report\n"
+    },
+    {
+      "name": "box",
+      "exit": 2,
+      "stderr": "invalid original tiled producer report\n"
+    },
+    {
+      "name": "lineage",
+      "exit": 2,
+      "stderr": "invalid original tiled producer report\n"
+    },
+    {
+      "name": "merge-work",
+      "exit": 2,
+      "stderr": "invalid original tiled producer report\n"
+    }
+  ],
+  "existing_output_preserved": true,
+  "pass_controls": true
+}

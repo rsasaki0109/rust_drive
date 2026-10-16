@@ -1,0 +1,1010 @@
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -138,6 +138,11 @@
+           python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/reciprocal-analytic --correspondence reciprocal --output artifacts/projective-depth/reciprocal-raw-audit
+           python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --residual symmetric_planes --output artifacts/projective-depth/symmetric-analytic
+           python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/symmetric-analytic --residual symmetric_planes --output artifacts/projective-depth/symmetric-raw-audit
++          python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --residual symmetric_midpoint --output artifacts/projective-depth/midpoint-analytic
++          python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/midpoint-analytic --residual symmetric_midpoint --output artifacts/projective-depth/midpoint-raw-audit
++          python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --residual bidirectional_midpoint --output artifacts/projective-depth/bidirectional-analytic
++          python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/bidirectional-analytic --residual bidirectional_midpoint --output artifacts/projective-depth/bidirectional-raw-audit
++          python scripts/check-projective-surface-math.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/surface-math
+           python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --correspondence bilinear --output artifacts/projective-depth/bilinear-analytic
+           python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/bilinear-analytic --correspondence bilinear --output artifacts/projective-depth/bilinear-raw-audit
+           python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --normals inverse_depth_plane --output artifacts/projective-depth/plane-normal-analytic
+@@ -205,6 +210,7 @@
+           python -m py_compile scripts/projective_step_raw.py scripts/check-projective-step-control.py
+           python -m py_compile scripts/projective_motion_raw.py scripts/check-projective-motion.py
+           python -m py_compile scripts/projective_timing_raw.py scripts/check-projective-timing.py scripts/projective_information_raw.py scripts/projective-heldout.py scripts/repair-projective-heldout-inventory.py scripts/check-projective-information-calibration.py scripts/check-projective-report-write.py scripts/check-projective-calibration-math.py
++          python -m py_compile scripts/diagnose-projective-surface-bias.py scripts/check-projective-surface-math.py
+           python -m py_compile scripts/diagnose-projective-motion-timing.py
+           python -m py_compile scripts/multireference_rgbd_common.py scripts/evaluate-multireference-rgbd.py
+           python -m py_compile scripts/joint_keyframe_depth.py scripts/evaluate-joint-keyframe-depth.py
+--- a/artifacts/projective-midpoint-v1/replay-defaults.py
++++ b/artifacts/projective-midpoint-v1/replay-defaults.py
+@@ -0,0 +1,51 @@
++"""One-time source-bound compatibility replay; no numeric reference reads."""
++import argparse,gzip,io,json,sys
++from pathlib import Path
++import numpy as np
++from PIL import Image
++
++r=Path.cwd();sys.path.insert(0,str(r/'scripts'))
++from projective_depth_common import CAMERA,Client,fresh,require,sha,write
++p=argparse.ArgumentParser();p.add_argument('--mode',choices=('depth','rgbd','timing'),required=True);p.add_argument('--output',type=Path,required=True);args=p.parse_args();out=fresh(args.output)
++binary=r/'integrations/projective-depth/target/release/rustdriving-projective-depth';binary_hash=sha(binary.read_bytes())
++sources=[Path(__file__).absolute(),r/'scripts/projective_depth_common.py',*sorted((r/'integrations/projective-depth/src').rglob('*.rs'))]
++pins={str(p.relative_to(r)):sha(p.read_bytes()) for p in sources}
++configuration={} if args.mode=='depth' else dict(photometric='keyframe')
++if args.mode=='timing':configuration.update(motion_model='constant_velocity',timing='previous_motion')
++write(out/'freeze.json',dict(source_sha256=pins,binary_sha256=binary_hash,configuration=configuration,numeric_reference_poses_decoded=False))
++cases=['tum-fr1-room-temporal','tum-fr1-desk2-independent']
++if args.mode!='rgbd':cases.append('tum-fr1-rpy-heldout')
++checks={}
++for case in cases:
++ if case.endswith('heldout'):
++  packet=r/'assets/projective-information-v1';folder=packet/'heldout/rpy'/args.mode
++ elif args.mode=='depth':packet=r/'assets/projective-depth-rust-v1';folder=packet/case
++ elif args.mode=='rgbd':packet=r/'assets/projective-affine-v1';folder=packet/'recorded'/case
++ else:packet=r/'assets/projective-timing-v1';folder=packet/'recorded'/case
++ path=folder/'sensor-only.json.gz';body=path.read_bytes();binding=json.loads((packet/'files.json').read_text())[str(path.relative_to(packet))]
++ require(len(body)==binding['bytes'] and sha(body)==binding['sha256'],'historical packet digest')
++ expected=json.loads(gzip.decompress(body));require(expected['ground_truth_parsed'] is False,'pre-label baseline')
++ base=r/'data'/case;manifest_body=(base/'manifest.json').read_bytes();manifest=json.loads(manifest_body)
++ inventory={i['file']:i for i in manifest['files']};client=Client(binary,CAMERA,configuration=configuration);rows=[]
++ def image(name,color=False):
++  data=(base/'raw'/name).read_bytes();pin=inventory[name]
++  require(len(data)==pin['bytes'] and sha(data)==pin['sha256'],'qualified sensor bytes')
++  im=Image.open(io.BytesIO(data));require(im.size==(640,480),'original sensor dimensions')
++  if color:
++   require(im.mode=='RGB','measured RGB');a=np.asarray(im,dtype=np.uint32)
++   return ((77*a[:,:,0]+150*a[:,:,1]+29*a[:,:,2])>>8).astype(np.uint8)
++  require(im.mode in ('I;16','I;16B','I'),'measured axial depth');return np.asarray(im,dtype=float)/5000.
++ try:
++  for frame in manifest['frames']:
++   rgb=None if args.mode=='depth' else dict(timestamp=frame['rgb_timestamp'],gray=image(frame['rgb_file'],True).ravel().tolist())
++   u=client.frame(frame['depth_timestamp'],image(frame['depth_file']),image=rgb);rows.append(dict(source_index=frame['source_index'],update=u))
++  client.finish()
++ except BaseException:client.abort();raise
++ require(len(rows)==len(expected['frames'])==180,'complete comparison')
++ if rows!=expected['frames']:
++  write(out/(case+'-first-disagreement.json'),dict(actual=rows,expected_ledger_sha256=sha(body)))
++  raise ValueError('sensor replay differs: '+case)
++ checks[case]=dict(identical_outcomes=180,manifest_sha256=sha(manifest_body),baseline_file=str(path.relative_to(r)),baseline_sha256=sha(body))
++ write(out/(case+'.json'),checks[case]);print(args.mode,case,'180 outcomes exactly identical',flush=True)
++require(sha(binary.read_bytes())==binary_hash and all(sha((r/n).read_bytes())==h for n,h in pins.items()),'binary and sources unchanged throughout replay')
++write(out/'summary.json',dict(pass_exact_compatibility=True,cases=checks,identical_outcomes=180*len(checks),numeric_reference_poses_decoded=False))
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -381,6 +381,13 @@
+ withhold image constraints. Own-time synthetic controls pass, while recorded
+ accuracy 80/179 room and 171/179 desk2 still fails the maximum-angle adoption gate.
+ Neither motion option establishes qualified vehicle localization.
++Optional [midpoint surface residuals and bidirectional projective matching](projective-surface.md)
++separate measured-normal averaging from correspondence search in both directions.
++Both retain accepted-state and conditioning guards. Each bidirectional solve and
++returned pose requires separate support in both directions, with reported counts
++and independently transported reverse-frame equations. Three viewed recordings
++fail the fixed adoption rule, so the original target-plane default remains.
++
+ A mandatory [physical directional-information guard](projective-information.md)
+ now checks combined information before diagonal equilibration and again at the
+ returned pose. It rejects the six weak planar fits previously marked accepted,
+--- a/docs/maturity.md
++++ b/docs/maturity.md
+@@ -637,3 +637,11 @@
+ fails its usefulness gate. Neither is qualified uncertainty. These default
+ robustness improvements and retained new failures do not close the 30% waypoint;
+ subjective maturity remains **about 20%** versus mature driving OSS.
++
++The later [surface-residual and bidirectional-matching comparison](projective-surface.md)
++retains those original failures. The new bidirectional estimator reduces RPY's
++maximum rotation error to about 0.156 rad, but scores 64/159/75 accurate updates
++in room/desk2/RPY and fails the unchanged adoption floors. Measured-normal
++averaging alone regresses desk2 further. Both stay opt-in and supply no calibrated
++uncertainty. Implementation and independent checks do not justify a percentage
++increase: maturity remains **about 20%**, with the 30% waypoint unmet.
+--- a/docs/native-depth-regression.md
++++ b/docs/native-depth-regression.md
+@@ -194,6 +194,16 @@
+ failure remains the open problem; subjective maturity stays **about 20%** versus
+ mature driving OSS. Test counts alone do not justify increasing it.
+ 
++## Midpoint surfaces and bidirectional association
++
++The later [surface comparison](projective-surface.md) evaluates all three viewed
++recordings with the original indices, root gates and update denominator. Midpoint
++normals score 66/86/75 accurate room/desk2/RPY updates; searching correspondences
++in both directions scores 64/159/75. The original default remains 64/161/74.
++Both candidates fail adoption. The native implementation, exact moving-normal
++derivative, separate-direction support and independent reverse-equation transport
++remain reproducible optional research, without a maturity increase.
++
+ ## Normal-noise diagnosis and rejected native change
+ 
+ The subsequent native normal-estimation experiment also makes **no default
+--- a/docs/projective-surface.md
++++ b/docs/projective-surface.md
+@@ -0,0 +1,164 @@
++# Measured surface residuals and bidirectional projective matching
++
++Two optional native depth-fitting modes distinguish symmetric plane residuals
++from actually searching correspondences in both directions. Neither meets the
++frozen adoption rule, so the original target-plane tracker remains the default.
++This is offline RGB-D research, with no driving or calibrated-confidence claim.
++
++## Complete viewed comparisons
++
++All three recordings retain their original depth indices 100–279, one first
++optical-camera origin, 179 update denominator, K525, axial metres and 0.1 m /
++0.1 rad root-error gates. Every mode accepts all 179 updates without expiry or
++reset. Numeric mocap labels enter trajectory scoring after the recording's
++complete sensor-only ledger is saved. RPY was viewed in the preceding
++[information-guard trial](projective-information.md); it is regression data here.
++
++| Mode | Room / desk2 / RPY accurate updates, each out of 179 |
++|---|---|
++| Original target plane | 64 / 161 / 74 |
++| Symmetric midpoint | 66 / 86 / 75 |
++| Bidirectional midpoint | 64 / 159 / 75 |
++
++| Mode and recording | Maximum position error (m) | Maximum rotation error (rad) |
++|---|---:|---:|
++| Original, room | 0.296290 | 0.141286 |
++| Midpoint, room | 0.297634 | 0.142046 |
++| Bidirectional, room | 0.300067 | 0.143001 |
++| Original, desk2 | 0.114800 | 0.090386 |
++| Midpoint, desk2 | 0.171308 | 0.316872 |
++| Bidirectional, desk2 | 0.124217 | 0.088299 |
++| Original, RPY | 0.087348 | 0.173375 |
++| Midpoint, RPY | 0.088627 | 0.155312 |
++| Bidirectional, RPY | 0.088044 | 0.155537 |
++
++The rule was fixed before each candidate: room must exceed 64 accurate updates,
++desk2 retain at least 161, RPY retain at least 74, and all three retain every
++update without worse maximum position or rotation error. Both candidates fail;
++both complete physical protocols exit 1 after saving their results. Reduced RPY
++rotation error does not compensate for regressions in another recording. No
++new recording is used to bypass these failed development gates. Maturity stays
++**about 20%** versus mature driving OSS, with the 30% waypoint unmet.
++
++## Projection and local objective diagnosis
++
++The official TUM file-format page recommends the ROS default model without
++undistorting the pre-registered depth. Its uncalibrated K525 interpretation and
++the previously failed published-intrinsics replacement are retained; no new
++depth multiplier, intrinsic fit or distortion correction is introduced.
++[Camera contract](registered-grid-camera.md); [previous comparison](multireference-rgbd.md).
++
++The maintained `diagnose-projective-surface-bias.py` probes 15 fixed consecutive
++raw-depth pairs in each already viewed recording, in both directions and at
++all three scales. Mocap supplies only the offline probe pose, never a tracker
++initializer or measurement. At native resolution the original objective's
++median one-step rotation correction away from the reference pose is 3.545 mrad
++in room, 3.948 mrad in desk2 and 3.096 mrad in RPY. Midpoint gives 3.523, 4.200 and
++3.158 mrad respectively. Thus averaging measured normals does not consistently
++remove the local mismatch. These sparse probes do not identify a unique cause,
++calibrate the camera or establish a complete trajectory result.
++
++## Residual and derivative
++
++For source point `p`, fitted source-to-target transform `(R,t)`, target point
++`v`, target normal `nt`, and measured source normal `ns`, let `q=R*p+t` and
++`n=R*ns`. The new signed residual is
++
++```
++r = (nt+n) dot (q-v) / 2
++J = [(nt+n)/2, (q cross nt + v cross n)/2]
++```
++
++The source normal rotates with the fitted pose; freezing it gives the wrong
++rotation derivative. The mean normal is not renormalized. The factor one half
++retains the ordinary signed-plane scale when the normals agree. The existing
++10 mm Huber rule applies to this one residual. For the unrobust squared losses,
++the old average of two squared plane residuals additionally includes
++`(rt-rs)^2/4`; averaging before squaring removes that difference penalty. This
++algebra is not a proof of smaller physical error, and robust tails differ too.
++
++`symmetric_midpoint` uses the existing current-to-model projective matches.
++`bidirectional_midpoint` also projects supported model vertices into the current
++depth image and applies the original distance/normal/border gates there.
++The reverse-selected fixed pairs contribute the same residual and target-frame
++derivative above. These are separate association sets, without a reciprocal
++matching requirement. Each contributes full H/g and squared residuals; reported
++RMS divides by their total count. Shared points and fused-history correlations
++are not independent measurements for covariance purposes.
++
++Every bidirectional normal equation reports `direction_counts: [forward,reverse]`.
++Both directions require at least 200 samples before every solve and at the
++returned pose; a large total cannot substitute for an unsupported direction.
++All existing work caps, physical information, solver, increment, returned-RMS,
++fusion, keyframe and accepted-clock rules remain. Rejection cannot commit state.
++
++## Interface and independent validation
++
++Select `TrackerConfig.residual` / JSON `Configure.residual` as
++`symmetric_midpoint` or `bidirectional_midpoint`. Both require the original
++depth/point/forward/central-difference policies, without photometric tracking.
++Unsupported combinations reject before acknowledging configuration. Old modes
++omit the optional directional counts and retain their successful output schema.
++
++Rust controls check all six derivatives by finite differences at a nonzero
++pose, fixed-pair endpoint reversal, the difference-penalty identity and
++per-direction support admission. The raw NumPy auditor computes reverse-frame
++normal equations and transports them with `-Ad(T^-1)`; the native implementation
++instead accumulates direct target-frame derivatives. All fitted and returned
++equations and model generations are reconstructed from original depth PNGs,
++without numeric reference-pose decoding. Altered/missing directional counts and
++substituting a one-direction objective must fail the raw check.
++
++An unequal-visibility ray-cast control checks reversed scalar objectives,
++swapped directional counts and transported H/g at all three scales. Its direction
++counts are 651/636, 3421/3391 and 3925/3816. These checks validate implementation
++and frame conventions. Native flat-plane controls independently reconstruct both
++weak-information failure witnesses and verify that rejection cannot renew the
++accepted clock or bypass latched expiry. Summing two directions does not create
++missing physical constraints. The physical results above still fail. No runtime noise,
++probability calibration, automotive qualification or new dependency is added.
++
++Sources, the two frozen designs, complete ledgers and failures are preserved in
++[the surface evidence packet](../assets/projective-surface-v1/summary.json).
++Historical evidence and the first midpoint-only source remain separate.
++
++All 420 Rust tests (49 optional-native and 371 core), Clippy, formatting and 49
++core scenario/replays pass. The 245 core outputs remain unchanged. Replaying the
++original depth, affine RGB-D and motion/time-compensated configurations reproduces
++all 1,440 historical sensor outcomes exactly across eight complete runs, without
++numeric pose-label reads. Across the six candidate runs, independent raw checks
++reconstruct 21,088 fitted/returned normal systems and 1,074 model generations.
++The mathematical and compatibility checks pass while all six complete physical
++accuracy protocols fail. CI exercises the synthetic modes and negative controls
++without downloading recorded datasets.
++
++## Reproduction
++
++With the existing pinned source datasets and NumPy/Pillow environment:
++
++```bash
++source scripts/env.sh
++cargo test --all-targets --locked --manifest-path integrations/projective-depth/Cargo.toml
++cargo build --release --bins --locked --manifest-path integrations/projective-depth/Cargo.toml
++OPENBLAS_NUM_THREADS=1 python scripts/check-projective-depth.py \
++  --binary integrations/projective-depth/target/release/rustdriving-projective-depth \
++  --residual bidirectional_midpoint --output artifacts/surface-analytic
++OPENBLAS_NUM_THREADS=1 python scripts/check-projective-surface-math.py \
++  --binary integrations/projective-depth/target/release/rustdriving-projective-depth \
++  --output artifacts/surface-math
++OPENBLAS_NUM_THREADS=1 python scripts/evaluate-projective-depth.py \
++  --binary integrations/projective-depth/target/release/rustdriving-projective-depth \
++  --residual bidirectional_midpoint \
++  --case tum-fr1-room-temporal --case tum-fr1-desk2-independent \
++  --case tum-fr1-rpy-heldout --output artifacts/surface-recorded
++# Expected exit 1: complete physical accuracy fails.
++OPENBLAS_NUM_THREADS=1 python scripts/audit-projective-depth-raw.py \
++  --analytic-reports artifacts/surface-analytic --residual bidirectional_midpoint \
++  --recorded-reports artifacts/surface-recorded \
++  --case tum-fr1-room-temporal --case tum-fr1-desk2-independent \
++  --case tum-fr1-rpy-heldout --output artifacts/surface-raw
++```
++
++Use fresh output paths. Replacing the residual with `symmetric_midpoint` repeats
++the first candidate. Omitting `--case` preserves the original two-recording
++evaluator/auditor selection; RPY has no earlier fused-prototype comparison file.
+--- a/integrations/projective-depth/src/information.rs
++++ b/integrations/projective-depth/src/information.rs
+@@ -92,6 +92,7 @@
+             g: [0.; 6],
+             count: 200,
+             rms_m: 0.,
++            direction_counts: None,
+         };
+         assert!(check(false, 4, Pose::identity(), &equation, None, &mut failure).is_err());
+         assert_eq!(failure.unwrap().equation.count, 200);
+--- a/integrations/projective-depth/src/lib.rs
++++ b/integrations/projective-depth/src/lib.rs
+@@ -13,6 +13,7 @@
+     MotionModel, Prediction, Status as PredictionStatus, TimeWarp, Timing, WarpStatus,
+ };
+ mod step_control;
++mod surface;
+ pub use step_control::StepPolicy;
+ pub mod supervision;
+ mod vertex_model;
+@@ -54,6 +55,12 @@
+     #[default]
+     TargetPlane,
+     SymmetricPlanes,
++    /// Average both signed plane distances before robust squaring. Its rotation
++    /// derivative includes the moving source normal.
++    SymmetricMidpoint,
++    /// Sum two independently projected correspondence sets. Each direction
++    /// must have its own complete geometric support.
++    BidirectionalMidpoint,
+ }
+ 
+ /// An inverse-depth plane is planar in pixel coordinates, including on tilted
+@@ -448,6 +455,17 @@
+     pub rms_m: f64,
+     pub h: H,
+     pub g: [f64; 6],
++    #[serde(skip_serializing_if = "Option::is_none")]
++    pub direction_counts: Option<[usize; 2]>,
++}
++impl Equation {
++    fn supported(&self) -> bool {
++        self.count >= MIN_SUPPORT
++            && self.direction_counts.is_none_or(|counts| {
++                counts.iter().all(|&n| n >= MIN_SUPPORT)
++                    && counts.iter().sum::<usize>() == self.count
++            })
++    }
+ }
+ fn equation(
+     target: &Level,
+@@ -462,6 +480,7 @@
+         rms_m: 0.,
+         h: [[0.; 6]; 6],
+         g: [0.; 6],
++        direction_counts: None,
+     };
+     let stride = if scale == 1 { 2 } else { 1 };
+     let mut squared = 0.;
+@@ -499,7 +518,14 @@
+             {
+                 continue;
+             }
+-            if residual == Residual::SymmetricPlanes {
++            if matches!(
++                residual,
++                Residual::SymmetricMidpoint | Residual::BidirectionalMidpoint
++            ) {
++                let (r, j) = surface::midpoint(q, target_point, pose.rotate(source.normals[i]), n);
++                add_residual(&mut e, j, r, 1.);
++                squared += r * r;
++            } else if residual == Residual::SymmetricPlanes {
+                 let source_normal = pose.rotate(source.normals[i]);
+                 let source_r = dot(source_normal, sub(q, target_point));
+                 add_plane(&mut e, n, q, r, 0.5);
+@@ -512,6 +538,11 @@
+             }
+             e.count += 1;
+         }
++    }
++    if residual == Residual::BidirectionalMidpoint {
++        let forward = e.count;
++        squared += surface::reverse(&mut e, target, source, pose, scale);
++        e.direction_counts = Some([forward, e.count - forward]);
+     }
+     e.rms_m = if e.count == 0 {
+         0.
+@@ -531,6 +562,10 @@
+         rotation[1],
+         rotation[2],
+     ];
++    add_residual(e, j, r, coefficient);
++}
++
++fn add_residual(e: &mut Equation, j: [f64; 6], r: f64, coefficient: f64) {
+     let weight = (0.01 / r.abs().max(1e-15)).min(1.) * coefficient;
+     for a in 0..6 {
+         e.g[a] += j[a] * r * weight;
+@@ -571,7 +606,7 @@
+     for ((t, s), (scale, cap)) in target.iter().zip(source).zip([(4, 10), (2, 7), (1, 5)]) {
+         for _ in 0..cap {
+             let e = equation(t, s, pose, scale, policy.correspondence, policy.residual);
+-            if e.count < MIN_SUPPORT {
++            if !e.supported() {
+                 return Err("insufficient geometric support".into());
+             }
+             let p = photo.map(|pair| pair.equation(t, s, pose, scale));
+@@ -631,7 +666,7 @@
+         policy.correspondence,
+         policy.residual,
+     );
+-    if final_e.count < MIN_SUPPORT || final_e.rms_m > 0.03 || norm(pose.translation) > 0.5 {
++    if !final_e.supported() || final_e.rms_m > 0.03 || norm(pose.translation) > 0.5 {
+         return Err("final geometric residual, support or displacement gate".into());
+     }
+     let final_photo = photo.map(|pair| pair.equation(&target[2], &source[2], pose, 1));
+@@ -863,6 +898,17 @@
+     /// Configure measured residual/model policies with shared clock and fault guards.
+     pub fn with_config(camera: Camera, config: TrackerConfig) -> Result<Self, String> {
+         camera.validate()?;
++        if matches!(
++            config.residual,
++            Residual::SymmetricMidpoint | Residual::BidirectionalMidpoint
++        ) && (config.geometry != ModelGeometry::Depth
++            || config.reprojection != Reprojection::Point
++            || config.correspondence != Correspondence::Forward
++            || config.normals != NormalEstimation::CentralDifference
++            || config.photometric != Photometric::Disabled)
++        {
++            return Err("midpoint residuals require depth/point/forward/central_difference without photometric tracking".into());
++        }
+         if config.timing == Timing::PreviousMotion
+             && (config.photometric != Photometric::Keyframe
+                 || config.motion_model != MotionModel::ConstantVelocity
+--- a/integrations/projective-depth/src/multireference.rs
++++ b/integrations/projective-depth/src/multireference.rs
+@@ -113,6 +113,7 @@
+         rms_m: 0.,
+         h: [[0.; 6]; 6],
+         g: [0.; 6],
++        direction_counts: None,
+     }
+ }
+ fn accumulate(e: &mut Equation, j: [f64; 6], r: f64, weight: f64) {
+--- a/integrations/projective-depth/src/surface.rs
++++ b/integrations/projective-depth/src/surface.rs
+@@ -0,0 +1,149 @@
++//! One signed residual for two measured planes, in the target optical frame.
++use crate::{Equation, Level, Pose, V, add, add_residual, cross, dot, mul, norm, sub};
++
++/// `source_normal` already includes the fitted rotation. Under a left rigid
++/// increment it rotates with `query`; the target point/normal remain fixed.
++/// The factor 1/2 keeps the ordinary plane scale when both normals agree.
++pub(crate) fn midpoint(query: V, target: V, source_normal: V, target_normal: V) -> (f64, [f64; 6]) {
++    let n = mul(add(target_normal, source_normal), 0.5);
++    let rotation = mul(
++        add(cross(query, target_normal), cross(target, source_normal)),
++        0.5,
++    );
++    (
++        dot(n, sub(query, target)),
++        [n[0], n[1], n[2], rotation[0], rotation[1], rotation[2]],
++    )
++}
++
++/// Independently search model-to-current correspondences. Accumulate their
++/// derivatives directly in the target frame, without an adjoint transformation
++/// of a normal equation solved in the opposite frame.
++pub(crate) fn reverse(
++    e: &mut Equation,
++    target: &Level,
++    source: &Level,
++    pose: Pose,
++    scale: usize,
++) -> f64 {
++    let inverse = pose.inverse();
++    let stride = if scale == 1 { 2 } else { 1 };
++    let mut squared = 0.;
++    for y in (0..target.camera.height).step_by(stride) {
++        for x in (0..target.camera.width).step_by(stride) {
++            let i = y * target.camera.width + x;
++            let nt = target.normals[i];
++            if dot(nt, nt) <= 0.25 {
++                continue;
++            }
++            let back = inverse.transform(target.vertices[i]);
++            let Some(j) = source.camera.project(back, true) else {
++                continue;
++            };
++            let ns = source.normals[j];
++            if dot(ns, ns) <= 0.25
++                || norm(sub(back, source.vertices[j])) >= if scale == 4 { 0.12 } else { 0.08 }
++                || dot(inverse.rotate(nt), ns) <= 0.8
++            {
++                continue;
++            }
++            let (r, jacobian) = midpoint(
++                pose.transform(source.vertices[j]),
++                target.vertices[i],
++                pose.rotate(ns),
++                nt,
++            );
++            add_residual(e, jacobian, r, 1.);
++            squared += r * r;
++            e.count += 1;
++        }
++    }
++    squared
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use crate::{Pose, norm};
++
++    fn unit(v: V) -> V {
++        mul(v, 1. / norm(v))
++    }
++
++    #[test]
++    fn one_supported_direction_cannot_substitute_for_the_other() {
++        let mut e = Equation {
++            count: 900,
++            rms_m: 0.,
++            h: [[0.; 6]; 6],
++            g: [0.; 6],
++            direction_counts: Some([199, 701]),
++        };
++        assert!(!e.supported());
++        e.direction_counts = Some([700, 200]);
++        assert!(e.supported());
++        e.direction_counts = Some([900, 0]);
++        assert!(!e.supported());
++        e.direction_counts = Some([700, 201]);
++        assert!(!e.supported());
++    }
++
++    #[test]
++    fn all_six_derivatives_include_the_rotating_normal() {
++        let pose = Pose::identity().increment([0.02, -0.01, 0.03, 0.05, -0.03, 0.02]);
++        let source = [0.4, -0.3, 2.1];
++        let target = [0.35, -0.22, 2.14];
++        let ns = unit([0.2, -0.3, 1.]);
++        let nt = unit([-0.1, 0.2, 1.]);
++        let (_, j) = midpoint(pose.transform(source), target, pose.rotate(ns), nt);
++        for axis in 0..6 {
++            let mut delta = [0.; 6];
++            delta[axis] = 1e-6;
++            let plus = pose.increment(delta);
++            delta[axis] = -1e-6;
++            let minus = pose.increment(delta);
++            let positive = midpoint(plus.transform(source), target, plus.rotate(ns), nt).0;
++            let negative = midpoint(minus.transform(source), target, minus.rotate(ns), nt).0;
++            assert!(((positive - negative) / 2e-6 - j[axis]).abs() < 5e-10);
++        }
++    }
++
++    #[test]
++    fn reversing_a_fixed_correspondence_negates_the_residual() {
++        let pose = Pose::identity().increment([0.1, -0.03, 0.02, 0.03, 0.02, -0.04]);
++        let source = [0.4, -0.3, 2.1];
++        let target = [-0.1, 0.2, 2.2];
++        let ns = unit([0.1, -0.2, 1.]);
++        let nt = unit([-0.15, 0.1, 1.]);
++        let forward = midpoint(pose.transform(source), target, pose.rotate(ns), nt).0;
++        let inverse = pose.inverse();
++        let reverse = midpoint(inverse.transform(target), source, inverse.rotate(nt), ns).0;
++        assert!((forward + reverse).abs() < 1e-14);
++    }
++
++    #[test]
++    fn removes_difference_penalty_and_retains_equal_normal_plane_scale() {
++        let query = [0.4, -0.2, 2.];
++        let target = [0.3, -0.1, 2.01];
++        let nt = unit([-0.2, 0.1, 1.]);
++        let ns = unit([0.15, -0.1, 1.]);
++        let rt = dot(nt, sub(query, target));
++        let rs = dot(ns, sub(query, target));
++        let (r, _) = midpoint(query, target, ns, nt);
++        assert!((0.5 * (rt * rt + rs * rs) - r * r - 0.25 * (rt - rs).powi(2)).abs() < 1e-15);
++        let (same, j) = midpoint(query, target, nt, nt);
++        assert_eq!(same, rt);
++        for axis in 0..3 {
++            assert_eq!(j[axis], nt[axis]);
++            // Equal normals have the ordinary derivative only when the
++            // point difference is normal: a rotating measured normal still
++            // matters for an arbitrary off-surface fixed correspondence.
++        }
++        let on_plane = sub(target, mul(nt, 0.01));
++        let (_, j) = midpoint(on_plane, target, nt, nt);
++        let ordinary = cross(on_plane, nt);
++        for axis in 0..3 {
++            assert!((j[3 + axis] - ordinary[axis]).abs() < 1e-15);
++        }
++    }
++}
+--- a/scripts/audit-projective-depth-raw.py
++++ b/scripts/audit-projective-depth-raw.py
+@@ -162,6 +162,17 @@
+         rms_m=u['iterations'][0]['equation']['rms_m']+.001))
+     corruption('false final support',lambda u:u['final_equation'].update(count=u['final_equation']['count']+1))
+     corruption('false returned-pose RMS',lambda u:u['final_equation'].update(rms_m=.02))
++    if residual=='bidirectional_midpoint':
++        def wrong_directions(u):
++            e=u['iterations'][0]['equation'];a,b=e['direction_counts'];e['direction_counts']=[a-1,b+1]
++        corruption('changed direction partition with unchanged total and solve',wrong_directions)
++        corruption('missing independent direction counts',lambda u:u['final_equation'].pop('direction_counts'))
++        try:
++            reconstruct_update(model,(model>.3).astype(np.uint8),raw,c,original,
++                               residual_policy='symmetric_midpoint')
++        except (AssertionError,ValueError,KeyError,TypeError,IndexError):
++            rejected.append('one-way correspondence objective substituted for bidirectional matching')
++        else:raise ValueError('one-way objective substitution undetected')
+     def move_fusion(u):
+         require(u['fusion']['averaged'] > 0,'nonempty analytic fusion witness')
+         u['fusion']['averaged'] -= 1
+@@ -219,7 +230,7 @@
+     require(photometric in ('disabled','keyframe'),'declared image policy')
+     require(geometry in ('depth','vertices'),'declared geometry policy')
+     require(normals in ('central_difference','inverse_depth_plane'),'declared normal policy')
+-    require(residual in ('target_plane','symmetric_planes'),'declared residual policy')
++    require(residual in ('target_plane','symmetric_planes','symmetric_midpoint','bidirectional_midpoint'),'declared residual policy')
+     require(correspondence in ('forward','reciprocal','bilinear'),'declared correspondence policy')
+     require(reprojection in ('point','tangent_plane'),'declared reprojection policy')
+     ledger_path = prior/'sensor-only.json' if reports else prior/'sensor-only.json.gz'
+@@ -322,9 +333,10 @@
+     parser.add_argument('--analytic-only',action='store_true')
+     parser.add_argument('--analytic-reports',type=Path,help='fresh reports from check-projective-depth.py; defaults to frozen originals')
+     parser.add_argument('--recorded-reports',type=Path,help='fresh evaluator reports; defaults to frozen originals')
++    parser.add_argument('--case',action='append',choices=('tum-fr1-room-temporal','tum-fr1-desk2-independent','tum-fr1-rpy-heldout'),help='viewed recording; default retains the original two-recording audit')
+     parser.add_argument('--reprojection',choices=('point','tangent_plane'),default='point',help='policy for fresh analytic reports')
+     parser.add_argument('--correspondence',choices=('forward','reciprocal','bilinear'),default='forward')
+-    parser.add_argument('--residual',choices=('target_plane','symmetric_planes'),default='target_plane')
++    parser.add_argument('--residual',choices=('target_plane','symmetric_planes','symmetric_midpoint','bidirectional_midpoint'),default='target_plane')
+     parser.add_argument('--normals',choices=('central_difference','inverse_depth_plane'),default='central_difference')
+     parser.add_argument('--geometry',choices=('depth','vertices'),default='depth')
+     parser.add_argument('--photometric',choices=('disabled','keyframe'),default='disabled')
+@@ -334,7 +346,10 @@
+     analytic(output,args.analytic_reports,args.reprojection,args.correspondence,args.residual,args.normals,args.geometry,args.photometric)
+     cases = {}
+     if not args.analytic_only:
+-        for case in ('tum-fr1-room-temporal','tum-fr1-desk2-independent'):
++        selected=args.case or ('tum-fr1-room-temporal','tum-fr1-desk2-independent')
++        require(len(set(selected))==len(selected),'unique recorded audit selection')
++        require('tum-fr1-rpy-heldout' not in selected or args.recorded_reports is not None,'RPY requires explicit viewed reports')
++        for case in selected:
+             folder = output/case
+             folder.mkdir()
+             cases[case] = recorded(case,folder,args.recorded_reports)
+--- a/scripts/check-projective-depth.py
++++ b/scripts/check-projective-depth.py
+@@ -43,7 +43,7 @@
+     parser.add_argument('--output',type=Path,required=True)
+     parser.add_argument('--reprojection',choices=('point','tangent_plane'),default='point')
+     parser.add_argument('--correspondence',choices=('forward','reciprocal','bilinear'),default='forward')
+-    parser.add_argument('--residual',choices=('target_plane','symmetric_planes'),default='target_plane')
++    parser.add_argument('--residual',choices=('target_plane','symmetric_planes','symmetric_midpoint','bidirectional_midpoint'),default='target_plane')
+     parser.add_argument('--normals',choices=('central_difference','inverse_depth_plane'),default='central_difference')
+     parser.add_argument('--geometry',choices=('depth','vertices'),default='depth')
+     parser.add_argument('--photometric',choices=('disabled','keyframe'),default='disabled')
+@@ -111,6 +111,11 @@
+             corrupt('false accepted clock',lambda u:u.update(last_accepted_timestamp=1.))
+             corrupt('wrong acquisition',lambda u:u.update(timestamp=1.04))
+             corrupt('false loss state',lambda u:u.update(lost=True))
++            if args.residual=='bidirectional_midpoint':
++                corrupt('one unsupported direction hidden by sufficient total',lambda u:u['iterations'][0]['equation'].update(
++                    direction_counts=[199,u['iterations'][0]['equation']['count']-199]))
++                corrupt('one unsupported final direction hidden by sufficient total',lambda u:u['final_equation'].update(
++                    direction_counts=[u['final_equation']['count']-199,199]))
+     config = json.dumps(dict(kind='Configure',camera=CAMERA))+'\n'
+     malformed = {
+         'missing configuration':json.dumps(dict(kind='Frame',timestamp=1.,depth_m=[]))+'\n',
+@@ -144,6 +149,12 @@
+                       for key,value in (('geometry','vertices'),('reprojection','tangent_plane'),('correspondence','reciprocal'),
+                                         ('residual','symmetric_planes'),('normals','inverse_depth_plane'))})
+     malformed['invalid RGB byte']=config+json.dumps(dict(kind='Frame',timestamp=1.,depth_m=[],image=dict(timestamp=1.,gray=[256])))+'\n'
++    malformed.update({'unsupported midpoint '+key:json.dumps(dict(kind='Configure',camera=CAMERA,residual='symmetric_midpoint',**{key:value}))+'\n'
++                      for key,value in (('geometry','vertices'),('reprojection','tangent_plane'),('correspondence','bilinear'),
++                                        ('normals','inverse_depth_plane'),('photometric','keyframe'))})
++    malformed.update({'unsupported bidirectional '+key:json.dumps(dict(kind='Configure',camera=CAMERA,residual='bidirectional_midpoint',**{key:value}))+'\n'
++                      for key,value in (('geometry','vertices'),('reprojection','tangent_plane'),('correspondence','reciprocal'),
++                                        ('normals','inverse_depth_plane'),('photometric','keyframe'))})
+     malformed['RGB label injection']=config+json.dumps(dict(kind='Frame',timestamp=1.,depth_m=[],image=dict(timestamp=1.,gray=[],truth=[])))+'\n'
+     for name,body in malformed.items():
+         result = subprocess.run([str(binary)],input=body,text=True,capture_output=True,timeout=30)
+--- a/scripts/check-projective-surface-math.py
++++ b/scripts/check-projective-surface-math.py
+@@ -0,0 +1,69 @@
++#!/usr/bin/env python3
++"""Reverse-frame equation checks on a ray-cast scene with unequal visibility."""
++import argparse
++import importlib.util
++import json
++from pathlib import Path
++
++import numpy as np
++from projective_depth_common import ROOT, Client, audit_sequence, exp_rotation, fresh, require, sha, write
++from projective_depth_raw import normal_equation, pyramid, reconstruct_update
++
++
++def main():
++    parser=argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('--output',type=Path,required=True)
++    parser.add_argument('--binary',type=Path,help='also check native plane rejection and atomic expiry')
++    args=parser.parse_args();out=fresh(args.output)
++    scene_path=ROOT/'scripts/check-projective-depth.py'
++    spec=importlib.util.spec_from_file_location('scene',scene_path)
++    scene=importlib.util.module_from_spec(spec);spec.loader.exec_module(scene)
++    transform=np.eye(4)
++    transform[:3,:3]=exp_rotation(np.array([.017,-.023,.011]))
++    transform[:3,3]=[.024,-.016,.008]
++    first=scene.render(np.eye(4));second=scene.render(transform)
++    first[24:38,52:88]=0.;second[44:63,30:76]=0.
++    a,b=pyramid(first,scene.CAMERA),pyramid(second,scene.CAMERA)
++    inverse=np.linalg.inv(transform);r=inverse[:3,:3];x,y,z=inverse[:3,3]
++    cross=np.array([[0.,-z,y],[z,0.,-x],[-y,x,0.]])
++    adjoint=np.block([[r,cross@r],[np.zeros((3,3)),r]])
++    rows=[]
++    for scale in (4,2,1):
++        forward=normal_equation(a[scale],b[scale],transform,scale,residual_policy='bidirectional_midpoint')
++        reverse=normal_equation(b[scale],a[scale],inverse,scale,residual_policy='bidirectional_midpoint')
++        counts=forward['direction_counts']
++        require(min(counts)>=200 and counts[0]!=counts[1]
++                and counts==reverse['direction_counts'][::-1], 'separate unequal directional support swaps')
++        h=adjoint.T@reverse['h']@adjoint;g=-adjoint.T@reverse['g']
++        np.testing.assert_allclose(forward['h'],h,atol=1e-9,rtol=1e-11)
++        np.testing.assert_allclose(forward['g'],g,atol=1e-10,rtol=1e-11)
++        require(abs(forward['rms_m']-reverse['rms_m'])<1e-12,'reversed scalar objective')
++        rows.append(dict(scale=scale,direction_counts=counts,
++            matrix_transport_max_error=float(np.max(abs(forward['h']-h))),
++            gradient_transport_max_error=float(np.max(abs(forward['g']-g)))))
++    planes=[]
++    if args.binary is not None:
++        depth=np.full((scene.CAMERA['height'],scene.CAMERA['width']),2.)
++        for mode in ('symmetric_midpoint','bidirectional_midpoint'):
++            client=Client(args.binary,scene.CAMERA,configuration=dict(residual=mode))
++            try:
++                initial=client.frame(1.,depth);failure=client.frame(1.03,depth)
++                expired=client.frame(1.201,depth);latched=client.frame(1.21,depth);client.finish()
++            except BaseException:client.abort();raise
++            require(initial['accepted'] and not failure['accepted'] and not failure['lost']
++                    and failure['rejection']=='insufficient physical observability condition'
++                    and failure['last_accepted_timestamp']==1.,'two directions cannot create planar information')
++            require(expired['lost'] and latched['lost'] and not latched['accepted'],'plane failures do not renew accepted clock')
++            reconstruct_update(depth,(depth>.3).astype(np.uint8),depth,scene.CAMERA,failure,residual_policy=mode)
++            audit_sequence([dict(update=u) for u in (initial,failure,expired,latched)],[1.,1.03,1.201,1.21])
++            planes.append(dict(residual=mode,rejected_weak_information=True,raw_failure_witness_checked=True,expiry_latched=True))
++            write(out/(mode+'-plane.json'),dict(frames=[initial,failure,expired,latched]))
++    sources=(Path(__file__),scene_path,ROOT/'scripts/projective_depth_common.py',ROOT/'scripts/projective_depth_raw.py')
++    report=dict(pass_algebraic_symmetry=True,controls=rows,native_plane_controls=planes,
++        binary_sha256=sha(args.binary.read_bytes()) if args.binary else None,numeric_recorded_truth_decoded=False,
++        source_sha256={str(p.relative_to(ROOT)):sha(p.read_bytes()) for p in sources},
++        scope='equation transport, reversed scalar objective and unequal visibility; native correctness is independently reconstructed from raw pixels')
++    write(out/'summary.json',report);print(json.dumps(report),flush=True)
++
++
++if __name__=='__main__':main()
+--- a/scripts/diagnose-projective-surface-bias.py
++++ b/scripts/diagnose-projective-surface-bias.py
+@@ -0,0 +1,82 @@
++#!/usr/bin/env python3
++"""Offline raw-pair objective probes on viewed recordings, never runtime truth input."""
++import argparse
++import importlib.util
++import io
++import json
++from pathlib import Path
++
++import numpy as np
++from PIL import Image
++from projective_depth_common import CAMERA, ROOT, fresh, require, sha, write
++from projective_depth_raw import normal_equation, pyramid
++
++CASES=('tum-fr1-room-temporal','tum-fr1-desk2-independent','tum-fr1-rpy-heldout')
++POLICIES=('target_plane','symmetric_planes','symmetric_midpoint')
++
++
++def main():
++    parser=argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('--output',type=Path,required=True)
++    args=parser.parse_args();out=fresh(args.output)
++    sources=(Path(__file__),ROOT/'scripts/projective_depth_common.py',
++             ROOT/'scripts/projective_depth_raw.py',ROOT/'scripts/check-opencv-rgbd.py')
++    source_pins={str(p.relative_to(ROOT)):sha(p.read_bytes()) for p in sources}
++    write(out/'freeze.json',dict(source_sha256=source_pins,cases=CASES,
++        selected_frame_offsets=list(range(1,180,12)),scales=[4,2,1],policies=POLICIES,
++        data_role='viewed offline diagnosis',ground_truth_operational=False,
++        reference_pose_probe=True,no_trajectory_accuracy_or_sensor_calibration_claim=True))
++    spec=importlib.util.spec_from_file_location('reference',ROOT/'scripts/check-opencv-rgbd.py')
++    reference=importlib.util.module_from_spec(spec);spec.loader.exec_module(reference);reference.controls()
++    results={}
++    for case in CASES:
++        base=ROOT/'data'/case;manifest_body=(base/'manifest.json').read_bytes();manifest=json.loads(manifest_body)
++        inventory={p['file']:p for p in manifest['files']}
++        def read(name):
++            p=base/'raw'/name;require(p.is_file() and not p.is_symlink(),'regular qualified input')
++            b=p.read_bytes();pin=inventory[name]
++            require(len(b)==pin['bytes'] and sha(b)==pin['sha256'],'qualified original bytes')
++            return b
++        labels=np.loadtxt(io.BytesIO(read('groundtruth.txt')),comments='#')
++        require(labels.ndim==2 and labels.shape[1]==8 and np.isfinite(labels).all()
++                and np.all(np.diff(labels[:,0])>0),'chronological finite offline reference')
++        rows=[]
++        for i in range(1,180,12):
++            a,b=manifest['frames'][i-1:i+1]
++            def depth(f):
++                im=Image.open(io.BytesIO(read(f['depth_file'])))
++                require(im.size==(640,480) and im.mode in ('I;16','I;16B','I'),'original axial depth')
++                return np.asarray(im,dtype=float)/5000.
++            old,new=pyramid(depth(a),CAMERA),pyramid(depth(b),CAMERA)
++            expected=np.linalg.inv(reference.truth_at(labels,a['depth_timestamp']))@reference.truth_at(labels,b['depth_timestamp'])
++            row=dict(source_index=b['source_index'],timestamp=b['depth_timestamp'],directions={})
++            for direction,target,source,transform in (('forward',old,new,expected),('reverse',new,old,np.linalg.inv(expected))):
++                equations={}
++                for scale in (4,2,1):
++                    for policy in POLICIES:
++                        e=normal_equation(target[scale],source[scale],transform,scale,residual_policy=policy)
++                        eig=np.linalg.eigvalsh(e['h']);condition=None if eig[0]<=0 else float(eig[-1]/eig[0])
++                        correction=None
++                        if condition is not None and condition<=1e6 and e['count']>=200:
++                            correction=np.linalg.solve(e['h'],-e['g']).tolist()
++                        equations[str(scale)+'/'+policy]=dict(count=e['count'],rms_m=e['rms_m'],
++                            physical_condition=condition,correction_at_reference_pose=correction)
++                row['directions'][direction]=equations
++            rows.append(row)
++        summary={}
++        for policy in POLICIES:
++            values=[r['directions'][d]['1/'+policy]['correction_at_reference_pose'] for r in rows for d in ('forward','reverse')]
++            valid=np.array([v for v in values if v is not None])
++            require(len(valid)>0,'nonempty diagnosis')
++            summary[policy]=dict(probes=len(values),observable=len(valid),
++                median_position_correction_m=float(np.median(np.linalg.norm(valid[:,:3],axis=1))),
++                median_rotation_correction_rad=float(np.median(np.linalg.norm(valid[:,3:],axis=1))),
++                maximum_rotation_correction_rad=float(np.max(np.linalg.norm(valid[:,3:],axis=1))))
++        write(out/(case+'.json'),dict(manifest_sha256=sha(manifest_body),summary=summary,probes=rows,
++            ground_truth_used_only_for_offline_objective_probe=True))
++        results[case]=summary;print(case,json.dumps(summary),flush=True)
++    require(all(sha((ROOT/p).read_bytes())==s for p,s in source_pins.items()),'unchanged diagnostic sources')
++    write(out/'summary.json',dict(cases=results,scope='raw consecutive-pair local objective bias; no fused-model or complete runtime-trajectory claim'))
++
++
++if __name__=='__main__':main()
+--- a/scripts/evaluate-projective-depth.py
++++ b/scripts/evaluate-projective-depth.py
+@@ -13,6 +13,7 @@
+ from projective_depth_common import CAMERA, ROOT, Client, audit_sequence, fresh, pose, require, sha, write
+ 
+ CASES = ('tum-fr1-room-temporal','tum-fr1-desk2-independent')
++VIEWED_CASES = (*CASES,'tum-fr1-rpy-heldout')
+ 
+ 
+ def evaluate(case, binary, output, reprojection='point', correspondence='forward', residual='target_plane', normals='central_difference', geometry='depth', photometric='disabled', step_control='disabled',motion_model='stationary',timing='disabled'):
+@@ -89,7 +90,7 @@
+             and np.all(np.linalg.norm(labels[:,4:],axis=1) > .5),'whole chronological reference')
+     origin = np.linalg.inv(independent.truth_at(labels,frames[0]['depth_timestamp']))
+     prototype_path = ROOT/'assets/projective-depth-diagnostics-v1'/(case+'-fused-v6.json.gz')
+-    prototype = json.loads(gzip.decompress(prototype_path.read_bytes()))['frames']
++    prototype = json.loads(gzip.decompress(prototype_path.read_bytes()))['frames'] if case in CASES else None
+     accepted = accurate = checked_steps = 0
+     errors, parity = [],[]
+     last_accepted = None
+@@ -106,8 +107,9 @@
+             require(update['accepted'] and not update['iterations'],'one initialization outside update denominator')
+             np.testing.assert_allclose(pose(update['first_from_current']),np.eye(4),atol=0,rtol=0)
+             continue
+-        other = prototype[index-1]
+-        comparison = dict(source_index=frame['source_index'],same_acceptance=other['accepted'] == update['accepted'])
++        other = prototype[index-1] if prototype is not None else None
++        comparison = dict(source_index=frame['source_index'])
++        if other is not None:comparison['same_acceptance']=other['accepted'] == update['accepted']
+         if update['accepted']:
+             estimate = pose(update['first_from_current'])
+             truth = origin@independent.truth_at(labels,frame['depth_timestamp'])
+@@ -118,7 +120,7 @@
+             accepted += 1
+             accurate += good
+             errors.append((position,rotation))
+-            if other['accepted']:
++            if other is not None and other['accepted']:
+                 previous = np.asarray(other['root'])
+                 comparison.update(translation_disagreement_m=float(np.linalg.norm(estimate[:3,3]-previous[:3,3])),
+                     rotation_disagreement_rad=float(np.arccos(np.clip((np.trace(previous[:3,:3].T@estimate[:3,:3])-1)/2,-1,1))))
+@@ -133,7 +135,7 @@
+         max_rotation_error_rad=max((v[1] for v in errors),default=None),
+         complete_accuracy_pass=accurate == 179 and not lost,independently_checked_normal_steps=checked_steps)
+     write(output/'results.json',dict(schema_version=1,dataset=case,summary=summary,frames=outcomes,
+-        comparison_to_viewed_prototype=parity,prototype_report_sha256=sha(prototype_path.read_bytes()),
++        comparison_to_viewed_prototype=parity,prototype_report_sha256=sha(prototype_path.read_bytes()) if prototype is not None else None,
+         audit_scope='independent normal solves, increments, state accounting, root scores and full prototype trajectory comparison; not all raw correspondence matrices'))
+     print(case,json.dumps(summary),flush=True)
+     return summary
+@@ -143,9 +145,10 @@
+     parser = argparse.ArgumentParser(description=__doc__)
+     parser.add_argument('--binary',type=Path,required=True)
+     parser.add_argument('--output',type=Path,required=True)
++    parser.add_argument('--case',action='append',choices=VIEWED_CASES,help='viewed recording; default retains the original two-recording comparison')
+     parser.add_argument('--reprojection',choices=('point','tangent_plane'),default='point')
+     parser.add_argument('--correspondence',choices=('forward','reciprocal','bilinear'),default='forward')
+-    parser.add_argument('--residual',choices=('target_plane','symmetric_planes'),default='target_plane')
++    parser.add_argument('--residual',choices=('target_plane','symmetric_planes','symmetric_midpoint','bidirectional_midpoint'),default='target_plane')
+     parser.add_argument('--normals',choices=('central_difference','inverse_depth_plane'),default='central_difference')
+     parser.add_argument('--geometry',choices=('depth','vertices'),default='depth')
+     parser.add_argument('--photometric',choices=('disabled','keyframe'),default='disabled')
+@@ -156,7 +159,9 @@
+     output = fresh(args.output)
+     summaries = {}
+     binary_digest = sha(args.binary.read_bytes())
+-    for case in CASES:
++    selected=args.case or CASES
++    require(len(set(selected))==len(selected),'unique recording selection')
++    for case in selected:
+         require(sha(args.binary.read_bytes())==binary_digest,'one unchanged native binary across recordings')
+         folder = output/case
+         folder.mkdir()
+--- a/scripts/projective_depth_common.py
++++ b/scripts/projective_depth_common.py
+@@ -109,6 +109,14 @@
+     return np.cos(angle)*np.eye(3)+(1-np.cos(angle))*np.outer(a,a)+np.sin(angle)*cross
+ 
+ 
++def audit_direction_support(equation):
++    if 'direction_counts' in equation:
++        counts=equation['direction_counts']
++        require(type(counts) is list and len(counts)==2
++                and all(type(n) is int and n>=200 for n in counts)
++                and sum(counts)==equation['count'],'independent support in both projection directions')
++
++
+ def audit_iterations(update):
+     steps = update['iterations']
+     require(len(steps) <= 22,'bounded geometric iteration count')
+@@ -123,6 +131,7 @@
+             np.testing.assert_allclose(before,previous,atol=1e-12,rtol=0)
+         previous = after
+         equation = step['equation']
++        audit_direction_support(equation)
+         h,g = np.asarray(equation['h']),np.asarray(equation['g'])
+         require(h.shape == (6,6) and g.shape == (6,) and np.isfinite(h).all()
+                 and np.isfinite(g).all() and equation['count'] >= 200
+@@ -177,6 +186,7 @@
+             and all(levels.count(s) <= cap for s,cap in ((4,10),(2,7),(1,5))), 'pyramid work caps')
+     if update['accepted'] and steps:
+         e = update['final_equation']
++        audit_direction_support(e)
+         require(e['count'] >= 200 and 0 <= e['rms_m'] <= .03,'returned-pose residual admission')
+         fusion = update['fusion']
+         stats = fusion['measurement']
+--- a/scripts/projective_depth_raw.py
++++ b/scripts/projective_depth_raw.py
+@@ -68,6 +68,21 @@
+ 
+ 
+ def normal_equation(target, source, transform, scale, correspondence='forward', residual_policy='target_plane'):
++    if residual_policy=='bidirectional_midpoint':
++        require(correspondence=='forward','qualified bidirectional correspondence policy')
++        forward=normal_equation(target,source,transform,scale,residual_policy='symmetric_midpoint')
++        reverse=normal_equation(source,target,np.linalg.inv(transform),scale,residual_policy='symmetric_midpoint')
++        # Reverse left increments are -Ad(T^-1) times target-frame increments.
++        # Unlike the Rust direct-pair accumulation, transport whole equations.
++        inverse=np.linalg.inv(transform);rotation=inverse[:3,:3];x,y,z=inverse[:3,3]
++        cross=np.array([[0.,-z,y],[z,0.,-x],[-y,x,0.]])
++        adjoint=np.block([[rotation,cross@rotation],[np.zeros((3,3)),rotation]])
++        count=forward['count']+reverse['count']
++        squared=forward['count']*forward['rms_m']**2+reverse['count']*reverse['rms_m']**2
++        return dict(count=count,rms_m=float(np.sqrt(squared/count)) if count else 0.,
++                    h=forward['h']+adjoint.T@reverse['h']@adjoint,
++                    g=forward['g']-adjoint.T@reverse['g'],
++                    direction_counts=[forward['count'],reverse['count']])
+     stride = 2 if scale == 1 else 1
+     xyz = source['vertices'][::stride,::stride].reshape(-1,3)
+     normals = source['normals'][::stride,::stride].reshape(-1,3)
+@@ -117,6 +132,12 @@
+     query,point,normal = query[valid],point[valid],normal[valid]
+     residual = np.sum(normal*(query-point),axis=1)
+     jacobian = np.column_stack([normal,np.cross(query,normal)])
++    if residual_policy=='symmetric_midpoint':
++        ns = transformed_normals[valid]
++        midpoint_normal = (normal+ns)/2
++        residual = np.sum(midpoint_normal*(query-point),axis=1)
++        jacobian = np.column_stack([midpoint_normal,
++                                   (np.cross(query,normal)+np.cross(point,ns))/2])
+     weights = np.minimum(1.,.01/np.maximum(np.abs(residual),1e-15))
+     h = jacobian.T@(weights[:,None]*jacobian)
+     g = jacobian.T@(weights*residual)
+@@ -134,6 +155,7 @@
+ 
+ def compare_equation(actual, expected):
+     require(type(actual['count']) is int and actual['count'] == expected['count'],'exact raw correspondence count')
++    require(actual.get('direction_counts')==expected.get('direction_counts'),'exact independent direction counts')
+     np.testing.assert_allclose(actual['h'],expected['h'],atol=1e-7,rtol=1e-10,
+                                err_msg='raw-pixel normal matrix')
+     np.testing.assert_allclose(actual['g'],expected['g'],atol=1e-9,rtol=1e-10,
+--- a/scripts/projective_information_raw.py
++++ b/scripts/projective_information_raw.py
+@@ -1,6 +1,6 @@
+ """Independent metre/radian observability; a structural guard, not covariance."""
+ import numpy as np
+-from projective_depth_common import pose,require
++from projective_depth_common import audit_direction_support,pose,require
+ 
+ 
+ def combined(e,p=None):
+@@ -32,12 +32,15 @@
+ 
+ def audit(update):
+     for step in update['iterations']:
++        audit_direction_support(step['equation'])
+         require(admitted(spectrum(combined(step['equation'],step.get('photometric')))),'every admitted solve has physical directional support')
+     if update['accepted'] and update['iterations']:
++        audit_direction_support(update['final_equation'])
+         require(admitted(spectrum(combined(update['final_equation'],update.get('final_photometric')))),'returned pose has physical directional support')
+     f=update.get('information_failure')
+     if update['rejection']=='insufficient physical observability condition':require(f is not None,'required observability failure witness')
+     if f is None:return
++    audit_direction_support(f['equation'])
+     require(not update['accepted'] and update['fusion'] is None and update['first_from_current'] is None,'weak information never commits state')
+     require(update['rejection']=='insufficient physical observability condition' and f['scale'] in (1,2,4) and type(f['final_pose']) is bool and f['equation']['count']>=200,'bounded failure stage/support')
+     s=spectrum(combined(f['equation'],f['photometric']));compare(f['spectrum'],s)

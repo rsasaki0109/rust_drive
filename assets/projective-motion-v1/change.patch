@@ -1,0 +1,869 @@
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -149,6 +149,9 @@
+           python scripts/check-projective-rgbd-lifecycle.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/rgbd-lifecycle
+           python scripts/check-projective-rgbd-exposure.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/rgbd-exposure
+           python scripts/check-projective-step-control.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/rgbd-step-control
++          python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --motion-model constant_velocity --output artifacts/projective-depth/motion-analytic
++          python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/motion-analytic --output artifacts/projective-depth/motion-raw-audit
++          python scripts/check-projective-motion.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/motion-lifecycle
+           python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --photometric keyframe --step-control fixed_support --output artifacts/projective-depth/guarded-analytic
+           python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/guarded-analytic --photometric keyframe --output artifacts/projective-depth/guarded-raw-audit
+           python scripts/check-projective-rgbd-lifecycle.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --step-control fixed_support --output artifacts/projective-depth/guarded-lifecycle
+@@ -196,6 +199,8 @@
+           python -m py_compile scripts/projective_photo_raw.py scripts/check-projective-rgbd-lifecycle.py
+           python -m py_compile scripts/check-projective-rgbd-exposure.py
+           python -m py_compile scripts/projective_step_raw.py scripts/check-projective-step-control.py
++          python -m py_compile scripts/projective_motion_raw.py scripts/check-projective-motion.py
++          python -m py_compile scripts/diagnose-projective-motion-timing.py
+           python -m py_compile scripts/multireference_rgbd_common.py scripts/evaluate-multireference-rgbd.py
+           python -m py_compile scripts/joint_keyframe_depth.py scripts/evaluate-joint-keyframe-depth.py
+           python -m py_compile scripts/marginalized_keyframe_depth.py scripts/evaluate-marginalized-keyframes.py
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -371,6 +371,12 @@
+ steps and records bounded level halts. It regresses recorded accuracy to83/179
+ room and67/179 desk2, so step control defaults to disabled; original depth and
+ ordinary exposure-aware RGB-D trajectories are retained.
++Optional [acquisition-time body-motion prediction](projective-motion.md) uses
++only two accepted depth poses to initialize ICP at variable frame intervals.
++Depth scores67/179 room and159/179 desk2; RGB-D scores75/179 and169/179.
++Neither passes adoption, so stationary initialization remains the default.
++The accepted-history controls and independent SE(3) audit do not establish
++RGB/depth temporal image compensation or vehicle localization.
+ [Contract and negative accuracy results](multireference-rgbd.md).
+ 
+ The optional NumPy joint-keyframe evaluator separately optimizes up to five
+--- a/docs/maturity.md
++++ b/docs/maturity.md
+@@ -606,3 +606,12 @@
+ 83/179 room and 67/179 desk2. It remains explicitly opt-in; both previous
+ defaults are preserved. Local descent is not qualified localization accuracy,
+ and subjective maturity remains **about 20%** versus mature driving OSS.
++
++The [causal motion initializer](projective-motion.md) handles actual acquisition
++intervals and excludes rejected observations from pose history. Its corrected
++SE(3) implementation removes a numerical frame-conversion error and passes
++independent history/fault controls. Depth accuracy is67/159; RGB-D is75/169,
++with room regression and unmet maximum-error gates. Both defaults remain
++unchanged. Timing diagnostics identify model-predicted image displacement, not
++validated synchronization error or compensation. Subjective maturity stays
++**about 20%** versus mature driving OSS.
+--- a/docs/native-depth-regression.md
++++ b/docs/native-depth-regression.md
+@@ -61,11 +61,12 @@
+     geometry: ModelGeometry::Depth,
+     photometric: Photometric::Disabled,
+     step_control: StepPolicy::Disabled,
++    motion_model: MotionModel::Stationary,
+ }
+ ```
+ 
+ The JSON-lines `Configure` request accepts optional `reprojection`,
+-`correspondence`, `residual`, `normals`, `geometry`, `photometric` and `step_control` fields. Missing fields use
++`correspondence`, `residual`, `normals`, `geometry`, `photometric`, `step_control` and `motion_model` fields. Missing fields use
+ the original defaults; unknown fields and enum values reject. The version-1
+ acknowledgment, frame limits, optical coordinate convention and metre/second
+ units are unchanged. There are no new dependencies or Cargo lockfile changes.
+@@ -107,6 +108,10 @@
+   photometric mode. It backtracks on fixed measurements and weights, with every
+   trial reported. Its [complete regression and independent checks](projective-step-control.md)
+   retain the failed 83/179 room and 67/179 desk2 result; it is explicitly opt-in.
++* `motion_model`: `stationary` or `constant_velocity`. The latter uses the last
++  two accepted depth poses and actual acquisition intervals for SE(3) prediction.
++  Its [controls and complete comparison](projective-motion.md) retain mixed
++  accuracy outcomes; stationary remains the default for both depth and RGB-D.
+ 
+ Only the individual configurations in the table have recorded trajectory
+ results. Their combinations have no physical accuracy qualification. All modes
+--- a/docs/projective-motion.md
++++ b/docs/projective-motion.md
+@@ -0,0 +1,132 @@
++# Acquisition-time motion prediction
++
++The optional Rust tracker now supports `motion_model: constant_velocity` as an
++initializer. It predicts a camera pose from the last two **accepted** depth
++poses and their actual acquisition intervals. It does not compensate RGB/depth
++time offsets. The default remains `stationary`: complete cross-record accuracy
++still fails adoption.
++
++## Recorded outcomes
++
++All runs retain 180 original acquisitions per recording, zero resets, the first
++optical-camera root, K=525 and 0.1 m / 0.1 rad gates. All 179 updates are accepted
++without expiry in every case. Numeric reference poses are parsed only after
++operational outcomes are saved.
++
++| Tracker / initialization | Accurate, room / desk2 | Maximum position, room / desk2 (m) | Maximum rotation, room / desk2 (rad) |
++|---|---|---|---|
++| Depth / stationary | 64 / 161 | 0.296290 / 0.114800 | 0.141286 / 0.090386 |
++| Depth / constant velocity | 67 / 159 | 0.298279 / 0.123121 | 0.141606 / 0.090772 |
++| Exposure-aware RGB-D / stationary | 84 / 124 | 0.267082 / 0.121676 | 0.102433 / 0.149427 |
++| Exposure-aware RGB-D / constant velocity | 75 / 169 | 0.270406 / 0.098134 | 0.117406 / 0.110973 |
++
++The depth candidate fails both recordings' original adoption rule. The RGB-D
++candidate improves desk2's count and maximum errors relative to ordinary RGB-D,
++but worsens room. Relative to the original depth baseline it passes room's
++relative gate, while desk2 still exceeds the unchanged maximum-angle bound.
++Neither candidate is adopted. These are already-viewed indoor development
++intervals, without held-out or automotive qualification.
++
++Both stationary defaults reproduce all 360 original outputs each, including
++equations, model fusion and clocks. The [source-bound packet](../assets/projective-motion-v1/summary.json)
++preserves first and corrected source versions, initial numerical-audit failures,
++complete corrected ledgers, raw audits, controls and failed adoption decisions.
++
++## Causal model and numerical correction
++
++For accepted optical poses `G0` at `t0` and `G1` at `t1`, the prediction is
++`G1 * Exp(Log(G0^-1 * G1) * (t-t1)/(t1-t0))`. This uses a constant **body twist**
++on SE(3), not separate world translation scaling and Euler angles. Rotation and
++translation are coupled through the exponential's left Jacobian. Small-angle
++series avoid cancellation. A near-pi logarithm does not invent a rotation axis.
++
++Only accepted measurement fits advance the two-entry history. A prediction never
++becomes history by itself. Duplicate, regressing, malformed or rejected frames
++cannot change the accepted poses or renew their clock. The existing 0.2 s expiry
++check runs before prediction; expired tracking stays lost. Bootstrap, ambiguous
++rotation and a predicted increment exceeding 0.1 m or 0.15 rad fall back to the
++previous accepted initializer. All original fitting, support, condition,
++iteration, final residual, keyframe and fusion policies remain.
++
++Every prediction reports its two source timestamps, history interval, horizon,
++predicted first-camera pose and increment from the latest accepted camera. The
++initializer composes the latter directly in the maintained reference frame.
++The first implementation instead round-tripped a global prediction through the
++reference inverse. Repeated frame conversions amplified floating-point rotation
++nonorthogonality; independent checks rejected its initial complete room runs.
++The correction removes that round trip and restores the original 1e-11
++initializer audit tolerance, rather than weakening it. Maximum rotation
++orthogonality error in the corrected four trajectories stays below 1.4e-14.
++First sources and unscored operational ledgers are retained.
++
++## Timing diagnostic and its limits
++
++The separate timing diagnostic projects a sparse measured-depth grid using the
++previous two accepted exposure-aware RGB-D estimates and the recorded RGB/depth
++timestamp difference. It verifies the original manifest, immutable pose ledger
++and depth bytes, without decoding numeric reference truth. It runs causally:
++current or future fitted poses do not enter a frame's motion estimate.
++
++The maximum absolute association difference is 17.31 ms in room and 17.03 ms in
++desk2. Across fresh-image frames with two accepted predecessors, the median
++frame's 95th-percentile predicted displacement is 5.93 px / 6.54 px; the largest
++frame's corresponding statistic is 15.19 px / 23.35 px. There are 171 / 160 probe
++frames. These are model-predicted coordinates under constant body motion and a
++static-scene assumption, **not measured timing error or photometric residual**.
++The source estimated poses already drift. Equal image/depth phase and motion
++can also cancel parts of a relative-image error; absolute displacement alone
++does not identify a cause of tracker drift.
++
++The initializer supplies a tested motion-history foundation. It does not warp
++source/reference images to their respective exposure times, correct rolling
++shutter or supply calibrated velocity uncertainty. No timing compensation or
++localization accuracy gain is claimed from this diagnostic.
++
++## Independent controls and reproduction
++
++NumPy reconstructs body motion with a quaternion eigensolve, integrates its
++Jacobian by Gauss-Legendre quadrature, and evaluates a four-dimensional matrix
++exponential by Taylor scaling/squaring. Rust uses a skew/trace logarithm and
++closed-form Jacobian expressions. The auditor checks predicted roots,
++increments, accepted-history provenance and the actual initial ICP poses.
++
++A ray-cast helix control uses irregular 10–60 ms intervals and checks 4 mm /
++0.004 rad motion gates. It retains valid-size rejected depth, malformed size,
++duplicate/regressing clocks, stationary fallback after a large predicted step,
++and latched expiry. Four corrupted prediction/history reports are rejected.
++Synthetic poses only generate depth and score results; runtime receives depths
++and acquisition timestamps. CI runs these and raw analytic checks without
++recording downloads. The optional crate passes 41 Rust tests.
++
++The corrected recorded audit reconstructs all 14,908 geometric systems, 7,408
++image systems, 716 prediction reports and 716 prescribed model generations,
++without decoding numeric pose truth. Together with 371 core Rust tests, 412
++Rust tests pass; all 49 scenario/replay checks and 245 deterministic output
++hashes remain. These checks validate the implementation, while the recorded
++physical accuracy decision remains a failure.
++
++Use the [original input/environment setup](projective-depth-rust.md#reproduction)
++and fresh output paths:
++
++```bash
++source scripts/env.sh
++cargo build --release --locked --manifest-path integrations/projective-depth/Cargo.toml
++OPENBLAS_NUM_THREADS=1 python scripts/check-projective-motion.py \
++  --binary integrations/projective-depth/target/release/rustdriving-projective-depth \
++  --output artifacts/motion-controls
++OPENBLAS_NUM_THREADS=1 python scripts/evaluate-projective-depth.py \
++  --binary integrations/projective-depth/target/release/rustdriving-projective-depth \
++  --motion-model constant_velocity --output artifacts/motion-depth
++OPENBLAS_NUM_THREADS=1 python scripts/evaluate-projective-depth.py \
++  --binary integrations/projective-depth/target/release/rustdriving-projective-depth \
++  --photometric keyframe --motion-model constant_velocity --output artifacts/motion-rgbd
++OPENBLAS_NUM_THREADS=1 python scripts/diagnose-projective-motion-timing.py \
++  --output artifacts/motion-timing
++```
++
++Both physical evaluators and adoption decisions save complete failures and exit
++1. Use motion-enabled `check-projective-depth.py` reports with the existing raw
++auditor, adding `--photometric keyframe` for RGB-D. This is offline research;
++vehicle localization, temporal image compensation, loop closure and long-run
++accuracy remain unqualified. Subjective maturity stays about 20% versus mature
++driving OSS.
+--- a/integrations/projective-depth/src/lib.rs
++++ b/integrations/projective-depth/src/lib.rs
+@@ -4,8 +4,10 @@
+ 
+ use serde::{Deserialize, Serialize};
+ 
++mod motion;
+ pub mod multireference;
+ pub mod photometric;
++pub use motion::{MotionModel, Prediction};
+ mod step_control;
+ pub use step_control::StepPolicy;
+ pub mod supervision;
+@@ -81,6 +83,7 @@
+     pub geometry: ModelGeometry,
+     pub photometric: Photometric,
+     pub step_control: StepPolicy,
++    pub motion_model: MotionModel,
+ }
+ 
+ #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+@@ -778,6 +781,8 @@
+     pub photometric: Option<PhotoState>,
+     #[serde(skip_serializing_if = "Option::is_none")]
+     pub final_photometric: Option<PhotoEquation>,
++    #[serde(skip_serializing_if = "Option::is_none")]
++    pub prediction: Option<Prediction>,
+ }
+ struct Model {
+     depth: Vec<f64>,
+@@ -798,6 +803,8 @@
+     geometry: ModelGeometry,
+     photometric: Photometric,
+     step_policy: StepPolicy,
++    motion_model: MotionModel,
++    history: motion::History,
+     last_rgb: Option<f64>,
+     model: Option<Model>,
+     last_observed: Option<f64>,
+@@ -828,6 +835,7 @@
+                 geometry: ModelGeometry::default(),
+                 photometric: Photometric::default(),
+                 step_control: StepPolicy::default(),
++                motion_model: MotionModel::default(),
+             },
+         )
+     }
+@@ -867,6 +875,8 @@
+             geometry: config.geometry,
+             photometric: config.photometric,
+             step_policy: config.step_control,
++            motion_model: config.motion_model,
++            history: motion::History::default(),
+             last_rgb: None,
+             model: None,
+             last_observed: None,
+@@ -900,6 +910,7 @@
+             fusion: None,
+             photometric: None,
+             final_photometric: None,
++            prediction: None,
+         };
+         let result = (|| -> Result<(), String> {
+             if !timestamp.is_finite()
+@@ -999,6 +1010,17 @@
+                 out.initialized = true;
+             } else {
+                 let old = self.model.as_ref().expect("model checked");
++                let mut initial = old.initial;
++                if self.motion_model == MotionModel::ConstantVelocity {
++                    let prediction = self.history.predict(timestamp);
++                    if let Some(increment) = prediction.latest_from_prediction {
++                        // Stay in the maintained reference frame. Repeated
++                        // key.inverse()*global_pose round trips amplify the
++                        // tiny nonorthogonality of floating-point rotations.
++                        initial = old.initial.compose(increment);
++                    }
++                    out.prediction = Some(prediction);
++                }
+                 let photo = match (&old.gray, &gray) {
+                     (Some(target), Some(source)) => Some(PhotoPair {
+                         target,
+@@ -1010,7 +1032,7 @@
+                 let (relative, final_e, final_photo) = fit(
+                     &old.pyramid,
+                     &current,
+-                    old.initial,
++                    initial,
+                     &mut out.iterations,
+                     FitPolicy {
+                         correspondence: self.correspondence,
+@@ -1104,6 +1126,10 @@
+                 out.fusion = Some(fusion);
+                 out.final_photometric = final_photo;
+             }
++            if self.motion_model == MotionModel::ConstantVelocity {
++                self.history
++                    .observe(timestamp, out.first_from_current.expect("accepted pose"));
++            }
+             self.last_accepted = Some(timestamp);
+             out.accepted = true;
+             Ok(())
+--- a/integrations/projective-depth/src/main.rs
++++ b/integrations/projective-depth/src/main.rs
+@@ -1,7 +1,7 @@
+ //! Bounded synchronous JSON-lines evaluation transport; no external services.
+ use rustdriving_projective_depth::{
+-    Camera, Correspondence, ModelGeometry, NormalEstimation, Reprojection, Residual, StepPolicy,
+-    Tracker, TrackerConfig,
++    Camera, Correspondence, ModelGeometry, MotionModel, NormalEstimation, Reprojection, Residual,
++    StepPolicy, Tracker, TrackerConfig,
+ };
+ use rustdriving_projective_depth::{ImageObservation, photometric::Photometric};
+ use serde::Deserialize;
+@@ -26,6 +26,8 @@
+         photometric: Photometric,
+         #[serde(default)]
+         step_control: StepPolicy,
++        #[serde(default)]
++        motion_model: MotionModel,
+     },
+     Frame {
+         timestamp: f64,
+@@ -71,6 +73,7 @@
+                 geometry,
+                 photometric,
+                 step_control,
++                motion_model,
+             } => {
+                 if tracker.is_some() {
+                     return Err("one configuration per process".into());
+@@ -85,6 +88,7 @@
+                         geometry,
+                         photometric,
+                         step_control,
++                        motion_model,
+                     },
+                 )?);
+                 writeln!(output, "{{\"configured\":true,\"schema_version\":1}}")
+--- a/integrations/projective-depth/src/motion.rs
++++ b/integrations/projective-depth/src/motion.rs
+@@ -0,0 +1,182 @@
++//! Causal SE(3) initialization from accepted depth-acquisition poses only.
++use crate::{Pose, V, add, cross, mul, norm, sub};
++use serde::{Deserialize, Serialize};
++
++#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
++#[serde(rename_all = "snake_case")]
++pub enum MotionModel {
++    #[default]
++    Stationary,
++    ConstantVelocity,
++}
++#[derive(Debug, Serialize)]
++#[serde(rename_all = "snake_case")]
++pub enum Status {
++    Bootstrap,
++    Predicted,
++    IncrementLimit,
++    AmbiguousRotation,
++}
++#[derive(Debug, Serialize)]
++pub struct Prediction {
++    pub status: Status,
++    pub previous_timestamp: Option<f64>,
++    pub latest_timestamp: Option<f64>,
++    pub history_interval_s: Option<f64>,
++    pub horizon_s: Option<f64>,
++    pub first_from_prediction: Option<Pose>,
++    pub latest_from_prediction: Option<Pose>,
++}
++#[derive(Default)]
++pub(super) struct History {
++    previous: Option<(f64, Pose)>,
++    latest: Option<(f64, Pose)>,
++}
++impl History {
++    pub(super) fn observe(&mut self, stamp: f64, pose: Pose) {
++        debug_assert!(self.latest.is_none_or(|(t, _)| stamp > t));
++        self.previous = self.latest;
++        self.latest = Some((stamp, pose));
++    }
++    pub(super) fn predict(&self, stamp: f64) -> Prediction {
++        let mut report = Prediction {
++            status: Status::Bootstrap,
++            previous_timestamp: self.previous.map(|p| p.0),
++            latest_timestamp: self.latest.map(|p| p.0),
++            history_interval_s: None,
++            horizon_s: self.latest.map(|p| stamp - p.0),
++            first_from_prediction: None,
++            latest_from_prediction: None,
++        };
++        let (Some((a, first)), Some((b, last))) = (self.previous, self.latest) else {
++            return report;
++        };
++        let dt = b - a;
++        report.history_interval_s = Some(dt);
++        let Some(twist) = log_body(first.inverse().compose(last)) else {
++            report.status = Status::AmbiguousRotation;
++            return report;
++        };
++        let scaled = twist.map(|v| v * ((stamp - b) / dt));
++        report.status = Status::IncrementLimit;
++        if !scaled.iter().all(|v| v.is_finite()) || norm([scaled[3], scaled[4], scaled[5]]) > 0.15 {
++            return report;
++        }
++        let increment = exp_body(scaled);
++        if !increment.finite_rigid() || norm(increment.translation) > 0.1 {
++            return report;
++        }
++        let predicted = last.compose(increment);
++        if !predicted.finite_rigid() {
++            return report;
++        }
++        report.status = Status::Predicted;
++        report.first_from_prediction = Some(predicted);
++        report.latest_from_prediction = Some(increment);
++        report
++    }
++}
++fn log_body(p: Pose) -> Option<[f64; 6]> {
++    let r = p.rotation;
++    let skew = [
++        (r[2][1] - r[1][2]) * 0.5,
++        (r[0][2] - r[2][0]) * 0.5,
++        (r[1][0] - r[0][1]) * 0.5,
++    ];
++    let sine = norm(skew);
++    let cosine = ((r[0][0] + r[1][1] + r[2][2] - 1.) * 0.5).clamp(-1., 1.);
++    let angle = sine.atan2(cosine);
++    if angle > std::f64::consts::PI - 1e-6 {
++        return None;
++    }
++    let w = if angle < 1e-8 {
++        skew
++    } else {
++        mul(skew, angle / sine)
++    };
++    let coefficient = if angle < 1e-4 {
++        1. / 12. + angle.powi(2) / 720. + angle.powi(4) / 30240.
++    } else {
++        (1. - 0.5 * angle / (0.5 * angle).tan()) / angle.powi(2)
++    };
++    let v = add(
++        sub(p.translation, mul(cross(w, p.translation), 0.5)),
++        mul(cross(w, cross(w, p.translation)), coefficient),
++    );
++    Some([v[0], v[1], v[2], w[0], w[1], w[2]])
++}
++fn exp_body(twist: [f64; 6]) -> Pose {
++    let v: V = [twist[0], twist[1], twist[2]];
++    let w = [twist[3], twist[4], twist[5]];
++    let angle = norm(w);
++    let (a, b) = if angle < 1e-4 {
++        (
++            0.5 - angle.powi(2) / 24. + angle.powi(4) / 720.,
++            1. / 6. - angle.powi(2) / 120. + angle.powi(4) / 5040.,
++        )
++    } else {
++        (
++            (1. - angle.cos()) / angle.powi(2),
++            (angle - angle.sin()) / angle.powi(3),
++        )
++    };
++    let translation = add(add(v, mul(cross(w, v), a)), mul(cross(w, cross(w, v)), b));
++    Pose {
++        translation,
++        ..Pose::identity().increment([0., 0., 0., w[0], w[1], w[2]])
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    #[test]
++    fn irregular_prediction_follows_a_helix_in_a_rotated_origin() {
++        let origin = Pose::identity().increment([0.2, -0.1, 0.3, 0.1, -0.15, 0.2]);
++        let arc = |s: f64| Pose {
++            translation: [
++                0.4 * (0.1 * s).sin(),
++                0.4 * (1. - (0.1 * s).cos()),
++                0.006 * s,
++            ],
++            ..Pose::identity().increment([0., 0., 0., 0., 0., 0.1 * s])
++        };
++        let mut history = History::default();
++        history.observe(1., origin);
++        history.observe(1.02, origin.compose(arc(1.)));
++        let prediction = history.predict(1.03).first_from_prediction.unwrap();
++        let error = origin.compose(arc(1.5)).inverse().compose(prediction);
++        assert!(norm(error.translation) < 1e-12);
++        for (a, b) in error
++            .rotation
++            .iter()
++            .flatten()
++            .zip(Pose::identity().rotation.iter().flatten())
++        {
++            assert!((a - b).abs() < 1e-12);
++        }
++    }
++    #[test]
++    fn bootstrap_bounds_and_ambiguous_rotation_never_invent_prediction() {
++        let mut history = History::default();
++        assert!(history.predict(1.).first_from_prediction.is_none());
++        history.observe(1., Pose::identity());
++        assert!(history.predict(1.02).first_from_prediction.is_none());
++        history.observe(1.02, Pose::identity().increment([0.04, 0., 0., 0., 0., 0.]));
++        assert!(matches!(history.predict(1.03).status, Status::Predicted));
++        assert!(matches!(
++            history.predict(1.1).status,
++            Status::IncrementLimit
++        ));
++        let mut rotation = History::default();
++        rotation.observe(1., Pose::identity());
++        rotation.observe(
++            1.02,
++            Pose::identity().increment([0., 0., 0., std::f64::consts::PI, 0., 0.]),
++        );
++        assert!(matches!(
++            rotation.predict(1.03).status,
++            Status::AmbiguousRotation
++        ));
++    }
++}
+--- a/scripts/audit-projective-depth-raw.py
++++ b/scripts/audit-projective-depth-raw.py
+@@ -17,6 +17,7 @@
+            ROOT/'scripts/projective_vertex_raw.py',
+            ROOT/'scripts/projective_photo_raw.py',
+            ROOT/'scripts/projective_step_raw.py',
++           ROOT/'scripts/projective_motion_raw.py',
+            ROOT/'scripts/check-projective-depth.py',ROOT/'scripts/requirements-visual.txt',
+            ROOT/'assets/projective-depth-raw-audit-v1/design.json')
+ SOURCE_PINS = {str(p.relative_to(ROOT)):sha(p.read_bytes()) for p in SOURCES}
+@@ -207,6 +208,8 @@
+     geometry = freeze.get('geometry','depth')
+     photometric = freeze.get('photometric','disabled')
+     step_policy=freeze.get('step_control')
++    motion_model=freeze.get('motion_model','stationary')
++    require(motion_model in ('stationary','constant_velocity'),'declared motion model')
+     require(step_policy in (None,'disabled','fixed_support'),'declared step policy')
+     require(photometric in ('disabled','keyframe'),'declared image policy')
+     require(geometry in ('depth','vertices'),'declared geometry policy')
+@@ -236,7 +239,7 @@
+         verified(frame)  # Hashes only; no pixel or reference label decoding yet.
+     require(all(sha(read(ROOT/n))==d for n,d in SOURCE_PINS.items()),'audit sources unchanged since process start')
+     write(output/'freeze.json',dict(dataset=case,source_sha256=SOURCE_PINS,
+-        manifest_sha256=sha(manifest_body),original_freeze_sha256=sha(read(freeze_path)),reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric,step_control=step_policy,
++        manifest_sha256=sha(manifest_body),original_freeze_sha256=sha(read(freeze_path)),reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric,step_control=step_policy,motion_model=motion_model,
+         original_sensor_ledger_sha256=sha(read(ledger_path,64*1024*1024)),depth_source_count=180,
+         ground_truth_decoded=False,raw_color_decoded=photometric=='keyframe'))
+     steps = audit_sequence(outcomes,[f['depth_timestamp'] for f in frames])
+@@ -262,6 +265,8 @@
+                 context=dict(target=key_gray,source=current_gray,source_timestamp=rgb,reference_timestamp=key_rgb,
+                              qualified=key_gray is not None and abs(phase-key_phase)<=.005,fresh=fresh_rgb)
+             initial=model is None
++            if row['update']['iterations']:
++                require(('prediction' in row['update'])==(motion_model=='constant_velocity'),'configured prediction provenance')
+             if step_policy is not None:
+                 require(all(('step_control' in s)==(step_policy=='fixed_support') for s in row['update']['iterations']),'complete configured step reports')
+             model,weights,checked = reconstruct_update(model,weights,raw,CAMERA,row['update'],reprojection,correspondence,residual,normals,geometry,context)
+--- a/scripts/check-projective-depth.py
++++ b/scripts/check-projective-depth.py
+@@ -48,6 +48,7 @@
+     parser.add_argument('--geometry',choices=('depth','vertices'),default='depth')
+     parser.add_argument('--photometric',choices=('disabled','keyframe'),default='disabled')
+     parser.add_argument('--step-control',choices=('disabled','fixed_support'),default='disabled')
++    parser.add_argument('--motion-model',choices=('stationary','constant_velocity'),default='stationary')
+     args = parser.parse_args()
+     output = fresh(args.output)
+     binary = args.binary.absolute()
+@@ -59,7 +60,7 @@
+         vector = np.zeros(3)
+         vector[axis] = angle
+         transform[:3,:3],transform[:3,3] = exp_rotation(vector),translation
+-        client = Client(binary,CAMERA,configuration=dict(reprojection=args.reprojection,correspondence=args.correspondence,residual=args.residual,normals=args.normals,geometry=args.geometry,photometric=args.photometric,step_control=args.step_control))
++        client = Client(binary,CAMERA,configuration=dict(reprojection=args.reprojection,correspondence=args.correspondence,residual=args.residual,normals=args.normals,geometry=args.geometry,photometric=args.photometric,step_control=args.step_control,motion_model=args.motion_model))
+         def frame(stamp,transform,depth):
+             image=None if args.photometric=='disabled' else dict(timestamp=stamp+.001,gray=render_gray(transform,depth).ravel().tolist())
+             return client.frame(stamp,depth,image=image)
+@@ -124,6 +125,7 @@
+         'unknown geometry':json.dumps(dict(kind='Configure',camera=CAMERA,geometry='unknown'))+'\n',
+         'unknown photometric mode':json.dumps(dict(kind='Configure',camera=CAMERA,photometric='unknown'))+'\n',
+         'unknown step control':json.dumps(dict(kind='Configure',camera=CAMERA,step_control='unknown'))+'\n',
++        'unknown motion model':json.dumps(dict(kind='Configure',camera=CAMERA,motion_model='truth'))+'\n',
+         'step control without RGB-D':json.dumps(dict(kind='Configure',camera=CAMERA,step_control='fixed_support'))+'\n',
+         'missing final newline':config.rstrip('\n'),
+         'no frame':config,
+@@ -154,7 +156,7 @@
+                     and json.loads(lines[0]) == dict(configured=True,schema_version=1),
+                     'exact acknowledged prefix before rejection: '+name)
+     write(output/'summary.json',dict(analytic_controls_pass=True,translation_gate_m=.004,rotation_gate_rad=.004,
+-        motions=cases,reprojection=args.reprojection,correspondence=args.correspondence,residual=args.residual,normals=args.normals,geometry=args.geometry,photometric=args.photometric,step_control=args.step_control,rejected_transport_cases=list(malformed),binary_sha256=sha(binary.read_bytes()),
++        motions=cases,reprojection=args.reprojection,correspondence=args.correspondence,residual=args.residual,normals=args.normals,geometry=args.geometry,photometric=args.photometric,step_control=args.step_control,motion_model=args.motion_model,rejected_transport_cases=list(malformed),binary_sha256=sha(binary.read_bytes()),
+         rejected_report_corruptions=corruption_names,
+         checker_sha256=sha(Path(__file__).read_bytes()),
+         scope='analytic geometry and independent linear algebra; no physical accuracy or real-time claim'))
+--- a/scripts/check-projective-motion.py
++++ b/scripts/check-projective-motion.py
+@@ -0,0 +1,75 @@
++#!/usr/bin/env python3
++"""Known screw motion, irregular cadence and accepted-history fault controls."""
++import argparse,copy,importlib.util
++from pathlib import Path
++import numpy as np
++from projective_depth_common import Client,ROOT,audit_sequence,fresh,pose,require,sha,write
++from projective_depth_raw import reconstruct_update
++
++
++def helix(elapsed,linear=.15,angular=.35):
++    angle=elapsed*angular;t=np.eye(4);t[:2,:2]=[[np.cos(angle),-np.sin(angle)],[np.sin(angle),np.cos(angle)]]
++    t[:3,3]=[linear/angular*np.sin(angle),linear/angular*(1-np.cos(angle)),.03*elapsed]
++    return t
++
++
++def main():
++    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--binary',type=Path,required=True);p.add_argument('--output',type=Path,required=True)
++    args=p.parse_args();out=fresh(args.output);digest=sha(args.binary.read_bytes())
++    spec=importlib.util.spec_from_file_location('motion_scene',ROOT/'scripts/check-projective-depth.py');scene=importlib.util.module_from_spec(spec);spec.loader.exec_module(scene)
++    client=Client(args.binary,scene.CAMERA,configuration=dict(motion_model='constant_velocity'));rows=[];times=[];faults={};checked=0;model=weights=None
++    try:
++        bad=client.frame(.99,np.empty((0,0)));require(not bad['accepted'] and bad['last_accepted_timestamp'] is None,'bad initialization cannot establish history');faults['malformed initial depth']=bad
++        for stamp in (1.,1.03,1.05,1.06,1.075,1.09,1.10,1.16,1.19):
++            expected=helix(stamp-1);depth=scene.render(expected)
++            if stamp==1.06:depth=np.zeros_like(depth)
++            if stamp==1.075:depth=np.empty((0,0))
++            update=client.frame(stamp,depth);rows.append(dict(expected=expected.tolist(),update=update));times.append(stamp)
++            if stamp in (1.06,1.075):
++                require(not update['accepted'] and update['last_accepted_timestamp']==1.05,'failed observation cannot advance history')
++                faults[str(stamp)]=update
++                if stamp==1.075:
++                    duplicate=client.frame(stamp,scene.render(expected));regression=client.frame(1.04,scene.render(expected))
++                    for name,value in (('duplicate depth',duplicate),('regressing depth',regression)):
++                        require(not value['accepted'] and value['last_accepted_timestamp']==1.05,'clock fault cannot advance history');faults[name]=value
++            else:
++                require(update['accepted'],'known irregular motion remains available')
++                error=np.linalg.inv(expected)@pose(update['first_from_current']);position=float(np.linalg.norm(error[:3,3]));rotation=float(np.arccos(np.clip((np.trace(error[:3,:3])-1)/2,-1,1)))
++                require(position<=.004 and rotation<=.004,'irregular helix 4mm/0.004rad gates')
++                rows[-1].update(position_error_m=position,rotation_error_rad=rotation)
++            if depth.shape==(120,160):
++                model,weights,c=reconstruct_update(model,weights,depth,scene.CAMERA,update);checked+=c['iterations']+c['final_equations']
++        audit_sequence(rows,times)
++        after_fault=next(r['update'] for r in rows if r['update']['timestamp']==1.09)['prediction']
++        require(after_fault['previous_timestamp']==1.03 and after_fault['latest_timestamp']==1.05 and after_fault['horizon_s']==1.09-1.05,'variable horizon excludes every rejected observation')
++        expired=client.frame(1.391,scene.render(helix(.391)));recovery=client.frame(1.40,scene.render(helix(.40)))
++        require(expired['lost'] and recovery['lost'] and not recovery['accepted'] and 'prediction' not in expired and 'prediction' not in recovery,'latched expiry never extrapolates');client.finish()
++    except BaseException:
++        client.abort();raise
++    corruptions=[]
++    def corrupt(name,change):
++        altered=copy.deepcopy(rows);change(next(r['update'] for r in altered if r['update']['timestamp']==1.09))
++        try:audit_sequence(altered,times)
++        except (AssertionError,ValueError,KeyError,TypeError):corruptions.append(name)
++        else:raise ValueError('undetected prediction corruption: '+name)
++    corrupt('rejected acquisition inserted into history',lambda u:u['prediction'].update(latest_timestamp=1.075))
++    corrupt('fixed frame interval substituted for elapsed time',lambda u:u['prediction'].update(horizon_s=.02))
++    corrupt('wrong predicted root pose',lambda u:u['prediction']['first_from_prediction']['translation'].__setitem__(0,u['prediction']['first_from_prediction']['translation'][0]+.001))
++    corrupt('future pose claimed as history',lambda u:u['prediction'].update(latest_timestamp=1.09))
++    client=Client(args.binary,scene.CAMERA,configuration=dict(motion_model='constant_velocity'));bounded=[]
++    try:
++        for stamp,elapsed in ((2.,0.),(2.02,.02),(2.20,.02)):
++            t=helix(elapsed,linear=.8,angular=1.);u=client.frame(stamp,scene.render(t));require(u['accepted'],'bounded fallback retains stopped-scene availability');bounded.append(dict(update=u))
++        client.finish()
++    except BaseException:
++        client.abort();raise
++    audit_sequence(bounded,[2.,2.02,2.20]);require(bounded[-1]['update']['prediction']['status']=='increment_limit','large prediction uses stationary fallback')
++    require(sha(args.binary.read_bytes())==digest,'fixed binary throughout motion controls')
++    write(out/'sequence.json',dict(frames=rows,faults=faults,expired=expired,recovery=recovery,bounded_fallback=bounded))
++    write(out/'summary.json',dict(pass_motion_controls=True,valid_irregular_acquisitions=7,raw_geometry_systems=checked,
++        rejected_faults=len(faults),rejected_corruptions=corruptions,bounded_fallback_pass=True,accepted_history_only=True,
++        binary_sha256=digest,checker_sha256=sha(Path(__file__).read_bytes()),
++        known_pose_role='analytic helix generates measurements and scores only; runtime sees depth and acquisition time'))
++
++
++if __name__=='__main__':main()
+--- a/scripts/diagnose-projective-motion-timing.py
++++ b/scripts/diagnose-projective-motion-timing.py
+@@ -0,0 +1,44 @@
++#!/usr/bin/env python3
++"""Estimate RGB/depth pixel displacement from prior accepted poses; no truth decoding."""
++import argparse,gzip,io,json
++from pathlib import Path
++import numpy as np
++from PIL import Image
++from projective_depth_common import CAMERA,ROOT,fresh,pose,require,sha,write
++from projective_motion_raw import log_body,exp_body
++
++
++def main():
++    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--output',type=Path,required=True);args=parser.parse_args();out=fresh(args.output);summaries={}
++    for case in ('tum-fr1-room-temporal','tum-fr1-desk2-independent'):
++        base=ROOT/'data'/case;manifest_body=(base/'manifest.json').read_bytes();manifest=json.loads(manifest_body)
++        frozen=ROOT/'assets/projective-affine-v1/recorded'/case/'sensor-only.json.gz';ledger_body=frozen.read_bytes();ledger=json.loads(gzip.decompress(ledger_body));require(not ledger['ground_truth_parsed'],'pre-label estimated poses')
++        binding=json.loads((frozen.parent/'freeze.json').read_text());require(binding['manifest_sha256']==sha(manifest_body),'original manifest associated with estimated poses')
++        ledger_pin=json.loads((ROOT/'assets/projective-affine-v1/files.json').read_text())[str(frozen.relative_to(ROOT/'assets/projective-affine-v1'))]
++        require(len(ledger_body)==ledger_pin['bytes'] and sha(ledger_body)==ledger_pin['sha256'],'immutable prior pose ledger')
++        inputs={p['file']:p for p in manifest['files']};rows=[];history=[]
++        for frame,saved in zip(manifest['frames'],ledger['frames'],strict=True):
++            u=saved['update'];require(saved['source_index']==frame['source_index'] and u['timestamp']==frame['depth_timestamp'],'sensor acquisition identity')
++            phase=frame['rgb_timestamp']-frame['depth_timestamp'];require(abs(phase)<=.02,'original association bound')
++            row=dict(source_index=frame['source_index'],phase_s=phase,fresh_rgb=u['photometric']['fresh'])
++            if len(history)==2 and row['fresh_rgb']:
++                name=frame['depth_file'];body=(base/'raw'/name).read_bytes();pin=inputs[name];require(len(body)==pin['bytes'] and sha(body)==pin['sha256'],'qualified measured depth')
++                image=Image.open(io.BytesIO(body));require(image.size==(640,480),'original camera dimensions');depth=np.asarray(image,dtype=float)/5000.
++                y,x=np.mgrid[:480:16,:640:16];z=depth[::16,::16];valid=(z>.3)&(z<5);x,y,z=x[valid],y[valid],z[valid]
++                points=np.column_stack([(x-CAMERA['cx'])*z/CAMERA['fx'],(y-CAMERA['cy'])*z/CAMERA['fy'],z])
++                twist=log_body(np.linalg.inv(history[0][1])@history[1][1]);require(twist is not None,'unambiguous prior body motion')
++                shift=exp_body(twist*(-phase/(history[1][0]-history[0][0])));q=points@shift[:3,:3].T+shift[:3,3]
++                valid=q[:,2]>.3;q=q[valid];x,y=x[valid],y[valid]
++                displacement=np.hypot(CAMERA['fx']*q[:,0]/q[:,2]+CAMERA['cx']-x,CAMERA['fy']*q[:,1]/q[:,2]+CAMERA['cy']-y)
++                require(len(displacement)>0 and np.isfinite(displacement).all(),'finite diagnostic probes')
++                row.update(history_timestamps=[history[0][0],history[1][0]],probes=len(displacement),
++                    median_px=float(np.median(displacement)),p95_px=float(np.quantile(displacement,.95)),maximum_px=float(displacement.max()))
++            rows.append(row)
++            if u['accepted']:history.append((u['timestamp'],pose(u['first_from_current'])));history=history[-2:]
++        measured=[r for r in rows if 'p95_px' in r];summary=dict(frames=len(rows),causal_probe_frames=len(measured),maximum_abs_association_s=max(abs(r['phase_s']) for r in rows),median_frame_p95_px=float(np.median([r['p95_px'] for r in measured])),maximum_frame_p95_px=max(r['p95_px'] for r in measured),frames_p95_over_half_pixel=sum(r['p95_px']>.5 for r in measured))
++        write(out/(case+'.json'),dict(summary=summary,frames=rows,manifest_sha256=sha(manifest_body),estimated_pose_ledger_sha256=sha(ledger_body),numeric_truth_decoded=False));summaries[case]=summary
++    write(out/'summary.json',dict(cases=summaries,numeric_truth_decoded=False,source='prior accepted exposure-aware RGB-D estimates, viewed development recordings',scope='model-predicted displacement under constant body motion/static scene; not measured timing error, not calibrated uncertainty, no compensation applied',source_sha256={str(p.relative_to(ROOT)):sha(p.read_bytes()) for p in (Path(__file__),ROOT/'scripts/projective_motion_raw.py',ROOT/'scripts/projective_depth_common.py')}))
++    print(json.dumps(summaries),flush=True)
++
++
++if __name__=='__main__':main()
+--- a/scripts/evaluate-projective-depth.py
++++ b/scripts/evaluate-projective-depth.py
+@@ -15,7 +15,7 @@
+ CASES = ('tum-fr1-room-temporal','tum-fr1-desk2-independent')
+ 
+ 
+-def evaluate(case, binary, output, reprojection='point', correspondence='forward', residual='target_plane', normals='central_difference', geometry='depth', photometric='disabled', step_control='disabled'):
++def evaluate(case, binary, output, reprojection='point', correspondence='forward', residual='target_plane', normals='central_difference', geometry='depth', photometric='disabled', step_control='disabled',motion_model='stationary'):
+     base = ROOT/'data'/case
+     manifest_body = (base/'manifest.json').read_bytes()
+     manifest = json.loads(manifest_body)
+@@ -43,16 +43,17 @@
+                ROOT/'scripts/projective_vertex_raw.py',
+                ROOT/'scripts/projective_photo_raw.py',
+                ROOT/'scripts/projective_step_raw.py',
++               ROOT/'scripts/projective_motion_raw.py',
+                *sorted((ROOT/'integrations/projective-depth/src').rglob('*.rs')),
+                ROOT/'integrations/projective-depth/Cargo.toml',ROOT/'integrations/projective-depth/Cargo.lock']
+     write(output/'freeze.json',dict(schema_version=1,dataset=case,data_role='already viewed port regression',
+         manifest_sha256=sha(manifest_body),binary_sha256=sha(binary.read_bytes()),
+         source_sha256={str(p.relative_to(ROOT)):sha(p.read_bytes()) for p in sources},
+         inputs={name:dict(bytes=v['bytes'],sha256=v['sha256']) for name,v in inventory.items()},
+-        camera=CAMERA,reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric,step_control=step_control,primary_clock='depth; associated RGB decoded only in keyframe photometric mode',root_translation_gate_m=.1,
++        camera=CAMERA,reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric,step_control=step_control,motion_model=motion_model,primary_clock='depth; associated RGB decoded only in keyframe photometric mode',root_translation_gate_m=.1,
+         root_rotation_gate_rad=.1,reference_bracket_max_s=.02,pose_resets=0,ground_truth_operational=False,
+         selected_frames=180,updates=179,numpy_version=np.__version__))
+-    client = Client(binary,CAMERA,configuration=dict(reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric,step_control=step_control))
++    client = Client(binary,CAMERA,configuration=dict(reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric,step_control=step_control,motion_model=motion_model))
+     outcomes = []
+     try:
+         for frame in frames:
+@@ -145,6 +146,7 @@
+     parser.add_argument('--geometry',choices=('depth','vertices'),default='depth')
+     parser.add_argument('--photometric',choices=('disabled','keyframe'),default='disabled')
+     parser.add_argument('--step-control',choices=('disabled','fixed_support'),default='disabled')
++    parser.add_argument('--motion-model',choices=('stationary','constant_velocity'),default='stationary')
+     args = parser.parse_args()
+     output = fresh(args.output)
+     summaries = {}
+@@ -153,7 +155,7 @@
+         require(sha(args.binary.read_bytes())==binary_digest,'one unchanged native binary across recordings')
+         folder = output/case
+         folder.mkdir()
+-        summaries[case] = evaluate(case,args.binary.absolute(),folder,args.reprojection,args.correspondence,args.residual,args.normals,args.geometry,args.photometric,args.step_control)
++        summaries[case] = evaluate(case,args.binary.absolute(),folder,args.reprojection,args.correspondence,args.residual,args.normals,args.geometry,args.photometric,args.step_control,args.motion_model)
+     require(sha(args.binary.read_bytes())==binary_digest,'native binary unchanged through evaluation')
+     passed = all(v['complete_accuracy_pass'] for v in summaries.values())
+     write(output/'comparison.json',dict(summaries=summaries,complete_accuracy_pass=passed,exit_code=0 if passed else 1))
+--- a/scripts/projective_depth_common.py
++++ b/scripts/projective_depth_common.py
+@@ -181,6 +181,7 @@
+     last_accepted = None
+     lost = False
+     checked = 0
++    history=[]
+     for index,(row,stamp) in enumerate(zip(outcomes,timestamps)):
+         update = row['update']
+         require(update['timestamp'] == stamp,'unaltered acquisition identity')
+@@ -189,9 +190,16 @@
+         require(update['lost'] == lost and not (lost and update['accepted']),'accepted-pose expiry latch')
+         checked += audit_iterations(update)
+         steps = update['iterations']
++        predicted_initial=initial
++        if 'prediction' in update:
++            from projective_motion_raw import predict,compare
++            expected=predict(history,stamp);compare(update['prediction'],expected)
++            if update['prediction']['latest_from_prediction'] is not None:
++                predicted_initial=initial@pose(update['prediction']['latest_from_prediction'])
+         if steps:
+-            np.testing.assert_allclose(pose(steps[0]['before']),initial,atol=1e-11,rtol=0)
++            np.testing.assert_allclose(pose(steps[0]['before']),predicted_initial,atol=1e-11,rtol=0)
+         if update['accepted']:
++            history.append((stamp,pose(update['first_from_current'])));history=history[-2:]
+             last_accepted = stamp
+             if index == 0:
+                 require(not steps and update['initialized'],'one cold initialization')
+--- a/scripts/projective_motion_raw.py
++++ b/scripts/projective_motion_raw.py
+@@ -0,0 +1,55 @@
++"""Independent accepted-pose prediction: quaternion eigensolve, quadrature and matrix exp."""
++import numpy as np
++from projective_depth_common import exp_rotation,pose,require
++
++NODES,WEIGHTS=np.polynomial.legendre.leggauss(8)
++
++
++def log_body(transform):
++    r=transform[:3,:3]
++    k=np.array([[r[0,0]-r[1,1]-r[2,2],r[0,1]+r[1,0],r[0,2]+r[2,0],r[2,1]-r[1,2]],
++        [r[0,1]+r[1,0],r[1,1]-r[0,0]-r[2,2],r[1,2]+r[2,1],r[0,2]-r[2,0]],
++        [r[0,2]+r[2,0],r[1,2]+r[2,1],r[2,2]-r[0,0]-r[1,1],r[1,0]-r[0,1]],
++        [r[2,1]-r[1,2],r[0,2]-r[2,0],r[1,0]-r[0,1],np.trace(r)]])
++    _,vectors=np.linalg.eigh(k);q=vectors[:,-1]
++    if q[3]<0:q=-q
++    sine=np.linalg.norm(q[:3]);angle=2*np.arctan2(sine,q[3])
++    if angle>np.pi-1e-6:return None
++    w=q[:3]*(angle/sine if sine>1e-15 else 2.)
++    # Integrate the left Jacobian, then solve, instead of Rust's closed inverse.
++    jac=sum(weight*.5*exp_rotation(w*((node+1)*.5)) for node,weight in zip(NODES,WEIGHTS))
++    return np.r_[np.linalg.solve(jac,transform[:3,3]),w]
++
++
++def exp_body(twist):
++    v=twist[:3];x,y,z=twist[3:];a=np.zeros((4,4));a[:3,:3]=[[0,-z,y],[z,0,-x],[-y,x,0]];a[:3,3]=v
++    count=max(0,int(np.ceil(np.log2(max(1.,np.linalg.norm(a,ord=np.inf)*2)))))
++    a=a/(2.**count);result=np.eye(4);term=np.eye(4)
++    for index in range(1,25):term=term@a/index;result+=term
++    for _ in range(count):result=result@result
++    return result
++
++
++def predict(history,stamp):
++    previous,latest=(history[-2] if len(history)>1 else None),(history[-1] if history else None)
++    result=dict(status='bootstrap',previous_timestamp=previous[0] if previous else None,latest_timestamp=latest[0] if latest else None,
++        history_interval_s=None,horizon_s=stamp-latest[0] if latest else None,first_from_prediction=None,latest_from_prediction=None)
++    if previous is None or latest is None:return result
++    dt=latest[0]-previous[0];result['history_interval_s']=dt
++    twist=log_body(np.linalg.inv(previous[1])@latest[1])
++    if twist is None:result['status']='ambiguous_rotation';return result
++    scaled=twist*((stamp-latest[0])/dt);result['status']='increment_limit'
++    if not np.isfinite(scaled).all() or np.linalg.norm(scaled[3:])>.15:return result
++    increment=exp_body(scaled)
++    if not np.isfinite(increment).all() or np.linalg.norm(increment[:3,3])>.1:return result
++    result.update(status='predicted',first_from_prediction=latest[1]@increment,latest_from_prediction=increment)
++    return result
++
++
++def compare(actual,expected):
++    require(actual.keys()==expected.keys(),'complete causal prediction metadata')
++    for key in ('status','previous_timestamp','latest_timestamp','history_interval_s','horizon_s'):
++        require(actual[key]==expected[key],'accepted-history prediction '+key)
++    for key in ('first_from_prediction','latest_from_prediction'):
++        if expected[key] is None:require(actual[key] is None,'no invented predicted pose')
++        else:np.testing.assert_allclose(pose(actual[key]),expected[key],atol=1e-10,rtol=0,err_msg='independent body-twist prediction')

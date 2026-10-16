@@ -1,0 +1,50 @@
+{
+  "hand_controls": {
+    "metre_axis_normal_witness": true,
+    "half_pixel_centers": true,
+    "invalid_discontinuous_reduction": true,
+    "exact_raster_tie_and_occlusion": true,
+    "four_fusion_partitions": true,
+    "capped_weight_arithmetic": true,
+    "hand_calculated_225_point_plane_equation": true
+  },
+  "motions": [
+    {
+      "motion": 1,
+      "report_sha256": "cd184b58279f3619e66f70d7cd84225477da83b401b642adf713287a48940562",
+      "iterations": 3,
+      "final_equations": 1,
+      "model_replaced": false
+    },
+    {
+      "motion": 2,
+      "report_sha256": "ee2cb60331f4451f383a4ccb20bb9dfd0c57c606b3d5519af43852c6addc593b",
+      "iterations": 10,
+      "final_equations": 1,
+      "model_replaced": false
+    },
+    {
+      "motion": 3,
+      "report_sha256": "4cfa8808c9370f12e87000539c995abff31721c985ced3954497c92c0f1e4073",
+      "iterations": 9,
+      "final_equations": 1,
+      "model_replaced": false
+    },
+    {
+      "motion": 4,
+      "report_sha256": "d943fa3fdd9859f09a5fdaf5886890b37c87340939ca0a19fa95edbae898706b",
+      "iterations": 9,
+      "final_equations": 1,
+      "model_replaced": false
+    }
+  ],
+  "rejected_corruptions": [
+    "joint H/g rescaling with unchanged valid solve",
+    "false correspondence count",
+    "false per-iteration RMS",
+    "false final support",
+    "false returned-pose RMS",
+    "fusion category moved while total remains valid"
+  ],
+  "prior_solve_only_auditor_accepts_rescaled_Hg": true
+}

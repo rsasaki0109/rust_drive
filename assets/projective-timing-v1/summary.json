@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "feature": "Causal own-acquisition-time RGB/depth image compensation",
+  "binary_sha256": "182627681cbd0102c1f25545c34610f749858e750b7d3cba42178cd2b41667e2",
+  "source_members": 49,
+  "scores": {
+    "tum-fr1-room-temporal": {
+      "total_updates": 179,
+      "accepted": 179,
+      "root_accurate": 80,
+      "lost": false,
+      "max_position_error_m": 0.28244366790053677,
+      "max_rotation_error_rad": 0.11192712250743383,
+      "complete_accuracy_pass": false,
+      "independently_checked_normal_steps": 3839
+    },
+    "tum-fr1-desk2-independent": {
+      "total_updates": 179,
+      "accepted": 179,
+      "root_accurate": 171,
+      "lost": false,
+      "max_position_error_m": 0.09022427073473746,
+      "max_rotation_error_rad": 0.11371741879659812,
+      "complete_accuracy_pass": false,
+      "independently_checked_normal_steps": 3772
+    }
+  },
+  "geometric_systems": 7969,
+  "image_systems": 7478,
+  "prediction_reports": 358,
+  "model_generations": 358,
+  "temporal_image_compensation_implemented": true,
+  "legacy_outcomes_identical": 720,
+  "default_adoption_pass": false,
+  "own_time_plane_accurate": {
+    "compensated": 8,
+    "uncorrected": 2,
+    "frames": 8
+  },
+  "viewed_development": true,
+  "ground_truth_operational": false,
+  "subjective_maturity_percent": 20
+}

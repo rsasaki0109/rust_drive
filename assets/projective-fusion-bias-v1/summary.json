@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "implemented": "optional visible_mean fusion sampling and offline fusion decomposition",
+  "default": "nearest unchanged",
+  "binary_sha256": "34175a1cef5056897dbca4d497bcf32317a7a16b66e7015c7535ce2f2871a207",
+  "source_members": 78,
+  "before_binary_sha256": "f896bf90aca477221c5b58f56e493936b80460618cbea5d3b262c629e6957051",
+  "recorded_scores": {
+    "tum-fr1-room-temporal": {
+      "total_updates": 179,
+      "accepted": 179,
+      "root_accurate": 67,
+      "lost": false,
+      "max_position_error_m": 0.29915392837884097,
+      "max_rotation_error_rad": 0.14272344144051527,
+      "complete_accuracy_pass": false,
+      "independently_checked_normal_steps": 3467
+    },
+    "tum-fr1-desk2-independent": {
+      "total_updates": 179,
+      "accepted": 179,
+      "root_accurate": 161,
+      "lost": false,
+      "max_position_error_m": 0.11729190888303605,
+      "max_rotation_error_rad": 0.09010160384520721,
+      "complete_accuracy_pass": false,
+      "independently_checked_normal_steps": 3399
+    },
+    "tum-fr1-rpy-heldout": {
+      "total_updates": 179,
+      "accepted": 179,
+      "root_accurate": 74,
+      "lost": false,
+      "max_position_error_m": 0.08821245823033518,
+      "max_rotation_error_rad": 0.17369917047642647,
+      "complete_accuracy_pass": false,
+      "independently_checked_normal_steps": 3375
+    }
+  },
+  "default_adoption": false,
+  "physical_accuracy_improvement": false,
+  "data_role": "three already viewed FR1 regression windows",
+  "diagnostic": "constructed nearest-Z bias reduced; reference-transform probes do not isolate recorded drift",
+  "uncertainty": "bounded heuristic frame support; no calibrated physical noise or map covariance",
+  "subjective_maturity_percent": 20,
+  "goal_30_percent_complete": false,
+  "validation": {
+    "native_tests": 56,
+    "core_tests": 371,
+    "total_rust_tests": 427,
+    "scenario_replays": 49,
+    "core_outputs_unchanged": 245,
+    "compatibility_outcomes_identical": 1440,
+    "raw_recorded_normal_systems": 10778,
+    "raw_recorded_model_generations": 537,
+    "raw_reference_view_warps": 124,
+    "offline_counterfactual_model_generations": 1611,
+    "malformed_transport_cases": 64,
+    "accepted_synthetic_outcomes_identical_after_rejection": 12,
+    "heldout_accuracy_claim": false,
+    "complete_physical_accuracy": false,
+    "default_adoption": false,
+    "prior_evidence_entries_unchanged": 1600
+  }
+}

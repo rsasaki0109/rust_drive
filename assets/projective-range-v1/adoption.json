@@ -1,0 +1,67 @@
+{
+  "baseline": {
+    "tum-fr1-room-temporal": {
+      "file": "assets/projective-surface-v1/recorded/first-default/tum-fr1-room-temporal/results.json.gz",
+      "sha256": "67462e4216067d1fa3715f0b50e9377ae8d38d799500af980709362bc1e6defe"
+    },
+    "tum-fr1-desk2-independent": {
+      "file": "assets/projective-surface-v1/recorded/first-default/tum-fr1-desk2-independent/results.json.gz",
+      "sha256": "b2da876e425610a11685dc926a175936123baf0f6a4e99db09c3e3bf50c73ad7"
+    },
+    "tum-fr1-rpy-heldout": {
+      "file": "assets/projective-surface-v1/recorded/first-default/tum-fr1-rpy-heldout/results.json.gz",
+      "sha256": "410958a9f1fcec88b61bc68c0baa7f6eccfbdc83bb4f6135d87903d93204d3ce"
+    }
+  },
+  "rule_sha256": "74c651d6e8dae98611531f87746697aac8fae132647e755b746489ee9a8e3763",
+  "whitened_rule_sha256": "5dd2fc9fe74af35583b61b087edff62d34d415b1c09fd4615085ff241432f528",
+  "modes": {
+    "variance": {
+      "pass_default_adoption": false,
+      "checks": {
+        "tum-fr1-room-temporal": {
+          "accuracy_count_pass": true,
+          "maximum_position_pass": true,
+          "maximum_rotation_pass": true,
+          "tracking_pass": true
+        },
+        "tum-fr1-desk2-independent": {
+          "accuracy_count_pass": false,
+          "maximum_position_pass": false,
+          "maximum_rotation_pass": false,
+          "tracking_pass": true
+        },
+        "tum-fr1-rpy-heldout": {
+          "accuracy_count_pass": true,
+          "maximum_position_pass": false,
+          "maximum_rotation_pass": true,
+          "tracking_pass": true
+        }
+      }
+    },
+    "whitened": {
+      "pass_default_adoption": false,
+      "checks": {
+        "tum-fr1-room-temporal": {
+          "accuracy_count_pass": true,
+          "maximum_position_pass": true,
+          "maximum_rotation_pass": true,
+          "tracking_pass": true
+        },
+        "tum-fr1-desk2-independent": {
+          "accuracy_count_pass": false,
+          "maximum_position_pass": false,
+          "maximum_rotation_pass": false,
+          "tracking_pass": true
+        },
+        "tum-fr1-rpy-heldout": {
+          "accuracy_count_pass": true,
+          "maximum_position_pass": false,
+          "maximum_rotation_pass": true,
+          "tracking_pass": true
+        }
+      }
+    }
+  },
+  "default_changed": false
+}

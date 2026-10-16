@@ -1,0 +1,1092 @@
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -142,6 +142,8 @@
+           python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/bilinear-analytic --correspondence bilinear --output artifacts/projective-depth/bilinear-raw-audit
+           python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --normals inverse_depth_plane --output artifacts/projective-depth/plane-normal-analytic
+           python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/plane-normal-analytic --normals inverse_depth_plane --output artifacts/projective-depth/plane-normal-raw-audit
++          python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --geometry vertices --output artifacts/projective-depth/vertex-analytic
++          python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/vertex-analytic --geometry vertices --output artifacts/projective-depth/vertex-raw-audit
+           python scripts/check-multireference-rgbd.py --binary integrations/projective-depth/target/release/rustdriving-multireference-rgbd --output artifacts/projective-depth/multireference
+           python scripts/check-joint-keyframe-depth.py --output artifacts/projective-depth/joint-keyframes
+           python scripts/check-marginalized-keyframes.py --output artifacts/projective-depth/marginalized-keyframes
+@@ -181,6 +183,7 @@
+           python scripts/check-interior-center-refinement.py --output artifacts/projective-depth/interior-center-refinement
+           python -m py_compile scripts/projective_depth_common.py scripts/evaluate-projective-depth.py scripts/check-projective-depth-supervision.py scripts/projective_depth_raw.py
+           python -m py_compile scripts/check-projective-depth-comparison.py
++          python -m py_compile scripts/projective_vertex_raw.py
+           python -m py_compile scripts/multireference_rgbd_common.py scripts/evaluate-multireference-rgbd.py
+           python -m py_compile scripts/joint_keyframe_depth.py scripts/evaluate-joint-keyframe-depth.py
+           python -m py_compile scripts/marginalized_keyframe_depth.py scripts/evaluate-marginalized-keyframes.py
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -350,6 +350,11 @@
+ support but regresses to63/179 room and85/179 desk2 accurate updates. Its failed
+ strict-support predecessor and revised implementation remain source-bound;
+ central-difference normals remain the default.
++An explicit [XYZ model](projective-vertices.md) retains complete transformed
++points and averages XYZ into model cells and pyramids. Its known-plane view-warp
++control prevents the depth-only resampling deformation. Recorded accuracy is
++67/179 room and 85/179 desk2, so depth geometry remains the default. Unsupported
++combinations with the other experimental policies reject before acknowledgment.
+ [Contract and negative accuracy results](multireference-rgbd.md).
+ 
+ The optional NumPy joint-keyframe evaluator separately optimizes up to five
+--- a/docs/capabilities.md
++++ b/docs/capabilities.md
+@@ -58,7 +58,7 @@
+ | KITTI processed-camera point projection | Implemented / independently checked analytically | Full selected P_rect, shared R_rect_00 and Velodyne/IMU extrinsics; all 72 authored rows across four cameras audited and byte-identical projection replay; no real KITTI files, deskew or driving integration; [scope](kitti-projection.md) |
+ | Sparse projected LiDAR depth | Implemented / analytically checked | Bounded row-major cells with nearest axial Z, exact index ties and full source-point assignments; separate locked tool, correctly rounded JSON parsing; no filling, physical visibility proof or measured accuracy; [contract](kitti-depth.md) |
+ | Dense-depth / OSS odometry comparison | Offline evaluation; accuracy gates fail | Six archived Python prototypes and pinned OpenCV reference on two viewed 179-update recordings; fused depth reaches 64/179 room and 161/179 desk2 accurate, reference 83/179 and 15/179; independent root scoring and exact reference repeat, no driving integration; [evidence](projective-depth-diagnostics.md) |
+-| Rust projective depth fusion | Implemented / offline accuracy incomplete | Independent bounded Rust library and CLI; sensor-only model, atomic failure and expiry; default64/179 room and161/179 desk2 accurate with exact full replay; reprojection, matching, residual and planar-normal candidates fail continuous adoption, no vehicle fusion or calibrated uncertainty; [contract](projective-depth-rust.md), [native regression](native-depth-regression.md) |
++| Rust projective depth fusion | Implemented / offline accuracy incomplete | Independent bounded Rust library and CLI; sensor-only model, atomic failure and expiry; default64/179 room and161/179 desk2 accurate with exact full replay; reprojection, matching, residual, planar-normal and XYZ models fail continuous adoption; XYZ preserves known-plane geometry, no vehicle fusion or calibrated uncertainty; [contract](projective-depth-rust.md), [native regression](native-depth-regression.md), [XYZ evidence](projective-vertices.md) |
+ | Optical-depth temporal supervision | Implemented / offline failure regressions | Caller-clock idle ticks expire stale poses without synthetic acquisitions; holds require post-fault successful depth, queued old data cannot clear them; terminal loss and clean-sequence map/pose parity checked, no live vehicle control; [contract](projective-depth-supervision.md) |
+ | Raw-depth odometry audit | Implemented / viewed mathematical validation | Separate NumPy reconstruction of all 6,861 iteration and 358 final equations, projective pixel selection and 358 prescribed fused models; exact discrete counts and corruption controls; physical accuracy failures unchanged; [scope](projective-depth-raw-audit.md) |
+ | Multi-reference RGB-D odometry | Optional experiment / recorded accuracy regresses | Bounded raw keyframes and phase-qualified intensity recover synthetic planar motion; independent raw analytic equations and recorded solve/state checks; neither branch improves both viewed records, default unchanged; [failures and contract](multireference-rgbd.md) |
+--- a/docs/maturity.md
++++ b/docs/maturity.md
+@@ -575,3 +575,11 @@
+ controls; the maintained correction restores those controls without improving
+ physical accuracy. Neither attempt is adopted. The default remains64/179 and
+ 161/179, and subjective maturity remains **about 20%** versus mature driving OSS.
++
++The [native XYZ model](projective-vertices.md) preserves measured points through
++fusion, view changes and pyramid reduction, preventing a known-plane resampling
++deformation. It scores 67/179 room and 85/179 desk2, so it fails continuous adoption
++and leaves the default unchanged. Transport checks also catch invalid
++configuration acceptance previously masked by an EOF error. These corrections
++add no qualified vehicle capability or sustained accuracy gain; subjective
++maturity remains **about 20%** versus mature driving OSS.
+--- a/docs/native-depth-regression.md
++++ b/docs/native-depth-regression.md
+@@ -58,11 +58,12 @@
+     correspondence: Correspondence::Forward,
+     residual: Residual::TargetPlane,
+     normals: NormalEstimation::CentralDifference,
++    geometry: ModelGeometry::Depth,
+ }
+ ```
+ 
+ The JSON-lines `Configure` request accepts optional `reprojection`,
+-`correspondence`, `residual` and `normals` fields with the names below. Missing fields use
++`correspondence`, `residual`, `normals` and `geometry` fields with the names below. Missing fields use
+ the original defaults; unknown fields and enum values reject. The version-1
+ acknowledgment, frame limits, optical coordinate convention and metre/second
+ units are unchanged. There are no new dependencies or Cargo lockfile changes.
+@@ -88,6 +89,11 @@
+   support and axial-depth fit RMS at most 0.002 m. Unsupported or curved patches
+   retain their original central normals; scales 2 and 4 always retain central
+   normals. This option also fails recorded accuracy and remains experimental.
++* `geometry`: `depth` or `vertices`. The latter retains full XYZ in model cells,
++  including fusion, view warps and source/model pyramids. It requires the other
++  default policies and rejects unsupported combinations before acknowledgment.
++  Its [geometric preservation control and failed continuous comparison](projective-vertices.md)
++  retain all outcomes; it is not promoted to the default.
+ 
+ Only the individual configurations in the table have recorded trajectory
+ results. Their combinations have no physical accuracy qualification. All modes
+--- a/docs/projective-depth-rust.md
++++ b/docs/projective-depth-rust.md
+@@ -13,6 +13,9 @@
+ reprojection, matching, residual and planar-normal changes fail its adoption
+ criteria; the default retains the original
+ 64/179 and 161/179 outcomes, with exact complete sensor-ledger replay.
++The subsequent [XYZ model](projective-vertices.md) preserves measured geometry
++through view changes but regresses desk2 continuous accuracy; depth remains the
++default representation.
+ 
+ ## Algorithm and interface
+ 
+--- /dev/null
++++ b/docs/projective-vertices.md
+@@ -0,0 +1,118 @@
++# Geometry-preserving projective XYZ fusion
++
++The maintained Rust tracker now has an explicit **`geometry: "vertices"`** mode
++that retains measured XYZ through reference-view changes, fusion and pyramid
++reduction. It prevents a demonstrated plane deformation in the original
++depth-only representation. **It is not adopted as the default:** continuous
++root accuracy improves slightly in room and substantially regresses in desk2.
++
++## Complete recorded outcomes
++
++Both modes use the original viewed TUM depth indices 100–279, K=525 calibration,
++first-camera optical root, 0.1 m / 0.1 rad accuracy gates and acquisition clocks.
++Each accepts all 179 updates without expiry or resets. Numeric pose labels are
++read only after every operational outcome in each recording is saved.
++
++| Model | Room accurate / 179 | Desk2 accurate / 179 | Maximum position, room / desk2 (m) | Maximum rotation, room / desk2 (rad) |
++|---|---:|---:|---|---|
++| Original depth | 64 | 161 | 0.296290 / 0.114800 | 0.141286 / 0.090386 |
++| Preserved XYZ | 67 | 85 | 0.299737 / 0.192257 | 0.141437 / 0.347606 |
++
++The unchanged adoption rule requires room above 64, desk2 at least 161, complete
++tracking and no worse maximum position/rotation error in either recording.
++The XYZ mode fails this rule. The camera-only default reproduces **all 360
++original outcomes exactly**. The [source-bound packet](../assets/projective-vertices-v1/summary.json)
++and [validation receipt](../assets/projective-vertices-v1/validation.json) retain
++the source, full trajectories, raw audit and failed adoption decision.
++
++## The geometric correction
++
++The original model projects a point into a rounded target cell and retains its
++Z value. On the next use, X and Y are reconstructed on that cell's center ray.
++The resulting point can leave its measured plane. Repeating this resampling
++also changes the geometry used to compute normals and coarse correspondences.
++
++In XYZ mode, target cells index visible points; they do not define their rays.
++The model keeps the exact transformed point selected by the existing nearest-Z
++buffer, with first row-major index winning exact ties. Compatible observations
++average all three coordinates with the existing weight cap of 16. Filling,
++nearer replacement and farther rejection retain their original Z-band rules.
++Pyramid cells average four supported XYZ points; cross products use their actual
++neighbor positions. The same XYZ reduction prepares each measured source frame.
++Projection thresholds, Huber loss, iteration/support/condition/increment guards,
++keyframe thresholds, root composition and atomic failure/expiry rules remain
++unchanged. No dependencies or Cargo pins change.
++
++A separate known-plane control applies 40 prescribed view changes and returns to
++the initial view. Intermediate plane RMS reaches **0.0149077 m** for the old
++depth representation and **2.22e-15 m** for XYZ. At the final returned view,
++the respective RMS values are 5.55e-5 m and 2.11e-15 m. The modes retain 12,288
++and 10,630 points respectively, so their visible supports differ. This control
++checks geometric preservation under supplied transforms; it is not an estimated
++physical trajectory or an explanation of every observed drift error.
++
++All XYZ pyramid levels also retain a tilted plane, and hand controls cover
++off-center point retention, nearest-depth/index ties and three-coordinate
++capped fusion. A rejected update preserves the XYZ model and accepted timestamp.
++
++## Interface and independent checks
++
++`TrackerConfig.geometry` accepts `ModelGeometry::Depth` (default) or
++`ModelGeometry::Vertices`. JSON `Configure` accepts `geometry: "depth"` or
++`"vertices"`. Missing fields retain legacy behavior. XYZ currently requires
++the original point/forward/target-plane/central-difference policies; combined
++experimental policies reject before configuration acknowledgment.
++
++The optional crate passes **32 tests**. Four existing ray-cast motion controls
++pass their original 4 mm / 0.004 rad gates. The separate NumPy oracle reconstructs
++all **6,912 fitted equations, 358 returned-pose equations and 358 prescribed model
++generations** from the raw depth PNGs, without reading reference poses. It checks
++all reported systems, counts and fusion partitions. Seven analytic mutations,
++including substituting depth geometry for XYZ, are rejected. Operational Rust
++and independent reconstruction sources are archived separately from historical
++versions. These are viewed indoor development results, with no held-out or
++vehicle-localization qualification.
++
++Transport checks also repair an acceptance-test gap: an invalid `Configure`
++must reject before any acknowledgment. An exit code of 2 alone could instead be
++caused by reaching EOF without frames after erroneously accepting configuration.
++A deliberately faulty wrapper strips an unknown geometry value, obtains a valid
++acknowledgment and then exits 2 at EOF. The strengthened checker detects this
++mutation. Duplicate configuration, malformed JSON and frame-count controls
++verify their exact allowed output prefixes. CI runs these controls and raw XYZ
++analytic reconstruction without downloading recordings.
++
++Core verification retains 371 Rust tests, 49 scenario replays and all 245 prior
++deterministic output hashes. Subjective maturity remains about 20% versus mature
++driving OSS; the geometric correction and test repair do not establish a
++continuous localization accuracy gain.
++
++## Reproduction
++
++Use the [original inputs and environment](projective-depth-rust.md#reproduction),
++build the standalone crate and choose fresh output paths:
++
++```bash
++source scripts/env.sh
++cargo build --release --locked --manifest-path integrations/projective-depth/Cargo.toml
++OPENBLAS_NUM_THREADS=1 python scripts/evaluate-projective-depth.py \
++  --binary integrations/projective-depth/target/release/rustdriving-projective-depth \
++  --geometry vertices --output artifacts/xyz-recorded
++OPENBLAS_NUM_THREADS=1 python scripts/check-projective-depth.py \
++  --binary integrations/projective-depth/target/release/rustdriving-projective-depth \
++  --geometry vertices --output artifacts/xyz-analytic
++OPENBLAS_NUM_THREADS=1 python scripts/audit-projective-depth-raw.py \
++  --geometry vertices --analytic-reports artifacts/xyz-analytic \
++  --recorded-reports artifacts/xyz-recorded --output artifacts/xyz-raw
++OPENBLAS_NUM_THREADS=1 python scripts/check-projective-depth-comparison.py \
++  --baseline artifacts/projective-reprojection/first-point \
++  --candidate artifacts/xyz-recorded --raw-audit artifacts/xyz-raw \
++  --output artifacts/xyz-adoption.json
++```
++
++The evaluator and adoption checker save the complete failures and exit 1.
++The baseline path refers to the locally retained original run; another checkout
++can reproduce its canonical outcomes using the archived legacy evaluator and
++the default current binary. The packet includes both scored and pre-label
++sensor ledgers; the comparison checker binds the baseline to the original native
++ledger and binds its raw audit to the exact candidate freeze and ledger hashes.
+--- a/integrations/projective-depth/src/lib.rs
++++ b/integrations/projective-depth/src/lib.rs
+@@ -5,6 +5,7 @@
+ 
+ pub mod multireference;
+ pub mod supervision;
++mod vertex_model;
+ 
+ type V = [f64; 3];
+ type M = [[f64; 3]; 3];
+@@ -53,6 +54,16 @@
+     InverseDepthPlane,
+ }
+ 
++/// Depth re-creates XY on rounded pixel rays; vertices preserve measured XYZ
++/// through model fusion, pyramid reduction and reference-view changes.
++#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
++#[serde(rename_all = "snake_case")]
++pub enum ModelGeometry {
++    #[default]
++    Depth,
++    Vertices,
++}
++
+ #[derive(Clone, Copy, Debug, Default, Deserialize, Serialize)]
+ #[serde(default, deny_unknown_fields)]
+ pub struct TrackerConfig {
+@@ -60,6 +71,7 @@
+     pub correspondence: Correspondence,
+     pub residual: Residual,
+     pub normals: NormalEstimation,
++    pub geometry: ModelGeometry,
+ }
+ 
+ #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+@@ -725,6 +737,7 @@
+     correspondence: Correspondence,
+     residual: Residual,
+     normals: NormalEstimation,
++    geometry: ModelGeometry,
+     model: Option<Model>,
+     last_observed: Option<f64>,
+     last_accepted: Option<f64>,
+@@ -751,18 +764,30 @@
+                 correspondence,
+                 residual: Residual::default(),
+                 normals: NormalEstimation::default(),
++                geometry: ModelGeometry::default(),
+             },
+         )
+     }
+     /// Configure measured residual/model policies with shared clock and fault guards.
+     pub fn with_config(camera: Camera, config: TrackerConfig) -> Result<Self, String> {
+         camera.validate()?;
++        if config.geometry == ModelGeometry::Vertices
++            && (config.reprojection != Reprojection::Point
++                || config.correspondence != Correspondence::Forward
++                || config.residual != Residual::TargetPlane
++                || config.normals != NormalEstimation::CentralDifference)
++        {
++            return Err(
++                "vertex geometry requires point/forward/target_plane/central_difference".into(),
++            );
++        }
+         Ok(Self {
+             camera,
+             reprojection: config.reprojection,
+             correspondence: config.correspondence,
+             residual: config.residual,
+             normals: config.normals,
++            geometry: config.geometry,
+             model: None,
+             last_observed: None,
+             last_accepted: None,
+@@ -809,7 +834,18 @@
+             {
+                 return Err("invalid bounded depth image".into());
+             }
+-            let current = pyramid_with_normals(self.camera, depth, self.normals);
++            let current = if self.geometry == ModelGeometry::Vertices {
++                vertex_model::pyramid(
++                    self.camera,
++                    depth
++                        .iter()
++                        .enumerate()
++                        .map(|(i, &z)| self.camera.point(i, z))
++                        .collect(),
++                )
++            } else {
++                pyramid_with_normals(self.camera, depth, self.normals)
++            };
+             if self.model.is_none() {
+                 if current[0]
+                     .normals
+@@ -844,30 +880,61 @@
+                     return Err("nonrigid composed root".into());
+                 }
+                 let replace = norm(relative.translation) > 0.1 || relative.angle() > 0.1;
+-                let (mut map, mut weights, warp) = if replace {
+-                    let (d, w, stats) = raster_with_tangents(
+-                        self.camera,
+-                        &old.depth,
+-                        &old.weights,
+-                        relative.inverse(),
+-                        (self.reprojection == Reprojection::TangentPlane)
+-                            .then_some(old.pyramid[2].normals.as_slice()),
+-                    );
+-                    (d, w, Some(stats))
+-                } else {
+-                    (old.depth.clone(), old.weights.clone(), None)
+-                };
+-                let mut fusion = fuse_with_tangents(
+-                    self.camera,
+-                    &mut map,
+-                    &mut weights,
+-                    depth,
+-                    if replace { Pose::identity() } else { relative },
+-                    (self.reprojection == Reprojection::TangentPlane)
+-                        .then_some(current[2].normals.as_slice()),
+-                );
+-                fusion.warp = warp;
+-                let next_pyramid = pyramid_with_normals(self.camera, &map, self.normals);
++                let (map, weights, next_pyramid, fusion) =
++                    if self.geometry == ModelGeometry::Vertices {
++                        let (mut points, mut weights, warp) = if replace {
++                            let (points, weights, stats) = vertex_model::raster(
++                                self.camera,
++                                &old.pyramid[2].vertices,
++                                &old.weights,
++                                relative.inverse(),
++                            );
++                            (points, weights, Some(stats))
++                        } else {
++                            (old.pyramid[2].vertices.clone(), old.weights.clone(), None)
++                        };
++                        let mut fusion = vertex_model::fuse(
++                            self.camera,
++                            &mut points,
++                            &mut weights,
++                            &current[2].vertices,
++                            if replace { Pose::identity() } else { relative },
++                        );
++                        fusion.warp = warp;
++                        let map = points.iter().map(|p| p[2]).collect();
++                        (
++                            map,
++                            weights,
++                            vertex_model::pyramid(self.camera, points),
++                            fusion,
++                        )
++                    } else {
++                        let (mut map, mut weights, warp) = if replace {
++                            let (d, w, stats) = raster_with_tangents(
++                                self.camera,
++                                &old.depth,
++                                &old.weights,
++                                relative.inverse(),
++                                (self.reprojection == Reprojection::TangentPlane)
++                                    .then_some(old.pyramid[2].normals.as_slice()),
++                            );
++                            (d, w, Some(stats))
++                        } else {
++                            (old.depth.clone(), old.weights.clone(), None)
++                        };
++                        let mut fusion = fuse_with_tangents(
++                            self.camera,
++                            &mut map,
++                            &mut weights,
++                            depth,
++                            if replace { Pose::identity() } else { relative },
++                            (self.reprojection == Reprojection::TangentPlane)
++                                .then_some(current[2].normals.as_slice()),
++                        );
++                        fusion.warp = warp;
++                        let next_pyramid = pyramid_with_normals(self.camera, &map, self.normals);
++                        (map, weights, next_pyramid, fusion)
++                    };
+                 self.model = Some(Model {
+                     depth: map,
+                     weights,
+--- a/integrations/projective-depth/src/main.rs
++++ b/integrations/projective-depth/src/main.rs
+@@ -1,6 +1,7 @@
+ //! Bounded synchronous JSON-lines evaluation transport; no external services.
+ use rustdriving_projective_depth::{
+-    Camera, Correspondence, NormalEstimation, Reprojection, Residual, Tracker, TrackerConfig,
++    Camera, Correspondence, ModelGeometry, NormalEstimation, Reprojection, Residual, Tracker,
++    TrackerConfig,
+ };
+ use serde::Deserialize;
+ use std::io::{self, BufRead, Read, Write};
+@@ -18,6 +19,8 @@
+         residual: Residual,
+         #[serde(default)]
+         normals: NormalEstimation,
++        #[serde(default)]
++        geometry: ModelGeometry,
+     },
+     Frame {
+         timestamp: f64,
+@@ -52,6 +55,7 @@
+                 correspondence,
+                 residual,
+                 normals,
++                geometry,
+             } => {
+                 if tracker.is_some() {
+                     return Err("one configuration per process".into());
+@@ -63,6 +67,7 @@
+                         correspondence,
+                         residual,
+                         normals,
++                        geometry,
+                     },
+                 )?);
+                 writeln!(output, "{{\"configured\":true,\"schema_version\":1}}")
+--- /dev/null
++++ b/integrations/projective-depth/src/vertex_model.rs
+@@ -0,0 +1,286 @@
++//! Bounded projective XYZ model. Cells are visibility indices, not camera rays.
++use super::{
++    Camera, FusionStats, Level, MAX_Z, MIN_Z, Pose, RasterStats, V, add, cross, mul, norm, sub,
++};
++
++pub(super) fn pyramid(camera: Camera, mut points: Vec<V>) -> Vec<Level> {
++    let mut levels = Vec::with_capacity(3);
++    for scale in [1, 2, 4] {
++        let c = camera.scaled(scale);
++        let mut normals = vec![[0.; 3]; points.len()];
++        for y in 1..c.height - 1 {
++            for x in 1..c.width - 1 {
++                let i = y * c.width + x;
++                let z = points[i][2];
++                if z <= MIN_Z || z >= MAX_Z {
++                    continue;
++                }
++                if [i + 1, i - 1, i + c.width, i - c.width]
++                    .iter()
++                    .any(|&j| points[j][2] <= MIN_Z || (points[j][2] - z).abs() >= 0.05 + 0.01 * z)
++                {
++                    continue;
++                }
++                let n = cross(
++                    sub(points[i + 1], points[i - 1]),
++                    sub(points[i + c.width], points[i - c.width]),
++                );
++                let length = norm(n);
++                if length > 1e-10 {
++                    normals[i] = mul(n, 1. / length);
++                }
++            }
++        }
++        let next = if scale == 4 {
++            Vec::new()
++        } else {
++            (0..c.width * c.height / 4)
++                .map(|i| {
++                    let k = i / (c.width / 2) * 2 * c.width + i % (c.width / 2) * 2;
++                    let block = [
++                        points[k],
++                        points[k + 1],
++                        points[k + c.width],
++                        points[k + c.width + 1],
++                    ];
++                    let lo = block.iter().map(|p| p[2]).fold(f64::INFINITY, f64::min);
++                    let hi = block.iter().map(|p| p[2]).fold(f64::NEG_INFINITY, f64::max);
++                    if lo < MIN_Z || hi > MAX_Z || hi - lo > 0.05 + 0.01 * lo {
++                        [0.; 3]
++                    } else {
++                        mul(add(add(add(block[0], block[1]), block[2]), block[3]), 0.25)
++                    }
++                })
++                .collect()
++        };
++        levels.push(Level {
++            camera: c,
++            vertices: points,
++            normals,
++        });
++        points = next;
++    }
++    levels.reverse();
++    levels
++}
++
++pub(super) fn raster(
++    camera: Camera,
++    points: &[V],
++    weights: &[u8],
++    pose: Pose,
++) -> (Vec<V>, Vec<u8>, RasterStats) {
++    let mut output = vec![[0.; 3]; points.len()];
++    let mut support = vec![0; points.len()];
++    let mut stats = RasterStats::default();
++    for (i, &point) in points.iter().enumerate() {
++        if point[2] <= MIN_Z || point[2] >= MAX_Z {
++            continue;
++        }
++        stats.source_valid += 1;
++        let p = pose.transform(point);
++        if p[2] >= MAX_Z {
++            continue;
++        }
++        let Some(j) = camera.project(p, false) else {
++            continue;
++        };
++        stats.projected += 1;
++        if output[j][2] == 0. || p[2] < output[j][2] {
++            if output[j][2] == 0. {
++                stats.selected += 1;
++            }
++            output[j] = p;
++            support[j] = weights[i];
++        }
++    }
++    (output, support, stats)
++}
++
++pub(super) fn fuse(
++    camera: Camera,
++    model: &mut [V],
++    weights: &mut [u8],
++    points: &[V],
++    pose: Pose,
++) -> FusionStats {
++    let (new, present, measurement) = raster(camera, points, &vec![1; points.len()], pose);
++    let mut stats = FusionStats {
++        measurement,
++        ..FusionStats::default()
++    };
++    for i in 0..model.len() {
++        if present[i] == 0 {
++            continue;
++        }
++        let old = model[i][2];
++        if weights[i] == 0 {
++            model[i] = new[i];
++            weights[i] = 1;
++            stats.filled += 1;
++        } else if (new[i][2] - old).abs() < 0.03 + 0.01 * old {
++            let w = f64::from(weights[i].min(16));
++            model[i] = mul(add(mul(model[i], w), new[i]), 1. / (w + 1.));
++            weights[i] = (weights[i] + 1).min(16);
++            stats.averaged += 1;
++        } else if new[i][2] < old - 0.03 - 0.01 * old {
++            model[i] = new[i];
++            weights[i] = 1;
++            stats.replaced += 1;
++        } else {
++            stats.ignored += 1;
++        }
++    }
++    stats
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use crate::{ModelGeometry, Tracker, TrackerConfig, dot};
++
++    fn camera() -> Camera {
++        Camera {
++            width: 128,
++            height: 96,
++            fx: 110.,
++            fy: 110.,
++            cx: 63.5,
++            cy: 47.5,
++        }
++    }
++    fn plane(c: Camera) -> (V, Vec<V>) {
++        let n = mul([0.3, -0.2, 1.], 1. / norm([0.3, -0.2, 1.]));
++        (
++            n,
++            (0..c.width * c.height)
++                .map(|i| c.point(i, 2. / dot(n, c.point(i, 1.))))
++                .collect(),
++        )
++    }
++    #[test]
++    fn xyz_pyramid_centroids_and_normals_remain_on_a_tilted_plane() {
++        let c = camera();
++        let (n, points) = plane(c);
++        for level in pyramid(c, points) {
++            assert!(level.normals.iter().filter(|v| norm(**v) > 0.5).count() > 500);
++            for p in &level.vertices {
++                assert!((dot(n, *p) - 2.).abs() < 1e-13);
++            }
++            for normal in level.normals.iter().filter(|v| norm(**v) > 0.5) {
++                assert!(norm(sub(*normal, n)) < 1e-12);
++            }
++        }
++    }
++    #[test]
++    fn forty_view_warps_preserve_the_plane_instead_of_snapping_xy() {
++        let c = camera();
++        let (n, mut points) = plane(c);
++        let mut depth: Vec<_> = points.iter().map(|p| p[2]).collect();
++        let mut weights = vec![1; points.len()];
++        let mut old_weights = weights.clone();
++        let mut previous = Pose::identity();
++        let mut peak_depth_rms = 0_f64;
++        for index in (1..=20).chain((0..20).rev()) {
++            let i = f64::from(index);
++            let view = Pose::identity().increment([
++                0.004 * i,
++                -0.001 * i,
++                0.001 * i,
++                0.001 * i,
++                -0.0015 * i,
++                0.0007 * i,
++            ]);
++            let transform = view.inverse().compose(previous);
++            let (next, w, _) = raster(c, &points, &weights, transform);
++            points = next;
++            weights = w;
++            let (next, w, _) = crate::raster(c, &depth, &old_weights, transform);
++            depth = next;
++            old_weights = w;
++            let normal = view.inverse().rotate(n);
++            let offset = 2. - dot(n, view.translation);
++            for (p, &w) in points.iter().zip(&weights) {
++                if w > 0 {
++                    assert!((dot(normal, *p) - offset).abs() < 1e-12);
++                }
++            }
++            let mut squared = 0.;
++            let mut count = 0;
++            for (j, &w) in old_weights.iter().enumerate() {
++                if w > 0 {
++                    squared += (dot(normal, c.point(j, depth[j])) - offset).powi(2);
++                    count += 1;
++                }
++            }
++            peak_depth_rms = peak_depth_rms.max((squared / f64::from(count)).sqrt());
++            previous = view;
++        }
++        assert!(weights.iter().filter(|&&w| w > 0).count() > 10000);
++        assert!(peak_depth_rms > 0.01);
++    }
++    #[test]
++    fn capped_fusion_averages_all_three_coordinates() {
++        let c = camera();
++        let i = 48 * c.width + 64;
++        let mut model = vec![[0.; 3]; c.width * c.height];
++        let mut weights = vec![0; model.len()];
++        let mut source = model.clone();
++        let old = c.point(i, 2.);
++        let new = add(c.point(i, 2.01), [0.005, -0.002, 0.]);
++        model[i] = old;
++        weights[i] = 16;
++        source[i] = new;
++        let stats = fuse(c, &mut model, &mut weights, &source, Pose::identity());
++        assert_eq!(stats.averaged, 1);
++        assert_eq!(weights[i], 16);
++        assert!(norm(sub(model[i], mul(add(mul(old, 16.), new), 1. / 17.))) < 1e-15);
++        assert!(norm(sub(model[i], c.point(i, model[i][2]))) > 1e-4);
++    }
++    #[test]
++    fn vertex_raster_keeps_nearest_depth_first_index_ties_and_exact_xyz() {
++        let c = camera();
++        let i = 48 * c.width + 64;
++        let mut points = vec![[0.; 3]; c.width * c.height];
++        let mut weights = vec![0; points.len()];
++        let p = add(c.point(i, 2.), [0.005, 0., 0.]);
++        points[0] = p;
++        points[1] = p;
++        weights[0] = 2;
++        weights[1] = 7;
++        let (output, support, stats) = raster(c, &points, &weights, Pose::identity());
++        assert_eq!(output[i], p);
++        assert_eq!(support[i], 2);
++        assert_eq!(stats.selected, 1);
++        points[2] = c.point(i, 1.);
++        weights[2] = 4;
++        let (output, support, stats) = raster(c, &points, &weights, Pose::identity());
++        assert_eq!(output[i], points[2]);
++        assert_eq!(support[i], 4);
++        assert_eq!(stats.selected, 1);
++    }
++    #[test]
++    fn rejected_vertex_update_preserves_the_model_and_accepted_clock() {
++        let c = camera();
++        let depth: Vec<_> = (0..c.width * c.height)
++            .map(|i| {
++                2. + 0.2 * ((i % c.width) as f64 * 0.07).sin() * ((i / c.width) as f64 * 0.09).sin()
++            })
++            .collect();
++        let mut tracker = Tracker::with_config(
++            c,
++            TrackerConfig {
++                geometry: ModelGeometry::Vertices,
++                ..TrackerConfig::default()
++            },
++        )
++        .unwrap();
++        assert!(tracker.step(1., &depth).accepted);
++        let model = tracker.model.as_ref().unwrap().pyramid[2].vertices.clone();
++        assert!(!tracker.step(1.03, &vec![0.; depth.len()]).accepted);
++        assert_eq!(tracker.model.as_ref().unwrap().pyramid[2].vertices, model);
++        assert_eq!(tracker.last_accepted, Some(1.));
++        assert!(!tracker.step(1.03, &depth).accepted);
++        assert!(tracker.step(1.06, &depth).accepted);
++    }
++}
+--- a/scripts/audit-projective-depth-raw.py
++++ b/scripts/audit-projective-depth-raw.py
+@@ -14,6 +14,7 @@
+ from projective_depth_raw import compare_equation, fuse, inverse_depth_normals, normal_equation, pyramid, raster, reconstruct_update
+ 
+ SOURCES = (Path(__file__),ROOT/'scripts/projective_depth_raw.py',ROOT/'scripts/projective_depth_common.py',
++           ROOT/'scripts/projective_vertex_raw.py',
+            ROOT/'scripts/check-projective-depth.py',ROOT/'scripts/requirements-visual.txt',
+            ROOT/'assets/projective-depth-raw-audit-v1/design.json')
+ SOURCE_PINS = {str(p.relative_to(ROOT)):sha(p.read_bytes()) for p in SOURCES}
+@@ -108,7 +109,7 @@
+                 nonplanar_and_coarse_normal_support_preserved=True)
+ 
+ 
+-def analytic(output, reports, reprojection='point', correspondence='forward', residual='target_plane', normals='central_difference'):
++def analytic(output, reports, reprojection='point', correspondence='forward', residual='target_plane', normals='central_difference', geometry='depth'):
+     spec = importlib.util.spec_from_file_location('independent_scene',ROOT/'scripts/check-projective-depth.py')
+     scene = importlib.util.module_from_spec(spec)
+     spec.loader.exec_module(scene)
+@@ -124,7 +125,7 @@
+         raw = scene.render(np.asarray(record['expected']))
+         update = record['result']
+         audit_iterations(update)
+-        _,_,checked = reconstruct_update(first,(first > .3).astype(np.uint8),raw,scene.CAMERA,update,reprojection,correspondence,residual,normals)
++        _,_,checked = reconstruct_update(first,(first > .3).astype(np.uint8),raw,scene.CAMERA,update,reprojection,correspondence,residual,normals,geometry)
+         summaries.append(dict(motion=index,report_sha256=sha(read(path)),**checked))
+         witnesses.append((first,raw,scene.CAMERA,update))
+     model,raw,c,original = witnesses[2]
+@@ -133,7 +134,7 @@
+         altered = copy.deepcopy(original)
+         change(altered)
+         try:
+-            reconstruct_update(model,(model > .3).astype(np.uint8),raw,c,altered,reprojection,correspondence,residual,normals)
++            reconstruct_update(model,(model > .3).astype(np.uint8),raw,c,altered,reprojection,correspondence,residual,normals,geometry)
+         except (AssertionError,ValueError,KeyError,TypeError,IndexError):
+             rejected.append(name)
+         else:
+@@ -157,7 +158,17 @@
+         u['fusion']['averaged'] -= 1
+         u['fusion']['ignored'] += 1
+     corruption('fusion category moved while total remains valid',move_fusion)
+-    write(output/'analytic-audit.json',dict(hand_controls=hand_controls(),motions=summaries,
++    vertex_controls=None
++    if geometry=='vertices':
++        from projective_vertex_raw import controls
++        vertex_controls=controls()
++        try:
++            reconstruct_update(model,(model>.3).astype(np.uint8),raw,c,original)
++        except (AssertionError,ValueError,KeyError,TypeError,IndexError):
++            rejected.append('legacy depth geometry substituted for vertex geometry')
++        else:
++            raise ValueError('vertex geometry substitution undetected')
++    write(output/'analytic-audit.json',dict(hand_controls=hand_controls(),motions=summaries,geometry=geometry,vertex_controls=vertex_controls,
+         rejected_corruptions=rejected,prior_solve_only_auditor_accepts_rescaled_Hg=True))
+ 
+ 
+@@ -171,6 +182,8 @@
+     correspondence = freeze.get('correspondence','forward')
+     residual = freeze.get('residual','target_plane')
+     normals = freeze.get('normals','central_difference')
++    geometry = freeze.get('geometry','depth')
++    require(geometry in ('depth','vertices'),'declared geometry policy')
+     require(normals in ('central_difference','inverse_depth_plane'),'declared normal policy')
+     require(residual in ('target_plane','symmetric_planes'),'declared residual policy')
+     require(correspondence in ('forward','reciprocal','bilinear'),'declared correspondence policy')
+@@ -197,7 +210,7 @@
+         verified(frame)  # Hashes only; no pixel or reference label decoding yet.
+     require(all(sha(read(ROOT/n))==d for n,d in SOURCE_PINS.items()),'audit sources unchanged since process start')
+     write(output/'freeze.json',dict(dataset=case,source_sha256=SOURCE_PINS,
+-        manifest_sha256=sha(manifest_body),original_freeze_sha256=sha(read(freeze_path)),reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,
++        manifest_sha256=sha(manifest_body),original_freeze_sha256=sha(read(freeze_path)),reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,
+         original_sensor_ledger_sha256=sha(read(ledger_path,64*1024*1024)),depth_source_count=180,
+         ground_truth_decoded=False,raw_color_decoded=False))
+     steps = audit_sequence(outcomes,[f['depth_timestamp'] for f in frames])
+@@ -209,7 +222,7 @@
+             image = Image.open(io.BytesIO(verified(frame)))
+             require(image.size == (640,480) and image.mode in ('I;16','I;16B','I'),'original 16-bit depth layout')
+             raw = np.asarray(image,dtype=float)/5000.
+-            model,weights,checked = reconstruct_update(model,weights,raw,CAMERA,row['update'],reprojection,correspondence,residual,normals)
++            model,weights,checked = reconstruct_update(model,weights,raw,CAMERA,row['update'],reprojection,correspondence,residual,normals,geometry)
+             checked_frames.append(dict(source_index=frame['source_index'],**checked,
+                 supported_model_pixels=int(np.sum(weights > 0)),maximum_model_weight=int(weights.max())))
+         except (ValueError,AssertionError,KeyError,TypeError,IndexError) as error:
+@@ -241,10 +254,11 @@
+     parser.add_argument('--correspondence',choices=('forward','reciprocal','bilinear'),default='forward')
+     parser.add_argument('--residual',choices=('target_plane','symmetric_planes'),default='target_plane')
+     parser.add_argument('--normals',choices=('central_difference','inverse_depth_plane'),default='central_difference')
++    parser.add_argument('--geometry',choices=('depth','vertices'),default='depth')
+     args = parser.parse_args()
+     output = fresh(args.output)
+-    require(args.analytic_reports is not None or (args.reprojection=='point' and args.correspondence=='forward' and args.residual=='target_plane' and args.normals=='central_difference'),'frozen analytic reports use original policies')
+-    analytic(output,args.analytic_reports,args.reprojection,args.correspondence,args.residual,args.normals)
++    require(args.analytic_reports is not None or (args.reprojection=='point' and args.correspondence=='forward' and args.residual=='target_plane' and args.normals=='central_difference' and args.geometry=='depth'),'frozen analytic reports use original policies')
++    analytic(output,args.analytic_reports,args.reprojection,args.correspondence,args.residual,args.normals,args.geometry)
+     cases = {}
+     if not args.analytic_only:
+         for case in ('tum-fr1-room-temporal','tum-fr1-desk2-independent'):
+--- a/scripts/check-projective-depth.py
++++ b/scripts/check-projective-depth.py
+@@ -37,6 +37,7 @@
+     parser.add_argument('--correspondence',choices=('forward','reciprocal','bilinear'),default='forward')
+     parser.add_argument('--residual',choices=('target_plane','symmetric_planes'),default='target_plane')
+     parser.add_argument('--normals',choices=('central_difference','inverse_depth_plane'),default='central_difference')
++    parser.add_argument('--geometry',choices=('depth','vertices'),default='depth')
+     args = parser.parse_args()
+     output = fresh(args.output)
+     binary = args.binary.absolute()
+@@ -48,7 +49,7 @@
+         vector = np.zeros(3)
+         vector[axis] = angle
+         transform[:3,:3],transform[:3,3] = exp_rotation(vector),translation
+-        client = Client(binary,CAMERA,configuration=dict(reprojection=args.reprojection,correspondence=args.correspondence,residual=args.residual,normals=args.normals))
++        client = Client(binary,CAMERA,configuration=dict(reprojection=args.reprojection,correspondence=args.correspondence,residual=args.residual,normals=args.normals,geometry=args.geometry))
+         try:
+             initial = client.frame(1.,render(np.eye(4)))
+             require(initial['accepted'],'analytic initialization')
+@@ -106,17 +107,32 @@
+         'unknown correspondence':json.dumps(dict(kind='Configure',camera=CAMERA,correspondence='unknown'))+'\n',
+         'unknown residual':json.dumps(dict(kind='Configure',camera=CAMERA,residual='unknown'))+'\n',
+         'unknown normal estimation':json.dumps(dict(kind='Configure',camera=CAMERA,normals='unknown'))+'\n',
++        'unknown geometry':json.dumps(dict(kind='Configure',camera=CAMERA,geometry='unknown'))+'\n',
+         'missing final newline':config.rstrip('\n'),
+         'no frame':config,
+         'oversized request':' '*(8*1024*1024+1)+'\n',
+         'nonfinite JSON':config+'{"kind":"Frame","timestamp":NaN,"depth_m":[]}\n',
+         'frame cap':config+''.join(json.dumps(dict(kind='Frame',timestamp=1.+i*.03,depth_m=[]))+'\n' for i in range(201)),
+     }
++    malformed.update({'unsupported vertex '+key:json.dumps(dict(kind='Configure',camera=CAMERA,geometry='vertices',**{key:value}))+'\n'
++                      for key,value in (('reprojection','tangent_plane'),('correspondence','reciprocal'),
++                                        ('residual','symmetric_planes'),('normals','inverse_depth_plane'))})
+     for name,body in malformed.items():
+         result = subprocess.run([str(binary)],input=body,text=True,capture_output=True,timeout=30)
+         require(result.returncode == 2 and bool(result.stderr),'transport rejection: '+name)
++        # Exit 2 at EOF is also returned for a valid Configure with no frames.
++        # Invalid configuration must reject before acknowledging it; otherwise
++        # that unrelated EOF error would make these controls pass incorrectly.
++        acknowledgments = {'duplicate configuration','no frame','nonfinite JSON','frame cap'}
++        if name not in acknowledgments:
++            require(result.stdout == '', 'rejected before any acknowledgment: '+name)
++        else:
++            lines = result.stdout.splitlines()
++            require(len(lines) == (201 if name=='frame cap' else 1)
++                    and json.loads(lines[0]) == dict(configured=True,schema_version=1),
++                    'exact acknowledged prefix before rejection: '+name)
+     write(output/'summary.json',dict(analytic_controls_pass=True,translation_gate_m=.004,rotation_gate_rad=.004,
+-        motions=cases,reprojection=args.reprojection,correspondence=args.correspondence,residual=args.residual,rejected_transport_cases=list(malformed),binary_sha256=sha(binary.read_bytes()),
++        motions=cases,reprojection=args.reprojection,correspondence=args.correspondence,residual=args.residual,normals=args.normals,geometry=args.geometry,rejected_transport_cases=list(malformed),binary_sha256=sha(binary.read_bytes()),
+         rejected_report_corruptions=corruption_names,
+         checker_sha256=sha(Path(__file__).read_bytes()),
+         scope='analytic geometry and independent linear algebra; no physical accuracy or real-time claim'))
+--- a/scripts/evaluate-projective-depth.py
++++ b/scripts/evaluate-projective-depth.py
+@@ -15,7 +15,7 @@
+ CASES = ('tum-fr1-room-temporal','tum-fr1-desk2-independent')
+ 
+ 
+-def evaluate(case, binary, output, reprojection='point', correspondence='forward', residual='target_plane', normals='central_difference'):
++def evaluate(case, binary, output, reprojection='point', correspondence='forward', residual='target_plane', normals='central_difference', geometry='depth'):
+     base = ROOT/'data'/case
+     manifest_body = (base/'manifest.json').read_bytes()
+     manifest = json.loads(manifest_body)
+@@ -40,16 +40,17 @@
+     sources = [Path(__file__),ROOT/'scripts/projective_depth_common.py',ROOT/'scripts/check-opencv-rgbd.py',
+                ROOT/'assets/projective-depth-rust-v1/design.json',
+                ROOT/'scripts/projective_depth_raw.py',
++               ROOT/'scripts/projective_vertex_raw.py',
+                *sorted((ROOT/'integrations/projective-depth/src').rglob('*.rs')),
+                ROOT/'integrations/projective-depth/Cargo.toml',ROOT/'integrations/projective-depth/Cargo.lock']
+     write(output/'freeze.json',dict(schema_version=1,dataset=case,data_role='already viewed port regression',
+         manifest_sha256=sha(manifest_body),binary_sha256=sha(binary.read_bytes()),
+         source_sha256={str(p.relative_to(ROOT)):sha(p.read_bytes()) for p in sources},
+         inputs={name:dict(bytes=v['bytes'],sha256=v['sha256']) for name,v in inventory.items()},
+-        camera=CAMERA,reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,primary_clock='depth only; RGB not decoded',root_translation_gate_m=.1,
++        camera=CAMERA,reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,primary_clock='depth only; RGB not decoded',root_translation_gate_m=.1,
+         root_rotation_gate_rad=.1,reference_bracket_max_s=.02,pose_resets=0,ground_truth_operational=False,
+         selected_frames=180,updates=179,numpy_version=np.__version__))
+-    client = Client(binary,CAMERA,configuration=dict(reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals))
++    client = Client(binary,CAMERA,configuration=dict(reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry))
+     outcomes = []
+     try:
+         for frame in frames:
+@@ -132,6 +133,7 @@
+     parser.add_argument('--correspondence',choices=('forward','reciprocal','bilinear'),default='forward')
+     parser.add_argument('--residual',choices=('target_plane','symmetric_planes'),default='target_plane')
+     parser.add_argument('--normals',choices=('central_difference','inverse_depth_plane'),default='central_difference')
++    parser.add_argument('--geometry',choices=('depth','vertices'),default='depth')
+     args = parser.parse_args()
+     output = fresh(args.output)
+     summaries = {}
+@@ -140,7 +142,7 @@
+         require(sha(args.binary.read_bytes())==binary_digest,'one unchanged native binary across recordings')
+         folder = output/case
+         folder.mkdir()
+-        summaries[case] = evaluate(case,args.binary.absolute(),folder,args.reprojection,args.correspondence,args.residual,args.normals)
++        summaries[case] = evaluate(case,args.binary.absolute(),folder,args.reprojection,args.correspondence,args.residual,args.normals,args.geometry)
+     require(sha(args.binary.read_bytes())==binary_digest,'native binary unchanged through evaluation')
+     passed = all(v['complete_accuracy_pass'] for v in summaries.values())
+     write(output/'comparison.json',dict(summaries=summaries,complete_accuracy_pass=passed,exit_code=0 if passed else 1))
+--- a/scripts/projective_depth_raw.py
++++ b/scripts/projective_depth_raw.py
+@@ -199,10 +199,16 @@
+     return output,support,counts
+ 
+ 
+-def reconstruct_update(model, weights, raw, camera, update, reprojection='point', correspondence='forward', residual_policy='target_plane', normal_policy='central_difference'):
++def reconstruct_update(model, weights, raw, camera, update, reprojection='point', correspondence='forward', residual_policy='target_plane', normal_policy='central_difference', geometry='depth'):
+     """Validate all raw equations and rebuild the next model only after acceptance."""
+     require(raw.shape == (camera['height'],camera['width']) and np.isfinite(raw).all()
+             and np.all((raw >= 0)&(raw <= 100)),'bounded decoded depth')
++    require(geometry in ('depth','vertices'),'declared model geometry')
++    if geometry=='vertices':
++        require((reprojection,correspondence,residual_policy,normal_policy)==
++                ('point','forward','target_plane','central_difference'),'qualified vertex policies')
++        from projective_vertex_raw import reconstruct
++        return reconstruct(model,weights,raw,camera,update)
+     source = pyramid(raw,camera,normal_policy)
+     if model is None:
+         require(update['accepted'] and not update['iterations'],'valid first initialization')
+--- /dev/null
++++ b/scripts/projective_vertex_raw.py
+@@ -0,0 +1,147 @@
++"""Independent NumPy reconstruction for the projective XYZ model; no Rust fitter."""
++import numpy as np
++
++from projective_depth_common import pose,require
++from projective_depth_raw import compare_equation,normal_equation,vertices
++
++
++def pyramid(points,camera):
++    grids={1:points.copy()}
++    for scale in (2,4):
++        old=grids[scale//2]
++        block=np.stack([old[dy::2,dx::2] for dy,dx in ((0,0),(0,1),(1,0),(1,1))])
++        z=block[:,:,:,2];lo,hi=z.min(axis=0),z.max(axis=0)
++        valid=(lo>=.3)&(hi<=5)&(hi-lo<=.05+.01*lo)
++        grids[scale]=np.where(valid[:,:,None],block.mean(axis=0),0.)
++    levels={}
++    for scale,xyz in grids.items():
++        c=dict(width=camera['width']//scale,height=camera['height']//scale,
++               fx=camera['fx']/scale,fy=camera['fy']/scale,
++               cx=(camera['cx']+.5)/scale-.5,cy=(camera['cy']+.5)/scale-.5)
++        depth=xyz[:,:,2];center=depth[1:-1,1:-1]
++        valid=(center>.3)&(center<5)
++        for other in (depth[1:-1,2:],depth[1:-1,:-2],depth[2:,1:-1],depth[:-2,1:-1]):
++            valid&=(other>.3)&(abs(other-center)<.05+.01*center)
++        tangent_x=xyz[1:-1,2:]-xyz[1:-1,:-2]
++        tangent_y=xyz[2:,1:-1]-xyz[:-2,1:-1]
++        normal=np.zeros_like(xyz);cross=np.cross(tangent_x,tangent_y)
++        length=np.linalg.norm(cross,axis=-1);valid&=length>1e-10
++        normal[1:-1,1:-1][valid]=cross[valid]/length[valid,None]
++        levels[scale]=dict(vertices=xyz,normals=normal,depth=depth,camera=c)
++    return levels
++
++
++def raster(points,weights,transform,camera):
++    flat=points.reshape(-1,3);support=weights.ravel()
++    indices=np.flatnonzero((flat[:,2]>.3)&(flat[:,2]<5))
++    query=flat[indices]@transform[:3,:3].T+transform[:3,3]
++    stats=dict(source_valid=len(indices),projected=0,selected=0)
++    front=np.isfinite(query).all(axis=1)&(query[:,2]>.3)&(query[:,2]<5)
++    query,indices=query[front],indices[front]
++    x=np.rint(camera['fx']*query[:,0]/query[:,2]+camera['cx'])
++    y=np.rint(camera['fy']*query[:,1]/query[:,2]+camera['cy'])
++    inside=(x>=0)&(x<camera['width'])&(y>=0)&(y<camera['height'])
++    cells=y[inside].astype(np.int64)*camera['width']+x[inside].astype(np.int64)
++    query,indices=query[inside],indices[inside];stats['projected']=len(indices)
++    order=np.lexsort((indices,query[:,2],cells))
++    ordered_cells=cells[order]
++    first=np.ones(len(order),dtype=bool);first[1:]=ordered_cells[1:]!=ordered_cells[:-1]
++    selected=order[first];stats['selected']=len(selected)
++    output=np.zeros_like(flat);new_weights=np.zeros_like(support)
++    output[cells[selected]]=query[selected];new_weights[cells[selected]]=support[indices[selected]]
++    return output.reshape(points.shape),new_weights.reshape(weights.shape),stats
++
++
++def fuse(model,weights,source,transform,camera):
++    projected,present,measurement=raster(source,np.ones(weights.shape,dtype=np.uint8),transform,camera)
++    old,new=model[:,:,2],projected[:,:,2]
++    valid=present>0;filled=valid&(weights==0)
++    averaged=valid&(weights>0)&(abs(new-old)<.03+.01*old)
++    replaced=valid&(weights>0)&~averaged&(new<old-.03-.01*old)
++    ignored=valid&~filled&~averaged&~replaced
++    output=model.copy();support=weights.copy();w=np.minimum(16,weights[averaged]).astype(float)
++    output[averaged]=(w[:,None]*model[averaged]+projected[averaged])/(w[:,None]+1)
++    support[averaged]=np.minimum(16,weights[averaged]+1)
++    output[filled|replaced]=projected[filled|replaced];support[filled|replaced]=1
++    counts=dict(warp=None,measurement=measurement,filled=int(filled.sum()),averaged=int(averaged.sum()),
++                replaced=int(replaced.sum()),ignored=int(ignored.sum()))
++    return output,support,counts
++
++
++def reconstruct(model,weights,raw,camera,update):
++    source=pyramid(vertices(raw,camera),camera)
++    if model is None:
++        require(update['accepted'] and not update['iterations'],'vertex initialization')
++        require(np.sum(np.sum(source[4]['normals']**2,axis=-1)>.25)>=200,'vertex surface support')
++        return source[1]['vertices'].copy(),(raw>.3).astype(np.uint8),dict(iterations=0,final_equations=0,model_replaced=False)
++    if model.ndim==2:model=vertices(model,camera)  # Analytic first-frame input.
++    target=pyramid(model,camera)
++    for step in update['iterations']:
++        scale=step['scale']
++        compare_equation(step['equation'],normal_equation(target[scale],source[scale],pose(step['before']),scale))
++    if not update['accepted']:
++        require(update['fusion'] is None and update['first_from_current'] is None,'vertex rejection is atomic')
++        return model,weights,dict(iterations=len(update['iterations']),final_equations=0,model_replaced=False)
++    relative=pose(update['iterations'][-1]['after'])
++    compare_equation(update['final_equation'],normal_equation(target[1],source[1],relative,1))
++    warp=None
++    if update['keyframe_replaced']:
++        model,weights,warp=raster(model,weights,np.linalg.inv(relative),camera)
++        relative=np.eye(4)
++    model,weights,counts=fuse(model,weights,source[1]['vertices'],relative,camera)
++    counts['warp']=warp;require(counts==update['fusion'],'exact vertex fusion partitions')
++    return model,weights,dict(iterations=len(update['iterations']),final_equations=1,model_replaced=update['keyframe_replaced'])
++
++
++def controls():
++    from projective_depth_common import exp_rotation
++    from projective_depth_raw import raster as depth_raster
++    c=dict(width=128,height=96,fx=110.,fy=110.,cx=63.5,cy=47.5)
++    n=np.array([.3,-.2,1.]);n/=np.linalg.norm(n)
++    rays=vertices(np.ones((96,128)),c);depth=2/np.einsum('...i,i->...',rays,n)
++    xyz=vertices(depth,c);original=xyz.copy();weights=np.ones(depth.shape,dtype=np.uint8)
++    legacy=depth.copy();legacy_weight=weights.copy();previous=np.eye(4)
++    peak_vertex_rms=peak_depth_rms=0.
++    for index in [*range(1,21),*range(19,-1,-1)]:
++        view=np.eye(4);view[:3,:3]=exp_rotation(np.array([.001,-.0015,.0007])*index)
++        view[:3,3]=np.array([.004,-.001,.001])*index
++        transform=np.linalg.inv(view)@previous
++        xyz,weights,_=raster(xyz,weights,transform,c)
++        legacy,legacy_weight,_=depth_raster(legacy,legacy_weight,transform,c)
++        camera_normal=view[:3,:3].T@n;offset=2-n@view[:3,3]
++        a=np.einsum('...i,i->...',xyz,camera_normal)[weights>0]-offset
++        b=np.einsum('...i,i->...',vertices(legacy,c),camera_normal)[legacy_weight>0]-offset
++        peak_vertex_rms=max(peak_vertex_rms,float(np.sqrt(np.mean(a*a))))
++        peak_depth_rms=max(peak_depth_rms,float(np.sqrt(np.mean(b*b))))
++        previous=view
++    valid=weights>0;old_valid=legacy_weight>0
++    error=np.einsum('...i,i->...',xyz,n)[valid]-2
++    old_error=np.einsum('...i,i->...',vertices(legacy,c),n)[old_valid]-2
++    require(valid.sum()>5000 and old_valid.sum()>5000,'retained bounded round-trip support')
++    require(np.max(abs(error))<1e-12 and peak_vertex_rms<1e-12 and peak_depth_rms>1e-4,'rigid plane preservation witness')
++    for level in pyramid(original,c).values():
++        p=level['vertices'];valid=(p[:,:,2]>.3)&(p[:,:,2]<5)
++        np.testing.assert_allclose(np.einsum('...i,i->...',p,n)[valid],2,atol=2e-14,rtol=0)
++    points=np.zeros_like(original);support=np.zeros(depth.shape,dtype=np.uint8)
++    p=original[48,64]+[.005,0,0]
++    points[0,0]=points[0,1]=p;support[0,:2]=[2,7]
++    selected,w,stats=raster(points,support,np.eye(4),c)
++    require(stats==dict(source_valid=2,projected=2,selected=1) and w[48,64]==2,'XYZ exact index tie')
++    np.testing.assert_array_equal(selected[48,64],p)
++    points[0,2]=vertices(np.ones(depth.shape),c)[48,64];support[0,2]=4
++    selected,w,stats=raster(points,support,np.eye(4),c)
++    require(w[48,64]==4 and stats['selected']==1,'XYZ nearest depth occlusion')
++    model=np.zeros_like(original);support[:]=0;source=model.copy()
++    old=vertices(np.full(depth.shape,2.),c)[48,64]
++    new=vertices(np.full(depth.shape,2.01),c)[48,64]+[.005,-.002,0]
++    model[48,64]=old;support[48,64]=16;source[48,64]=new
++    fused,w,stats=fuse(model,support,source,np.eye(4),c)
++    np.testing.assert_allclose(fused[48,64],old+(new-old)/17,atol=5e-16,rtol=0)
++    require(w[48,64]==16 and stats['averaged']==1,'XYZ bounded fusion still updates')
++    return dict(warps=40,retained_vertex_points=int((weights>0).sum()),
++                retained_depth_points=int((legacy_weight>0).sum()),
++                vertex_plane_max_error_m=float(np.max(abs(error))),
++                vertex_plane_rms_m=float(np.sqrt(np.mean(error**2))),
++                legacy_depth_plane_rms_m=float(np.sqrt(np.mean(old_error**2))),
++                peak_vertex_plane_rms_m=peak_vertex_rms,peak_depth_plane_rms_m=peak_depth_rms,
++                xyz_pyramids_preserve_plane=True,diagnostic_only_no_physical_accuracy_claim=True)

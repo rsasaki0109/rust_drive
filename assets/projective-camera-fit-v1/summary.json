@@ -1,0 +1,240 @@
+{
+  "schema_version": 1,
+  "implemented": "offline focal/depth correction, raw-unit scale gauge repair and independent full-fit audit",
+  "source_members": 92,
+  "binary_sha256": "59332ed6601e8b7ff16759694f8c8fb4af1b23050efeb1982b0e065a5a47b426",
+  "native_tracker_changed": false,
+  "default_camera_changed": false,
+  "outcomes": {
+    "physical": {
+      "trial_eligible": false,
+      "checks": {
+        "all_fits_converged_without_bound": false,
+        "cross_record_agreement": false,
+        "leave_one_pair_out_stable": false,
+        "validation_nonincreasing": false
+      },
+      "joint_fit_status": "at_bound",
+      "diagnostic_parameters": [
+        0.005311038766285062,
+        -0.05
+      ],
+      "maximum_between_record_log_difference": 0.01094576601593402,
+      "maximum_leave_one_pair_out_log_deviation": {
+        "tum-fr1-room-temporal": 0.014336291260356302,
+        "tum-fr1-desk2-independent": 0.02197728472289625
+      },
+      "validation": {
+        "tum-fr1-room-temporal": {
+          "original": {
+            "pairs": 15,
+            "all_pose_probes_observable": true,
+            "mean_robust_cost_m2": 7.625463881849655e-05,
+            "rms_m": 0.01710005073227686,
+            "median_position_correction_m": 0.010239321370978827,
+            "median_rotation_correction_rad": 0.007422731904647345
+          },
+          "candidate": {
+            "pairs": 15,
+            "all_pose_probes_observable": true,
+            "mean_robust_cost_m2": 7.586031717918938e-05,
+            "rms_m": 0.016801637416315646,
+            "median_position_correction_m": 0.011571721946186445,
+            "median_rotation_correction_rad": 0.008477902136331266
+          },
+          "checks": {
+            "complete_pose_probes": true,
+            "mean_robust_cost_m2_nonincreasing": true,
+            "rms_m_nonincreasing": true,
+            "median_position_correction_m_nonincreasing": false,
+            "median_rotation_correction_rad_nonincreasing": false
+          }
+        },
+        "tum-fr1-desk2-independent": {
+          "original": {
+            "pairs": 15,
+            "all_pose_probes_observable": true,
+            "mean_robust_cost_m2": 7.595770407974552e-05,
+            "rms_m": 0.016222997430717822,
+            "median_position_correction_m": 0.011626094395131016,
+            "median_rotation_correction_rad": 0.012007228039218963
+          },
+          "candidate": {
+            "pairs": 15,
+            "all_pose_probes_observable": true,
+            "mean_robust_cost_m2": 6.796364320067549e-05,
+            "rms_m": 0.015175578517553518,
+            "median_position_correction_m": 0.010274787029439037,
+            "median_rotation_correction_rad": 0.012406667339645482
+          },
+          "checks": {
+            "complete_pose_probes": true,
+            "mean_robust_cost_m2_nonincreasing": true,
+            "rms_m_nonincreasing": true,
+            "median_position_correction_m_nonincreasing": true,
+            "median_rotation_correction_rad_nonincreasing": false
+          }
+        },
+        "tum-fr1-rpy-heldout": {
+          "original": {
+            "pairs": 15,
+            "all_pose_probes_observable": true,
+            "mean_robust_cost_m2": 5.6604824050679055e-05,
+            "rms_m": 0.013611315947463771,
+            "median_position_correction_m": 0.008439449080492259,
+            "median_rotation_correction_rad": 0.005268609765016771
+          },
+          "candidate": {
+            "pairs": 15,
+            "all_pose_probes_observable": true,
+            "mean_robust_cost_m2": 5.052886628500803e-05,
+            "rms_m": 0.012740089403424543,
+            "median_position_correction_m": 0.008943760193813525,
+            "median_rotation_correction_rad": 0.0057490462004072245
+          },
+          "checks": {
+            "complete_pose_probes": true,
+            "mean_robust_cost_m2_nonincreasing": true,
+            "rms_m_nonincreasing": true,
+            "median_position_correction_m_nonincreasing": false,
+            "median_rotation_correction_rad_nonincreasing": false
+          }
+        }
+      },
+      "exported_trial_profile": false,
+      "physical_calibration_certified": false,
+      "default_changed": false,
+      "heldout_accuracy_claim": false,
+      "subjective_maturity_percent": 20
+    },
+    "raw_scaled": {
+      "trial_eligible": false,
+      "checks": {
+        "all_fits_converged_without_bound": false,
+        "cross_record_agreement": true,
+        "leave_one_pair_out_stable": false,
+        "validation_nonincreasing": false
+      },
+      "joint_fit_status": "converged",
+      "diagnostic_parameters": [
+        0.01695964696911248,
+        0.014507859355607389
+      ],
+      "maximum_between_record_log_difference": 0.0064673564905666225,
+      "maximum_leave_one_pair_out_log_deviation": {
+        "tum-fr1-room-temporal": 0.0179761167074698,
+        "tum-fr1-desk2-independent": 0.01961637888322563
+      },
+      "validation": {
+        "tum-fr1-room-temporal": {
+          "original": {
+            "pairs": 15,
+            "all_pose_probes_observable": true,
+            "mean_robust_cost_m2": 7.625463881849655e-05,
+            "rms_m": 0.01710005073227686,
+            "median_position_correction_m": 0.010239321370978827,
+            "median_rotation_correction_rad": 0.007422731904647345
+          },
+          "candidate": {
+            "pairs": 15,
+            "all_pose_probes_observable": true,
+            "mean_robust_cost_m2": 7.939998196971397e-05,
+            "rms_m": 0.017607729623893717,
+            "median_position_correction_m": 0.0108885703204832,
+            "median_rotation_correction_rad": 0.008324769095671767
+          },
+          "checks": {
+            "complete_pose_probes": true,
+            "mean_robust_cost_m2_nonincreasing": false,
+            "rms_m_nonincreasing": false,
+            "median_position_correction_m_nonincreasing": false,
+            "median_rotation_correction_rad_nonincreasing": false
+          }
+        },
+        "tum-fr1-desk2-independent": {
+          "original": {
+            "pairs": 15,
+            "all_pose_probes_observable": true,
+            "mean_robust_cost_m2": 7.595770407974552e-05,
+            "rms_m": 0.016222997430717822,
+            "median_position_correction_m": 0.011626094395131016,
+            "median_rotation_correction_rad": 0.012007228039218963
+          },
+          "candidate": {
+            "pairs": 15,
+            "all_pose_probes_observable": true,
+            "mean_robust_cost_m2": 7.747593804961102e-05,
+            "rms_m": 0.016427632344815063,
+            "median_position_correction_m": 0.01121882707093084,
+            "median_rotation_correction_rad": 0.011845979843902007
+          },
+          "checks": {
+            "complete_pose_probes": true,
+            "mean_robust_cost_m2_nonincreasing": false,
+            "rms_m_nonincreasing": false,
+            "median_position_correction_m_nonincreasing": true,
+            "median_rotation_correction_rad_nonincreasing": true
+          }
+        },
+        "tum-fr1-rpy-heldout": {
+          "original": {
+            "pairs": 15,
+            "all_pose_probes_observable": true,
+            "mean_robust_cost_m2": 5.6604824050679055e-05,
+            "rms_m": 0.013611315947463771,
+            "median_position_correction_m": 0.008439449080492259,
+            "median_rotation_correction_rad": 0.005268609765016771
+          },
+          "candidate": {
+            "pairs": 15,
+            "all_pose_probes_observable": true,
+            "mean_robust_cost_m2": 5.886187801246342e-05,
+            "rms_m": 0.014008911247333014,
+            "median_position_correction_m": 0.00953050984008085,
+            "median_rotation_correction_rad": 0.005894891500210408
+          },
+          "checks": {
+            "complete_pose_probes": true,
+            "mean_robust_cost_m2_nonincreasing": false,
+            "rms_m_nonincreasing": false,
+            "median_position_correction_m_nonincreasing": false,
+            "median_rotation_correction_rad_nonincreasing": false
+          }
+        }
+      },
+      "exported_trial_profile": false,
+      "physical_calibration_certified": false,
+      "default_changed": false,
+      "heldout_accuracy_claim": false,
+      "subjective_maturity_percent": 20,
+      "fit_objective": "raw_scaled"
+    }
+  },
+  "physical_calibration_certified": false,
+  "trajectory_trial_eligible": false,
+  "exported_profiles": 0,
+  "data_role": "same viewed FR1 records; disjoint training/validation frame endpoints, temporally correlated",
+  "limitation": "conditional two-parameter fixed-correspondence model, provisional noise normalization; no measured camera certificate or root accuracy increase",
+  "subjective_maturity_percent": 20,
+  "goal_30_percent_complete": false,
+  "validation": {
+    "native_tests": 59,
+    "core_tests": 371,
+    "total_rust_tests": 430,
+    "scenario_replays": 49,
+    "unchanged_core_outputs": 245,
+    "native_source_and_binary_unchanged": true,
+    "legacy_native_replays_performed_this_turn": false,
+    "historical_legacy_1440_receipt_retained": true,
+    "distinct_raw_pair_batches": 75,
+    "identical_frozen_sample_caches": 75,
+    "calibration_systems_independently_checked": 796,
+    "validation_pose_systems_independently_checked": 180,
+    "attempted_profiles": 2,
+    "exported_profiles": 0,
+    "operational_trajectories_run": 0,
+    "new_heldout_data": false,
+    "original_failed_audit_and_syntax_epochs_retained": true,
+    "prior_evidence_entries_unchanged": 1774
+  }
+}

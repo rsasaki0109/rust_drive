@@ -1,0 +1,340 @@
+{
+  "summaries": {
+    "tum-fr1-room-temporal": {
+      "samples": 5,
+      "continuous_converged": 0,
+      "original_discrete_fresh_converged": 0,
+      "control_continuous_converged": 0,
+      "local_guard_failures": 2,
+      "original_discrete_guard_failures": 0,
+      "original_discrete_rms_gate_passes": 5,
+      "median_original_discrete_rms_m": 0.002454813877873918,
+      "control_median_original_discrete_rms_m": 0.002454214162878936,
+      "budget_exhaustions": 3,
+      "total_applied_corrections": 104,
+      "unchanged_complete_control_reports": 1,
+      "exact_control_prefix_corrections": 44,
+      "triggered_searches": 63,
+      "damped_solve_checks": 504,
+      "selected_damped_directions": 32,
+      "selected_gauss_newton_directions": 72,
+      "original_gn_candidate_trials": 869,
+      "original_gn_invalid_candidates": 149,
+      "original_gn_valid_nonpassing_candidates": 616,
+      "original_gn_passing_candidates": 104,
+      "damped_candidate_trials": 504,
+      "damped_invalid_candidates": 71,
+      "accepted_cost_increases": 9,
+      "checkpoints": {
+        "10": {
+          "continuous_converged": 0,
+          "budget_exhaustions": 4
+        },
+        "20": {
+          "continuous_converged": 0,
+          "budget_exhaustions": 3
+        },
+        "30": {
+          "continuous_converged": 0,
+          "budget_exhaustions": 3
+        }
+      },
+      "eligible_for_followup_full_trajectory": false
+    },
+    "tum-fr1-desk2-independent": {
+      "samples": 5,
+      "continuous_converged": 2,
+      "original_discrete_fresh_converged": 0,
+      "control_continuous_converged": 2,
+      "local_guard_failures": 3,
+      "original_discrete_guard_failures": 0,
+      "original_discrete_rms_gate_passes": 5,
+      "median_original_discrete_rms_m": 0.0027404641366715284,
+      "control_median_original_discrete_rms_m": 0.0027404641366715284,
+      "budget_exhaustions": 0,
+      "total_applied_corrections": 35,
+      "unchanged_complete_control_reports": 5,
+      "exact_control_prefix_corrections": 35,
+      "triggered_searches": 0,
+      "damped_solve_checks": 0,
+      "selected_damped_directions": 0,
+      "selected_gauss_newton_directions": 35,
+      "original_gn_candidate_trials": 52,
+      "original_gn_invalid_candidates": 0,
+      "original_gn_valid_nonpassing_candidates": 17,
+      "original_gn_passing_candidates": 35,
+      "damped_candidate_trials": 0,
+      "damped_invalid_candidates": 0,
+      "accepted_cost_increases": 0,
+      "checkpoints": {
+        "10": {
+          "continuous_converged": 0,
+          "budget_exhaustions": 2
+        },
+        "20": {
+          "continuous_converged": 2,
+          "budget_exhaustions": 0
+        },
+        "30": {
+          "continuous_converged": 2,
+          "budget_exhaustions": 0
+        }
+      },
+      "eligible_for_followup_full_trajectory": false
+    }
+  },
+  "samples": {
+    "tum-fr1-room-temporal": [
+      {
+        "source_index": 120,
+        "applied_corrections": 30,
+        "termination": "budget",
+        "guard_failure": null,
+        "continuous_converged": false,
+        "exact_control_prefix_corrections": 10,
+        "complete_control_report_equal": false,
+        "final_objective_delta_vs_control": 6.982984095474376e-10,
+        "remaining_max_translation_m": 2.6595239364675916e-05,
+        "remaining_max_rotation_rad": 1.948547797719791e-05,
+        "selected_dampings": [
+          100.0,
+          100.0,
+          100.0,
+          1000.0,
+          1000.0,
+          10000.0,
+          10000.0,
+          10000.0,
+          10000.0,
+          10000.0,
+          10000.0,
+          10000.0,
+          10000.0
+        ]
+      },
+      {
+        "source_index": 160,
+        "applied_corrections": 30,
+        "termination": "budget",
+        "guard_failure": null,
+        "continuous_converged": false,
+        "exact_control_prefix_corrections": 18,
+        "complete_control_report_equal": false,
+        "final_objective_delta_vs_control": 2.9989383571946138e-09,
+        "remaining_max_translation_m": 0.00011427924704006124,
+        "remaining_max_rotation_rad": 8.740791288753518e-05,
+        "selected_dampings": [
+          1000.0,
+          100.0,
+          1000.0,
+          1000.0,
+          10000.0,
+          1000.0,
+          1000.0
+        ]
+      },
+      {
+        "source_index": 200,
+        "applied_corrections": 0,
+        "termination": "guard",
+        "guard_failure": "new frame needs measured support",
+        "continuous_converged": false,
+        "exact_control_prefix_corrections": 0,
+        "complete_control_report_equal": true,
+        "final_objective_delta_vs_control": 0.0,
+        "remaining_max_translation_m": null,
+        "remaining_max_rotation_rad": null,
+        "selected_dampings": []
+      },
+      {
+        "source_index": 240,
+        "applied_corrections": 30,
+        "termination": "budget",
+        "guard_failure": null,
+        "continuous_converged": false,
+        "exact_control_prefix_corrections": 13,
+        "complete_control_report_equal": false,
+        "final_objective_delta_vs_control": 1.6039686939750553e-12,
+        "remaining_max_translation_m": 4.617313586951392e-05,
+        "remaining_max_rotation_rad": 3.668845620069323e-05,
+        "selected_dampings": [
+          100.0,
+          100.0,
+          10000.0
+        ]
+      },
+      {
+        "source_index": 279,
+        "applied_corrections": 14,
+        "termination": "guard",
+        "guard_failure": "line search",
+        "continuous_converged": false,
+        "exact_control_prefix_corrections": 3,
+        "complete_control_report_equal": false,
+        "final_objective_delta_vs_control": -1.5375129823629909e-06,
+        "remaining_max_translation_m": 0.0012330760144137803,
+        "remaining_max_rotation_rad": 0.0011995149282205987,
+        "selected_dampings": [
+          10.0,
+          100.0,
+          100.0,
+          100.0,
+          100.0,
+          100.0,
+          100.0,
+          100.0,
+          1000.0
+        ]
+      }
+    ],
+    "tum-fr1-desk2-independent": [
+      {
+        "source_index": 120,
+        "applied_corrections": 0,
+        "termination": "guard",
+        "guard_failure": "new frame needs measured support",
+        "continuous_converged": false,
+        "exact_control_prefix_corrections": 0,
+        "complete_control_report_equal": true,
+        "final_objective_delta_vs_control": 0.0,
+        "remaining_max_translation_m": null,
+        "remaining_max_rotation_rad": null,
+        "selected_dampings": []
+      },
+      {
+        "source_index": 160,
+        "applied_corrections": 16,
+        "termination": "converged",
+        "guard_failure": null,
+        "continuous_converged": true,
+        "exact_control_prefix_corrections": 16,
+        "complete_control_report_equal": true,
+        "final_objective_delta_vs_control": 0.0,
+        "remaining_max_translation_m": 8.73279214475641e-06,
+        "remaining_max_rotation_rad": 7.274081780310331e-06,
+        "selected_dampings": []
+      },
+      {
+        "source_index": 200,
+        "applied_corrections": 19,
+        "termination": "converged",
+        "guard_failure": null,
+        "continuous_converged": true,
+        "exact_control_prefix_corrections": 19,
+        "complete_control_report_equal": true,
+        "final_objective_delta_vs_control": 0.0,
+        "remaining_max_translation_m": 6.490512807197587e-06,
+        "remaining_max_rotation_rad": 5.481378037716619e-06,
+        "selected_dampings": []
+      },
+      {
+        "source_index": 240,
+        "applied_corrections": 0,
+        "termination": "guard",
+        "guard_failure": "new frame needs measured support",
+        "continuous_converged": false,
+        "exact_control_prefix_corrections": 0,
+        "complete_control_report_equal": true,
+        "final_objective_delta_vs_control": 0.0,
+        "remaining_max_translation_m": null,
+        "remaining_max_rotation_rad": null,
+        "selected_dampings": []
+      },
+      {
+        "source_index": 279,
+        "applied_corrections": 0,
+        "termination": "guard",
+        "guard_failure": "new frame needs measured support",
+        "continuous_converged": false,
+        "exact_control_prefix_corrections": 0,
+        "complete_control_report_equal": true,
+        "final_objective_delta_vs_control": 0.0,
+        "remaining_max_translation_m": null,
+        "remaining_max_rotation_rad": null,
+        "selected_dampings": []
+      }
+    ]
+  },
+  "accepted_gn_cost_increases": [
+    {
+      "case": "tum-fr1-room-temporal",
+      "source_index": 120,
+      "applied_correction": 17,
+      "alpha": 6.103515625e-05,
+      "cost_delta": 5.583120771257555e-13
+    },
+    {
+      "case": "tum-fr1-room-temporal",
+      "source_index": 120,
+      "applied_correction": 19,
+      "alpha": 0.0001220703125,
+      "cost_delta": 8.214375360471315e-13
+    },
+    {
+      "case": "tum-fr1-room-temporal",
+      "source_index": 120,
+      "applied_correction": 21,
+      "alpha": 6.103515625e-05,
+      "cost_delta": 4.5420004562979344e-13
+    },
+    {
+      "case": "tum-fr1-room-temporal",
+      "source_index": 120,
+      "applied_correction": 23,
+      "alpha": 0.0001220703125,
+      "cost_delta": 9.279586647703564e-13
+    },
+    {
+      "case": "tum-fr1-room-temporal",
+      "source_index": 120,
+      "applied_correction": 25,
+      "alpha": 6.103515625e-05,
+      "cost_delta": 3.485167883454654e-13
+    },
+    {
+      "case": "tum-fr1-room-temporal",
+      "source_index": 120,
+      "applied_correction": 30,
+      "alpha": 6.103515625e-05,
+      "cost_delta": 9.075856385876158e-13
+    },
+    {
+      "case": "tum-fr1-room-temporal",
+      "source_index": 240,
+      "applied_correction": 27,
+      "alpha": 7.62939453125e-06,
+      "cost_delta": 8.050331234965569e-13
+    },
+    {
+      "case": "tum-fr1-room-temporal",
+      "source_index": 240,
+      "applied_correction": 28,
+      "alpha": 1.52587890625e-05,
+      "cost_delta": 8.452440136696993e-13
+    },
+    {
+      "case": "tum-fr1-room-temporal",
+      "source_index": 240,
+      "applied_correction": 30,
+      "alpha": 7.62939453125e-06,
+      "cost_delta": 2.1190167676099492e-13
+    }
+  ],
+  "budget_objective_regressions": [
+    {
+      "case": "tum-fr1-room-temporal",
+      "source_index": 120,
+      "final_objective_delta": 6.982984095474376e-10
+    },
+    {
+      "case": "tum-fr1-room-temporal",
+      "source_index": 160,
+      "final_objective_delta": 2.9989383571946138e-09
+    },
+    {
+      "case": "tum-fr1-room-temporal",
+      "source_index": 240,
+      "final_objective_delta": 1.6039686939750553e-12
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "implemented": "optional depth_variance_plane and depth_whitened_plane",
+  "default": "target_plane unchanged",
+  "before_binary_sha256": "5e40fa39410d486dafddf67d81aa90666e4fee2e9a6bffb056b1a15e06d72125",
+  "variance_binary_sha256": "959169ccd6e9b0540122a364e05ad346bb9ef1b41d711dd8bb2117fe86dfa981",
+  "binary_sha256": "f896bf90aca477221c5b58f56e493936b80460618cbea5d3b262c629e6957051",
+  "source_members": 72,
+  "recorded_scores": {
+    "variance": {
+      "tum-fr1-room-temporal": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 79,
+        "lost": false,
+        "max_position_error_m": 0.27524009271676386,
+        "max_rotation_error_rad": 0.1305926097472439,
+        "complete_accuracy_pass": false,
+        "independently_checked_normal_steps": 3145
+      },
+      "tum-fr1-desk2-independent": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 74,
+        "lost": false,
+        "max_position_error_m": 0.31141876157629395,
+        "max_rotation_error_rad": 0.3057607286216749,
+        "complete_accuracy_pass": false,
+        "independently_checked_normal_steps": 3418
+      },
+      "tum-fr1-rpy-heldout": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 115,
+        "lost": false,
+        "max_position_error_m": 0.09438862684812371,
+        "max_rotation_error_rad": 0.12812673827941137,
+        "complete_accuracy_pass": false,
+        "independently_checked_normal_steps": 2956
+      }
+    },
+    "whitened": {
+      "tum-fr1-room-temporal": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 77,
+        "lost": false,
+        "max_position_error_m": 0.2800871895869025,
+        "max_rotation_error_rad": 0.13384573331837357,
+        "complete_accuracy_pass": false,
+        "independently_checked_normal_steps": 3038
+      },
+      "tum-fr1-desk2-independent": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 75,
+        "lost": false,
+        "max_position_error_m": 0.28518747295396324,
+        "max_rotation_error_rad": 0.27444284470886676,
+        "complete_accuracy_pass": false,
+        "independently_checked_normal_steps": 3344
+      },
+      "tum-fr1-rpy-heldout": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 107,
+        "lost": false,
+        "max_position_error_m": 0.09397593987462492,
+        "max_rotation_error_rad": 0.13340112624779676,
+        "complete_accuracy_pass": false,
+        "independently_checked_normal_steps": 2863
+      }
+    }
+  },
+  "all_recorded_protocols_pass": false,
+  "default_adoption": false,
+  "data_role": "three already viewed FR1 regressions, no fresh heldout claim",
+  "uncertainty": "relative scalar axial variance hypothesis, not measured/calibrated sensor or fused-history uncertainty",
+  "subjective_maturity_percent": 20,
+  "goal_30_percent_complete": false,
+  "validation": {
+    "native_tests": 53,
+    "core_tests": 371,
+    "total_rust_tests": 424,
+    "scenario_replays": 49,
+    "core_outputs_unchanged": 245,
+    "compatibility_outcomes_identical": 1440,
+    "raw_recorded_normal_systems": 19838,
+    "raw_recorded_model_generations": 1074,
+    "independently_checked_weighted_plane_failures": 2,
+    "heldout_accuracy_claim": false,
+    "complete_physical_accuracy": false,
+    "default_adoption": false,
+    "prior_evidence_entries_unchanged": 1466
+  }
+}

@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "data_role": "already viewed development; conditional damped-direction comparison",
+  "pass_implementation_integrity": true,
+  "source_members": 83,
+  "source_archive_sha256": "303590226319d0466aa2eb84541a49120e135173b7ec3a2e07740d1d763d8fb9",
+  "input_deep_search_sha256": "6650bb961c036ec39174135c0d028fe663519b8fc4d650c65bb4e59628b6358c",
+  "original_objective_guards_and_undamped_convergence_retained": true,
+  "new_gn_reported_systems": 159,
+  "rechecked_control_systems": 154,
+  "checkpoint_system_checks": 60,
+  "numerical_damped_solve_checks": 504,
+  "triggered_searches": 63,
+  "selected_damped_directions": 32,
+  "selected_gn_directions": 107,
+  "applied_corrections": 139,
+  "continuous_converged": 2,
+  "original_discrete_fresh_converged": 0,
+  "missing_support_stops": 4,
+  "search_stops": 1,
+  "budget_stops": 3,
+  "budget_final_objective_regressions": [
+    {
+      "case": "tum-fr1-room-temporal",
+      "source_index": 120,
+      "final_objective_delta": 6.982984095474376e-10
+    },
+    {
+      "case": "tum-fr1-room-temporal",
+      "source_index": 160,
+      "final_objective_delta": 2.9989383571946138e-09
+    },
+    {
+      "case": "tum-fr1-room-temporal",
+      "source_index": 240,
+      "final_objective_delta": 1.6039686939750553e-12
+    }
+  ],
+  "unchanged_complete_control_reports": 6,
+  "exact_control_prefix_corrections": 79,
+  "gn_candidate_trials": 921,
+  "damped_candidate_trials": 504,
+  "gn_invalid_candidates": 149,
+  "damped_invalid_candidates": 71,
+  "accepted_cost_increases": 9,
+  "all_increases_from_preserved_gn_fallback": true,
+  "eligible_for_followup_full_trajectory": false,
+  "real_local_pose_fitting": true,
+  "new_trajectory_fitting": false,
+  "numeric_ground_truth_parsed": false,
+  "physical_accuracy_scored": false,
+  "tracker_state_commits": false,
+  "default_changed": false,
+  "rust_driving_changed": false,
+  "analytic_rendered_reported_systems": 21,
+  "analytic_checkpoint_systems": 6,
+  "analytic_rendered_trace_damped_solve_checks": 72,
+  "analytic_rendered_terminal_damped_solve_checks": 8,
+  "analytic_rendered_selected_damped_directions": 0,
+  "authored_quadratic_damped_solve_checks": 8,
+  "authored_quadratic_is_not_image_accuracy_evidence": true,
+  "new_corruptions_rejected": 5,
+  "core_rust_tests_passed": 371,
+  "core_scenario_runs_and_replays_passed": 49,
+  "unchanged_core_files": 245,
+  "unchanged_previous_evidence_files": 470,
+  "unchanged_native_sources": 16,
+  "subjective_maturity_percent": 20,
+  "statistics": {
+    "tum-fr1-room-temporal": {
+      "samples": 5,
+      "continuous_converged": 0,
+      "original_discrete_fresh_converged": 0,
+      "control_continuous_converged": 0,
+      "local_guard_failures": 2,
+      "original_discrete_guard_failures": 0,
+      "original_discrete_rms_gate_passes": 5,
+      "median_original_discrete_rms_m": 0.002454813877873918,
+      "control_median_original_discrete_rms_m": 0.002454214162878936,
+      "budget_exhaustions": 3,
+      "total_applied_corrections": 104,
+      "unchanged_complete_control_reports": 1,
+      "exact_control_prefix_corrections": 44,
+      "triggered_searches": 63,
+      "damped_solve_checks": 504,
+      "selected_damped_directions": 32,
+      "selected_gauss_newton_directions": 72,
+      "original_gn_candidate_trials": 869,
+      "original_gn_invalid_candidates": 149,
+      "original_gn_valid_nonpassing_candidates": 616,
+      "original_gn_passing_candidates": 104,
+      "damped_candidate_trials": 504,
+      "damped_invalid_candidates": 71,
+      "accepted_cost_increases": 9,
+      "checkpoints": {
+        "10": {
+          "continuous_converged": 0,
+          "budget_exhaustions": 4
+        },
+        "20": {
+          "continuous_converged": 0,
+          "budget_exhaustions": 3
+        },
+        "30": {
+          "continuous_converged": 0,
+          "budget_exhaustions": 3
+        }
+      },
+      "eligible_for_followup_full_trajectory": false
+    },
+    "tum-fr1-desk2-independent": {
+      "samples": 5,
+      "continuous_converged": 2,
+      "original_discrete_fresh_converged": 0,
+      "control_continuous_converged": 2,
+      "local_guard_failures": 3,
+      "original_discrete_guard_failures": 0,
+      "original_discrete_rms_gate_passes": 5,
+      "median_original_discrete_rms_m": 0.0027404641366715284,
+      "control_median_original_discrete_rms_m": 0.0027404641366715284,
+      "budget_exhaustions": 0,
+      "total_applied_corrections": 35,
+      "unchanged_complete_control_reports": 5,
+      "exact_control_prefix_corrections": 35,
+      "triggered_searches": 0,
+      "damped_solve_checks": 0,
+      "selected_damped_directions": 0,
+      "selected_gauss_newton_directions": 35,
+      "original_gn_candidate_trials": 52,
+      "original_gn_invalid_candidates": 0,
+      "original_gn_valid_nonpassing_candidates": 17,
+      "original_gn_passing_candidates": 35,
+      "damped_candidate_trials": 0,
+      "damped_invalid_candidates": 0,
+      "accepted_cost_increases": 0,
+      "checkpoints": {
+        "10": {
+          "continuous_converged": 0,
+          "budget_exhaustions": 2
+        },
+        "20": {
+          "continuous_converged": 2,
+          "budget_exhaustions": 0
+        },
+        "30": {
+          "continuous_converged": 2,
+          "budget_exhaustions": 0
+        }
+      },
+      "eligible_for_followup_full_trajectory": false
+    }
+  },
+  "limits": [
+    "Convergence remains2/10 and all three budget objectives regress slightly; progression fails",
+    "Nine tiny positive costs come from preserved GN slack; selected alternatives require a resolved decrease",
+    "Damped numerical systems and repeated GN/control/checkpoint roles reuse observations and are not new measured information",
+    "Quadratic closed-form policy control is separate from rendered or physical accuracy evidence",
+    "Viewed local fits without new trajectory accuracy, native adoption, vehicle integration or timing evidence"
+  ]
+}

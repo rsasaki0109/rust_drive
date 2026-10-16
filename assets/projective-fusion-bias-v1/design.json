@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "hypothesis": "nearest-Z selection among same-surface splats has a signed order-statistic bias; distinguish raster selection, geometric resampling and estimated-pose errors",
+  "prior_attempts": "XYZ retention and tangent reprojection preserve nearest-Z selection; do not repeat their plane deformation as a new finding",
+  "diagnostic": {
+    "controls": "fronto-parallel 2 m plane with independent 10 mm Gaussian axial noise, seed1702, 40 raw realizations, supplied +0.10 m axial transform; no pose estimation; compare all common visible cells and collision subset",
+    "records": [
+      "tum-fr1-room-temporal",
+      "tum-fr1-desk2-independent",
+      "tum-fr1-rpy-heldout"
+    ],
+    "frames": "original100..279, probes at offsets1..169 step12, all180 fused chronologically",
+    "channels": [
+      "raw physical keyframe",
+      "fused with archived estimated transforms",
+      "counterfactual fusion with offline reference transforms using exactly the same keyframe schedule"
+    ],
+    "comparisons": "point-to-plane equation and local correction at offline reference pose before each probe update; not ground-truth sensor noise or an estimated trajectory"
+  },
+  "candidate_if_bias_observed": {
+    "name": "visible_mean",
+    "selection": "minimum Z still locates front surface; average all projected samples with Z-minZ < .03+.01*minZ, using source support weights; retain maximum contributing support capped16, so splat density cannot create frame confidence",
+    "same_frame": "unit support for each raw source; aggregate remains one frame",
+    "occlusion": "points outside nearest surface band never contribute",
+    "scope": "original depth/point/forward/target-plane/central_difference, disabled photometric/timing, stationary motion; no parameter sweep"
+  },
+  "adoption": {
+    "room_above": 64,
+    "desk2_at_least": 161,
+    "rpy_at_least": 74,
+    "all_updates_accepted": 179,
+    "no_worse_maximum_position_or_rotation_on_all_three": true,
+    "no_resets": true
+  },
+  "binary_sha256": "f896bf90aca477221c5b58f56e493936b80460618cbea5d3b262c629e6957051",
+  "data_role": "three already viewed FR1 regressions; no heldout claim",
+  "ground_truth_operational": false,
+  "subjective_maturity_percent": 20
+}

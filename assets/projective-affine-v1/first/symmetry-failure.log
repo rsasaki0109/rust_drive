@@ -1,0 +1,31 @@
+Traceback (most recent call last):
+  File "/workspace/rust_drive/scripts/evaluate-projective-depth.py", line 162, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/workspace/rust_drive/scripts/evaluate-projective-depth.py", line 154, in main
+    summaries[case] = evaluate(case,args.binary.absolute(),folder,args.reprojection,args.correspondence,args.residual,args.normals,args.geometry,args.photometric)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/rust_drive/scripts/evaluate-projective-depth.py", line 124, in evaluate
+    checked_steps = audit_sequence(outcomes,[f['depth_timestamp'] for f in frames])
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/rust_drive/scripts/projective_depth_common.py", line 176, in audit_sequence
+    checked += audit_iterations(update)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/rust_drive/scripts/projective_depth_common.py", line 125, in audit_iterations
+    np.testing.assert_allclose(ph,ph.T,atol=1e-6,rtol=1e-12)
+  File "/workspace/.rustdrive-tools/demo-venv/lib/python3.12/site-packages/numpy/testing/_private/utils.py", line 1711, in assert_allclose
+    assert_array_compare(compare, actual, desired, err_msg=str(err_msg),
+  File "/workspace/.rustdrive-tools/demo-venv/lib/python3.12/site-packages/numpy/testing/_private/utils.py", line 919, in assert_array_compare
+    raise AssertionError(msg)
+AssertionError: 
+Not equal to tolerance rtol=1e-12, atol=1e-06
+
+Mismatched elements: 2 / 36 (5.56%)
+Max absolute difference among violations: 7.10785389e-06
+Max relative difference among violations: 1.88599355e-12
+ ACTUAL: array([[ 2.331025e+11, -2.487495e+09, -5.056105e+09,  4.520011e+09,
+         2.655874e+11, -2.352219e+10],
+       [-2.487495e+09,  4.894933e+11, -3.608210e+10, -5.162437e+11,...
+ DESIRED: array([[ 2.331025e+11, -2.487495e+09, -5.056105e+09,  4.520011e+09,
+         2.655874e+11, -2.352219e+10],
+       [-2.487495e+09,  4.894933e+11, -3.608210e+10, -5.162437e+11,...

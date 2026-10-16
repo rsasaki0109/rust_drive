@@ -1,0 +1,1881 @@
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -152,6 +152,8 @@
+           python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --motion-model constant_velocity --output artifacts/projective-depth/motion-analytic
+           python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/motion-analytic --output artifacts/projective-depth/motion-raw-audit
+           python scripts/check-projective-motion.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/motion-lifecycle
++          python scripts/check-projective-report-write.py --output artifacts/projective-depth/report-write-controls
++          python scripts/check-projective-calibration-math.py --output artifacts/projective-depth/calibration-math
+           python scripts/check-projective-timing.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/timing-controls
+           python scripts/check-projective-rgbd-lifecycle.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --timing previous_motion --output artifacts/projective-depth/timing-lifecycle
+           python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --photometric keyframe --step-control fixed_support --output artifacts/projective-depth/guarded-analytic
+@@ -202,7 +204,7 @@
+           python -m py_compile scripts/check-projective-rgbd-exposure.py
+           python -m py_compile scripts/projective_step_raw.py scripts/check-projective-step-control.py
+           python -m py_compile scripts/projective_motion_raw.py scripts/check-projective-motion.py
+-          python -m py_compile scripts/projective_timing_raw.py scripts/check-projective-timing.py
++          python -m py_compile scripts/projective_timing_raw.py scripts/check-projective-timing.py scripts/projective_information_raw.py scripts/projective-heldout.py scripts/repair-projective-heldout-inventory.py scripts/check-projective-information-calibration.py scripts/check-projective-report-write.py scripts/check-projective-calibration-math.py
+           python -m py_compile scripts/diagnose-projective-motion-timing.py
+           python -m py_compile scripts/multireference_rgbd_common.py scripts/evaluate-multireference-rgbd.py
+           python -m py_compile scripts/joint_keyframe_depth.py scripts/evaluate-joint-keyframe-depth.py
+--- a/data/tum-fr1-rpy-heldout/SOURCE.md
++++ b/data/tum-fr1-rpy-heldout/SOURCE.md
+@@ -0,0 +1,40 @@
++# Original TUM FR1 RPY held-out recording
++
++The first physical accuracy trial fixes original depth indices 100–279, 180
++acquisitions and 179 continuous updates, before archive payload acquisition.
++The native estimator binary is SHA-256 `0f47ac96222dc940573e2336a66909d25dd6124dd5de76c6e68a1bd6b3cc6e3e`.
++The source, two declared configurations, optical-camera calibration, timestamp
++qualification and unchanged 0.1 m / 0.1 rad gates are bound in the
++[pre-acquisition design](../../assets/projective-information-v1/heldout/rpy/design.json).
++
++Source: [official TUM archive](https://webshare.cvg.cit.tum.de/g/rgbd/dataset/freiburg1/rgbd_dataset_freiburg1_rpy.tgz), `410268381` bytes, observed
++SHA-256 `78103722a25873dbbb4de027eaa8c810a6382100691f02b6cf95c3adc91c4ac1`. The archive identity is recorded from the downloaded
++bytes; an independently published checksum was not obtained. HTTPS range
++responses were verified against original total length, exact Content-Range and
++ETag before assembly, then the complete bounded archive was parsed and hashed.
++Raw recordings remain ignored and are not redistributed.
++
++Attribution: TUM RGB-D Benchmark, J. Sturm, N. Engelhard, F. Endres, W. Burgard
++and D. Cremers, IROS 2012. The general official benchmark terms state CC BY 4.0
++for data unless otherwise specified; accompanying source code has separate
++terms. [Authoritative license and attribution record](../../docs/tum-source-provenance.md).
++This is another indoor FR1 camera recording, without a demonstrated new physical
++room, automotive domain, measured vehicle calibration or external verification.
++
++All original pixels and timestamps remain. Registered optical x-right/y-down/
++z-forward depth uses axial metres = stored units/5000. The declared shared
++pinhole model is K=525, cx 319.5, cy 239.5, 640×480, with no additional image
++undistortion or range correction. Numeric mocap poses are evaluation labels only.
++They are decoded after both 180-frame sensor ledgers and independent raw audits.
++
++The first inventory writer stopped on a duplicate source_path keyword after
++metadata qualification and opaque file selection. Its error and exact source
++are retained. An acquisition-only repair independently verified all selected
++bytes against the same archive and explicitly copied each pin's bytes/SHA,
++without changing selection, source coordinates, estimator, scoring, or decoding
++images/pose numbers. The original pre-acquisition design remains byte-exact.
++
++The preceding plant trial is separately retained as a metadata qualification
++failure: indices 232–237 lack reference brackets within 20 ms. Its pixels and
++numeric poses were not decoded, no accuracy result is claimed, and its window
++was never reselected. See the [guard and validation record](../../docs/projective-information.md).
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -381,6 +381,13 @@
+ withhold image constraints. Own-time synthetic controls pass, while recorded
+ accuracy 80/179 room and 171/179 desk2 still fails the maximum-angle adoption gate.
+ Neither motion option establishes qualified vehicle localization.
++A mandatory [physical directional-information guard](projective-information.md)
++now checks combined information before diagonal equilibration and again at the
++returned pose. It rejects the six weak planar fits previously marked accepted,
++with independently reconstructible failure witnesses and unchanged accepted
++history. All 1,080 preceding sensor outputs remain identical. A first frozen RPY
++trial still scores 74/179 depth and 61/179 compensated RGB-D; conditional uncertainty
++and scalar inflation also fail, so the guard is not a calibrated accuracy bound.
+ [Contract and negative accuracy results](multireference-rgbd.md).
+ 
+ The optional NumPy joint-keyframe evaluator separately optimizes up to five
+--- a/docs/maturity.md
++++ b/docs/maturity.md
+@@ -625,3 +625,15 @@
+ also retains a better room count. The default stays unchanged, with no held-out
+ or automotive qualification. Subjective maturity remains **about 20%** versus
+ mature driving OSS.
++
++
++The mandatory [directional information and report-integrity repairs](projective-information.md)
++reject six previously accepted weak planar fits, preserve all 1,080 historical
++sensor outcomes, and prevent partial JSON reports from being published. The
++first new official plant candidate fails metadata qualification; a separately
++frozen RPY recording passes raw reconstruction but scores 74/179 depth and 61/179
++compensated RGB-D. Nominal conditional uncertainty has 0% observed coverage;
++empirical variance inflation reaches 100% with 1.55–2.71 m positional radii and
++fails its usefulness gate. Neither is qualified uncertainty. These default
++robustness improvements and retained new failures do not close the 30% waypoint;
++subjective maturity remains **about 20%** versus mature driving OSS.
+--- a/docs/projective-information.md
++++ b/docs/projective-information.md
+@@ -0,0 +1,213 @@
++# Physical directional information guard
++
++The maintained Rust projective tracker now rejects pose fits whose information
++is effectively missing in a physical direction. This guard is mandatory before
++every normal solve and again at the returned pose, before any accepted state,
++fused model or motion-history commit. It repairs a false-acceptance case rather
++than adding another optional accuracy variant.
++
++The previous solver checked condition only after dividing each row and column
++by its own diagonal scale. This is useful for numerical solution, but it can make
++an almost unobserved pose direction look as strong as a measured direction.
++A diagonal matrix with entries `[1e-12,1,1,1,1,1]` has equilibrated condition 1,
++while its physical condition is 1e12. Both numerical stability and directional
++information must pass; one cannot substitute for the other.
++
++## Contract
++
++The combined geometric and actually used brightness-marginalized image Hessian
++is evaluated at fixed parameter scales: 1 metre translation and 1 radian rotation.
++A single maximum-diagonal factor scales the entire matrix for the bounded 6×6
++Jacobi eigensolve. Unlike diagonal equilibration, it preserves the relative
++strength of different pose directions. The spectrum must be positive definite
++with largest/smallest eigenvalue at most 1e6, the existing solver's condition
++ceiling. No threshold is fitted to the physical reference trajectories.
++
++The existing scaled SPD solver, update calculation, support, residual, increment,
++keyframe/fusion and acquisition-expiry policies remain. The guard is invariant
++to common residual scaling and rotations of the translation/rotation axes at
++these fixed units; it is not a calibrated uncertainty model or an arbitrary
++SE(3) reference-origin invariance claim. Relative spectrum alone does not supply
++absolute information, sensor-noise, association-error or covariance calibration.
++Noise or modeling error can still create apparent constraints.
++
++A rejection emits an optional `information_failure` witness containing its
++pyramid scale, candidate depth-frame pose, raw geometric/image equations and
++spectrum. `final_pose` identifies rejection at the final admission check. The
++spectrum reports the fixed physical units, common matrix scale, all sorted
++eigenvalues and an optional condition. Nonpositive or numerically singular
++spectra cannot authorize a pose. Successful report payloads retain their original
++structure, and failures retain atomic accepted-state behavior.
++
++## Verified repair and regressions
++
++The own-time plane control first acquires two synchronous textured RGB-D frames,
++then varies image offsets from −14 to +14 ms. Previously the uncompensated mode
++accepted all 8 acquisitions, although six poses failed 4 mm / 0.004 rad accuracy.
++The guard now admits only the first two and rejects all six weak-information
++fits. Those rejections cannot refresh the accepted clock: subsequent expiry
++latches loss, without extrapolation or silent restart. The properly compensated
++mode continues to pass 8/8, as does its 10-acquisition nonplanar positive control.
++Nonzero-phase plane bootstrap without an observable motion rate still rejects.
++
++The independent NumPy auditor reconstructs every rejected witness from raw
++pixels, compares the physical spectrum using `eigvalsh`, and verifies the pose
++against the last reported iterate or the independently predicted initializer.
++Near machine precision the sign of an effectively zero eigenvalue may differ
++between Jacobi and NumPy; both must reject, and the eigenvalues must agree within
++the documented numerical tolerance. Three corrupted failure reports reject:
++a fabricated eigenvalue, an accepted weak pose and a missing required witness.
++The original timing provenance mutations and brightness-null-space controls
++also pass. Rust tests check an artificially equilibrated weak direction, rotated
++physical axes and global residual scaling from 1e-20 to 1e20.
++
++All 416 Rust tests (45 optional-native and 371 core), Clippy, formatting and 49 core
++scenario/replays pass. The 245 core outputs remain unchanged. Complete depth,
++ordinary RGB-D and compensated RGB-D runs reproduce all 1,080 historical sensor
++outcomes exactly, including their known physical accuracy failures:
++
++| Mode | Accurate room / desk2, out of 179 updates |
++|---|---|
++| Depth default | 64 / 161 |
++| Ordinary affine RGB-D | 84 / 124 |
++| Motion and time-compensated RGB-D | 80 / 171 |
++
++The stronger rejection contract does not repair those real-motion drift results.
++The design and sources were frozen before fitting or acquiring new validation
++data. Historical source/evidence archives remain intact.
++
++## First frozen original-source validation
++
++The first new candidate was the official FR1 plant recording, indices 100–279.
++The complete original archive was hashed and its whole metadata tables checked
++before any PNG header, pixel or numeric mocap-pose decoding. Reference brackets
++at six fixed indices 232–237 exceed the unchanged 20 ms limit. The trial stops as
++an input-qualification failure, without a pose score, easier replacement window
++or relaxed reference gate. Its original design, source archive and failure remain.
++
++The separately frozen official FR1 RPY recording passes complete metadata
++qualification: 722 depth rows, 723 RGB rows and 2,742 mocap rows; maximum selected
++reference bracket 10.700 ms and RGB/depth association 14.338 ms. The same fixed
++indices 100–279 provide 180 acquisitions and 179 updates, without repeated RGB.
++This is a new recording for this estimator, with the same FR1 camera family and
++no established automotive or independent-room generalization. The source is
++[attributed and byte-pinned](../data/tum-fr1-rpy-heldout/SOURCE.md).
++
++Both declared modes finish their complete sensor-only ledgers before numerical
++reference scoring. Independent processes then reconstruct all 7,333 geometric
++and 3,829 intensity systems and all 358 fused-model generations without decoding
++numeric reference poses. Both modes accept all 179 updates without expiry/reset.
++
++| Frozen RPY mode | Root accurate / 179 | Maximum position (m) | Maximum rotation (rad) |
++|---|---:|---:|---:|
++| Depth default | 74 | 0.087348 | 0.173375 |
++| Previous-motion / time-compensated RGB-D | 61 | 0.104537 | 0.184782 |
++
++Both complete physical protocols fail. The new information guard does not
++reject these biased but well-conditioned fits, and temporal image compensation
++worsens this new recording's outcome. No runtime parameter, source calibration
++or selection was retuned after these scores. The new recording is now viewed;
++subsequent development must treat it as regression data. All 360 sensor outputs
++also reproduce byte-for-byte from its archived source and pinned native binary.
++
++## Conditional uncertainty and empirical calibration failure
++
++An additional offline checker tests a deliberately provisional conditional
++model, `Sigma0=(0.005 m)^2 * H^-1`, with the final combined information matrix.
++The model fixes the maintained map and motion warps; it omits map/pose history,
++association, calibration, brightness-weight uncertainty and sample correlation.
++It is not a reported or calibrated runtime covariance.
++
++The first-camera root error is expressed in the actual maintained reference:
++`xi=Log(Gkey^-1 * Gest * Gtruth^-1 * Gkey)`. The conditional NEES is
++`xi^T * Sigma0^-1 * xi`, compared with nominal six-dimensional Gaussian 95%
++threshold 12.591587. For position, the Jacobian is
++`Rkey * [I, -[t_relative]_cross]`, including the reference lever arm. Projected
++joint-ellipsoid radii use this positional covariance and the rotational block.
++Six pure-axis error controls in a rotated/translated reference, and independent
++finite differences of the position projection, pass.
++
++A mode-specific empirical variance factor is frozen from the higher 95th
++percentile of both previously viewed recordings’ 358 accepted updates, before
++numeric RPY pose scoring. It changes no runtime estimate. This is a diagnostic
++calibration attempt on correlated frames from two recordings, without an
++exchangeability or probability-calibration claim.
++
++| RPY conditional diagnostic | Depth | Time-compensated RGB-D |
++|---|---:|---:|
++| Nominal ellipsoid coverage, 179 accepted updates | 0% | 0% |
++| Frozen empirical variance factor | 2,718,306.748 | 16,957,683.728 |
++| Inflated ellipsoid coverage | 100% | 100% |
++| Maximum projected position radius (m) | 1.553465 | 2.711021 |
++| Maximum projected rotation radius (rad) | 2.344250 | 2.463849 |
++
++The preregistered diagnostic requires at least 90% held-out coverage and both
++projected radii at most 0.1 m / 0.1 rad. Both modes fail. Large inflated radii also
++leave a useful small-error linear approximation, so 100% observed coverage is
++not a qualified probabilistic error bound. Neither the nominal inverse Hessian
++nor scalar inflation is supplied to the driving EKF or used to authorize motion.
++
++## Evidence integrity and maintained helper repairs
++
++The RPY inventory writer initially repeated `source_path` while expanding a
++verified archive member. The acquisition-only repair reverified every original
++selected byte and wrote that key once. Original selection, estimator, scoring
++and pre-acquisition design stayed fixed; no pixels or numeric poses were decoded
++by the repair. The maintained writer now explicitly copies `bytes` and `sha256`.
++A full real-archive regression reproduces the exact repaired manifest.
++
++The conditional report initially failed on a NumPy scalar Boolean, leaving an
++incomplete JSON file. Its source, partial file and error are preserved. A
++serialization-only repair converts scalars to JSON primitives and recomputes all
++values against the same frozen factor; there is no numerical retuning. The
++maintained conditional checker now casts its gate to a Python Boolean.
++
++Shared JSON evidence writes now publish only complete files, by writing and
++flushing a temporary file and linking it exclusively into the final name.
++Serialization, flush and publication faults leave no final report; an existing
++report cannot be overwritten, including by concurrent writers. Six fault/race
++and canonical-byte controls pass. This prevents a failed evaluation from
++leaving an apparent completed report. CLI acknowledgments and successful report
++bytes remain unchanged. The maintained physical scorer and empirical-calibration
++checker return exit 1 for completed quality failures; source/input validation or
++serialization exceptions remain distinct from a saved numerical failure. Their
++final helper regressions reproduce all prior values and failed gates. The first
++cold sources and their original exit/serialization behavior remain archived.
++
++The [versioned packet](../assets/projective-information-v1/summary.json) contains
++before/candidate/final sources, both cold source freezes, first failures,
++complete RPY ledgers/results and raw audits, empirical factors/results, default
++replay receipts and validation logs. Raw images and compiled binaries are not
++redistributed. Cold replay requires its exact archived source/configuration;
++current helper fixes and documentation are separately preserved in the final
++source archive. The working source never retroactively becomes the source of
++an earlier trial.
++
++This work repairs a genuine false-acceptance and report-publication defect,
++while preserving prior results and establishing a new failed validation.
++The 30% waypoint is still unmet. Useful real-motion accuracy, calibration and
++broader perception/localization evidence remain incomplete; the subjective
++maturity estimate stays about 20% versus mature driving OSS.
++
++## Reproduction
++
++Use a fresh output directory for controls:
++
++```sh
++source scripts/env.sh
++cargo test --manifest-path integrations/projective-depth/Cargo.toml --offline
++cargo build --release --manifest-path integrations/projective-depth/Cargo.toml --offline
++python scripts/check-projective-timing.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/information-controls
++python scripts/check-projective-report-write.py --output artifacts/report-write-controls
++python scripts/check-projective-calibration-math.py --output artifacts/calibration-math
++bash scripts/check.sh
++```
++
++The one-time `projective-heldout.py` protocol has separate `prepare`, `acquire`,
++`run`, `audit` and `score` stages. It refuses existing trial paths and changed
++frozen sources. The first RPY inventory uses the separately hashed repair.
++Replay the published cold source snapshot with the recorded raw manifest and
++native binary; all 360 recorded outcomes were reproduced that way locally.
++The current acquisition writer and conditional serializer have regression
++repairs, while the preceding exact cold sources remain immutable. An internal
++same-environment replay does not establish external or cross-platform success.
+--- a/integrations/projective-depth/src/information.rs
++++ b/integrations/projective-depth/src/information.rs
+@@ -0,0 +1,118 @@
++//! Directional information at fixed metre/radian scales, before equilibration.
++use crate::{Equation, H, Pose, eigenvalues, photometric};
++use serde::Serialize;
++
++#[derive(Clone, Debug, Serialize)]
++pub struct Spectrum {
++    pub translation_scale_m: f64,
++    pub rotation_scale_rad: f64,
++    pub matrix_scale: f64,
++    pub eigenvalues: [f64; 6],
++    pub condition: Option<f64>,
++}
++#[derive(Debug, Serialize)]
++pub struct InformationFailure {
++    pub final_pose: bool,
++    pub scale: usize,
++    pub pose: Pose,
++    pub equation: Equation,
++    pub photometric: Option<photometric::PhotoEquation>,
++    pub spectrum: Option<Spectrum>,
++}
++fn spectrum(h: H) -> Option<Spectrum> {
++    if !h.iter().flatten().all(|v| v.is_finite()) {
++        return None;
++    }
++    let scale = (0..6).map(|i| h[i][i]).fold(0., f64::max);
++    if scale <= 0. {
++        return None;
++    }
++    let mut values = eigenvalues(h.map(|row| row.map(|v| v / scale)));
++    values.sort_by(f64::total_cmp);
++    let condition = (values[0] > 0.)
++        .then(|| values[5] / values[0])
++        .filter(|c| c.is_finite());
++    Some(Spectrum {
++        translation_scale_m: 1.,
++        rotation_scale_rad: 1.,
++        matrix_scale: scale,
++        eigenvalues: values,
++        condition,
++    })
++}
++pub(super) fn check(
++    final_pose: bool,
++    scale: usize,
++    pose: Pose,
++    equation: &Equation,
++    photo: Option<&photometric::PhotoEquation>,
++    failure: &mut Option<InformationFailure>,
++) -> Result<(), String> {
++    let (h, _) = photometric::combine(equation, photo);
++    let spectrum = spectrum(h);
++    if spectrum
++        .as_ref()
++        .and_then(|s| s.condition)
++        .is_some_and(|c| c <= 1e6)
++    {
++        return Ok(());
++    }
++    *failure = Some(InformationFailure {
++        final_pose,
++        scale,
++        pose,
++        equation: equation.clone(),
++        photometric: photo.cloned(),
++        spectrum,
++    });
++    Err("insufficient physical observability condition".into())
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    #[test]
++    fn diagonal_equilibration_cannot_invent_a_weak_pose_direction() {
++        let weak: H = std::array::from_fn(|i| {
++            std::array::from_fn(|j| {
++                if i != j {
++                    0.
++                } else if i == 0 {
++                    1e-12
++                } else {
++                    1.
++                }
++            })
++        });
++        assert!(crate::solve_normal(weak, [0.; 6], 1e6).is_ok());
++        assert!(spectrum(weak).unwrap().condition.unwrap() > 1e6);
++        let mut failure = None;
++        let equation = Equation {
++            h: weak,
++            g: [0.; 6],
++            count: 200,
++            rms_m: 0.,
++        };
++        assert!(check(false, 4, Pose::identity(), &equation, None, &mut failure).is_err());
++        assert_eq!(failure.unwrap().equation.count, 200);
++    }
++    #[test]
++    fn spectrum_preserves_physical_axes_under_rotation_and_global_residual_scale() {
++        let h: H = std::array::from_fn(|i| {
++            std::array::from_fn(|j| if i == j { (i + 1) as f64 } else { 0. })
++        });
++        let r = Pose::identity()
++            .increment([0., 0., 0., 0.2, -0.3, 0.1])
++            .rotation;
++        let q: H = std::array::from_fn(|i| {
++            std::array::from_fn(|j| if i / 3 == j / 3 { r[i % 3][j % 3] } else { 0. })
++        });
++        let rotated: H = std::array::from_fn(|i| {
++            std::array::from_fn(|j| (0..6).map(|k| q[i][k] * h[k][k] * q[j][k]).sum())
++        });
++        for factor in [1e-20, 1., 1e20] {
++            let s = spectrum(rotated.map(|row| row.map(|v| v * factor))).unwrap();
++            assert!((s.condition.unwrap() - 6.).abs() < 1e-12);
++        }
++    }
++}
+--- a/integrations/projective-depth/src/lib.rs
++++ b/integrations/projective-depth/src/lib.rs
+@@ -4,7 +4,9 @@
+ 
+ use serde::{Deserialize, Serialize};
+ 
++mod information;
+ mod motion;
++pub use information::{InformationFailure, Spectrum};
+ pub mod multireference;
+ pub mod photometric;
+ pub use motion::{
+@@ -561,6 +563,7 @@
+     source: &[Level],
+     initial: Pose,
+     trace: &mut Vec<Iteration>,
++    information_failure: &mut Option<InformationFailure>,
+     policy: FitPolicy,
+     photo: Option<&PhotoPair<'_>>,
+ ) -> Result<(Pose, Equation, Option<PhotoEquation>), String> {
+@@ -572,6 +575,7 @@
+                 return Err("insufficient geometric support".into());
+             }
+             let p = photo.map(|pair| pair.equation(t, s, pose, scale));
++            information::check(false, scale, pose, &e, p.as_ref(), information_failure)?;
+             let (h, g) = photometric::combine(&e, p.as_ref());
+             let (d, condition) = solve_normal(h, g, 1e6)?;
+             if norm([d[0], d[1], d[2]]) > 0.1 || norm([d[3], d[4], d[5]]) > 0.15 {
+@@ -631,6 +635,14 @@
+         return Err("final geometric residual, support or displacement gate".into());
+     }
+     let final_photo = photo.map(|pair| pair.equation(&target[2], &source[2], pose, 1));
++    information::check(
++        true,
++        1,
++        pose,
++        &final_e,
++        final_photo.as_ref(),
++        information_failure,
++    )?;
+     Ok((pose, final_e, final_photo))
+ }
+ 
+@@ -786,6 +798,8 @@
+     pub final_photometric: Option<PhotoEquation>,
+     #[serde(skip_serializing_if = "Option::is_none")]
+     pub prediction: Option<Prediction>,
++    #[serde(skip_serializing_if = "Option::is_none")]
++    pub information_failure: Option<InformationFailure>,
+ }
+ struct Model {
+     depth: Vec<f64>,
+@@ -926,6 +940,7 @@
+             photometric: None,
+             final_photometric: None,
+             prediction: None,
++            information_failure: None,
+         };
+         let result = (|| -> Result<(), String> {
+             if !timestamp.is_finite()
+@@ -1078,6 +1093,7 @@
+                     &current,
+                     initial,
+                     &mut out.iterations,
++                    &mut out.information_failure,
+                     FitPolicy {
+                         correspondence: self.correspondence,
+                         residual: self.residual,
+--- a/scripts/audit-projective-depth-raw.py
++++ b/scripts/audit-projective-depth-raw.py
+@@ -17,7 +17,7 @@
+            ROOT/'scripts/projective_vertex_raw.py',
+            ROOT/'scripts/projective_photo_raw.py',
+            ROOT/'scripts/projective_step_raw.py',
+-           ROOT/'scripts/projective_motion_raw.py',ROOT/'scripts/projective_timing_raw.py',
++           ROOT/'scripts/projective_motion_raw.py',ROOT/'scripts/projective_timing_raw.py',ROOT/'scripts/projective_information_raw.py',
+            ROOT/'scripts/check-projective-depth.py',ROOT/'scripts/requirements-visual.txt',
+            ROOT/'assets/projective-depth-raw-audit-v1/design.json')
+ SOURCE_PINS = {str(p.relative_to(ROOT)):sha(p.read_bytes()) for p in SOURCES}
+@@ -209,6 +209,8 @@
+     photometric = freeze.get('photometric','disabled')
+     step_policy=freeze.get('step_control')
+     motion_model=freeze.get('motion_model','stationary')
++    information_guard=freeze.get('information_guard')
++    require(information_guard in (None,'physical_spectrum_v1'),'declared physical information guard')
+     timing=freeze.get('timing','disabled')
+     require(timing in ('disabled','previous_motion'),'declared timing policy')
+     if timing=='previous_motion':require(photometric=='keyframe' and motion_model=='constant_velocity' and step_policy=='disabled','qualified temporal policies')
+@@ -242,9 +244,12 @@
+         verified(frame)  # Hashes only; no pixel or reference label decoding yet.
+     require(all(sha(read(ROOT/n))==d for n,d in SOURCE_PINS.items()),'audit sources unchanged since process start')
+     write(output/'freeze.json',dict(dataset=case,source_sha256=SOURCE_PINS,
+-        manifest_sha256=sha(manifest_body),original_freeze_sha256=sha(read(freeze_path)),reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric,step_control=step_policy,motion_model=motion_model,timing=timing,
++        manifest_sha256=sha(manifest_body),original_freeze_sha256=sha(read(freeze_path)),reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric,step_control=step_policy,motion_model=motion_model,timing=timing,information_guard=information_guard,
+         original_sensor_ledger_sha256=sha(read(ledger_path,64*1024*1024)),depth_source_count=180,
+         ground_truth_decoded=False,raw_color_decoded=photometric=='keyframe'))
++    if information_guard:
++        from projective_information_raw import audit
++        for row in outcomes:audit(row['update'])
+     steps = audit_sequence(outcomes,[f['depth_timestamp'] for f in frames])
+     model = weights = None
+     key_gray=key_rgb=last_rgb=None;key_phase=0.
+@@ -299,7 +304,7 @@
+     summary = dict(frames=180,updates=179,raw_iteration_equations=steps,
+         returned_pose_equations=sum(v['final_equations'] for v in checked_frames),
+         reference_view_warps=sum(v['model_replaced'] for v in checked_frames),
+-        fused_model_generations=179,exact_discrete_counts=True,ground_truth_decoded=False,
++        fused_model_generations=179,exact_discrete_counts=True,physical_information_checked=information_guard is not None,ground_truth_decoded=False,
+         physical_accuracy_claim=False)
+     if photometric=='keyframe':
+         summary.update(raw_photometric_equations=sum(v['photometric_equations'] for v in checked_frames),
+--- a/scripts/check-projective-calibration-math.py
++++ b/scripts/check-projective-calibration-math.py
+@@ -0,0 +1,34 @@
++#!/usr/bin/env python3
++import argparse
++from pathlib import Path
++import importlib.util,sys,json,types
++import numpy as np
++from projective_depth_common import ROOT,fresh,write
++r=ROOT
++p=argparse.ArgumentParser(description='Six-axis reference error and projected uncertainty finite-difference controls');p.add_argument('--output',type=Path,required=True);args=p.parse_args();out=fresh(args.output)
++from projective_depth_common import exp_rotation
++s=importlib.util.spec_from_file_location('cal',r/'scripts/check-projective-information-calibration.py');m=importlib.util.module_from_spec(s);s.loader.exec_module(m)
++def p(t):return dict(rotation=t[:3,:3].tolist(),translation=t[:3,3].tolist())
++key=np.eye(4);key[:3,:3]=exp_rotation(np.array([.1,-.15,.2]));key[:3,3]=[.4,-.3,.2]
++t=np.eye(4);t[:3,:3]=exp_rotation(np.array([-.01,.02,-.03]));t[:3,3]=[.02,-.01,.03]
++h=np.diag([1.,2.,3.,4.,5.,6.]);e=dict(h=h.tolist(),g=[0.]*6,count=200,rms_m=0.)
++m.reference=lambda:types.SimpleNamespace(truth_at=lambda labels,stamp:[np.eye(4),key,key@t][int(stamp)])
++for axis in range(6):
++ delta=np.zeros(6);delta[axis]=.001;d=np.eye(4);d[:3,:3]=exp_rotation(delta[3:]);d[:3,3]=delta[:3];est=key@d@t
++ rows=[]
++ for i,g in enumerate([np.eye(4),key,est]):
++  rows.append(dict(update=dict(timestamp=float(i),accepted=True,keyframe_replaced=i==1,first_from_current=p(g),rejection=None,
++      iterations=[] if i==0 else [dict(equation=e,after=p(key if i==1 else d@t))],final_equation=None if i==0 else e)))
++ got=m.samples(rows,[dict(depth_timestamp=float(i),source_index=i) for i in range(3)],None)[-1]
++ expected=float(delta@h@delta/m.SIGMA_M**2);assert abs(got['nominal_nees']-expected)<1e-10
++ j=np.zeros((3,6));rel=d@t
++ for k in range(6):
++  plus=np.eye(4);minus=np.eye(4)
++  if k<3:plus[k,3]=1e-6;minus[k,3]=-1e-6
++  else:
++   w=np.zeros(3);w[k-3]=1e-6;plus[:3,:3]=exp_rotation(w);minus[:3,:3]=exp_rotation(-w)
++  j[:,k]=((key@plus@rel)[:3,3]-(key@minus@rel)[:3,3])/2e-6
++ cov=m.SIGMA_M**2*np.linalg.inv(h);radius=float(np.sqrt(m.CHI2_6_95*np.linalg.eigvalsh(j@cov@j.T)[-1]))
++ assert abs(got['nominal_position_radius_m']-radius)<1e-10
++write(out/'summary.json',dict(pass_calibration_math=True,pure_axes_checked=6,rotated_and_translated_reference=True,position_covariance_checked_with_finite_differences=True,new_heldout_data_read=False))
++print('six-axis error transport and position covariance finite differences pass')
+--- a/scripts/check-projective-information-calibration.py
++++ b/scripts/check-projective-information-calibration.py
+@@ -0,0 +1,85 @@
++#!/usr/bin/env python3
++"""Offline conditional uncertainty calibration check; no runtime pose inputs."""
++import argparse,importlib.util,io,json
++from pathlib import Path
++import numpy as np
++from projective_depth_common import ROOT,pose,require,sha,write
++from projective_information_raw import combined,audit
++from projective_motion_raw import log_body
++
++BASE=ROOT/'artifacts/projective-information/calibration'
++CHI2_6_95=12.591587243743977
++SIGMA_M=.005
++
++
++def reference():
++    p=ROOT/'scripts/check-opencv-rgbd.py';s=importlib.util.spec_from_file_location('reference',p);m=importlib.util.module_from_spec(s);s.loader.exec_module(m);m.controls();return m
++
++
++def samples(rows,frames,labels):
++    ref=reference();origin=np.linalg.inv(ref.truth_at(labels,frames[0]['depth_timestamp']));key=np.eye(4);out=[]
++    for i,(row,frame) in enumerate(zip(rows,frames,strict=True)):
++        u=row['update'];audit(u)
++        if not u['accepted'] or not i:continue
++        g=pose(u['first_from_current']);truth=origin@ref.truth_at(labels,frame['depth_timestamp'])
++        error=np.linalg.inv(key)@g@np.linalg.inv(truth)@key;twist=log_body(error)
++        require(twist is not None,'conditional error logarithm unambiguous')
++        h=combined(u['final_equation'],u.get('final_photometric'));cov=SIGMA_M**2*np.linalg.inv(h)
++        nees=float(twist@h@twist/SIGMA_M**2);require(np.isfinite(nees) and nees>=0,'finite conditional NEES')
++        t=pose(u['iterations'][-1]['after'])[:3,3];x,y,z=t;cross=np.array([[0,-z,y],[z,0,-x],[-y,x,0]])
++        j=key[:3,:3]@np.column_stack([np.eye(3),-cross]);position_cov=j@cov@j.T;rotation_cov=cov[3:,3:]
++        out.append(dict(source_index=frame['source_index'],nominal_nees=nees,
++            nominal_position_radius_m=float(np.sqrt(CHI2_6_95*np.linalg.eigvalsh(position_cov)[-1])),
++            nominal_rotation_radius_rad=float(np.sqrt(CHI2_6_95*np.linalg.eigvalsh(rotation_cov)[-1]))))
++        if u['keyframe_replaced']:key=g
++    return out
++
++
++def calibrate():
++    require(not BASE.exists(),'new empirical calibration evidence');BASE.mkdir();factors={};pins={};reports={}
++    for mode,folder in [('depth','default'),('timing','timing')]:
++        values=[]
++        for case in ('tum-fr1-room-temporal','tum-fr1-desk2-independent'):
++            root=ROOT/'data'/case;body=(root/'manifest.json').read_bytes();m=json.loads(body);pin=next(x for x in m['files'] if x['file']=='groundtruth.txt');truth=(root/'raw/groundtruth.txt').read_bytes()
++            require(sha(truth)==pin['sha256'] and len(truth)==pin['bytes'],'original viewed reference bytes')
++            path=ROOT/'artifacts/projective-information'/folder/case/'sensor-only.json';ledger=path.read_bytes();rows=json.loads(ledger)['frames']
++            data=samples(rows,m['frames'],np.loadtxt(io.BytesIO(truth),comments='#'));values.extend(x['nominal_nees'] for x in data)
++            pins[mode+'/'+case]=dict(manifest_sha256=sha(body),ledger_sha256=sha(ledger),reference_sha256=sha(truth))
++            reports[mode+'/'+case]=data
++        factors[mode]=max(1.,float(np.quantile(values,.95,method='higher')/CHI2_6_95))
++    write(BASE/'freeze.json',dict(estimator_operational_changes=False,nominal_sigma_m=SIGMA_M,chi2_6_95=CHI2_6_95,
++        empirical_inflation=factors,fit='higher empirical 95th percentile on both previously viewed records, separately by mode',
++        caveat='strongly correlated frames, two viewed recordings, no exchangeability or calibrated probability claim',
++        heldout_design_sha256=sha((ROOT/'artifacts/projective-information/heldout-rpy/design.json').read_bytes()),
++        minimum_heldout_coverage=.9,maximum_projected_position_radius_m=.1,maximum_projected_rotation_radius_rad=.1,
++        source_sha256={str(p.relative_to(ROOT)):sha(p.read_bytes()) for p in (Path(__file__),ROOT/'scripts/projective_information_raw.py',ROOT/'scripts/projective_motion_raw.py',ROOT/'scripts/projective_depth_common.py',ROOT/'scripts/check-opencv-rgbd.py')},inputs=pins))
++    write(BASE/'viewed-samples.json',reports)
++    print(json.dumps(factors),flush=True)
++
++
++def evaluate():
++    f=json.loads((BASE/'freeze.json').read_text());require(f['nominal_sigma_m']==SIGMA_M and f['chi2_6_95']==CHI2_6_95,'fixed nominal conditional model')
++    for n,h in f['source_sha256'].items():require(sha((ROOT/n).read_bytes())==h,'unchanged calibration checker '+n)
++    root=ROOT/'data/tum-fr1-rpy-heldout';m=json.loads((root/'manifest.json').read_text());pin=next(x for x in m['files'] if x['file']=='groundtruth.txt');body=(root/'raw/groundtruth.txt').read_bytes();require(sha(body)==pin['sha256'],'held-out original reference')
++    trial=ROOT/'artifacts/projective-information/heldout-rpy';results={}
++    for mode in ('depth','timing'):
++        require(json.loads((trial/mode/'raw-audit.json').read_text())['pass_raw_mathematics'],'both raw audits completed before conditional scoring')
++    labels=np.loadtxt(io.BytesIO(body),comments='#')
++    for mode in ('depth','timing'):
++        rows=json.loads((trial/mode/'sensor-only.json').read_text())['frames'];data=samples(rows,m['frames'],labels);require(bool(data),'conditional samples available')
++        factor=f['empirical_inflation'][mode];coverage=sum(x['nominal_nees']/factor<=CHI2_6_95 for x in data)/len(data)
++        nominal=sum(x['nominal_nees']<=CHI2_6_95 for x in data)/len(data)
++        max_position=max(x['nominal_position_radius_m']*np.sqrt(factor) for x in data);max_rotation=max(x['nominal_rotation_radius_rad']*np.sqrt(factor) for x in data)
++        results[mode]=dict(accepted_samples=len(data),nominal_coverage=nominal,empirically_inflated_coverage=coverage,
++            max_projected_position_radius_m=max_position,max_projected_rotation_radius_rad=max_rotation,
++            empirical_gate_pass=bool(coverage>=.9 and max_position<=.1 and max_rotation<=.1),
++            calibrated_probability_claim=False,full_information_covariance_claim=False,samples=data)
++    write(BASE/'heldout-results.json',dict(preregistered_freeze_sha256=sha((BASE/'freeze.json').read_bytes()),results=results,
++        reference_never_operational=True,model_or_inflation_retuned_on_heldout=False,probability_calibration_established=False))
++    print(json.dumps({k:{n:x for n,x in v.items() if n!='samples'} for k,v in results.items()}),flush=True)
++    return 0 if all(v['empirical_gate_pass'] for v in results.values()) else 1
++
++
++if __name__=='__main__':
++    p=argparse.ArgumentParser(description=__doc__);p.add_argument('action',choices=('calibrate','evaluate'));a=p.parse_args();result=globals()[a.action]()
++    if type(result) is int:raise SystemExit(result)
+--- a/scripts/check-projective-report-write.py
++++ b/scripts/check-projective-report-write.py
+@@ -0,0 +1,41 @@
++#!/usr/bin/env python3
++"""Failure and concurrent-publication controls for exclusive JSON evidence writes."""
++import argparse,concurrent.futures,json
++from pathlib import Path
++from unittest.mock import patch
++import numpy as np
++import projective_depth_common as common
++
++
++def main():
++    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,required=True);a=p.parse_args();out=common.fresh(a.output);checks=[]
++    bad=out/'invalid.json'
++    try:common.write(bad,dict(samples=[1,2,3],gate=np.bool_(True)))
++    except TypeError:pass
++    else:raise ValueError('unsupported NumPy scalar unexpectedly serializes')
++    common.require(not bad.exists() and not list(out.glob('.*.prepare-*')),'serialization failure publishes no partial report');checks.append('late serialization failure')
++    target=out/'existing.json';target.write_bytes(b'original evidence\n')
++    try:common.write(target,dict(changed=True))
++    except FileExistsError:pass
++    else:raise ValueError('existing evidence overwritten')
++    common.require(target.read_bytes()==b'original evidence\n','original file survives');checks.append('existing evidence')
++    for label,method in [('flush failure','fsync'),('publication failure','link')]:
++        target=out/(method+'.json')
++        with patch.object(common.os,method,side_effect=OSError('injected IO failure')):
++            try:common.write(target,dict(valid=True))
++            except OSError:pass
++            else:raise ValueError('injected write fault ignored')
++        common.require(not target.exists() and not list(out.glob('.*.prepare-*')),'IO failure leaves no final or temporary report');checks.append(label)
++    target=out/'race.json'
++    def writer(index):
++        try:common.write(target,dict(writer=index,samples=list(range(1000))));return True
++        except FileExistsError:return False
++    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:passed=list(pool.map(writer,(1,2)))
++    body=json.loads(target.read_text());common.require(sum(passed)==1 and body['writer'] in (1,2) and body['samples']==list(range(1000)),'one complete concurrent winner')
++    common.require(not list(out.glob('.*.prepare-*')),'no orphaned temporary reports');checks.append('concurrent publication')
++    expected='''{\n  "count": 179,\n  "passed": false,\n  "value": 0.005\n}\n''';target=out/'canonical.json';common.write(target,dict(count=179,passed=False,value=.005))
++    common.require(target.read_text()==expected,'preserve canonical evidence JSON bytes');checks.append('canonical bytes')
++    common.write(out/'summary.json',dict(pass_atomic_report_controls=True,checks=checks,partial_reports_published=0))
++
++
++if __name__=='__main__':main()
+--- a/scripts/check-projective-timing.py
++++ b/scripts/check-projective-timing.py
+@@ -60,10 +60,17 @@
+                     require(not u['accepted'] and u['last_accepted_timestamp']==1.06,'failed acquisition cannot advance motion or reference rate')
+                 if not plane and stamp==1.09:
+                     require(u['photometric']['timing']['source']['latest_timestamp']==1.06,'rejected pose excluded from time warp')
++            if name=='plane uncorrected':
++                depth,_=render(.231);_,gray=render(.231)
++                expired=client.frame(1.231,depth,image=dict(timestamp=1.231,gray=gray.ravel().tolist()))
++                recovery=client.frame(1.24,depth,image=dict(timestamp=1.24,gray=gray.ravel().tolist()))
++                require(expired['lost'] and recovery['lost'] and not recovery['accepted'],'rejected weak information cannot renew accepted-depth expiry')
+             client.finish()
+         except BaseException:
+             client.abort();raise
+         audit_sequence(rows,times)
++        from projective_information_raw import audit
++        for r in rows:audit(r['update'])
+         accepted=sum(r['update']['accepted'] for r in rows)
+         if name=='nonplanar asynchronous':
+             require(accepted==10 and any(r['update']['keyframe_replaced'] for r in rows),'own-time scene tracks through keyframe change')
+@@ -73,9 +80,22 @@
+             witness=(rows[index]['update'],contexts[index])
+         elif name=='plane compensated':
+             require(accepted==8 and all(r['update']['final_photometric']['used'] for r in rows[1:]),'time compensation retains plane observability')
+-        elif name=='plane uncorrected':require(sum(r.get('position_error_m',1.)<.004 and r.get('rotation_error_rad',1.)<.004 for r in rows)<8,'uncorrected asynchronous plane fails full known-motion accuracy')
++        elif name=='plane uncorrected':
++            require(accepted==2 and all('information_failure' in r['update'] for r in rows[2:]),'unobservable plane drift never commits pose')
++            require(sum(r.get('position_error_m',1.)<.004 and r.get('rotation_error_rad',1.)<.004 for r in rows)<8,'uncorrected asynchronous plane fails full known-motion accuracy')
+         else:require(accepted==1 and not rows[-1]['update'].get('final_photometric',{}).get('used',False),'asynchronous unobservable bootstrap cannot invent rate')
+         accurate=sum(r.get('position_error_m',1.)<.004 and r.get('rotation_error_rad',1.)<.004 for r in rows)
++        if name=='plane uncorrected':
++            from projective_information_raw import audit
++            failure=next(r['update'] for r in rows if 'information_failure' in r['update'])
++            for label,change in (
++                ('fabricated physical spectrum',lambda u:u['information_failure']['spectrum']['eigenvalues'].__setitem__(0,.5)),
++                ('weak pose marked accepted',lambda u:u.update(accepted=True)),
++                ('missing failure witness',lambda u:u.pop('information_failure'))):
++                altered=copy.deepcopy(failure);change(altered)
++                try:audit(altered)
++                except (AssertionError,ValueError,KeyError,TypeError):pass
++                else:raise ValueError('undetected observability corruption: '+label)
+         results[name]=dict(accepted=accepted,accurate=accurate,frames=rows)
+     require(witness is not None,'reference and source nonidentity compensation witness')
+     corruptions=[]
+@@ -90,7 +110,7 @@
+         else:raise ValueError('undetected timing corruption: '+name)
+     require(sha(args.binary.read_bytes())==digest,'one fixed binary across timing controls')
+     write(out/'controls.json',results)
+-    write(out/'summary.json',dict(pass_timing_controls=True,raw_geometry_systems=systems,raw_photometric_systems=systems,
++    write(out/'summary.json',dict(pass_timing_controls=True,physical_guard=True,observability_corruptions_rejected=3,weak_pose_expiry_latches=True,raw_failure_witnesses=7,raw_geometry_systems=systems,raw_photometric_systems=systems,
+         accepted={n:r['accepted'] for n,r in results.items()},accurate={n:r['accurate'] for n,r in results.items()},rejected_corruptions=corruptions,
+         own_time_rendering=True,accepted_history_only=True,reference_rate_frozen=True,binary_sha256=digest,
+         checker_sha256=sha(Path(__file__).read_bytes()),known_pose_role='static scene rendering at depth and RGB acquisition times and scoring only; never runtime inputs'))
+--- a/scripts/evaluate-projective-depth.py
++++ b/scripts/evaluate-projective-depth.py
+@@ -45,13 +45,14 @@
+                ROOT/'scripts/projective_step_raw.py',
+                ROOT/'scripts/projective_motion_raw.py',
+                ROOT/'scripts/projective_timing_raw.py',
++               ROOT/'scripts/projective_information_raw.py',
+                *sorted((ROOT/'integrations/projective-depth/src').rglob('*.rs')),
+                ROOT/'integrations/projective-depth/Cargo.toml',ROOT/'integrations/projective-depth/Cargo.lock']
+     write(output/'freeze.json',dict(schema_version=1,dataset=case,data_role='already viewed port regression',
+         manifest_sha256=sha(manifest_body),binary_sha256=sha(binary.read_bytes()),
+         source_sha256={str(p.relative_to(ROOT)):sha(p.read_bytes()) for p in sources},
+         inputs={name:dict(bytes=v['bytes'],sha256=v['sha256']) for name,v in inventory.items()},
+-        camera=CAMERA,reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric,step_control=step_control,motion_model=motion_model,timing=timing,primary_clock='depth; associated RGB decoded only in keyframe photometric mode',root_translation_gate_m=.1,
++        information_guard='physical_spectrum_v1',camera=CAMERA,reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric,step_control=step_control,motion_model=motion_model,timing=timing,primary_clock='depth; associated RGB decoded only in keyframe photometric mode',root_translation_gate_m=.1,
+         root_rotation_gate_rad=.1,reference_bracket_max_s=.02,pose_resets=0,ground_truth_operational=False,
+         selected_frames=180,updates=179,numpy_version=np.__version__))
+     client = Client(binary,CAMERA,configuration=dict(reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric,step_control=step_control,motion_model=motion_model,timing=timing))
+@@ -124,6 +125,8 @@
+         else:
+             require(update['first_from_current'] is None and update['fusion'] is None,'no rejected-state commit')
+         parity.append(comparison)
++    from projective_information_raw import audit
++    for row in outcomes:audit(row['update'])
+     checked_steps = audit_sequence(outcomes,[f['depth_timestamp'] for f in frames])
+     summary = dict(total_updates=179,accepted=accepted,root_accurate=accurate,lost=lost,
+         max_position_error_m=max((v[0] for v in errors),default=None),
+--- a/scripts/fetch-independent-dataset.py
++++ b/scripts/fetch-independent-dataset.py
+@@ -0,0 +1,555 @@
++#!/usr/bin/env python3
++"""Bounded official FR1 desk2 acquisition; opaque tar payloads, never image decoding."""
++import argparse
++import gzip
++import hashlib
++import importlib.util
++import json
++import math
++import os
++from pathlib import Path
++import re
++import subprocess
++import tarfile
++import tempfile
++from datetime import datetime, timezone
++
++ROOT = Path(__file__).resolve().parent.parent
++DATASET = 'tum-fr1-desk2-independent'
++DESIGN_PATH = ROOT / 'assets/recorded-independent/desk2-v1/design.json'
++DESIGN_SHA256 = '6fa44837d27f6f1f4f69285780ccd5e4883d7b59ace15500699914aca323797a'
++OFFICIAL_URL = 'https://cvg.cit.tum.de/rgbd/dataset/freiburg1/rgbd_dataset_freiburg1_desk2.tgz'
++FINAL_URL = 'https://webshare.cvg.cit.tum.de/g/rgbd/dataset/freiburg1/rgbd_dataset_freiburg1_desk2.tgz'
++ARCHIVE_ROOT = 'rgbd_dataset_freiburg1_desk2/'
++DEFAULT_LIMITS = dict(compressed=512 * 1024 * 1024, decompressed=2 * 1024 * 1024 * 1024,
++                      members=10000, member=4 * 1024 * 1024, metadata=4 * 1024 * 1024,
++                      selected=128 * 1024 * 1024)
++PROFILE = dict(width=640, height=480, fx=517.306408, fy=516.469215,
++               cx=318.643040, cy=255.313989, units_per_metre=5000, invalid_depth=0)
++CALIBRATION = dict(repository='luigifreda/pyslam',
++                   revision='96019cfafcfc099ac9866884d7143a9ed1451a0d',
++                   source_path='settings/TUM1.yaml', file='camera-calibration.yaml', bytes=1615,
++                   sha256='5bd0ec559a251ac402756be7db0bd367bb364fe6a9d85e0770cd0681003602cf',
++                   role='source_calibration_documentation_only')
++METADATA_ROLES = {'depth.txt': 'depth_index', 'rgb.txt': 'rgb_index',
++                  'groundtruth.txt': 'evaluation_only_mocap_ground_truth'}
++MANIFEST_KEYS = {'schema_version', 'dataset', 'official_archive', 'preregistration_sha256',
++                 'depth_calibration', 'calibration_source', 'frames', 'files'}
++ARCHIVE_KEYS = {'url', 'final_url', 'bytes', 'sha256', 'md5', 'root', 'published_checksum'}
++FRAME_KEYS = {'source_index', 'depth_file', 'depth_timestamp', 'rgb_file', 'rgb_timestamp',
++              'rgb_source_index', 'pair_gap_seconds', 'split'}
++FILE_KEYS = {'file', 'source_path', 'bytes', 'sha256', 'role'}
++
++
++def digest(data):
++    return hashlib.sha256(data).hexdigest()
++
++
++def load_qualifier():
++    path = ROOT / 'scripts/qualify-rgbd-independent.py'
++    spec = importlib.util.spec_from_file_location('independent_metadata', path)
++    module = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(module)
++    return module
++
++
++def verify_design(path):
++    if path.is_symlink() or path.stat().st_size > 64 * 1024:
++        raise ValueError('unsafe preregistration source')
++    data = path.read_bytes()
++    if digest(data) != DESIGN_SHA256:
++        raise ValueError('changed preregistered source/window/design')
++    return json.loads(data)
++
++
++def archive_identity(path, limits=DEFAULT_LIMITS):
++    if path.is_symlink() or not path.is_file():
++        raise ValueError('archive must be a regular non-symlink file')
++    size = path.stat().st_size
++    if not 0 < size <= limits['compressed']:
++        raise ValueError('compressed archive byte bound exceeded')
++    sha, md5, count = hashlib.sha256(), hashlib.md5(), 0
++    with path.open('rb') as stream:
++        for chunk in iter(lambda: stream.read(65536), b''):
++            count += len(chunk)
++            if count > limits['compressed']:
++                raise ValueError('compressed archive changed or exceeds bound')
++            sha.update(chunk)
++            md5.update(chunk)
++    if count != size:
++        raise ValueError('archive size changed while hashing')
++    return dict(bytes=count, sha256=sha.hexdigest(), md5=md5.hexdigest())
++
++
++class BoundedGzip:
++    """Count the complete decompressed tar stream, including headers and padding."""
++    def __init__(self, stream, maximum):
++        self.stream, self.maximum, self.count = stream, maximum, 0
++
++    def read(self, size):
++        data = self.stream.read(min(size, max(1, self.maximum - self.count + 1)))
++        self.count += len(data)
++        if self.count > self.maximum:
++            raise ValueError('full decompressed archive stream exceeds bound')
++        return data
++
++    def exact(self, size):
++        result = bytearray()
++        while len(result) < size:
++            part = self.read(min(65536, size - len(result)))
++            if not part:
++                raise ValueError('truncated tar stream')
++            result.extend(part)
++        return bytes(result)
++
++
++def member_relative(name):
++    if not name or name.startswith('/') or '\\' in name:
++        raise ValueError('unsafe archive path')
++    if any(part in ('', '.', '..') for part in name.split('/')):
++        raise ValueError('archive path traversal or noncanonical path')
++    if name == ARCHIVE_ROOT.rstrip('/'):
++        return ''
++    if not name.startswith(ARCHIVE_ROOT):
++        raise ValueError('foreign archive root')
++    return name[len(ARCHIVE_ROOT):]
++
++
++def local_filename(source_path):
++    if source_path in METADATA_ROLES:
++        return source_path
++    if not re.fullmatch(r'(depth|rgb)/[0-9]+\.[0-9]+\.png', source_path):
++        raise ValueError('unsupported selected original image path')
++    kind, filename = source_path.split('/')
++    return kind + '-' + filename
++
++
++def scan_archive(path, selected_paths=(), output_directory=None, limits=DEFAULT_LIMITS):
++    """Inventory safe headers; consume opaque payloads without interpreting PNGs.
++
++    The first pass requests no selected paths. The second may hash/write only
++    qualified source paths. Extended tar headers are rejected before allocating
++    their payloads. No tarfile extraction method is used.
++    """
++    archive_identity(path, limits)
++    selected = set(selected_paths)
++    for source_path in selected:
++        local_filename(source_path)
++    if output_directory is not None:
++        if output_directory.is_symlink():
++            raise ValueError('unsafe selected-output symlink')
++        output_directory.mkdir(parents=True, exist_ok=True)
++    inventory, metadata, hashes, seen = {}, {}, {}, set()
++    count, metadata_bytes, selected_bytes = 0, 0, 0
++    with path.open('rb') as compressed, gzip.GzipFile(fileobj=compressed, mode='rb') as zipped:
++        stream = BoundedGzip(zipped, limits['decompressed'])
++        while True:
++            header = stream.exact(512)
++            if header == bytes(512):
++                if stream.exact(512) != bytes(512):
++                    raise ValueError('tar end marker missing second zero block')
++                while True:
++                    trailing = stream.read(65536)
++                    if not trailing:
++                        break
++                    if any(trailing):
++                        raise ValueError('nonzero payload after tar end markers')
++                break
++            try:
++                member = tarfile.TarInfo.frombuf(header, 'utf8', 'strict')
++            except (tarfile.HeaderError, UnicodeError, ValueError) as error:
++                raise ValueError('invalid tar header: ' + str(error)) from None
++            count += 1
++            if count > limits['members']:
++                raise ValueError('archive member count exceeds bound')
++            if member.type not in (tarfile.REGTYPE, tarfile.AREGTYPE, tarfile.DIRTYPE):
++                raise ValueError('unsupported archive member type; links/extensions/devices refused')
++            if type(member.size) is not int or not 0 <= member.size <= limits['member']:
++                raise ValueError('archive member size exceeds bound or is negative')
++            if member.linkname:
++                raise ValueError('archive link target forbidden')
++            relative = member_relative(member.name)
++            if member.name in seen:
++                raise ValueError('duplicate archive member path')
++            seen.add(member.name)
++            if member.isdir():
++                if member.size:
++                    raise ValueError('directory payload forbidden')
++                continue
++            if not relative:
++                raise ValueError('archive root cannot be a regular file')
++            inventory[relative] = dict(source_path=relative, bytes=member.size)
++            collect = relative in METADATA_ROLES
++            if collect:
++                metadata_bytes += member.size
++                if metadata_bytes > limits['metadata']:
++                    raise ValueError('aggregate complete metadata byte bound exceeded')
++            if relative in selected:
++                selected_bytes += member.size
++                if selected_bytes > limits['selected']:
++                    raise ValueError('selected archive byte bound exceeded')
++            data, hasher = bytearray(), hashlib.sha256()
++            target_stream = None
++            if relative in selected and output_directory is not None:
++                target = output_directory / local_filename(relative)
++                if target.is_symlink():
++                    raise ValueError('unsafe selected output file symlink')
++                target_stream = target.open('xb')
++            try:
++                remaining = member.size
++                while remaining:
++                    chunk = stream.exact(min(65536, remaining))
++                    remaining -= len(chunk)
++                    if collect:
++                        data.extend(chunk)
++                    if relative in selected:
++                        hasher.update(chunk)
++                        if target_stream is not None:
++                            target_stream.write(chunk)
++                if collect:
++                    metadata[relative] = bytes(data)
++                if relative in selected:
++                    hashes[relative] = dict(source_path=relative, bytes=member.size,
++                                            sha256=hasher.hexdigest())
++                if member.size % 512:
++                    padding = stream.exact(512 - member.size % 512)
++                    if any(padding):
++                        raise ValueError('nonzero archive member padding')
++            finally:
++                if target_stream is not None:
++                    target_stream.close()
++        decompressed = stream.count
++    if set(metadata) != set(METADATA_ROLES):
++        raise ValueError('missing complete original metadata tables')
++    if selected - set(hashes):
++        raise ValueError('selected original image or metadata member absent')
++    return dict(inventory=inventory, metadata=metadata, selected_files=hashes,
++                members=count, decompressed_bytes=decompressed,
++                archive_payload_decompressed=True)
++
++
++def verify_manifest(manifest):
++    """Strict public design schema; no Git-mirror fallback or source reselection."""
++    if set(manifest) != MANIFEST_KEYS or type(manifest['schema_version']) is not int or manifest['schema_version'] != 1:
++        raise ValueError('changed exact independent manifest schema')
++    if manifest['dataset'] != DATASET or manifest['preregistration_sha256'] != DESIGN_SHA256:
++        raise ValueError('changed independent source/window preregistration')
++    archive = manifest['official_archive']
++    if set(archive) != ARCHIVE_KEYS or archive['url'] != OFFICIAL_URL or archive['final_url'] != FINAL_URL or archive['root'] != ARCHIVE_ROOT:
++        raise ValueError('changed official archive identity/URLs/root')
++    if type(archive['bytes']) is not int or not 0 < archive['bytes'] <= DEFAULT_LIMITS['compressed']:
++        raise ValueError('archive byte bound')
++    if not re.fullmatch(r'[0-9a-f]{64}', archive['sha256']) or not re.fullmatch(r'[0-9a-f]{32}', archive['md5']):
++        raise ValueError('archive hash format')
++    if archive['published_checksum'] is not None:
++        raise ValueError('publisher checksum requires a new preregistered design before data use')
++    if (manifest['depth_calibration'] != PROFILE
++            or any(type(value) not in (int, float) for value in manifest['depth_calibration'].values())
++            or manifest['calibration_source'] != CALIBRATION):
++        raise ValueError('changed exact published camera descriptor/profile')
++    frames = manifest['frames']
++    if len(frames) != 180 or [f['source_index'] for f in frames] != list(range(100, 280)):
++        raise ValueError('changed fixed consecutive original window')
++    expected = set(METADATA_ROLES)
++    last_depth, last_rgb, last_rgb_index, recorded = None, None, None, {}
++    for i, frame in enumerate(frames):
++        if set(frame) != FRAME_KEYS or type(frame['source_index']) is not int or type(frame['rgb_source_index']) is not int or frame['rgb_source_index'] < 0:
++            raise ValueError('changed exact frame schema or source ordinal')
++        if frame['split'] != ('initialization' if i == 0 else 'independent_recording'):
++            raise ValueError('changed frame evidence role')
++        depth, rgb, gap = frame['depth_timestamp'], frame['rgb_timestamp'], frame['pair_gap_seconds']
++        if any(type(value) not in (int, float) or not math.isfinite(value) for value in (depth, rgb, gap)):
++            raise ValueError('nonfinite association timestamp/gap')
++        if gap < 0 or abs(depth - rgb) > .02 or abs(gap - abs(depth - rgb)) > 1e-15:
++            raise ValueError('changed exact RGB/depth association gate')
++        if (last_depth is not None and depth <= last_depth) or (last_rgb is not None and rgb < last_rgb) or (last_rgb_index is not None and frame['rgb_source_index'] < last_rgb_index):
++            raise ValueError('nonincreasing original association order')
++        for kind in ('depth', 'rgb'):
++            filename = frame[kind + '_file']
++            if not re.fullmatch(kind + r'-[0-9]+\.[0-9]+\.png', filename):
++                raise ValueError('unsafe selected filename')
++            expected.add(filename)
++        identity = (rgb, frame['rgb_file'])
++        if frame['rgb_source_index'] in recorded and recorded[frame['rgb_source_index']] != identity:
++            raise ValueError('ambiguous repeated RGB acquisition')
++        recorded[frame['rgb_source_index']] = identity
++        last_depth, last_rgb, last_rgb_index = depth, rgb, frame['rgb_source_index']
++    files = manifest['files']
++    if len(files) != len(expected) or {f['file'] for f in files} != expected:
++        raise ValueError('changed exact selected raw inventory')
++    total, metadata_total = CALIBRATION['bytes'], 0
++    for item in files:
++        if set(item) != FILE_KEYS or type(item['bytes']) is not int or not 0 < item['bytes'] <= DEFAULT_LIMITS['member'] or not re.fullmatch(r'[0-9a-f]{64}', item['sha256']):
++            raise ValueError('unsafe source file descriptor')
++        if item['file'] != local_filename(item['source_path']):
++            raise ValueError('source path/local filename mismatch')
++        if item['file'] in METADATA_ROLES:
++            metadata_total += item['bytes']
++            expected_role = METADATA_ROLES[item['file']]
++        else:
++            expected_role = item['source_path'].split('/')[0] + '_frame'
++        if item['role'] != expected_role:
++            raise ValueError('source role mismatch')
++        total += item['bytes']
++    if metadata_total > DEFAULT_LIMITS['metadata'] or total > DEFAULT_LIMITS['selected']:
++        raise ValueError('aggregate metadata or selected raw byte bound exceeded')
++    return manifest
++
++
++def response_headers(path):
++    """Read HTTP status/Location only, never authentication/cookie header values."""
++    status, location = None, None
++    for line in path.read_text().splitlines():
++        if line.startswith('HTTP/'):
++            status, location = int(line.split()[1]), None
++        elif line.lower().startswith('location:'):
++            location = line.split(':', 1)[1].strip()
++    return status, location
++
++
++def observed_regular_bytes(path):
++    """Observe only a retained regular file size; never follow a symlink."""
++    try:
++        if not path.is_symlink() and path.is_file():
++            return path.stat().st_size
++    except OSError:
++        pass
++    return None
++
++
++def download_archive(path, exposure=None):
++    """Follow only the single explicitly preregistered official redirect."""
++    path.parent.mkdir(parents=True, exist_ok=True)
++    partial, headers = path.with_suffix('.download'), path.with_suffix('.http-headers')
++    if partial.exists() or partial.is_symlink() or headers.exists() or headers.is_symlink():
++        raise ValueError('archive transfer scratch path exists; preserve prior attempt')
++    common = ['curl', '--silent', '--show-error', '--fail', '--connect-timeout', '20',
++              '--max-time', '300', '--proto', '=https', '--proto-redir', '=https']
++    subprocess.run(common + ['--head', '--dump-header', str(headers), OFFICIAL_URL,
++                             '--output', '/dev/null'], check=True)
++    status, location = response_headers(headers)
++    if status != 302 or location != FINAL_URL:
++        raise ValueError('official archive redirect differs from preregistered final URL')
++    headers.unlink()
++    try:
++        subprocess.run(common + ['--max-filesize', str(DEFAULT_LIMITS['compressed']),
++                                 '--dump-header', str(headers), FINAL_URL,
++                                 '--output', str(partial)], check=True)
++        status, location = response_headers(headers)
++        if status != 200 or location is not None:
++            raise ValueError('unexpected final archive HTTP status or redirect')
++        archive_identity(partial)
++        partial.replace(path)
++    finally:
++        # Preserve a partial-transfer observation before removing scratch bytes.
++        # A failed transfer cannot establish whether those bytes contain images.
++        if exposure is not None:
++            observed = observed_regular_bytes(partial)
++            if observed is not None:
++                exposure['compressed_archive_bytes_observed'] = observed
++        partial.unlink(missing_ok=True)
++
++
++def camera_bytes(path=None):
++    if path is not None:
++        if path.is_symlink() or path.stat().st_size != CALIBRATION['bytes']:
++            raise ValueError('unsafe camera documentation source')
++        data = path.read_bytes()
++    else:
++        url = f'https://raw.githubusercontent.com/{CALIBRATION["repository"]}/{CALIBRATION["revision"]}/{CALIBRATION["source_path"]}'
++        result = subprocess.run(['curl', '--fail', '--silent', '--show-error', '--connect-timeout',
++                                 '20', '--max-time', '60', '--max-filesize', str(CALIBRATION['bytes']),
++                                 '--proto', '=https', url], check=True, stdout=subprocess.PIPE)
++        data = result.stdout
++    if len(data) != CALIBRATION['bytes'] or digest(data) != CALIBRATION['sha256']:
++        raise ValueError('pinned camera documentation SHA256/size mismatch')
++    return data
++
++
++def write_bytes_new(path, value):
++    """Publish a complete file atomically without replacing any prior evidence."""
++    path.parent.mkdir(parents=True, exist_ok=True)
++    descriptor, temporary = tempfile.mkstemp(prefix=path.name + '.prepare-', dir=path.parent)
++    try:
++        with os.fdopen(descriptor, 'wb') as stream:
++            stream.write(value)
++            stream.flush()
++            os.fsync(stream.fileno())
++        os.link(temporary, path)
++    finally:
++        Path(temporary).unlink(missing_ok=True)
++
++
++def write_json_new(path, value):
++    write_bytes_new(path, (json.dumps(value, indent=2, allow_nan=False) + '\n').encode())
++
++
++def verify_inputs(manifest, raw, archive):
++    verify_manifest(manifest)
++    if raw.is_symlink():
++        raise ValueError('unsafe raw directory symlink')
++    receipt = archive_identity(archive)
++    if any(receipt[key] != manifest['official_archive'][key] for key in receipt):
++        raise ValueError('retained archive differs from frozen identity')
++    expected_names = {i['file'] for i in manifest['files']} | {CALIBRATION['file']}
++    if {p.name for p in raw.iterdir()} != expected_names:
++        raise ValueError('extra or missing selected raw files (camera documentation sidecar allowed)')
++    scanned = scan_archive(archive, [i['source_path'] for i in manifest['files']])
++    for item in manifest['files']:
++        path = raw / item['file']
++        if path.is_symlink() or not path.is_file() or path.stat().st_size != item['bytes']:
++            raise ValueError('unsafe or changed raw file')
++        actual = digest(path.read_bytes())
++        member = scanned['selected_files'][item['source_path']]
++        if actual != item['sha256'] or member['bytes'] != item['bytes'] or member['sha256'] != actual:
++            raise ValueError('raw file differs from original archive member')
++    camera_bytes(raw / CALIBRATION['file'])
++    load_qualifier().qualify_metadata(manifest, lambda name: (raw / name).read_bytes())
++    return receipt
++
++
++def acquire(archive, preregistration, output, acquisition_log, calibration=None):
++    verify_design(preregistration)
++    if acquisition_log.exists() or acquisition_log.is_symlink() or (output / 'manifest.json').exists():
++        raise ValueError('existing acquisition success/evidence; use a new evidence path')
++    started = acquisition_log.with_name(acquisition_log.name + '.started.json')
++    write_json_new(started, dict(schema_version=1, dataset=DATASET, preregistration_sha256=DESIGN_SHA256,
++                                fixed_window=dict(first_depth_index=100, last_depth_index=279,
++                                                  frames=180, updates=179),
++                                acquisition_helper_sha256=digest(Path(__file__).read_bytes()),
++                                started_utc=datetime.now(timezone.utc).isoformat()))
++    stage = 'archive_acquisition'
++    exposure = dict(compressed_acquisition_attempted=False, decompression_attempted=False,
++                    compressed_archive_bytes_observed=None, compressed_images_acquired=False,
++                    archive_payload_decompressed=False)
++    manifest_was_written, final_log_attempted = False, False
++    try:
++        exposure['compressed_acquisition_attempted'] = True
++        exposure['compressed_images_acquired'] = None
++        exposure['compressed_archive_bytes_observed'] = observed_regular_bytes(archive)
++        if not archive.exists():
++            download_archive(archive, exposure)
++        receipt = archive_identity(archive)
++        exposure['compressed_archive_bytes_observed'] = receipt['bytes']
++        stage = 'bounded_inventory_and_metadata'
++        exposure['decompression_attempted'] = True
++        exposure['archive_payload_decompressed'] = None
++        scanned = scan_archive(archive)
++        exposure['compressed_images_acquired'] = True
++        exposure['archive_payload_decompressed'] = True
++        official_archive = dict(url=OFFICIAL_URL, final_url=FINAL_URL, **receipt,
++                                root=ARCHIVE_ROOT, published_checksum=None)
++        write_json_new(acquisition_log.with_name(acquisition_log.name + '.inventory.json'),
++                       dict(official_archive=official_archive, members=scanned['members'],
++                            decompressed_bytes=scanned['decompressed_bytes'], inventory=scanned['inventory']))
++        raw = output / 'raw'
++        if raw.is_symlink():
++            raise ValueError('unsafe raw output symlink')
++        raw.mkdir(parents=True, exist_ok=True)
++        for name, data in scanned['metadata'].items():
++            with (raw / name).open('xb') as stream:
++                stream.write(data)
++        stage = 'metadata_qualification'
++        selection = load_qualifier().select_metadata(scanned['metadata'])
++        images = {kind + '/' + f[kind + '_file'].removeprefix(kind + '-')
++                  for f in selection['frames'] for kind in ('depth', 'rgb')}
++        wanted = images | set(METADATA_ROLES)
++        if wanted - set(scanned['inventory']):
++            raise ValueError('fixed selection image member absent; no replacement window')
++        if sum(scanned['inventory'][name]['bytes'] for name in wanted) + CALIBRATION['bytes'] > DEFAULT_LIMITS['selected']:
++            raise ValueError('selected raw inventory exceeds 128 MiB')
++        stage = 'qualified_opaque_selection'
++        copied = scan_archive(archive, images, raw)
++        if copied['metadata'] != scanned['metadata'] or archive_identity(archive) != receipt:
++            raise ValueError('archive changed between qualification and selected copy')
++        files = []
++        for source_path in sorted(wanted):
++            if source_path in METADATA_ROLES:
++                data = scanned['metadata'][source_path]
++                item = dict(bytes=len(data), sha256=digest(data))
++                role = METADATA_ROLES[source_path]
++            else:
++                item = copied['selected_files'][source_path]
++                role = source_path.split('/')[0] + '_frame'
++            files.append(dict(file=local_filename(source_path), source_path=source_path,
++                              bytes=item['bytes'], sha256=item['sha256'], role=role))
++        documentation = camera_bytes(calibration)
++        with (raw / CALIBRATION['file']).open('xb') as stream:
++            stream.write(documentation)
++        manifest = dict(schema_version=1, dataset=DATASET, official_archive=official_archive,
++                        preregistration_sha256=DESIGN_SHA256, depth_calibration=dict(PROFILE),
++                        calibration_source=dict(CALIBRATION), frames=selection['frames'], files=files)
++        verify_manifest(manifest)
++        manifest_bytes = (json.dumps(manifest, indent=2, allow_nan=False) + '\n').encode()
++        if len(manifest_bytes) > 512 * 1024:
++            raise ValueError('generated manifest exceeds 512 KiB')
++        stage = 'final_input_verification'
++        verify_inputs(manifest, raw, archive)
++        write_bytes_new(output / 'manifest.json', manifest_bytes)
++        manifest_was_written = True
++        stage = 'final_evidence_publication'
++        log = dict(schema_version=1, dataset=DATASET, passed=True, official_archive=official_archive,
++                   preregistration_sha256=DESIGN_SHA256, manifest_sha256=digest(manifest_bytes),
++                   acquisition_helper_sha256=digest(Path(__file__).read_bytes()),
++                   qualification_helper_sha256=digest((ROOT / 'scripts/qualify-rgbd-independent.py').read_bytes()),
++                   **exposure,
++                   image_headers_read=False, pixels_read=False,
++                   ground_truth_pose_values_parsed=False, features_or_fits_run=False,
++                   metadata_qualified_before_selected_image_copy=True,
++                   archive_members=scanned['members'], decompressed_bytes=scanned['decompressed_bytes'],
++                   selected_raw_bytes=sum(i['bytes'] for i in files) + CALIBRATION['bytes'],
++                   files=len(files), calibration_documentation_sidecar=True,
++                   manifest_was_written=True, success_manifest_retained=True,
++                   qualification={k: v for k, v in selection.items() if k != 'frames'})
++        final_log_attempted = True
++        write_json_new(acquisition_log, log)
++        return log
++    except Exception as error:
++        if manifest_was_written:
++            (output / 'manifest.json').unlink(missing_ok=True)
++        if final_log_attempted:
++            acquisition_log.unlink(missing_ok=True)
++        observed = observed_regular_bytes(archive)
++        if observed is not None:
++            exposure['compressed_archive_bytes_observed'] = observed
++        write_json_new(acquisition_log.with_name(acquisition_log.name + '.failure.json'),
++                       dict(schema_version=1, dataset=DATASET, passed=False, stage=stage,
++                            error=str(error), preregistration_sha256=DESIGN_SHA256,
++                            fixed_window=dict(first_depth_index=100, last_depth_index=279),
++                            **exposure,
++                            image_headers_read=False, pixels_read=False,
++                            ground_truth_pose_values_parsed=False, features_or_fits_run=False,
++                            source_or_window_reselected=False,
++                            manifest_was_written=manifest_was_written,
++                            success_manifest_retained=False, success_log_retained=False))
++        raise
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('dataset', choices=[DATASET])
++    parser.add_argument('--archive', type=Path, required=True)
++    parser.add_argument('--preregistration', type=Path, required=True)
++    parser.add_argument('--acquisition-log', type=Path)
++    parser.add_argument('--output', type=Path, default=ROOT / 'data' / DATASET)
++    parser.add_argument('--calibration', type=Path)
++    parser.add_argument('--verify-only', action='store_true')
++    args = parser.parse_args()
++    verify_design(args.preregistration)
++    if args.verify_only:
++        manifest_path = args.output / 'manifest.json'
++        if manifest_path.is_symlink() or manifest_path.stat().st_size > 512 * 1024:
++            raise ValueError('unsafe or oversized manifest')
++        manifest = json.loads(manifest_path.read_bytes())
++        verify_inputs(manifest, args.output / 'raw', args.archive)
++        print(DATASET + ': retained archive and exact selected opaque bytes verified')
++    else:
++        if args.acquisition_log is None:
++            parser.error('--acquisition-log required for acquisition')
++        result = acquire(args.archive, args.preregistration, args.output,
++                         args.acquisition_log, args.calibration)
++        print(json.dumps(result))
++
++
++if __name__ == '__main__':
++    main()
+--- a/scripts/projective-heldout.py
++++ b/scripts/projective-heldout.py
+@@ -0,0 +1,173 @@
++#!/usr/bin/env python3
++"""Preregistered original TUM FR1 trials: opaque acquisition, run, raw audit, score."""
++import argparse,gzip,importlib.util,io,json,tarfile
++from pathlib import Path
++import numpy as np
++from PIL import Image
++from projective_depth_common import ROOT,CAMERA,Client,audit_sequence,pose,require,sha,write
++from projective_information_raw import audit as information_audit
++from projective_depth_raw import reconstruct_update
++from projective_timing_raw import TimingHistory
++
++BASE=ROOT/'artifacts/projective-information/heldout'
++DATA=ROOT/'data/tum-fr1-plant-heldout'
++BINARY=ROOT/'integrations/projective-depth/target/release/rustdriving-projective-depth'
++ARCHIVE_ROOT='rgbd_dataset_freiburg1_plant/'
++URL='https://webshare.cvg.cit.tum.de/g/rgbd/dataset/freiburg1/rgbd_dataset_freiburg1_plant.tgz'
++LIMITS=dict(compressed=832*1024*1024,decompressed=2*1024**3,members=12000,member=4*1024**2,metadata=4*1024**2,selected=128*1024**2)
++RECORDING='plant'
++EXPECTED_BYTES=695620135
++MODES={'depth':{},'timing':dict(photometric='keyframe',motion_model='constant_velocity',timing='previous_motion')}
++
++
++def module(name,path):
++    spec=importlib.util.spec_from_file_location(name,path);m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);return m
++
++
++def frozen():
++    f=json.loads((BASE/'design.json').read_text())
++    require(f['binary_sha256']==sha(BINARY.read_bytes()),'unchanged preregistered binary')
++    for n,h in f['source_sha256'].items():require(sha((ROOT/n).read_bytes())==h,'unchanged held-out source '+n)
++    return f
++
++
++def inputs():
++    f=frozen();body=(DATA/'manifest.json').read_bytes();manifest=json.loads(body)
++    require(manifest['preregistration_sha256']==sha((BASE/'design.json').read_bytes()),'preregistered manifest')
++    inventory={x['file']:x for x in manifest['files']}
++    require(len(inventory)==len(manifest['files']) and len(manifest['frames'])==180,'complete unique input inventory')
++    def read(name):
++        require(Path(name).name==name and name in inventory,'plain pinned input path')
++        p=DATA/'raw'/name;pin=inventory[name]
++        require(not p.is_symlink() and p.stat().st_size==pin['bytes']<=4*1024**2,'bounded raw input')
++        body=p.read_bytes();require(sha(body)==pin['sha256'],'raw input digest');return body
++    for name in inventory:read(name)
++    return f,manifest,read
++
++
++def prepare():
++    require(not BASE.exists() and not DATA.exists(),'fresh trial and data paths')
++    BASE.mkdir(parents=True)
++    pins=json.loads((ROOT/'artifacts/projective-information/candidate-source-sha256.json').read_text())
++    sources=set(pins)|{'scripts/projective-heldout.py','scripts/fetch-independent-dataset.py','scripts/qualify-rgbd-independent.py','scripts/check-opencv-rgbd.py'}
++    sources={n:sha((ROOT/n).read_bytes()) for n in sorted(sources)}
++    write(BASE/'design.json',dict(schema_version=1,dataset='tum-fr1-'+RECORDING+'-heldout',source_url=URL,archive_root=ARCHIVE_ROOT,
++        expected_archive_bytes_from_http_head=EXPECTED_BYTES,limits=LIMITS,first_depth_index=100,last_depth_index=279,frames=180,updates=179,
++        modes=MODES,camera=CAMERA,depth_units_per_metre=5000,source_sha256=sources,binary_sha256=sha(BINARY.read_bytes()),
++        reference_role='original independent TUM mocap; numeric poses deferred until both complete sensor ledgers and independent raw audits',
++        gates=dict(root_translation_m=.1,root_rotation_rad=.1,reference_bracket_s=.02,rgb_association_s=.02,resets=0),
++        provenance='TUM RGB-D benchmark, Sturm et al. IROS 2012; general official CC BY 4.0 terms documented in docs/tum-source-provenance.md; raw not redistributed',
++        status='new '+RECORDING+' recording and fixed interval, never used for algorithm development in this chat; same FR1 camera family, not automotive',
++        no_select_on_accuracy=True,source_frozen_before_archive_payload=True))
++    with tarfile.open(BASE/'source.tar.gz','w:gz') as t:
++        for n in sources:t.add(ROOT/n,arcname=n)
++
++
++def acquire():
++    f=frozen();archive=BASE/'archive.tgz'
++    require(archive.is_file() and archive.stat().st_size==f['expected_archive_bytes_from_http_head'],'complete bounded official transfer')
++    source=module('bounded_source',ROOT/'scripts/fetch-independent-dataset.py');source.ARCHIVE_ROOT=ARCHIVE_ROOT
++    receipt=source.archive_identity(archive,LIMITS);scanned=source.scan_archive(archive,limits=LIMITS)
++    qualifier=module('metadata_only',ROOT/'scripts/qualify-rgbd-independent.py');selected=qualifier.select_metadata(scanned['metadata'])
++    wanted={kind+'/'+x[kind+'_file'].removeprefix(kind+'-') for x in selected['frames'] for kind in ('depth','rgb')}
++    require(not(wanted-set(scanned['inventory'])),'all fixed-window images present; no fallback window')
++    DATA.mkdir();raw=DATA/'raw';raw.mkdir()
++    for n,body in scanned['metadata'].items():
++        with (raw/n).open('xb') as stream:stream.write(body)
++    copied=source.scan_archive(archive,wanted,raw,limits=LIMITS)
++    require(scanned['metadata']==copied['metadata'] and source.archive_identity(archive,LIMITS)==receipt,'archive unchanged through selection')
++    files=[]
++    for n in sorted(wanted|set(scanned['metadata'])):
++        pin=copied['selected_files'].get(n)
++        if pin is None:body=scanned['metadata'][n];pin=dict(bytes=len(body),sha256=sha(body))
++        files.append(dict(file=source.local_filename(n),source_path=n,bytes=pin['bytes'],sha256=pin['sha256']))
++    write(DATA/'manifest.json',dict(dataset='tum-fr1-'+RECORDING+'-heldout',preregistration_sha256=sha((BASE/'design.json').read_bytes()),
++        official_archive=dict(url=URL,root=ARCHIVE_ROOT,published_checksum=None,**receipt),camera=CAMERA,frames=selected['frames'],files=files))
++    write(BASE/'acquisition.json',dict(archive=receipt,metadata_only_qualification=selected['timestamps'],image_headers_read=False,pixels_decoded=False,
++        numeric_reference_poses_decoded=False,selected_images=len(wanted),members=scanned['members'],decompressed_bytes=scanned['decompressed_bytes']))
++    frozen()
++
++
++def image(read,frame,color=False):
++    im=Image.open(io.BytesIO(read(frame['rgb_file' if color else 'depth_file'])))
++    require(im.size==(640,480) and im.mode in (('RGB',) if color else ('I;16','I;16B','I')),'original sensor image')
++    if color:
++        a=np.asarray(im,dtype=np.uint32);return ((77*a[:,:,0]+150*a[:,:,1]+29*a[:,:,2])>>8).astype(np.uint8)
++    return np.asarray(im,dtype=float)/5000.
++
++
++def run():
++    f,manifest,read=inputs()
++    for mode,config in MODES.items():
++        out=BASE/mode;out.mkdir();write(out/'freeze.json',dict(binary_sha256=f['binary_sha256'],configuration=config,
++            manifest_sha256=sha((DATA/'manifest.json').read_bytes()),preregistration_sha256=sha((BASE/'design.json').read_bytes()),
++            sensor_only=True,ground_truth_operational=False,information_guard='physical_spectrum_v1'))
++        client=Client(BINARY,CAMERA,configuration=config);rows=[]
++        try:
++            for frame in manifest['frames']:
++                rgb=None if mode=='depth' else dict(timestamp=frame['rgb_timestamp'],gray=image(read,frame,True).ravel().tolist())
++                u=client.frame(frame['depth_timestamp'],image(read,frame),image=rgb);rows.append(dict(source_index=frame['source_index'],update=u));information_audit(u)
++            client.finish()
++        except BaseException:client.abort();raise
++        write(out/'sensor-only.json',dict(frames=rows,ground_truth_parsed=False));frozen()
++
++
++def raw_audit():
++    _,manifest,read=inputs()
++    for mode in MODES:
++        out=BASE/mode;rows=json.loads((out/'sensor-only.json').read_text())['frames'];require(len(rows)==180,'all selected acquisitions')
++        audit_sequence(rows,[x['depth_timestamp'] for x in manifest['frames']]);history=TimingHistory()
++        model=weights=key_gray=key_rgb=last_rgb=None;counts=[]
++        for frame,row in zip(manifest['frames'],rows,strict=True):
++            u=row['update'];information_audit(u);context=None;gray=None;fresh=False
++            if mode=='timing' and 'photometric' in u:
++                gray=image(read,frame,True);rgb=frame['rgb_timestamp'];fresh=last_rgb is None or rgb>last_rgb;last_rgb=rgb
++                context=dict(target=key_gray,source=gray,source_timestamp=rgb,reference_timestamp=key_rgb,qualified=False,fresh=fresh)
++                history.augment(context,frame['depth_timestamp'])
++            initial=model is None
++            model,weights,c=reconstruct_update(model,weights,image(read,frame),CAMERA,u,image_context=context);counts.append(c)
++            if mode=='timing' and u['accepted'] and (initial or u['keyframe_replaced']):key_gray=gray if fresh else None;key_rgb=frame['rgb_timestamp'] if fresh else None
++            history.observe(u)
++            if len(counts)%30==0:print(mode,'raw frames',len(counts),flush=True)
++        write(out/'raw-audit.json',dict(pass_raw_mathematics=True,numeric_reference_poses_decoded=False,frames=180,
++            geometric_systems=sum(x['iterations']+x['final_equations'] for x in counts),failure_witnesses=sum('information_failure' in row['update'] for row in rows)))
++    frozen()
++
++
++def score():
++    _,manifest,read=inputs()
++    for mode in MODES:require(json.loads((BASE/mode/'raw-audit.json').read_text())['pass_raw_mathematics'],'raw audit before numeric reference scoring')
++    ref=module('mocap_score',ROOT/'scripts/check-opencv-rgbd.py');ref.controls();labels=np.loadtxt(io.BytesIO(read('groundtruth.txt')),comments='#')
++    require(labels.ndim==2 and labels.shape[1]==8 and np.isfinite(labels).all() and np.all(np.diff(labels[:,0])>0),'whole chronological mocap')
++    origin=np.linalg.inv(ref.truth_at(labels,manifest['frames'][0]['depth_timestamp']));results={}
++    for mode in MODES:
++        rows=json.loads((BASE/mode/'sensor-only.json').read_text())['frames'];accurate=accepted=0;errors=[]
++        for i,(frame,row) in enumerate(zip(manifest['frames'],rows,strict=True)):
++            u=row['update']
++            if not i:require(u['accepted'],'first optical camera root established');continue
++            if not u['accepted']:continue
++            truth=origin@ref.truth_at(labels,frame['depth_timestamp']);error=np.linalg.inv(truth)@pose(u['first_from_current'])
++            position=float(np.linalg.norm(error[:3,3]));r=error[:3,:3];skew=[r[2,1]-r[1,2],r[0,2]-r[2,0],r[1,0]-r[0,1]]
++            angle=float(np.arctan2(np.linalg.norm(skew)/2,(np.trace(r)-1)/2));good=position<=.1 and angle<=.1;accepted+=1;accurate+=int(good);errors.append((position,angle))
++            row.update(position_error_m=position,rotation_error_rad=angle,accurate=good)
++        summary=dict(total_updates=179,accepted=accepted,root_accurate=accurate,lost=rows[-1]['update']['lost'],max_position_error_m=max((x[0] for x in errors),default=None),max_rotation_error_rad=max((x[1] for x in errors),default=None),complete_accuracy_pass=accurate==179 and not rows[-1]['update']['lost'])
++        write(BASE/mode/'results.json',dict(summary=summary,frames=rows));results[mode]=summary
++    write(BASE/'results.json',dict(first_frozen_heldout_trial=True,summaries=results,source_unchanged=frozen()['binary_sha256'],all_numeric_truth_deferred_until_both_raw_audits=True))
++    print(json.dumps(results),flush=True)
++    return 0 if all(s['complete_accuracy_pass'] for s in results.values()) else 1
++
++
++if __name__=='__main__':
++    p=argparse.ArgumentParser(description=__doc__);p.add_argument('action',choices=('prepare','acquire','run','audit','score'))
++    p.add_argument('--recording',choices=('plant','rpy'),default='plant');p.add_argument('--expected-archive-bytes',type=int);a=p.parse_args()
++    RECORDING=a.recording
++    if RECORDING!='plant':
++        BASE=ROOT/'artifacts/projective-information'/('heldout-'+RECORDING)
++        DATA=ROOT/'data'/('tum-fr1-'+RECORDING+'-heldout')
++        ARCHIVE_ROOT='rgbd_dataset_freiburg1_'+RECORDING+'/'
++        URL='https://webshare.cvg.cit.tum.de/g/rgbd/dataset/freiburg1/rgbd_dataset_freiburg1_'+RECORDING+'.tgz'
++    if a.action=='prepare':
++        EXPECTED_BYTES=a.expected_archive_bytes if a.expected_archive_bytes is not None else EXPECTED_BYTES
++        require(type(EXPECTED_BYTES) is int and 0<EXPECTED_BYTES<=LIMITS['compressed'],'bounded declared archive size')
++    result=globals()[{'audit':'raw_audit'}.get(a.action,a.action)]()
++    if type(result) is int:raise SystemExit(result)
+--- a/scripts/projective_depth_common.py
++++ b/scripts/projective_depth_common.py
+@@ -1,8 +1,10 @@
+ """Evaluation transport and independent linear algebra for optional depth research."""
+ import hashlib
+ import json
++import os
+ from pathlib import Path
+ import subprocess
++import tempfile
+ 
+ import numpy as np
+ 
+@@ -20,9 +22,20 @@
+ 
+ 
+ def write(path, value):
+-    with path.open('x') as stream:
+-        json.dump(value,stream,indent=2,allow_nan=False)
+-        stream.write('\n')
++    if path.exists() or path.is_symlink():
++        raise FileExistsError(str(path))
++    descriptor, temporary = tempfile.mkstemp(prefix='.'+path.name+'.prepare-',dir=path.parent)
++    try:
++        with os.fdopen(descriptor,'w') as stream:
++            json.dump(value,stream,indent=2,allow_nan=False)
++            stream.write('\n')
++            stream.flush()
++            os.fsync(stream.fileno())
++        # Publish only a complete JSON file; linking refuses an existing target
++        # even when two writers pass the initial existence check concurrently.
++        os.link(temporary,path)
++    finally:
++        Path(temporary).unlink(missing_ok=True)
+ 
+ 
+ def fresh(path):
+@@ -198,6 +211,8 @@
+                 predicted_initial=initial@pose(update['prediction']['latest_from_prediction'])
+         if steps:
+             np.testing.assert_allclose(pose(steps[0]['before']),predicted_initial,atol=1e-11,rtol=0)
++        elif 'information_failure' in update:
++            np.testing.assert_allclose(pose(update['information_failure']['pose']),predicted_initial,atol=1e-11,rtol=0)
+         if update['accepted']:
+             history.append((stamp,pose(update['first_from_current'])));history=history[-2:]
+             last_accepted = stamp
+--- a/scripts/projective_depth_raw.py
++++ b/scripts/projective_depth_raw.py
+@@ -236,6 +236,15 @@
+             from projective_step_raw import reconstruct,compare
+             require('photometric' in update,'step control belongs to the RGB-D mode')
+             compare(step['step_control'],reconstruct(target[scale],source[scale],colors,step))
++    if 'information_failure' in update:
++        from projective_information_raw import audit
++        audit(update)
++        f=update['information_failure'];scale=f['scale'];transform=pose(f['pose'])
++        compare_equation(f['equation'],normal_equation(target[scale],source[scale],transform,scale,correspondence,residual_policy))
++        if colors is not None:
++            from projective_photo_raw import equation,compare
++            compare(f['photometric'],equation(target[scale],source[scale],colors[0][scale],colors[1][scale],transform,scale,image_context['qualified'] and image_context['fresh'],affine=True,warps=image_context.get('warps')))
++        else:require(f['photometric'] is None,'no invented failure image anchor')
+     if not update['accepted']:
+         require(update['fusion'] is None and update['first_from_current'] is None,'no rejected-state commit')
+         return model,weights,dict(iterations=len(update['iterations']),final_equations=0,model_replaced=False)
+--- a/scripts/projective_information_raw.py
++++ b/scripts/projective_information_raw.py
+@@ -0,0 +1,46 @@
++"""Independent metre/radian observability; a structural guard, not covariance."""
++import numpy as np
++from projective_depth_common import pose,require
++
++
++def combined(e,p=None):
++    h=np.asarray(e['h'],dtype=float)
++    if p is not None and p['used']:h=h+p['scale_m2_per_gray2']*np.asarray(p['h'])
++    return h
++
++
++def spectrum(h):
++    require(h.shape==(6,6) and np.isfinite(h).all(),'finite physical information')
++    scale=float(np.diag(h).max())
++    if scale<=0:return None
++    eigen=np.linalg.eigvalsh(h/scale)
++    return dict(translation_scale_m=1.,rotation_scale_rad=1.,matrix_scale=scale,eigenvalues=eigen,
++        condition=float(eigen[-1]/eigen[0]) if eigen[0]>0 else None)
++
++
++def admitted(s):return s is not None and s['condition'] is not None and s['condition']<=1e6
++
++
++def compare(actual,expected):
++    if expected is None:require(actual is None,'no fabricated physical spectrum');return
++    require(actual is not None and actual.keys()==expected.keys(),'complete physical spectrum')
++    for key in ('translation_scale_m','rotation_scale_rad','matrix_scale'):require(actual[key]==expected[key],'fixed physical spectrum units/scale')
++    np.testing.assert_allclose(actual['eigenvalues'],expected['eigenvalues'],atol=2e-13,rtol=1e-11)
++    if expected['eigenvalues'][0]>1e-12:np.testing.assert_allclose(actual['condition'],expected['condition'],atol=1e-7,rtol=1e-7)
++    else:require(actual['condition'] is None or actual['condition']>1e6,'numerically singular information cannot authorize motion')
++
++
++def audit(update):
++    for step in update['iterations']:
++        require(admitted(spectrum(combined(step['equation'],step.get('photometric')))),'every admitted solve has physical directional support')
++    if update['accepted'] and update['iterations']:
++        require(admitted(spectrum(combined(update['final_equation'],update.get('final_photometric')))),'returned pose has physical directional support')
++    f=update.get('information_failure')
++    if update['rejection']=='insufficient physical observability condition':require(f is not None,'required observability failure witness')
++    if f is None:return
++    require(not update['accepted'] and update['fusion'] is None and update['first_from_current'] is None,'weak information never commits state')
++    require(update['rejection']=='insufficient physical observability condition' and f['scale'] in (1,2,4) and type(f['final_pose']) is bool and f['equation']['count']>=200,'bounded failure stage/support')
++    s=spectrum(combined(f['equation'],f['photometric']));compare(f['spectrum'],s)
++    require(not admitted(s),'observability rejection has independently weak information')
++    if update['iterations']:np.testing.assert_allclose(pose(f['pose']),pose(update['iterations'][-1]['after']),atol=1e-12,rtol=0)
++    if f['final_pose']:require(f['scale']==1 and bool(update['iterations']),'final pose witness follows actual fitting')
+--- a/scripts/qualify-rgbd-independent.py
++++ b/scripts/qualify-rgbd-independent.py
+@@ -0,0 +1,188 @@
++#!/usr/bin/env python3
++"""Qualify fixed official FR1 desk2 metadata without opening PNGs or pose values."""
++import argparse
++from bisect import bisect_left
++import hashlib
++import importlib.util
++import json
++import math
++from pathlib import Path
++import re
++
++ROOT = Path(__file__).resolve().parent.parent
++MAX_BYTES = 4 * 1024 * 1024
++MAX_INDEX_ROWS = 20000
++MAX_GT_ROWS = 30000
++SUMMARY_TIME_UNIT = ('rounded microseconds from source timestamps; '
++                     'qualification gates use unrounded seconds')
++WINDOW = dict(first_depth_index=100, last_depth_index=279, frames=180, updates=179)
++
++
++def digest(content):
++    return hashlib.sha256(content).hexdigest()
++
++
++def timestamp_rows(content, columns, name, maximum):
++    """Only the timestamp is numeric; seven reference-pose tokens stay opaque."""
++    if len(content) > MAX_BYTES:
++        raise ValueError(name + ': metadata byte bound exceeded')
++    result, paths = [], set()
++    for physical_line, line in enumerate(content.decode('utf8').splitlines(), 1):
++        fields = line.strip().split()
++        if not fields or fields[0].startswith('#'):
++            continue
++        if len(fields) != columns:
++            raise ValueError(f'{name}: invalid arity on line {physical_line}')
++        try:
++            stamp = float(fields[0])
++        except ValueError:
++            raise ValueError(f'{name}: invalid timestamp on line {physical_line}') from None
++        if not math.isfinite(stamp) or (result and stamp <= result[-1][0]):
++            raise ValueError(f'{name}: nonfinite or nonincreasing timestamp on line {physical_line}')
++        source_path = None
++        if columns == 2:
++            source_path = fields[1]
++            kind = name.removesuffix('.txt')
++            if not re.fullmatch(kind + r'/[0-9]+\.[0-9]+\.png', source_path):
++                raise ValueError(name + ': unsafe or unsupported original image path')
++            if source_path in paths:
++                raise ValueError(name + ': ambiguous repeated source path')
++            paths.add(source_path)
++        result.append((stamp, source_path))
++        if len(result) > maximum:
++            raise ValueError(name + ': metadata row bound exceeded')
++    if len(result) < 2:
++        raise ValueError(name + ': insufficient metadata')
++    return result
++
++
++def nearest_index(times, stamp):
++    upper = bisect_left(times, stamp)
++    candidates = [i for i in (upper - 1, upper) if 0 <= i < len(times)]
++    return min(candidates, key=lambda i: (abs(times[i] - stamp), i))
++
++
++def bracket_width(times, stamp):
++    upper = bisect_left(times, stamp)
++    if upper < len(times) and times[upper] == stamp:
++        return 0.0
++    if upper == 0 or upper == len(times):
++        raise ValueError('reference timestamp would require extrapolation')
++    width = times[upper] - times[upper - 1]
++    if not 0 < width <= 0.02:
++        raise ValueError('reference timestamp bracket exceeds 0.02 seconds')
++    return width
++
++
++def select_metadata(tables):
++    """Derive the sole fixed window using three complete tables, never pixels."""
++    if set(tables) != {'depth.txt', 'rgb.txt', 'groundtruth.txt'}:
++        raise ValueError('complete source metadata inventory required')
++    if sum(len(content) for content in tables.values()) > MAX_BYTES:
++        raise ValueError('aggregate complete metadata exceeds 4 MiB')
++    rows = {name: timestamp_rows(tables[name], columns, name, maximum)
++            for name, columns, maximum in [('depth.txt', 2, MAX_INDEX_ROWS),
++                                           ('rgb.txt', 2, MAX_INDEX_ROWS),
++                                           ('groundtruth.txt', 8, MAX_GT_ROWS)]}
++    if len(rows['depth.txt']) < 280:
++        raise ValueError('fixed original depth window absent; no replacement window')
++    rgb_times = [r[0] for r in rows['rgb.txt']]
++    gt_times = [r[0] for r in rows['groundtruth.txt']]
++    frames, gaps, widths, rgb_identities = [], [], [], set()
++    for ordinal in range(100, 280):
++        stamp, source_path = rows['depth.txt'][ordinal]
++        rgb_ordinal = nearest_index(rgb_times, stamp)
++        rgb_stamp, rgb_source_path = rows['rgb.txt'][rgb_ordinal]
++        gap = abs(stamp - rgb_stamp)
++        if gap > 0.02:
++            raise ValueError(f'RGB/depth gap exceeds 0.02 seconds at depth index {ordinal}')
++        width = bracket_width(gt_times, stamp)
++        frames.append(dict(source_index=ordinal,
++                           depth_file='depth-' + Path(source_path).name,
++                           depth_timestamp=stamp,
++                           rgb_file='rgb-' + Path(rgb_source_path).name,
++                           rgb_timestamp=rgb_stamp, rgb_source_index=rgb_ordinal,
++                           pair_gap_seconds=gap,
++                           split='initialization' if ordinal == 100 else 'independent_recording'))
++        gaps.append(gap)
++        widths.append(width)
++        rgb_identities.add((rgb_ordinal, rgb_stamp, rgb_source_path))
++    rounded_us = lambda value: math.floor(value * 1000000.0 + 0.5)
++    metadata_files = {name: dict(bytes=len(content), sha256=digest(content))
++                      for name, content in tables.items()}
++    timestamps = dict(depth_index_rows=len(rows['depth.txt']),
++                      rgb_index_rows=len(rows['rgb.txt']),
++                      ground_truth_rows=len(rows['groundtruth.txt']),
++                      strict_depth_order=True, strict_rgb_order=True,
++                      strict_ground_truth_order=True, all_frame_brackets_valid=True,
++                      max_ground_truth_bracket_s=0.02, max_pair_gap_s=0.02,
++                      maximum_observed_ground_truth_bracket_us=rounded_us(max(widths)),
++                      maximum_pair_gap_us=rounded_us(max(gaps)),
++                      unique_rgb_acquisitions=len(rgb_identities),
++                      duplicate_rgb_associations=180 - len(rgb_identities),
++                      summary_time_unit=SUMMARY_TIME_UNIT)
++    return dict(frames=frames, window=dict(WINDOW),
++                metadata_files=metadata_files, timestamps=timestamps)
++
++
++def qualify_metadata(manifest, read_metadata):
++    items = {item['file']: item for item in manifest['files']}
++    tables = {}
++    for name in ('depth.txt', 'rgb.txt', 'groundtruth.txt'):
++        content = read_metadata(name)
++        if len(content) != items[name]['bytes'] or digest(content) != items[name]['sha256']:
++            raise ValueError(name + ': pinned metadata bytes changed')
++        tables[name] = content
++    selected = select_metadata(tables)
++    if manifest['frames'] != selected.pop('frames'):
++        raise ValueError('manifest differs from fixed original timestamp/window associations')
++    return selected
++
++
++def qualify(manifest_raw, raw):
++    if len(manifest_raw) > 512 * 1024:
++        raise ValueError('manifest byte bound exceeded')
++    manifest = json.loads(manifest_raw)
++    path = ROOT / 'scripts/fetch-independent-dataset.py'
++    spec = importlib.util.spec_from_file_location('independent_acquisition', path)
++    acquisition = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(acquisition)
++    acquisition.verify_manifest(manifest)
++    expected = {item['file'] for item in manifest['files']} | {'camera-calibration.yaml'}
++    if raw.is_symlink() or {path.name for path in raw.iterdir()} != expected:
++        raise ValueError('extra or missing actual raw inputs; pinned camera sidecar is allowed')
++    if any(path.is_symlink() or not path.is_file() for path in raw.iterdir()):
++        raise ValueError('unsafe actual raw input type')
++
++    def reader(name):
++        path = raw / name
++        if raw.is_symlink() or path.is_symlink() or path.stat().st_size > MAX_BYTES:
++            raise ValueError('unsafe or oversized metadata input')
++        return path.read_bytes()
++
++    evidence = qualify_metadata(manifest, reader)
++    return dict(schema_version=1, dataset=manifest['dataset'],
++                manifest_sha256=digest(manifest_raw), official_archive=manifest['official_archive'],
++                preregistration_sha256=manifest['preregistration_sha256'],
++                helper_sha256=digest(Path(__file__).read_bytes()),
++                acquisition_helper_sha256=digest(path.read_bytes()),
++                passed=True, pixels_read=False, image_headers_read=False,
++                ground_truth_pose_values_parsed=False, features_or_fits_run=False, **evidence)
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('--manifest', type=Path, required=True)
++    parser.add_argument('--raw', type=Path, required=True)
++    parser.add_argument('--output', type=Path, required=True)
++    args = parser.parse_args()
++    result = qualify(args.manifest.read_bytes(), args.raw)
++    args.output.parent.mkdir(parents=True, exist_ok=True)
++    with args.output.open('x') as stream:
++        json.dump(result, stream, indent=2, allow_nan=False)
++        stream.write('\n')
++    print(json.dumps(result))
++
++
++if __name__ == '__main__':
++    main()
+--- a/scripts/repair-projective-heldout-inventory.py
++++ b/scripts/repair-projective-heldout-inventory.py
+@@ -0,0 +1,46 @@
++#!/usr/bin/env python3
++"""Complete the frozen RPY opaque inventory after its duplicate-key writer error."""
++import importlib.util,json
++from pathlib import Path
++from projective_depth_common import ROOT,require,sha,write
++
++
++def load(name,path):
++    spec=importlib.util.spec_from_file_location(name,path);m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);return m
++
++
++def main():
++    base=ROOT/'artifacts/projective-information/heldout-rpy';data=ROOT/'data/tum-fr1-rpy-heldout';raw=data/'raw';archive=base/'archive.tgz'
++    original=load('frozen_trial',ROOT/'scripts/projective-heldout.py');original.BASE=base;original.DATA=data
++    f=original.frozen();require(f['dataset']=='tum-fr1-rpy-heldout','only the original frozen RPY acquisition')
++    require(not (data/'manifest.json').exists() and not (base/'acquisition.json').exists(),'never overwrite successful acquisition')
++    error=Path('/tmp/rustdrive-information-rpy-acquire.log').read_bytes()
++    require(b"dict() got multiple values for keyword argument 'source_path'" in error,'identified acquisition-only failure')
++    receipt=dict(repair_source_sha256=sha(Path(__file__).read_bytes()),frozen_design_sha256=sha((base/'design.json').read_bytes()),
++        original_helper_sha256=sha((ROOT/'scripts/projective-heldout.py').read_bytes()),original_failure_sha256=sha(error),
++        repair='write each original source_path once; bytes/SHA read explicitly from verified source inventory',
++        images_decoded=False,numeric_reference_poses_parsed=False,selection_parameters_changed=False,estimator_or_scoring_changed=False)
++    write(base/'inventory-repair-started.json',receipt)
++    source=load('bounded_source',ROOT/'scripts/fetch-independent-dataset.py');source.ARCHIVE_ROOT='rgbd_dataset_freiburg1_rpy/'
++    identity=source.archive_identity(archive,original.LIMITS);first=source.scan_archive(archive,limits=original.LIMITS)
++    qualifier=load('metadata_only',ROOT/'scripts/qualify-rgbd-independent.py');selected=qualifier.select_metadata(first['metadata'])
++    wanted={kind+'/'+frame[kind+'_file'].removeprefix(kind+'-') for frame in selected['frames'] for kind in ('depth','rgb')}
++    scan=source.scan_archive(archive,wanted,limits=original.LIMITS)
++    require(scan['metadata']==first['metadata'],'unchanged complete metadata')
++    names=wanted|set(scan['metadata']);require({p.name for p in raw.iterdir()}=={source.local_filename(n) for n in names},'exact selected raw inventory')
++    files=[]
++    for name in sorted(names):
++        pin=scan['selected_files'].get(name)
++        if pin is None:body=scan['metadata'][name];pin=dict(bytes=len(body),sha256=sha(body))
++        target=raw/source.local_filename(name);require(not target.is_symlink() and target.is_file() and target.stat().st_size==pin['bytes'],'bounded original raw file')
++        require(sha(target.read_bytes())==pin['sha256'],'original archive byte identity')
++        files.append(dict(file=target.name,source_path=name,bytes=pin['bytes'],sha256=pin['sha256']))
++    require(source.archive_identity(archive,original.LIMITS)==identity,'unchanged original archive')
++    write(data/'manifest.json',dict(dataset=f['dataset'],preregistration_sha256=receipt['frozen_design_sha256'],
++        official_archive=dict(url=f['source_url'],root=f['archive_root'],published_checksum=None,**identity),camera=original.CAMERA,frames=selected['frames'],files=files))
++    write(base/'acquisition.json',dict(archive=identity,metadata_only_qualification=selected['timestamps'],image_headers_read=False,pixels_decoded=False,
++        numeric_reference_poses_decoded=False,selected_images=len(wanted),members=first['members'],decompressed_bytes=first['decompressed_bytes'],inventory_repair=receipt))
++    original.inputs();original.frozen();print('exact original RPY inventory completed; no pixel or numerical pose decoding',flush=True)
++
++
++if __name__=='__main__':main()

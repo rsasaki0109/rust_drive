@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "implemented": "optional free_space_decay and paired map-point/normal diagnostic",
+  "default": "visibility disabled unchanged",
+  "binary_sha256": "59332ed6601e8b7ff16759694f8c8fb4af1b23050efeb1982b0e065a5a47b426",
+  "before_binary_sha256": "34175a1cef5056897dbca4d497bcf32317a7a16b66e7015c7535ce2f2871a207",
+  "source_members": 84,
+  "recorded_scores": {
+    "tum-fr1-room-temporal": {
+      "total_updates": 179,
+      "accepted": 179,
+      "root_accurate": 67,
+      "lost": false,
+      "max_position_error_m": 0.3013767670011913,
+      "max_rotation_error_rad": 0.14064577190676208,
+      "complete_accuracy_pass": false,
+      "independently_checked_normal_steps": 3464
+    },
+    "tum-fr1-desk2-independent": {
+      "total_updates": 179,
+      "accepted": 179,
+      "root_accurate": 161,
+      "lost": false,
+      "max_position_error_m": 0.11771464839809802,
+      "max_rotation_error_rad": 0.09027874977201732,
+      "complete_accuracy_pass": false,
+      "independently_checked_normal_steps": 3396
+    },
+    "tum-fr1-rpy-heldout": {
+      "total_updates": 179,
+      "accepted": 179,
+      "root_accurate": 74,
+      "lost": false,
+      "max_position_error_m": 0.08734631430119212,
+      "max_rotation_error_rad": 0.17299527570814893,
+      "complete_accuracy_pass": false,
+      "independently_checked_normal_steps": 3344
+    }
+  },
+  "visibility_totals": {
+    "tum-fr1-room-temporal": {
+      "tested": 35960945,
+      "consistent": 35217341,
+      "occluded": 255631,
+      "free_space": 487973,
+      "removed": 129166
+    },
+    "tum-fr1-desk2-independent": {
+      "tested": 36093237,
+      "consistent": 35317155,
+      "occluded": 199268,
+      "free_space": 576814,
+      "removed": 137126
+    },
+    "tum-fr1-rpy-heldout": {
+      "tested": 38793187,
+      "consistent": 37970827,
+      "occluded": 166847,
+      "free_space": 655513,
+      "removed": 152704
+    }
+  },
+  "default_adoption": false,
+  "complete_physical_accuracy": false,
+  "data_role": "same three viewed FR1 regression windows",
+  "limitation": "accepted-pose-dependent support heuristic; no calibrated free-space probability or unique physical drift cause",
+  "subjective_maturity_percent": 20,
+  "goal_30_percent_complete": false,
+  "validation": {
+    "native_tests": 59,
+    "core_tests": 371,
+    "total_rust_tests": 430,
+    "scenario_replays": 49,
+    "core_outputs_unchanged": 245,
+    "compatibility_outcomes_identical": 1440,
+    "raw_recorded_normal_systems": 10741,
+    "raw_recorded_model_generations": 537,
+    "raw_reference_view_warps": 124,
+    "diagnostic_common_matches": 667106,
+    "known_linearized_axes": 6,
+    "malformed_transport_cases": 75,
+    "valid_synthetic_outcomes_identical_after_rejection": 9,
+    "controlled_stale_foreground_cells_removed": 144,
+    "heldout_accuracy_claim": false,
+    "complete_physical_accuracy": false,
+    "default_adoption": false,
+    "prior_evidence_entries_unchanged": 1687
+  }
+}

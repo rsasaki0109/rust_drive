@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "pass_implementation_integrity": true,
+  "source_members": 95,
+  "source_archive_sha256": "2cef9aa2244bfbce6e2d30830380b2262128269e794d1169b93fb338b7456e78",
+  "input_cubic_sha256": "9c6defb5ba21417df543337f2564ea3d92f8a5e3491e3dcc07b26249d59001d3",
+  "data_role": "viewed follow-up after frozen cubic domain failure; initial support margin comparison",
+  "continuous_converged": 1,
+  "center_cubic_control_converged": 0,
+  "bilinear_control_converged": 2,
+  "original_discrete_fresh_converged": 0,
+  "search_stops": 2,
+  "missing_current_support_stops": 7,
+  "budget_stops": 0,
+  "applied_corrections": 50,
+  "reported_systems": 70,
+  "rechecked_control_systems": 60,
+  "checkpoint_system_checks": 60,
+  "initial_source_occurrences_before": 32507,
+  "initial_source_occurrences_after": 16234,
+  "retained_initial_sources": 0.4994001292029409,
+  "original_factor_occurrences": 36,
+  "retained_factor_occurrences": 19,
+  "original_survivor_arrays_and_normalizers_preserved": true,
+  "invalid_candidate_trials": 282,
+  "valid_nonpassing_candidate_trials": 0,
+  "accepted_candidate_trials": 50,
+  "shortened_steps": 23,
+  "accepted_cost_increases": 0,
+  "converged_cases": [
+    {
+      "case": "tum-fr1-room-temporal",
+      "source_index": 240,
+      "applied_corrections": 9,
+      "remaining_max_translation_m": 9.40119978159192e-06,
+      "remaining_max_rotation_rad": 9.072198505257214e-06
+    }
+  ],
+  "analytic_rendered_converged": true,
+  "analytic_rendered_updates": 1,
+  "analytic_reported_systems": 3,
+  "analytic_checkpoint_checks": 6,
+  "analytic_initial_sources_before": 988,
+  "analytic_initial_sources_after": 887,
+  "additional_corruptions_rejected": 3,
+  "real_local_pose_fitting": true,
+  "new_trajectory_fitting": false,
+  "numeric_ground_truth_parsed": false,
+  "physical_accuracy_scored": false,
+  "tracker_state_commits": false,
+  "default_changed": false,
+  "eligible_for_followup_full_trajectory": false,
+  "core_rust_tests_passed": 371,
+  "core_scenarios_and_replays_passed": 49,
+  "unchanged_core_outputs": 245,
+  "unchanged_previous_evidence_files": 503,
+  "unchanged_native_sources": 16,
+  "subjective_maturity_percent": 20,
+  "statistics": {
+    "tum-fr1-room-temporal": {
+      "samples": 5,
+      "continuous_converged": 1,
+      "control_continuous_converged": 0,
+      "original_discrete_fresh_converged": 0,
+      "local_guard_failures": 4,
+      "original_discrete_guard_failures": 0,
+      "original_discrete_rms_gate_passes": 5,
+      "median_original_discrete_rms_m": 0.0024838335603096125,
+      "control_median_original_discrete_rms_m": 0.0024776698583121853,
+      "source_occurrences_before": 10156,
+      "source_occurrences_after": 1939,
+      "source_retention": 0.1909216226860969,
+      "factors_before": 20,
+      "factors_after": 6,
+      "budget_exhaustions": 0,
+      "total_applied_corrections": 9,
+      "shortened_steps": 0,
+      "invalid_candidate_trials": 0,
+      "valid_nonpassing_candidate_trials": 0,
+      "accepted_candidate_trials": 9,
+      "accepted_cost_increases": 0,
+      "checkpoints": {
+        "10": {
+          "continuous_converged": 1,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 4,
+          "budget_exhaustions": 0
+        },
+        "20": {
+          "continuous_converged": 1,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 4,
+          "budget_exhaustions": 0
+        },
+        "30": {
+          "continuous_converged": 1,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 4,
+          "budget_exhaustions": 0
+        }
+      },
+      "eligible_for_followup_full_trajectory": false
+    },
+    "tum-fr1-desk2-independent": {
+      "samples": 5,
+      "continuous_converged": 0,
+      "control_continuous_converged": 0,
+      "original_discrete_fresh_converged": 0,
+      "local_guard_failures": 5,
+      "original_discrete_guard_failures": 0,
+      "original_discrete_rms_gate_passes": 5,
+      "median_original_discrete_rms_m": 0.0027404641366715284,
+      "control_median_original_discrete_rms_m": 0.0027404641366715284,
+      "source_occurrences_before": 22351,
+      "source_occurrences_after": 14295,
+      "source_retention": 0.6395686993870521,
+      "factors_before": 16,
+      "factors_after": 13,
+      "budget_exhaustions": 0,
+      "total_applied_corrections": 41,
+      "shortened_steps": 23,
+      "invalid_candidate_trials": 282,
+      "valid_nonpassing_candidate_trials": 0,
+      "accepted_candidate_trials": 41,
+      "accepted_cost_increases": 0,
+      "checkpoints": {
+        "10": {
+          "continuous_converged": 0,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 3,
+          "budget_exhaustions": 2
+        },
+        "20": {
+          "continuous_converged": 0,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 4,
+          "budget_exhaustions": 1
+        },
+        "30": {
+          "continuous_converged": 0,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 5,
+          "budget_exhaustions": 0
+        }
+      },
+      "eligible_for_followup_full_trajectory": false
+    }
+  },
+  "limits": [
+    "Viewed outcome-informed follow-up after frozen cubic failure, not a held-out trial",
+    "One room fit converges but seven lack current support and overall1/10 remains below bilinear2/10",
+    "Only49.94% source occurrences survive initial stencil and minimum-factor admission; joint objective/selection comparison does not isolate smoothing benefit",
+    "Original-discrete fresh convergence0/10; no new physical trajectory, native adoption, vehicle integration or timing claim"
+  ]
+}

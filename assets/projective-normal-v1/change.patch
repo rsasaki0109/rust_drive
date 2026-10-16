@@ -1,0 +1,533 @@
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -140,6 +140,8 @@
+           python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/symmetric-analytic --residual symmetric_planes --output artifacts/projective-depth/symmetric-raw-audit
+           python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --correspondence bilinear --output artifacts/projective-depth/bilinear-analytic
+           python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/bilinear-analytic --correspondence bilinear --output artifacts/projective-depth/bilinear-raw-audit
++          python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --normals inverse_depth_plane --output artifacts/projective-depth/plane-normal-analytic
++          python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/plane-normal-analytic --normals inverse_depth_plane --output artifacts/projective-depth/plane-normal-raw-audit
+           python scripts/check-multireference-rgbd.py --binary integrations/projective-depth/target/release/rustdriving-multireference-rgbd --output artifacts/projective-depth/multireference
+           python scripts/check-joint-keyframe-depth.py --output artifacts/projective-depth/joint-keyframes
+           python scripts/check-marginalized-keyframes.py --output artifacts/projective-depth/marginalized-keyframes
+--- a/docs/native-depth-regression.md
++++ b/docs/native-depth-regression.md
+@@ -57,11 +57,12 @@
+     reprojection: Reprojection::Point,
+     correspondence: Correspondence::Forward,
+     residual: Residual::TargetPlane,
++    normals: NormalEstimation::CentralDifference,
+ }
+ ```
+ 
+ The JSON-lines `Configure` request accepts optional `reprojection`,
+-`correspondence` and `residual` fields with the names below. Missing fields use
++`correspondence`, `residual` and `normals` fields with the names below. Missing fields use
+ the original defaults; unknown fields and enum values reject. The version-1
+ acknowledgment, frame limits, optical coordinate convention and metre/second
+ units are unchanged. There are no new dependencies or Cargo lockfile changes.
+@@ -82,6 +83,11 @@
+   giving a target-point lever arm. Its RMS averages the two squared residuals
+   per correspondence, which is counted once. This option is not recommended
+   by the recorded comparison.
++* `normals`: `central_difference` or `inverse_depth_plane`. The latter uses
++  a uniform 5×5 inverse-depth plane at native resolution, with complete measured
++  support and axial-depth fit RMS at most 0.002 m. Unsupported or curved patches
++  retain their original central normals; scales 2 and 4 always retain central
++  normals. This option also fails recorded accuracy and remains experimental.
+ 
+ Only the individual configurations in the table have recorded trajectory
+ results. Their combinations have no physical accuracy qualification. All modes
+@@ -145,7 +151,7 @@
+ generations. Counts and fusion categories agree exactly. The four full comparisons
+ reuse the same observations. They do not represent four independent acquisitions.
+ 
+-The optional Rust crate passes **23 tests**, including a transformed-plane
++The four-policy packet records **23 tests**, including a transformed-plane
+ witness, missing/grazing-normal fallback, an incorrect reverse-pixel witness,
+ all six source-normal Jacobian axes and missing bilinear support. Each policy
+ also passes four known-motion checks, malformed-input/clock/expiry checks and
+@@ -156,3 +162,50 @@
+ No driving pipeline or vehicle integration was changed. The original accuracy
+ failure remains the open problem; subjective maturity stays **about 20%** versus
+ mature driving OSS. Test counts alone do not justify increasing it.
++
++## Normal-noise diagnosis and rejected native change
++
++The subsequent native normal-estimation experiment also makes **no default
++change**. On 12 evenly spaced frames from each already viewed recording,
++adjacent central normals differ by a median 0.310 rad in room and 0.348 rad in
++desk2, measured on complete 5×5 patches whose inverse-depth plane fits within
++2 mm. The plane estimates differ by 0.078 and 0.081 rad respectively. Selection
++uses that same fitted patch, so this is a planar-support noise diagnostic,
++not independent normal truth or proof of the cause of trajectory drift.
++
++For a plane, inverse axial depth is linear in pixel coordinates:
++`1/Z = a*du + b*dv + c`. The camera normal is proportional to
++`[fx*a, fy*b, c-(u-cx)*a-(v-cy)*b]`. The Rust implementation fits all 25 measured
++values without changing depth vertices, fusion, correspondence policy, Huber
++weights, iteration budgets, clocks or the fixed physical accuracy gates.
++
++| Normal estimation | Room accurate / 179 | Desk2 accurate / 179 | Max position, room / desk2 (m) | Max rotation, room / desk2 (rad) |
++|---|---:|---:|---|---|
++| Original central differences | 64 | 161 | 0.296290 / 0.114800 | 0.141286 / 0.090386 |
++| First: strict 5×5 support at all scales | 59 | 77 | 0.302753 / 0.138466 | 0.143199 / 0.376426 |
++| Revised: native-resolution planar support, central fallback | 63 | 85 | 0.299755 / 0.184243 | 0.142434 / 0.322477 |
++
++Both attempts accept all updates without expiry, but fail the unchanged adoption
++rule. The first also fails two of four existing known-motion controls because
++strict wide support removes small curved geometry at coarse levels. Its source,
++complete physical outcomes and failed controls are retained; it has **no complete
++raw-equation audit**. The maintained revision preserves coarse and curved-surface
++support and passes all four controls. It still substantially regresses desk2.
++Smoother planar normals did not establish better continuous localization.
++
++The [normal experiment packet](../assets/projective-normal-v1/summary.json)
++and [validation receipt](../assets/projective-normal-v1/validation.json) retain
++both attempts and sources. The revised raw audit reconstructs every fitted and
++returned-pose equation and all 358 prescribed fusion generations without parsing
++pose truth. Camera-only default input reproduces all 360 original outcomes.
++
++The current optional crate passes **27 tests**, adding exact tilted-plane,
++known-noise, unsupported-patch and coarse/curved-support checks. The independent
++oracle uses a NumPy pseudo-inverse, with direct plane/support controls. CI runs
++the new known-motion, transport and raw analytic checks without downloading
++recordings. To reproduce the maintained policy, add
++`--normals inverse_depth_plane` to the evaluator, analytic checker and raw auditor
++commands above. Use fresh paths and pass the new recorded reports to the auditor
++and adoption checker. Physical evaluation and the adoption checker save these
++failures and exit 1. These are viewed indoor experiments, not held-out or vehicle
++evidence; maturity remains about 20%.
+--- a/integrations/projective-depth/src/lib.rs
++++ b/integrations/projective-depth/src/lib.rs
+@@ -42,12 +42,24 @@
+     SymmetricPlanes,
+ }
+ 
++/// An inverse-depth plane is planar in pixel coordinates, including on tilted
++/// surfaces. Native-resolution planar patches can reduce noisy tangents without
++/// discarding the original support on curved surfaces or at coarse scales.
++#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
++#[serde(rename_all = "snake_case")]
++pub enum NormalEstimation {
++    #[default]
++    CentralDifference,
++    InverseDepthPlane,
++}
++
+ #[derive(Clone, Copy, Debug, Default, Deserialize, Serialize)]
+ #[serde(default, deny_unknown_fields)]
+ pub struct TrackerConfig {
+     pub reprojection: Reprojection,
+     pub correspondence: Correspondence,
+     pub residual: Residual,
++    pub normals: NormalEstimation,
+ }
+ 
+ #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+@@ -271,6 +283,10 @@
+     }
+ }
+ fn pyramid(camera: Camera, raw: &[f64]) -> Vec<Level> {
++    pyramid_with_normals(camera, raw, NormalEstimation::CentralDifference)
++}
++
++fn pyramid_with_normals(camera: Camera, raw: &[f64], policy: NormalEstimation) -> Vec<Level> {
+     let mut depth = raw.to_vec();
+     let mut levels = Vec::with_capacity(3);
+     for s in [1, 2, 4] {
+@@ -326,6 +342,14 @@
+                 }
+             }
+         }
++        if policy == NormalEstimation::InverseDepthPlane && s == 1 {
++            let planes = inverse_depth_normals(c, &depth);
++            for (original, plane) in normals.iter_mut().zip(planes) {
++                if dot(plane, plane) > 0.25 {
++                    *original = plane;
++                }
++            }
++        }
+         levels.push(Level {
+             camera: c,
+             vertices,
+@@ -334,6 +358,59 @@
+     }
+     levels.reverse();
+     levels
++}
++
++fn inverse_depth_normals(camera: Camera, depth: &[f64]) -> Vec<V> {
++    let mut normals = vec![[0.; 3]; depth.len()];
++    for y in 2..camera.height - 2 {
++        'pixel: for x in 2..camera.width - 2 {
++            let center = depth[y * camera.width + x];
++            let mut coefficients = [0.; 3];
++            for dy in -2_isize..=2 {
++                for dx in -2_isize..=2 {
++                    let z = depth
++                        [(y as isize + dy) as usize * camera.width + (x as isize + dx) as usize];
++                    if z <= MIN_Z || z >= MAX_Z || (z - center).abs() >= 0.05 + 0.01 * center {
++                        continue 'pixel;
++                    }
++                    coefficients[0] += dx as f64 / z;
++                    coefficients[1] += dy as f64 / z;
++                    coefficients[2] += 1. / z;
++                }
++            }
++            // Orthogonal uniform 5x5 design: sum(du^2)=sum(dv^2)=50.
++            let [a, b, c] = [
++                coefficients[0] / 50.,
++                coefficients[1] / 50.,
++                coefficients[2] / 25.,
++            ];
++            // A plane is only used when it explains the observed patch within
++            // 2 mm in axial depth. Curvature and unsupported patches keep their
++            // original central-difference normal in pyramid_with_normals.
++            let mut squared = 0.;
++            for dy in -2_isize..=2 {
++                for dx in -2_isize..=2 {
++                    let z = depth
++                        [(y as isize + dy) as usize * camera.width + (x as isize + dx) as usize];
++                    let predicted = 1. / (a * dx as f64 + b * dy as f64 + c);
++                    squared += (predicted - z).powi(2);
++                }
++            }
++            if squared > 25. * 0.002_f64.powi(2) {
++                continue;
++            }
++            let n = [
++                camera.fx * a,
++                camera.fy * b,
++                c - (x as f64 - camera.cx) * a - (y as f64 - camera.cy) * b,
++            ];
++            let length = norm(n);
++            if length > 1e-10 {
++                normals[y * camera.width + x] = mul(n, 1. / length);
++            }
++        }
++    }
++    normals
+ }
+ 
+ #[derive(Clone, Debug, Serialize)]
+@@ -647,6 +724,7 @@
+     reprojection: Reprojection,
+     correspondence: Correspondence,
+     residual: Residual,
++    normals: NormalEstimation,
+     model: Option<Model>,
+     last_observed: Option<f64>,
+     last_accepted: Option<f64>,
+@@ -672,6 +750,7 @@
+                 reprojection,
+                 correspondence,
+                 residual: Residual::default(),
++                normals: NormalEstimation::default(),
+             },
+         )
+     }
+@@ -683,6 +762,7 @@
+             reprojection: config.reprojection,
+             correspondence: config.correspondence,
+             residual: config.residual,
++            normals: config.normals,
+             model: None,
+             last_observed: None,
+             last_accepted: None,
+@@ -729,7 +809,7 @@
+             {
+                 return Err("invalid bounded depth image".into());
+             }
+-            let current = pyramid(self.camera, depth);
++            let current = pyramid_with_normals(self.camera, depth, self.normals);
+             if self.model.is_none() {
+                 if current[0]
+                     .normals
+@@ -787,7 +867,7 @@
+                         .then_some(current[2].normals.as_slice()),
+                 );
+                 fusion.warp = warp;
+-                let next_pyramid = pyramid(self.camera, &map);
++                let next_pyramid = pyramid_with_normals(self.camera, &map, self.normals);
+                 self.model = Some(Model {
+                     depth: map,
+                     weights,
+@@ -1183,4 +1263,65 @@
+         assert!(layer.bilinear(query).is_none());
+         assert!(layer.bilinear([f64::NAN, 0., 2.]).is_none());
+     }
+-}
++
++    #[test]
++    fn inverse_depth_fit_recovers_a_tilted_plane_in_camera_coordinates() {
++        let c = camera();
++        let expected = mul([0.2, -0.15, 1.], 1. / norm([0.2, -0.15, 1.]));
++        let depth: Vec<_> = (0..c.width * c.height)
++            .map(|i| 2. / dot(expected, c.point(i, 1.)))
++            .collect();
++        let normals = inverse_depth_normals(c, &depth);
++        for y in 2..c.height - 2 {
++            for x in 2..c.width - 2 {
++                assert!(norm(sub(normals[y * c.width + x], expected)) < 1e-12);
++            }
++        }
++    }
++
++    #[test]
++    fn plane_normals_reject_holes_discontinuities_and_incomplete_support() {
++        let c = camera();
++        let i = 48 * c.width + 64;
++        for unsupported in [0., 0.3, 5., 2.1] {
++            let mut depth = vec![2.; c.width * c.height];
++            depth[i - 2] = unsupported;
++            let normals = inverse_depth_normals(c, &depth);
++            assert_eq!(normals[i], [0.; 3]);
++            assert!(norm(sub(normals[i + 1], [0., 0., 1.])) < 1e-12);
++            assert_eq!(normals[0], [0.; 3]);
++            assert_eq!(normals[c.width + 1], [0.; 3]);
++        }
++    }
++
++    #[test]
++    fn plane_fit_reduces_a_known_single_sample_depth_perturbation() {
++        let c = camera();
++        let i = 48 * c.width + 64;
++        let mut depth = vec![2.; c.width * c.height];
++        depth[i + 1] += 0.002;
++        let central = pyramid(c, &depth)[2].normals[i];
++        let fitted = inverse_depth_normals(c, &depth)[i];
++        assert!(norm(sub(fitted, [0., 0., 1.])) < norm(sub(central, [0., 0., 1.])) / 20.);
++    }
++
++    #[test]
++    fn nonplanar_patches_and_coarse_levels_keep_original_normals() {
++        let c = camera();
++        let i = 48 * c.width + 64;
++        let mut depth = vec![2.; c.width * c.height];
++        depth[i] = 2.;
++        depth[i + 1] = 2.02;
++        depth[i - 1] = 1.98;
++        depth[i + c.width] = 2.02;
++        depth[i - c.width] = 1.98;
++        assert_eq!(inverse_depth_normals(c, &depth)[i], [0.; 3]);
++        let original = pyramid(c, &depth);
++        let fitted = pyramid_with_normals(c, &depth, NormalEstimation::InverseDepthPlane);
++        assert_eq!(original[2].normals[i], fitted[2].normals[i]);
++        assert!(norm(fitted[2].normals[i]) > 0.5);
++        for level in 0..2 {
++            assert_eq!(original[level].normals, fitted[level].normals);
++        }
++    }
++}
+--- a/integrations/projective-depth/src/main.rs
++++ b/integrations/projective-depth/src/main.rs
+@@ -1,6 +1,6 @@
+ //! Bounded synchronous JSON-lines evaluation transport; no external services.
+ use rustdriving_projective_depth::{
+-    Camera, Correspondence, Reprojection, Residual, Tracker, TrackerConfig,
++    Camera, Correspondence, NormalEstimation, Reprojection, Residual, Tracker, TrackerConfig,
+ };
+ use serde::Deserialize;
+ use std::io::{self, BufRead, Read, Write};
+@@ -16,6 +16,8 @@
+         correspondence: Correspondence,
+         #[serde(default)]
+         residual: Residual,
++        #[serde(default)]
++        normals: NormalEstimation,
+     },
+     Frame {
+         timestamp: f64,
+@@ -49,6 +51,7 @@
+                 reprojection,
+                 correspondence,
+                 residual,
++                normals,
+             } => {
+                 if tracker.is_some() {
+                     return Err("one configuration per process".into());
+@@ -59,6 +62,7 @@
+                         reprojection,
+                         correspondence,
+                         residual,
++                        normals,
+                     },
+                 )?);
+                 writeln!(output, "{{\"configured\":true,\"schema_version\":1}}")
+--- a/scripts/audit-projective-depth-raw.py
++++ b/scripts/audit-projective-depth-raw.py
+@@ -11,7 +11,7 @@
+ import numpy as np
+ from PIL import Image
+ from projective_depth_common import CAMERA, ROOT, audit_iterations, audit_sequence, fresh, require, sha, write
+-from projective_depth_raw import compare_equation, fuse, normal_equation, pyramid, raster, reconstruct_update
++from projective_depth_raw import compare_equation, fuse, inverse_depth_normals, normal_equation, pyramid, raster, reconstruct_update
+ 
+ SOURCES = (Path(__file__),ROOT/'scripts/projective_depth_raw.py',ROOT/'scripts/projective_depth_common.py',
+            ROOT/'scripts/check-projective-depth.py',ROOT/'scripts/requirements-visual.txt',
+@@ -83,12 +83,32 @@
+     e = normal_equation(layer,layer,transform,1)
+     require(e['count'] == 225,'hand-calculated planar sample count')
+     np.testing.assert_allclose([e['h'][2,2],e['g'][2],e['rms_m']],[225.,2.25,.01],atol=1e-10,rtol=0)
++    y,x = np.indices((32,32))
++    expected = np.array([.1,-.15,1.]);expected /= np.linalg.norm(expected)
++    depth = 2/(expected[0]*(x-c['cx'])/c['fx']+expected[1]*(y-c['cy'])/c['fy']+expected[2])
++    fitted = inverse_depth_normals(depth,c)
++    np.testing.assert_allclose(fitted[2:-2,2:-2],np.broadcast_to(expected,(28,28,3)),atol=2e-13,rtol=0)
++    for bad in (0.,.3,5.,2.1):
++        depth = np.full((32,32),2.);depth[16,14] = bad
++        fitted = inverse_depth_normals(depth,c)
++        np.testing.assert_array_equal(fitted[16,16],np.zeros(3))
++        np.testing.assert_allclose(fitted[16,17],[0,0,1],atol=2e-13,rtol=0)
++    require(not np.any(fitted[:2]) and not np.any(fitted[-2:]),'complete five-by-five support')
++    depth = np.full((32,32),2.)
++    depth[16,17],depth[16,15],depth[17,16],depth[15,16] = 2.02,1.98,2.02,1.98
++    require(not np.any(inverse_depth_normals(depth,c)[16,16]),'nonplanar residual rejected')
++    central,planes = pyramid(depth,c),pyramid(depth,c,'inverse_depth_plane')
++    for scale in (2,4):
++        np.testing.assert_array_equal(planes[scale]['normals'],central[scale]['normals'])
++    np.testing.assert_array_equal(planes[1]['normals'][16,16],central[1]['normals'][16,16])
+     return dict(metre_axis_normal_witness=True,half_pixel_centers=True,invalid_discontinuous_reduction=True,
+                 exact_raster_tie_and_occlusion=True,four_fusion_partitions=True,
+-                capped_weight_arithmetic=True,hand_calculated_225_point_plane_equation=True)
+-
+-
+-def analytic(output, reports, reprojection='point', correspondence='forward', residual='target_plane'):
++                capped_weight_arithmetic=True,hand_calculated_225_point_plane_equation=True,
++                inverse_depth_plane_camera_normal=True,missing_discontinuous_plane_support_rejected=True,
++                nonplanar_and_coarse_normal_support_preserved=True)
++
++
++def analytic(output, reports, reprojection='point', correspondence='forward', residual='target_plane', normals='central_difference'):
+     spec = importlib.util.spec_from_file_location('independent_scene',ROOT/'scripts/check-projective-depth.py')
+     scene = importlib.util.module_from_spec(spec)
+     spec.loader.exec_module(scene)
+@@ -104,7 +124,7 @@
+         raw = scene.render(np.asarray(record['expected']))
+         update = record['result']
+         audit_iterations(update)
+-        _,_,checked = reconstruct_update(first,(first > .3).astype(np.uint8),raw,scene.CAMERA,update,reprojection,correspondence,residual)
++        _,_,checked = reconstruct_update(first,(first > .3).astype(np.uint8),raw,scene.CAMERA,update,reprojection,correspondence,residual,normals)
+         summaries.append(dict(motion=index,report_sha256=sha(read(path)),**checked))
+         witnesses.append((first,raw,scene.CAMERA,update))
+     model,raw,c,original = witnesses[2]
+@@ -113,7 +133,7 @@
+         altered = copy.deepcopy(original)
+         change(altered)
+         try:
+-            reconstruct_update(model,(model > .3).astype(np.uint8),raw,c,altered,reprojection,correspondence,residual)
++            reconstruct_update(model,(model > .3).astype(np.uint8),raw,c,altered,reprojection,correspondence,residual,normals)
+         except (AssertionError,ValueError,KeyError,TypeError,IndexError):
+             rejected.append(name)
+         else:
+@@ -150,6 +170,8 @@
+     reprojection = freeze.get('reprojection','point')
+     correspondence = freeze.get('correspondence','forward')
+     residual = freeze.get('residual','target_plane')
++    normals = freeze.get('normals','central_difference')
++    require(normals in ('central_difference','inverse_depth_plane'),'declared normal policy')
+     require(residual in ('target_plane','symmetric_planes'),'declared residual policy')
+     require(correspondence in ('forward','reciprocal','bilinear'),'declared correspondence policy')
+     require(reprojection in ('point','tangent_plane'),'declared reprojection policy')
+@@ -175,7 +197,7 @@
+         verified(frame)  # Hashes only; no pixel or reference label decoding yet.
+     require(all(sha(read(ROOT/n))==d for n,d in SOURCE_PINS.items()),'audit sources unchanged since process start')
+     write(output/'freeze.json',dict(dataset=case,source_sha256=SOURCE_PINS,
+-        manifest_sha256=sha(manifest_body),original_freeze_sha256=sha(read(freeze_path)),reprojection=reprojection,correspondence=correspondence,residual=residual,
++        manifest_sha256=sha(manifest_body),original_freeze_sha256=sha(read(freeze_path)),reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,
+         original_sensor_ledger_sha256=sha(read(ledger_path,64*1024*1024)),depth_source_count=180,
+         ground_truth_decoded=False,raw_color_decoded=False))
+     steps = audit_sequence(outcomes,[f['depth_timestamp'] for f in frames])
+@@ -187,7 +209,7 @@
+             image = Image.open(io.BytesIO(verified(frame)))
+             require(image.size == (640,480) and image.mode in ('I;16','I;16B','I'),'original 16-bit depth layout')
+             raw = np.asarray(image,dtype=float)/5000.
+-            model,weights,checked = reconstruct_update(model,weights,raw,CAMERA,row['update'],reprojection,correspondence,residual)
++            model,weights,checked = reconstruct_update(model,weights,raw,CAMERA,row['update'],reprojection,correspondence,residual,normals)
+             checked_frames.append(dict(source_index=frame['source_index'],**checked,
+                 supported_model_pixels=int(np.sum(weights > 0)),maximum_model_weight=int(weights.max())))
+         except (ValueError,AssertionError,KeyError,TypeError,IndexError) as error:
+@@ -218,10 +240,11 @@
+     parser.add_argument('--reprojection',choices=('point','tangent_plane'),default='point',help='policy for fresh analytic reports')
+     parser.add_argument('--correspondence',choices=('forward','reciprocal','bilinear'),default='forward')
+     parser.add_argument('--residual',choices=('target_plane','symmetric_planes'),default='target_plane')
++    parser.add_argument('--normals',choices=('central_difference','inverse_depth_plane'),default='central_difference')
+     args = parser.parse_args()
+     output = fresh(args.output)
+-    require(args.analytic_reports is not None or (args.reprojection=='point' and args.correspondence=='forward' and args.residual=='target_plane'),'frozen analytic reports use original policies')
+-    analytic(output,args.analytic_reports,args.reprojection,args.correspondence,args.residual)
++    require(args.analytic_reports is not None or (args.reprojection=='point' and args.correspondence=='forward' and args.residual=='target_plane' and args.normals=='central_difference'),'frozen analytic reports use original policies')
++    analytic(output,args.analytic_reports,args.reprojection,args.correspondence,args.residual,args.normals)
+     cases = {}
+     if not args.analytic_only:
+         for case in ('tum-fr1-room-temporal','tum-fr1-desk2-independent'):
+--- a/scripts/projective_depth_raw.py
++++ b/scripts/projective_depth_raw.py
+@@ -10,7 +10,8 @@
+                      (y-camera['cy'])*depth/camera['fy'],depth],axis=-1)
+ 
+ 
+-def pyramid(raw, camera):
++def pyramid(raw, camera, normal_policy='central_difference'):
++    require(normal_policy in ('central_difference','inverse_depth_plane'),'declared normal policy')
+     depths = {1:raw.copy()}
+     for scale in (2,4):
+         a = depths[scale//2]
+@@ -33,8 +34,37 @@
+         length = np.linalg.norm(cross,axis=-1)
+         valid &= length > 1e-10
+         normal[1:-1,1:-1][valid] = cross[valid]/length[valid,None]
++        if normal_policy == 'inverse_depth_plane' and scale == 1:
++            planes = inverse_depth_normals(depth,c)
++            use_plane = np.sum(planes*planes,axis=-1)>.25
++            normal[use_plane] = planes[use_plane]
+         result[scale] = dict(vertices=xyz,normals=normal,camera=c,depth=depth)
+     return result
++
++
++def inverse_depth_normals(depth,camera):
++    """Independent uniform least squares on complete inverse-depth patches."""
++    windows = np.lib.stride_tricks.sliding_window_view(depth,(5,5))
++    center = depth[2:-2,2:-2]
++    valid = ((windows>.3)&(windows<5)&
++             (abs(windows-center[:,:,None,None])<.05+.01*center[:,:,None,None])).all(axis=(-2,-1))
++    yy,xx = np.mgrid[-2:3,-2:3]
++    design = np.column_stack([xx.ravel(),yy.ravel(),np.ones(25)])
++    # NumPy QR/SVD pseudo-inverse; no operational coefficient implementation.
++    coefficients = np.einsum('ij,abj->abi',np.linalg.pinv(design),
++                             (1/np.maximum(windows,1e-15)).reshape(*center.shape,25))
++    prediction = np.einsum('ji,abi->abj',design,coefficients).reshape(*center.shape,5,5)
++    rms = np.sqrt(np.mean((1/np.maximum(prediction,1e-15)-windows)**2,axis=(-2,-1)))
++    valid &= rms<=.002
++    a,b,g = np.moveaxis(coefficients,-1,0)
++    y,x = np.mgrid[2:depth.shape[0]-2,2:depth.shape[1]-2]
++    n = np.stack([camera['fx']*a,camera['fy']*b,
++                  g-(x-camera['cx'])*a-(y-camera['cy'])*b],axis=-1)
++    length = np.linalg.norm(n,axis=-1)
++    normal = np.zeros((*depth.shape,3))
++    supported = valid&(length>1e-10)
++    normal[2:-2,2:-2][supported] = n[supported]/length[supported,None]
++    return normal
+ 
+ 
+ def normal_equation(target, source, transform, scale, correspondence='forward', residual_policy='target_plane'):
+@@ -169,16 +199,16 @@
+     return output,support,counts
+ 
+ 
+-def reconstruct_update(model, weights, raw, camera, update, reprojection='point', correspondence='forward', residual_policy='target_plane'):
++def reconstruct_update(model, weights, raw, camera, update, reprojection='point', correspondence='forward', residual_policy='target_plane', normal_policy='central_difference'):
+     """Validate all raw equations and rebuild the next model only after acceptance."""
+     require(raw.shape == (camera['height'],camera['width']) and np.isfinite(raw).all()
+             and np.all((raw >= 0)&(raw <= 100)),'bounded decoded depth')
+-    source = pyramid(raw,camera)
++    source = pyramid(raw,camera,normal_policy)
+     if model is None:
+         require(update['accepted'] and not update['iterations'],'valid first initialization')
+         require(np.sum(np.sum(source[4]['normals']**2,axis=-1) > .25) >= 200,'initial surface support')
+         return raw.copy(),(raw > .3).astype(np.uint8),dict(iterations=0,final_equations=0,model_replaced=False)
+-    target = pyramid(model,camera)
++    target = pyramid(model,camera,normal_policy)
+     for step in update['iterations']:
+         scale = step['scale']
+         expected = normal_equation(target[scale],source[scale],pose(step['before']),scale,correspondence,residual_policy)

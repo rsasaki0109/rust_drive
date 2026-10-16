@@ -1,0 +1,184 @@
+{
+  "frames": [
+    {
+      "timestamp": 1.0,
+      "accepted": true,
+      "initialized": true,
+      "lost": false,
+      "rejection": null,
+      "first_from_current": {
+        "rotation": [
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "last_accepted_timestamp": 1.0,
+      "keyframe_replaced": false,
+      "iterations": [],
+      "final_equation": null,
+      "fusion": null
+    },
+    {
+      "timestamp": 1.03,
+      "accepted": false,
+      "initialized": true,
+      "lost": false,
+      "rejection": "insufficient physical observability condition",
+      "first_from_current": null,
+      "last_accepted_timestamp": 1.0,
+      "keyframe_replaced": false,
+      "iterations": [],
+      "final_equation": null,
+      "fusion": null,
+      "information_failure": {
+        "final_pose": false,
+        "scale": 4,
+        "pose": {
+          "rotation": [
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "translation": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "equation": {
+          "count": 1064,
+          "rms_m": 0.004999999999999827,
+          "h": [
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              4.1458658853403785,
+              -7.806255641895632e-17,
+              -2.42861286636753e-17,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              -7.806255641895632e-17,
+              4.10803451569219,
+              3.642919299551295e-17,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              -2.42861286636753e-17,
+              3.642919299551295e-17,
+              7.570745601716323,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          ],
+          "g": [
+            0.0,
+            0.0,
+            0.02072932942670197,
+            -7.047314121155779e-19,
+            6.776263578034403e-21,
+            0.0
+          ]
+        },
+        "photometric": null,
+        "spectrum": {
+          "translation_scale_m": 1.0,
+          "rotation_scale_rad": 1.0,
+          "matrix_scale": 7.570745601716323,
+          "eigenvalues": [
+            0.0,
+            0.0,
+            0.0,
+            0.542619542619538,
+            0.5476165893621484,
+            1.0
+          ],
+          "condition": null
+        }
+      }
+    },
+    {
+      "timestamp": 1.201,
+      "accepted": false,
+      "initialized": true,
+      "lost": true,
+      "rejection": "accepted-pose expiry latched; no reset",
+      "first_from_current": null,
+      "last_accepted_timestamp": 1.0,
+      "keyframe_replaced": false,
+      "iterations": [],
+      "final_equation": null,
+      "fusion": null
+    },
+    {
+      "timestamp": 1.21,
+      "accepted": false,
+      "initialized": true,
+      "lost": true,
+      "rejection": "accepted-pose expiry latched; no reset",
+      "first_from_current": null,
+      "last_accepted_timestamp": 1.0,
+      "keyframe_replaced": false,
+      "iterations": [],
+      "final_equation": null,
+      "fusion": null
+    }
+  ]
+}

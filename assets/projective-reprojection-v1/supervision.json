@@ -1,0 +1,26 @@
+{
+  "pass_temporal_supervision": true,
+  "analytic": {
+    "analytic_sequence_pass": true,
+    "clean_estimator_parity": true,
+    "rejected_protocol_cases": [
+      "tick before configuration",
+      "duplicate configuration",
+      "unknown event field",
+      "unknown failure field",
+      "unknown depth field",
+      "invalid receipt clock",
+      "duplicate receipt clock",
+      "regressing receipt clock",
+      "missing final newline",
+      "no tick",
+      "oversized request",
+      "tick cap",
+      "frame cap"
+    ]
+  },
+  "recorded": {},
+  "physical_accuracy_claim": false,
+  "driving_integration": false,
+  "subjective_maturity_percent": 20
+}

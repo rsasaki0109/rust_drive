@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "role": "already viewed development comparison; not held out",
+  "parent": "assets/marginalized-keyframe-depth-v1",
+  "mode": "retain",
+  "hypothesis": "Continuous projective inverse-depth factors reduce rounding discontinuities; physical benefit is unproven",
+  "change": "Replace only raw pair kernel; same frozen retained-information engine and all work/admission/keyframe/expiry bounds",
+  "factor": {
+    "target": "bilinear inverse axial depth",
+    "canonical_integer_pixel_tolerance": 1e-10,
+    "cell": "floor, right-sided derivative at integer knots",
+    "corner_requirements": "all four measured depths and valid normals; 0.3<Z<5; max-min<=0.05+0.01*min",
+    "source_stride_by_scale": {
+      "4": 1,
+      "2": 2,
+      "1": 4
+    },
+    "projection": "optical source to target, then continuous u,v",
+    "residual": "F=bilinear_inverse_depth(u,v)-1/query_z",
+    "jacobian": "exact derivative of F with respect to target-camera query, including projective depth gradients",
+    "metric_normalizer": "norm(dF/dq) frozen per linearization; residual_m=F/normalizer; J_metric=(dF/dq)/normalizer",
+    "normal_gate": "source normal dot normalized dF/dq > 0.8",
+    "distance_gate": "query versus backprojected interpolated target: <0.12m scale4, <0.08m scales2/1",
+    "robust": "Huber 0.01m on normalized residual; min200 per pair",
+    "prior": "same incident-only Schur elimination and fixed-anchor transport; factor normalization frozen with marginalized linearization"
+  },
+  "evaluation": {
+    "cases": [
+      "tum-fr1-room-temporal",
+      "tum-fr1-desk2-independent"
+    ],
+    "updates": 179,
+    "initialization_outside_denominator": 1,
+    "root_translation_gate_m": 0.1,
+    "root_rotation_gate_rad": 0.1,
+    "reference_bracket_max_s": 0.02,
+    "ground_truth_operational": false,
+    "rgb_decoded": false,
+    "pose_resets": 0,
+    "all_operations_and_raw_audits_before_reference_scores": true
+  },
+  "audit": {
+    "h_atol": 1e-06,
+    "g_atol": 1e-08,
+    "rtol": 1e-08,
+    "exact_counts": true,
+    "scalar_corner_controls": true,
+    "fixed_normalizer_finite_difference": true,
+    "compare_old_engine_fork_except_pair_import": true
+  },
+  "default_changed": false
+}

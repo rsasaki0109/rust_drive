@@ -1,0 +1,16 @@
+[package]
+name = "rustdriving-projective-depth"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.90"
+license = "Apache-2.0"
+description = "Bounded projective depth odometry and keyframe depth fusion research"
+
+[workspace]
+
+[dependencies]
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = { version = "=1.0.151", features = ["float_roundtrip"] }
+
+[lints.rust]
+unsafe_code = "forbid"

@@ -1,0 +1,42 @@
+{
+  "analytic_pass": true,
+  "profile_equivalence_cases": 5,
+  "chart_angles_rad": [
+    1e-09,
+    0.0001,
+    0.3,
+    1.2
+  ],
+  "reports": {
+    "discard": {
+      "checked_reported_equations": 147,
+      "marginal_generations": 0,
+      "max_position_error_m": 0.00014012008494444835
+    },
+    "retain": {
+      "checked_reported_equations": 139,
+      "marginal_generations": 9,
+      "max_position_error_m": 0.00013964441600728504
+    }
+  },
+  "discarded_information_control": true,
+  "no_fabricated_new_support": true,
+  "terminal_expiry": true,
+  "rejected_corruptions": [
+    "wrong Schur gradient",
+    "coherently scaled Schur H/g",
+    "duplicate factor history",
+    "wrong fixed origin",
+    "wrong linearization anchor",
+    "retained raw factors also marginalized",
+    "normal system scaled without changing its solve",
+    "moved first origin",
+    "wrong normal increment"
+  ],
+  "late_elimination_failure_atomic": true,
+  "clean_recovery_prior_parity": true,
+  "malformed_clock_and_depth_rejected": true,
+  "singular_elimination_rejected": true,
+  "checker_sha256": "91daebf2b29b35b0e43d97a599da566b758d4e7eab2fcedfe6d9b5428df4e8e5",
+  "kernel_sha256": "9fbe4230277499d7ae08fe766e4b253fcf3b5012470666618d4b97b20189eb92"
+}

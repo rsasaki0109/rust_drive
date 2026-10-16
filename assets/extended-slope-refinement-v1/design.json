@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "parent": "assets/one-sided-depth-refinement-v1",
+  "motivation": "Preserved one-sided slope trial converges5/10 and leaves only desk2160 at its30-correction budget among six observable windows; test a larger fixed computation budget",
+  "data_role": "already viewed outcome-informed development continuation, not held-out validation",
+  "cases": ["tum-fr1-room-temporal", "tum-fr1-desk2-independent"],
+  "sample_indices": [120, 160, 200, 240, 279],
+  "only_solver_changes": "Allow fixed caps10/20/30/60/90 instead of10/20/30 and default to90 instead of30. The refiner and snapshot function bodies otherwise match exactly; checkpoint body is unchanged. Original source/normalizer selection, cached one-sided slopes, residuals, nonlinear prior, robust loss, solve, guards, search and convergence functions are the same objects",
+  "fixed_population": "Select once from the original initial poses, preserve all source IDs, point coordinates, source normals and original bilinear-center normalizers for the whole attempt. No reset, relinearization-time reselection or weight renewal at30 or60. Prepared per-frame slope fields and incoming nonlinear prior stay unchanged",
+  "unchanged_policy": "Huber0.01m loss, original scaled GN solve,21 positive Armijo multipliers1..2^-20 with original numerical slack, current support, SPD condition<=1e6, full-proposal bounds0.1m/0.15rad, strict full-proposal convergence1e-5m/1e-5rad; no damping or regularization",
+  "checkpoints": [30, 60, 90],
+  "checkpoint_order": "Proposal guards and strict convergence precede the cap; a next candidate search follows the cap. Early terminal states carry actual correction counts forward. Every reconstructed cap30 report must equal its entire original archived report, not only its final pose or convergence flag",
+  "prefix_integrity": "Require exact equality of every original trace entry, initial source metadata, original report reconstructed atcap30 and original input poses/priors. Report unchanged shorter terminal cases and isolate additional corrections; no discarded failed outcome",
+  "independent_verification": "Original independent side eligibility, reciprocal-mean slope field, polynomial interpolation, source/prior/incidence matrices, spectral solve and Rodrigues search are reused. Independent report and checkpoint verifier bodies only widen the fixed admitted cap set. Recheck all original cap30 controls separately with their unchanged verifier",
+  "analytic_controls": "Inherit eight side-availability and original interpolation controls, then run actual extended-cap rendered warm/degenerate fits, nonzero-prior12-axis objective gradients, independent30/60/90 checkpoint checks and four report corruptions. For recorded continuation beyond30, deliberately substituting the future final pose into the cap30 checkpoint must be rejected",
+  "followup_eligibility_rule": "Both cases converge all five new windows, improve original-discrete fresh convergence, have no local/fresh guards, pass original0.03m RMS gates and have median original-discrete fresh RMS no worse than original one-sided control",
+  "scope": "Larger bounded computation on the same measurements, not new measurement information or a changed convergence threshold. No numeric real reference labels, physical trajectory score, new continuous trajectory, native/default adoption, tracker/prior/Schur commit or timing claim",
+  "subjective_maturity_percent": 20
+}

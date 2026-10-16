@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "role": "Rust port on already viewed data; not held-out validation",
+  "input_basis_sha256": {
+    "artifacts/projective-odometry-dev/prototype-fused-v6.py": "9756b73c9a2d5d6be257dd0f30b828f61b1632dd38ce95753099400f9567fb2f",
+    "assets/projective-depth-diagnostics-v1/review.json": "c229f98cc4837c51e37996feed0c4c6fb42e7715bad8922fe01c524e1530a157",
+    "scripts/check-opencv-rgbd.py": "63e366ce4d83d1fd1512c13726c777d5d04aa24c8b22d6161ecbb33cf21df1ff"
+  },
+  "algorithm": "projective point-to-plane ICP with keyframe depth fusion",
+  "camera": {
+    "width": 640,
+    "height": 480,
+    "fx": 525.0,
+    "fy": 525.0,
+    "cx": 319.5,
+    "cy": 239.5
+  },
+  "depth_units_per_metre": 5000,
+  "depth_range_m": [
+    0.3,
+    5.0
+  ],
+  "scales": [
+    4,
+    2,
+    1
+  ],
+  "iteration_caps": [
+    10,
+    7,
+    5
+  ],
+  "huber_delta_m": 0.01,
+  "association_distance_m": [
+    0.12,
+    0.08,
+    0.08
+  ],
+  "normal_dot_min": 0.8,
+  "min_correspondences": 200,
+  "scaled_hessian_condition_max": 1000000.0,
+  "step_translation_max_m": 0.1,
+  "step_rotation_max_rad": 0.15,
+  "final_rms_max_m": 0.03,
+  "final_translation_max_m": 0.5,
+  "keyframe_translation_m": 0.1,
+  "keyframe_rotation_rad": 0.1,
+  "fusion_weight_max": 16,
+  "fusion_compatibility_m": "0.03 + 0.01 * model_depth",
+  "raster": "round ties to even, nearest positive camera Z, equal Z lowest source index",
+  "model_frame": "accepted keyframe optical coordinates; first optical camera remains root",
+  "primary_clock": "strictly new measured depth; no RGB used",
+  "max_accepted_pose_age_s": 0.2,
+  "loss": "latched beyond age, no implicit reset, rejected acquisition never refreshes",
+  "atomicity": "failed fit leaves pose/reference/model and accepted clock unchanged; valid observed clock may advance",
+  "intentional_difference_from_prototype": "re-evaluate final correspondence RMS at the returned pose before acceptance",
+  "datasets": [
+    "tum-fr1-room-temporal",
+    "tum-fr1-desk2-independent"
+  ],
+  "selected_original_depth_indices": [
+    100,
+    279
+  ],
+  "updates_per_recording": 179,
+  "root_translation_gate_m": 0.1,
+  "root_rotation_gate_rad": 0.1,
+  "reference_bracket_max_s": 0.02,
+  "ground_truth_operational": false,
+  "acceptance": "retain all updates; report full root accuracy and failures; do not widen gates to match prototype",
+  "maturity_claim": false
+}

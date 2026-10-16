@@ -1,0 +1,9 @@
+{
+  "scope": "Use both measured tangent planes in the maintained Rust normal equations after the reciprocal-only full trajectory comparison failed adoption",
+  "configuration": "point reprojection, forward matching, symmetric_planes residual",
+  "equations": "For each unchanged eligible pair use one-half Huber(n_target dot(q-p)) plus one-half Huber(n_source_rotated dot(q-p)). Target Jacobian is[n_target,q cross n_target]; source Jacobian is[n_source_rotated,p cross n_source_rotated], including rotation of the measured source normal. Count correspondences once; report RMS as sqrt(mean((r_target^2+r_source^2)/2)). Keep0.01m Huber and0.03m final RMS gate",
+  "unchanged": "Same measurements/calibration, normal/distance/support gates, fusion, pyramid/work bounds, condition/increment gates, reference replacement, root origin, accepted clocks and latched expiry. Original target-plane residual remains explicitly selectable",
+  "acceptance": "Same predeclared complete-trajectory adoption gate: room accurate above64, desk2 at least161, both179 accepted without loss and no worse maximum position or rotation errors in either recording. Complete179/179 accuracy and driving integration remain separate unmet requirements if applicable",
+  "verification": "Finite differences of all six rotating-source-plane Jacobian axes; independent source/target H/g and RMS reconstruction; all known-motion, malformed input, expiry and corruption checks; full358-update physical scoring with original0.1m/0.1rad gates and no resets",
+  "data_role": "Already viewed development; no held-out or automotive claim. Preserve the two earlier candidate outcomes and their source snapshots"
+}

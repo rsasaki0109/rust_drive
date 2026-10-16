@@ -1,0 +1,168 @@
+{
+  "analytic_controls_pass": true,
+  "translation_gate_m": 0.004,
+  "rotation_gate_rad": 0.004,
+  "motions": [
+    {
+      "axis": 0,
+      "angle_rad": 0.0,
+      "known_first_from_current": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "position_error_m": 0.0,
+      "rotation_error_rad": 0.0,
+      "checked_normal_steps": 3
+    },
+    {
+      "axis": 0,
+      "angle_rad": -0.02,
+      "known_first_from_current": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.01
+        ],
+        [
+          0.0,
+          0.9998000066665778,
+          0.01999866669333308,
+          0.02
+        ],
+        [
+          0.0,
+          -0.01999866669333308,
+          0.9998000066665778,
+          0.01
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "position_error_m": 0.00011657458463395025,
+      "rotation_error_rad": 0.00024654663258058524,
+      "checked_normal_steps": 8
+    },
+    {
+      "axis": 1,
+      "angle_rad": 0.02,
+      "known_first_from_current": [
+        [
+          0.9998000066665778,
+          0.0,
+          0.01999866669333308,
+          0.02
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          -0.01
+        ],
+        [
+          -0.01999866669333308,
+          0.0,
+          0.9998000066665778,
+          0.01
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "position_error_m": 3.943436036471031e-05,
+      "rotation_error_rad": 3.6373566601185856e-05,
+      "checked_normal_steps": 8
+    },
+    {
+      "axis": 2,
+      "angle_rad": 0.02,
+      "known_first_from_current": [
+        [
+          0.9998000066665778,
+          -0.01999866669333308,
+          0.0,
+          0.01
+        ],
+        [
+          0.01999866669333308,
+          0.9998000066665778,
+          0.0,
+          0.01
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          -0.02
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "position_error_m": 5.358898554914849e-05,
+      "rotation_error_rad": 1.670698629536615e-05,
+      "checked_normal_steps": 9
+    }
+  ],
+  "reprojection": "tangent_plane",
+  "rejected_transport_cases": [
+    "missing configuration",
+    "duplicate configuration",
+    "unknown request field",
+    "oversized camera",
+    "invalid focal length",
+    "unknown reprojection",
+    "missing final newline",
+    "no frame",
+    "oversized request",
+    "nonfinite JSON",
+    "frame cap"
+  ],
+  "binary_sha256": "5eea6f95317f4b8ff6a7a48677e75595e954a8fce5732716829798efdbac06d3",
+  "rejected_report_corruptions": [
+    "wrong normal solve",
+    "wrong increment pose",
+    "altered root composition",
+    "missing support",
+    "returned-pose residual exceeds gate",
+    "lost fusion assignment",
+    "wrong keyframe switch",
+    "false accepted clock",
+    "wrong acquisition",
+    "false loss state"
+  ],
+  "checker_sha256": "41e1fb90cb49324bd3c371a359071590b2012460a07029d98c84f54731c27d7e",
+  "scope": "analytic geometry and independent linear algebra; no physical accuracy or real-time claim"
+}

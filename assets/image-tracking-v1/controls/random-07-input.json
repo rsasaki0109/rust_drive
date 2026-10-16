@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "camera_id": "controls",
+  "width": 100,
+  "height": 100,
+  "config": {
+    "max_tracks": 4,
+    "confirmation_hits": 1,
+    "min_iou": 0.1
+  },
+  "events": [
+    {
+      "timestamp_s": 0.0,
+      "input": {
+        "kind": "failed"
+      }
+    },
+    {
+      "timestamp_s": 0.125,
+      "input": {
+        "kind": "detections",
+        "image_sha256": "5f5b561177e5211a0dbb6a46b56a05fe7cf6f04fe37d5383e77b12328c7543b2",
+        "detections": [
+          {
+            "class_index": 2,
+            "confidence": 0.6,
+            "bbox": [
+              24.0,
+              28.0,
+              48.0,
+              52.0
+            ]
+          },
+          {
+            "class_index": 2,
+            "confidence": 0.7,
+            "bbox": [
+              40.0,
+              16.0,
+              60.0,
+              36.0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "timestamp_s": 0.25,
+      "input": {
+        "kind": "detections",
+        "image_sha256": "81b35ccad80dddd58a8e0728e1824b0118580c2849d0625fea7e6c272b886d1f",
+        "detections": [
+          {
+            "class_index": 2,
+            "confidence": 0.6,
+            "bbox": [
+              36.0,
+              40.0,
+              56.0,
+              60.0
+            ]
+          },
+          {
+            "class_index": 7,
+            "confidence": 0.7,
+            "bbox": [
+              12.0,
+              44.0,
+              36.0,
+              68.0
+            ]
+          },
+          {
+            "class_index": 7,
+            "confidence": 0.8,
+            "bbox": [
+              20.0,
+              4.0,
+              36.0,
+              20.0
+            ]
+          },
+          {
+            "class_index": 2,
+            "confidence": 0.9,
+            "bbox": [
+              52.0,
+              24.0,
+              76.0,
+              48.0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "timestamp_s": 0.375,
+      "input": {
+        "kind": "missing"
+      }
+    },
+    {
+      "timestamp_s": 0.5,
+      "input": {
+        "kind": "detections",
+        "image_sha256": "12f4a3e329b58802712ea4fc85875108c6e17e857ed746466e984c6aefddfe45",
+        "detections": [
+          {
+            "class_index": 2,
+            "confidence": 0.6,
+            "bbox": [
+              28.0,
+              52.0,
+              48.0,
+              72.0
+            ]
+          },
+          {
+            "class_index": 7,
+            "confidence": 0.7,
+            "bbox": [
+              56.0,
+              12.0,
+              72.0,
+              28.0
+            ]
+          },
+          {
+            "class_index": 2,
+            "confidence": 0.8,
+            "bbox": [
+              16.0,
+              60.0,
+              32.0,
+              76.0
+            ]
+          },
+          {
+            "class_index": 2,
+            "confidence": 0.9,
+            "bbox": [
+              36.0,
+              24.0,
+              60.0,
+              48.0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "timestamp_s": 0.625,
+      "input": {
+        "kind": "detections",
+        "image_sha256": "d409384512bb84bbfb83b3124b294e00d4588422288e036cb3bde5928d0905d8",
+        "detections": []
+      }
+    }
+  ]
+}

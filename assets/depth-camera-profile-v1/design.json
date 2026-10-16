@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "role": "viewed calibration interpretation diagnostic; not new measured calibration",
+  "camera": {
+    "width": 640,
+    "height": 480,
+    "fx": 517.306408,
+    "fy": 516.469215,
+    "cx": 318.64304,
+    "cy": 255.313989
+  },
+  "distortion_applied": false,
+  "source": "pinned pyslam TUM1.yaml already retained in input manifests",
+  "qualification": "comparison only; official recommended ROS525 default remains unchanged; no second depth correction or image undistortion",
+  "depth_units_per_metre": 5000,
+  "existing_algorithm_unchanged": true,
+  "records": [
+    "tum-fr1-room-temporal",
+    "tum-fr1-desk2-independent"
+  ],
+  "indices": [
+    100,
+    279
+  ],
+  "root_gates_m_rad": [
+    0.1,
+    0.1
+  ],
+  "pose_resets": 0,
+  "ground_truth_operational": false
+}

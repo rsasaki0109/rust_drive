@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "algorithm": "yolox_s_image_analysis_v1",
+  "purpose": "Offline one-image inference and ambiguity-preserving vehicle reconciliation",
+  "producer_algorithm": "pinned_yolox_s_full_plus_three_squares_v1",
+  "postprocessor_algorithm": "yolox_s_vehicle_consistency_v1",
+  "score_threshold": 0.3,
+  "nms_iou_threshold": 0.45,
+  "maximum_model_forwards_per_image": 4,
+  "maximum_image_encoded_bytes": 16777216,
+  "maximum_image_pixels": 16000000,
+  "maximum_report_bytes": 4194304,
+  "publication": "Fresh destination; reserve sibling staging before input reads; serialize and sync; hard-link complete bytes without replacement; remove staging on normal exit",
+  "crash_behavior": "A killed process can leave a hidden .partial staging file; destination is either absent or complete. Parent directory fsync and power-loss durability are not provided.",
+  "runtime_reference_labels": false,
+  "vehicle_control_integration": false
+}

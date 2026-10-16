@@ -1,0 +1,97 @@
+{
+  "configurations": {
+    "first": {
+      "tum-fr1-room-temporal": {
+        "total_updates": 179,
+        "accepted": 172,
+        "root_accurate": 80,
+        "lost": false,
+        "max_position_error_m": 0.27439326945002945,
+        "max_rotation_error_rad": 0.11294374187313715,
+        "complete_accuracy_pass": false,
+        "independently_checked_normal_steps": 3686
+      },
+      "tum-fr1-desk2-independent": {
+        "total_updates": 179,
+        "accepted": 160,
+        "root_accurate": 21,
+        "lost": false,
+        "max_position_error_m": 0.8013650986789657,
+        "max_rotation_error_rad": 0.3293113911110817,
+        "complete_accuracy_pass": false,
+        "independently_checked_normal_steps": 3494
+      }
+    },
+    "rgbd": {
+      "tum-fr1-room-temporal": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 80,
+        "lost": false,
+        "max_position_error_m": 0.27556862199761917,
+        "max_rotation_error_rad": 0.10938452895744419,
+        "complete_accuracy_pass": false,
+        "independently_checked_normal_steps": 3817
+      },
+      "tum-fr1-desk2-independent": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 75,
+        "lost": false,
+        "max_position_error_m": 0.3066364370929857,
+        "max_rotation_error_rad": 0.20163202412279807,
+        "complete_accuracy_pass": false,
+        "independently_checked_normal_steps": 3820
+      }
+    },
+    "default": {
+      "tum-fr1-room-temporal": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 64,
+        "lost": false,
+        "max_position_error_m": 0.2962903752194005,
+        "max_rotation_error_rad": 0.1412856775931408,
+        "complete_accuracy_pass": false,
+        "independently_checked_normal_steps": 3411
+      },
+      "tum-fr1-desk2-independent": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 161,
+        "lost": false,
+        "max_position_error_m": 0.11480018654834367,
+        "max_rotation_error_rad": 0.0903855165562892,
+        "complete_accuracy_pass": false,
+        "independently_checked_normal_steps": 3450
+      }
+    }
+  },
+  "default_changed": false,
+  "accuracy_improvement_adopted": false,
+  "room_relative_adoption_pass": true,
+  "desk2_relative_adoption_pass": false,
+  "complete_physical_accuracy_pass": false,
+  "default_full_outcomes_reproduced": 360,
+  "maintained_corrected_outcomes_reproduced": 360,
+  "raw_geometric_equations": 7995,
+  "raw_photometric_equations": 7383,
+  "total_raw_equations": 15378,
+  "prescribed_depth_generations": 358,
+  "clock_accounting": {
+    "tum-fr1-room-temporal": {
+      "repeated_rgb": 7,
+      "color_anchor_clears": 3,
+      "frames_without_color_anchor": 10
+    },
+    "tum-fr1-desk2-independent": {
+      "repeated_rgb": 18,
+      "color_anchor_clears": 5,
+      "frames_without_color_anchor": 22
+    }
+  },
+  "first_raw_image_audit_complete": false,
+  "textured_plane_observability_control_pass": true,
+  "lifecycle_control_pass": true,
+  "ground_truth_operational": false
+}

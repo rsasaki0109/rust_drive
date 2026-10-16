@@ -1,0 +1,28 @@
+    Checking rustdriving-projective-depth v0.1.0 (/workspace/rust_drive/integrations/projective-depth)
+error: this `if` statement can be collapsed
+   --> src/lib.rs:416:9
+    |
+416 | /         if let Some(normals) = normals {
+417 | |             if dot(normals[i], normals[i]) > 0.25 {
+418 | |                 let normal = pose.rotate(normals[i]);
+419 | |                 let ray = camera.point(j, 1.);
+...   |
+435 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#collapsible_if
+    = note: `-D clippy::collapsible-if` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::collapsible_if)]`
+help: collapse nested if block
+    |
+416 ~         if let Some(normals) = normals
+417 ~             && dot(normals[i], normals[i]) > 0.25 {
+418 |                 let normal = pose.rotate(normals[i]);
+...
+433 |                 }
+434 ~             }
+    |
+
+error: could not compile `rustdriving-projective-depth` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `rustdriving-projective-depth` (lib test) due to 1 previous error

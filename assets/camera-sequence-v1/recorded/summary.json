@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "pass_checks": true,
+  "source_sequence_sha256": "5fa15877e7d910fe102dae175af40b5ee473c6f614b0740f36127b58b77f864c",
+  "original_recorded_image_count": 8,
+  "sequence_repeats": 2,
+  "model_loads_per_sequence": 1,
+  "native_sequence_forward_passes": 64,
+  "old_single_image_parity_forward_passes": 32,
+  "actual_model_forward_passes_this_check": 96,
+  "raw_detections_repeat_identical": true,
+  "unchanged_single_image_parity": true,
+  "standalone_tracking_replay_identical": true,
+  "independent_residual_flow_and_lifecycle_checked": true,
+  "flow_oracle_exhaustive_graph_checks": 96,
+  "real_object_identity_accuracy_measured": false,
+  "record": [
+    {
+      "mode": "first",
+      "image_count": 8,
+      "detections": [
+        8,
+        8,
+        12,
+        9,
+        9,
+        8,
+        10,
+        8
+      ],
+      "confirmed_counts": [
+        0,
+        8,
+        7,
+        8,
+        8,
+        7,
+        8,
+        8
+      ],
+      "retired_tracks": [
+        [],
+        [],
+        [],
+        [
+          {
+            "track_id": 10,
+            "reason": "tentative_miss"
+          },
+          {
+            "track_id": 11,
+            "reason": "tentative_miss"
+          },
+          {
+            "track_id": 12,
+            "reason": "tentative_miss"
+          },
+          {
+            "track_id": 13,
+            "reason": "tentative_miss"
+          }
+        ],
+        [],
+        [
+          {
+            "track_id": 15,
+            "reason": "tentative_miss"
+          }
+        ],
+        [],
+        [
+          {
+            "track_id": 17,
+            "reason": "tentative_miss"
+          },
+          {
+            "track_id": 18,
+            "reason": "tentative_miss"
+          }
+        ]
+      ]
+    },
+    {
+      "mode": "repeat",
+      "image_count": 8,
+      "detections": [
+        8,
+        8,
+        12,
+        9,
+        9,
+        8,
+        10,
+        8
+      ],
+      "confirmed_counts": [
+        0,
+        8,
+        7,
+        8,
+        8,
+        7,
+        8,
+        8
+      ],
+      "retired_tracks": [
+        [],
+        [],
+        [],
+        [
+          {
+            "track_id": 10,
+            "reason": "tentative_miss"
+          },
+          {
+            "track_id": 11,
+            "reason": "tentative_miss"
+          },
+          {
+            "track_id": 12,
+            "reason": "tentative_miss"
+          },
+          {
+            "track_id": 13,
+            "reason": "tentative_miss"
+          }
+        ],
+        [],
+        [
+          {
+            "track_id": 15,
+            "reason": "tentative_miss"
+          }
+        ],
+        [],
+        [
+          {
+            "track_id": 17,
+            "reason": "tentative_miss"
+          },
+          {
+            "track_id": 18,
+            "reason": "tentative_miss"
+          }
+        ]
+      ]
+    }
+  ],
+  "subjective_maturity_percent": 20
+}

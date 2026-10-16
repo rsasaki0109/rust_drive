@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "data_role": "already viewed development; not held out",
+  "algorithm": "optional NumPy retained-information tracker with 5x5 patch PCA normals and unchanged symmetric Huber factors",
+  "pass_implementation_integrity": true,
+  "complete_accuracy_pass": false,
+  "recorded_command_exit_code": 1,
+  "default_changed": false,
+  "rust_driving_changed": false,
+  "ground_truth_operational": false,
+  "rgb_decoded": false,
+  "parent_engine_only_pyramid_import_changed": true,
+  "input_manifests_camera_and_bytes_match_symmetric_control": true,
+  "source_archive_sha256": "b6db875eeb7245167f973f8ffed11808f1cc0e56f036ec93b420f6d506babfef",
+  "raw_reported_systems": 5895,
+  "iteration_systems": 5434,
+  "returned_pose_systems": 262,
+  "elimination_input_systems": 199,
+  "schur_result_priors": 199,
+  "consumed_unique_raw_factors": 841,
+  "reproduced_fit_rejections": 12,
+  "rejected_after_expiry_without_fitting": 84,
+  "original_scored_report_bytes_reconstruct_from_trace_and_compact_scores": true,
+  "reconstruction": {
+    "tum-fr1-room-temporal-retain": {
+      "byte_exact_reconstruction": true,
+      "original_scored_report_sha256": "cd6adc9fded2add1763bcbc19d9f1deceed884c48b0228daacc91a4cf203136b",
+      "iteration_systems": 2996,
+      "returned_pose_systems": 142,
+      "elimination_input_systems": 109
+    },
+    "tum-fr1-desk2-independent-retain": {
+      "byte_exact_reconstruction": true,
+      "original_scored_report_sha256": "5921c9086ec933ca44f212ab26a9cbba5c374f0a7caad159839eca765dd3808e",
+      "iteration_systems": 2438,
+      "returned_pose_systems": 120,
+      "elimination_input_systems": 90
+    }
+  },
+  "analytic_pass": true,
+  "analytic_iteration_and_returned_pose_equations": 452,
+  "analytic_retained_marginal_generations": 9,
+  "corruption_controls_rejected": 9,
+  "normal_controls": {
+    "independent_normal_method": "centered patch SVD with zero rows for excluded samples",
+    "normal_layers_compared": 18,
+    "max_component_difference": 1.1074474670635936e-14,
+    "depth_vertices_intrinsics_unchanged": true,
+    "noisy_plane_common_pixels": 18096,
+    "noise_seed": 421016,
+    "axial_gaussian_sigma_m": 0.002,
+    "normal_error_rad_median_p95_before": [
+      0.10204124749776977,
+      0.2190987344059988
+    ],
+    "normal_error_rad_median_p95_after": [
+      0.021102982665502,
+      0.045123376391808474
+    ],
+    "exact_plane_and_depth_step": true,
+    "missing_center_and_sparse_line_rejected": true,
+    "minimum_13_samples_enforced": true,
+    "rank_and_roughness_rejected": true,
+    "parent_engine_only_pyramid_import_changed": true
+  },
+  "core_rust_tests_passed": 371,
+  "core_scenario_runs_and_replays_passed": 49,
+  "unchanged_deterministic_core_files": 245,
+  "unchanged_previous_evidence_files": 257,
+  "summaries": {
+    "tum-fr1-room-temporal-retain": {
+      "total_updates": 179,
+      "accepted": 142,
+      "root_accurate": 77,
+      "lost": true,
+      "max_position_error_m": 0.2930165520480109,
+      "max_rotation_error_rad": 0.14393890962351094,
+      "integrity": {
+        "pass_integrity": true,
+        "checked_reported_systems": 3247,
+        "accepted_updates": 142,
+        "reproduced_fit_rejections": 6,
+        "marginal_generations": 109,
+        "consumed_unique_raw_factors": 411,
+        "rejections": {
+          "condition": 3,
+          "increment": 3,
+          "accepted pose expiry latched": 31
+        },
+        "lost": true,
+        "ground_truth_parsed": false
+      },
+      "complete_accuracy_pass": false
+    },
+    "tum-fr1-desk2-independent-retain": {
+      "total_updates": 179,
+      "accepted": 120,
+      "root_accurate": 75,
+      "lost": true,
+      "max_position_error_m": 0.18706127777989687,
+      "max_rotation_error_rad": 0.205987776208418,
+      "integrity": {
+        "pass_integrity": true,
+        "checked_reported_systems": 2648,
+        "accepted_updates": 120,
+        "reproduced_fit_rejections": 6,
+        "marginal_generations": 90,
+        "consumed_unique_raw_factors": 430,
+        "rejections": {
+          "increment": 5,
+          "new frame needs measured support": 1,
+          "accepted pose expiry latched": 53
+        },
+        "lost": true,
+        "ground_truth_parsed": false
+      },
+      "complete_accuracy_pass": false
+    }
+  },
+  "subjective_maturity_percent": 20,
+  "remaining_limits": [
+    "Viewed indoor recordings",
+    "Symmetric fixed-pair residual; nearest-pixel projective search remains one-way",
+    "Patch membership, spread and planarity thresholds are engineering choices; no calibrated uncertainty",
+    "Shared original depth decimation, vertices and intrinsics; normal reconstruction independently uses SVD",
+    "No fresh physical environment, vehicle integration, idle watchdog or real-time evidence"
+  ]
+}

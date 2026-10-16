@@ -1,0 +1,16 @@
+{
+  "problem": "RGB-D Gauss-Newton increments have no nonlinear step acceptance; changing support/RMS cannot certify descent.",
+  "change": "Fixed correspondences and frozen IRLS weights; weighted point-plane surrogate plus variable-projection affine image surrogate; all retained image rows must remain sampleable. Backtrack full proposal by factors 1,.5,.25,.125,.0625; halt level with unchanged pose if none descends.",
+  "cost": "0.5*sum(w_depth*r_depth^2)+0.5*(0.005^2/100)*min_gain_offset sum(w_image*r_image^2); image weights frozen from reported exposure estimate, nuisance gain/offset refit without additional constraints for the fixed-weight surrogate.",
+  "tolerance": "candidate <= before + 1e-12*(1+before)",
+  "scope": "Maintained optional keyframe RGB-D mode only, including geometry-only intervals within that mode; original depth-only modes unchanged.",
+  "guards": "Original support, SPD condition, full-proposal increment, iteration caps, final RMS/displacement, phase, image clock, fusion and expiry gates preserved.",
+  "adoption": {
+    "room_accurate_greater_than": 64,
+    "desk2_accurate_at_least": 161,
+    "accepted_each": 179,
+    "maximum_position_and_rotation_no_worse": true,
+    "no_resets": true
+  },
+  "labels": "Already viewed development recordings; numeric truth scored only after operational ledgers; no recording-specific switch or tuning."
+}

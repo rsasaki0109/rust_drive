@@ -1,0 +1,48 @@
+{
+  "implementation_integrity_pass": true,
+  "cases": {
+    "tum-fr1-room-temporal": {
+      "baseline": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 64,
+        "lost": false,
+        "max_position_error_m": 0.2962903752194005,
+        "max_rotation_error_rad": 0.1412856775931136
+      },
+      "candidate": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 64,
+        "lost": false,
+        "max_position_error_m": 0.2994066561655243,
+        "max_rotation_error_rad": 0.1420441192856726
+      },
+      "default_adoption_pass": false
+    },
+    "tum-fr1-desk2-independent": {
+      "baseline": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 161,
+        "lost": false,
+        "max_position_error_m": 0.11480018654834367,
+        "max_rotation_error_rad": 0.09038551655629316
+      },
+      "candidate": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 162,
+        "lost": false,
+        "max_position_error_m": 0.11348749227234269,
+        "max_rotation_error_rad": 0.09009355924602695
+      },
+      "default_adoption_pass": true
+    }
+  },
+  "default_adoption_pass": false,
+  "complete_physical_accuracy_pass": false,
+  "shared_reference_interpolation": true,
+  "rotation_check": "independent atan2 of relative rotation",
+  "viewed_development_data": true
+}

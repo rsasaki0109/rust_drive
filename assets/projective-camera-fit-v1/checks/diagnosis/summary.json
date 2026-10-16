@@ -1,0 +1,101 @@
+{
+  "trial_eligible": false,
+  "checks": {
+    "all_fits_converged_without_bound": false,
+    "cross_record_agreement": false,
+    "leave_one_pair_out_stable": false,
+    "validation_nonincreasing": false
+  },
+  "joint_fit_status": "at_bound",
+  "diagnostic_parameters": [
+    0.005311038766285062,
+    -0.05
+  ],
+  "maximum_between_record_log_difference": 0.01094576601593402,
+  "maximum_leave_one_pair_out_log_deviation": {
+    "tum-fr1-room-temporal": 0.014336291260356302,
+    "tum-fr1-desk2-independent": 0.02197728472289625
+  },
+  "validation": {
+    "tum-fr1-room-temporal": {
+      "original": {
+        "pairs": 15,
+        "all_pose_probes_observable": true,
+        "mean_robust_cost_m2": 7.625463881849655e-05,
+        "rms_m": 0.01710005073227686,
+        "median_position_correction_m": 0.010239321370978827,
+        "median_rotation_correction_rad": 0.007422731904647345
+      },
+      "candidate": {
+        "pairs": 15,
+        "all_pose_probes_observable": true,
+        "mean_robust_cost_m2": 7.586031717918938e-05,
+        "rms_m": 0.016801637416315646,
+        "median_position_correction_m": 0.011571721946186445,
+        "median_rotation_correction_rad": 0.008477902136331266
+      },
+      "checks": {
+        "complete_pose_probes": true,
+        "mean_robust_cost_m2_nonincreasing": true,
+        "rms_m_nonincreasing": true,
+        "median_position_correction_m_nonincreasing": false,
+        "median_rotation_correction_rad_nonincreasing": false
+      }
+    },
+    "tum-fr1-desk2-independent": {
+      "original": {
+        "pairs": 15,
+        "all_pose_probes_observable": true,
+        "mean_robust_cost_m2": 7.595770407974552e-05,
+        "rms_m": 0.016222997430717822,
+        "median_position_correction_m": 0.011626094395131016,
+        "median_rotation_correction_rad": 0.012007228039218963
+      },
+      "candidate": {
+        "pairs": 15,
+        "all_pose_probes_observable": true,
+        "mean_robust_cost_m2": 6.796364320067549e-05,
+        "rms_m": 0.015175578517553518,
+        "median_position_correction_m": 0.010274787029439037,
+        "median_rotation_correction_rad": 0.012406667339645482
+      },
+      "checks": {
+        "complete_pose_probes": true,
+        "mean_robust_cost_m2_nonincreasing": true,
+        "rms_m_nonincreasing": true,
+        "median_position_correction_m_nonincreasing": true,
+        "median_rotation_correction_rad_nonincreasing": false
+      }
+    },
+    "tum-fr1-rpy-heldout": {
+      "original": {
+        "pairs": 15,
+        "all_pose_probes_observable": true,
+        "mean_robust_cost_m2": 5.6604824050679055e-05,
+        "rms_m": 0.013611315947463771,
+        "median_position_correction_m": 0.008439449080492259,
+        "median_rotation_correction_rad": 0.005268609765016771
+      },
+      "candidate": {
+        "pairs": 15,
+        "all_pose_probes_observable": true,
+        "mean_robust_cost_m2": 5.052886628500803e-05,
+        "rms_m": 0.012740089403424543,
+        "median_position_correction_m": 0.008943760193813525,
+        "median_rotation_correction_rad": 0.0057490462004072245
+      },
+      "checks": {
+        "complete_pose_probes": true,
+        "mean_robust_cost_m2_nonincreasing": true,
+        "rms_m_nonincreasing": true,
+        "median_position_correction_m_nonincreasing": false,
+        "median_rotation_correction_rad_nonincreasing": false
+      }
+    }
+  },
+  "exported_trial_profile": false,
+  "physical_calibration_certified": false,
+  "default_changed": false,
+  "heldout_accuracy_claim": false,
+  "subjective_maturity_percent": 20
+}

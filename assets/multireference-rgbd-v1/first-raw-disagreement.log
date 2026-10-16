@@ -1,0 +1,36 @@
+raw checked 0
+FIRST_MISMATCH 2 0 4 
+Not equal to tolerance rtol=1e-10, atol=0.001
+
+Mismatched elements: 36 / 36 (100%)
+Max absolute difference among violations: 5239210.84995031
+Max relative difference among violations: 0.06683468
+ ACTUAL: array([[ 9.251518e+07,  5.181734e+07,  7.338095e+07, -4.749785e+07,
+         9.841389e+07, -2.350070e+07],
+       [ 5.181734e+07,  8.775495e+08,  1.663256e+08, -8.279010e+08,...
+ DESIRED: array([[ 9.246449e+07,  5.144668e+07,  7.342666e+07, -4.710508e+07,
+         9.836316e+07, -2.353747e+07],
+       [ 5.144668e+07,  8.827887e+08,  1.657765e+08, -8.330800e+08,...
+actual [8203, 8836] [5211, 5668] expected [8203, 8836] [5211, 5668]
+Traceback (most recent call last):
+  File "/tmp/rustdrive-diagnose-multi-photo.py", line 19, in <module>
+    try:compare_raw(s['equation'],expected)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/rust_drive/scripts/multireference_rgbd_common.py", line 188, in compare_raw
+    np.testing.assert_allclose(actual[key],expected[key],atol=atol,rtol=1e-10)
+  File "/workspace/.rustdrive-tools/demo-venv/lib/python3.12/site-packages/numpy/testing/_private/utils.py", line 1711, in assert_allclose
+    assert_array_compare(compare, actual, desired, err_msg=str(err_msg),
+  File "/workspace/.rustdrive-tools/demo-venv/lib/python3.12/site-packages/numpy/testing/_private/utils.py", line 919, in assert_array_compare
+    raise AssertionError(msg)
+AssertionError: 
+Not equal to tolerance rtol=1e-10, atol=0.001
+
+Mismatched elements: 36 / 36 (100%)
+Max absolute difference among violations: 5239210.84995031
+Max relative difference among violations: 0.06683468
+ ACTUAL: array([[ 9.251518e+07,  5.181734e+07,  7.338095e+07, -4.749785e+07,
+         9.841389e+07, -2.350070e+07],
+       [ 5.181734e+07,  8.775495e+08,  1.663256e+08, -8.279010e+08,...
+ DESIRED: array([[ 9.246449e+07,  5.144668e+07,  7.342666e+07, -4.710508e+07,
+         9.836316e+07, -2.353747e+07],
+       [ 5.144668e+07,  8.827887e+08,  1.657765e+08, -8.330800e+08,...

@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "camera_id": "controls",
+  "width": 100,
+  "height": 100,
+  "config": {
+    "max_tracks": 4,
+    "confirmation_hits": 1,
+    "min_iou": 0.1
+  },
+  "events": [
+    {
+      "timestamp_s": 0.0,
+      "input": {
+        "kind": "detections",
+        "image_sha256": "bc3ef44fd554a294fb852453d1539c5c5c994040853395d72dd426ca34d39b4f",
+        "detections": [
+          {
+            "class_index": 0,
+            "confidence": 0.6,
+            "bbox": [
+              64.0,
+              16.0,
+              84.0,
+              36.0
+            ]
+          },
+          {
+            "class_index": 0,
+            "confidence": 0.7,
+            "bbox": [
+              12.0,
+              16.0,
+              32.0,
+              36.0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "timestamp_s": 0.125,
+      "input": {
+        "kind": "missing"
+      }
+    },
+    {
+      "timestamp_s": 0.25,
+      "input": {
+        "kind": "detections",
+        "image_sha256": "7abd1f25912c2500e57666717f82369893dc06f2cd34401e7f39b5e90ffc4cd1",
+        "detections": [
+          {
+            "class_index": 2,
+            "confidence": 0.6,
+            "bbox": [
+              52.0,
+              36.0,
+              68.0,
+              52.0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "timestamp_s": 0.375,
+      "input": {
+        "kind": "detections",
+        "image_sha256": "263da8782441546b1dece34c9aec4f9a08c4d4706a4fdc9b68df25fa5ea0b01c",
+        "detections": []
+      }
+    },
+    {
+      "timestamp_s": 0.5,
+      "input": {
+        "kind": "detections",
+        "image_sha256": "058c5376f352b2903967cbc928f0f927974cf4ca8ac457a406a43a79448ed95a",
+        "detections": [
+          {
+            "class_index": 7,
+            "confidence": 0.6,
+            "bbox": [
+              24.0,
+              20.0,
+              40.0,
+              36.0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "timestamp_s": 0.625,
+      "input": {
+        "kind": "detections",
+        "image_sha256": "5de3abab708a56ad3dcc23f9fec6e8a57408df9bab1b53d3ad96f3183c9fbdb0",
+        "detections": [
+          {
+            "class_index": 0,
+            "confidence": 0.6,
+            "bbox": [
+              60.0,
+              44.0,
+              80.0,
+              64.0
+            ]
+          },
+          {
+            "class_index": 7,
+            "confidence": 0.7,
+            "bbox": [
+              24.0,
+              40.0,
+              44.0,
+              60.0
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

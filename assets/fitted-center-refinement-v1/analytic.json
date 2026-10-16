@@ -1,0 +1,105 @@
+{
+  "analytic_pass": true,
+  "source_proof": true,
+  "inherited_boundary_controls_pass": true,
+  "inherited_historical_identity_controls": {
+    "unquantized": {
+      "old_operational_sources": 963,
+      "old_independent_sources": 974,
+      "new_agreed_sources": 939,
+      "removed_from_operational": 24,
+      "removed_from_independent": 35,
+      "source_sha256": "0975e776050767cfac80e7eb0b9b6789d4a9cbb6d2abcaf3bb9a6a5b38dfa1fa",
+      "old_only_operational": [
+        5152,
+        5184,
+        9052,
+        10276
+      ],
+      "old_only_independent": [
+        3876,
+        3900,
+        3912,
+        4540,
+        4548,
+        4572,
+        5216,
+        5220,
+        5784,
+        7136,
+        8408,
+        8436,
+        8984,
+        10936,
+        12924
+      ],
+      "resolved": true,
+      "identity_converged": true,
+      "applied_corrections": 0
+    },
+    "quantized_2mm": {
+      "old_operational_sources": 964,
+      "old_independent_sources": 974,
+      "new_agreed_sources": 939,
+      "removed_from_operational": 25,
+      "removed_from_independent": 35,
+      "source_sha256": "0975e776050767cfac80e7eb0b9b6789d4a9cbb6d2abcaf3bb9a6a5b38dfa1fa",
+      "old_only_operational": [
+        3924,
+        5152,
+        9632
+      ],
+      "old_only_independent": [
+        3876,
+        3900,
+        3912,
+        4540,
+        4548,
+        5220,
+        5784,
+        7136,
+        8436,
+        8984,
+        9720,
+        10936,
+        12924
+      ],
+      "resolved": true,
+      "identity_converged": true,
+      "applied_corrections": 0
+    }
+  },
+  "admission": {
+    "fitted_only_center_added": true,
+    "legacy_only_center_retained": true,
+    "both_alignment_reject": true,
+    "distance_reject": true,
+    "missing_depth_reject": true,
+    "unused_target_corner_normal_not_filled": true,
+    "point_and_metric_audited": true
+  },
+  "reported_systems": 11,
+  "checkpoint_systems": 6,
+  "prior_system_checks": 1,
+  "objective_gradient_axes": 12,
+  "rendered_sources": 998,
+  "rendered_old_sources": 998,
+  "rendered_continuous_converged": true,
+  "rendered_applied_corrections": 1,
+  "rejected_corruptions": [
+    "false convergence",
+    "wrong source identities",
+    "wrong normalizer digest",
+    "wrong final matrix"
+  ],
+  "guards": {
+    "missing": "new frame needs measured support",
+    "plane": "zero/nonfinite diagonal",
+    "identity": null,
+    "quantized_identity": null
+  },
+  "source_sha256": {
+    "scripts/fitted_center_refinement.py": "dc2e4d1d3552b9e87fbe3f8a4a03b9d60ebda6cf47141ef808d45410cdd72e75",
+    "scripts/check-fitted-center-refinement.py": "06ef12ce519a3ea773a9e551b7a637397181a1da278870e51def59c73e432be5"
+  }
+}

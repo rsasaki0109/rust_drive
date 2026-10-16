@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "camera_id": "failure-controls",
+  "width": 640,
+  "height": 480,
+  "events": [
+    {
+      "now_s": 0.0,
+      "input": {
+        "kind": "detections",
+        "acquired_s": 0.0,
+        "image_sha256": "a7937b64b8caa58f03721bb6bacf5c78cb235febe0e70b1b84cd99541461a08e",
+        "detections": [
+          {
+            "class_index": 2,
+            "confidence": 0.8,
+            "bbox": [
+              10.0,
+              10.0,
+              30.0,
+              30.0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "now_s": 0.1,
+      "input": {
+        "kind": "analysis",
+        "acquired_s": 0.1,
+        "report": "missing.json",
+        "sha256": "3c7240ef6237a4ba1087a42917dfa2bca6ce4de6039e745a721175f9ca4f89af"
+      }
+    }
+  ]
+}

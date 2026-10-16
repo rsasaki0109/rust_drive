@@ -1,0 +1,59 @@
+{
+  "analytic_pass": true,
+  "profile_equivalence_cases": 5,
+  "chart_angles_rad": [
+    1e-09,
+    0.0001,
+    0.3,
+    1.2
+  ],
+  "reports": {
+    "discard": {
+      "checked_reported_equations": 214,
+      "marginal_generations": 0,
+      "max_position_error_m": 0.00023476697567180747
+    },
+    "retain": {
+      "checked_reported_equations": 194,
+      "marginal_generations": 9,
+      "max_position_error_m": 0.0002511610707689051
+    }
+  },
+  "discarded_information_control": true,
+  "no_fabricated_new_support": true,
+  "terminal_expiry": true,
+  "rejected_corruptions": [
+    "wrong Schur gradient",
+    "coherently scaled Schur H/g",
+    "duplicate factor history",
+    "wrong fixed origin",
+    "wrong linearization anchor",
+    "retained raw factors also marginalized",
+    "normal system scaled without changing its solve",
+    "moved first origin",
+    "wrong normal increment"
+  ],
+  "late_elimination_failure_atomic": true,
+  "clean_recovery_prior_parity": true,
+  "malformed_clock_and_depth_rejected": true,
+  "singular_elimination_rejected": true,
+  "interpolation": {
+    "scalar_samples": 3,
+    "frozen_normalizer_central_difference_axes": 3,
+    "right_knot_derivative": true,
+    "continuous_knot_value": true,
+    "rejected_corner_controls": [
+      "missing depth",
+      "invalid corner normal",
+      "depth discontinuity"
+    ],
+    "behind_camera_rejected": true,
+    "omitted_projective_gradient_detected": true,
+    "parent_engine_only_pair_import_changed": true
+  },
+  "source_sha256": {
+    "scripts/check-subpixel-keyframes.py": "364b27788ca90a03c442e5b1cfe031d9b8e295851588becb6531aabe747bd285",
+    "scripts/subpixel_depth_factors.py": "5c07372e8a85a53270f38ae12ed77b61ede96ae1641d4be1baef2c33f38fb397",
+    "scripts/subpixel_keyframe_depth.py": "f4432363b644f410269b216422e33606db0014342d65e5fa34a4e89771f6731c"
+  }
+}

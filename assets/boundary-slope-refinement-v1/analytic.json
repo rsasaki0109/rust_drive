@@ -1,0 +1,103 @@
+{
+  "analytic_pass": true,
+  "source_proof": true,
+  "interpolation": {
+    "all_incident_cell_controls": true,
+    "raw_values_unchanged": true,
+    "no_coordinate_snap": true,
+    "finite_difference_axes": 18,
+    "one_sided_boundary_rejected": true,
+    "missing_depth_remains_missing": true,
+    "corner_control": true,
+    "invalid_queries_rejected": true
+  },
+  "historical_identity_controls": {
+    "unquantized": {
+      "old_operational_sources": 963,
+      "old_independent_sources": 974,
+      "new_agreed_sources": 939,
+      "removed_from_operational": 24,
+      "removed_from_independent": 35,
+      "source_sha256": "0975e776050767cfac80e7eb0b9b6789d4a9cbb6d2abcaf3bb9a6a5b38dfa1fa",
+      "old_only_operational": [
+        5152,
+        5184,
+        9052,
+        10276
+      ],
+      "old_only_independent": [
+        3876,
+        3900,
+        3912,
+        4540,
+        4548,
+        4572,
+        5216,
+        5220,
+        5784,
+        7136,
+        8408,
+        8436,
+        8984,
+        10936,
+        12924
+      ],
+      "resolved": true,
+      "identity_converged": true,
+      "applied_corrections": 0
+    },
+    "quantized_2mm": {
+      "old_operational_sources": 964,
+      "old_independent_sources": 974,
+      "new_agreed_sources": 939,
+      "removed_from_operational": 25,
+      "removed_from_independent": 35,
+      "source_sha256": "0975e776050767cfac80e7eb0b9b6789d4a9cbb6d2abcaf3bb9a6a5b38dfa1fa",
+      "old_only_operational": [
+        3924,
+        5152,
+        9632
+      ],
+      "old_only_independent": [
+        3876,
+        3900,
+        3912,
+        4540,
+        4548,
+        5220,
+        5784,
+        7136,
+        8436,
+        8984,
+        9720,
+        10936,
+        12924
+      ],
+      "resolved": true,
+      "identity_converged": true,
+      "applied_corrections": 0
+    }
+  },
+  "reported_systems": 11,
+  "checkpoint_systems": 18,
+  "prior_system_checks": 1,
+  "objective_gradient_axes": 12,
+  "rendered_continuous_converged": true,
+  "rendered_applied_corrections": 1,
+  "rejected_corruptions": [
+    "false convergence",
+    "wrong source identities",
+    "wrong normalizer digest",
+    "wrong final system"
+  ],
+  "guards": {
+    "missing": "new frame needs measured support",
+    "plane": "zero/nonfinite diagonal"
+  },
+  "original_solver_and_audit_bindings_unchanged": true,
+  "source_sha256": {
+    "scripts/boundary_depth_support.py": "a15baaecc87e7c6ef19de75c5d2c9fa691c3df608da5551cca34bedbc1f6ac89",
+    "scripts/boundary_slope_refinement.py": "7e8b0656fa498f5d92c93e31d63bbbe069b0ed444a6f0f5c1bb24b0a419ae880",
+    "scripts/check-boundary-slope-refinement.py": "c849080092fe453e83a07f9c64ca1eee76fa32eaf9b869d812d529968229b712"
+  }
+}

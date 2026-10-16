@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "dataset": "Argoverse 1.1 official tracking sample",
+  "primary_page": "https://www.argoverse.org/av1.html",
+  "attribution": "\u00a9 2018\u20132019 Argo AI, LLC; Chang et al., Argoverse: 3D Tracking and Forecasting with Rich Maps, CVPR 2019",
+  "dataset_license": "CC BY-NC-SA 4.0",
+  "terms_url": "https://www.argoverse.org/about.html#terms-of-use",
+  "source_sha256": {
+    "scripts/fetch-argoverse-depth-sample.py": "812fc4c6375365068397e80c206de2ad67338ca60c948cc06b9caf57f4fb0c78",
+    "scripts/check-argoverse-sparse-depth.py": "36027c5244fc4b6d17937dbc453d8d10a7399dc4fb7b062263db29ea8199fba1",
+    "scripts/diagnose-argoverse-sparse-depth.py": "5eaef20a4672535637e82a399d1e0c237122f822a4ebea84a491d420b36ab0cf"
+  },
+  "api_source_tree_sha": "f886ac54fba9f06f8a7d109eb663c7f501b3aa8e",
+  "api_documents_sha256": {
+    "readme.txt": "5747c742808a7e2b1ad5590bef5af6a4caa758a591df3db393ea9a8ee559b6fc",
+    "transform.py": "8280023354df6438380e78d31f7c72b316394e50cf1790c3b03b403392039c13",
+    "calibration.py": "e79d1cc92e8a6a6f10dc62241ee627c2ff20e4da6dc5c3c26d32699468004a4f",
+    "ply_loader.py": "edae864f3ae50552aa925fb18f9a2b171d432d5a84056fe7f429dd598e7cd7f3",
+    "terms.txt": "168bc694237121b78fc7fe481e859cda7a72280d6354d2fc534a38fc0daf3264",
+    "license.txt": "03bfcf4a417625c0764556d85aa52783281e6fd1d6a6b180e494eaf0520dd7fe"
+  },
+  "first_integrity_trial_passed": false,
+  "first_scans_passing": 1,
+  "diagnosis_inframe_and_all_raster_passed": true,
+  "original_failure_preserved": true,
+  "pixel_tolerance_changed": false,
+  "selected_points": 278790,
+  "independent_physical_reference_available": false,
+  "measured_depth_rmse_m": null,
+  "measured_depth_mae_m": null,
+  "actual_kitti_data": false,
+  "large_raw_and_derived_data_redistributed": false,
+  "bound_files": {
+    "acquisition.json": {
+      "bytes": 1638,
+      "sha256": "c69c78d74bcbeeb1548271876bdcce6666b229c980c64bead573ebf94a55c4bc"
+    },
+    "check-argoverse-sparse-depth.py.gz": {
+      "bytes": 4989,
+      "sha256": "44e0f6c414254084c2cf1401c5506688c7e6aa5f55c57bb98a3b9fd1cb98a76e"
+    },
+    "diagnose-argoverse-sparse-depth.py.gz": {
+      "bytes": 2974,
+      "sha256": "62c43b8e8f5a2c816c368fc08de98cbfb9efd3cd0f84ef3b2539dadfea2ff8ae"
+    },
+    "diagnosis-freeze.json": {
+      "bytes": 470,
+      "sha256": "cda38af892b70fb4f003d13370e40b1b5048030b36f84a049ae5b6a0e94fcabe"
+    },
+    "diagnosis-results.json": {
+      "bytes": 2668,
+      "sha256": "0881e3fdcca40b43f05fba3a67bd115cab45497e966ac9084d4cabb198623d88"
+    },
+    "fetch-argoverse-depth-sample.py.gz": {
+      "bytes": 2114,
+      "sha256": "91d4168ccc6f1c1a91664f51f8022c36ee723d26364947ffd91c332f1105e468"
+    },
+    "first-freeze.json": {
+      "bytes": 3160,
+      "sha256": "c8ae94768f781c8b2ce41771ce205b13121de7862298a5892f10f0848c63e21b"
+    },
+    "first-results.json": {
+      "bytes": 2984,
+      "sha256": "85eddc891223f4c8bf0e01e55690f9d5986665b374a511ab1629e9792429877c"
+    },
+    "selection-plan.json": {
+      "bytes": 675,
+      "sha256": "856dd3fa8384e082c8ff7c0a1abd2e2dbea672e5b825a0abfb7e8fa8576d3bc0"
+    }
+  },
+  "local_validation": {
+    "core_rust_tests": 371,
+    "core_scenario_replays": 49,
+    "unchanged_core_output_files": 245,
+    "new_evaluator_tests": 13,
+    "actionlint_passed": true,
+    "python_compile_passed": true,
+    "remote_ci_run": false
+  }
+}

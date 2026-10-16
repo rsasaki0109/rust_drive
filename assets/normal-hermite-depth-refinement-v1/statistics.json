@@ -1,0 +1,438 @@
+{
+  "summaries": {
+    "tum-fr1-room-temporal": {
+      "samples": 5,
+      "continuous_converged": 3,
+      "control_continuous_converged": 0,
+      "original_discrete_fresh_converged": 0,
+      "local_guard_failures": 2,
+      "original_discrete_guard_failures": 0,
+      "original_discrete_rms_gate_passes": 5,
+      "median_original_discrete_rms_m": 0.002473233482577955,
+      "control_median_original_discrete_rms_m": 0.002454214162878936,
+      "source_occurrences_before": 10156,
+      "source_occurrences_after": 10156,
+      "source_retention": 1.0,
+      "factors_before": 20,
+      "factors_after": 20,
+      "budget_exhaustions": 0,
+      "total_applied_corrections": 35,
+      "shortened_steps": 8,
+      "invalid_candidate_trials": 73,
+      "valid_nonpassing_candidate_trials": 0,
+      "accepted_candidate_trials": 35,
+      "accepted_cost_increases": 0,
+      "checkpoints": {
+        "10": {
+          "continuous_converged": 2,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 2,
+          "budget_exhaustions": 1
+        },
+        "20": {
+          "continuous_converged": 3,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 2,
+          "budget_exhaustions": 0
+        },
+        "30": {
+          "continuous_converged": 3,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 2,
+          "budget_exhaustions": 0
+        }
+      },
+      "eligible_for_followup_full_trajectory": false
+    },
+    "tum-fr1-desk2-independent": {
+      "samples": 5,
+      "continuous_converged": 1,
+      "control_continuous_converged": 2,
+      "original_discrete_fresh_converged": 0,
+      "local_guard_failures": 4,
+      "original_discrete_guard_failures": 0,
+      "original_discrete_rms_gate_passes": 5,
+      "median_original_discrete_rms_m": 0.0027404641366715284,
+      "control_median_original_discrete_rms_m": 0.0027404641366715284,
+      "source_occurrences_before": 22351,
+      "source_occurrences_after": 22351,
+      "source_retention": 1.0,
+      "factors_before": 16,
+      "factors_after": 16,
+      "budget_exhaustions": 0,
+      "total_applied_corrections": 44,
+      "shortened_steps": 9,
+      "invalid_candidate_trials": 125,
+      "valid_nonpassing_candidate_trials": 0,
+      "accepted_candidate_trials": 44,
+      "accepted_cost_increases": 0,
+      "checkpoints": {
+        "10": {
+          "continuous_converged": 0,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 3,
+          "budget_exhaustions": 2
+        },
+        "20": {
+          "continuous_converged": 1,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 3,
+          "budget_exhaustions": 1
+        },
+        "30": {
+          "continuous_converged": 1,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 4,
+          "budget_exhaustions": 0
+        }
+      },
+      "eligible_for_followup_full_trajectory": false
+    }
+  },
+  "samples": {
+    "tum-fr1-room-temporal": [
+      {
+        "source_index": 120,
+        "applied_corrections": 11,
+        "continuous_converged": true,
+        "guard_failure": null,
+        "termination": "converged",
+        "source_occurrences": 1978,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": null,
+          "converged": true,
+          "delta": [
+            [
+              -2.677600073215938e-09,
+              3.053681982649208e-09,
+              -1.15805178069984e-09,
+              -5.659213893588102e-10,
+              -1.0899488134659453e-09,
+              -4.94170341576442e-09
+            ],
+            [
+              -2.1496412434492737e-07,
+              7.864735764084858e-09,
+              5.692912152109724e-08,
+              3.6578927806934797e-09,
+              -4.2274637226453375e-09,
+              -3.345692952596802e-08
+            ],
+            [
+              1.6946904384273272e-06,
+              -7.151941548689201e-08,
+              -4.533222155101672e-07,
+              4.686456299202032e-08,
+              3.610632926315158e-07,
+              5.504051591452354e-07
+            ],
+            [
+              -3.2250477925381795e-06,
+              -3.485633615103751e-06,
+              5.0391640967277565e-06,
+              1.0525103256058146e-06,
+              6.555674386380666e-06,
+              5.527613381179733e-06
+            ]
+          ],
+          "condition": 1074.3589370840411
+        }
+      },
+      {
+        "source_index": 160,
+        "applied_corrections": 7,
+        "continuous_converged": true,
+        "guard_failure": null,
+        "termination": "converged",
+        "source_occurrences": 2582,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": null,
+          "converged": true,
+          "delta": [
+            [
+              -4.449058303038453e-07,
+              -8.63712068682446e-08,
+              1.9874098680474353e-07,
+              5.000265867417141e-08,
+              3.438393560950576e-07,
+              2.896386367209846e-07
+            ],
+            [
+              2.7039940272056574e-06,
+              4.003881349978467e-07,
+              -1.1673343749743733e-06,
+              -3.8064812002277504e-07,
+              -2.0973194373764374e-06,
+              -1.6741911485430428e-06
+            ],
+            [
+              -2.65915255708102e-06,
+              -6.105674610777386e-07,
+              1.1983346627579613e-06,
+              6.266258996013032e-08,
+              1.669320303716433e-06,
+              1.0938957331147663e-06
+            ],
+            [
+              -6.215729840919835e-06,
+              -1.362658720112025e-06,
+              2.7450168586713858e-06,
+              -2.3461997917782656e-06,
+              3.348424143696947e-06,
+              1.653070611622641e-07
+            ]
+          ],
+          "condition": 7476.19316786283
+        }
+      },
+      {
+        "source_index": 200,
+        "applied_corrections": 0,
+        "continuous_converged": false,
+        "guard_failure": "new frame needs measured support",
+        "termination": "guard",
+        "source_occurrences": 0,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": "new frame needs measured support",
+          "converged": false,
+          "delta": null,
+          "condition": null
+        }
+      },
+      {
+        "source_index": 240,
+        "applied_corrections": 9,
+        "continuous_converged": true,
+        "guard_failure": null,
+        "termination": "converged",
+        "source_occurrences": 4235,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": null,
+          "converged": true,
+          "delta": [
+            [
+              9.639664549896633e-08,
+              1.815548332643206e-07,
+              2.2792925242812115e-07,
+              4.355959848228549e-07,
+              -6.442338956933514e-08,
+              -9.746111300973784e-08
+            ],
+            [
+              2.241356212959099e-07,
+              3.720523323014604e-07,
+              -8.129454201179469e-09,
+              5.124180308416118e-07,
+              -2.2288955440571105e-07,
+              -1.2488304186603217e-07
+            ],
+            [
+              -4.7248150656817616e-07,
+              -1.1139401975427006e-07,
+              1.1209118274162118e-06,
+              5.991152625732497e-07,
+              6.127026481267207e-07,
+              2.5078623041385513e-07
+            ],
+            [
+              -2.0763837369533085e-06,
+              -4.7659040501640725e-06,
+              5.773358721426948e-06,
+              -3.18606198532055e-07,
+              3.697207211919931e-06,
+              1.8924565771998375e-06
+            ]
+          ],
+          "condition": 271937.6420842077
+        }
+      },
+      {
+        "source_index": 279,
+        "applied_corrections": 8,
+        "continuous_converged": false,
+        "guard_failure": "line search",
+        "termination": "guard",
+        "source_occurrences": 1361,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": null,
+          "converged": false,
+          "delta": [
+            [
+              0.00015071050512866323,
+              4.519451869152035e-05,
+              -7.411576763735995e-05,
+              -3.3667179801393487e-06,
+              -7.561386331209362e-05,
+              -0.00015549807232731163
+            ],
+            [
+              -0.00031879604923876957,
+              -8.411221491370586e-05,
+              0.00015825682686170713,
+              0.00013819449730402499,
+              0.00019121564469635826,
+              0.0002117653479159171
+            ],
+            [
+              -0.0010638809315407572,
+              -0.0005017780792469236,
+              0.0006076282669084029,
+              0.0002807016859200803,
+              0.0006995289532130556,
+              0.0008753408099584549
+            ]
+          ],
+          "condition": 70325.40841863421
+        }
+      }
+    ],
+    "tum-fr1-desk2-independent": [
+      {
+        "source_index": 120,
+        "applied_corrections": 0,
+        "continuous_converged": false,
+        "guard_failure": "new frame needs measured support",
+        "termination": "guard",
+        "source_occurrences": 1244,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": "new frame needs measured support",
+          "converged": false,
+          "delta": null,
+          "condition": null
+        }
+      },
+      {
+        "source_index": 160,
+        "applied_corrections": 24,
+        "continuous_converged": false,
+        "guard_failure": "line search",
+        "termination": "guard",
+        "source_occurrences": 4905,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": null,
+          "converged": false,
+          "delta": [
+            [
+              3.0074115255535098e-06,
+              -4.5201413588036714e-07,
+              1.0631465892561124e-08,
+              -2.3719935194684028e-07,
+              -1.5365516077625746e-06,
+              -1.750736012134547e-06
+            ],
+            [
+              -1.435196451576097e-05,
+              3.105927256614675e-06,
+              -8.929549786994611e-07,
+              1.061894082333844e-06,
+              7.014521334531109e-06,
+              8.159234879996682e-06
+            ],
+            [
+              -2.436299572635275e-06,
+              -8.619953074741365e-07,
+              9.256958626563826e-07,
+              -3.2141341652961627e-07,
+              6.265143245923867e-07,
+              2.2214966769372407e-06
+            ],
+            [
+              9.513481231523529e-05,
+              -3.5536310061326095e-05,
+              2.429397547451063e-05,
+              -8.390875801567803e-06,
+              -6.343044424411667e-05,
+              -6.218318012691636e-05
+            ]
+          ],
+          "condition": 17013.058190750726
+        }
+      },
+      {
+        "source_index": 200,
+        "applied_corrections": 20,
+        "continuous_converged": true,
+        "guard_failure": null,
+        "termination": "converged",
+        "source_occurrences": 16202,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": null,
+          "converged": true,
+          "delta": [
+            [
+              7.175947870773853e-07,
+              -3.666957563243409e-07,
+              1.533282572609574e-07,
+              -8.998891260069301e-08,
+              -3.964974771672668e-07,
+              -4.948574220043597e-07
+            ],
+            [
+              -2.716022628891022e-06,
+              1.4892919450707518e-06,
+              -5.478893371357338e-07,
+              3.614976522605004e-07,
+              1.4016083788266124e-06,
+              1.9723613125497403e-06
+            ],
+            [
+              -5.795079642002335e-06,
+              2.0820126334724645e-06,
+              -1.4582785539864992e-07,
+              5.40414737394626e-07,
+              2.1892750626578646e-06,
+              3.38160725244866e-06
+            ],
+            [
+              -7.718533132722908e-06,
+              4.56269662358196e-06,
+              -1.525451280862704e-06,
+              1.3821608333943317e-06,
+              4.278034383833328e-06,
+              5.909735693989356e-06
+            ]
+          ],
+          "condition": 75237.60438782244
+        }
+      },
+      {
+        "source_index": 240,
+        "applied_corrections": 0,
+        "continuous_converged": false,
+        "guard_failure": "new frame needs measured support",
+        "termination": "guard",
+        "source_occurrences": 0,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": "new frame needs measured support",
+          "converged": false,
+          "delta": null,
+          "condition": null
+        }
+      },
+      {
+        "source_index": 279,
+        "applied_corrections": 0,
+        "continuous_converged": false,
+        "guard_failure": "new frame needs measured support",
+        "termination": "guard",
+        "source_occurrences": 0,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": "new frame needs measured support",
+          "converged": false,
+          "delta": null,
+          "condition": null
+        }
+      }
+    ]
+  }
+}

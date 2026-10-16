@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/workspace/rust_drive/scripts/check-projective-camera.py", line 276, in <module>
+    if __name__ == '__main__':main()
+                              ^^^^^^
+  File "/workspace/rust_drive/scripts/check-projective-camera.py", line 271, in main
+    ref = importlib.util.module_from_spec(spec); spec.loader.exec_module(ref); ref.controls(); audit(args.reports.absolute(), output, ref)
+                                                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/rust_drive/scripts/check-projective-camera.py", line 212, in audit
+    checked += audit_fit(result['full'], samples)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/rust_drive/scripts/check-projective-camera.py", line 199, in audit_fit
+    require(max(abs(result['trace'][-1]['unclipped_step'])) < 1e-7, 'actual stationary camera fit')
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: bad operand type for abs(): 'list'

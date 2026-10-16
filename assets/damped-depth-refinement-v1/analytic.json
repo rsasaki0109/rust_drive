@@ -1,0 +1,345 @@
+{
+  "analytic_pass": true,
+  "source_proof": true,
+  "inherited_deep_controls": {
+    "analytic_pass": true,
+    "source_proof": true,
+    "inherited_long_controls": {
+      "analytic_pass": true,
+      "source_proof": true,
+      "inherited_sampling_controls": {
+        "analytic_pass": true,
+        "unchanged_function_bodies": [
+          "evaluate",
+          "equation",
+          "energy",
+          "search",
+          "refine"
+        ],
+        "inherited_continuous_controls": {
+          "analytic_pass": true,
+          "independently_checked_reported_systems": 15,
+          "additional_prior_system_checks": 1,
+          "objective_gradient_axes": 12,
+          "interpolation": {
+            "scalar_samples": 3,
+            "frozen_normalizer_central_difference_axes": 3,
+            "right_knot_derivative": true,
+            "continuous_knot_value": true,
+            "rejected_corner_controls": [
+              "missing depth",
+              "invalid corner normal",
+              "depth discontinuity"
+            ],
+            "behind_camera_rejected": true,
+            "omitted_projective_gradient_detected": true,
+            "parent_engine_only_pair_import_changed": true
+          },
+          "source_domain_failure_reproduced": true,
+          "rendered_continuous_converged": true,
+          "rendered_discrete_fresh_converged": false,
+          "rendered_applied_corrections": 1,
+          "rendered_termination": "converged",
+          "rendered_guard_failure": null,
+          "rendered_position_error_m": 1.9802412904961762e-05,
+          "rendered_rotation_error_rad": 2.7546834872737607e-05,
+          "measured_guards": {
+            "identity": null,
+            "missing": "new frame needs measured support",
+            "plane": "zero/nonfinite diagonal"
+          },
+          "perturbed_rendered_continuous_converged": false,
+          "perturbed_rendered_applied_corrections": 4,
+          "perturbed_rendered_termination": "guard",
+          "perturbed_rendered_guard_failure": "line search",
+          "isolated_injected_direction_invalid_trials": 2,
+          "isolated_injected_direction_search_exhausted": true,
+          "rejected_corruptions": [
+            "changed source hash",
+            "changed normalizer digest",
+            "changed normalizer value",
+            "wrong initial cost",
+            "false continuous convergence",
+            "false discrete convergence",
+            "wrong final matrix",
+            "wrong stop cause",
+            "wrong applied multiplier",
+            "wrong applied pose",
+            "coherently changed fixed normalizer",
+            "invalid candidate presented as zero cost"
+          ],
+          "input_roots_unchanged": true
+        },
+        "additional_rendered_reported_systems": 3,
+        "hand_counted_sampling_mask": [
+          true,
+          false,
+          false
+        ],
+        "geometric_gate_and_sampling_domain_distinguished": true,
+        "initial_geometry_selector_isolated": true,
+        "rendered_center_source_occurrences": 1050,
+        "rendered_sampling_source_occurrences": 988,
+        "rejected_sampling_corruptions": [
+          "center-only population substituted for sampling stencil"
+        ],
+        "stencil_is_not_a_continuous_domain_guarantee": true
+      },
+      "additional_rendered_reported_systems": 3,
+      "additional_checkpoint_systems": 6,
+      "rendered_continuous_converged": true,
+      "rendered_applied_corrections": 1,
+      "complete_ten_correction_control_parity": true,
+      "event_order_controls_are_not_image_evidence": true,
+      "cap_precedes_next_search_failure": true,
+      "proposal_guard_and_convergence_precede_cap": true,
+      "rejected_long_corruptions": [
+        "wrong extended cap",
+        "false long convergence",
+        "changed frozen normalizer",
+        "wrong checkpoint count",
+        "false carry-forward",
+        "false checkpoint budget",
+        "wrong checkpoint matrix"
+      ],
+      "input_roots_unchanged": true
+    },
+    "additional_rendered_reported_systems": 3,
+    "additional_checkpoint_systems": 6,
+    "rendered_continuous_converged": true,
+    "rendered_applied_corrections": 1,
+    "complete_rendered_control_equal": true,
+    "authored_injected_direction_systems": 2,
+    "authored_directions_are_not_guarded_solver_proposals": true,
+    "authored_search_receipts": {
+      "deeper pass": {
+        "before_cost": 1.0155975199998636e-06,
+        "directional_derivative": -5.700799999998989e-08,
+        "trials": [
+          {
+            "alpha": 1.0,
+            "cost": null,
+            "limit": 1.0155928191998635e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 0.5,
+            "cost": null,
+            "limit": 1.0155956695998636e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 0.25,
+            "cost": null,
+            "limit": 1.0155970947998637e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 0.125,
+            "cost": null,
+            "limit": 1.0155978073998636e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 0.0625,
+            "cost": null,
+            "limit": 1.0155981636998636e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 0.03125,
+            "cost": null,
+            "limit": 1.0155983418498636e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 0.015625,
+            "cost": null,
+            "limit": 1.0155984309248637e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 0.0078125,
+            "cost": null,
+            "limit": 1.0155984754623637e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 0.00390625,
+            "cost": 1.0153748447071407e-06,
+            "limit": 1.0155984977311135e-06,
+            "guard_failure": null
+          }
+        ],
+        "accepted_alpha": 0.00390625
+      },
+      "exhausted domain": {
+        "before_cost": 1.0153125000000136e-06,
+        "directional_derivative": -5.699999999999411e-08,
+        "trials": [
+          {
+            "alpha": 1.0,
+            "cost": null,
+            "limit": 1.0153078000000137e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 0.5,
+            "cost": null,
+            "limit": 1.0153106500000137e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 0.25,
+            "cost": null,
+            "limit": 1.0153120750000137e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 0.125,
+            "cost": null,
+            "limit": 1.0153127875000137e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 0.0625,
+            "cost": null,
+            "limit": 1.0153131437500136e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 0.03125,
+            "cost": null,
+            "limit": 1.0153133218750136e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 0.015625,
+            "cost": null,
+            "limit": 1.0153134109375136e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 0.0078125,
+            "cost": null,
+            "limit": 1.0153134554687637e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 0.00390625,
+            "cost": null,
+            "limit": 1.0153134777343887e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 0.001953125,
+            "cost": null,
+            "limit": 1.015313488867201e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 0.0009765625,
+            "cost": null,
+            "limit": 1.0153134944336075e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 0.00048828125,
+            "cost": null,
+            "limit": 1.0153134972168106e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 0.000244140625,
+            "cost": null,
+            "limit": 1.015313498608412e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 0.0001220703125,
+            "cost": null,
+            "limit": 1.015313499304213e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 6.103515625e-05,
+            "cost": null,
+            "limit": 1.0153134996521133e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 3.0517578125e-05,
+            "cost": null,
+            "limit": 1.0153134998260634e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 1.52587890625e-05,
+            "cost": null,
+            "limit": 1.0153134999130386e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 7.62939453125e-06,
+            "cost": null,
+            "limit": 1.0153134999565261e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 3.814697265625e-06,
+            "cost": null,
+            "limit": 1.0153134999782699e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 1.9073486328125e-06,
+            "cost": null,
+            "limit": 1.0153134999891418e-06,
+            "guard_failure": "fixed source support"
+          },
+          {
+            "alpha": 9.5367431640625e-07,
+            "cost": null,
+            "limit": 1.0153134999945776e-06,
+            "guard_failure": "fixed source support"
+          }
+        ],
+        "accepted_alpha": null
+      }
+    },
+    "rejected_deep_search_corruptions": [
+      "wrong accepted multiplier",
+      "truncated failed prefix",
+      "false valid candidate cost",
+      "false candidate validity"
+    ],
+    "input_roots_unchanged": true
+  },
+  "additional_rendered_reported_systems": 21,
+  "additional_checkpoint_systems": 6,
+  "rendered_warm_converged": true,
+  "perturbed_converged": false,
+  "perturbed_applied_corrections": 12,
+  "perturbed_guard": "line search",
+  "rendered_damped_solve_checks": 72,
+  "rendered_damped_choices": 0,
+  "original_degenerate_guards": {
+    "missing": "new frame needs measured support",
+    "plane": "zero/nonfinite diagonal"
+  },
+  "authored_quadratic_damped_solve_checks": 8,
+  "authored_quadratic_selected_damping": 100,
+  "authored_quadratic_is_not_measured_image_or_physical_accuracy_evidence": true,
+  "rejected_damped_corruptions": [
+    "false selected direction",
+    "changed damping",
+    "false damped solve",
+    "truncated alternatives",
+    "false accepted cost"
+  ],
+  "input_roots_unchanged": true,
+  "source_sha256": {
+    "scripts/damped_depth_refinement.py": "bb5e61f3161a6ec65a22c8134321e72ac1fe51e8edcd6874208cafea2c5b8d6b",
+    "scripts/check-damped-depth-refinement.py": "9f18b7f6752175930a15f19c27c4fe7c7abbb7ca27844fbb5dbbdbf50d7e877a"
+  }
+}

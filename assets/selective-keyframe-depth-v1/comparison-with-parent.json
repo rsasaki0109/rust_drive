@@ -1,0 +1,103 @@
+{
+  "tum-fr1-room-temporal-retain": {
+    "patch_control": {
+      "total_updates": 179,
+      "accepted": 142,
+      "root_accurate": 77,
+      "lost": true,
+      "max_position_error_m": 0.2930165520480109,
+      "max_rotation_error_rad": 0.14393890962351094,
+      "integrity": {
+        "pass_integrity": true,
+        "checked_reported_systems": 3247,
+        "accepted_updates": 142,
+        "reproduced_fit_rejections": 6,
+        "marginal_generations": 109,
+        "consumed_unique_raw_factors": 411,
+        "rejections": {
+          "condition": 3,
+          "increment": 3,
+          "accepted pose expiry latched": 31
+        },
+        "lost": true,
+        "ground_truth_parsed": false
+      },
+      "complete_accuracy_pass": false
+    },
+    "selective_levels": {
+      "total_updates": 179,
+      "accepted": 179,
+      "root_accurate": 77,
+      "lost": false,
+      "max_position_error_m": 0.2930165520480109,
+      "max_rotation_error_rad": 0.1866213248243997,
+      "integrity": {
+        "pass_integrity": true,
+        "checked_reported_systems": 3796,
+        "accepted_updates": 179,
+        "reproduced_fit_rejections": 0,
+        "marginal_generations": 137,
+        "consumed_unique_raw_factors": 513,
+        "rejections": {},
+        "lost": false,
+        "ground_truth_parsed": false,
+        "checked_coarse_skips": 38,
+        "coarse_skip_reasons": {
+          "condition": 32,
+          "increment": 6
+        }
+      },
+      "complete_accuracy_pass": false
+    }
+  },
+  "tum-fr1-desk2-independent-retain": {
+    "patch_control": {
+      "total_updates": 179,
+      "accepted": 120,
+      "root_accurate": 75,
+      "lost": true,
+      "max_position_error_m": 0.18706127777989687,
+      "max_rotation_error_rad": 0.205987776208418,
+      "integrity": {
+        "pass_integrity": true,
+        "checked_reported_systems": 2648,
+        "accepted_updates": 120,
+        "reproduced_fit_rejections": 6,
+        "marginal_generations": 90,
+        "consumed_unique_raw_factors": 430,
+        "rejections": {
+          "increment": 5,
+          "new frame needs measured support": 1,
+          "accepted pose expiry latched": 53
+        },
+        "lost": true,
+        "ground_truth_parsed": false
+      },
+      "complete_accuracy_pass": false
+    },
+    "selective_levels": {
+      "total_updates": 179,
+      "accepted": 179,
+      "root_accurate": 76,
+      "lost": false,
+      "max_position_error_m": 0.18706127777989687,
+      "max_rotation_error_rad": 0.205987776208418,
+      "integrity": {
+        "pass_integrity": true,
+        "checked_reported_systems": 4017,
+        "accepted_updates": 179,
+        "reproduced_fit_rejections": 0,
+        "marginal_generations": 138,
+        "consumed_unique_raw_factors": 595,
+        "rejections": {},
+        "lost": false,
+        "ground_truth_parsed": false,
+        "checked_coarse_skips": 2,
+        "coarse_skip_reasons": {
+          "increment": 2
+        }
+      },
+      "complete_accuracy_pass": false
+    }
+  }
+}

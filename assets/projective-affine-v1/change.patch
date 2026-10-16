@@ -1,0 +1,668 @@
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -147,6 +147,7 @@
+           python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --photometric keyframe --output artifacts/projective-depth/rgbd-analytic
+           python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/rgbd-analytic --photometric keyframe --output artifacts/projective-depth/rgbd-raw-audit
+           python scripts/check-projective-rgbd-lifecycle.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/rgbd-lifecycle
++          python scripts/check-projective-rgbd-exposure.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/rgbd-exposure
+           python scripts/check-multireference-rgbd.py --binary integrations/projective-depth/target/release/rustdriving-multireference-rgbd --output artifacts/projective-depth/multireference
+           python scripts/check-joint-keyframe-depth.py --output artifacts/projective-depth/joint-keyframes
+           python scripts/check-marginalized-keyframes.py --output artifacts/projective-depth/marginalized-keyframes
+@@ -188,6 +189,7 @@
+           python -m py_compile scripts/check-projective-depth-comparison.py
+           python -m py_compile scripts/projective_vertex_raw.py
+           python -m py_compile scripts/projective_photo_raw.py scripts/check-projective-rgbd-lifecycle.py
++          python -m py_compile scripts/check-projective-rgbd-exposure.py
+           python -m py_compile scripts/multireference_rgbd_common.py scripts/evaluate-multireference-rgbd.py
+           python -m py_compile scripts/joint_keyframe_depth.py scripts/evaluate-joint-keyframe-depth.py
+           python -m py_compile scripts/marginalized_keyframe_depth.py scripts/evaluate-marginalized-keyframes.py
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -360,7 +360,11 @@
+ keep independent acquisition clocks; repeated RGB cannot contribute intensity,
+ and a reference change without fresh RGB clears its color anchor. The combined
+ system recovers textured-plane motion absent geometric observability, but its
+-viewed 80/179 room and 75/179 desk2 result fails adoption. It remains outside
++original viewed 80/179 room and 75/179 desk2 result fails adoption. The maintained
++[exposure correction](projective-rgbd-exposure.md) estimates brightness gain and
++offset and removes both directions with a Schur complement. Its 84/179 room and
++124/179 desk2 result still fails adoption; depth-only remains the default.
++It remains outside
+ vehicle control and the depth-only idle-tick supervisor.
+ [Contract and negative accuracy results](multireference-rgbd.md).
+ 
+--- a/docs/maturity.md
++++ b/docs/maturity.md
+@@ -591,3 +591,11 @@
+ asynchronous-image correction; the original complete accuracy and cross-record
+ adoption gates remain unmet. The mode is not the default and supplies no
+ qualified vehicle capability. Subjective maturity stays **about 20%**.
++
++The maintained [RGB-D exposure correction](projective-rgbd-exposure.md) separates
++brightness gain/offset from pose and improves the viewed RGB-D results to
++84/179 room and 124/179 desk2. Its synthetic invariance and rejection controls
++pass, but desk2 remains worse than the 161/179 depth-only default and adoption
++fails. This repairs a specific measurement-model limitation without qualified
++sustained localization or driving integration. Subjective maturity remains
++**about 20%** versus mature driving OSS.
+--- a/docs/native-depth-regression.md
++++ b/docs/native-depth-regression.md
+@@ -100,6 +100,7 @@
+   phase-qualified intensity constraints against a measured reference image;
+   repeated RGB is ignored while new admissible depth remains usable. The
+   [fused RGB-D implementation and complete failures](projective-rgbd-fusion.md)
++  and the maintained [exposure correction](projective-rgbd-exposure.md)
+   are retained; depth-only tracking remains the default.
+ 
+ Only the individual configurations in the table have recorded trajectory
+--- a/docs/projective-rgbd-exposure.md
++++ b/docs/projective-rgbd-exposure.md
+@@ -0,0 +1,127 @@
++# Exposure-aware fused RGB-D tracking
++
++The maintained optional RGB-D tracker now estimates brightness gain and offset
++for each image equation and removes both nuisance directions from its pose
++system. Exposure changes no longer need to become camera motion in the
++synthetic controls. This does not establish accurate continuous localization.
++The depth-only default and driving pipeline remain unchanged.
++
++## Complete recorded outcomes
++
++| Tracker | Accurate, room / desk2 | Maximum position, room / desk2 (m) | Maximum rotation, room / desk2 (rad) |
++|---|---|---|---|
++| Depth-only default | 64 / 161 | 0.296290 / 0.114800 | 0.141286 / 0.090386 |
++| Preceding RGB-D | 80 / 75 | 0.275569 / 0.306636 | 0.109385 / 0.201632 |
++| Exposure-aware RGB-D | 84 / 124 | 0.267082 / 0.121676 | 0.102433 / 0.149427 |
++
++Every run accepts all 179 updates in each recording, without expiry or reset.
++Exposure correction improves both already-viewed RGB-D results and all their
++maximum errors. It still fails the original adoption rule: desk2 remains below
++161 accurate, and its maximum errors remain worse than depth-only tracking.
++The mode stays optional. No complete physical accuracy pass is claimed.
++The current default reproduces all 360 original native operational outcomes
++exactly. These indoor development intervals are not held-out validation.
++
++The [source-bound packet](../assets/projective-affine-v1/summary.json) retains
++the original diagnostic, first implementation and symmetry failure, corrected
++ledgers, independent audit, controls, source versions and adoption decision.
++
++## Diagnosis and implementation
++
++The preceding [uncorrected RGB-D result](projective-rgbd-fusion.md) scores
++80/179 room and 75/179 desk2 accurate updates. Reconstructing its measured image
++pairs finds mean residual magnitudes up to about 32 gray levels. Median fine
++image/geometry Hessian diagonal ratios exceed one in five of six pose axes in
++both recordings. These are diagnostics at the estimated poses, with changing
++support: motion misalignment, occlusion and exposure are confounded. They do
++not prove exposure is the unique cause of the desk2 regression.
++
++The correction models reference intensity as `gain * source + offset`.
++Geometrically admitted samples still require image gradient at least one gray
++level/pixel. Initial ordinary least squares is followed by three Tukey-weighted
++least-squares fits, with the existing 30-gray cutoff applied to the corrected
++residual. Gain must lie in [0.5, 2], absolute offset must not exceed 80 gray
++levels, weighted source variance must be at least 25 gray², and at least 200
++corrected samples must survive. An unavailable or out-of-bounds exposure fit
++contributes no image equation; original geometric admission still applies.
++
++The pose Hessian and gradient use the Schur complement of both brightness
++parameters. Merely fixing a fitted exposure while differentiating pose would
++invent information in image directions explained by brightness. Centered source
++intensities keep the nuisance normal matrix diagonal. Gain, offset, candidate
++count and weighted variance are reported with each image system. Exposure is
++re-estimated at each pose and pyramid level; it is not persisted or averaged
++into the reference image. All original phase, freshness, depth fusion, solver,
++iteration, displacement, residual and expiry policies remain, including the
++same image/geometry weight. No recording-specific switches or parameter sweep
++are used.
++
++The first implementation's complete room operational ledger was retained when
++the independent symmetry check found floating-point asymmetry in a large image
++Hessian. Computing `weight * (Ja * Jb)` makes mirrored products identical before
++the Schur subtraction. The correction keeps the existing audit tolerance;
++the first source and binary remain archived.
++
++## Independent controls
++
++The Rust crate passes 37 tests. The exposure checker additionally runs four
++positive plane controls: stationary darkening, moving darkening, moving
++brightening, and moving exposure with deterministic image outliers. Every
++accepted motion must remain within 4 mm / 0.004 rad and recover the known
++gain/offset. Four negative controls cover out-of-bounds gain, out-of-bounds
++offset, uniform intensity, and a gradient whose apparent motion can be explained
++by brightness. Rejections cannot update the model or accepted-pose clock.
++The archived preceding binary fails all four positive controls at the same
++4 mm gate: translation errors range from 6.96 to 89.03 mm, including 7.60 mm
++of false motion for a stationary camera. The corrected binary passes all four.
++
++NumPy independently projects the weighted pose Jacobian out of the brightness
++column space using SVD least squares, rather than copying the Rust centered
++Schur arithmetic. It reconstructs the controls' reported raw systems and checks
++gain, offset and fitting support. The usual four ray-cast motion controls and
++ten-frame asynchronous reference lifecycle still pass. Raw analytic mutation
++controls reject altered exposure gain/support as well as image-gradient,
++freshness, geometry and fusion tampering. CI runs these synthetic checks without
++recording downloads.
++
++Complete recorded reconstruction passes for **7,963 geometry systems and 7,757
++image systems**, including unused image equations, and all 358 prescribed depth
++model generations. This audit never decodes numeric pose truth. Root checks
++retain 371 tests, 49 scenario/replay checks and all 245 deterministic output
++hashes. With 37 optional-crate tests, 408 Rust tests pass. No historical source
++or evidence hashes are changed.
++
++## Reproduction and scope
++
++Use the existing [input/environment setup](projective-depth-rust.md#reproduction)
++and fresh output paths:
++
++```bash
++source scripts/env.sh
++cargo build --release --locked --manifest-path integrations/projective-depth/Cargo.toml
++OPENBLAS_NUM_THREADS=1 python scripts/check-projective-rgbd-exposure.py \
++  --binary integrations/projective-depth/target/release/rustdriving-projective-depth \
++  --output artifacts/exposure-controls
++OPENBLAS_NUM_THREADS=1 python scripts/evaluate-projective-depth.py \
++  --binary integrations/projective-depth/target/release/rustdriving-projective-depth \
++  --photometric keyframe --output artifacts/exposure-recorded
++OPENBLAS_NUM_THREADS=1 python scripts/check-projective-depth.py \
++  --binary integrations/projective-depth/target/release/rustdriving-projective-depth \
++  --photometric keyframe --output artifacts/exposure-analytic
++OPENBLAS_NUM_THREADS=1 python scripts/audit-projective-depth-raw.py \
++  --photometric keyframe --analytic-reports artifacts/exposure-analytic \
++  --recorded-reports artifacts/exposure-recorded --output artifacts/exposure-raw
++```
++
++Physical scoring retains the same 180 acquisitions per recording, K=525 camera,
++first optical-camera root, 0.1 m / 0.1 rad gates, all 179 updates and zero resets.
++Numeric pose truth is decoded only after operational ledgers are saved.
++The adoption rule still requires room >64 and desk2 ≥161 accurate, all updates
++accepted without expiry, and neither recording's maximum error worsening.
++The evaluator saves complete failures and exits 1 when full accuracy fails.
++
++Global affine intensity is only an approximation. It does not compensate
++RGB/depth time offsets, rolling shutter, clipping, spatial lighting changes,
++occlusion or moving objects. A correct local equation and synthetic invariance
++do not establish root-pose accuracy, vehicle integration or automotive validity.
++Subjective maturity stays about 20% versus mature driving OSS.
+--- a/docs/projective-rgbd-fusion.md
++++ b/docs/projective-rgbd-fusion.md
+@@ -1,4 +1,9 @@
+ # Measured RGB constraints for fused-depth tracking
++
++This page preserves the original RGB-D comparison. The maintained `keyframe`
++mode now includes [exposure gain/offset elimination](projective-rgbd-exposure.md),
++scoring 84/179 room and 124/179 desk2. It still fails default adoption. The
++original implementation and complete 80/75 outcomes below remain archived.
+ 
+ The maintained Rust fused-depth tracker now accepts an explicit, optional
+ **keyframe photometric mode**. It combines measured image intensities with the
+--- a/integrations/projective-depth/src/photometric.rs
++++ b/integrations/projective-depth/src/photometric.rs
+@@ -19,6 +19,137 @@
+     pub scale_m2_per_gray2: f64,
+     pub h: H,
+     pub g: [f64; 6],
++    pub illumination: Option<Illumination>,
++}
++#[derive(Clone, Debug, Serialize)]
++pub struct Illumination {
++    /// Reference intensity = gain * source intensity + offset_gray.
++    pub gain: f64,
++    pub offset_gray: f64,
++    pub candidate_count: usize,
++    pub source_variance_gray2: f64,
++}
++struct Sample {
++    target: f64,
++    source: f64,
++    jacobian: [f64; 6],
++}
++
++fn tukey(residual: f64) -> f64 {
++    if residual.abs() < 30. {
++        (1. - (residual / 30.).powi(2)).powi(2)
++    } else {
++        0.
++    }
++}
++
++// Centering avoids cancellation for bright, nearly constant patches. Exposure
++// is a nuisance parameter, never a source of pose information or persistence.
++fn exposure(samples: &[Sample], weights: &[f64]) -> Option<(f64, f64)> {
++    let total: f64 = weights.iter().sum();
++    if total <= 0. {
++        return None;
++    }
++    let mean = |source: bool| {
++        samples
++            .iter()
++            .zip(weights)
++            .map(|(s, w)| w * if source { s.source } else { s.target })
++            .sum::<f64>()
++            / total
++    };
++    let (x, y) = (mean(true), mean(false));
++    let (mut variance, mut covariance) = (0., 0.);
++    for (s, w) in samples.iter().zip(weights) {
++        variance += w * (s.source - x).powi(2);
++        covariance += w * (s.source - x) * (s.target - y);
++    }
++    if variance / total < 25. {
++        return None;
++    }
++    let gain = covariance / variance;
++    Some((gain, y - gain * x))
++}
++
++fn affine_equation(samples: &[Sample], out: &mut PhotoEquation) {
++    if samples.len() < 200 {
++        return;
++    }
++    let mut weights = vec![1.; samples.len()];
++    let Some((mut gain, mut offset)) = exposure(samples, &weights) else {
++        return;
++    };
++    for _ in 0..3 {
++        for (s, w) in samples.iter().zip(&mut weights) {
++            *w = tukey(s.target - gain * s.source - offset);
++        }
++        let Some(next) = exposure(samples, &weights) else {
++            return;
++        };
++        (gain, offset) = next;
++    }
++    if !(0.5..=2.).contains(&gain) || offset.abs() > 80. {
++        return;
++    }
++    let (mut total, mut x_sum, mut squared, mut count) = (0., 0., 0., 0);
++    for (s, w) in samples.iter().zip(&mut weights) {
++        let r = s.target - gain * s.source - offset;
++        *w = tukey(r);
++        if *w > 0. {
++            count += 1;
++            squared += r * r;
++        }
++        total += *w;
++        x_sum += *w * s.source;
++    }
++    if count < 200 || total <= 0. {
++        return;
++    }
++    let center = x_sum / total;
++    let mut variance = 0.;
++    let mut cross_terms = [[0.; 2]; 6];
++    let mut nuisance_g = [0.; 2];
++    for (s, w) in samples.iter().zip(weights) {
++        let x = s.source - center;
++        let r = s.target - gain * s.source - offset;
++        variance += w * x * x;
++        // The minus signs of both nuisance columns cancel in the Schur term.
++        nuisance_g[0] += w * x * r;
++        nuisance_g[1] += w * r;
++        for (a, terms) in cross_terms.iter_mut().enumerate() {
++            out.g[a] += w * s.jacobian[a] * r;
++            terms[0] += w * s.jacobian[a] * x;
++            terms[1] += w * s.jacobian[a];
++            for b in 0..6 {
++                out.h[a][b] += w * (s.jacobian[a] * s.jacobian[b]);
++            }
++        }
++    }
++    if variance / total < 25. {
++        out.h = [[0.; 6]; 6];
++        out.g = [0.; 6];
++        return;
++    }
++    // Centered nuisance columns have diagonal normal matrix (variance,total).
++    // Project out both directions rather than fixing the estimated exposure
++    // while differentiating pose, which would invent pose information.
++    for a in 0..6 {
++        out.g[a] -= cross_terms[a][0] * nuisance_g[0] / variance
++            + cross_terms[a][1] * nuisance_g[1] / total;
++        for b in 0..6 {
++            out.h[a][b] -= cross_terms[a][0] * cross_terms[b][0] / variance
++                + cross_terms[a][1] * cross_terms[b][1] / total;
++        }
++    }
++    out.count = count;
++    out.rms_gray = Some((squared / count as f64).sqrt());
++    out.used = true;
++    out.illumination = Some(Illumination {
++        gain,
++        offset_gray: offset,
++        candidate_count: samples.len(),
++        source_variance_gray2: variance / total,
++    });
+ }
+ #[derive(Debug, Serialize)]
+ pub struct PhotoState {
+@@ -47,6 +178,7 @@
+             scale_m2_per_gray2: 0.005_f64.powi(2) / 100.,
+             h: [[0.; 6]; 6],
+             g: [0.; 6],
++            illumination: None,
+         };
+         if !self.enabled {
+             return out;
+@@ -57,7 +189,7 @@
+             _ => 2,
+         };
+         let stride = if scale == 1 { 2 } else { 1 };
+-        let mut squared = 0.;
++        let mut samples = Vec::new();
+         for y in (0..source.camera.height).step_by(stride) {
+             for x in (0..source.camera.width).step_by(stride) {
+                 let i = y * source.camera.width + x;
+@@ -82,26 +214,17 @@
+                 else {
+                     continue;
+                 };
+-                let residual = value - self.source[level].pixels[i];
+-                if residual.abs() >= 30. || gx.hypot(gy) < 1. {
++                if gx.hypot(gy) < 1. {
+                     continue;
+                 }
+-                let jacobian = image_jacobian(c, q, gx, gy);
+-                let weight = (1. - (residual / 30.).powi(2)).powi(2);
+-                for a in 0..6 {
+-                    out.g[a] += jacobian[a] * residual * weight;
+-                    for b in 0..6 {
+-                        out.h[a][b] += jacobian[a] * jacobian[b] * weight;
+-                    }
+-                }
+-                out.count += 1;
+-                squared += residual * residual;
++                samples.push(Sample {
++                    target: value,
++                    source: self.source[level].pixels[i],
++                    jacobian: image_jacobian(c, q, gx, gy),
++                });
+             }
+         }
+-        if out.count > 0 {
+-            out.rms_gray = Some((squared / out.count as f64).sqrt());
+-        }
+-        out.used = out.count >= 200;
++        affine_equation(&samples, &mut out);
+         out
+     }
+ }
+@@ -221,6 +344,90 @@
+         assert!(norm(error.translation) < 0.004 && error.angle() < 0.004);
+     }
+     #[test]
++    fn exposure_change_does_not_become_plane_motion() {
++        let c = camera();
++        let depth = vec![2.5; c.width * c.height];
++        for transform in [
++            Pose::identity(),
++            Pose::identity().increment([0.015, -0.01, 0., 0., 0., 0.01]),
++        ] {
++            let first = texture(c, Pose::identity());
++            let current: Vec<_> = texture(c, transform)
++                .iter()
++                .map(|&v| (0.75 * f64::from(v) + 25.).round() as u8)
++                .collect();
++            let mut tracker = Tracker::with_config(
++                c,
++                TrackerConfig {
++                    photometric: Photometric::Keyframe,
++                    ..TrackerConfig::default()
++                },
++            )
++            .unwrap();
++            tracker.step_with_image(
++                1.,
++                &depth,
++                Some(ImageObservation {
++                    timestamp: 1.001,
++                    gray: &first,
++                }),
++            );
++            let result = tracker.step_with_image(
++                1.03,
++                &depth,
++                Some(ImageObservation {
++                    timestamp: 1.031,
++                    gray: &current,
++                }),
++            );
++            assert!(result.accepted, "{:?}", result.rejection);
++            let exposure = result.final_photometric.unwrap().illumination.unwrap();
++            assert!((exposure.gain - 4. / 3.).abs() < 0.03);
++            assert!((exposure.offset_gray + 100. / 3.).abs() < 3.);
++            let error = transform
++                .inverse()
++                .compose(result.first_from_current.unwrap());
++            assert!(norm(error.translation) < 0.004 && error.angle() < 0.004);
++        }
++    }
++    #[test]
++    fn affine_brightness_directions_supply_no_pose_information() {
++        let samples: Vec<_> = (0..1000)
++            .map(|i| {
++                let source = (i % 200) as f64 + 20.;
++                Sample {
++                    source,
++                    target: 1.1 * source + 7.,
++                    jacobian: [source, 1., (i as f64).sin(), 0., 0., 0.],
++                }
++            })
++            .collect();
++        let mut out = PhotoEquation {
++            count: 0,
++            rms_gray: None,
++            used: false,
++            scale_m2_per_gray2: 1.,
++            h: [[0.; 6]; 6],
++            g: [0.; 6],
++            illumination: None,
++        };
++        affine_equation(&samples, &mut out);
++        assert!(out.used);
++        assert!(out.h[0][0].abs() < 1e-5 && out.h[1][1].abs() < 1e-8);
++        assert!(out.h[2][2] > 400.);
++        assert!(out.g.iter().all(|v| v.abs() < 1e-8));
++        // Bright but textureless data cannot determine exposure gain.
++        let flat: Vec<_> = samples
++            .into_iter()
++            .map(|s| Sample { source: 100., ..s })
++            .collect();
++        out.count = 0;
++        out.used = false;
++        out.illumination = None;
++        affine_equation(&flat, &mut out);
++        assert!(!out.used && out.illumination.is_none());
++    }
++    #[test]
+     fn repeated_rgb_adds_no_constraint_but_new_depth_can_update() {
+         let c = camera();
+         let depth: Vec<_> = (0..c.width * c.height)
+--- a/scripts/audit-projective-depth-raw.py
++++ b/scripts/audit-projective-depth-raw.py
+@@ -168,6 +168,11 @@
+     if photometric=='keyframe':
+         corruption('altered image gradient',lambda u:u['iterations'][0]['photometric']['g'].__setitem__(0,u['iterations'][0]['photometric']['g'][0]+100.))
+         corruption('repeated image falsely marked fresh',lambda u:u['photometric'].update(fresh=False))
++        if 'illumination' in original['iterations'][0]['photometric']:
++            corruption('altered exposure gain',lambda u:u['iterations'][0]['photometric']['illumination'].update(
++                gain=u['iterations'][0]['photometric']['illumination']['gain']+.01))
++            corruption('altered exposure fitting support',lambda u:u['iterations'][0]['photometric']['illumination'].update(
++                candidate_count=u['iterations'][0]['photometric']['illumination']['candidate_count']+1))
+     vertex_controls=None
+     if geometry=='vertices':
+         from projective_vertex_raw import controls
+--- a/scripts/check-projective-rgbd-exposure.py
++++ b/scripts/check-projective-rgbd-exposure.py
+@@ -0,0 +1,62 @@
++#!/usr/bin/env python3
++"""Independent exposure/motion controls, including nuisance-only image texture."""
++import argparse
++from pathlib import Path
++import numpy as np
++from projective_depth_common import Client,audit_sequence,fresh,pose,require,sha,write
++from projective_depth_raw import reconstruct_update,vertices
++
++CAMERA=dict(width=160,height=120,fx=130.,fy=130.,cx=79.5,cy=59.5)
++
++
++def texture(transform):
++    p=vertices(np.full((120,160),2.5),CAMERA)@transform[:3,:3].T+transform[:3,3]
++    return np.rint(128+30*np.sin(7*p[:,:,0])+25*np.cos(9*p[:,:,1])+20*np.sin(4*p[:,:,0]+5*p[:,:,1])).astype(np.uint8)
++
++
++def main():
++    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--binary',type=Path,required=True);p.add_argument('--output',type=Path,required=True)
++    args=p.parse_args();out=fresh(args.output);binary_sha=sha(args.binary.read_bytes());results={};checked=0
++    stationary=np.eye(4);moving=np.eye(4);a=.01;moving[:2,:2]=[[np.cos(a),-np.sin(a)],[np.sin(a),np.cos(a)]];moving[:2,3]=[.015,-.01]
++    for name,transform,alpha,beta,outliers in (
++        ('stationary darkened',stationary,.75,25.,False),('moving darkened',moving,.75,25.,False),
++        ('moving brightened',moving,1.1,5.,False),('moving exposed with outliers',moving,.75,25.,True),
++        ('gain out of bounds',stationary,.25,20.,False),('offset out of bounds',stationary,1.,-90.,False),
++        ('uniform image',stationary,1.,0.,False),('brightness explains image gradient',stationary,1.,15.,False)):
++        depth=np.full((120,160),2.5);first=texture(stationary);current=texture(transform)
++        if name=='uniform image':first[:]=100;current[:]=100
++        if name=='brightness explains image gradient':
++            first=np.tile(np.arange(160,dtype=np.uint8),(120,1))+40;current=first.copy()
++        current=np.rint(alpha*current.astype(float)+beta).clip(0,255).astype(np.uint8)
++        if outliers:current.ravel()[::19]=255
++        expected_accept=name.startswith(('stationary darkened','moving '))
++        client=Client(args.binary,CAMERA,configuration=dict(photometric='keyframe'))
++        try:
++            initial=client.frame(1.,depth,image=dict(timestamp=1.001,gray=first.ravel().tolist()))
++            update=client.frame(1.03,depth,image=dict(timestamp=1.031,gray=current.ravel().tolist()));client.finish()
++        except BaseException:
++            client.abort();raise
++        require(initial['accepted'] and update['accepted']==expected_accept,'exposure/observability admission: '+name)
++        audit_sequence([dict(update=initial),dict(update=update)],[1.,1.03])
++        context=dict(target=first,source=current,source_timestamp=1.031,reference_timestamp=1.001,qualified=True,fresh=True)
++        _,_,counts=reconstruct_update(depth,(depth>.3).astype(np.uint8),depth,CAMERA,update,image_context=context)
++        checked+=counts['iterations']+counts['final_equations']
++        result=dict(expected_accepted=expected_accept,initial=initial,update=update)
++        if expected_accept:
++            estimate=pose(update['first_from_current']);error=np.linalg.inv(transform)@estimate
++            translation=float(np.linalg.norm(error[:3,3]));rotation=float(np.arccos(np.clip((np.trace(error[:3,:3])-1)/2,-1,1)))
++            require(translation<.004 and rotation<.004,'known motion unaffected by exposure: '+name)
++            exposure=update['final_photometric']['illumination']
++            require(abs(exposure['gain']-1/alpha)<.03 and abs(exposure['offset_gray']+beta/alpha)<3,'measured exposure recovery')
++            result.update(translation_error_m=translation,rotation_error_rad=rotation)
++        else:
++            require(update['last_accepted_timestamp']==1. and update['fusion'] is None,'unobservable/rejected image cannot renew pose')
++        results[name]=result
++    require(sha(args.binary.read_bytes())==binary_sha,'binary fixed throughout controls')
++    write(out/'controls.json',results)
++    write(out/'summary.json',dict(pass_exposure_controls=True,positive_controls=4,negative_controls=4,
++        independently_reconstructed_systems=checked,binary_sha256=binary_sha,checker_sha256=sha(Path(__file__).read_bytes()),
++        known_pose_role='Synthetic measurement generation and scoring; no pose input to tracker'))
++
++
++if __name__=='__main__':main()
+--- a/scripts/projective_depth_common.py
++++ b/scripts/projective_depth_common.py
+@@ -123,6 +123,15 @@
+                     'bounded photometric contribution')
+             require((p['rms_gray'] is None) if p['count']==0 else 0<=p['rms_gray']<30,'image residual disclosure')
+             np.testing.assert_allclose(ph,ph.T,atol=1e-6,rtol=1e-12)
++            if 'illumination' in p:
++                illumination=p['illumination']
++                require((illumination is not None)==p['used'],'exposure-qualified intensity support')
++                if illumination is not None:
++                    require(.5<=illumination['gain']<=2 and abs(illumination['offset_gray'])<=80
++                            and 25<=illumination['source_variance_gray2']<=255**2
++                            and type(illumination['candidate_count']) is int
++                            and p['count']<=illumination['candidate_count']<=equation['count'],
++                            'bounded measured exposure fit')
+             if p['used']:h=h+p['scale_m2_per_gray2']*ph;g=g+p['scale_m2_per_gray2']*pg
+         scale = np.sqrt(np.diag(h))
+         a = h/scale[:,None]/scale[None,:]
+--- a/scripts/projective_depth_raw.py
++++ b/scripts/projective_depth_raw.py
+@@ -231,7 +231,7 @@
+         compare_equation(step['equation'],expected)
+         if colors is not None:
+             from projective_photo_raw import equation,compare
+-            compare(step['photometric'],equation(target[scale],source[scale],colors[0][scale],colors[1][scale],pose(step['before']),scale,image_context['qualified'] and image_context['fresh']))
++            compare(step['photometric'],equation(target[scale],source[scale],colors[0][scale],colors[1][scale],pose(step['before']),scale,image_context['qualified'] and image_context['fresh'],affine='illumination' in step['photometric']))
+     if not update['accepted']:
+         require(update['fusion'] is None and update['first_from_current'] is None,'no rejected-state commit')
+         return model,weights,dict(iterations=len(update['iterations']),final_equations=0,model_replaced=False)
+@@ -240,7 +240,7 @@
+     compare_equation(update['final_equation'],final)
+     if colors is not None:
+         from projective_photo_raw import equation,compare
+-        compare(update['final_photometric'],equation(target[1],source[1],colors[0][1],colors[1][1],relative,1,image_context['qualified'] and image_context['fresh']))
++        compare(update['final_photometric'],equation(target[1],source[1],colors[0][1],colors[1][1],relative,1,image_context['qualified'] and image_context['fresh'],affine='illumination' in update['final_photometric']))
+     warp = None
+     if update['keyframe_replaced']:
+         inverse = np.eye(4)
+--- a/scripts/projective_photo_raw.py
++++ b/scripts/projective_photo_raw.py
+@@ -11,8 +11,35 @@
+     return grids
+ 
+ 
+-def equation(target,source,target_gray,source_gray,transform,scale,enabled):
++def affine_system(jac,source,value):
++    """Independent weighted least squares and orthogonal nuisance projection."""
++    empty=dict(count=0,rms_gray=None,used=False,h=np.zeros((6,6)),g=np.zeros(6),illumination=None)
++    if len(source)<200:return empty
++    design=np.column_stack([source,np.ones(len(source))]);weights=np.ones(len(source))
++    for iteration in range(4):
++        total=weights.sum()
++        if total<=0:return empty
++        center=weights@source/total;variance=weights@((source-center)**2)/total
++        if variance<25:return empty
++        gain,offset=np.linalg.lstsq(design*np.sqrt(weights[:,None]),value*np.sqrt(weights),rcond=None)[0]
++        residual=value-gain*source-offset
++        weights=np.where(abs(residual)<30,(1-(residual/30)**2)**2,0.)
++    valid=weights>0;count=int(valid.sum());total=weights.sum()
++    if count<200 or not .5<=gain<=2 or abs(offset)>80 or total<=0:return empty
++    center=weights@source/total;variance=weights@((source-center)**2)/total
++    if variance<25:return empty
++    # Remove the span of brightness gain/offset with NumPy's SVD least squares.
++    # Rust instead accumulates a centered 2x2 Schur complement.
++    weighted=jac*np.sqrt(weights[:,None]);nuisance=design*np.sqrt(weights[:,None])
++    projected=weighted-nuisance@np.linalg.lstsq(nuisance,weighted,rcond=None)[0]
++    return dict(count=count,rms_gray=float(np.sqrt(np.mean(residual[valid]**2))),used=True,
++        h=projected.T@projected,g=projected.T@(np.sqrt(weights)*residual),
++        illumination=dict(gain=float(gain),offset_gray=float(offset),candidate_count=len(source),source_variance_gray2=float(variance)))
++
++
++def equation(target,source,target_gray,source_gray,transform,scale,enabled,affine=False):
+     out=dict(count=0,rms_gray=None,used=False,scale_m2_per_gray2=.005**2/100,h=np.zeros((6,6)),g=np.zeros(6))
++    if affine:out['illumination']=None
+     if not enabled:return out
+     stride=2 if scale==1 else 1
+     xyz=source['vertices'][::stride,::stride].reshape(-1,3)
+@@ -39,10 +66,13 @@
+     a,b,d,e=target_gray[v,u],target_gray[v,u+1],target_gray[v+1,u],target_gray[v+1,u+1]
+     value=(1-dx)*(1-dy)*a+dx*(1-dy)*b+(1-dx)*dy*d+dx*dy*e
+     gx=(1-dy)*(b-a)+dy*(e-d);gy=(1-dx)*(d-a)+dx*(e-b)
+-    r=value-color;valid=(abs(r)<30)&(np.hypot(gx,gy)>=1)
+-    q,r,gx,gy=q[valid],r[valid],gx[valid],gy[valid];z=q[:,2]
++    r=value-color;valid=(np.hypot(gx,gy)>=1)&(True if affine else abs(r)<30)
++    q,r,gx,gy,color,value=q[valid],r[valid],gx[valid],gy[valid],color[valid],value[valid];z=q[:,2]
+     grad=np.column_stack([gx*c['fx']/z,gy*c['fy']/z,-(gx*c['fx']*q[:,0]+gy*c['fy']*q[:,1])/(z*z)])
+     jac=np.column_stack([grad,np.cross(q,grad)]);w=(1-(r/30)**2)**2
++    if affine:
++        out.update(affine_system(jac,color,value))
++        return out
+     out.update(count=len(r),rms_gray=float(np.sqrt(np.mean(r*r))) if len(r) else None,used=len(r)>=200,
+                h=jac.T@(w[:,None]*jac),g=jac.T@(w*r))
+     return out
+@@ -53,6 +83,14 @@
+             and actual['scale_m2_per_gray2']==expected['scale_m2_per_gray2'],'exact photometric support/usage/scale')
+     if expected['rms_gray'] is None:require(actual['rms_gray'] is None,'no fabricated image residual')
+     else:require(abs(actual['rms_gray']-expected['rms_gray'])<1e-9,'raw image RMS')
++    if 'illumination' in expected:
++        require('illumination' in actual,'explicit exposure model, including unavailable fits')
++        a,e=actual['illumination'],expected['illumination']
++        if e is None:require(a is None,'no fabricated exposure estimate')
++        else:
++            require(a is not None and a['candidate_count']==e['candidate_count'],'exposure fitting support')
++            for key in ('gain','offset_gray','source_variance_gray2'):
++                np.testing.assert_allclose(a[key],e[key],atol=1e-8,rtol=1e-10,err_msg='raw exposure '+key)
+     np.testing.assert_allclose(actual['h'],expected['h'],atol=.001,rtol=1e-10,err_msg='raw photometric Hessian')
+     np.testing.assert_allclose(actual['g'],expected['g'],atol=1e-5,rtol=1e-10,err_msg='raw photometric gradient')
+ 

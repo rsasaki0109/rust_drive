@@ -1,0 +1,49 @@
+{
+  "analytic_pass": true,
+  "independent_metric_systems": 30,
+  "measured_identity_converges_without_update": true,
+  "measured_missing_support_rejected": true,
+  "algebra_budget": 10,
+  "algebra_guards": {
+    "zero/nonfinite diagonal": {
+      "applied_iterations": 0,
+      "guard_failure": "zero/nonfinite diagonal",
+      "final_raw_residual_gate": true
+    },
+    "condition": {
+      "applied_iterations": 0,
+      "guard_failure": "condition",
+      "final_raw_residual_gate": true
+    },
+    "increment": {
+      "applied_iterations": 0,
+      "guard_failure": "increment",
+      "final_raw_residual_gate": true
+    },
+    "late missing support": {
+      "applied_iterations": 2,
+      "guard_failure": "new frame needs measured support",
+      "final_raw_residual_gate": true
+    },
+    "high final RMS": {
+      "applied_iterations": 10,
+      "guard_failure": null,
+      "final_raw_residual_gate": false
+    }
+  },
+  "rejected_corruptions": [
+    "extra iteration",
+    "unjustified early stop",
+    "false convergence",
+    "coarse masquerading as fine",
+    "false residual metric",
+    "scaled final system"
+  ],
+  "input_poses_and_roots_unchanged": true,
+  "raw_oracle_shared": "frozen reciprocal pixel oracle and SVD normal reconstruction",
+  "injected_algebra_is_not_raw_image_evidence": true,
+  "source_sha256": {
+    "scripts/check-depth-convergence.py": "31d9b4de320833878159e63bb7b4a4ebbe2bdffc4a15b477f285f54f093656af",
+    "scripts/diagnose-depth-convergence.py": "2bd6c4b85c4f93d69a169f4ae57fa8ba7a9f9fe905ed8df28916a62b6b907f65"
+  }
+}

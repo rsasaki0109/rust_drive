@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "role": "numerical convention repair after retained first Rust/NumPy raw disagreement",
+  "cause": "bilinear derivatives have different one-sided limits at integer pixel knots; inverse/forward composition roundoff selected different cells for an identical relative pose",
+  "unchanged": "all physical accuracy gates, source selection, geometry, reference policy and robust weights",
+  "convention": "canonicalize bilinear sample coordinates within 1e-10 pixel of ties-to-even nearest integer before bounds, floor, interpolation and derivative; take right/down cell at an integer knot",
+  "sample_coordinate_snap_tolerance_pixels": 1e-10,
+  "prior_source_archive_sha256": "9f30b4b2080021967e5c75ece876edbf047bf6338c702b2564d50fadcd1faa6d",
+  "first_disagreement_sha256": "aa27168b95a90eb980f933bb4445f133dff617c3a43ca28ffe998c05c9f8bffa",
+  "validation": "new analytic nonidentity RGB-D references, strict raw equation reconstruction and repeat all4 viewed branches before numeric scoring",
+  "held_out": false
+}

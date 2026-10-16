@@ -1,0 +1,15 @@
+{
+  "problem": "Clock-aware RGB/depth compensation requires a causal six-degree-of-freedom motion model; current ICP starts at the last accepted pose regardless of variable depth intervals.",
+  "change": "Optional constant body-twist initializer from the last two accepted depth poses: latest*Exp(log(previous^-1*latest)*(query-latest)/(latest-previous)); never integrate predicted poses into history.",
+  "bounds": "Existing0.2s accepted-pose expiry, prediction displacement <=0.1m and rotation <=0.15rad; otherwise fall back to last accepted pose. Near-pi rotation log falls back rather than inventing an axis.",
+  "controls": "Noncommuting translation/rotation screw; irregular cadence; rejected/malformed/duplicate frames cannot alter history; fallback/expiry; independent SE3 logarithm and exponential, initializer and raw ICP/fusion reconstruction.",
+  "unchanged": "Pose solver, correspondence/fusion/RGB photometric and phase policies, all acceptance gates and full180frames percase. RGB/depth time compensation is not yet implemented by this initializer.",
+  "adoption": {
+    "room_accurate_greater_than": 64,
+    "desk2_accurate_at_least": 161,
+    "accepted_each": 179,
+    "maximum_position_and_rotation_no_worse": true,
+    "no_resets": true
+  },
+  "scope": "Already viewed development; no truth into runtime; no driving integration or maturity inflation."
+}

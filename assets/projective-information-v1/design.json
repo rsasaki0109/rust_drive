@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "goal": "towards 30 percent maturity, no increase for tests alone",
+  "problem": "per-column diagonal normalization hides absolute directional information; wrong planar motion accepted after weak model perturbations",
+  "change": "mandatory physical spectrum guard before every solve and at final pose, before accepted state commit",
+  "units": "a fixed 1 metre translation and 1 radian rotation parameter scaling, no per-column equalization; normalize whole matrix by maximum diagonal for numerical eigensolve",
+  "gate": "positive definite and lambda_max/lambda_min <= 1e6, same numerical condition ceiling, not calibrated covariance",
+  "compatibility": "successful output structure unchanged; geometric and image equations/solver steps unchanged; failure carries independently reconstructible equation+pose+spectrum witness",
+  "regressions": "same 360 original acquisitions per mode plus own-time plane, brightness nuisance, arbitrary rotated/weak planes; original failed records retained; defaults must retain original accurate counts and maxima",
+  "heldout": "freeze after implementation before acquiring unseen original TUM frames; retain all outcomes; no truth operational, no select on accuracy",
+  "maturity": "real-data reliability, calibrated confidence and automotive validity must still justify a move from 20 to 30; do not assign 30 merely for implementing this guard"
+}

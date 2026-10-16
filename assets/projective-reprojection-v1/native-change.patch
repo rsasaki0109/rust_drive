@@ -1,0 +1,644 @@
+--- a/integrations/projective-depth/src/lib.rs
++++ b/integrations/projective-depth/src/lib.rs
+@@ -13,6 +13,42 @@
+ const MAX_Z: f64 = 5.0;
+ const MIN_SUPPORT: usize = 200;
+ const AGE: f64 = 0.2;
++
++/// Point splats preserve the original model. Tangent planes compensate for
++/// rounding a measured surface point onto a different camera ray.
++#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
++#[serde(rename_all = "snake_case")]
++pub enum Reprojection {
++    #[default]
++    Point,
++    TangentPlane,
++}
++
++/// Reciprocal matching rejects a target that maps back to another source pixel.
++#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
++#[serde(rename_all = "snake_case")]
++pub enum Correspondence {
++    #[default]
++    Forward,
++    Reciprocal,
++    Bilinear,
++}
++
++#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
++#[serde(rename_all = "snake_case")]
++pub enum Residual {
++    #[default]
++    TargetPlane,
++    SymmetricPlanes,
++}
++
++#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize)]
++#[serde(default, deny_unknown_fields)]
++pub struct TrackerConfig {
++    pub reprojection: Reprojection,
++    pub correspondence: Correspondence,
++    pub residual: Residual,
++}
+ 
+ #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+ #[serde(deny_unknown_fields)]
+@@ -186,6 +222,53 @@
+     camera: Camera,
+     vertices: Vec<V>,
+     normals: Vec<V>,
++}
++impl Level {
++    fn bilinear(&self, query: V) -> Option<(V, V)> {
++        if query[2] <= MIN_Z || !query.iter().all(|v| v.is_finite()) {
++            return None;
++        }
++        let c = self.camera;
++        let u = c.fx * query[0] / query[2] + c.cx;
++        let v = c.fy * query[1] / query[2] + c.cy;
++        let x = u.floor();
++        let y = v.floor();
++        if x < 1.
++            || x >= (c.width - 2) as f64
++            || y < 1.
++            || y >= (c.height - 2) as f64
++            || !u.is_finite()
++            || !v.is_finite()
++        {
++            return None;
++        }
++        let i = y as usize * c.width + x as usize;
++        let indices = [i, i + 1, i + c.width, i + c.width + 1];
++        let mut low: f64 = MAX_Z;
++        let mut high: f64 = MIN_Z;
++        for j in indices {
++            let z = self.vertices[j][2];
++            if z <= MIN_Z || z >= MAX_Z || dot(self.normals[j], self.normals[j]) <= 0.25 {
++                return None;
++            }
++            low = low.min(z);
++            high = high.max(z);
++        }
++        if high - low > 0.05 + 0.01 * low {
++            return None;
++        }
++        let a = u - x;
++        let b = v - y;
++        let weights = [(1. - a) * (1. - b), a * (1. - b), (1. - a) * b, a * b];
++        let mut point = [0.; 3];
++        let mut normal = [0.; 3];
++        for (j, w) in indices.into_iter().zip(weights) {
++            point = add(point, mul(self.vertices[j], w));
++            normal = add(normal, mul(self.normals[j], w));
++        }
++        let length = norm(normal);
++        (length > 0.5).then(|| (point, mul(normal, 1. / length)))
++    }
+ }
+ fn pyramid(camera: Camera, raw: &[f64]) -> Vec<Level> {
+     let mut depth = raw.to_vec();
+@@ -260,7 +343,14 @@
+     pub h: H,
+     pub g: [f64; 6],
+ }
+-fn equation(target: &Level, source: &Level, pose: Pose, scale: usize) -> Equation {
++fn equation(
++    target: &Level,
++    source: &Level,
++    pose: Pose,
++    scale: usize,
++    correspondence: Correspondence,
++    residual: Residual,
++) -> Equation {
+     let mut e = Equation {
+         count: 0,
+         rms_m: 0.,
+@@ -269,6 +359,7 @@
+     };
+     let stride = if scale == 1 { 2 } else { 1 };
+     let mut squared = 0.;
++    let inverse = pose.inverse();
+     for y in (0..source.camera.height).step_by(stride) {
+         for x in (0..source.camera.width).step_by(stride) {
+             let i = y * source.camera.width + x;
+@@ -276,27 +367,43 @@
+                 continue;
+             }
+             let q = pose.transform(source.vertices[i]);
+-            let Some(j) = target.camera.project(q, true) else {
++            let matched = if correspondence == Correspondence::Bilinear {
++                target.bilinear(q)
++            } else {
++                target
++                    .camera
++                    .project(q, true)
++                    .map(|j| (target.vertices[j], target.normals[j]))
++            };
++            let Some((target_point, n)) = matched else {
+                 continue;
+             };
+-            let n = target.normals[j];
+             if dot(n, n) <= 0.25
+-                || norm(sub(q, target.vertices[j])) >= if scale == 4 { 0.12 } else { 0.08 }
++                || norm(sub(q, target_point)) >= if scale == 4 { 0.12 } else { 0.08 }
+                 || dot(pose.rotate(source.normals[i]), n) <= 0.8
+             {
+                 continue;
+             }
+-            let r = dot(n, sub(q, target.vertices[j]));
+-            let rotation = cross(q, n);
+-            let jacobian = [n[0], n[1], n[2], rotation[0], rotation[1], rotation[2]];
+-            let weight = (0.01 / r.abs().max(1e-15)).min(1.);
+-            for a in 0..6 {
+-                e.g[a] += jacobian[a] * r * weight;
+-                for b in 0..6 {
+-                    e.h[a][b] += jacobian[a] * jacobian[b] * weight;
+-                }
+-            }
+-            squared += r * r;
++            let r = dot(n, sub(q, target_point));
++            if correspondence == Correspondence::Reciprocal
++                && source
++                    .camera
++                    .project(inverse.transform(target_point), false)
++                    != Some(i)
++            {
++                continue;
++            }
++            if residual == Residual::SymmetricPlanes {
++                let source_normal = pose.rotate(source.normals[i]);
++                let source_r = dot(source_normal, sub(q, target_point));
++                add_plane(&mut e, n, q, r, 0.5);
++                // Rotation of the source normal leaves the target lever arm.
++                add_plane(&mut e, source_normal, target_point, source_r, 0.5);
++                squared += 0.5 * (r * r + source_r * source_r);
++            } else {
++                add_plane(&mut e, n, q, r, 1.);
++                squared += r * r;
++            }
+             e.count += 1;
+         }
+     }
+@@ -306,6 +413,25 @@
+         (squared / e.count as f64).sqrt()
+     };
+     e
++}
++
++fn add_plane(e: &mut Equation, normal: V, pivot: V, r: f64, coefficient: f64) {
++    let rotation = cross(pivot, normal);
++    let j = [
++        normal[0],
++        normal[1],
++        normal[2],
++        rotation[0],
++        rotation[1],
++        rotation[2],
++    ];
++    let weight = (0.01 / r.abs().max(1e-15)).min(1.) * coefficient;
++    for a in 0..6 {
++        e.g[a] += j[a] * r * weight;
++        for b in 0..6 {
++            e.h[a][b] += j[a] * j[b] * weight;
++        }
++    }
+ }
+ 
+ #[derive(Clone, Debug, Serialize)]
+@@ -322,11 +448,13 @@
+     source: &[Level],
+     initial: Pose,
+     trace: &mut Vec<Iteration>,
++    correspondence: Correspondence,
++    residual: Residual,
+ ) -> Result<(Pose, Equation), String> {
+     let mut pose = initial;
+     for ((t, s), (scale, cap)) in target.iter().zip(source).zip([(4, 10), (2, 7), (1, 5)]) {
+         for _ in 0..cap {
+-            let e = equation(t, s, pose, scale);
++            let e = equation(t, s, pose, scale, correspondence, residual);
+             if e.count < MIN_SUPPORT {
+                 return Err("insufficient geometric support".into());
+             }
+@@ -353,7 +481,7 @@
+         }
+     }
+     // Admission uses correspondences at the returned pose, not the previous iterate.
+-    let final_e = equation(&target[2], &source[2], pose, 1);
++    let final_e = equation(&target[2], &source[2], pose, 1, correspondence, residual);
+     if final_e.count < MIN_SUPPORT || final_e.rms_m > 0.03 || norm(pose.translation) > 0.5 {
+         return Err("final geometric residual, support or displacement gate".into());
+     }
+@@ -365,12 +493,27 @@
+     pub source_valid: usize,
+     pub projected: usize,
+     pub selected: usize,
+-}
++    #[serde(skip_serializing_if = "is_zero")]
++    pub tangent_adjusted: usize,
++}
++fn is_zero(value: &usize) -> bool {
++    *value == 0
++}
++#[cfg(test)]
+ fn raster(
+     camera: Camera,
+     depth: &[f64],
+     weights: &[u8],
+     pose: Pose,
++) -> (Vec<f64>, Vec<u8>, RasterStats) {
++    raster_with_tangents(camera, depth, weights, pose, None)
++}
++fn raster_with_tangents(
++    camera: Camera,
++    depth: &[f64],
++    weights: &[u8],
++    pose: Pose,
++    normals: Option<&[V]>,
+ ) -> (Vec<f64>, Vec<u8>, RasterStats) {
+     let mut output = vec![0.; depth.len()];
+     let mut support = vec![0; depth.len()];
+@@ -387,12 +530,33 @@
+         let Some(j) = camera.project(p, false) else {
+             continue;
+         };
++        let mut projected_z = p[2];
++        if let Some(normals) = normals
++            && dot(normals[i], normals[i]) > 0.25
++        {
++            let normal = pose.rotate(normals[i]);
++            let ray = camera.point(j, 1.);
++            let denominator = dot(normal, ray);
++            if denominator.abs() > 0.1 * norm(ray) {
++                let corrected = dot(normal, p) / denominator;
++                // A local tangent is only an approximation. Keep the point
++                // splat if grazing, unsupported or outside the fusion band.
++                if corrected.is_finite()
++                    && corrected > MIN_Z
++                    && corrected < MAX_Z
++                    && (corrected - p[2]).abs() < 0.03 + 0.01 * p[2]
++                {
++                    projected_z = corrected;
++                    stats.tangent_adjusted += 1;
++                }
++            }
++        }
+         stats.projected += 1;
+-        if output[j] == 0. || p[2] < output[j] {
++        if output[j] == 0. || projected_z < output[j] {
+             if output[j] == 0. {
+                 stats.selected += 1;
+             }
+-            output[j] = p[2];
++            output[j] = projected_z;
+             support[j] = weights[i];
+         }
+         // Strictly smaller Z only: row-major traversal keeps the first exact tie.
+@@ -408,6 +572,7 @@
+     pub replaced: usize,
+     pub ignored: usize,
+ }
++#[cfg(test)]
+ fn fuse(
+     camera: Camera,
+     model: &mut [f64],
+@@ -415,7 +580,18 @@
+     depth: &[f64],
+     pose: Pose,
+ ) -> FusionStats {
+-    let (new, present, measurement) = raster(camera, depth, &vec![1; depth.len()], pose);
++    fuse_with_tangents(camera, model, weights, depth, pose, None)
++}
++fn fuse_with_tangents(
++    camera: Camera,
++    model: &mut [f64],
++    weights: &mut [u8],
++    depth: &[f64],
++    pose: Pose,
++    normals: Option<&[V]>,
++) -> FusionStats {
++    let (new, present, measurement) =
++        raster_with_tangents(camera, depth, &vec![1; depth.len()], pose, normals);
+     let mut stats = FusionStats {
+         measurement,
+         ..FusionStats::default()
+@@ -468,6 +644,9 @@
+ }
+ pub struct Tracker {
+     camera: Camera,
++    reprojection: Reprojection,
++    correspondence: Correspondence,
++    residual: Residual,
+     model: Option<Model>,
+     last_observed: Option<f64>,
+     last_accepted: Option<f64>,
+@@ -475,9 +654,35 @@
+ }
+ impl Tracker {
+     pub fn new(camera: Camera) -> Result<Self, String> {
++        Self::with_reprojection(camera, Reprojection::default())
++    }
++    /// Select the model reprojection explicitly; all fitting and clock guards
++    /// are shared by both policies.
++    pub fn with_reprojection(camera: Camera, reprojection: Reprojection) -> Result<Self, String> {
++        Self::with_options(camera, reprojection, Correspondence::default())
++    }
++    pub fn with_options(
++        camera: Camera,
++        reprojection: Reprojection,
++        correspondence: Correspondence,
++    ) -> Result<Self, String> {
++        Self::with_config(
++            camera,
++            TrackerConfig {
++                reprojection,
++                correspondence,
++                residual: Residual::default(),
++            },
++        )
++    }
++    /// Configure measured residual/model policies with shared clock and fault guards.
++    pub fn with_config(camera: Camera, config: TrackerConfig) -> Result<Self, String> {
+         camera.validate()?;
+         Ok(Self {
+             camera,
++            reprojection: config.reprojection,
++            correspondence: config.correspondence,
++            residual: config.residual,
+             model: None,
+             last_observed: None,
+             last_accepted: None,
+@@ -546,26 +751,40 @@
+                 out.initialized = true;
+             } else {
+                 let old = self.model.as_ref().expect("model checked");
+-                let (relative, final_e) =
+-                    fit(&old.pyramid, &current, old.initial, &mut out.iterations)?;
++                let (relative, final_e) = fit(
++                    &old.pyramid,
++                    &current,
++                    old.initial,
++                    &mut out.iterations,
++                    self.correspondence,
++                    self.residual,
++                )?;
+                 let root = old.key_root.compose(relative);
+                 if !root.finite_rigid() {
+                     return Err("nonrigid composed root".into());
+                 }
+                 let replace = norm(relative.translation) > 0.1 || relative.angle() > 0.1;
+                 let (mut map, mut weights, warp) = if replace {
+-                    let (d, w, stats) =
+-                        raster(self.camera, &old.depth, &old.weights, relative.inverse());
++                    let (d, w, stats) = raster_with_tangents(
++                        self.camera,
++                        &old.depth,
++                        &old.weights,
++                        relative.inverse(),
++                        (self.reprojection == Reprojection::TangentPlane)
++                            .then_some(old.pyramid[2].normals.as_slice()),
++                    );
+                     (d, w, Some(stats))
+                 } else {
+                     (old.depth.clone(), old.weights.clone(), None)
+                 };
+-                let mut fusion = fuse(
++                let mut fusion = fuse_with_tangents(
+                     self.camera,
+                     &mut map,
+                     &mut weights,
+                     depth,
+                     if replace { Pose::identity() } else { relative },
++                    (self.reprojection == Reprojection::TangentPlane)
++                        .then_some(current[2].normals.as_slice()),
+                 );
+                 fusion.warp = warp;
+                 let next_pyramid = pyramid(self.camera, &map);
+@@ -738,14 +957,18 @@
+     }
+     #[test]
+     fn geometric_rejection_does_not_modify_model_or_accepted_pose() {
+-        let mut tracker = Tracker::new(camera()).unwrap();
+-        assert!(tracker.step(1., &surface()).accepted);
+-        let before = tracker.model.as_ref().unwrap().depth.clone();
+-        let rejected = tracker.step(1.03, &vec![0.; 128 * 96]);
+-        assert!(!rejected.accepted && rejected.first_from_current.is_none());
+-        assert_eq!(tracker.model.as_ref().unwrap().depth, before);
+-        assert_eq!(tracker.last_accepted, Some(1.));
+-        assert!(tracker.step(1.06, &surface()).accepted);
++        for policy in [Reprojection::Point, Reprojection::TangentPlane] {
++            let mut tracker = Tracker::with_reprojection(camera(), policy).unwrap();
++            assert!(tracker.step(1., &surface()).accepted);
++            let before = tracker.model.as_ref().unwrap().depth.clone();
++            let weights = tracker.model.as_ref().unwrap().weights.clone();
++            let rejected = tracker.step(1.03, &vec![0.; 128 * 96]);
++            assert!(!rejected.accepted && rejected.first_from_current.is_none());
++            assert_eq!(tracker.model.as_ref().unwrap().depth, before);
++            assert_eq!(tracker.model.as_ref().unwrap().weights, weights);
++            assert_eq!(tracker.last_accepted, Some(1.));
++            assert!(tracker.step(1.06, &surface()).accepted);
++        }
+     }
+     #[test]
+     fn a_single_plane_is_rejected_as_unobservable() {
+@@ -823,4 +1046,141 @@
+         assert!(weights.iter().all(|&w| w == 16));
+         assert!((model[123] - (16. * 2. + 2.01) / 17.).abs() < 1e-15);
+     }
+-}
++
++    #[test]
++    fn tangent_splats_land_on_the_transformed_plane_at_pixel_centers() {
++        let c = camera();
++        let normal = [-0.3, 0.2, 1.];
++        let unit = mul(normal, 1. / norm(normal));
++        let depth: Vec<_> = (0..c.width * c.height)
++            .map(|i| 2. / dot(normal, c.point(i, 1.)))
++            .collect();
++        let normals = vec![unit; depth.len()];
++        let weights = vec![1; depth.len()];
++        let p = Pose::identity().increment([0.012, -0.008, 0.005, 0.007, 0.009, -0.003]);
++        let (point, _, _) = raster(c, &depth, &weights, p);
++        let (plane, _, stats) = raster_with_tangents(c, &depth, &weights, p, Some(&normals));
++        let transformed = p.rotate(normal);
++        let offset = 2. + dot(transformed, p.translation);
++        let mut point_error: f64 = 0.;
++        for (i, &z) in plane.iter().enumerate().filter(|(_, z)| **z > 0.) {
++            let exact = offset / dot(transformed, c.point(i, 1.));
++            assert!((z - exact).abs() < 2e-14);
++            point_error = point_error.max((point[i] - exact).abs());
++        }
++        assert!(stats.tangent_adjusted > 10_000 && point_error > 0.001);
++    }
++
++    #[test]
++    fn missing_or_grazing_normals_preserve_point_splats() {
++        let c = camera();
++        let mut depth = vec![0.; c.width * c.height];
++        depth[48 * c.width + 64] = 2.;
++        let weights = vec![1; depth.len()];
++        let p = Pose::identity().increment([0.001, 0., 0., 0., 0., 0.]);
++        let (expected, support, _) = raster(c, &depth, &weights, p);
++        for normal in [[0.; 3], [1., 0., 0.]] {
++            let normals = vec![normal; depth.len()];
++            let (actual, w, stats) = raster_with_tangents(c, &depth, &weights, p, Some(&normals));
++            assert_eq!(actual, expected);
++            assert_eq!(w, support);
++            assert_eq!(stats.tangent_adjusted, 0);
++        }
++    }
++
++    #[test]
++    fn reciprocal_matching_rejects_a_different_return_pixel() {
++        let c = Camera {
++            width: 32,
++            height: 32,
++            fx: 32.,
++            fy: 32.,
++            cx: 15.5,
++            cy: 15.5,
++        };
++        let vertices: Vec<_> = (0..1024).map(|i| c.point(i, 2.)).collect();
++        let mut source = Level {
++            camera: c,
++            vertices: vertices.clone(),
++            normals: vec![[0.; 3]; 1024],
++        };
++        let i = 16 * 32 + 16;
++        source.normals[i] = [0., 0., 1.];
++        let mut target = Level {
++            camera: c,
++            vertices,
++            normals: vec![[0., 0., 1.]; 1024],
++        };
++        let p = Pose::identity().increment([0.031875, 0., 0., 0., 0., 0.]);
++        assert_eq!(
++            equation(
++                &target,
++                &source,
++                p,
++                1,
++                Correspondence::Reciprocal,
++                Residual::TargetPlane
++            )
++            .count,
++            1
++        );
++        target.vertices[i + 1] = c.point(i + 1, 2.06);
++        assert_eq!(
++            equation(
++                &target,
++                &source,
++                p,
++                1,
++                Correspondence::Forward,
++                Residual::TargetPlane
++            )
++            .count,
++            1
++        );
++        assert_eq!(
++            equation(
++                &target,
++                &source,
++                p,
++                1,
++                Correspondence::Reciprocal,
++                Residual::TargetPlane
++            )
++            .count,
++            0
++        );
++    }
++    #[test]
++    fn rotating_source_plane_has_the_target_point_lever_arm() {
++        let source = [0.13, -0.07, 1.8];
++        let target = [0.15, -0.04, 1.83];
++        let normal = mul([0.2, -0.1, 1.], 1. / norm([0.2, -0.1, 1.]));
++        let p = Pose::identity().increment([0.01, -0.02, 0.005, 0.02, -0.01, 0.015]);
++        let n = p.rotate(normal);
++        let rotation = cross(target, n);
++        let expected = [n[0], n[1], n[2], rotation[0], rotation[1], rotation[2]];
++        for axis in 0..6 {
++            let value = |sign: f64| {
++                let mut d = [0.; 6];
++                d[axis] = sign * 1e-7;
++                let moved = p.increment(d);
++                dot(moved.rotate(normal), sub(moved.transform(source), target))
++            };
++            assert!(((value(1.) - value(-1.)) / 2e-7 - expected[axis]).abs() < 3e-9);
++        }
++    }
++    #[test]
++    fn bilinear_targets_preserve_planes_and_reject_missing_corners() {
++        let c = camera();
++        let raw = vec![2.; c.width * c.height];
++        let mut levels = pyramid(c, &raw);
++        let layer = &mut levels[2];
++        let query = [(64.25 - c.cx) * 2. / c.fx, (48.75 - c.cy) * 2. / c.fy, 2.];
++        let (point, normal) = layer.bilinear(query).unwrap();
++        assert!(norm(sub(point, query)) < 1e-14);
++        assert_eq!(normal, [0., 0., 1.]);
++        layer.vertices[49 * c.width + 65][2] = 0.;
++        assert!(layer.bilinear(query).is_none());
++        assert!(layer.bilinear([f64::NAN, 0., 2.]).is_none());
++    }
++}
+--- a/integrations/projective-depth/src/main.rs
++++ b/integrations/projective-depth/src/main.rs
+@@ -1,13 +1,26 @@
+ //! Bounded synchronous JSON-lines evaluation transport; no external services.
+-use rustdriving_projective_depth::{Camera, Tracker};
++use rustdriving_projective_depth::{
++    Camera, Correspondence, Reprojection, Residual, Tracker, TrackerConfig,
++};
+ use serde::Deserialize;
+ use std::io::{self, BufRead, Read, Write};
+ 
+ #[derive(Deserialize)]
+ #[serde(tag = "kind", deny_unknown_fields)]
+ enum Request {
+-    Configure { camera: Camera },
+-    Frame { timestamp: f64, depth_m: Vec<f64> },
++    Configure {
++        camera: Camera,
++        #[serde(default)]
++        reprojection: Reprojection,
++        #[serde(default)]
++        correspondence: Correspondence,
++        #[serde(default)]
++        residual: Residual,
++    },
++    Frame {
++        timestamp: f64,
++        depth_m: Vec<f64>,
++    },
+ }
+ fn run() -> Result<(), String> {
+     let input = io::stdin();
+@@ -31,11 +44,23 @@
+         }
+         let request: Request = serde_json::from_slice(&body).map_err(|e| e.to_string())?;
+         match request {
+-            Request::Configure { camera } => {
++            Request::Configure {
++                camera,
++                reprojection,
++                correspondence,
++                residual,
++            } => {
+                 if tracker.is_some() {
+                     return Err("one configuration per process".into());
+                 }
+-                tracker = Some(Tracker::new(camera)?);
++                tracker = Some(Tracker::with_config(
++                    camera,
++                    TrackerConfig {
++                        reprojection,
++                        correspondence,
++                        residual,
++                    },
++                )?);
+                 writeln!(output, "{{\"configured\":true,\"schema_version\":1}}")
+                     .map_err(|e| e.to_string())?;
+             }

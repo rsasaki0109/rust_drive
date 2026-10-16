@@ -1,0 +1,57 @@
+{
+  "analytic_pass": true,
+  "profile_equivalence_cases": 5,
+  "chart_angles_rad": [
+    1e-09,
+    0.0001,
+    0.3,
+    1.2
+  ],
+  "reports": {
+    "discard": {
+      "checked_reported_equations": 133,
+      "marginal_generations": 0,
+      "max_position_error_m": 3.184995666270944e-05
+    },
+    "retain": {
+      "checked_reported_equations": 128,
+      "marginal_generations": 9,
+      "max_position_error_m": 3.504402513527625e-05
+    }
+  },
+  "discarded_information_control": true,
+  "no_fabricated_new_support": true,
+  "terminal_expiry": true,
+  "rejected_corruptions": [
+    "wrong Schur gradient",
+    "coherently scaled Schur H/g",
+    "duplicate factor history",
+    "wrong fixed origin",
+    "wrong linearization anchor",
+    "retained raw factors also marginalized",
+    "normal system scaled without changing its solve",
+    "moved first origin",
+    "wrong normal increment"
+  ],
+  "late_elimination_failure_atomic": true,
+  "clean_recovery_prior_parity": true,
+  "malformed_clock_and_depth_rejected": true,
+  "singular_elimination_rejected": true,
+  "symmetric_factor": {
+    "source_and_target_central_difference_axes": 12,
+    "swapped_residual_sign": true,
+    "common_rigid_frame_invariance": true,
+    "omitted_normal_rotation_detected": true,
+    "original_fixed_pose_support_counts": {
+      "4": 770,
+      "2": 973,
+      "1": 1081
+    },
+    "parent_engine_only_pair_import_changed": true
+  },
+  "source_sha256": {
+    "scripts/check-symmetric-keyframes.py": "bc84ab9c875763afde697d3a0c9eac143158e008e6ef3579f991423007bdd591",
+    "scripts/symmetric_depth_factors.py": "ae3d5b789e93b6c3aa9cef105e8e0c043d27bf456640fba67bf680a1a4714ee6",
+    "scripts/symmetric_keyframe_depth.py": "c71f3e2ebf0832e8f5efe67ffa04382df393e2b568a72173637d645f5627b20a"
+  }
+}

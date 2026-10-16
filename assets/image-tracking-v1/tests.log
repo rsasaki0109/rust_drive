@@ -1,0 +1,37 @@
+   Compiling rustdriving-image-tracking v0.1.0 (/workspace/rust_drive/integrations/camera-tracking)
+    Finished `release` profile [optimized] target(s) in 2.00s
+     Running unittests src/lib.rs (integrations/camera-tracking/target/release/deps/rustdriving_image_tracking-2dbc7815681dedd2)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/rustdriving-camera-track.rs (integrations/camera-tracking/target/release/deps/rustdriving_camera_track-fabf158d5e0dfc3c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/tracking.rs (integrations/camera-tracking/target/release/deps/tracking-d49918e677b1885f)
+
+running 11 tests
+test capacity_preserves_coasting_tracks_and_reports_untracked_detections ... ok
+test coasting_never_refreshes_observations_and_expiry_allocates_a_new_id ... ok
+test global_assignment_avoids_the_greedy_cardinality_trap ... ok
+test invalid_geometry_and_unbounded_configuration_are_rejected ... ok
+test failed_acquisition_invalidates_tracks_and_does_not_reuse_ids_or_images ... ok
+test one_hit_false_positives_retire_on_a_miss_and_classes_never_merge ... ok
+test unix_epoch_seconds_are_accepted_without_a_session_specific_clock_origin ... ok
+test velocity_retains_crossing_identities_through_short_occlusions ... ok
+test rejected_frames_are_atomic_including_clock_history_and_future_ids ... ok
+test recent_image_identity_cache_is_explicitly_bounded ... ok
+test dense_maximum_capacity_has_one_to_one_deterministic_bounded_assignment ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+   Doc-tests rustdriving_image_tracking
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

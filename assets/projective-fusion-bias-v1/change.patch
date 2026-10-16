@@ -1,0 +1,1236 @@
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -149,6 +149,10 @@
+           python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/whitened-analytic --residual depth_whitened_plane --output artifacts/projective-depth/whitened-raw-audit
+           python scripts/check-projective-range.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/range-controls
+           python scripts/check-projective-range.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --residual depth_whitened_plane --output artifacts/projective-depth/whitened-controls
++          python scripts/diagnose-projective-fusion.py --controls-only --output artifacts/projective-depth/fusion-bias-controls
++          python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --fusion-sampling visible_mean --output artifacts/projective-depth/fusion-analytic
++          python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/fusion-analytic --fusion-sampling visible_mean --output artifacts/projective-depth/fusion-raw-audit
++          python scripts/check-projective-fusion.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/fusion-controls
+           python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --correspondence bilinear --output artifacts/projective-depth/bilinear-analytic
+           python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/bilinear-analytic --correspondence bilinear --output artifacts/projective-depth/bilinear-raw-audit
+           python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --normals inverse_depth_plane --output artifacts/projective-depth/plane-normal-analytic
+@@ -218,6 +222,7 @@
+           python -m py_compile scripts/projective_timing_raw.py scripts/check-projective-timing.py scripts/projective_information_raw.py scripts/projective-heldout.py scripts/repair-projective-heldout-inventory.py scripts/check-projective-information-calibration.py scripts/check-projective-report-write.py scripts/check-projective-calibration-math.py
+           python -m py_compile scripts/diagnose-projective-surface-bias.py scripts/check-projective-surface-math.py
+           python -m py_compile scripts/projective_range_raw.py scripts/projective_whitened_raw.py scripts/diagnose-projective-range.py scripts/check-projective-range.py
++          python -m py_compile scripts/projective_fusion_raw.py scripts/diagnose-projective-fusion.py scripts/check-projective-fusion.py
+           python -m py_compile scripts/diagnose-projective-motion-timing.py
+           python -m py_compile scripts/multireference_rgbd_common.py scripts/evaluate-multireference-rgbd.py
+           python -m py_compile scripts/joint_keyframe_depth.py scripts/evaluate-joint-keyframe-depth.py
+--- a/artifacts/projective-fusion-bias-v1/design.json
++++ b/artifacts/projective-fusion-bias-v1/design.json
+@@ -0,0 +1,39 @@
++{
++  "schema_version": 1,
++  "hypothesis": "nearest-Z selection among same-surface splats has a signed order-statistic bias; distinguish raster selection, geometric resampling and estimated-pose errors",
++  "prior_attempts": "XYZ retention and tangent reprojection preserve nearest-Z selection; do not repeat their plane deformation as a new finding",
++  "diagnostic": {
++    "controls": "fronto-parallel 2 m plane with independent 10 mm Gaussian axial noise, seed1702, 40 raw realizations, supplied +0.10 m axial transform; no pose estimation; compare all common visible cells and collision subset",
++    "records": [
++      "tum-fr1-room-temporal",
++      "tum-fr1-desk2-independent",
++      "tum-fr1-rpy-heldout"
++    ],
++    "frames": "original100..279, probes at offsets1..169 step12, all180 fused chronologically",
++    "channels": [
++      "raw physical keyframe",
++      "fused with archived estimated transforms",
++      "counterfactual fusion with offline reference transforms using exactly the same keyframe schedule"
++    ],
++    "comparisons": "point-to-plane equation and local correction at offline reference pose before each probe update; not ground-truth sensor noise or an estimated trajectory"
++  },
++  "candidate_if_bias_observed": {
++    "name": "visible_mean",
++    "selection": "minimum Z still locates front surface; average all projected samples with Z-minZ < .03+.01*minZ, using source support weights; retain maximum contributing support capped16, so splat density cannot create frame confidence",
++    "same_frame": "unit support for each raw source; aggregate remains one frame",
++    "occlusion": "points outside nearest surface band never contribute",
++    "scope": "original depth/point/forward/target-plane/central_difference, disabled photometric/timing, stationary motion; no parameter sweep"
++  },
++  "adoption": {
++    "room_above": 64,
++    "desk2_at_least": 161,
++    "rpy_at_least": 74,
++    "all_updates_accepted": 179,
++    "no_worse_maximum_position_or_rotation_on_all_three": true,
++    "no_resets": true
++  },
++  "binary_sha256": "f896bf90aca477221c5b58f56e493936b80460618cbea5d3b262c629e6957051",
++  "data_role": "three already viewed FR1 regressions; no heldout claim",
++  "ground_truth_operational": false,
++  "subjective_maturity_percent": 20
++}
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -387,6 +387,12 @@
+ desk2, so neither changes the default. This is an uncalibrated scalar weighting
+ experiment, without modeled map/history or association uncertainty.
+ 
++Optional [visible-surface fusion](projective-fusion.md) averages compatible
++splats within the original nearest-surface visibility band. It reduces a signed
++selection bias in a prescribed noisy-plane control, while preserving frame
++support and accepted-state rules. Viewed scores67/161/74 room/desk2/RPY fail
++maximum-error adoption gates; nearest-Z rasterization remains the default.
++
+ Optional [midpoint surface residuals and bidirectional projective matching](projective-surface.md)
+ separate measured-normal averaging from correspondence search in both directions.
+ Both retain accepted-state and conditioning guards. Each bidirectional solve and
+--- a/docs/maturity.md
++++ b/docs/maturity.md
+@@ -653,3 +653,11 @@
+ that failure. Their conditional synthetic checks and raw reconstruction establish
+ implementation integrity, without calibrated physical noise, held-out accuracy or
+ a maturity increase. The estimate remains **about 20%**, with 30% unmet.
++
++The [visible-surface fusion study](projective-fusion.md) then reduces a constructed
++nearest-Z selection bias and implements the corresponding native raster policy.
++Reference-transform map probes do not isolate a unique physical drift cause.
++Complete viewed scores67/161/74 retain larger maximum position errors than the
++default, so adoption fails. Independent raw reconstruction and accepted-state
++controls establish implementation integrity, without improving the maturity
++estimate: **about 20%**, with the **30% waypoint unmet**.
+--- a/docs/native-depth-regression.md
++++ b/docs/native-depth-regression.md
+@@ -12,6 +12,11 @@
+ used as substitutes for these complete physical trajectories.
+ 
+ ## Complete outcomes
++
++The later [visible-surface fusion study](projective-fusion.md) separately tests
++nearest-Z selection bias. Its opt-in mean raster scores67/161/74 on the viewed
++room/desk2/RPY windows and increases maximum position errors in all three.
++It fails the same adoption rule and leaves the original default unchanged.
+ 
+ All configurations accept all 179 updates in each recording without expiry or
+ resets. Every complete accuracy protocol still fails. Counts use the original
+--- a/docs/projective-fusion.md
++++ b/docs/projective-fusion.md
+@@ -0,0 +1,159 @@
++# Visible-surface fusion and signed raster bias
++
++The Rust tracker now has an optional `fusion_sampling: "visible_mean"` policy.
++It removes most of a demonstrated nearest-Z bias in a prescribed noisy-plane
++control. Complete viewed tracking scores are **67/161/74** accurate updates in
++room/desk2/RPY, compared with the original **64/161/74**. Maximum position errors
++increase in all three recordings, so **the default remains `nearest`**.
++
++The [fixed design](../assets/projective-fusion-bias-v1/design.json),
++[source-bound packet](../assets/projective-fusion-bias-v1/summary.json) and
++[adoption decision](../assets/projective-fusion-bias-v1/adoption.json) preserve
++the diagnostic, full outcomes and unchanged acceptance rule. These are the same
++three already viewed Freiburg 1 windows, with no held-out accuracy claim.
++
++## The measured problem and implementation
++
++The original raster keeps the smallest axial Z when multiple transformed points
++round into one target pixel. Even observations from one noisy surface can then
++select preferentially nearer depths. The earlier [XYZ representation](projective-vertices.md)
++preserves transformed coordinates, and tangent reprojection compensates for
++pixel-center ray changes; both retain this nearest-Z selection.
++
++A separate fixed control uses forty independent noisy observations of a 2 m
++fronto-parallel plane, 10 mm Gaussian axial noise, seed 1702 and a supplied
++0.10 m axial transform. It does not estimate a trajectory. Both selectors have
++the same 693,112 occupied output cells, including 71,509 collision cells:
++
++| Selection | Mean error, all cells (mm) | Mean error, collision cells (mm) | Collision-cell RMS (mm) |
++|---|---:|---:|---:|
++| Nearest Z | -0.57546 | -5.70939 | 10.04215 |
++| Visible-surface mean | 0.01535 | 0.01711 | 7.04933 |
++
++These pixels are correlated samples within a constructed noise model. The
++result establishes a conditional raster bias, without calibrating physical
++sensor noise or establishing its contribution to recorded trajectory drift.
++
++The new raster makes two passes. The first retains the original nearest depth
++`z_min` for visibility. The second admits only points with
++`z - z_min < 0.03 + 0.01*z_min` metres and returns their support-weighted mean.
++The band is always anchored to the original minimum: intermediate points cannot
++form a chain that admits a farther surface. More distant points never enter
++the average. A nearer outlier can still determine the band, and surfaces closer
++than the band can mix; this remains a provisional fusion policy.
++
++Raw points have unit support, and their aggregate retains support one. A warped
++stored cell retains the maximum contributing support, capped at 16, rather than
++summing frame support from overlapping rays. These weights remain heuristic.
++Compatible temporal averaging, nearer replacement, farther rejection and the
++cap of 16 retain their original rules. Fitting equations, information checks,
++root composition, accepted clocks and expiry are unchanged.
++
++`TrackerConfig.fusion_sampling` and JSON `Configure.fusion_sampling` accept
++`nearest` (default) or `visible_mean`. Visible mean currently requires original
++depth/point/forward/target-plane/central-difference fitting, stationary motion,
++disabled photometric tracking, disabled step control and disabled timing.
++Unsupported combinations reject before configuration acknowledgment.
++
++## Separating supplied pose errors from map construction
++
++The diagnostic replays all 180 raw frames in each recording and probes fifteen
++fixed offsets, 1 through 169 in steps of 12, before fusion. It compares the raw
++physical keyframe, a model reconstructed with the archived estimated transforms,
++and two counterfactual models fused with interpolated reference transforms.
++All models use exactly the archived keyframe-change schedule. Reference labels
++enter this offline diagnostic only; the native tracker receives depth and its
++acquisition timestamp.
++
++The table reports median magnitudes of one linearized correction at the
++reference pose, using the original fine-scale point-to-plane matcher. Translation
++is in millimetres; rotation is in milliradians. These are objective probes,
++not recovered trajectories or calibrated error estimates.
++
++| Model | Room translation / rotation | Desk2 translation / rotation | RPY translation / rotation |
++|---|---|---|---|
++| Raw physical keyframe | 6.521 / 6.928 | 6.295 / 3.806 | 7.516 / 5.929 |
++| Fusion with estimated transforms, nearest Z | 4.991 / 7.019 | 5.719 / 4.358 | 7.129 / 7.424 |
++| Fusion with reference transforms, nearest Z | 8.058 / 6.647 | 10.239 / 6.548 | 11.969 / 5.548 |
++| Fusion with reference transforms, visible mean | 8.241 / 6.693 | 10.423 / 6.607 | 11.772 / 5.470 |
++
++Surface averaging changes these corrections only slightly. Using reference
++transforms does not consistently reduce them. Different models can admit
++different correspondences, and the registered-grid camera remains uncalibrated.
++This experiment therefore does not isolate a unique drift cause or treat
++reference-transform fusion as a physically exact map. All probe summaries
++and replayed fusion partitions are retained in the packet.
++
++## Complete trajectory outcomes and adoption
++
++All runs keep original indices 100–279, K=525 intrinsics, acquisition clocks,
++first-camera optical root, and 0.1 m / 0.1 rad accuracy gates. Each accepts all
++179 updates without expiry or pose resets. Numeric reference poses are decoded
++only after each recording's complete native sensor ledger is saved.
++
++| Recording | Accurate, original / mean | Maximum position, original / mean (m) | Maximum rotation, original / mean (rad) |
++|---|---|---|---|
++| Room | 64 / 67 | 0.296290 / 0.299154 | 0.141286 / 0.142723 |
++| Desk2 | 161 / 161 | 0.114800 / 0.117292 | 0.090386 / 0.090102 |
++| RPY | 74 / 74 | 0.087348 / 0.088212 | 0.173375 / 0.173699 |
++
++The frozen rule requires room above 64, desk2 at least 161, RPY at least 74,
++all 179 updates accepted in each recording, and no worse maximum position or
++rotation error in any recording. Counts pass; maximum-error requirements fail.
++There is no parameter sweep or changed default. Complete physical accuracy
++remains false for every recording.
++
++## Verification and reproduction
++
++The optional crate passes **56 Rust tests**. Hand controls verify weighted
++surface means, background exclusion, minimum-anchored bands and frame-support
++retention. Four existing ray-cast motions retain their original 4 mm / 0.004 rad
++gates. A twelve-frame known-scene sequence with 2 mm axial noise exercises a
++stored-model reference change and passes fixed 10 mm / 0.01 rad gates. Injecting
++a rejected empty depth leaves all twelve valid outcomes exactly identical.
++The separate NumPy implementation reconstructs subsequent fitted equations,
++so the check also exercises the internal fused map across updates.
++
++Recorded raw audits reconstruct **10,778 fitted and returned-pose systems** and
++**537 fused-model generations**, without decoding reference poses. Analytic
++mutations reject substitution of nearest-Z sampling and altered merge counts,
++along with the original matrix, residual and fusion-category corruptions.
++Transport tests reject **64** malformed or unsupported requests. The **1,440**
++historical native sensor outputs remain exactly identical across default depth,
++RGB-D and timing modes. Core verification retains **371 Rust tests**, **49**
++scenario replays and **245** unchanged deterministic outputs: **427 Rust tests**
++including the optional crate. CI runs dataset-free analytic controls; the full
++recorded audit was run locally on this Linux host.
++
++Use the [existing input provenance and environment](projective-depth-rust.md#reproduction)
++and fresh output paths:
++
++```bash
++source scripts/env.sh
++cargo build --release --locked --manifest-path integrations/projective-depth/Cargo.toml
++OPENBLAS_NUM_THREADS=1 python scripts/diagnose-projective-fusion.py \
++  --output artifacts/fusion-diagnostic
++OPENBLAS_NUM_THREADS=1 python scripts/check-projective-fusion.py \
++  --binary integrations/projective-depth/target/release/rustdriving-projective-depth \
++  --output artifacts/fusion-controls
++OPENBLAS_NUM_THREADS=1 python scripts/check-projective-depth.py \
++  --binary integrations/projective-depth/target/release/rustdriving-projective-depth \
++  --fusion-sampling visible_mean --output artifacts/fusion-analytic
++OPENBLAS_NUM_THREADS=1 python scripts/evaluate-projective-depth.py \
++  --binary integrations/projective-depth/target/release/rustdriving-projective-depth \
++  --fusion-sampling visible_mean --case tum-fr1-room-temporal \
++  --case tum-fr1-desk2-independent --case tum-fr1-rpy-heldout \
++  --output artifacts/fusion-recorded
++# Expected exit 1 for retained physical accuracy failures; continue the audit.
++OPENBLAS_NUM_THREADS=1 python scripts/audit-projective-depth-raw.py \
++  --fusion-sampling visible_mean --analytic-reports artifacts/fusion-analytic \
++  --recorded-reports artifacts/fusion-recorded --case tum-fr1-room-temporal \
++  --case tum-fr1-desk2-independent --case tum-fr1-rpy-heldout \
++  --output artifacts/fusion-raw
++```
++
++The packet retains the exact diagnostic source epoch as well as the subsequent
++implementation epoch. Encoded raw recordings and compiled binaries are not
++redistributed. This change supplies no held-out localization, calibrated
++uncertainty or vehicle integration. Subjective maturity versus mature driving
++OSS remains **about 20%**, with the **30% waypoint unmet**.
+--- a/integrations/projective-depth/src/fusion_sampling.rs
++++ b/integrations/projective-depth/src/fusion_sampling.rs
+@@ -0,0 +1,146 @@
++//! Visible-surface averaging for model rasterization, separate from pose fitting.
++use super::*;
++
++#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
++#[serde(rename_all = "snake_case")]
++pub enum FusionSampling {
++    #[default]
++    Nearest,
++    /// Locate the nearest surface before averaging compatible projected points.
++    /// Multiple rays from one acquisition do not increase its frame support.
++    VisibleMean,
++}
++
++pub(super) fn raster(
++    camera: Camera,
++    depth: &[f64],
++    weights: &[u8],
++    pose: Pose,
++) -> (Vec<f64>, Vec<u8>, RasterStats) {
++    let (nearest, _, mut stats) = raster_with_tangents(camera, depth, weights, pose, None);
++    let mut moment = vec![0.; depth.len()];
++    let mut total = vec![0.; depth.len()];
++    let mut support = vec![0; depth.len()];
++    let mut contributing = 0;
++    for (i, &z) in depth.iter().enumerate() {
++        if z <= MIN_Z || z >= MAX_Z {
++            continue;
++        }
++        let point = pose.transform(camera.point(i, z));
++        if point[2] >= MAX_Z {
++            continue;
++        }
++        let Some(j) = camera.project(point, false) else {
++            continue;
++        };
++        if point[2] - nearest[j] < 0.03 + 0.01 * nearest[j] {
++            let w = f64::from(weights[i]);
++            moment[j] += w * point[2];
++            total[j] += w;
++            support[j] = support[j].max(weights[i].min(16));
++            contributing += 1;
++        }
++    }
++    for (z, w) in moment.iter_mut().zip(total) {
++        if w > 0. {
++            *z /= w;
++        }
++    }
++    stats.surface_merged = contributing - stats.selected;
++    (moment, support, stats)
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    fn camera() -> Camera {
++        Camera {
++            width: 32,
++            height: 32,
++            fx: 32.,
++            fy: 32.,
++            cx: 15.5,
++            cy: 15.5,
++        }
++    }
++
++    #[test]
++    fn surface_mean_excludes_background_and_preserves_frame_support() {
++        let c = camera();
++        let mut depth = vec![0.; 1024];
++        let mut weights = vec![0; 1024];
++        depth[16 * 32 + 16] = 1.;
++        depth[16 * 32 + 17] = 1.02;
++        depth[17 * 32 + 17] = 2.;
++        weights[16 * 32 + 16] = 2;
++        weights[16 * 32 + 17] = 6;
++        weights[17 * 32 + 17] = 16;
++        let mut pose = Pose::identity();
++        pose.translation[2] = 1.;
++        let (map, support, stats) = raster(c, &depth, &weights, pose);
++        let j = 16 * 32 + 16;
++        assert!((map[j] - 2.015).abs() < 1e-14);
++        assert_eq!(support[j], 6);
++        assert_eq!(
++            (stats.projected, stats.selected, stats.surface_merged),
++            (3, 1, 1)
++        );
++        let (_, support, _) = raster(c, &depth, &vec![1; 1024], pose);
++        assert_eq!(support[j], 1);
++    }
++
++    #[test]
++    fn surface_band_is_anchored_to_minimum_independent_of_traversal() {
++        let c = camera();
++        let mut depth = vec![0.; 1024];
++        // All three points map to one cell. The middle point must not create
++        // a chain that admits the farthest point outside the nearest band.
++        for values in [[1., 1.04, 1.08], [1.08, 1.04, 1.]] {
++            depth[16 * 32 + 16] = values[0];
++            depth[16 * 32 + 17] = values[1];
++            depth[17 * 32 + 17] = values[2];
++            let mut pose = Pose::identity();
++            pose.translation[2] = 1.;
++            let (map, _, stats) = raster(c, &depth, &vec![1; 1024], pose);
++            assert!((map[16 * 32 + 16] - 2.02).abs() < 1e-14);
++            assert_eq!(stats.surface_merged, 1);
++        }
++    }
++
++    #[test]
++    fn original_configuration_remains_default_and_mixed_policies_reject() {
++        assert_eq!(
++            TrackerConfig::default().fusion_sampling,
++            FusionSampling::Nearest
++        );
++        for option in 0..9 {
++            let mut config = TrackerConfig {
++                fusion_sampling: FusionSampling::VisibleMean,
++                ..TrackerConfig::default()
++            };
++            match option {
++                0 => config.geometry = ModelGeometry::Vertices,
++                1 => config.reprojection = Reprojection::TangentPlane,
++                2 => config.correspondence = Correspondence::Reciprocal,
++                3 => config.residual = Residual::DepthVariancePlane,
++                4 => config.normals = NormalEstimation::InverseDepthPlane,
++                5 => config.photometric = Photometric::Keyframe,
++                6 => config.motion_model = MotionModel::ConstantVelocity,
++                7 => config.step_control = StepPolicy::FixedSupport,
++                _ => config.timing = Timing::PreviousMotion,
++            }
++            assert!(Tracker::with_config(camera(), config).is_err());
++        }
++        assert!(
++            Tracker::with_config(
++                camera(),
++                TrackerConfig {
++                    fusion_sampling: FusionSampling::VisibleMean,
++                    ..TrackerConfig::default()
++                }
++            )
++            .is_ok()
++        );
++    }
++}
+--- a/integrations/projective-depth/src/lib.rs
++++ b/integrations/projective-depth/src/lib.rs
+@@ -5,6 +5,8 @@
+ use serde::{Deserialize, Serialize};
+ 
+ mod depth_weight;
++mod fusion_sampling;
++pub use fusion_sampling::FusionSampling;
+ mod information;
+ mod motion;
+ pub use information::{InformationFailure, Spectrum};
+@@ -94,6 +96,7 @@
+ #[derive(Clone, Copy, Debug, Default, Deserialize, Serialize)]
+ #[serde(default, deny_unknown_fields)]
+ pub struct TrackerConfig {
++    pub fusion_sampling: FusionSampling,
+     pub reprojection: Reprojection,
+     pub correspondence: Correspondence,
+     pub residual: Residual,
+@@ -702,6 +705,8 @@
+     pub selected: usize,
+     #[serde(skip_serializing_if = "is_zero")]
+     pub tangent_adjusted: usize,
++    #[serde(skip_serializing_if = "is_zero")]
++    pub surface_merged: usize,
+ }
+ fn is_zero(value: &usize) -> bool {
+     *value == 0
+@@ -799,6 +804,15 @@
+ ) -> FusionStats {
+     let (new, present, measurement) =
+         raster_with_tangents(camera, depth, &vec![1; depth.len()], pose, normals);
++    fuse_raster(model, weights, &new, &present, measurement)
++}
++fn fuse_raster(
++    model: &mut [f64],
++    weights: &mut [u8],
++    new: &[f64],
++    present: &[u8],
++    measurement: RasterStats,
++) -> FusionStats {
+     let mut stats = FusionStats {
+         measurement,
+         ..FusionStats::default()
+@@ -864,6 +878,7 @@
+ }
+ pub struct Tracker {
+     camera: Camera,
++    fusion_sampling: FusionSampling,
+     reprojection: Reprojection,
+     correspondence: Correspondence,
+     residual: Residual,
+@@ -897,6 +912,7 @@
+         Self::with_config(
+             camera,
+             TrackerConfig {
++                fusion_sampling: FusionSampling::default(),
+                 reprojection,
+                 correspondence,
+                 residual: Residual::default(),
+@@ -912,6 +928,19 @@
+     /// Configure measured residual/model policies with shared clock and fault guards.
+     pub fn with_config(camera: Camera, config: TrackerConfig) -> Result<Self, String> {
+         camera.validate()?;
++        if config.fusion_sampling == FusionSampling::VisibleMean
++            && (config.geometry != ModelGeometry::Depth
++                || config.reprojection != Reprojection::Point
++                || config.correspondence != Correspondence::Forward
++                || config.residual != Residual::TargetPlane
++                || config.normals != NormalEstimation::CentralDifference
++                || config.photometric != Photometric::Disabled
++                || config.motion_model != MotionModel::Stationary
++                || config.step_control != StepPolicy::Disabled
++                || config.timing != Timing::Disabled)
++        {
++            return Err("visible_mean requires original stationary depth tracking without other experimental policies".into());
++        }
+         if matches!(
+             config.residual,
+             Residual::SymmetricMidpoint
+@@ -959,6 +988,7 @@
+         }
+         Ok(Self {
+             camera,
++            fusion_sampling: config.fusion_sampling,
+             reprojection: config.reprojection,
+             correspondence: config.correspondence,
+             residual: config.residual,
+@@ -1169,61 +1199,82 @@
+                     return Err("nonrigid composed root".into());
+                 }
+                 let replace = norm(relative.translation) > 0.1 || relative.angle() > 0.1;
+-                let (map, weights, next_pyramid, fusion) =
+-                    if self.geometry == ModelGeometry::Vertices {
+-                        let (mut points, mut weights, warp) = if replace {
+-                            let (points, weights, stats) = vertex_model::raster(
++                let (map, weights, next_pyramid, fusion) = if self.geometry
++                    == ModelGeometry::Vertices
++                {
++                    let (mut points, mut weights, warp) = if replace {
++                        let (points, weights, stats) = vertex_model::raster(
++                            self.camera,
++                            &old.pyramid[2].vertices,
++                            &old.weights,
++                            relative.inverse(),
++                        );
++                        (points, weights, Some(stats))
++                    } else {
++                        (old.pyramid[2].vertices.clone(), old.weights.clone(), None)
++                    };
++                    let mut fusion = vertex_model::fuse(
++                        self.camera,
++                        &mut points,
++                        &mut weights,
++                        &current[2].vertices,
++                        if replace { Pose::identity() } else { relative },
++                    );
++                    fusion.warp = warp;
++                    let map = points.iter().map(|p| p[2]).collect();
++                    (
++                        map,
++                        weights,
++                        vertex_model::pyramid(self.camera, points),
++                        fusion,
++                    )
++                } else {
++                    let (mut map, mut weights, warp) = if replace {
++                        let (d, w, stats) = if self.fusion_sampling == FusionSampling::VisibleMean {
++                            fusion_sampling::raster(
+                                 self.camera,
+-                                &old.pyramid[2].vertices,
++                                &old.depth,
+                                 &old.weights,
+                                 relative.inverse(),
+-                            );
+-                            (points, weights, Some(stats))
++                            )
+                         } else {
+-                            (old.pyramid[2].vertices.clone(), old.weights.clone(), None)
+-                        };
+-                        let mut fusion = vertex_model::fuse(
+-                            self.camera,
+-                            &mut points,
+-                            &mut weights,
+-                            &current[2].vertices,
+-                            if replace { Pose::identity() } else { relative },
+-                        );
+-                        fusion.warp = warp;
+-                        let map = points.iter().map(|p| p[2]).collect();
+-                        (
+-                            map,
+-                            weights,
+-                            vertex_model::pyramid(self.camera, points),
+-                            fusion,
+-                        )
+-                    } else {
+-                        let (mut map, mut weights, warp) = if replace {
+-                            let (d, w, stats) = raster_with_tangents(
++                            raster_with_tangents(
+                                 self.camera,
+                                 &old.depth,
+                                 &old.weights,
+                                 relative.inverse(),
+                                 (self.reprojection == Reprojection::TangentPlane)
+                                     .then_some(old.pyramid[2].normals.as_slice()),
+-                            );
+-                            (d, w, Some(stats))
+-                        } else {
+-                            (old.depth.clone(), old.weights.clone(), None)
++                            )
+                         };
+-                        let mut fusion = fuse_with_tangents(
++                        (d, w, Some(stats))
++                    } else {
++                        (old.depth.clone(), old.weights.clone(), None)
++                    };
++                    let transform = if replace { Pose::identity() } else { relative };
++                    let mut fusion = if self.fusion_sampling == FusionSampling::VisibleMean {
++                        let (new, present, stats) = fusion_sampling::raster(
++                            self.camera,
++                            depth,
++                            &vec![1; depth.len()],
++                            transform,
++                        );
++                        fuse_raster(&mut map, &mut weights, &new, &present, stats)
++                    } else {
++                        fuse_with_tangents(
+                             self.camera,
+                             &mut map,
+                             &mut weights,
+                             depth,
+-                            if replace { Pose::identity() } else { relative },
++                            transform,
+                             (self.reprojection == Reprojection::TangentPlane)
+                                 .then_some(current[2].normals.as_slice()),
+-                        );
+-                        fusion.warp = warp;
+-                        let next_pyramid = pyramid_with_normals(self.camera, &map, self.normals);
+-                        (map, weights, next_pyramid, fusion)
++                        )
+                     };
++                    fusion.warp = warp;
++                    let next_pyramid = pyramid_with_normals(self.camera, &map, self.normals);
++                    (map, weights, next_pyramid, fusion)
++                };
+                 let (next_gray, next_rgb_timestamp, next_phase) = if replace && fresh {
+                     (gray, rgb_timestamp, phase)
+                 } else if replace {
+--- a/integrations/projective-depth/src/main.rs
++++ b/integrations/projective-depth/src/main.rs
+@@ -1,7 +1,7 @@
+ //! Bounded synchronous JSON-lines evaluation transport; no external services.
+ use rustdriving_projective_depth::{
+-    Camera, Correspondence, ModelGeometry, MotionModel, NormalEstimation, Reprojection, Residual,
+-    StepPolicy, Timing, Tracker, TrackerConfig,
++    Camera, Correspondence, FusionSampling, ModelGeometry, MotionModel, NormalEstimation,
++    Reprojection, Residual, StepPolicy, Timing, Tracker, TrackerConfig,
+ };
+ use rustdriving_projective_depth::{ImageObservation, photometric::Photometric};
+ use serde::Deserialize;
+@@ -12,6 +12,8 @@
+ enum Request {
+     Configure {
+         camera: Camera,
++        #[serde(default)]
++        fusion_sampling: FusionSampling,
+         #[serde(default)]
+         reprojection: Reprojection,
+         #[serde(default)]
+@@ -68,6 +70,7 @@
+         match request {
+             Request::Configure {
+                 camera,
++                fusion_sampling,
+                 reprojection,
+                 correspondence,
+                 residual,
+@@ -84,6 +87,7 @@
+                 tracker = Some(Tracker::with_config(
+                     camera,
+                     TrackerConfig {
++                        fusion_sampling,
+                         reprojection,
+                         correspondence,
+                         residual,
+--- a/scripts/audit-projective-depth-raw.py
++++ b/scripts/audit-projective-depth-raw.py
+@@ -14,6 +14,7 @@
+ from projective_depth_raw import compare_equation, fuse, inverse_depth_normals, normal_equation, pyramid, raster, reconstruct_update
+ 
+ SOURCES = (Path(__file__),ROOT/'scripts/projective_depth_raw.py',ROOT/'scripts/projective_depth_common.py',
++           ROOT/'scripts/projective_fusion_raw.py',
+            ROOT/'scripts/projective_range_raw.py',
+            ROOT/'scripts/projective_whitened_raw.py',
+            ROOT/'scripts/projective_vertex_raw.py',
+@@ -114,7 +115,7 @@
+                 nonplanar_and_coarse_normal_support_preserved=True)
+ 
+ 
+-def analytic(output, reports, reprojection='point', correspondence='forward', residual='target_plane', normals='central_difference', geometry='depth', photometric='disabled'):
++def analytic(output, reports, reprojection='point', correspondence='forward', residual='target_plane', normals='central_difference', geometry='depth', photometric='disabled',fusion_sampling='nearest'):
+     spec = importlib.util.spec_from_file_location('independent_scene',ROOT/'scripts/check-projective-depth.py')
+     scene = importlib.util.module_from_spec(spec)
+     spec.loader.exec_module(scene)
+@@ -134,7 +135,7 @@
+         if photometric=='keyframe':
+             context=dict(target=scene.render_gray(np.eye(4),first),source=scene.render_gray(np.asarray(record['expected']),raw),
+                          source_timestamp=1.03+.001,reference_timestamp=1.+.001,qualified=True,fresh=True)
+-        _,_,checked = reconstruct_update(first,(first > .3).astype(np.uint8),raw,scene.CAMERA,update,reprojection,correspondence,residual,normals,geometry,context)
++        _,_,checked = reconstruct_update(first,(first > .3).astype(np.uint8),raw,scene.CAMERA,update,reprojection,correspondence,residual,normals,geometry,context,fusion_sampling)
+         summaries.append(dict(motion=index,report_sha256=sha(read(path)),**checked))
+         witnesses.append((first,raw,scene.CAMERA,update,context))
+     model,raw,c,original,context = witnesses[2]
+@@ -143,7 +144,7 @@
+         altered = copy.deepcopy(original)
+         change(altered)
+         try:
+-            reconstruct_update(model,(model > .3).astype(np.uint8),raw,c,altered,reprojection,correspondence,residual,normals,geometry,context)
++            reconstruct_update(model,(model > .3).astype(np.uint8),raw,c,altered,reprojection,correspondence,residual,normals,geometry,context,fusion_sampling)
+         except (AssertionError,ValueError,KeyError,TypeError,IndexError):
+             rejected.append(name)
+         else:
+@@ -195,6 +196,18 @@
+             corruption('altered fixed-support geometry count',lambda u:u['iterations'][0]['step_control'].update(
+                 geometric_count=u['iterations'][0]['step_control']['geometric_count']+1))
+     vertex_controls=None
++    fusion_controls=None
++    if fusion_sampling=='visible_mean':
++        from projective_fusion_raw import controls
++        fusion_controls=controls()
++        try:
++            reconstruct_update(model,(model>.3).astype(np.uint8),raw,c,original)
++        except (AssertionError,ValueError,KeyError,TypeError,IndexError):
++            rejected.append('nearest-Z sampling substituted for visible mean')
++        else:
++            raise ValueError('fusion sampling substitution undetected')
++        corruption('altered visible surface merge count',lambda u:u['fusion']['measurement'].update(
++            surface_merged=u['fusion']['measurement'].get('surface_merged',0)+1))
+     if geometry=='vertices':
+         from projective_vertex_raw import controls
+         vertex_controls=controls()
+@@ -205,7 +218,8 @@
+         else:
+             raise ValueError('vertex geometry substitution undetected')
+     write(output/'analytic-audit.json',dict(hand_controls=hand_controls(),motions=summaries,geometry=geometry,vertex_controls=vertex_controls,
+-        rejected_corruptions=rejected,prior_solve_only_auditor_accepts_rescaled_Hg=True))
++        rejected_corruptions=rejected,prior_solve_only_auditor_accepts_rescaled_Hg=True,
++        fusion_sampling=fusion_sampling,fusion_controls=fusion_controls))
+ 
+ 
+ def recorded(case, output, reports=None):
+@@ -219,6 +233,8 @@
+     residual = freeze.get('residual','target_plane')
+     normals = freeze.get('normals','central_difference')
+     geometry = freeze.get('geometry','depth')
++    fusion_sampling = freeze.get('fusion_sampling','nearest')
++    require(fusion_sampling in ('nearest','visible_mean'),'declared fusion sampling policy')
+     photometric = freeze.get('photometric','disabled')
+     step_policy=freeze.get('step_control')
+     motion_model=freeze.get('motion_model','stationary')
+@@ -293,7 +309,7 @@
+                 require(('prediction' in row['update'])==(motion_model=='constant_velocity'),'configured prediction provenance')
+             if step_policy is not None:
+                 require(all(('step_control' in s)==(step_policy=='fixed_support') for s in row['update']['iterations']),'complete configured step reports')
+-            model,weights,checked = reconstruct_update(model,weights,raw,CAMERA,row['update'],reprojection,correspondence,residual,normals,geometry,context)
++            model,weights,checked = reconstruct_update(model,weights,raw,CAMERA,row['update'],reprojection,correspondence,residual,normals,geometry,context,fusion_sampling)
+             if photometric=='keyframe':
+                 checked['photometric_equations']=sum('photometric' in s for s in row['update']['iterations'])+int('final_photometric' in row['update'])
+                 checked['used_photometric_solves']=sum(s.get('photometric',{}).get('used',False) for s in row['update']['iterations'])
+@@ -342,10 +358,11 @@
+     parser.add_argument('--normals',choices=('central_difference','inverse_depth_plane'),default='central_difference')
+     parser.add_argument('--geometry',choices=('depth','vertices'),default='depth')
+     parser.add_argument('--photometric',choices=('disabled','keyframe'),default='disabled')
++    parser.add_argument('--fusion-sampling',choices=('nearest','visible_mean'),default='nearest')
+     args = parser.parse_args()
+     output = fresh(args.output)
+-    require(args.analytic_reports is not None or (args.reprojection=='point' and args.correspondence=='forward' and args.residual=='target_plane' and args.normals=='central_difference' and args.geometry=='depth' and args.photometric=='disabled'),'frozen analytic reports use original policies')
+-    analytic(output,args.analytic_reports,args.reprojection,args.correspondence,args.residual,args.normals,args.geometry,args.photometric)
++    require(args.analytic_reports is not None or (args.reprojection=='point' and args.correspondence=='forward' and args.residual=='target_plane' and args.normals=='central_difference' and args.geometry=='depth' and args.photometric=='disabled' and args.fusion_sampling=='nearest'),'frozen analytic reports use original policies')
++    analytic(output,args.analytic_reports,args.reprojection,args.correspondence,args.residual,args.normals,args.geometry,args.photometric,args.fusion_sampling)
+     cases = {}
+     if not args.analytic_only:
+         selected=args.case or ('tum-fr1-room-temporal','tum-fr1-desk2-independent')
+--- a/scripts/check-projective-depth.py
++++ b/scripts/check-projective-depth.py
+@@ -49,6 +49,7 @@
+     parser.add_argument('--photometric',choices=('disabled','keyframe'),default='disabled')
+     parser.add_argument('--step-control',choices=('disabled','fixed_support'),default='disabled')
+     parser.add_argument('--motion-model',choices=('stationary','constant_velocity'),default='stationary')
++    parser.add_argument('--fusion-sampling',choices=('nearest','visible_mean'),default='nearest')
+     args = parser.parse_args()
+     output = fresh(args.output)
+     binary = args.binary.absolute()
+@@ -60,7 +61,7 @@
+         vector = np.zeros(3)
+         vector[axis] = angle
+         transform[:3,:3],transform[:3,3] = exp_rotation(vector),translation
+-        client = Client(binary,CAMERA,configuration=dict(reprojection=args.reprojection,correspondence=args.correspondence,residual=args.residual,normals=args.normals,geometry=args.geometry,photometric=args.photometric,step_control=args.step_control,motion_model=args.motion_model))
++        client = Client(binary,CAMERA,configuration=dict(reprojection=args.reprojection,correspondence=args.correspondence,residual=args.residual,normals=args.normals,geometry=args.geometry,photometric=args.photometric,step_control=args.step_control,motion_model=args.motion_model,fusion_sampling=args.fusion_sampling))
+         def frame(stamp,transform,depth):
+             image=None if args.photometric=='disabled' else dict(timestamp=stamp+.001,gray=render_gray(transform,depth).ravel().tolist())
+             return client.frame(stamp,depth,image=image)
+@@ -162,6 +163,11 @@
+     malformed.update({'unsupported standardized depth '+key:json.dumps(dict(kind='Configure',camera=CAMERA,residual='depth_whitened_plane',**{key:value}))+'\n'
+                       for key,value in (('geometry','vertices'),('reprojection','tangent_plane'),('correspondence','reciprocal'),
+                                         ('normals','inverse_depth_plane'),('photometric','keyframe'))})
++    malformed['unknown fusion sampling']=json.dumps(dict(kind='Configure',camera=CAMERA,fusion_sampling='truth'))+'\n'
++    malformed.update({'unsupported visible mean '+key:json.dumps(dict(kind='Configure',camera=CAMERA,fusion_sampling='visible_mean',**{key:value}))+'\n'
++                      for key,value in (('geometry','vertices'),('reprojection','tangent_plane'),('correspondence','reciprocal'),
++                                        ('residual','depth_whitened_plane'),('normals','inverse_depth_plane'),('photometric','keyframe'),
++                                        ('motion_model','constant_velocity'),('step_control','fixed_support'),('timing','previous_motion'))})
+     for name,body in malformed.items():
+         result = subprocess.run([str(binary)],input=body,text=True,capture_output=True,timeout=30)
+         require(result.returncode == 2 and bool(result.stderr),'transport rejection: '+name)
+@@ -180,7 +186,7 @@
+         motions=cases,reprojection=args.reprojection,correspondence=args.correspondence,residual=args.residual,normals=args.normals,geometry=args.geometry,photometric=args.photometric,step_control=args.step_control,motion_model=args.motion_model,rejected_transport_cases=list(malformed),binary_sha256=sha(binary.read_bytes()),
+         rejected_report_corruptions=corruption_names,
+         checker_sha256=sha(Path(__file__).read_bytes()),
+-        scope='analytic geometry and independent linear algebra; no physical accuracy or real-time claim'))
++        scope='analytic geometry and independent linear algebra; no physical accuracy or real-time claim',fusion_sampling=args.fusion_sampling))
+ 
+ 
+ if __name__ == '__main__':
+--- a/scripts/check-projective-fusion.py
++++ b/scripts/check-projective-fusion.py
+@@ -0,0 +1,85 @@
++#!/usr/bin/env python3
++"""Known-scene fusion, keyframe warps and rejected-update atomicity controls."""
++import argparse
++import importlib.util
++import json
++from pathlib import Path
++
++import numpy as np
++
++from projective_depth_common import ROOT, Client, audit_sequence, exp_rotation, fresh, pose, require, sha, write
++from projective_depth_raw import reconstruct_update
++from projective_fusion_raw import controls
++
++
++def main():
++    p = argparse.ArgumentParser(description=__doc__)
++    p.add_argument('--binary', type=Path, required=True)
++    p.add_argument('--output', type=Path, required=True)
++    args = p.parse_args(); out = fresh(args.output); binary = args.binary.absolute()
++    sources = [Path(__file__), ROOT/'scripts/projective_depth_common.py', ROOT/'scripts/projective_depth_raw.py',
++               ROOT/'scripts/projective_fusion_raw.py', ROOT/'scripts/check-projective-depth.py']
++    pins = {str(f.relative_to(ROOT)): sha(f.read_bytes()) for f in sources}
++    binary_hash = sha(binary.read_bytes())
++    write(out/'freeze.json', dict(binary_sha256=binary_hash, source_sha256=pins,
++        fusion_sampling='visible_mean', frames=12, axial_noise_std_m=.002, noise_seed=1703,
++        position_gate_m=.01, rotation_gate_rad=.01, failure_injection_before_offset=5,
++        operational_inputs='depth and acquisition timestamp only', scope='synthetic regression'))
++    spec = importlib.util.spec_from_file_location('scene', ROOT/'scripts/check-projective-depth.py')
++    scene = importlib.util.module_from_spec(spec); spec.loader.exec_module(scene)
++    depths = []; transforms = []; rng = np.random.default_rng(1703)
++    for i in range(12):
++        t = np.eye(4); t[:3, :3] = exp_rotation(np.array([.001*i, -.0015*i, .0005*i]))
++        t[:3, 3] = [.012*i, .002*np.sin(.4*i), .002*(np.cos(.4*i)-1)]
++        exact = scene.render(t)
++        depths.append(exact+rng.normal(0., .002, exact.shape)); transforms.append(t)
++    ledgers = {}; streams = {}
++    for name in ('clean', 'with_rejection'):
++        client = Client(binary, scene.CAMERA, configuration=dict(fusion_sampling='visible_mean'))
++        rows = []; inputs = []
++        try:
++            for i, raw in enumerate(depths):
++                if name == 'with_rejection' and i == 5:
++                    invalid = np.zeros(raw.shape); stamp = 2.+.033*i-.005
++                    rows.append(dict(update=client.frame(stamp, invalid))); inputs.append(invalid)
++                rows.append(dict(update=client.frame(2.+.033*i, raw))); inputs.append(raw)
++            client.finish()
++        except BaseException:
++            client.abort(); raise
++        ledgers[name] = rows; streams[name] = inputs
++        write(out/(name+'-sensor-only.json'), dict(frames=rows, reference_pose_supplied_to_tracker=False))
++    # All native outcomes are saved before using the prescribed scene poses.
++    summaries = {}
++    for name, rows in ledgers.items():
++        audit_sequence(rows, [r['update']['timestamp'] for r in rows])
++        model = weights = None; equations = 0; changes = 0
++        for raw, row in zip(streams[name], rows, strict=True):
++            model, weights, checked = reconstruct_update(model, weights, raw, scene.CAMERA, row['update'],
++                fusion_sampling='visible_mean')
++            equations += checked['iterations']+checked['final_equations']; changes += checked['model_replaced']
++        require(changes >= 1, 'the sequence actually exercises stored-model view changes')
++        accepted = [r['update'] for r in rows if r['update']['accepted']]
++        require(len(accepted) == 12, 'all twelve valid acquisitions accepted')
++        errors = []
++        for t, update in zip(transforms[1:], accepted[1:], strict=True):
++            estimate = pose(update['first_from_current'])
++            errors.append(dict(position_error_m=float(np.linalg.norm(estimate[:3, 3]-t[:3, 3])),
++                rotation_error_rad=float(np.arccos(np.clip((np.trace(t[:3, :3].T@estimate[:3, :3])-1)/2, -1, 1)))))
++        max_p = max(v['position_error_m'] for v in errors); max_r = max(v['rotation_error_rad'] for v in errors)
++        require(max_p <= .01 and max_r <= .01, 'fixed known-scene accuracy gates')
++        summaries[name] = dict(accepted_updates=11, raw_equations=equations, reference_warps=changes,
++            max_position_error_m=max_p, max_rotation_error_rad=max_r, errors=errors)
++    good = [r for r in ledgers['with_rejection'] if r['update']['accepted']]
++    require(good == ledgers['clean'], 'rejected depth leaves every subsequent accepted outcome identical')
++    failure = ledgers['with_rejection'][5]['update']
++    require(not failure['accepted'] and not failure['lost'] and failure['fusion'] is None
++            and failure['last_accepted_timestamp'] == 2.+.033*4, 'failure cannot commit fusion or renew pose')
++    require(sha(binary.read_bytes()) == binary_hash and all(sha((ROOT/n).read_bytes()) == h for n, h in pins.items()),
++            'unchanged binary and control sources')
++    write(out/'summary.json', dict(pass_fusion_controls=True, hand_controls=controls(), cases=summaries,
++        accepted_outcomes_identical_after_rejection=12, physical_sensor_accuracy_claim=False))
++    print(json.dumps(summaries), flush=True)
++
++
++if __name__ == '__main__':
++    main()
+--- a/scripts/diagnose-projective-fusion.py
++++ b/scripts/diagnose-projective-fusion.py
+@@ -0,0 +1,171 @@
++#!/usr/bin/env python3
++"""Offline fusion decomposition; reference poses never enter the tracker."""
++import argparse
++import gzip
++import importlib.util
++import io
++import json
++from pathlib import Path
++
++import numpy as np
++from PIL import Image
++
++from projective_depth_common import CAMERA, ROOT, fresh, pose, require, sha, write
++import projective_depth_raw as original
++import projective_fusion_raw as mean
++
++CASES = ('tum-fr1-room-temporal', 'tum-fr1-desk2-independent', 'tum-fr1-rpy-heldout')
++PROBES = range(1, 180, 12)
++
++
++def distribution(values):
++    require(len(values) > 0, 'nonempty diagnostic population')
++    median = float(np.median(values))
++    return dict(count=len(values), mean_m=float(np.mean(values)), median_m=median,
++                rms_m=float(np.sqrt(np.mean(values*values))),
++                mad_m=float(np.median(abs(values-median)))*1.4826)
++
++
++def analytic():
++    c = dict(width=160, height=120, fx=140., fy=140., cx=79.5, cy=59.5)
++    transform = np.eye(4); transform[2, 3] = .1
++    rng = np.random.default_rng(1702)
++    errors = {'nearest': [], 'visible_mean': []}
++    collisions = {'nearest': [], 'visible_mean': []}
++    for _ in range(40):
++        raw = 2.+rng.normal(0., .01, (120, 160)); weight = np.ones(raw.shape, dtype=np.uint8)
++        old, ow, _ = original.raster(raw, weight, transform, c)
++        new, nw, _ = mean.raster(raw, weight, transform, c)
++        np.testing.assert_array_equal(ow > 0, nw > 0)
++        # Count projecting rays independently of either selector.
++        y, x = np.indices(raw.shape)
++        tx = np.rint((x-c['cx'])*raw/(raw+.1)+c['cx']).astype(int)
++        ty = np.rint((y-c['cy'])*raw/(raw+.1)+c['cy']).astype(int)
++        hits = np.bincount((ty*160+tx).ravel(), minlength=raw.size).reshape(raw.shape)
++        for label, depth in (('nearest', old), ('visible_mean', new)):
++            errors[label].append(depth[ow > 0]-2.1)
++            collisions[label].append(depth[hits > 1]-2.1)
++    results = {label: dict(all_cells=distribution(np.concatenate(errors[label])),
++                          collision_cells=distribution(np.concatenate(collisions[label])))
++               for label in errors}
++    require(results['nearest']['collision_cells']['mean_m'] < -.003,
++            'signed nearest-Z selection bias is visible in fixed control')
++    require(abs(results['visible_mean']['collision_cells']['mean_m']) <
++            abs(results['nearest']['collision_cells']['mean_m'])/3,
++            'surface averaging reduces this conditional signed bias')
++    return dict(hand_controls=mean.controls(), prescribed_plane=results,
++                physical_noise_or_trajectory_validation=False)
++
++
++def probe(target_depth, raw, transform):
++    equation = original.normal_equation(original.pyramid(target_depth, CAMERA)[1],
++        original.pyramid(raw, CAMERA)[1], transform, 1)
++    eigen = np.linalg.eigvalsh(equation['h'])
++    usable = equation['count'] >= 200 and eigen[0] > 0 and eigen[-1]/eigen[0] <= 1e6
++    correction = np.linalg.solve(equation['h'], -equation['g']) if usable else None
++    return dict(count=equation['count'], rms_m=equation['rms_m'],
++        physical_condition=float(eigen[-1]/eigen[0]) if eigen[0] > 0 else None,
++        correction_at_reference_pose=None if correction is None else correction.tolist())
++
++
++def recording(case, output, reference):
++    base = ROOT/'data'/case
++    body = (base/'manifest.json').read_bytes(); manifest = json.loads(body)
++    inventory = {item['file']: item for item in manifest['files']}
++    def read(name):
++        path = base/'raw'/name
++        require(path.is_file() and not path.is_symlink(), 'regular qualified input')
++        b = path.read_bytes(); p = inventory[name]
++        require(len(b) == p['bytes'] and sha(b) == p['sha256'], 'qualified original bytes')
++        return b
++    ledger_path = ROOT/'assets/projective-surface-v1/recorded/first-default'/case/'sensor-only.json.gz'
++    ledger_body = ledger_path.read_bytes()
++    pin = json.loads((ROOT/'assets/projective-surface-v1/files.json').read_text())[str(ledger_path.relative_to(ROOT/'assets/projective-surface-v1'))]
++    require(len(ledger_body) == pin['bytes'] and sha(ledger_body) == pin['sha256'], 'canonical default ledger')
++    ledger = json.loads(gzip.decompress(ledger_body))
++    require(not ledger['ground_truth_parsed'] and len(ledger['frames']) == 180, 'pre-label archived sensor outputs')
++    labels = np.loadtxt(io.BytesIO(read('groundtruth.txt')), comments='#')
++    require(labels.ndim == 2 and labels.shape[1] == 8 and np.isfinite(labels).all()
++            and np.all(np.diff(labels[:, 0]) > 0), 'finite chronological offline reference')
++    truth = [reference.truth_at(labels, f['depth_timestamp']) for f in manifest['frames']]
++    write(output/(case+'-freeze.json'), dict(manifest_sha256=sha(body), ledger_sha256=sha(ledger_body),
++        raw_input_sha256={k: v['sha256'] for k, v in inventory.items()},
++        role='offline prescribed-transform decomposition, not runtime reference input'))
++    maps = {}; weights = {}; key = 0; rows = []; fusion_counts = []
++    for i, (frame, row) in enumerate(zip(manifest['frames'], ledger['frames'], strict=True)):
++        require(row['source_index'] == frame['source_index'], 'complete indexed chronology')
++        update = row['update']; require(update['accepted'] and not update['lost'], 'fixed accepted baseline schedule')
++        image = Image.open(io.BytesIO(read(frame['depth_file'])))
++        require(image.size == (640, 480) and image.mode in ('I;16', 'I;16B', 'I'), 'measured axial depth')
++        raw = np.asarray(image, dtype=float)/5000.
++        if i == 0:
++            for mode in ('estimated_nearest', 'reference_nearest', 'reference_mean'):
++                maps[mode] = raw.copy(); weights[mode] = (raw > .3).astype(np.uint8)
++            anchor = raw.copy()
++            continue
++        expected = np.linalg.inv(truth[key])@truth[i]
++        if i in PROBES:
++            channels = {'raw_anchor': anchor, **maps}
++            rows.append(dict(source_index=frame['source_index'], physical_keyframe_source_index=manifest['frames'][key]['source_index'],
++                channels={name: probe(depth, raw, expected) for name, depth in channels.items()}))
++        estimated = pose(update['iterations'][-1]['after'])
++        counts = {}
++        for mode in maps:
++            method = mean if mode == 'reference_mean' else original
++            transform = estimated if mode == 'estimated_nearest' else expected
++            warp = None
++            if update['keyframe_replaced']:
++                maps[mode], weights[mode], warp = method.raster(maps[mode], weights[mode], np.linalg.inv(transform), CAMERA)
++                transform = np.eye(4)
++            maps[mode], weights[mode], count = method.fuse(maps[mode], weights[mode], raw, transform, CAMERA)
++            count['warp'] = warp
++            if mode == 'estimated_nearest':
++                require(count == update['fusion'], 'exact legacy fusion replay partitions')
++            counts[mode] = count
++        fusion_counts.append(dict(source_index=frame['source_index'], channels=counts))
++        if update['keyframe_replaced']:
++            key = i; anchor = raw.copy()
++        if i % 30 == 0:
++            print(case, 'offline model updates', i, flush=True)
++    summary = {}
++    for mode in rows[0]['channels']:
++        equations = [r['channels'][mode] for r in rows]
++        corrections = np.array([e['correction_at_reference_pose'] for e in equations if e['correction_at_reference_pose'] is not None])
++        require(len(corrections) > 0, 'observable offline probe equations')
++        summary[mode] = dict(probes=len(equations), observable=len(corrections),
++            median_rms_m=float(np.median([e['rms_m'] for e in equations])),
++            median_position_correction_m=float(np.median(np.linalg.norm(corrections[:, :3], axis=1))),
++            median_rotation_correction_rad=float(np.median(np.linalg.norm(corrections[:, 3:], axis=1))))
++    write(output/(case+'.json'), dict(summary=summary, probes=rows, model_updates=fusion_counts,
++        reference_fusion_is_counterfactual=True, same_keyframe_schedule=True, operational_accuracy_claim=False))
++    print(case, json.dumps(summary), flush=True)
++    return summary
++
++
++def main():
++    p = argparse.ArgumentParser(description=__doc__)
++    p.add_argument('--output', type=Path, required=True)
++    p.add_argument('--controls-only', action='store_true')
++    p.add_argument('--design', type=Path, help='optional fixed experiment design to bind in the freeze')
++    args = p.parse_args(); output = fresh(args.output)
++    sources = [Path(__file__), ROOT/'scripts/projective_fusion_raw.py', ROOT/'scripts/projective_depth_raw.py',
++        ROOT/'scripts/projective_depth_common.py', ROOT/'scripts/check-opencv-rgbd.py']
++    if args.design is not None:
++        sources.append(args.design.absolute())
++    pins = {str(path.relative_to(ROOT)): sha(path.read_bytes()) for path in sources}
++    write(output/'freeze.json', dict(source_sha256=pins, fixed_probe_offsets=list(PROBES),
++        offline_only=True, numeric_reference_allowed_only_in_diagnostic=True))
++    controls = analytic(); write(output/'controls.json', controls)
++    cases = {}
++    if not args.controls_only:
++        spec = importlib.util.spec_from_file_location('reference', ROOT/'scripts/check-opencv-rgbd.py')
++        reference = importlib.util.module_from_spec(spec); spec.loader.exec_module(reference); reference.controls()
++        for case in CASES:
++            cases[case] = recording(case, output, reference)
++    require(all(sha((ROOT/name).read_bytes()) == h for name, h in pins.items()), 'frozen diagnostic source')
++    write(output/'summary.json', dict(pass_diagnostic_integrity=True, controls=controls, cases=cases,
++        root_accuracy_improvement_established=False, physical_noise_calibration_established=False))
++
++
++if __name__ == '__main__':
++    main()
+--- a/scripts/evaluate-projective-depth.py
++++ b/scripts/evaluate-projective-depth.py
+@@ -16,7 +16,7 @@
+ VIEWED_CASES = (*CASES,'tum-fr1-rpy-heldout')
+ 
+ 
+-def evaluate(case, binary, output, reprojection='point', correspondence='forward', residual='target_plane', normals='central_difference', geometry='depth', photometric='disabled', step_control='disabled',motion_model='stationary',timing='disabled'):
++def evaluate(case, binary, output, reprojection='point', correspondence='forward', residual='target_plane', normals='central_difference', geometry='depth', photometric='disabled', step_control='disabled',motion_model='stationary',timing='disabled',fusion_sampling='nearest'):
+     base = ROOT/'data'/case
+     manifest_body = (base/'manifest.json').read_bytes()
+     manifest = json.loads(manifest_body)
+@@ -49,6 +49,7 @@
+                ROOT/'scripts/projective_information_raw.py',
+                ROOT/'scripts/projective_range_raw.py',
+                ROOT/'scripts/projective_whitened_raw.py',
++               ROOT/'scripts/projective_fusion_raw.py',
+                *sorted((ROOT/'integrations/projective-depth/src').rglob('*.rs')),
+                ROOT/'integrations/projective-depth/Cargo.toml',ROOT/'integrations/projective-depth/Cargo.lock']
+     write(output/'freeze.json',dict(schema_version=1,dataset=case,data_role='already viewed port regression',
+@@ -57,8 +58,8 @@
+         inputs={name:dict(bytes=v['bytes'],sha256=v['sha256']) for name,v in inventory.items()},
+         information_guard='physical_spectrum_v1',camera=CAMERA,reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric,step_control=step_control,motion_model=motion_model,timing=timing,primary_clock='depth; associated RGB decoded only in keyframe photometric mode',root_translation_gate_m=.1,
+         root_rotation_gate_rad=.1,reference_bracket_max_s=.02,pose_resets=0,ground_truth_operational=False,
+-        selected_frames=180,updates=179,numpy_version=np.__version__))
+-    client = Client(binary,CAMERA,configuration=dict(reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric,step_control=step_control,motion_model=motion_model,timing=timing))
++        selected_frames=180,updates=179,numpy_version=np.__version__,fusion_sampling=fusion_sampling))
++    client = Client(binary,CAMERA,configuration=dict(reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric,step_control=step_control,motion_model=motion_model,timing=timing,fusion_sampling=fusion_sampling))
+     outcomes = []
+     try:
+         for frame in frames:
+@@ -157,6 +158,7 @@
+     parser.add_argument('--step-control',choices=('disabled','fixed_support'),default='disabled')
+     parser.add_argument('--motion-model',choices=('stationary','constant_velocity'),default='stationary')
+     parser.add_argument('--timing',choices=('disabled','previous_motion'),default='disabled')
++    parser.add_argument('--fusion-sampling',choices=('nearest','visible_mean'),default='nearest')
+     args = parser.parse_args()
+     output = fresh(args.output)
+     summaries = {}
+@@ -167,7 +169,7 @@
+         require(sha(args.binary.read_bytes())==binary_digest,'one unchanged native binary across recordings')
+         folder = output/case
+         folder.mkdir()
+-        summaries[case] = evaluate(case,args.binary.absolute(),folder,args.reprojection,args.correspondence,args.residual,args.normals,args.geometry,args.photometric,args.step_control,args.motion_model,args.timing)
++        summaries[case] = evaluate(case,args.binary.absolute(),folder,args.reprojection,args.correspondence,args.residual,args.normals,args.geometry,args.photometric,args.step_control,args.motion_model,args.timing,args.fusion_sampling)
+     require(sha(args.binary.read_bytes())==binary_digest,'native binary unchanged through evaluation')
+     passed = all(v['complete_accuracy_pass'] for v in summaries.values())
+     write(output/'comparison.json',dict(summaries=summaries,complete_accuracy_pass=passed,exit_code=0 if passed else 1))
+--- a/scripts/projective_depth_raw.py
++++ b/scripts/projective_depth_raw.py
+@@ -229,11 +229,16 @@
+     return output,support,counts
+ 
+ 
+-def reconstruct_update(model, weights, raw, camera, update, reprojection='point', correspondence='forward', residual_policy='target_plane', normal_policy='central_difference', geometry='depth', image_context=None):
++def reconstruct_update(model, weights, raw, camera, update, reprojection='point', correspondence='forward', residual_policy='target_plane', normal_policy='central_difference', geometry='depth', image_context=None, fusion_sampling='nearest'):
+     """Validate all raw equations and rebuild the next model only after acceptance."""
+     require(raw.shape == (camera['height'],camera['width']) and np.isfinite(raw).all()
+             and np.all((raw >= 0)&(raw <= 100)),'bounded decoded depth')
+     require(geometry in ('depth','vertices'),'declared model geometry')
++    require(fusion_sampling in ('nearest','visible_mean'),'declared fusion sampling policy')
++    if fusion_sampling=='visible_mean':
++        require((geometry,reprojection,correspondence,residual_policy,normal_policy)==
++                ('depth','point','forward','target_plane','central_difference') and image_context is None,
++                'qualified visible-mean fusion policies')
+     if geometry=='vertices':
+         require((reprojection,correspondence,residual_policy,normal_policy)==
+                 ('point','forward','target_plane','central_difference'),'qualified vertex policies')
+@@ -289,11 +294,19 @@
+         inverse = np.eye(4)
+         inverse[:3,:3] = relative[:3,:3].T
+         inverse[:3,3] = -relative[:3,:3].T@relative[:3,3]
+-        model,weights,warp = raster(model,weights,inverse,camera,
+-                                  target[1]['normals'] if reprojection=='tangent_plane' else None)
++        if fusion_sampling=='visible_mean':
++            from projective_fusion_raw import raster as model_raster
++            model,weights,warp = model_raster(model,weights,inverse,camera)
++        else:
++            model,weights,warp = raster(model,weights,inverse,camera,
++                                      target[1]['normals'] if reprojection=='tangent_plane' else None)
+         relative = np.eye(4)
+-    result,support,counts = fuse(model,weights,raw,relative,camera,
+-                               source[1]['normals'] if reprojection=='tangent_plane' else None)
++    if fusion_sampling=='visible_mean':
++        from projective_fusion_raw import fuse as model_fuse
++        result,support,counts = model_fuse(model,weights,raw,relative,camera)
++    else:
++        result,support,counts = fuse(model,weights,raw,relative,camera,
++                                   source[1]['normals'] if reprojection=='tangent_plane' else None)
+     counts['warp'] = warp
+     require(update['fusion'] == counts,'exact independently reconstructed raster/fusion categories')
+     return result,support,dict(iterations=len(update['iterations']),final_equations=1,
+--- a/scripts/projective_fusion_raw.py
++++ b/scripts/projective_fusion_raw.py
+@@ -0,0 +1,80 @@
++"""Independent visible-surface aggregation for prescribed-transform map probes."""
++import numpy as np
++
++from projective_depth_common import require
++from projective_depth_raw import vertices
++
++
++def raster(depth, weights, transform, camera):
++    """Keep the nearest surface, average its samples, retain frame support cap.
++
++    A raw frame supplies unit weights: multiple splats still count as one frame.
++    Stored-map weights select the mean, but the output keeps only the largest
++    contributing support. This is a bounded fusion heuristic, not confidence.
++    """
++    ids = np.flatnonzero(((depth > .3)&(depth < 5)).ravel())
++    query = vertices(depth, camera).reshape(-1, 3)[ids]@transform[:3, :3].T+transform[:3, 3]
++    support = weights.ravel()[ids]
++    stats = dict(source_valid=len(ids), projected=0, selected=0)
++    front = np.isfinite(query).all(axis=1)&(query[:, 2] > .3)&(query[:, 2] < 5)
++    query, support = query[front], support[front]
++    x = np.rint(camera['fx']*query[:, 0]/query[:, 2]+camera['cx'])
++    y = np.rint(camera['fy']*query[:, 1]/query[:, 2]+camera['cy'])
++    inside = (x >= 0)&(x < camera['width'])&(y >= 0)&(y < camera['height'])
++    cells = y[inside].astype(np.int64)*camera['width']+x[inside].astype(np.int64)
++    z, support = query[inside, 2], support[inside]
++    require(np.all((support > 0)&(support <= 16)), 'bounded supported raster inputs')
++    stats['projected'] = len(cells)
++    nearest = np.full(depth.size, np.inf)
++    np.minimum.at(nearest, cells, z)
++    visible = z-nearest[cells] < .03+.01*nearest[cells]
++    cells, z, support = cells[visible], z[visible], support[visible]
++    total = np.bincount(cells, weights=support, minlength=depth.size)
++    moment = np.bincount(cells, weights=z*support, minlength=depth.size)
++    present = total > 0
++    output = np.zeros(depth.size)
++    np.divide(moment, total, out=output, where=present)
++    output_support = np.zeros(depth.size, dtype=np.uint8)
++    np.maximum.at(output_support, cells, support)
++    stats['selected'] = int(present.sum())
++    merged = len(cells)-stats['selected']
++    if merged:
++        stats['surface_merged'] = merged
++    return output.reshape(depth.shape), output_support.reshape(depth.shape), stats
++
++
++def fuse(model, weights, raw, transform, camera):
++    projected, present, stats = raster(raw, np.ones(raw.shape, dtype=np.uint8), transform, camera)
++    valid = present > 0
++    filled = valid&(weights == 0)
++    averaged = valid&(weights > 0)&(abs(projected-model) < .03+.01*model)
++    replaced = valid&(weights > 0)&~averaged&(projected < model-.03-.01*model)
++    ignored = valid&~filled&~averaged&~replaced
++    output, support = model.copy(), weights.copy()
++    prior = np.minimum(16, weights[averaged]).astype(float)
++    output[averaged] = (prior*model[averaged]+projected[averaged])/(prior+1)
++    support[averaged] = np.minimum(16, weights[averaged]+1)
++    output[filled|replaced] = projected[filled|replaced]
++    support[filled|replaced] = 1
++    return output, support, dict(warp=None, measurement=stats, filled=int(filled.sum()),
++        averaged=int(averaged.sum()), replaced=int(replaced.sum()), ignored=int(ignored.sum()))
++
++
++def controls():
++    c = dict(width=32, height=32, fx=32., fy=32., cx=15.5, cy=15.5)
++    depth = np.zeros((32, 32)); weights = np.zeros((32, 32), dtype=np.uint8)
++    depth[16, 16:18] = [1., 1.02]; weights[16, 16:18] = [2, 6]
++    depth[17, 17] = 2.; weights[17, 17] = 16
++    transform = np.eye(4); transform[2, 3] = 1.
++    out, support, stats = raster(depth, weights, transform, c)
++    require(stats == dict(source_valid=3, projected=3, selected=1, surface_merged=1),
++            'only the two foreground splats merge')
++    require(abs(out[16, 16]-2.015) < 1e-14 and support[16, 16] == 6,
++            'weighted surface mean without background or inflated frame support')
++    _, unit, _ = raster(depth, (weights > 0).astype(np.uint8), transform, c)
++    require(unit[16, 16] == 1, 'one acquisition remains one frame')
++    out, support, _ = raster(depth, weights, np.eye(4), c)
++    np.testing.assert_array_equal(out, depth)
++    np.testing.assert_array_equal(support, weights)
++    return dict(weighted_mean=True, background_excluded=True, frame_support_not_summed=True,
++                identity_exact=True)

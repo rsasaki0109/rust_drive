@@ -1,0 +1,10 @@
+{
+  "wrong_transport_detected": true,
+  "mutant": "silently drops unknown geometry then delegates to actual native binary",
+  "reason": "Configured acknowledgment is visible before unrelated no-frames EOF error; old exit-code-only check could pass",
+  "checker_error": "rejected before any acknowledgment: unknown geometry",
+  "exit_code": 1,
+  "stdout": "",
+  "stderr": "Traceback (most recent call last):\n  File \"/workspace/rust_drive/scripts/check-projective-depth.py\", line 142, in <module>\n    main()\n  File \"/workspace/rust_drive/scripts/check-projective-depth.py\", line 128, in main\n    require(result.stdout == '', 'rejected before any acknowledgment: '+name)\n  File \"/workspace/rust_drive/scripts/projective_depth_common.py\", line 15, in require\n    raise ValueError(message)\nValueError: rejected before any acknowledgment: unknown geometry\n",
+  "shim_sha256": "351f11cbc4950977569e4fbbbf4f00bf77c66d6dadd5556c21cbfca82ded2ea6"
+}

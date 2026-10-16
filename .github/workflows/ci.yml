@@ -74,6 +74,264 @@ jobs:
             artifacts/turn-restrictions/
             artifacts/datasets/*.json
             artifacts/map-localization/
+  image-tracking:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned Rust
+        run: rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
+      - name: Check independent image tracking library and CLI
+        run: |
+          cargo fmt --manifest-path integrations/camera-tracking/Cargo.toml --check
+          cargo clippy --manifest-path integrations/camera-tracking/Cargo.toml --all-targets --locked -- -D warnings
+          cargo test --release --manifest-path integrations/camera-tracking/Cargo.toml --locked
+          cargo build --release --manifest-path integrations/camera-tracking/Cargo.toml --locked
+      - name: Enumerate association optima and verify temporal failure behavior
+        run: |
+          python integrations/camera-tracking/check.py --binary integrations/camera-tracking/target/release/rustdriving-camera-track --output artifacts/image-tracking-v1/ci
+          cp assets/camera-analysis-v1/LICENSE-data.txt artifacts/image-tracking-v1/ci/LICENSE-data.txt
+      - name: Verify camera acquisition and delivery clocks with injected faults
+        run: |
+          python integrations/camera-tracking/freshness_check.py --output artifacts/camera-freshness-v1/ci
+          cp assets/camera-freshness-v1/LICENSE-data.txt artifacts/camera-freshness-v1/ci/LICENSE-data.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: image-tracking-controls
+          path: |
+            artifacts/image-tracking-v1/ci/
+            artifacts/camera-freshness-v1/ci/
+  kitti-depth:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned Rust and analytic checker
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
+          python -m pip install -r scripts/requirements-visual.txt
+      - name: Check sparse-depth Rust and build projection tools
+        run: |
+          cargo fmt --manifest-path integrations/kitti-depth/Cargo.toml --check
+          cargo clippy --manifest-path integrations/kitti-depth/Cargo.toml --all-targets --locked -- -D warnings
+          cargo test --manifest-path integrations/kitti-depth/Cargo.toml --locked
+          cargo build --release --manifest-path integrations/kitti-depth/Cargo.toml --locked
+          cargo build --release --manifest-path integrations/rgbd/Cargo.toml --locked --bin rustdriving-kitti-project
+      - name: Independently reconstruct four-camera sparse depth and reject malformed inputs
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+        run: |
+          python scripts/check-kitti-depth.py --projection-binary integrations/rgbd/target/release/rustdriving-kitti-project --depth-binary integrations/kitti-depth/target/release/rustdriving-kitti-depth --output artifacts/kitti-depth/analytic
+      - name: Verify conditional depth metrics, coverage, frozen inputs and retained failures
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+        run: |
+          python scripts/test-evaluate-kitti-depth.py
+          python -m py_compile scripts/evaluate-kitti-depth.py scripts/fetch-argoverse-depth-sample.py scripts/check-argoverse-sparse-depth.py scripts/diagnose-argoverse-sparse-depth.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kitti-depth-analytic
+          path: artifacts/kitti-depth/**/*.json
+  projective-depth:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned Rust and independent numerical checker
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
+          python -m pip install -r scripts/requirements-visual.txt
+      - name: Check independent projective-depth Rust library and transport
+        run: |
+          cargo fmt --manifest-path integrations/projective-depth/Cargo.toml --check
+          cargo clippy --all-targets --locked --manifest-path integrations/projective-depth/Cargo.toml -- -D warnings
+          cargo test --locked --manifest-path integrations/projective-depth/Cargo.toml
+          cargo build --release --locked --manifest-path integrations/projective-depth/Cargo.toml
+      - name: Reconstruct analytic motion and reject transport and report corruptions
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+        run: |
+          python scripts/check-projective-fixed-map.py --binary integrations/projective-depth/target/release/rustdriving-projective-fixed-map --output artifacts/projective-depth/fixed-map-controls
+          python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/analytic
+          python scripts/check-projective-depth-supervision.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth-supervised --base-binary integrations/projective-depth/target/release/rustdriving-projective-depth --analytic-only --output artifacts/projective-depth/supervision
+          python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/analytic --output artifacts/projective-depth/raw-audit
+          python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --reprojection tangent_plane --output artifacts/projective-depth/tangent-analytic
+          python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/tangent-analytic --reprojection tangent_plane --output artifacts/projective-depth/tangent-raw-audit
+          python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --correspondence reciprocal --output artifacts/projective-depth/reciprocal-analytic
+          python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/reciprocal-analytic --correspondence reciprocal --output artifacts/projective-depth/reciprocal-raw-audit
+          python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --residual symmetric_planes --output artifacts/projective-depth/symmetric-analytic
+          python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/symmetric-analytic --residual symmetric_planes --output artifacts/projective-depth/symmetric-raw-audit
+          python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --residual symmetric_midpoint --output artifacts/projective-depth/midpoint-analytic
+          python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/midpoint-analytic --residual symmetric_midpoint --output artifacts/projective-depth/midpoint-raw-audit
+          python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --residual bidirectional_midpoint --output artifacts/projective-depth/bidirectional-analytic
+          python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/bidirectional-analytic --residual bidirectional_midpoint --output artifacts/projective-depth/bidirectional-raw-audit
+          python scripts/check-projective-surface-math.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/surface-math
+          python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --residual depth_variance_plane --output artifacts/projective-depth/range-analytic
+          python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/range-analytic --residual depth_variance_plane --output artifacts/projective-depth/range-raw-audit
+          python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --residual depth_whitened_plane --output artifacts/projective-depth/whitened-analytic
+          python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/whitened-analytic --residual depth_whitened_plane --output artifacts/projective-depth/whitened-raw-audit
+          python scripts/check-projective-range.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/range-controls
+          python scripts/check-projective-range.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --residual depth_whitened_plane --output artifacts/projective-depth/whitened-controls
+          python scripts/diagnose-projective-fusion.py --controls-only --output artifacts/projective-depth/fusion-bias-controls
+          python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --fusion-sampling visible_mean --output artifacts/projective-depth/fusion-analytic
+          python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/fusion-analytic --fusion-sampling visible_mean --output artifacts/projective-depth/fusion-raw-audit
+          python scripts/check-projective-fusion.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/fusion-controls
+          python scripts/diagnose-projective-visibility.py --controls-only --output artifacts/projective-depth/visibility-math
+          python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --visibility free_space_decay --output artifacts/projective-depth/visibility-analytic
+          python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/visibility-analytic --visibility free_space_decay --output artifacts/projective-depth/visibility-raw-audit
+          python scripts/check-projective-visibility.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/visibility-controls
+          python scripts/check-projective-camera.py --output artifacts/projective-depth/camera-math
+          python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --correspondence bilinear --output artifacts/projective-depth/bilinear-analytic
+          python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/bilinear-analytic --correspondence bilinear --output artifacts/projective-depth/bilinear-raw-audit
+          python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --normals inverse_depth_plane --output artifacts/projective-depth/plane-normal-analytic
+          python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/plane-normal-analytic --normals inverse_depth_plane --output artifacts/projective-depth/plane-normal-raw-audit
+          python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --geometry vertices --output artifacts/projective-depth/vertex-analytic
+          python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/vertex-analytic --geometry vertices --output artifacts/projective-depth/vertex-raw-audit
+          python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --photometric keyframe --output artifacts/projective-depth/rgbd-analytic
+          python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/rgbd-analytic --photometric keyframe --output artifacts/projective-depth/rgbd-raw-audit
+          python scripts/check-projective-rgbd-lifecycle.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/rgbd-lifecycle
+          python scripts/check-projective-rgbd-exposure.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/rgbd-exposure
+          python scripts/check-projective-step-control.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/rgbd-step-control
+          python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --motion-model constant_velocity --output artifacts/projective-depth/motion-analytic
+          python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/motion-analytic --output artifacts/projective-depth/motion-raw-audit
+          python scripts/check-projective-motion.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/motion-lifecycle
+          python scripts/check-projective-report-write.py --output artifacts/projective-depth/report-write-controls
+          python scripts/check-projective-calibration-math.py --output artifacts/projective-depth/calibration-math
+          python scripts/check-projective-timing.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/timing-controls
+          python scripts/check-projective-rgbd-lifecycle.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --timing previous_motion --output artifacts/projective-depth/timing-lifecycle
+          python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --photometric keyframe --step-control fixed_support --output artifacts/projective-depth/guarded-analytic
+          python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/guarded-analytic --photometric keyframe --output artifacts/projective-depth/guarded-raw-audit
+          python scripts/check-projective-rgbd-lifecycle.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --step-control fixed_support --output artifacts/projective-depth/guarded-lifecycle
+          python scripts/check-projective-rgbd-exposure.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --step-control fixed_support --output artifacts/projective-depth/guarded-exposure
+          python scripts/check-multireference-rgbd.py --binary integrations/projective-depth/target/release/rustdriving-multireference-rgbd --output artifacts/projective-depth/multireference
+          python scripts/check-joint-keyframe-depth.py --output artifacts/projective-depth/joint-keyframes
+          python scripts/check-marginalized-keyframes.py --output artifacts/projective-depth/marginalized-keyframes
+          python scripts/check-subpixel-keyframes.py --output artifacts/projective-depth/subpixel-keyframes
+          python scripts/check-symmetric-keyframes.py --output artifacts/projective-depth/symmetric-keyframes
+          python scripts/check-robust-keyframes.py --output artifacts/projective-depth/robust-keyframes
+          python scripts/check-patch-keyframes.py --output artifacts/projective-depth/patch-keyframes
+          python scripts/check-selective-keyframes.py --output artifacts/projective-depth/selective-keyframes
+          python scripts/check-reciprocal-keyframes.py --output artifacts/projective-depth/reciprocal-keyframes
+          python scripts/check-depth-convergence.py --output artifacts/projective-depth/convergence-controls
+          python scripts/check-descent-keyframes.py --output artifacts/projective-depth/descent-keyframes
+          python scripts/check-depth-correspondence.py --output artifacts/projective-depth/correspondence-controls
+          python scripts/check-fixed-depth-refinement.py --output artifacts/projective-depth/fixed-refinement
+          python scripts/check-alternating-depth-refinement.py --output artifacts/projective-depth/alternating-refinement
+          python scripts/check-budget-depth-refinement.py --output artifacts/projective-depth/budget-refinement
+          python scripts/check-continuous-depth-refinement.py --output artifacts/projective-depth/continuous-refinement
+          python scripts/check-margin-depth-refinement.py --output artifacts/projective-depth/margin-refinement
+          python scripts/check-sampling-depth-refinement.py --output artifacts/projective-depth/sampling-refinement
+          python scripts/check-long-depth-refinement.py --output artifacts/projective-depth/long-refinement
+          python scripts/diagnose-depth-search.py --analytic-only --output artifacts/projective-depth/search-diagnostic
+          python scripts/check-deep-search-depth-refinement.py --output artifacts/projective-depth/deep-search-refinement
+          python scripts/check-damped-depth-refinement.py --output artifacts/projective-depth/damped-refinement
+          python scripts/diagnose-depth-cell-slopes.py --analytic-only --output artifacts/projective-depth/cell-slopes
+          python scripts/check-cubic-depth-refinement.py --output artifacts/projective-depth/cubic-refinement
+          python scripts/check-cubic-margin-refinement.py --output artifacts/projective-depth/cubic-margin-refinement
+          python scripts/check-normal-hermite-depth-refinement.py --output artifacts/projective-depth/normal-hermite-refinement
+          python scripts/check-local-normal-depth-refinement.py --output artifacts/projective-depth/local-normal-refinement
+          python scripts/check-depth-slope-refinement.py --output artifacts/projective-depth/depth-slope-refinement
+          python scripts/check-one-sided-depth-refinement.py --output artifacts/projective-depth/one-sided-depth-refinement
+          python scripts/check-extended-slope-refinement.py --output artifacts/projective-depth/extended-slope-refinement
+          python scripts/check-slope-admission-refinement.py --output artifacts/projective-depth/slope-admission-refinement
+          python scripts/diagnose-depth-objectives.py --analytic-only --output artifacts/projective-depth/objective-bridge
+          python scripts/check-reselected-slope-refinement.py --output artifacts/projective-depth/reselected-slope-refinement
+          python scripts/check-boundary-slope-refinement.py --output artifacts/projective-depth/boundary-slope-refinement
+          python scripts/check-fitted-center-refinement.py --output artifacts/projective-depth/fitted-center-refinement
+          python scripts/check-reselected-center-refinement.py --output artifacts/projective-depth/reselected-center-refinement
+          python scripts/check-interior-center-refinement.py --output artifacts/projective-depth/interior-center-refinement
+          python -m py_compile scripts/projective_depth_common.py scripts/evaluate-projective-depth.py scripts/check-projective-depth-supervision.py scripts/projective_depth_raw.py
+          python -m py_compile scripts/check-projective-depth-comparison.py
+          python -m py_compile scripts/projective_vertex_raw.py
+          python -m py_compile scripts/projective_photo_raw.py scripts/check-projective-rgbd-lifecycle.py
+          python -m py_compile scripts/check-projective-rgbd-exposure.py
+          python -m py_compile scripts/projective_step_raw.py scripts/check-projective-step-control.py
+          python -m py_compile scripts/projective_motion_raw.py scripts/check-projective-motion.py
+          python -m py_compile scripts/projective_timing_raw.py scripts/check-projective-timing.py scripts/projective_information_raw.py scripts/projective-heldout.py scripts/repair-projective-heldout-inventory.py scripts/check-projective-information-calibration.py scripts/check-projective-report-write.py scripts/check-projective-calibration-math.py
+          python -m py_compile scripts/diagnose-projective-surface-bias.py scripts/check-projective-surface-math.py
+          python -m py_compile scripts/projective_range_raw.py scripts/projective_whitened_raw.py scripts/diagnose-projective-range.py scripts/check-projective-range.py
+          python -m py_compile scripts/projective_fusion_raw.py scripts/diagnose-projective-fusion.py scripts/check-projective-fusion.py
+          python -m py_compile scripts/projective_visibility_raw.py scripts/diagnose-projective-visibility.py scripts/check-projective-visibility.py
+          python -m py_compile scripts/projective_camera_fit.py scripts/diagnose-projective-camera.py scripts/check-projective-camera.py
+          python -m py_compile scripts/evaluate-projective-fixed-map.py scripts/check-projective-fixed-map.py
+          python -m py_compile scripts/diagnose-projective-motion-timing.py
+          python -m py_compile scripts/multireference_rgbd_common.py scripts/evaluate-multireference-rgbd.py
+          python -m py_compile scripts/joint_keyframe_depth.py scripts/evaluate-joint-keyframe-depth.py
+          python -m py_compile scripts/marginalized_keyframe_depth.py scripts/evaluate-marginalized-keyframes.py
+          python -m py_compile scripts/subpixel_depth_factors.py scripts/subpixel_keyframe_depth.py scripts/evaluate-subpixel-keyframes.py
+          python -m py_compile scripts/symmetric_depth_factors.py scripts/symmetric_keyframe_depth.py scripts/evaluate-symmetric-keyframes.py scripts/diagnose-depth-prior.py
+          python -m py_compile scripts/robust_depth_factors.py scripts/robust_keyframe_depth.py scripts/evaluate-robust-keyframes.py scripts/diagnose-depth-residuals.py
+          python -m py_compile scripts/patch_depth_normals.py scripts/patch_keyframe_depth.py scripts/check-patch-keyframes.py scripts/evaluate-patch-keyframes.py
+          python -m py_compile scripts/selective_keyframe_depth.py scripts/check-selective-keyframes.py scripts/evaluate-selective-keyframes.py scripts/diagnose-depth-levels.py
+          python -m py_compile scripts/reciprocal_depth_factors.py scripts/reciprocal_depth_oracle.py scripts/reciprocal_keyframe_depth.py scripts/check-reciprocal-keyframes.py scripts/evaluate-reciprocal-keyframes.py scripts/diagnose-depth-associations.py
+          python -m py_compile scripts/diagnose-depth-convergence.py scripts/check-depth-convergence.py
+          python -m py_compile scripts/frozen_depth_objective.py scripts/descent_keyframe_depth.py scripts/check-descent-keyframes.py scripts/evaluate-descent-keyframes.py
+          python -m py_compile scripts/depth_correspondence_stability.py scripts/depth_correspondence_oracle.py scripts/check-depth-correspondence.py scripts/diagnose-depth-correspondence.py
+          python -m py_compile scripts/fixed_depth_refinement.py scripts/check-fixed-depth-refinement.py scripts/evaluate-fixed-depth-refinement.py
+          python -m py_compile scripts/alternating_depth_refinement.py scripts/check-alternating-depth-refinement.py scripts/evaluate-alternating-depth-refinement.py
+          python -m py_compile scripts/budget_depth_refinement.py scripts/check-budget-depth-refinement.py scripts/evaluate-budget-depth-refinement.py
+          python -m py_compile scripts/continuous_depth_refinement.py scripts/check-continuous-depth-refinement.py scripts/evaluate-continuous-depth-refinement.py
+          python -m py_compile scripts/margin_depth_refinement.py scripts/check-margin-depth-refinement.py scripts/evaluate-margin-depth-refinement.py
+          python -m py_compile scripts/sampling_depth_refinement.py scripts/check-sampling-depth-refinement.py scripts/evaluate-sampling-depth-refinement.py
+          python -m py_compile scripts/long_depth_refinement.py scripts/check-long-depth-refinement.py scripts/evaluate-long-depth-refinement.py
+          python -m py_compile scripts/depth_search_diagnostic.py scripts/diagnose-depth-search.py
+          python -m py_compile scripts/deep_search_depth_refinement.py scripts/check-deep-search-depth-refinement.py scripts/evaluate-deep-search-depth-refinement.py
+          python -m py_compile scripts/damped_depth_refinement.py scripts/check-damped-depth-refinement.py scripts/evaluate-damped-depth-refinement.py
+          python -m py_compile scripts/depth_cell_slopes.py scripts/diagnose-depth-cell-slopes.py
+          python -m py_compile scripts/cubic_depth_factors.py scripts/cubic_depth_refinement.py scripts/check-cubic-depth-refinement.py scripts/evaluate-cubic-depth-refinement.py
+          python -m py_compile scripts/cubic_margin_refinement.py scripts/check-cubic-margin-refinement.py scripts/evaluate-cubic-margin-refinement.py
+          python -m py_compile scripts/normal_hermite_depth_factors.py scripts/normal_hermite_depth_refinement.py scripts/check-normal-hermite-depth-refinement.py scripts/evaluate-normal-hermite-depth-refinement.py
+          python -m py_compile scripts/local_normal_support.py scripts/local_normal_depth_refinement.py scripts/check-local-normal-depth-refinement.py scripts/evaluate-local-normal-depth-refinement.py
+          python -m py_compile scripts/depth_slope_factors.py scripts/depth_slope_refinement.py scripts/check-depth-slope-refinement.py scripts/evaluate-depth-slope-refinement.py
+          python -m py_compile scripts/one_sided_depth_slopes.py scripts/one_sided_depth_refinement.py scripts/check-one-sided-depth-refinement.py scripts/evaluate-one-sided-depth-refinement.py
+          python -m py_compile scripts/extended_slope_refinement.py scripts/check-extended-slope-refinement.py scripts/evaluate-extended-slope-refinement.py
+          python -m py_compile scripts/slope_admission_refinement.py scripts/check-slope-admission-refinement.py scripts/evaluate-slope-admission-refinement.py
+          python -m py_compile scripts/depth_objective_bridge.py scripts/diagnose-depth-objectives.py
+          python -m py_compile scripts/reselected_slope_refinement.py scripts/check-reselected-slope-refinement.py scripts/evaluate-reselected-slope-refinement.py
+          python -m py_compile scripts/boundary_depth_support.py scripts/boundary_slope_refinement.py scripts/check-boundary-slope-refinement.py scripts/evaluate-boundary-slope-refinement.py
+          python -m py_compile scripts/fitted_center_refinement.py scripts/check-fitted-center-refinement.py scripts/evaluate-fitted-center-refinement.py
+          python -m py_compile scripts/reselected_center_refinement.py scripts/check-reselected-center-refinement.py scripts/evaluate-reselected-center-refinement.py
+          python -m py_compile scripts/interior_center_refinement.py scripts/check-interior-center-refinement.py scripts/evaluate-interior-center-refinement.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: projective-depth-analytic
+          path: artifacts/projective-depth/**/*.json
+  opencv-reference-controls:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install optional pinned reference environment
+        run: python -m pip install -r scripts/requirements-opencv-reference.txt
+      - name: Check metric depth and nonzero source-to-destination poses
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+          OMP_NUM_THREADS: '1'
+        run: |
+          python scripts/compare-opencv-rgbd.py --controls-only --output artifacts/opencv-reference/controls
+          python - <<'PY'
+          import importlib.util
+          spec = importlib.util.spec_from_file_location('audit', 'scripts/check-opencv-rgbd.py')
+          audit = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(audit)
+          audit.controls()
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: opencv-reference-controls
+          path: artifacts/opencv-reference/**/*.json
   research-cpu:
     runs-on: ubuntu-latest
     steps:
@@ -126,6 +384,72 @@ jobs:
           assert tuple(proof["overall"][key] for key in
                        ("true_positives", "false_positives", "false_negatives")) == (55, 14, 83)
           PY
+      - name: Verify bounded multi-view camera inference and retain failed quality gates
+        run: |
+          python -m pip install -r scripts/requirements-visual.txt
+          python integrations/onnx/bdd_tiles_check.py controls --binary integrations/onnx/target/release/rustdriving-camera-detect-tiled-s --output artifacts/yolox-s-tiles-v1/controls
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import subprocess
+          import sys
+          command = [sys.executable, "integrations/onnx/bdd_tiles_check.py", "run",
+                     "--binary", "integrations/onnx/target/release/rustdriving-camera-detect-tiled-s",
+                     "--controls", "artifacts/yolox-s-tiles-v1/controls",
+                     "--output", "artifacts/yolox-s-tiles-v1/regression"]
+          completed = subprocess.run(command)
+          assert completed.returncode == 1, "retain measured quality failure"
+          proof = json.loads(Path("artifacts/yolox-s-tiles-v1/regression/results.json").read_text())
+          assert proof["integrity"]["repeated_native_inference_identical"]
+          assert proof["integrity"]["independent_merge"]
+          assert proof["quality_gates"]["pass"] is False
+          assert proof["previous_s_reference_matches"]["retained"] == 55
+          assert proof["previous_s_reference_matches"]["lost"] == []
+          assert tuple(proof["overall"][key] for key in
+                       ("true_positives", "false_positives", "false_negatives")) == (78, 33, 60)
+          PY
+      - name: Reproduce ambiguity-preserving vehicle report reconciliation
+        run: |
+          python integrations/onnx/bdd_vehicle_consistency_check.py controls --binary integrations/onnx/target/release/rustdriving-camera-reconcile --output artifacts/yolox-vehicle-consistency-v1/controls
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import subprocess
+          import sys
+          command = [sys.executable, "integrations/onnx/bdd_vehicle_consistency_check.py", "run",
+                     "--binary", "integrations/onnx/target/release/rustdriving-camera-reconcile",
+                     "--controls", "artifacts/yolox-vehicle-consistency-v1/controls",
+                     "--parents", "artifacts/yolox-s-tiles-v1/regression",
+                     "--output", "artifacts/yolox-vehicle-consistency-v1/reproduction"]
+          completed = subprocess.run(command)
+          assert completed.returncode == 1, "retain original overall/per-class quality failure"
+          proof = json.loads(Path("artifacts/yolox-vehicle-consistency-v1/reproduction/results.json").read_text())
+          assert proof["relative_adoption_passed"] is True
+          assert proof["quality_gates"]["pass"] is False
+          assert proof["previous_tiled_matches"]["retained"] == 78
+          assert proof["previous_tiled_matches"]["lost"] == []
+          assert proof["integrity"]["postprocessing_repeat_identical"]
+          assert proof["integrity"]["new_model_forward_passes"] == 0
+          assert tuple(proof["overall"][key] for key in
+                       ("true_positives", "false_positives", "false_negatives")) == (78, 31, 60)
+          PY
+      - name: Verify one-command camera analysis and complete output publication
+        run: |
+          python integrations/onnx/camera_analysis_check.py controls --binary integrations/onnx/target/release/rustdriving-camera-analyze --output artifacts/camera-analysis-v1/controls
+          python integrations/onnx/camera_analysis_check.py run --binary integrations/onnx/target/release/rustdriving-camera-analyze --controls artifacts/camera-analysis-v1/controls --output artifacts/camera-analysis-v1/regression
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          proof = json.loads(Path("artifacts/camera-analysis-v1/regression/results.json").read_text())
+          assert proof["integrity"]["pass_checks"] is True
+          assert proof["integrity"]["native_image_processes"] == 16
+          assert proof["integrity"]["model_forward_passes"] == 64
+          assert proof["quality_gates"]["pass"] is False
+          assert tuple(proof["overall"][key] for key in
+                       ("true_positives", "false_positives", "false_negatives")) == (78, 31, 60)
+          controls = json.loads(Path("artifacts/camera-analysis-v1/controls/summary.json").read_text())
+          assert controls["destination_staging_name_collision_passed"] is True
+          PY
       - name: Validate additional measured-data acquisition
         run: |
           python scripts/test-fetch-additional-datasets.py
@@ -175,6 +499,90 @@ jobs:
           python scripts/fetch-visual-datasets.py tum-fr3-office-visual
           python scripts/fetch-visual-datasets.py tum-fr3-sitting-visual
           python scripts/check-recorded-visual-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-evaluate --output artifacts/recorded-visual
+      - name: Verify recorded-image detection and tracking with one CPU model plan
+        run: |
+          cargo build --release --locked --manifest-path integrations/camera-tracking/Cargo.toml
+          python integrations/onnx/camera_sequence_check.py controls --binary integrations/onnx/target/release/rustdriving-camera-sequence --output artifacts/camera-sequence-v1/controls
+          python integrations/onnx/prepare_sequence.py --dataset data/tum-fr3-sitting-visual --first 102 --count 8 --camera-id tum-fr3-sitting-rgb --output artifacts/camera-sequence-v1/sequence.json
+          cmp assets/camera-sequence-v1/sequence.json artifacts/camera-sequence-v1/sequence.json
+          python integrations/onnx/camera_sequence_check.py run --binary integrations/onnx/target/release/rustdriving-camera-sequence --controls artifacts/camera-sequence-v1/controls --sequence artifacts/camera-sequence-v1/sequence.json --output artifacts/camera-sequence-v1/recorded
+          cp assets/camera-sequence-v1/LICENSE-data.txt artifacts/camera-sequence-v1/recorded/LICENSE-data.txt
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          proof = json.loads(Path("artifacts/camera-sequence-v1/recorded/summary.json").read_text())
+          assert proof["pass_checks"] is True
+          assert proof["model_loads_per_sequence"] == 1
+          assert proof["actual_model_forward_passes_this_check"] == 96
+          assert proof["standalone_tracking_replay_identical"] is True
+          assert proof["real_object_identity_accuracy_measured"] is False
+          PY
+      - name: Verify complete camera pipeline and clock-based inference exclusion
+        run: |
+          python integrations/onnx/camera_pipeline_check.py controls --output artifacts/camera-pipeline-v1/controls
+          python integrations/onnx/camera_pipeline_check.py run --controls artifacts/camera-pipeline-v1/controls --output artifacts/camera-pipeline-v1/recorded
+          cp assets/camera-pipeline-v1/LICENSE-data.txt artifacts/camera-pipeline-v1/recorded/LICENSE-data.txt
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          proof = json.loads(Path("artifacts/camera-pipeline-v1/recorded/summary.json").read_text())
+          assert proof["pass_checks"] is True
+          assert proof["actual_model_forwards"] == 216
+          assert proof["model_loads_per_sequence"] == 1
+          assert proof["standalone_guard_and_tracker_replay_identical"] is True
+          assert proof["actual_execution_latency_used_for_freshness"] is False
+          assert proof["real_object_identity_accuracy_measured"] is False
+          PY
+      - name: Audit measured camera processing and preserve observed deadline results
+        run: |
+          python integrations/onnx/camera_latency_check.py controls --output artifacts/camera-latency-v1/controls
+          python integrations/onnx/camera_latency_check.py run --controls artifacts/camera-latency-v1/controls --output artifacts/camera-latency-v1/measured
+          cp assets/camera-latency-v1/LICENSE-data.txt artifacts/camera-latency-v1/measured/LICENSE-data.txt
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          proof = json.loads(Path("artifacts/camera-latency-v1/measured/summary.json").read_text())
+          assert proof["pass_checks"] is True
+          assert proof["measured_host_processing_time"] is True
+          assert proof["exact_guard_replay"] is True
+          assert proof["deadline_success_required_for_execution_success"] is False
+          assert proof["real_object_identity_accuracy_measured"] is False
+          PY
+      - name: Verify unchanged parallel camera detections and paired CPU timings
+        run: |
+          python integrations/onnx/camera_parallel_check.py controls --output artifacts/camera-parallel-v1/controls
+          python integrations/onnx/camera_parallel_check.py run --controls artifacts/camera-parallel-v1/controls --output artifacts/camera-parallel-v1/verification
+          cp assets/camera-parallel-v1/LICENSE-TUM-data.txt artifacts/camera-parallel-v1/verification/LICENSE-TUM-data.txt
+          cp assets/camera-parallel-v1/LICENSE-BDD-data.txt artifacts/camera-parallel-v1/verification/LICENSE-BDD-data.txt
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          proof = json.loads(Path("artifacts/camera-parallel-v1/verification/summary.json").read_text())
+          assert proof["pass_checks"] is True
+          assert proof["all_view_pixels_and_detections_identical"] is True
+          assert proof["all_merge_and_consistency_results_identical"] is True
+          assert proof["original_image_count"] == 16
+          assert proof["timing_speedup_required_for_execution_success"] is False
+          assert proof["inherited_quality_gates_pass"] is False
+          PY
+      - name: Compare optional native CPU build without assuming a speedup
+        run: |
+          python integrations/onnx/build_cpu.py build --output artifacts/camera-cpu-v1/build
+          python integrations/onnx/build_cpu.py verify --output artifacts/camera-cpu-v1/build
+          python integrations/onnx/camera_cpu_check.py controls --build artifacts/camera-cpu-v1/build --output artifacts/camera-cpu-v1/controls
+          python integrations/onnx/camera_cpu_check.py run --build artifacts/camera-cpu-v1/build --controls artifacts/camera-cpu-v1/controls --output artifacts/camera-cpu-v1/verification
+          cp assets/camera-cpu-v1/LICENSE-TUM-data.txt artifacts/camera-cpu-v1/verification/LICENSE-TUM-data.txt
+          cp assets/camera-cpu-v1/LICENSE-BDD-data.txt artifacts/camera-cpu-v1/verification/LICENSE-BDD-data.txt
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          proof = json.loads(Path("artifacts/camera-cpu-v1/verification/summary.json").read_text())
+          assert proof["pass_checks"] is True
+          assert proof["complete_numerical_parity"] is True
+          assert proof["original_image_count"] == 16
+          assert proof["timing_speedup_required_for_execution_success"] is False
+          assert proof["inherited_quality_gates_pass"] is False
+          PY
       - name: Reproduce viewed pixel-refined RGB-D motion and independent reprojection checks
         run: |
           python scripts/fetch-reprojection-dataset.py tum-fr2-desk-reprojection
@@ -315,6 +723,27 @@ jobs:
             artifacts/yolox-s-bdd-v1/controls/
             artifacts/yolox-s-bdd-v1/reproduction/
             artifacts/yolox-s-bdd-v1/ci-launch-receipt.json
+            artifacts/yolox-s-tiles-v1/controls/
+            artifacts/yolox-s-tiles-v1/regression/
+            artifacts/yolox-vehicle-consistency-v1/controls/
+            artifacts/yolox-vehicle-consistency-v1/reproduction/
+            artifacts/camera-analysis-v1/controls/summary.json
+            artifacts/camera-analysis-v1/controls/executable.json
+            artifacts/camera-analysis-v1/regression/
+            artifacts/camera-sequence-v1/controls/summary.json
+            artifacts/camera-sequence-v1/controls/executable.json
+            artifacts/camera-sequence-v1/sequence.json
+            artifacts/camera-sequence-v1/recorded/
+            artifacts/camera-pipeline-v1/controls/
+            artifacts/camera-pipeline-v1/recorded/
+            artifacts/camera-latency-v1/controls/
+            artifacts/camera-latency-v1/measured/
+            artifacts/camera-parallel-v1/controls/
+            artifacts/camera-parallel-v1/verification/
+            artifacts/camera-cpu-v1/build/*.json
+            artifacts/camera-cpu-v1/build/build.log
+            artifacts/camera-cpu-v1/controls/
+            artifacts/camera-cpu-v1/verification/
             artifacts/adaptive/
             artifacts/rgbd/
             artifacts/recorded-motion/

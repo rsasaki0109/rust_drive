@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "preceding_trial": "variance-only relative weighting improves room/RPY and regresses desk2; retain failed trial",
+  "revision": "depth_whitened_plane: same frozen relative variance but apply Huber to the standardized residual",
+  "formula": "v=max(1,(zs^4+zt^4)/2); w=(1/v)*min(1,0.01*sqrt(v)/abs(r)); raw RMS/support/admission unchanged",
+  "parameters": "same 1 metre floor and original 10 mm Huber threshold at unit variance, no fit to outcome labels",
+  "interpretation": "consistent M-estimator under a provisional disparity-noise hypothesis; not a measured physical noise model or calibrated probability",
+  "adoption": {
+    "room_above": 64,
+    "desk2_at_least": 161,
+    "rpy_at_least": 74,
+    "all_updates_accepted": 179,
+    "no_worse_maximum_position_or_rotation_on_all_three": true
+  },
+  "data_role": "same three viewed regressions, no heldout claim",
+  "retune_after_trial": false
+}

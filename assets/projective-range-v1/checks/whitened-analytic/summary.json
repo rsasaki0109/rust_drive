@@ -1,0 +1,218 @@
+{
+  "analytic_controls_pass": true,
+  "translation_gate_m": 0.004,
+  "rotation_gate_rad": 0.004,
+  "motions": [
+    {
+      "axis": 0,
+      "angle_rad": 0.0,
+      "known_first_from_current": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "position_error_m": 0.0,
+      "rotation_error_rad": 0.0,
+      "checked_normal_steps": 3
+    },
+    {
+      "axis": 0,
+      "angle_rad": -0.02,
+      "known_first_from_current": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.01
+        ],
+        [
+          0.0,
+          0.9998000066665778,
+          0.01999866669333308,
+          0.02
+        ],
+        [
+          0.0,
+          -0.01999866669333308,
+          0.9998000066665778,
+          0.01
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "position_error_m": 0.00012696469916926719,
+      "rotation_error_rad": 0.00022606596631548497,
+      "checked_normal_steps": 8
+    },
+    {
+      "axis": 1,
+      "angle_rad": 0.02,
+      "known_first_from_current": [
+        [
+          0.9998000066665778,
+          0.0,
+          0.01999866669333308,
+          0.02
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          -0.01
+        ],
+        [
+          -0.01999866669333308,
+          0.0,
+          0.9998000066665778,
+          0.01
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "position_error_m": 0.00012091565152723299,
+      "rotation_error_rad": 5.283622293664113e-05,
+      "checked_normal_steps": 7
+    },
+    {
+      "axis": 2,
+      "angle_rad": 0.02,
+      "known_first_from_current": [
+        [
+          0.9998000066665778,
+          -0.01999866669333308,
+          0.0,
+          0.01
+        ],
+        [
+          0.01999866669333308,
+          0.9998000066665778,
+          0.0,
+          0.01
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          -0.02
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "position_error_m": 7.665896333547473e-05,
+      "rotation_error_rad": 5.861923634086407e-05,
+      "checked_normal_steps": 8
+    }
+  ],
+  "reprojection": "point",
+  "correspondence": "forward",
+  "residual": "depth_whitened_plane",
+  "normals": "central_difference",
+  "geometry": "depth",
+  "photometric": "disabled",
+  "step_control": "disabled",
+  "motion_model": "stationary",
+  "rejected_transport_cases": [
+    "missing configuration",
+    "duplicate configuration",
+    "unknown request field",
+    "oversized camera",
+    "invalid focal length",
+    "unknown reprojection",
+    "unknown correspondence",
+    "unknown residual",
+    "unknown normal estimation",
+    "unknown geometry",
+    "unknown photometric mode",
+    "unknown step control",
+    "unknown timing mode",
+    "timing without photometric",
+    "timing without motion history",
+    "timing with fixed support",
+    "unknown motion model",
+    "step control without RGB-D",
+    "missing final newline",
+    "no frame",
+    "oversized request",
+    "nonfinite JSON",
+    "frame cap",
+    "unsupported vertex reprojection",
+    "unsupported vertex correspondence",
+    "unsupported vertex residual",
+    "unsupported vertex normals",
+    "unsupported photometric geometry",
+    "unsupported photometric reprojection",
+    "unsupported photometric correspondence",
+    "unsupported photometric residual",
+    "unsupported photometric normals",
+    "invalid RGB byte",
+    "unsupported midpoint geometry",
+    "unsupported midpoint reprojection",
+    "unsupported midpoint correspondence",
+    "unsupported midpoint normals",
+    "unsupported midpoint photometric",
+    "unsupported bidirectional geometry",
+    "unsupported bidirectional reprojection",
+    "unsupported bidirectional correspondence",
+    "unsupported bidirectional normals",
+    "unsupported bidirectional photometric",
+    "RGB label injection",
+    "unsupported depth variance geometry",
+    "unsupported depth variance reprojection",
+    "unsupported depth variance correspondence",
+    "unsupported depth variance normals",
+    "unsupported depth variance photometric",
+    "unsupported standardized depth geometry",
+    "unsupported standardized depth reprojection",
+    "unsupported standardized depth correspondence",
+    "unsupported standardized depth normals",
+    "unsupported standardized depth photometric"
+  ],
+  "binary_sha256": "f896bf90aca477221c5b58f56e493936b80460618cbea5d3b262c629e6957051",
+  "rejected_report_corruptions": [
+    "wrong normal solve",
+    "wrong increment pose",
+    "altered root composition",
+    "missing support",
+    "returned-pose residual exceeds gate",
+    "lost fusion assignment",
+    "wrong keyframe switch",
+    "false accepted clock",
+    "wrong acquisition",
+    "false loss state"
+  ],
+  "checker_sha256": "36afd6275f3d099dcc60a85bc405adba7df6a2c97916081ec1f84888e89a8b19",
+  "scope": "analytic geometry and independent linear algebra; no physical accuracy or real-time claim"
+}

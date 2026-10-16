@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "data_role": "already viewed development; fixed-source budget comparison only",
+  "pass_implementation_integrity": true,
+  "source_members": 72,
+  "source_archive_sha256": "cd65ad53a2d78793efecd8d22688c8218447e9246d97b7f0178285dcc31622ed",
+  "input_sampling_sha256": "7b4dbdc62e2dbce5a6b1bc37585c02ee6862e25462612d265591747086aa72f6",
+  "long_reported_systems": 106,
+  "independently_rechecked_control_systems": 74,
+  "checkpoint_system_checks": 60,
+  "long_iteration_systems": 86,
+  "continuous_final_systems": 10,
+  "original_discrete_final_systems": 10,
+  "complete_cap10_control_matches": 10,
+  "continuous_converged_samples_at_10": 0,
+  "continuous_converged_samples_at_20": 2,
+  "continuous_converged_samples_at_30": 2,
+  "original_discrete_fresh_converged_samples": 0,
+  "line_search_failed_samples": 4,
+  "missing_current_support_samples": 4,
+  "local_guard_failed_samples": 8,
+  "original_discrete_guard_failed_samples": 0,
+  "budget_exhausted_samples": 0,
+  "actual_max_applied_corrections": 19,
+  "applied_corrections": 86,
+  "shortened_steps": 49,
+  "invalid_candidate_trials": 22,
+  "valid_nonpassing_candidate_trials": 157,
+  "valid_passing_candidate_trials": 86,
+  "frozen_population_and_normalizers_throughout": true,
+  "original_prior_retained": true,
+  "cap_precedes_next_search_failure": true,
+  "eligible_for_followup_full_trajectory": false,
+  "real_local_pose_fitting": true,
+  "new_trajectory_fitting": false,
+  "physical_accuracy_scored": false,
+  "numeric_ground_truth_parsed": false,
+  "tracker_state_commits": false,
+  "tracker_integration": false,
+  "default_changed": false,
+  "rust_driving_changed": false,
+  "analytic_additional_reported_systems": 3,
+  "analytic_checkpoint_systems": 6,
+  "long_rejected_corruptions": 7,
+  "inherited_sampling_rendered_systems": 15,
+  "inherited_repeated_rendered_checks": 3,
+  "inherited_prior_system_checks": 1,
+  "objective_gradient_axes": 12,
+  "inherited_continuous_corruptions": 12,
+  "inherited_sampling_corruptions": 1,
+  "core_rust_tests_passed": 371,
+  "core_scenario_runs_and_replays_passed": 49,
+  "unchanged_core_files": 245,
+  "unchanged_previous_evidence_files": 437,
+  "unchanged_pinned_native_sources": 16,
+  "statistics": {
+    "tum-fr1-room-temporal": {
+      "checkpoints": {
+        "10": {
+          "samples": 5,
+          "continuous_converged": 0,
+          "original_discrete_fresh_converged": 0,
+          "local_guard_failures": 2,
+          "original_discrete_guard_failures": 0,
+          "budget_exhaustions": 3,
+          "applied_corrections": 34,
+          "terminal_carried_forward": 2,
+          "original_discrete_rms_gate_passes": 5,
+          "median_original_discrete_rms_m": 0.0024539224965528035
+        },
+        "20": {
+          "samples": 5,
+          "continuous_converged": 0,
+          "original_discrete_fresh_converged": 0,
+          "local_guard_failures": 5,
+          "original_discrete_guard_failures": 0,
+          "budget_exhaustions": 0,
+          "applied_corrections": 51,
+          "terminal_carried_forward": 5,
+          "original_discrete_rms_gate_passes": 5,
+          "median_original_discrete_rms_m": 0.0024543801366865457
+        },
+        "30": {
+          "samples": 5,
+          "continuous_converged": 0,
+          "original_discrete_fresh_converged": 0,
+          "local_guard_failures": 5,
+          "original_discrete_guard_failures": 0,
+          "budget_exhaustions": 0,
+          "applied_corrections": 51,
+          "terminal_carried_forward": 5,
+          "original_discrete_rms_gate_passes": 5,
+          "median_original_discrete_rms_m": 0.0024543801366865457
+        }
+      },
+      "eligible_for_followup_full_trajectory": false,
+      "exact_ten_correction_control_matches": 5,
+      "total_applied_corrections": 51,
+      "shortened_steps": 39,
+      "invalid_candidate_trials": 22,
+      "valid_nonpassing_trials": 140
+    },
+    "tum-fr1-desk2-independent": {
+      "checkpoints": {
+        "10": {
+          "samples": 5,
+          "continuous_converged": 0,
+          "original_discrete_fresh_converged": 0,
+          "local_guard_failures": 3,
+          "original_discrete_guard_failures": 0,
+          "budget_exhaustions": 2,
+          "applied_corrections": 20,
+          "terminal_carried_forward": 3,
+          "original_discrete_rms_gate_passes": 5,
+          "median_original_discrete_rms_m": 0.0027404641366715284
+        },
+        "20": {
+          "samples": 5,
+          "continuous_converged": 2,
+          "original_discrete_fresh_converged": 0,
+          "local_guard_failures": 3,
+          "original_discrete_guard_failures": 0,
+          "budget_exhaustions": 0,
+          "applied_corrections": 35,
+          "terminal_carried_forward": 5,
+          "original_discrete_rms_gate_passes": 5,
+          "median_original_discrete_rms_m": 0.0027404641366715284
+        },
+        "30": {
+          "samples": 5,
+          "continuous_converged": 2,
+          "original_discrete_fresh_converged": 0,
+          "local_guard_failures": 3,
+          "original_discrete_guard_failures": 0,
+          "budget_exhaustions": 0,
+          "applied_corrections": 35,
+          "terminal_carried_forward": 5,
+          "original_discrete_rms_gate_passes": 5,
+          "median_original_discrete_rms_m": 0.0027404641366715284
+        }
+      },
+      "eligible_for_followup_full_trajectory": false,
+      "exact_ten_correction_control_matches": 5,
+      "total_applied_corrections": 35,
+      "shortened_steps": 10,
+      "invalid_candidate_trials": 0,
+      "valid_nonpassing_trials": 17
+    }
+  },
+  "converged_cases": [
+    {
+      "case": "tum-fr1-desk2-independent",
+      "source_index": 160,
+      "applied_corrections": 16
+    },
+    {
+      "case": "tum-fr1-desk2-independent",
+      "source_index": 200,
+      "applied_corrections": 19
+    }
+  ],
+  "subjective_maturity_percent": 20,
+  "limits": [
+    "Thirty is a maximum; all ten attempts terminate before correction20, and repeated checkpoint states are explicit",
+    "Long, control and checkpoint matrix roles overlap; 240 checks are not 240 independent measurements or new equations",
+    "Two continuous-objective convergences do not imply original-discrete convergence, physical pose accuracy or admitted tracker updates",
+    "Three formerly budget-stopped room windows exhaust bounded search with validly sampled candidates; this does not prove a kink or physical drift cause",
+    "Viewed local windows with unchanged incoming prior; no new trajectory, physical domain, calibrated uncertainty, driving integration or timing claim"
+  ]
+}

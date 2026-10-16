@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "hypotheses": [
+    "separate map point displacement from normal/admission changes using identical matched pixels and fixed raw-keyframe normals",
+    "new depth can contradict an old foreground surface; farther-ignore fusion retains that surface without negative evidence"
+  ],
+  "diagnostic": {
+    "cases": [
+      "tum-fr1-room-temporal",
+      "tum-fr1-desk2-independent",
+      "tum-fr1-rpy-heldout"
+    ],
+    "frames": "original100..279, full chronological replay; probes offsets1..169 step12",
+    "paired_support": "intersection of original fine-scale admissions at offline reference pose for raw physical keyframe and reference-transform fused model; identical source and projected target pixels; fixed raw normals, Jacobians and Huber weights; disclose unfrozen-normal channel separately",
+    "visibility": "project old model into current raw view with estimated and separately offline-reference transforms; only measured valid depth with supported original central-difference normals; free if measured Z exceeds projected old Z by .03+.01*projectedZ; occluded for opposite strict inequality; otherwise consistent",
+    "limitation": "paired linear responses are algebraic snapshot probes, not additive physical error causes or calibrated noise; no operational reference input"
+  },
+  "candidate": {
+    "visibility": "free_space_decay",
+    "scope": "original nearest/depth/point/forward/target_plane/central_difference/stationary, no other experimental policies",
+    "action": "after fit admission, clone old state; decrement support by one for each supported old cell contradicted by this accepted current acquisition; zero support clears depth; then original reference warp and original four-category fusion",
+    "cadence": "one negative frame credit per accepted newer depth; unknown/unsupported/occluded observations never decrement; no decay on rejected fits",
+    "weight_role": "bounded evidence heuristic, not independent observation counts or probability",
+    "constants": "reuse original .03+.01*Z fusion band, source normal support and cap16; no new tuned threshold and no parameter sweep"
+  },
+  "adoption": {
+    "room_above": 64,
+    "desk2_at_least": 161,
+    "rpy_at_least": 74,
+    "all_updates_accepted": 179,
+    "no_worse_maximum_position_or_rotation_on_all_three": true,
+    "no_resets": true
+  },
+  "data_role": "same three viewed FR1 regressions, no heldout claim",
+  "ground_truth_operational": false,
+  "binary_sha256": "34175a1cef5056897dbca4d497bcf32317a7a16b66e7015c7535ce2f2871a207",
+  "subjective_maturity_percent": 20
+}

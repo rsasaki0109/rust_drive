@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "data_role": "already viewed development; not held out",
+  "algorithm": "Optional NumPy retained tracker with fixed reciprocal-pair nonlinear Huber-plus-prior Armijo updates",
+  "pass_implementation_integrity": true,
+  "complete_accuracy_pass": false,
+  "recorded_exit_code": 1,
+  "default_changed": false,
+  "rust_driving_changed": false,
+  "ground_truth_operational": false,
+  "rgb_decoded": false,
+  "only_fitter_and_objective_import_changed": true,
+  "all_input_manifests_inventory_camera_match_control": true,
+  "unscaled_proposal_guards_and_convergence_unchanged": true,
+  "caps_unchanged": [
+    10,
+    7,
+    5
+  ],
+  "source_archive_sha256": "ebafd455d86e90ca9333ba5f13e4285311faaf70fc3b2943ea0b68a7bd973d38",
+  "source_members": 33,
+  "raw_reported_systems": 8103,
+  "iteration_systems": 7427,
+  "coarse_skip_systems": 47,
+  "returned_pose_systems": 355,
+  "elimination_input_systems": 274,
+  "schur_result_priors": 274,
+  "consumed_unique_raw_factors": 954,
+  "reproduced_fit_rejections": 3,
+  "rejected_after_expiry_without_fitting": 0,
+  "byte_exact_scored_report_reconstruction": true,
+  "reconstruction": {
+    "tum-fr1-room-temporal-retain": {
+      "byte_exact_reconstruction": true,
+      "original_scored_report_sha256": "d205837b11adf6925c048fac384eee357c15b5afeda72b7043cf797bae66ef5e",
+      "iteration_systems": 3541,
+      "coarse_skip_systems": 45,
+      "returned_pose_systems": 176,
+      "elimination_input_systems": 135
+    },
+    "tum-fr1-desk2-independent-retain": {
+      "byte_exact_reconstruction": true,
+      "original_scored_report_sha256": "c7a61eeb9ceccd2a95b802ca552939ffa45bd814c71a4511b276049c63a777c9",
+      "iteration_systems": 3886,
+      "coarse_skip_systems": 2,
+      "returned_pose_systems": 179,
+      "elimination_input_systems": 139
+    }
+  },
+  "analytic_systems": 452,
+  "inherited_report_corruptions_rejected": 9,
+  "descent_report_corruptions_rejected": 6,
+  "objective_gradient_axes": 12,
+  "core_rust_tests_passed": 371,
+  "core_scenario_runs_and_replays_passed": 49,
+  "unchanged_core_files": 245,
+  "unchanged_previous_evidence_files": 335,
+  "unchanged_pinned_native_sources": 16,
+  "statistics": {
+    "tum-fr1-room-temporal-retain": {
+      "applied_updates": 3541,
+      "candidate_objective_evaluations": 3541,
+      "full_steps": 3541,
+      "shortened_steps": 0,
+      "accepted_alpha_counts": {
+        "1.0": 3541
+      },
+      "strict_objective_decreases": 3541,
+      "maximum_accepted_objective_change": -1.3289831388152429e-08,
+      "minimum_accepted_objective_change": -3.989197382600125
+    },
+    "tum-fr1-desk2-independent-retain": {
+      "applied_updates": 3886,
+      "candidate_objective_evaluations": 3886,
+      "full_steps": 3886,
+      "shortened_steps": 0,
+      "accepted_alpha_counts": {
+        "1.0": 3886
+      },
+      "strict_objective_decreases": 3886,
+      "maximum_accepted_objective_change": -5.692502025311796e-12,
+      "minimum_accepted_objective_change": -4.69564224485443
+    }
+  },
+  "state_parity": {
+    "tum-fr1-room-temporal-retain": {
+      "identical_initialization": true,
+      "identical_acquisitions_after_removing_search_receipts": 180,
+      "identical_prefix_acquisitions": 180,
+      "first_changed_source_index": null,
+      "all_states_and_attempted_systems_identical": true
+    },
+    "tum-fr1-desk2-independent-retain": {
+      "identical_initialization": true,
+      "identical_acquisitions_after_removing_search_receipts": 180,
+      "identical_prefix_acquisitions": 180,
+      "first_changed_source_index": null,
+      "all_states_and_attempted_systems_identical": true
+    }
+  },
+  "summaries": {
+    "tum-fr1-room-temporal-retain": {
+      "total_updates": 179,
+      "accepted": 176,
+      "root_accurate": 88,
+      "lost": false,
+      "max_position_error_m": 0.28016927981556633,
+      "max_rotation_error_rad": 0.1978936434728806,
+      "integrity": {
+        "pass_integrity": true,
+        "checked_reported_systems": 3897,
+        "accepted_updates": 176,
+        "reproduced_fit_rejections": 3,
+        "marginal_generations": 135,
+        "consumed_unique_raw_factors": 451,
+        "rejections": {
+          "condition": 3
+        },
+        "lost": false,
+        "ground_truth_parsed": false,
+        "checked_coarse_skips": 45,
+        "coarse_skip_reasons": {
+          "condition": 45
+        }
+      },
+      "complete_accuracy_pass": false
+    },
+    "tum-fr1-desk2-independent-retain": {
+      "total_updates": 179,
+      "accepted": 179,
+      "root_accurate": 75,
+      "lost": false,
+      "max_position_error_m": 0.21198241113449937,
+      "max_rotation_error_rad": 0.23313499582203798,
+      "integrity": {
+        "pass_integrity": true,
+        "checked_reported_systems": 4206,
+        "accepted_updates": 179,
+        "reproduced_fit_rejections": 0,
+        "marginal_generations": 139,
+        "consumed_unique_raw_factors": 503,
+        "rejections": {},
+        "lost": false,
+        "ground_truth_parsed": false,
+        "checked_coarse_skips": 2,
+        "coarse_skip_reasons": {
+          "increment": 2
+        }
+      },
+      "complete_accuracy_pass": false
+    }
+  },
+  "subjective_maturity_percent": 20,
+  "remaining_limits": [
+    "Viewed indoor recordings, not held out",
+    "Frozen-population descent does not prove a shared objective decreases after re-association or establish physical accuracy",
+    "Shared raw oracle, decimation, vertices, intrinsics and prior chart contract; independently rebuilt SVD normals, matrix selection, spectral solves and target-frame objective",
+    "Engineered line-search fixtures are not calibrated priors or sensor-noise models",
+    "No new physical environment, vehicle integration, real-time evidence or confidence calibration"
+  ]
+}

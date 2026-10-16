@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "implemented": "optional symmetric_midpoint and bidirectional_midpoint measured surface fits",
+  "default": "target_plane unchanged",
+  "before_binary_sha256": "0f47ac96222dc940573e2336a66909d25dd6124dd5de76c6e68a1bd6b3cc6e3e",
+  "midpoint_binary_sha256": "fd10d2b13a0b26d707031eb64b94abbfc397a9b7a8bf6404669ac72ffadde452",
+  "binary_sha256": "5e40fa39410d486dafddf67d81aa90666e4fee2e9a6bffb056b1a15e06d72125",
+  "source_members": 65,
+  "recorded_scores": {
+    "midpoint": {
+      "tum-fr1-room-temporal": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 66,
+        "lost": false,
+        "max_position_error_m": 0.2976344107059931,
+        "max_rotation_error_rad": 0.142046348769661,
+        "complete_accuracy_pass": false,
+        "independently_checked_normal_steps": 3394
+      },
+      "tum-fr1-desk2-independent": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 86,
+        "lost": false,
+        "max_position_error_m": 0.17130813775043852,
+        "max_rotation_error_rad": 0.316872059940371,
+        "complete_accuracy_pass": false,
+        "independently_checked_normal_steps": 3397
+      },
+      "tum-fr1-rpy-heldout": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 75,
+        "lost": false,
+        "max_position_error_m": 0.0886266656065125,
+        "max_rotation_error_rad": 0.15531221831201883,
+        "complete_accuracy_pass": false,
+        "independently_checked_normal_steps": 3300
+      }
+    },
+    "bidirectional": {
+      "tum-fr1-room-temporal": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 64,
+        "lost": false,
+        "max_position_error_m": 0.30006703706151544,
+        "max_rotation_error_rad": 0.14300108905964545,
+        "complete_accuracy_pass": false,
+        "independently_checked_normal_steps": 3356
+      },
+      "tum-fr1-desk2-independent": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 159,
+        "lost": false,
+        "max_position_error_m": 0.12421682588821259,
+        "max_rotation_error_rad": 0.08829899662350826,
+        "complete_accuracy_pass": false,
+        "independently_checked_normal_steps": 3323
+      },
+      "tum-fr1-rpy-heldout": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 75,
+        "lost": false,
+        "max_position_error_m": 0.08804380857720363,
+        "max_rotation_error_rad": 0.15553710953872657,
+        "complete_accuracy_pass": false,
+        "independently_checked_normal_steps": 3244
+      }
+    }
+  },
+  "all_recorded_protocols_pass": false,
+  "default_adoption": false,
+  "data_role": "three already viewed FR1 regression recordings, including previously viewed RPY",
+  "uncertainty": "no calibrated covariance or probability claim; bidirectional matches share samples and fused history",
+  "subjective_maturity_percent": 20,
+  "goal_30_percent_complete": false,
+  "validation": {
+    "native_tests": 49,
+    "core_tests": 371,
+    "total_rust_tests": 420,
+    "scenario_replays": 49,
+    "core_outputs_unchanged": 245,
+    "compatibility_outcomes_identical": 1440,
+    "raw_recorded_normal_systems": 21088,
+    "raw_recorded_model_generations": 1074,
+    "independently_checked_weak_plane_failures": 2,
+    "heldout_accuracy_claim": false,
+    "complete_physical_accuracy": false,
+    "default_adoption": false,
+    "prior_evidence_entries_unchanged": 1338
+  }
+}

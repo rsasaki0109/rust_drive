@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "design_sha256": "04ccb320476e59cc735d981678709dc3580c11c976c2f86740a0d8f8a560beb1",
+  "criterion": {
+    "room_above": 64,
+    "desk2_at_least": 161,
+    "rpy_at_least": 74,
+    "all_updates_accepted": 179,
+    "no_worse_maximum_position_or_rotation_on_all_three": true,
+    "no_resets": true
+  },
+  "baseline": {
+    "tum-fr1-room-temporal": {
+      "file": "assets/projective-surface-v1/recorded/first-default/tum-fr1-room-temporal/results.json.gz",
+      "sha256": "67462e4216067d1fa3715f0b50e9377ae8d38d799500af980709362bc1e6defe"
+    },
+    "tum-fr1-desk2-independent": {
+      "file": "assets/projective-surface-v1/recorded/first-default/tum-fr1-desk2-independent/results.json.gz",
+      "sha256": "b2da876e425610a11685dc926a175936123baf0f6a4e99db09c3e3bf50c73ad7"
+    },
+    "tum-fr1-rpy-heldout": {
+      "file": "assets/projective-surface-v1/recorded/first-default/tum-fr1-rpy-heldout/results.json.gz",
+      "sha256": "410958a9f1fcec88b61bc68c0baa7f6eccfbdc83bb4f6135d87903d93204d3ce"
+    }
+  },
+  "checks": {
+    "tum-fr1-room-temporal": {
+      "accuracy_count_pass": true,
+      "maximum_position_pass": false,
+      "maximum_rotation_pass": false,
+      "tracking_pass": true
+    },
+    "tum-fr1-desk2-independent": {
+      "accuracy_count_pass": true,
+      "maximum_position_pass": false,
+      "maximum_rotation_pass": true,
+      "tracking_pass": true
+    },
+    "tum-fr1-rpy-heldout": {
+      "accuracy_count_pass": true,
+      "maximum_position_pass": false,
+      "maximum_rotation_pass": false,
+      "tracking_pass": true
+    }
+  },
+  "pass_default_adoption": false,
+  "default_changed": false,
+  "physical_accuracy_claim": false
+}

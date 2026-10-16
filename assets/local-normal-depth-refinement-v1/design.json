@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "parent": "assets/normal-hermite-depth-refinement-v1",
+  "motivation": "Two preserved terminal searches lose normal support while their four corner depths remain measured; targeted post-hoc patch inspection motivates an additive local normal estimate",
+  "data_role": "already viewed, outcome-informed development; not held-out validation",
+  "cases": ["tum-fr1-room-temporal", "tum-fr1-desk2-independent"],
+  "sample_indices": [120, 160, 200, 240, 279],
+  "normal_support": "Keep original5x5 normals unchanged. Only absent interior normals may get a3x3 PCA estimate. Require all9 measured depths strictly0.3..5m and absolute difference from center strictly<0.05+0.01*center. Require middle population-covariance eigenvalue>1e-8m2 and minimum eigenvalue<=0.1*middle; orient toward positive dot with optical vertex. Preserve the original two-pixel border. No repeated retries, thresholds fitted to results, smoothing or depth filling",
+  "sampling_field": "Precompute a separate per-frame per-layer immutable-use hermite_normals field before fitting. The unchanged four-corner C1 sampler reads only this normal field. Original normals, axial depths, vertices and intrinsics remain available unchanged to original source selection, matching and fresh evaluation. Missing prepared fields reject explicitly",
+  "initial_population": "Use unchanged original bilinear selection and normalizers, then unchanged normal-Hermite center qualification with the new target sampling field. Minimum200 sources per factor. No new source geometry, weights or measurements from normal completion",
+  "fixed_objective": "Freeze initial source IDs, points, source normals, bilinear-center metric normalizers and sampling normal field for the complete attempt. Same incoming nonlinear prior and Huber0.01m loss; no source dropout or reselection during fitting",
+  "unchanged_solver": "Exact normal-Hermite solver/function bodies; thirty-correction GN cap,21 Armijo candidates1..2^-20 and original slack, current-frame support, scaled SPD condition<=1e6, full-proposal bounds0.1m/0.15rad and strict full-proposal convergence1e-5m/1e-5rad; no damping",
+  "checkpoints": [10, 20, 30],
+  "independent_verification": "Centered full-nine-point SVD instead of operational offset covariance PCA, independently completed sampling masks/normals, privately bound original polynomial interpolation audit, relative-camera residuals, prior/incidence matrices, spectral solve, Rodrigues search and independent checkpoints. Recheck old normal-Hermite controls separately with original target normals",
+  "terminal_support_diagnosis": "Replay all21 archived terminal candidates at both old search stops. Compare lost source IDs and new support using independent projection/interpolation; archive missing corner pixels and3x3/5x5 gated point covariances with independent SVD spectral checks. These are saved candidate probes, not newly applied optimizer steps or physical outlier labels",
+  "analytic_controls": "Exact and sloped planes, fully measured local plane below a wider nonplanar patch, missing center, roughness, full-nine vs eight depth support, rank-one geometry, unchanged depth/vertices/original normals/borders, changed completion-mask rejection, unprepared-field rejection; inherited C1 interpolation checks, rendered warm/degenerate fits,12 nonzero-prior gradient axes and four report corruptions",
+  "followup_eligibility_rule": "Both cases converge all five new windows, improve original-discrete fresh convergence, have no local/fresh guards, pass original0.03m RMS gates and have median original-discrete fresh RMS no worse than input normal-Hermite control",
+  "scope": "Local measured normal support changes interpolation slopes/domain where original normals were absent; shorter support may be less robust to noise. No claim of missing-depth recovery, isolated solver gain, native/default adoption, numeric real reference labels, trajectory accuracy, tracker/prior/Schur commits or timing",
+  "subjective_maturity_percent": 20
+}

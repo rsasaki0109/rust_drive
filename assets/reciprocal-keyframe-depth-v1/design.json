@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "parent": "assets/selective-keyframe-depth-v1",
+  "data_role": "already viewed development; not held out",
+  "change": "Only raw pair import changes; keep selective schedule, PCA normals, residual/Jacobian, Huber, final guards and Schur unchanged",
+  "association": {
+    "forward": "Original projected nearest target pixel and all original normal/distance/depth gates",
+    "reverse": "Project selected target vertex back into source, require axial Z>0.3m and rounded u/v exactly equal original sampled source pixel",
+    "rounding": "NumPy nearest even, no tolerance radius",
+    "source_strides": {
+      "4": 1,
+      "2": 2,
+      "1": 4
+    },
+    "differentiation": "Fixed selected pair; shared symmetric residual rotation derivative; no derivatives of discrete association",
+    "limitations": "Reciprocity of projected pixels does not prove visibility or true correspondence; finer strides still sample one endpoint"
+  },
+  "diagnostic": {
+    "real_samples": [
+      120,
+      160,
+      200,
+      240,
+      279
+    ],
+    "no_real_pose_fitting": true,
+    "no_numeric_real_ground_truth": true,
+    "noise_seed": 891021,
+    "noise_sigma_m": 0.002,
+    "synthetic_frames": 15,
+    "synthetic_profiles": [
+      "stationary",
+      "known motion"
+    ]
+  },
+  "evaluation": {
+    "cases": [
+      "tum-fr1-room-temporal",
+      "tum-fr1-desk2-independent"
+    ],
+    "updates": 179,
+    "root_translation_gate_m": 0.1,
+    "root_rotation_gate_rad": 0.1,
+    "reference_bracket_max_s": 0.02,
+    "pose_resets": 0,
+    "ground_truth_operational": false,
+    "rgb_decoded": false,
+    "audits_before_reference_scores": true
+  },
+  "default_changed": false
+}

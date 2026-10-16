@@ -1,0 +1,458 @@
+{
+  "summaries": {
+    "tum-fr1-room-temporal": {
+      "samples": 5,
+      "continuous_converged": 4,
+      "control_continuous_converged": 3,
+      "original_discrete_fresh_converged": 0,
+      "local_guard_failures": 1,
+      "original_discrete_guard_failures": 0,
+      "original_discrete_rms_gate_passes": 5,
+      "median_original_discrete_rms_m": 0.00246366791241644,
+      "control_median_original_discrete_rms_m": 0.00246366791241644,
+      "source_occurrences_before": 10156,
+      "source_occurrences_after": 10156,
+      "source_retention": 1.0,
+      "factors_before": 20,
+      "factors_after": 20,
+      "budget_exhaustions": 0,
+      "total_applied_corrections": 41,
+      "shortened_steps": 0,
+      "invalid_candidate_trials": 0,
+      "valid_nonpassing_candidate_trials": 0,
+      "accepted_candidate_trials": 41,
+      "accepted_cost_increases": 0,
+      "checkpoints": {
+        "10": {
+          "continuous_converged": 2,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 1,
+          "budget_exhaustions": 2
+        },
+        "20": {
+          "continuous_converged": 4,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 1,
+          "budget_exhaustions": 0
+        },
+        "30": {
+          "continuous_converged": 4,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 1,
+          "budget_exhaustions": 0
+        }
+      },
+      "eligible_for_followup_full_trajectory": false
+    },
+    "tum-fr1-desk2-independent": {
+      "samples": 5,
+      "continuous_converged": 1,
+      "control_continuous_converged": 0,
+      "original_discrete_fresh_converged": 0,
+      "local_guard_failures": 3,
+      "original_discrete_guard_failures": 0,
+      "original_discrete_rms_gate_passes": 5,
+      "median_original_discrete_rms_m": 0.0027404641366715284,
+      "control_median_original_discrete_rms_m": 0.0027404641366715284,
+      "source_occurrences_before": 22351,
+      "source_occurrences_after": 22351,
+      "source_retention": 1.0,
+      "factors_before": 16,
+      "factors_after": 16,
+      "budget_exhaustions": 1,
+      "total_applied_corrections": 56,
+      "shortened_steps": 0,
+      "invalid_candidate_trials": 0,
+      "valid_nonpassing_candidate_trials": 0,
+      "accepted_candidate_trials": 56,
+      "accepted_cost_increases": 0,
+      "checkpoints": {
+        "10": {
+          "continuous_converged": 0,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 3,
+          "budget_exhaustions": 2
+        },
+        "20": {
+          "continuous_converged": 0,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 3,
+          "budget_exhaustions": 2
+        },
+        "30": {
+          "continuous_converged": 1,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 3,
+          "budget_exhaustions": 1
+        }
+      },
+      "eligible_for_followup_full_trajectory": false
+    }
+  },
+  "samples": {
+    "tum-fr1-room-temporal": [
+      {
+        "source_index": 120,
+        "applied_corrections": 12,
+        "continuous_converged": true,
+        "guard_failure": null,
+        "termination": "converged",
+        "complete_report_equal_control": false,
+        "exact_old_trace_prefix": 0,
+        "source_occurrences": 1978,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": null,
+          "converged": true,
+          "delta": [
+            [
+              -2.104926722502177e-09,
+              1.7366836191255339e-09,
+              -1.9542082994052785e-09,
+              -2.6247033726531354e-10,
+              4.956839397125555e-09,
+              1.3164267689312798e-09
+            ],
+            [
+              3.3443932641887475e-07,
+              -1.252520034138533e-08,
+              -7.683515458250046e-08,
+              -4.6971269138159154e-08,
+              -2.3045148377141822e-07,
+              -1.6840141569778397e-07
+            ],
+            [
+              -2.6110147470456376e-06,
+              2.7331050772731205e-08,
+              6.708266471482731e-07,
+              3.6632633171753464e-07,
+              1.6882995677768586e-06,
+              1.273854797202429e-06
+            ],
+            [
+              -8.893316659215408e-06,
+              -4.7408253287771295e-07,
+              2.9325464951862283e-06,
+              5.70495225258093e-07,
+              2.438925886838963e-06,
+              1.7295187765003865e-06
+            ]
+          ],
+          "condition": 1092.2808037724353
+        }
+      },
+      {
+        "source_index": 160,
+        "applied_corrections": 10,
+        "continuous_converged": true,
+        "guard_failure": null,
+        "termination": "converged",
+        "complete_report_equal_control": true,
+        "exact_old_trace_prefix": 10,
+        "source_occurrences": 2582,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": null,
+          "converged": true,
+          "delta": [
+            [
+              -1.7376367641949334e-07,
+              -9.441116221728465e-08,
+              1.3037948490887222e-07,
+              1.829376191077968e-08,
+              1.7278011995660724e-07,
+              1.5906253738471986e-07
+            ],
+            [
+              9.634471205215383e-07,
+              4.062719808037963e-07,
+              -6.560049272440402e-07,
+              -1.330236977822431e-07,
+              -8.97900238213283e-07,
+              -7.652977034849727e-07
+            ],
+            [
+              -2.5277705131394524e-06,
+              -2.0013517917298628e-07,
+              8.013737935661528e-07,
+              3.952630762136505e-07,
+              1.611511430739431e-06,
+              1.3850837485316902e-06
+            ],
+            [
+              1.9041181328812203e-06,
+              3.2224164367146736e-06,
+              -2.2221670149121957e-06,
+              -1.4308001408159958e-06,
+              -3.422864370005179e-06,
+              -6.73662389944929e-06
+            ]
+          ],
+          "condition": 7534.83078028718
+        }
+      },
+      {
+        "source_index": 200,
+        "applied_corrections": 0,
+        "continuous_converged": false,
+        "guard_failure": "new frame needs measured support",
+        "termination": "guard",
+        "complete_report_equal_control": true,
+        "exact_old_trace_prefix": 0,
+        "source_occurrences": 0,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": "new frame needs measured support",
+          "converged": false,
+          "delta": null,
+          "condition": null
+        }
+      },
+      {
+        "source_index": 240,
+        "applied_corrections": 7,
+        "continuous_converged": true,
+        "guard_failure": null,
+        "termination": "converged",
+        "complete_report_equal_control": false,
+        "exact_old_trace_prefix": 0,
+        "source_occurrences": 4235,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": null,
+          "converged": true,
+          "delta": [
+            [
+              -2.346953407085782e-07,
+              -5.180735527371508e-07,
+              -8.274536032443337e-07,
+              -1.7142494825609776e-06,
+              -1.064351044008374e-07,
+              5.032659636136261e-07
+            ],
+            [
+              -9.130402301436851e-07,
+              -1.509692809487594e-06,
+              8.766177898837974e-08,
+              -1.915634961849268e-06,
+              6.713491078552023e-07,
+              1.0962418341051925e-06
+            ],
+            [
+              -1.362550927381201e-06,
+              9.41059736493938e-07,
+              -1.9699389966821076e-06,
+              -1.1966766822480695e-06,
+              1.8994726439009576e-07,
+              1.2571700491073552e-06
+            ],
+            [
+              6.253626660440769e-06,
+              1.9759980890709182e-06,
+              -4.562104836101175e-06,
+              -1.250705370243967e-06,
+              -6.043537018181809e-06,
+              -4.112767989362902e-06
+            ]
+          ],
+          "condition": 272165.95191686845
+        }
+      },
+      {
+        "source_index": 279,
+        "applied_corrections": 12,
+        "continuous_converged": true,
+        "guard_failure": null,
+        "termination": "converged",
+        "complete_report_equal_control": true,
+        "exact_old_trace_prefix": 12,
+        "source_occurrences": 1361,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": null,
+          "converged": true,
+          "delta": [
+            [
+              2.8082897634039845e-07,
+              1.6873975746090152e-07,
+              -1.9952628055147622e-07,
+              -1.1473071081278061e-08,
+              -1.6777314488906214e-07,
+              -2.280392168141846e-07
+            ],
+            [
+              -8.469930704055984e-07,
+              -6.732669793516604e-07,
+              6.188136261823199e-07,
+              -2.2470775748169397e-08,
+              5.496729916800556e-07,
+              4.979624553230633e-07
+            ],
+            [
+              -5.054345735478325e-06,
+              -3.242238688206984e-06,
+              3.2746333916197986e-06,
+              -4.715221621712134e-08,
+              3.1828422885022087e-06,
+              3.1023618141538194e-06
+            ]
+          ],
+          "condition": 70974.01824871432
+        }
+      }
+    ],
+    "tum-fr1-desk2-independent": [
+      {
+        "source_index": 120,
+        "applied_corrections": 0,
+        "continuous_converged": false,
+        "guard_failure": "new frame needs measured support",
+        "termination": "guard",
+        "complete_report_equal_control": true,
+        "exact_old_trace_prefix": 0,
+        "source_occurrences": 1244,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": "new frame needs measured support",
+          "converged": false,
+          "delta": null,
+          "condition": null
+        }
+      },
+      {
+        "source_index": 160,
+        "applied_corrections": 30,
+        "continuous_converged": false,
+        "guard_failure": null,
+        "termination": "budget",
+        "complete_report_equal_control": true,
+        "exact_old_trace_prefix": 30,
+        "source_occurrences": 4905,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": null,
+          "converged": false,
+          "delta": [
+            [
+              1.4505376234976364e-06,
+              -1.328847571965547e-07,
+              -1.0763516786631023e-07,
+              -1.3271562579086098e-07,
+              -7.823244409216957e-07,
+              -9.777236622940253e-07
+            ],
+            [
+              -6.250278542277026e-06,
+              6.031759274809192e-07,
+              5.736131798913161e-07,
+              7.305820822681191e-07,
+              3.5924624617363245e-06,
+              4.27318317482824e-06
+            ],
+            [
+              -1.9933512385224436e-05,
+              5.569902382872378e-06,
+              -2.0512676250349367e-06,
+              1.2469084638383851e-06,
+              1.2384879766751403e-05,
+              1.657675294439754e-05
+            ],
+            [
+              5.075801014687167e-05,
+              -1.913040881836522e-05,
+              7.503735973360977e-06,
+              -4.241020094158368e-06,
+              -2.668066176633854e-05,
+              -3.445680371738458e-05
+            ]
+          ],
+          "condition": 17415.03350691372
+        }
+      },
+      {
+        "source_index": 200,
+        "applied_corrections": 26,
+        "continuous_converged": true,
+        "guard_failure": null,
+        "termination": "converged",
+        "complete_report_equal_control": false,
+        "exact_old_trace_prefix": 0,
+        "source_occurrences": 16202,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": null,
+          "converged": true,
+          "delta": [
+            [
+              3.5829191594498307e-07,
+              -1.976111166370886e-07,
+              8.448353364466204e-08,
+              -4.1609764856087337e-08,
+              -1.7539969283502802e-07,
+              -2.2459847971463304e-07
+            ],
+            [
+              -1.3873012220080047e-06,
+              8.376152211630842e-07,
+              -3.067485963545823e-07,
+              1.8771179494181099e-07,
+              6.387419708317243e-07,
+              9.180363269706724e-07
+            ],
+            [
+              -8.844968510792163e-06,
+              3.6386188102956925e-06,
+              -8.247375937473972e-07,
+              1.1395349030966921e-06,
+              4.391367382690915e-06,
+              6.1002398599924705e-06
+            ],
+            [
+              -6.839609663974273e-06,
+              3.2068601707888167e-06,
+              -1.2718953104436447e-06,
+              8.70131392284593e-07,
+              3.794092897823144e-06,
+              4.961420243864142e-06
+            ]
+          ],
+          "condition": 76109.65655075126
+        }
+      },
+      {
+        "source_index": 240,
+        "applied_corrections": 0,
+        "continuous_converged": false,
+        "guard_failure": "new frame needs measured support",
+        "termination": "guard",
+        "complete_report_equal_control": true,
+        "exact_old_trace_prefix": 0,
+        "source_occurrences": 0,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": "new frame needs measured support",
+          "converged": false,
+          "delta": null,
+          "condition": null
+        }
+      },
+      {
+        "source_index": 279,
+        "applied_corrections": 0,
+        "continuous_converged": false,
+        "guard_failure": "new frame needs measured support",
+        "termination": "guard",
+        "complete_report_equal_control": true,
+        "exact_old_trace_prefix": 0,
+        "source_occurrences": 0,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": "new frame needs measured support",
+          "converged": false,
+          "delta": null,
+          "condition": null
+        }
+      }
+    ]
+  }
+}

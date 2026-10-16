@@ -1,0 +1,66 @@
+{
+  "analytic_pass": true,
+  "source_proof": true,
+  "independent_reported_systems": 13,
+  "identity_fresh_converged_without_updates": true,
+  "rendered_association_rounds": 2,
+  "rendered_applied_iterations": 3,
+  "rendered_fresh_converged": true,
+  "same_start_single_fixed_fresh_converged": false,
+  "rendered_position_error_m": 2.6091979093421008e-05,
+  "rendered_rotation_error_rad": 3.7205379693224975e-05,
+  "separately_checked_single_fixed_systems": 4,
+  "measured_guard_failures": {
+    "missing support": "new frame needs measured support",
+    "plane": "zero/nonfinite diagonal"
+  },
+  "isolated_worst_case_schedule": [
+    3,
+    3,
+    3,
+    1
+  ],
+  "no_progress_rejected": true,
+  "fixtures_are_not_image_evidence": true,
+  "rejected_corruptions": [
+    "wrong total budget",
+    "wrong inner budget",
+    "wrong remaining batch cap",
+    "unjustified early stop",
+    "stale batch anchor",
+    "false fresh convergence",
+    "wrong new population",
+    "wrong applied multiplier",
+    "wrong final fresh system",
+    "batch after fresh convergence"
+  ],
+  "input_roots_unchanged": true,
+  "inherited_fixed_controls": {
+    "analytic_pass": true,
+    "checked_systems": 10,
+    "gradient_axes": 12,
+    "gradient_includes_prior": true,
+    "warm_start_position_error_m": 2.60520998958311e-05,
+    "perturbed_start_iterations": 2,
+    "guards": {
+      "missing support": "new frame needs measured support",
+      "plane": "zero/nonfinite diagonal"
+    },
+    "rejected_corruptions": [
+      "changed frozen population",
+      "wrong inner system",
+      "wrong applied multiplier",
+      "wrong applied pose",
+      "false fixed convergence",
+      "false fresh convergence",
+      "wrong fresh system",
+      "wrong objective",
+      "extra correction"
+    ],
+    "input_roots_unchanged": true
+  },
+  "source_sha256": {
+    "scripts/alternating_depth_refinement.py": "d64cb6522cb868cb9232546cb41bb69459477f7dff4bd4d66d284d109f39ea6c",
+    "scripts/check-alternating-depth-refinement.py": "ac24bf977349e101df0c14b37f8f2272e82d23815a569f5cb908a35fd1f097c8"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "estimator_operational_changes": false,
+  "nominal_sigma_m": 0.005,
+  "chi2_6_95": 12.591587243743977,
+  "empirical_inflation": {
+    "depth": 2718306.7479766663,
+    "timing": 16957683.72760198
+  },
+  "fit": "higher empirical 95th percentile on both previously viewed records, separately by mode",
+  "caveat": "strongly correlated frames, two viewed recordings, no exchangeability or calibrated probability claim",
+  "heldout_design_sha256": "4c87f884dd8c1b74bdbc9fb26660f13f6f6670d66adc112ee3f520197195075f",
+  "minimum_heldout_coverage": 0.9,
+  "maximum_projected_position_radius_m": 0.1,
+  "maximum_projected_rotation_radius_rad": 0.1,
+  "source_sha256": {
+    "scripts/check-projective-information-calibration.py": "8f886dfc9def609afb00aa45acff4302f1316347c1ab8c8da7222c54bd63c18a",
+    "scripts/projective_information_raw.py": "1836df3c24f6ddbf908be3b42f8ed31d6d67b32b733e9060acfde65481ca4a3e",
+    "scripts/projective_motion_raw.py": "10b4aeb64d5e011299a6d91cc79d08a5eee7048ce61ca2d1013936de039ba868",
+    "scripts/projective_depth_common.py": "1c5341b77acc57539fe4f2b6cf1c7e87af6559e25f7795653060bf8b57513b7c",
+    "scripts/check-opencv-rgbd.py": "63e366ce4d83d1fd1512c13726c777d5d04aa24c8b22d6161ecbb33cf21df1ff"
+  },
+  "inputs": {
+    "depth/tum-fr1-room-temporal": {
+      "manifest_sha256": "c7fcc6dbaf72110858cb9225a238d5d0f52513662fe677b1a11cf72a7b7f7c52",
+      "ledger_sha256": "1509a77330183b6df2f60e2036454fbc03df48ce66fe89d83c4f39740226f6da",
+      "reference_sha256": "66b6770d887a5a3b69c94c3b186c3f76fe092ca25399772177f41aed984bd1b0"
+    },
+    "depth/tum-fr1-desk2-independent": {
+      "manifest_sha256": "f9de2bcb1037c46c70242f2c1bdbc8b09bbd06c95716d15b256b3c523ba24327",
+      "ledger_sha256": "6d0474b96ba296a366dba03931526a27a6bace06d72577c2b64b1c45d6a715fb",
+      "reference_sha256": "de1c4f91685f7ce0ec5bdc644f5aec007affc4d51b3476ddc946cbf21e48b166"
+    },
+    "timing/tum-fr1-room-temporal": {
+      "manifest_sha256": "c7fcc6dbaf72110858cb9225a238d5d0f52513662fe677b1a11cf72a7b7f7c52",
+      "ledger_sha256": "711e1f07d90ebf08f2fa642e31a63abd594d9e85ef8550afaefb89b748cb77a8",
+      "reference_sha256": "66b6770d887a5a3b69c94c3b186c3f76fe092ca25399772177f41aed984bd1b0"
+    },
+    "timing/tum-fr1-desk2-independent": {
+      "manifest_sha256": "f9de2bcb1037c46c70242f2c1bdbc8b09bbd06c95716d15b256b3c523ba24327",
+      "ledger_sha256": "b8491796cd5926bf096c72d25fb0a133ff1146314180ee23c41c6d7b1573c59a",
+      "reference_sha256": "de1c4f91685f7ce0ec5bdc644f5aec007affc4d51b3476ddc946cbf21e48b166"
+    }
+  }
+}

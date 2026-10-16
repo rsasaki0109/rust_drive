@@ -1,0 +1,315 @@
+{
+  "totals": {
+    "samples": 10,
+    "applied_corrections": 124,
+    "new_reported_systems": 144,
+    "rechecked_control_systems": 144,
+    "checkpoint_system_checks": 60,
+    "reselected_system_checks": 10,
+    "continuous_converged": 9,
+    "original_discrete_fresh_converged": 0,
+    "same_model_fresh_converged": 0,
+    "initial_source_occurrences": 60288,
+    "retained_source_occurrences": 60288,
+    "lost_source_occurrences": 0,
+    "new_source_occurrences": 0,
+    "factor_occurrences": 51,
+    "complete_control_reports_equal": 10,
+    "complete_checkpoint_sets_equal": 10,
+    "invalid_candidate_trials": 0,
+    "valid_nonpassing_candidate_trials": 0,
+    "accepted_candidate_trials": 124,
+    "shortened_steps": 0,
+    "accepted_cost_increases": 0,
+    "initial_support_stops": 1,
+    "search_stops": 0,
+    "budget_stops": 0,
+    "other_guard_stops": 0,
+    "source_retention": 1.0
+  },
+  "per_case": {
+    "tum-fr1-room-temporal": {
+      "samples": 5,
+      "continuous_converged": 4,
+      "control_continuous_converged": 4,
+      "original_discrete_fresh_converged": 0,
+      "local_guard_failures": 1,
+      "original_discrete_guard_failures": 0,
+      "original_discrete_rms_gate_passes": 5,
+      "median_original_discrete_rms_m": 0.0024638321838177635,
+      "control_median_original_discrete_rms_m": 0.0024638321838177635,
+      "source_occurrences_before": 23448,
+      "source_occurrences_after": 23448,
+      "source_retention": 1.0,
+      "retained_previous_source_occurrences": 23448,
+      "newly_admitted_source_occurrences": 0,
+      "previous_source_occurrences_lost": 0,
+      "source_population_ratio": 1.0,
+      "factors_before": 23,
+      "factors_after": 23,
+      "budget_exhaustions": 0,
+      "total_applied_corrections": 41,
+      "shortened_steps": 0,
+      "invalid_candidate_trials": 0,
+      "valid_nonpassing_candidate_trials": 0,
+      "accepted_candidate_trials": 41,
+      "accepted_cost_increases": 0,
+      "checkpoints": {
+        "30": {
+          "continuous_converged": 4,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 1,
+          "budget_exhaustions": 0
+        },
+        "60": {
+          "continuous_converged": 4,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 1,
+          "budget_exhaustions": 0
+        },
+        "90": {
+          "continuous_converged": 4,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 1,
+          "budget_exhaustions": 0
+        }
+      },
+      "eligible_for_followup_full_trajectory": false,
+      "terminal_same_model_fresh_converged": 0,
+      "complete_control_reports_equal": 5
+    },
+    "tum-fr1-desk2-independent": {
+      "samples": 5,
+      "continuous_converged": 5,
+      "control_continuous_converged": 5,
+      "original_discrete_fresh_converged": 0,
+      "local_guard_failures": 0,
+      "original_discrete_guard_failures": 0,
+      "original_discrete_rms_gate_passes": 5,
+      "median_original_discrete_rms_m": 0.0027117804869571244,
+      "control_median_original_discrete_rms_m": 0.0027117804869571244,
+      "source_occurrences_before": 36840,
+      "source_occurrences_after": 36840,
+      "source_retention": 1.0,
+      "retained_previous_source_occurrences": 36840,
+      "newly_admitted_source_occurrences": 0,
+      "previous_source_occurrences_lost": 0,
+      "source_population_ratio": 1.0,
+      "factors_before": 28,
+      "factors_after": 28,
+      "budget_exhaustions": 0,
+      "total_applied_corrections": 83,
+      "shortened_steps": 0,
+      "invalid_candidate_trials": 0,
+      "valid_nonpassing_candidate_trials": 0,
+      "accepted_candidate_trials": 83,
+      "accepted_cost_increases": 0,
+      "checkpoints": {
+        "30": {
+          "continuous_converged": 5,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 0,
+          "budget_exhaustions": 0
+        },
+        "60": {
+          "continuous_converged": 5,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 0,
+          "budget_exhaustions": 0
+        },
+        "90": {
+          "continuous_converged": 5,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 0,
+          "budget_exhaustions": 0
+        }
+      },
+      "eligible_for_followup_full_trajectory": false,
+      "terminal_same_model_fresh_converged": 0,
+      "complete_control_reports_equal": 5
+    }
+  },
+  "samples": {
+    "tum-fr1-room-temporal": [
+      {
+        "source_index": 120,
+        "applied_corrections": 7,
+        "continuous_converged": true,
+        "original_discrete_fresh_converged": false,
+        "same_model_fresh_converged": false,
+        "initial_sources": 5788,
+        "retained_sources": 5788,
+        "complete_report_and_checkpoints_equal": true,
+        "guard_failure": null
+      },
+      {
+        "source_index": 160,
+        "applied_corrections": 16,
+        "continuous_converged": true,
+        "original_discrete_fresh_converged": false,
+        "same_model_fresh_converged": false,
+        "initial_sources": 6067,
+        "retained_sources": 6067,
+        "complete_report_and_checkpoints_equal": true,
+        "guard_failure": null
+      },
+      {
+        "source_index": 200,
+        "applied_corrections": 0,
+        "continuous_converged": false,
+        "original_discrete_fresh_converged": false,
+        "same_model_fresh_converged": false,
+        "initial_sources": 0,
+        "retained_sources": 0,
+        "complete_report_and_checkpoints_equal": true,
+        "guard_failure": "new frame needs measured support"
+      },
+      {
+        "source_index": 240,
+        "applied_corrections": 5,
+        "continuous_converged": true,
+        "original_discrete_fresh_converged": false,
+        "same_model_fresh_converged": false,
+        "initial_sources": 8592,
+        "retained_sources": 8592,
+        "complete_report_and_checkpoints_equal": true,
+        "guard_failure": null
+      },
+      {
+        "source_index": 279,
+        "applied_corrections": 13,
+        "continuous_converged": true,
+        "original_discrete_fresh_converged": false,
+        "same_model_fresh_converged": false,
+        "initial_sources": 3001,
+        "retained_sources": 3001,
+        "complete_report_and_checkpoints_equal": true,
+        "guard_failure": null
+      }
+    ],
+    "tum-fr1-desk2-independent": [
+      {
+        "source_index": 120,
+        "applied_corrections": 10,
+        "continuous_converged": true,
+        "original_discrete_fresh_converged": false,
+        "same_model_fresh_converged": false,
+        "initial_sources": 3116,
+        "retained_sources": 3116,
+        "complete_report_and_checkpoints_equal": true,
+        "guard_failure": null
+      },
+      {
+        "source_index": 160,
+        "applied_corrections": 19,
+        "continuous_converged": true,
+        "original_discrete_fresh_converged": false,
+        "same_model_fresh_converged": false,
+        "initial_sources": 9667,
+        "retained_sources": 9667,
+        "complete_report_and_checkpoints_equal": true,
+        "guard_failure": null
+      },
+      {
+        "source_index": 200,
+        "applied_corrections": 27,
+        "continuous_converged": true,
+        "original_discrete_fresh_converged": false,
+        "same_model_fresh_converged": false,
+        "initial_sources": 21153,
+        "retained_sources": 21153,
+        "complete_report_and_checkpoints_equal": true,
+        "guard_failure": null
+      },
+      {
+        "source_index": 240,
+        "applied_corrections": 19,
+        "continuous_converged": true,
+        "original_discrete_fresh_converged": false,
+        "same_model_fresh_converged": false,
+        "initial_sources": 792,
+        "retained_sources": 792,
+        "complete_report_and_checkpoints_equal": true,
+        "guard_failure": null
+      },
+      {
+        "source_index": 279,
+        "applied_corrections": 8,
+        "continuous_converged": true,
+        "original_discrete_fresh_converged": false,
+        "same_model_fresh_converged": false,
+        "initial_sources": 2112,
+        "retained_sources": 2112,
+        "complete_report_and_checkpoints_equal": true,
+        "guard_failure": null
+      }
+    ]
+  },
+  "historical_identity_controls": {
+    "unquantized": {
+      "old_operational_sources": 963,
+      "old_independent_sources": 974,
+      "new_agreed_sources": 939,
+      "removed_from_operational": 24,
+      "removed_from_independent": 35,
+      "source_sha256": "0975e776050767cfac80e7eb0b9b6789d4a9cbb6d2abcaf3bb9a6a5b38dfa1fa",
+      "old_only_operational": [
+        5152,
+        5184,
+        9052,
+        10276
+      ],
+      "old_only_independent": [
+        3876,
+        3900,
+        3912,
+        4540,
+        4548,
+        4572,
+        5216,
+        5220,
+        5784,
+        7136,
+        8408,
+        8436,
+        8984,
+        10936,
+        12924
+      ],
+      "resolved": true,
+      "identity_converged": true,
+      "applied_corrections": 0
+    },
+    "quantized_2mm": {
+      "old_operational_sources": 964,
+      "old_independent_sources": 974,
+      "new_agreed_sources": 939,
+      "removed_from_operational": 25,
+      "removed_from_independent": 35,
+      "source_sha256": "0975e776050767cfac80e7eb0b9b6789d4a9cbb6d2abcaf3bb9a6a5b38dfa1fa",
+      "old_only_operational": [
+        3924,
+        5152,
+        9632
+      ],
+      "old_only_independent": [
+        3876,
+        3900,
+        3912,
+        4540,
+        4548,
+        5220,
+        5784,
+        7136,
+        8436,
+        8984,
+        9720,
+        10936,
+        12924
+      ],
+      "resolved": true,
+      "identity_converged": true,
+      "applied_corrections": 0
+    }
+  }
+}

@@ -1,0 +1,27 @@
+Traceback (most recent call last):
+  File "/workspace/rust_drive/scripts/audit-projective-depth-raw.py", line 341, in <module>
+    main()
+  File "/workspace/rust_drive/scripts/audit-projective-depth-raw.py", line 335, in main
+    cases[case] = recorded(case,folder,args.recorded_reports)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/rust_drive/scripts/audit-projective-depth-raw.py", line 278, in recorded
+    model,weights,checked = reconstruct_update(model,weights,raw,CAMERA,row['update'],reprojection,correspondence,residual,normals,geometry,context)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/rust_drive/scripts/projective_depth_raw.py", line 234, in reconstruct_update
+    compare(step['photometric'],equation(target[scale],source[scale],colors[0][scale],colors[1][scale],pose(step['before']),scale,image_context['qualified'] and image_context['fresh'],affine='illumination' in step['photometric'],warps=image_context.get('warps')))
+  File "/workspace/rust_drive/scripts/projective_photo_raw.py", line 131, in compare
+    np.testing.assert_allclose(actual['g'],expected['g'],atol=1e-5,rtol=1e-10,err_msg='raw photometric gradient')
+  File "/workspace/.rustdrive-tools/demo-venv/lib/python3.12/site-packages/numpy/testing/_private/utils.py", line 1711, in assert_allclose
+    assert_array_compare(compare, actual, desired, err_msg=str(err_msg),
+  File "/workspace/.rustdrive-tools/demo-venv/lib/python3.12/site-packages/numpy/testing/_private/utils.py", line 919, in assert_array_compare
+    raise AssertionError(msg)
+AssertionError: 
+Not equal to tolerance rtol=1e-10, atol=1e-05
+raw photometric gradient
+Mismatched elements: 1 / 6 (16.7%)
+Max absolute difference among violations: 6.88807922e-05
+Max relative difference among violations: 9.1331328e-10
+ ACTUAL: array([-7.541858e+04,  1.484293e+08,  4.747011e+07, -1.804258e+08,
+       -2.213804e+06,  4.679698e+06])
+ DESIRED: array([-7.541858e+04,  1.484293e+08,  4.747011e+07, -1.804258e+08,
+       -2.213804e+06,  4.679698e+06])

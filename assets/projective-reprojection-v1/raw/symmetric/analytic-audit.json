@@ -1,0 +1,50 @@
+{
+  "hand_controls": {
+    "metre_axis_normal_witness": true,
+    "half_pixel_centers": true,
+    "invalid_discontinuous_reduction": true,
+    "exact_raster_tie_and_occlusion": true,
+    "four_fusion_partitions": true,
+    "capped_weight_arithmetic": true,
+    "hand_calculated_225_point_plane_equation": true
+  },
+  "motions": [
+    {
+      "motion": 1,
+      "report_sha256": "e0661569cb763618aa77f8cd2a138dfb1bc29f98ca0b2ecb1af5f95f42a906da",
+      "iterations": 3,
+      "final_equations": 1,
+      "model_replaced": false
+    },
+    {
+      "motion": 2,
+      "report_sha256": "c60ef07fddef9b1bd55053be5490549d015fa7b00d4aad7ff6bdc6038853a13f",
+      "iterations": 9,
+      "final_equations": 1,
+      "model_replaced": false
+    },
+    {
+      "motion": 3,
+      "report_sha256": "d0ae19d0a6c3b8335b0b6779b187d77e875f7865e797ef635983aa416f7d242d",
+      "iterations": 8,
+      "final_equations": 1,
+      "model_replaced": false
+    },
+    {
+      "motion": 4,
+      "report_sha256": "7c859dfaf0e013c8eef31b5983660bbd6287100014a6daeb73eb7a480dfd641c",
+      "iterations": 8,
+      "final_equations": 1,
+      "model_replaced": false
+    }
+  ],
+  "rejected_corruptions": [
+    "joint H/g rescaling with unchanged valid solve",
+    "false correspondence count",
+    "false per-iteration RMS",
+    "false final support",
+    "false returned-pose RMS",
+    "fusion category moved while total remains valid"
+  ],
+  "prior_solve_only_auditor_accepts_rescaled_Hg": true
+}

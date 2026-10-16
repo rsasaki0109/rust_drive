@@ -1,0 +1,60 @@
+{
+  "authored_half_quarter_band_pass": true,
+  "offset_multipliers": [
+    -2.0,
+    -0.5,
+    -0.25,
+    0.0,
+    0.25,
+    0.5,
+    2.0
+  ],
+  "epsilon_pixels": 1e-09,
+  "operational_support": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    true
+  ],
+  "independent_support": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    true
+  ],
+  "missing_pixel_xy": [
+    11,
+    12
+  ],
+  "query_v": 12.3,
+  "query_z_m": 2.0,
+  "query_u": [
+    11.999999998,
+    11.9999999995,
+    11.99999999975,
+    12.0,
+    12.00000000025,
+    12.0000000005,
+    12.000000002
+  ],
+  "source_sha256": {
+    "scripts/boundary_depth_support.py": "a15baaecc87e7c6ef19de75c5d2c9fa691c3df608da5551cca34bedbc1f6ac89",
+    "scripts/check-boundary-slope-refinement.py": "c849080092fe453e83a07f9c64ca1eee76fa32eaf9b869d812d529968229b712"
+  },
+  "camera": {
+    "width": 32,
+    "height": 32,
+    "fx": 40.0,
+    "fy": 42.0,
+    "cx": 15.5,
+    "cy": 15.5
+  },
+  "background_depth_m": 2.0,
+  "missing_depth_m": 0.0
+}

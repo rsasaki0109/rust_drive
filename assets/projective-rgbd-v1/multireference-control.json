@@ -1,0 +1,38 @@
+{
+  "analytic_controls_pass": true,
+  "analytic_sequences": 7,
+  "checked_raw_equations": 270,
+  "checked_normal_steps": 241,
+  "translation_gate_m": 0.004,
+  "rotation_gate_rad": 0.004,
+  "rejected_report_corruptions": [
+    "wrong combined solve",
+    "wrong root pose",
+    "missing first reference",
+    "forged accepted clock",
+    "lost latch",
+    "excess final residual",
+    "image count partition",
+    "key replacement",
+    "RGB freshness",
+    "joint scaling hidden from solve-only audit"
+  ],
+  "rejected_transport_cases": [
+    "missing configuration",
+    "duplicate configuration",
+    "unknown configuration field",
+    "invalid mode",
+    "oversized camera",
+    "invalid focal length",
+    "unknown image field",
+    "out of range grayscale",
+    "missing newline",
+    "no acquisition",
+    "oversized line",
+    "nonfinite JSON",
+    "frame cap"
+  ],
+  "binary_sha256": "d47a24d1762a05be2319ed9445bf995416bfbbb47c5631d3847f0fa4a383649a",
+  "checker_sha256": "d0b9b80068775bdfe1ce7da42331699875ccb2c01876ff97252aa97166c8b54b",
+  "scope": "synthetic pixels, independent raw matrices and state; no physical or real-time claim"
+}

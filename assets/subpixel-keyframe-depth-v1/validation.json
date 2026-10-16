@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "data_role": "already viewed development; not held out",
+  "algorithm": "optional NumPy retained-information tracker with continuous inverse-depth raw factors",
+  "pass_implementation_integrity": true,
+  "complete_accuracy_pass": false,
+  "recorded_command_exit_code": 1,
+  "default_changed": false,
+  "rust_driving_changed": false,
+  "ground_truth_operational": false,
+  "rgb_decoded": false,
+  "parent_engine_only_pair_import_changed": true,
+  "input_manifests_camera_and_bytes_match_preceding_retained_control": true,
+  "source_archive_sha256": "4ff6fa8891bfac8bdbecd427fe360410f315e413548fb75d4dfc879c9a6721f4",
+  "raw_reported_systems": 8336,
+  "iteration_systems": 7705,
+  "returned_pose_systems": 358,
+  "elimination_input_systems": 273,
+  "schur_result_priors": 273,
+  "consumed_unique_raw_factors": 1183,
+  "reproduced_fit_rejections": 0,
+  "rejected_after_expiry_without_fitting": 0,
+  "original_scored_report_bytes_reconstruct_from_trace_and_compact_scores": true,
+  "reconstruction": {
+    "tum-fr1-room-temporal-retain": {
+      "byte_exact_reconstruction": true,
+      "original_scored_report_sha256": "ade1855bbd67eb1613a01c09abd6426387d3fc158517a55280194ec698139ba4",
+      "iteration_systems": 3848,
+      "returned_pose_systems": 179,
+      "elimination_input_systems": 136
+    },
+    "tum-fr1-desk2-independent-retain": {
+      "byte_exact_reconstruction": true,
+      "original_scored_report_sha256": "f72a6aabb8bf79f2674c99a40baab57cb73a33a352dd12ccec86e582e70e2b94",
+      "iteration_systems": 3857,
+      "returned_pose_systems": 179,
+      "elimination_input_systems": 137
+    }
+  },
+  "analytic_pass": true,
+  "analytic_iteration_and_returned_pose_equations": 408,
+  "analytic_retained_marginal_generations": 9,
+  "corruption_controls_rejected": 9,
+  "interpolation_controls": {
+    "scalar_samples": 3,
+    "frozen_normalizer_central_difference_axes": 3,
+    "right_knot_derivative": true,
+    "continuous_knot_value": true,
+    "rejected_corner_controls": [
+      "missing depth",
+      "invalid corner normal",
+      "depth discontinuity"
+    ],
+    "behind_camera_rejected": true,
+    "omitted_projective_gradient_detected": true,
+    "parent_engine_only_pair_import_changed": true
+  },
+  "core_rust_tests_passed": 371,
+  "core_scenario_runs_and_replays_passed": 49,
+  "unchanged_deterministic_core_files": 245,
+  "unchanged_previous_evidence_files": 194,
+  "summaries": {
+    "tum-fr1-room-temporal-retain": {
+      "total_updates": 179,
+      "accepted": 179,
+      "root_accurate": 69,
+      "lost": false,
+      "max_position_error_m": 0.2962137305041381,
+      "max_rotation_error_rad": 0.1517056977830479,
+      "integrity": {
+        "pass_integrity": true,
+        "checked_reported_systems": 4163,
+        "accepted_updates": 179,
+        "reproduced_fit_rejections": 0,
+        "marginal_generations": 136,
+        "consumed_unique_raw_factors": 586,
+        "rejections": {},
+        "lost": false,
+        "ground_truth_parsed": false
+      },
+      "complete_accuracy_pass": false
+    },
+    "tum-fr1-desk2-independent-retain": {
+      "total_updates": 179,
+      "accepted": 179,
+      "root_accurate": 74,
+      "lost": false,
+      "max_position_error_m": 0.37013954785232783,
+      "max_rotation_error_rad": 0.3756119588505334,
+      "integrity": {
+        "pass_integrity": true,
+        "checked_reported_systems": 4173,
+        "accepted_updates": 179,
+        "reproduced_fit_rejections": 0,
+        "marginal_generations": 137,
+        "consumed_unique_raw_factors": 597,
+        "rejections": {},
+        "lost": false,
+        "ground_truth_parsed": false
+      },
+      "complete_accuracy_pass": false
+    }
+  },
+  "subjective_maturity_percent": 20,
+  "remaining_limits": [
+    "Viewed indoor recordings",
+    "Raw factor also changes support; cannot isolate rounding alone",
+    "Normalizer frozen per linearization; no calibrated uncertainty",
+    "Shared depth-pyramid frontend",
+    "No fresh physical environment, vehicle integration, idle watchdog or real-time evidence"
+  ]
+}

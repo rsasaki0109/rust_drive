@@ -1,0 +1,52 @@
+{
+  "analytic_pass": true,
+  "source_proof": true,
+  "inherited_cubic_controls": {
+    "analytic_pass": true,
+    "source_proof": true,
+    "interpolation": {
+      "quadratic_samples": 7,
+      "xyz_finite_difference_axes": 3,
+      "interpolatory_integer_samples": 1,
+      "c1_authored_kink_samples": 3,
+      "missing_outer_corner_rejected": true
+    },
+    "rendered_continuous_converged": false,
+    "rendered_applied_corrections": 9,
+    "rendered_guard": "line search",
+    "reported_systems": 15,
+    "checkpoint_systems": 6,
+    "prior_system_checks": 1,
+    "objective_gradient_axes": 12,
+    "original_rendered_sources": 988,
+    "cubic_rendered_sources": 988,
+    "degenerate_guards": {
+      "missing": "new frame needs measured support",
+      "plane": "zero/nonfinite diagonal"
+    },
+    "rejected_corruptions": [
+      "false convergence",
+      "changed source identities",
+      "changed normalizer digest",
+      "wrong final matrix"
+    ],
+    "input_roots_unchanged": true
+  },
+  "reported_systems": 3,
+  "checkpoint_systems": 6,
+  "rendered_continuous_converged": true,
+  "rendered_applied_corrections": 1,
+  "rendered_guard": null,
+  "original_rendered_sources": 988,
+  "margin_rendered_sources": 887,
+  "rejected_corruptions": [
+    "center-only population",
+    "false convergence",
+    "wrong final matrix"
+  ],
+  "input_roots_unchanged": true,
+  "source_sha256": {
+    "scripts/cubic_margin_refinement.py": "6b10cb7dcbefaed9a1a599449d10929c481a79b8e1002906f2f2b827271f2451",
+    "scripts/check-cubic-margin-refinement.py": "d91edda22f579e339485cc6275532e093393c6b824aea1b830782232d9efa770"
+  }
+}

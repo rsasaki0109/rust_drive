@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "data_role": "already viewed development; not held out",
+  "pass_implementation_integrity": true,
+  "complete_accuracy_pass": false,
+  "default_changed": false,
+  "algorithm": "NumPy pose-only keyframe adjustment; Rust driving/estimators unchanged",
+  "raw_reported_normal_systems": 8880,
+  "iteration_systems": 8477,
+  "returned_pose_systems": 403,
+  "reproduced_fit_rejections": 24,
+  "rejected_after_expiry_without_fitting": 289,
+  "exact_first_prototype_acceptance_loss_clocks_and_accepted_poses": true,
+  "original_scored_report_bytes_reconstruct_from_trace_and_compact_scores": true,
+  "source_archive_sha256": "faeed722dd354f1fd3c0144df100e94860a9e6def4dc5cf7936d6c70710d94cd",
+  "summaries": {
+    "tum-fr1-room-temporal-fixed": {
+      "total_updates": 179,
+      "accepted": 91,
+      "root_accurate": 71,
+      "lost": true,
+      "max_position_error_m": 0.14867236111723245,
+      "max_rotation_error_rad": 0.1100724530795661,
+      "integrity": {
+        "pass_integrity": true,
+        "raw_reconstructed_equations": 1943,
+        "accepted_updates": 91,
+        "independently_reproduced_fit_rejections": 6,
+        "rejections": {
+          "disconnected measured constraint graph": 6,
+          "accepted pose expiry latched": 82
+        },
+        "lost": true,
+        "ground_truth_parsed": false
+      }
+    },
+    "tum-fr1-room-temporal-joint": {
+      "total_updates": 179,
+      "accepted": 92,
+      "root_accurate": 72,
+      "lost": true,
+      "max_position_error_m": 0.13277781968817925,
+      "max_rotation_error_rad": 0.12253371359147391,
+      "integrity": {
+        "pass_integrity": true,
+        "raw_reconstructed_equations": 2113,
+        "accepted_updates": 92,
+        "independently_reproduced_fit_rejections": 6,
+        "rejections": {
+          "disconnected measured constraint graph": 6,
+          "accepted pose expiry latched": 81
+        },
+        "lost": true,
+        "ground_truth_parsed": false
+      }
+    },
+    "tum-fr1-desk2-independent-fixed": {
+      "total_updates": 179,
+      "accepted": 125,
+      "root_accurate": 74,
+      "lost": true,
+      "max_position_error_m": 0.28186786367636163,
+      "max_rotation_error_rad": 0.26381367003369904,
+      "integrity": {
+        "pass_integrity": true,
+        "raw_reconstructed_equations": 2665,
+        "accepted_updates": 125,
+        "independently_reproduced_fit_rejections": 5,
+        "rejections": {
+          "disconnected measured constraint graph": 5,
+          "accepted pose expiry latched": 49
+        },
+        "lost": true,
+        "ground_truth_parsed": false
+      }
+    },
+    "tum-fr1-desk2-independent-joint": {
+      "total_updates": 179,
+      "accepted": 95,
+      "root_accurate": 51,
+      "lost": true,
+      "max_position_error_m": 1.7062783222871356,
+      "max_rotation_error_rad": 0.6291277329323103,
+      "integrity": {
+        "pass_integrity": true,
+        "raw_reconstructed_equations": 2159,
+        "accepted_updates": 95,
+        "independently_reproduced_fit_rejections": 7,
+        "rejections": {
+          "condition": 6,
+          "increment": 1,
+          "accepted pose expiry latched": 77
+        },
+        "lost": true,
+        "ground_truth_parsed": false
+      }
+    }
+  },
+  "analytic": {
+    "pass_integrity": true,
+    "checked_systems": 19,
+    "rejected_corruptions": [
+      "wrong target/source sign",
+      "moved first origin",
+      "missing reference constraint",
+      "wrong variable set",
+      "wrong condition",
+      "coherently scaled normal system"
+    ],
+    "rejected_invalid_inputs": [
+      "unknown mode",
+      "moved origin",
+      "duplicate clock",
+      "nonfinite clock",
+      "nonrigid pose"
+    ],
+    "unobservable_plane_rejected": true,
+    "disconnected_graph_rejected": true
+  },
+  "core_regression": {
+    "rust_tests": 371,
+    "scenario_runs_and_complete_replays": 49,
+    "unchanged_output_files": 245
+  },
+  "source_scope": "shared preceding depth-pyramid and rotation exponential helpers; independent finite-difference residual Jacobians, raw correspondence equations, incidence-matrix assembly, spectral solves, state and rejection accounting",
+  "marginalization_implemented": false,
+  "ground_truth_operational": false,
+  "rgb_decoded": false,
+  "driving_integration": false,
+  "calibrated_uncertainty": false,
+  "real_time_claim": false,
+  "subjective_maturity_percent": 20
+}

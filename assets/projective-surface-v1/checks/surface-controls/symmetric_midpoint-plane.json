@@ -1,0 +1,184 @@
+{
+  "frames": [
+    {
+      "timestamp": 1.0,
+      "accepted": true,
+      "initialized": true,
+      "lost": false,
+      "rejection": null,
+      "first_from_current": {
+        "rotation": [
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "last_accepted_timestamp": 1.0,
+      "keyframe_replaced": false,
+      "iterations": [],
+      "final_equation": null,
+      "fusion": null
+    },
+    {
+      "timestamp": 1.03,
+      "accepted": false,
+      "initialized": true,
+      "lost": false,
+      "rejection": "insufficient physical observability condition",
+      "first_from_current": null,
+      "last_accepted_timestamp": 1.0,
+      "keyframe_replaced": false,
+      "iterations": [],
+      "final_equation": null,
+      "fusion": null,
+      "information_failure": {
+        "final_pose": false,
+        "scale": 4,
+        "pose": {
+          "rotation": [
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "translation": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "equation": {
+          "count": 1064,
+          "rms_m": 0.0,
+          "h": [
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1064.0,
+              -3.3306690738754696e-15,
+              -6.661338147750939e-16,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              -3.3306690738754696e-15,
+              262.91502958579713,
+              1.887379141862766e-15,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              -6.661338147750939e-16,
+              1.887379141862766e-15,
+              484.52923076923094,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          ],
+          "g": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "photometric": null,
+        "spectrum": {
+          "translation_scale_m": 1.0,
+          "rotation_scale_rad": 1.0,
+          "matrix_scale": 1064.0,
+          "eigenvalues": [
+            0.0,
+            0.0,
+            0.0,
+            0.24710059171597473,
+            0.45538461538461555,
+            1.0
+          ],
+          "condition": null
+        }
+      }
+    },
+    {
+      "timestamp": 1.201,
+      "accepted": false,
+      "initialized": true,
+      "lost": true,
+      "rejection": "accepted-pose expiry latched; no reset",
+      "first_from_current": null,
+      "last_accepted_timestamp": 1.0,
+      "keyframe_replaced": false,
+      "iterations": [],
+      "final_equation": null,
+      "fusion": null
+    },
+    {
+      "timestamp": 1.21,
+      "accepted": false,
+      "initialized": true,
+      "lost": true,
+      "rejection": "accepted-pose expiry latched; no reset",
+      "first_from_current": null,
+      "last_accepted_timestamp": 1.0,
+      "keyframe_replaced": false,
+      "iterations": [],
+      "final_equation": null,
+      "fusion": null
+    }
+  ]
+}

@@ -161,3 +161,73 @@ fail. Complete replay verifies detection sets within absolute tolerance 1e-5
 and exactly reproduces match IDs/counts/gates; its integrity flag is true but
 quality exit remains 1. No fresh held-out generalization, real-time performance
 or driving integration is claimed.
+
+The separate [bounded multi-view S adapter](../../docs/yolox-tiles-camera.md)
+adds up to three overlapping square crops and an independently checked global
+merge. It retains all 55 single-view matches and reaches 78/138 viewed
+references, with 33 false positives. Recall improves to 56.52%, but the
+unchanged overall and per-class quality gates still fail. Select
+`--bin rustdriving-camera-detect-tiled-s` explicitly; model-free crop/merge
+controls and full repeated native inference are available through
+`bdd_tiles_check.py`. No fresh holdout or fitted calibration is claimed.
+
+The optional [vehicle consistency postprocessor](../../docs/yolox-vehicle-context.md)
+reads original tiled detector JSON with `rustdriving-camera-reconcile --input
+RAW.json --output NEW.json`. It reconciles car/bus/truck conflicts only when
+all eligible full-image proposals support one class, and preserves ambiguous
+hypotheses. The viewed result retains all 78 reference matches and reduces
+false positives from 33 to 31. Earlier majority/full-context failures remain
+reproducible. Original overall/per-class recall gates still fail; this is no
+fresh holdout, confidence calibration or camera-based driving capability.
+
+For a single image, [one-command analysis](../../docs/camera-analysis.md) runs
+the unchanged tiled detector and consistency rule with
+`rustdriving-camera-analyze --model FILE --image FILE --output NEW.json`.
+It saves the original proposals and final hypotheses together, and publishes
+only a complete bounded report without replacing an existing destination.
+The same eight-image repeated check retains 78 TP / 31 FP / 60 FN; this is an
+execution and failure-handling improvement, with the original quality failure
+still explicit.
+
+The optional [recorded-image sequence CLI](../../docs/camera-sequence.md)
+reuses one model plan across consecutive images and runs the unchanged
+image-space tracker in the same process. `prepare_sequence.py` derives input
+paths, hashes and original clock text from an existing cached RGB inventory.
+An eight-frame indoor recording reproduces both the single-image detector and
+standalone tracker, with no measured object-identity accuracy or driving
+integration claim. Select `--bin rustdriving-camera-sequence` explicitly.
+
+The [complete offline camera pipeline](../../docs/camera-pipeline.md) adds the
+unchanged two-clock freshness guard to actual image analysis/tracking in one
+command. It shares one CPU model plan, skips inference for rejected image
+deliveries and retains complete detector and freshness lineage. Its clocks are
+caller-supplied replay metadata; live-camera ingestion and measured end-to-end
+latency are unimplemented. `prepare_camera_pipeline.py` adds an explicit
+authored delivery lag to the existing image sequence without reading images.
+Select `--bin rustdriving-camera-pipeline` explicitly.
+
+The [measured serial replay](../../docs/camera-latency.md) uses actual host
+monotonic time for analysis and tracking, preserving the original acquisition
+schedule. It skips expired work and withholds results that become late during
+processing. The first CPU trials take 2.27–2.31 s for one four-view image and
+fail the prior 0.2 s limit. Startup is reported separately; the final poll and
+audit publication are excluded. This is offline file replay without live sensor
+transport. Select `--bin rustdriving-camera-latency` explicitly.
+
+The optional [parallel fixed-view analyzer](../../docs/camera-parallel.md) shares
+one immutable CPU plan across at most four scoped view workers, then restores
+the original merge order. It offers image analysis and the unchanged measured
+replay controller. Sixteen images twice retain all serial detections; this
+host's paired processing improves from 2.26–2.39 s to 0.58–0.63 s (~3.9×).
+The 200 ms deadline and original quality gates still fail. Its producer receipt
+is distinct from the old pinned serial JSON profile. Select
+`--bin rustdriving-camera-parallel` explicitly.
+
+The optional [CPU-specific build recipe](../../docs/camera-cpu-build.md) uses
+O3, ThinLTO and native CPU features in a separate target directory, preserving
+normal releases and all detector code/weights. It records compiler settings,
+binary/source hashes and CPU flags, with complete numerical comparison on
+16 images twice. Its two-pair mean is 5.94% shorter but one pair regresses;
+consistent speedup is unproven and the 200 ms gates still fail. Use
+`python3 integrations/onnx/build_cpu.py build --output NEW` from the repository
+root after normal dependencies have been cached; this recipe is Linux x86-64 only.

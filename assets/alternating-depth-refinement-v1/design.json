@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "parent": "assets/fixed-depth-refinement-v1",
+  "initial_state": "Same saved accepted poses and incoming priors from assets/depth-convergence-v1/summary.json",
+  "data_role": "already viewed development; bounded local refinement only",
+  "sample_indices": [
+    120,
+    160,
+    200,
+    240,
+    279
+  ],
+  "cases": [
+    "tum-fr1-room-temporal",
+    "tum-fr1-desk2-independent"
+  ],
+  "total_applied_correction_cap": 10,
+  "inner_applied_correction_cap": 3,
+  "maximum_association_rounds": 10,
+  "scale": 1,
+  "association": "Re-select reciprocal pixel pairs at each batch start; keep them fixed within at most3 corrections; re-check fresh geometry at every batch end",
+  "relinearization": "Unchanged fixed-refinement residual, normal rotation derivative, Huber weights and nonlinear incoming-prior transport",
+  "guards": "Original support>=200 per raw pair, scaled SPD/condition<=1e6, full node increments<=0.1m/0.15rad; no rank fill",
+  "step": "Eight Armijo lengths1..1/128 against current batch frozen Huber-plus-prior objective",
+  "convergence": "Only fresh-population full proposals below strict1e-5m/1e-5rad for every nonorigin node",
+  "fixed_convergence": "May end an inner batch but cannot terminate the global solver without fresh convergence",
+  "stop": "Fresh convergence, reproduced guard failure/no progress, or ten total applied corrections",
+  "control": "Archived ten fresh-association continuation corrections from exactly the same initial poses/prior; equal maximum applied corrections, not a runtime comparison",
+  "progression_rule": "Advance only if BOTH cases improve fresh-converged count with no guards, all fresh RMS<=0.03m, and median fresh RMS no worse than control",
+  "real_local_pose_fitting": true,
+  "new_trajectory_fitting": false,
+  "numeric_ground_truth_parsed": false,
+  "tracker_state_commits": false,
+  "default_changed": false,
+  "rust_driving_changed": false
+}

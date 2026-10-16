@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/workspace/rust_drive/scripts/check-interior-center-refinement.py", line 170, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/workspace/rust_drive/scripts/check-interior-center-refinement.py", line 165, in main
+    args = parser.parse_args();out = fresh(args.output);report = controls()
+                                                                 ^^^^^^^^^^
+  File "/workspace/rust_drive/scripts/check-interior-center-refinement.py", line 116, in controls
+    require(report['association_rounds']>=2,'actual rendered reselection reaches multiple rounds')
+  File "/workspace/rust_drive/scripts/projective_depth_common.py", line 15, in require
+    raise ValueError(message)
+ValueError: actual rendered reselection reaches multiple rounds

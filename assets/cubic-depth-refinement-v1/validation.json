@@ -1,0 +1,142 @@
+{
+  "schema_version": 1,
+  "pass_implementation_integrity": true,
+  "source_members": 91,
+  "source_archive_sha256": "1a7fe09ba5fc902d338047a02e0dd7021d3262a28cb8d22f0988ae166f8e5a78",
+  "input_deep_search_sha256": "6650bb961c036ec39174135c0d028fe663519b8fc4d650c65bb4e59628b6358c",
+  "continuous_converged": 0,
+  "control_continuous_converged": 2,
+  "original_discrete_fresh_converged": 0,
+  "search_stops": 6,
+  "missing_current_support_stops": 4,
+  "budget_stops": 0,
+  "applied_corrections": 40,
+  "reported_systems": 60,
+  "rechecked_control_systems": 154,
+  "checkpoint_system_checks": 60,
+  "initial_source_occurrences_before": 32507,
+  "initial_source_occurrences_after": 32507,
+  "retained_initial_sources": 1.0,
+  "complete_population_and_normalizer_equality": 10,
+  "invalid_candidate_trials": 729,
+  "valid_nonpassing_candidate_trials": 0,
+  "accepted_candidate_trials": 40,
+  "accepted_cost_increases": 0,
+  "all_six_terminal_searches_have21_invalid_trials": true,
+  "analytic_rendered_converged": false,
+  "analytic_rendered_updates": 9,
+  "analytic_reported_systems": 15,
+  "analytic_checkpoint_checks": 6,
+  "prior_system_checks": 1,
+  "objective_gradient_axes": 12,
+  "corruptions_rejected": 4,
+  "real_local_pose_fitting": true,
+  "new_trajectory_fitting": false,
+  "numeric_ground_truth_parsed": false,
+  "physical_accuracy_scored": false,
+  "tracker_state_commits": false,
+  "default_changed": false,
+  "eligible_for_followup_full_trajectory": false,
+  "core_rust_tests_passed": 371,
+  "core_scenarios_and_replays_passed": 49,
+  "unchanged_core_outputs": 245,
+  "unchanged_previous_evidence_files": 492,
+  "unchanged_native_sources": 16,
+  "subjective_maturity_percent": 20,
+  "statistics": {
+    "tum-fr1-room-temporal": {
+      "samples": 5,
+      "continuous_converged": 0,
+      "control_continuous_converged": 0,
+      "original_discrete_fresh_converged": 0,
+      "local_guard_failures": 5,
+      "original_discrete_guard_failures": 0,
+      "original_discrete_rms_gate_passes": 5,
+      "median_original_discrete_rms_m": 0.0024776698583121853,
+      "control_median_original_discrete_rms_m": 0.002454214162878936,
+      "source_occurrences_before": 10156,
+      "source_occurrences_after": 10156,
+      "source_retention": 1.0,
+      "factors_before": 20,
+      "factors_after": 20,
+      "budget_exhaustions": 0,
+      "total_applied_corrections": 26,
+      "shortened_steps": 26,
+      "invalid_candidate_trials": 470,
+      "valid_nonpassing_candidate_trials": 0,
+      "accepted_candidate_trials": 26,
+      "accepted_cost_increases": 0,
+      "checkpoints": {
+        "10": {
+          "continuous_converged": 0,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 5,
+          "budget_exhaustions": 0
+        },
+        "20": {
+          "continuous_converged": 0,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 5,
+          "budget_exhaustions": 0
+        },
+        "30": {
+          "continuous_converged": 0,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 5,
+          "budget_exhaustions": 0
+        }
+      },
+      "eligible_for_followup_full_trajectory": false
+    },
+    "tum-fr1-desk2-independent": {
+      "samples": 5,
+      "continuous_converged": 0,
+      "control_continuous_converged": 2,
+      "original_discrete_fresh_converged": 0,
+      "local_guard_failures": 5,
+      "original_discrete_guard_failures": 0,
+      "original_discrete_rms_gate_passes": 5,
+      "median_original_discrete_rms_m": 0.0027404641366715284,
+      "control_median_original_discrete_rms_m": 0.0027404641366715284,
+      "source_occurrences_before": 22351,
+      "source_occurrences_after": 22351,
+      "source_retention": 1.0,
+      "factors_before": 16,
+      "factors_after": 16,
+      "budget_exhaustions": 0,
+      "total_applied_corrections": 14,
+      "shortened_steps": 14,
+      "invalid_candidate_trials": 259,
+      "valid_nonpassing_candidate_trials": 0,
+      "accepted_candidate_trials": 14,
+      "accepted_cost_increases": 0,
+      "checkpoints": {
+        "10": {
+          "continuous_converged": 0,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 5,
+          "budget_exhaustions": 0
+        },
+        "20": {
+          "continuous_converged": 0,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 5,
+          "budget_exhaustions": 0
+        },
+        "30": {
+          "continuous_converged": 0,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 5,
+          "budget_exhaustions": 0
+        }
+      },
+      "eligible_for_followup_full_trajectory": false
+    }
+  },
+  "limits": [
+    "C1 on jointly valid stencils does not prevent lost16-corner support; convergence regresses2/10->0/10",
+    "Initial populations and original bilinear normalizers match controls, but interpolation, domain and snapping policy change",
+    "New/control/checkpoint matrix roles share observations and repeated states",
+    "Viewed local objectives without new trajectory accuracy, native adoption, vehicle integration or timing evidence"
+  ]
+}

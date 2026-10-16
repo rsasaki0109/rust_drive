@@ -1,0 +1,47 @@
+   Compiling rustdriving-camera-detect v0.1.0 (/workspace/rust_drive/integrations/onnx)
+    Finished `release` profile [optimized] target(s) in 4.01s
+     Running unittests src/bin/rustdriving-camera-parallel.rs (integrations/onnx/target/release/deps/rustdriving_camera_parallel-7f4fea12bdf2f7cc)
+
+running 39 tests
+test camera_analysis::tests::out_of_budget_view_counts_start_no_jobs ... ok
+test camera_analysis::tests::square_single_view_uses_the_calling_thread ... ok
+test camera_analysis::tests::worker_panic_is_a_joined_error_including_multiple_panics ... ok
+test camera_freshness::tests::delivery_clock_errors_are_atomic ... ok
+test camera_freshness::tests::each_track_ages_even_when_new_images_keep_camera_ready ... ok
+test camera_freshness::tests::explicit_failure_clears_ids_and_queued_frames_cannot_clear_the_hold ... ok
+test camera_freshness::tests::expiry_is_latched_and_only_post_fault_frames_can_recover ... ok
+test camera_freshness::tests::fresh_arrival_after_a_gap_records_expiry_before_new_acquisition ... ok
+test camera_freshness::tests::healthy_empty_images_can_recover_without_inventing_objects ... ok
+test camera_freshness::tests::inclusive_deadline_is_consistent_for_relative_and_unix_clocks ... ok
+test camera_freshness::tests::invalid_policy_is_rejected ... ok
+test camera_freshness::tests::polling_projects_without_renewing_observations_or_acquisition_clock ... ok
+test camera_freshness::tests::rejected_payload_does_not_refresh_time_and_breaks_recovery_streak ... ok
+test camera_latency::tests::already_old_images_skip_the_analyzer_entirely ... ok
+test camera_latency::tests::analysis_crossing_deadline_is_measured_and_never_accepted_as_fresh ... ok
+test camera_latency::tests::clock_and_analyzer_failures_leave_complete_guard_state_unchanged ... ok
+test camera_latency::tests::expired_backlog_cannot_resurrect_ids_and_two_new_frames_are_required ... ok
+test camera_latency::tests::fast_frames_recover_once_without_consuming_probe_ids_or_hashes ... ok
+test camera_latency::tests::original_epoch_offsets_and_schedule_bound_are_explicit ... ok
+test camera_latency::tests::polls_and_failure_do_not_invoke_analysis ... ok
+test camera_analysis::tests::concurrently_completed_views_keep_original_order ... ok
+test camera_latency::tests::tracking_work_crossing_deadline_clears_a_provisionally_available_result ... ok
+test camera_sequence::tests::duplicate_clock_and_nonfinite_timestamp_fail_before_model_loading ... ok
+test camera_sequence::tests::source_epoch_timestamp_text_keeps_its_rust_float_identity ... ok
+test serial_camera_analysis::tests::abandoning_reserved_output_removes_staging ... ok
+test serial_camera_analysis::tests::publication_race_preserves_the_other_writer_and_removes_staging ... ok
+test camera_analysis::tests::worker_error_waits_for_all_other_views ... ok
+test yolox_s::tests::overlapping_boxes_are_classwise_suppressed_with_deterministic_class_ties ... ok
+test serial_camera_analysis::tests::oversized_serialization_never_publishes_a_truncated_report ... ok
+test yolox_s::tests::hidden_corruption_shape_and_image_resource_violations_fail_closed ... ok
+test yolox_tiles::tests::fixed_views_cover_landscape_portrait_and_odd_gaps_without_duplicate_work ... ok
+test yolox_tiles::tests::interior_edges_reject_truncated_objects_and_global_nms_retains_class_identity ... ok
+test yolox_vehicle_context::tests::conflicting_hypotheses_remain_when_full_image_has_no_eligible_vote ... ok
+test yolox_vehicle_context::tests::full_image_overrides_correlated_crop_majority_without_inflating_confidence ... ok
+test yolox_vehicle_vote::tests::distinct_views_vote_once_and_non_clique_overlap_remains_ambiguous ... ok
+test yolox_vehicle_vote::tests::full_context_breaks_a_tie_without_changing_scores_or_geometry ... ok
+test yolox_s::tests::independent_three_stride_geometry_restores_original_image_coordinates ... ok
+test yolox_s::tests::roundoff_threshold_and_retained_box_budget_remain_bounded ... ok
+test yolox_s::tests::raw_bgr_constant_pixels_and_letterbox_padding_are_not_normalized ... ok
+
+test result: ok. 39 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+

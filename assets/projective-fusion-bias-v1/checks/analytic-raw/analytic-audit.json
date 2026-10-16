@@ -1,0 +1,64 @@
+{
+  "hand_controls": {
+    "metre_axis_normal_witness": true,
+    "half_pixel_centers": true,
+    "invalid_discontinuous_reduction": true,
+    "exact_raster_tie_and_occlusion": true,
+    "four_fusion_partitions": true,
+    "capped_weight_arithmetic": true,
+    "hand_calculated_225_point_plane_equation": true,
+    "inverse_depth_plane_camera_normal": true,
+    "missing_discontinuous_plane_support_rejected": true,
+    "nonplanar_and_coarse_normal_support_preserved": true
+  },
+  "motions": [
+    {
+      "motion": 1,
+      "report_sha256": "fefa4faf8881a79867c3bfa9a133149300d514dab2905148673cd9337578578c",
+      "iterations": 3,
+      "final_equations": 1,
+      "model_replaced": false
+    },
+    {
+      "motion": 2,
+      "report_sha256": "98f318e9b1bb89a83897c6f03dafd85eff84c5fa41ae98ba168624fae1417ad4",
+      "iterations": 8,
+      "final_equations": 1,
+      "model_replaced": false
+    },
+    {
+      "motion": 3,
+      "report_sha256": "e2bca42cec64a708dd730c54f1fafa0b5522ebaf8a0400dbd0b5c7a64fe4d028",
+      "iterations": 8,
+      "final_equations": 1,
+      "model_replaced": false
+    },
+    {
+      "motion": 4,
+      "report_sha256": "68cf5be6516b86d5698925eac4cb1c4ee2d95edc045399d7aa511988a69ed417",
+      "iterations": 9,
+      "final_equations": 1,
+      "model_replaced": false
+    }
+  ],
+  "geometry": "depth",
+  "vertex_controls": null,
+  "rejected_corruptions": [
+    "joint H/g rescaling with unchanged valid solve",
+    "false correspondence count",
+    "false per-iteration RMS",
+    "false final support",
+    "false returned-pose RMS",
+    "fusion category moved while total remains valid",
+    "nearest-Z sampling substituted for visible mean",
+    "altered visible surface merge count"
+  ],
+  "prior_solve_only_auditor_accepts_rescaled_Hg": true,
+  "fusion_sampling": "visible_mean",
+  "fusion_controls": {
+    "weighted_mean": true,
+    "background_excluded": true,
+    "frame_support_not_summed": true,
+    "identity_exact": true
+  }
+}

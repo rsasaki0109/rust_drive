@@ -1,0 +1,33 @@
+{
+  "dataset": "tum-fr1-room-temporal",
+  "source_sha256": {
+    "scripts/audit-projective-depth-raw.py": "417cf38ed67adbea4517049cf9c89d567da78ddbb35e82a55a50bd48f1a6c11b",
+    "scripts/projective_depth_raw.py": "6added0369f5ee4d4b68bd4d0a4a396404cb550d0b7521cd6ab23e6452d091ff",
+    "scripts/projective_depth_common.py": "5a60294dd09f5b79c52deb7014464988c948c61e73d64ac62c578c304989cb65",
+    "scripts/projective_vertex_raw.py": "04979366cf02fce38db2c06a26d3abd2bc31ef3b5693604ccb348ccb93d2a791",
+    "scripts/projective_photo_raw.py": "3fec99c3dacf0c8d41d1a67d55ab10a61f02b6aa76fcf365235c440fd626e86b",
+    "scripts/projective_step_raw.py": "e6a20afe04af0e04828856f21b5fc2b7a2cb3e1c8826d2ac8d91a7619732f3a8",
+    "scripts/projective_motion_raw.py": "10b4aeb64d5e011299a6d91cc79d08a5eee7048ce61ca2d1013936de039ba868",
+    "scripts/projective_timing_raw.py": "9a4f4966e7b7b3929c57a4b252da21a35362c46dcb77c00a728f25cf8f3bffce",
+    "scripts/projective_information_raw.py": "1836df3c24f6ddbf908be3b42f8ed31d6d67b32b733e9060acfde65481ca4a3e",
+    "scripts/check-projective-depth.py": "66b8f184b2fc5f873938c797352f1d0a594e92268bf5103c9f9cdd17e67f47bf",
+    "scripts/requirements-visual.txt": "d8d4e85e0aa1f30325cb3fb9d39834a37e2e0894ecf2153d585e0631ed74d155",
+    "assets/projective-depth-raw-audit-v1/design.json": "4c19610beb7538d6b3c37082096edc4eba45ba633502cf20d8efdb0cdb5218e3"
+  },
+  "manifest_sha256": "c7fcc6dbaf72110858cb9225a238d5d0f52513662fe677b1a11cf72a7b7f7c52",
+  "original_freeze_sha256": "1a8b3ad41978603efecc67dc47e1bb6f35c419e9a318acbe9431487497a52d32",
+  "reprojection": "point",
+  "correspondence": "forward",
+  "residual": "symmetric_midpoint",
+  "normals": "central_difference",
+  "geometry": "depth",
+  "photometric": "disabled",
+  "step_control": "disabled",
+  "motion_model": "stationary",
+  "timing": "disabled",
+  "information_guard": "physical_spectrum_v1",
+  "original_sensor_ledger_sha256": "d8f4fb3284b0abd778d8eee1c8420f4ee141eabc843f581af16c4d752611c150",
+  "depth_source_count": 180,
+  "ground_truth_decoded": false,
+  "raw_color_decoded": false
+}

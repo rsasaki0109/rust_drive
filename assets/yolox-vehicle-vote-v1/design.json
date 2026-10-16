@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "purpose": "reconcile cross-view car/bus/truck label conflicts without treating crops as independent probability observations",
+  "base": "unchanged pinned YOLOX-S full plus3 squares, local/global classwise NMS .45, confidence .3; no learned-weight or camera changes",
+  "group_classes": [
+    2,
+    5,
+    7
+  ],
+  "conflict_edges": "different class AND different source view AND f32 IoU strictly>.45 among existing global outputs",
+  "components": "connected components; reconcile only pairwise-complete components with distinct classes and distinct source views; otherwise keep all outputs and report ambiguity",
+  "votes": "use existing merge with all other views empty to restore and edge-filter each view; eligible original proposals have component classes and IoU>.45 to EVERY component member; highest-confidence eligible proposal supplies at most one vote per view",
+  "selection": "class with most distinct view votes; tied full-image vote wins if among tied classes; otherwise highest vote confidence then lower class id",
+  "representative": "highest-ranked existing global output of selected class; retain original class/confidence/box/origin; no geometry or probability fusion",
+  "ordering": "retain original global output order; every suppression records original ranks and votes; no hidden class/category removal",
+  "bounds": {
+    "max_views": 4,
+    "max_per_view": 300,
+    "max_global": 300,
+    "max_iou_comparisons": 1200000,
+    "max_encoded_parent_report_bytes": 4194304
+  },
+  "evaluated_data": "all8 previously viewed BDD records and138 unchanged original scoped references; no fresh holdout claim; no numeric labels parsed in this turn before freeze",
+  "evaluation": {
+    "original_quality_gates": {
+      "min_precision": 0.7,
+      "min_recall": 0.6,
+      "min_present_class_recall": 0.5
+    },
+    "relative_adoption": "retain every earlier78 reference match and every per-class count, reduce false positives below33; otherwise no recommendation over original tiled detector",
+    "protocol": "independent all-box/lineage/vote recomputation, controlled full-view tie and non-clique ambiguity, malformed inputs, native inference on all8 twice, original full+tiled detections unchanged",
+    "calibration": "report descriptive fixed5-bin Brier/ECE; correlated views do not yield calibrated confidence"
+  },
+  "defaults": "all previous binaries and source-bound evidence remain unchanged; explicit new binary only",
+  "maturity": "about20%; does not establish30%"
+}

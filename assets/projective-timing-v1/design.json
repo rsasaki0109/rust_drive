@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "mode": "timing: previous_motion; requires keyframe photometric + constant_velocity; rejects fixed_support",
+  "default": "disabled; legacy bitwise outcome preservation",
+  "motion": "SE3 body log from last two accepted depth roots, never current fit or labels",
+  "warps": "A=Exp(-twist_ref*reference_phase/dt_ref), B=Exp(-twist_prior*source_phase/dt_prior)",
+  "sample": "target(pi(A*T*p)), source(pi(B*p)); geometric admission remains in depth frame",
+  "jacobian": "g_depth=R_A^T*g_image; [g_depth, (T*p) cross g_depth]",
+  "history": "only accepted commits advance rate; reference rate frozen at its accepted endpoint; initial reference can be backfilled only from first accepted interval starting there",
+  "unavailable": "nonzero offset without usable history, near-pi log or >0.1m/>0.15rad warp disables image constraints; exact zero offset is identity",
+  "rgb": "fresh only, association within 20ms, phase difference gate replaced by both valid warps",
+  "evaluation": "same 180 acquisitions per room/desk2; sensor ledger before label decoding; independent raw equations and provenance; synthetic images rendered at their own acquisition time",
+  "adoption": "room accurate>64, desk2>=161; 179 accepted each, no expiry/reset, max translation and rotation <= original depth baseline in both records",
+  "maturity": "20 percent subjective; no safety/real-time claims"
+}

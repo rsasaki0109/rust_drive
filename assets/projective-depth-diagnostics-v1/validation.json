@@ -1,0 +1,29 @@
+{
+  "core_check": {
+    "command": "bash scripts/check.sh",
+    "exit_code": 0,
+    "rust_tests": 371,
+    "scenario_runs_and_replays": 49,
+    "log_sha256": "c20b75f5b7262b71b3a7ee82fb58ea21d303ed88efbe6121bb6a6922a4a9b9a0"
+  },
+  "unchanged_prior_simulation_output_files": 245,
+  "reference_evaluation_exit_codes": [
+    1,
+    1
+  ],
+  "independent_reference_audit_exit_code": 0,
+  "rejected_reference_corruptions": 18,
+  "prototype_trajectories_independently_scored": 12,
+  "prototype_updates_scored": 2148,
+  "prototype_accuracy_classification_changes_after_normalized_reference": 0,
+  "exact_same_version_reference_json_replays": 8,
+  "first_version_sensor_ledgers_reproduced": 2,
+  "opencv_analytic_controls_pass": true,
+  "independent_scoring_controls_pass": true,
+  "python_compile_pass": true,
+  "actionlint_pass": true,
+  "git_diff_check_pass": true,
+  "scope": "This validation does not claim prototype optimizer correctness, held-out accuracy, calibrated uncertainty or complete physical acceptance.",
+  "subjective_maturity_percent": 20,
+  "requested_30_percent_reached": false
+}

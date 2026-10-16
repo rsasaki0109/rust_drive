@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "problem": "rotation drift on viewed FR1 room, desk2 and RPY; calibration replacement is unsupported",
+  "hypothesis": "averaging source and target residuals before squaring cancels the difference-of-planes penalty introduced by separate squared plane residuals",
+  "residual": "r=(n_target+R*n_source)^T*(R*p_source+t-p_target)/2",
+  "jacobian": "[(n_target+R*n_source)/2, (q cross n_target+p_target cross R*n_source)/2]",
+  "implementation": "explicit symmetric_midpoint residual, no image combination, unchanged measurement support and robust/residual/information/fusion/clock guards",
+  "diagnostic": "every twelfth raw consecutive pair, both endpoint directions, reference motion used only as offline probe to measure one-step normal correction; never a runtime initializer",
+  "comparison": "same original 180 frames per viewed recording; keep all failed outcomes; do not claim held-out for RPY",
+  "adoption": {
+    "room_accurate_above": 64,
+    "desk2_accurate_at_least": 161,
+    "rpy_accurate_at_least": 74,
+    "all_updates_accepted": 179,
+    "no_worse_position_or_rotation_maxima_in_all_three": true
+  },
+  "maturity": "20 percent until broader reliable accuracy/calibration evidence supports a change"
+}

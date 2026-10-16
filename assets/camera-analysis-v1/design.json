@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "algorithm": "yolox_s_image_analysis_v1",
+  "purpose": "Single command for the unchanged detector and consistency rule; atomic no-clobber report publication",
+  "data_role": "same eight previously viewed BDD images; no new holdout or accuracy improvement claim",
+  "acceptance": {
+    "all_native_images": 8,
+    "repetitions": 2,
+    "old_box_coordinates_tolerance_after_f32_canonicalization": 1e-05,
+    "local_repeat_f32_identical": true,
+    "all78_reference_identities_unchanged": true,
+    "expected_counts": {
+      "true_positives": 78,
+      "false_positives": 31,
+      "false_negatives": 60
+    },
+    "original_quality_gates_must_still_fail": true
+  },
+  "faults": "existing file, dangling symlink, existing directory, missing parent, malformed arguments, missing/invalid/nonregular/oversized images, missing/size/hash-invalid model; no final or staging output after handled failures",
+  "publication_tests": "concurrent destination created after preflight; mid-serialization byte-budget error; abandoned staging",
+  "crash_limits": "kill may leave hidden .partial; no directory fsync or power-loss durability claim",
+  "model_forwards_per_image_max": 4,
+  "report_bytes_max": 4194304,
+  "subjective_maturity_percent": 20
+}

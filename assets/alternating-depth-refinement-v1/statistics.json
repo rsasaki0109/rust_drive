@@ -1,0 +1,200 @@
+{
+  "summaries": {
+    "tum-fr1-room-temporal": {
+      "samples": 5,
+      "fresh_converged": 0,
+      "control_fresh_converged": 0,
+      "guard_failures": 0,
+      "budget_exhaustions": 5,
+      "fresh_rms_gate_passes": 5,
+      "new_applied_iterations": 50,
+      "control_applied_iterations": 50,
+      "association_rounds": 29,
+      "fixed_converged_batches": 25,
+      "new_fresh_rms_m_median": 0.002464872275522572,
+      "control_fresh_rms_m_median": 0.0024642591557559397,
+      "advance_to_full_trajectory": false
+    },
+    "tum-fr1-desk2-independent": {
+      "samples": 5,
+      "fresh_converged": 0,
+      "control_fresh_converged": 0,
+      "guard_failures": 0,
+      "budget_exhaustions": 5,
+      "fresh_rms_gate_passes": 5,
+      "new_applied_iterations": 50,
+      "control_applied_iterations": 50,
+      "association_rounds": 31,
+      "fixed_converged_batches": 23,
+      "new_fresh_rms_m_median": 0.0027658186260333226,
+      "control_fresh_rms_m_median": 0.002768452853837115,
+      "advance_to_full_trajectory": false
+    }
+  },
+  "samples": {
+    "tum-fr1-room-temporal": [
+      {
+        "source_index": 120,
+        "batch_sizes": [
+          2,
+          1,
+          1,
+          2,
+          2,
+          1,
+          1
+        ],
+        "association_rounds": 7,
+        "new_max_node_translation_correction_m": 0.00044492701581818955,
+        "control_max_node_translation_correction_m": 0.00033417728202497955,
+        "new_fresh_rms_m": 0.002300355173286161,
+        "control_fresh_rms_m": 0.00232220419442176
+      },
+      {
+        "source_index": 160,
+        "batch_sizes": [
+          2,
+          1,
+          1,
+          2,
+          1,
+          1,
+          1,
+          1
+        ],
+        "association_rounds": 8,
+        "new_max_node_translation_correction_m": 0.0001735744507342607,
+        "control_max_node_translation_correction_m": 8.244359923893553e-05,
+        "new_fresh_rms_m": 0.002464872275522572,
+        "control_fresh_rms_m": 0.0024642591557559397
+      },
+      {
+        "source_index": 200,
+        "batch_sizes": [
+          3,
+          3,
+          2,
+          2
+        ],
+        "association_rounds": 4,
+        "new_max_node_translation_correction_m": 0.0011045387777612384,
+        "control_max_node_translation_correction_m": 0.0011976757332948374,
+        "new_fresh_rms_m": 0.007962945670519389,
+        "control_fresh_rms_m": 0.008075759586120917
+      },
+      {
+        "source_index": 240,
+        "batch_sizes": [
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "association_rounds": 5,
+        "new_max_node_translation_correction_m": 0.00016122807434533425,
+        "control_max_node_translation_correction_m": 4.226148726020922e-05,
+        "new_fresh_rms_m": 0.0023488512866838424,
+        "control_fresh_rms_m": 0.002348947087197469
+      },
+      {
+        "source_index": 279,
+        "batch_sizes": [
+          2,
+          2,
+          2,
+          3,
+          1
+        ],
+        "association_rounds": 5,
+        "new_max_node_translation_correction_m": 0.0001863440108028314,
+        "control_max_node_translation_correction_m": 0.00012043356178134677,
+        "new_fresh_rms_m": 0.003302432427163965,
+        "control_fresh_rms_m": 0.003329029903745754
+      }
+    ],
+    "tum-fr1-desk2-independent": [
+      {
+        "source_index": 120,
+        "batch_sizes": [
+          2,
+          1,
+          1,
+          1,
+          2,
+          2,
+          1
+        ],
+        "association_rounds": 7,
+        "new_max_node_translation_correction_m": 0.00029942448683518974,
+        "control_max_node_translation_correction_m": 0.00034022284196251826,
+        "new_fresh_rms_m": 0.0027658186260333226,
+        "control_fresh_rms_m": 0.002768452853837115
+      },
+      {
+        "source_index": 160,
+        "batch_sizes": [
+          1,
+          2,
+          2,
+          2,
+          2,
+          1
+        ],
+        "association_rounds": 6,
+        "new_max_node_translation_correction_m": 0.00013620347589861085,
+        "control_max_node_translation_correction_m": 0.00040973650413911577,
+        "new_fresh_rms_m": 0.0019733624655728457,
+        "control_fresh_rms_m": 0.001975891173297669
+      },
+      {
+        "source_index": 200,
+        "batch_sizes": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "association_rounds": 10,
+        "new_max_node_translation_correction_m": 8.943057328959604e-05,
+        "control_max_node_translation_correction_m": 8.943057328949344e-05,
+        "new_fresh_rms_m": 0.0015946806751476197,
+        "control_fresh_rms_m": 0.0015946806751476197
+      },
+      {
+        "source_index": 240,
+        "batch_sizes": [
+          3,
+          3,
+          3,
+          1
+        ],
+        "association_rounds": 4,
+        "new_max_node_translation_correction_m": 0.0021101217043001316,
+        "control_max_node_translation_correction_m": 0.001054336309285327,
+        "new_fresh_rms_m": 0.0057353528382079,
+        "control_fresh_rms_m": 0.005882706175838402
+      },
+      {
+        "source_index": 279,
+        "batch_sizes": [
+          3,
+          3,
+          3,
+          1
+        ],
+        "association_rounds": 4,
+        "new_max_node_translation_correction_m": 0.0012054643269642025,
+        "control_max_node_translation_correction_m": 0.000633654539944206,
+        "new_fresh_rms_m": 0.0053071577371908785,
+        "control_fresh_rms_m": 0.005277169880409918
+      }
+    ]
+  }
+}
