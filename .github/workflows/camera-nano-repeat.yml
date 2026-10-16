@@ -1,0 +1,72 @@
+name: Guarded Nano Resize comparison
+on:
+  push:
+    paths:
+      - '.github/workflows/camera-nano-repeat.yml'
+      - 'integrations/onnx/**'
+      - 'integrations/camera-tracking/**'
+      - 'assets/camera-nano-repeat2x-v1/**'
+      - 'rust-toolchain.toml'
+permissions:
+  contents: read
+env:
+  CARGO_INCREMENTAL: '0'
+jobs:
+  nano-repeat2x:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned Rust and independent numerical checker
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
+          python -m pip install -r scripts/requirements-visual.txt
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            integrations/onnx/target
+            integrations/camera-tracking/target
+          key: camera-nano-repeat-${{ runner.os }}-rust-1.90-${{ hashFiles('integrations/onnx/Cargo.lock', 'integrations/camera-tracking/Cargo.lock') }}
+      - name: Check original and guarded Nano implementations
+        run: |
+          cargo fmt --manifest-path integrations/onnx/Cargo.toml -- --check
+          cargo clippy --release --locked --manifest-path integrations/onnx/Cargo.toml --all-targets -- -D warnings
+          cargo test --release --locked --manifest-path integrations/onnx/Cargo.toml --bin rustdriving-camera-nano-profile --bin rustdriving-camera-nano-repeat2x
+          cargo build --release --locked --manifest-path integrations/onnx/Cargo.toml --bin rustdriving-camera-nano --bin rustdriving-camera-latest --bin rustdriving-camera-nano-profile --bin rustdriving-camera-nano-repeat2x
+          cargo build --release --locked --manifest-path integrations/camera-tracking/Cargo.toml
+          python -B assets/camera-nano-repeat2x-v1/verify.py
+          python -m unittest discover -s integrations/onnx -p test_camera_nano_repeat.py -v
+      - name: Acquire unchanged pinned inputs and retain licenses
+        run: |
+          python integrations/onnx/fetch.py --output artifacts/camera-model
+          python integrations/onnx/fetch_s.py --output artifacts/camera-model-s
+          python scripts/fetch-visual-datasets.py tum-fr3-sitting-visual
+          python integrations/onnx/bdd_fetch.py --output artifacts/bdd-camera
+          mkdir -p artifacts/camera-nano-repeat-check
+          cp assets/camera-nano-v1/LICENSE-TUM-data.txt artifacts/camera-nano-repeat-check/LICENSE-TUM-data.txt
+          cp assets/camera-nano-v1/LICENSE-BDD-data.txt artifacts/camera-nano-repeat-check/LICENSE-BDD-data.txt
+      - name: Recheck every output bit and record both clock outcomes
+        run: |
+          python integrations/onnx/camera_nano_repeat_check.py controls --output artifacts/camera-nano-repeat-check/controls
+          python integrations/onnx/camera_nano_repeat_check.py run --controls artifacts/camera-nano-repeat-check/controls --output artifacts/camera-nano-repeat-check/validation
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d = json.loads(Path('artifacts/camera-nano-repeat-check/validation/summary.json').read_text())
+          assert d['pass_checks'] and d['raw_outputs_per_view'] == 301665
+          assert d['original_images'] == 16 and d['repeats'] == 2 and d['raw_bitwise_pairs'] == 128
+          assert d['raw_profile_model_forwards'] == 256 and d['parallel_model_forwards'] == 128
+          assert d['current_serial_reference_model_forwards'] == 64 and d['exact_guard_replays'] == 8
+          assert d['actual_model_forwards'] == d['timed_model_forwards'] + 448
+          assert d['deadline_or_quality_success_required_for_execution'] is False
+          assert d['new_holdout'] is False and d['driving_integration'] is False
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: camera-nano-repeat2x
+          path: artifacts/camera-nano-repeat-check/

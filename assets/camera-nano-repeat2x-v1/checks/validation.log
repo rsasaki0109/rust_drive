@@ -1,0 +1,25 @@
+Measured fifo baseline-first
+Measured fifo optimized-first
+Measured fifo optimized-repeat
+Measured fifo baseline-repeat
+Measured latest baseline-first
+Measured latest optimized-first
+Measured latest optimized-repeat
+Measured latest baseline-repeat
+Exact original/optimized raw outputs and parallel results tum-0
+Exact original/optimized raw outputs and parallel results tum-1
+Exact original/optimized raw outputs and parallel results tum-2
+Exact original/optimized raw outputs and parallel results tum-3
+Exact original/optimized raw outputs and parallel results tum-4
+Exact original/optimized raw outputs and parallel results tum-5
+Exact original/optimized raw outputs and parallel results tum-6
+Exact original/optimized raw outputs and parallel results tum-7
+Exact original/optimized raw outputs and parallel results 00a395fe-d60c0b47
+Exact original/optimized raw outputs and parallel results 026c7465-d54954fa
+Exact original/optimized raw outputs and parallel results 0798a3a8-c4501e0f
+Exact original/optimized raw outputs and parallel results 0a493f24-352f747e
+Exact original/optimized raw outputs and parallel results 17d21997-6f076249
+Exact original/optimized raw outputs and parallel results 4899be53-dcc6c017
+Exact original/optimized raw outputs and parallel results 4dab8d2a-be9667d4
+Exact original/optimized raw outputs and parallel results ab2360f2-7704a1bf
+{"pass_checks": true, "comparison": [{"scheduler": "fifo", "label": "baseline-first", "source_images": 8, "inferred_images": 4, "superseded_images": 0, "available_results": 1, "inferred_but_late_images": 1, "processing_s": [0.08706026900000001, 0.08381024499999999, 0.14007580100000003, 0.10142662499999999]}, {"scheduler": "fifo", "label": "optimized-first", "source_images": 8, "inferred_images": 4, "superseded_images": 0, "available_results": 1, "inferred_but_late_images": 0, "processing_s": [0.078406979, 0.07954207699999999, 0.07874694099999999, 0.076718919]}, {"scheduler": "fifo", "label": "optimized-repeat", "source_images": 8, "inferred_images": 4, "superseded_images": 0, "available_results": 1, "inferred_but_late_images": 0, "processing_s": [0.094598062, 0.07685199999999999, 0.07676394, 0.07265713899999998]}, {"scheduler": "fifo", "label": "baseline-repeat", "source_images": 8, "inferred_images": 4, "superseded_images": 0, "available_results": 1, "inferred_but_late_images": 1, "processing_s": [0.099005698, 0.08770325999999999, 0.08170238999999999, 0.07914887499999995]}, {"scheduler": "latest", "label": "baseline-first", "source_images": 8, "inferred_images": 4, "superseded_images": 4, "available_results": 3, "inferred_but_late_images": 0, "processing_s": [0.081940683, 0.078623618, 0.08183480499999998, 0.08069700400000002]}, {"scheduler": "latest", "label": "optimized-first", "source_images": 8, "inferred_images": 3, "superseded_images": 5, "available_results": 0, "inferred_but_late_images": 0, "processing_s": [0.15432167800000002, 0.16143275, 0.07247482]}, {"scheduler": "latest", "label": "optimized-repeat", "source_images": 8, "inferred_images": 4, "superseded_images": 4, "available_results": 1, "inferred_but_late_images": 0, "processing_s": [0.11745691100000001, 0.09157069300000001, 0.072157513, 0.07219246400000001]}, {"scheduler": "latest", "label": "baseline-repeat", "source_images": 8, "inferred_images": 4, "superseded_images": 4, "available_results": 1, "inferred_but_late_images": 0, "processing_s": [0.10770307200000001, 0.10779729, 0.08298451499999998, 0.08996240900000002]}], "first_image_timings": {"fifo": {"baseline_first_image_s": [0.08706026900000001, 0.099005698], "optimized_first_image_s": [0.078406979, 0.094598062], "mean_reduction_fraction": 0.07019513676028677}, "latest": {"baseline_first_image_s": [0.081940683, 0.10770307200000001], "optimized_first_image_s": [0.15432167800000002, 0.11745691100000001], "mean_reduction_fraction": -0.43310065232572503}}, "timed_model_forwards": 124, "raw_profile_model_forwards": 256, "parallel_model_forwards": 128, "current_serial_reference_model_forwards": 64, "actual_model_forwards": 572, "raw_outputs_per_view": 301665, "raw_bitwise_pairs": 128, "original_images": 16, "repeats": 2, "exact_guard_replays": 8, "fresh_quality_scoring": false, "inherited_nano_quality": {"true_positives": 55, "false_positives": 39, "false_negatives": 83, "precision": 0.5851063829787234, "recall": 0.39855072463768115, "mean_matched_iou": 0.7623536466104748}, "new_holdout": false, "driving_integration": false, "deadline_or_quality_success_required_for_execution": false, "checker_sha256": "3408f90f199ef501bb2e660197995013c1d33940746f9047629c30b2d4dec87a", "clock_checker_sha256": "6a2bb9037e5c14a288dd8e7aeb69d3f99a558fce564fdf3f796201b30dd8546c"}
