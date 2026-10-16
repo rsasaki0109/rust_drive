@@ -29,6 +29,19 @@ def require(condition, message):
         raise ValueError(message)
 
 
+def identical(expected, actual, message, path='$'):
+    """Keep exact equality, but locate the first mismatch in remote CI logs."""
+    if expected == actual:
+        return
+    if isinstance(expected, dict) and isinstance(actual, dict) and expected.keys() == actual.keys():
+        for key in expected:
+            identical(expected[key], actual[key], message, path + '.' + str(key))
+    elif isinstance(expected, list) and isinstance(actual, list) and len(expected) == len(actual):
+        for index, (left, right) in enumerate(zip(expected, actual)):
+            identical(left, right, message, path + f'[{index}]')
+    raise ValueError(f'{message}; first difference {path}: expected={repr(expected)[:240]}, actual={repr(actual)[:240]}')
+
+
 def digest(path):
     with Path(path).open('rb') as stream:
         return hashlib.file_digest(stream, 'sha256').hexdigest()
@@ -273,12 +286,14 @@ def run(args):
         inspected = native(args.binary, ['--inspect-sequence', path], out / (name + '-inspection.json'))
         first = native(args.binary, ['--model', args.model, '--sequence', path], out / (name + '-first.json'))
         repeat = native(args.binary, ['--model', args.model, '--sequence', path], out / (name + '-repeat.json'))
+        print(json.dumps(dict(pipeline_case=name, first_forwards=first['execution']['model_forwards'],
+                              repeat_forwards=repeat['execution']['model_forwards'])), flush=True)
         require(without_timing(first) == without_timing(repeat), 'complete repeat excluding only measured inference/load time')
         require(first['compiled_sources'] == receipt['compiled_sources'] and first['source_sequence_sha256'] == digest(path), 'source/sequence receipts')
         require(first['algorithm'] == 'yolox_s_camera_pipeline_v1' and first['control_permission'] is False
                 and first['freshness_clock'] == 'caller_supplied_replay', 'scope and clock identity')
         previous = load(saved / (name + '-first.json'))
-        require([e['freshness'] for e in first['events']] == previous['results'], 'exact prior freshness decisions/projections')
+        identical(previous['results'], [e['freshness'] for e in first['events']], 'exact prior freshness decisions/projections')
         require([e['admission_without_model'] for e in inspected['events']] == [e['freshness']['decision'] for e in first['events']], 'preflight/runtime decisions agree')
         guard_events, analysis_count, image_count = [], 0, 0
         for index,(event, actual) in enumerate(zip(manifest['events'], first['events'])):
@@ -293,7 +308,7 @@ def run(args):
                     require(not actual['inference_skipped'] and actual['freshness']['decision'] == 'accepted', 'inference only for admitted images')
                     old_report = next(load(saved/old['input']['report']) for old in load(saved/(name+'-input.json'))['events']
                         if old['input']['kind']=='analysis' and load(saved/old['input']['report'])['source_image_sha256']==data['sha256'])
-                    require(without_timing(actual['analysis']) == without_timing(old_report), 'complete analyzer parity with saved real inference')
+                    identical(without_timing(old_report), without_timing(actual['analysis']), 'complete analyzer parity with saved real inference')
                     export = exports / (name + f'-{index}.json')
                     write(export, actual['analysis'])
                     guard_input = dict(kind='analysis', acquired_s=actual['acquired_s'], report=os.path.relpath(export,out), sha256=digest(export))

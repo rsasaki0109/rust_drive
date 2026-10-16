@@ -1,0 +1,50 @@
+name: Camera pipeline contract
+on:
+  push:
+    paths:
+      - '.github/workflows/camera-contract.yml'
+      - 'integrations/onnx/**'
+      - 'integrations/camera-tracking/**'
+      - 'scripts/fetch-visual-datasets.py'
+      - 'rust-toolchain.toml'
+permissions:
+  contents: read
+env:
+  CARGO_INCREMENTAL: '0'
+jobs:
+  exact-camera-pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned Rust
+        run: rustup toolchain install 1.90.0 --profile minimal
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            integrations/onnx/target
+            integrations/camera-tracking/target
+          key: camera-contract-${{ runner.os }}-rust-1.90-${{ hashFiles('integrations/onnx/Cargo.lock', 'integrations/camera-tracking/Cargo.lock') }}
+      - name: Build the original independent camera tools
+        run: |
+          cargo build --release --locked --manifest-path integrations/onnx/Cargo.toml --bin rustdriving-camera-pipeline
+          cargo build --release --locked --manifest-path integrations/camera-tracking/Cargo.toml
+      - name: Acquire pinned model and original indoor image cache
+        run: |
+          python integrations/onnx/fetch_s.py --output artifacts/camera-model-s
+          python scripts/fetch-visual-datasets.py tum-fr3-sitting-visual
+      - name: Check exact camera pipeline contract and preserve the first difference
+        run: |
+          mkdir -p artifacts/camera-contract
+          cp assets/camera-pipeline-v1/LICENSE-data.txt artifacts/camera-contract/LICENSE-data.txt
+          python integrations/onnx/camera_pipeline_check.py controls --output artifacts/camera-contract/controls
+          python integrations/onnx/camera_pipeline_check.py run --controls artifacts/camera-contract/controls --output artifacts/camera-contract/recorded
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: camera-pipeline-contract
+          path: artifacts/camera-contract/
