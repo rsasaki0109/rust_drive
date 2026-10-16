@@ -1,0 +1,51 @@
+{
+  "analytic_pass": true,
+  "source_proof": true,
+  "interpolation": {
+    "plane_samples": 7,
+    "xyz_finite_difference_axes": 3,
+    "nonaffine_xyz_finite_difference_axes": 3,
+    "interpolatory_integer_samples": 3,
+    "c1_inconsistent_edge_axes": 2,
+    "normal_sign_and_scale_checks": 2,
+    "missing_outer_corner_allowed": true,
+    "missing_corners_rejected": 4,
+    "invalid_normal_and_plane_guards": 3,
+    "negative_overshoot_guard": true
+  },
+  "normal_completion": {
+    "normal_layers_compared": 15,
+    "original_normals_depth_vertices_and_border_preserved": true,
+    "local_measured_plane_repair": true,
+    "sampler_support_repaired": true,
+    "strict_nine_vs_eight_control": true,
+    "missing_center_roughness_and_rank_rejected": true,
+    "unprepared_field_rejected": true,
+    "corrupted_completed_mask_rejected": true
+  },
+  "rendered_continuous_converged": true,
+  "rendered_applied_corrections": 1,
+  "rendered_guard": null,
+  "reported_systems": 7,
+  "checkpoint_systems": 6,
+  "prior_system_checks": 1,
+  "objective_gradient_axes": 12,
+  "original_rendered_sources": 988,
+  "hermite_rendered_sources": 988,
+  "degenerate_guards": {
+    "missing": "new frame needs measured support",
+    "plane": "zero/nonfinite diagonal"
+  },
+  "rejected_corruptions": [
+    "false convergence",
+    "changed source identities",
+    "changed normalizer digest",
+    "wrong final matrix"
+  ],
+  "input_roots_unchanged": true,
+  "source_sha256": {
+    "scripts/local_normal_support.py": "9f753737dcfd35a47a034e58141e1fbc83e469bc520632466231d9d0b1aeee89",
+    "scripts/local_normal_depth_refinement.py": "69d51cbef87915249a8788184d264e2932cbb35f804144631fa2e1d9f0af5312",
+    "scripts/check-local-normal-depth-refinement.py": "dfc149ecd92208cd83c26a17c0dc3918e02169cbe15190981e83562398bb85b1"
+  }
+}

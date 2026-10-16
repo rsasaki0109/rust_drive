@@ -1,0 +1,35 @@
+{
+  "pass_checks": true,
+  "native_input_rejections": 25,
+  "existing_output_protections": 2,
+  "build_admission_rejections": [
+    {
+      "name": "binary-hash",
+      "error": "native executable differs from build receipt"
+    },
+    {
+      "name": "cpu-features",
+      "error": "current CPU lacks features recorded for the native build"
+    },
+    {
+      "name": "missing-cpu-features",
+      "error": "nonempty recorded CPU features required"
+    },
+    {
+      "name": "missing-sources",
+      "error": "complete unchanged parallel-detector source receipt required"
+    },
+    {
+      "name": "recipe",
+      "error": "expected native build recipe"
+    },
+    {
+      "name": "builder",
+      "error": "build script differs"
+    }
+  ],
+  "build_receipt_sha256": "ece5cbd34ae7ea144754a01d930279602cb87df8d7b21b9ecaad9f42a64925be",
+  "executable_sha256": "8605784e609cd38cc23070e93f5a6c4aaf8b4ffb8499fe762f36e32f550d7932",
+  "checker_sha256": "bb17a1e1c03561dc71c5fa72695292622b1d9f0300b01e09d3bff0f2181fa585",
+  "build_script_sha256": "c3cf264ded555d525057ff6a6bb975c97ca02e6f8ce68122b5572a7a9bc73f22"
+}

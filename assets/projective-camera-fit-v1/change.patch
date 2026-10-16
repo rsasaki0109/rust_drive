@@ -1,0 +1,1044 @@
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -157,6 +157,7 @@
+           python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --visibility free_space_decay --output artifacts/projective-depth/visibility-analytic
+           python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/visibility-analytic --visibility free_space_decay --output artifacts/projective-depth/visibility-raw-audit
+           python scripts/check-projective-visibility.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/visibility-controls
++          python scripts/check-projective-camera.py --output artifacts/projective-depth/camera-math
+           python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --correspondence bilinear --output artifacts/projective-depth/bilinear-analytic
+           python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/bilinear-analytic --correspondence bilinear --output artifacts/projective-depth/bilinear-raw-audit
+           python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --normals inverse_depth_plane --output artifacts/projective-depth/plane-normal-analytic
+@@ -228,6 +229,7 @@
+           python -m py_compile scripts/projective_range_raw.py scripts/projective_whitened_raw.py scripts/diagnose-projective-range.py scripts/check-projective-range.py
+           python -m py_compile scripts/projective_fusion_raw.py scripts/diagnose-projective-fusion.py scripts/check-projective-fusion.py
+           python -m py_compile scripts/projective_visibility_raw.py scripts/diagnose-projective-visibility.py scripts/check-projective-visibility.py
++          python -m py_compile scripts/projective_camera_fit.py scripts/diagnose-projective-camera.py scripts/check-projective-camera.py
+           python -m py_compile scripts/diagnose-projective-motion-timing.py
+           python -m py_compile scripts/multireference_rgbd_common.py scripts/evaluate-multireference-rgbd.py
+           python -m py_compile scripts/joint_keyframe_depth.py scripts/evaluate-joint-keyframe-depth.py
+--- a/artifacts/projective-camera-fit-v1/design.json
++++ b/artifacts/projective-camera-fit-v1/design.json
+@@ -0,0 +1,198 @@
++{
++  "schema_version": 1,
++  "purpose": "diagnose whether one shared pinhole focal/depth-scale correction explains raw pair discrepancies before operational pose fitting",
++  "model": {
++    "parameters": [
++      "log_shared_focal_multiplier",
++      "log_axial_depth_multiplier"
++    ],
++    "bounds": [
++      -0.05,
++      0.05
++    ],
++    "base_camera": {
++      "width": 640,
++      "height": 480,
++      "fx": 525.0,
++      "fy": 525.0,
++      "cx": 319.5,
++      "cy": 239.5
++    },
++    "fixed": "principal point, focal aspect ratio, distortion, depth offset, original depth/GT clocks and qualification scorer; no second manufacturer depth correction",
++    "geometry": "p = exp(b)*diag(exp(-a),exp(-a),1)*p_base; target normal follows inverse transpose with normalization; its derivative is included"
++  },
++  "data": {
++    "training_records": [
++      "tum-fr1-room-temporal",
++      "tum-fr1-desk2-independent"
++    ],
++    "validation_records": [
++      "tum-fr1-room-temporal",
++      "tum-fr1-desk2-independent",
++      "tum-fr1-rpy-heldout"
++    ],
++    "training_pairs": [
++      [
++        0,
++        6
++      ],
++      [
++        12,
++        18
++      ],
++      [
++        24,
++        30
++      ],
++      [
++        36,
++        42
++      ],
++      [
++        48,
++        54
++      ],
++      [
++        60,
++        66
++      ],
++      [
++        72,
++        78
++      ],
++      [
++        84,
++        90
++      ],
++      [
++        96,
++        102
++      ],
++      [
++        108,
++        114
++      ],
++      [
++        120,
++        126
++      ],
++      [
++        132,
++        138
++      ],
++      [
++        144,
++        150
++      ],
++      [
++        156,
++        162
++      ],
++      [
++        168,
++        174
++      ]
++    ],
++    "validation_pairs": [
++      [
++        3,
++        9
++      ],
++      [
++        15,
++        21
++      ],
++      [
++        27,
++        33
++      ],
++      [
++        39,
++        45
++      ],
++      [
++        51,
++        57
++      ],
++      [
++        63,
++        69
++      ],
++      [
++        75,
++        81
++      ],
++      [
++        87,
++        93
++      ],
++      [
++        99,
++        105
++      ],
++      [
++        111,
++        117
++      ],
++      [
++        123,
++        129
++      ],
++      [
++        135,
++        141
++      ],
++      [
++        147,
++        153
++      ],
++      [
++        159,
++        165
++      ],
++      [
++        171,
++        177
++      ]
++    ],
++    "role": "all three are previously viewed FR1 recordings; validation endpoints differ from training endpoints, but no fresh heldout/generalization claim",
++    "correspondences": "original fine stride2 forward/normal/distance admission at original K and offline interpolated reference relative pose; keep every eighth admitted pair in row-major order; freeze pair identities and target base normals",
++    "minimum_samples_per_pair": 200
++  },
++  "solver": {
++    "loss": "Huber .01 m; each pair equal weight and both training records equal weight",
++    "iterations": 12,
++    "max_log_step": 0.02,
++    "backtracking": [
++      1,
++      0.5,
++      0.25,
++      0.125,
++      0.0625
++    ],
++    "max_parameter_information_condition": 10000.0,
++    "convergence_log_step": 1e-07,
++    "covariance_claim": false
++  },
++  "trial_eligibility": {
++    "all_training_fits_converged_without_bound": true,
++    "room_desk_parameter_agreement_log_at_most": 0.01,
++    "leave_one_pair_out_max_log_deviation_at_most": 0.01,
++    "validation_all_three": "nonincreasing fixed-support robust cost, raw RMS, median position correction and median rotation correction at reference pose",
++    "same_original_qualification_clocks": true,
++    "not_physical_calibration_certificate": true
++  },
++  "trajectory_adoption": {
++    "room_above": 64,
++    "desk2_at_least": 161,
++    "rpy_at_least": 74,
++    "all_updates_accepted": 179,
++    "no_worse_maximum_position_or_rotation_on_all_three": true,
++    "no_resets": true
++  },
++  "limitations": "two-parameter model omits image registration warp, timing, principal point, normal uncertainty, association and reference errors; per-pixel residuals are correlated; fits are development diagnostics",
++  "ground_truth_operational": false,
++  "default_changed": false,
++  "binary_sha256": "59332ed6601e8b7ff16759694f8c8fb4af1b23050efeb1982b0e065a5a47b426",
++  "subjective_maturity_percent": 20
++}
+--- a/artifacts/projective-camera-fit-v1/normalized-design.json
++++ b/artifacts/projective-camera-fit-v1/normalized-design.json
+@@ -0,0 +1,14 @@
++{
++  "schema_version": 1,
++  "reason": "retained pure-rotation/noise counterexample: physical-distance residual scales with a uniform depth multiplier, creating spurious scale sensitivity and preferring the lower bound",
++  "preserved_first_trial": "diagnosis; candidate-source.tar.gz; scale-gauge-first; audit-first and repaired audit",
++  "normalized_fit_residual": "physical point-plane residual / exp(log_depth_multiplier), in nominal original raw metres",
++  "derivatives": {
++    "focal": "physical focal derivative / exp(b)",
++    "depth": "- n(a) dot reference_translation / exp(b)"
++  },
++  "robust_loss": "Huber .01 in original nominal raw metres; scale the entire loss consistently",
++  "gauge_requirement": "for zero reference translation the fit objective must be invariant to uniform scale, and its scale Jacobian must be exactly zero even with noisy points",
++  "unchanged": "same75 source pairs, same samples, bounds, per-record weights, folds, validation using original physical residuals/pose corrections, original reference clocks and eligibility gates; one mathematical correction, no parameter sweep",
++  "certificate": "noise-normalization hypothesis and gauge repair; no calibrated physical camera certificate"
++}
+--- a/artifacts/projective-camera-fit-v1/numerical-design.json
++++ b/artifacts/projective-camera-fit-v1/numerical-design.json
+@@ -0,0 +1,7 @@
++{
++  "role": "pre-data numerical guard supplement",
++  "maximum_eigenvalue_floor_m2": 1e-12,
++  "interpretation": "reject numerical zero sensitivity; not a statistical calibration-information threshold",
++  "step_cap": "maximum absolute log component .02",
++  "trial_profile_export": "only when every frozen eligibility gate passes; original reference timestamps always retained"
++}
+--- a/artifacts/projective-camera-fit-v1/probe-scale-gauge.py
++++ b/artifacts/projective-camera-fit-v1/probe-scale-gauge.py
+@@ -0,0 +1,25 @@
++from pathlib import Path
++import importlib.util
++import json
++import sys
++import numpy as np
++r=Path('/workspace/rust_drive');sys.path.insert(0,str(r/'scripts'))
++from projective_camera_fit import fit,system
++from projective_depth_common import fresh,sha,write,require
++b=r/'artifacts/projective-camera-fit-v1';out=fresh(b/'scale-gauge-first')
++sources=(Path(__file__),r/'scripts/projective_camera_fit.py',r/'scripts/check-projective-camera.py',r/'scripts/projective_depth_common.py')
++pins={str(f.relative_to(r)):sha(f.read_bytes()) for f in sources}
++write(out/'freeze.json',dict(source_sha256=pins,noise_seed=1705,independent_axial_coordinate_noise_std_m=.003,reference_translation_m=0.,role='conditional gauge counterexample, not physical camera noise'))
++spec=importlib.util.spec_from_file_location('check',r/'scripts/check-projective-camera.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
++parameters=np.array([.018,-.023]);samples=m.synthetic(parameters,False);rng=np.random.default_rng(1705)
++for s in samples:
++    s['source']+=rng.normal(0.,.003,s['source'].shape)
++    s['target']+=rng.normal(0.,.003,s['target'].shape)
++original=system(samples,parameters);smaller=system(samples,parameters+[0.,-.01]);result=fit(samples)
++require(original['observable'],'the original raw-distance system mistakes noise for scale information')
++require(smaller['cost_m2']<original['cost_m2'],'shrinking uniform scale reduces the objective without a metric motion baseline')
++write(out/'summary.json',dict(counterexample_reproduced=True,initial_observable=original['observable'],initial_condition=original['condition'],
++    original_cost_m2=original['cost_m2'],smaller_scale_cost_m2=smaller['cost_m2'],fit_status=result['status'],fit_parameters=result['parameters'],
++    physical_scale_identifiable=False,physical_noise_calibration=False))
++require(all(sha((r/n).read_bytes())==h for n,h in pins.items()),'frozen gauge probe sources')
++print(json.dumps(json.loads((out/'summary.json').read_text())),flush=True)
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -399,6 +399,12 @@
+ foreground controls pass, while viewed scores67/161/74 fail room/desk2 maximum
+ position gates. The default keeps this mode disabled.
+ 
++An offline [camera correction probe and independent auditor](projective-camera-fit.md)
++tests shared focal/depth perturbations before a trajectory trial. Raw-unit loss
++normalization prevents noisy pure rotations from inventing depth-scale
++information. Viewed training/validation checks reject both attempted corrections,
++so the native registered-grid camera and all runtime policies remain unchanged.
++
+ Optional [midpoint surface residuals and bidirectional projective matching](projective-surface.md)
+ separate measured-normal averaging from correspondence search in both directions.
+ Both retain accepted-state and conditioning guards. Each bidirectional solve and
+--- a/docs/maturity.md
++++ b/docs/maturity.md
+@@ -669,3 +669,10 @@
+ position error in room/desk2, so the mode remains disabled by default. These
+ mapping and diagnostic additions do not establish qualified localization;
+ maturity remains **about 20%**, with the **30% waypoint unmet**.
++
++The [raw camera correction study](projective-camera-fit.md) adds independent
++focal/depth derivatives, complete fold audits and a repair for noisy scale
++ambiguity. Two corrections fail the frozen stability/validation gate; neither
++exports a camera profile or changes the tracker. This improves the calibration
++diagnostic while leaving physical calibration and sustained accuracy unresolved.
++The engineering estimate remains **about 20%**, with the **30% waypoint unmet**.
+--- a/docs/native-depth-regression.md
++++ b/docs/native-depth-regression.md
+@@ -12,6 +12,11 @@
+ used as substitutes for these complete physical trajectories.
+ 
+ ## Complete outcomes
++
++The later [raw camera correction study](projective-camera-fit.md) tests focal
++and depth-scale perturbations before running another trajectory comparison.
++Both attempts fail the frozen application gate; their raw audits pass, and
++the native camera, fitting policies and prior outcomes remain unchanged.
+ 
+ The later [measured free-space update](projective-visibility.md) removes a
+ controlled disappearing foreground but scores67/161/74 on the same viewed
+--- a/docs/projective-camera-fit.md
++++ b/docs/projective-camera-fit.md
+@@ -0,0 +1,170 @@
++# Raw camera correction probes and scale ambiguity
++
++New offline tools fit and independently audit a shared focal/depth correction
++before considering a camera change in the tracker. They also repair a discovered
++scale ambiguity in the first fitting objective. **Neither attempted correction
++passes trial eligibility, so no camera profile is exported or applied.** Native
++Rust code, its compiled tracker and all operational defaults remain unchanged.
++
++The [fixed design](../assets/projective-camera-fit-v1/design.json),
++[normalization correction](../assets/projective-camera-fit-v1/normalized-design.json)
++and [source-bound packet](../assets/projective-camera-fit-v1/summary.json) preserve
++both complete failures. This study supplies conditional calibration diagnostics,
++without a physical camera calibration certificate or an accuracy increase.
++
++## Fixed data and model
++
++The original [registered-grid model](registered-grid-camera.md) remains the
++operational baseline: K=525, center 319.5/239.5, axial PNG depth divided by 5,000,
++and no further manufacturer scale factor or distortion warp. The earlier
++published-K-only comparison already fails the
++[continuous adoption gate](multireference-rgbd.md). This experiment estimates
++two shared perturbations rather than selecting a different published camera.
++
++Parameters `a` and `b` multiply both focal lengths by `exp(a)` and nominal depth
++by `exp(b)`. Principal point, focal aspect ratio, distortion, depth offset and
++all source/reference timestamps stay fixed. Bounds are ±0.05 in log units.
++With `A=diag(exp(-a),exp(-a),1)`, nominal points become `exp(b)*A*p`.
++Target normals follow the normalized inverse transpose of that transformation;
++the derivative includes this moving normal.
++
++Training uses fifteen room and fifteen desk2 pairs at original window offsets
++`(0,6), (12,18), …, (168,174)`, approximately 0.2 s apart. Validation uses fifteen
++pairs per recording at `(3,9), …, (171,177)`, including RPY. Its frame endpoints
++are disjoint from training endpoints. All recordings are already viewed FR1
++data, with temporal correlation and the same camera; this is not a fresh
++held-out or automotive result.
++
++Correspondences use the original fine-scale projection, normal and distance
++gates at original K and offline reference motion. Every eighth admitted pair
++is retained in row-major order, with at least 200 samples in each fixed pair.
++Pixel identities, raw points, base normals and reference motions then stay
++frozen during fitting. Each pair has equal weight, and the two training records
++have equal weight. Reference labels enter these offline probes only.
++
++## The first failure and its correction
++
++The first objective minimizes physical point-to-plane Huber loss with a 10 mm
++cutoff. When reference translation is zero, multiplying all depths by `s`
++also multiplies residual noise by `s`. The objective can prefer smaller depths
++even though that motion supplies no metric scale baseline.
++
++A fixed control with known pure rotations and independent 3 mm noise on all
++three point coordinates reproduces the problem. The first numerical information
++test reports condition 160.863 and accepts apparent scale sensitivity. Reducing
++the log scale by 0.01 lowers cost from 8.466226e-6 to 8.300992e-6 m²; fitting reaches
++the lower scale bound. This is a constructed gauge counterexample, not a camera
++noise calibration. The first probe receipt's `axial_coordinate` field names
++only part of the injected three-coordinate noise; its source and original
++receipt are retained.
++
++The corrected objective expresses the complete robust residual in original
++nominal raw metres: `r_fit = r_physical / exp(b)`. Its focal derivative is the
++physical derivative divided by `exp(b)`, and its scale derivative simplifies to
++`-n(a)·t_reference / exp(b)`. It is exactly zero for zero reference translation,
++including noisy points. The corrected control rejects scale estimation and
++keeps the objective invariant under a uniform scale change.
++
++This repairs the demonstrated scale ambiguity. It remains a provisional
++normalization and a conditional sensitivity test. Focal estimation, surface
++association, measured-normal errors, image registration, reference timing and
++unmodeled noise can still affect the fitted parameters. No covariance or
++physical identifiability certificate is produced.
++
++## Complete outcomes and the application gate
++
++Both versions fit room, desk2 and one joint correction, plus all thirty
++leave-one-pair-out fits. The iteration cap of 12, bounds, step cap, line search,
++pair identities, validation metrics and eligibility thresholds stay fixed.
++All **75 derived sample caches reproduce byte-for-byte** between versions.
++
++| Joint objective | Focal multiplier | Depth multiplier | Joint status | Eligible for trajectory trial |
++|---|---:|---:|---|---|
++| First physical-distance loss | 1.005325 | 0.951229 | Lower depth bound | No |
++| Corrected raw-unit loss | 1.017104 | 1.014614 | Converged | No |
++
++The first separate room fit reaches its bound. Corrected room fitting reaches
++the work cap, and twelve of its fifteen leave-one-out folds also reach the cap.
++The corrected room/desk2 parameter difference is 0.006467 in maximum log units,
++within the predeclared 0.01 agreement threshold. Maximum leave-one-out deviations
++are 0.017976 and 0.019616, exceeding the same 0.01 stability threshold. The cap is
++not increased after viewing these outcomes.
++
++Validation below reports physical raw RMS in millimetres, with identical
++frozen samples. The original physical-metre metrics and reference clocks remain
++the application gate even after training normalization changes.
++
++| Viewed recording | Original RMS | First correction RMS | Corrected objective RMS |
++|---|---:|---:|---:|
++| Room | 17.1001 | 16.8016 | 17.6077 |
++| Desk2 | 16.2230 | 15.1756 | 16.4276 |
++| RPY | 13.6113 | 12.7401 | 14.0089 |
++
++Lower RMS from the first correction also fails to improve all reference-pose
++corrections. The next table shows median translation / rotation magnitudes
++in millimetres / milliradians. They are single linearized raw-pair probes,
++not estimated root trajectories.
++
++| Viewed recording | Original | First correction | Corrected objective |
++|---|---|---|---|
++| Room | 10.239 / 7.423 | 11.572 / 8.478 | 10.889 / 8.325 |
++| Desk2 | 11.626 / 12.007 | 10.275 / 12.407 | 11.219 / 11.846 |
++| RPY | 8.439 / 5.269 | 8.944 / 5.749 | 9.531 / 5.895 |
++
++Eligibility requires every full and leave-one-out fit to converge inside the
++bounds, parameter agreement and stability within 0.01 log units, and nonincreasing
++validation robust cost, RMS and median pose corrections in all three records.
++Both versions fail. No `trial-profile.json` is written, no new operational
++trajectory is run, and the original three-recording adoption gates remain.
++The result does not rule out calibration with a richer model or independent
++measurements; it rejects applying these fitted corrections under this protocol.
++
++## Independent verification and reproduction
++
++The maintained checker constructs transformed normals from triangle cross
++products, independently of the fitter's dual-normal formula. Central finite
++differences check focal and scale derivatives, absolute H/g and line-search
++costs. Two known synthetic corrections are recovered, including a complete
++JSON round trip through the fit-trace auditor. Unexcited motion, noiseless and
++noisy pure-rotation scale gauges reject; joint H/g rescaling is detected.
++
++For recorded checks, the auditor decodes original PNGs, independently rebuilds
++central normals and the complete original match population, verifies frozen
++pixel identities and all caches, and checks every fit and fold. The two attempts
++contain **390 and 406** fitted/final calibration systems, respectively, and
++**90 physical pose systems each** for validation. All pass independent
++reconstruction while both eligibility decisions remain false.
++
++The first full audit exposed an `abs(JSON list)` handling bug. It is repaired
++with array conversion and serialized-trace controls; the original failed log,
++diagnostic source and repaired audit are retained. A later extra closing
++parenthesis was caught before the normalized process read data. That failed
++source epoch and syntax log are retained separately from the actual normalized
++run. Neither issue changes the preserved numeric first trial.
++
++The root suite passes 371 Rust tests and 49 scenario replays, retaining all 245
++deterministic hashes. The unchanged optional tracker passes 59 Rust tests:
++**430 Rust tests** in total. Native source, Cargo pins and the release-binary
++hash match the preceding visibility packet. CI includes dataset-free camera
++math controls; recorded audits were run locally on this Linux host.
++
++Use the [existing inputs and environment](projective-depth-rust.md#reproduction)
++and fresh output paths:
++
++```bash
++OPENBLAS_NUM_THREADS=1 python scripts/check-projective-camera.py \
++  --output artifacts/camera-controls
++OPENBLAS_NUM_THREADS=1 python scripts/diagnose-projective-camera.py \
++  --output artifacts/camera-diagnostic
++# Expected exit 1 for retained calibration eligibility failures; continue auditing.
++OPENBLAS_NUM_THREADS=1 python scripts/check-projective-camera.py \
++  --reports artifacts/camera-diagnostic --output artifacts/camera-audit
++```
++
++`--source-archive` lets the independent checker bind historical diagnostic source
++pins to the appropriate retained archive while using a separately frozen
++auditor. The default objective for a historical report without an objective
++field is the original physical-distance loss. The packet includes all source
++epochs and derived reports; original recordings, sparse point caches and
++compiled binaries are not redistributed. Subjective maturity versus mature
++driving OSS remains **about 20%**, with the **30% waypoint unmet**.
+--- a/scripts/check-projective-camera.py
++++ b/scripts/check-projective-camera.py
+@@ -0,0 +1,308 @@
++#!/usr/bin/env python3
++"""Independent triangle-normal/finite-difference camera checks and raw audit."""
++import argparse
++import copy
++import importlib.util
++import io
++import json
++from pathlib import Path
++import tarfile
++
++import numpy as np
++from PIL import Image
++
++from projective_depth_common import CAMERA, ROOT, exp_rotation, fresh, require, sha, write
++
++
++def basis(normals):
++    axis = np.eye(3)[np.argmin(abs(normals), axis=1)]
++    u = np.cross(normals, axis); u /= np.linalg.norm(u, axis=1)[:, None]
++    return u, np.cross(normals, u)
++
++
++def independent(sample, parameters):
++    a, b = parameters; scale = np.array([np.exp(b-a), np.exp(b-a), np.exp(b)])
++    u, v = basis(sample['normal'])
++    n = np.cross(u*scale, v*scale); n /= np.linalg.norm(n, axis=1)[:, None]
++    query = (sample['source']*scale)@sample['transform'][:3, :3].T+sample['transform'][:3, 3]
++    residual = np.sum(n*(query-sample['target']*scale), axis=1)
++    return residual, n, query
++
++
++def fit_residual(sample, parameters, objective):
++    residual = independent(sample, parameters)[0]
++    require(objective in ('physical','raw_scaled'), 'declared fitted residual units')
++    return residual if objective == 'physical' else residual/np.exp(parameters[1])
++
++
++def finite_system(samples, parameters, objective='raw_scaled'):
++    h = np.zeros((2, 2)); g = np.zeros(2); cost = 0.
++    for sample in samples:
++        residual = fit_residual(sample, parameters, objective); columns = []
++        for axis in range(2):
++            d = np.zeros(2); d[axis] = 1e-6
++            columns.append((fit_residual(sample, np.asarray(parameters)+d, objective)-fit_residual(sample, np.asarray(parameters)-d, objective))/2e-6)
++        j = np.column_stack(columns); w = np.minimum(1., .01/np.maximum(abs(residual), 1e-15))
++        factor = 1/(len(samples)*len(residual))
++        h += factor*j.T@(w[:, None]*j); g += factor*j.T@(w*residual)
++        cost += factor*float(np.sum(np.where(abs(residual) <= .01, residual*residual/2, .01*abs(residual)-.00005)))
++    return dict(h=h, g=g, cost_m2=cost)
++
++
++def independent_cost(samples, parameters, objective='raw_scaled'):
++    total = 0.
++    for sample in samples:
++        residual = fit_residual(sample, parameters, objective)
++        total += float(np.mean(np.where(abs(residual) <= .01, residual*residual/2, .01*abs(residual)-.00005)))/len(samples)
++    return total
++
++
++def compare(actual, expected):
++    np.testing.assert_allclose(actual['h'], expected['h'], atol=2e-10, rtol=2e-6, err_msg='independent camera normal matrix')
++    np.testing.assert_allclose(actual['g'], expected['g'], atol=2e-11, rtol=2e-6, err_msg='independent camera gradient')
++    require(abs(actual['cost_m2']-expected['cost_m2']) <= 1e-12, 'independent camera robust cost')
++    if 'eigenvalues_m2' in actual:
++        eigen = np.linalg.eigvalsh(np.asarray(actual['h']))
++        np.testing.assert_allclose(actual['eigenvalues_m2'], eigen, atol=1e-14, rtol=1e-10)
++        condition = float(eigen[-1]/eigen[0]) if eigen[0] > 0 else None
++        require(condition == actual['condition'], 'fixed-unit camera sensitivity condition')
++        require(actual['observable'] == (eigen[-1] >= 1e-12 and condition is not None and condition <= 10000.), 'camera observability admission')
++
++
++def synthetic(parameters, translation=True):
++    rng = np.random.default_rng(1704); samples = []
++    for i in range(6):
++        target = rng.uniform([-.7, -.5, 1.1], [.7, .5, 4.5], (600, 3))
++        normals = rng.normal(0., .4, (600, 3)); normals[:, 2] += 1.5
++        normals /= np.linalg.norm(normals, axis=1)[:, None]
++        r = exp_rotation(np.array([.03*(i-2), -.04*(i%3-1), .02*(i-1)]))
++        t = np.array([.03*(i-2), .02*(i%3-1), .03*(i+1)]) if translation else np.zeros(3)
++        source = (target-t)@r
++        # Construct the raw measurement coordinates and triangle normals from
++        # physical points. The checked implementation uses a dual normal map.
++        a, b = parameters; inverse = np.array([np.exp(a-b), np.exp(a-b), np.exp(-b)])
++        u, v = basis(normals); raw_n = np.cross(u*inverse, v*inverse)
++        raw_n /= np.linalg.norm(raw_n, axis=1)[:, None]
++        transform = np.eye(4); transform[:3, :3] = r; transform[:3, 3] = t
++        samples.append(dict(source=source*inverse, target=target*inverse, normal=raw_n, transform=transform))
++    return samples
++
++
++def controls():
++    from projective_camera_fit import evaluate, fit, system
++    recovered = []
++    for truth in ([.018, -.023], [-.025, .016]):
++        samples = synthetic(truth); result = fit(samples)
++        require(result['status'] == 'converged', 'excited synthetic camera fit converges')
++        np.testing.assert_allclose(result['parameters'], truth, atol=1e-7, rtol=0)
++        recovered.append(result['parameters'])
++        audit_fit(json.loads(json.dumps(result)), samples)
++    samples = synthetic([.018, -.023]); parameters = np.array([-.01, .012])
++    expected = finite_system(samples, parameters); compare(system(samples, parameters), expected)
++    sample = samples[0]; observed = evaluate(sample, parameters); columns = []
++    for axis in range(2):
++        d = np.zeros(2); d[axis] = 1e-6
++        columns.append((independent(sample, parameters+d)[0]-independent(sample, parameters-d)[0])/2e-6)
++    np.testing.assert_allclose(observed['jacobian'], np.column_stack(columns), atol=3e-8, rtol=2e-6)
++    fitted_columns = []
++    for axis in range(2):
++        d = np.zeros(2); d[axis] = 1e-6
++        fitted_columns.append((fit_residual(sample, parameters+d, 'raw_scaled')-fit_residual(sample, parameters-d, 'raw_scaled'))/2e-6)
++    np.testing.assert_allclose(observed['fit_jacobian'], np.column_stack(fitted_columns), atol=3e-8, rtol=2e-6)
++    # A pure-rotation control makes uniform depth scale unobservable.
++    require(not system(synthetic([.018, -.023], False), [.018, -.023])['observable'], 'pure rotation cannot calibrate depth scale')
++    noisy = synthetic([.018, -.023], False); rng = np.random.default_rng(1705)
++    for s in noisy:
++        s['source'] += rng.normal(0., .003, s['source'].shape)
++        s['target'] += rng.normal(0., .003, s['target'].shape)
++    gauge = system(noisy, [.018, -.023]); smaller = system(noisy, [.018, -.033])
++    require(not gauge['observable'] and abs(gauge['cost_m2']-smaller['cost_m2']) < 1e-12,
++            'noise cannot create metric scale information under pure rotation')
++    require(all(np.all(evaluate(s, [.018, -.023])['fit_jacobian'][:, 1] == 0.) for s in noisy), 'zero translation has exactly zero scale sensitivity')
++    require(fit(noisy)['status'] == 'unobservable', 'noisy gauge rejects before inventing calibration')
++    identity = copy.deepcopy(samples)
++    for s in identity:s['source'] = s['target'].copy(); s['transform'] = np.eye(4)
++    require(fit(identity)['status'] == 'unobservable', 'unexcited data cannot export a calibration')
++    altered = copy.deepcopy(system(samples, parameters)); altered['h'] *= 2; altered['g'] *= 2
++    try:compare(altered, expected)
++    except (AssertionError, ValueError):pass
++    else:raise ValueError('joint H/g rescaling escaped independent finite differences')
++    return dict(recovered_profiles=recovered, focal_and_depth_derivatives_checked=True, triangle_normals_independent=True,
++        pure_rotation_scale_rejected=True, noisy_rotation_scale_rejected=True, normalized_scale_invariant=True,
++        unexcited_fit_rejected=True, joint_Hg_rescaling_rejected=True)
++
++
++def points(depth, ids):
++    z = depth.ravel()[ids]; y, x = ids//640, ids%640
++    return np.column_stack([(x-319.5)*z/525., (y-239.5)*z/525., z])
++
++
++def normals(depth, ids):
++    y, x = ids//640, ids%640; inside = (x > 0)&(x < 639)&(y > 0)&(y < 479)
++    result = np.zeros((len(ids), 3)); safe = ids[inside]; z = depth.ravel()[safe]
++    valid = (z > .3)&(z < 5)
++    for offset in (1, -1, 640, -640):
++        neighbour = depth.ravel()[safe+offset]
++        valid &= (neighbour > .3)&(abs(neighbour-z) < .05+.01*z)
++    cross = np.cross(points(depth, safe+1)-points(depth, safe-1), points(depth, safe+640)-points(depth, safe-640))
++    length = np.linalg.norm(cross, axis=1); valid &= length > 1e-10
++    selected = np.flatnonzero(inside)[valid]; result[selected] = cross[valid]/length[valid, None]
++    return result
++
++
++def load(case, reports, reference):
++    base = ROOT/'data'/case; folder = reports/case
++    freeze = json.loads((folder/'freeze.json').read_text()); body = (base/'manifest.json').read_bytes()
++    require(sha(body) == freeze['manifest_sha256'] and freeze['camera'] == CAMERA, 'fixed camera and original manifest')
++    manifest = json.loads(body)
++    def read(name):
++        path = base/'raw'/name; require(path.is_file() and not path.is_symlink(), 'regular original source')
++        body = path.read_bytes(); pin = freeze['inputs'][name]
++        require(len(body) == pin['bytes'] and sha(body) == pin['sha256'], 'qualified original source')
++        return body
++    labels = np.loadtxt(io.BytesIO(read('groundtruth.txt')), comments='#'); batches = dict(train=[], validation=[])
++    receipts = json.loads((folder/'samples.json').read_text())['pairs']
++    for receipt in receipts:
++        a, b = receipt['offsets']; frames = [manifest['frames'][i] for i in (a, b)]
++        depths = []
++        for frame in frames:
++            image = Image.open(io.BytesIO(read(frame['depth_file'])))
++            require(image.size == (640, 480), 'original depth dimensions')
++            depths.append(np.asarray(image, dtype=float)/5000.)
++        old, new = depths; transform = np.linalg.inv(reference.truth_at(labels, frames[0]['depth_timestamp']))@reference.truth_at(labels, frames[1]['depth_timestamp'])
++        ids = np.arange(480*640).reshape(480, 640)[::2, ::2].ravel()
++        ps, ns = points(new, ids), normals(new, ids); good = np.sum(ns*ns, axis=1) > .25
++        ids, ps, ns = ids[good], ps[good], ns[good]
++        q = ps@transform[:3, :3].T+transform[:3, 3]; ns = ns@transform[:3, :3].T
++        good = np.isfinite(q).all(axis=1)&(q[:, 2] > .3)
++        ids, ps, q, ns = ids[good], ps[good], q[good], ns[good]
++        x = np.rint(525*q[:, 0]/q[:, 2]+319.5); y = np.rint(525*q[:, 1]/q[:, 2]+239.5)
++        good = (x >= 1)&(x < 639)&(y >= 1)&(y < 479)
++        ids, ps, q, ns = ids[good], ps[good], q[good], ns[good]
++        cells = y[good].astype(np.int64)*640+x[good].astype(np.int64)
++        pt, nt = points(old, cells), normals(old, cells)
++        good = (np.sum(nt*nt, axis=1) > .25)&(np.linalg.norm(q-pt, axis=1) < .08)&(np.sum(ns*nt, axis=1) > .8)
++        require(int(good.sum()) == receipt['original_matches'], 'independent original full match population')
++        expected = dict(source=ps[good][::8], target=pt[good][::8], normal=nt[good][::8], transform=transform,
++                        source_pixels=ids[good][::8], target_pixels=cells[good][::8])
++        path = folder/receipt['cache_file']; require(sha(path.read_bytes()) == receipt['cache_sha256'], 'derived cache byte binding')
++        with np.load(path, allow_pickle=False) as cache:
++            require(set(cache.files) == set(expected), 'complete source-cache schema')
++            for name, value in expected.items():
++                if name.endswith('_pixels'):np.testing.assert_array_equal(cache[name], value)
++                else:np.testing.assert_allclose(cache[name], value, atol=1e-12, rtol=1e-12)
++        batches[receipt['partition']].append(expected)
++    return batches
++
++
++def audit_fit(result, samples, objective='raw_scaled'):
++    checked = 0; parameters = np.zeros(2)
++    for step in result['trace']:
++        np.testing.assert_array_equal(step['before'], parameters)
++        compare(step['equation'], finite_system(samples, step['before'], objective)); checked += 1
++        if 'unclipped_step' in step:
++            proposal = np.linalg.solve(step['equation']['h'], -np.asarray(step['equation']['g']))
++            np.testing.assert_allclose(step['unclipped_step'], proposal, atol=1e-12, rtol=1e-10)
++            proposal *= min(1., .02/max(abs(proposal))) if max(abs(proposal)) else 1.
++        accepted = None
++        for i, trial in enumerate(step['trials']):
++            require(trial['factor'] == (1., .5, .25, .125, .0625)[i], 'fixed line-search factors')
++            np.testing.assert_array_equal(trial['parameters'], np.clip(parameters+trial['factor']*proposal, -.05, .05))
++            cost = independent_cost(samples, trial['parameters'], objective)
++            require(abs(trial['cost_m2']-cost) <= 1e-12, 'independent line-search trial cost')
++            if trial['cost_m2'] < step['equation']['cost_m2']:
++                require(i == len(step['trials'])-1, 'stop after first improving trial'); accepted = trial['parameters']
++        require(('after' in step) == (accepted is not None), 'accepted camera step is backed by an improving trial')
++        if accepted is not None:
++            np.testing.assert_array_equal(step['after'], accepted); parameters = np.asarray(accepted)
++    np.testing.assert_array_equal(result['parameters'], parameters)
++    compare(result['final_system'], finite_system(samples, result['parameters'], objective))
++    if result['status'] == 'converged':
++        require(result['final_system']['observable'] and max(abs(parameters)) < .05-1e-10, 'qualified fit is observable and interior')
++        require(max(abs(np.asarray(result['trace'][-1]['unclipped_step']))) < 1e-7, 'actual stationary camera fit')
++    return checked+1
++
++
++def audit(reports, output, reference, source_archive=None):
++    freeze = json.loads((reports/'freeze.json').read_text())
++    objective = freeze.get('fit_objective','physical')
++    require(not freeze['native_binary_executed'] and freeze['original_scoring_clocks_unchanged'], 'offline-only calibration role')
++    archived = None
++    if source_archive is not None:
++        with tarfile.open(source_archive) as stream:
++            archived = {m.name: stream.extractfile(m).read() for m in stream.getmembers() if m.isfile()}
++    for name, digest in freeze['source_sha256'].items():
++        require(sha((ROOT/name).read_bytes() if archived is None else archived[name]) == digest, 'fixed diagnostic source epoch')
++    batches = {case: load(case, reports, reference) for case in freeze['validation_records']}
++    checked = 0; all_train = []; fits = {}; folds = {}
++    for case in freeze['training_records']:
++        samples = batches[case]['train']; all_train.extend(samples)
++        result = json.loads((reports/(case+'-fit.json')).read_text()); fits[case] = result['full']; folds[case] = result['leave_one_pair_out']
++        checked += audit_fit(result['full'], samples, objective)
++        require(len(result['leave_one_pair_out']) == len(samples) == 15, 'all fixed leave-one-out folds retained')
++        for i, f in enumerate(result['leave_one_pair_out']):checked += audit_fit(f, samples[:i]+samples[i+1:], objective)
++    joint = json.loads((reports/'joint-fit.json').read_text()); checked += audit_fit(joint, all_train, objective)
++    validation_checks = {}
++    for case in freeze['validation_records']:
++        result = json.loads((reports/(case+'-validation.json')).read_text())
++        for label, parameters in (('original', [0., 0.]), ('candidate', joint['parameters'])):
++            rows = result[label]['pairs']; require(len(rows) == len(batches[case]['validation']) == 15, 'all validation pairs retained')
++            corrections = []
++            for row, sample in zip(rows, batches[case]['validation'], strict=True):
++                residual, n, q = independent(sample, parameters); j = np.column_stack([n, np.cross(q, n)])
++                w = np.minimum(1., .01/np.maximum(abs(residual), 1e-15)); h, g = j.T@(w[:, None]*j), j.T@(w*residual)
++                np.testing.assert_allclose(row['pose_equation']['h'], h, atol=1e-7, rtol=1e-10)
++                np.testing.assert_allclose(row['pose_equation']['g'], g, atol=1e-9, rtol=1e-10)
++                require(abs(row['rms_m']-float(np.sqrt(np.mean(residual**2)))) <= 1e-12, 'independent validation raw RMS')
++                cost = float(np.mean(np.where(abs(residual) <= .01, residual*residual/2, .01*abs(residual)-.00005)))
++                require(abs(row['robust_cost_m2']-cost) <= 1e-12 and row['samples'] == len(residual), 'independent validation robust cost and population')
++                eigen = np.linalg.eigvalsh(h); observable = eigen[0] > 0 and eigen[-1]/eigen[0] <= 1e6
++                require((row['correction'] is not None) == observable, 'complete validation pose observability')
++                if observable:
++                    correction = np.linalg.solve(h, -g); corrections.append(correction)
++                    np.testing.assert_allclose(row['correction'], correction, atol=1e-10, rtol=1e-8)
++            summary = result[label]['summary']; complete = len(corrections) == 15
++            require(summary['pairs'] == 15 and summary['all_pose_probes_observable'] == complete, 'validation denominator unchanged')
++            require(abs(summary['mean_robust_cost_m2']-float(np.mean([row['robust_cost_m2'] for row in rows]))) <= 1e-12, 'validation robust cost summary')
++            require(abs(summary['rms_m']-float(np.sqrt(np.mean([row['rms_m']**2 for row in rows])))) <= 1e-12, 'validation RMS summary')
++            if complete:
++                corrections = np.asarray(corrections)
++                require(abs(summary['median_position_correction_m']-float(np.median(np.linalg.norm(corrections[:, :3], axis=1)))) <= 1e-10, 'validation translation summary')
++                require(abs(summary['median_rotation_correction_rad']-float(np.median(np.linalg.norm(corrections[:, 3:], axis=1)))) <= 1e-10, 'validation rotation summary')
++        original, candidate = result['original']['summary'], result['candidate']['summary']
++        flags = dict(complete_pose_probes=original['all_pose_probes_observable'] and candidate['all_pose_probes_observable'])
++        for metric in ('mean_robust_cost_m2','rms_m','median_position_correction_m','median_rotation_correction_rad'):
++            a, b = original[metric], candidate[metric]; flags[metric+'_nonincreasing'] = a is not None and b is not None and b <= a
++        require(flags == result['checks'], 'all validation gates recomputed'); validation_checks[case] = flags
++    summary = json.loads((reports/'summary.json').read_text())
++    records = freeze['training_records']
++    agreement = float(np.max(abs(np.asarray(fits[records[0]]['parameters'])-fits[records[1]]['parameters'])))
++    deviations = {c: max(float(np.max(abs(np.asarray(f['parameters'])-fits[c]['parameters']))) for f in folds[c]) for c in records}
++    checks = dict(all_fits_converged_without_bound=joint['status'] == 'converged' and all(fits[c]['status'] == 'converged' and all(f['status'] == 'converged' for f in folds[c]) for c in records),
++        cross_record_agreement=agreement <= .01, leave_one_pair_out_stable=all(v <= .01 for v in deviations.values()),
++        validation_nonincreasing=all(all(row.values()) for row in validation_checks.values()))
++    require(summary['checks'] == checks and summary['trial_eligible'] == all(checks.values()), 'unchanged eligibility decision')
++    require((reports/'trial-profile.json').exists() == summary['trial_eligible'], 'unqualified profile never exported')
++    write(output/'raw-audit.json', dict(pass_independent_camera_audit=True, finite_difference_systems=checked,
++        raw_pairs=75, validation_pose_systems=90, raw_samples_reconstructed=True, all_leave_one_out_folds_checked=True,
++        trial_eligible=summary['trial_eligible'], physical_calibration_certified=False, fit_objective=objective))
++
++
++def main():
++    p = argparse.ArgumentParser(description=__doc__); p.add_argument('--output', type=Path, required=True)
++    p.add_argument('--reports', type=Path); p.add_argument('--source-archive', type=Path)
++    args = p.parse_args(); output = fresh(args.output)
++    require(args.source_archive is None or args.reports is not None, 'source archive belongs to a recorded diagnostic')
++    sources = [Path(__file__), ROOT/'scripts/projective_camera_fit.py', ROOT/'scripts/projective_depth_common.py', ROOT/'scripts/check-opencv-rgbd.py']
++    pins = {str(f.relative_to(ROOT)): sha(f.read_bytes()) for f in sources}
++    write(output/'freeze.json', dict(source_sha256=pins, reports=None if args.reports is None else str(args.reports),
++        diagnostic_source_archive_sha256=None if args.source_archive is None else sha(args.source_archive.read_bytes())))
++    write(output/'controls.json', controls())
++    if args.reports is not None:
++        spec = importlib.util.spec_from_file_location('ref', ROOT/'scripts/check-opencv-rgbd.py')
++        ref = importlib.util.module_from_spec(spec); spec.loader.exec_module(ref); ref.controls(); audit(args.reports.absolute(), output, ref, args.source_archive)
++    require(all(sha((ROOT/n).read_bytes()) == h for n, h in pins.items()), 'checker sources unchanged')
++    write(output/'summary.json', dict(pass_camera_checks=True, raw_audit_completed=args.reports is not None))
++
++
++if __name__ == '__main__':main()
+--- a/scripts/diagnose-projective-camera.py
++++ b/scripts/diagnose-projective-camera.py
+@@ -0,0 +1,131 @@
++#!/usr/bin/env python3
++"""Offline focal/depth-scale consistency study on previously viewed raw pairs."""
++import argparse
++import importlib.util
++import io
++import json
++from pathlib import Path
++import sys
++
++import numpy as np
++from PIL import Image
++
++from projective_depth_common import CAMERA, ROOT, fresh, require, sha, write
++from projective_depth_raw import compare_equation, normal_equation, pyramid
++from projective_range_raw import pairs, equation
++from projective_camera_fit import fit, validation
++
++CASES = ('tum-fr1-room-temporal', 'tum-fr1-desk2-independent', 'tum-fr1-rpy-heldout')
++TRAIN = [(i, i+6) for i in range(0, 180, 12)]
++VALIDATE = [(i, i+6) for i in range(3, 174, 12)]
++
++
++def prepare(case, output, reference):
++    base = ROOT/'data'/case; body = (base/'manifest.json').read_bytes(); manifest = json.loads(body)
++    frames = manifest['frames']; require(len(frames) == 180, 'original complete window')
++    require([f['source_index'] for f in frames] == list(range(100, 280)), 'original source indices')
++    require(all(b['depth_timestamp'] > a['depth_timestamp'] for a, b in zip(frames, frames[1:])), 'chronological depth clock')
++    require(not ({i for pair in TRAIN for i in pair}&{i for pair in VALIDATE for i in pair}), 'disjoint training/validation frame endpoints')
++    inventory = {item['file']: item for item in manifest['files']}
++    def read(name):
++        path = base/'raw'/name; require(path.is_file() and not path.is_symlink(), 'regular qualified original source')
++        data = path.read_bytes(); pin = inventory[name]
++        require(len(data) == pin['bytes'] and sha(data) == pin['sha256'], 'original bytes: '+name)
++        return data
++    folder = output/case; folder.mkdir()
++    write(folder/'freeze.json', dict(manifest_sha256=sha(body), camera=CAMERA, depth_units_per_metre=5000,
++        inputs={k: dict(bytes=v['bytes'], sha256=v['sha256']) for k, v in inventory.items()},
++        training_pairs=TRAIN if case != CASES[2] else [], validation_pairs=VALIDATE,
++        role='viewed development calibration diagnosis; numeric reference allowed only offline'))
++    labels = np.loadtxt(io.BytesIO(read('groundtruth.txt')), comments='#')
++    require(labels.ndim == 2 and labels.shape[1] == 8 and np.isfinite(labels).all()
++            and np.all(np.diff(labels[:, 0]) > 0), 'finite chronological offline reference')
++    samples = {}; receipts = []
++    def depth(index):
++        image = Image.open(io.BytesIO(read(frames[index]['depth_file'])))
++        require(image.size == (640, 480) and image.mode in ('I;16', 'I;16B', 'I'), 'original measured depth')
++        return pyramid(np.asarray(image, dtype=float)/5000., CAMERA)[1]
++    for partition, selected in (('train', TRAIN if case != CASES[2] else []), ('validation', VALIDATE)):
++        samples[partition] = []
++        for index, (a, b) in enumerate(selected):
++            transform = np.linalg.inv(reference.truth_at(labels, frames[a]['depth_timestamp']))@reference.truth_at(labels, frames[b]['depth_timestamp'])
++            target, source = depth(a), depth(b); sample = pairs(target, source, transform, 1)
++            compare_equation(equation(sample, False), normal_equation(target, source, transform, 1))
++            frozen = {k: sample[k][::8].copy() for k in ('source', 'target', 'normal')}
++            require(len(frozen['source']) >= 200, 'each fixed pair retains at least200 calibration samples')
++            frozen['transform'] = transform
++            def pixels(points):
++                x = np.rint(CAMERA['fx']*points[:, 0]/points[:, 2]+CAMERA['cx']).astype(np.int64)
++                y = np.rint(CAMERA['fy']*points[:, 1]/points[:, 2]+CAMERA['cy']).astype(np.int64)
++                return y*640+x
++            frozen['source_pixels'] = pixels(frozen['source']); frozen['target_pixels'] = pixels(frozen['target'])
++            name = partition+'-'+str(index)+'.npz'
++            with (folder/name).open('xb') as stream:
++                np.savez_compressed(stream, **frozen)
++            receipts.append(dict(partition=partition, index=index, offsets=[a, b], source_indices=[100+a, 100+b],
++                timestamps=[frames[a]['depth_timestamp'], frames[b]['depth_timestamp']], original_matches=len(sample['source']),
++                frozen_samples=len(frozen['source']), cache_file=name, cache_sha256=sha((folder/name).read_bytes())))
++            samples[partition].append(frozen)
++    write(folder/'samples.json', dict(pairs=receipts, native_pose_fitter_executed=False))
++    return samples
++
++
++def main():
++    p = argparse.ArgumentParser(description=__doc__)
++    p.add_argument('--output', type=Path, required=True)
++    p.add_argument('--design', type=Path, action='append', help='optional fixed designs to bind in the freeze')
++    args = p.parse_args(); out = fresh(args.output)
++    sources = [Path(__file__), ROOT/'scripts/projective_camera_fit.py', ROOT/'scripts/check-projective-camera.py',
++        ROOT/'scripts/projective_depth_common.py', ROOT/'scripts/projective_depth_raw.py', ROOT/'scripts/projective_range_raw.py',
++        ROOT/'scripts/check-opencv-rgbd.py', ROOT/'scripts/requirements-visual.txt', *(args.design or [])]
++    pins = {str(f.absolute().relative_to(ROOT)): sha(f.read_bytes()) for f in sources}
++    write(out/'freeze.json', dict(source_sha256=pins, training_records=CASES[:2], validation_records=CASES,
++        parameters=['log_shared_focal_multiplier', 'log_depth_multiplier'], numpy_version=np.__version__,
++        numeric_reference_role='offline fixed-motion calibration probes', original_scoring_clocks_unchanged=True,
++        native_binary_executed=False, default_changed=False, fit_objective='raw_scaled'))
++    spec = importlib.util.spec_from_file_location('reference', ROOT/'scripts/check-opencv-rgbd.py')
++    reference = importlib.util.module_from_spec(spec); spec.loader.exec_module(reference); reference.controls()
++    batches = {case: prepare(case, out, reference) for case in CASES}
++    fits = {}; folds = {}; all_train = []
++    for case in CASES[:2]:
++        samples = batches[case]['train']; all_train.extend(samples)
++        fits[case] = fit(samples)
++        folds[case] = [fit(samples[:i]+samples[i+1:]) for i in range(len(samples))]
++        write(out/(case+'-fit.json'), dict(full=fits[case], leave_one_pair_out=folds[case]))
++        print(case, fits[case]['status'], fits[case]['parameters'], flush=True)
++    joint = fit(all_train); write(out/'joint-fit.json', joint)
++    results = {}; validation_flags = {}
++    for case in CASES:
++        original = validation(batches[case]['validation'], np.zeros(2))
++        candidate = validation(batches[case]['validation'], joint['parameters'])
++        flags = dict(complete_pose_probes=original['summary']['all_pose_probes_observable'] and candidate['summary']['all_pose_probes_observable'])
++        for metric in ('mean_robust_cost_m2', 'rms_m', 'median_position_correction_m', 'median_rotation_correction_rad'):
++            a, b = original['summary'][metric], candidate['summary'][metric]
++            flags[metric+'_nonincreasing'] = a is not None and b is not None and b <= a
++        results[case] = dict(original=original, candidate=candidate, checks=flags)
++        validation_flags[case] = flags
++        write(out/(case+'-validation.json'), results[case]); print(case, json.dumps(flags), flush=True)
++    agreement = float(np.max(abs(np.asarray(fits[CASES[0]]['parameters'])-fits[CASES[1]]['parameters'])))
++    deviations = {case: max(float(np.max(abs(np.asarray(f['parameters'])-fits[case]['parameters']))) for f in folds[case]) for case in CASES[:2]}
++    converged = joint['status'] == 'converged' and all(fits[c]['status'] == 'converged'
++        and all(f['status'] == 'converged' for f in folds[c]) for c in CASES[:2])
++    checks = dict(all_fits_converged_without_bound=converged, cross_record_agreement=agreement <= .01,
++        leave_one_pair_out_stable=all(v <= .01 for v in deviations.values()), validation_nonincreasing=all(all(v.values()) for v in validation_flags.values()))
++    eligible = all(checks.values())
++    summary = dict(trial_eligible=eligible, checks=checks, joint_fit_status=joint['status'], diagnostic_parameters=joint['parameters'],
++        maximum_between_record_log_difference=agreement, maximum_leave_one_pair_out_log_deviation=deviations,
++        validation={c: dict(original=v['original']['summary'], candidate=v['candidate']['summary'], checks=v['checks']) for c, v in results.items()},
++        exported_trial_profile=eligible, physical_calibration_certified=False, default_changed=False,
++        heldout_accuracy_claim=False, subjective_maturity_percent=20, fit_objective='raw_scaled')
++    if eligible:
++        a, b = joint['parameters']; camera = dict(CAMERA); camera['fx'] *= float(np.exp(a)); camera['fy'] *= float(np.exp(a))
++        write(out/'trial-profile.json', dict(schema_version=1, camera=camera, depth_multiplier=float(np.exp(b)),
++            qualification='eligible for a frozen viewed trajectory trial only', original_scoring_clocks_unchanged=True,
++            derivation_source_sha256=pins, default_adoption=False))
++    require(all(sha((ROOT/n).read_bytes()) == h for n, h in pins.items()), 'unchanged calibration source epoch')
++    write(out/'summary.json', summary)
++    return 0 if eligible else 1
++
++
++if __name__ == '__main__':
++    sys.exit(main())
+--- a/scripts/projective_camera_fit.py
++++ b/scripts/projective_camera_fit.py
+@@ -0,0 +1,107 @@
++"""Offline two-parameter camera probes; no operational tracking or pose labels here."""
++import numpy as np
++
++from projective_depth_common import require
++
++BOUND = .05
++HUBER = .01
++
++
++def evaluate(sample, parameters):
++    a, b = np.asarray(parameters, dtype=float)
++    require(np.isfinite([a, b]).all() and max(abs(a), abs(b)) <= BOUND+1e-12, 'bounded camera parameters')
++    axial = np.exp(b); lateral = np.array([np.exp(-a), np.exp(-a), 1.])
++    ps, pt = axial*sample['source']*lateral, axial*sample['target']*lateral
++    n = sample['normal']*np.array([np.exp(a), np.exp(a), 1.])
++    n /= np.linalg.norm(n, axis=1)[:, None]
++    transform = sample['transform']; rotated = ps@transform[:3, :3].T
++    q = rotated+transform[:3, 3]; difference = q-pt
++    residual = np.einsum('ij,ij->i', n, difference)
++    # The normal moves under the inverse transpose of the focal ray change.
++    bn = n*np.array([1., 1., 0.])
++    dn = bn-n*np.einsum('ij,ij->i', n, bn)[:, None]
++    dps, dpt = ps*np.array([-1., -1., 0.]), pt*np.array([-1., -1., 0.])
++    da = np.einsum('ij,ij->i', dn, difference)+np.einsum('ij,ij->i', n, dps@transform[:3, :3].T-dpt)
++    db = np.einsum('ij,ij->i', n, rotated-pt)
++    # Express fitting errors in the original nominal raw metres. Otherwise
++    # shrinking the depth multiplier also shrinks measurement noise, creating
++    # artificial scale information even when reference translation is zero.
++    fit_jacobian = np.column_stack([da/axial, -(n@transform[:3, 3])/axial])
++    return dict(residual=residual, jacobian=np.column_stack([da, db]), normal=n, query=q,
++                fit_residual=residual/axial, fit_jacobian=fit_jacobian)
++
++
++def loss(residual):
++    magnitude = abs(residual)
++    return np.where(magnitude <= HUBER, .5*residual**2, HUBER*(magnitude-.5*HUBER))
++
++
++def system(samples, parameters):
++    require(len(samples) > 0, 'nonempty camera batches')
++    h = np.zeros((2, 2)); g = np.zeros(2); cost = 0.
++    for sample in samples:
++        values = evaluate(sample, parameters); residual, j = values['fit_residual'], values['fit_jacobian']
++        require(len(residual) >= 200 and np.isfinite(j).all() and np.isfinite(residual).all(), 'finite supported camera batch')
++        weight = np.minimum(1., HUBER/np.maximum(abs(residual), 1e-15))
++        normalization = 1/(len(samples)*len(residual))
++        h += normalization*(j.T@(weight[:, None]*j)); g += normalization*(j.T@(weight*residual))
++        cost += normalization*float(np.sum(loss(residual)))
++    eigen = np.linalg.eigvalsh(h)
++    condition = float(eigen[-1]/eigen[0]) if eigen[0] > 0 else None
++    observable = bool(eigen[-1] >= 1e-12 and condition is not None and condition <= 10000.)
++    return dict(h=h, g=g, cost_m2=cost, eigenvalues_m2=eigen, condition=condition, observable=observable)
++
++
++def serial(values):
++    return {key: value.tolist() if isinstance(value, np.ndarray) else value for key, value in values.items()}
++
++
++def fit(samples):
++    parameters = np.zeros(2); trace = []
++    for _ in range(12):
++        equation = system(samples, parameters)
++        row = dict(before=parameters.tolist(), equation=serial(equation), trials=[]); trace.append(row)
++        if not equation['observable']:
++            status = 'unobservable'; break
++        step = np.linalg.solve(equation['h'], -equation['g'])
++        row['unclipped_step'] = step.tolist()
++        if max(abs(step)) < 1e-7:
++            status = 'at_bound' if max(abs(parameters)) >= BOUND-1e-10 else 'converged'; break
++        step *= min(1., .02/max(abs(step)))
++        accepted = False
++        for factor in (1., .5, .25, .125, .0625):
++            trial = np.clip(parameters+factor*step, -BOUND, BOUND)
++            candidate = system(samples, trial)
++            row['trials'].append(dict(factor=factor, parameters=trial.tolist(), cost_m2=candidate['cost_m2']))
++            if candidate['cost_m2'] < equation['cost_m2']:
++                parameters = trial; accepted = True; row['after'] = parameters.tolist(); break
++        if not accepted:
++            status = 'at_bound' if max(abs(parameters)) >= BOUND-1e-10 else 'line_search_failure'; break
++    else:
++        status = 'iteration_limit'
++    if max(abs(parameters)) >= BOUND-1e-10:
++        status = 'at_bound'
++    return dict(status=status, parameters=parameters.tolist(), focal_multiplier=float(np.exp(parameters[0])),
++                depth_multiplier=float(np.exp(parameters[1])), final_system=serial(system(samples, parameters)), trace=trace)
++
++
++def validation(samples, parameters):
++    rows = []
++    for sample in samples:
++        values = evaluate(sample, parameters); r, n, q = values['residual'], values['normal'], values['query']
++        j = np.column_stack([n, np.cross(q, n)])
++        w = np.minimum(1., HUBER/np.maximum(abs(r), 1e-15))
++        h, g = j.T@(w[:, None]*j), j.T@(w*r)
++        eigen = np.linalg.eigvalsh(h)
++        observable = eigen[0] > 0 and eigen[-1]/eigen[0] <= 1e6
++        correction = np.linalg.solve(h, -g) if observable else None
++        rows.append(dict(samples=len(r), robust_cost_m2=float(np.mean(loss(r))), rms_m=float(np.sqrt(np.mean(r*r))),
++            pose_equation=dict(h=h.tolist(), g=g.tolist()), correction=None if correction is None else correction.tolist()))
++    complete = all(row['correction'] is not None for row in rows)
++    corrections = np.array([row['correction'] for row in rows]) if complete else None
++    summary = dict(pairs=len(rows), all_pose_probes_observable=complete,
++        mean_robust_cost_m2=float(np.mean([row['robust_cost_m2'] for row in rows])),
++        rms_m=float(np.sqrt(np.mean([row['rms_m']**2 for row in rows]))),
++        median_position_correction_m=float(np.median(np.linalg.norm(corrections[:, :3], axis=1))) if complete else None,
++        median_rotation_correction_rad=float(np.median(np.linalg.norm(corrections[:, 3:], axis=1))) if complete else None)
++    return dict(summary=summary, pairs=rows)

@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "scope": "Local Linux analytic sparse-depth and existing regression validation; no measured KITTI evaluation or remote CI run",
+  "rust": "1.90.0",
+  "core_tests": 371,
+  "rgbd_tests": 114,
+  "sparse_depth_tests": 5,
+  "core_scenarios_and_replays": 49,
+  "unchanged_core_output_files": 245,
+  "unchanged_frozen_projection_reports": 4,
+  "formatting_passed": true,
+  "clippy_warnings_denied_passed": true,
+  "actionlint_passed": true,
+  "python_compile_passed": true,
+  "depth_audit": {
+    "schema_version": 1,
+    "analytic_geometry_and_contracts_passed": true,
+    "camera_summaries": [
+      {
+        "behind": 2,
+        "inframe_points": 10,
+        "occluded_points": 3,
+        "occupied_pixels": 7,
+        "outside": 6,
+        "points": 18
+      },
+      {
+        "behind": 3,
+        "inframe_points": 8,
+        "occluded_points": 3,
+        "occupied_pixels": 5,
+        "outside": 7,
+        "points": 18
+      },
+      {
+        "behind": 3,
+        "inframe_points": 5,
+        "occluded_points": 1,
+        "occupied_pixels": 4,
+        "outside": 10,
+        "points": 18
+      },
+      {
+        "behind": 1,
+        "inframe_points": 12,
+        "occluded_points": 5,
+        "occupied_pixels": 7,
+        "outside": 5,
+        "points": 18
+      }
+    ],
+    "independently_projected_rows": 72,
+    "byte_identical_depth_replays": 7,
+    "positive_cli_runs": 18,
+    "rejected_cli_runs": 35,
+    "checker_corruptions_rejected": 7,
+    "actual_kitti_data": false,
+    "measured_accuracy": false,
+    "output_directory": "/workspace/rust_drive/artifacts/kitti-depth/review-audit"
+  },
+  "source_sha256": {
+    "integrations/kitti-depth/src/main.rs": "361a048ddf7dcd0e12410a6237069a67a5ae36c4babc4908739d2be00aa34353",
+    "integrations/kitti-depth/src/depth.rs": "9da9b424e41cf26071c41413890ca0334105d6535a2ee8acc3232138f7de56cf",
+    "integrations/kitti-depth/Cargo.toml": "97ef2bc1d89d5ac7de682e449169b5cfbca54855a6be87be2836ee0e5aa13086",
+    "integrations/kitti-depth/Cargo.lock": "a8ff86e3e847591ae773c46e0ff72d223780bc04d8d9cd821a86b7abbc53337b",
+    "scripts/check-kitti-depth.py": "8203736ca2a9d0da1d607f90aa729ee69af767c651c1ab744622e35daeb23dc1"
+  },
+  "bound_files": {
+    "camera-0-depth.json": {
+      "bytes": 3134,
+      "sha256": "d9c66a95652404c9d0a97953e0b135d684efd4fd7184bad7a12d7fec2a29c88c"
+    },
+    "inputs.json": {
+      "bytes": 619,
+      "sha256": "efad7af81312c57591d6d70f56d94dfa8c9967651ac580d5c31760f011bd1477"
+    },
+    "near-tie-depth.json": {
+      "bytes": 2184,
+      "sha256": "453f51e0c90873d19362b354920e0c610a4749742a5f4236196176ae903a3e12"
+    },
+    "results.json": {
+      "bytes": 1031,
+      "sha256": "6c8450502c0be3816fff36b22f7611167f1733ff5416e6e53bd54c5ff74e1040"
+    }
+  },
+  "analytic_controls": [
+    "four independent homogeneous camera projections",
+    "nearest axial Z rather than Euclidean range",
+    "exact tie chooses original row index",
+    "adjacent binary64 depths remain distinct through JSON parsing",
+    "half-open pixel cells and canvas",
+    "all-behind empty observed canvas",
+    "all input rows retained",
+    "seven byte-identical replays",
+    "35 rejected input/output/CLI contracts",
+    "seven rejected checker corruptions"
+  ],
+  "observed_development_failure": "Default serde_json parsing rounded 3.9999999999999996 to 4.0; isolated float_roundtrip crate and explicit pixel/depth regression repair this without modifying the frozen projection tool.",
+  "actual_kitti_data": false,
+  "measured_accuracy": false,
+  "driving_integration": false,
+  "remote_ci_run": false
+}

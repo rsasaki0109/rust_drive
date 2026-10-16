@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "parent": "assets/descent-keyframe-depth-v1",
+  "input_poses": "assets/depth-convergence-v1/summary.json",
+  "data_role": "already viewed development; saved continuation replay only",
+  "sample_indices": [
+    120,
+    160,
+    200,
+    240,
+    279
+  ],
+  "iterations_per_sample": 10,
+  "cases": [
+    "tum-fr1-room-temporal",
+    "tum-fr1-desk2-independent"
+  ],
+  "scale": 1,
+  "pixel_identity": "Per raw node pair: flattened target pixel ID and flattened sampled source pixel ID",
+  "classification": "Exact retained pair; same source retargeted; disappeared source; appeared source",
+  "factor_admission_minimum": 200,
+  "geometric_counts": "All candidate pair occurrences before factor admission; not unique observations",
+  "cost": "Sum Huber(r,0.01m) of admitted factors plus unchanged nonlinear incoming marginal prior",
+  "decomposition": "F_old(after)-F_old(before); F_new(after)-F_old(after); sum gives population-dependent total change",
+  "gate_accounting": "An edge crossing200 adds or removes its entire cost; distinguish this from geometric pixel turnover",
+  "controls": [
+    "Identity and shifted rendered pixels at scales4/2/1",
+    "Equal-sized hand-counted swapped populations",
+    "199-to-200 and200-to-199 whole-factor gates",
+    "Empty populations",
+    "Independent dictionary and structured-array intersections",
+    "Eight report corruptions"
+  ],
+  "real_pose_fitting": false,
+  "numeric_ground_truth_parsed": false,
+  "tracker_state_commits": false,
+  "estimator_changed": false,
+  "default_changed": false,
+  "real_physical_accuracy_claim": false
+}

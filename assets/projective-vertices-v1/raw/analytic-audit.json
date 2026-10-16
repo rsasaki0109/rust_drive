@@ -1,0 +1,67 @@
+{
+  "hand_controls": {
+    "metre_axis_normal_witness": true,
+    "half_pixel_centers": true,
+    "invalid_discontinuous_reduction": true,
+    "exact_raster_tie_and_occlusion": true,
+    "four_fusion_partitions": true,
+    "capped_weight_arithmetic": true,
+    "hand_calculated_225_point_plane_equation": true,
+    "inverse_depth_plane_camera_normal": true,
+    "missing_discontinuous_plane_support_rejected": true,
+    "nonplanar_and_coarse_normal_support_preserved": true
+  },
+  "motions": [
+    {
+      "motion": 1,
+      "report_sha256": "fe7dbfaca7e2d704ee02d6c06fb9b5951eee6313441262f8c1cb4f88e3dc07f0",
+      "iterations": 3,
+      "final_equations": 1,
+      "model_replaced": false
+    },
+    {
+      "motion": 2,
+      "report_sha256": "6f1ed91aeccaf62bd7a9da411e190921ed9b3c422a7dad26aa4cc6335c2f39fe",
+      "iterations": 8,
+      "final_equations": 1,
+      "model_replaced": false
+    },
+    {
+      "motion": 3,
+      "report_sha256": "cb4077ff082bd5c584bf7fe64e916c2715080a44d1a83e074045044f0a503495",
+      "iterations": 8,
+      "final_equations": 1,
+      "model_replaced": false
+    },
+    {
+      "motion": 4,
+      "report_sha256": "baacea033884e5fda981d86bc9eb64a0c271e162838a0229eca6af3083cc693a",
+      "iterations": 9,
+      "final_equations": 1,
+      "model_replaced": false
+    }
+  ],
+  "geometry": "vertices",
+  "vertex_controls": {
+    "warps": 40,
+    "retained_vertex_points": 10630,
+    "retained_depth_points": 12288,
+    "vertex_plane_max_error_m": 5.329070518200751e-15,
+    "vertex_plane_rms_m": 2.1087711555065796e-15,
+    "legacy_depth_plane_rms_m": 5.5468508436044404e-05,
+    "peak_vertex_plane_rms_m": 2.2200856936278385e-15,
+    "peak_depth_plane_rms_m": 0.014907718151353415,
+    "xyz_pyramids_preserve_plane": true,
+    "diagnostic_only_no_physical_accuracy_claim": true
+  },
+  "rejected_corruptions": [
+    "joint H/g rescaling with unchanged valid solve",
+    "false correspondence count",
+    "false per-iteration RMS",
+    "false final support",
+    "false returned-pose RMS",
+    "fusion category moved while total remains valid",
+    "legacy depth geometry substituted for vertex geometry"
+  ],
+  "prior_solve_only_auditor_accepts_rescaled_Hg": true
+}

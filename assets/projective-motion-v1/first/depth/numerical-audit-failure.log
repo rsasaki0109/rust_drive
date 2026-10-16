@@ -1,0 +1,30 @@
+Traceback (most recent call last):
+  File "/workspace/rust_drive/scripts/evaluate-projective-depth.py", line 166, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/workspace/rust_drive/scripts/evaluate-projective-depth.py", line 158, in main
+    summaries[case] = evaluate(case,args.binary.absolute(),folder,args.reprojection,args.correspondence,args.residual,args.normals,args.geometry,args.photometric,args.step_control,args.motion_model)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/rust_drive/scripts/evaluate-projective-depth.py", line 126, in evaluate
+    checked_steps = audit_sequence(outcomes,[f['depth_timestamp'] for f in frames])
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/rust_drive/scripts/projective_depth_common.py", line 200, in audit_sequence
+    np.testing.assert_allclose(pose(steps[0]['before']),predicted_initial,atol=1e-10 if 'prediction' in update else 1e-11,rtol=0)
+  File "/workspace/.rustdrive-tools/demo-venv/lib/python3.12/site-packages/numpy/testing/_private/utils.py", line 1711, in assert_allclose
+    assert_array_compare(compare, actual, desired, err_msg=str(err_msg),
+  File "/workspace/.rustdrive-tools/demo-venv/lib/python3.12/site-packages/numpy/testing/_private/utils.py", line 919, in assert_array_compare
+    raise AssertionError(msg)
+AssertionError: 
+Not equal to tolerance rtol=0, atol=1e-10
+
+Mismatched elements: 3 / 16 (18.8%)
+Max absolute difference among violations: 6.08889716e-10
+Max relative difference among violations: 6.08921297e-10
+ ACTUAL: array([[ 9.999481e-01,  7.112608e-03, -7.289266e-03,  2.209881e-02],
+       [-7.120627e-03,  9.999741e-01, -1.074801e-03,  2.547131e-04],
+       [ 7.281432e-03,  1.126650e-03,  9.999729e-01, -4.027357e-03],
+       [ 0.000000e+00,  0.000000e+00,  0.000000e+00,  1.000000e+00]])
+ DESIRED: array([[ 9.999481e-01,  7.112608e-03, -7.289266e-03,  2.209881e-02],
+       [-7.120627e-03,  9.999741e-01, -1.074801e-03,  2.547131e-04],
+       [ 7.281433e-03,  1.126650e-03,  9.999729e-01, -4.027357e-03],
+       [ 0.000000e+00,  0.000000e+00,  0.000000e+00,  1.000000e+00]])

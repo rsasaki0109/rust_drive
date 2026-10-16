@@ -1,0 +1,90 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.02s
+     Running unittests src/lib.rs (integrations/projective-depth/target/debug/deps/rustdriving_projective_depth-03b4782df025a009)
+
+running 59 tests
+test depth_weight::tests::fourth_power_variance_has_metre_floor_and_symmetric_bounded_endpoints ... ok
+test depth_weight::tests::all_six_weighted_huber_derivatives_hold_measured_depths_fixed ... ok
+test depth_weight::tests::standardized_huber_has_correct_six_axis_gradient_and_bounded_cofactor ... ok
+test fusion_sampling::tests::original_configuration_remains_default_and_mixed_policies_reject ... ok
+test information::tests::diagonal_equilibration_cannot_invent_a_weak_pose_direction ... ok
+test fusion_sampling::tests::surface_band_is_anchored_to_minimum_independent_of_traversal ... ok
+test information::tests::spectrum_preserves_physical_axes_under_rotation_and_global_residual_scale ... ok
+test fusion_sampling::tests::surface_mean_excludes_background_and_preserves_frame_support ... ok
+test motion::tests::bootstrap_bounds_and_ambiguous_rotation_never_invent_prediction ... ok
+test motion::tests::irregular_prediction_follows_a_helix_in_a_rotated_origin ... ok
+test motion::tests::signed_exposure_offsets_use_inverse_body_motion_and_bounded_history ... ok
+test multireference::tests::bilinear_derivatives_match_hand_calculated_linear_image ... ok
+test multireference::tests::bilinear_pixel_knots_have_canonical_right_down_derivatives ... ok
+test depth_weight::tests::relative_weight_does_not_reduce_raw_rms_or_invent_support ... ok
+test multireference::tests::rejected_frames_preserve_reference_and_age_until_latched_loss ... ok
+test photometric::tests::affine_brightness_directions_supply_no_pose_information ... ok
+test multireference::tests::malformed_image_does_not_initialize_or_refresh_an_estimate ... ok
+test photometric::tests::exposure_warp_jacobian_matches_all_six_depth_pose_directions ... ok
+test photometric::tests::measured_image_jacobian_matches_all_six_pose_directions ... ok
+test multireference::tests::image_texture_recovers_translation_unobservable_from_a_single_plane ... ok
+test multireference::tests::repeated_or_incompatible_phase_images_cannot_fill_geometric_degeneracy ... ok
+test step_control::tests::one_pixel_leaving_the_image_cannot_reduce_the_cost ... ok
+test step_control::tests::overshoot_is_halved_and_uphill_steps_end_the_level ... ok
+test photometric::tests::repeated_rgb_adds_no_constraint_but_new_depth_can_update ... ok
+test supervision::tests::fault_epoch_quarantines_backlog_then_fresh_fit_recovers_same_origin ... ok
+test supervision::tests::future_invalid_duplicate_and_stale_acquisitions_do_not_fit_or_refresh ... ok
+test supervision::tests::invalid_receipt_clocks_leave_all_state_unchanged ... ok
+test supervision::tests::repeated_faults_and_rejected_depth_cannot_postpone_silence_loss ... ok
+test supervision::tests::silence_expires_without_fabricated_acquisitions_and_never_revives ... ok
+test surface::tests::all_six_derivatives_include_the_rotating_normal ... ok
+test surface::tests::one_supported_direction_cannot_substitute_for_the_other ... ok
+test surface::tests::removes_difference_penalty_and_retains_equal_normal_plane_scale ... ok
+test surface::tests::reversing_a_fixed_correspondence_negates_the_residual ... ok
+test photometric::tests::textured_plane_recovers_motion_unobservable_from_depth ... ok
+test tests::bilinear_targets_preserve_planes_and_reject_missing_corners ... ok
+test tests::a_single_plane_is_rejected_as_unobservable ... ok
+test tests::depth_fusion_weight_cap_keeps_updating_without_unbounded_weight ... ok
+test tests::duplicate_and_bad_depth_do_not_refresh_and_expiry_latches ... ok
+test tests::inverse_depth_fit_recovers_a_tilted_plane_in_camera_coordinates ... ok
+test photometric::tests::exposure_change_does_not_become_plane_motion ... ok
+test tests::missing_or_grazing_normals_preserve_point_splats ... ok
+test tests::malformed_initial_frame_does_not_establish_a_pose ... ok
+test supervision::tests::malformed_measurement_cannot_corrupt_the_next_fit_or_refresh_age ... ok
+test tests::plane_fit_reduces_a_known_single_sample_depth_perturbation ... ok
+test tests::raster_has_hand_calculated_nearest_depth_and_index_ties ... ok
+test tests::reciprocal_matching_rejects_a_different_return_pixel ... ok
+test tests::rotating_source_plane_has_the_target_point_lever_arm ... ok
+test tests::tangent_splats_land_on_the_transformed_plane_at_pixel_centers ... ok
+test vertex_model::tests::capped_fusion_averages_all_three_coordinates ... ok
+test tests::nonplanar_patches_and_coarse_levels_keep_original_normals ... ok
+test tests::geometric_rejection_does_not_modify_model_or_accepted_pose ... ok
+test vertex_model::tests::vertex_raster_keeps_nearest_depth_first_index_ties_and_exact_xyz ... ok
+test tests::plane_normals_reject_holes_discontinuities_and_incomplete_support ... ok
+test visibility::tests::only_supported_free_space_exhausts_evidence_and_clears_depth ... ok
+test visibility::tests::visibility_is_opt_in_and_unsupported_combinations_reject ... ok
+test visibility::tests::visibility_projects_model_into_the_actual_current_view ... ok
+test vertex_model::tests::xyz_pyramid_centroids_and_normals_remain_on_a_tilted_plane ... ok
+test vertex_model::tests::rejected_vertex_update_preserves_the_model_and_accepted_clock ... ok
+test vertex_model::tests::forty_view_warps_preserve_the_plane_instead_of_snapping_xy ... ok
+
+test result: ok. 59 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.64s
+
+     Running unittests src/bin/rustdriving-multireference-rgbd.rs (integrations/projective-depth/target/debug/deps/rustdriving_multireference_rgbd-7a9ca4beeb88b81f)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (integrations/projective-depth/target/debug/deps/rustdriving_projective_depth-f1a25158d80cfce5)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/rustdriving-projective-depth-supervised.rs (integrations/projective-depth/target/debug/deps/rustdriving_projective_depth_supervised-dc55415567a7515d)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rustdriving_projective_depth
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

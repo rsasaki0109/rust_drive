@@ -1,0 +1,76 @@
+{
+  "analytic_pass": true,
+  "source_proof": true,
+  "inherited_continuous_controls": {
+    "analytic_pass": true,
+    "independently_checked_reported_systems": 15,
+    "additional_prior_system_checks": 1,
+    "objective_gradient_axes": 12,
+    "interpolation": {
+      "scalar_samples": 3,
+      "frozen_normalizer_central_difference_axes": 3,
+      "right_knot_derivative": true,
+      "continuous_knot_value": true,
+      "rejected_corner_controls": [
+        "missing depth",
+        "invalid corner normal",
+        "depth discontinuity"
+      ],
+      "behind_camera_rejected": true,
+      "omitted_projective_gradient_detected": true,
+      "parent_engine_only_pair_import_changed": true
+    },
+    "source_domain_failure_reproduced": true,
+    "rendered_continuous_converged": true,
+    "rendered_discrete_fresh_converged": false,
+    "rendered_applied_corrections": 1,
+    "rendered_termination": "converged",
+    "rendered_guard_failure": null,
+    "rendered_position_error_m": 1.9802412904961762e-05,
+    "rendered_rotation_error_rad": 2.7546834872737607e-05,
+    "measured_guards": {
+      "identity": null,
+      "missing": "new frame needs measured support",
+      "plane": "zero/nonfinite diagonal"
+    },
+    "perturbed_rendered_continuous_converged": false,
+    "perturbed_rendered_applied_corrections": 4,
+    "perturbed_rendered_termination": "guard",
+    "perturbed_rendered_guard_failure": "line search",
+    "isolated_injected_direction_invalid_trials": 2,
+    "isolated_injected_direction_search_exhausted": true,
+    "rejected_corruptions": [
+      "changed source hash",
+      "changed normalizer digest",
+      "changed normalizer value",
+      "wrong initial cost",
+      "false continuous convergence",
+      "false discrete convergence",
+      "wrong final matrix",
+      "wrong stop cause",
+      "wrong applied multiplier",
+      "wrong applied pose",
+      "coherently changed fixed normalizer",
+      "invalid candidate presented as zero cost"
+    ],
+    "input_roots_unchanged": true
+  },
+  "additional_rendered_reported_systems": 3,
+  "hand_counted_probe_mask": [
+    true,
+    false,
+    false
+  ],
+  "initial_center_qualified_fixture_samples": 3,
+  "initial_margin_qualified_fixture_samples": 1,
+  "rendered_parent_source_occurrences": 1050,
+  "rendered_margin_source_occurrences": 988,
+  "rejected_margin_corruptions": [
+    "center-only population substituted for margin selection"
+  ],
+  "stencil_is_not_a_continuous_domain_guarantee": true,
+  "source_sha256": {
+    "scripts/margin_depth_refinement.py": "85969ab8c3167660cdfc4fddc128638fe004a1377dbff50c21bc42476d4b5229",
+    "scripts/check-margin-depth-refinement.py": "2d432708dae9563a3835a91952bb5d6ac34a524ae4a5e61a8555446ba83ce2df"
+  }
+}

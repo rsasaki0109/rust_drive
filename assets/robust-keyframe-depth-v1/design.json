@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "role": "already viewed development comparison; not held out",
+  "parent": "assets/symmetric-keyframe-depth-v1",
+  "engine_parent": "scripts/marginalized_keyframe_depth.py",
+  "mode": "retain",
+  "hypothesis": "Redescending residual influence can reduce the effect of large-residual correspondences; physical benefit is unproven",
+  "change": "Only pair import in retained engine; symmetric residual and exact rotating-normal derivative unchanged",
+  "weight": {
+    "name": "Tukey biweight",
+    "cutoff_m_by_scale": {
+      "4": 0.12,
+      "2": 0.06,
+      "1": 0.03
+    },
+    "formula": "w=(1-(r/c)^2)^2 if abs(r)<c else 0",
+    "minimum_pair_weight_mass": 200.0,
+    "geometric_candidate_selection": "same as symmetric control",
+    "count": "all geometric candidates for admitted pairs; zero for pairs below weight-mass admission",
+    "unweighted_rms": "all geometric candidates for admitted pairs, including zero-weight tails",
+    "weights_frozen_per_linearization": true,
+    "prior": "finest-scale Tukey weights frozen with incident-only Schur linearization; same transport and ownership"
+  },
+  "evaluation": {
+    "cases": [
+      "tum-fr1-room-temporal",
+      "tum-fr1-desk2-independent"
+    ],
+    "updates": 179,
+    "initialization_outside_denominator": 1,
+    "root_translation_gate_m": 0.1,
+    "root_rotation_gate_rad": 0.1,
+    "reference_bracket_max_s": 0.02,
+    "ground_truth_operational": false,
+    "rgb_decoded": false,
+    "pose_resets": 0,
+    "all_operations_and_raw_audits_before_numeric_labels": true
+  },
+  "unchanged_bounds": {
+    "max_nodes": 5,
+    "iteration_caps": [
+      10,
+      7,
+      5
+    ],
+    "scaled_condition_max": 1000000.0,
+    "increment_m": 0.1,
+    "increment_rad": 0.15,
+    "final_unweighted_rms_m": 0.03,
+    "accepted_displacement_m": 0.5,
+    "expiry_s": 0.2
+  },
+  "audit": {
+    "h_atol": 1e-06,
+    "g_atol": 1e-08,
+    "rtol": 1e-08,
+    "exact_counts": true,
+    "weight_mass_admission": true,
+    "zero_weight_candidates_still_in_rms": true
+  },
+  "default_changed": false
+}

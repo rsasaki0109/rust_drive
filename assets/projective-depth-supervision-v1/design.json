@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "role": "caller-driven monotonic supervision of offline optical-depth odometry; temporal freshness is not accuracy or permission to drive",
+  "base_source_sha256": {
+    "integrations/projective-depth/src/lib.rs": "c5562c7642d973b4b74ff62b5181a6ce993e012b5fdb3dea4f275535ac27ba64",
+    "integrations/projective-depth/src/main.rs": "60e574d1b7f4d5872cac858dd6ff5cfdfd07653b6ef4906071cba258c17eb78d",
+    "integrations/projective-depth/Cargo.toml": "6a14a3298ecfa1cf78f241d119dbd0fc1377b6f5c178c3fa38a7c5173f0fb991",
+    "integrations/projective-depth/Cargo.lock": "4537f1a8fc6aa3e2b54788ae521213abb22659d0c64252d37fafbef94ac0c2e6",
+    "scripts/projective_depth_common.py": "4d951fed622483de224666056b3fbabdd22902837cbdf8574cb500df9a86a29f",
+    "scripts/evaluate-projective-depth.py": "5f7110e1227270968f7ed7459003f3726a78a9d8e5de829c3cfd10f8a0eeec9f",
+    "scripts/check-projective-depth.py": "d38e17df85285f43bea569cd3410eabf5da9c0150f5bcab5c1802910625a87a4"
+  },
+  "age_max_s": 0.2,
+  "clock": "explicit caller now and acquisition timestamp in same monotonic epoch; no wall clock or threads",
+  "receipt_clock": "finite nonnegative strictly newer now <= 1e12; invalid now returns error without mutation",
+  "measurement_clock": "finite nonnegative, strictly new acquisition <= now; invalid/future/duplicate/stale acquisitions hold and cannot mutate model",
+  "fault_recovery": "only a successfully fitted acquisition strictly after receipt-clock fault epoch may clear hold",
+  "silence": "caller idle ticks expire accepted pose beyond0.2 seconds and latch terminal Lost",
+  "no_reset": true,
+  "coordinate_frame": "first depth camera, optical x-right/y-down/z-forward",
+  "underlying_estimator_unchanged": true,
+  "tests": [
+    "blank or malformed depth preserves map",
+    "old acquisition cannot clear hold",
+    "silence expires without fabricating depth",
+    "lost never revives",
+    "invalid receipt clock cannot mutate state",
+    "clean/faulted filtered input yield identical later estimates"
+  ],
+  "recorded_cases": [
+    "tum-fr1-room-temporal",
+    "tum-fr1-desk2-independent"
+  ],
+  "healthy_frames": 180,
+  "fault_prefix_frames": 20,
+  "malformed_at_offset": 5,
+  "explicit_failure_at_offset": 11,
+  "comparison": "clean tracker fed exactly surviving accepted depth sequence; compare every common root and trace",
+  "ground_truth_operational": false,
+  "physical_accuracy_gates_unchanged": [
+    0.1,
+    0.1
+  ],
+  "maturity_claim": false,
+  "fault_prefix_post_expiry_retry_offset": 27,
+  "healthy_idle_tick_offset_s": 0.01,
+  "healthy_receipt_delay_s": 0.001
+}

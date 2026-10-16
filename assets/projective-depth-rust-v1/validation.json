@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "core_check": {
+    "command": "bash scripts/check.sh",
+    "exit_code": 0,
+    "rust_tests": 371,
+    "scenario_runs_and_replays": 49,
+    "log_sha256": "25753341652bd758758c09b957abd34eacdbcd365cd0bc938d1979349ca6a820"
+  },
+  "optional_projective_rust": {
+    "rust_tests": 6,
+    "fmt_pass": true,
+    "clippy_all_targets_pass": true,
+    "release_build_pass": true,
+    "locked": true,
+    "unsafe_forbidden": true
+  },
+  "recorded_evaluation_exit_codes": [
+    1,
+    1
+  ],
+  "cases": {
+    "tum-fr1-room-temporal": {
+      "summary": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 64,
+        "lost": false,
+        "max_position_error_m": 0.2962903752194005,
+        "max_rotation_error_rad": 0.1412856775931408,
+        "complete_accuracy_pass": false,
+        "independently_checked_normal_steps": 3411
+      },
+      "all_acceptance_decisions_match_prototype": true,
+      "max_translation_disagreement_m": 1.7618998046316714e-14,
+      "max_rotation_disagreement_rad": 1.332800374925012e-07,
+      "exact_first_final_replay": {
+        "sensor-only.json": "1509a77330183b6df2f60e2036454fbc03df48ce66fe89d83c4f39740226f6da",
+        "results.json": "cc5422374ec823864512c17028a79a0b89020f85ebbbe86f8f97212a9171ab09"
+      }
+    },
+    "tum-fr1-desk2-independent": {
+      "summary": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 161,
+        "lost": false,
+        "max_position_error_m": 0.11480018654834367,
+        "max_rotation_error_rad": 0.0903855165562892,
+        "complete_accuracy_pass": false,
+        "independently_checked_normal_steps": 3450
+      },
+      "all_acceptance_decisions_match_prototype": true,
+      "max_translation_disagreement_m": 8.742609801708503e-15,
+      "max_rotation_disagreement_rad": 7.598131170262078e-08,
+      "exact_first_final_replay": {
+        "sensor-only.json": "6d0474b96ba296a366dba03931526a27a6bace06d72577c2b64b1c45d6a715fb",
+        "results.json": "a9c5a6a66dbc44064c96449617b7452303b25c09cf40f93da52ab23674e87531"
+      }
+    }
+  },
+  "independent_normal_steps": 6861,
+  "replayed_sensor_and_result_files": 4,
+  "all_prior_simulation_output_files_unchanged": 245,
+  "analytic_motions": 4,
+  "rejected_transport_cases": 10,
+  "rejected_report_corruptions": 10,
+  "python_compile_pass": true,
+  "actionlint_pass": true,
+  "git_diff_check_pass": true,
+  "complete_physical_accuracy_pass": false,
+  "subjective_maturity_percent": 20,
+  "requested_30_percent_reached": false,
+  "scope": "Viewed-data Rust implementation parity, independent normal algebra and pose/reference/clock accounting; not held-out automotive accuracy, complete raw ICP reconstruction or vehicle integration.",
+  "final_source_sha256": {
+    "assets/projective-depth-rust-v1/design.json": "3db948361f4f7b7c0a60f6b7ad53ebaca3a8df178189f42d6f24ce08311c61c7",
+    "integrations/projective-depth/Cargo.lock": "4537f1a8fc6aa3e2b54788ae521213abb22659d0c64252d37fafbef94ac0c2e6",
+    "integrations/projective-depth/Cargo.toml": "6a14a3298ecfa1cf78f241d119dbd0fc1377b6f5c178c3fa38a7c5173f0fb991",
+    "integrations/projective-depth/src/lib.rs": "c5562c7642d973b4b74ff62b5181a6ce993e012b5fdb3dea4f275535ac27ba64",
+    "integrations/projective-depth/src/main.rs": "60e574d1b7f4d5872cac858dd6ff5cfdfd07653b6ef4906071cba258c17eb78d",
+    "scripts/check-opencv-rgbd.py": "63e366ce4d83d1fd1512c13726c777d5d04aa24c8b22d6161ecbb33cf21df1ff",
+    "scripts/check-projective-depth.py": "d38e17df85285f43bea569cd3410eabf5da9c0150f5bcab5c1802910625a87a4",
+    "scripts/evaluate-projective-depth.py": "5f7110e1227270968f7ed7459003f3726a78a9d8e5de829c3cfd10f8a0eeec9f",
+    "scripts/projective_depth_common.py": "4d951fed622483de224666056b3fbabdd22902837cbdf8574cb500df9a86a29f"
+  }
+}

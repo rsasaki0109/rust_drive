@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "parent": "assets/depth-slope-refinement-v1",
+  "motivation": "Preserve the failed bilateral slope trial3/10, then extend its slope domain where an out-of-cell depth jump invalidates one cardinal neighbor but four measured interpolation corners remain continuous",
+  "data_role": "already viewed outcome-informed follow-up, not held-out validation",
+  "cases": ["tum-fr1-room-temporal", "tum-fr1-desk2-independent"],
+  "sample_indices": [120, 160, 200, 240, 279],
+  "field_rule": "Keep the same depth range, strict center-neighbor continuity gate and two-pixel border. Each vertex requires measured center depth and at least one eligible neighbor on each image axis. Both eligible sides use the unchanged harmonic limited slope; only the low side uses center-minus-low inverse depth; only the high side uses high-minus-center inverse depth. Neither side on any axis rejects the vertex. These choices are precomputed per vertex, never selected by candidate or residual",
+  "extension_invariant": "Every bilateral-valid vertex keeps exactly the same slopes; every bilateral-supported sample retains its value and projective derivative. New support uses measured one-sided differences only and still requires all four interpolation corners and their original depth-continuity gate. No depth is filled, and no interpolation crosses an absent corner",
+  "interpolation": "Unchanged four-corner Hermite sampler with shared corner values/slopes and zero mixed derivatives. C1 on jointly supported adjacent cells. No integer snapping, clipping or bilinear fallback; positive finite inverse depth and finite derivatives still required. One-dimensional limiting is not a two-dimensional monotonicity or physical accuracy guarantee",
+  "initial_population": "Same original measured-normal matching and bilinear9-probe source selection. Preserve original IDs, points, source normals and bilinear-center normalizers for survivors of new center support. Minimum200 per factor; report actual retention and initial cost parity",
+  "fixed_objective": "Freeze sources, original normalizers and per-frame vertex fields throughout each attempt. Same incoming nonlinear prior and Huber0.01m loss; no reselection, source dropout, target normal completion or arbitrary unsupported derivative during fitting",
+  "unchanged_solver": "Exact bilateral depth-slope solver/objective/checkpoint function bodies,30-correction GN cap,21 Armijo candidates1..2^-20 with original numerical slack, current support, SPD condition<=1e6, full proposal<=0.1m/0.15rad and strict full-proposal convergence1e-5m/1e-5rad; no damping",
+  "checkpoints": [10, 20, 30],
+  "independent_verification": "Independent stacked side eligibility and reciprocal-mean harmonic construction. Original polynomial sampler, source selection, prior/matrix/spectral-solve/search/checkpoint audit functions consume independently prepared new fields unchanged. Bilateral controls are independently rechecked using their own original field",
+  "analytic_controls": "Eight side-availability fixtures, bilateral domain inclusion and exact shared slopes/sample values, explicit cross-jump rejection by bilateral model with valid opposite-side repair, no missing-corner filling, C1 and XYZ finite differences on newly admitted cells, original geometry unchanged, inherited bilateral controls, rendered warm/degenerate fits,12-axis nonzero-prior objective gradients and four report corruptions",
+  "followup_eligibility_rule": "Both cases converge all five new windows, improve original-discrete fresh convergence, have no local/fresh guards, pass original0.03m RMS gates and have median original-discrete fresh RMS no worse than bilateral control",
+  "scope": "Outcome-informed extension of a depth-difference model. One-sided slopes have less surrounding support and do not establish physical accuracy. No numeric real reference labels, new continuous trajectory, tracker/prior/Schur commits, native/default adoption or timing claim",
+  "subjective_maturity_percent": 20
+}

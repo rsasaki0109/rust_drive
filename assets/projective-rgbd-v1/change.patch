@@ -1,0 +1,1429 @@
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -144,6 +144,9 @@
+           python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/plane-normal-analytic --normals inverse_depth_plane --output artifacts/projective-depth/plane-normal-raw-audit
+           python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --geometry vertices --output artifacts/projective-depth/vertex-analytic
+           python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/vertex-analytic --geometry vertices --output artifacts/projective-depth/vertex-raw-audit
++          python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --photometric keyframe --output artifacts/projective-depth/rgbd-analytic
++          python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/rgbd-analytic --photometric keyframe --output artifacts/projective-depth/rgbd-raw-audit
++          python scripts/check-projective-rgbd-lifecycle.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/rgbd-lifecycle
+           python scripts/check-multireference-rgbd.py --binary integrations/projective-depth/target/release/rustdriving-multireference-rgbd --output artifacts/projective-depth/multireference
+           python scripts/check-joint-keyframe-depth.py --output artifacts/projective-depth/joint-keyframes
+           python scripts/check-marginalized-keyframes.py --output artifacts/projective-depth/marginalized-keyframes
+@@ -184,6 +187,7 @@
+           python -m py_compile scripts/projective_depth_common.py scripts/evaluate-projective-depth.py scripts/check-projective-depth-supervision.py scripts/projective_depth_raw.py
+           python -m py_compile scripts/check-projective-depth-comparison.py
+           python -m py_compile scripts/projective_vertex_raw.py
++          python -m py_compile scripts/projective_photo_raw.py scripts/check-projective-rgbd-lifecycle.py
+           python -m py_compile scripts/multireference_rgbd_common.py scripts/evaluate-multireference-rgbd.py
+           python -m py_compile scripts/joint_keyframe_depth.py scripts/evaluate-joint-keyframe-depth.py
+           python -m py_compile scripts/marginalized_keyframe_depth.py scripts/evaluate-marginalized-keyframes.py
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -355,6 +355,13 @@
+ control prevents the depth-only resampling deformation. Recorded accuracy is
+ 67/179 room and 85/179 desk2, so depth geometry remains the default. Unsupported
+ combinations with the other experimental policies reject before acknowledgment.
++An optional [fused RGB-D mode](projective-rgbd-fusion.md) adds measured,
++phase-qualified intensity systems against a raw color reference. RGB and depth
++keep independent acquisition clocks; repeated RGB cannot contribute intensity,
++and a reference change without fresh RGB clears its color anchor. The combined
++system recovers textured-plane motion absent geometric observability, but its
++viewed 80/179 room and 75/179 desk2 result fails adoption. It remains outside
++vehicle control and the depth-only idle-tick supervisor.
+ [Contract and negative accuracy results](multireference-rgbd.md).
+ 
+ The optional NumPy joint-keyframe evaluator separately optimizes up to five
+--- a/docs/capabilities.md
++++ b/docs/capabilities.md
+@@ -58,7 +58,7 @@
+ | KITTI processed-camera point projection | Implemented / independently checked analytically | Full selected P_rect, shared R_rect_00 and Velodyne/IMU extrinsics; all 72 authored rows across four cameras audited and byte-identical projection replay; no real KITTI files, deskew or driving integration; [scope](kitti-projection.md) |
+ | Sparse projected LiDAR depth | Implemented / analytically checked | Bounded row-major cells with nearest axial Z, exact index ties and full source-point assignments; separate locked tool, correctly rounded JSON parsing; no filling, physical visibility proof or measured accuracy; [contract](kitti-depth.md) |
+ | Dense-depth / OSS odometry comparison | Offline evaluation; accuracy gates fail | Six archived Python prototypes and pinned OpenCV reference on two viewed 179-update recordings; fused depth reaches 64/179 room and 161/179 desk2 accurate, reference 83/179 and 15/179; independent root scoring and exact reference repeat, no driving integration; [evidence](projective-depth-diagnostics.md) |
+-| Rust projective depth fusion | Implemented / offline accuracy incomplete | Independent bounded Rust library and CLI; sensor-only model, atomic failure and expiry; default64/179 room and161/179 desk2 accurate with exact full replay; reprojection, matching, residual, planar-normal and XYZ models fail continuous adoption; XYZ preserves known-plane geometry, no vehicle fusion or calibrated uncertainty; [contract](projective-depth-rust.md), [native regression](native-depth-regression.md), [XYZ evidence](projective-vertices.md) |
++| Rust projective depth fusion | Implemented / offline accuracy incomplete | Independent bounded Rust library and CLI; default64/179 room and161/179 desk2 accurate with exact replay; optional RGB-D recovers synthetic textured-plane observability and handles asynchronous RGB, but scores80/179 room and75/179 desk2 and fails adoption; no vehicle fusion or calibrated uncertainty; [contract](projective-depth-rust.md), [native regression](native-depth-regression.md), [XYZ evidence](projective-vertices.md), [RGB-D evidence](projective-rgbd-fusion.md) |
+ | Optical-depth temporal supervision | Implemented / offline failure regressions | Caller-clock idle ticks expire stale poses without synthetic acquisitions; holds require post-fault successful depth, queued old data cannot clear them; terminal loss and clean-sequence map/pose parity checked, no live vehicle control; [contract](projective-depth-supervision.md) |
+ | Raw-depth odometry audit | Implemented / viewed mathematical validation | Separate NumPy reconstruction of all 6,861 iteration and 358 final equations, projective pixel selection and 358 prescribed fused models; exact discrete counts and corruption controls; physical accuracy failures unchanged; [scope](projective-depth-raw-audit.md) |
+ | Multi-reference RGB-D odometry | Optional experiment / recorded accuracy regresses | Bounded raw keyframes and phase-qualified intensity recover synthetic planar motion; independent raw analytic equations and recorded solve/state checks; neither branch improves both viewed records, default unchanged; [failures and contract](multireference-rgbd.md) |
+--- a/docs/maturity.md
++++ b/docs/maturity.md
+@@ -583,3 +583,11 @@
+ configuration acceptance previously masked by an EOF error. These corrections
+ add no qualified vehicle capability or sustained accuracy gain; subjective
+ maturity remains **about 20%** versus mature driving OSS.
++
++The [fused RGB-D mode](projective-rgbd-fusion.md) recovers a synthetic textured
++plane's otherwise unobservable motion and handles independent image/depth
++freshness with explicit reference ownership. Its viewed room result improves
++to 80/179, but desk2 regresses to 75/179. All updates are available after the
++asynchronous-image correction; the original complete accuracy and cross-record
++adoption gates remain unmet. The mode is not the default and supplies no
++qualified vehicle capability. Subjective maturity stays **about 20%**.
+--- a/docs/native-depth-regression.md
++++ b/docs/native-depth-regression.md
+@@ -59,11 +59,12 @@
+     residual: Residual::TargetPlane,
+     normals: NormalEstimation::CentralDifference,
+     geometry: ModelGeometry::Depth,
++    photometric: Photometric::Disabled,
+ }
+ ```
+ 
+ The JSON-lines `Configure` request accepts optional `reprojection`,
+-`correspondence`, `residual`, `normals` and `geometry` fields with the names below. Missing fields use
++`correspondence`, `residual`, `normals`, `geometry` and `photometric` fields. Missing fields use
+ the original defaults; unknown fields and enum values reject. The version-1
+ acknowledgment, frame limits, optical coordinate convention and metre/second
+ units are unchanged. There are no new dependencies or Cargo lockfile changes.
+@@ -94,6 +95,12 @@
+   default policies and rejects unsupported combinations before acknowledgment.
+   Its [geometric preservation control and failed continuous comparison](projective-vertices.md)
+   retain all outcomes; it is not promoted to the default.
++* `photometric`: `disabled` or `keyframe`. The latter requires associated measured
++  grayscale images and the original depth/fitting policies. It uses fresh,
++  phase-qualified intensity constraints against a measured reference image;
++  repeated RGB is ignored while new admissible depth remains usable. The
++  [fused RGB-D implementation and complete failures](projective-rgbd-fusion.md)
++  are retained; depth-only tracking remains the default.
+ 
+ Only the individual configurations in the table have recorded trajectory
+ results. Their combinations have no physical accuracy qualification. All modes
+--- a/docs/projective-depth-rust.md
++++ b/docs/projective-depth-rust.md
+@@ -21,9 +21,11 @@
+ 
+ The standalone [crate](../integrations/projective-depth/Cargo.toml) has a
+ `Tracker::new(Camera)` / `Tracker::step(timestamp, depth_metres)` API.
+-The algorithm accepts only optical axial-depth samples, pinhole calibration
+-and acquisition time. It accepts no RGB, reference poses, external map or
+-simulator state. The only library dependency is serde for explicit diagnostics;
++The default algorithm accepts optical axial-depth samples, pinhole calibration
++and acquisition time. An explicit [photometric mode](projective-rgbd-fusion.md)
++also accepts associated measured grayscale images and independent RGB timestamps.
++Neither mode accepts reference poses, an external map or simulator state.
++The only library dependency is serde for explicit diagnostics;
+ the CLI additionally uses correctly rounded serde_json input.
+ 
+ Coordinates are x right, y down, z forward, in metres. The initial depth camera
+--- /dev/null
++++ b/docs/projective-rgbd-fusion.md
+@@ -0,0 +1,132 @@
++# Measured RGB constraints for fused-depth tracking
++
++The maintained Rust fused-depth tracker now accepts an explicit, optional
++**keyframe photometric mode**. It combines measured image intensities with the
++existing fused depth surface. A textured-plane control recovers motion that
++depth alone cannot observe. **The mode is not adopted as the default:** room
++improves, but desk2 accuracy regresses. All results remain offline research.
++
++## Complete outcomes
++
++Both recordings retain the original 180 acquisitions, first optical-camera root,
++K=525 calibration, 0.1 m / 0.1 rad gates and all 179 updates in the denominator.
++Numeric reference poses enter scoring only after operational outcomes are saved.
++
++| Tracker | Accepted, room / desk2 | Accurate, room / desk2 | Maximum position, room / desk2 (m) | Maximum rotation, room / desk2 (rad) |
++|---|---|---|---|---|
++| Original depth | 179 / 179 | 64 / 161 | 0.296290 / 0.114800 | 0.141286 / 0.090386 |
++| First RGB-D: repeated image rejects the bundle | 172 / 160 | 80 / 21 | 0.274393 / 0.801365 | 0.112944 / 0.329311 |
++| Maintained RGB-D: independent image freshness | 179 / 179 | 80 / 75 | 0.275569 / 0.306636 | 0.109385 / 0.201632 |
++
++No run expires or resets. The corrected mode restores new-depth availability
++when RGB acquisitions repeat, improves room's count and maximum errors, but
++still fails the unchanged adoption rule because desk2 is worse. The default
++reproduces all 360 original outcomes exactly. These are already viewed indoor
++development recordings, without held-out or automotive qualification.
++
++The [source-bound packet](../assets/projective-rgbd-v1/summary.json) and
++[validation receipt](../assets/projective-rgbd-v1/validation.json) preserve the
++first failure, corrected sources, complete pre-label ledgers and scored results.
++The first strict-image attempt has no complete raw-image equation audit; the
++maintained mode receives full independent reconstruction.
++
++## Measurements and model ownership
++
++`Photometric::Keyframe` requires an associated `ImageObservation` with a
++grayscale byte per depth pixel and its own acquisition timestamp. RGB PNGs in
++the viewed trials are converted by `(77*R + 150*G + 29*B) >> 8`. Image dimensions
++match the camera; values are bytes. RGB/depth association must be within 0.02 s.
++Depth clocks remain strictly increasing and govern accepted-pose expiry.
++
++RGB clocks may repeat while depth advances: the two recordings have 173 and
++162 unique RGB acquisitions for 180 depth frames each. A repeated image supplies
++**no intensity constraint**. A newly measured depth can still update pose after
++the original geometric support, conditioning and residual checks pass.
++Regressing, missing, malformed or unassociated RGB rejects the configured bundle
++without updating the accepted pose. A duplicate depth cannot refresh tracking,
++and new RGB cannot hide accepted-depth expiry.
++
++The reference color is a raw measured image at a depth-reference change; it is
++not averaged into a synthetic image. If a reference changes without fresh RGB,
++the color anchor is cleared. Geometry remains usable, and intensity resumes
++only after a later reference change has a fresh associated image. This avoids
++assigning an old image to a new camera view. Pose labels never enter this logic.
++
++The existing sampler and grayscale pyramid are shared with the older separate
++multi-reference experiment. The new mode uses the maintained fused-depth model,
++one measured color reference and the original fine sampling stride of 2.
++It is separate from the older raw-keyframe multi-reference tracker.
++
++## Joint fit and limitations
++
++Each photometric term uses a geometrically admitted source point and bilinear
++reference intensity, with explicit right/down derivative conventions at pixel
++knots. It contributes only if RGB/depth phase differs from the reference phase
++by at most 0.005 s, the image is fresh, gradient magnitude is at least 1 gray
++level/pixel, absolute intensity residual is below 30 gray levels, and at least
++200 photometric samples survive. Tukey weights use that same 30-level cutoff.
++
++Weights reuse the previously defined 0.005 m geometric and 10-gray intensity
++scales: the photometric H/g contribution is multiplied by `0.005² / 100`
++relative to the original geometric system. Separate H/g, counts, residuals and
++usage flags are reported; the solve and scaled condition use their combined
++system. All original depth gates, iteration caps, keyframe thresholds, root
++composition, atomic failures and 0.2 s expiry remain. No dependencies, Cargo pins,
++vehicle localization or controls change. Other experimental fitting policies
++and XYZ geometry are rejected when combined with this mode.
++
++These weights and phase bounds are provisional. Phase qualification does not
++compensate camera motion between RGB and depth, rolling shutter, exposure change
++or dynamic objects. Small geometric or image RMS does not establish root
++accuracy. The first diagnostic identifies accumulating rotation error in the
++viewed desk2 interval; it does not prove a unique cause. Adding measured texture
++does not resolve the complete physical protocol.
++
++## Validation and reproduction
++
++The optional crate passes **35 tests**, including all six image Jacobian axes,
++textured-plane motion that geometry rejects as unobservable, and repeated-image
++freshness. The original four ray-cast motion controls pass their 4 mm / 0.004 rad
++gates. A separate ten-frame lifecycle control checks reference clearing and
++resumption, independently reconstructs its systems, rejects five input faults
++and verifies latched expiry.
++
++The NumPy raw auditor reconstructs the maintained mode's depth and image systems
++from hash-qualified PNGs, checks separate and combined contributions, image
++freshness/phase/reference ownership and every prescribed depth model update.
++This includes 7,995 reported geometric systems, 7,383 image systems and 358
++prescribed model generations. Reference changes without fresh RGB clear the
++color anchor three times in room and five times in desk2; their subsequent
++image-free reference intervals are included in the audit.
++Altered image gradients, freshness metadata and joint H/g rescaling are rejected.
++The original attempt and current sources remain versioned rather than changing
++historical hashes. Core checks retain 371 Rust tests, 49 scenario replays and
++245 deterministic output hashes. CI runs synthetic RGB-D, lifecycle and raw
++analytic checks without downloading recordings.
++
++Use the [original input/environment instructions](projective-depth-rust.md#reproduction)
++and fresh output paths:
++
++```bash
++source scripts/env.sh
++cargo build --release --locked --manifest-path integrations/projective-depth/Cargo.toml
++OPENBLAS_NUM_THREADS=1 python scripts/evaluate-projective-depth.py \
++  --binary integrations/projective-depth/target/release/rustdriving-projective-depth \
++  --photometric keyframe --output artifacts/fused-rgbd-recorded
++OPENBLAS_NUM_THREADS=1 python scripts/check-projective-depth.py \
++  --binary integrations/projective-depth/target/release/rustdriving-projective-depth \
++  --photometric keyframe --output artifacts/fused-rgbd-analytic
++OPENBLAS_NUM_THREADS=1 python scripts/check-projective-rgbd-lifecycle.py \
++  --binary integrations/projective-depth/target/release/rustdriving-projective-depth \
++  --output artifacts/fused-rgbd-lifecycle
++OPENBLAS_NUM_THREADS=1 python scripts/audit-projective-depth-raw.py \
++  --photometric keyframe --analytic-reports artifacts/fused-rgbd-analytic \
++  --recorded-reports artifacts/fused-rgbd-recorded --output artifacts/fused-rgbd-raw
++```
++
++The physical evaluator saves the complete accuracy failure and exits 1. Apply
++the [unchanged adoption checker](native-depth-regression.md) with these candidate
++and raw-audit folders and the canonical depth baseline. The mode remains outside
++the depth-only idle-tick supervisor. Subjective maturity stays about 20% versus
++mature driving OSS; neither synthetic observability nor room's improvement is a
++qualified sustained-localization result.
+--- a/integrations/projective-depth/src/lib.rs
++++ b/integrations/projective-depth/src/lib.rs
+@@ -1,11 +1,16 @@
+ //! Optical x-right/y-down/z-forward depths in metres. Research odometry only.
+-//! No images, reference poses, clocks supplied by wall time or driving controls.
++//! Optional associated grayscale supports photometric fitting. No reference
++//! poses, clocks supplied by wall time or driving controls.
+ 
+ use serde::{Deserialize, Serialize};
+ 
+ pub mod multireference;
++pub mod photometric;
+ pub mod supervision;
+ mod vertex_model;
++pub use multireference::ImageObservation;
++use multireference::{Gray, gray_pyramid};
++use photometric::{PhotoEquation, PhotoPair, PhotoState, Photometric};
+ 
+ type V = [f64; 3];
+ type M = [[f64; 3]; 3];
+@@ -72,6 +77,7 @@
+     pub residual: Residual,
+     pub normals: NormalEstimation,
+     pub geometry: ModelGeometry,
++    pub photometric: Photometric,
+ }
+ 
+ #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+@@ -531,6 +537,8 @@
+     pub scaled_condition: f64,
+     pub delta: [f64; 6],
+     pub after: Pose,
++    #[serde(skip_serializing_if = "Option::is_none")]
++    pub photometric: Option<PhotoEquation>,
+ }
+ fn fit(
+     target: &[Level],
+@@ -539,7 +547,8 @@
+     trace: &mut Vec<Iteration>,
+     correspondence: Correspondence,
+     residual: Residual,
+-) -> Result<(Pose, Equation), String> {
++    photo: Option<&PhotoPair<'_>>,
++) -> Result<(Pose, Equation, Option<PhotoEquation>), String> {
+     let mut pose = initial;
+     for ((t, s), (scale, cap)) in target.iter().zip(source).zip([(4, 10), (2, 7), (1, 5)]) {
+         for _ in 0..cap {
+@@ -547,7 +556,9 @@
+             if e.count < MIN_SUPPORT {
+                 return Err("insufficient geometric support".into());
+             }
+-            let (d, condition) = solve_normal(e.h, e.g, 1e6)?;
++            let p = photo.map(|pair| pair.equation(t, s, pose, scale));
++            let (h, g) = photometric::combine(&e, p.as_ref());
++            let (d, condition) = solve_normal(h, g, 1e6)?;
+             if norm([d[0], d[1], d[2]]) > 0.1 || norm([d[3], d[4], d[5]]) > 0.15 {
+                 return Err("oversized geometric increment".into());
+             }
+@@ -562,6 +573,7 @@
+                 scaled_condition: condition,
+                 delta: d,
+                 after: next,
++                photometric: p,
+             });
+             pose = next;
+             if norm([d[0], d[1], d[2]]) < 1e-5 && norm([d[3], d[4], d[5]]) < 1e-5 {
+@@ -574,7 +586,8 @@
+     if final_e.count < MIN_SUPPORT || final_e.rms_m > 0.03 || norm(pose.translation) > 0.5 {
+         return Err("final geometric residual, support or displacement gate".into());
+     }
+-    Ok((pose, final_e))
++    let final_photo = photo.map(|pair| pair.equation(&target[2], &source[2], pose, 1));
++    Ok((pose, final_e, final_photo))
+ }
+ 
+ #[derive(Clone, Debug, Default, Serialize)]
+@@ -723,6 +736,10 @@
+     pub iterations: Vec<Iteration>,
+     pub final_equation: Option<Equation>,
+     pub fusion: Option<FusionStats>,
++    #[serde(skip_serializing_if = "Option::is_none")]
++    pub photometric: Option<PhotoState>,
++    #[serde(skip_serializing_if = "Option::is_none")]
++    pub final_photometric: Option<PhotoEquation>,
+ }
+ struct Model {
+     depth: Vec<f64>,
+@@ -730,6 +747,9 @@
+     pyramid: Vec<Level>,
+     key_root: Pose,
+     initial: Pose,
++    gray: Option<Vec<Gray>>,
++    rgb_timestamp: Option<f64>,
++    phase: f64,
+ }
+ pub struct Tracker {
+     camera: Camera,
+@@ -738,6 +758,8 @@
+     residual: Residual,
+     normals: NormalEstimation,
+     geometry: ModelGeometry,
++    photometric: Photometric,
++    last_rgb: Option<f64>,
+     model: Option<Model>,
+     last_observed: Option<f64>,
+     last_accepted: Option<f64>,
+@@ -765,12 +787,22 @@
+                 residual: Residual::default(),
+                 normals: NormalEstimation::default(),
+                 geometry: ModelGeometry::default(),
++                photometric: Photometric::default(),
+             },
+         )
+     }
+     /// Configure measured residual/model policies with shared clock and fault guards.
+     pub fn with_config(camera: Camera, config: TrackerConfig) -> Result<Self, String> {
+         camera.validate()?;
++        if config.photometric == Photometric::Keyframe
++            && (config.geometry != ModelGeometry::Depth
++                || config.reprojection != Reprojection::Point
++                || config.correspondence != Correspondence::Forward
++                || config.residual != Residual::TargetPlane
++                || config.normals != NormalEstimation::CentralDifference)
++        {
++            return Err("photometric tracking requires the original depth/point/forward/target_plane/central_difference policies".into());
++        }
+         if config.geometry == ModelGeometry::Vertices
+             && (config.reprojection != Reprojection::Point
+                 || config.correspondence != Correspondence::Forward
+@@ -788,6 +820,8 @@
+             residual: config.residual,
+             normals: config.normals,
+             geometry: config.geometry,
++            photometric: config.photometric,
++            last_rgb: None,
+             model: None,
+             last_observed: None,
+             last_accepted: None,
+@@ -797,6 +831,15 @@
+     /// Rejected fits do not mutate pose/model/accepted time. Valid acquisition
+     /// clocks advance even for malformed depth, so expiry cannot be hidden.
+     pub fn step(&mut self, timestamp: f64, depth: &[f64]) -> Update {
++        self.step_with_image(timestamp, depth, None)
++    }
++
++    pub fn step_with_image(
++        &mut self,
++        timestamp: f64,
++        depth: &[f64],
++        image: Option<ImageObservation<'_>>,
++    ) -> Update {
+         let mut out = Update {
+             timestamp,
+             accepted: false,
+@@ -809,6 +852,8 @@
+             iterations: Vec::new(),
+             final_equation: None,
+             fusion: None,
++            photometric: None,
++            final_photometric: None,
+         };
+         let result = (|| -> Result<(), String> {
+             if !timestamp.is_finite()
+@@ -827,6 +872,44 @@
+             if self.lost {
+                 return Err("accepted-pose expiry latched; no reset".into());
+             }
++            let (gray, rgb_timestamp, phase, fresh) = match (self.photometric, image) {
++                (Photometric::Disabled, None) => (None, None, 0., false),
++                (Photometric::Disabled, Some(_)) => {
++                    return Err("depth mode expects no RGB image".into());
++                }
++                (Photometric::Keyframe, None) => {
++                    return Err("photometric tracking requires an associated image".into());
++                }
++                (Photometric::Keyframe, Some(image)) => {
++                    if !image.timestamp.is_finite()
++                        || !(0.0..=1e12).contains(&image.timestamp)
++                        || (image.timestamp - timestamp).abs() > 0.02
++                        || self.last_rgb.is_some_and(|t| image.timestamp < t)
++                    {
++                        return Err("invalid, regressing or unassociated RGB clock".into());
++                    }
++                    let fresh = self.last_rgb.is_none_or(|t| image.timestamp > t);
++                    self.last_rgb = Some(image.timestamp);
++                    if image.gray.len() != self.camera.width * self.camera.height {
++                        return Err("invalid grayscale image size".into());
++                    }
++                    out.photometric = Some(PhotoState {
++                        source_timestamp: image.timestamp,
++                        reference_timestamp: self.model.as_ref().and_then(|m| m.rgb_timestamp),
++                        phase_qualified: self.model.as_ref().is_some_and(|m| {
++                            m.gray.is_some()
++                                && ((image.timestamp - timestamp) - m.phase).abs() <= 0.005
++                        }),
++                        fresh,
++                    });
++                    (
++                        Some(gray_pyramid(self.camera, image.gray)),
++                        Some(image.timestamp),
++                        image.timestamp - timestamp,
++                        fresh,
++                    )
++                }
++            };
+             if depth.len() != self.camera.width * self.camera.height
+                 || depth
+                     .iter()
+@@ -862,18 +945,30 @@
+                     pyramid: current,
+                     key_root: Pose::identity(),
+                     initial: Pose::identity(),
++                    gray,
++                    rgb_timestamp,
++                    phase,
+                 });
+                 out.first_from_current = Some(Pose::identity());
+                 out.initialized = true;
+             } else {
+                 let old = self.model.as_ref().expect("model checked");
+-                let (relative, final_e) = fit(
++                let photo = match (&old.gray, &gray) {
++                    (Some(target), Some(source)) => Some(PhotoPair {
++                        target,
++                        source,
++                        enabled: fresh && (phase - old.phase).abs() <= 0.005,
++                    }),
++                    _ => None,
++                };
++                let (relative, final_e, final_photo) = fit(
+                     &old.pyramid,
+                     &current,
+                     old.initial,
+                     &mut out.iterations,
+                     self.correspondence,
+                     self.residual,
++                    photo.as_ref(),
+                 )?;
+                 let root = old.key_root.compose(relative);
+                 if !root.finite_rigid() {
+@@ -935,17 +1030,30 @@
+                         let next_pyramid = pyramid_with_normals(self.camera, &map, self.normals);
+                         (map, weights, next_pyramid, fusion)
+                     };
++                let (next_gray, next_rgb_timestamp, next_phase) = if replace && fresh {
++                    (gray, rgb_timestamp, phase)
++                } else if replace {
++                    // A repeated image does not establish a color anchor in a
++                    // new depth reference view. Fresh depth remains usable.
++                    (None, None, 0.)
++                } else {
++                    (old.gray.clone(), old.rgb_timestamp, old.phase)
++                };
+                 self.model = Some(Model {
+                     depth: map,
+                     weights,
+                     pyramid: next_pyramid,
+                     key_root: if replace { root } else { old.key_root },
+                     initial: if replace { Pose::identity() } else { relative },
++                    gray: next_gray,
++                    rgb_timestamp: next_rgb_timestamp,
++                    phase: next_phase,
+                 });
+                 out.first_from_current = Some(root);
+                 out.final_equation = Some(final_e);
+                 out.keyframe_replaced = replace;
+                 out.fusion = Some(fusion);
++                out.final_photometric = final_photo;
+             }
+             self.last_accepted = Some(timestamp);
+             out.accepted = true;
+--- a/integrations/projective-depth/src/main.rs
++++ b/integrations/projective-depth/src/main.rs
+@@ -3,6 +3,7 @@
+     Camera, Correspondence, ModelGeometry, NormalEstimation, Reprojection, Residual, Tracker,
+     TrackerConfig,
+ };
++use rustdriving_projective_depth::{ImageObservation, photometric::Photometric};
+ use serde::Deserialize;
+ use std::io::{self, BufRead, Read, Write};
+ 
+@@ -21,11 +22,21 @@
+         normals: NormalEstimation,
+         #[serde(default)]
+         geometry: ModelGeometry,
++        #[serde(default)]
++        photometric: Photometric,
+     },
+     Frame {
+         timestamp: f64,
+         depth_m: Vec<f64>,
++        #[serde(default)]
++        image: Option<Image>,
+     },
++}
++#[derive(Deserialize)]
++#[serde(deny_unknown_fields)]
++struct Image {
++    timestamp: f64,
++    gray: Vec<u8>,
+ }
+ fn run() -> Result<(), String> {
+     let input = io::stdin();
+@@ -56,6 +67,7 @@
+                 residual,
+                 normals,
+                 geometry,
++                photometric,
+             } => {
+                 if tracker.is_some() {
+                     return Err("one configuration per process".into());
+@@ -68,18 +80,27 @@
+                         residual,
+                         normals,
+                         geometry,
++                        photometric,
+                     },
+                 )?);
+                 writeln!(output, "{{\"configured\":true,\"schema_version\":1}}")
+                     .map_err(|e| e.to_string())?;
+             }
+-            Request::Frame { timestamp, depth_m } => {
++            Request::Frame {
++                timestamp,
++                depth_m,
++                image,
++            } => {
+                 count += 1;
+                 if count > 200 {
+                     return Err("at most 200 frames per evaluation process".into());
+                 }
+                 let t = tracker.as_mut().ok_or("configure camera before frames")?;
+-                serde_json::to_writer(&mut output, &t.step(timestamp, &depth_m))
++                let image = image.as_ref().map(|v| ImageObservation {
++                    timestamp: v.timestamp,
++                    gray: &v.gray,
++                });
++                serde_json::to_writer(&mut output, &t.step_with_image(timestamp, &depth_m, image))
+                     .map_err(|e| e.to_string())?;
+                 writeln!(output).map_err(|e| e.to_string())?;
+             }
+--- a/integrations/projective-depth/src/multireference.rs
++++ b/integrations/projective-depth/src/multireference.rs
+@@ -14,13 +14,14 @@
+     pub timestamp: f64,
+     pub gray: &'a [u8],
+ }
+-struct Gray {
+-    width: usize,
+-    height: usize,
+-    pixels: Vec<f64>,
++#[derive(Clone)]
++pub(super) struct Gray {
++    pub(super) width: usize,
++    pub(super) height: usize,
++    pub(super) pixels: Vec<f64>,
+ }
+ impl Gray {
+-    fn sample(&self, x: f64, y: f64) -> Option<(f64, f64, f64)> {
++    pub(super) fn sample(&self, x: f64, y: f64) -> Option<(f64, f64, f64)> {
+         // Bilinear derivatives have different one-sided limits at pixel knots.
+         // Canonicalize roundoff from inverse/forward pose composition so the
+         // right/down cell is selected consistently at an integer coordinate.
+@@ -60,7 +61,7 @@
+         ))
+     }
+ }
+-fn gray_pyramid(camera: Camera, pixels: &[u8]) -> Vec<Gray> {
++pub(super) fn gray_pyramid(camera: Camera, pixels: &[u8]) -> Vec<Gray> {
+     let mut layers = vec![Gray {
+         width: camera.width,
+         height: camera.height,
+--- /dev/null
++++ b/integrations/projective-depth/src/photometric.rs
+@@ -0,0 +1,305 @@
++//! Measured keyframe intensity complements the fused depth surface. No labels.
++use crate::multireference::Gray;
++use crate::{Equation, H, Level, Pose, cross, dot, norm, sub};
++use serde::{Deserialize, Serialize};
++
++#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
++#[serde(rename_all = "snake_case")]
++pub enum Photometric {
++    #[default]
++    Disabled,
++    Keyframe,
++}
++
++#[derive(Clone, Debug, Serialize)]
++pub struct PhotoEquation {
++    pub count: usize,
++    pub rms_gray: Option<f64>,
++    pub used: bool,
++    pub scale_m2_per_gray2: f64,
++    pub h: H,
++    pub g: [f64; 6],
++}
++#[derive(Debug, Serialize)]
++pub struct PhotoState {
++    pub source_timestamp: f64,
++    pub reference_timestamp: Option<f64>,
++    pub phase_qualified: bool,
++    pub fresh: bool,
++}
++pub(super) struct PhotoPair<'a> {
++    pub target: &'a [Gray],
++    pub source: &'a [Gray],
++    pub enabled: bool,
++}
++impl PhotoPair<'_> {
++    pub(super) fn equation(
++        &self,
++        target: &Level,
++        source: &Level,
++        pose: Pose,
++        scale: usize,
++    ) -> PhotoEquation {
++        let mut out = PhotoEquation {
++            count: 0,
++            rms_gray: None,
++            used: false,
++            scale_m2_per_gray2: 0.005_f64.powi(2) / 100.,
++            h: [[0.; 6]; 6],
++            g: [0.; 6],
++        };
++        if !self.enabled {
++            return out;
++        }
++        let level = match scale {
++            4 => 0,
++            2 => 1,
++            _ => 2,
++        };
++        let stride = if scale == 1 { 2 } else { 1 };
++        let mut squared = 0.;
++        for y in (0..source.camera.height).step_by(stride) {
++            for x in (0..source.camera.width).step_by(stride) {
++                let i = y * source.camera.width + x;
++                if dot(source.normals[i], source.normals[i]) <= 0.25 {
++                    continue;
++                }
++                let q = pose.transform(source.vertices[i]);
++                let Some(j) = target.camera.project(q, true) else {
++                    continue;
++                };
++                let n = target.normals[j];
++                if dot(n, n) <= 0.25
++                    || norm(sub(q, target.vertices[j])) >= if scale == 4 { 0.12 } else { 0.08 }
++                    || dot(pose.rotate(source.normals[i]), n) <= 0.8
++                {
++                    continue;
++                }
++                let c = target.camera;
++                let z = q[2];
++                let Some((value, gx, gy)) =
++                    self.target[level].sample(c.fx * q[0] / z + c.cx, c.fy * q[1] / z + c.cy)
++                else {
++                    continue;
++                };
++                let residual = value - self.source[level].pixels[i];
++                if residual.abs() >= 30. || gx.hypot(gy) < 1. {
++                    continue;
++                }
++                let jacobian = image_jacobian(c, q, gx, gy);
++                let weight = (1. - (residual / 30.).powi(2)).powi(2);
++                for a in 0..6 {
++                    out.g[a] += jacobian[a] * residual * weight;
++                    for b in 0..6 {
++                        out.h[a][b] += jacobian[a] * jacobian[b] * weight;
++                    }
++                }
++                out.count += 1;
++                squared += residual * residual;
++            }
++        }
++        if out.count > 0 {
++            out.rms_gray = Some((squared / out.count as f64).sqrt());
++        }
++        out.used = out.count >= 200;
++        out
++    }
++}
++fn image_jacobian(c: crate::Camera, q: [f64; 3], gx: f64, gy: f64) -> [f64; 6] {
++    let z = q[2];
++    let g = [
++        gx * c.fx / z,
++        gy * c.fy / z,
++        -(gx * c.fx * q[0] + gy * c.fy * q[1]) / (z * z),
++    ];
++    let r = cross(q, g);
++    [g[0], g[1], g[2], r[0], r[1], r[2]]
++}
++
++pub(super) fn combine(geometry: &Equation, photo: Option<&PhotoEquation>) -> (H, [f64; 6]) {
++    let (mut h, mut g) = (geometry.h, geometry.g);
++    if let Some(p) = photo
++        && p.used
++    {
++        for a in 0..6 {
++            g[a] += p.scale_m2_per_gray2 * p.g[a];
++            for b in 0..6 {
++                h[a][b] += p.scale_m2_per_gray2 * p.h[a][b];
++            }
++        }
++    }
++    (h, g)
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use crate::{Camera, ImageObservation, Tracker, TrackerConfig};
++    fn camera() -> Camera {
++        Camera {
++            width: 160,
++            height: 120,
++            fx: 130.,
++            fy: 130.,
++            cx: 79.5,
++            cy: 59.5,
++        }
++    }
++    fn texture(c: Camera, transform: Pose) -> Vec<u8> {
++        (0..c.width * c.height)
++            .map(|i| {
++                let p = transform.transform(c.point(i, 2.5));
++                (128.
++                    + 30. * (7. * p[0]).sin()
++                    + 25. * (9. * p[1]).cos()
++                    + 20. * (4. * p[0] + 5. * p[1]).sin())
++                .round()
++                .clamp(0., 255.) as u8
++            })
++            .collect()
++    }
++    #[test]
++    fn measured_image_jacobian_matches_all_six_pose_directions() {
++        let c = camera();
++        let q = [0.17, -0.12, 2.3];
++        let expected = image_jacobian(c, q, 2., 3.);
++        let value = |delta: [f64; 6]| {
++            let p = Pose::identity().increment(delta).transform(q);
++            2. * (c.fx * p[0] / p[2] + c.cx) + 3. * (c.fy * p[1] / p[2] + c.cy)
++        };
++        for i in 0..6 {
++            let mut a = [0.; 6];
++            let mut b = [0.; 6];
++            a[i] = 1e-7;
++            b[i] = -1e-7;
++            assert!(((value(a) - value(b)) / 2e-7 - expected[i]).abs() < 2e-6);
++        }
++    }
++    #[test]
++    fn textured_plane_recovers_motion_unobservable_from_depth() {
++        let c = camera();
++        let depth = vec![2.5; c.width * c.height];
++        let transform = Pose::identity().increment([0.015, -0.01, 0., 0., 0., 0.01]);
++        let first = texture(c, Pose::identity());
++        let current = texture(c, transform);
++        let mut geometry = Tracker::new(c).unwrap();
++        assert!(geometry.step(1., &depth).accepted);
++        assert!(!geometry.step(1.03, &depth).accepted);
++        let mut tracker = Tracker::with_config(
++            c,
++            TrackerConfig {
++                photometric: Photometric::Keyframe,
++                ..TrackerConfig::default()
++            },
++        )
++        .unwrap();
++        assert!(
++            tracker
++                .step_with_image(
++                    1.,
++                    &depth,
++                    Some(ImageObservation {
++                        timestamp: 1.001,
++                        gray: &first
++                    })
++                )
++                .accepted
++        );
++        let result = tracker.step_with_image(
++            1.03,
++            &depth,
++            Some(ImageObservation {
++                timestamp: 1.031,
++                gray: &current,
++            }),
++        );
++        assert!(result.accepted, "{:?}", result.rejection);
++        assert!(result.final_photometric.unwrap().used);
++        let error = transform
++            .inverse()
++            .compose(result.first_from_current.unwrap());
++        assert!(norm(error.translation) < 0.004 && error.angle() < 0.004);
++    }
++    #[test]
++    fn repeated_rgb_adds_no_constraint_but_new_depth_can_update() {
++        let c = camera();
++        let depth: Vec<_> = (0..c.width * c.height)
++            .map(|i| {
++                2. + 0.2 * ((i % c.width) as f64 * 0.07).sin() * ((i / c.width) as f64 * 0.09).sin()
++            })
++            .collect();
++        let gray = texture(c, Pose::identity());
++        let mut tracker = Tracker::with_config(
++            c,
++            TrackerConfig {
++                photometric: Photometric::Keyframe,
++                ..TrackerConfig::default()
++            },
++        )
++        .unwrap();
++        assert!(
++            tracker
++                .step_with_image(
++                    1.,
++                    &depth,
++                    Some(ImageObservation {
++                        timestamp: 1.001,
++                        gray: &gray
++                    })
++                )
++                .accepted
++        );
++        let repeated = tracker.step_with_image(
++            1.004,
++            &depth,
++            Some(ImageObservation {
++                timestamp: 1.001,
++                gray: &gray,
++            }),
++        );
++        assert!(repeated.accepted);
++        assert!(!repeated.photometric.unwrap().fresh);
++        let e = repeated.final_photometric.unwrap();
++        assert_eq!(e.count, 0);
++        assert!(!e.used);
++        assert!(
++            !tracker
++                .step_with_image(
++                    1.004,
++                    &depth,
++                    Some(ImageObservation {
++                        timestamp: 1.001,
++                        gray: &gray
++                    })
++                )
++                .accepted
++        );
++        assert!(!tracker.step_with_image(1.01, &depth, None).accepted);
++        assert_eq!(tracker.last_accepted, Some(1.004));
++        assert!(
++            !tracker
++                .step_with_image(
++                    1.02,
++                    &depth,
++                    Some(ImageObservation {
++                        timestamp: 1.,
++                        gray: &gray
++                    })
++                )
++                .accepted
++        );
++        assert_eq!(tracker.last_accepted, Some(1.004));
++        assert!(
++            tracker
++                .step_with_image(
++                    1.03,
++                    &depth,
++                    Some(ImageObservation {
++                        timestamp: 1.031,
++                        gray: &gray
++                    })
++                )
++                .accepted
++        );
++    }
++}
+--- a/scripts/audit-projective-depth-raw.py
++++ b/scripts/audit-projective-depth-raw.py
+@@ -15,6 +15,7 @@
+ 
+ SOURCES = (Path(__file__),ROOT/'scripts/projective_depth_raw.py',ROOT/'scripts/projective_depth_common.py',
+            ROOT/'scripts/projective_vertex_raw.py',
++           ROOT/'scripts/projective_photo_raw.py',
+            ROOT/'scripts/check-projective-depth.py',ROOT/'scripts/requirements-visual.txt',
+            ROOT/'assets/projective-depth-raw-audit-v1/design.json')
+ SOURCE_PINS = {str(p.relative_to(ROOT)):sha(p.read_bytes()) for p in SOURCES}
+@@ -109,7 +110,7 @@
+                 nonplanar_and_coarse_normal_support_preserved=True)
+ 
+ 
+-def analytic(output, reports, reprojection='point', correspondence='forward', residual='target_plane', normals='central_difference', geometry='depth'):
++def analytic(output, reports, reprojection='point', correspondence='forward', residual='target_plane', normals='central_difference', geometry='depth', photometric='disabled'):
+     spec = importlib.util.spec_from_file_location('independent_scene',ROOT/'scripts/check-projective-depth.py')
+     scene = importlib.util.module_from_spec(spec)
+     spec.loader.exec_module(scene)
+@@ -125,16 +126,20 @@
+         raw = scene.render(np.asarray(record['expected']))
+         update = record['result']
+         audit_iterations(update)
+-        _,_,checked = reconstruct_update(first,(first > .3).astype(np.uint8),raw,scene.CAMERA,update,reprojection,correspondence,residual,normals,geometry)
++        context=None
++        if photometric=='keyframe':
++            context=dict(target=scene.render_gray(np.eye(4),first),source=scene.render_gray(np.asarray(record['expected']),raw),
++                         source_timestamp=1.03+.001,reference_timestamp=1.+.001,qualified=True,fresh=True)
++        _,_,checked = reconstruct_update(first,(first > .3).astype(np.uint8),raw,scene.CAMERA,update,reprojection,correspondence,residual,normals,geometry,context)
+         summaries.append(dict(motion=index,report_sha256=sha(read(path)),**checked))
+-        witnesses.append((first,raw,scene.CAMERA,update))
+-    model,raw,c,original = witnesses[2]
++        witnesses.append((first,raw,scene.CAMERA,update,context))
++    model,raw,c,original,context = witnesses[2]
+     rejected = []
+     def corruption(name, change):
+         altered = copy.deepcopy(original)
+         change(altered)
+         try:
+-            reconstruct_update(model,(model > .3).astype(np.uint8),raw,c,altered,reprojection,correspondence,residual,normals,geometry)
++            reconstruct_update(model,(model > .3).astype(np.uint8),raw,c,altered,reprojection,correspondence,residual,normals,geometry,context)
+         except (AssertionError,ValueError,KeyError,TypeError,IndexError):
+             rejected.append(name)
+         else:
+@@ -143,6 +148,8 @@
+         e = u['iterations'][0]['equation']
+         e['h'] = (2*np.asarray(e['h'])).tolist()
+         e['g'] = (2*np.asarray(e['g'])).tolist()
++        if 'photometric' in u['iterations'][0]:
++            p=u['iterations'][0]['photometric'];p['h']=(2*np.asarray(p['h'])).tolist();p['g']=(2*np.asarray(p['g'])).tolist()
+     rescaled = copy.deepcopy(original)
+     rescale_normal(rescaled)
+     audit_iterations(rescaled)  # A valid solve alone cannot detect joint H/g scaling.
+@@ -158,6 +165,9 @@
+         u['fusion']['averaged'] -= 1
+         u['fusion']['ignored'] += 1
+     corruption('fusion category moved while total remains valid',move_fusion)
++    if photometric=='keyframe':
++        corruption('altered image gradient',lambda u:u['iterations'][0]['photometric']['g'].__setitem__(0,u['iterations'][0]['photometric']['g'][0]+100.))
++        corruption('repeated image falsely marked fresh',lambda u:u['photometric'].update(fresh=False))
+     vertex_controls=None
+     if geometry=='vertices':
+         from projective_vertex_raw import controls
+@@ -183,6 +193,8 @@
+     residual = freeze.get('residual','target_plane')
+     normals = freeze.get('normals','central_difference')
+     geometry = freeze.get('geometry','depth')
++    photometric = freeze.get('photometric','disabled')
++    require(photometric in ('disabled','keyframe'),'declared image policy')
+     require(geometry in ('depth','vertices'),'declared geometry policy')
+     require(normals in ('central_difference','inverse_depth_plane'),'declared normal policy')
+     require(residual in ('target_plane','symmetric_planes'),'declared residual policy')
+@@ -210,11 +222,12 @@
+         verified(frame)  # Hashes only; no pixel or reference label decoding yet.
+     require(all(sha(read(ROOT/n))==d for n,d in SOURCE_PINS.items()),'audit sources unchanged since process start')
+     write(output/'freeze.json',dict(dataset=case,source_sha256=SOURCE_PINS,
+-        manifest_sha256=sha(manifest_body),original_freeze_sha256=sha(read(freeze_path)),reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,
++        manifest_sha256=sha(manifest_body),original_freeze_sha256=sha(read(freeze_path)),reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric,
+         original_sensor_ledger_sha256=sha(read(ledger_path,64*1024*1024)),depth_source_count=180,
+-        ground_truth_decoded=False,raw_color_decoded=False))
++        ground_truth_decoded=False,raw_color_decoded=photometric=='keyframe'))
+     steps = audit_sequence(outcomes,[f['depth_timestamp'] for f in frames])
+     model = weights = None
++    key_gray=key_rgb=last_rgb=None;key_phase=0.
+     checked_frames = []
+     for frame,row in zip(frames,outcomes):
+         try:
+@@ -222,7 +235,25 @@
+             image = Image.open(io.BytesIO(verified(frame)))
+             require(image.size == (640,480) and image.mode in ('I;16','I;16B','I'),'original 16-bit depth layout')
+             raw = np.asarray(image,dtype=float)/5000.
+-            model,weights,checked = reconstruct_update(model,weights,raw,CAMERA,row['update'],reprojection,correspondence,residual,normals,geometry)
++            context=None;fresh_rgb=False;current_gray=None
++            if photometric=='keyframe' and not row['update']['lost']:
++                name=frame['rgb_file'];require(Path(name).name==name,'plain RGB source')
++                body=read(source/'raw'/name,4*1024*1024);pin=freeze['inputs'][name]
++                require(len(body)==pin['bytes'] and sha(body)==pin['sha256'],'raw RGB source binding')
++                color=Image.open(io.BytesIO(body));require(color.size==(640,480) and color.mode=='RGB','measured RGB layout')
++                color=np.asarray(color,dtype=np.uint32);current_gray=((77*color[:,:,0]+150*color[:,:,1]+29*color[:,:,2])>>8).astype(np.uint8)
++                rgb=frame['rgb_timestamp'];require(last_rgb is None or rgb>=last_rgb,'monotonic associated RGB')
++                fresh_rgb=last_rgb is None or rgb>last_rgb;last_rgb=rgb
++                phase=rgb-frame['depth_timestamp'];require(abs(phase)<=.02,'RGB association')
++                context=dict(target=key_gray,source=current_gray,source_timestamp=rgb,reference_timestamp=key_rgb,
++                             qualified=key_gray is not None and abs(phase-key_phase)<=.005,fresh=fresh_rgb)
++            initial=model is None
++            model,weights,checked = reconstruct_update(model,weights,raw,CAMERA,row['update'],reprojection,correspondence,residual,normals,geometry,context)
++            if photometric=='keyframe':
++                checked['photometric_equations']=sum('photometric' in s for s in row['update']['iterations'])+int('final_photometric' in row['update'])
++                checked['used_photometric_solves']=sum(s.get('photometric',{}).get('used',False) for s in row['update']['iterations'])
++            if photometric=='keyframe' and row['update']['accepted'] and (initial or row['update']['keyframe_replaced']):
++                key_gray=current_gray if fresh_rgb else None;key_rgb=rgb if fresh_rgb else None;key_phase=phase if fresh_rgb else 0.
+             checked_frames.append(dict(source_index=frame['source_index'],**checked,
+                 supported_model_pixels=int(np.sum(weights > 0)),maximum_model_weight=int(weights.max())))
+         except (ValueError,AssertionError,KeyError,TypeError,IndexError) as error:
+@@ -239,6 +270,9 @@
+         reference_view_warps=sum(v['model_replaced'] for v in checked_frames),
+         fused_model_generations=179,exact_discrete_counts=True,ground_truth_decoded=False,
+         physical_accuracy_claim=False)
++    if photometric=='keyframe':
++        summary.update(raw_photometric_equations=sum(v['photometric_equations'] for v in checked_frames),
++                       used_photometric_solves=sum(v['used_photometric_solves'] for v in checked_frames),raw_color_decoded=True)
+     write(output/'audit.json',dict(pass_raw_mathematics=True,summary=summary,frames=checked_frames))
+     print(case,json.dumps(summary),flush=True)
+     return summary
+@@ -255,10 +289,11 @@
+     parser.add_argument('--residual',choices=('target_plane','symmetric_planes'),default='target_plane')
+     parser.add_argument('--normals',choices=('central_difference','inverse_depth_plane'),default='central_difference')
+     parser.add_argument('--geometry',choices=('depth','vertices'),default='depth')
++    parser.add_argument('--photometric',choices=('disabled','keyframe'),default='disabled')
+     args = parser.parse_args()
+     output = fresh(args.output)
+-    require(args.analytic_reports is not None or (args.reprojection=='point' and args.correspondence=='forward' and args.residual=='target_plane' and args.normals=='central_difference' and args.geometry=='depth'),'frozen analytic reports use original policies')
+-    analytic(output,args.analytic_reports,args.reprojection,args.correspondence,args.residual,args.normals,args.geometry)
++    require(args.analytic_reports is not None or (args.reprojection=='point' and args.correspondence=='forward' and args.residual=='target_plane' and args.normals=='central_difference' and args.geometry=='depth' and args.photometric=='disabled'),'frozen analytic reports use original policies')
++    analytic(output,args.analytic_reports,args.reprojection,args.correspondence,args.residual,args.normals,args.geometry,args.photometric)
+     cases = {}
+     if not args.analytic_only:
+         for case in ('tum-fr1-room-temporal','tum-fr1-desk2-independent'):
+--- a/scripts/check-projective-depth.py
++++ b/scripts/check-projective-depth.py
+@@ -29,6 +29,14 @@
+     return depth
+ 
+ 
++def render_gray(transform,depth):
++    y,x=np.indices(depth.shape)
++    points=np.stack([(x-CAMERA['cx'])*depth/CAMERA['fx'],(y-CAMERA['cy'])*depth/CAMERA['fy'],depth],axis=-1)
++    world=points@transform[:3,:3].T+transform[:3,3]
++    a,b,c=np.moveaxis(world,-1,0)
++    return np.rint(np.clip(128+30*np.sin(3*a)+30*np.cos(4*b)+20*np.sin(2*a+3*b+c),0,255)).astype(np.uint8)
++
++
+ def main():
+     parser = argparse.ArgumentParser(description=__doc__)
+     parser.add_argument('--binary',type=Path,required=True)
+@@ -38,6 +46,7 @@
+     parser.add_argument('--residual',choices=('target_plane','symmetric_planes'),default='target_plane')
+     parser.add_argument('--normals',choices=('central_difference','inverse_depth_plane'),default='central_difference')
+     parser.add_argument('--geometry',choices=('depth','vertices'),default='depth')
++    parser.add_argument('--photometric',choices=('disabled','keyframe'),default='disabled')
+     args = parser.parse_args()
+     output = fresh(args.output)
+     binary = args.binary.absolute()
+@@ -49,23 +58,26 @@
+         vector = np.zeros(3)
+         vector[axis] = angle
+         transform[:3,:3],transform[:3,3] = exp_rotation(vector),translation
+-        client = Client(binary,CAMERA,configuration=dict(reprojection=args.reprojection,correspondence=args.correspondence,residual=args.residual,normals=args.normals,geometry=args.geometry))
++        client = Client(binary,CAMERA,configuration=dict(reprojection=args.reprojection,correspondence=args.correspondence,residual=args.residual,normals=args.normals,geometry=args.geometry,photometric=args.photometric))
++        def frame(stamp,transform,depth):
++            image=None if args.photometric=='disabled' else dict(timestamp=stamp+.001,gray=render_gray(transform,depth).ravel().tolist())
++            return client.frame(stamp,depth,image=image)
+         try:
+-            initial = client.frame(1.,render(np.eye(4)))
++            initial = frame(1.,np.eye(4),render(np.eye(4)))
+             require(initial['accepted'],'analytic initialization')
+-            result = client.frame(1.03,render(transform))
++            result = frame(1.03,transform,render(transform))
+             require(result['accepted'],'analytic motion fit')
+             steps = audit_iterations(result)
+             estimate = pose(result['first_from_current'])
+             position = float(np.linalg.norm(estimate[:3,3]-transform[:3,3]))
+             rotation = float(np.arccos(np.clip((np.trace(transform[:3,:3].T@estimate[:3,:3])-1)/2,-1,1)))
+             require(position <= .004 and rotation <= .004,'analytic direction/metre/rotation accuracy')
+-            duplicate = client.frame(1.03,render(transform))
++            duplicate = frame(1.03,transform,render(transform))
+             require(not duplicate['accepted'] and duplicate['last_accepted_timestamp'] == 1.03,'duplicate cannot renew pose')
+-            failure = client.frame(1.1,np.zeros((120,160)))
++            failure = frame(1.1,transform,np.zeros((120,160)))
+             require(not failure['accepted'] and failure['last_accepted_timestamp'] == 1.03,'failed fit cannot renew pose')
+-            expired = client.frame(1.231,np.zeros((120,160)))
+-            recovery = client.frame(1.24,render(transform))
++            expired = frame(1.231,transform,np.zeros((120,160)))
++            recovery = frame(1.24,transform,render(transform))
+             require(expired['lost'] and recovery['lost'] and not recovery['accepted'],'expired pose has no implicit reset')
+             client.finish()
+         except BaseException:
+@@ -108,6 +120,7 @@
+         'unknown residual':json.dumps(dict(kind='Configure',camera=CAMERA,residual='unknown'))+'\n',
+         'unknown normal estimation':json.dumps(dict(kind='Configure',camera=CAMERA,normals='unknown'))+'\n',
+         'unknown geometry':json.dumps(dict(kind='Configure',camera=CAMERA,geometry='unknown'))+'\n',
++        'unknown photometric mode':json.dumps(dict(kind='Configure',camera=CAMERA,photometric='unknown'))+'\n',
+         'missing final newline':config.rstrip('\n'),
+         'no frame':config,
+         'oversized request':' '*(8*1024*1024+1)+'\n',
+@@ -117,13 +130,18 @@
+     malformed.update({'unsupported vertex '+key:json.dumps(dict(kind='Configure',camera=CAMERA,geometry='vertices',**{key:value}))+'\n'
+                       for key,value in (('reprojection','tangent_plane'),('correspondence','reciprocal'),
+                                         ('residual','symmetric_planes'),('normals','inverse_depth_plane'))})
++    malformed.update({'unsupported photometric '+key:json.dumps(dict(kind='Configure',camera=CAMERA,photometric='keyframe',**{key:value}))+'\n'
++                      for key,value in (('geometry','vertices'),('reprojection','tangent_plane'),('correspondence','reciprocal'),
++                                        ('residual','symmetric_planes'),('normals','inverse_depth_plane'))})
++    malformed['invalid RGB byte']=config+json.dumps(dict(kind='Frame',timestamp=1.,depth_m=[],image=dict(timestamp=1.,gray=[256])))+'\n'
++    malformed['RGB label injection']=config+json.dumps(dict(kind='Frame',timestamp=1.,depth_m=[],image=dict(timestamp=1.,gray=[],truth=[])))+'\n'
+     for name,body in malformed.items():
+         result = subprocess.run([str(binary)],input=body,text=True,capture_output=True,timeout=30)
+         require(result.returncode == 2 and bool(result.stderr),'transport rejection: '+name)
+         # Exit 2 at EOF is also returned for a valid Configure with no frames.
+         # Invalid configuration must reject before acknowledging it; otherwise
+         # that unrelated EOF error would make these controls pass incorrectly.
+-        acknowledgments = {'duplicate configuration','no frame','nonfinite JSON','frame cap'}
++        acknowledgments = {'duplicate configuration','no frame','nonfinite JSON','frame cap','invalid RGB byte','RGB label injection'}
+         if name not in acknowledgments:
+             require(result.stdout == '', 'rejected before any acknowledgment: '+name)
+         else:
+@@ -132,7 +150,7 @@
+                     and json.loads(lines[0]) == dict(configured=True,schema_version=1),
+                     'exact acknowledged prefix before rejection: '+name)
+     write(output/'summary.json',dict(analytic_controls_pass=True,translation_gate_m=.004,rotation_gate_rad=.004,
+-        motions=cases,reprojection=args.reprojection,correspondence=args.correspondence,residual=args.residual,normals=args.normals,geometry=args.geometry,rejected_transport_cases=list(malformed),binary_sha256=sha(binary.read_bytes()),
++        motions=cases,reprojection=args.reprojection,correspondence=args.correspondence,residual=args.residual,normals=args.normals,geometry=args.geometry,photometric=args.photometric,rejected_transport_cases=list(malformed),binary_sha256=sha(binary.read_bytes()),
+         rejected_report_corruptions=corruption_names,
+         checker_sha256=sha(Path(__file__).read_bytes()),
+         scope='analytic geometry and independent linear algebra; no physical accuracy or real-time claim'))
+--- /dev/null
++++ b/scripts/check-projective-rgbd-lifecycle.py
+@@ -0,0 +1,64 @@
++#!/usr/bin/env python3
++"""Known-scene control for asynchronous RGB/depth and color-reference ownership."""
++import argparse,importlib.util
++from pathlib import Path
++import numpy as np
++from projective_depth_common import Client,ROOT,audit_sequence,fresh,require,sha,write
++from projective_depth_raw import reconstruct_update
++
++
++def main():
++    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--binary',type=Path,required=True);p.add_argument('--output',type=Path,required=True)
++    args=p.parse_args();out=fresh(args.output)
++    spec=importlib.util.spec_from_file_location('synthetic_rgbd',ROOT/'scripts/check-projective-depth.py')
++    scene=importlib.util.module_from_spec(spec);spec.loader.exec_module(scene)
++    client=Client(args.binary,scene.CAMERA,configuration=dict(photometric='keyframe'))
++    model=weights=key_gray=key_rgb=last_rgb=None;key_phase=0.;rows=[];times=[];checked=0
++    try:
++        for stamp,x in ((1.,0.),(1.004,.03),(1.008,.06),(1.012,.09),(1.016,.12),
++                        (1.04,.15),(1.07,.18),(1.10,.21),(1.13,.24),(1.16,.27)):
++            transform=np.eye(4);transform[0,3]=x;raw=scene.render(transform)
++            rgb_stamp=1.001 if stamp<=1.016 else stamp+.001
++            image_pose=np.eye(4) if stamp<=1.016 else transform
++            gray=scene.render_gray(image_pose,scene.render(image_pose))
++            update=client.frame(stamp,raw,image=dict(timestamp=rgb_stamp,gray=gray.ravel().tolist()))
++            require(update['accepted'],'new measured depth remains trackable')
++            new_rgb=last_rgb is None or rgb_stamp>last_rgb;last_rgb=rgb_stamp;phase=rgb_stamp-stamp
++            context=dict(target=key_gray,source=gray,source_timestamp=rgb_stamp,reference_timestamp=key_rgb,
++                         qualified=key_gray is not None and abs(phase-key_phase)<=.005,fresh=new_rgb)
++            initial=model is None
++            model,weights,counts=reconstruct_update(model,weights,raw,scene.CAMERA,update,image_context=context)
++            checked+=counts['iterations']+counts['final_equations']
++            if initial or update['keyframe_replaced']:
++                key_gray=gray if new_rgb else None;key_rgb=rgb_stamp if new_rgb else None;key_phase=phase if new_rgb else 0.
++            rows.append(dict(expected=transform.tolist(),update=update));times.append(stamp)
++        require(any(r['update']['keyframe_replaced'] and not r['update']['photometric']['fresh'] for r in rows),'reference changes with a repeated image')
++        require(any(r['update']['photometric']['reference_timestamp'] is None and r['update']['iterations'] for r in rows),'no stale image anchor in new view')
++        require(rows[-1]['update']['final_photometric']['used'],'fresh image reference resumes intensity constraints')
++        audit_sequence(rows,times)
++        last=times[-1];depth=scene.render(transform);gray=scene.render_gray(transform,depth)
++        def observe(stamp,rgb_stamp,pixels):
++            image=None if rgb_stamp is None else dict(timestamp=rgb_stamp,gray=pixels)
++            return client.frame(stamp,depth,image=image)
++        repeated=observe(1.164,last+.001,gray.ravel().tolist())
++        require(repeated['accepted'] and not repeated['photometric']['fresh'] and not repeated['final_photometric']['used'],'repeated RGB contributes no intensity')
++        accepted=repeated['last_accepted_timestamp'];faults={}
++        for name,stamp,rgb_stamp,pixels in (
++            ('duplicate depth',1.164,last+.001,gray.ravel().tolist()),
++            ('regressing RGB',1.17,1.16,gray.ravel().tolist()),
++            ('missing RGB',1.18,None,[]),('malformed RGB size',1.19,1.191,[]),
++            ('unassociated RGB',1.20,1.25,gray.ravel().tolist())):
++            u=observe(stamp,rgb_stamp,pixels);require(not u['accepted'] and u['last_accepted_timestamp']==accepted,'fault does not refresh pose: '+name);faults[name]=u
++        expired=observe(1.37,1.371,gray.ravel().tolist());recovery=observe(1.38,1.381,gray.ravel().tolist())
++        require(expired['lost'] and recovery['lost'] and not recovery['accepted'],'RGB cannot hide accepted-depth expiry')
++        client.finish()
++    except BaseException:
++        client.abort();raise
++    write(out/'sequence.json',dict(frames=rows,repeated=repeated,faults=faults,expired=expired,recovery=recovery))
++    write(out/'summary.json',dict(pass_lifecycle=True,measured_depth_frames=len(rows),raw_equations_checked=checked,
++        repeated_rgb_never_contributes=True,color_anchor_cleared_and_resumed=True,faults_rejected=list(faults),
++        no_implicit_reset=True,binary_sha256=sha(args.binary.read_bytes()),checker_sha256=sha(Path(__file__).read_bytes()),
++        source='synthetic static scene; known poses generate measurements only'))
++
++
++if __name__=='__main__':main()
+--- a/scripts/evaluate-projective-depth.py
++++ b/scripts/evaluate-projective-depth.py
+@@ -15,7 +15,7 @@
+ CASES = ('tum-fr1-room-temporal','tum-fr1-desk2-independent')
+ 
+ 
+-def evaluate(case, binary, output, reprojection='point', correspondence='forward', residual='target_plane', normals='central_difference', geometry='depth'):
++def evaluate(case, binary, output, reprojection='point', correspondence='forward', residual='target_plane', normals='central_difference', geometry='depth', photometric='disabled'):
+     base = ROOT/'data'/case
+     manifest_body = (base/'manifest.json').read_bytes()
+     manifest = json.loads(manifest_body)
+@@ -41,23 +41,31 @@
+                ROOT/'assets/projective-depth-rust-v1/design.json',
+                ROOT/'scripts/projective_depth_raw.py',
+                ROOT/'scripts/projective_vertex_raw.py',
++               ROOT/'scripts/projective_photo_raw.py',
+                *sorted((ROOT/'integrations/projective-depth/src').rglob('*.rs')),
+                ROOT/'integrations/projective-depth/Cargo.toml',ROOT/'integrations/projective-depth/Cargo.lock']
+     write(output/'freeze.json',dict(schema_version=1,dataset=case,data_role='already viewed port regression',
+         manifest_sha256=sha(manifest_body),binary_sha256=sha(binary.read_bytes()),
+         source_sha256={str(p.relative_to(ROOT)):sha(p.read_bytes()) for p in sources},
+         inputs={name:dict(bytes=v['bytes'],sha256=v['sha256']) for name,v in inventory.items()},
+-        camera=CAMERA,reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,primary_clock='depth only; RGB not decoded',root_translation_gate_m=.1,
++        camera=CAMERA,reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric,primary_clock='depth; associated RGB decoded only in keyframe photometric mode',root_translation_gate_m=.1,
+         root_rotation_gate_rad=.1,reference_bracket_max_s=.02,pose_resets=0,ground_truth_operational=False,
+         selected_frames=180,updates=179,numpy_version=np.__version__))
+-    client = Client(binary,CAMERA,configuration=dict(reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry))
++    client = Client(binary,CAMERA,configuration=dict(reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric))
+     outcomes = []
+     try:
+         for frame in frames:
+             image = Image.open(io.BytesIO(verified(frame['depth_file'])))
+             require(image.size == (640,480) and image.mode in ('I;16','I;16B','I'),'original grayscale depth')
+             depth = np.asarray(image,dtype=float)/5000.
+-            update = client.frame(frame['depth_timestamp'],depth)
++            rgb=None
++            if photometric=='keyframe':
++                color=Image.open(io.BytesIO(verified(frame['rgb_file'])))
++                require(color.size==(640,480) and color.mode=='RGB','associated measured RGB')
++                color=np.asarray(color,dtype=np.uint32)
++                gray=((77*color[:,:,0]+150*color[:,:,1]+29*color[:,:,2])>>8).astype(np.uint8)
++                rgb=dict(timestamp=frame['rgb_timestamp'],gray=gray.ravel().tolist())
++            update = client.frame(frame['depth_timestamp'],depth,image=rgb)
+             require(update['timestamp'] == frame['depth_timestamp'],'acquisition identity')
+             outcomes.append(dict(source_index=frame['source_index'],update=update))
+         client.finish()
+@@ -134,6 +142,7 @@
+     parser.add_argument('--residual',choices=('target_plane','symmetric_planes'),default='target_plane')
+     parser.add_argument('--normals',choices=('central_difference','inverse_depth_plane'),default='central_difference')
+     parser.add_argument('--geometry',choices=('depth','vertices'),default='depth')
++    parser.add_argument('--photometric',choices=('disabled','keyframe'),default='disabled')
+     args = parser.parse_args()
+     output = fresh(args.output)
+     summaries = {}
+@@ -142,7 +151,7 @@
+         require(sha(args.binary.read_bytes())==binary_digest,'one unchanged native binary across recordings')
+         folder = output/case
+         folder.mkdir()
+-        summaries[case] = evaluate(case,args.binary.absolute(),folder,args.reprojection,args.correspondence,args.residual,args.normals,args.geometry)
++        summaries[case] = evaluate(case,args.binary.absolute(),folder,args.reprojection,args.correspondence,args.residual,args.normals,args.geometry,args.photometric)
+     require(sha(args.binary.read_bytes())==binary_digest,'native binary unchanged through evaluation')
+     passed = all(v['complete_accuracy_pass'] for v in summaries.values())
+     write(output/'comparison.json',dict(summaries=summaries,complete_accuracy_pass=passed,exit_code=0 if passed else 1))
+--- a/scripts/projective_depth_common.py
++++ b/scripts/projective_depth_common.py
+@@ -53,8 +53,10 @@
+         require(response.endswith('\n') and len(response) <= 1024*1024,'bounded complete solver response')
+         return json.loads(response)
+ 
+-    def frame(self, stamp, depth):
+-        return self.send(dict(kind='Frame',timestamp=stamp,depth_m=depth.ravel().tolist()))
++    def frame(self, stamp, depth, *, image=None):
++        request=dict(kind='Frame',timestamp=stamp,depth_m=depth.ravel().tolist())
++        if image is not None:request['image']=image
++        return self.send(request)
+ 
+     def finish(self):
+         self.process.stdin.close()
+@@ -113,6 +115,15 @@
+                 and np.isfinite(g).all() and equation['count'] >= 200
+                 and 0 <= equation['rms_m'] <= 1.,'finite supported normal equations')
+         np.testing.assert_allclose(h,h.T,atol=1e-9,rtol=1e-12)
++        if 'photometric' in step:
++            p=step['photometric'];ph,pg=np.asarray(p['h']),np.asarray(p['g'])
++            require(type(p['count']) is int and 0<=p['count']<=equation['count']
++                    and p['used']==(p['count']>=200) and p['scale_m2_per_gray2']==.005**2/100
++                    and ph.shape==(6,6) and pg.shape==(6,) and np.isfinite(ph).all() and np.isfinite(pg).all(),
++                    'bounded photometric contribution')
++            require((p['rms_gray'] is None) if p['count']==0 else 0<=p['rms_gray']<30,'image residual disclosure')
++            np.testing.assert_allclose(ph,ph.T,atol=1e-6,rtol=1e-12)
++            if p['used']:h=h+p['scale_m2_per_gray2']*ph;g=g+p['scale_m2_per_gray2']*pg
+         scale = np.sqrt(np.diag(h))
+         a = h/scale[:,None]/scale[None,:]
+         eigen = np.linalg.eigvalsh(a)
+--- a/scripts/projective_depth_raw.py
++++ b/scripts/projective_depth_raw.py
+@@ -199,7 +199,7 @@
+     return output,support,counts
+ 
+ 
+-def reconstruct_update(model, weights, raw, camera, update, reprojection='point', correspondence='forward', residual_policy='target_plane', normal_policy='central_difference', geometry='depth'):
++def reconstruct_update(model, weights, raw, camera, update, reprojection='point', correspondence='forward', residual_policy='target_plane', normal_policy='central_difference', geometry='depth', image_context=None):
+     """Validate all raw equations and rebuild the next model only after acceptance."""
+     require(raw.shape == (camera['height'],camera['width']) and np.isfinite(raw).all()
+             and np.all((raw >= 0)&(raw <= 100)),'bounded decoded depth')
+@@ -210,6 +210,16 @@
+         from projective_vertex_raw import reconstruct
+         return reconstruct(model,weights,raw,camera,update)
+     source = pyramid(raw,camera,normal_policy)
++    colors=None
++    if 'photometric' in update:
++        require(image_context is not None and geometry=='depth','RGB source context required')
++        from projective_photo_raw import metadata,gray_pyramid
++        metadata(update,image_context)
++        if image_context['target'] is not None:
++            colors=(gray_pyramid(image_context['target']),gray_pyramid(image_context['source']))
++        else:
++            require(all('photometric' not in s for s in update['iterations']) and 'final_photometric' not in update,'no invented color anchor')
++    else:require(image_context is None,'no silently ignored image context')
+     if model is None:
+         require(update['accepted'] and not update['iterations'],'valid first initialization')
+         require(np.sum(np.sum(source[4]['normals']**2,axis=-1) > .25) >= 200,'initial surface support')
+@@ -219,12 +229,18 @@
+         scale = step['scale']
+         expected = normal_equation(target[scale],source[scale],pose(step['before']),scale,correspondence,residual_policy)
+         compare_equation(step['equation'],expected)
++        if colors is not None:
++            from projective_photo_raw import equation,compare
++            compare(step['photometric'],equation(target[scale],source[scale],colors[0][scale],colors[1][scale],pose(step['before']),scale,image_context['qualified'] and image_context['fresh']))
+     if not update['accepted']:
+         require(update['fusion'] is None and update['first_from_current'] is None,'no rejected-state commit')
+         return model,weights,dict(iterations=len(update['iterations']),final_equations=0,model_replaced=False)
+     relative = pose(update['iterations'][-1]['after'])
+     final = normal_equation(target[1],source[1],relative,1,correspondence,residual_policy)
+     compare_equation(update['final_equation'],final)
++    if colors is not None:
++        from projective_photo_raw import equation,compare
++        compare(update['final_photometric'],equation(target[1],source[1],colors[0][1],colors[1][1],relative,1,image_context['qualified'] and image_context['fresh']))
+     warp = None
+     if update['keyframe_replaced']:
+         inverse = np.eye(4)
+--- /dev/null
++++ b/scripts/projective_photo_raw.py
+@@ -0,0 +1,62 @@
++"""Independent measured-intensity equations for the fused-depth tracker."""
++import numpy as np
++from projective_depth_common import require
++
++
++def gray_pyramid(raw):
++    grids={1:raw.astype(float)}
++    for scale in (2,4):
++        a=grids[scale//2]
++        grids[scale]=np.stack([a[dy::2,dx::2] for dy,dx in ((0,0),(0,1),(1,0),(1,1))]).mean(axis=0)
++    return grids
++
++
++def equation(target,source,target_gray,source_gray,transform,scale,enabled):
++    out=dict(count=0,rms_gray=None,used=False,scale_m2_per_gray2=.005**2/100,h=np.zeros((6,6)),g=np.zeros(6))
++    if not enabled:return out
++    stride=2 if scale==1 else 1
++    xyz=source['vertices'][::stride,::stride].reshape(-1,3)
++    normals=source['normals'][::stride,::stride].reshape(-1,3)
++    color=source_gray[::stride,::stride].ravel()
++    valid=np.sum(normals*normals,axis=1)>.25
++    xyz,normals,color=xyz[valid],normals[valid],color[valid]
++    q=xyz@transform[:3,:3].T+transform[:3,3];ns=normals@transform[:3,:3].T
++    valid=np.isfinite(q).all(axis=1)&(q[:,2]>.3)
++    q,ns,color=q[valid],ns[valid],color[valid]
++    c=target['camera'];uf=c['fx']*q[:,0]/q[:,2]+c['cx'];vf=c['fy']*q[:,1]/q[:,2]+c['cy']
++    u,v=np.rint(uf),np.rint(vf)
++    valid=(u>=1)&(u<c['width']-1)&(v>=1)&(v<c['height']-1)
++    q,ns,color,uf,vf=q[valid],ns[valid],color[valid],uf[valid],vf[valid]
++    u,v=u[valid].astype(np.int64),v[valid].astype(np.int64)
++    p=target['vertices'][v,u];n=target['normals'][v,u]
++    valid=(np.sum(n*n,axis=1)>.25)&(np.linalg.norm(q-p,axis=1)<(.12 if scale==4 else .08))&(np.sum(ns*n,axis=1)>.8)
++    q,color,uf,vf=q[valid],color[valid],uf[valid],vf[valid]
++    uf=np.where(abs(uf-np.rint(uf))<=1e-10,np.rint(uf),uf)
++    vf=np.where(abs(vf-np.rint(vf))<=1e-10,np.rint(vf),vf)
++    valid=(uf>=0)&(uf<c['width']-1)&(vf>=0)&(vf<c['height']-1)
++    q,color,uf,vf=q[valid],color[valid],uf[valid],vf[valid]
++    u,v=np.floor(uf).astype(np.int64),np.floor(vf).astype(np.int64);dx,dy=uf-u,vf-v
++    a,b,d,e=target_gray[v,u],target_gray[v,u+1],target_gray[v+1,u],target_gray[v+1,u+1]
++    value=(1-dx)*(1-dy)*a+dx*(1-dy)*b+(1-dx)*dy*d+dx*dy*e
++    gx=(1-dy)*(b-a)+dy*(e-d);gy=(1-dx)*(d-a)+dx*(e-b)
++    r=value-color;valid=(abs(r)<30)&(np.hypot(gx,gy)>=1)
++    q,r,gx,gy=q[valid],r[valid],gx[valid],gy[valid];z=q[:,2]
++    grad=np.column_stack([gx*c['fx']/z,gy*c['fy']/z,-(gx*c['fx']*q[:,0]+gy*c['fy']*q[:,1])/(z*z)])
++    jac=np.column_stack([grad,np.cross(q,grad)]);w=(1-(r/30)**2)**2
++    out.update(count=len(r),rms_gray=float(np.sqrt(np.mean(r*r))) if len(r) else None,used=len(r)>=200,
++               h=jac.T@(w[:,None]*jac),g=jac.T@(w*r))
++    return out
++
++
++def compare(actual,expected):
++    require(actual['count']==expected['count'] and actual['used']==expected['used']
++            and actual['scale_m2_per_gray2']==expected['scale_m2_per_gray2'],'exact photometric support/usage/scale')
++    if expected['rms_gray'] is None:require(actual['rms_gray'] is None,'no fabricated image residual')
++    else:require(abs(actual['rms_gray']-expected['rms_gray'])<1e-9,'raw image RMS')
++    np.testing.assert_allclose(actual['h'],expected['h'],atol=.001,rtol=1e-10,err_msg='raw photometric Hessian')
++    np.testing.assert_allclose(actual['g'],expected['g'],atol=1e-5,rtol=1e-10,err_msg='raw photometric gradient')
++
++
++def metadata(update,context):
++    expected=dict(source_timestamp=context['source_timestamp'],reference_timestamp=context['reference_timestamp'],phase_qualified=context['qualified'],fresh=context['fresh'])
++    require(update.get('photometric')==expected,'measured image reference/phase provenance')

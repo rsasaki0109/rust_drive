@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "camera_id": "freshness-controls",
+  "width": 100,
+  "height": 100,
+  "config": {
+    "max_tracks": 4,
+    "min_iou": 0.1
+  },
+  "events": [
+    {
+      "timestamp_s": 0.0,
+      "input": {
+        "kind": "detections",
+        "image_sha256": "c6ada9be2be94a71f1ccc73be803c0bcaf5f0906418e6e799528a48ed7802767",
+        "detections": [
+          {
+            "class_index": 2,
+            "confidence": 0.8,
+            "bbox": [
+              10.0,
+              10.0,
+              30.0,
+              30.0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "timestamp_s": 0.05,
+      "input": {
+        "kind": "detections",
+        "image_sha256": "d065e3cb2625ea0a6d62b9fbafabe6d7d606bc794421415cd97463982ff451fe",
+        "detections": [
+          {
+            "class_index": 2,
+            "confidence": 0.8,
+            "bbox": [
+              10.05,
+              10.0,
+              30.05,
+              30.0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "timestamp_s": 0.25,
+      "input": {
+        "kind": "failed"
+      }
+    },
+    {
+      "timestamp_s": 0.79,
+      "input": {
+        "kind": "failed"
+      }
+    },
+    {
+      "timestamp_s": 1.0,
+      "input": {
+        "kind": "failed"
+      }
+    },
+    {
+      "timestamp_s": 1.01,
+      "input": {
+        "kind": "failed"
+      }
+    },
+    {
+      "timestamp_s": 1.145,
+      "input": {
+        "kind": "detections",
+        "image_sha256": "6afc7b9d866942a0d9b9891d6b2d86945080404195444b82f98eeb477b3abf87",
+        "detections": []
+      }
+    },
+    {
+      "timestamp_s": 1.345,
+      "input": {
+        "kind": "failed"
+      }
+    },
+    {
+      "timestamp_s": 1.735,
+      "input": {
+        "kind": "detections",
+        "image_sha256": "7f22c5dbde3abb88327b81fa4994534ee539a539ff6a1c6174d1c2427d1af568",
+        "detections": [
+          {
+            "class_index": 2,
+            "confidence": 0.8,
+            "bbox": [
+              36.0,
+              10.0,
+              56.0,
+              30.0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "timestamp_s": 1.935,
+      "input": {
+        "kind": "failed"
+      }
+    },
+    {
+      "timestamp_s": 2.02,
+      "input": {
+        "kind": "detections",
+        "image_sha256": "1c47a6d44ec1b334178a64109ca3b12081f901e61366d841def86ee7d188040f",
+        "detections": [
+          {
+            "class_index": 2,
+            "confidence": 0.8,
+            "bbox": [
+              38.0,
+              10.0,
+              58.0,
+              30.0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "timestamp_s": 2.09,
+      "input": {
+        "kind": "detections",
+        "image_sha256": "a0637b9044bb767e5ba757f16da16e4c78cdffc935e0a6b55190c7febb7abb9a",
+        "detections": [
+          {
+            "class_index": 2,
+            "confidence": 0.8,
+            "bbox": [
+              39.0,
+              10.0,
+              59.0,
+              30.0
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

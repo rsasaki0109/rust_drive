@@ -1,0 +1,892 @@
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -143,6 +143,12 @@
+           python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --residual bidirectional_midpoint --output artifacts/projective-depth/bidirectional-analytic
+           python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/bidirectional-analytic --residual bidirectional_midpoint --output artifacts/projective-depth/bidirectional-raw-audit
+           python scripts/check-projective-surface-math.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/surface-math
++          python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --residual depth_variance_plane --output artifacts/projective-depth/range-analytic
++          python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/range-analytic --residual depth_variance_plane --output artifacts/projective-depth/range-raw-audit
++          python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --residual depth_whitened_plane --output artifacts/projective-depth/whitened-analytic
++          python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/whitened-analytic --residual depth_whitened_plane --output artifacts/projective-depth/whitened-raw-audit
++          python scripts/check-projective-range.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/range-controls
++          python scripts/check-projective-range.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --residual depth_whitened_plane --output artifacts/projective-depth/whitened-controls
+           python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --correspondence bilinear --output artifacts/projective-depth/bilinear-analytic
+           python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/bilinear-analytic --correspondence bilinear --output artifacts/projective-depth/bilinear-raw-audit
+           python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --normals inverse_depth_plane --output artifacts/projective-depth/plane-normal-analytic
+@@ -211,6 +217,7 @@
+           python -m py_compile scripts/projective_motion_raw.py scripts/check-projective-motion.py
+           python -m py_compile scripts/projective_timing_raw.py scripts/check-projective-timing.py scripts/projective_information_raw.py scripts/projective-heldout.py scripts/repair-projective-heldout-inventory.py scripts/check-projective-information-calibration.py scripts/check-projective-report-write.py scripts/check-projective-calibration-math.py
+           python -m py_compile scripts/diagnose-projective-surface-bias.py scripts/check-projective-surface-math.py
++          python -m py_compile scripts/projective_range_raw.py scripts/projective_whitened_raw.py scripts/diagnose-projective-range.py scripts/check-projective-range.py
+           python -m py_compile scripts/diagnose-projective-motion-timing.py
+           python -m py_compile scripts/multireference_rgbd_common.py scripts/evaluate-multireference-rgbd.py
+           python -m py_compile scripts/joint_keyframe_depth.py scripts/evaluate-joint-keyframe-depth.py
+--- a/artifacts/projective-range-v1/replay-defaults.py
++++ b/artifacts/projective-range-v1/replay-defaults.py
+@@ -0,0 +1,51 @@
++"""One-time source-bound compatibility replay; no numeric reference reads."""
++import argparse,gzip,io,json,sys
++from pathlib import Path
++import numpy as np
++from PIL import Image
++
++r=Path.cwd();sys.path.insert(0,str(r/'scripts'))
++from projective_depth_common import CAMERA,Client,fresh,require,sha,write
++p=argparse.ArgumentParser();p.add_argument('--mode',choices=('depth','rgbd','timing'),required=True);p.add_argument('--output',type=Path,required=True);args=p.parse_args();out=fresh(args.output)
++binary=r/'integrations/projective-depth/target/release/rustdriving-projective-depth';binary_hash=sha(binary.read_bytes())
++sources=[Path(__file__).absolute(),r/'scripts/projective_depth_common.py',*sorted((r/'integrations/projective-depth/src').rglob('*.rs'))]
++pins={str(p.relative_to(r)):sha(p.read_bytes()) for p in sources}
++configuration={} if args.mode=='depth' else dict(photometric='keyframe')
++if args.mode=='timing':configuration.update(motion_model='constant_velocity',timing='previous_motion')
++write(out/'freeze.json',dict(source_sha256=pins,binary_sha256=binary_hash,configuration=configuration,numeric_reference_poses_decoded=False))
++cases=['tum-fr1-room-temporal','tum-fr1-desk2-independent']
++if args.mode!='rgbd':cases.append('tum-fr1-rpy-heldout')
++checks={}
++for case in cases:
++ if case.endswith('heldout'):
++  packet=r/'assets/projective-information-v1';folder=packet/'heldout/rpy'/args.mode
++ elif args.mode=='depth':packet=r/'assets/projective-depth-rust-v1';folder=packet/case
++ elif args.mode=='rgbd':packet=r/'assets/projective-affine-v1';folder=packet/'recorded'/case
++ else:packet=r/'assets/projective-timing-v1';folder=packet/'recorded'/case
++ path=folder/'sensor-only.json.gz';body=path.read_bytes();binding=json.loads((packet/'files.json').read_text())[str(path.relative_to(packet))]
++ require(len(body)==binding['bytes'] and sha(body)==binding['sha256'],'historical packet digest')
++ expected=json.loads(gzip.decompress(body));require(expected['ground_truth_parsed'] is False,'pre-label baseline')
++ base=r/'data'/case;manifest_body=(base/'manifest.json').read_bytes();manifest=json.loads(manifest_body)
++ inventory={i['file']:i for i in manifest['files']};client=Client(binary,CAMERA,configuration=configuration);rows=[]
++ def image(name,color=False):
++  data=(base/'raw'/name).read_bytes();pin=inventory[name]
++  require(len(data)==pin['bytes'] and sha(data)==pin['sha256'],'qualified sensor bytes')
++  im=Image.open(io.BytesIO(data));require(im.size==(640,480),'original sensor dimensions')
++  if color:
++   require(im.mode=='RGB','measured RGB');a=np.asarray(im,dtype=np.uint32)
++   return ((77*a[:,:,0]+150*a[:,:,1]+29*a[:,:,2])>>8).astype(np.uint8)
++  require(im.mode in ('I;16','I;16B','I'),'measured axial depth');return np.asarray(im,dtype=float)/5000.
++ try:
++  for frame in manifest['frames']:
++   rgb=None if args.mode=='depth' else dict(timestamp=frame['rgb_timestamp'],gray=image(frame['rgb_file'],True).ravel().tolist())
++   u=client.frame(frame['depth_timestamp'],image(frame['depth_file']),image=rgb);rows.append(dict(source_index=frame['source_index'],update=u))
++  client.finish()
++ except BaseException:client.abort();raise
++ require(len(rows)==len(expected['frames'])==180,'complete comparison')
++ if rows!=expected['frames']:
++  write(out/(case+'-first-disagreement.json'),dict(actual=rows,expected_ledger_sha256=sha(body)))
++  raise ValueError('sensor replay differs: '+case)
++ checks[case]=dict(identical_outcomes=180,manifest_sha256=sha(manifest_body),baseline_file=str(path.relative_to(r)),baseline_sha256=sha(body))
++ write(out/(case+'.json'),checks[case]);print(args.mode,case,'180 outcomes exactly identical',flush=True)
++require(sha(binary.read_bytes())==binary_hash and all(sha((r/n).read_bytes())==h for n,h in pins.items()),'binary and sources unchanged throughout replay')
++write(out/'summary.json',dict(pass_exact_compatibility=True,cases=checks,identical_outcomes=180*len(checks),numeric_reference_poses_decoded=False))
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -381,6 +381,12 @@
+ withhold image constraints. Own-time synthetic controls pass, while recorded
+ accuracy 80/179 room and 171/179 desk2 still fails the maximum-angle adoption gate.
+ Neither motion option establishes qualified vehicle localization.
++Optional [relative axial-depth weighting and standardized robust loss](projective-range.md)
++use a bounded fourth-power depth variance hypothesis with the original raw-RMS,
++support and accepted-state gates. Both improve viewed room/RPY counts but regress
++desk2, so neither changes the default. This is an uncalibrated scalar weighting
++experiment, without modeled map/history or association uncertainty.
++
+ Optional [midpoint surface residuals and bidirectional projective matching](projective-surface.md)
+ separate measured-normal averaging from correspondence search in both directions.
+ Both retain accepted-state and conditioning guards. Each bidirectional solve and
+--- a/docs/maturity.md
++++ b/docs/maturity.md
+@@ -645,3 +645,11 @@
+ averaging alone regresses desk2 further. Both stay opt-in and supply no calibrated
+ uncertainty. Implementation and independent checks do not justify a percentage
+ increase: maturity remains **about 20%**, with the 30% waypoint unmet.
++
++The [relative axial-depth weighting study](projective-range.md) finds increasing
++depth-residual dispersion in three viewed recordings. Its two native modes improve
++room/RPY counts but substantially regress desk2; both fail the fixed adoption rule
++and retain the original default. Standardizing the robust loss does not resolve
++that failure. Their conditional synthetic checks and raw reconstruction establish
++implementation integrity, without calibrated physical noise, held-out accuracy or
++a maturity increase. The estimate remains **about 20%**, with 30% unmet.
+--- a/docs/native-depth-regression.md
++++ b/docs/native-depth-regression.md
+@@ -194,6 +194,17 @@
+ failure remains the open problem; subjective maturity stays **about 20%** versus
+ mature driving OSS. Test counts alone do not justify increasing it.
+ 
++## Relative axial-depth weights and standardized robust loss
++
++The [distance-stratified study](projective-range.md) observes increasing residual
++dispersion in all four axial-depth bins on three viewed recordings. Its frozen
++relative-variance mode scores 79/74/115 accurate room/desk2/RPY updates; the
++separately frozen standardized-Huber revision scores 77/75/107. Both retain all
++updates but regress desk2 and fail the fixed adoption rule. Original raw-RMS,
++support, conditioning, fusion and accepted-clock gates remain, and the default
++continues scoring 64/161/74. These improvements in two recordings do not supply
++camera/noise calibration or justify increasing maturity beyond about 20%.
++
+ ## Midpoint surfaces and bidirectional association
+ 
+ The later [surface comparison](projective-surface.md) evaluates all three viewed
+--- a/docs/projective-range.md
++++ b/docs/projective-range.md
+@@ -0,0 +1,190 @@
++# Relative axial-depth weighting
++
++The optional native tracker now implements `depth_variance_plane` and
++`depth_whitened_plane`. They test a depth-dependent measurement-weight hypothesis
++and its consistent standardized Huber loss. Both improve viewed room and RPY
++counts but substantially regress desk2. Neither meets adoption: the original
++target-plane default remains, and maturity stays **about 20%**, with 30% unmet.
++
++## Distance-stratified diagnosis
++
++Fifteen fixed consecutive raw-depth pairs per recording, at selected offsets
++1,13,…,169, are probed in both directions at native resolution. Mocap supplies
++only the offline probe motion. Original pixel projection, border, normal and
++distance gates remain; the independent sampler agrees with every original
++point-to-plane equation. No reference motion enters the native tracker.
++
++The table reports `1.4826 * median(abs(r-median(r)))` in millimetres. Bins use the
++mean of the source and target axial depths, not radial distance from the camera.
++
++| Viewed recording | Z 0.3–1 m | Z 1–2 m | Z 2–3 m | Z 3–5 m |
++|---|---:|---:|---:|---:|
++| Room | 2.176 | 4.341 | 13.903 | 15.949 |
++| Desk2 | 2.869 | 6.361 | 10.610 | 25.176 |
++| RPY | 2.972 | 5.772 | 10.155 | 12.485 |
++
++All four bins increase monotonically in these three viewed recordings. The
++far-to-near dispersion ratios are 7.33, 8.78 and 4.20. Desk2's far bin has only
++1,335 matches, versus over 45,000 in room and 82,000 in RPY. These correlated
++pixels/pairs and differing surfaces are not independent noise observations.
++The residual also includes association, calibration, reference-motion and
++surface errors. A separately disclosed channel divides the residual by source
++axial incidence only where that factor exceeds 0.5; the original channel is
++retained. This diagnosis motivates an experiment, not a fitted or calibrated
++physical noise law.
++
++## Fixed relative variance and robust loss
++
++For axial depth `z=fb/disparity`, constant disparity variance implies an axial
++variance proportional to `z^4`. The frozen engineering hypothesis uses
++
++```
++v = max(1, (zs^4 + zt^4) / 2)
++relative = 1/v
++```
++
++Here `zs` is the original source depth and `zt` the matched maintained-model
++depth, each in its own optical frame. The 1 metre floor and original 10 mm Huber
++threshold were fixed before the candidate outcomes. Valid depths keep relative
++weights between 1/625 and 1. The depth values remain fixed for each normal
++equation; they are not replaced with the fitted point's transformed Z.
++
++`depth_variance_plane` multiplies the original Huber weight by `1/v`.
++Its initial trial scores are preserved. The separately frozen revision
++`depth_whitened_plane` applies Huber to `r/sqrt(v)`, giving
++
++```
++w = (1/v) * min(1, 0.01*sqrt(v)/abs(r))
++J = [nt, q cross nt]
++H = sum(w * J^T J), g = sum(w * J^T r)
++```
++
++The native revision supplies a ratio of robust multipliers to the existing
++accumulator; NumPy independently computes this direct weight. No parameter is
++fitted to pose-error scores, and the first trial is not overwritten.
++
++Counts and **raw, unweighted geometric RMS** retain their original definition.
++All support, distance, normal, physical-information, solver, increment, final
++RMS, fusion, keyframe and accepted-clock gates remain. Lower matrix weights
++cannot make the reported physical residual smaller. A weak plane still rejects
++and cannot renew the accepted pose or bypass latched expiry.
++
++This scalar proxy omits normal/ray incidence in actual point-to-plane variance,
++fused-model and history uncertainty, spatial bias and correlation. The target
++model and source observations are not independent samples with known variances.
++The modes supply neither calibrated covariance nor a probabilistic error bound.
++
++## Complete viewed outcomes
++
++All runs use the same 180 original depth acquisitions, indices 100–279, one first
++optical-camera origin, K525, depth/5000 and all 179 updates. Root gates remain
++0.1 m / 0.1 rad; numeric reference poses are scored only after the complete
++recording's sensor-only ledger is saved. RPY is now viewed regression data.
++The [registered-grid camera contract](registered-grid-camera.md) and
++[original TUM source attribution](tum-source-provenance.md) remain in force.
++
++| Mode | Room / desk2 / RPY accurate updates, each out of 179 |
++|---|---|
++| Original target plane | 64 / 161 / 74 |
++| Relative variance | 79 / 74 / 115 |
++| Standardized Huber | 77 / 75 / 107 |
++
++| Mode and recording | Maximum position error (m) | Maximum rotation error (rad) |
++|---|---:|---:|
++| Original, room | 0.296290 | 0.141286 |
++| Relative variance, room | 0.275240 | 0.130593 |
++| Standardized, room | 0.280087 | 0.133846 |
++| Original, desk2 | 0.114800 | 0.090386 |
++| Relative variance, desk2 | 0.311419 | 0.305761 |
++| Standardized, desk2 | 0.285187 | 0.274443 |
++| Original, RPY | 0.087348 | 0.173375 |
++| Relative variance, RPY | 0.094389 | 0.128127 |
++| Standardized, RPY | 0.093976 | 0.133401 |
++
++Every candidate accepts all 179 updates without expiry or reset, but every
++complete accuracy protocol fails and exits 1 after saving its results. The
++predeclared adoption rule requires room above 64, desk2 at least 161, RPY at
++least 74, complete tracking and no worse maximum position/rotation error in all
++three. Both fail. Distance-dependent weighting alone does not consistently
++repair this tracker. No new recording, easier selection or relaxed accuracy
++gate replaces these development failures.
++
++## Independent checks and scope
++
++Native tests check the fourth-power law, symmetric endpoints and floor bounds;
++all six pose derivatives for ordinary weighted and standardized Huber costs;
++and exact 1/256 matrix scaling for a known 4 m plane while keeping raw RMS and
++support unchanged. Independent NumPy matches are checked against the original
++equations during diagnosis, then used to reconstruct candidate equations and
++fused models from original PNGs without numeric reference-pose reads.
++
++A weak-plane control reconstructs the weighted failure witness, rejects both
++unweighted-matrix substitution and falsely attenuated raw RMS, and checks atomic
++accepted clocks and expiry. A 12-frame ray-cast scene adds fixed Gaussian
++inverse-depth noise, seed 1701 and standard deviation 0.001 per metre. Both
++candidates and the original meet the preregistered 10 mm / 0.01 rad control
++gates and accept all 11 updates. Its maximum errors are:
++
++| Synthetic mode | Position (mm) | Rotation (mrad) |
++|---|---:|---:|
++| Original | 3.410 | 4.768 |
++| Relative variance | 3.894 | 1.668 |
++| Standardized Huber | 3.705 | 2.339 |
++
++All control equations are independently reconstructed. Injecting the assumed
++noise law checks conditional behavior; it does not independently establish that
++law for a physical camera. Position error slightly worsens in both controls,
++despite their smaller rotation errors.
++
++The [source-bound evidence packet](../assets/projective-range-v1/summary.json)
++retains the diagnostic, both designs, original sources, complete ledgers and
++failed decisions. Earlier source/evidence archives remain intact. CI runs the
++synthetic, raw and transport checks without downloading recorded datasets.
++
++All 424 Rust tests (53 optional-native and 371 core), Clippy, formatting and 49
++core scenario/replays pass. The 245 core outputs remain unchanged. All 1,440
++historical depth, affine RGB-D and motion/time-compensated sensor outcomes
++reproduce exactly, without numeric reference-pose reads. Independent checks of
++the six candidate recordings reconstruct 19,838 fitted/returned normal systems
++and 1,074 model generations. These integrity checks pass while both adoption
++decisions and all complete recorded accuracy protocols fail.
++
++## Interface and reproduction
++
++Select `TrackerConfig.residual` or JSON `Configure.residual` explicitly as
++`depth_variance_plane` or `depth_whitened_plane`. Both require
++depth/point/forward/central-difference policies without photometric tracking.
++Unsupported combinations reject before configuration acknowledgment. The default
++and successful report schema retain their original behavior. RGB timing, camera
++calibration, root transforms, vehicle driving and Cargo dependencies are unchanged.
++
++With the existing pinned original data and NumPy/Pillow environment:
++
++```bash
++source scripts/env.sh
++cargo test --all-targets --locked --manifest-path integrations/projective-depth/Cargo.toml
++cargo build --release --bins --locked --manifest-path integrations/projective-depth/Cargo.toml
++OPENBLAS_NUM_THREADS=1 python scripts/diagnose-projective-range.py \
++  --output artifacts/range-diagnosis
++OPENBLAS_NUM_THREADS=1 python scripts/check-projective-depth.py \
++  --binary integrations/projective-depth/target/release/rustdriving-projective-depth \
++  --residual depth_whitened_plane --output artifacts/range-analytic
++OPENBLAS_NUM_THREADS=1 python scripts/check-projective-range.py \
++  --binary integrations/projective-depth/target/release/rustdriving-projective-depth \
++  --residual depth_whitened_plane --output artifacts/range-controls
++OPENBLAS_NUM_THREADS=1 python scripts/evaluate-projective-depth.py \
++  --binary integrations/projective-depth/target/release/rustdriving-projective-depth \
++  --residual depth_whitened_plane \
++  --case tum-fr1-room-temporal --case tum-fr1-desk2-independent \
++  --case tum-fr1-rpy-heldout --output artifacts/range-recorded
++# Expected exit 1: complete physical accuracy fails.
++OPENBLAS_NUM_THREADS=1 python scripts/audit-projective-depth-raw.py \
++  --analytic-reports artifacts/range-analytic --residual depth_whitened_plane \
++  --recorded-reports artifacts/range-recorded \
++  --case tum-fr1-room-temporal --case tum-fr1-desk2-independent \
++  --case tum-fr1-rpy-heldout --output artifacts/range-raw
++```
++
++Use fresh paths and replace the mode with `depth_variance_plane` to repeat the
++first candidate. The original frozen diagnostic source is retained because the
++maintained independent dispatcher subsequently gained both experimental modes.
+--- a/integrations/projective-depth/src/depth_weight.rs
++++ b/integrations/projective-depth/src/depth_weight.rs
+@@ -0,0 +1,159 @@
++//! A relative engineering weighting hypothesis, not a measured noise model.
++
++/// For z=fb/disparity, constant disparity variance gives axial variance
++/// proportional to z^4. Keep both measured endpoint depths fixed during each
++/// normal solve. Fusion/history uncertainty is not modeled by this coefficient.
++pub(crate) fn relative(source_z: f64, target_z: f64) -> f64 {
++    let source_squared = source_z * source_z;
++    let target_squared = target_z * target_z;
++    1. / ((source_squared * source_squared + target_squared * target_squared) * 0.5).max(1.)
++}
++
++/// The existing accumulator applies a 10 mm Huber multiplier. Supply the
++/// coefficient that replaces it with Huber(r*sqrt(relative)) consistently.
++pub(crate) fn robust_coefficient(source_z: f64, target_z: f64, residual: f64) -> f64 {
++    let relative = relative(source_z, target_z);
++    let absolute = residual.abs().max(1e-15);
++    let original_huber = (0.01 / absolute).min(1.);
++    let standardized_huber = (0.01 / (absolute * relative.sqrt())).min(1.);
++    relative * standardized_huber / original_huber
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use crate::{
++        Camera, Correspondence, Equation, Pose, Residual, add_plane, dot, norm, pyramid, sub,
++    };
++
++    #[test]
++    fn fourth_power_variance_has_metre_floor_and_symmetric_bounded_endpoints() {
++        for (z, expected) in [
++            (0.3, 1.),
++            (1., 1.),
++            (2., 1. / 16.),
++            (4., 1. / 256.),
++            (5., 1. / 625.),
++        ] {
++            assert_eq!(relative(z, z), expected);
++        }
++        assert_eq!(relative(1., 3.), 1. / 41.);
++        for a in [0.3, 0.8, 1., 2., 3.5, 5.] {
++            for b in [0.3, 0.8, 1., 2., 3.5, 5.] {
++                assert_eq!(relative(a, b), relative(b, a));
++                assert!(((1. / 625.)..=1.).contains(&relative(a, b)));
++            }
++        }
++    }
++
++    #[test]
++    fn all_six_weighted_huber_derivatives_hold_measured_depths_fixed() {
++        let pose = Pose::identity().increment([0.02, -0.01, 0.03, 0.01, -0.02, 0.015]);
++        let source = [0.2, -0.1, 2.4];
++        let target = [0.18, -0.08, 2.5];
++        let n = [0.2, -0.3, 1.].map(|v| v / norm([0.2, -0.3, 1.]));
++        let weight = relative(source[2], target[2]);
++        let q = pose.transform(source);
++        let r = dot(n, sub(q, target));
++        let mut e = Equation {
++            count: 0,
++            rms_m: 0.,
++            h: [[0.; 6]; 6],
++            g: [0.; 6],
++            direction_counts: None,
++        };
++        add_plane(&mut e, n, q, r, weight);
++        let cost = |p: Pose| {
++            let a = dot(n, sub(p.transform(source), target)).abs();
++            weight
++                * if a <= 0.01 {
++                    0.5 * a * a
++                } else {
++                    0.01 * (a - 0.005)
++                }
++        };
++        for axis in 0..6 {
++            let mut d = [0.; 6];
++            d[axis] = 1e-6;
++            let plus = cost(pose.increment(d));
++            d[axis] = -1e-6;
++            let minus = cost(pose.increment(d));
++            assert!(((plus - minus) / 2e-6 - e.g[axis]).abs() < 1e-10);
++        }
++    }
++
++    #[test]
++    fn relative_weight_does_not_reduce_raw_rms_or_invent_support() {
++        let c = Camera {
++            width: 32,
++            height: 32,
++            fx: 32.,
++            fy: 32.,
++            cx: 15.5,
++            cy: 15.5,
++        };
++        let levels = pyramid(c, &vec![4.; 32 * 32]);
++        let p = Pose::identity().increment([0., 0., 0.005, 0., 0., 0.]);
++        let ordinary = crate::equation(
++            &levels[2],
++            &levels[2],
++            p,
++            1,
++            Correspondence::Forward,
++            Residual::TargetPlane,
++        );
++        for mode in [Residual::DepthVariancePlane, Residual::DepthWhitenedPlane] {
++            let weighted =
++                crate::equation(&levels[2], &levels[2], p, 1, Correspondence::Forward, mode);
++            assert_eq!(weighted.count, ordinary.count);
++            assert!(weighted.count >= 200);
++            assert_eq!(weighted.rms_m, ordinary.rms_m);
++            assert_eq!(weighted.h, ordinary.h.map(|row| row.map(|v| v / 256.)));
++            assert_eq!(weighted.g, ordinary.g.map(|v| v / 256.));
++        }
++    }
++
++    #[test]
++    fn standardized_huber_has_correct_six_axis_gradient_and_bounded_cofactor() {
++        for z in [0.3, 1., 1.5, 2., 3., 5.] {
++            let w = relative(z, z);
++            for r in [0., 0.005, 0.02, 0.04, 0.08] {
++                let c = robust_coefficient(z, z, r);
++                assert!(c >= w * (1. - 1e-14) && c <= w.sqrt() * (1. + 1e-14));
++            }
++        }
++        let p = Pose::identity().increment([0.02, -0.01, 0.03, 0.01, -0.02, 0.015]);
++        let source = [0.2, -0.1, 2.4];
++        let target = [0.18, -0.08, 2.5];
++        let n = [0.2, -0.3, 1.].map(|v| v / norm([0.2, -0.3, 1.]));
++        let q = p.transform(source);
++        let r = dot(n, sub(q, target));
++        let c = robust_coefficient(source[2], target[2], r);
++        let mut e = Equation {
++            count: 0,
++            rms_m: 0.,
++            h: [[0.; 6]; 6],
++            g: [0.; 6],
++            direction_counts: None,
++        };
++        add_plane(&mut e, n, q, r, c);
++        let cost = |p: Pose| {
++            let a = (dot(n, sub(p.transform(source), target))
++                * relative(source[2], target[2]).sqrt())
++            .abs();
++            if a <= 0.01 {
++                0.5 * a * a
++            } else {
++                0.01 * (a - 0.005)
++            }
++        };
++        for axis in 0..6 {
++            let mut d = [0.; 6];
++            d[axis] = 1e-6;
++            let plus = cost(p.increment(d));
++            d[axis] = -1e-6;
++            let minus = cost(p.increment(d));
++            assert!(((plus - minus) / 2e-6 - e.g[axis]).abs() < 1e-10);
++        }
++    }
++}
+--- a/integrations/projective-depth/src/lib.rs
++++ b/integrations/projective-depth/src/lib.rs
+@@ -4,6 +4,7 @@
+ 
+ use serde::{Deserialize, Serialize};
+ 
++mod depth_weight;
+ mod information;
+ mod motion;
+ pub use information::{InformationFailure, Spectrum};
+@@ -61,6 +62,12 @@
+     /// Sum two independently projected correspondence sets. Each direction
+     /// must have its own complete geometric support.
+     BidirectionalMidpoint,
++    /// Relative axial-depth variance under constant disparity noise, bounded
++    /// by a one-metre floor. This does not supply calibrated uncertainty.
++    DepthVariancePlane,
++    /// Use the same relative variance to standardize the robust residual as
++    /// well as weighting its quadratic region. Raw RMS admission is unchanged.
++    DepthWhitenedPlane,
+ }
+ 
+ /// An inverse-depth plane is planar in pixel coordinates, including on tilted
+@@ -533,7 +540,14 @@
+                 add_plane(&mut e, source_normal, target_point, source_r, 0.5);
+                 squared += 0.5 * (r * r + source_r * source_r);
+             } else {
+-                add_plane(&mut e, n, q, r, 1.);
++                let coefficient = if residual == Residual::DepthVariancePlane {
++                    depth_weight::relative(source.vertices[i][2], target_point[2])
++                } else if residual == Residual::DepthWhitenedPlane {
++                    depth_weight::robust_coefficient(source.vertices[i][2], target_point[2], r)
++                } else {
++                    1.
++                };
++                add_plane(&mut e, n, q, r, coefficient);
+                 squared += r * r;
+             }
+             e.count += 1;
+@@ -900,14 +914,17 @@
+         camera.validate()?;
+         if matches!(
+             config.residual,
+-            Residual::SymmetricMidpoint | Residual::BidirectionalMidpoint
++            Residual::SymmetricMidpoint
++                | Residual::BidirectionalMidpoint
++                | Residual::DepthVariancePlane
++                | Residual::DepthWhitenedPlane
+         ) && (config.geometry != ModelGeometry::Depth
+             || config.reprojection != Reprojection::Point
+             || config.correspondence != Correspondence::Forward
+             || config.normals != NormalEstimation::CentralDifference
+             || config.photometric != Photometric::Disabled)
+         {
+-            return Err("midpoint residuals require depth/point/forward/central_difference without photometric tracking".into());
++            return Err("experimental plane residuals require depth/point/forward/central_difference without photometric tracking".into());
+         }
+         if config.timing == Timing::PreviousMotion
+             && (config.photometric != Photometric::Keyframe
+--- a/scripts/audit-projective-depth-raw.py
++++ b/scripts/audit-projective-depth-raw.py
+@@ -14,6 +14,8 @@
+ from projective_depth_raw import compare_equation, fuse, inverse_depth_normals, normal_equation, pyramid, raster, reconstruct_update
+ 
+ SOURCES = (Path(__file__),ROOT/'scripts/projective_depth_raw.py',ROOT/'scripts/projective_depth_common.py',
++           ROOT/'scripts/projective_range_raw.py',
++           ROOT/'scripts/projective_whitened_raw.py',
+            ROOT/'scripts/projective_vertex_raw.py',
+            ROOT/'scripts/projective_photo_raw.py',
+            ROOT/'scripts/projective_step_raw.py',
+@@ -230,7 +232,7 @@
+     require(photometric in ('disabled','keyframe'),'declared image policy')
+     require(geometry in ('depth','vertices'),'declared geometry policy')
+     require(normals in ('central_difference','inverse_depth_plane'),'declared normal policy')
+-    require(residual in ('target_plane','symmetric_planes','symmetric_midpoint','bidirectional_midpoint'),'declared residual policy')
++    require(residual in ('target_plane','symmetric_planes','symmetric_midpoint','bidirectional_midpoint','depth_variance_plane','depth_whitened_plane'),'declared residual policy')
+     require(correspondence in ('forward','reciprocal','bilinear'),'declared correspondence policy')
+     require(reprojection in ('point','tangent_plane'),'declared reprojection policy')
+     ledger_path = prior/'sensor-only.json' if reports else prior/'sensor-only.json.gz'
+@@ -336,7 +338,7 @@
+     parser.add_argument('--case',action='append',choices=('tum-fr1-room-temporal','tum-fr1-desk2-independent','tum-fr1-rpy-heldout'),help='viewed recording; default retains the original two-recording audit')
+     parser.add_argument('--reprojection',choices=('point','tangent_plane'),default='point',help='policy for fresh analytic reports')
+     parser.add_argument('--correspondence',choices=('forward','reciprocal','bilinear'),default='forward')
+-    parser.add_argument('--residual',choices=('target_plane','symmetric_planes','symmetric_midpoint','bidirectional_midpoint'),default='target_plane')
++    parser.add_argument('--residual',choices=('target_plane','symmetric_planes','symmetric_midpoint','bidirectional_midpoint','depth_variance_plane','depth_whitened_plane'),default='target_plane')
+     parser.add_argument('--normals',choices=('central_difference','inverse_depth_plane'),default='central_difference')
+     parser.add_argument('--geometry',choices=('depth','vertices'),default='depth')
+     parser.add_argument('--photometric',choices=('disabled','keyframe'),default='disabled')
+--- a/scripts/check-projective-depth.py
++++ b/scripts/check-projective-depth.py
+@@ -43,7 +43,7 @@
+     parser.add_argument('--output',type=Path,required=True)
+     parser.add_argument('--reprojection',choices=('point','tangent_plane'),default='point')
+     parser.add_argument('--correspondence',choices=('forward','reciprocal','bilinear'),default='forward')
+-    parser.add_argument('--residual',choices=('target_plane','symmetric_planes','symmetric_midpoint','bidirectional_midpoint'),default='target_plane')
++    parser.add_argument('--residual',choices=('target_plane','symmetric_planes','symmetric_midpoint','bidirectional_midpoint','depth_variance_plane','depth_whitened_plane'),default='target_plane')
+     parser.add_argument('--normals',choices=('central_difference','inverse_depth_plane'),default='central_difference')
+     parser.add_argument('--geometry',choices=('depth','vertices'),default='depth')
+     parser.add_argument('--photometric',choices=('disabled','keyframe'),default='disabled')
+@@ -156,6 +156,12 @@
+                       for key,value in (('geometry','vertices'),('reprojection','tangent_plane'),('correspondence','reciprocal'),
+                                         ('normals','inverse_depth_plane'),('photometric','keyframe'))})
+     malformed['RGB label injection']=config+json.dumps(dict(kind='Frame',timestamp=1.,depth_m=[],image=dict(timestamp=1.,gray=[],truth=[])))+'\n'
++    malformed.update({'unsupported depth variance '+key:json.dumps(dict(kind='Configure',camera=CAMERA,residual='depth_variance_plane',**{key:value}))+'\n'
++                      for key,value in (('geometry','vertices'),('reprojection','tangent_plane'),('correspondence','bilinear'),
++                                        ('normals','inverse_depth_plane'),('photometric','keyframe'))})
++    malformed.update({'unsupported standardized depth '+key:json.dumps(dict(kind='Configure',camera=CAMERA,residual='depth_whitened_plane',**{key:value}))+'\n'
++                      for key,value in (('geometry','vertices'),('reprojection','tangent_plane'),('correspondence','reciprocal'),
++                                        ('normals','inverse_depth_plane'),('photometric','keyframe'))})
+     for name,body in malformed.items():
+         result = subprocess.run([str(binary)],input=body,text=True,capture_output=True,timeout=30)
+         require(result.returncode == 2 and bool(result.stderr),'transport rejection: '+name)
+--- a/scripts/check-projective-range.py
++++ b/scripts/check-projective-range.py
+@@ -0,0 +1,89 @@
++#!/usr/bin/env python3
++"""Depth-range weighting: raw weak-plane witnesses and fixed noisy ray-cast controls."""
++import argparse,copy,importlib.util,json
++from pathlib import Path
++import numpy as np
++from projective_depth_common import ROOT,Client,audit_sequence,exp_rotation,fresh,pose,require,sha,write
++from projective_depth_raw import reconstruct_update
++from projective_range_raw import controls
++
++
++def main():
++    parser=argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('--binary',type=Path,required=True);parser.add_argument('--output',type=Path,required=True)
++    parser.add_argument('--residual',choices=('depth_variance_plane','depth_whitened_plane'),default='depth_variance_plane')
++    args=parser.parse_args();out=fresh(args.output);binary=args.binary.absolute();binary_hash=sha(binary.read_bytes())
++    scene_path=ROOT/'scripts/check-projective-depth.py'
++    sources=(Path(__file__),scene_path,ROOT/'scripts/projective_depth_common.py',ROOT/'scripts/projective_depth_raw.py',
++             ROOT/'scripts/projective_range_raw.py',ROOT/'scripts/projective_information_raw.py')
++    sources=(*sources,ROOT/'scripts/projective_whitened_raw.py')
++    pins={str(p.relative_to(ROOT)):sha(p.read_bytes()) for p in sources}
++    write(out/'freeze.json',dict(binary_sha256=binary_hash,source_sha256=pins,residual=args.residual,noise_seed=1701,
++        inverse_depth_std_per_m=.001,frames=12,position_gate_m=.01,rotation_gate_rad=.01,
++        noise_role='explicit synthetic constant-disparity hypothesis, not evidence of physical sensor calibration'))
++    spec=importlib.util.spec_from_file_location('scene',scene_path);scene=importlib.util.module_from_spec(spec);spec.loader.exec_module(scene)
++    reference=np.full((120,160),4.);measured=np.full((120,160),4.005)
++    client=Client(binary,scene.CAMERA,configuration=dict(residual=args.residual))
++    try:
++        initial=client.frame(1.,reference);failure=client.frame(1.03,measured)
++        expired=client.frame(1.201,measured);latched=client.frame(1.21,reference);client.finish()
++    except BaseException:client.abort();raise
++    write(out/'plane.json',dict(frames=[initial,failure,expired,latched]))
++    require(initial['accepted'] and not failure['accepted'] and not failure['lost']
++            and failure['rejection']=='insufficient physical observability condition'
++            and failure['last_accepted_timestamp']==1.,'weighting cannot create unmeasured planar directions')
++    require(expired['lost'] and latched['lost'] and not latched['accepted'],'rejected weighted data cannot renew accepted clock')
++    reconstruct_update(reference,(reference>.3).astype(np.uint8),measured,scene.CAMERA,failure,residual_policy=args.residual)
++    audit_sequence([dict(update=x) for x in (initial,failure,expired,latched)],[1.,1.03,1.201,1.21])
++    rejected=[]
++    for name,policy,changed in (
++        ('unweighted equation substituted','target_plane',failure),
++        ('weight attenuated raw RMS',args.residual,copy.deepcopy(failure))):
++        if name=='weight attenuated raw RMS':changed['information_failure']['equation']['rms_m']/=256
++        try:reconstruct_update(reference,(reference>.3).astype(np.uint8),measured,scene.CAMERA,changed,residual_policy=policy)
++        except (AssertionError,ValueError,KeyError,TypeError,IndexError):rejected.append(name)
++        else:raise ValueError('undetected range-weight corruption: '+name)
++
++    transforms=[];depths=[];rng=np.random.default_rng(1701)
++    for i in range(12):
++        transform=np.eye(4);transform[:3,:3]=exp_rotation(np.array([.001*i,-.0015*i,.0005*i]))
++        transform[:3,3]=[.003*i,.002*np.sin(.4*i),.002*(np.cos(.4*i)-1)]
++        exact=scene.render(transform)
++        depths.append(1/(1/exact+rng.normal(0,.001,exact.shape)));transforms.append(transform)
++    ledgers={}
++    for mode in ('target_plane',args.residual):
++        client=Client(binary,scene.CAMERA,configuration=dict(residual=mode));rows=[]
++        try:
++            for i,depth in enumerate(depths):rows.append(dict(update=client.frame(2.+.033*i,depth)))
++            client.finish()
++        except BaseException:client.abort();raise
++        ledgers[mode]=rows;write(out/(mode+'-sensor-only.json'),dict(frames=rows,reference_pose_supplied_to_tracker=False))
++    summaries={}
++    for mode,rows in ledgers.items():
++        audit_sequence(rows,[2.+.033*i for i in range(12)])
++        model=weights=None;equations=0
++        for depth,row in zip(depths,rows,strict=True):
++            model,weights,checked=reconstruct_update(model,weights,depth,scene.CAMERA,row['update'],residual_policy=mode)
++            equations+=checked['iterations']+checked['final_equations']
++        errors=[]
++        for transform,row in zip(transforms[1:],rows[1:],strict=True):
++            u=row['update']
++            if u['accepted']:
++                estimate=pose(u['first_from_current'])
++                position=float(np.linalg.norm(estimate[:3,3]-transform[:3,3]))
++                rotation=float(np.arccos(np.clip((np.trace(transform[:3,:3].T@estimate[:3,:3])-1)/2,-1,1)))
++                errors.append(dict(position_error_m=position,rotation_error_rad=rotation))
++        max_p=max((x['position_error_m'] for x in errors),default=None);max_r=max((x['rotation_error_rad'] for x in errors),default=None)
++        summaries[mode]=dict(accepted_updates=len(errors),raw_equations=equations,max_position_error_m=max_p,max_rotation_error_rad=max_r,
++            physical_control_pass=len(errors)==11 and max_p<=.01 and max_r<=.01,errors=errors)
++    passed=all(x['physical_control_pass'] for x in summaries.values())
++    require(sha(binary.read_bytes())==binary_hash and all(sha((ROOT/n).read_bytes())==h for n,h in pins.items()),'frozen control implementation')
++    from projective_whitened_raw import controls as standardized_controls
++    write(out/'summary.json',dict(pass_range_controls=passed,math_controls=controls(),standardized_math_controls=standardized_controls(),weak_plane_raw_checked=True,
++        rejected_corruptions=rejected,noisy_synthetic=summaries,calibrated_physical_noise_claim=False,
++        scope='conditional synthetic accuracy, measured-weight algebra, raw matrices and failure-state integrity'))
++    print(json.dumps(summaries),flush=True)
++    return 0 if passed else 1
++
++
++if __name__=='__main__':raise SystemExit(main())
+--- a/scripts/diagnose-projective-range.py
++++ b/scripts/diagnose-projective-range.py
+@@ -0,0 +1,83 @@
++#!/usr/bin/env python3
++"""Distance-stratified raw-pair residuals on viewed TUM recordings; offline probes."""
++import argparse,importlib.util,io,json
++from pathlib import Path
++import numpy as np
++from PIL import Image
++from projective_depth_common import CAMERA,ROOT,fresh,require,sha,write
++from projective_depth_raw import pyramid,normal_equation,compare_equation
++from projective_range_raw import pairs,equation,controls
++
++CASES=('tum-fr1-room-temporal','tum-fr1-desk2-independent','tum-fr1-rpy-heldout')
++BINS=(.3,1.,2.,3.,5.)
++
++
++def statistics(values):
++    if len(values)==0:return dict(count=0)
++    center=np.median(values)
++    return dict(count=len(values),median_m=float(center),mad_scale_m=float(1.4826*np.median(abs(values-center))),
++                median_abs_m=float(np.median(abs(values))),rms_m=float(np.sqrt(np.mean(values**2))),
++                p95_abs_m=float(np.quantile(abs(values),.95)))
++
++
++def stratify(depth,residual):
++    return {str(low)+'-'+str(high):statistics(residual[(depth>=low)&(depth<high)]) for low,high in zip(BINS,BINS[1:])}
++
++
++def main():
++    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--output',type=Path,required=True)
++    args=parser.parse_args();out=fresh(args.output)
++    sources=(Path(__file__),ROOT/'scripts/projective_range_raw.py',ROOT/'scripts/projective_depth_common.py',
++             ROOT/'scripts/projective_depth_raw.py',ROOT/'scripts/check-opencv-rgbd.py')
++    pins={str(p.relative_to(ROOT)):sha(p.read_bytes()) for p in sources}
++    write(out/'freeze.json',dict(source_sha256=pins,selected_frame_offsets=list(range(1,180,12)),
++        cases=CASES,depth_bins_m=BINS,scale=1,ground_truth_operational=False,
++        reference_pose_role='offline local objective probe, never a runtime initialization',
++        interpretation='residual dispersion includes calibration, motion-reference, correspondence and surface errors; not isolated independent sensor noise'))
++    spec=importlib.util.spec_from_file_location('reference',ROOT/'scripts/check-opencv-rgbd.py')
++    reference=importlib.util.module_from_spec(spec);spec.loader.exec_module(reference);reference.controls()
++    summaries={}
++    for case in CASES:
++        base=ROOT/'data'/case;manifest_body=(base/'manifest.json').read_bytes();manifest=json.loads(manifest_body)
++        inventory={x['file']:x for x in manifest['files']}
++        def read(name):
++            path=base/'raw'/name;require(path.is_file() and not path.is_symlink(),'regular original file')
++            body=path.read_bytes();p=inventory[name];require(len(body)==p['bytes'] and sha(body)==p['sha256'],'source hash')
++            return body
++        labels=np.loadtxt(io.BytesIO(read('groundtruth.txt')),comments='#')
++        require(labels.ndim==2 and labels.shape[1]==8 and np.isfinite(labels).all() and np.all(np.diff(labels[:,0])>0),'finite chronological offline reference')
++        rows=[];ranges=[];residuals=[];normalized=[]
++        for i in range(1,180,12):
++            a,b=manifest['frames'][i-1:i+1]
++            def depth(f):
++                im=Image.open(io.BytesIO(read(f['depth_file'])))
++                require(im.size==(640,480) and im.mode in ('I;16','I;16B','I'),'original measured depth')
++                return np.asarray(im,dtype=float)/5000.
++            old,new=pyramid(depth(a),CAMERA)[1],pyramid(depth(b),CAMERA)[1]
++            truth=np.linalg.inv(reference.truth_at(labels,a['depth_timestamp']))@reference.truth_at(labels,b['depth_timestamp'])
++            for direction,target,source,transform in (('forward',old,new,truth),('reverse',new,old,np.linalg.inv(truth))):
++                sample=pairs(target,source,transform,1)
++                raw=equation(sample,False);compare_equation(raw,normal_equation(target,source,transform,1))
++                zs,zt=sample['source'][:,2],sample['target'][:,2];z=(zs+zt)/2;residual=sample['residual']
++                ray=sample['source']/zs[:,None]
++                incidence=abs(np.einsum('ij,ij->i',sample['normal'],ray@transform[:3,:3].T))
++                # Disclose incidence-normalized values separately, never admit
++                # new runtime matches or hide the original residual channel.
++                usable=incidence>.5
++                normalized.append((z[usable],residual[usable]/incidence[usable]))
++                rows.append(dict(source_index=b['source_index'],direction=direction,
++                    plane=stratify(z,residual),axial_equivalent_incidence_over_half=stratify(z[usable],residual[usable]/incidence[usable])))
++                ranges.append(z);residuals.append(residual)
++        all_z,all_r=np.concatenate(ranges),np.concatenate(residuals)
++        nz,nr=map(np.concatenate,zip(*normalized))
++        summary=dict(pair_directions=len(rows),plane=stratify(all_z,all_r),
++                     axial_equivalent_incidence_over_half=stratify(nz,nr))
++        write(out/(case+'.json'),dict(manifest_sha256=sha(manifest_body),summary=summary,pairs=rows,
++            raw_matcher_agrees_with_original_equations=True,numeric_truth_only_for_offline_probe=True))
++        summaries[case]=summary;print(case,json.dumps(summary),flush=True)
++    require(all(sha((ROOT/n).read_bytes())==h for n,h in pins.items()),'frozen diagnostic sources')
++    write(out/'summary.json',dict(cases=summaries,relative_weight_math_controls=controls(),
++        measurement_noise_calibration_established=False,root_pose_accuracy_claim=False))
++
++
++if __name__=='__main__':main()
+--- a/scripts/evaluate-projective-depth.py
++++ b/scripts/evaluate-projective-depth.py
+@@ -47,6 +47,8 @@
+                ROOT/'scripts/projective_motion_raw.py',
+                ROOT/'scripts/projective_timing_raw.py',
+                ROOT/'scripts/projective_information_raw.py',
++               ROOT/'scripts/projective_range_raw.py',
++               ROOT/'scripts/projective_whitened_raw.py',
+                *sorted((ROOT/'integrations/projective-depth/src').rglob('*.rs')),
+                ROOT/'integrations/projective-depth/Cargo.toml',ROOT/'integrations/projective-depth/Cargo.lock']
+     write(output/'freeze.json',dict(schema_version=1,dataset=case,data_role='already viewed port regression',
+@@ -148,7 +150,7 @@
+     parser.add_argument('--case',action='append',choices=VIEWED_CASES,help='viewed recording; default retains the original two-recording comparison')
+     parser.add_argument('--reprojection',choices=('point','tangent_plane'),default='point')
+     parser.add_argument('--correspondence',choices=('forward','reciprocal','bilinear'),default='forward')
+-    parser.add_argument('--residual',choices=('target_plane','symmetric_planes','symmetric_midpoint','bidirectional_midpoint'),default='target_plane')
++    parser.add_argument('--residual',choices=('target_plane','symmetric_planes','symmetric_midpoint','bidirectional_midpoint','depth_variance_plane','depth_whitened_plane'),default='target_plane')
+     parser.add_argument('--normals',choices=('central_difference','inverse_depth_plane'),default='central_difference')
+     parser.add_argument('--geometry',choices=('depth','vertices'),default='depth')
+     parser.add_argument('--photometric',choices=('disabled','keyframe'),default='disabled')
+--- a/scripts/projective_depth_raw.py
++++ b/scripts/projective_depth_raw.py
+@@ -68,6 +68,14 @@
+ 
+ 
+ def normal_equation(target, source, transform, scale, correspondence='forward', residual_policy='target_plane'):
++    if residual_policy=='depth_whitened_plane':
++        require(correspondence=='forward','qualified standardized range-weighted correspondence policy')
++        from projective_whitened_raw import equation
++        return equation(target,source,transform,scale)
++    if residual_policy=='depth_variance_plane':
++        require(correspondence=='forward','qualified range-weighted correspondence policy')
++        from projective_range_raw import pairs,equation
++        return equation(pairs(target,source,transform,scale),True)
+     if residual_policy=='bidirectional_midpoint':
+         require(correspondence=='forward','qualified bidirectional correspondence policy')
+         forward=normal_equation(target,source,transform,scale,residual_policy='symmetric_midpoint')
+--- a/scripts/projective_range_raw.py
++++ b/scripts/projective_range_raw.py
+@@ -0,0 +1,52 @@
++"""Independent forward-pair sampling and relative axial-range weighting oracle."""
++import numpy as np
++from projective_depth_common import require
++
++
++def pairs(target,source,transform,scale):
++    stride=2 if scale==1 else 1
++    ps=source['vertices'][::stride,::stride].reshape(-1,3)
++    ns=source['normals'][::stride,::stride].reshape(-1,3)
++    valid=np.sum(ns**2,axis=1)>.25
++    ps,ns=ps[valid],ns[valid]
++    query=ps@transform[:3,:3].T+transform[:3,3]
++    ns=ns@transform[:3,:3].T
++    valid=np.isfinite(query).all(axis=1)&(query[:,2]>.3)
++    ps,query,ns=ps[valid],query[valid],ns[valid]
++    c=target['camera']
++    u=np.rint(c['fx']*query[:,0]/query[:,2]+c['cx'])
++    v=np.rint(c['fy']*query[:,1]/query[:,2]+c['cy'])
++    valid=(u>=1)&(u<c['width']-1)&(v>=1)&(v<c['height']-1)
++    ps,query,ns=ps[valid],query[valid],ns[valid]
++    u,v=u[valid].astype(np.int64),v[valid].astype(np.int64)
++    pt,nt=target['vertices'][v,u],target['normals'][v,u]
++    valid=(np.sum(nt**2,axis=1)>.25)&(np.linalg.norm(query-pt,axis=1)<(.12 if scale==4 else .08))
++    valid&=np.einsum('ij,ij->i',ns,nt)>.8
++    ps,query,pt,nt=ps[valid],query[valid],pt[valid],nt[valid]
++    residual=np.einsum('ij,ij->i',nt,query-pt)
++    return dict(source=ps,query=query,target=pt,normal=nt,residual=residual,
++                jacobian=np.column_stack([nt,np.cross(query,nt)]))
++
++
++def coefficient(source_z,target_z):
++    # Axial z=fb/disparity gives Var(z) proportional to z^4 under constant
++    # disparity noise. This is only a bounded, relative engineering hypothesis.
++    return 1/np.maximum(1.,(np.asarray(source_z)**4+np.asarray(target_z)**4)/2)
++
++
++def equation(samples,weighted):
++    residual=samples['residual'];j=samples['jacobian']
++    weight=np.minimum(1.,.01/np.maximum(abs(residual),1e-15))
++    if weighted:weight*=coefficient(samples['source'][:,2],samples['target'][:,2])
++    return dict(count=len(residual),rms_m=float(np.sqrt(np.mean(residual**2))) if len(residual) else 0.,
++                h=j.T@(weight[:,None]*j),g=j.T@(weight*residual))
++
++
++def controls():
++    z=np.array([.3,1.,2.,4.,5.])
++    np.testing.assert_allclose(coefficient(z,z),[1.,1.,1/16,1/256,1/625],atol=0,rtol=1e-15)
++    require(coefficient(1.,3.)==1/41,'two endpoint fourth-power variance average')
++    np.testing.assert_array_equal(coefficient(z,z[::-1]),coefficient(z[::-1],z))
++    return dict(metre_floor=True,quadratic_depth_standard_deviation=True,
++                symmetric_endpoint_variance=True,bounded_relative_weight=[1/625,1.],
++                calibrated_noise_or_covariance=False)
+--- a/scripts/projective_whitened_raw.py
++++ b/scripts/projective_whitened_raw.py
+@@ -0,0 +1,26 @@
++"""Independent standardized-Huber equations for the provisional axial variance."""
++import numpy as np
++from projective_range_raw import pairs,coefficient
++
++
++def equation(target,source,transform,scale):
++    samples=pairs(target,source,transform,scale)
++    r=samples['residual'];j=samples['jacobian']
++    relative=coefficient(samples['source'][:,2],samples['target'][:,2])
++    standardized=r*np.sqrt(relative)
++    # Direct robust weight; Rust instead corrects the existing Huber
++    # accumulator by a ratio of robust multipliers.
++    weight=relative*np.minimum(1.,.01/np.maximum(abs(standardized),1e-15))
++    return dict(count=len(r),rms_m=float(np.sqrt(np.mean(r**2))) if len(r) else 0.,
++                h=j.T@(weight[:,None]*j),g=j.T@(weight*r))
++
++
++def controls():
++    residual=np.array([0.,.005,.02,.04,.08])
++    relative=coefficient(2.,2.)
++    actual=relative*np.minimum(1.,.01/np.maximum(abs(residual)*np.sqrt(relative),1e-15))
++    np.testing.assert_allclose(actual,[1/16,1/16,1/16,1/16,1/32],atol=0,rtol=1e-15)
++    unit=coefficient(.5,1.)
++    assert unit==1.
++    return dict(standardized_quadratic_region=True,standardized_robust_tail=True,
++                unit_variance_retains_original_huber=True,measured_noise_calibration=False)

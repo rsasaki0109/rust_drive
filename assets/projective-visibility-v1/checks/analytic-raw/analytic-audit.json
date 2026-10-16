@@ -1,0 +1,68 @@
+{
+  "hand_controls": {
+    "metre_axis_normal_witness": true,
+    "half_pixel_centers": true,
+    "invalid_discontinuous_reduction": true,
+    "exact_raster_tie_and_occlusion": true,
+    "four_fusion_partitions": true,
+    "capped_weight_arithmetic": true,
+    "hand_calculated_225_point_plane_equation": true,
+    "inverse_depth_plane_camera_normal": true,
+    "missing_discontinuous_plane_support_rejected": true,
+    "nonplanar_and_coarse_normal_support_preserved": true
+  },
+  "motions": [
+    {
+      "motion": 1,
+      "report_sha256": "1ae85d11c519a6f2903134611858381bf2caec7ad18add9f3de21ad85815e0f1",
+      "iterations": 3,
+      "final_equations": 1,
+      "model_replaced": false
+    },
+    {
+      "motion": 2,
+      "report_sha256": "5dcdcf679ce3830c0dff1096ad9495d0e7734cbe9ec3d82f140bb23727050ade",
+      "iterations": 8,
+      "final_equations": 1,
+      "model_replaced": false
+    },
+    {
+      "motion": 3,
+      "report_sha256": "d25a23fc37c85f3f9ee6c6d5ef756ec3e5ee539eefb1e116440e43ac93c07a58",
+      "iterations": 8,
+      "final_equations": 1,
+      "model_replaced": false
+    },
+    {
+      "motion": 4,
+      "report_sha256": "534c34edf3e7e5775a3f45b24fb9bf5a96c361e5d34648be871b66e84933abeb",
+      "iterations": 9,
+      "final_equations": 1,
+      "model_replaced": false
+    }
+  ],
+  "geometry": "depth",
+  "vertex_controls": null,
+  "rejected_corruptions": [
+    "joint H/g rescaling with unchanged valid solve",
+    "false correspondence count",
+    "false per-iteration RMS",
+    "false final support",
+    "false returned-pose RMS",
+    "fusion category moved while total remains valid",
+    "false free-space visibility count",
+    "false visibility removal count",
+    "missing visibility evidence receipt"
+  ],
+  "prior_solve_only_auditor_accepts_rescaled_Hg": true,
+  "fusion_sampling": "nearest",
+  "fusion_controls": null,
+  "visibility": "free_space_decay",
+  "visibility_controls": {
+    "unknown_skipped": true,
+    "unsupported_skipped": true,
+    "occluded_background_retained": true,
+    "per_acquisition_credit": true,
+    "zero_support_clears_depth": true
+  }
+}

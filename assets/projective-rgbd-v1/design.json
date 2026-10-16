@@ -1,0 +1,20 @@
+{
+  "problem": "XYZ desk2 rotation error rises across indices186..192 while finest geometric RMS remains small; no consistent rotation anchoring in the viewed geometry-only interval",
+  "change": "Joint geometry and measured intensity against the raw RGB image at the fused depth reference view; depth fusion and original source pyramids retained",
+  "weights": "Reuse previously defined geometry sigma0.005m / intensity sigma10gray, Tukey cutoff30gray, gradient>=1gray/pixel, minimum photo support200",
+  "phase": "RGB/depth acquisition difference<=0.02s; target/source phase difference<=0.005s",
+  "rgb_reference": "raw image at reference changes, no synthetic color fusion",
+  "guards": "original iteration, correspondence, condition, support, increment, RMS, clock and expiry gates",
+  "adoption": {
+    "room_accurate_greater_than": 64,
+    "desk2_accurate_at_least": 161,
+    "accepted_each": 179,
+    "maximum_position_and_rotation_no_worse": true,
+    "no_resets": true
+  },
+  "scope": "already viewed development; GT scores only after operational ledgers; no driving integration",
+  "root_gates": {
+    "position_m": 0.1,
+    "rotation_rad": 0.1
+  }
+}

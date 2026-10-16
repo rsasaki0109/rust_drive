@@ -1,0 +1,26 @@
+Traceback (most recent call last):
+  File "/workspace/rust_drive/integrations/onnx/bdd_tiles_check.py", line 464, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/workspace/rust_drive/integrations/onnx/bdd_tiles_check.py", line 457, in main
+    result = audit(args) if args.command == 'audit' else run(args)
+             ^^^^^^^^^^^
+  File "/workspace/rust_drive/integrations/onnx/bdd_tiles_check.py", line 438, in audit
+    return audit_native(args,out,passes,freeze,design,oracle,compiled,base_compiled,receipt,old)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/rust_drive/integrations/onnx/bdd_tiles_check.py", line 370, in audit_native
+    historical_same(a,b)
+  File "/workspace/rust_drive/integrations/onnx/bdd_tiles_check.py", line 155, in historical_same
+    for index,(a,b) in enumerate(zip(expected,actual)):historical_same(a,b,path+f'[{index}]')
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/rust_drive/integrations/onnx/bdd_tiles_check.py", line 152, in historical_same
+    for key in expected:historical_same(expected[key],actual[key],path+'.'+str(key))
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/rust_drive/integrations/onnx/bdd_tiles_check.py", line 155, in historical_same
+    for index,(a,b) in enumerate(zip(expected,actual)):historical_same(a,b,path+f'[{index}]')
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/rust_drive/integrations/onnx/bdd_tiles_check.py", line 148, in historical_same
+    require(type(actual) in (int,float) and np.isfinite(actual)
+  File "/workspace/rust_drive/integrations/onnx/bdd_tiles_check.py", line 27, in require
+    raise ValueError(message)
+ValueError: historical measurement: $[2].bbox[0]

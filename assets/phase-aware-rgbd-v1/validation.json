@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "data_role": "viewed development; not held out",
+  "summaries": {
+    "tum-fr1-room-temporal": {
+      "total_updates": 179,
+      "accepted": 179,
+      "root_accurate": 78,
+      "lost": false,
+      "max_position_error_m": 0.2795166252158683,
+      "max_rotation_error_rad": 0.11456541020920606,
+      "photo_enabled_updates": 149
+    },
+    "tum-fr1-desk2-independent": {
+      "total_updates": 179,
+      "accepted": 179,
+      "root_accurate": 75,
+      "lost": false,
+      "max_position_error_m": 0.3385165574611988,
+      "max_rotation_error_rad": 0.1826453877952686,
+      "photo_enabled_updates": 134
+    }
+  },
+  "baseline_accurate": {
+    "room": 64,
+    "desk2": 161
+  },
+  "complete_accuracy_pass": false,
+  "improves_both_records": false,
+  "operational_branches_before_numeric_reference_scoring": 2,
+  "ground_truth_operational": false,
+  "default_changed": false,
+  "subjective_maturity_percent": 20,
+  "scope": "retained fixed NumPy development trial; Rust implementation uses separate raw multi-reference geometry"
+}

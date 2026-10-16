@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "implemented": "Separate optional native/O3/ThinLTO build, explicit binary/source/CPU binding, exact detector comparison",
+  "normal_release_default": true,
+  "consistent_speedup_demonstrated": false,
+  "baseline_processing_s": [
+    0.722091085,
+    0.643847479
+  ],
+  "native_processing_s": [
+    0.606685816,
+    0.678182959
+  ],
+  "mean_speedup": 1.0630957733407442,
+  "mean_processing_reduction_fraction": 0.0593509775158525,
+  "observed_deadline_gates": {
+    "baseline-first": false,
+    "native-first": false,
+    "native-repeat": false,
+    "baseline-repeat": false
+  },
+  "fixed_age_limit_s": 0.2,
+  "original_image_count": 16,
+  "repeats_per_image": 2,
+  "complete_numerical_parity": true,
+  "total_actual_model_forwards": 144,
+  "native_input_rejections": 25,
+  "existing_output_protections": 2,
+  "build_admission_rejections": 6,
+  "inherited_bdd_quality": {
+    "true_positives": 78,
+    "false_positives": 31,
+    "false_negatives": 60,
+    "precision": 0.7155963302752294,
+    "recall": 0.5652173913043478,
+    "mean_matched_iou": 0.7822587810258869
+  },
+  "inherited_quality_gates_pass": false,
+  "new_accuracy_improvement_measured": false,
+  "core_tests": 371,
+  "scenario_replays": 49,
+  "unchanged_core_output_files": 245,
+  "prior_packet_entries_verified": 3777,
+  "compiled_sources_unchanged": 35,
+  "current_archived_source_files": 73,
+  "raw_recorded_data_weights_or_executables_redistributed": false,
+  "github_ci_run_performed": false,
+  "subjective_maturity_percent": 20,
+  "waypoint_30_percent_met": false
+}

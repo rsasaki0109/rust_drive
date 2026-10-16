@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "algorithm": "yolox_s_sequence_tracking_v1",
+  "purpose": "Offline consecutive recorded images; one reusable CPU detector plan and one image-space tracker",
+  "algorithm_changes": "No changes to YOLOX-S, four-view merge, vehicle consistency, or standalone tracker math",
+  "implementation": "Compile the existing independent tracking library sources in this binary; the unchanged ONNX workspace lockfile supplies resolved dependencies",
+  "maximum_events": 32,
+  "maximum_manifest_bytes": 524288,
+  "maximum_report_bytes": 4194304,
+  "timestamp_s_input": "Original decimal seconds as a JSON string; parse with Rust str::parse::<f64>, then validate monotonic clock",
+  "preflight": "Before model loading, validate every image hash/decoded dimensions, clock, configuration and duplicate identity; retain one RGB image at a time",
+  "inference": "Read and verify each image again against its declared SHA/dimensions; reuse one model plan across all image events",
+  "other_events": "missing and failed, with the unchanged tracker semantics",
+  "output": "One complete bounded report; no overwrite; all raw detector views and tracking snapshots preserved",
+  "vehicle_control_integration": false,
+  "identity_ground_truth_at_runtime": false
+}

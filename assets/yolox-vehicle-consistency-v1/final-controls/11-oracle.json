@@ -1,0 +1,178 @@
+{
+  "context_result": {
+    "voting_result": {
+      "base_merged": {
+        "detections": [
+          {
+            "class_index": 5,
+            "confidence": 0.8999999761581421,
+            "bbox": [
+              600.0,
+              100.0,
+              700.0,
+              200.0
+            ]
+          },
+          {
+            "class_index": 2,
+            "confidence": 0.6000000238418579,
+            "bbox": [
+              600.0,
+              100.0,
+              700.0,
+              200.0
+            ]
+          }
+        ],
+        "detection_origins": [
+          {
+            "view": 2,
+            "rank": 0
+          },
+          {
+            "view": 0,
+            "rank": 0
+          }
+        ],
+        "merge": {
+          "input_boxes": 4,
+          "interior_edge_rejected": 0,
+          "suppressed": 2,
+          "comparisons": 3,
+          "output_cap_reached": false
+        }
+      },
+      "detections": [
+        {
+          "class_index": 5,
+          "confidence": 0.8999999761581421,
+          "bbox": [
+            600.0,
+            100.0,
+            700.0,
+            200.0
+          ]
+        }
+      ],
+      "detection_origins": [
+        {
+          "view": 2,
+          "rank": 0
+        }
+      ],
+      "retained_base_ranks": [
+        0
+      ],
+      "resolutions": [
+        {
+          "base_ranks": [
+            0,
+            1
+          ],
+          "selected_base_rank": 0,
+          "class_index": 5,
+          "votes": [
+            {
+              "view": 0,
+              "source_rank": 0,
+              "class_index": 2,
+              "confidence": 0.6000000238418579
+            },
+            {
+              "view": 1,
+              "source_rank": 0,
+              "class_index": 5,
+              "confidence": 0.800000011920929
+            },
+            {
+              "view": 2,
+              "source_rank": 0,
+              "class_index": 5,
+              "confidence": 0.8999999761581421
+            },
+            {
+              "view": 3,
+              "source_rank": 0,
+              "class_index": 5,
+              "confidence": 0.8500000238418579
+            }
+          ],
+          "full_image_tie_break": false
+        }
+      ],
+      "ambiguities": [],
+      "comparison_work": 12
+    },
+    "detections": [
+      {
+        "class_index": 2,
+        "confidence": 0.6000000238418579,
+        "bbox": [
+          600.0,
+          100.0,
+          700.0,
+          200.0
+        ]
+      }
+    ],
+    "detection_origins": [
+      {
+        "view": 0,
+        "rank": 0
+      }
+    ],
+    "retained_base_ranks": [
+      1
+    ],
+    "selections": [
+      {
+        "base_ranks": [
+          0,
+          1
+        ],
+        "selected_base_rank": 1,
+        "class_index": 2,
+        "full_image_source_rank": 0
+      }
+    ],
+    "ambiguous_without_full_context": []
+  },
+  "detections": [
+    {
+      "class_index": 2,
+      "confidence": 0.6000000238418579,
+      "bbox": [
+        600.0,
+        100.0,
+        700.0,
+        200.0
+      ]
+    }
+  ],
+  "detection_origins": [
+    {
+      "view": 0,
+      "rank": 0
+    }
+  ],
+  "retained_base_ranks": [
+    1
+  ],
+  "decisions": [
+    {
+      "base_ranks": [
+        0,
+        1
+      ],
+      "full_image_support": [
+        {
+          "source_rank": 0,
+          "class_index": 2,
+          "confidence": 0.6000000238418579
+        }
+      ],
+      "selected_base_rank": 1
+    }
+  ],
+  "comparison_work": 14
+}

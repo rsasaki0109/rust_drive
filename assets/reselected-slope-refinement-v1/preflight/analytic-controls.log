@@ -1,0 +1,21 @@
+Traceback (most recent call last):
+  File "/workspace/rust_drive/scripts/check-reselected-slope-refinement.py", line 165, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/workspace/rust_drive/scripts/check-reselected-slope-refinement.py", line 160, in main
+    args = parser.parse_args();out = fresh(args.output);report = controls()
+                                                                 ^^^^^^^^^^
+  File "/workspace/rust_drive/scripts/check-reselected-slope-refinement.py", line 138, in controls
+    result = kernel.refine(raw,poses,None);checked += verify(result,ind,poses,None,audit)
+                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/rust_drive/scripts/check-reselected-slope-refinement.py", line 70, in verify
+    checked += reference.verify(batch,nodes,poses,prior,audit)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/rust_drive/scripts/check-extended-slope-refinement.py", line 48, in verify
+    scale = report['scale'];matches = population(nodes,poses,scale);check_metadata(report['frozen_population'],matches)
+                                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/rust_drive/scripts/check-continuous-depth-refinement.py", line 52, in check_metadata
+    require(item['target'] == wanted['target'] and item['source'] == wanted['source'] and item['count'] == len(wanted['source_ids']),'fixed source endpoints and count')
+  File "/workspace/rust_drive/scripts/projective_depth_common.py", line 15, in require
+    raise ValueError(message)
+ValueError: fixed source endpoints and count

@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "parent": "assets/deep-search-depth-refinement-v1",
+  "data_role": "already viewed development; conditional damped-direction comparison",
+  "motivation": "Room120/160/240 exhaust30 corrections with nonzero scaled gradients and late GN multipliers around1/128..1/32768; halving a single direction need not explore a useful neighboring direction",
+  "cases": ["tum-fr1-room-temporal", "tum-fr1-desk2-independent"],
+  "sample_indices": [120, 160, 200, 240, 279],
+  "original_guard": "Always first require the original undamped support, SPD condition<=1e6 and full proposal<=0.1m/0.15rad guards; convergence still requires the undamped full proposal strictly below1e-5m/1e-5rad",
+  "trigger": "Run the same21-candidate GN search. Only when it exhausts or accepts alpha<1/16, also evaluate eight full-step damped directions",
+  "damping_grid": [0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000],
+  "direction": "Solve (H+lambda*diag(diag(H)))d=-g after original admissibility; require finite positive diagonal, scaled SPD condition<=1e6 and the same proposal bounds on each damped direction. Damping is numerical direction selection, not measured information or rank repair",
+  "choice": "Start with the original passing GN candidate if any. In fixed grid order replace it only with a fully supported candidate satisfying original Armijo, cost<before-slack and cost<incumbent-slack, where slack=1e-12*max(1,abs(before)); compare identical original objective without a damping penalty",
+  "bounds": "At most29 objective candidates per correction,30 corrections,2..5 nodes; stop on original proposal/convergence guards, exhausted direction search or budget; no adaptive grid extension",
+  "fixed": "Same original initial sources, normalizers, incoming prior, Huber loss, frame/timestamp conventions, original-discrete fresh reconstruction and no per-step source deletion",
+  "control": "Reverify each previous complete report independently, preserve exact state/matrix/pose prefixes until the first selected damped direction, and require whole normalized report equality when no damped direction is selected",
+  "audit": "Independent relative-camera polynomial objective/system, spectral damped solves, Rodrigues increments and candidate choice; replay every rejected and selected candidate. Report GN matrices, damped solve checks and repeated endpoint/control roles separately",
+  "followup_eligibility_rule": "Both recordings must converge all five continuous windows, improve original-discrete fresh convergence versus deep-search cap30, have no local/fresh guards, pass every original0.03m RMS gate and have median fresh RMS no worse than control",
+  "scope": "Local pose fitting only; no new physical trajectory/GT scoring, prior accumulation, tracker/Schur commits, default or native-Rust adoption, calibrated uncertainty or timing claim",
+  "subjective_maturity_percent": 20
+}

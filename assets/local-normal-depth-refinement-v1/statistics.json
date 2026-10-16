@@ -1,0 +1,4998 @@
+{
+  "summaries": {
+    "tum-fr1-room-temporal": {
+      "samples": 5,
+      "continuous_converged": 3,
+      "control_continuous_converged": 3,
+      "original_discrete_fresh_converged": 0,
+      "local_guard_failures": 2,
+      "original_discrete_guard_failures": 0,
+      "original_discrete_rms_gate_passes": 5,
+      "median_original_discrete_rms_m": 0.002473233482577955,
+      "control_median_original_discrete_rms_m": 0.002473233482577955,
+      "source_occurrences_before": 10156,
+      "source_occurrences_after": 10156,
+      "source_retention": 1.0,
+      "factors_before": 20,
+      "factors_after": 20,
+      "budget_exhaustions": 0,
+      "total_applied_corrections": 42,
+      "shortened_steps": 15,
+      "invalid_candidate_trials": 151,
+      "valid_nonpassing_candidate_trials": 0,
+      "accepted_candidate_trials": 42,
+      "accepted_cost_increases": 0,
+      "checkpoints": {
+        "10": {
+          "continuous_converged": 2,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 1,
+          "budget_exhaustions": 2
+        },
+        "20": {
+          "continuous_converged": 3,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 2,
+          "budget_exhaustions": 0
+        },
+        "30": {
+          "continuous_converged": 3,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 2,
+          "budget_exhaustions": 0
+        }
+      },
+      "eligible_for_followup_full_trajectory": false
+    },
+    "tum-fr1-desk2-independent": {
+      "samples": 5,
+      "continuous_converged": 1,
+      "control_continuous_converged": 1,
+      "original_discrete_fresh_converged": 0,
+      "local_guard_failures": 4,
+      "original_discrete_guard_failures": 0,
+      "original_discrete_rms_gate_passes": 5,
+      "median_original_discrete_rms_m": 0.0027404641366715284,
+      "control_median_original_discrete_rms_m": 0.0027404641366715284,
+      "source_occurrences_before": 22351,
+      "source_occurrences_after": 22351,
+      "source_retention": 1.0,
+      "factors_before": 16,
+      "factors_after": 16,
+      "budget_exhaustions": 0,
+      "total_applied_corrections": 44,
+      "shortened_steps": 9,
+      "invalid_candidate_trials": 125,
+      "valid_nonpassing_candidate_trials": 0,
+      "accepted_candidate_trials": 44,
+      "accepted_cost_increases": 0,
+      "checkpoints": {
+        "10": {
+          "continuous_converged": 0,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 3,
+          "budget_exhaustions": 2
+        },
+        "20": {
+          "continuous_converged": 1,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 3,
+          "budget_exhaustions": 1
+        },
+        "30": {
+          "continuous_converged": 1,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 4,
+          "budget_exhaustions": 0
+        }
+      },
+      "eligible_for_followup_full_trajectory": false
+    }
+  },
+  "samples": {
+    "tum-fr1-room-temporal": [
+      {
+        "source_index": 120,
+        "applied_corrections": 11,
+        "continuous_converged": true,
+        "guard_failure": null,
+        "termination": "converged",
+        "complete_report_equal_control": true,
+        "exact_old_trace_prefix": 11,
+        "source_occurrences": 1978,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": null,
+          "converged": true,
+          "delta": [
+            [
+              -2.677600073215938e-09,
+              3.053681982649208e-09,
+              -1.15805178069984e-09,
+              -5.659213893588102e-10,
+              -1.0899488134659453e-09,
+              -4.94170341576442e-09
+            ],
+            [
+              -2.1496412434492737e-07,
+              7.864735764084858e-09,
+              5.692912152109724e-08,
+              3.6578927806934797e-09,
+              -4.2274637226453375e-09,
+              -3.345692952596802e-08
+            ],
+            [
+              1.6946904384273272e-06,
+              -7.151941548689201e-08,
+              -4.533222155101672e-07,
+              4.686456299202032e-08,
+              3.610632926315158e-07,
+              5.504051591452354e-07
+            ],
+            [
+              -3.2250477925381795e-06,
+              -3.485633615103751e-06,
+              5.0391640967277565e-06,
+              1.0525103256058146e-06,
+              6.555674386380666e-06,
+              5.527613381179733e-06
+            ]
+          ],
+          "condition": 1074.3589370840411
+        }
+      },
+      {
+        "source_index": 160,
+        "applied_corrections": 7,
+        "continuous_converged": true,
+        "guard_failure": null,
+        "termination": "converged",
+        "complete_report_equal_control": true,
+        "exact_old_trace_prefix": 7,
+        "source_occurrences": 2582,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": null,
+          "converged": true,
+          "delta": [
+            [
+              -4.449058303038453e-07,
+              -8.63712068682446e-08,
+              1.9874098680474353e-07,
+              5.000265867417141e-08,
+              3.438393560950576e-07,
+              2.896386367209846e-07
+            ],
+            [
+              2.7039940272056574e-06,
+              4.003881349978467e-07,
+              -1.1673343749743733e-06,
+              -3.8064812002277504e-07,
+              -2.0973194373764374e-06,
+              -1.6741911485430428e-06
+            ],
+            [
+              -2.65915255708102e-06,
+              -6.105674610777386e-07,
+              1.1983346627579613e-06,
+              6.266258996013032e-08,
+              1.669320303716433e-06,
+              1.0938957331147663e-06
+            ],
+            [
+              -6.215729840919835e-06,
+              -1.362658720112025e-06,
+              2.7450168586713858e-06,
+              -2.3461997917782656e-06,
+              3.348424143696947e-06,
+              1.653070611622641e-07
+            ]
+          ],
+          "condition": 7476.19316786283
+        }
+      },
+      {
+        "source_index": 200,
+        "applied_corrections": 0,
+        "continuous_converged": false,
+        "guard_failure": "new frame needs measured support",
+        "termination": "guard",
+        "complete_report_equal_control": true,
+        "exact_old_trace_prefix": 0,
+        "source_occurrences": 0,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": "new frame needs measured support",
+          "converged": false,
+          "delta": null,
+          "condition": null
+        }
+      },
+      {
+        "source_index": 240,
+        "applied_corrections": 9,
+        "continuous_converged": true,
+        "guard_failure": null,
+        "termination": "converged",
+        "complete_report_equal_control": true,
+        "exact_old_trace_prefix": 9,
+        "source_occurrences": 4235,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": null,
+          "converged": true,
+          "delta": [
+            [
+              9.639664549896633e-08,
+              1.815548332643206e-07,
+              2.2792925242812115e-07,
+              4.355959848228549e-07,
+              -6.442338956933514e-08,
+              -9.746111300973784e-08
+            ],
+            [
+              2.241356212959099e-07,
+              3.720523323014604e-07,
+              -8.129454201179469e-09,
+              5.124180308416118e-07,
+              -2.2288955440571105e-07,
+              -1.2488304186603217e-07
+            ],
+            [
+              -4.7248150656817616e-07,
+              -1.1139401975427006e-07,
+              1.1209118274162118e-06,
+              5.991152625732497e-07,
+              6.127026481267207e-07,
+              2.5078623041385513e-07
+            ],
+            [
+              -2.0763837369533085e-06,
+              -4.7659040501640725e-06,
+              5.773358721426948e-06,
+              -3.18606198532055e-07,
+              3.697207211919931e-06,
+              1.8924565771998375e-06
+            ]
+          ],
+          "condition": 271937.6420842077
+        }
+      },
+      {
+        "source_index": 279,
+        "applied_corrections": 15,
+        "continuous_converged": false,
+        "guard_failure": "line search",
+        "termination": "guard",
+        "complete_report_equal_control": false,
+        "exact_old_trace_prefix": 2,
+        "source_occurrences": 1361,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": null,
+          "converged": false,
+          "delta": [
+            [
+              6.388132999729721e-05,
+              1.873740008115405e-05,
+              -3.021094022887694e-05,
+              7.316798798758312e-07,
+              -3.215608438922526e-05,
+              -6.760096015696997e-05
+            ],
+            [
+              -0.00012033723157767665,
+              -2.9299629377923952e-05,
+              5.6321714320235224e-05,
+              5.3771676428312543e-05,
+              7.290513173076618e-05,
+              7.457490254034787e-05
+            ],
+            [
+              -0.00048156509044097447,
+              -0.00020344459385304614,
+              0.00027226580580515643,
+              0.00011808021496502185,
+              0.00031419361585187947,
+              0.0003522980119303909
+            ]
+          ],
+          "condition": 70292.5430099314
+        }
+      }
+    ],
+    "tum-fr1-desk2-independent": [
+      {
+        "source_index": 120,
+        "applied_corrections": 0,
+        "continuous_converged": false,
+        "guard_failure": "new frame needs measured support",
+        "termination": "guard",
+        "complete_report_equal_control": true,
+        "exact_old_trace_prefix": 0,
+        "source_occurrences": 1244,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": "new frame needs measured support",
+          "converged": false,
+          "delta": null,
+          "condition": null
+        }
+      },
+      {
+        "source_index": 160,
+        "applied_corrections": 24,
+        "continuous_converged": false,
+        "guard_failure": "line search",
+        "termination": "guard",
+        "complete_report_equal_control": true,
+        "exact_old_trace_prefix": 24,
+        "source_occurrences": 4905,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": null,
+          "converged": false,
+          "delta": [
+            [
+              3.0074115255535098e-06,
+              -4.5201413588036714e-07,
+              1.0631465892561124e-08,
+              -2.3719935194684028e-07,
+              -1.5365516077625746e-06,
+              -1.750736012134547e-06
+            ],
+            [
+              -1.435196451576097e-05,
+              3.105927256614675e-06,
+              -8.929549786994611e-07,
+              1.061894082333844e-06,
+              7.014521334531109e-06,
+              8.159234879996682e-06
+            ],
+            [
+              -2.436299572635275e-06,
+              -8.619953074741365e-07,
+              9.256958626563826e-07,
+              -3.2141341652961627e-07,
+              6.265143245923867e-07,
+              2.2214966769372407e-06
+            ],
+            [
+              9.513481231523529e-05,
+              -3.5536310061326095e-05,
+              2.429397547451063e-05,
+              -8.390875801567803e-06,
+              -6.343044424411667e-05,
+              -6.218318012691636e-05
+            ]
+          ],
+          "condition": 17013.058190750726
+        }
+      },
+      {
+        "source_index": 200,
+        "applied_corrections": 20,
+        "continuous_converged": true,
+        "guard_failure": null,
+        "termination": "converged",
+        "complete_report_equal_control": true,
+        "exact_old_trace_prefix": 20,
+        "source_occurrences": 16202,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": null,
+          "converged": true,
+          "delta": [
+            [
+              7.175947870773853e-07,
+              -3.666957563243409e-07,
+              1.533282572609574e-07,
+              -8.998891260069301e-08,
+              -3.964974771672668e-07,
+              -4.948574220043597e-07
+            ],
+            [
+              -2.716022628891022e-06,
+              1.4892919450707518e-06,
+              -5.478893371357338e-07,
+              3.614976522605004e-07,
+              1.4016083788266124e-06,
+              1.9723613125497403e-06
+            ],
+            [
+              -5.795079642002335e-06,
+              2.0820126334724645e-06,
+              -1.4582785539864992e-07,
+              5.40414737394626e-07,
+              2.1892750626578646e-06,
+              3.38160725244866e-06
+            ],
+            [
+              -7.718533132722908e-06,
+              4.56269662358196e-06,
+              -1.525451280862704e-06,
+              1.3821608333943317e-06,
+              4.278034383833328e-06,
+              5.909735693989356e-06
+            ]
+          ],
+          "condition": 75237.60438782244
+        }
+      },
+      {
+        "source_index": 240,
+        "applied_corrections": 0,
+        "continuous_converged": false,
+        "guard_failure": "new frame needs measured support",
+        "termination": "guard",
+        "complete_report_equal_control": true,
+        "exact_old_trace_prefix": 0,
+        "source_occurrences": 0,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": "new frame needs measured support",
+          "converged": false,
+          "delta": null,
+          "condition": null
+        }
+      },
+      {
+        "source_index": 279,
+        "applied_corrections": 0,
+        "continuous_converged": false,
+        "guard_failure": "new frame needs measured support",
+        "termination": "guard",
+        "complete_report_equal_control": true,
+        "exact_old_trace_prefix": 0,
+        "source_occurrences": 0,
+        "complete_population_and_normalizer_equality": true,
+        "remaining_full_proposal": {
+          "guard_failure": "new frame needs measured support",
+          "converged": false,
+          "delta": null,
+          "condition": null
+        }
+      }
+    ]
+  },
+  "old_terminal_support_diagnosis": {
+    "tum-fr1-room-temporal": {
+      "source_index": 279,
+      "candidate_probes": 21,
+      "new_domain_supported_candidates": 20,
+      "full_probes": [
+        {
+          "alpha": 1.0,
+          "old_missing_sources": 4,
+          "new_missing_sources": 2,
+          "lost_sources": [
+            {
+              "target": 1,
+              "source": 3,
+              "source_pixel": 105332,
+              "uv": [
+                338.02169975590425,
+                125.05052269978172
+              ],
+              "cell": [
+                338,
+                125
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    339,
+                    126
+                  ],
+                  "normal_added": false,
+                  "patch3": {
+                    "depth": [
+                      [
+                        1.8134,
+                        1.8134,
+                        1.8236
+                      ],
+                      [
+                        1.8134,
+                        1.8134,
+                        1.8134
+                      ],
+                      [
+                        1.8044,
+                        1.8044,
+                        1.8044
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      1.1907774942264218e-06,
+                      7.93150844490216e-06,
+                      4.997239131357997e-05
+                    ],
+                    "plane_ratio": 0.15013253815442554
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        1.8336,
+                        1.8236,
+                        1.8336,
+                        1.8336,
+                        1.8236
+                      ],
+                      [
+                        1.8236,
+                        1.8134,
+                        1.8134,
+                        1.8236,
+                        1.8134
+                      ],
+                      [
+                        1.8134,
+                        1.8134,
+                        1.8134,
+                        1.8134,
+                        1.8134
+                      ],
+                      [
+                        1.8044,
+                        1.8044,
+                        1.8044,
+                        1.8044,
+                        1.8044
+                      ],
+                      [
+                        1.7954,
+                        1.8044,
+                        1.8044,
+                        1.8044,
+                        1.8044
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      2.715836532650355e-06,
+                      2.3828471542583907e-05,
+                      0.00015417572576784935
+                    ],
+                    "plane_ratio": 0.11397443297178665
+                  }
+                }
+              ]
+            },
+            {
+              "target": 1,
+              "source": 3,
+              "source_pixel": 110504,
+              "uv": [
+                389.09389851208334,
+                136.9263259211487
+              ],
+              "cell": [
+                389,
+                136
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    390,
+                    136
+                  ],
+                  "normal_added": false,
+                  "patch3": {
+                    "depth": [
+                      [
+                        1.7592,
+                        1.7592,
+                        1.7592
+                      ],
+                      [
+                        1.7592,
+                        1.7592,
+                        1.7502
+                      ],
+                      [
+                        1.7502,
+                        1.7502,
+                        1.7502
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      1.2543428778223159e-06,
+                      7.238491200132762e-06,
+                      3.059461851161463e-05
+                    ],
+                    "plane_ratio": 0.17328789151519725
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        1.7864,
+                        1.7864,
+                        1.7864,
+                        1.7864,
+                        1.7864
+                      ],
+                      [
+                        1.7682,
+                        1.7592,
+                        1.7592,
+                        1.7592,
+                        1.7592
+                      ],
+                      [
+                        1.7592,
+                        1.7592,
+                        1.7592,
+                        1.7502,
+                        1.7502
+                      ],
+                      [
+                        1.7502,
+                        1.7502,
+                        1.7502,
+                        1.7502,
+                        1.7502
+                      ],
+                      [
+                        1.741,
+                        1.741,
+                        1.741,
+                        1.741,
+                        1.741
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      2.36338898282948e-06,
+                      2.2020925440171675e-05,
+                      0.0002996099312658869
+                    ],
+                    "plane_ratio": 0.10732468938467352
+                  }
+                }
+              ]
+            },
+            {
+              "target": 2,
+              "source": 3,
+              "source_pixel": 56388,
+              "uv": [
+                58.41284585743233,
+                78.7382415316529
+              ],
+              "cell": [
+                58,
+                78
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    59,
+                    78
+                  ],
+                  "normal_added": true,
+                  "patch3": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      0.0,
+                      1.946469355101992e-05,
+                      1.946469355101992e-05
+                    ],
+                    "plane_ratio": 0.0
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8138
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      1.3264657052227978e-05,
+                      5.453297892229015e-05,
+                      7.979727352643414e-05
+                    ],
+                    "plane_ratio": 0.24324101331655107
+                  }
+                }
+              ]
+            },
+            {
+              "target": 2,
+              "source": 3,
+              "source_pixel": 79612,
+              "uv": [
+                244.0532774435911,
+                118.14930962840955
+              ],
+              "cell": [
+                244,
+                118
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    245,
+                    118
+                  ],
+                  "normal_added": true,
+                  "patch3": {
+                    "depth": [
+                      [
+                        3.062,
+                        3.062,
+                        3.062
+                      ],
+                      [
+                        3.062,
+                        3.062,
+                        3.062
+                      ],
+                      [
+                        3.062,
+                        3.062,
+                        3.062
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      0.0,
+                      2.2677778382463865e-05,
+                      2.2677778382464078e-05
+                    ],
+                    "plane_ratio": 0.0
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        3.062,
+                        3.062,
+                        3.062,
+                        3.062,
+                        3.035
+                      ],
+                      [
+                        3.062,
+                        3.062,
+                        3.062,
+                        3.062,
+                        3.062
+                      ],
+                      [
+                        3.062,
+                        3.062,
+                        3.062,
+                        3.062,
+                        3.062
+                      ],
+                      [
+                        3.062,
+                        3.062,
+                        3.062,
+                        3.062,
+                        3.062
+                      ],
+                      [
+                        3.062,
+                        3.062,
+                        3.062,
+                        3.062,
+                        3.062
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      2.1554195196369272e-05,
+                      6.462057897783218e-05,
+                      7.752082276221486e-05
+                    ],
+                    "plane_ratio": 0.33355001668684137
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 0.5,
+          "old_missing_sources": 1,
+          "new_missing_sources": 0,
+          "lost_sources": [
+            {
+              "target": 2,
+              "source": 3,
+              "source_pixel": 56388,
+              "uv": [
+                58.20644484884053,
+                78.76639927126664
+              ],
+              "cell": [
+                58,
+                78
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    59,
+                    78
+                  ],
+                  "normal_added": true,
+                  "patch3": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      0.0,
+                      1.946469355101992e-05,
+                      1.946469355101992e-05
+                    ],
+                    "plane_ratio": 0.0
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8138
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      1.3264657052227978e-05,
+                      5.453297892229015e-05,
+                      7.979727352643414e-05
+                    ],
+                    "plane_ratio": 0.24324101331655107
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 0.25,
+          "old_missing_sources": 1,
+          "new_missing_sources": 0,
+          "lost_sources": [
+            {
+              "target": 2,
+              "source": 3,
+              "source_pixel": 56388,
+              "uv": [
+                58.10322777569462,
+                78.78048180280783
+              ],
+              "cell": [
+                58,
+                78
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    59,
+                    78
+                  ],
+                  "normal_added": true,
+                  "patch3": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      0.0,
+                      1.946469355101992e-05,
+                      1.946469355101992e-05
+                    ],
+                    "plane_ratio": 0.0
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8138
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      1.3264657052227978e-05,
+                      5.453297892229015e-05,
+                      7.979727352643414e-05
+                    ],
+                    "plane_ratio": 0.24324101331655107
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 0.125,
+          "old_missing_sources": 1,
+          "new_missing_sources": 0,
+          "lost_sources": [
+            {
+              "target": 2,
+              "source": 3,
+              "source_pixel": 56388,
+              "uv": [
+                58.0516150967058,
+                78.78752398395295
+              ],
+              "cell": [
+                58,
+                78
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    59,
+                    78
+                  ],
+                  "normal_added": true,
+                  "patch3": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      0.0,
+                      1.946469355101992e-05,
+                      1.946469355101992e-05
+                    ],
+                    "plane_ratio": 0.0
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8138
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      1.3264657052227978e-05,
+                      5.453297892229015e-05,
+                      7.979727352643414e-05
+                    ],
+                    "plane_ratio": 0.24324101331655107
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 0.0625,
+          "old_missing_sources": 1,
+          "new_missing_sources": 0,
+          "lost_sources": [
+            {
+              "target": 2,
+              "source": 3,
+              "source_pixel": 56388,
+              "uv": [
+                58.02580772158194,
+                78.79104530336181
+              ],
+              "cell": [
+                58,
+                78
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    59,
+                    78
+                  ],
+                  "normal_added": true,
+                  "patch3": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      0.0,
+                      1.946469355101992e-05,
+                      1.946469355101992e-05
+                    ],
+                    "plane_ratio": 0.0
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8138
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      1.3264657052227978e-05,
+                      5.453297892229015e-05,
+                      7.979727352643414e-05
+                    ],
+                    "plane_ratio": 0.24324101331655107
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 0.03125,
+          "old_missing_sources": 1,
+          "new_missing_sources": 0,
+          "lost_sources": [
+            {
+              "target": 2,
+              "source": 3,
+              "source_pixel": 56388,
+              "uv": [
+                58.01290377510952,
+                78.7928060202743
+              ],
+              "cell": [
+                58,
+                78
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    59,
+                    78
+                  ],
+                  "normal_added": true,
+                  "patch3": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      0.0,
+                      1.946469355101992e-05,
+                      1.946469355101992e-05
+                    ],
+                    "plane_ratio": 0.0
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8138
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      1.3264657052227978e-05,
+                      5.453297892229015e-05,
+                      7.979727352643414e-05
+                    ],
+                    "plane_ratio": 0.24324101331655107
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 0.015625,
+          "old_missing_sources": 1,
+          "new_missing_sources": 0,
+          "lost_sources": [
+            {
+              "target": 2,
+              "source": 3,
+              "source_pixel": 56388,
+              "uv": [
+                58.00645173714514,
+                78.79368639303243
+              ],
+              "cell": [
+                58,
+                78
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    59,
+                    78
+                  ],
+                  "normal_added": true,
+                  "patch3": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      0.0,
+                      1.946469355101992e-05,
+                      1.946469355101992e-05
+                    ],
+                    "plane_ratio": 0.0
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8138
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      1.3264657052227978e-05,
+                      5.453297892229015e-05,
+                      7.979727352643414e-05
+                    ],
+                    "plane_ratio": 0.24324101331655107
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 0.0078125,
+          "old_missing_sources": 1,
+          "new_missing_sources": 0,
+          "lost_sources": [
+            {
+              "target": 2,
+              "source": 3,
+              "source_pixel": 56388,
+              "uv": [
+                58.00322570198102,
+                78.79412658298702
+              ],
+              "cell": [
+                58,
+                78
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    59,
+                    78
+                  ],
+                  "normal_added": true,
+                  "patch3": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      0.0,
+                      1.946469355101992e-05,
+                      1.946469355101992e-05
+                    ],
+                    "plane_ratio": 0.0
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8138
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      1.3264657052227978e-05,
+                      5.453297892229015e-05,
+                      7.979727352643414e-05
+                    ],
+                    "plane_ratio": 0.24324101331655107
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 0.00390625,
+          "old_missing_sources": 1,
+          "new_missing_sources": 0,
+          "lost_sources": [
+            {
+              "target": 2,
+              "source": 3,
+              "source_pixel": 56388,
+              "uv": [
+                58.00161268035333,
+                78.79434667885818
+              ],
+              "cell": [
+                58,
+                78
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    59,
+                    78
+                  ],
+                  "normal_added": true,
+                  "patch3": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      0.0,
+                      1.946469355101992e-05,
+                      1.946469355101992e-05
+                    ],
+                    "plane_ratio": 0.0
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8138
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      1.3264657052227978e-05,
+                      5.453297892229015e-05,
+                      7.979727352643414e-05
+                    ],
+                    "plane_ratio": 0.24324101331655107
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 0.001953125,
+          "old_missing_sources": 1,
+          "new_missing_sources": 0,
+          "lost_sources": [
+            {
+              "target": 2,
+              "source": 3,
+              "source_pixel": 56388,
+              "uv": [
+                58.00080616852813,
+                78.7944567270172
+              ],
+              "cell": [
+                58,
+                78
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    59,
+                    78
+                  ],
+                  "normal_added": true,
+                  "patch3": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      0.0,
+                      1.946469355101992e-05,
+                      1.946469355101992e-05
+                    ],
+                    "plane_ratio": 0.0
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8138
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      1.3264657052227978e-05,
+                      5.453297892229015e-05,
+                      7.979727352643414e-05
+                    ],
+                    "plane_ratio": 0.24324101331655107
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 0.0009765625,
+          "old_missing_sources": 1,
+          "new_missing_sources": 0,
+          "lost_sources": [
+            {
+              "target": 2,
+              "source": 3,
+              "source_pixel": 56388,
+              "uv": [
+                58.00040291236269,
+                78.79451175115264
+              ],
+              "cell": [
+                58,
+                78
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    59,
+                    78
+                  ],
+                  "normal_added": true,
+                  "patch3": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      0.0,
+                      1.946469355101992e-05,
+                      1.946469355101992e-05
+                    ],
+                    "plane_ratio": 0.0
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8138
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      1.3264657052227978e-05,
+                      5.453297892229015e-05,
+                      7.979727352643414e-05
+                    ],
+                    "plane_ratio": 0.24324101331655107
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 0.00048828125,
+          "old_missing_sources": 1,
+          "new_missing_sources": 0,
+          "lost_sources": [
+            {
+              "target": 2,
+              "source": 3,
+              "source_pixel": 56388,
+              "uv": [
+                58.00020128421687,
+                78.79453926323427
+              ],
+              "cell": [
+                58,
+                78
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    59,
+                    78
+                  ],
+                  "normal_added": true,
+                  "patch3": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      0.0,
+                      1.946469355101992e-05,
+                      1.946469355101992e-05
+                    ],
+                    "plane_ratio": 0.0
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8138
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      1.3264657052227978e-05,
+                      5.453297892229015e-05,
+                      7.979727352643414e-05
+                    ],
+                    "plane_ratio": 0.24324101331655107
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 0.000244140625,
+          "old_missing_sources": 1,
+          "new_missing_sources": 0,
+          "lost_sources": [
+            {
+              "target": 2,
+              "source": 3,
+              "source_pixel": 56388,
+              "uv": [
+                58.000100470128075,
+                78.79455301927854
+              ],
+              "cell": [
+                58,
+                78
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    59,
+                    78
+                  ],
+                  "normal_added": true,
+                  "patch3": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      0.0,
+                      1.946469355101992e-05,
+                      1.946469355101992e-05
+                    ],
+                    "plane_ratio": 0.0
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8138
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      1.3264657052227978e-05,
+                      5.453297892229015e-05,
+                      7.979727352643414e-05
+                    ],
+                    "plane_ratio": 0.24324101331655107
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 0.0001220703125,
+          "old_missing_sources": 1,
+          "new_missing_sources": 0,
+          "lost_sources": [
+            {
+              "target": 2,
+              "source": 3,
+              "source_pixel": 56388,
+              "uv": [
+                58.00005006307964,
+                78.79455989730167
+              ],
+              "cell": [
+                58,
+                78
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    59,
+                    78
+                  ],
+                  "normal_added": true,
+                  "patch3": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      0.0,
+                      1.946469355101992e-05,
+                      1.946469355101992e-05
+                    ],
+                    "plane_ratio": 0.0
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8138
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      1.3264657052227978e-05,
+                      5.453297892229015e-05,
+                      7.979727352643414e-05
+                    ],
+                    "plane_ratio": 0.24324101331655107
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 6.103515625e-05,
+          "old_missing_sources": 1,
+          "new_missing_sources": 0,
+          "lost_sources": [
+            {
+              "target": 2,
+              "source": 3,
+              "source_pixel": 56388,
+              "uv": [
+                58.000024859554514,
+                78.79456333631344
+              ],
+              "cell": [
+                58,
+                78
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    59,
+                    78
+                  ],
+                  "normal_added": true,
+                  "patch3": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      0.0,
+                      1.946469355101992e-05,
+                      1.946469355101992e-05
+                    ],
+                    "plane_ratio": 0.0
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8138
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      1.3264657052227978e-05,
+                      5.453297892229015e-05,
+                      7.979727352643414e-05
+                    ],
+                    "plane_ratio": 0.24324101331655107
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 3.0517578125e-05,
+          "old_missing_sources": 1,
+          "new_missing_sources": 0,
+          "lost_sources": [
+            {
+              "target": 2,
+              "source": 3,
+              "source_pixel": 56388,
+              "uv": [
+                58.00001225779181,
+                78.79456505581928
+              ],
+              "cell": [
+                58,
+                78
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    59,
+                    78
+                  ],
+                  "normal_added": true,
+                  "patch3": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      0.0,
+                      1.946469355101992e-05,
+                      1.946469355101992e-05
+                    ],
+                    "plane_ratio": 0.0
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8138
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      1.3264657052227978e-05,
+                      5.453297892229015e-05,
+                      7.979727352643414e-05
+                    ],
+                    "plane_ratio": 0.24324101331655107
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 1.52587890625e-05,
+          "old_missing_sources": 1,
+          "new_missing_sources": 0,
+          "lost_sources": [
+            {
+              "target": 2,
+              "source": 3,
+              "source_pixel": 56388,
+              "uv": [
+                58.000005956910286,
+                78.79456591557226
+              ],
+              "cell": [
+                58,
+                78
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    59,
+                    78
+                  ],
+                  "normal_added": true,
+                  "patch3": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      0.0,
+                      1.946469355101992e-05,
+                      1.946469355101992e-05
+                    ],
+                    "plane_ratio": 0.0
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8138
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      1.3264657052227978e-05,
+                      5.453297892229015e-05,
+                      7.979727352643414e-05
+                    ],
+                    "plane_ratio": 0.24324101331655107
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 7.62939453125e-06,
+          "old_missing_sources": 1,
+          "new_missing_sources": 0,
+          "lost_sources": [
+            {
+              "target": 2,
+              "source": 3,
+              "source_pixel": 56388,
+              "uv": [
+                58.00000280646941,
+                78.7945663454488
+              ],
+              "cell": [
+                58,
+                78
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    59,
+                    78
+                  ],
+                  "normal_added": true,
+                  "patch3": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      0.0,
+                      1.946469355101992e-05,
+                      1.946469355101992e-05
+                    ],
+                    "plane_ratio": 0.0
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8138
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      1.3264657052227978e-05,
+                      5.453297892229015e-05,
+                      7.979727352643414e-05
+                    ],
+                    "plane_ratio": 0.24324101331655107
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 3.814697265625e-06,
+          "old_missing_sources": 1,
+          "new_missing_sources": 0,
+          "lost_sources": [
+            {
+              "target": 2,
+              "source": 3,
+              "source_pixel": 56388,
+              "uv": [
+                58.00000123124914,
+                78.79456656038698
+              ],
+              "cell": [
+                58,
+                78
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    59,
+                    78
+                  ],
+                  "normal_added": true,
+                  "patch3": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      0.0,
+                      1.946469355101992e-05,
+                      1.946469355101992e-05
+                    ],
+                    "plane_ratio": 0.0
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8138
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      1.3264657052227978e-05,
+                      5.453297892229015e-05,
+                      7.979727352643414e-05
+                    ],
+                    "plane_ratio": 0.24324101331655107
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 1.9073486328125e-06,
+          "old_missing_sources": 1,
+          "new_missing_sources": 0,
+          "lost_sources": [
+            {
+              "target": 2,
+              "source": 3,
+              "source_pixel": 56388,
+              "uv": [
+                58.00000044363895,
+                78.79456666785606
+              ],
+              "cell": [
+                58,
+                78
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    59,
+                    78
+                  ],
+                  "normal_added": true,
+                  "patch3": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      0.0,
+                      1.946469355101992e-05,
+                      1.946469355101992e-05
+                    ],
+                    "plane_ratio": 0.0
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8138
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      1.3264657052227978e-05,
+                      5.453297892229015e-05,
+                      7.979727352643414e-05
+                    ],
+                    "plane_ratio": 0.24324101331655107
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 9.5367431640625e-07,
+          "old_missing_sources": 1,
+          "new_missing_sources": 0,
+          "lost_sources": [
+            {
+              "target": 2,
+              "source": 3,
+              "source_pixel": 56388,
+              "uv": [
+                58.00000004983383,
+                78.79456672159063
+              ],
+              "cell": [
+                58,
+                78
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    59,
+                    78
+                  ],
+                  "normal_added": true,
+                  "patch3": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      0.0,
+                      1.946469355101992e-05,
+                      1.946469355101992e-05
+                    ],
+                    "plane_ratio": 0.0
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8138
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ],
+                      [
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368,
+                        2.8368
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      1.3264657052227978e-05,
+                      5.453297892229015e-05,
+                      7.979727352643414e-05
+                    ],
+                    "plane_ratio": 0.24324101331655107
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "tum-fr1-desk2-independent": {
+      "source_index": 160,
+      "candidate_probes": 21,
+      "new_domain_supported_candidates": 0,
+      "full_probes": [
+        {
+          "alpha": 1.0,
+          "old_missing_sources": 1,
+          "new_missing_sources": 1,
+          "lost_sources": [
+            {
+              "target": 3,
+              "source": 4,
+              "source_pixel": 289452,
+              "uv": [
+                168.44657688767776,
+                463.02854895924696
+              ],
+              "cell": [
+                168,
+                463
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    168,
+                    464
+                  ],
+                  "normal_added": false,
+                  "patch3": {
+                    "depth": [
+                      [
+                        0.7238,
+                        0.7258,
+                        0.7238
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      3.1490234527017156e-07,
+                      1.010710527166827e-06,
+                      1.5207417680266218e-06
+                    ],
+                    "plane_ratio": 0.3115653164837315
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7258,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7238,
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      3.404046737263189e-07,
+                      3.0142880741369625e-06,
+                      4.2110934964905264e-06
+                    ],
+                    "plane_ratio": 0.11293037206597517
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 0.5,
+          "old_missing_sources": 1,
+          "new_missing_sources": 1,
+          "lost_sources": [
+            {
+              "target": 3,
+              "source": 4,
+              "source_pixel": 289452,
+              "uv": [
+                168.4369606443238,
+                463.01427400155006
+              ],
+              "cell": [
+                168,
+                463
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    168,
+                    464
+                  ],
+                  "normal_added": false,
+                  "patch3": {
+                    "depth": [
+                      [
+                        0.7238,
+                        0.7258,
+                        0.7238
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      3.1490234527017156e-07,
+                      1.010710527166827e-06,
+                      1.5207417680266218e-06
+                    ],
+                    "plane_ratio": 0.3115653164837315
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7258,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7238,
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      3.404046737263189e-07,
+                      3.0142880741369625e-06,
+                      4.2110934964905264e-06
+                    ],
+                    "plane_ratio": 0.11293037206597517
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 0.25,
+          "old_missing_sources": 1,
+          "new_missing_sources": 1,
+          "lost_sources": [
+            {
+              "target": 3,
+              "source": 4,
+              "source_pixel": 289452,
+              "uv": [
+                168.43215344907074,
+                463.0071368772883
+              ],
+              "cell": [
+                168,
+                463
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    168,
+                    464
+                  ],
+                  "normal_added": false,
+                  "patch3": {
+                    "depth": [
+                      [
+                        0.7238,
+                        0.7258,
+                        0.7238
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      3.1490234527017156e-07,
+                      1.010710527166827e-06,
+                      1.5207417680266218e-06
+                    ],
+                    "plane_ratio": 0.3115653164837315
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7258,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7238,
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      3.404046737263189e-07,
+                      3.0142880741369625e-06,
+                      4.2110934964905264e-06
+                    ],
+                    "plane_ratio": 0.11293037206597517
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 0.125,
+          "old_missing_sources": 1,
+          "new_missing_sources": 1,
+          "lost_sources": [
+            {
+              "target": 3,
+              "source": 4,
+              "source_pixel": 289452,
+              "uv": [
+                168.42975008303654,
+                463.0035684038028
+              ],
+              "cell": [
+                168,
+                463
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    168,
+                    464
+                  ],
+                  "normal_added": false,
+                  "patch3": {
+                    "depth": [
+                      [
+                        0.7238,
+                        0.7258,
+                        0.7238
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      3.1490234527017156e-07,
+                      1.010710527166827e-06,
+                      1.5207417680266218e-06
+                    ],
+                    "plane_ratio": 0.3115653164837315
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7258,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7238,
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      3.404046737263189e-07,
+                      3.0142880741369625e-06,
+                      4.2110934964905264e-06
+                    ],
+                    "plane_ratio": 0.11293037206597517
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 0.0625,
+          "old_missing_sources": 1,
+          "new_missing_sources": 1,
+          "lost_sources": [
+            {
+              "target": 3,
+              "source": 4,
+              "source_pixel": 289452,
+              "uv": [
+                168.4285484579148,
+                463.0017841892217
+              ],
+              "cell": [
+                168,
+                463
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    168,
+                    464
+                  ],
+                  "normal_added": false,
+                  "patch3": {
+                    "depth": [
+                      [
+                        0.7238,
+                        0.7258,
+                        0.7238
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      3.1490234527017156e-07,
+                      1.010710527166827e-06,
+                      1.5207417680266218e-06
+                    ],
+                    "plane_ratio": 0.3115653164837315
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7258,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7238,
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      3.404046737263189e-07,
+                      3.0142880741369625e-06,
+                      4.2110934964905264e-06
+                    ],
+                    "plane_ratio": 0.11293037206597517
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 0.03125,
+          "old_missing_sources": 1,
+          "new_missing_sources": 1,
+          "lost_sources": [
+            {
+              "target": 3,
+              "source": 4,
+              "source_pixel": 289452,
+              "uv": [
+                168.4279476598282,
+                463.00089208747124
+              ],
+              "cell": [
+                168,
+                463
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    168,
+                    464
+                  ],
+                  "normal_added": false,
+                  "patch3": {
+                    "depth": [
+                      [
+                        0.7238,
+                        0.7258,
+                        0.7238
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      3.1490234527017156e-07,
+                      1.010710527166827e-06,
+                      1.5207417680266218e-06
+                    ],
+                    "plane_ratio": 0.3115653164837315
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7258,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7238,
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      3.404046737263189e-07,
+                      3.0142880741369625e-06,
+                      4.2110934964905264e-06
+                    ],
+                    "plane_ratio": 0.11293037206597517
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 0.015625,
+          "old_missing_sources": 1,
+          "new_missing_sources": 1,
+          "lost_sources": [
+            {
+              "target": 3,
+              "source": 4,
+              "source_pixel": 289452,
+              "uv": [
+                168.4276472644035,
+                463.0004460379811
+              ],
+              "cell": [
+                168,
+                463
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    168,
+                    464
+                  ],
+                  "normal_added": false,
+                  "patch3": {
+                    "depth": [
+                      [
+                        0.7238,
+                        0.7258,
+                        0.7238
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      3.1490234527017156e-07,
+                      1.010710527166827e-06,
+                      1.5207417680266218e-06
+                    ],
+                    "plane_ratio": 0.3115653164837315
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7258,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7238,
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      3.404046737263189e-07,
+                      3.0142880741369625e-06,
+                      4.2110934964905264e-06
+                    ],
+                    "plane_ratio": 0.11293037206597517
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 0.0078125,
+          "old_missing_sources": 1,
+          "new_missing_sources": 1,
+          "lost_sources": [
+            {
+              "target": 3,
+              "source": 4,
+              "source_pixel": 289452,
+              "uv": [
+                168.42749706759528,
+                463.0002230135825
+              ],
+              "cell": [
+                168,
+                463
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    168,
+                    464
+                  ],
+                  "normal_added": false,
+                  "patch3": {
+                    "depth": [
+                      [
+                        0.7238,
+                        0.7258,
+                        0.7238
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      3.1490234527017156e-07,
+                      1.010710527166827e-06,
+                      1.5207417680266218e-06
+                    ],
+                    "plane_ratio": 0.3115653164837315
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7258,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7238,
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      3.404046737263189e-07,
+                      3.0142880741369625e-06,
+                      4.2110934964905264e-06
+                    ],
+                    "plane_ratio": 0.11293037206597517
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 0.00390625,
+          "old_missing_sources": 1,
+          "new_missing_sources": 1,
+          "lost_sources": [
+            {
+              "target": 3,
+              "source": 4,
+              "source_pixel": 289452,
+              "uv": [
+                168.42742196941765,
+                463.0001115014695
+              ],
+              "cell": [
+                168,
+                463
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    168,
+                    464
+                  ],
+                  "normal_added": false,
+                  "patch3": {
+                    "depth": [
+                      [
+                        0.7238,
+                        0.7258,
+                        0.7238
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      3.1490234527017156e-07,
+                      1.010710527166827e-06,
+                      1.5207417680266218e-06
+                    ],
+                    "plane_ratio": 0.3115653164837315
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7258,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7238,
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      3.404046737263189e-07,
+                      3.0142880741369625e-06,
+                      4.2110934964905264e-06
+                    ],
+                    "plane_ratio": 0.11293037206597517
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 0.001953125,
+          "old_missing_sources": 1,
+          "new_missing_sources": 1,
+          "lost_sources": [
+            {
+              "target": 3,
+              "source": 4,
+              "source_pixel": 289452,
+              "uv": [
+                168.42738442038512,
+                463.00005574543485
+              ],
+              "cell": [
+                168,
+                463
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    168,
+                    464
+                  ],
+                  "normal_added": false,
+                  "patch3": {
+                    "depth": [
+                      [
+                        0.7238,
+                        0.7258,
+                        0.7238
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      3.1490234527017156e-07,
+                      1.010710527166827e-06,
+                      1.5207417680266218e-06
+                    ],
+                    "plane_ratio": 0.3115653164837315
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7258,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7238,
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      3.404046737263189e-07,
+                      3.0142880741369625e-06,
+                      4.2110934964905264e-06
+                    ],
+                    "plane_ratio": 0.11293037206597517
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 0.0009765625,
+          "old_missing_sources": 1,
+          "new_missing_sources": 1,
+          "lost_sources": [
+            {
+              "target": 3,
+              "source": 4,
+              "source_pixel": 289452,
+              "uv": [
+                168.42736564588301,
+                463.00002786742294
+              ],
+              "cell": [
+                168,
+                463
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    168,
+                    464
+                  ],
+                  "normal_added": false,
+                  "patch3": {
+                    "depth": [
+                      [
+                        0.7238,
+                        0.7258,
+                        0.7238
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      3.1490234527017156e-07,
+                      1.010710527166827e-06,
+                      1.5207417680266218e-06
+                    ],
+                    "plane_ratio": 0.3115653164837315
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7258,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7238,
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      3.404046737263189e-07,
+                      3.0142880741369625e-06,
+                      4.2110934964905264e-06
+                    ],
+                    "plane_ratio": 0.11293037206597517
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 0.00048828125,
+          "old_missing_sources": 1,
+          "new_missing_sources": 1,
+          "lost_sources": [
+            {
+              "target": 3,
+              "source": 4,
+              "source_pixel": 289452,
+              "uv": [
+                168.4273562586358,
+                463.00001392841824
+              ],
+              "cell": [
+                168,
+                463
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    168,
+                    464
+                  ],
+                  "normal_added": false,
+                  "patch3": {
+                    "depth": [
+                      [
+                        0.7238,
+                        0.7258,
+                        0.7238
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      3.1490234527017156e-07,
+                      1.010710527166827e-06,
+                      1.5207417680266218e-06
+                    ],
+                    "plane_ratio": 0.3115653164837315
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7258,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7238,
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      3.404046737263189e-07,
+                      3.0142880741369625e-06,
+                      4.2110934964905264e-06
+                    ],
+                    "plane_ratio": 0.11293037206597517
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 0.000244140625,
+          "old_missing_sources": 1,
+          "new_missing_sources": 1,
+          "lost_sources": [
+            {
+              "target": 3,
+              "source": 4,
+              "source_pixel": 289452,
+              "uv": [
+                168.42735156501266,
+                463.0000069589163
+              ],
+              "cell": [
+                168,
+                463
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    168,
+                    464
+                  ],
+                  "normal_added": false,
+                  "patch3": {
+                    "depth": [
+                      [
+                        0.7238,
+                        0.7258,
+                        0.7238
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      3.1490234527017156e-07,
+                      1.010710527166827e-06,
+                      1.5207417680266218e-06
+                    ],
+                    "plane_ratio": 0.3115653164837315
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7258,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7238,
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      3.404046737263189e-07,
+                      3.0142880741369625e-06,
+                      4.2110934964905264e-06
+                    ],
+                    "plane_ratio": 0.11293037206597517
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 0.0001220703125,
+          "old_missing_sources": 1,
+          "new_missing_sources": 1,
+          "lost_sources": [
+            {
+              "target": 3,
+              "source": 4,
+              "source_pixel": 289452,
+              "uv": [
+                168.4273492182018,
+                463.0000034741653
+              ],
+              "cell": [
+                168,
+                463
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    168,
+                    464
+                  ],
+                  "normal_added": false,
+                  "patch3": {
+                    "depth": [
+                      [
+                        0.7238,
+                        0.7258,
+                        0.7238
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      3.1490234527017156e-07,
+                      1.010710527166827e-06,
+                      1.5207417680266218e-06
+                    ],
+                    "plane_ratio": 0.3115653164837315
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7258,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7238,
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      3.404046737263189e-07,
+                      3.0142880741369625e-06,
+                      4.2110934964905264e-06
+                    ],
+                    "plane_ratio": 0.11293037206597517
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 6.103515625e-05,
+          "old_missing_sources": 1,
+          "new_missing_sources": 1,
+          "lost_sources": [
+            {
+              "target": 3,
+              "source": 4,
+              "source_pixel": 289452,
+              "uv": [
+                168.42734804479596,
+                463.00000173179
+              ],
+              "cell": [
+                168,
+                463
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    168,
+                    464
+                  ],
+                  "normal_added": false,
+                  "patch3": {
+                    "depth": [
+                      [
+                        0.7238,
+                        0.7258,
+                        0.7238
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      3.1490234527017156e-07,
+                      1.010710527166827e-06,
+                      1.5207417680266218e-06
+                    ],
+                    "plane_ratio": 0.3115653164837315
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7258,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7238,
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      3.404046737263189e-07,
+                      3.0142880741369625e-06,
+                      4.2110934964905264e-06
+                    ],
+                    "plane_ratio": 0.11293037206597517
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 3.0517578125e-05,
+          "old_missing_sources": 1,
+          "new_missing_sources": 1,
+          "lost_sources": [
+            {
+              "target": 3,
+              "source": 4,
+              "source_pixel": 289452,
+              "uv": [
+                168.4273474580933,
+                463.0000008606022
+              ],
+              "cell": [
+                168,
+                463
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    168,
+                    464
+                  ],
+                  "normal_added": false,
+                  "patch3": {
+                    "depth": [
+                      [
+                        0.7238,
+                        0.7258,
+                        0.7238
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      3.1490234527017156e-07,
+                      1.010710527166827e-06,
+                      1.5207417680266218e-06
+                    ],
+                    "plane_ratio": 0.3115653164837315
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7258,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7238,
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      3.404046737263189e-07,
+                      3.0142880741369625e-06,
+                      4.2110934964905264e-06
+                    ],
+                    "plane_ratio": 0.11293037206597517
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 1.52587890625e-05,
+          "old_missing_sources": 1,
+          "new_missing_sources": 1,
+          "lost_sources": [
+            {
+              "target": 3,
+              "source": 4,
+              "source_pixel": 289452,
+              "uv": [
+                168.42734716474206,
+                463.00000042500824
+              ],
+              "cell": [
+                168,
+                463
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    168,
+                    464
+                  ],
+                  "normal_added": false,
+                  "patch3": {
+                    "depth": [
+                      [
+                        0.7238,
+                        0.7258,
+                        0.7238
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      3.1490234527017156e-07,
+                      1.010710527166827e-06,
+                      1.5207417680266218e-06
+                    ],
+                    "plane_ratio": 0.3115653164837315
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7258,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7238,
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      3.404046737263189e-07,
+                      3.0142880741369625e-06,
+                      4.2110934964905264e-06
+                    ],
+                    "plane_ratio": 0.11293037206597517
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 7.62939453125e-06,
+          "old_missing_sources": 1,
+          "new_missing_sources": 1,
+          "lost_sources": [
+            {
+              "target": 3,
+              "source": 4,
+              "source_pixel": 289452,
+              "uv": [
+                168.42734701806606,
+                463.00000020721154
+              ],
+              "cell": [
+                168,
+                463
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    168,
+                    464
+                  ],
+                  "normal_added": false,
+                  "patch3": {
+                    "depth": [
+                      [
+                        0.7238,
+                        0.7258,
+                        0.7238
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      3.1490234527017156e-07,
+                      1.010710527166827e-06,
+                      1.5207417680266218e-06
+                    ],
+                    "plane_ratio": 0.3115653164837315
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7258,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7238,
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      3.404046737263189e-07,
+                      3.0142880741369625e-06,
+                      4.2110934964905264e-06
+                    ],
+                    "plane_ratio": 0.11293037206597517
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 3.814697265625e-06,
+          "old_missing_sources": 1,
+          "new_missing_sources": 1,
+          "lost_sources": [
+            {
+              "target": 3,
+              "source": 4,
+              "source_pixel": 289452,
+              "uv": [
+                168.42734694472847,
+                463.00000009831285
+              ],
+              "cell": [
+                168,
+                463
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    168,
+                    464
+                  ],
+                  "normal_added": false,
+                  "patch3": {
+                    "depth": [
+                      [
+                        0.7238,
+                        0.7258,
+                        0.7238
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      3.1490234527017156e-07,
+                      1.010710527166827e-06,
+                      1.5207417680266218e-06
+                    ],
+                    "plane_ratio": 0.3115653164837315
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7258,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7238,
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      3.404046737263189e-07,
+                      3.0142880741369625e-06,
+                      4.2110934964905264e-06
+                    ],
+                    "plane_ratio": 0.11293037206597517
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 1.9073486328125e-06,
+          "old_missing_sources": 1,
+          "new_missing_sources": 1,
+          "lost_sources": [
+            {
+              "target": 3,
+              "source": 4,
+              "source_pixel": 289452,
+              "uv": [
+                168.42734690805966,
+                463.0000000438637
+              ],
+              "cell": [
+                168,
+                463
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    168,
+                    464
+                  ],
+                  "normal_added": false,
+                  "patch3": {
+                    "depth": [
+                      [
+                        0.7238,
+                        0.7258,
+                        0.7238
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      3.1490234527017156e-07,
+                      1.010710527166827e-06,
+                      1.5207417680266218e-06
+                    ],
+                    "plane_ratio": 0.3115653164837315
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7258,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7238,
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      3.404046737263189e-07,
+                      3.0142880741369625e-06,
+                      4.2110934964905264e-06
+                    ],
+                    "plane_ratio": 0.11293037206597517
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "alpha": 9.5367431640625e-07,
+          "old_missing_sources": 1,
+          "new_missing_sources": 1,
+          "lost_sources": [
+            {
+              "target": 3,
+              "source": 4,
+              "source_pixel": 289452,
+              "uv": [
+                168.4273468897251,
+                463.00000001663904
+              ],
+              "cell": [
+                168,
+                463
+              ],
+              "missing_normals": [
+                {
+                  "pixel": [
+                    168,
+                    464
+                  ],
+                  "normal_added": false,
+                  "patch3": {
+                    "depth": [
+                      [
+                        0.7238,
+                        0.7258,
+                        0.7238
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 9,
+                    "eigenvalues_m2": [
+                      3.1490234527017156e-07,
+                      1.010710527166827e-06,
+                      1.5207417680266218e-06
+                    ],
+                    "plane_ratio": 0.3115653164837315
+                  },
+                  "patch5": {
+                    "depth": [
+                      [
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258,
+                        0.7258
+                      ],
+                      [
+                        0.7238,
+                        0.7238,
+                        0.7258,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7238,
+                        0.7238,
+                        0.7238,
+                        0.7238
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ],
+                      [
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228,
+                        0.7228
+                      ]
+                    ],
+                    "gated_count": 25,
+                    "eigenvalues_m2": [
+                      3.404046737263189e-07,
+                      3.0142880741369625e-06,
+                      4.2110934964905264e-06
+                    ],
+                    "plane_ratio": 0.11293037206597517
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

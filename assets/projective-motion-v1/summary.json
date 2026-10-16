@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "feature": "Causal acquisition-time SE3 initializer and timing displacement diagnostic",
+  "binary_sha256": "7b1a02bf2c3fd9d7cb0f0fad228ac505b8a9f2735bd7b59054619a068011f49d",
+  "source_members": 46,
+  "scores": {
+    "depth": {
+      "tum-fr1-room-temporal": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 67,
+        "lost": false,
+        "max_position_error_m": 0.29827923441185145,
+        "max_rotation_error_rad": 0.14160578618748945,
+        "complete_accuracy_pass": false,
+        "independently_checked_normal_steps": 3343
+      },
+      "tum-fr1-desk2-independent": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 159,
+        "lost": false,
+        "max_position_error_m": 0.1231212337695268,
+        "max_rotation_error_rad": 0.09077189075744319,
+        "complete_accuracy_pass": false,
+        "independently_checked_normal_steps": 3349
+      }
+    },
+    "rgbd": {
+      "tum-fr1-room-temporal": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 75,
+        "lost": false,
+        "max_position_error_m": 0.2704056088013484,
+        "max_rotation_error_rad": 0.11740572928088788,
+        "complete_accuracy_pass": false,
+        "independently_checked_normal_steps": 3744
+      },
+      "tum-fr1-desk2-independent": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 169,
+        "lost": false,
+        "max_position_error_m": 0.09813416311726879,
+        "max_rotation_error_rad": 0.11097272080536726,
+        "complete_accuracy_pass": false,
+        "independently_checked_normal_steps": 3756
+      }
+    }
+  },
+  "geometric_systems": 14908,
+  "image_systems": 7408,
+  "prediction_reports": 716,
+  "model_generations": 716,
+  "depth_default_outcomes_identical": 360,
+  "rgbd_default_outcomes_identical": 360,
+  "default_adoption_pass": false,
+  "temporal_image_compensation_implemented": false,
+  "viewed_development": true,
+  "ground_truth_operational": false,
+  "subjective_maturity_percent": 20
+}

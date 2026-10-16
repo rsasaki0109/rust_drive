@@ -1,0 +1,25 @@
+{
+  "problem": "Unmodelled global exposure differences can become pose forces; diagnostic finds nonzero image bias and dominant intensity curvature, without proving the desk2 failure has one cause.",
+  "change": "Estimate source-to-reference affine intensity gain and offset with robust bounded IRLS; eliminate both nuisance directions by a Schur complement before combining with geometry. No recording-specific policy.",
+  "fit": {
+    "initial": "unweighted least squares",
+    "robust_iterations": 3,
+    "tukey_cutoff_gray": 30,
+    "source_std_min_gray": 5,
+    "gain_bounds": [
+      0.5,
+      2
+    ],
+    "offset_abs_max_gray": 80,
+    "minimum_support": 200
+  },
+  "unchanged": "Depth model, sampling, phase/freshness, joint scale, pose solver/gates/iteration caps and input recordings.",
+  "adoption": {
+    "room_accurate_greater_than": 64,
+    "desk2_accurate_at_least": 161,
+    "accepted_each": 179,
+    "maximum_position_and_rotation_no_worse": true,
+    "no_resets": true
+  },
+  "scope": "Already viewed development recordings; numeric truth only after sensor ledgers; synthetic positive/negative brightness controls required; subjective maturity not raised for this work."
+}

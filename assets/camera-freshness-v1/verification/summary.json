@@ -1,0 +1,701 @@
+{
+  "pass_checks": true,
+  "synthetic_sequences": 46,
+  "synthetic_events": 1029,
+  "recorded_control_sequences": 4,
+  "recorded_unique_images": 8,
+  "recorded_model_forwards_this_check": 0,
+  "actual_sensor_failures_measured": false,
+  "all_delivery_times_and_faults_injected": true,
+  "real_object_identity_accuracy_measured": false,
+  "exact_repeated_runs": true,
+  "independent_motion_and_assignment_verified": true,
+  "flow_exhaustive_selfchecks": 96,
+  "exact_standalone_backend_replay": true,
+  "guard_process_runs": 132,
+  "tracker_replay_process_runs": 50,
+  "transport_rejections": [
+    {
+      "name": "delivery-reversal",
+      "exit": 2,
+      "stderr": "event 1: delivery clock must be finite, in [0,1e12], and advance at least one microsecond\n"
+    },
+    {
+      "name": "delivery-duplicate",
+      "exit": 2,
+      "stderr": "event 1: delivery clock must be finite, in [0,1e12], and advance at least one microsecond\n"
+    },
+    {
+      "name": "delivery-too-close",
+      "exit": 2,
+      "stderr": "event 1: delivery clock must be finite, in [0,1e12], and advance at least one microsecond\n"
+    },
+    {
+      "name": "delivery-range",
+      "exit": 2,
+      "stderr": "event 1: delivery clock must be finite, in [0,1e12], and advance at least one microsecond\n"
+    },
+    {
+      "name": "delivery-type",
+      "exit": 2,
+      "stderr": "invalid type: string \"NaN\", expected f64 at line 28 column 20\n"
+    },
+    {
+      "name": "delivery-null",
+      "exit": 2,
+      "stderr": "invalid type: null, expected f64 at line 28 column 19\n"
+    },
+    {
+      "name": "bad-schema",
+      "exit": 2,
+      "stderr": "invalid sequence version, camera ID or event count\n"
+    },
+    {
+      "name": "empty-events",
+      "exit": 2,
+      "stderr": "invalid sequence version, camera ID or event count\n"
+    },
+    {
+      "name": "too-many-events",
+      "exit": 2,
+      "stderr": "invalid sequence version, camera ID or event count\n"
+    },
+    {
+      "name": "bad-camera-id",
+      "exit": 2,
+      "stderr": "invalid sequence version, camera ID or event count\n"
+    },
+    {
+      "name": "bad-dimensions",
+      "exit": 2,
+      "stderr": "invalid fixed image dimensions\n"
+    },
+    {
+      "name": "bad-policy-age",
+      "exit": 2,
+      "stderr": "invalid bounded freshness policy\n"
+    },
+    {
+      "name": "bad-policy-count",
+      "exit": 2,
+      "stderr": "invalid bounded freshness policy\n"
+    },
+    {
+      "name": "unknown-policy",
+      "exit": 2,
+      "stderr": "unknown field `unexpected`, expected `max_age_s` or `recovery_samples` at line 49 column 16\n"
+    },
+    {
+      "name": "bad-config",
+      "exit": 2,
+      "stderr": "invalid bounded tracker configuration\n"
+    },
+    {
+      "name": "unknown-root",
+      "exit": 2,
+      "stderr": "unknown field `unexpected`, expected one of `schema_version`, `camera_id`, `width`, `height`, `config`, `policy`, `events` at line 48 column 14\n"
+    },
+    {
+      "name": "unknown-input",
+      "exit": 2,
+      "stderr": "unknown field `unexpected`, expected one of `acquired_s`, `image_sha256`, `detections` at line 47 column 5\n"
+    },
+    {
+      "name": "report-hash",
+      "exit": 2,
+      "stderr": "event 1: source report SHA-256 mismatch\n"
+    },
+    {
+      "name": "invalid-report-hash",
+      "exit": 2,
+      "stderr": "event 1: invalid report hash\n"
+    },
+    {
+      "name": "corrupt-report",
+      "exit": 2,
+      "stderr": "event 1: expected ident at line 1 column 2\n"
+    },
+    {
+      "name": "wrong-profile",
+      "exit": 2,
+      "stderr": "event 1: invalid pinned camera analysis report\n"
+    },
+    {
+      "name": "report-symlink",
+      "exit": 2,
+      "stderr": "event 1: regular non-symlink input required\n"
+    },
+    {
+      "name": "report-fifo",
+      "exit": 2,
+      "stderr": "event 1: regular non-symlink input required\n"
+    },
+    {
+      "name": "report-byte-budget",
+      "exit": 2,
+      "stderr": "event 1: bounded JSON input exceeded\n"
+    },
+    {
+      "name": "missing-report",
+      "exit": 2,
+      "stderr": "event 1: No such file or directory (os error 2)\n"
+    },
+    {
+      "name": "wrong-report-dimensions",
+      "exit": 2,
+      "stderr": "event 1: invalid pinned camera analysis report\n"
+    },
+    {
+      "name": "sequence-byte-budget",
+      "exit": 2,
+      "stderr": "bounded JSON input exceeded\n"
+    },
+    {
+      "name": "malformed-json",
+      "exit": 2,
+      "stderr": "EOF while parsing an object at line 1 column 1\n"
+    },
+    {
+      "name": "nonfinite-number",
+      "exit": 2,
+      "stderr": "unknown field `now_s`, expected one of `schema_version`, `camera_id`, `width`, `height`, `config`, `policy`, `events` at line 1 column 8\n"
+    },
+    {
+      "name": "output-byte-budget",
+      "exit": 2,
+      "stderr": "report byte budget exceeded\n"
+    }
+  ],
+  "output_rejections": [
+    {
+      "name": "existing.json",
+      "exit": 2,
+      "stderr": "fresh output required before input reads\n"
+    },
+    {
+      "name": "dangling-output.json",
+      "exit": 2,
+      "stderr": "fresh output required before input reads\n"
+    }
+  ],
+  "cases": [
+    {
+      "name": "delayed-after-poll",
+      "events": 4,
+      "backend_updates": 3,
+      "accepted": 3,
+      "held": 1,
+      "final_ready": true,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "deadline-and-recovery",
+      "events": 7,
+      "backend_updates": 5,
+      "accepted": 4,
+      "held": 5,
+      "final_ready": true,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "fresh-after-gap",
+      "events": 4,
+      "backend_updates": 5,
+      "accepted": 4,
+      "held": 2,
+      "final_ready": true,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "explicit-failure",
+      "events": 6,
+      "backend_updates": 5,
+      "accepted": 4,
+      "held": 4,
+      "final_ready": true,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "rejected-breaks-recovery",
+      "events": 4,
+      "backend_updates": 3,
+      "accepted": 3,
+      "held": 3,
+      "final_ready": true,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "empty-images",
+      "events": 3,
+      "backend_updates": 2,
+      "accepted": 2,
+      "held": 1,
+      "final_ready": true,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "per-object-age",
+      "events": 5,
+      "backend_updates": 4,
+      "accepted": 4,
+      "held": 1,
+      "final_ready": true,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "short-object-coast",
+      "events": 4,
+      "backend_updates": 3,
+      "accepted": 3,
+      "held": 1,
+      "final_ready": true,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "inclusive-relative",
+      "events": 4,
+      "backend_updates": 3,
+      "accepted": 2,
+      "held": 2,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "inclusive-epoch",
+      "events": 4,
+      "backend_updates": 3,
+      "accepted": 2,
+      "held": 2,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "invalid-source-clocks",
+      "events": 8,
+      "backend_updates": 3,
+      "accepted": 3,
+      "held": 7,
+      "final_ready": true,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "invalid-payloads",
+      "events": 7,
+      "backend_updates": 3,
+      "accepted": 3,
+      "held": 6,
+      "final_ready": true,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "three-sample-recovery",
+      "events": 4,
+      "backend_updates": 3,
+      "accepted": 3,
+      "held": 3,
+      "final_ready": true,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "fault-before-first-image",
+      "events": 5,
+      "backend_updates": 3,
+      "accepted": 2,
+      "held": 4,
+      "final_ready": true,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-00",
+      "events": 30,
+      "backend_updates": 19,
+      "accepted": 13,
+      "held": 12,
+      "final_ready": true,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-01",
+      "events": 30,
+      "backend_updates": 18,
+      "accepted": 10,
+      "held": 24,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-02",
+      "events": 30,
+      "backend_updates": 20,
+      "accepted": 12,
+      "held": 24,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-03",
+      "events": 30,
+      "backend_updates": 22,
+      "accepted": 13,
+      "held": 26,
+      "final_ready": true,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-04",
+      "events": 30,
+      "backend_updates": 17,
+      "accepted": 12,
+      "held": 23,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-05",
+      "events": 30,
+      "backend_updates": 18,
+      "accepted": 10,
+      "held": 26,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-06",
+      "events": 30,
+      "backend_updates": 19,
+      "accepted": 11,
+      "held": 24,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-07",
+      "events": 30,
+      "backend_updates": 15,
+      "accepted": 8,
+      "held": 25,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-08",
+      "events": 30,
+      "backend_updates": 16,
+      "accepted": 10,
+      "held": 24,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-09",
+      "events": 30,
+      "backend_updates": 21,
+      "accepted": 14,
+      "held": 16,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-10",
+      "events": 30,
+      "backend_updates": 14,
+      "accepted": 10,
+      "held": 20,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-11",
+      "events": 30,
+      "backend_updates": 19,
+      "accepted": 11,
+      "held": 25,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-12",
+      "events": 30,
+      "backend_updates": 18,
+      "accepted": 11,
+      "held": 29,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-13",
+      "events": 30,
+      "backend_updates": 18,
+      "accepted": 13,
+      "held": 15,
+      "final_ready": true,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-14",
+      "events": 30,
+      "backend_updates": 13,
+      "accepted": 5,
+      "held": 28,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-15",
+      "events": 30,
+      "backend_updates": 16,
+      "accepted": 10,
+      "held": 19,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-16",
+      "events": 30,
+      "backend_updates": 13,
+      "accepted": 7,
+      "held": 27,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-17",
+      "events": 30,
+      "backend_updates": 15,
+      "accepted": 8,
+      "held": 28,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-18",
+      "events": 30,
+      "backend_updates": 16,
+      "accepted": 12,
+      "held": 22,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-19",
+      "events": 30,
+      "backend_updates": 22,
+      "accepted": 15,
+      "held": 18,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-20",
+      "events": 30,
+      "backend_updates": 22,
+      "accepted": 14,
+      "held": 20,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-21",
+      "events": 30,
+      "backend_updates": 22,
+      "accepted": 12,
+      "held": 23,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-22",
+      "events": 30,
+      "backend_updates": 12,
+      "accepted": 7,
+      "held": 25,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-23",
+      "events": 30,
+      "backend_updates": 21,
+      "accepted": 13,
+      "held": 22,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-24",
+      "events": 30,
+      "backend_updates": 19,
+      "accepted": 10,
+      "held": 28,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-25",
+      "events": 30,
+      "backend_updates": 16,
+      "accepted": 10,
+      "held": 24,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-26",
+      "events": 30,
+      "backend_updates": 16,
+      "accepted": 10,
+      "held": 23,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-27",
+      "events": 30,
+      "backend_updates": 19,
+      "accepted": 11,
+      "held": 24,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-28",
+      "events": 30,
+      "backend_updates": 19,
+      "accepted": 12,
+      "held": 21,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-29",
+      "events": 30,
+      "backend_updates": 12,
+      "accepted": 6,
+      "held": 23,
+      "final_ready": true,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-30",
+      "events": 30,
+      "backend_updates": 16,
+      "accepted": 13,
+      "held": 15,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "random-31",
+      "events": 30,
+      "backend_updates": 17,
+      "accepted": 10,
+      "held": 24,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "recorded-healthy",
+      "events": 8,
+      "backend_updates": 8,
+      "accepted": 8,
+      "held": 1,
+      "final_ready": true,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "recorded-delayed-after-poll",
+      "events": 9,
+      "backend_updates": 8,
+      "accepted": 8,
+      "held": 2,
+      "final_ready": true,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "recorded-explicit-fault-recovery",
+      "events": 10,
+      "backend_updates": 9,
+      "accepted": 8,
+      "held": 4,
+      "final_ready": true,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    },
+    {
+      "name": "recorded-deadline-still-held",
+      "events": 6,
+      "backend_updates": 4,
+      "accepted": 3,
+      "held": 5,
+      "final_ready": false,
+      "repeat_identical": true,
+      "standalone_replay_identical": true
+    }
+  ],
+  "binary_sha256": "8637259fa93c6b73eb65abf915c9d0d455cb22c68bf9065ae670261f7855108b",
+  "tracker_binary_sha256": "97f1c0a02d1373e5f63029088b9c5f67553056a25c62880ad95b9b54db1a1703",
+  "source_sha256": {
+    "integrations/camera-tracking/Cargo.toml": "d235c784c3b4566cae8395425838e1145431c68d60d1c3f1544f8227bcdcf449",
+    "integrations/camera-tracking/Cargo.lock": "b361dc93aced50ba194ed4227e3d1624d30eeb291ab66104db8fdf933b072a2d",
+    "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed",
+    "integrations/camera-tracking/producer-sources.json": "32a790788e886c4ea960eb7920f572f232a73d7008ae4ca8437ed6f444ddee5c",
+    "integrations/camera-tracking/profile-freshness.json": "b289147d0a14079fdc9b1ad96e962bb91ff343ce025167282e533721402b7a31",
+    "integrations/camera-tracking/src/assignment.rs": "e9b7223b4a6cab91bad4c11725a4e828d21a8cb10cc4ef8fd72b60dde0b6e179",
+    "integrations/camera-tracking/src/bin/rustdriving-camera-guard.rs": "ed655addbbf967810766d70a5ca92c68bddcd9ef1ebbbfb153a78cd3234416df",
+    "integrations/camera-tracking/src/bin/rustdriving-camera-track.rs": "807750c4abe29f82c5272f89d673ce4277ec9f0cbc95608e3317c7f1503c143f",
+    "integrations/camera-tracking/src/freshness.rs": "d6995715b7c378d314b70abf595e094034b627eafce5dc0fbdaaeed80733332b",
+    "integrations/camera-tracking/src/lib.rs": "d2ef1e0649a64e16457b360e1871c81d3794cd38fef0600f1e5535200e8b2acc",
+    "integrations/camera-tracking/src/report_input.rs": "ff587ff13b218d720c03c90155a6387df7fc0c96a2a01147eba06823b11b0f0a",
+    "integrations/camera-tracking/tests/tracking.rs": "965e9b35b113495f575c61151115d86d6945720d1393c4c7963061048901a54d",
+    "integrations/camera-tracking/check.py": "575669cb4e62943cf211138c432969c08da4cd3ec5419b4326d8e7ae8f02ee08",
+    "integrations/camera-tracking/freshness_check.py": "816e6c0a2f53abf8af38cb5b1875127cd86f25fe8294cf8b6db057f3929589b7"
+  }
+}

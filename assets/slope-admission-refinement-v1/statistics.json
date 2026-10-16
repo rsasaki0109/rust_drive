@@ -1,0 +1,1144 @@
+{
+  "summaries": {
+    "tum-fr1-room-temporal": {
+      "samples": 5,
+      "continuous_converged": 4,
+      "control_continuous_converged": 4,
+      "original_discrete_fresh_converged": 0,
+      "local_guard_failures": 1,
+      "original_discrete_guard_failures": 0,
+      "original_discrete_rms_gate_passes": 5,
+      "median_original_discrete_rms_m": 0.0024638321838177635,
+      "control_median_original_discrete_rms_m": 0.00246366791241644,
+      "source_occurrences_before": 10156,
+      "source_occurrences_after": 23448,
+      "source_retention": 1.0,
+      "retained_previous_source_occurrences": 10156,
+      "newly_admitted_source_occurrences": 13292,
+      "previous_source_occurrences_lost": 0,
+      "source_population_ratio": 2.3087829854273334,
+      "factors_before": 20,
+      "factors_after": 23,
+      "budget_exhaustions": 0,
+      "total_applied_corrections": 41,
+      "shortened_steps": 0,
+      "invalid_candidate_trials": 0,
+      "valid_nonpassing_candidate_trials": 0,
+      "accepted_candidate_trials": 41,
+      "accepted_cost_increases": 0,
+      "checkpoints": {
+        "30": {
+          "continuous_converged": 4,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 1,
+          "budget_exhaustions": 0
+        },
+        "60": {
+          "continuous_converged": 4,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 1,
+          "budget_exhaustions": 0
+        },
+        "90": {
+          "continuous_converged": 4,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 1,
+          "budget_exhaustions": 0
+        }
+      },
+      "eligible_for_followup_full_trajectory": false
+    },
+    "tum-fr1-desk2-independent": {
+      "samples": 5,
+      "continuous_converged": 5,
+      "control_continuous_converged": 2,
+      "original_discrete_fresh_converged": 0,
+      "local_guard_failures": 0,
+      "original_discrete_guard_failures": 0,
+      "original_discrete_rms_gate_passes": 5,
+      "median_original_discrete_rms_m": 0.0027117804869571244,
+      "control_median_original_discrete_rms_m": 0.0027404641366715284,
+      "source_occurrences_before": 22351,
+      "source_occurrences_after": 36840,
+      "source_retention": 1.0,
+      "retained_previous_source_occurrences": 22351,
+      "newly_admitted_source_occurrences": 14489,
+      "previous_source_occurrences_lost": 0,
+      "source_population_ratio": 1.6482484005189924,
+      "factors_before": 16,
+      "factors_after": 28,
+      "budget_exhaustions": 0,
+      "total_applied_corrections": 83,
+      "shortened_steps": 0,
+      "invalid_candidate_trials": 0,
+      "valid_nonpassing_candidate_trials": 0,
+      "accepted_candidate_trials": 83,
+      "accepted_cost_increases": 0,
+      "checkpoints": {
+        "30": {
+          "continuous_converged": 5,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 0,
+          "budget_exhaustions": 0
+        },
+        "60": {
+          "continuous_converged": 5,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 0,
+          "budget_exhaustions": 0
+        },
+        "90": {
+          "continuous_converged": 5,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 0,
+          "budget_exhaustions": 0
+        }
+      },
+      "eligible_for_followup_full_trajectory": false
+    }
+  },
+  "samples": {
+    "tum-fr1-room-temporal": [
+      {
+        "source_index": 120,
+        "applied_corrections": 7,
+        "continuous_converged": true,
+        "guard_failure": null,
+        "termination": "converged",
+        "old_source_occurrences": 1978,
+        "new_source_occurrences": 5788,
+        "retained_previous_source_occurrences": 1978,
+        "newly_admitted_source_occurrences": 3810,
+        "original_source_values_and_normalizers_preserved": true,
+        "remaining_full_proposal": {
+          "guard_failure": null,
+          "converged": true,
+          "delta": [
+            [
+              5.142489864915062e-08,
+              1.0877223343603272e-07,
+              -3.661314714713375e-08,
+              -1.0667718431320047e-07,
+              -6.112252617927419e-07,
+              -7.221365045117586e-07
+            ],
+            [
+              -7.674306428527602e-08,
+              -6.399213954333732e-07,
+              4.868224002841538e-07,
+              4.379465671400599e-07,
+              1.953680540495703e-06,
+              2.2273749937135065e-06
+            ],
+            [
+              2.1200498946874002e-07,
+              3.5354149850788453e-06,
+              -3.4477058450022133e-06,
+              -9.248246319295723e-07,
+              -6.215667755540221e-06,
+              -6.017657934015693e-06
+            ],
+            [
+              2.1535181841218403e-06,
+              2.1427880980543747e-06,
+              -7.589699038012302e-07,
+              8.147983482769319e-07,
+              -7.317574525857042e-06,
+              -6.684152562113967e-06
+            ]
+          ],
+          "condition": 1189.7487285802456
+        },
+        "admission_stages": [
+          {
+            "target": 0,
+            "source": 1,
+            "current_source": false,
+            "raw_count": 880,
+            "bilinear_geometric_center": 433,
+            "old_bilinear_probe_count": 217,
+            "new_model_probe_count": 432
+          },
+          {
+            "target": 0,
+            "source": 2,
+            "current_source": false,
+            "raw_count": 517,
+            "bilinear_geometric_center": 229,
+            "old_bilinear_probe_count": 102,
+            "new_model_probe_count": 229
+          },
+          {
+            "target": 1,
+            "source": 2,
+            "current_source": false,
+            "raw_count": 1857,
+            "bilinear_geometric_center": 804,
+            "old_bilinear_probe_count": 304,
+            "new_model_probe_count": 802
+          },
+          {
+            "target": 0,
+            "source": 3,
+            "current_source": false,
+            "raw_count": 293,
+            "bilinear_geometric_center": 122,
+            "old_bilinear_probe_count": 45,
+            "new_model_probe_count": 122
+          },
+          {
+            "target": 1,
+            "source": 3,
+            "current_source": false,
+            "raw_count": 1055,
+            "bilinear_geometric_center": 482,
+            "old_bilinear_probe_count": 190,
+            "new_model_probe_count": 482
+          },
+          {
+            "target": 2,
+            "source": 3,
+            "current_source": false,
+            "raw_count": 2225,
+            "bilinear_geometric_center": 952,
+            "old_bilinear_probe_count": 401,
+            "new_model_probe_count": 952
+          },
+          {
+            "target": 0,
+            "source": 4,
+            "current_source": true,
+            "raw_count": 269,
+            "bilinear_geometric_center": 102,
+            "old_bilinear_probe_count": 43,
+            "new_model_probe_count": 102
+          },
+          {
+            "target": 1,
+            "source": 4,
+            "current_source": true,
+            "raw_count": 937,
+            "bilinear_geometric_center": 396,
+            "old_bilinear_probe_count": 153,
+            "new_model_probe_count": 395
+          },
+          {
+            "target": 2,
+            "source": 4,
+            "current_source": true,
+            "raw_count": 2055,
+            "bilinear_geometric_center": 871,
+            "old_bilinear_probe_count": 367,
+            "new_model_probe_count": 868
+          },
+          {
+            "target": 3,
+            "source": 4,
+            "current_source": true,
+            "raw_count": 3704,
+            "bilinear_geometric_center": 1629,
+            "old_bilinear_probe_count": 689,
+            "new_model_probe_count": 1628
+          }
+        ]
+      },
+      {
+        "source_index": 160,
+        "applied_corrections": 16,
+        "continuous_converged": true,
+        "guard_failure": null,
+        "termination": "converged",
+        "old_source_occurrences": 2582,
+        "new_source_occurrences": 6067,
+        "retained_previous_source_occurrences": 2582,
+        "newly_admitted_source_occurrences": 3485,
+        "original_source_values_and_normalizers_preserved": true,
+        "remaining_full_proposal": {
+          "guard_failure": null,
+          "converged": true,
+          "delta": [
+            [
+              -7.15846643544433e-07,
+              -6.843827503363068e-07,
+              8.73688802645756e-07,
+              1.63174686677769e-07,
+              1.0134002964136485e-06,
+              9.60413498549038e-07
+            ],
+            [
+              4.008860031820234e-06,
+              3.2465544181414062e-06,
+              -4.336822541328634e-06,
+              -8.570823948594066e-07,
+              -5.22615913047853e-06,
+              -4.8071589117856595e-06
+            ],
+            [
+              -6.006708258616872e-06,
+              -3.41786832548571e-06,
+              4.8487784830768115e-06,
+              1.1969878287761825e-06,
+              6.075801036464715e-06,
+              5.813775339205463e-06
+            ],
+            [
+              4.812398600551144e-06,
+              3.3677114328505307e-06,
+              -5.158027934080771e-06,
+              7.295499759830157e-07,
+              -6.106161107941026e-06,
+              -4.003915465672189e-06
+            ]
+          ],
+          "condition": 9528.682909409217
+        },
+        "admission_stages": [
+          {
+            "target": 1,
+            "source": 2,
+            "current_source": false,
+            "raw_count": 3030,
+            "bilinear_geometric_center": 1298,
+            "old_bilinear_probe_count": 576,
+            "new_model_probe_count": 1297
+          },
+          {
+            "target": 1,
+            "source": 3,
+            "current_source": false,
+            "raw_count": 2427,
+            "bilinear_geometric_center": 1061,
+            "old_bilinear_probe_count": 435,
+            "new_model_probe_count": 1059
+          },
+          {
+            "target": 2,
+            "source": 3,
+            "current_source": false,
+            "raw_count": 2875,
+            "bilinear_geometric_center": 1314,
+            "old_bilinear_probe_count": 552,
+            "new_model_probe_count": 1311
+          },
+          {
+            "target": 1,
+            "source": 4,
+            "current_source": true,
+            "raw_count": 1629,
+            "bilinear_geometric_center": 672,
+            "old_bilinear_probe_count": 320,
+            "new_model_probe_count": 671
+          },
+          {
+            "target": 2,
+            "source": 4,
+            "current_source": true,
+            "raw_count": 1935,
+            "bilinear_geometric_center": 835,
+            "old_bilinear_probe_count": 363,
+            "new_model_probe_count": 835
+          },
+          {
+            "target": 3,
+            "source": 4,
+            "current_source": true,
+            "raw_count": 2061,
+            "bilinear_geometric_center": 896,
+            "old_bilinear_probe_count": 336,
+            "new_model_probe_count": 894
+          }
+        ]
+      },
+      {
+        "source_index": 200,
+        "applied_corrections": 0,
+        "continuous_converged": false,
+        "guard_failure": "new frame needs measured support",
+        "termination": "guard",
+        "old_source_occurrences": 0,
+        "new_source_occurrences": 0,
+        "retained_previous_source_occurrences": 0,
+        "newly_admitted_source_occurrences": 0,
+        "original_source_values_and_normalizers_preserved": true,
+        "remaining_full_proposal": {
+          "guard_failure": "new frame needs measured support",
+          "converged": false,
+          "delta": null,
+          "condition": null
+        },
+        "admission_stages": [
+          {
+            "target": 2,
+            "source": 3,
+            "current_source": false,
+            "raw_count": 308,
+            "bilinear_geometric_center": 141,
+            "old_bilinear_probe_count": 42,
+            "new_model_probe_count": 138
+          },
+          {
+            "target": 2,
+            "source": 4,
+            "current_source": true,
+            "raw_count": 217,
+            "bilinear_geometric_center": 107,
+            "old_bilinear_probe_count": 34,
+            "new_model_probe_count": 106
+          },
+          {
+            "target": 3,
+            "source": 4,
+            "current_source": true,
+            "raw_count": 292,
+            "bilinear_geometric_center": 155,
+            "old_bilinear_probe_count": 36,
+            "new_model_probe_count": 151
+          }
+        ]
+      },
+      {
+        "source_index": 240,
+        "applied_corrections": 5,
+        "continuous_converged": true,
+        "guard_failure": null,
+        "termination": "converged",
+        "old_source_occurrences": 4235,
+        "new_source_occurrences": 8592,
+        "retained_previous_source_occurrences": 4235,
+        "newly_admitted_source_occurrences": 4357,
+        "original_source_values_and_normalizers_preserved": true,
+        "remaining_full_proposal": {
+          "guard_failure": null,
+          "converged": true,
+          "delta": [
+            [
+              1.2380530747885285e-06,
+              2.2146877439813582e-06,
+              1.7464129571857014e-06,
+              4.646200774054631e-06,
+              -7.767181540392421e-07,
+              -1.380088196723994e-06
+            ],
+            [
+              -1.079979712761292e-06,
+              6.614121771714597e-07,
+              3.3560819778949624e-06,
+              4.555846844281547e-06,
+              1.2880877444502812e-06,
+              6.235617398334507e-07
+            ],
+            [
+              -5.012923693252296e-06,
+              -2.821059732042071e-06,
+              6.401441476961897e-06,
+              4.00836233380402e-06,
+              4.476541938738158e-06,
+              3.3661095992568967e-06
+            ],
+            [
+              3.416792939376014e-06,
+              3.1067477775002037e-06,
+              1.4186276758456465e-06,
+              4.418285982996593e-06,
+              -3.0898559759709296e-06,
+              -5.0331916300725245e-06
+            ]
+          ],
+          "condition": 358403.28406715347
+        },
+        "admission_stages": [
+          {
+            "target": 1,
+            "source": 2,
+            "current_source": false,
+            "raw_count": 2303,
+            "bilinear_geometric_center": 1181,
+            "old_bilinear_probe_count": 573,
+            "new_model_probe_count": 1176
+          },
+          {
+            "target": 1,
+            "source": 3,
+            "current_source": false,
+            "raw_count": 1601,
+            "bilinear_geometric_center": 850,
+            "old_bilinear_probe_count": 420,
+            "new_model_probe_count": 848
+          },
+          {
+            "target": 2,
+            "source": 3,
+            "current_source": false,
+            "raw_count": 3925,
+            "bilinear_geometric_center": 2023,
+            "old_bilinear_probe_count": 961,
+            "new_model_probe_count": 2009
+          },
+          {
+            "target": 1,
+            "source": 4,
+            "current_source": true,
+            "raw_count": 1320,
+            "bilinear_geometric_center": 614,
+            "old_bilinear_probe_count": 287,
+            "new_model_probe_count": 613
+          },
+          {
+            "target": 2,
+            "source": 4,
+            "current_source": true,
+            "raw_count": 3336,
+            "bilinear_geometric_center": 1613,
+            "old_bilinear_probe_count": 808,
+            "new_model_probe_count": 1608
+          },
+          {
+            "target": 3,
+            "source": 4,
+            "current_source": true,
+            "raw_count": 4495,
+            "bilinear_geometric_center": 2347,
+            "old_bilinear_probe_count": 1186,
+            "new_model_probe_count": 2338
+          }
+        ]
+      },
+      {
+        "source_index": 279,
+        "applied_corrections": 13,
+        "continuous_converged": true,
+        "guard_failure": null,
+        "termination": "converged",
+        "old_source_occurrences": 1361,
+        "new_source_occurrences": 3001,
+        "retained_previous_source_occurrences": 1361,
+        "newly_admitted_source_occurrences": 1640,
+        "original_source_values_and_normalizers_preserved": true,
+        "remaining_full_proposal": {
+          "guard_failure": null,
+          "converged": true,
+          "delta": [
+            [
+              6.047091791382695e-07,
+              2.721029342232015e-07,
+              -1.1957688782284198e-07,
+              2.545134076725559e-07,
+              -2.866794066332886e-07,
+              -6.336655777287824e-07
+            ],
+            [
+              -1.5864768228387745e-06,
+              -5.248373533783099e-07,
+              5.215321306151739e-07,
+              3.7795447323451223e-07,
+              1.0630027268730101e-06,
+              1.0012280811729958e-06
+            ],
+            [
+              -2.5031141359370026e-06,
+              -6.14419112522579e-06,
+              6.925251101653557e-06,
+              6.675641533121005e-07,
+              1.4762653894136315e-06,
+              8.775634289300749e-07
+            ]
+          ],
+          "condition": 91751.81456813926
+        },
+        "admission_stages": [
+          {
+            "target": 1,
+            "source": 2,
+            "current_source": false,
+            "raw_count": 2175,
+            "bilinear_geometric_center": 1048,
+            "old_bilinear_probe_count": 505,
+            "new_model_probe_count": 1046
+          },
+          {
+            "target": 1,
+            "source": 3,
+            "current_source": true,
+            "raw_count": 1935,
+            "bilinear_geometric_center": 939,
+            "old_bilinear_probe_count": 428,
+            "new_model_probe_count": 933
+          },
+          {
+            "target": 2,
+            "source": 3,
+            "current_source": true,
+            "raw_count": 2194,
+            "bilinear_geometric_center": 1028,
+            "old_bilinear_probe_count": 428,
+            "new_model_probe_count": 1022
+          }
+        ]
+      }
+    ],
+    "tum-fr1-desk2-independent": [
+      {
+        "source_index": 120,
+        "applied_corrections": 10,
+        "continuous_converged": true,
+        "guard_failure": null,
+        "termination": "converged",
+        "old_source_occurrences": 1244,
+        "new_source_occurrences": 3116,
+        "retained_previous_source_occurrences": 1244,
+        "newly_admitted_source_occurrences": 1872,
+        "original_source_values_and_normalizers_preserved": true,
+        "remaining_full_proposal": {
+          "guard_failure": null,
+          "converged": true,
+          "delta": [
+            [
+              -1.0526726621674968e-07,
+              -9.065483871859929e-09,
+              6.673973334123576e-09,
+              -3.645020436678782e-08,
+              -1.7155022971553098e-08,
+              5.2579501302827316e-08
+            ],
+            [
+              5.603889773838903e-07,
+              -6.131575574325401e-08,
+              -4.068562950681475e-07,
+              5.010563035345525e-07,
+              7.721402922380087e-07,
+              -1.1637076896433645e-06
+            ],
+            [
+              4.011608074941769e-06,
+              6.399344852671136e-07,
+              -1.9213322577056055e-07,
+              1.1548795410202796e-06,
+              -1.5940804777604386e-06,
+              -3.8108726557192087e-06
+            ],
+            [
+              6.559808654256701e-06,
+              -1.759085325205631e-06,
+              -2.2184891492671063e-06,
+              -2.7284034183494274e-07,
+              9.378186296031283e-07,
+              -8.540408286690784e-06
+            ]
+          ],
+          "condition": 230.8474579807507
+        },
+        "admission_stages": [
+          {
+            "target": 0,
+            "source": 1,
+            "current_source": false,
+            "raw_count": 1011,
+            "bilinear_geometric_center": 643,
+            "old_bilinear_probe_count": 454,
+            "new_model_probe_count": 642
+          },
+          {
+            "target": 0,
+            "source": 2,
+            "current_source": false,
+            "raw_count": 286,
+            "bilinear_geometric_center": 171,
+            "old_bilinear_probe_count": 118,
+            "new_model_probe_count": 170
+          },
+          {
+            "target": 1,
+            "source": 2,
+            "current_source": false,
+            "raw_count": 1077,
+            "bilinear_geometric_center": 537,
+            "old_bilinear_probe_count": 314,
+            "new_model_probe_count": 534
+          },
+          {
+            "target": 0,
+            "source": 3,
+            "current_source": false,
+            "raw_count": 211,
+            "bilinear_geometric_center": 138,
+            "old_bilinear_probe_count": 89,
+            "new_model_probe_count": 138
+          },
+          {
+            "target": 1,
+            "source": 3,
+            "current_source": false,
+            "raw_count": 848,
+            "bilinear_geometric_center": 412,
+            "old_bilinear_probe_count": 248,
+            "new_model_probe_count": 410
+          },
+          {
+            "target": 2,
+            "source": 3,
+            "current_source": false,
+            "raw_count": 948,
+            "bilinear_geometric_center": 448,
+            "old_bilinear_probe_count": 228,
+            "new_model_probe_count": 446
+          },
+          {
+            "target": 1,
+            "source": 4,
+            "current_source": true,
+            "raw_count": 545,
+            "bilinear_geometric_center": 289,
+            "old_bilinear_probe_count": 190,
+            "new_model_probe_count": 288
+          },
+          {
+            "target": 2,
+            "source": 4,
+            "current_source": true,
+            "raw_count": 767,
+            "bilinear_geometric_center": 391,
+            "old_bilinear_probe_count": 182,
+            "new_model_probe_count": 389
+          },
+          {
+            "target": 3,
+            "source": 4,
+            "current_source": true,
+            "raw_count": 828,
+            "bilinear_geometric_center": 411,
+            "old_bilinear_probe_count": 198,
+            "new_model_probe_count": 407
+          }
+        ]
+      },
+      {
+        "source_index": 160,
+        "applied_corrections": 19,
+        "continuous_converged": true,
+        "guard_failure": null,
+        "termination": "converged",
+        "old_source_occurrences": 4905,
+        "new_source_occurrences": 9667,
+        "retained_previous_source_occurrences": 4905,
+        "newly_admitted_source_occurrences": 4762,
+        "original_source_values_and_normalizers_preserved": true,
+        "remaining_full_proposal": {
+          "guard_failure": null,
+          "converged": true,
+          "delta": [
+            [
+              2.456772531777271e-07,
+              -7.673008990092705e-08,
+              3.1492766118881724e-08,
+              -1.981634855871906e-08,
+              -1.2924853077274814e-07,
+              -1.655249700727744e-07
+            ],
+            [
+              -1.3229862837640383e-06,
+              4.843722587150397e-07,
+              -2.240563018240394e-07,
+              1.2385338914188906e-07,
+              6.767254346084593e-07,
+              8.389043669125923e-07
+            ],
+            [
+              -3.439886436572303e-07,
+              3.257853032246488e-07,
+              -5.643893984161878e-07,
+              -1.0360034067036533e-07,
+              -3.59635620124295e-07,
+              -7.229677786118542e-07
+            ],
+            [
+              7.297932960792553e-06,
+              -1.0373394517246503e-06,
+              -1.1460237843033695e-06,
+              -2.128976448870898e-06,
+              -6.260793287809072e-06,
+              -5.620428553460985e-06
+            ]
+          ],
+          "condition": 22532.150133140814
+        },
+        "admission_stages": [
+          {
+            "target": 1,
+            "source": 2,
+            "current_source": false,
+            "raw_count": 2813,
+            "bilinear_geometric_center": 1393,
+            "old_bilinear_probe_count": 720,
+            "new_model_probe_count": 1389
+          },
+          {
+            "target": 1,
+            "source": 3,
+            "current_source": false,
+            "raw_count": 2687,
+            "bilinear_geometric_center": 1329,
+            "old_bilinear_probe_count": 682,
+            "new_model_probe_count": 1326
+          },
+          {
+            "target": 2,
+            "source": 3,
+            "current_source": false,
+            "raw_count": 3714,
+            "bilinear_geometric_center": 1891,
+            "old_bilinear_probe_count": 922,
+            "new_model_probe_count": 1888
+          },
+          {
+            "target": 1,
+            "source": 4,
+            "current_source": true,
+            "raw_count": 2236,
+            "bilinear_geometric_center": 1109,
+            "old_bilinear_probe_count": 550,
+            "new_model_probe_count": 1108
+          },
+          {
+            "target": 2,
+            "source": 4,
+            "current_source": true,
+            "raw_count": 3290,
+            "bilinear_geometric_center": 1658,
+            "old_bilinear_probe_count": 761,
+            "new_model_probe_count": 1657
+          },
+          {
+            "target": 3,
+            "source": 4,
+            "current_source": true,
+            "raw_count": 4385,
+            "bilinear_geometric_center": 2300,
+            "old_bilinear_probe_count": 1270,
+            "new_model_probe_count": 2299
+          }
+        ]
+      },
+      {
+        "source_index": 200,
+        "applied_corrections": 27,
+        "continuous_converged": true,
+        "guard_failure": null,
+        "termination": "converged",
+        "old_source_occurrences": 16202,
+        "new_source_occurrences": 21153,
+        "retained_previous_source_occurrences": 16202,
+        "newly_admitted_source_occurrences": 4951,
+        "original_source_values_and_normalizers_preserved": true,
+        "remaining_full_proposal": {
+          "guard_failure": null,
+          "converged": true,
+          "delta": [
+            [
+              3.9032013156140874e-07,
+              -5.948319405993939e-07,
+              3.2961428172693576e-07,
+              -8.268995755026893e-08,
+              -2.157690026567749e-07,
+              -3.095809212886945e-07
+            ],
+            [
+              -8.555779845373752e-07,
+              2.190638458995624e-06,
+              -1.0282992807972836e-06,
+              3.572385042093029e-07,
+              3.5633519346342634e-07,
+              7.86269433004668e-07
+            ],
+            [
+              -9.174240627194535e-06,
+              2.261812751482026e-06,
+              5.933770984371224e-07,
+              1.152923904305366e-06,
+              4.1761574721134396e-06,
+              6.1709727747704065e-06
+            ],
+            [
+              -8.844181651238438e-06,
+              3.4507586422743728e-06,
+              -5.347116504801936e-07,
+              1.1022612101767702e-06,
+              4.358028063562171e-06,
+              6.322211185453331e-06
+            ]
+          ],
+          "condition": 90677.73465768145
+        },
+        "admission_stages": [
+          {
+            "target": 1,
+            "source": 2,
+            "current_source": false,
+            "raw_count": 6787,
+            "bilinear_geometric_center": 4881,
+            "old_bilinear_probe_count": 4121,
+            "new_model_probe_count": 4869
+          },
+          {
+            "target": 1,
+            "source": 3,
+            "current_source": false,
+            "raw_count": 5619,
+            "bilinear_geometric_center": 3967,
+            "old_bilinear_probe_count": 3364,
+            "new_model_probe_count": 3955
+          },
+          {
+            "target": 2,
+            "source": 3,
+            "current_source": false,
+            "raw_count": 6743,
+            "bilinear_geometric_center": 4225,
+            "old_bilinear_probe_count": 2879,
+            "new_model_probe_count": 4199
+          },
+          {
+            "target": 1,
+            "source": 4,
+            "current_source": true,
+            "raw_count": 3874,
+            "bilinear_geometric_center": 2688,
+            "old_bilinear_probe_count": 2282,
+            "new_model_probe_count": 2676
+          },
+          {
+            "target": 2,
+            "source": 4,
+            "current_source": true,
+            "raw_count": 4735,
+            "bilinear_geometric_center": 2911,
+            "old_bilinear_probe_count": 2017,
+            "new_model_probe_count": 2894
+          },
+          {
+            "target": 3,
+            "source": 4,
+            "current_source": true,
+            "raw_count": 4433,
+            "bilinear_geometric_center": 2566,
+            "old_bilinear_probe_count": 1539,
+            "new_model_probe_count": 2560
+          }
+        ]
+      },
+      {
+        "source_index": 240,
+        "applied_corrections": 19,
+        "continuous_converged": true,
+        "guard_failure": null,
+        "termination": "converged",
+        "old_source_occurrences": 0,
+        "new_source_occurrences": 792,
+        "retained_previous_source_occurrences": 0,
+        "newly_admitted_source_occurrences": 792,
+        "original_source_values_and_normalizers_preserved": true,
+        "remaining_full_proposal": {
+          "guard_failure": null,
+          "converged": true,
+          "delta": [
+            [
+              -1.5032204962964508e-08,
+              2.3571265643807887e-09,
+              1.3030228798472974e-09,
+              5.046690663105864e-09,
+              2.5219246525430358e-08,
+              2.390022524381432e-08
+            ],
+            [
+              -2.0557617070981e-07,
+              1.217225377997022e-07,
+              -5.923642658464905e-08,
+              6.959575828585853e-09,
+              3.5785889695088665e-08,
+              1.3378861107060882e-07
+            ],
+            [
+              1.119584766744989e-06,
+              -7.737469824381572e-07,
+              4.485037123017203e-07,
+              -4.024779451046169e-08,
+              -1.8222284756974144e-07,
+              -5.637934270452158e-07
+            ],
+            [
+              8.079794091876902e-06,
+              -2.822960335203147e-06,
+              5.355963800789466e-07,
+              -6.03632237986623e-07,
+              -2.0696006509704123e-06,
+              -2.582598486130686e-06
+            ]
+          ],
+          "condition": 10321.336306531757
+        },
+        "admission_stages": [
+          {
+            "target": 1,
+            "source": 2,
+            "current_source": false,
+            "raw_count": 389,
+            "bilinear_geometric_center": 169,
+            "old_bilinear_probe_count": 28,
+            "new_model_probe_count": 168
+          },
+          {
+            "target": 1,
+            "source": 3,
+            "current_source": false,
+            "raw_count": 397,
+            "bilinear_geometric_center": 167,
+            "old_bilinear_probe_count": 26,
+            "new_model_probe_count": 166
+          },
+          {
+            "target": 2,
+            "source": 3,
+            "current_source": false,
+            "raw_count": 517,
+            "bilinear_geometric_center": 243,
+            "old_bilinear_probe_count": 65,
+            "new_model_probe_count": 243
+          },
+          {
+            "target": 1,
+            "source": 4,
+            "current_source": true,
+            "raw_count": 398,
+            "bilinear_geometric_center": 178,
+            "old_bilinear_probe_count": 41,
+            "new_model_probe_count": 177
+          },
+          {
+            "target": 2,
+            "source": 4,
+            "current_source": true,
+            "raw_count": 475,
+            "bilinear_geometric_center": 233,
+            "old_bilinear_probe_count": 55,
+            "new_model_probe_count": 232
+          },
+          {
+            "target": 3,
+            "source": 4,
+            "current_source": true,
+            "raw_count": 617,
+            "bilinear_geometric_center": 319,
+            "old_bilinear_probe_count": 104,
+            "new_model_probe_count": 317
+          }
+        ]
+      },
+      {
+        "source_index": 279,
+        "applied_corrections": 8,
+        "continuous_converged": true,
+        "guard_failure": null,
+        "termination": "converged",
+        "old_source_occurrences": 0,
+        "new_source_occurrences": 2112,
+        "retained_previous_source_occurrences": 0,
+        "newly_admitted_source_occurrences": 2112,
+        "original_source_values_and_normalizers_preserved": true,
+        "remaining_full_proposal": {
+          "guard_failure": null,
+          "converged": true,
+          "delta": [
+            [
+              -5.098692470570523e-07,
+              4.136855465372759e-07,
+              4.907446715890566e-07,
+              2.1149686020773814e-07,
+              8.480814027459279e-08,
+              3.4143232273728433e-07
+            ],
+            [
+              1.1097765397859598e-06,
+              -1.7793288423926856e-06,
+              -2.964157966600827e-06,
+              -1.4686841827016213e-06,
+              -1.1947918731680512e-07,
+              5.257923449212035e-08
+            ],
+            [
+              -5.4779929600254624e-06,
+              -7.4181089059746e-07,
+              4.786158818321466e-06,
+              1.418420101651839e-06,
+              -3.173141212274542e-07,
+              1.097758696360697e-06
+            ],
+            [
+              -2.9048568771284526e-06,
+              -6.20648786554805e-06,
+              1.576149299425548e-06,
+              -5.331966533961583e-07,
+              1.158030037564109e-06,
+              -2.1317798196874056e-06
+            ]
+          ],
+          "condition": 28254.747758481677
+        },
+        "admission_stages": [
+          {
+            "target": 1,
+            "source": 2,
+            "current_source": false,
+            "raw_count": 548,
+            "bilinear_geometric_center": 303,
+            "old_bilinear_probe_count": 117,
+            "new_model_probe_count": 302
+          },
+          {
+            "target": 1,
+            "source": 3,
+            "current_source": false,
+            "raw_count": 525,
+            "bilinear_geometric_center": 315,
+            "old_bilinear_probe_count": 119,
+            "new_model_probe_count": 310
+          },
+          {
+            "target": 2,
+            "source": 3,
+            "current_source": false,
+            "raw_count": 954,
+            "bilinear_geometric_center": 515,
+            "old_bilinear_probe_count": 169,
+            "new_model_probe_count": 513
+          },
+          {
+            "target": 1,
+            "source": 4,
+            "current_source": true,
+            "raw_count": 365,
+            "bilinear_geometric_center": 212,
+            "old_bilinear_probe_count": 70,
+            "new_model_probe_count": 208
+          },
+          {
+            "target": 2,
+            "source": 4,
+            "current_source": true,
+            "raw_count": 713,
+            "bilinear_geometric_center": 384,
+            "old_bilinear_probe_count": 132,
+            "new_model_probe_count": 383
+          },
+          {
+            "target": 3,
+            "source": 4,
+            "current_source": true,
+            "raw_count": 761,
+            "bilinear_geometric_center": 398,
+            "old_bilinear_probe_count": 130,
+            "new_model_probe_count": 396
+          }
+        ]
+      }
+    ]
+  }
+}

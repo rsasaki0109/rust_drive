@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "purpose": "use full-image context for explicit cross-view vehicle class conflicts; correlated crop counts are diagnostic only",
+  "development_role": "post-failure viewed-data design informed by the preserved75TP/31FP majority result; not fresh heldout evidence",
+  "frozen_vote_design_sha256": "f09cd83c9d0f7e3b8c4484ba49df0aac606c3b322acac405185c6073f6c9078e",
+  "base": "exact unchanged full-plus-three-crops detector and v1 conflict components/eligible per-view proposals",
+  "policy": "on each complete component choose class of the eligible full-image vote regardless of crop vote counts; without full-image vote preserve all hypotheses and mark ambiguity",
+  "selection": "retain original highest-ranked global box of that class; original confidence, geometry, source view/rank and output order unchanged",
+  "unchanged": "car/bus/truck group2/5/7; conflictIoU>.45; score>=.3; original local/global classwise NMS; no threshold or per-image tuning",
+  "bounds": "same4 views/1200 proposals/300 outputs/1200000 comparison work/4MiB JSON bounds",
+  "evaluation": {
+    "data": "all8 viewed BDD frames and138 unchanged original references",
+    "original_quality_gates": {
+      "min_precision": 0.7,
+      "min_recall": 0.6,
+      "min_present_class_recall": 0.5
+    },
+    "relative_adoption": "retain every original78 reference match and per-class count, false positives<33; otherwise no recommendation",
+    "independent": "NumPy reconstruction of entire original merge/votes plus separate full-context projection; preserve all native raw outputs; all8 native CPU images twice",
+    "confidence": "fixed5-bin descriptive Brier/ECE; no fitted/calibrated confidence or independent crop probability claim"
+  },
+  "defaults": "keep all existing binaries including failed vote mode unchanged; explicit new binary only",
+  "maturity": "about20%;30%unmet"
+}

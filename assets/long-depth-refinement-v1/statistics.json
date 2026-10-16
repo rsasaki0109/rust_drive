@@ -1,0 +1,544 @@
+{
+  "summaries": {
+    "tum-fr1-room-temporal": {
+      "checkpoints": {
+        "10": {
+          "samples": 5,
+          "continuous_converged": 0,
+          "original_discrete_fresh_converged": 0,
+          "local_guard_failures": 2,
+          "original_discrete_guard_failures": 0,
+          "budget_exhaustions": 3,
+          "applied_corrections": 34,
+          "terminal_carried_forward": 2,
+          "original_discrete_rms_gate_passes": 5,
+          "median_original_discrete_rms_m": 0.0024539224965528035
+        },
+        "20": {
+          "samples": 5,
+          "continuous_converged": 0,
+          "original_discrete_fresh_converged": 0,
+          "local_guard_failures": 5,
+          "original_discrete_guard_failures": 0,
+          "budget_exhaustions": 0,
+          "applied_corrections": 51,
+          "terminal_carried_forward": 5,
+          "original_discrete_rms_gate_passes": 5,
+          "median_original_discrete_rms_m": 0.0024543801366865457
+        },
+        "30": {
+          "samples": 5,
+          "continuous_converged": 0,
+          "original_discrete_fresh_converged": 0,
+          "local_guard_failures": 5,
+          "original_discrete_guard_failures": 0,
+          "budget_exhaustions": 0,
+          "applied_corrections": 51,
+          "terminal_carried_forward": 5,
+          "original_discrete_rms_gate_passes": 5,
+          "median_original_discrete_rms_m": 0.0024543801366865457
+        }
+      },
+      "eligible_for_followup_full_trajectory": false,
+      "exact_ten_correction_control_matches": 5,
+      "total_applied_corrections": 51,
+      "shortened_steps": 39,
+      "invalid_candidate_trials": 22,
+      "valid_nonpassing_trials": 140
+    },
+    "tum-fr1-desk2-independent": {
+      "checkpoints": {
+        "10": {
+          "samples": 5,
+          "continuous_converged": 0,
+          "original_discrete_fresh_converged": 0,
+          "local_guard_failures": 3,
+          "original_discrete_guard_failures": 0,
+          "budget_exhaustions": 2,
+          "applied_corrections": 20,
+          "terminal_carried_forward": 3,
+          "original_discrete_rms_gate_passes": 5,
+          "median_original_discrete_rms_m": 0.0027404641366715284
+        },
+        "20": {
+          "samples": 5,
+          "continuous_converged": 2,
+          "original_discrete_fresh_converged": 0,
+          "local_guard_failures": 3,
+          "original_discrete_guard_failures": 0,
+          "budget_exhaustions": 0,
+          "applied_corrections": 35,
+          "terminal_carried_forward": 5,
+          "original_discrete_rms_gate_passes": 5,
+          "median_original_discrete_rms_m": 0.0027404641366715284
+        },
+        "30": {
+          "samples": 5,
+          "continuous_converged": 2,
+          "original_discrete_fresh_converged": 0,
+          "local_guard_failures": 3,
+          "original_discrete_guard_failures": 0,
+          "budget_exhaustions": 0,
+          "applied_corrections": 35,
+          "terminal_carried_forward": 5,
+          "original_discrete_rms_gate_passes": 5,
+          "median_original_discrete_rms_m": 0.0027404641366715284
+        }
+      },
+      "eligible_for_followup_full_trajectory": false,
+      "exact_ten_correction_control_matches": 5,
+      "total_applied_corrections": 35,
+      "shortened_steps": 10,
+      "invalid_candidate_trials": 0,
+      "valid_nonpassing_trials": 17
+    }
+  },
+  "samples": {
+    "tum-fr1-room-temporal": [
+      {
+        "source_index": 120,
+        "complete_cap10_report_equal": true,
+        "actual_applied_corrections": 12,
+        "continuous_converged": false,
+        "termination": "guard",
+        "guard_failure": "line search",
+        "accepted_multipliers": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          0.5,
+          0.5,
+          0.25,
+          0.25,
+          0.25,
+          0.125,
+          0.03125,
+          0.03125
+        ],
+        "checkpoints": [
+          {
+            "requested_cap": 10,
+            "actual_applied_corrections": 10,
+            "continuous_converged": false,
+            "termination": "budget",
+            "guard_failure": null,
+            "remaining_max_translation_m": 2.997397874582778e-05
+          },
+          {
+            "requested_cap": 20,
+            "actual_applied_corrections": 12,
+            "continuous_converged": false,
+            "termination": "guard",
+            "guard_failure": "line search",
+            "remaining_max_translation_m": 2.8015135066067795e-05
+          },
+          {
+            "requested_cap": 30,
+            "actual_applied_corrections": 12,
+            "continuous_converged": false,
+            "termination": "guard",
+            "guard_failure": "line search",
+            "remaining_max_translation_m": 2.8015135066067795e-05
+          }
+        ]
+      },
+      {
+        "source_index": 160,
+        "complete_cap10_report_equal": true,
+        "actual_applied_corrections": 18,
+        "continuous_converged": false,
+        "termination": "guard",
+        "guard_failure": "line search",
+        "accepted_multipliers": [
+          1.0,
+          1.0,
+          1.0,
+          0.5,
+          0.25,
+          0.25,
+          0.125,
+          0.25,
+          0.0625,
+          0.125,
+          0.0625,
+          0.125,
+          0.0625,
+          0.125,
+          0.0625,
+          0.03125,
+          0.0625,
+          0.125
+        ],
+        "checkpoints": [
+          {
+            "requested_cap": 10,
+            "actual_applied_corrections": 10,
+            "continuous_converged": false,
+            "termination": "budget",
+            "guard_failure": null,
+            "remaining_max_translation_m": 0.0002031136414255364
+          },
+          {
+            "requested_cap": 20,
+            "actual_applied_corrections": 18,
+            "continuous_converged": false,
+            "termination": "guard",
+            "guard_failure": "line search",
+            "remaining_max_translation_m": 0.0002518190397488583
+          },
+          {
+            "requested_cap": 30,
+            "actual_applied_corrections": 18,
+            "continuous_converged": false,
+            "termination": "guard",
+            "guard_failure": "line search",
+            "remaining_max_translation_m": 0.0002518190397488583
+          }
+        ]
+      },
+      {
+        "source_index": 200,
+        "complete_cap10_report_equal": true,
+        "actual_applied_corrections": 0,
+        "continuous_converged": false,
+        "termination": "guard",
+        "guard_failure": "new frame needs measured support",
+        "accepted_multipliers": [],
+        "checkpoints": [
+          {
+            "requested_cap": 10,
+            "actual_applied_corrections": 0,
+            "continuous_converged": false,
+            "termination": "guard",
+            "guard_failure": "new frame needs measured support",
+            "remaining_max_translation_m": null
+          },
+          {
+            "requested_cap": 20,
+            "actual_applied_corrections": 0,
+            "continuous_converged": false,
+            "termination": "guard",
+            "guard_failure": "new frame needs measured support",
+            "remaining_max_translation_m": null
+          },
+          {
+            "requested_cap": 30,
+            "actual_applied_corrections": 0,
+            "continuous_converged": false,
+            "termination": "guard",
+            "guard_failure": "new frame needs measured support",
+            "remaining_max_translation_m": null
+          }
+        ]
+      },
+      {
+        "source_index": 240,
+        "complete_cap10_report_equal": true,
+        "actual_applied_corrections": 17,
+        "continuous_converged": false,
+        "termination": "guard",
+        "guard_failure": "line search",
+        "accepted_multipliers": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          0.5,
+          0.25,
+          0.125,
+          0.125,
+          0.0625,
+          0.125,
+          0.0625,
+          0.03125,
+          0.03125,
+          0.015625,
+          0.015625,
+          0.015625
+        ],
+        "checkpoints": [
+          {
+            "requested_cap": 10,
+            "actual_applied_corrections": 10,
+            "continuous_converged": false,
+            "termination": "budget",
+            "guard_failure": null,
+            "remaining_max_translation_m": 1.607988423705075e-05
+          },
+          {
+            "requested_cap": 20,
+            "actual_applied_corrections": 17,
+            "continuous_converged": false,
+            "termination": "guard",
+            "guard_failure": "line search",
+            "remaining_max_translation_m": 5.0746493968785247e-05
+          },
+          {
+            "requested_cap": 30,
+            "actual_applied_corrections": 17,
+            "continuous_converged": false,
+            "termination": "guard",
+            "guard_failure": "line search",
+            "remaining_max_translation_m": 5.0746493968785247e-05
+          }
+        ]
+      },
+      {
+        "source_index": 279,
+        "complete_cap10_report_equal": true,
+        "actual_applied_corrections": 4,
+        "continuous_converged": false,
+        "termination": "guard",
+        "guard_failure": "line search",
+        "accepted_multipliers": [
+          0.5,
+          0.5,
+          0.03125,
+          0.0078125
+        ],
+        "checkpoints": [
+          {
+            "requested_cap": 10,
+            "actual_applied_corrections": 4,
+            "continuous_converged": false,
+            "termination": "guard",
+            "guard_failure": "line search",
+            "remaining_max_translation_m": 0.0011668642229516481
+          },
+          {
+            "requested_cap": 20,
+            "actual_applied_corrections": 4,
+            "continuous_converged": false,
+            "termination": "guard",
+            "guard_failure": "line search",
+            "remaining_max_translation_m": 0.0011668642229516481
+          },
+          {
+            "requested_cap": 30,
+            "actual_applied_corrections": 4,
+            "continuous_converged": false,
+            "termination": "guard",
+            "guard_failure": "line search",
+            "remaining_max_translation_m": 0.0011668642229516481
+          }
+        ]
+      }
+    ],
+    "tum-fr1-desk2-independent": [
+      {
+        "source_index": 120,
+        "complete_cap10_report_equal": true,
+        "actual_applied_corrections": 0,
+        "continuous_converged": false,
+        "termination": "guard",
+        "guard_failure": "new frame needs measured support",
+        "accepted_multipliers": [],
+        "checkpoints": [
+          {
+            "requested_cap": 10,
+            "actual_applied_corrections": 0,
+            "continuous_converged": false,
+            "termination": "guard",
+            "guard_failure": "new frame needs measured support",
+            "remaining_max_translation_m": null
+          },
+          {
+            "requested_cap": 20,
+            "actual_applied_corrections": 0,
+            "continuous_converged": false,
+            "termination": "guard",
+            "guard_failure": "new frame needs measured support",
+            "remaining_max_translation_m": null
+          },
+          {
+            "requested_cap": 30,
+            "actual_applied_corrections": 0,
+            "continuous_converged": false,
+            "termination": "guard",
+            "guard_failure": "new frame needs measured support",
+            "remaining_max_translation_m": null
+          }
+        ]
+      },
+      {
+        "source_index": 160,
+        "complete_cap10_report_equal": true,
+        "actual_applied_corrections": 16,
+        "continuous_converged": true,
+        "termination": "converged",
+        "guard_failure": null,
+        "accepted_multipliers": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          0.5,
+          1.0,
+          0.25,
+          0.5,
+          1.0,
+          0.5,
+          1.0,
+          0.5
+        ],
+        "checkpoints": [
+          {
+            "requested_cap": 10,
+            "actual_applied_corrections": 10,
+            "continuous_converged": false,
+            "termination": "budget",
+            "guard_failure": null,
+            "remaining_max_translation_m": 0.00014313147903583477
+          },
+          {
+            "requested_cap": 20,
+            "actual_applied_corrections": 16,
+            "continuous_converged": true,
+            "termination": "converged",
+            "guard_failure": null,
+            "remaining_max_translation_m": 8.73279214475641e-06
+          },
+          {
+            "requested_cap": 30,
+            "actual_applied_corrections": 16,
+            "continuous_converged": true,
+            "termination": "converged",
+            "guard_failure": null,
+            "remaining_max_translation_m": 8.73279214475641e-06
+          }
+        ]
+      },
+      {
+        "source_index": 200,
+        "complete_cap10_report_equal": true,
+        "actual_applied_corrections": 19,
+        "continuous_converged": true,
+        "termination": "converged",
+        "guard_failure": null,
+        "accepted_multipliers": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          0.5,
+          0.25,
+          0.125,
+          0.25,
+          0.125
+        ],
+        "checkpoints": [
+          {
+            "requested_cap": 10,
+            "actual_applied_corrections": 10,
+            "continuous_converged": false,
+            "termination": "budget",
+            "guard_failure": null,
+            "remaining_max_translation_m": 4.616546120904054e-05
+          },
+          {
+            "requested_cap": 20,
+            "actual_applied_corrections": 19,
+            "continuous_converged": true,
+            "termination": "converged",
+            "guard_failure": null,
+            "remaining_max_translation_m": 6.490512807197587e-06
+          },
+          {
+            "requested_cap": 30,
+            "actual_applied_corrections": 19,
+            "continuous_converged": true,
+            "termination": "converged",
+            "guard_failure": null,
+            "remaining_max_translation_m": 6.490512807197587e-06
+          }
+        ]
+      },
+      {
+        "source_index": 240,
+        "complete_cap10_report_equal": true,
+        "actual_applied_corrections": 0,
+        "continuous_converged": false,
+        "termination": "guard",
+        "guard_failure": "new frame needs measured support",
+        "accepted_multipliers": [],
+        "checkpoints": [
+          {
+            "requested_cap": 10,
+            "actual_applied_corrections": 0,
+            "continuous_converged": false,
+            "termination": "guard",
+            "guard_failure": "new frame needs measured support",
+            "remaining_max_translation_m": null
+          },
+          {
+            "requested_cap": 20,
+            "actual_applied_corrections": 0,
+            "continuous_converged": false,
+            "termination": "guard",
+            "guard_failure": "new frame needs measured support",
+            "remaining_max_translation_m": null
+          },
+          {
+            "requested_cap": 30,
+            "actual_applied_corrections": 0,
+            "continuous_converged": false,
+            "termination": "guard",
+            "guard_failure": "new frame needs measured support",
+            "remaining_max_translation_m": null
+          }
+        ]
+      },
+      {
+        "source_index": 279,
+        "complete_cap10_report_equal": true,
+        "actual_applied_corrections": 0,
+        "continuous_converged": false,
+        "termination": "guard",
+        "guard_failure": "new frame needs measured support",
+        "accepted_multipliers": [],
+        "checkpoints": [
+          {
+            "requested_cap": 10,
+            "actual_applied_corrections": 0,
+            "continuous_converged": false,
+            "termination": "guard",
+            "guard_failure": "new frame needs measured support",
+            "remaining_max_translation_m": null
+          },
+          {
+            "requested_cap": 20,
+            "actual_applied_corrections": 0,
+            "continuous_converged": false,
+            "termination": "guard",
+            "guard_failure": "new frame needs measured support",
+            "remaining_max_translation_m": null
+          },
+          {
+            "requested_cap": 30,
+            "actual_applied_corrections": 0,
+            "continuous_converged": false,
+            "termination": "guard",
+            "guard_failure": "new frame needs measured support",
+            "remaining_max_translation_m": null
+          }
+        ]
+      }
+    ]
+  }
+}

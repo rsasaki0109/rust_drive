@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "data_role": "already viewed development; budget diagnostic only",
+  "pass_implementation_integrity": true,
+  "source_members": 53,
+  "source_archive_sha256": "af7a4da9065e601a7cf0b3b5e468e5f6ef79fad7f10e34803c3f39a48848e311",
+  "input_alternating_sha256": "bc5a68f4c4de21a958b2982dace38d36becf95a08f61d7719d59707cf4bb94e8",
+  "complete_first_segment_control_matches": 10,
+  "reported_systems": 670,
+  "repeated_control_systems": 220,
+  "incremental_extension_systems": 450,
+  "applied_iteration_systems": 300,
+  "batch_final_fixed_systems": 185,
+  "batch_final_fresh_systems": 185,
+  "additional_endpoint_system_checks": 30,
+  "pair_transitions": 288,
+  "total_applied_correction_cap_per_sample": 30,
+  "segment_cap": 10,
+  "inner_cap": 3,
+  "association_rounds": 185,
+  "fixed_converged_batches": 154,
+  "fresh_converged_samples_at_10": 0,
+  "fresh_converged_samples_at_20": 0,
+  "fresh_converged_samples_at_30": 0,
+  "budget_exhausted_samples": 10,
+  "guard_failed_samples": 0,
+  "endpoint_fixed_cost_decreases": 30,
+  "endpoint_fresh_cost_increases": 15,
+  "endpoint_factor_gate_changes": 0,
+  "eligible_for_followup_full_trajectory": false,
+  "real_local_pose_fitting": true,
+  "new_trajectory_fitting": false,
+  "physical_accuracy_scored": false,
+  "numeric_ground_truth_parsed": false,
+  "tracker_state_commits": false,
+  "tracker_integration": false,
+  "default_changed": false,
+  "rust_driving_changed": false,
+  "analytic_reported_systems": 13,
+  "analytic_additional_endpoint_checks": 4,
+  "analytic_pair_transitions": 4,
+  "rejected_corruptions": 11,
+  "core_rust_tests_passed": 371,
+  "core_scenario_runs_and_replays_passed": 49,
+  "unchanged_core_files": 245,
+  "unchanged_previous_evidence_files": 390,
+  "unchanged_pinned_native_sources": 16,
+  "statistics": {
+    "tum-fr1-room-temporal": {
+      "checkpoints": {
+        "10": {
+          "samples": 5,
+          "fresh_converged": 0,
+          "guards": 0,
+          "budget_stops": 5,
+          "applied_corrections": 50,
+          "fresh_rms_gate_passes": 5,
+          "median_fresh_rms_m": 0.002464872275522572,
+          "terminal_carried_forward": 0
+        },
+        "20": {
+          "samples": 5,
+          "fresh_converged": 0,
+          "guards": 0,
+          "budget_stops": 5,
+          "applied_corrections": 100,
+          "fresh_rms_gate_passes": 5,
+          "median_fresh_rms_m": 0.0024599013299186757,
+          "terminal_carried_forward": 0
+        },
+        "30": {
+          "samples": 5,
+          "fresh_converged": 0,
+          "guards": 0,
+          "budget_stops": 5,
+          "applied_corrections": 150,
+          "fresh_rms_gate_passes": 5,
+          "median_fresh_rms_m": 0.0024808693472500817,
+          "terminal_carried_forward": 0
+        }
+      },
+      "eligible_for_followup_full_trajectory": false,
+      "total_association_rounds": 90,
+      "endpoint_pair_occurrences": 157625,
+      "endpoint_stable_pair_occurrences": 149135,
+      "endpoint_retargeted_source_occurrences": 2774,
+      "fixed_converged_batches": 81
+    },
+    "tum-fr1-desk2-independent": {
+      "checkpoints": {
+        "10": {
+          "samples": 5,
+          "fresh_converged": 0,
+          "guards": 0,
+          "budget_stops": 5,
+          "applied_corrections": 50,
+          "fresh_rms_gate_passes": 5,
+          "median_fresh_rms_m": 0.0027658186260333226,
+          "terminal_carried_forward": 0
+        },
+        "20": {
+          "samples": 5,
+          "fresh_converged": 0,
+          "guards": 0,
+          "budget_stops": 5,
+          "applied_corrections": 100,
+          "fresh_rms_gate_passes": 5,
+          "median_fresh_rms_m": 0.0027848494810292102,
+          "terminal_carried_forward": 0
+        },
+        "30": {
+          "samples": 5,
+          "fresh_converged": 0,
+          "guards": 0,
+          "budget_stops": 5,
+          "applied_corrections": 150,
+          "fresh_rms_gate_passes": 5,
+          "median_fresh_rms_m": 0.002768749032676634,
+          "terminal_carried_forward": 0
+        }
+      },
+      "eligible_for_followup_full_trajectory": false,
+      "total_association_rounds": 95,
+      "endpoint_pair_occurrences": 194063,
+      "endpoint_stable_pair_occurrences": 182911,
+      "endpoint_retargeted_source_occurrences": 4120,
+      "fixed_converged_batches": 73
+    }
+  },
+  "subjective_maturity_percent": 20,
+  "limits": [
+    "Thirty corrections at these ten viewed local windows do not prove that every larger budget or policy fails",
+    "The 670 reported systems include 220 exactly replayed control systems; 30 extra endpoint checks repeat reported systems",
+    "The 288 transitions are checkpoint-last-batch pair occurrences with reused measurements, not independent observations",
+    "Persistent turnover and nonconvergence do not identify physically correct matches or prove the cause of trajectory drift",
+    "Changing candidate populations prevent RMS alone from proving physical pose improvement",
+    "No new continuous trajectory, physical environment, uncertainty calibration, vehicle integration or runtime claim"
+  ]
+}

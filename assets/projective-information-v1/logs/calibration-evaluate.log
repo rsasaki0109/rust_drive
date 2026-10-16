@@ -1,0 +1,25 @@
+Traceback (most recent call last):
+  File "/workspace/rust_drive/scripts/check-projective-information-calibration.py", line 83, in <module>
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('action',choices=('calibrate','evaluate'));a=p.parse_args();globals()[a.action]()
+                                                                                                                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/rust_drive/scripts/check-projective-information-calibration.py", line 77, in evaluate
+    write(BASE/'heldout-results.json',dict(preregistered_freeze_sha256=sha((BASE/'freeze.json').read_bytes()),results=results,
+  File "/workspace/rust_drive/scripts/projective_depth_common.py", line 24, in write
+    json.dump(value,stream,indent=2,allow_nan=False)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/json/__init__.py", line 179, in dump
+    for chunk in iterable:
+                 ^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/json/encoder.py", line 432, in _iterencode
+    yield from _iterencode_dict(o, _current_indent_level)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/json/encoder.py", line 439, in _iterencode
+    o = _default(o)
+        ^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type bool is not JSON serializable

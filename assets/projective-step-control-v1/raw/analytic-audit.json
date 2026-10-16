@@ -1,0 +1,62 @@
+{
+  "hand_controls": {
+    "metre_axis_normal_witness": true,
+    "half_pixel_centers": true,
+    "invalid_discontinuous_reduction": true,
+    "exact_raster_tie_and_occlusion": true,
+    "four_fusion_partitions": true,
+    "capped_weight_arithmetic": true,
+    "hand_calculated_225_point_plane_equation": true,
+    "inverse_depth_plane_camera_normal": true,
+    "missing_discontinuous_plane_support_rejected": true,
+    "nonplanar_and_coarse_normal_support_preserved": true
+  },
+  "motions": [
+    {
+      "motion": 1,
+      "report_sha256": "7642a1727f2d1b8d99c337eb1e415dcc2b5c0e8db14147c2dcf2217d7ee88639",
+      "iterations": 3,
+      "final_equations": 1,
+      "model_replaced": false
+    },
+    {
+      "motion": 2,
+      "report_sha256": "eff18f22f82cc84bf8bf46ca0e1707fd90534acf86ef92eed0a97c639802f63d",
+      "iterations": 8,
+      "final_equations": 1,
+      "model_replaced": false
+    },
+    {
+      "motion": 3,
+      "report_sha256": "ed67c9abf8e8de24037a93d1c2a2cab361b19a9ca0be18bd2cc108de5a8c6368",
+      "iterations": 8,
+      "final_equations": 1,
+      "model_replaced": false
+    },
+    {
+      "motion": 4,
+      "report_sha256": "6b6e33d4e804eb77d4384482a47e9eb61122f1b2fb19c8233c11718a2e82201c",
+      "iterations": 8,
+      "final_equations": 1,
+      "model_replaced": false
+    }
+  ],
+  "geometry": "depth",
+  "vertex_controls": null,
+  "rejected_corruptions": [
+    "joint H/g rescaling with unchanged valid solve",
+    "false correspondence count",
+    "false per-iteration RMS",
+    "false final support",
+    "false returned-pose RMS",
+    "fusion category moved while total remains valid",
+    "altered image gradient",
+    "repeated image falsely marked fresh",
+    "altered exposure gain",
+    "altered exposure fitting support",
+    "altered fixed-support initial cost",
+    "altered fixed-support trial cost",
+    "altered fixed-support geometry count"
+  ],
+  "prior_solve_only_auditor_accepts_rescaled_Hg": true
+}

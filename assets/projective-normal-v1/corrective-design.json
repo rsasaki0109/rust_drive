@@ -1,0 +1,13 @@
+{
+  "reason": "strict full-patch support at all scales excludes small curved geometry and fails two known-motion controls",
+  "change": "use five-by-five inverse-depth planes only at native resolution and only when the reconstructed patch depth RMS <= 2 mm; preserve central normals elsewhere or when full planar support is absent",
+  "rms_gate_m": 0.002,
+  "adoption_rule_changed": false,
+  "coarse_support": "original central differences at scales 2 and 4",
+  "failure_evidence": "first-analytic-motion-failures.json",
+  "first_viewed_scores": {
+    "room": 59,
+    "desk2": 77
+  },
+  "truth_used_operationally": false
+}

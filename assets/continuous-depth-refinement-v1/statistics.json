@@ -1,0 +1,675 @@
+{
+  "summaries": {
+    "tum-fr1-room-temporal": {
+      "samples": 5,
+      "continuous_converged": 0,
+      "discrete_fresh_converged": 0,
+      "control_discrete_fresh_converged": 0,
+      "local_guard_failures": 5,
+      "discrete_fresh_guard_failures": 0,
+      "budget_exhaustions": 0,
+      "applied_corrections": 0,
+      "control_applied_corrections": 50,
+      "invalid_candidate_trials": 32,
+      "valid_nonpassing_trials": 0,
+      "applied_shortened_steps": 0,
+      "discrete_fresh_rms_gate_passes": 5,
+      "median_original_discrete_rms_m": 0.0024838335603096125,
+      "median_control_discrete_rms_m": 0.002464872275522572,
+      "median_continuous_rms_m": 0.002050818575573436,
+      "eligible_for_followup_full_trajectory": false
+    },
+    "tum-fr1-desk2-independent": {
+      "samples": 5,
+      "continuous_converged": 0,
+      "discrete_fresh_converged": 0,
+      "control_discrete_fresh_converged": 0,
+      "local_guard_failures": 5,
+      "discrete_fresh_guard_failures": 0,
+      "budget_exhaustions": 0,
+      "applied_corrections": 1,
+      "control_applied_corrections": 50,
+      "invalid_candidate_trials": 46,
+      "valid_nonpassing_trials": 0,
+      "applied_shortened_steps": 1,
+      "discrete_fresh_rms_gate_passes": 5,
+      "median_original_discrete_rms_m": 0.0027404641366715284,
+      "median_control_discrete_rms_m": 0.0027658186260333226,
+      "median_continuous_rms_m": 0.0023563093246710192,
+      "eligible_for_followup_full_trajectory": false
+    }
+  },
+  "samples": {
+    "tum-fr1-room-temporal": [
+      {
+        "source_index": 120,
+        "continuous_converged": false,
+        "original_discrete_fresh_converged": false,
+        "applied_corrections": 0,
+        "guard_failure": "line search",
+        "initial_factors": 8,
+        "fixed_source_occurrences": 5796,
+        "final_continuous_rms_m": 0.0019602691862418693,
+        "final_original_discrete_rms_m": 0.00230607129245166,
+        "last_trial_domain_loss": {
+          "search_index": 0,
+          "alpha": 0.0078125,
+          "guard_failure": "fixed source support",
+          "initial_source_occurrences": 5796,
+          "lost_source_occurrences": 2,
+          "lost_interpolation_domain": 0,
+          "lost_geometry_or_alignment": 2,
+          "lost_fraction": 0.0003450655624568668,
+          "edges": [
+            {
+              "target": 0,
+              "source": 1,
+              "initial_sources": 433,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 433
+            },
+            {
+              "target": 0,
+              "source": 2,
+              "initial_sources": 229,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 229
+            },
+            {
+              "target": 1,
+              "source": 2,
+              "initial_sources": 804,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 804
+            },
+            {
+              "target": 1,
+              "source": 3,
+              "initial_sources": 482,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 482
+            },
+            {
+              "target": 2,
+              "source": 3,
+              "initial_sources": 952,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 2,
+              "retained_sources": 950
+            },
+            {
+              "target": 1,
+              "source": 4,
+              "initial_sources": 396,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 396
+            },
+            {
+              "target": 2,
+              "source": 4,
+              "initial_sources": 871,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 871
+            },
+            {
+              "target": 3,
+              "source": 4,
+              "initial_sources": 1629,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 1629
+            }
+          ]
+        }
+      },
+      {
+        "source_index": 160,
+        "continuous_converged": false,
+        "original_discrete_fresh_converged": false,
+        "applied_corrections": 0,
+        "guard_failure": "line search",
+        "initial_factors": 6,
+        "fixed_source_occurrences": 6076,
+        "final_continuous_rms_m": 0.00217112945962169,
+        "final_original_discrete_rms_m": 0.0024838335603096125,
+        "last_trial_domain_loss": {
+          "search_index": 0,
+          "alpha": 0.0078125,
+          "guard_failure": "fixed source support",
+          "initial_source_occurrences": 6076,
+          "lost_source_occurrences": 4,
+          "lost_interpolation_domain": 1,
+          "lost_geometry_or_alignment": 3,
+          "lost_fraction": 0.0006583278472679394,
+          "edges": [
+            {
+              "target": 1,
+              "source": 2,
+              "initial_sources": 1298,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 2,
+              "retained_sources": 1296
+            },
+            {
+              "target": 1,
+              "source": 3,
+              "initial_sources": 1061,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 1061
+            },
+            {
+              "target": 2,
+              "source": 3,
+              "initial_sources": 1314,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 1,
+              "retained_sources": 1313
+            },
+            {
+              "target": 1,
+              "source": 4,
+              "initial_sources": 672,
+              "lost_interpolation_domain": 1,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 671
+            },
+            {
+              "target": 2,
+              "source": 4,
+              "initial_sources": 835,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 835
+            },
+            {
+              "target": 3,
+              "source": 4,
+              "initial_sources": 896,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 896
+            }
+          ]
+        }
+      },
+      {
+        "source_index": 200,
+        "continuous_converged": false,
+        "original_discrete_fresh_converged": false,
+        "applied_corrections": 0,
+        "guard_failure": "new frame needs measured support",
+        "initial_factors": 0,
+        "fixed_source_occurrences": 0,
+        "final_continuous_rms_m": 0.0,
+        "final_original_discrete_rms_m": 0.008148117638304486,
+        "last_trial_domain_loss": null
+      },
+      {
+        "source_index": 240,
+        "continuous_converged": false,
+        "original_discrete_fresh_converged": false,
+        "applied_corrections": 0,
+        "guard_failure": "line search",
+        "initial_factors": 6,
+        "fixed_source_occurrences": 8628,
+        "final_continuous_rms_m": 0.002050818575573436,
+        "final_original_discrete_rms_m": 0.002342692036727467,
+        "last_trial_domain_loss": {
+          "search_index": 0,
+          "alpha": 0.0078125,
+          "guard_failure": "fixed source support",
+          "initial_source_occurrences": 8628,
+          "lost_source_occurrences": 1,
+          "lost_interpolation_domain": 0,
+          "lost_geometry_or_alignment": 1,
+          "lost_fraction": 0.0001159017153453871,
+          "edges": [
+            {
+              "target": 1,
+              "source": 2,
+              "initial_sources": 1181,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 1181
+            },
+            {
+              "target": 1,
+              "source": 3,
+              "initial_sources": 850,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 850
+            },
+            {
+              "target": 2,
+              "source": 3,
+              "initial_sources": 2023,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 1,
+              "retained_sources": 2022
+            },
+            {
+              "target": 1,
+              "source": 4,
+              "initial_sources": 614,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 614
+            },
+            {
+              "target": 2,
+              "source": 4,
+              "initial_sources": 1613,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 1613
+            },
+            {
+              "target": 3,
+              "source": 4,
+              "initial_sources": 2347,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 2347
+            }
+          ]
+        }
+      },
+      {
+        "source_index": 279,
+        "continuous_converged": false,
+        "original_discrete_fresh_converged": false,
+        "applied_corrections": 0,
+        "guard_failure": "line search",
+        "initial_factors": 3,
+        "fixed_source_occurrences": 3015,
+        "final_continuous_rms_m": 0.0027996330101845396,
+        "final_original_discrete_rms_m": 0.0032679191829315182,
+        "last_trial_domain_loss": {
+          "search_index": 0,
+          "alpha": 0.0078125,
+          "guard_failure": "fixed source support",
+          "initial_source_occurrences": 3015,
+          "lost_source_occurrences": 3,
+          "lost_interpolation_domain": 0,
+          "lost_geometry_or_alignment": 3,
+          "lost_fraction": 0.0009950248756218905,
+          "edges": [
+            {
+              "target": 1,
+              "source": 2,
+              "initial_sources": 1048,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 1,
+              "retained_sources": 1047
+            },
+            {
+              "target": 1,
+              "source": 3,
+              "initial_sources": 939,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 1,
+              "retained_sources": 938
+            },
+            {
+              "target": 2,
+              "source": 3,
+              "initial_sources": 1028,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 1,
+              "retained_sources": 1027
+            }
+          ]
+        }
+      }
+    ],
+    "tum-fr1-desk2-independent": [
+      {
+        "source_index": 120,
+        "continuous_converged": false,
+        "original_discrete_fresh_converged": false,
+        "applied_corrections": 0,
+        "guard_failure": "line search",
+        "initial_factors": 7,
+        "fixed_source_occurrences": 3131,
+        "final_continuous_rms_m": 0.0023563093246710192,
+        "final_original_discrete_rms_m": 0.0027404641366715284,
+        "last_trial_domain_loss": {
+          "search_index": 0,
+          "alpha": 0.0078125,
+          "guard_failure": "fixed source support",
+          "initial_source_occurrences": 3131,
+          "lost_source_occurrences": 1,
+          "lost_interpolation_domain": 1,
+          "lost_geometry_or_alignment": 0,
+          "lost_fraction": 0.00031938677738741617,
+          "edges": [
+            {
+              "target": 0,
+              "source": 1,
+              "initial_sources": 643,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 643
+            },
+            {
+              "target": 1,
+              "source": 2,
+              "initial_sources": 537,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 537
+            },
+            {
+              "target": 1,
+              "source": 3,
+              "initial_sources": 412,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 412
+            },
+            {
+              "target": 2,
+              "source": 3,
+              "initial_sources": 448,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 448
+            },
+            {
+              "target": 1,
+              "source": 4,
+              "initial_sources": 289,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 289
+            },
+            {
+              "target": 2,
+              "source": 4,
+              "initial_sources": 391,
+              "lost_interpolation_domain": 1,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 390
+            },
+            {
+              "target": 3,
+              "source": 4,
+              "initial_sources": 411,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 411
+            }
+          ]
+        }
+      },
+      {
+        "source_index": 160,
+        "continuous_converged": false,
+        "original_discrete_fresh_converged": false,
+        "applied_corrections": 0,
+        "guard_failure": "line search",
+        "initial_factors": 6,
+        "fixed_source_occurrences": 9680,
+        "final_continuous_rms_m": 0.0016400689126014282,
+        "final_original_discrete_rms_m": 0.0019754012141818453,
+        "last_trial_domain_loss": {
+          "search_index": 0,
+          "alpha": 0.0078125,
+          "guard_failure": "fixed source support",
+          "initial_source_occurrences": 9680,
+          "lost_source_occurrences": 4,
+          "lost_interpolation_domain": 2,
+          "lost_geometry_or_alignment": 2,
+          "lost_fraction": 0.00041322314049586776,
+          "edges": [
+            {
+              "target": 1,
+              "source": 2,
+              "initial_sources": 1393,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 1393
+            },
+            {
+              "target": 1,
+              "source": 3,
+              "initial_sources": 1329,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 1329
+            },
+            {
+              "target": 2,
+              "source": 3,
+              "initial_sources": 1891,
+              "lost_interpolation_domain": 2,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 1889
+            },
+            {
+              "target": 1,
+              "source": 4,
+              "initial_sources": 1109,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 1,
+              "retained_sources": 1108
+            },
+            {
+              "target": 2,
+              "source": 4,
+              "initial_sources": 1658,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 1,
+              "retained_sources": 1657
+            },
+            {
+              "target": 3,
+              "source": 4,
+              "initial_sources": 2300,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 2300
+            }
+          ]
+        }
+      },
+      {
+        "source_index": 200,
+        "continuous_converged": false,
+        "original_discrete_fresh_converged": false,
+        "applied_corrections": 0,
+        "guard_failure": "line search",
+        "initial_factors": 6,
+        "fixed_source_occurrences": 21238,
+        "final_continuous_rms_m": 0.001514036626997156,
+        "final_original_discrete_rms_m": 0.0016014269677478079,
+        "last_trial_domain_loss": {
+          "search_index": 0,
+          "alpha": 0.0078125,
+          "guard_failure": "fixed source support",
+          "initial_source_occurrences": 21238,
+          "lost_source_occurrences": 4,
+          "lost_interpolation_domain": 0,
+          "lost_geometry_or_alignment": 4,
+          "lost_fraction": 0.0001883416517562859,
+          "edges": [
+            {
+              "target": 1,
+              "source": 2,
+              "initial_sources": 4881,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 4881
+            },
+            {
+              "target": 1,
+              "source": 3,
+              "initial_sources": 3967,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 2,
+              "retained_sources": 3965
+            },
+            {
+              "target": 2,
+              "source": 3,
+              "initial_sources": 4225,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 4225
+            },
+            {
+              "target": 1,
+              "source": 4,
+              "initial_sources": 2688,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 1,
+              "retained_sources": 2687
+            },
+            {
+              "target": 2,
+              "source": 4,
+              "initial_sources": 2911,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 2911
+            },
+            {
+              "target": 3,
+              "source": 4,
+              "initial_sources": 2566,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 1,
+              "retained_sources": 2565
+            }
+          ]
+        }
+      },
+      {
+        "source_index": 240,
+        "continuous_converged": false,
+        "original_discrete_fresh_converged": false,
+        "applied_corrections": 0,
+        "guard_failure": "line search",
+        "initial_factors": 3,
+        "fixed_source_occurrences": 795,
+        "final_continuous_rms_m": 0.006024558097092577,
+        "final_original_discrete_rms_m": 0.005855454912807349,
+        "last_trial_domain_loss": {
+          "search_index": 0,
+          "alpha": 0.0078125,
+          "guard_failure": "fixed source support",
+          "initial_source_occurrences": 795,
+          "lost_source_occurrences": 1,
+          "lost_interpolation_domain": 1,
+          "lost_geometry_or_alignment": 0,
+          "lost_fraction": 0.0012578616352201257,
+          "edges": [
+            {
+              "target": 2,
+              "source": 3,
+              "initial_sources": 243,
+              "lost_interpolation_domain": 1,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 242
+            },
+            {
+              "target": 2,
+              "source": 4,
+              "initial_sources": 233,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 233
+            },
+            {
+              "target": 3,
+              "source": 4,
+              "initial_sources": 319,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 319
+            }
+          ]
+        }
+      },
+      {
+        "source_index": 279,
+        "continuous_converged": false,
+        "original_discrete_fresh_converged": false,
+        "applied_corrections": 1,
+        "guard_failure": "line search",
+        "initial_factors": 6,
+        "fixed_source_occurrences": 2127,
+        "final_continuous_rms_m": 0.005622076626921353,
+        "final_original_discrete_rms_m": 0.005374051774718676,
+        "last_trial_domain_loss": {
+          "search_index": 1,
+          "alpha": 0.0078125,
+          "guard_failure": "fixed source support",
+          "initial_source_occurrences": 2127,
+          "lost_source_occurrences": 2,
+          "lost_interpolation_domain": 2,
+          "lost_geometry_or_alignment": 0,
+          "lost_fraction": 0.0009402914903620122,
+          "edges": [
+            {
+              "target": 1,
+              "source": 2,
+              "initial_sources": 303,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 303
+            },
+            {
+              "target": 1,
+              "source": 3,
+              "initial_sources": 315,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 315
+            },
+            {
+              "target": 2,
+              "source": 3,
+              "initial_sources": 515,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 515
+            },
+            {
+              "target": 1,
+              "source": 4,
+              "initial_sources": 212,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 212
+            },
+            {
+              "target": 2,
+              "source": 4,
+              "initial_sources": 384,
+              "lost_interpolation_domain": 2,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 382
+            },
+            {
+              "target": 3,
+              "source": 4,
+              "initial_sources": 398,
+              "lost_interpolation_domain": 0,
+              "lost_geometry_or_alignment": 0,
+              "retained_sources": 398
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

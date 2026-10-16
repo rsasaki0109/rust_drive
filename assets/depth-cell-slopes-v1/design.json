@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "data_role": "post-hoc read-only cell-transition slope diagnosis on viewed local fits",
+  "parents": ["assets/deep-search-depth-refinement-v1", "assets/damped-depth-refinement-v1"],
+  "case": "tum-fr1-room-temporal",
+  "source_indices": [120, 160, 240, 279],
+  "anchors": "All four saved final poses from each parent: three budget stops and one sampling-domain control per method, eight states of four reused windows",
+  "observations": "Reconstruct original initial sampling population, frozen center normalizers and incoming prior; never reselect at a final or probe pose",
+  "path": "Archived full terminal undamped GN direction, using the original exp(alpha*omega) rotation and alpha*v translation in the first-camera root frame",
+  "scale": "Last applied trace entry's GN accepted multiplier, or2^-20 if that GN search had no accepted candidate",
+  "probes": "Zero plus both signs of scale*2^k for every integer k=-4..4, nineteen predeclared positions per anchor; no optimization continuation or adaptive extra probes",
+  "derivative": "Exact pose-path tangent at alpha has translation v-alpha*(omega cross v), rotation omega. Sum clipped Huber residual times the sampler's reported bilinear-branch derivative and the original nonlinear prior derivative. Inside the1e-10 pixel snapping band this need not equal differentiating the literal rounded operation; snapped-coordinate counts remain explicit",
+  "partition": "For every adjacent signed pair, decompose slope change into sources whose endpoint cells changed, unchanged endpoint cells and prior; retain exact changed-source IDs. Endpoint accounting does not certify the first crossing or count intermediate crossings",
+  "numerics": "Record total and per-source paired cost differences. Independent projection discrepancies within3e-11 pixels of a snap/cell switch are unresolved if cell choices differ; retain both answers and exclude unresolved comparisons from sign conclusions. Implementation differences are not certified error bounds",
+  "independent_checks": "Separate relative-camera homogeneous projection, polynomial sampling, SVD normals, prior/gradient construction and Rodrigues path; compare all resolved probe values and partitions. Shared source observations and aggregation are explicit",
+  "analytic_controls": "Smooth cell, authored grid kink, invalid domain and moved target/source rotational paths; finite differences check path tangent away from knots; injected directions do not claim guarded pose fitting or physical accuracy",
+  "scope": "Read-only diagnosis; no new convergence, source dropout, objective smoothing, numeric real GT, physical scoring, tracker/prior/Schur commits or default adoption",
+  "subjective_maturity_percent": 20
+}

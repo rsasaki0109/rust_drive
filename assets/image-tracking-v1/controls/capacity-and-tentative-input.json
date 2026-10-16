@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "camera_id": "controls",
+  "width": 100,
+  "height": 100,
+  "config": {
+    "max_tracks": 2,
+    "confirmation_hits": 3
+  },
+  "events": [
+    {
+      "timestamp_s": 0.0,
+      "input": {
+        "kind": "detections",
+        "image_sha256": "4e1195df020de59e0d65a33a4279f1183e7ae4e5d980e309f8b55adff2e61c3e",
+        "detections": [
+          {
+            "class_index": 2,
+            "confidence": 0.8,
+            "bbox": [
+              0.0,
+              10.0,
+              20.0,
+              30.0
+            ]
+          },
+          {
+            "class_index": 2,
+            "confidence": 0.7,
+            "bbox": [
+              30.0,
+              10.0,
+              50.0,
+              30.0
+            ]
+          },
+          {
+            "class_index": 2,
+            "confidence": 0.9,
+            "bbox": [
+              60.0,
+              10.0,
+              80.0,
+              30.0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "timestamp_s": 0.125,
+      "input": {
+        "kind": "detections",
+        "image_sha256": "f55ff16f66f43360266b95db6f8fec01d76031054306ae4a4b380598f6cfd114",
+        "detections": []
+      }
+    },
+    {
+      "timestamp_s": 0.25,
+      "input": {
+        "kind": "detections",
+        "image_sha256": "2c3a4249d77070058649dbd822dcaf7957586fce428cfb2ca88b94741eda8b07",
+        "detections": [
+          {
+            "class_index": 2,
+            "confidence": 0.9,
+            "bbox": [
+              10.0,
+              10.0,
+              30.0,
+              30.0
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

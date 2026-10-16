@@ -1,0 +1,123 @@
+{
+  "algorithm": "image_iou_velocity_tracking_v1",
+  "camera_id": "isolated-admission",
+  "compiled_sources": {
+    "integrations/camera-tracking/Cargo.lock": "b361dc93aced50ba194ed4227e3d1624d30eeb291ab66104db8fdf933b072a2d",
+    "integrations/camera-tracking/Cargo.toml": "d235c784c3b4566cae8395425838e1145431c68d60d1c3f1544f8227bcdcf449",
+    "integrations/camera-tracking/producer-sources.json": "32a790788e886c4ea960eb7920f572f232a73d7008ae4ca8437ed6f444ddee5c",
+    "integrations/camera-tracking/src/assignment.rs": "e9b7223b4a6cab91bad4c11725a4e828d21a8cb10cc4ef8fd72b60dde0b6e179",
+    "integrations/camera-tracking/src/bin/rustdriving-camera-track.rs": "807750c4abe29f82c5272f89d673ce4277ec9f0cbc95608e3317c7f1503c143f",
+    "integrations/camera-tracking/src/lib.rs": "d2ef1e0649a64e16457b360e1871c81d3794cd38fef0600f1e5535200e8b2acc",
+    "integrations/camera-tracking/src/report_input.rs": "ff587ff13b218d720c03c90155a6387df7fc0c96a2a01147eba06823b11b0f0a",
+    "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed"
+  },
+  "config": {
+    "coast_seconds": 0.5,
+    "confirmation_hits": 2,
+    "max_tracks": 300,
+    "min_iou": 0.3,
+    "velocity_gain": 0.5
+  },
+  "height": 720,
+  "images_read": false,
+  "inference_run": false,
+  "inline_detection_events": 0,
+  "model_read": false,
+  "schema_version": 1,
+  "snapshots": [
+    {
+      "assignment_work": 0,
+      "health": "observed",
+      "retired": [],
+      "sequence_number": 1,
+      "source_image_sha256": "f0edf2284f6cb5dfc92823457c7587ee2db3e630906850a0c6ebc49e66ba77f2",
+      "timestamp_s": 0.0,
+      "tracks": [
+        {
+          "bbox": [
+            632.2276000976562,
+            229.7761993408203,
+            741.6675415039062,
+            365.30401611328125
+          ],
+          "class_index": 7,
+          "detection_index": 0,
+          "last_observed_bbox": [
+            632.2276000976562,
+            229.7761993408203,
+            741.6675415039062,
+            365.30401611328125
+          ],
+          "last_observed_confidence": 0.929412841796875,
+          "last_observed_timestamp_s": 0.0,
+          "observation_count": 1,
+          "phase": "tentative",
+          "track_id": 1,
+          "velocity_px_s": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "bbox": [
+            740.3359985351562,
+            298.8272705078125,
+            795.9567260742188,
+            345.6878662109375
+          ],
+          "class_index": 2,
+          "detection_index": 1,
+          "last_observed_bbox": [
+            740.3359985351562,
+            298.8272705078125,
+            795.9567260742188,
+            345.6878662109375
+          ],
+          "last_observed_confidence": 0.8837294578552246,
+          "last_observed_timestamp_s": 0.0,
+          "observation_count": 1,
+          "phase": "tentative",
+          "track_id": 2,
+          "velocity_px_s": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "bbox": [
+            877.03076171875,
+            536.8487548828125,
+            1278.7918701171875,
+            715.1932373046875
+          ],
+          "class_index": 2,
+          "detection_index": 2,
+          "last_observed_bbox": [
+            877.03076171875,
+            536.8487548828125,
+            1278.7918701171875,
+            715.1932373046875
+          ],
+          "last_observed_confidence": 0.3326832950115204,
+          "last_observed_timestamp_s": 0.0,
+          "observation_count": 1,
+          "phase": "tentative",
+          "track_id": 3,
+          "velocity_px_s": [
+            0.0,
+            0.0
+          ]
+        }
+      ],
+      "untracked_detection_indices": []
+    }
+  ],
+  "source_reports": [
+    {
+      "event_index": 0,
+      "sha256": "b77a249f288d9147ec8e447f48da051cbcb9bc1d353671f1ff5c71c218ca8577"
+    }
+  ],
+  "source_sequence_sha256": "28f4e7320fdd8b72cd157d943c237b989b8b93dcc7a56583fe09306da50e0d6b",
+  "width": 1280
+}

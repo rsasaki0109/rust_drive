@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "problem": "one-pixel depth normals vary sharply even in planar observed support",
+  "change": "uniform inverse-depth plane fit on complete 5x5 support; reject missing, out-of-range or discontinuous samples; original depth vertices/fusion/fitting/guards unchanged",
+  "formula": "1/Z = a*du + b*dv + c; normal proportional to [fx*a, fy*b, c-(u-cx)*a-(v-cy)*b]",
+  "fixed_support": 25,
+  "selection": "same viewed room/desk2 indices 100..279 with no resets",
+  "root_gates": {
+    "translation_m": 0.1,
+    "rotation_rad": 0.1
+  },
+  "adoption": {
+    "room_accurate_greater_than": 64,
+    "desk2_accurate_at_least": 161,
+    "accepted_each": 179,
+    "expiry": false,
+    "maximum_position_and_rotation_no_worse_in_either": true,
+    "raw_reconstruction_required": true,
+    "legacy_policy_exact_replay_required": true
+  },
+  "ground_truth_operational": false,
+  "diagnostic_limitation": "normal variation on selected planar patches does not establish drift causality or pose accuracy"
+}

@@ -1,0 +1,228 @@
+{
+  "hypothesis": "one-pixel normals amplify depth noise; a five-by-five inverse-depth plane reduces local normal variation",
+  "ground_truth_decoded": false,
+  "selection": "12 evenly spaced viewed frames per case; common adjacent valid normals on five-by-five patches with fitted depth RMS <= 2 mm",
+  "limitation": "same-support plane residual selection favors planar patches; normal consistency is not pose accuracy or proof of drift cause",
+  "cases": {
+    "tum-fr1-room-temporal": [
+      {
+        "source_index": 100,
+        "depth_sha256": "43c6a376b3f1bcb7e2dfc2371be6d46dff6f8b8b8758eb7e5c3cd5702363dc5e",
+        "pairs": 149942,
+        "central_median_rad": 0.3842360513658418,
+        "plane_median_rad": 0.08419772237292064,
+        "central_p90_rad": 0.760906701978385,
+        "plane_p90_rad": 0.19023198366746522
+      },
+      {
+        "source_index": 115,
+        "depth_sha256": "16db4c9fc6abe36c023fc3804c7758f2e1d2abc98bb8be01876e105ee6ec5393",
+        "pairs": 162863,
+        "central_median_rad": 0.347926792386689,
+        "plane_median_rad": 0.08226295345098733,
+        "central_p90_rad": 0.7737580126689654,
+        "plane_p90_rad": 0.19369804115606534
+      },
+      {
+        "source_index": 130,
+        "depth_sha256": "6918c7398706ec42af400b3a5fcd61f2ecb4649d34faad61a6df8fcc1593636f",
+        "pairs": 165516,
+        "central_median_rad": 0.3107749535627551,
+        "plane_median_rad": 0.07655452000636055,
+        "central_p90_rad": 0.7368796924914601,
+        "plane_p90_rad": 0.17206994983999868
+      },
+      {
+        "source_index": 145,
+        "depth_sha256": "c02a8d43621172534f37e89a33882af41e3e80b03653fe48cc45518bcdbf656a",
+        "pairs": 148222,
+        "central_median_rad": 0.2871566686543572,
+        "plane_median_rad": 0.07641583474831548,
+        "central_p90_rad": 0.7490410993661917,
+        "plane_p90_rad": 0.17470904812303026
+      },
+      {
+        "source_index": 160,
+        "depth_sha256": "5d8db0359a937eab9c1ef2c90a06c804787628939308c7a386b74439e1160f4d",
+        "pairs": 132032,
+        "central_median_rad": 0.3984767304512806,
+        "plane_median_rad": 0.09280209396824304,
+        "central_p90_rad": 0.8076887238373529,
+        "plane_p90_rad": 0.20753925245383878
+      },
+      {
+        "source_index": 175,
+        "depth_sha256": "37266def57f0acea8635bafa44549d312b6f8a582731d4b341acc9e3f50c7b0d",
+        "pairs": 21000,
+        "central_median_rad": 0.0,
+        "plane_median_rad": 0.0,
+        "central_p90_rad": 0.7865638577412986,
+        "plane_p90_rad": 0.17317675391727352
+      },
+      {
+        "source_index": 190,
+        "depth_sha256": "1fbdb61b56fc83afad8533d124fa49b382a086154aa4c5f45a2316d9d247fc91",
+        "pairs": 18521,
+        "central_median_rad": 0.0,
+        "plane_median_rad": 0.0,
+        "central_p90_rad": 0.0,
+        "plane_p90_rad": 0.0
+      },
+      {
+        "source_index": 205,
+        "depth_sha256": "a5951fa7577771136ee3bbfc59dfea43ceb765af8427f89598a2e90fb8fe6132",
+        "pairs": 16489,
+        "central_median_rad": 0.0,
+        "plane_median_rad": 0.0,
+        "central_p90_rad": 0.0,
+        "plane_p90_rad": 0.0
+      },
+      {
+        "source_index": 220,
+        "depth_sha256": "34c897b709189e35e5ee57bc743316b92af5d00894c5e5940e56ae6dad3f1e49",
+        "pairs": 52440,
+        "central_median_rad": 0.3051669446679004,
+        "plane_median_rad": 0.08619942677285364,
+        "central_p90_rad": 0.8466066072034688,
+        "plane_p90_rad": 0.2152282494616677
+      },
+      {
+        "source_index": 235,
+        "depth_sha256": "720a708cfb80642c34cf82c7c24aad7a2b251ae76361774adf83fe7cfd4121d9",
+        "pairs": 151287,
+        "central_median_rad": 0.3101115062423588,
+        "plane_median_rad": 0.0766628894769449,
+        "central_p90_rad": 0.7170461097037093,
+        "plane_p90_rad": 0.17740725678662533
+      },
+      {
+        "source_index": 250,
+        "depth_sha256": "42d1f5ded383caa0bdebe5039c9693874b3316e9aa830ab4286831107729a222",
+        "pairs": 147499,
+        "central_median_rad": 0.3552302968193874,
+        "plane_median_rad": 0.08136335713543362,
+        "central_p90_rad": 0.7372995796788729,
+        "plane_p90_rad": 0.1881432427750268
+      },
+      {
+        "source_index": 265,
+        "depth_sha256": "3cf420aa4fb8b9f74ffcf77d0289dd033a4e85835b13d4177563085bb24226f8",
+        "pairs": 121704,
+        "central_median_rad": 0.3344142481389253,
+        "plane_median_rad": 0.07929919305898647,
+        "central_p90_rad": 0.7404080790722348,
+        "plane_p90_rad": 0.17870927803768852
+      }
+    ],
+    "tum-fr1-desk2-independent": [
+      {
+        "source_index": 100,
+        "depth_sha256": "681904df2727445d9683c15cc71a724e9c1dba5acddb2aa531bace56bfea8c0e",
+        "pairs": 208733,
+        "central_median_rad": 0.32793562915738206,
+        "plane_median_rad": 0.07131237235768899,
+        "central_p90_rad": 0.6578414121036356,
+        "plane_p90_rad": 0.16349554811701236
+      },
+      {
+        "source_index": 115,
+        "depth_sha256": "8a6d70a8f684df68332e1f6a0119623e35e2ca7416efce447fd4ac8426b6a12d",
+        "pairs": 175487,
+        "central_median_rad": 0.4104803689358479,
+        "plane_median_rad": 0.09520162681800141,
+        "central_p90_rad": 0.7796828419302334,
+        "plane_p90_rad": 0.21627707601944482
+      },
+      {
+        "source_index": 130,
+        "depth_sha256": "bcbb1d51fe3c8eda6892d5715d73336438b9ed68cf43de21bbc47230fdc95f3c",
+        "pairs": 70442,
+        "central_median_rad": 0.26818250712973524,
+        "plane_median_rad": 0.0885867440191105,
+        "central_p90_rad": 0.8685735506243614,
+        "plane_p90_rad": 0.20642417881779634
+      },
+      {
+        "source_index": 145,
+        "depth_sha256": "55a5498b4b9a9986c05ee4c1af1956a1b0f238d10c5c0bd7e0ed0e877a5f0c22",
+        "pairs": 120494,
+        "central_median_rad": 0.36539127155674717,
+        "plane_median_rad": 0.08168045666170251,
+        "central_p90_rad": 0.7589319666207729,
+        "plane_p90_rad": 0.1848232130545052
+      },
+      {
+        "source_index": 160,
+        "depth_sha256": "ae44b55f0224dd64e229a26979f794962b619a8980920c9f0e102715c620523a",
+        "pairs": 146692,
+        "central_median_rad": 0.34198644777087617,
+        "plane_median_rad": 0.08117389833026739,
+        "central_p90_rad": 0.7163734827543524,
+        "plane_p90_rad": 0.18234636136572327
+      },
+      {
+        "source_index": 175,
+        "depth_sha256": "5b1b85301eda3e33fbee8631848e6f3aa7e4d8f4e9700e2522c2dc988eaa4bdb",
+        "pairs": 167244,
+        "central_median_rad": 0.3549675851715589,
+        "plane_median_rad": 0.07310167594376593,
+        "central_p90_rad": 0.707273462442292,
+        "plane_p90_rad": 0.15944944047308157
+      },
+      {
+        "source_index": 190,
+        "depth_sha256": "dbbd81852624f285c39605a3d263d54d4b6938452b6a9886e5acdf51b001ab9b",
+        "pairs": 195241,
+        "central_median_rad": 0.321524888747801,
+        "plane_median_rad": 0.06595597965155678,
+        "central_p90_rad": 0.6739249135829397,
+        "plane_p90_rad": 0.14718786952792243
+      },
+      {
+        "source_index": 205,
+        "depth_sha256": "459dcad7b12310b1ab8d2e9783605cd42ac59fb4c581110e0261d67635918e53",
+        "pairs": 177315,
+        "central_median_rad": 0.3998902102901078,
+        "plane_median_rad": 0.08546046786729916,
+        "central_p90_rad": 0.7834740911028488,
+        "plane_p90_rad": 0.1909045750825767
+      },
+      {
+        "source_index": 220,
+        "depth_sha256": "d241498d82dd9fd410a4d9c2fc037993e1e83618df50253726910d070cba9984",
+        "pairs": 110369,
+        "central_median_rad": 0.4497596324388549,
+        "plane_median_rad": 0.0938880709217724,
+        "central_p90_rad": 0.8487099796869355,
+        "plane_p90_rad": 0.20335194252739802
+      },
+      {
+        "source_index": 235,
+        "depth_sha256": "c84e8bd11da77a50e07c7c4bcb2248e3c75d2e75a4f43834f1fe0e2331d871bd",
+        "pairs": 43870,
+        "central_median_rad": 0.4619891491746536,
+        "plane_median_rad": 0.10806817832654898,
+        "central_p90_rad": 0.9935517523165135,
+        "plane_p90_rad": 0.2570785786049338
+      },
+      {
+        "source_index": 250,
+        "depth_sha256": "095e3b687e774ac26f60d74882a7e3e894fa9ee4cfbf0d990f1b69e6207a4b61",
+        "pairs": 27341,
+        "central_median_rad": 0.0,
+        "plane_median_rad": 0.07712604803382948,
+        "central_p90_rad": 0.9150369933769593,
+        "plane_p90_rad": 0.25149695439225966
+      },
+      {
+        "source_index": 265,
+        "depth_sha256": "84697c5404e927f6cb0ca6b0bf6bd4637c3cff96a456366592a6f70313111064",
+        "pairs": 28223,
+        "central_median_rad": 0.0,
+        "plane_median_rad": 0.0,
+        "central_p90_rad": 0.5537740443922554,
+        "plane_p90_rad": 0.1344003710618748
+      }
+    ]
+  }
+}

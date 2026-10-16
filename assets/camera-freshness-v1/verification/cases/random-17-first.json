@@ -1,0 +1,1026 @@
+{
+  "algorithm": "image_tracking_freshness_v1",
+  "camera_id": "freshness-controls",
+  "compiled_sources": {
+    "integrations/camera-tracking/Cargo.lock": "b361dc93aced50ba194ed4227e3d1624d30eeb291ab66104db8fdf933b072a2d",
+    "integrations/camera-tracking/Cargo.toml": "d235c784c3b4566cae8395425838e1145431c68d60d1c3f1544f8227bcdcf449",
+    "integrations/camera-tracking/producer-sources.json": "32a790788e886c4ea960eb7920f572f232a73d7008ae4ca8437ed6f444ddee5c",
+    "integrations/camera-tracking/profile-freshness.json": "b289147d0a14079fdc9b1ad96e962bb91ff343ce025167282e533721402b7a31",
+    "integrations/camera-tracking/src/assignment.rs": "e9b7223b4a6cab91bad4c11725a4e828d21a8cb10cc4ef8fd72b60dde0b6e179",
+    "integrations/camera-tracking/src/bin/rustdriving-camera-guard.rs": "ed655addbbf967810766d70a5ca92c68bddcd9ef1ebbbfb153a78cd3234416df",
+    "integrations/camera-tracking/src/freshness.rs": "d6995715b7c378d314b70abf595e094034b627eafce5dc0fbdaaeed80733332b",
+    "integrations/camera-tracking/src/lib.rs": "d2ef1e0649a64e16457b360e1871c81d3794cd38fef0600f1e5535200e8b2acc",
+    "integrations/camera-tracking/src/report_input.rs": "ff587ff13b218d720c03c90155a6387df7fc0c96a2a01147eba06823b11b0f0a",
+    "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed"
+  },
+  "config": {
+    "coast_seconds": 0.5,
+    "confirmation_hits": 2,
+    "max_tracks": 4,
+    "min_iou": 0.1,
+    "velocity_gain": 0.5
+  },
+  "control_permission": false,
+  "height": 100,
+  "images_read": false,
+  "inference_run": false,
+  "inline_detection_events": 21,
+  "model_read": false,
+  "policy": {
+    "max_age_s": 0.2,
+    "recovery_samples": 2
+  },
+  "results": [
+    {
+      "backend_updates": [
+        {
+          "frame": {
+            "acquisition": {
+              "detections": [
+                {
+                  "bbox": [
+                    10.0,
+                    10.0,
+                    30.0,
+                    30.0
+                  ],
+                  "class_index": 2,
+                  "confidence": 0.8
+                }
+              ],
+              "image_sha256": "43a5fd06dc04c75e585a9c8b7ccd38970e84406d4132606a43be52c0f136c14d",
+              "status": "detected"
+            },
+            "timestamp_s": 0.0
+          },
+          "snapshot": {
+            "assignment_work": 0,
+            "health": "observed",
+            "retired": [],
+            "sequence_number": 1,
+            "source_image_sha256": "43a5fd06dc04c75e585a9c8b7ccd38970e84406d4132606a43be52c0f136c14d",
+            "timestamp_s": 0.0,
+            "tracks": [
+              {
+                "bbox": [
+                  10.0,
+                  10.0,
+                  30.0,
+                  30.0
+                ],
+                "class_index": 2,
+                "detection_index": 0,
+                "last_observed_bbox": [
+                  10.0,
+                  10.0,
+                  30.0,
+                  30.0
+                ],
+                "last_observed_confidence": 0.8,
+                "last_observed_timestamp_s": 0.0,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 1,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "untracked_detection_indices": []
+          },
+          "trigger": "sample"
+        }
+      ],
+      "decision": "accepted",
+      "fault_epoch_s": null,
+      "hold_reason": "initializing",
+      "last_accepted_acquired_s": 0.0,
+      "now_s": 0.0,
+      "ready": false,
+      "recovery_count": 1,
+      "result_age_s": 0.0,
+      "tracks": []
+    },
+    {
+      "backend_updates": [
+        {
+          "frame": {
+            "acquisition": {
+              "detections": [
+                {
+                  "bbox": [
+                    10.05,
+                    10.0,
+                    30.05,
+                    30.0
+                  ],
+                  "class_index": 2,
+                  "confidence": 0.8
+                }
+              ],
+              "image_sha256": "6025b143aeb997dc44513dfa35963c30c454197ddb5028477b3a054d01e6c78e",
+              "status": "detected"
+            },
+            "timestamp_s": 0.05
+          },
+          "snapshot": {
+            "assignment_work": 3,
+            "health": "observed",
+            "retired": [],
+            "sequence_number": 2,
+            "source_image_sha256": "6025b143aeb997dc44513dfa35963c30c454197ddb5028477b3a054d01e6c78e",
+            "timestamp_s": 0.05,
+            "tracks": [
+              {
+                "bbox": [
+                  10.05,
+                  10.0,
+                  30.05,
+                  30.0
+                ],
+                "class_index": 2,
+                "detection_index": 0,
+                "last_observed_bbox": [
+                  10.05,
+                  10.0,
+                  30.05,
+                  30.0
+                ],
+                "last_observed_confidence": 0.8,
+                "last_observed_timestamp_s": 0.05,
+                "observation_count": 2,
+                "phase": "confirmed",
+                "track_id": 1,
+                "velocity_px_s": [
+                  1.0000000000000142,
+                  0.0
+                ]
+              }
+            ],
+            "untracked_detection_indices": []
+          },
+          "trigger": "sample"
+        }
+      ],
+      "decision": "accepted",
+      "fault_epoch_s": null,
+      "hold_reason": null,
+      "last_accepted_acquired_s": 0.05,
+      "now_s": 0.05,
+      "ready": true,
+      "recovery_count": 2,
+      "result_age_s": 0.0,
+      "tracks": [
+        {
+          "bbox_at_now": [
+            10.05,
+            10.0,
+            30.05,
+            30.0
+          ],
+          "class_index": 2,
+          "extrapolated": false,
+          "last_observed_confidence": 0.8,
+          "observation_age_s": 0.0,
+          "observed_at_s": 0.05,
+          "track_id": 1,
+          "velocity_px_s": [
+            1.0000000000000142,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "backend_updates": [
+        {
+          "frame": {
+            "acquisition": {
+              "detections": [],
+              "image_sha256": "c0e7b33ab9856151497e2631832215083f50c3ac3b81f744b138f73636e09418",
+              "status": "detected"
+            },
+            "timestamp_s": 0.12
+          },
+          "snapshot": {
+            "assignment_work": 0,
+            "health": "observed",
+            "retired": [],
+            "sequence_number": 3,
+            "source_image_sha256": "c0e7b33ab9856151497e2631832215083f50c3ac3b81f744b138f73636e09418",
+            "timestamp_s": 0.12,
+            "tracks": [
+              {
+                "bbox": [
+                  10.120000000000001,
+                  10.0,
+                  30.12,
+                  30.0
+                ],
+                "class_index": 2,
+                "detection_index": null,
+                "last_observed_bbox": [
+                  10.05,
+                  10.0,
+                  30.05,
+                  30.0
+                ],
+                "last_observed_confidence": 0.8,
+                "last_observed_timestamp_s": 0.05,
+                "observation_count": 2,
+                "phase": "coasting",
+                "track_id": 1,
+                "velocity_px_s": [
+                  1.0000000000000142,
+                  0.0
+                ]
+              }
+            ],
+            "untracked_detection_indices": []
+          },
+          "trigger": "sample"
+        }
+      ],
+      "decision": "accepted",
+      "fault_epoch_s": null,
+      "hold_reason": null,
+      "last_accepted_acquired_s": 0.12,
+      "now_s": 0.12,
+      "ready": true,
+      "recovery_count": 2,
+      "result_age_s": 0.0,
+      "tracks": [
+        {
+          "bbox_at_now": [
+            10.120000000000001,
+            10.0,
+            30.12,
+            30.0
+          ],
+          "class_index": 2,
+          "extrapolated": true,
+          "last_observed_confidence": 0.8,
+          "observation_age_s": 0.06999999999999999,
+          "observed_at_s": 0.05,
+          "track_id": 1,
+          "velocity_px_s": [
+            1.0000000000000142,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "backend_updates": [
+        {
+          "frame": {
+            "acquisition": {
+              "status": "failed"
+            },
+            "timestamp_s": 0.37
+          },
+          "snapshot": {
+            "assignment_work": 0,
+            "health": "acquisition_failed",
+            "retired": [
+              {
+                "reason": "acquisition_failed",
+                "track_id": 1
+              }
+            ],
+            "sequence_number": 4,
+            "source_image_sha256": null,
+            "timestamp_s": 0.37,
+            "tracks": [],
+            "untracked_detection_indices": []
+          },
+          "trigger": "acquisition_failure"
+        }
+      ],
+      "decision": "acquisition_failed",
+      "fault_epoch_s": 0.37,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 0.12,
+      "now_s": 0.37,
+      "ready": false,
+      "recovery_count": 0,
+      "result_age_s": 0.25,
+      "tracks": []
+    },
+    {
+      "backend_updates": [],
+      "decision": "before_fault",
+      "fault_epoch_s": 0.37,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 0.12,
+      "now_s": 0.44,
+      "ready": false,
+      "recovery_count": 0,
+      "result_age_s": 0.32,
+      "tracks": []
+    },
+    {
+      "backend_updates": [],
+      "decision": "future_sample",
+      "fault_epoch_s": 0.37,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 0.12,
+      "now_s": 0.45,
+      "ready": false,
+      "recovery_count": 0,
+      "result_age_s": 0.33,
+      "tracks": []
+    },
+    {
+      "backend_updates": [],
+      "decision": "stale_sample",
+      "fault_epoch_s": 0.37,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 0.12,
+      "now_s": 0.7,
+      "ready": false,
+      "recovery_count": 0,
+      "result_age_s": 0.58,
+      "tracks": []
+    },
+    {
+      "backend_updates": [],
+      "decision": "stale_sample",
+      "fault_epoch_s": 0.37,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 0.12,
+      "now_s": 0.73,
+      "ready": false,
+      "recovery_count": 0,
+      "result_age_s": 0.61,
+      "tracks": []
+    },
+    {
+      "backend_updates": [
+        {
+          "frame": {
+            "acquisition": {
+              "detections": [
+                {
+                  "bbox": [
+                    18.0,
+                    10.0,
+                    38.0,
+                    30.0
+                  ],
+                  "class_index": 2,
+                  "confidence": 0.8
+                }
+              ],
+              "image_sha256": "1687b6000596335920c8c9b71a845667d71fe315c595ab9c029b449e2409df70",
+              "status": "detected"
+            },
+            "timestamp_s": 0.74
+          },
+          "snapshot": {
+            "assignment_work": 0,
+            "health": "observed",
+            "retired": [],
+            "sequence_number": 5,
+            "source_image_sha256": "1687b6000596335920c8c9b71a845667d71fe315c595ab9c029b449e2409df70",
+            "timestamp_s": 0.74,
+            "tracks": [
+              {
+                "bbox": [
+                  18.0,
+                  10.0,
+                  38.0,
+                  30.0
+                ],
+                "class_index": 2,
+                "detection_index": 0,
+                "last_observed_bbox": [
+                  18.0,
+                  10.0,
+                  38.0,
+                  30.0
+                ],
+                "last_observed_confidence": 0.8,
+                "last_observed_timestamp_s": 0.74,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 2,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "untracked_detection_indices": []
+          },
+          "trigger": "sample"
+        }
+      ],
+      "decision": "accepted",
+      "fault_epoch_s": 0.37,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 0.74,
+      "now_s": 0.74,
+      "ready": false,
+      "recovery_count": 1,
+      "result_age_s": 0.0,
+      "tracks": []
+    },
+    {
+      "backend_updates": [],
+      "decision": "out_of_order",
+      "fault_epoch_s": 0.37,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 0.74,
+      "now_s": 0.77,
+      "ready": false,
+      "recovery_count": 0,
+      "result_age_s": 0.030000000000000027,
+      "tracks": []
+    },
+    {
+      "backend_updates": [
+        {
+          "frame": {
+            "acquisition": {
+              "status": "failed"
+            },
+            "timestamp_s": 0.8
+          },
+          "snapshot": {
+            "assignment_work": 0,
+            "health": "acquisition_failed",
+            "retired": [
+              {
+                "reason": "acquisition_failed",
+                "track_id": 2
+              }
+            ],
+            "sequence_number": 6,
+            "source_image_sha256": null,
+            "timestamp_s": 0.8,
+            "tracks": [],
+            "untracked_detection_indices": []
+          },
+          "trigger": "acquisition_failure"
+        }
+      ],
+      "decision": "acquisition_failed",
+      "fault_epoch_s": 0.8,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 0.74,
+      "now_s": 0.8,
+      "ready": false,
+      "recovery_count": 0,
+      "result_age_s": 0.06000000000000005,
+      "tracks": []
+    },
+    {
+      "backend_updates": [],
+      "decision": "before_fault",
+      "fault_epoch_s": 0.8,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 0.74,
+      "now_s": 0.87,
+      "ready": false,
+      "recovery_count": 0,
+      "result_age_s": 0.13,
+      "tracks": []
+    },
+    {
+      "backend_updates": [],
+      "decision": "polled",
+      "fault_epoch_s": 0.8,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 0.74,
+      "now_s": 0.88,
+      "ready": false,
+      "recovery_count": 0,
+      "result_age_s": 0.14,
+      "tracks": []
+    },
+    {
+      "backend_updates": [
+        {
+          "frame": {
+            "acquisition": {
+              "status": "failed"
+            },
+            "timestamp_s": 0.89
+          },
+          "snapshot": {
+            "assignment_work": 0,
+            "health": "acquisition_failed",
+            "retired": [],
+            "sequence_number": 7,
+            "source_image_sha256": null,
+            "timestamp_s": 0.89,
+            "tracks": [],
+            "untracked_detection_indices": []
+          },
+          "trigger": "acquisition_failure"
+        }
+      ],
+      "decision": "acquisition_failed",
+      "fault_epoch_s": 0.89,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 0.74,
+      "now_s": 0.89,
+      "ready": false,
+      "recovery_count": 0,
+      "result_age_s": 0.15000000000000002,
+      "tracks": []
+    },
+    {
+      "backend_updates": [],
+      "decision": "invalid_payload",
+      "fault_epoch_s": 0.89,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 0.74,
+      "now_s": 0.96,
+      "ready": false,
+      "recovery_count": 0,
+      "result_age_s": 0.21999999999999997,
+      "tracks": []
+    },
+    {
+      "backend_updates": [],
+      "decision": "before_fault",
+      "fault_epoch_s": 0.89,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 0.74,
+      "now_s": 0.97,
+      "ready": false,
+      "recovery_count": 0,
+      "result_age_s": 0.22999999999999998,
+      "tracks": []
+    },
+    {
+      "backend_updates": [],
+      "decision": "invalid_payload",
+      "fault_epoch_s": 0.89,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 0.74,
+      "now_s": 0.98,
+      "ready": false,
+      "recovery_count": 0,
+      "result_age_s": 0.24,
+      "tracks": []
+    },
+    {
+      "backend_updates": [
+        {
+          "frame": {
+            "acquisition": {
+              "detections": [
+                {
+                  "bbox": [
+                    27.0,
+                    10.0,
+                    47.0,
+                    30.0
+                  ],
+                  "class_index": 2,
+                  "confidence": 0.8
+                }
+              ],
+              "image_sha256": "321481e4c586905b74089e3af44321a00b8757e2f45ea1a17c00f7e1eb9cf871",
+              "status": "detected"
+            },
+            "timestamp_s": 0.97
+          },
+          "snapshot": {
+            "assignment_work": 0,
+            "health": "observed",
+            "retired": [],
+            "sequence_number": 8,
+            "source_image_sha256": "321481e4c586905b74089e3af44321a00b8757e2f45ea1a17c00f7e1eb9cf871",
+            "timestamp_s": 0.97,
+            "tracks": [
+              {
+                "bbox": [
+                  27.0,
+                  10.0,
+                  47.0,
+                  30.0
+                ],
+                "class_index": 2,
+                "detection_index": 0,
+                "last_observed_bbox": [
+                  27.0,
+                  10.0,
+                  47.0,
+                  30.0
+                ],
+                "last_observed_confidence": 0.8,
+                "last_observed_timestamp_s": 0.97,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 3,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "untracked_detection_indices": []
+          },
+          "trigger": "sample"
+        }
+      ],
+      "decision": "accepted",
+      "fault_epoch_s": 0.89,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 0.97,
+      "now_s": 1.01,
+      "ready": false,
+      "recovery_count": 1,
+      "result_age_s": 0.040000000000000036,
+      "tracks": []
+    },
+    {
+      "backend_updates": [],
+      "decision": "invalid_payload",
+      "fault_epoch_s": 0.89,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 0.97,
+      "now_s": 1.04,
+      "ready": false,
+      "recovery_count": 0,
+      "result_age_s": 0.07000000000000006,
+      "tracks": []
+    },
+    {
+      "backend_updates": [
+        {
+          "frame": {
+            "acquisition": {
+              "status": "failed"
+            },
+            "timestamp_s": 1.07
+          },
+          "snapshot": {
+            "assignment_work": 0,
+            "health": "acquisition_failed",
+            "retired": [
+              {
+                "reason": "acquisition_failed",
+                "track_id": 3
+              }
+            ],
+            "sequence_number": 9,
+            "source_image_sha256": null,
+            "timestamp_s": 1.07,
+            "tracks": [],
+            "untracked_detection_indices": []
+          },
+          "trigger": "acquisition_failure"
+        }
+      ],
+      "decision": "acquisition_failed",
+      "fault_epoch_s": 1.07,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 0.97,
+      "now_s": 1.07,
+      "ready": false,
+      "recovery_count": 0,
+      "result_age_s": 0.10000000000000009,
+      "tracks": []
+    },
+    {
+      "backend_updates": [],
+      "decision": "before_fault",
+      "fault_epoch_s": 1.07,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 0.97,
+      "now_s": 1.08,
+      "ready": false,
+      "recovery_count": 0,
+      "result_age_s": 0.1100000000000001,
+      "tracks": []
+    },
+    {
+      "backend_updates": [],
+      "decision": "invalid_payload",
+      "fault_epoch_s": 1.07,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 0.97,
+      "now_s": 1.11,
+      "ready": false,
+      "recovery_count": 0,
+      "result_age_s": 0.14000000000000012,
+      "tracks": []
+    },
+    {
+      "backend_updates": [
+        {
+          "frame": {
+            "acquisition": {
+              "detections": [
+                {
+                  "bbox": [
+                    32.0,
+                    10.0,
+                    52.0,
+                    30.0
+                  ],
+                  "class_index": 2,
+                  "confidence": 0.8
+                }
+              ],
+              "image_sha256": "e6cdb2f7b164523f817c5450e5034b83b1d87f9175ae4a0ef4f794ba81f8b9a5",
+              "status": "detected"
+            },
+            "timestamp_s": 1.14
+          },
+          "snapshot": {
+            "assignment_work": 0,
+            "health": "observed",
+            "retired": [],
+            "sequence_number": 10,
+            "source_image_sha256": "e6cdb2f7b164523f817c5450e5034b83b1d87f9175ae4a0ef4f794ba81f8b9a5",
+            "timestamp_s": 1.14,
+            "tracks": [
+              {
+                "bbox": [
+                  32.0,
+                  10.0,
+                  52.0,
+                  30.0
+                ],
+                "class_index": 2,
+                "detection_index": 0,
+                "last_observed_bbox": [
+                  32.0,
+                  10.0,
+                  52.0,
+                  30.0
+                ],
+                "last_observed_confidence": 0.8,
+                "last_observed_timestamp_s": 1.14,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 4,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "untracked_detection_indices": []
+          },
+          "trigger": "sample"
+        }
+      ],
+      "decision": "accepted",
+      "fault_epoch_s": 1.07,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 1.14,
+      "now_s": 1.18,
+      "ready": false,
+      "recovery_count": 1,
+      "result_age_s": 0.040000000000000036,
+      "tracks": []
+    },
+    {
+      "backend_updates": [
+        {
+          "frame": {
+            "acquisition": {
+              "status": "failed"
+            },
+            "timestamp_s": 1.25
+          },
+          "snapshot": {
+            "assignment_work": 0,
+            "health": "acquisition_failed",
+            "retired": [
+              {
+                "reason": "acquisition_failed",
+                "track_id": 4
+              }
+            ],
+            "sequence_number": 11,
+            "source_image_sha256": null,
+            "timestamp_s": 1.25,
+            "tracks": [],
+            "untracked_detection_indices": []
+          },
+          "trigger": "acquisition_failure"
+        }
+      ],
+      "decision": "acquisition_failed",
+      "fault_epoch_s": 1.25,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 1.14,
+      "now_s": 1.25,
+      "ready": false,
+      "recovery_count": 0,
+      "result_age_s": 0.1100000000000001,
+      "tracks": []
+    },
+    {
+      "backend_updates": [],
+      "decision": "polled",
+      "fault_epoch_s": 1.25,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 1.14,
+      "now_s": 1.28,
+      "ready": false,
+      "recovery_count": 0,
+      "result_age_s": 0.14000000000000012,
+      "tracks": []
+    },
+    {
+      "backend_updates": [
+        {
+          "frame": {
+            "acquisition": {
+              "status": "failed"
+            },
+            "timestamp_s": 1.31
+          },
+          "snapshot": {
+            "assignment_work": 0,
+            "health": "acquisition_failed",
+            "retired": [],
+            "sequence_number": 12,
+            "source_image_sha256": null,
+            "timestamp_s": 1.31,
+            "tracks": [],
+            "untracked_detection_indices": []
+          },
+          "trigger": "acquisition_failure"
+        }
+      ],
+      "decision": "acquisition_failed",
+      "fault_epoch_s": 1.31,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 1.14,
+      "now_s": 1.31,
+      "ready": false,
+      "recovery_count": 0,
+      "result_age_s": 0.17000000000000015,
+      "tracks": []
+    },
+    {
+      "backend_updates": [],
+      "decision": "future_sample",
+      "fault_epoch_s": 1.31,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 1.14,
+      "now_s": 1.38,
+      "ready": false,
+      "recovery_count": 0,
+      "result_age_s": 0.24,
+      "tracks": []
+    },
+    {
+      "backend_updates": [
+        {
+          "frame": {
+            "acquisition": {
+              "detections": [
+                {
+                  "bbox": [
+                    37.0,
+                    10.0,
+                    57.0,
+                    30.0
+                  ],
+                  "class_index": 2,
+                  "confidence": 0.8
+                }
+              ],
+              "image_sha256": "5c00d24db1607ae66f1bf78c4850567728849783685f6a25b7c54e37e4b97e28",
+              "status": "detected"
+            },
+            "timestamp_s": 1.41
+          },
+          "snapshot": {
+            "assignment_work": 0,
+            "health": "observed",
+            "retired": [],
+            "sequence_number": 13,
+            "source_image_sha256": "5c00d24db1607ae66f1bf78c4850567728849783685f6a25b7c54e37e4b97e28",
+            "timestamp_s": 1.41,
+            "tracks": [
+              {
+                "bbox": [
+                  37.0,
+                  10.0,
+                  57.0,
+                  30.0
+                ],
+                "class_index": 2,
+                "detection_index": 0,
+                "last_observed_bbox": [
+                  37.0,
+                  10.0,
+                  57.0,
+                  30.0
+                ],
+                "last_observed_confidence": 0.8,
+                "last_observed_timestamp_s": 1.41,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 5,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "untracked_detection_indices": []
+          },
+          "trigger": "sample"
+        }
+      ],
+      "decision": "accepted",
+      "fault_epoch_s": 1.31,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 1.41,
+      "now_s": 1.45,
+      "ready": false,
+      "recovery_count": 1,
+      "result_age_s": 0.040000000000000036,
+      "tracks": []
+    },
+    {
+      "backend_updates": [
+        {
+          "frame": {
+            "acquisition": {
+              "status": "failed"
+            },
+            "timestamp_s": 1.46
+          },
+          "snapshot": {
+            "assignment_work": 0,
+            "health": "acquisition_failed",
+            "retired": [
+              {
+                "reason": "acquisition_failed",
+                "track_id": 5
+              }
+            ],
+            "sequence_number": 14,
+            "source_image_sha256": null,
+            "timestamp_s": 1.46,
+            "tracks": [],
+            "untracked_detection_indices": []
+          },
+          "trigger": "acquisition_failure"
+        }
+      ],
+      "decision": "acquisition_failed",
+      "fault_epoch_s": 1.46,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 1.41,
+      "now_s": 1.46,
+      "ready": false,
+      "recovery_count": 0,
+      "result_age_s": 0.050000000000000044,
+      "tracks": []
+    },
+    {
+      "backend_updates": [
+        {
+          "frame": {
+            "acquisition": {
+              "detections": [],
+              "image_sha256": "e42f3314a4be4633a506e3ce2f992a9d130fa93d4b5e654a91f58b7b8beda665",
+              "status": "detected"
+            },
+            "timestamp_s": 1.465
+          },
+          "snapshot": {
+            "assignment_work": 0,
+            "health": "observed",
+            "retired": [],
+            "sequence_number": 15,
+            "source_image_sha256": "e42f3314a4be4633a506e3ce2f992a9d130fa93d4b5e654a91f58b7b8beda665",
+            "timestamp_s": 1.465,
+            "tracks": [],
+            "untracked_detection_indices": []
+          },
+          "trigger": "sample"
+        }
+      ],
+      "decision": "accepted",
+      "fault_epoch_s": 1.46,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 1.465,
+      "now_s": 1.47,
+      "ready": false,
+      "recovery_count": 1,
+      "result_age_s": 0.004999999999999893,
+      "tracks": []
+    }
+  ],
+  "schema_version": 1,
+  "source_reports": [],
+  "source_sequence_sha256": "2a3d394ec5fb58459a912a7bb78d8d5dfffbaa56314f3dfd72516df11c3c9784",
+  "width": 100
+}

@@ -1,0 +1,328 @@
+{
+  "schema_version": 1,
+  "data_role": "already viewed development; not held out",
+  "pass_implementation_integrity": true,
+  "complete_accuracy_pass": false,
+  "default_changed": false,
+  "raw_reconstructed_equations": 15915,
+  "independently_checked_normal_steps": 15199,
+  "returned_pose_equations": 716,
+  "exact_raw_support_accounting": true,
+  "ground_truth_operational": false,
+  "operational_branches_before_numeric_scoring": 4,
+  "summaries": {
+    "tum-fr1-room-temporal-geometry-only": {
+      "total_updates": 179,
+      "accepted": 179,
+      "root_accurate": 70,
+      "lost": false,
+      "max_position_error_m": 0.2352810682267683,
+      "max_rotation_error_rad": 0.1598475848990214,
+      "independently_checked_normal_steps": 3710,
+      "independently_reconstructed_raw_equations": 3889,
+      "same_prototype_acceptance": true,
+      "max_prototype_translation_disagreement_m": 1.9008548567599122e-13,
+      "max_prototype_rotation_disagreement_rad": 9.65705618025044e-08,
+      "complete_accuracy_pass": false
+    },
+    "tum-fr1-room-temporal-phase-gated-rgbd": {
+      "total_updates": 179,
+      "accepted": 179,
+      "root_accurate": 69,
+      "lost": false,
+      "max_position_error_m": 0.23298513278826388,
+      "max_rotation_error_rad": 0.08645865560788812,
+      "independently_checked_normal_steps": 3899,
+      "independently_reconstructed_raw_equations": 4078,
+      "same_prototype_acceptance": true,
+      "max_prototype_translation_disagreement_m": 2.1095546321785375e-13,
+      "max_prototype_rotation_disagreement_rad": 1.3978528260658483e-07,
+      "complete_accuracy_pass": false
+    },
+    "tum-fr1-desk2-independent-geometry-only": {
+      "total_updates": 179,
+      "accepted": 179,
+      "root_accurate": 74,
+      "lost": false,
+      "max_position_error_m": 0.3011304167879814,
+      "max_rotation_error_rad": 0.28865145049389973,
+      "independently_checked_normal_steps": 3684,
+      "independently_reconstructed_raw_equations": 3863,
+      "same_prototype_acceptance": true,
+      "max_prototype_translation_disagreement_m": 7.232325466703441e-14,
+      "max_prototype_rotation_disagreement_rad": 6.664001874625058e-08,
+      "complete_accuracy_pass": false
+    },
+    "tum-fr1-desk2-independent-phase-gated-rgbd": {
+      "total_updates": 179,
+      "accepted": 179,
+      "root_accurate": 72,
+      "lost": false,
+      "max_position_error_m": 0.5258991943723694,
+      "max_rotation_error_rad": 0.28864571618744284,
+      "independently_checked_normal_steps": 3906,
+      "independently_reconstructed_raw_equations": 4085,
+      "same_prototype_acceptance": true,
+      "max_prototype_translation_disagreement_m": 6.134735709813411e-14,
+      "max_prototype_rotation_disagreement_rad": 1.0106459234841571e-07,
+      "complete_accuracy_pass": false
+    }
+  },
+  "canonical_prototype_parity_translation_gate_m": 1e-08,
+  "canonical_prototype_parity_rotation_gate_rad": 1e-06,
+  "first_failure": {
+    "source_archive": "first-rust-source.tar.gz",
+    "raw_disagreement": "first-raw-disagreement.log",
+    "cause": "inconsistent one-sided bilinear derivative at integer pixel knots after inverse/forward pose composition"
+  },
+  "numerical_repair": {
+    "design": "numeric-convention.json",
+    "sample_coordinate_canonicalization_tolerance_pixels": 1e-10,
+    "physical_accuracy_gates_changed": false,
+    "first_sources_and_results_preserved": true
+  },
+  "analytic": {
+    "analytic_controls_pass": true,
+    "analytic_sequences": 7,
+    "checked_raw_equations": 270,
+    "checked_normal_steps": 241,
+    "translation_gate_m": 0.004,
+    "rotation_gate_rad": 0.004,
+    "rejected_report_corruptions": [
+      "wrong combined solve",
+      "wrong root pose",
+      "missing first reference",
+      "forged accepted clock",
+      "lost latch",
+      "excess final residual",
+      "image count partition",
+      "key replacement",
+      "RGB freshness",
+      "joint scaling hidden from solve-only audit"
+    ],
+    "rejected_transport_cases": [
+      "missing configuration",
+      "duplicate configuration",
+      "unknown configuration field",
+      "invalid mode",
+      "oversized camera",
+      "invalid focal length",
+      "unknown image field",
+      "out of range grayscale",
+      "missing newline",
+      "no acquisition",
+      "oversized line",
+      "nonfinite JSON",
+      "frame cap"
+    ],
+    "binary_sha256": "249e167c9e7c553fe0dda4b5026090db92f870f8d5805f29455f5bff38b00154",
+    "checker_sha256": "d0b9b80068775bdfe1ce7da42331699875ccb2c01876ff97252aa97166c8b54b",
+    "scope": "synthetic pixels, independent raw matrices and state; no physical or real-time claim"
+  },
+  "existing_regressions": {
+    "core_rust_tests": 371,
+    "scenario_runs_and_complete_replays": 49,
+    "unchanged_output_files": 245,
+    "unchanged_original_estimator_supervisor_transports_and_cargo_pins": true,
+    "library_change": "one new module export",
+    "base_analytic": {
+      "analytic_controls_pass": true,
+      "translation_gate_m": 0.004,
+      "rotation_gate_rad": 0.004,
+      "motions": [
+        {
+          "axis": 0,
+          "angle_rad": 0.0,
+          "known_first_from_current": [
+            [
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "position_error_m": 0.0,
+          "rotation_error_rad": 0.0,
+          "checked_normal_steps": 3
+        },
+        {
+          "axis": 0,
+          "angle_rad": -0.02,
+          "known_first_from_current": [
+            [
+              1.0,
+              0.0,
+              0.0,
+              -0.01
+            ],
+            [
+              0.0,
+              0.9998000066665778,
+              0.01999866669333308,
+              0.02
+            ],
+            [
+              0.0,
+              -0.01999866669333308,
+              0.9998000066665778,
+              0.01
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "position_error_m": 0.00011657458463395025,
+          "rotation_error_rad": 0.00024654663258058524,
+          "checked_normal_steps": 8
+        },
+        {
+          "axis": 1,
+          "angle_rad": 0.02,
+          "known_first_from_current": [
+            [
+              0.9998000066665778,
+              0.0,
+              0.01999866669333308,
+              0.02
+            ],
+            [
+              0.0,
+              1.0,
+              0.0,
+              -0.01
+            ],
+            [
+              -0.01999866669333308,
+              0.0,
+              0.9998000066665778,
+              0.01
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "position_error_m": 3.943436036471031e-05,
+          "rotation_error_rad": 3.6373566601185856e-05,
+          "checked_normal_steps": 8
+        },
+        {
+          "axis": 2,
+          "angle_rad": 0.02,
+          "known_first_from_current": [
+            [
+              0.9998000066665778,
+              -0.01999866669333308,
+              0.0,
+              0.01
+            ],
+            [
+              0.01999866669333308,
+              0.9998000066665778,
+              0.0,
+              0.01
+            ],
+            [
+              0.0,
+              0.0,
+              1.0,
+              -0.02
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "position_error_m": 5.358898554914849e-05,
+          "rotation_error_rad": 1.670698629536615e-05,
+          "checked_normal_steps": 9
+        }
+      ],
+      "rejected_transport_cases": [
+        "missing configuration",
+        "duplicate configuration",
+        "unknown request field",
+        "oversized camera",
+        "invalid focal length",
+        "missing final newline",
+        "no frame",
+        "oversized request",
+        "nonfinite JSON",
+        "frame cap"
+      ],
+      "binary_sha256": "cedb3dcf0d2cb7bfe82ff4e3df6595c60dcf0ace74cfaf90e2e25f8e79dcd3f4",
+      "rejected_report_corruptions": [
+        "wrong normal solve",
+        "wrong increment pose",
+        "altered root composition",
+        "missing support",
+        "returned-pose residual exceeds gate",
+        "lost fusion assignment",
+        "wrong keyframe switch",
+        "false accepted clock",
+        "wrong acquisition",
+        "false loss state"
+      ],
+      "checker_sha256": "d38e17df85285f43bea569cd3410eabf5da9c0150f5bcab5c1802910625a87a4",
+      "scope": "analytic geometry and independent linear algebra; no physical accuracy or real-time claim"
+    },
+    "supervision_analytic": {
+      "pass_temporal_supervision": true,
+      "analytic": {
+        "analytic_sequence_pass": true,
+        "clean_estimator_parity": true,
+        "rejected_protocol_cases": [
+          "tick before configuration",
+          "duplicate configuration",
+          "unknown event field",
+          "unknown failure field",
+          "unknown depth field",
+          "invalid receipt clock",
+          "duplicate receipt clock",
+          "regressing receipt clock",
+          "missing final newline",
+          "no tick",
+          "oversized request",
+          "tick cap",
+          "frame cap"
+        ]
+      },
+      "recorded": {},
+      "physical_accuracy_claim": false,
+      "driving_integration": false,
+      "subjective_maturity_percent": 20
+    }
+  },
+  "optional_rust_tests": 18,
+  "source_archive_sha256": "4dbfab7f1d61db9a4e1c1bf56c5ea7a4a84f98cd022336afe4016551a1b1fbde",
+  "subjective_maturity_percent": 20,
+  "driving_integration": false,
+  "calibrated_uncertainty": false,
+  "real_time_claim": false,
+  "scope": "raw geometric and image correspondence counts, residuals, Jacobians and matrices at all reported iterates; independent solves, increments, reference/clock state and normalized reference scoring; physical accuracy remains incomplete"
+}

@@ -1,0 +1,3924 @@
+{
+  "algorithm": "image_tracking_freshness_v1",
+  "camera_id": "freshness-controls",
+  "compiled_sources": {
+    "integrations/camera-tracking/Cargo.lock": "b361dc93aced50ba194ed4227e3d1624d30eeb291ab66104db8fdf933b072a2d",
+    "integrations/camera-tracking/Cargo.toml": "d235c784c3b4566cae8395425838e1145431c68d60d1c3f1544f8227bcdcf449",
+    "integrations/camera-tracking/producer-sources.json": "32a790788e886c4ea960eb7920f572f232a73d7008ae4ca8437ed6f444ddee5c",
+    "integrations/camera-tracking/profile-freshness.json": "b289147d0a14079fdc9b1ad96e962bb91ff343ce025167282e533721402b7a31",
+    "integrations/camera-tracking/src/assignment.rs": "e9b7223b4a6cab91bad4c11725a4e828d21a8cb10cc4ef8fd72b60dde0b6e179",
+    "integrations/camera-tracking/src/bin/rustdriving-camera-guard.rs": "ed655addbbf967810766d70a5ca92c68bddcd9ef1ebbbfb153a78cd3234416df",
+    "integrations/camera-tracking/src/freshness.rs": "d6995715b7c378d314b70abf595e094034b627eafce5dc0fbdaaeed80733332b",
+    "integrations/camera-tracking/src/lib.rs": "d2ef1e0649a64e16457b360e1871c81d3794cd38fef0600f1e5535200e8b2acc",
+    "integrations/camera-tracking/src/report_input.rs": "ff587ff13b218d720c03c90155a6387df7fc0c96a2a01147eba06823b11b0f0a",
+    "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed"
+  },
+  "config": {
+    "coast_seconds": 0.5,
+    "confirmation_hits": 2,
+    "max_tracks": 300,
+    "min_iou": 0.3,
+    "velocity_gain": 0.5
+  },
+  "control_permission": false,
+  "height": 480,
+  "images_read": false,
+  "inference_run": false,
+  "inline_detection_events": 0,
+  "model_read": false,
+  "policy": {
+    "max_age_s": 0.2,
+    "recovery_samples": 2
+  },
+  "results": [
+    {
+      "backend_updates": [
+        {
+          "frame": {
+            "acquisition": {
+              "detections": [
+                {
+                  "bbox": [
+                    355.9882507324219,
+                    252.47213745117188,
+                    636.58154296875,
+                    478.9036560058594
+                  ],
+                  "class_index": 0,
+                  "confidence": 0.9397782683372498
+                },
+                {
+                  "bbox": [
+                    0.85687255859375,
+                    208.9870147705078,
+                    253.6595458984375,
+                    478.19342041015625
+                  ],
+                  "class_index": 0,
+                  "confidence": 0.9342126846313477
+                },
+                {
+                  "bbox": [
+                    148.2949981689453,
+                    263.70806884765625,
+                    241.9113006591797,
+                    336.36126708984375
+                  ],
+                  "class_index": 62,
+                  "confidence": 0.9062391519546509
+                },
+                {
+                  "bbox": [
+                    138.85064697265625,
+                    354.19842529296875,
+                    235.24327087402344,
+                    374.8397216796875
+                  ],
+                  "class_index": 66,
+                  "confidence": 0.8793827891349792
+                },
+                {
+                  "bbox": [
+                    340.4840087890625,
+                    251.87982177734375,
+                    471.8563232421875,
+                    347.9686279296875
+                  ],
+                  "class_index": 62,
+                  "confidence": 0.8670386075973511
+                },
+                {
+                  "bbox": [
+                    249.55430603027344,
+                    370.46575927734375,
+                    266.9208984375,
+                    383.24554443359375
+                  ],
+                  "class_index": 64,
+                  "confidence": 0.7867663502693176
+                },
+                {
+                  "bbox": [
+                    367.5408020019531,
+                    360.5356140136719,
+                    475.3443908691406,
+                    384.0702819824219
+                  ],
+                  "class_index": 66,
+                  "confidence": 0.7782018184661865
+                },
+                {
+                  "bbox": [
+                    308.1445007324219,
+                    346.1123046875,
+                    361.4275817871094,
+                    373.06573486328125
+                  ],
+                  "class_index": 73,
+                  "confidence": 0.6425057053565979
+                }
+              ],
+              "image_sha256": "d0ac25cf1cadb0bb2194e85d899366e90fd7ffa97b8a6f9cb9ccebc01c69f65a",
+              "status": "detected"
+            },
+            "timestamp_s": 1341845824.165751
+          },
+          "snapshot": {
+            "assignment_work": 0,
+            "health": "observed",
+            "retired": [],
+            "sequence_number": 1,
+            "source_image_sha256": "d0ac25cf1cadb0bb2194e85d899366e90fd7ffa97b8a6f9cb9ccebc01c69f65a",
+            "timestamp_s": 1341845824.165751,
+            "tracks": [
+              {
+                "bbox": [
+                  355.9882507324219,
+                  252.47213745117188,
+                  636.58154296875,
+                  478.9036560058594
+                ],
+                "class_index": 0,
+                "detection_index": 0,
+                "last_observed_bbox": [
+                  355.9882507324219,
+                  252.47213745117188,
+                  636.58154296875,
+                  478.9036560058594
+                ],
+                "last_observed_confidence": 0.9397782683372498,
+                "last_observed_timestamp_s": 1341845824.165751,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 1,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "bbox": [
+                  0.85687255859375,
+                  208.9870147705078,
+                  253.6595458984375,
+                  478.19342041015625
+                ],
+                "class_index": 0,
+                "detection_index": 1,
+                "last_observed_bbox": [
+                  0.85687255859375,
+                  208.9870147705078,
+                  253.6595458984375,
+                  478.19342041015625
+                ],
+                "last_observed_confidence": 0.9342126846313477,
+                "last_observed_timestamp_s": 1341845824.165751,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 2,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "bbox": [
+                  148.2949981689453,
+                  263.70806884765625,
+                  241.9113006591797,
+                  336.36126708984375
+                ],
+                "class_index": 62,
+                "detection_index": 2,
+                "last_observed_bbox": [
+                  148.2949981689453,
+                  263.70806884765625,
+                  241.9113006591797,
+                  336.36126708984375
+                ],
+                "last_observed_confidence": 0.9062391519546509,
+                "last_observed_timestamp_s": 1341845824.165751,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 3,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "bbox": [
+                  138.85064697265625,
+                  354.19842529296875,
+                  235.24327087402344,
+                  374.8397216796875
+                ],
+                "class_index": 66,
+                "detection_index": 3,
+                "last_observed_bbox": [
+                  138.85064697265625,
+                  354.19842529296875,
+                  235.24327087402344,
+                  374.8397216796875
+                ],
+                "last_observed_confidence": 0.8793827891349792,
+                "last_observed_timestamp_s": 1341845824.165751,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 4,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "bbox": [
+                  340.4840087890625,
+                  251.87982177734375,
+                  471.8563232421875,
+                  347.9686279296875
+                ],
+                "class_index": 62,
+                "detection_index": 4,
+                "last_observed_bbox": [
+                  340.4840087890625,
+                  251.87982177734375,
+                  471.8563232421875,
+                  347.9686279296875
+                ],
+                "last_observed_confidence": 0.8670386075973511,
+                "last_observed_timestamp_s": 1341845824.165751,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 5,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "bbox": [
+                  249.55430603027344,
+                  370.46575927734375,
+                  266.9208984375,
+                  383.24554443359375
+                ],
+                "class_index": 64,
+                "detection_index": 5,
+                "last_observed_bbox": [
+                  249.55430603027344,
+                  370.46575927734375,
+                  266.9208984375,
+                  383.24554443359375
+                ],
+                "last_observed_confidence": 0.7867663502693176,
+                "last_observed_timestamp_s": 1341845824.165751,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 6,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "bbox": [
+                  367.5408020019531,
+                  360.5356140136719,
+                  475.3443908691406,
+                  384.0702819824219
+                ],
+                "class_index": 66,
+                "detection_index": 6,
+                "last_observed_bbox": [
+                  367.5408020019531,
+                  360.5356140136719,
+                  475.3443908691406,
+                  384.0702819824219
+                ],
+                "last_observed_confidence": 0.7782018184661865,
+                "last_observed_timestamp_s": 1341845824.165751,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 7,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "bbox": [
+                  308.1445007324219,
+                  346.1123046875,
+                  361.4275817871094,
+                  373.06573486328125
+                ],
+                "class_index": 73,
+                "detection_index": 7,
+                "last_observed_bbox": [
+                  308.1445007324219,
+                  346.1123046875,
+                  361.4275817871094,
+                  373.06573486328125
+                ],
+                "last_observed_confidence": 0.6425057053565979,
+                "last_observed_timestamp_s": 1341845824.165751,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 8,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "untracked_detection_indices": []
+          },
+          "trigger": "sample"
+        }
+      ],
+      "decision": "accepted",
+      "fault_epoch_s": null,
+      "hold_reason": "initializing",
+      "last_accepted_acquired_s": 1341845824.165751,
+      "now_s": 1341845824.170751,
+      "ready": false,
+      "recovery_count": 1,
+      "result_age_s": 0.005000114440917969,
+      "tracks": []
+    },
+    {
+      "backend_updates": [
+        {
+          "frame": {
+            "acquisition": {
+              "detections": [
+                {
+                  "bbox": [
+                    355.22137451171875,
+                    252.2335205078125,
+                    635.7352294921875,
+                    478.77667236328125
+                  ],
+                  "class_index": 0,
+                  "confidence": 0.9348872303962708
+                },
+                {
+                  "bbox": [
+                    0.3736114501953125,
+                    211.45626831054688,
+                    251.39549255371094,
+                    478.6930847167969
+                  ],
+                  "class_index": 0,
+                  "confidence": 0.9137821197509766
+                },
+                {
+                  "bbox": [
+                    147.39044189453125,
+                    262.7384033203125,
+                    237.03475952148438,
+                    335.20831298828125
+                  ],
+                  "class_index": 62,
+                  "confidence": 0.9124786257743835
+                },
+                {
+                  "bbox": [
+                    339.9144287109375,
+                    251.78077697753906,
+                    473.296875,
+                    348.52593994140625
+                  ],
+                  "class_index": 62,
+                  "confidence": 0.8931806683540344
+                },
+                {
+                  "bbox": [
+                    134.61700439453125,
+                    352.83551025390625,
+                    234.69216918945312,
+                    375.82696533203125
+                  ],
+                  "class_index": 66,
+                  "confidence": 0.863414466381073
+                },
+                {
+                  "bbox": [
+                    247.91429138183594,
+                    371.3484191894531,
+                    264.0999450683594,
+                    384.2239074707031
+                  ],
+                  "class_index": 64,
+                  "confidence": 0.8406633138656616
+                },
+                {
+                  "bbox": [
+                    367.549560546875,
+                    364.1683044433594,
+                    479.35980224609375,
+                    382.8826599121094
+                  ],
+                  "class_index": 66,
+                  "confidence": 0.724852979183197
+                },
+                {
+                  "bbox": [
+                    307.0028076171875,
+                    347.3049621582031,
+                    359.09765625,
+                    372.6091613769531
+                  ],
+                  "class_index": 73,
+                  "confidence": 0.6489294767379761
+                }
+              ],
+              "image_sha256": "13455dc28cb3f796f4da0758ee522db6868f2a0b129ddf8e5a502ed5ed2f9f7d",
+              "status": "detected"
+            },
+            "timestamp_s": 1341845824.19793
+          },
+          "snapshot": {
+            "assignment_work": 192,
+            "health": "observed",
+            "retired": [],
+            "sequence_number": 2,
+            "source_image_sha256": "13455dc28cb3f796f4da0758ee522db6868f2a0b129ddf8e5a502ed5ed2f9f7d",
+            "timestamp_s": 1341845824.19793,
+            "tracks": [
+              {
+                "bbox": [
+                  355.22137451171875,
+                  252.2335205078125,
+                  635.7352294921875,
+                  478.77667236328125
+                ],
+                "class_index": 0,
+                "detection_index": 0,
+                "last_observed_bbox": [
+                  355.22137451171875,
+                  252.2335205078125,
+                  635.7352294921875,
+                  478.77667236328125
+                ],
+                "last_observed_confidence": 0.9348872303962708,
+                "last_observed_timestamp_s": 1341845824.19793,
+                "observation_count": 2,
+                "phase": "confirmed",
+                "track_id": 1,
+                "velocity_px_s": [
+                  -25.065785476665013,
+                  -5.6807118671694985
+                ]
+              },
+              {
+                "bbox": [
+                  0.3736114501953125,
+                  211.45626831054688,
+                  251.39549255371094,
+                  478.6930847167969
+                ],
+                "class_index": 0,
+                "detection_index": 1,
+                "last_observed_bbox": [
+                  0.3736114501953125,
+                  211.45626831054688,
+                  251.39549255371094,
+                  478.6930847167969
+                ],
+                "last_observed_confidence": 0.9137821197509766,
+                "last_observed_timestamp_s": 1341845824.19793,
+                "observation_count": 2,
+                "phase": "confirmed",
+                "track_id": 2,
+                "velocity_px_s": [
+                  -42.687846838903745,
+                  46.131126406804526
+                ]
+              },
+              {
+                "bbox": [
+                  147.39044189453125,
+                  262.7384033203125,
+                  237.03475952148438,
+                  335.20831298828125
+                ],
+                "class_index": 62,
+                "detection_index": 2,
+                "last_observed_bbox": [
+                  147.39044189453125,
+                  262.7384033203125,
+                  237.03475952148438,
+                  335.20831298828125
+                ],
+                "last_observed_confidence": 0.9124786257743835,
+                "last_observed_timestamp_s": 1341845824.19793,
+                "observation_count": 2,
+                "phase": "confirmed",
+                "track_id": 3,
+                "velocity_px_s": [
+                  -89.82684912831836,
+                  -32.981321636820304
+                ]
+              },
+              {
+                "bbox": [
+                  134.61700439453125,
+                  352.83551025390625,
+                  234.69216918945312,
+                  375.82696533203125
+                ],
+                "class_index": 66,
+                "detection_index": 4,
+                "last_observed_bbox": [
+                  134.61700439453125,
+                  352.83551025390625,
+                  234.69216918945312,
+                  375.82696533203125
+                ],
+                "last_observed_confidence": 0.863414466381073,
+                "last_observed_timestamp_s": 1341845824.19793,
+                "observation_count": 2,
+                "phase": "confirmed",
+                "track_id": 4,
+                "velocity_px_s": [
+                  -74.34548674139988,
+                  -5.837192244144952
+                ]
+              },
+              {
+                "bbox": [
+                  339.9144287109375,
+                  251.78077697753906,
+                  473.296875,
+                  348.52593994140625
+                ],
+                "class_index": 62,
+                "detection_index": 3,
+                "last_observed_bbox": [
+                  339.9144287109375,
+                  251.78077697753906,
+                  473.296875,
+                  348.52593994140625
+                ],
+                "last_observed_confidence": 0.8931806683540344,
+                "last_observed_timestamp_s": 1341845824.19793,
+                "observation_count": 2,
+                "phase": "confirmed",
+                "track_id": 5,
+                "velocity_px_s": [
+                  13.53318169357408,
+                  7.1205684268239375
+                ]
+              },
+              {
+                "bbox": [
+                  247.91429138183594,
+                  371.3484191894531,
+                  264.0999450683594,
+                  384.2239074707031
+                ],
+                "class_index": 64,
+                "detection_index": 5,
+                "last_observed_bbox": [
+                  247.91429138183594,
+                  371.3484191894531,
+                  264.0999450683594,
+                  384.2239074707031
+                ],
+                "last_observed_confidence": 0.8406633138656616,
+                "last_observed_timestamp_s": 1341845824.19793,
+                "observation_count": 2,
+                "phase": "confirmed",
+                "track_id": 6,
+                "velocity_px_s": [
+                  -69.31464262163904,
+                  28.916625299142765
+                ]
+              },
+              {
+                "bbox": [
+                  367.549560546875,
+                  364.1683044433594,
+                  479.35980224609375,
+                  382.8826599121094
+                ],
+                "class_index": 66,
+                "detection_index": 6,
+                "last_observed_bbox": [
+                  367.549560546875,
+                  364.1683044433594,
+                  479.35980224609375,
+                  382.8826599121094
+                ],
+                "last_observed_confidence": 0.724852979183197,
+                "last_observed_timestamp_s": 1341845824.19793,
+                "observation_count": 2,
+                "phase": "confirmed",
+                "track_id": 7,
+                "velocity_px_s": [
+                  62.52766190754914,
+                  37.991538797798015
+                ]
+              },
+              {
+                "bbox": [
+                  307.0028076171875,
+                  347.3049621582031,
+                  359.09765625,
+                  372.6091613769531
+                ],
+                "class_index": 73,
+                "detection_index": 7,
+                "last_observed_bbox": [
+                  307.0028076171875,
+                  347.3049621582031,
+                  359.09765625,
+                  372.6091613769531
+                ],
+                "last_observed_confidence": 0.6489294767379761,
+                "last_observed_timestamp_s": 1341845824.19793,
+                "observation_count": 2,
+                "phase": "confirmed",
+                "track_id": 8,
+                "velocity_px_s": [
+                  -53.94210522416259,
+                  11.437293008024065
+                ]
+              }
+            ],
+            "untracked_detection_indices": []
+          },
+          "trigger": "sample"
+        }
+      ],
+      "decision": "accepted",
+      "fault_epoch_s": null,
+      "hold_reason": null,
+      "last_accepted_acquired_s": 1341845824.19793,
+      "now_s": 1341845824.2029302,
+      "ready": true,
+      "recovery_count": 2,
+      "result_age_s": 0.005000114440917969,
+      "tracks": [
+        {
+          "bbox_at_now": [
+            355.09604271578394,
+            252.20511629837077,
+            635.6098976962527,
+            478.74826815383955
+          ],
+          "class_index": 0,
+          "extrapolated": true,
+          "last_observed_confidence": 0.9348872303962708,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.19793,
+          "track_id": 1,
+          "velocity_px_s": [
+            -25.065785476665013,
+            -5.6807118671694985
+          ]
+        },
+        {
+          "bbox_at_now": [
+            0.16016733076441542,
+            211.68692922186935,
+            251.18204843428003,
+            478.9237456281194
+          ],
+          "class_index": 0,
+          "extrapolated": true,
+          "last_observed_confidence": 0.9137821197509766,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.19793,
+          "track_id": 2,
+          "velocity_px_s": [
+            -42.687846838903745,
+            46.131126406804526
+          ]
+        },
+        {
+          "bbox_at_now": [
+            146.94129736902258,
+            262.5734929377157,
+            236.5856149959757,
+            335.04340260568443
+          ],
+          "class_index": 62,
+          "extrapolated": true,
+          "last_observed_confidence": 0.9124786257743835,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.19793,
+          "track_id": 3,
+          "velocity_px_s": [
+            -89.82684912831836,
+            -32.981321636820304
+          ]
+        },
+        {
+          "bbox_at_now": [
+            134.2452684526585,
+            352.8063236246719,
+            234.32043324758038,
+            375.7977787027969
+          ],
+          "class_index": 66,
+          "extrapolated": true,
+          "last_observed_confidence": 0.863414466381073,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.19793,
+          "track_id": 4,
+          "velocity_px_s": [
+            -74.34548674139988,
+            -5.837192244144952
+          ]
+        },
+        {
+          "bbox_at_now": [
+            339.9820961681551,
+            251.81638063455756,
+            473.3645424572176,
+            348.56154359842475
+          ],
+          "class_index": 62,
+          "extrapolated": true,
+          "last_observed_confidence": 0.8931806683540344,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.19793,
+          "track_id": 5,
+          "velocity_px_s": [
+            13.53318169357408,
+            7.1205684268239375
+          ]
+        },
+        {
+          "bbox_at_now": [
+            247.56771023629642,
+            371.493005625194,
+            263.75336392281986,
+            384.368493906444
+          ],
+          "class_index": 64,
+          "extrapolated": true,
+          "last_observed_confidence": 0.8406633138656616,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.19793,
+          "track_id": 6,
+          "velocity_px_s": [
+            -69.31464262163904,
+            28.916625299142765
+          ]
+        },
+        {
+          "bbox_at_now": [
+            367.8622060121358,
+            364.35826648513495,
+            479.67244771135455,
+            383.07262195388495
+          ],
+          "class_index": 66,
+          "extrapolated": true,
+          "last_observed_confidence": 0.724852979183197,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.19793,
+          "track_id": 7,
+          "velocity_px_s": [
+            62.52766190754914,
+            37.991538797798015
+          ]
+        },
+        {
+          "bbox_at_now": [
+            306.73309091788263,
+            347.3621499321376,
+            358.82793955069513,
+            372.6663491508876
+          ],
+          "class_index": 73,
+          "extrapolated": true,
+          "last_observed_confidence": 0.6489294767379761,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.19793,
+          "track_id": 8,
+          "velocity_px_s": [
+            -53.94210522416259,
+            11.437293008024065
+          ]
+        }
+      ]
+    },
+    {
+      "backend_updates": [
+        {
+          "frame": {
+            "acquisition": {
+              "detections": [
+                {
+                  "bbox": [
+                    357.2904968261719,
+                    259.7510070800781,
+                    636.1317138671875,
+                    478.8816833496094
+                  ],
+                  "class_index": 0,
+                  "confidence": 0.9420772194862366
+                },
+                {
+                  "bbox": [
+                    1.2510986328125,
+                    214.89816284179688,
+                    254.75692749023438,
+                    477.5667419433594
+                  ],
+                  "class_index": 0,
+                  "confidence": 0.9114135503768921
+                },
+                {
+                  "bbox": [
+                    147.20294189453125,
+                    268.19329833984375,
+                    241.1238555908203,
+                    344.39508056640625
+                  ],
+                  "class_index": 62,
+                  "confidence": 0.9038262963294983
+                },
+                {
+                  "bbox": [
+                    340.5986633300781,
+                    256.77056884765625,
+                    469.4936218261719,
+                    352.75677490234375
+                  ],
+                  "class_index": 62,
+                  "confidence": 0.8990530967712402
+                },
+                {
+                  "bbox": [
+                    135.1301727294922,
+                    360.5365905761719,
+                    235.50946044921875,
+                    381.1773376464844
+                  ],
+                  "class_index": 66,
+                  "confidence": 0.8715865612030029
+                },
+                {
+                  "bbox": [
+                    249.80909729003906,
+                    377.6538391113281,
+                    266.61199951171875,
+                    389.4118347167969
+                  ],
+                  "class_index": 64,
+                  "confidence": 0.7099860906600952
+                },
+                {
+                  "bbox": [
+                    369.49249267578125,
+                    370.3960266113281,
+                    482.43267822265625,
+                    391.3247985839844
+                  ],
+                  "class_index": 66,
+                  "confidence": 0.6030840277671814
+                },
+                {
+                  "bbox": [
+                    308.08074951171875,
+                    347.72332763671875,
+                    361.7799072265625,
+                    378.49462890625
+                  ],
+                  "class_index": 73,
+                  "confidence": 0.5364561080932617
+                },
+                {
+                  "bbox": [
+                    28.806062698364258,
+                    152.6866455078125,
+                    91.95255279541016,
+                    309.354736328125
+                  ],
+                  "class_index": 72,
+                  "confidence": 0.5153626203536987
+                },
+                {
+                  "bbox": [
+                    366.1026916503906,
+                    325.74493408203125,
+                    478.7347717285156,
+                    475.63189697265625
+                  ],
+                  "class_index": 0,
+                  "confidence": 0.40540987253189087
+                },
+                {
+                  "bbox": [
+                    611.003173828125,
+                    232.2334442138672,
+                    624.9046630859375,
+                    271.09869384765625
+                  ],
+                  "class_index": 39,
+                  "confidence": 0.33268770575523376
+                },
+                {
+                  "bbox": [
+                    106.23381805419922,
+                    343.5451354980469,
+                    164.45840454101562,
+                    362.2662048339844
+                  ],
+                  "class_index": 66,
+                  "confidence": 0.3264356255531311
+                }
+              ],
+              "image_sha256": "db3ce4e52df01b4ba5e8bfcd55059105ca541a543f44a44d22a1f42ccef6bc50",
+              "status": "detected"
+            },
+            "timestamp_s": 1341845824.229907
+          },
+          "snapshot": {
+            "assignment_work": 256,
+            "health": "observed",
+            "retired": [],
+            "sequence_number": 3,
+            "source_image_sha256": "db3ce4e52df01b4ba5e8bfcd55059105ca541a543f44a44d22a1f42ccef6bc50",
+            "timestamp_s": 1341845824.229907,
+            "tracks": [
+              {
+                "bbox": [
+                  357.2904968261719,
+                  259.7510070800781,
+                  636.1317138671875,
+                  478.8816833496094
+                ],
+                "class_index": 0,
+                "detection_index": 0,
+                "last_observed_bbox": [
+                  357.2904968261719,
+                  259.7510070800781,
+                  636.1317138671875,
+                  478.8816833496094
+                ],
+                "last_observed_confidence": 0.9420772194862366,
+                "last_observed_timestamp_s": 1341845824.229907,
+                "observation_count": 3,
+                "phase": "confirmed",
+                "track_id": 1,
+                "velocity_px_s": [
+                  6.74355166634685,
+                  56.753354223661326
+                ]
+              },
+              {
+                "bbox": [
+                  1.2510986328125,
+                  214.89816284179688,
+                  254.75692749023438,
+                  477.5667419433594
+                ],
+                "class_index": 0,
+                "detection_index": 1,
+                "last_observed_bbox": [
+                  1.2510986328125,
+                  214.89816284179688,
+                  254.75692749023438,
+                  477.5667419433594
+                ],
+                "last_observed_confidence": 0.9114135503768921,
+                "last_observed_timestamp_s": 1341845824.229907,
+                "observation_count": 3,
+                "phase": "confirmed",
+                "track_id": 2,
+                "velocity_px_s": [
+                  11.79653929705039,
+                  41.16885798945366
+                ]
+              },
+              {
+                "bbox": [
+                  147.20294189453125,
+                  268.19329833984375,
+                  241.1238555908203,
+                  344.39508056640625
+                ],
+                "class_index": 62,
+                "detection_index": 2,
+                "last_observed_bbox": [
+                  147.20294189453125,
+                  268.19329833984375,
+                  241.1238555908203,
+                  344.39508056640625
+                ],
+                "last_observed_confidence": 0.9038262963294983,
+                "last_observed_timestamp_s": 1341845824.229907,
+                "observation_count": 3,
+                "phase": "confirmed",
+                "track_id": 3,
+                "velocity_px_s": [
+                  -14.410222231936782,
+                  97.97982478787074
+                ]
+              },
+              {
+                "bbox": [
+                  135.1301727294922,
+                  360.5365905761719,
+                  235.50946044921875,
+                  381.1773376464844
+                ],
+                "class_index": 66,
+                "detection_index": 4,
+                "last_observed_bbox": [
+                  135.1301727294922,
+                  360.5365905761719,
+                  235.50946044921875,
+                  381.1773376464844
+                ],
+                "last_observed_confidence": 0.8715865612030029,
+                "last_observed_timestamp_s": 1341845824.229907,
+                "observation_count": 3,
+                "phase": "confirmed",
+                "track_id": 4,
+                "velocity_px_s": [
+                  -26.771031483672555,
+                  99.11941433117497
+                ]
+              },
+              {
+                "bbox": [
+                  340.5986633300781,
+                  256.77056884765625,
+                  469.4936218261719,
+                  352.75677490234375
+                ],
+                "class_index": 62,
+                "detection_index": 3,
+                "last_observed_bbox": [
+                  340.5986633300781,
+                  256.77056884765625,
+                  469.4936218261719,
+                  352.75677490234375
+                ],
+                "last_observed_confidence": 0.8990530967712402,
+                "last_observed_timestamp_s": 1341845824.229907,
+                "observation_count": 3,
+                "phase": "confirmed",
+                "track_id": 5,
+                "velocity_px_s": [
+                  -17.618315320032472,
+                  75.64838376530915
+                ]
+              },
+              {
+                "bbox": [
+                  245.69782133506374,
+                  372.2730843309751,
+                  261.8834750215872,
+                  385.1485726122251
+                ],
+                "class_index": 64,
+                "detection_index": null,
+                "last_observed_bbox": [
+                  247.91429138183594,
+                  371.3484191894531,
+                  264.0999450683594,
+                  384.2239074707031
+                ],
+                "last_observed_confidence": 0.8406633138656616,
+                "last_observed_timestamp_s": 1341845824.19793,
+                "observation_count": 2,
+                "phase": "coasting",
+                "track_id": 6,
+                "velocity_px_s": [
+                  -69.31464262163904,
+                  28.916625299142765
+                ]
+              },
+              {
+                "bbox": [
+                  369.49249267578125,
+                  370.3960266113281,
+                  482.43267822265625,
+                  391.3247985839844
+                ],
+                "class_index": 66,
+                "detection_index": 6,
+                "last_observed_bbox": [
+                  369.49249267578125,
+                  370.3960266113281,
+                  482.43267822265625,
+                  391.3247985839844
+                ],
+                "last_observed_confidence": 0.6030840277671814,
+                "last_observed_timestamp_s": 1341845824.229907,
+                "observation_count": 3,
+                "phase": "confirmed",
+                "track_id": 7,
+                "velocity_px_s": [
+                  70.47809270249401,
+                  133.68671265163348
+                ]
+              },
+              {
+                "bbox": [
+                  308.08074951171875,
+                  347.72332763671875,
+                  361.7799072265625,
+                  378.49462890625
+                ],
+                "class_index": 73,
+                "detection_index": 7,
+                "last_observed_bbox": [
+                  308.08074951171875,
+                  347.72332763671875,
+                  361.7799072265625,
+                  378.49462890625
+                ],
+                "last_observed_confidence": 0.5364561080932617,
+                "last_observed_timestamp_s": 1341845824.229907,
+                "observation_count": 3,
+                "phase": "confirmed",
+                "track_id": 8,
+                "velocity_px_s": [
+                  2.4266405157659463,
+                  55.002860012709405
+                ]
+              },
+              {
+                "bbox": [
+                  249.80909729003906,
+                  377.6538391113281,
+                  266.61199951171875,
+                  389.4118347167969
+                ],
+                "class_index": 64,
+                "detection_index": 5,
+                "last_observed_bbox": [
+                  249.80909729003906,
+                  377.6538391113281,
+                  266.61199951171875,
+                  389.4118347167969
+                ],
+                "last_observed_confidence": 0.7099860906600952,
+                "last_observed_timestamp_s": 1341845824.229907,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 9,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "bbox": [
+                  28.806062698364258,
+                  152.6866455078125,
+                  91.95255279541016,
+                  309.354736328125
+                ],
+                "class_index": 72,
+                "detection_index": 8,
+                "last_observed_bbox": [
+                  28.806062698364258,
+                  152.6866455078125,
+                  91.95255279541016,
+                  309.354736328125
+                ],
+                "last_observed_confidence": 0.5153626203536987,
+                "last_observed_timestamp_s": 1341845824.229907,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 10,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "bbox": [
+                  366.1026916503906,
+                  325.74493408203125,
+                  478.7347717285156,
+                  475.63189697265625
+                ],
+                "class_index": 0,
+                "detection_index": 9,
+                "last_observed_bbox": [
+                  366.1026916503906,
+                  325.74493408203125,
+                  478.7347717285156,
+                  475.63189697265625
+                ],
+                "last_observed_confidence": 0.40540987253189087,
+                "last_observed_timestamp_s": 1341845824.229907,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 11,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "bbox": [
+                  611.003173828125,
+                  232.2334442138672,
+                  624.9046630859375,
+                  271.09869384765625
+                ],
+                "class_index": 39,
+                "detection_index": 10,
+                "last_observed_bbox": [
+                  611.003173828125,
+                  232.2334442138672,
+                  624.9046630859375,
+                  271.09869384765625
+                ],
+                "last_observed_confidence": 0.33268770575523376,
+                "last_observed_timestamp_s": 1341845824.229907,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 12,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "bbox": [
+                  106.23381805419922,
+                  343.5451354980469,
+                  164.45840454101562,
+                  362.2662048339844
+                ],
+                "class_index": 66,
+                "detection_index": 11,
+                "last_observed_bbox": [
+                  106.23381805419922,
+                  343.5451354980469,
+                  164.45840454101562,
+                  362.2662048339844
+                ],
+                "last_observed_confidence": 0.3264356255531311,
+                "last_observed_timestamp_s": 1341845824.229907,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 13,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "untracked_detection_indices": []
+          },
+          "trigger": "sample"
+        }
+      ],
+      "decision": "accepted",
+      "fault_epoch_s": null,
+      "hold_reason": null,
+      "last_accepted_acquired_s": 1341845824.229907,
+      "now_s": 1341845824.2349072,
+      "ready": true,
+      "recovery_count": 2,
+      "result_age_s": 0.005000114440917969,
+      "tracks": [
+        {
+          "bbox_at_now": [
+            357.32421535624184,
+            260.03478034610237,
+            636.1654323972575,
+            479.1654566156336
+          ],
+          "class_index": 0,
+          "extrapolated": true,
+          "last_observed_confidence": 0.9420772194862366,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.229907,
+          "track_id": 1,
+          "velocity_px_s": [
+            6.74355166634685,
+            56.753354223661326
+          ]
+        },
+        {
+          "bbox_at_now": [
+            1.310082679304538,
+            215.10401184314605,
+            254.81591153672642,
+            477.77259094470855
+          ],
+          "class_index": 0,
+          "extrapolated": true,
+          "last_observed_confidence": 0.9114135503768921,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.229907,
+          "track_id": 2,
+          "velocity_px_s": [
+            11.79653929705039,
+            41.16885798945366
+          ]
+        },
+        {
+          "bbox_at_now": [
+            147.1308891342525,
+            268.6832086766842,
+            241.05180283054156,
+            344.8849909032467
+          ],
+          "class_index": 62,
+          "extrapolated": true,
+          "last_observed_confidence": 0.9038262963294983,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.229907,
+          "track_id": 3,
+          "velocity_px_s": [
+            -14.410222231936782,
+            97.97982478787074
+          ]
+        },
+        {
+          "bbox_at_now": [
+            134.9963145083724,
+            361.0321989911445,
+            235.37560222809896,
+            381.672946061457
+          ],
+          "class_index": 66,
+          "extrapolated": true,
+          "last_observed_confidence": 0.8715865612030029,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.229907,
+          "track_id": 4,
+          "velocity_px_s": [
+            -26.771031483672555,
+            99.11941433117497
+          ]
+        },
+        {
+          "bbox_at_now": [
+            340.5105697372218,
+            257.14881942375325,
+            469.4055282333155,
+            353.13502547844075
+          ],
+          "class_index": 62,
+          "extrapolated": true,
+          "last_observed_confidence": 0.8990530967712402,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.229907,
+          "track_id": 5,
+          "velocity_px_s": [
+            -17.618315320032472,
+            75.64838376530915
+          ]
+        },
+        {
+          "bbox_at_now": [
+            245.35124018952422,
+            372.417670766716,
+            261.53689387604766,
+            385.293159047966
+          ],
+          "class_index": 64,
+          "extrapolated": true,
+          "last_observed_confidence": 0.8406633138656616,
+          "observation_age_s": 0.03697705268859863,
+          "observed_at_s": 1341845824.19793,
+          "track_id": 6,
+          "velocity_px_s": [
+            -69.31464262163904,
+            28.916625299142765
+          ]
+        },
+        {
+          "bbox_at_now": [
+            369.8448912048714,
+            371.0644754738164,
+            482.7850767517464,
+            391.99324744647265
+          ],
+          "class_index": 66,
+          "extrapolated": true,
+          "last_observed_confidence": 0.6030840277671814,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.229907,
+          "track_id": 7,
+          "velocity_px_s": [
+            70.47809270249401,
+            133.68671265163348
+          ]
+        },
+        {
+          "bbox_at_now": [
+            308.09288299200455,
+            347.99834823136007,
+            361.7920407068483,
+            378.7696495008913
+          ],
+          "class_index": 73,
+          "extrapolated": true,
+          "last_observed_confidence": 0.5364561080932617,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.229907,
+          "track_id": 8,
+          "velocity_px_s": [
+            2.4266405157659463,
+            55.002860012709405
+          ]
+        }
+      ]
+    },
+    {
+      "backend_updates": [
+        {
+          "frame": {
+            "acquisition": {
+              "detections": [
+                {
+                  "bbox": [
+                    365.49713134765625,
+                    264.2891845703125,
+                    639.2880859375,
+                    477.9459228515625
+                  ],
+                  "class_index": 0,
+                  "confidence": 0.9435911178588867
+                },
+                {
+                  "bbox": [
+                    150.35357666015625,
+                    271.3238525390625,
+                    249.28668212890625,
+                    345.08477783203125
+                  ],
+                  "class_index": 62,
+                  "confidence": 0.9024859666824341
+                },
+                {
+                  "bbox": [
+                    2.7010421752929688,
+                    219.50531005859375,
+                    166.77029418945312,
+                    477.05047607421875
+                  ],
+                  "class_index": 0,
+                  "confidence": 0.9011597037315369
+                },
+                {
+                  "bbox": [
+                    347.11767578125,
+                    259.81207275390625,
+                    476.58544921875,
+                    353.01373291015625
+                  ],
+                  "class_index": 62,
+                  "confidence": 0.8873398900032043
+                },
+                {
+                  "bbox": [
+                    145.291259765625,
+                    363.5187683105469,
+                    240.41067504882812,
+                    383.3836364746094
+                  ],
+                  "class_index": 66,
+                  "confidence": 0.7975181937217712
+                },
+                {
+                  "bbox": [
+                    376.3815612792969,
+                    370.6017761230469,
+                    478.7052917480469,
+                    391.4216003417969
+                  ],
+                  "class_index": 66,
+                  "confidence": 0.5473023056983948
+                },
+                {
+                  "bbox": [
+                    312.8260192871094,
+                    356.099365234375,
+                    371.0407409667969,
+                    385.27593994140625
+                  ],
+                  "class_index": 73,
+                  "confidence": 0.5093648433685303
+                },
+                {
+                  "bbox": [
+                    256.2539367675781,
+                    379.1005554199219,
+                    273.5372619628906,
+                    392.2297668457031
+                  ],
+                  "class_index": 64,
+                  "confidence": 0.4813460111618042
+                },
+                {
+                  "bbox": [
+                    377.3088073730469,
+                    370.9566345214844,
+                    485.9873962402344,
+                    391.2434387207031
+                  ],
+                  "class_index": 63,
+                  "confidence": 0.3988882899284363
+                }
+              ],
+              "image_sha256": "115cea1df25e2402545c48a6e86db8aee679b90254ecccc46ee80fbf9f3620dd",
+              "status": "detected"
+            },
+            "timestamp_s": 1341845824.2658
+          },
+          "snapshot": {
+            "assignment_work": 623,
+            "health": "observed",
+            "retired": [
+              {
+                "reason": "tentative_miss",
+                "track_id": 10
+              },
+              {
+                "reason": "tentative_miss",
+                "track_id": 11
+              },
+              {
+                "reason": "tentative_miss",
+                "track_id": 12
+              },
+              {
+                "reason": "tentative_miss",
+                "track_id": 13
+              }
+            ],
+            "sequence_number": 4,
+            "source_image_sha256": "115cea1df25e2402545c48a6e86db8aee679b90254ecccc46ee80fbf9f3620dd",
+            "timestamp_s": 1341845824.2658,
+            "tracks": [
+              {
+                "bbox": [
+                  365.49713134765625,
+                  264.2891845703125,
+                  639.2880859375,
+                  477.9459228515625
+                ],
+                "class_index": 0,
+                "detection_index": 0,
+                "last_observed_bbox": [
+                  365.49713134765625,
+                  264.2891845703125,
+                  639.2880859375,
+                  477.9459228515625
+                ],
+                "last_observed_confidence": 0.9435911178588867,
+                "last_observed_timestamp_s": 1341845824.2658,
+                "observation_count": 4,
+                "phase": "confirmed",
+                "track_id": 1,
+                "velocity_px_s": [
+                  82.5168610562946,
+                  53.468064461876494
+                ]
+              },
+              {
+                "bbox": [
+                  2.7010421752929688,
+                  219.50531005859375,
+                  166.77029418945312,
+                  477.05047607421875
+                ],
+                "class_index": 0,
+                "detection_index": 2,
+                "last_observed_bbox": [
+                  2.7010421752929688,
+                  219.50531005859375,
+                  166.77029418945312,
+                  477.05047607421875
+                ],
+                "last_observed_confidence": 0.9011597037315369,
+                "last_observed_timestamp_s": 1341845824.2658,
+                "observation_count": 4,
+                "phase": "confirmed",
+                "track_id": 2,
+                "velocity_px_s": [
+                  -596.8430585833773,
+                  49.07804556374893
+                ]
+              },
+              {
+                "bbox": [
+                  150.35357666015625,
+                  271.3238525390625,
+                  249.28668212890625,
+                  345.08477783203125
+                ],
+                "class_index": 62,
+                "detection_index": 1,
+                "last_observed_bbox": [
+                  150.35357666015625,
+                  271.3238525390625,
+                  249.28668212890625,
+                  345.08477783203125
+                ],
+                "last_observed_confidence": 0.9024859666824341,
+                "last_observed_timestamp_s": 1341845824.2658,
+                "observation_count": 4,
+                "phase": "confirmed",
+                "track_id": 3,
+                "velocity_px_s": [
+                  71.5948835700412,
+                  75.59855028534398
+                ]
+              },
+              {
+                "bbox": [
+                  145.291259765625,
+                  363.5187683105469,
+                  240.41067504882812,
+                  383.3836364746094
+                ],
+                "class_index": 66,
+                "detection_index": 4,
+                "last_observed_bbox": [
+                  145.291259765625,
+                  363.5187683105469,
+                  240.41067504882812,
+                  383.3836364746094
+                ],
+                "last_observed_confidence": 0.7975181937217712,
+                "last_observed_timestamp_s": 1341845824.2658,
+                "observation_count": 4,
+                "phase": "confirmed",
+                "track_id": 4,
+                "velocity_px_s": [
+                  91.52572733336997,
+                  85.69824289553048
+                ]
+              },
+              {
+                "bbox": [
+                  347.11767578125,
+                  259.81207275390625,
+                  476.58544921875,
+                  353.01373291015625
+                ],
+                "class_index": 62,
+                "detection_index": 3,
+                "last_observed_bbox": [
+                  347.11767578125,
+                  259.81207275390625,
+                  476.58544921875,
+                  353.01373291015625
+                ],
+                "last_observed_confidence": 0.8873398900032043,
+                "last_observed_timestamp_s": 1341845824.2658,
+                "observation_count": 4,
+                "phase": "confirmed",
+                "track_id": 5,
+                "velocity_px_s": [
+                  85.99243122311583,
+                  60.79848545405468
+                ]
+              },
+              {
+                "bbox": [
+                  243.20991340370796,
+                  373.31098770476126,
+                  259.3955670902314,
+                  386.18647598601126
+                ],
+                "class_index": 64,
+                "detection_index": null,
+                "last_observed_bbox": [
+                  247.91429138183594,
+                  371.3484191894531,
+                  264.0999450683594,
+                  384.2239074707031
+                ],
+                "last_observed_confidence": 0.8406633138656616,
+                "last_observed_timestamp_s": 1341845824.19793,
+                "observation_count": 2,
+                "phase": "coasting",
+                "track_id": 6,
+                "velocity_px_s": [
+                  -69.31464262163904,
+                  28.916625299142765
+                ]
+              },
+              {
+                "bbox": [
+                  376.3815612792969,
+                  370.6017761230469,
+                  478.7052917480469,
+                  391.4216003417969
+                ],
+                "class_index": 66,
+                "detection_index": 5,
+                "last_observed_bbox": [
+                  376.3815612792969,
+                  370.6017761230469,
+                  478.7052917480469,
+                  391.4216003417969
+                ],
+                "last_observed_confidence": 0.5473023056983948,
+                "last_observed_timestamp_s": 1341845824.2658,
+                "observation_count": 4,
+                "phase": "confirmed",
+                "track_id": 7,
+                "velocity_px_s": [
+                  57.26064772225653,
+                  68.95067236211129
+                ]
+              },
+              {
+                "bbox": [
+                  312.8260192871094,
+                  356.099365234375,
+                  371.0407409667969,
+                  385.27593994140625
+                ],
+                "class_index": 73,
+                "detection_index": 6,
+                "last_observed_bbox": [
+                  312.8260192871094,
+                  356.099365234375,
+                  371.0407409667969,
+                  385.27593994140625
+                ],
+                "last_observed_confidence": 0.5093648433685303,
+                "last_observed_timestamp_s": 1341845824.2658,
+                "observation_count": 4,
+                "phase": "confirmed",
+                "track_id": 8,
+                "velocity_px_s": [
+                  98.7679812917198,
+                  133.07469000662041
+                ]
+              },
+              {
+                "bbox": [
+                  256.2539367675781,
+                  379.1005554199219,
+                  273.5372619628906,
+                  392.2297668457031
+                ],
+                "class_index": 64,
+                "detection_index": 7,
+                "last_observed_bbox": [
+                  256.2539367675781,
+                  379.1005554199219,
+                  273.5372619628906,
+                  392.2297668457031
+                ],
+                "last_observed_confidence": 0.4813460111618042,
+                "last_observed_timestamp_s": 1341845824.2658,
+                "observation_count": 2,
+                "phase": "confirmed",
+                "track_id": 9,
+                "velocity_px_s": [
+                  186.24962469942741,
+                  59.407862048809
+                ]
+              },
+              {
+                "bbox": [
+                  377.3088073730469,
+                  370.9566345214844,
+                  485.9873962402344,
+                  391.2434387207031
+                ],
+                "class_index": 63,
+                "detection_index": 8,
+                "last_observed_bbox": [
+                  377.3088073730469,
+                  370.9566345214844,
+                  485.9873962402344,
+                  391.2434387207031
+                ],
+                "last_observed_confidence": 0.3988882899284363,
+                "last_observed_timestamp_s": 1341845824.2658,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 14,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "untracked_detection_indices": []
+          },
+          "trigger": "sample"
+        }
+      ],
+      "decision": "accepted",
+      "fault_epoch_s": null,
+      "hold_reason": null,
+      "last_accepted_acquired_s": 1341845824.2658,
+      "now_s": 1341845824.2708,
+      "ready": true,
+      "recovery_count": 2,
+      "result_age_s": 0.005000114440917969,
+      "tracks": [
+        {
+          "bbox_at_now": [
+            365.90972509624305,
+            264.5565310115563,
+            639.7006796860868,
+            478.2132692928063
+          ],
+          "class_index": 0,
+          "extrapolated": true,
+          "last_observed_confidence": 0.9435911178588867,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.2658,
+          "track_id": 1,
+          "velocity_px_s": [
+            82.5168610562946,
+            53.468064461876494
+          ]
+        },
+        {
+          "bbox_at_now": [
+            -0.28324142089142557,
+            219.75070590294908,
+            163.78601059326874,
+            477.2958719185741
+          ],
+          "class_index": 0,
+          "extrapolated": true,
+          "last_observed_confidence": 0.9011597037315369,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.2658,
+          "track_id": 2,
+          "velocity_px_s": [
+            -596.8430585833773,
+            49.07804556374893
+          ]
+        },
+        {
+          "bbox_at_now": [
+            150.71155927139066,
+            271.7018539420567,
+            249.64466474014066,
+            345.46277923502544
+          ],
+          "class_index": 62,
+          "extrapolated": true,
+          "last_observed_confidence": 0.9024859666824341,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.2658,
+          "track_id": 3,
+          "velocity_px_s": [
+            71.5948835700412,
+            75.59855028534398
+          ]
+        },
+        {
+          "bbox_at_now": [
+            145.7488988765801,
+            363.9472693324101,
+            240.86831415978324,
+            383.8121374964726
+          ],
+          "class_index": 66,
+          "extrapolated": true,
+          "last_observed_confidence": 0.7975181937217712,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.2658,
+          "track_id": 4,
+          "velocity_px_s": [
+            91.52572733336997,
+            85.69824289553048
+          ]
+        },
+        {
+          "bbox_at_now": [
+            347.54764777841837,
+            260.116072139011,
+            477.01542121591837,
+            353.317732295261
+          ],
+          "class_index": 62,
+          "extrapolated": true,
+          "last_observed_confidence": 0.8873398900032043,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.2658,
+          "track_id": 5,
+          "velocity_px_s": [
+            85.99243122311583,
+            60.79848545405468
+          ]
+        },
+        {
+          "bbox_at_now": [
+            242.86333225816844,
+            373.45557414050216,
+            259.0489859446919,
+            386.33106242175216
+          ],
+          "class_index": 64,
+          "extrapolated": true,
+          "last_observed_confidence": 0.8406633138656616,
+          "observation_age_s": 0.07287001609802246,
+          "observed_at_s": 1341845824.19793,
+          "track_id": 6,
+          "velocity_px_s": [
+            -69.31464262163904,
+            28.916625299142765
+          ]
+        },
+        {
+          "bbox_at_now": [
+            376.66787107086924,
+            370.94653737563567,
+            478.99160153961924,
+            391.76636159438567
+          ],
+          "class_index": 66,
+          "extrapolated": true,
+          "last_observed_confidence": 0.5473023056983948,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.2658,
+          "track_id": 7,
+          "velocity_px_s": [
+            57.26064772225653,
+            68.95067236211129
+          ]
+        },
+        {
+          "bbox_at_now": [
+            313.3198704966664,
+            356.76475391359776,
+            371.5345921763539,
+            385.941328620629
+          ],
+          "class_index": 73,
+          "extrapolated": true,
+          "last_observed_confidence": 0.5093648433685303,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.2658,
+          "track_id": 8,
+          "velocity_px_s": [
+            98.7679812917198,
+            133.07469000662041
+          ]
+        },
+        {
+          "bbox_at_now": [
+            257.1852062056533,
+            379.39760152885617,
+            274.4685314009658,
+            392.5268129546374
+          ],
+          "class_index": 64,
+          "extrapolated": true,
+          "last_observed_confidence": 0.4813460111618042,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.2658,
+          "track_id": 9,
+          "velocity_px_s": [
+            186.24962469942741,
+            59.407862048809
+          ]
+        }
+      ]
+    },
+    {
+      "backend_updates": [
+        {
+          "frame": {
+            "acquisition": {
+              "status": "failed"
+            },
+            "timestamp_s": 1341845824.2758
+          },
+          "snapshot": {
+            "assignment_work": 0,
+            "health": "acquisition_failed",
+            "retired": [
+              {
+                "reason": "acquisition_failed",
+                "track_id": 1
+              },
+              {
+                "reason": "acquisition_failed",
+                "track_id": 2
+              },
+              {
+                "reason": "acquisition_failed",
+                "track_id": 3
+              },
+              {
+                "reason": "acquisition_failed",
+                "track_id": 4
+              },
+              {
+                "reason": "acquisition_failed",
+                "track_id": 5
+              },
+              {
+                "reason": "acquisition_failed",
+                "track_id": 6
+              },
+              {
+                "reason": "acquisition_failed",
+                "track_id": 7
+              },
+              {
+                "reason": "acquisition_failed",
+                "track_id": 8
+              },
+              {
+                "reason": "acquisition_failed",
+                "track_id": 9
+              },
+              {
+                "reason": "acquisition_failed",
+                "track_id": 14
+              }
+            ],
+            "sequence_number": 5,
+            "source_image_sha256": null,
+            "timestamp_s": 1341845824.2758,
+            "tracks": [],
+            "untracked_detection_indices": []
+          },
+          "trigger": "acquisition_failure"
+        }
+      ],
+      "decision": "acquisition_failed",
+      "fault_epoch_s": 1341845824.2758,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 1341845824.2658,
+      "now_s": 1341845824.2758,
+      "ready": false,
+      "recovery_count": 0,
+      "result_age_s": 0.009999990463256836,
+      "tracks": []
+    },
+    {
+      "backend_updates": [],
+      "decision": "before_fault",
+      "fault_epoch_s": 1341845824.2758,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 1341845824.2658,
+      "now_s": 1341845824.2808,
+      "ready": false,
+      "recovery_count": 0,
+      "result_age_s": 0.015000104904174805,
+      "tracks": []
+    },
+    {
+      "backend_updates": [
+        {
+          "frame": {
+            "acquisition": {
+              "detections": [
+                {
+                  "bbox": [
+                    379.19744873046875,
+                    263.5281982421875,
+                    639.96142578125,
+                    478.3262939453125
+                  ],
+                  "class_index": 0,
+                  "confidence": 0.9429962038993835
+                },
+                {
+                  "bbox": [
+                    16.04090118408203,
+                    220.740966796875,
+                    267.9522705078125,
+                    478.46795654296875
+                  ],
+                  "class_index": 0,
+                  "confidence": 0.9085492491722107
+                },
+                {
+                  "bbox": [
+                    163.18087768554688,
+                    272.7001037597656,
+                    257.8648986816406,
+                    345.8336486816406
+                  ],
+                  "class_index": 62,
+                  "confidence": 0.89266037940979
+                },
+                {
+                  "bbox": [
+                    355.61712646484375,
+                    261.54461669921875,
+                    491.30450439453125,
+                    358.8087158203125
+                  ],
+                  "class_index": 62,
+                  "confidence": 0.8619823455810547
+                },
+                {
+                  "bbox": [
+                    153.58482360839844,
+                    363.1376953125,
+                    250.29124450683594,
+                    385.70343017578125
+                  ],
+                  "class_index": 66,
+                  "confidence": 0.8324428796768188
+                },
+                {
+                  "bbox": [
+                    323.6529846191406,
+                    355.78131103515625,
+                    378.8744201660156,
+                    386.35186767578125
+                  ],
+                  "class_index": 73,
+                  "confidence": 0.6533627510070801
+                },
+                {
+                  "bbox": [
+                    476.33843994140625,
+                    153.63766479492188,
+                    501.33978271484375,
+                    182.49774169921875
+                  ],
+                  "class_index": 74,
+                  "confidence": 0.61414635181427
+                },
+                {
+                  "bbox": [
+                    267.037353515625,
+                    380.3164978027344,
+                    284.5335388183594,
+                    393.2334899902344
+                  ],
+                  "class_index": 64,
+                  "confidence": 0.6135063767433167
+                },
+                {
+                  "bbox": [
+                    386.39056396484375,
+                    370.4678955078125,
+                    500.83843994140625,
+                    394.05450439453125
+                  ],
+                  "class_index": 63,
+                  "confidence": 0.45979538559913635
+                }
+              ],
+              "image_sha256": "e7f268fda337e3859db47b4ce222ed3eb928dc5bbf9c644d17246d2c52a0ebde",
+              "status": "detected"
+            },
+            "timestamp_s": 1341845824.29808
+          },
+          "snapshot": {
+            "assignment_work": 0,
+            "health": "observed",
+            "retired": [],
+            "sequence_number": 6,
+            "source_image_sha256": "e7f268fda337e3859db47b4ce222ed3eb928dc5bbf9c644d17246d2c52a0ebde",
+            "timestamp_s": 1341845824.29808,
+            "tracks": [
+              {
+                "bbox": [
+                  379.19744873046875,
+                  263.5281982421875,
+                  639.96142578125,
+                  478.3262939453125
+                ],
+                "class_index": 0,
+                "detection_index": 0,
+                "last_observed_bbox": [
+                  379.19744873046875,
+                  263.5281982421875,
+                  639.96142578125,
+                  478.3262939453125
+                ],
+                "last_observed_confidence": 0.9429962038993835,
+                "last_observed_timestamp_s": 1341845824.29808,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 15,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "bbox": [
+                  16.04090118408203,
+                  220.740966796875,
+                  267.9522705078125,
+                  478.46795654296875
+                ],
+                "class_index": 0,
+                "detection_index": 1,
+                "last_observed_bbox": [
+                  16.04090118408203,
+                  220.740966796875,
+                  267.9522705078125,
+                  478.46795654296875
+                ],
+                "last_observed_confidence": 0.9085492491722107,
+                "last_observed_timestamp_s": 1341845824.29808,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 16,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "bbox": [
+                  163.18087768554688,
+                  272.7001037597656,
+                  257.8648986816406,
+                  345.8336486816406
+                ],
+                "class_index": 62,
+                "detection_index": 2,
+                "last_observed_bbox": [
+                  163.18087768554688,
+                  272.7001037597656,
+                  257.8648986816406,
+                  345.8336486816406
+                ],
+                "last_observed_confidence": 0.89266037940979,
+                "last_observed_timestamp_s": 1341845824.29808,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 17,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "bbox": [
+                  355.61712646484375,
+                  261.54461669921875,
+                  491.30450439453125,
+                  358.8087158203125
+                ],
+                "class_index": 62,
+                "detection_index": 3,
+                "last_observed_bbox": [
+                  355.61712646484375,
+                  261.54461669921875,
+                  491.30450439453125,
+                  358.8087158203125
+                ],
+                "last_observed_confidence": 0.8619823455810547,
+                "last_observed_timestamp_s": 1341845824.29808,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 18,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "bbox": [
+                  153.58482360839844,
+                  363.1376953125,
+                  250.29124450683594,
+                  385.70343017578125
+                ],
+                "class_index": 66,
+                "detection_index": 4,
+                "last_observed_bbox": [
+                  153.58482360839844,
+                  363.1376953125,
+                  250.29124450683594,
+                  385.70343017578125
+                ],
+                "last_observed_confidence": 0.8324428796768188,
+                "last_observed_timestamp_s": 1341845824.29808,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 19,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "bbox": [
+                  323.6529846191406,
+                  355.78131103515625,
+                  378.8744201660156,
+                  386.35186767578125
+                ],
+                "class_index": 73,
+                "detection_index": 5,
+                "last_observed_bbox": [
+                  323.6529846191406,
+                  355.78131103515625,
+                  378.8744201660156,
+                  386.35186767578125
+                ],
+                "last_observed_confidence": 0.6533627510070801,
+                "last_observed_timestamp_s": 1341845824.29808,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 20,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "bbox": [
+                  476.33843994140625,
+                  153.63766479492188,
+                  501.33978271484375,
+                  182.49774169921875
+                ],
+                "class_index": 74,
+                "detection_index": 6,
+                "last_observed_bbox": [
+                  476.33843994140625,
+                  153.63766479492188,
+                  501.33978271484375,
+                  182.49774169921875
+                ],
+                "last_observed_confidence": 0.61414635181427,
+                "last_observed_timestamp_s": 1341845824.29808,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 21,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "bbox": [
+                  267.037353515625,
+                  380.3164978027344,
+                  284.5335388183594,
+                  393.2334899902344
+                ],
+                "class_index": 64,
+                "detection_index": 7,
+                "last_observed_bbox": [
+                  267.037353515625,
+                  380.3164978027344,
+                  284.5335388183594,
+                  393.2334899902344
+                ],
+                "last_observed_confidence": 0.6135063767433167,
+                "last_observed_timestamp_s": 1341845824.29808,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 22,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "bbox": [
+                  386.39056396484375,
+                  370.4678955078125,
+                  500.83843994140625,
+                  394.05450439453125
+                ],
+                "class_index": 63,
+                "detection_index": 8,
+                "last_observed_bbox": [
+                  386.39056396484375,
+                  370.4678955078125,
+                  500.83843994140625,
+                  394.05450439453125
+                ],
+                "last_observed_confidence": 0.45979538559913635,
+                "last_observed_timestamp_s": 1341845824.29808,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 23,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "untracked_detection_indices": []
+          },
+          "trigger": "sample"
+        }
+      ],
+      "decision": "accepted",
+      "fault_epoch_s": 1341845824.2758,
+      "hold_reason": "acquisition_failed",
+      "last_accepted_acquired_s": 1341845824.29808,
+      "now_s": 1341845824.30308,
+      "ready": false,
+      "recovery_count": 1,
+      "result_age_s": 0.005000114440917969,
+      "tracks": []
+    },
+    {
+      "backend_updates": [
+        {
+          "frame": {
+            "acquisition": {
+              "detections": [
+                {
+                  "bbox": [
+                    390.00518798828125,
+                    265.19891357421875,
+                    639.3611450195312,
+                    477.93255615234375
+                  ],
+                  "class_index": 0,
+                  "confidence": 0.9242191910743713
+                },
+                {
+                  "bbox": [
+                    168.1361083984375,
+                    275.3337097167969,
+                    260.0428771972656,
+                    351.4123229980469
+                  ],
+                  "class_index": 62,
+                  "confidence": 0.9071211814880371
+                },
+                {
+                  "bbox": [
+                    19.614791870117188,
+                    225.4650421142578,
+                    266.86273193359375,
+                    478.367431640625
+                  ],
+                  "class_index": 0,
+                  "confidence": 0.8982371687889099
+                },
+                {
+                  "bbox": [
+                    359.89031982421875,
+                    264.2021789550781,
+                    494.82684326171875,
+                    362.8768005371094
+                  ],
+                  "class_index": 62,
+                  "confidence": 0.8914117813110352
+                },
+                {
+                  "bbox": [
+                    269.73260498046875,
+                    385.1147155761719,
+                    285.83612060546875,
+                    397.4034118652344
+                  ],
+                  "class_index": 64,
+                  "confidence": 0.8877092599868774
+                },
+                {
+                  "bbox": [
+                    165.71337890625,
+                    367.61016845703125,
+                    254.77218627929688,
+                    388.81573486328125
+                  ],
+                  "class_index": 66,
+                  "confidence": 0.8497126698493958
+                },
+                {
+                  "bbox": [
+                    388.6159362792969,
+                    379.4776306152344,
+                    499.0972595214844,
+                    396.4805603027344
+                  ],
+                  "class_index": 66,
+                  "confidence": 0.7341697812080383
+                },
+                {
+                  "bbox": [
+                    326.64996337890625,
+                    358.09136962890625,
+                    381.28411865234375,
+                    386.0709228515625
+                  ],
+                  "class_index": 73,
+                  "confidence": 0.4681492745876312
+                }
+              ],
+              "image_sha256": "bd13de9c67a356989e85ac9e7dc409789a85a8769515d10687615fc482aa4bab",
+              "status": "detected"
+            },
+            "timestamp_s": 1341845824.333783
+          },
+          "snapshot": {
+            "assignment_work": 242,
+            "health": "observed",
+            "retired": [
+              {
+                "reason": "tentative_miss",
+                "track_id": 21
+              },
+              {
+                "reason": "tentative_miss",
+                "track_id": 23
+              }
+            ],
+            "sequence_number": 7,
+            "source_image_sha256": "bd13de9c67a356989e85ac9e7dc409789a85a8769515d10687615fc482aa4bab",
+            "timestamp_s": 1341845824.333783,
+            "tracks": [
+              {
+                "bbox": [
+                  390.00518798828125,
+                  265.19891357421875,
+                  639.3611450195312,
+                  477.93255615234375
+                ],
+                "class_index": 0,
+                "detection_index": 0,
+                "last_observed_bbox": [
+                  390.00518798828125,
+                  265.19891357421875,
+                  639.3611450195312,
+                  477.93255615234375
+                ],
+                "last_observed_confidence": 0.9242191910743713,
+                "last_observed_timestamp_s": 1341845824.333783,
+                "observation_count": 2,
+                "phase": "confirmed",
+                "track_id": 15,
+                "velocity_px_s": [
+                  142.94981602548265,
+                  17.883364830483007
+                ]
+              },
+              {
+                "bbox": [
+                  19.614791870117188,
+                  225.4650421142578,
+                  266.86273193359375,
+                  478.367431640625
+                ],
+                "class_index": 0,
+                "detection_index": 2,
+                "last_observed_bbox": [
+                  19.614791870117188,
+                  225.4650421142578,
+                  266.86273193359375,
+                  478.367431640625
+                ],
+                "last_observed_confidence": 0.8982371687889099,
+                "last_observed_timestamp_s": 1341845824.333783,
+                "observation_count": 2,
+                "phase": "confirmed",
+                "track_id": 16,
+                "velocity_px_s": [
+                  34.791978577486326,
+                  64.75026878309706
+                ]
+              },
+              {
+                "bbox": [
+                  168.1361083984375,
+                  275.3337097167969,
+                  260.0428771972656,
+                  351.4123229980469
+                ],
+                "class_index": 62,
+                "detection_index": 1,
+                "last_observed_bbox": [
+                  168.1361083984375,
+                  275.3337097167969,
+                  260.0428771972656,
+                  351.4123229980469
+                ],
+                "last_observed_confidence": 0.9071211814880371,
+                "last_observed_timestamp_s": 1341845824.333783,
+                "observation_count": 2,
+                "phase": "confirmed",
+                "track_id": 17,
+                "velocity_px_s": [
+                  99.89665373391475,
+                  115.0084474687644
+                ]
+              },
+              {
+                "bbox": [
+                  359.89031982421875,
+                  264.2021789550781,
+                  494.82684326171875,
+                  362.8768005371094
+                ],
+                "class_index": 62,
+                "detection_index": 3,
+                "last_observed_bbox": [
+                  359.89031982421875,
+                  264.2021789550781,
+                  494.82684326171875,
+                  362.8768005371094
+                ],
+                "last_observed_confidence": 0.8914117813110352,
+                "last_observed_timestamp_s": 1341845824.333783,
+                "observation_count": 2,
+                "phase": "confirmed",
+                "track_id": 18,
+                "velocity_px_s": [
+                  109.1721213497252,
+                  94.18896954236756
+                ]
+              },
+              {
+                "bbox": [
+                  165.71337890625,
+                  367.61016845703125,
+                  254.77218627929688,
+                  388.81573486328125
+                ],
+                "class_index": 66,
+                "detection_index": 5,
+                "last_observed_bbox": [
+                  165.71337890625,
+                  367.61016845703125,
+                  254.77218627929688,
+                  388.81573486328125
+                ],
+                "last_observed_confidence": 0.8497126698493958,
+                "last_observed_timestamp_s": 1341845824.333783,
+                "observation_count": 2,
+                "phase": "confirmed",
+                "track_id": 19,
+                "velocity_px_s": [
+                  232.60682876012527,
+                  106.2206225083306
+                ]
+              },
+              {
+                "bbox": [
+                  326.64996337890625,
+                  358.09136962890625,
+                  381.28411865234375,
+                  386.0709228515625
+                ],
+                "class_index": 73,
+                "detection_index": 7,
+                "last_observed_bbox": [
+                  326.64996337890625,
+                  358.09136962890625,
+                  381.28411865234375,
+                  386.0709228515625
+                ],
+                "last_observed_confidence": 0.4681492745876312,
+                "last_observed_timestamp_s": 1341845824.333783,
+                "observation_count": 2,
+                "phase": "confirmed",
+                "track_id": 20,
+                "velocity_px_s": [
+                  75.71752732906397,
+                  28.416617139346506
+                ]
+              },
+              {
+                "bbox": [
+                  269.73260498046875,
+                  385.1147155761719,
+                  285.83612060546875,
+                  397.4034118652344
+                ],
+                "class_index": 64,
+                "detection_index": 4,
+                "last_observed_bbox": [
+                  269.73260498046875,
+                  385.1147155761719,
+                  285.83612060546875,
+                  397.4034118652344
+                ],
+                "last_observed_confidence": 0.8877092599868774,
+                "last_observed_timestamp_s": 1341845824.333783,
+                "observation_count": 2,
+                "phase": "confirmed",
+                "track_id": 22,
+                "velocity_px_s": [
+                  55.98744565906951,
+                  125.59384035953495
+                ]
+              },
+              {
+                "bbox": [
+                  388.6159362792969,
+                  379.4776306152344,
+                  499.0972595214844,
+                  396.4805603027344
+                ],
+                "class_index": 66,
+                "detection_index": 6,
+                "last_observed_bbox": [
+                  388.6159362792969,
+                  379.4776306152344,
+                  499.0972595214844,
+                  396.4805603027344
+                ],
+                "last_observed_confidence": 0.7341697812080383,
+                "last_observed_timestamp_s": 1341845824.333783,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 24,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "untracked_detection_indices": []
+          },
+          "trigger": "sample"
+        }
+      ],
+      "decision": "accepted",
+      "fault_epoch_s": 1341845824.2758,
+      "hold_reason": null,
+      "last_accepted_acquired_s": 1341845824.333783,
+      "now_s": 1341845824.338783,
+      "ready": true,
+      "recovery_count": 2,
+      "result_age_s": 0.005000114440917969,
+      "tracks": [
+        {
+          "bbox_at_now": [
+            390.71995342771686,
+            265.28833244495985,
+            640.0759104589669,
+            478.02197502308485
+          ],
+          "class_index": 0,
+          "extrapolated": true,
+          "last_observed_confidence": 0.9242191910743713,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.333783,
+          "track_id": 15,
+          "velocity_px_s": [
+            142.94981602548265,
+            17.883364830483007
+          ]
+        },
+        {
+          "bbox_at_now": [
+            19.788755744630585,
+            225.7888008682535,
+            267.03669580810714,
+            478.69119039462066
+          ],
+          "class_index": 0,
+          "extrapolated": true,
+          "last_observed_confidence": 0.8982371687889099,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.333783,
+          "track_id": 16,
+          "velocity_px_s": [
+            34.791978577486326,
+            64.75026878309706
+          ]
+        },
+        {
+          "bbox_at_now": [
+            168.63560309937182,
+            275.908765115813,
+            260.5423718982,
+            351.987378397063
+          ],
+          "class_index": 62,
+          "extrapolated": true,
+          "last_observed_confidence": 0.9071211814880371,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.333783,
+          "track_id": 17,
+          "velocity_px_s": [
+            99.89665373391475,
+            115.0084474687644
+          ]
+        },
+        {
+          "bbox_at_now": [
+            360.43619292472516,
+            264.6731345818621,
+            495.37271636222516,
+            363.34775616389334
+          ],
+          "class_index": 62,
+          "extrapolated": true,
+          "last_observed_confidence": 0.8914117813110352,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.333783,
+          "track_id": 18,
+          "velocity_px_s": [
+            109.1721213497252,
+            94.18896954236756
+          ]
+        },
+        {
+          "bbox_at_now": [
+            166.87643966978965,
+            368.1412837255584,
+            255.93524704283652,
+            389.3468501318084
+          ],
+          "class_index": 66,
+          "extrapolated": true,
+          "last_observed_confidence": 0.8497126698493958,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.333783,
+          "track_id": 19,
+          "velocity_px_s": [
+            232.60682876012527,
+            106.2206225083306
+          ]
+        },
+        {
+          "bbox_at_now": [
+            327.02855968073493,
+            358.2334559666267,
+            381.66271495417243,
+            386.21300918928296
+          ],
+          "class_index": 73,
+          "extrapolated": true,
+          "last_observed_confidence": 0.4681492745876312,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.333783,
+          "track_id": 20,
+          "velocity_px_s": [
+            75.71752732906397,
+            28.416617139346506
+          ]
+        },
+        {
+          "bbox_at_now": [
+            270.01254861601876,
+            385.74269915104395,
+            286.11606424101876,
+            398.03139544010645
+          ],
+          "class_index": 64,
+          "extrapolated": true,
+          "last_observed_confidence": 0.8877092599868774,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.333783,
+          "track_id": 22,
+          "velocity_px_s": [
+            55.98744565906951,
+            125.59384035953495
+          ]
+        }
+      ]
+    },
+    {
+      "backend_updates": [
+        {
+          "frame": {
+            "acquisition": {
+              "detections": [
+                {
+                  "bbox": [
+                    390.96844482421875,
+                    268.6729431152344,
+                    638.99169921875,
+                    477.4399719238281
+                  ],
+                  "class_index": 0,
+                  "confidence": 0.912965714931488
+                },
+                {
+                  "bbox": [
+                    167.69854736328125,
+                    278.6817626953125,
+                    258.96392822265625,
+                    351.642578125
+                  ],
+                  "class_index": 62,
+                  "confidence": 0.9065757989883423
+                },
+                {
+                  "bbox": [
+                    358.6318054199219,
+                    267.4130554199219,
+                    493.7162170410156,
+                    365.5937194824219
+                  ],
+                  "class_index": 62,
+                  "confidence": 0.8909516930580139
+                },
+                {
+                  "bbox": [
+                    18.71680450439453,
+                    230.08633422851562,
+                    262.24932861328125,
+                    477.9948425292969
+                  ],
+                  "class_index": 0,
+                  "confidence": 0.8876752257347107
+                },
+                {
+                  "bbox": [
+                    161.9645538330078,
+                    368.4014892578125,
+                    254.8959197998047,
+                    390.98431396484375
+                  ],
+                  "class_index": 66,
+                  "confidence": 0.878316342830658
+                },
+                {
+                  "bbox": [
+                    269.0503234863281,
+                    386.2606506347656,
+                    284.4624328613281,
+                    398.9398498535156
+                  ],
+                  "class_index": 64,
+                  "confidence": 0.8189557790756226
+                },
+                {
+                  "bbox": [
+                    388.2862548828125,
+                    380.11627197265625,
+                    499.28802490234375,
+                    398.46112060546875
+                  ],
+                  "class_index": 66,
+                  "confidence": 0.8010392189025879
+                },
+                {
+                  "bbox": [
+                    326.4099426269531,
+                    358.8316955566406,
+                    380.8321838378906,
+                    388.7727355957031
+                  ],
+                  "class_index": 73,
+                  "confidence": 0.5412728190422058
+                },
+                {
+                  "bbox": [
+                    84.97386169433594,
+                    117.42750549316406,
+                    127.0151138305664,
+                    155.5821075439453
+                  ],
+                  "class_index": 62,
+                  "confidence": 0.4341142475605011
+                },
+                {
+                  "bbox": [
+                    50.09431457519531,
+                    163.085693359375,
+                    111.41030883789062,
+                    315.0345764160156
+                  ],
+                  "class_index": 72,
+                  "confidence": 0.31522297859191895
+                }
+              ],
+              "image_sha256": "f6afcb881471a0d2d81ef0d598007cb39dfe243ab998ffbeb9ae126dbb1d9737",
+              "status": "detected"
+            },
+            "timestamp_s": 1341845824.365821
+          },
+          "snapshot": {
+            "assignment_work": 224,
+            "health": "observed",
+            "retired": [],
+            "sequence_number": 8,
+            "source_image_sha256": "f6afcb881471a0d2d81ef0d598007cb39dfe243ab998ffbeb9ae126dbb1d9737",
+            "timestamp_s": 1341845824.365821,
+            "tracks": [
+              {
+                "bbox": [
+                  390.96844482421875,
+                  268.6729431152344,
+                  638.99169921875,
+                  477.4399719238281
+                ],
+                "class_index": 0,
+                "detection_index": 0,
+                "last_observed_bbox": [
+                  390.96844482421875,
+                  268.6729431152344,
+                  638.99169921875,
+                  477.4399719238281
+                ],
+                "last_observed_confidence": 0.912965714931488,
+                "last_observed_timestamp_s": 1341845824.365821,
+                "observation_count": 3,
+                "phase": "confirmed",
+                "track_id": 15,
+                "velocity_px_s": [
+                  76.10855811655374,
+                  32.20661614646039
+                ]
+              },
+              {
+                "bbox": [
+                  18.71680450439453,
+                  230.08633422851562,
+                  262.24932861328125,
+                  477.9948425292969
+                ],
+                "class_index": 0,
+                "detection_index": 3,
+                "last_observed_bbox": [
+                  18.71680450439453,
+                  230.08633422851562,
+                  262.24932861328125,
+                  477.9948425292969
+                ],
+                "last_observed_confidence": 0.8876752257347107,
+                "last_observed_timestamp_s": 1341845824.365821,
+                "observation_count": 3,
+                "phase": "confirmed",
+                "track_id": 16,
+                "velocity_px_s": [
+                  -25.61071572774031,
+                  65.52878419769095
+                ]
+              },
+              {
+                "bbox": [
+                  167.69854736328125,
+                  278.6817626953125,
+                  258.96392822265625,
+                  351.642578125
+                ],
+                "class_index": 62,
+                "detection_index": 1,
+                "last_observed_bbox": [
+                  167.69854736328125,
+                  278.6817626953125,
+                  258.96392822265625,
+                  351.642578125
+                ],
+                "last_observed_confidence": 0.9065757989883423,
+                "last_observed_timestamp_s": 1341845824.365821,
+                "observation_count": 3,
+                "phase": "confirmed",
+                "track_id": 17,
+                "velocity_px_s": [
+                  38.11463508934662,
+                  85.42662116846691
+                ]
+              },
+              {
+                "bbox": [
+                  358.6318054199219,
+                  267.4130554199219,
+                  493.7162170410156,
+                  365.5937194824219
+                ],
+                "class_index": 62,
+                "detection_index": 2,
+                "last_observed_bbox": [
+                  358.6318054199219,
+                  267.4130554199219,
+                  493.7162170410156,
+                  365.5937194824219
+                ],
+                "last_observed_confidence": 0.8909516930580139,
+                "last_observed_timestamp_s": 1341845824.365821,
+                "observation_count": 3,
+                "phase": "confirmed",
+                "track_id": 18,
+                "velocity_px_s": [
+                  36.09908745771979,
+                  93.35049584450735
+                ]
+              },
+              {
+                "bbox": [
+                  161.9645538330078,
+                  368.4014892578125,
+                  254.8959197998047,
+                  390.98431396484375
+                ],
+                "class_index": 66,
+                "detection_index": 4,
+                "last_observed_bbox": [
+                  161.9645538330078,
+                  368.4014892578125,
+                  254.8959197998047,
+                  390.98431396484375
+                ],
+                "last_observed_confidence": 0.878316342830658,
+                "last_observed_timestamp_s": 1341845824.365821,
+                "observation_count": 3,
+                "phase": "confirmed",
+                "track_id": 19,
+                "velocity_px_s": [
+                  88.01595447248917,
+                  76.20712097606712
+                ]
+              },
+              {
+                "bbox": [
+                  326.4099426269531,
+                  358.8316955566406,
+                  380.8321838378906,
+                  388.7727355957031
+                ],
+                "class_index": 73,
+                "detection_index": 7,
+                "last_observed_bbox": [
+                  326.4099426269531,
+                  358.8316955566406,
+                  380.8321838378906,
+                  388.7727355957031
+                ],
+                "last_observed_confidence": 0.5412728190422058,
+                "last_observed_timestamp_s": 1341845824.365821,
+                "observation_count": 3,
+                "phase": "confirmed",
+                "track_id": 20,
+                "velocity_px_s": [
+                  32.45926821516193,
+                  41.06814321399483
+                ]
+              },
+              {
+                "bbox": [
+                  269.0503234863281,
+                  386.2606506347656,
+                  284.4624328613281,
+                  398.9398498535156
+                ],
+                "class_index": 64,
+                "detection_index": 5,
+                "last_observed_bbox": [
+                  269.0503234863281,
+                  386.2606506347656,
+                  284.4624328613281,
+                  398.9398498535156
+                ],
+                "last_observed_confidence": 0.8189557790756226,
+                "last_observed_timestamp_s": 1341845824.365821,
+                "observation_count": 3,
+                "phase": "confirmed",
+                "track_id": 22,
+                "velocity_px_s": [
+                  11.950501147252815,
+                  83.72812120375224
+                ]
+              },
+              {
+                "bbox": [
+                  388.2862548828125,
+                  380.11627197265625,
+                  499.28802490234375,
+                  398.46112060546875
+                ],
+                "class_index": 66,
+                "detection_index": 6,
+                "last_observed_bbox": [
+                  388.2862548828125,
+                  380.11627197265625,
+                  499.28802490234375,
+                  398.46112060546875
+                ],
+                "last_observed_confidence": 0.8010392189025879,
+                "last_observed_timestamp_s": 1341845824.365821,
+                "observation_count": 2,
+                "phase": "confirmed",
+                "track_id": 24,
+                "velocity_px_s": [
+                  -2.1679900578223954,
+                  40.87651904715837
+                ]
+              },
+              {
+                "bbox": [
+                  84.97386169433594,
+                  117.42750549316406,
+                  127.0151138305664,
+                  155.5821075439453
+                ],
+                "class_index": 62,
+                "detection_index": 8,
+                "last_observed_bbox": [
+                  84.97386169433594,
+                  117.42750549316406,
+                  127.0151138305664,
+                  155.5821075439453
+                ],
+                "last_observed_confidence": 0.4341142475605011,
+                "last_observed_timestamp_s": 1341845824.365821,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 25,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "bbox": [
+                  50.09431457519531,
+                  163.085693359375,
+                  111.41030883789062,
+                  315.0345764160156
+                ],
+                "class_index": 72,
+                "detection_index": 9,
+                "last_observed_bbox": [
+                  50.09431457519531,
+                  163.085693359375,
+                  111.41030883789062,
+                  315.0345764160156
+                ],
+                "last_observed_confidence": 0.31522297859191895,
+                "last_observed_timestamp_s": 1341845824.365821,
+                "observation_count": 1,
+                "phase": "tentative",
+                "track_id": 26,
+                "velocity_px_s": [
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "untracked_detection_indices": []
+          },
+          "trigger": "sample"
+        }
+      ],
+      "decision": "accepted",
+      "fault_epoch_s": 1341845824.2758,
+      "hold_reason": null,
+      "last_accepted_acquired_s": 1341845824.365821,
+      "now_s": 1341845824.370821,
+      "ready": true,
+      "recovery_count": 2,
+      "result_age_s": 0.005000114440917969,
+      "tracks": [
+        {
+          "bbox_at_now": [
+            391.3489963247348,
+            268.8339798817214,
+            639.372250719266,
+            477.60100869031515
+          ],
+          "class_index": 0,
+          "extrapolated": true,
+          "last_observed_confidence": 0.912965714931488,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.365821,
+          "track_id": 15,
+          "velocity_px_s": [
+            76.10855811655374,
+            32.20661614646039
+          ]
+        },
+        {
+          "bbox_at_now": [
+            18.588747994842013,
+            230.4139856486783,
+            262.12127210372876,
+            478.32249394945956
+          ],
+          "class_index": 0,
+          "extrapolated": true,
+          "last_observed_confidence": 0.8876752257347107,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.365821,
+          "track_id": 16,
+          "velocity_px_s": [
+            -25.61071572774031,
+            65.52878419769095
+          ]
+        },
+        {
+          "bbox_at_now": [
+            167.88912490060181,
+            279.1089055774558,
+            259.1545057599768,
+            352.0697210071433
+          ],
+          "class_index": 62,
+          "extrapolated": true,
+          "last_observed_confidence": 0.9065757989883423,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.365821,
+          "track_id": 17,
+          "velocity_px_s": [
+            38.11463508934662,
+            85.42662116846691
+          ]
+        },
+        {
+          "bbox_at_now": [
+            358.8123049884232,
+            267.87981858226084,
+            493.89671660951694,
+            366.06048264476084
+          ],
+          "class_index": 62,
+          "extrapolated": true,
+          "last_observed_confidence": 0.8909516930580139,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.365821,
+          "track_id": 18,
+          "velocity_px_s": [
+            36.09908745771979,
+            93.35049584450735
+          ]
+        },
+        {
+          "bbox_at_now": [
+            162.4046436779969,
+            368.7825335839057,
+            255.33600964479376,
+            391.36535829093697
+          ],
+          "class_index": 66,
+          "extrapolated": true,
+          "last_observed_confidence": 0.878316342830658,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.365821,
+          "track_id": 19,
+          "velocity_px_s": [
+            88.01595447248917,
+            76.20712097606712
+          ]
+        },
+        {
+          "bbox_at_now": [
+            326.5722426826974,
+            359.0370409725866,
+            380.9944838936349,
+            388.9780810116491
+          ],
+          "class_index": 73,
+          "extrapolated": true,
+          "last_observed_confidence": 0.5412728190422058,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.365821,
+          "track_id": 20,
+          "velocity_px_s": [
+            32.45926821516193,
+            41.06814321399483
+          ]
+        },
+        {
+          "bbox_at_now": [
+            269.1100773596907,
+            386.67930082270743,
+            284.5221867346907,
+            399.35850004145743
+          ],
+          "class_index": 64,
+          "extrapolated": true,
+          "last_observed_confidence": 0.8189557790756226,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.365821,
+          "track_id": 22,
+          "velocity_px_s": [
+            11.950501147252815,
+            83.72812120375224
+          ]
+        },
+        {
+          "bbox_at_now": [
+            388.2754146844166,
+            380.3206592458384,
+            499.27718470394785,
+            398.6655078786509
+          ],
+          "class_index": 66,
+          "extrapolated": true,
+          "last_observed_confidence": 0.8010392189025879,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.365821,
+          "track_id": 24,
+          "velocity_px_s": [
+            -2.1679900578223954,
+            40.87651904715837
+          ]
+        }
+      ]
+    },
+    {
+      "backend_updates": [
+        {
+          "frame": {
+            "acquisition": {
+              "detections": [
+                {
+                  "bbox": [
+                    386.02557373046875,
+                    268.516845703125,
+                    639.7533569335938,
+                    478.95648193359375
+                  ],
+                  "class_index": 0,
+                  "confidence": 0.9206228256225586
+                },
+                {
+                  "bbox": [
+                    169.35299682617188,
+                    277.6644287109375,
+                    260.8343811035156,
+                    347.67291259765625
+                  ],
+                  "class_index": 62,
+                  "confidence": 0.9022403359413147
+                },
+                {
+                  "bbox": [
+                    22.756561279296875,
+                    228.65853881835938,
+                    188.58287048339844,
+                    475.0507507324219
+                  ],
+                  "class_index": 0,
+                  "confidence": 0.8953946828842163
+                },
+                {
+                  "bbox": [
+                    361.0582275390625,
+                    265.75506591796875,
+                    495.26409912109375,
+                    362.32568359375
+                  ],
+                  "class_index": 62,
+                  "confidence": 0.8896410465240479
+                },
+                {
+                  "bbox": [
+                    157.96705627441406,
+                    367.10150146484375,
+                    257.501220703125,
+                    388.50750732421875
+                  ],
+                  "class_index": 66,
+                  "confidence": 0.8216372132301331
+                },
+                {
+                  "bbox": [
+                    329.2445373535156,
+                    359.1441345214844,
+                    383.7149963378906,
+                    385.7660827636719
+                  ],
+                  "class_index": 73,
+                  "confidence": 0.5794875025749207
+                },
+                {
+                  "bbox": [
+                    271.603759765625,
+                    385.100830078125,
+                    287.97149658203125,
+                    398.4388427734375
+                  ],
+                  "class_index": 64,
+                  "confidence": 0.5770508646965027
+                },
+                {
+                  "bbox": [
+                    391.0916748046875,
+                    379.260009765625,
+                    503.14263916015625,
+                    398.537841796875
+                  ],
+                  "class_index": 66,
+                  "confidence": 0.35967564582824707
+                }
+              ],
+              "image_sha256": "898edc65fc5be0949695b58aaaf355b092a04fbf651f99959d58a7780cf5ff70",
+              "status": "detected"
+            },
+            "timestamp_s": 1341845824.398039
+          },
+          "snapshot": {
+            "assignment_work": 278,
+            "health": "observed",
+            "retired": [
+              {
+                "reason": "tentative_miss",
+                "track_id": 25
+              },
+              {
+                "reason": "tentative_miss",
+                "track_id": 26
+              }
+            ],
+            "sequence_number": 9,
+            "source_image_sha256": "898edc65fc5be0949695b58aaaf355b092a04fbf651f99959d58a7780cf5ff70",
+            "timestamp_s": 1341845824.398039,
+            "tracks": [
+              {
+                "bbox": [
+                  386.02557373046875,
+                  268.516845703125,
+                  639.7533569335938,
+                  478.95648193359375
+                ],
+                "class_index": 0,
+                "detection_index": 0,
+                "last_observed_bbox": [
+                  386.02557373046875,
+                  268.516845703125,
+                  639.7533569335938,
+                  478.95648193359375
+                ],
+                "last_observed_confidence": 0.9206228256225586,
+                "last_observed_timestamp_s": 1341845824.398039,
+                "observation_count": 4,
+                "phase": "confirmed",
+                "track_id": 15,
+                "velocity_px_s": [
+                  5.609798435483029,
+                  26.659545261777772
+                ]
+              },
+              {
+                "bbox": [
+                  22.756561279296875,
+                  228.65853881835938,
+                  188.58287048339844,
+                  475.0507507324219
+                ],
+                "class_index": 0,
+                "detection_index": 2,
+                "last_observed_bbox": [
+                  22.756561279296875,
+                  228.65853881835938,
+                  188.58287048339844,
+                  475.0507507324219
+                ],
+                "last_observed_confidence": 0.8953946828842163,
+                "last_observed_timestamp_s": 1341845824.398039,
+                "observation_count": 4,
+                "phase": "confirmed",
+                "track_id": 16,
+                "velocity_px_s": [
+                  -553.0796653979293,
+                  -1.1596383008348354
+                ]
+              },
+              {
+                "bbox": [
+                  169.35299682617188,
+                  277.6644287109375,
+                  260.8343811035156,
+                  347.67291259765625
+                ],
+                "class_index": 62,
+                "detection_index": 1,
+                "last_observed_bbox": [
+                  169.35299682617188,
+                  277.6644287109375,
+                  260.8343811035156,
+                  347.67291259765625
+                ],
+                "last_observed_confidence": 0.9022403359413147,
+                "last_observed_timestamp_s": 1341845824.398039,
+                "observation_count": 4,
+                "phase": "confirmed",
+                "track_id": 17,
+                "velocity_px_s": [
+                  46.40909690278717,
+                  4.016263970896965
+                ]
+              },
+              {
+                "bbox": [
+                  361.0582275390625,
+                  265.75506591796875,
+                  495.26409912109375,
+                  362.32568359375
+                ],
+                "class_index": 62,
+                "detection_index": 3,
+                "last_observed_bbox": [
+                  361.0582275390625,
+                  265.75506591796875,
+                  495.26409912109375,
+                  362.32568359375
+                ],
+                "last_observed_confidence": 0.8896410465240479,
+                "last_observed_timestamp_s": 1341845824.398039,
+                "observation_count": 4,
+                "phase": "confirmed",
+                "track_id": 18,
+                "velocity_px_s": [
+                  48.888494984289736,
+                  8.451335184432416
+                ]
+              },
+              {
+                "bbox": [
+                  157.96705627441406,
+                  367.10150146484375,
+                  257.501220703125,
+                  388.50750732421875
+                ],
+                "class_index": 66,
+                "detection_index": 4,
+                "last_observed_bbox": [
+                  157.96705627441406,
+                  367.10150146484375,
+                  257.501220703125,
+                  388.50750732421875
+                ],
+                "last_observed_confidence": 0.8216372132301331,
+                "last_observed_timestamp_s": 1341845824.398039,
+                "observation_count": 4,
+                "phase": "confirmed",
+                "track_id": 19,
+                "velocity_px_s": [
+                  33.20510895092568,
+                  8.797203047585999
+                ]
+              },
+              {
+                "bbox": [
+                  329.2445373535156,
+                  359.1441345214844,
+                  383.7149963378906,
+                  385.7660827636719
+                ],
+                "class_index": 73,
+                "detection_index": 5,
+                "last_observed_bbox": [
+                  329.2445373535156,
+                  359.1441345214844,
+                  383.7149963378906,
+                  385.7660827636719
+                ],
+                "last_observed_confidence": 0.5794875025749207,
+                "last_observed_timestamp_s": 1341845824.398039,
+                "observation_count": 4,
+                "phase": "confirmed",
+                "track_id": 20,
+                "velocity_px_s": [
+                  60.59434146995729,
+                  -0.37190990751051345
+                ]
+              },
+              {
+                "bbox": [
+                  271.603759765625,
+                  385.100830078125,
+                  287.97149658203125,
+                  398.4388427734375
+                ],
+                "class_index": 64,
+                "detection_index": 6,
+                "last_observed_bbox": [
+                  271.603759765625,
+                  385.100830078125,
+                  287.97149658203125,
+                  398.4388427734375
+                ],
+                "last_observed_confidence": 0.5770508646965027,
+                "last_observed_timestamp_s": 1341845824.398039,
+                "observation_count": 4,
+                "phase": "confirmed",
+                "track_id": 22,
+                "velocity_px_s": [
+                  53.017734644874736,
+                  28.976727382011244
+                ]
+              },
+              {
+                "bbox": [
+                  391.0916748046875,
+                  379.260009765625,
+                  503.14263916015625,
+                  398.537841796875
+                ],
+                "class_index": 66,
+                "detection_index": 7,
+                "last_observed_bbox": [
+                  391.0916748046875,
+                  379.260009765625,
+                  503.14263916015625,
+                  398.537841796875
+                ],
+                "last_observed_confidence": 0.35967564582824707,
+                "last_observed_timestamp_s": 1341845824.398039,
+                "observation_count": 3,
+                "phase": "confirmed",
+                "track_id": 24,
+                "velocity_px_s": [
+                  50.59510630088982,
+                  14.389344750725773
+                ]
+              }
+            ],
+            "untracked_detection_indices": []
+          },
+          "trigger": "sample"
+        }
+      ],
+      "decision": "accepted",
+      "fault_epoch_s": 1341845824.2758,
+      "hold_reason": null,
+      "last_accepted_acquired_s": 1341845824.398039,
+      "now_s": 1341845824.4030392,
+      "ready": true,
+      "recovery_count": 2,
+      "result_age_s": 0.005000114440917969,
+      "tracks": [
+        {
+          "bbox_at_now": [
+            386.0536233646366,
+            268.65014648037675,
+            639.7814065677617,
+            479.0897827108455
+          ],
+          "class_index": 0,
+          "extrapolated": true,
+          "last_observed_confidence": 0.9206228256225586,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.398039,
+          "track_id": 15,
+          "velocity_px_s": [
+            5.609798435483029,
+            26.659545261777772
+          ]
+        },
+        {
+          "bbox_at_now": [
+            19.99109965736261,
+            228.65274049414512,
+            185.81740886146417,
+            475.0449524082076
+          ],
+          "class_index": 0,
+          "extrapolated": true,
+          "last_observed_confidence": 0.8953946828842163,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.398039,
+          "track_id": 16,
+          "velocity_px_s": [
+            -553.0796653979293,
+            -1.1596383008348354
+          ]
+        },
+        {
+          "bbox_at_now": [
+            169.58504762178546,
+            277.6845104904169,
+            261.0664318991292,
+            347.6929943771357
+          ],
+          "class_index": 62,
+          "extrapolated": true,
+          "last_observed_confidence": 0.9022403359413147,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.398039,
+          "track_id": 17,
+          "velocity_px_s": [
+            46.40909690278717,
+            4.016263970896965
+          ]
+        },
+        {
+          "bbox_at_now": [
+            361.30267560882817,
+            265.79732356106945,
+            495.5085471908594,
+            362.3679412368507
+          ],
+          "class_index": 62,
+          "extrapolated": true,
+          "last_observed_confidence": 0.8896410465240479,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.398039,
+          "track_id": 18,
+          "velocity_px_s": [
+            48.888494984289736,
+            8.451335184432416
+          ]
+        },
+        {
+          "bbox_at_now": [
+            158.13308561919183,
+            367.14548848684166,
+            257.66725004790277,
+            388.55149434621666
+          ],
+          "class_index": 66,
+          "extrapolated": true,
+          "last_observed_confidence": 0.8216372132301331,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.398039,
+          "track_id": 19,
+          "velocity_px_s": [
+            33.20510895092568,
+            8.797203047585999
+          ]
+        },
+        {
+          "bbox_at_now": [
+            329.54751599533745,
+            359.1422749293851,
+            384.01797497971245,
+            385.7642231715726
+          ],
+          "class_index": 73,
+          "extrapolated": true,
+          "last_observed_confidence": 0.5794875025749207,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.398039,
+          "track_id": 20,
+          "velocity_px_s": [
+            60.59434146995729,
+            -0.37190990751051345
+          ]
+        },
+        {
+          "bbox_at_now": [
+            271.8688545062476,
+            385.24571703115834,
+            288.23659132265385,
+            398.58372972647084
+          ],
+          "class_index": 64,
+          "extrapolated": true,
+          "last_observed_confidence": 0.5770508646965027,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.398039,
+          "track_id": 22,
+          "velocity_px_s": [
+            53.017734644874736,
+            28.976727382011244
+          ]
+        },
+        {
+          "bbox_at_now": [
+            391.3446561263424,
+            379.3319581361084,
+            503.39562048181114,
+            398.6097901673584
+          ],
+          "class_index": 66,
+          "extrapolated": true,
+          "last_observed_confidence": 0.35967564582824707,
+          "observation_age_s": 0.005000114440917969,
+          "observed_at_s": 1341845824.398039,
+          "track_id": 24,
+          "velocity_px_s": [
+            50.59510630088982,
+            14.389344750725773
+          ]
+        }
+      ]
+    }
+  ],
+  "schema_version": 1,
+  "source_reports": [
+    {
+      "event_index": 0,
+      "sha256": "3c7240ef6237a4ba1087a42917dfa2bca6ce4de6039e745a721175f9ca4f89af"
+    },
+    {
+      "event_index": 1,
+      "sha256": "cb7a37c3f623113f676e767e3c069da60b98b3ebb97d6a69e10b2cb0dd31e11e"
+    },
+    {
+      "event_index": 2,
+      "sha256": "06504106d33a36602dc30aaf25d4e201f9fb3f5c69ef53518540cb96008d9e9b"
+    },
+    {
+      "event_index": 3,
+      "sha256": "b2aa9c2d4224a35c1e6b91ecfff03fc992dde97f0b328035c43a05a595e79fe1"
+    },
+    {
+      "event_index": 5,
+      "sha256": "b2aa9c2d4224a35c1e6b91ecfff03fc992dde97f0b328035c43a05a595e79fe1"
+    },
+    {
+      "event_index": 6,
+      "sha256": "0bf4ed45fd00f208d91ba2b065f922c6f90057fd5cd5c942d014f1f9372728c0"
+    },
+    {
+      "event_index": 7,
+      "sha256": "0275b6dd9030be3b6f8911fc39523d1871e8660c67b6e74732e13c8295252b6b"
+    },
+    {
+      "event_index": 8,
+      "sha256": "1383abb996cb369a9094875c6262af47c7299cd678d9cf90386f9f592377ec11"
+    },
+    {
+      "event_index": 9,
+      "sha256": "7c1af86cd7d77a81a16038478e1d9c6c12217013e4821562b313dc1f948a746b"
+    }
+  ],
+  "source_sequence_sha256": "c5f12d43a2cfeac3d32de6b97de853f13e77b44681eeb62cc4d12a1fd5f4d92e",
+  "width": 640
+}

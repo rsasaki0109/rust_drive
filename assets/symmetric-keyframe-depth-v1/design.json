@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "role": "already viewed development comparison; not held out",
+  "parent": "assets/marginalized-keyframe-depth-v1",
+  "mode": "retain",
+  "hypothesis": "Use both measured normals with their exact rotation derivative to reduce source/target asymmetry; physical improvement is unproven",
+  "change": "Only raw pair kernel import differs from frozen retained-information engine",
+  "factor": {
+    "source": "raw axial depth, original pyramid and original nearest target pixel",
+    "selection": "same source strides, depth-normal validity, projective rounded pixel, distance and normal-dot gates as original at any fixed poses",
+    "normal": "n=(ns+nt)/L, L=norm(ns+nt), both normals in first optical-camera coordinates",
+    "residual_m": "r=n dot (qs-qt)",
+    "source_jacobian": "[n, qs cross n + ns cross ((qs-qt-r*n)/L)]",
+    "target_jacobian": "negative source Jacobian, including both normal-rotation effects",
+    "robust": "Huber0.01m, at least200 samples per pair",
+    "prior": "same incident-only Schur elimination, fixed-anchor coordinate transport and unique factor identities"
+  },
+  "work": {
+    "max_nodes": 5,
+    "max_variables": 24,
+    "max_retained_prior_variables": 18,
+    "iteration_caps": [
+      10,
+      7,
+      5
+    ],
+    "scaled_condition_max": 1000000.0,
+    "increment_m": 0.1,
+    "increment_rad": 0.15,
+    "returned_raw_rms_m": 0.03,
+    "accepted_displacement_m": 0.5,
+    "accepted_age_s": 0.2,
+    "pose_resets": 0
+  },
+  "evaluation": {
+    "cases": [
+      "tum-fr1-room-temporal",
+      "tum-fr1-desk2-independent"
+    ],
+    "updates": 179,
+    "initialization_outside_denominator": 1,
+    "root_translation_gate_m": 0.1,
+    "root_rotation_gate_rad": 0.1,
+    "reference_bracket_max_s": 0.02,
+    "ground_truth_operational": false,
+    "rgb_decoded": false,
+    "all_operations_and_raw_audits_before_numeric_labels": true
+  },
+  "audit": {
+    "h_atol": 1e-06,
+    "g_atol": 1e-08,
+    "rtol": 1e-08,
+    "exact_counts": true,
+    "finite_difference_both_pose_jacobians": true,
+    "original_fixed_pose_support_parity": true
+  },
+  "default_changed": false
+}

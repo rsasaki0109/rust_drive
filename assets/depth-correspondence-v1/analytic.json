@@ -1,0 +1,92 @@
+{
+  "analytic_pass": true,
+  "source_proof": [
+    {
+      "parent": "frozen_depth_objective.py",
+      "child": "depth_correspondence_stability.py",
+      "function": "select",
+      "only_pixel_ids_added": true
+    },
+    {
+      "parent": "check-descent-keyframes.py",
+      "child": "depth_correspondence_oracle.py",
+      "function": "independent_matches",
+      "only_pixel_ids_added": true
+    }
+  ],
+  "manual_equal_population_counts": {
+    "stable": 197,
+    "retargeted": 1,
+    "disappeared": 2,
+    "appeared": 2
+  },
+  "admitted_factor_birth_cost": 0.0016,
+  "admitted_factor_death_cost": -0.0016,
+  "rendered_layers": [
+    {
+      "scale": 4,
+      "translation_m": 0.0,
+      "before_count": 760,
+      "after_count": 760,
+      "stable_pairs": 760,
+      "retargeted_sources": 0
+    },
+    {
+      "scale": 4,
+      "translation_m": 0.02,
+      "before_count": 760,
+      "after_count": 760,
+      "stable_pairs": 760,
+      "retargeted_sources": 0
+    },
+    {
+      "scale": 2,
+      "translation_m": 0.0,
+      "before_count": 987,
+      "after_count": 987,
+      "stable_pairs": 987,
+      "retargeted_sources": 0
+    },
+    {
+      "scale": 2,
+      "translation_m": 0.02,
+      "before_count": 987,
+      "after_count": 979,
+      "stable_pairs": 805,
+      "retargeted_sources": 174
+    },
+    {
+      "scale": 1,
+      "translation_m": 0.0,
+      "before_count": 1115,
+      "after_count": 1115,
+      "stable_pairs": 1115,
+      "retargeted_sources": 0
+    },
+    {
+      "scale": 1,
+      "translation_m": 0.02,
+      "before_count": 1115,
+      "after_count": 1096,
+      "stable_pairs": 0,
+      "retargeted_sources": 1096
+    }
+  ],
+  "raw_aggregation_with_prior_checked": true,
+  "duplicate_pixel_ids_rejected_by_both": true,
+  "rejected_corruptions": [
+    "wrong stable count",
+    "lost retargeting",
+    "wrong sample denominator",
+    "ignored gate transition",
+    "wrong removed cost sign",
+    "wrong reassociation delta",
+    "wrong pixel digest",
+    "wrong prior cost"
+  ],
+  "source_sha256": {
+    "scripts/check-depth-correspondence.py": "c3db6326e01de0cd963fa689b25ed4d74a2fd30a1ae7acef744f541431b23f5a",
+    "scripts/depth_correspondence_stability.py": "203acc96ce89dd7741e746cdddbe3e2d1e0448e34f49c9b46fc3af74ad47f5b0",
+    "scripts/depth_correspondence_oracle.py": "de42fd848df6569ee4df692549ae9ddd6f8bca87a44dea7432be6f616e89cca4"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "parent": "assets/long-depth-refinement-v1",
+  "motivation": "The frozen depth-search diagnostic found valid decreasing steps beyond the original1/128 bound at four saved room failures",
+  "data_role": "already viewed development; bounded search-depth comparison",
+  "cases": ["tum-fr1-room-temporal", "tum-fr1-desk2-independent"],
+  "sample_indices": [120, 160, 200, 240, 279],
+  "change": "Only expand the Armijo loop from eight to twenty-one positive multipliers:1 through2^-20; same first-passing decision, constants and numerical slack",
+  "fixed_population": "Same original initial poses, source identities, center normalizers and incoming nonlinear prior for the whole attempt; no reselection, dropout or posterior accumulation",
+  "bounds": "Same maximum30 applied corrections and exact10/20/30 checkpoints; stop on existing proposal guards, full-proposal convergence or exhaustion of all21 candidates",
+  "unchanged_guards": "Support>=200 per admitted factor, measured current-frame support, scaled SPD condition<=1e6, full proposal<=0.1m/0.15rad, strict full-proposal1e-5m/1e-5rad convergence, all fixed sources sampled for every candidate",
+  "control": "Every complete old trace prefix must match exactly. Old non-search terminal reports must match completely. At an old search failure, the new next update must replay all eight failed trials before trying smaller multipliers",
+  "independent_validation": "Frozen relative-camera polynomial objective and system verifier with only its independently coded search range changed; unchanged independent checkpoint audit, original-discrete fresh checks and exact control replay",
+  "numerical_reporting": "Report steps below1/128, positive/zero accepted cost changes and cases depending on existing Armijo slack; small applied steps cannot substitute for full-proposal convergence",
+  "followup_eligibility_rule": "Both cases must converge all five continuous windows, improve original-discrete fresh-converged counts versus old cap30, have no local/fresh guards, pass every original0.03m RMS gate and have original-discrete median RMS no worse than old cap30",
+  "scope": "Real local fitting only; no new full trajectory, numeric ground truth, physical accuracy scoring, tracker/Schur commits, default/native-estimator adoption or timing claim",
+  "subjective_maturity_percent": 20
+}

@@ -1,0 +1,59 @@
+{
+  "analytic_pass": true,
+  "source_proof": true,
+  "interpolation": {
+    "inherited_bilateral_controls": {
+      "plane_samples": 7,
+      "harmonic_authored_cases": 6,
+      "nonaffine_xyz_finite_difference_axes": 3,
+      "c1_edge_axes": 2,
+      "integer_samples": 3,
+      "one_dimensional_monotone_samples": 241,
+      "zero_normal_sampling_supported": true,
+      "missing_corner_or_cardinal_rejections": 5,
+      "unused_diagonal_allowed": true,
+      "depth_jump_rejected": true,
+      "unprepared_field_rejected": true,
+      "source_geometry_and_normals_unchanged": true,
+      "rejected_field_corruptions": [
+        "valid",
+        "du"
+      ],
+      "limits": "one-dimensional monotonicity does not certify two-dimensional range preservation or physical surface accuracy"
+    },
+    "side_availability_fixture_cases": 8,
+    "bilateral_valid_slopes_and_samples_exactly_preserved": true,
+    "authored_old_supported_queries": 5732,
+    "authored_new_supported_queries": 5796,
+    "cardinal_jump_uses_valid_other_side": true,
+    "no_missing_corner_filling": true,
+    "new_support_xyz_finite_difference_axes": 3,
+    "new_support_c1_edge_axes": 2,
+    "original_geometry_and_normals_preserved": true
+  },
+  "rendered_continuous_converged": true,
+  "rendered_applied_corrections": 1,
+  "rendered_guard": null,
+  "reported_systems": 7,
+  "checkpoint_systems": 6,
+  "prior_system_checks": 1,
+  "objective_gradient_axes": 12,
+  "original_rendered_sources": 988,
+  "depth_slope_rendered_sources": 988,
+  "degenerate_guards": {
+    "missing": "new frame needs measured support",
+    "plane": "zero/nonfinite diagonal"
+  },
+  "rejected_corruptions": [
+    "false convergence",
+    "changed source identities",
+    "changed normalizer digest",
+    "wrong final matrix"
+  ],
+  "input_roots_unchanged": true,
+  "source_sha256": {
+    "scripts/one_sided_depth_slopes.py": "3eedabfbf576f08c0b7de8d847494f1d534235b7b96d7941563100f229bae9a7",
+    "scripts/one_sided_depth_refinement.py": "ce795a6f2cdf29e4beedee72293bdbe15aa7c2b9d9b86292dbb9ac5856db0a51",
+    "scripts/check-one-sided-depth-refinement.py": "d7e4fbf2682c941eaea15c809b9dc06d6456148ff479be0678cafa029baf8c1a"
+  }
+}

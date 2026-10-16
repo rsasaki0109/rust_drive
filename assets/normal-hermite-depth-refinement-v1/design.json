@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "parent": "assets/deep-search-depth-refinement-v1",
+  "motivation": "After preserving failed16-corner cubic and margin trials, compare a four-corner C1 field whose slopes use existing measured normals",
+  "data_role": "already viewed outcome-informed development; not held-out validation",
+  "cases": ["tum-fr1-room-temporal", "tum-fr1-desk2-independent"],
+  "sample_indices": [120, 160, 200, 240, 279],
+  "interpolation": "Bicubic tensor Hermite inverse axial Z, corner values1/Z, tangent-plane slopes n_x/(fx*n.dot(vertex)) and n_y/(fy*n.dot(vertex)), mixed derivative zero at every vertex. Shared vertex data make jointly supported neighboring cells C1. No integer snapping, clipping or fallback",
+  "normal_provenance": "Existing measured5x5 PCA normals operationally and independent SVD normals in the audit. Four-corner sampling does not mean only four raw measurements or no wider normal dependencies",
+  "domain": "Original front/image bounds, all four depths strictly0.3..5m, all finite normals with norm>0.5, original2x2 continuity bound0.05+0.01*minimum depth. Absolute unit-normal plane offset must exceed1e-6m. Positive finite inverse depth and finite image derivatives; near-ray-tangent planes and negative overshoot reject",
+  "initial_population": "Start from original bilinear sampling-domain population including geometric matching and nine initial bilinear probes. Filter once for new center support, require at least200 sources per factor, preserve original source IDs, points, normals and bilinear-center normalizers",
+  "fixed_objective": "Freeze sources and original normalizers throughout the same incoming nonlinear prior and Huber0.01m objective; no reselection or dropping invalid sources mid-solve. Metric weights are engineering scales, not calibrated noise",
+  "unchanged_solver": "Unchanged thirty-correction GN body,21 Armijo candidates1..2^-20 and original numerical slack. Original current support, scaled SPD condition<=1e6, full proposal<=0.1m/0.15rad, strict full-proposal convergence1e-5m/1e-5rad before cap; no damping",
+  "checkpoints": [10, 20, 30],
+  "independent_verification": "Solve bicubic polynomial endpoint constraints, independently construct plane covectors in homogeneous camera coordinates, SVD normal surfaces, relative-camera residuals, incidence/prior matrices, spectral solve, Rodrigues candidate search and independent checkpoints. Separately verify bilinear control",
+  "analytic_controls": "Affine inverse-depth plane, integer interpolation, both first derivatives at vertical/horizontal edges with inconsistent normals, plane and nonaffine XYZ finite differences, normal sign/scaling, missing four corners, allowed missing outer corner, invalid normals/plane offset, negative overshoot, rendered warm/degenerate guards, nonzero-prior12-axis objective gradients, report corruption and AST body proofs",
+  "followup_eligibility_rule": "Both cases converge all five new local windows, improve original-discrete fresh convergence, have no local/fresh guards, pass original0.03m RMS gates and have median original-discrete fresh RMS no worse than bilinear deep-search control",
+  "scope": "Changes interpolation, slopes and sampling domain; not solver-only or an isolated C1 benefit. No new continuous trajectory, numeric real reference labels, physical accuracy scoring, tracker/prior/Schur state commit, native/default adoption or timing claim",
+  "subjective_maturity_percent": 20
+}

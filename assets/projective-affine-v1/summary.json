@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "feature": "Affine exposure elimination in maintained optional Rust RGB-D tracker",
+  "binary_sha256": "ceece2eae5eec492d95b274c6d7458cf585b7cc31f79228dfa4486d3cc9d41b6",
+  "source_members": 37,
+  "scores": {
+    "tum-fr1-room-temporal": {
+      "total_updates": 179,
+      "accepted": 179,
+      "root_accurate": 84,
+      "lost": false,
+      "max_position_error_m": 0.2670817326453789,
+      "max_rotation_error_rad": 0.1024325088588886,
+      "complete_accuracy_pass": false,
+      "independently_checked_normal_steps": 3808
+    },
+    "tum-fr1-desk2-independent": {
+      "total_updates": 179,
+      "accepted": 179,
+      "root_accurate": 124,
+      "lost": false,
+      "max_position_error_m": 0.12167568273354586,
+      "max_rotation_error_rad": 0.14942688673512275,
+      "complete_accuracy_pass": false,
+      "independently_checked_normal_steps": 3797
+    }
+  },
+  "independent_geometry_systems": 7963,
+  "independent_image_systems": 7757,
+  "synthetic_exposure_before_pass": 0,
+  "synthetic_exposure_after_pass": 4,
+  "negative_exposure_controls": 4,
+  "default_outcomes_identical": 360,
+  "implementation_integrity_pass": true,
+  "default_adoption_pass": false,
+  "viewed_development": true,
+  "ground_truth_operational": false,
+  "subjective_maturity_percent": 20
+}

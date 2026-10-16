@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "parent": "assets/reciprocal-keyframe-depth-v1",
+  "data_role": "already viewed development; not held out",
+  "change": "Only fit applies bounded Armijo backtracking on frozen reciprocal correspondences plus unchanged nonlinear transported marginal prior",
+  "caps": [
+    10,
+    7,
+    5
+  ],
+  "alphas": [
+    1,
+    0.5,
+    0.25,
+    0.125,
+    0.0625,
+    0.03125,
+    0.015625,
+    0.0078125
+  ],
+  "armijo_coefficient": 0.0001,
+  "cost_roundoff_allowance": "1e-12*max(1,abs(before_cost))",
+  "raw_cost": "Sum Huber(r,0.01m), including every admitted reciprocal sample; no re-association during candidate trials",
+  "prior_cost": "0.5*delta^T H_prior delta + g_prior^T delta with original nonlinear chart; additive constant immaterial",
+  "association": "Original per-iteration reciprocal selection, at least200 per pair, fixed within search; recomputed for next linearization and final gates",
+  "proposal_guards_unchanged": true,
+  "convergence": "Unscaled full solve below strict 1e-5m and 1e-5rad for all nonorigin nodes",
+  "trace_delta": "Full unscaled proposal; applied alpha and all cost trials recorded separately",
+  "exhausted_search": "Reject entire fit; no partial state commit, no coarse skip for exhausted search",
+  "original_final_and_schur_guards_unchanged": true,
+  "source_freeze_before_new_recorded_fitting": true,
+  "evaluation": {
+    "cases": [
+      "tum-fr1-room-temporal",
+      "tum-fr1-desk2-independent"
+    ],
+    "updates": 179,
+    "resets": 0,
+    "root_translation_gate_m": 0.1,
+    "root_rotation_gate_rad": 0.1,
+    "reference_bracket_max_s": 0.02,
+    "ground_truth_operational": false,
+    "rgb_decoded": false,
+    "audits_before_numeric_reference_scoring": true
+  },
+  "default_changed": false,
+  "objective_is_not_physical_accuracy_or_calibrated_likelihood": true
+}

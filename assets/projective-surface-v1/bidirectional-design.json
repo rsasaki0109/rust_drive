@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "prerequisite": "fixed-normal midpoint failed adoption on viewed records; do not promote",
+  "problem": "previous symmetric-normal objectives still use one directed projective association set",
+  "change": "bidirectional_midpoint: search current-to-model and model-to-current separately; each fixed pair uses the midpoint residual and exact rotating-normal Jacobian",
+  "direction_support": "at least 200 measurements in EACH direction at each solve and returned pose; report exact forward/reverse counts, no partial-direction fallback",
+  "invariance": "symmetric residual summation under fixed inverse poses and endpoint swapping, not identical operational trajectory or fixed sampling invariance across reference changes",
+  "raw_oracle": "independently compute reverse-frame equations and transport H/g through the negative inverse-pose adjoint; native accumulation evaluates direct target-frame derivatives",
+  "data_role": "room, desk2 and previously viewed RPY; same original indices100..279 and all179 updates; no ground truth in estimator",
+  "adoption": {
+    "room_accurate_above": 64,
+    "desk2_accurate_at_least": 161,
+    "rpy_accurate_at_least": 74,
+    "all_updates_accepted": 179,
+    "no_worse_position_or_rotation_maxima_in_all_three": true
+  },
+  "no_probability_or_maturity_increase_from_checks_alone": true
+}

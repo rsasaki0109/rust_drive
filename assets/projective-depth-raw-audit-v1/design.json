@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "role": "independent reconstruction of viewed sensor-only depth reports; mathematical integrity is not physical accuracy",
+  "datasets": [
+    "tum-fr1-room-temporal",
+    "tum-fr1-desk2-independent"
+  ],
+  "selected_original_depth_indices": [
+    100,
+    279
+  ],
+  "selected_frames_per_recording": 180,
+  "updates_per_recording": 179,
+  "camera": {
+    "width": 640,
+    "height": 480,
+    "fx": 525.0,
+    "fy": 525.0,
+    "cx": 319.5,
+    "cy": 239.5
+  },
+  "source_basis_sha256": {
+    "integrations/projective-depth/src/lib.rs": "22740a333d371b269524fd6c451f74c8af2b4931ebaff44f865b1849ebf1bb0e",
+    "scripts/projective_depth_common.py": "4d951fed622483de224666056b3fbabdd22902837cbdf8574cb500df9a86a29f",
+    "scripts/requirements-visual.txt": "d8d4e85e0aa1f30325cb3fb9d39834a37e2e0894ecf2153d585e0631ed74d155"
+  },
+  "authority": "frozen source and whole sensor report retained in projective-depth-rust-v1",
+  "pyramid_scales": [
+    4,
+    2,
+    1
+  ],
+  "scope": [
+    "raw depth units/layout",
+    "depth discontinuity pyramid",
+    "surface normals",
+    "projective nearest-pixel associations",
+    "Huber normal H/g/RMS at every reported iteration",
+    "returned-pose final correspondences",
+    "keyframe view warp and nearest-depth/index raster",
+    "fusion partitions and per-pixel model carried forward",
+    "clock/reference/root composition through existing independent auditor"
+  ],
+  "normal_matrix_atol": 1e-07,
+  "normal_matrix_rtol": 1e-10,
+  "gradient_atol": 1e-09,
+  "gradient_rtol": 1e-10,
+  "residual_rms_atol_m": 1e-10,
+  "correspondence_count_tolerance": 0,
+  "raster_and_fusion_count_tolerance": 0,
+  "ground_truth_decoded": false,
+  "raw_color_decoded": false,
+  "quality_gates_unchanged": true,
+  "maturity_claim": false,
+  "ambiguity_policy": "retain any first discrepancy and diagnose it separately; do not silently widen discrete or physical gates"
+}

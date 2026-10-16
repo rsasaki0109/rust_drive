@@ -1,0 +1,1068 @@
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -148,6 +148,11 @@
+           python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/rgbd-analytic --photometric keyframe --output artifacts/projective-depth/rgbd-raw-audit
+           python scripts/check-projective-rgbd-lifecycle.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/rgbd-lifecycle
+           python scripts/check-projective-rgbd-exposure.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/rgbd-exposure
++          python scripts/check-projective-step-control.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/rgbd-step-control
++          python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --photometric keyframe --step-control fixed_support --output artifacts/projective-depth/guarded-analytic
++          python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/guarded-analytic --photometric keyframe --output artifacts/projective-depth/guarded-raw-audit
++          python scripts/check-projective-rgbd-lifecycle.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --step-control fixed_support --output artifacts/projective-depth/guarded-lifecycle
++          python scripts/check-projective-rgbd-exposure.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --step-control fixed_support --output artifacts/projective-depth/guarded-exposure
+           python scripts/check-multireference-rgbd.py --binary integrations/projective-depth/target/release/rustdriving-multireference-rgbd --output artifacts/projective-depth/multireference
+           python scripts/check-joint-keyframe-depth.py --output artifacts/projective-depth/joint-keyframes
+           python scripts/check-marginalized-keyframes.py --output artifacts/projective-depth/marginalized-keyframes
+@@ -190,6 +195,7 @@
+           python -m py_compile scripts/projective_vertex_raw.py
+           python -m py_compile scripts/projective_photo_raw.py scripts/check-projective-rgbd-lifecycle.py
+           python -m py_compile scripts/check-projective-rgbd-exposure.py
++          python -m py_compile scripts/projective_step_raw.py scripts/check-projective-step-control.py
+           python -m py_compile scripts/multireference_rgbd_common.py scripts/evaluate-multireference-rgbd.py
+           python -m py_compile scripts/joint_keyframe_depth.py scripts/evaluate-joint-keyframe-depth.py
+           python -m py_compile scripts/marginalized_keyframe_depth.py scripts/evaluate-marginalized-keyframes.py
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -366,6 +366,11 @@
+ 124/179 desk2 result still fails adoption; depth-only remains the default.
+ It remains outside
+ vehicle control and the depth-only idle-tick supervisor.
++Explicit [fixed-support RGB-D step control](projective-step-control.md) checks
++each proposed increment without dropping difficult measurements, shrinks failed
++steps and records bounded level halts. It regresses recorded accuracy to83/179
++room and67/179 desk2, so step control defaults to disabled; original depth and
++ordinary exposure-aware RGB-D trajectories are retained.
+ [Contract and negative accuracy results](multireference-rgbd.md).
+ 
+ The optional NumPy joint-keyframe evaluator separately optimizes up to five
+--- a/docs/maturity.md
++++ b/docs/maturity.md
+@@ -599,3 +599,10 @@
+ fails. This repairs a specific measurement-model limitation without qualified
+ sustained localization or driving integration. Subjective maturity remains
+ **about 20%** versus mature driving OSS.
++
++The [fixed-support step-control policy](projective-step-control.md) adds measured
++nonlinear update checks with independent reconstruction and image-boundary
++controls. Despite passing those checks, it regresses continuous accuracy to
++83/179 room and 67/179 desk2. It remains explicitly opt-in; both previous
++defaults are preserved. Local descent is not qualified localization accuracy,
++and subjective maturity remains **about 20%** versus mature driving OSS.
+--- a/docs/native-depth-regression.md
++++ b/docs/native-depth-regression.md
+@@ -60,11 +60,12 @@
+     normals: NormalEstimation::CentralDifference,
+     geometry: ModelGeometry::Depth,
+     photometric: Photometric::Disabled,
++    step_control: StepPolicy::Disabled,
+ }
+ ```
+ 
+ The JSON-lines `Configure` request accepts optional `reprojection`,
+-`correspondence`, `residual`, `normals`, `geometry` and `photometric` fields. Missing fields use
++`correspondence`, `residual`, `normals`, `geometry`, `photometric` and `step_control` fields. Missing fields use
+ the original defaults; unknown fields and enum values reject. The version-1
+ acknowledgment, frame limits, optical coordinate convention and metre/second
+ units are unchanged. There are no new dependencies or Cargo lockfile changes.
+@@ -102,6 +103,10 @@
+   [fused RGB-D implementation and complete failures](projective-rgbd-fusion.md)
+   and the maintained [exposure correction](projective-rgbd-exposure.md)
+   are retained; depth-only tracking remains the default.
++* `step_control`: `disabled` or `fixed_support`; the latter requires `keyframe`
++  photometric mode. It backtracks on fixed measurements and weights, with every
++  trial reported. Its [complete regression and independent checks](projective-step-control.md)
++  retain the failed 83/179 room and 67/179 desk2 result; it is explicitly opt-in.
+ 
+ Only the individual configurations in the table have recorded trajectory
+ results. Their combinations have no physical accuracy qualification. All modes
+--- a/docs/projective-rgbd-exposure.md
++++ b/docs/projective-rgbd-exposure.md
+@@ -5,6 +5,10 @@
+ system. Exposure changes no longer need to become camera motion in the
+ synthetic controls. This does not establish accurate continuous localization.
+ The depth-only default and driving pipeline remain unchanged.
++
++The separate [fixed-support step-control experiment](projective-step-control.md)
++regresses recorded accuracy and defaults to disabled. Ordinary `keyframe` mode
++retains the exposure-aware results on this page.
+ 
+ ## Complete recorded outcomes
+ 
+--- a/docs/projective-step-control.md
++++ b/docs/projective-step-control.md
+@@ -0,0 +1,130 @@
++# Fixed-support RGB-D step control
++
++The optional Rust RGB-D tracker now has an explicit `step_control: fixed_support`
++research policy. It checks the nonlinear effect of each proposed increment on
++the same measurements and weights, shrinks bad steps, and stops a pyramid level
++when none of five trials passes. **It is not adopted:** complete recorded pose
++accuracy regresses. Both depth-only and ordinary RGB-D defaults are preserved.
++
++## Recorded decision
++
++All results retain the original 180 acquisitions per recording, first optical
++camera origin, K=525 camera, 0.1 m / 0.1 rad accuracy gates and zero resets.
++Every run accepts all 179 updates without expiry.
++
++| Tracker | Accurate, room / desk2 | Maximum position, room / desk2 (m) | Maximum rotation, room / desk2 (rad) |
++|---|---|---|---|
++| Depth default | 64 / 161 | 0.296290 / 0.114800 | 0.141286 / 0.090386 |
++| Ordinary exposure-aware RGB-D | 84 / 124 | 0.267082 / 0.121676 | 0.102433 / 0.149427 |
++| Fixed-support step control | 83 / 67 | 0.360512 / 0.181417 | 0.120893 / 0.194282 |
++
++The original cross-record adoption gate fails for both recordings. Room's
++maximum position error worsens relative to depth-only, and desk2 regresses in
++count and both maxima. Both also regress relative to the maintained RGB-D
++predecessor. Checking local descent does not establish root accuracy.
++Numeric pose truth enters scoring only after operational ledgers are saved.
++These remain already-viewed indoor development recordings.
++
++The guarded ledgers contain 3,819 / 3,801 step reports and 4,566 / 4,335 trial
++costs. Steps shrink 495 / 374 times, with 747 / 534 unavailable trials and no
++level halts. No finite full-step cost exceeds its initial cost: every reduction
++in these runs is caused by retained measurements leaving the admissible domain,
++rather than an observed increase in the finite surrogate. This distinguishes
++the tested failure mechanism from a demonstrated need to correct uphill steps.
++It does not prove a unique cause of accumulated root drift.
++
++The first implementation applied the guard to all RGB-D fits. After its complete
++failure was saved, the maintained correction made it explicitly opt-in rather
++than changing the algorithm or tuning its constants. The first and corrected
++guarded runs retain identical operational results. Depth default retains all
++360 original outputs, and RGB-D with step control disabled retains all 360
++exposure-aware outputs. The [source-bound packet](../assets/projective-step-control-v1/summary.json)
++contains complete ledgers, sources, controls, audits and failed adoption.
++
++## Fixed measurement objective
++
++At each iteration, original projective correspondence, normal and distance
++admission select source queries and reference surface planes. The guard freezes
++these pairs and their Huber IRLS weights. If a photometric equation is usable,
++it additionally freezes its accepted source pixels and Tukey weights from the
++reported exposure estimate. No residual or gradient cutoff is reapplied while
++testing a trial.
++
++Each trial evaluates the weighted squared point-to-plane residual plus
++`0.005²/100` times the weighted squared image residual, with the common 1/2
++factor. The image's gain and offset are re-fit by weighted least squares on
++exactly those pixels. This is a local fixed-weight surrogate; exposure bounds
++apply to original equation admission, while the surrogate nuisance fit is
++unconstrained. The constant, centered brightness columns use the same source
++values and weights for every trial. All retained image samples must remain
++sampleable; any image-domain or near-plane failure makes the whole trial
++unavailable rather than dropping its pixels.
++
++The full proposed normal solve keeps its original support, scaled SPD condition
++and 0.1 m / 0.15 rad increment gates. Proposed scales are exactly
++`1, 1/2, 1/4, 1/8, 1/16`; the first cost no greater than the initial cost plus
++`1e-12*(1+initial_cost)` is accepted. No passing trial leaves the pose unchanged
++and ends that resolution level. This is not a frame rejection: finer levels and
++the original final residual, displacement and clock checks still apply.
++
++Each trace retains the unscaled normal solution in `delta`, and separately
++reports `step_control.applied_scale`, fixed counts, initial cost and all tried
++costs. `after` composes the scaled increment. A zero scale explicitly records a
++level halt. Geometry-only intervals within RGB-D use the same depth surrogate,
++including when reference color has been cleared after a repeated image.
++`step_control` defaults to `disabled` and requires `photometric: keyframe` when
++enabled. Unsupported configuration rejects before acknowledgment.
++
++## Independent validation
++
++NumPy rebuilds fixed correspondences, image samples and weights from measured
++PNG data and reported linearization poses. It uses weighted SVD least squares
++for trial exposure rather than Rust's centered sums. It checks every reported
++cost, unavailable trial, selected scale and scaled pose, plus the existing raw
++normal equations and prescribed depth fusion. Separate mutation controls detect
++fabricated costs, false support counts and a zero-cost claim for pixels that
++left the image.
++
++Four additional ray-cast motions pass 4 mm / 0.004 rad gates. Three exercise
++image-boundary backtracking: their full steps are unavailable and their half
++steps keep all retained pixels. Rust hand controls also verify an overshoot
++shrinks, wholly uphill proposals halt, and a single lost pixel cannot lower
++cost. Existing motion, exposure and asynchronous reference lifecycle controls
++pass with the guard enabled. CI covers these without recording downloads.
++
++Complete recorded reconstruction passes for 7,978 geometric systems, 7,638 image
++systems, 7,620 initial surrogate costs and 8,901 trial costs, with all 358
++prescribed depth model generations. Numeric pose truth is never decoded by this
++audit. The optional crate passes 39 Rust tests; core checks retain 371 tests,
++49 scenario/replay checks and all 245 deterministic output hashes. The 410
++passing Rust tests and correct local calculations do not reverse the failed
++physical accuracy decision. Earlier evidence files remain unchanged.
++
++## Reproduction and limitations
++
++Use the [existing input/environment setup](projective-depth-rust.md#reproduction)
++and fresh output directories:
++
++```bash
++source scripts/env.sh
++cargo build --release --locked --manifest-path integrations/projective-depth/Cargo.toml
++OPENBLAS_NUM_THREADS=1 python scripts/check-projective-step-control.py \
++  --binary integrations/projective-depth/target/release/rustdriving-projective-depth \
++  --output artifacts/step-controls
++OPENBLAS_NUM_THREADS=1 python scripts/evaluate-projective-depth.py \
++  --binary integrations/projective-depth/target/release/rustdriving-projective-depth \
++  --photometric keyframe --step-control fixed_support --output artifacts/step-recorded
++OPENBLAS_NUM_THREADS=1 python scripts/check-projective-depth.py \
++  --binary integrations/projective-depth/target/release/rustdriving-projective-depth \
++  --photometric keyframe --step-control fixed_support --output artifacts/step-analytic
++OPENBLAS_NUM_THREADS=1 python scripts/audit-projective-depth-raw.py \
++  --photometric keyframe --analytic-reports artifacts/step-analytic \
++  --recorded-reports artifacts/step-recorded --output artifacts/step-raw
++```
++
++The physical evaluator and adoption checker save failures and exit 1. Surrogate
++descent can converge toward a biased or ambiguous pose, and correspondence sets
++can change between iterations. A single boundary sample can restrict a whole
++trial. The policy does not add calibrated uncertainty, temporal compensation,
++loop closure or vehicle localization. Subjective maturity remains about 20%
++versus mature driving OSS; this work supplies no qualified accuracy gain.
+--- a/integrations/projective-depth/src/lib.rs
++++ b/integrations/projective-depth/src/lib.rs
+@@ -6,6 +6,8 @@
+ 
+ pub mod multireference;
+ pub mod photometric;
++mod step_control;
++pub use step_control::StepPolicy;
+ pub mod supervision;
+ mod vertex_model;
+ pub use multireference::ImageObservation;
+@@ -78,6 +80,7 @@
+     pub normals: NormalEstimation,
+     pub geometry: ModelGeometry,
+     pub photometric: Photometric,
++    pub step_control: StepPolicy,
+ }
+ 
+ #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+@@ -539,20 +542,26 @@
+     pub after: Pose,
+     #[serde(skip_serializing_if = "Option::is_none")]
+     pub photometric: Option<PhotoEquation>,
++    #[serde(skip_serializing_if = "Option::is_none")]
++    pub step_control: Option<step_control::StepControl>,
++}
++struct FitPolicy {
++    correspondence: Correspondence,
++    residual: Residual,
++    safeguarded: bool,
+ }
+ fn fit(
+     target: &[Level],
+     source: &[Level],
+     initial: Pose,
+     trace: &mut Vec<Iteration>,
+-    correspondence: Correspondence,
+-    residual: Residual,
++    policy: FitPolicy,
+     photo: Option<&PhotoPair<'_>>,
+ ) -> Result<(Pose, Equation, Option<PhotoEquation>), String> {
+     let mut pose = initial;
+     for ((t, s), (scale, cap)) in target.iter().zip(source).zip([(4, 10), (2, 7), (1, 5)]) {
+         for _ in 0..cap {
+-            let e = equation(t, s, pose, scale, correspondence, residual);
++            let e = equation(t, s, pose, scale, policy.correspondence, policy.residual);
+             if e.count < MIN_SUPPORT {
+                 return Err("insufficient geometric support".into());
+             }
+@@ -562,7 +571,26 @@
+             if norm([d[0], d[1], d[2]]) > 0.1 || norm([d[3], d[4], d[5]]) > 0.15 {
+                 return Err("oversized geometric increment".into());
+             }
+-            let next = pose.increment(d);
++            let step_control = if policy.safeguarded {
++                let witnesses = step_control::Witnesses::new(t, s, pose, scale, photo, p.as_ref());
++                if witnesses.counts()
++                    != (
++                        e.count,
++                        p.as_ref().filter(|p| p.used).map_or(0, |p| p.count),
++                    )
++                {
++                    return Err("fixed-support witness mismatch".into());
++                }
++                Some(witnesses.select(d)?)
++            } else {
++                None
++            };
++            let applied_scale = step_control.as_ref().map_or(1., |s| s.applied_scale);
++            let next = if applied_scale == 0. {
++                pose
++            } else {
++                pose.increment(d.map(|v| v * applied_scale))
++            };
+             if !next.finite_rigid() {
+                 return Err("nonrigid geometric result".into());
+             }
+@@ -574,15 +602,25 @@
+                 delta: d,
+                 after: next,
+                 photometric: p,
++                step_control,
+             });
+             pose = next;
+-            if norm([d[0], d[1], d[2]]) < 1e-5 && norm([d[3], d[4], d[5]]) < 1e-5 {
++            if applied_scale == 0.
++                || (norm([d[0], d[1], d[2]]) < 1e-5 && norm([d[3], d[4], d[5]]) < 1e-5)
++            {
+                 break;
+             }
+         }
+     }
+     // Admission uses correspondences at the returned pose, not the previous iterate.
+-    let final_e = equation(&target[2], &source[2], pose, 1, correspondence, residual);
++    let final_e = equation(
++        &target[2],
++        &source[2],
++        pose,
++        1,
++        policy.correspondence,
++        policy.residual,
++    );
+     if final_e.count < MIN_SUPPORT || final_e.rms_m > 0.03 || norm(pose.translation) > 0.5 {
+         return Err("final geometric residual, support or displacement gate".into());
+     }
+@@ -759,6 +797,7 @@
+     normals: NormalEstimation,
+     geometry: ModelGeometry,
+     photometric: Photometric,
++    step_policy: StepPolicy,
+     last_rgb: Option<f64>,
+     model: Option<Model>,
+     last_observed: Option<f64>,
+@@ -788,12 +827,18 @@
+                 normals: NormalEstimation::default(),
+                 geometry: ModelGeometry::default(),
+                 photometric: Photometric::default(),
++                step_control: StepPolicy::default(),
+             },
+         )
+     }
+     /// Configure measured residual/model policies with shared clock and fault guards.
+     pub fn with_config(camera: Camera, config: TrackerConfig) -> Result<Self, String> {
+         camera.validate()?;
++        if config.step_control == StepPolicy::FixedSupport
++            && config.photometric != Photometric::Keyframe
++        {
++            return Err("fixed-support step control requires keyframe photometric tracking".into());
++        }
+         if config.photometric == Photometric::Keyframe
+             && (config.geometry != ModelGeometry::Depth
+                 || config.reprojection != Reprojection::Point
+@@ -821,6 +866,7 @@
+             normals: config.normals,
+             geometry: config.geometry,
+             photometric: config.photometric,
++            step_policy: config.step_control,
+             last_rgb: None,
+             model: None,
+             last_observed: None,
+@@ -966,8 +1012,11 @@
+                     &current,
+                     old.initial,
+                     &mut out.iterations,
+-                    self.correspondence,
+-                    self.residual,
++                    FitPolicy {
++                        correspondence: self.correspondence,
++                        residual: self.residual,
++                        safeguarded: self.step_policy == StepPolicy::FixedSupport,
++                    },
+                     photo.as_ref(),
+                 )?;
+                 let root = old.key_root.compose(relative);
+--- a/integrations/projective-depth/src/main.rs
++++ b/integrations/projective-depth/src/main.rs
+@@ -1,7 +1,7 @@
+ //! Bounded synchronous JSON-lines evaluation transport; no external services.
+ use rustdriving_projective_depth::{
+-    Camera, Correspondence, ModelGeometry, NormalEstimation, Reprojection, Residual, Tracker,
+-    TrackerConfig,
++    Camera, Correspondence, ModelGeometry, NormalEstimation, Reprojection, Residual, StepPolicy,
++    Tracker, TrackerConfig,
+ };
+ use rustdriving_projective_depth::{ImageObservation, photometric::Photometric};
+ use serde::Deserialize;
+@@ -24,6 +24,8 @@
+         geometry: ModelGeometry,
+         #[serde(default)]
+         photometric: Photometric,
++        #[serde(default)]
++        step_control: StepPolicy,
+     },
+     Frame {
+         timestamp: f64,
+@@ -68,6 +70,7 @@
+                 normals,
+                 geometry,
+                 photometric,
++                step_control,
+             } => {
+                 if tracker.is_some() {
+                     return Err("one configuration per process".into());
+@@ -81,6 +84,7 @@
+                         normals,
+                         geometry,
+                         photometric,
++                        step_control,
+                     },
+                 )?);
+                 writeln!(output, "{{\"configured\":true,\"schema_version\":1}}")
+--- a/integrations/projective-depth/src/step_control.rs
++++ b/integrations/projective-depth/src/step_control.rs
+@@ -0,0 +1,262 @@
++//! Bounded nonlinear checks on fixed measurements and fixed IRLS weights.
++use crate::multireference::Gray;
++use crate::photometric::{PhotoEquation, PhotoPair};
++use crate::{Camera, Level, Pose, V, dot, norm, sub};
++use serde::{Deserialize, Serialize};
++
++#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
++#[serde(rename_all = "snake_case")]
++pub enum StepPolicy {
++    #[default]
++    Disabled,
++    FixedSupport,
++}
++
++#[derive(Clone, Debug, Serialize)]
++pub struct StepControl {
++    pub geometric_count: usize,
++    pub photometric_count: usize,
++    pub before_cost_m2: f64,
++    pub trial_costs_m2: Vec<Option<f64>>,
++    /// Zero keeps the current pose and ends this pyramid level.
++    pub applied_scale: f64,
++}
++
++struct Plane {
++    query: V,
++    target: V,
++    normal: V,
++    weight: f64,
++}
++struct Pixel {
++    query: V,
++    source: f64,
++    weight: f64,
++}
++struct Image<'a> {
++    gray: &'a Gray,
++    camera: Camera,
++    pixels: Vec<Pixel>,
++    mean_source: f64,
++    total: f64,
++    variance: f64,
++    scale: f64,
++}
++pub(super) struct Witnesses<'a> {
++    planes: Vec<Plane>,
++    image: Option<Image<'a>>,
++}
++impl<'a> Witnesses<'a> {
++    pub(super) fn new(
++        target: &Level,
++        source: &Level,
++        pose: Pose,
++        scale: usize,
++        photo: Option<&'a PhotoPair<'a>>,
++        equation: Option<&PhotoEquation>,
++    ) -> Self {
++        let level = match scale {
++            4 => 0,
++            2 => 1,
++            _ => 2,
++        };
++        let pair = photo.zip(equation).filter(|(_, e)| e.used);
++        let mut planes = Vec::new();
++        let mut pixels = Vec::new();
++        let stride = if scale == 1 { 2 } else { 1 };
++        for y in (0..source.camera.height).step_by(stride) {
++            for x in (0..source.camera.width).step_by(stride) {
++                let i = y * source.camera.width + x;
++                if dot(source.normals[i], source.normals[i]) <= 0.25 {
++                    continue;
++                }
++                let q = pose.transform(source.vertices[i]);
++                let Some(j) = target.camera.project(q, true) else {
++                    continue;
++                };
++                let (p, n) = (target.vertices[j], target.normals[j]);
++                if dot(n, n) <= 0.25
++                    || norm(sub(q, p)) >= if scale == 4 { 0.12 } else { 0.08 }
++                    || dot(pose.rotate(source.normals[i]), n) <= 0.8
++                {
++                    continue;
++                }
++                let r = dot(n, sub(q, p));
++                planes.push(Plane {
++                    query: q,
++                    target: p,
++                    normal: n,
++                    weight: (0.01 / r.abs().max(1e-15)).min(1.),
++                });
++                if let Some((pair, e)) = pair {
++                    let c = target.camera;
++                    let Some((value, gx, gy)) = pair.target[level]
++                        .sample(c.fx * q[0] / q[2] + c.cx, c.fy * q[1] / q[2] + c.cy)
++                    else {
++                        continue;
++                    };
++                    if gx.hypot(gy) < 1. {
++                        continue;
++                    }
++                    let illumination = e.illumination.as_ref().expect("used exposure fit");
++                    let color = pair.source[level].pixels[i];
++                    let residual = value - illumination.gain * color - illumination.offset_gray;
++                    if residual.abs() < 30. {
++                        pixels.push(Pixel {
++                            query: q,
++                            source: color,
++                            weight: (1. - (residual / 30.).powi(2)).powi(2),
++                        });
++                    }
++                }
++            }
++        }
++        let image = pair.map(|(pair, e)| {
++            let total = pixels.iter().map(|p| p.weight).sum::<f64>();
++            let mean_source = pixels.iter().map(|p| p.weight * p.source).sum::<f64>() / total;
++            let variance = pixels
++                .iter()
++                .map(|p| p.weight * (p.source - mean_source).powi(2))
++                .sum();
++            Image {
++                gray: &pair.target[level],
++                camera: target.camera,
++                pixels,
++                mean_source,
++                total,
++                variance,
++                scale: e.scale_m2_per_gray2,
++            }
++        });
++        Self { planes, image }
++    }
++    pub(super) fn counts(&self) -> (usize, usize) {
++        (
++            self.planes.len(),
++            self.image.as_ref().map_or(0, |i| i.pixels.len()),
++        )
++    }
++    fn cost(&self, increment: Pose) -> Option<f64> {
++        let mut cost = 0.;
++        for p in &self.planes {
++            let q = increment.transform(p.query);
++            if q[2] <= 0.3 {
++                return None;
++            }
++            cost += 0.5 * p.weight * dot(p.normal, sub(q, p.target)).powi(2);
++        }
++        if let Some(image) = &self.image {
++            let mut values = Vec::with_capacity(image.pixels.len());
++            let (mut sum, mut cross) = (0., 0.);
++            for p in &image.pixels {
++                let q = increment.transform(p.query);
++                if q[2] <= 0.3 {
++                    return None;
++                }
++                let c = image.camera;
++                // Every retained pixel must survive. No support re-selection,
++                // residual cutoff or gradient gate can reduce this trial cost.
++                let (v, _, _) = image
++                    .gray
++                    .sample(c.fx * q[0] / q[2] + c.cx, c.fy * q[1] / q[2] + c.cy)?;
++                values.push(v);
++                sum += p.weight * v;
++                cross += p.weight * (p.source - image.mean_source) * v;
++            }
++            let gain = cross / image.variance;
++            let offset = sum / image.total - gain * image.mean_source;
++            for (p, v) in image.pixels.iter().zip(values) {
++                cost += 0.5 * image.scale * p.weight * (v - gain * p.source - offset).powi(2);
++            }
++        }
++        cost.is_finite().then_some(cost)
++    }
++    pub(super) fn select(&self, delta: [f64; 6]) -> Result<StepControl, String> {
++        let before = self
++            .cost(Pose::identity())
++            .ok_or("invalid initial fixed-support cost")?;
++        let mut report = StepControl {
++            geometric_count: self.counts().0,
++            photometric_count: self.counts().1,
++            before_cost_m2: before,
++            trial_costs_m2: Vec::new(),
++            applied_scale: 0.,
++        };
++        for scale in [1., 0.5, 0.25, 0.125, 0.0625] {
++            let cost = self.cost(Pose::identity().increment(delta.map(|v| v * scale)));
++            report.trial_costs_m2.push(cost);
++            if cost.is_some_and(|v| v <= before + 1e-12 * (1. + before)) {
++                report.applied_scale = scale;
++                break;
++            }
++        }
++        Ok(report)
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    #[test]
++    fn overshoot_is_halved_and_uphill_steps_end_the_level() {
++        let witnesses = Witnesses {
++            planes: vec![Plane {
++                query: [0., 0., 1.],
++                target: [0., 0., 1.01],
++                normal: [0., 0., 1.],
++                weight: 1.,
++            }],
++            image: None,
++        };
++        let report = witnesses.select([0., 0., 0.03, 0., 0., 0.]).unwrap();
++        assert_eq!(report.applied_scale, 0.5);
++        assert!(report.trial_costs_m2[0].unwrap() > report.before_cost_m2);
++        assert!(report.trial_costs_m2[1].unwrap() < report.before_cost_m2);
++        let uphill = witnesses.select([0., 0., -0.01, 0., 0., 0.]).unwrap();
++        assert_eq!(uphill.applied_scale, 0.);
++        assert_eq!(uphill.trial_costs_m2.len(), 5);
++    }
++    #[test]
++    fn one_pixel_leaving_the_image_cannot_reduce_the_cost() {
++        let gray = Gray {
++            width: 4,
++            height: 4,
++            pixels: (0..16).map(|i| i as f64 * 10.).collect(),
++        };
++        let witnesses = Witnesses {
++            planes: Vec::new(),
++            image: Some(Image {
++                gray: &gray,
++                camera: Camera {
++                    width: 4,
++                    height: 4,
++                    fx: 1.,
++                    fy: 1.,
++                    cx: 0.,
++                    cy: 0.,
++                },
++                pixels: vec![
++                    Pixel {
++                        query: [2.9, 1., 1.],
++                        source: 50.,
++                        weight: 1.,
++                    },
++                    Pixel {
++                        query: [1., 1., 1.],
++                        source: 100.,
++                        weight: 1.,
++                    },
++                ],
++                mean_source: 75.,
++                total: 2.,
++                variance: 1250.,
++                scale: 0.005_f64.powi(2) / 100.,
++            }),
++        };
++        let report = witnesses.select([0.2, 0., 0., 0., 0., 0.]).unwrap();
++        assert_eq!(report.photometric_count, 2);
++        assert_eq!(report.applied_scale, 0.25);
++        assert_eq!(&report.trial_costs_m2[..2], &[None, None]);
++        assert!(report.trial_costs_m2[2].unwrap() < 1e-12);
++    }
++}
+--- a/scripts/audit-projective-depth-raw.py
++++ b/scripts/audit-projective-depth-raw.py
+@@ -16,6 +16,7 @@
+ SOURCES = (Path(__file__),ROOT/'scripts/projective_depth_raw.py',ROOT/'scripts/projective_depth_common.py',
+            ROOT/'scripts/projective_vertex_raw.py',
+            ROOT/'scripts/projective_photo_raw.py',
++           ROOT/'scripts/projective_step_raw.py',
+            ROOT/'scripts/check-projective-depth.py',ROOT/'scripts/requirements-visual.txt',
+            ROOT/'assets/projective-depth-raw-audit-v1/design.json')
+ SOURCE_PINS = {str(p.relative_to(ROOT)):sha(p.read_bytes()) for p in SOURCES}
+@@ -173,6 +174,12 @@
+                 gain=u['iterations'][0]['photometric']['illumination']['gain']+.01))
+             corruption('altered exposure fitting support',lambda u:u['iterations'][0]['photometric']['illumination'].update(
+                 candidate_count=u['iterations'][0]['photometric']['illumination']['candidate_count']+1))
++        if 'step_control' in original['iterations'][0]:
++            corruption('altered fixed-support initial cost',lambda u:u['iterations'][0]['step_control'].update(
++                before_cost_m2=u['iterations'][0]['step_control']['before_cost_m2']+.001))
++            corruption('altered fixed-support trial cost',lambda u:u['iterations'][0]['step_control']['trial_costs_m2'].__setitem__(0,.1))
++            corruption('altered fixed-support geometry count',lambda u:u['iterations'][0]['step_control'].update(
++                geometric_count=u['iterations'][0]['step_control']['geometric_count']+1))
+     vertex_controls=None
+     if geometry=='vertices':
+         from projective_vertex_raw import controls
+@@ -199,6 +206,8 @@
+     normals = freeze.get('normals','central_difference')
+     geometry = freeze.get('geometry','depth')
+     photometric = freeze.get('photometric','disabled')
++    step_policy=freeze.get('step_control')
++    require(step_policy in (None,'disabled','fixed_support'),'declared step policy')
+     require(photometric in ('disabled','keyframe'),'declared image policy')
+     require(geometry in ('depth','vertices'),'declared geometry policy')
+     require(normals in ('central_difference','inverse_depth_plane'),'declared normal policy')
+@@ -227,7 +236,7 @@
+         verified(frame)  # Hashes only; no pixel or reference label decoding yet.
+     require(all(sha(read(ROOT/n))==d for n,d in SOURCE_PINS.items()),'audit sources unchanged since process start')
+     write(output/'freeze.json',dict(dataset=case,source_sha256=SOURCE_PINS,
+-        manifest_sha256=sha(manifest_body),original_freeze_sha256=sha(read(freeze_path)),reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric,
++        manifest_sha256=sha(manifest_body),original_freeze_sha256=sha(read(freeze_path)),reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric,step_control=step_policy,
+         original_sensor_ledger_sha256=sha(read(ledger_path,64*1024*1024)),depth_source_count=180,
+         ground_truth_decoded=False,raw_color_decoded=photometric=='keyframe'))
+     steps = audit_sequence(outcomes,[f['depth_timestamp'] for f in frames])
+@@ -253,10 +262,15 @@
+                 context=dict(target=key_gray,source=current_gray,source_timestamp=rgb,reference_timestamp=key_rgb,
+                              qualified=key_gray is not None and abs(phase-key_phase)<=.005,fresh=fresh_rgb)
+             initial=model is None
++            if step_policy is not None:
++                require(all(('step_control' in s)==(step_policy=='fixed_support') for s in row['update']['iterations']),'complete configured step reports')
+             model,weights,checked = reconstruct_update(model,weights,raw,CAMERA,row['update'],reprojection,correspondence,residual,normals,geometry,context)
+             if photometric=='keyframe':
+                 checked['photometric_equations']=sum('photometric' in s for s in row['update']['iterations'])+int('final_photometric' in row['update'])
+                 checked['used_photometric_solves']=sum(s.get('photometric',{}).get('used',False) for s in row['update']['iterations'])
++                controls=[s['step_control'] for s in row['update']['iterations'] if 'step_control' in s]
++                checked.update(step_controls=len(controls),step_trials=sum(len(c['trial_costs_m2']) for c in controls),
++                    reduced_steps=sum(0<c['applied_scale']<1 for c in controls),halted_levels=sum(c['applied_scale']==0 for c in controls))
+             if photometric=='keyframe' and row['update']['accepted'] and (initial or row['update']['keyframe_replaced']):
+                 key_gray=current_gray if fresh_rgb else None;key_rgb=rgb if fresh_rgb else None;key_phase=phase if fresh_rgb else 0.
+             checked_frames.append(dict(source_index=frame['source_index'],**checked,
+@@ -278,6 +292,8 @@
+     if photometric=='keyframe':
+         summary.update(raw_photometric_equations=sum(v['photometric_equations'] for v in checked_frames),
+                        used_photometric_solves=sum(v['used_photometric_solves'] for v in checked_frames),raw_color_decoded=True)
++        for key in ('step_controls','step_trials','reduced_steps','halted_levels'):
++            summary[key]=sum(v[key] for v in checked_frames)
+     write(output/'audit.json',dict(pass_raw_mathematics=True,summary=summary,frames=checked_frames))
+     print(case,json.dumps(summary),flush=True)
+     return summary
+--- a/scripts/check-projective-depth.py
++++ b/scripts/check-projective-depth.py
+@@ -47,6 +47,7 @@
+     parser.add_argument('--normals',choices=('central_difference','inverse_depth_plane'),default='central_difference')
+     parser.add_argument('--geometry',choices=('depth','vertices'),default='depth')
+     parser.add_argument('--photometric',choices=('disabled','keyframe'),default='disabled')
++    parser.add_argument('--step-control',choices=('disabled','fixed_support'),default='disabled')
+     args = parser.parse_args()
+     output = fresh(args.output)
+     binary = args.binary.absolute()
+@@ -58,7 +59,7 @@
+         vector = np.zeros(3)
+         vector[axis] = angle
+         transform[:3,:3],transform[:3,3] = exp_rotation(vector),translation
+-        client = Client(binary,CAMERA,configuration=dict(reprojection=args.reprojection,correspondence=args.correspondence,residual=args.residual,normals=args.normals,geometry=args.geometry,photometric=args.photometric))
++        client = Client(binary,CAMERA,configuration=dict(reprojection=args.reprojection,correspondence=args.correspondence,residual=args.residual,normals=args.normals,geometry=args.geometry,photometric=args.photometric,step_control=args.step_control))
+         def frame(stamp,transform,depth):
+             image=None if args.photometric=='disabled' else dict(timestamp=stamp+.001,gray=render_gray(transform,depth).ravel().tolist())
+             return client.frame(stamp,depth,image=image)
+@@ -67,6 +68,7 @@
+             require(initial['accepted'],'analytic initialization')
+             result = frame(1.03,transform,render(transform))
+             require(result['accepted'],'analytic motion fit')
++            require(all(('step_control' in s)==(args.step_control=='fixed_support') for s in result['iterations']),'explicit step policy')
+             steps = audit_iterations(result)
+             estimate = pose(result['first_from_current'])
+             position = float(np.linalg.norm(estimate[:3,3]-transform[:3,3]))
+@@ -121,6 +123,8 @@
+         'unknown normal estimation':json.dumps(dict(kind='Configure',camera=CAMERA,normals='unknown'))+'\n',
+         'unknown geometry':json.dumps(dict(kind='Configure',camera=CAMERA,geometry='unknown'))+'\n',
+         'unknown photometric mode':json.dumps(dict(kind='Configure',camera=CAMERA,photometric='unknown'))+'\n',
++        'unknown step control':json.dumps(dict(kind='Configure',camera=CAMERA,step_control='unknown'))+'\n',
++        'step control without RGB-D':json.dumps(dict(kind='Configure',camera=CAMERA,step_control='fixed_support'))+'\n',
+         'missing final newline':config.rstrip('\n'),
+         'no frame':config,
+         'oversized request':' '*(8*1024*1024+1)+'\n',
+@@ -150,7 +154,7 @@
+                     and json.loads(lines[0]) == dict(configured=True,schema_version=1),
+                     'exact acknowledged prefix before rejection: '+name)
+     write(output/'summary.json',dict(analytic_controls_pass=True,translation_gate_m=.004,rotation_gate_rad=.004,
+-        motions=cases,reprojection=args.reprojection,correspondence=args.correspondence,residual=args.residual,normals=args.normals,geometry=args.geometry,photometric=args.photometric,rejected_transport_cases=list(malformed),binary_sha256=sha(binary.read_bytes()),
++        motions=cases,reprojection=args.reprojection,correspondence=args.correspondence,residual=args.residual,normals=args.normals,geometry=args.geometry,photometric=args.photometric,step_control=args.step_control,rejected_transport_cases=list(malformed),binary_sha256=sha(binary.read_bytes()),
+         rejected_report_corruptions=corruption_names,
+         checker_sha256=sha(Path(__file__).read_bytes()),
+         scope='analytic geometry and independent linear algebra; no physical accuracy or real-time claim'))
+--- a/scripts/check-projective-rgbd-exposure.py
++++ b/scripts/check-projective-rgbd-exposure.py
+@@ -16,6 +16,7 @@
+ 
+ def main():
+     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--binary',type=Path,required=True);p.add_argument('--output',type=Path,required=True)
++    p.add_argument('--step-control',choices=('disabled','fixed_support'),default='disabled')
+     args=p.parse_args();out=fresh(args.output);binary_sha=sha(args.binary.read_bytes());results={};checked=0
+     stationary=np.eye(4);moving=np.eye(4);a=.01;moving[:2,:2]=[[np.cos(a),-np.sin(a)],[np.sin(a),np.cos(a)]];moving[:2,3]=[.015,-.01]
+     for name,transform,alpha,beta,outliers in (
+@@ -30,7 +31,7 @@
+         current=np.rint(alpha*current.astype(float)+beta).clip(0,255).astype(np.uint8)
+         if outliers:current.ravel()[::19]=255
+         expected_accept=name.startswith(('stationary darkened','moving '))
+-        client=Client(args.binary,CAMERA,configuration=dict(photometric='keyframe'))
++        client=Client(args.binary,CAMERA,configuration=dict(photometric='keyframe',step_control=args.step_control))
+         try:
+             initial=client.frame(1.,depth,image=dict(timestamp=1.001,gray=first.ravel().tolist()))
+             update=client.frame(1.03,depth,image=dict(timestamp=1.031,gray=current.ravel().tolist()));client.finish()
+@@ -54,7 +55,7 @@
+         results[name]=result
+     require(sha(args.binary.read_bytes())==binary_sha,'binary fixed throughout controls')
+     write(out/'controls.json',results)
+-    write(out/'summary.json',dict(pass_exposure_controls=True,positive_controls=4,negative_controls=4,
++    write(out/'summary.json',dict(pass_exposure_controls=True,positive_controls=4,negative_controls=4,step_control=args.step_control,
+         independently_reconstructed_systems=checked,binary_sha256=binary_sha,checker_sha256=sha(Path(__file__).read_bytes()),
+         known_pose_role='Synthetic measurement generation and scoring; no pose input to tracker'))
+ 
+--- a/scripts/check-projective-rgbd-lifecycle.py
++++ b/scripts/check-projective-rgbd-lifecycle.py
+@@ -9,10 +9,11 @@
+ 
+ def main():
+     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--binary',type=Path,required=True);p.add_argument('--output',type=Path,required=True)
++    p.add_argument('--step-control',choices=('disabled','fixed_support'),default='disabled')
+     args=p.parse_args();out=fresh(args.output)
+     spec=importlib.util.spec_from_file_location('synthetic_rgbd',ROOT/'scripts/check-projective-depth.py')
+     scene=importlib.util.module_from_spec(spec);spec.loader.exec_module(scene)
+-    client=Client(args.binary,scene.CAMERA,configuration=dict(photometric='keyframe'))
++    client=Client(args.binary,scene.CAMERA,configuration=dict(photometric='keyframe',step_control=args.step_control))
+     model=weights=key_gray=key_rgb=last_rgb=None;key_phase=0.;rows=[];times=[];checked=0
+     try:
+         for stamp,x in ((1.,0.),(1.004,.03),(1.008,.06),(1.012,.09),(1.016,.12),
+@@ -55,7 +56,7 @@
+     except BaseException:
+         client.abort();raise
+     write(out/'sequence.json',dict(frames=rows,repeated=repeated,faults=faults,expired=expired,recovery=recovery))
+-    write(out/'summary.json',dict(pass_lifecycle=True,measured_depth_frames=len(rows),raw_equations_checked=checked,
++    write(out/'summary.json',dict(pass_lifecycle=True,measured_depth_frames=len(rows),raw_equations_checked=checked,step_control=args.step_control,
+         repeated_rgb_never_contributes=True,color_anchor_cleared_and_resumed=True,faults_rejected=list(faults),
+         no_implicit_reset=True,binary_sha256=sha(args.binary.read_bytes()),checker_sha256=sha(Path(__file__).read_bytes()),
+         source='synthetic static scene; known poses generate measurements only'))
+--- a/scripts/check-projective-step-control.py
++++ b/scripts/check-projective-step-control.py
+@@ -0,0 +1,48 @@
++#!/usr/bin/env python3
++"""Ray-cast motion checks that exercise fixed-support image-boundary backtracking."""
++import argparse,copy,importlib.util
++from pathlib import Path
++import numpy as np
++from projective_depth_common import Client,ROOT,audit_sequence,exp_rotation,fresh,pose,require,sha,write
++from projective_depth_raw import reconstruct_update
++
++
++def main():
++    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--binary',type=Path,required=True);parser.add_argument('--output',type=Path,required=True)
++    args=parser.parse_args();out=fresh(args.output);digest=sha(args.binary.read_bytes())
++    spec=importlib.util.spec_from_file_location('step_scene',ROOT/'scripts/check-projective-depth.py');scene=importlib.util.module_from_spec(spec);spec.loader.exec_module(scene)
++    first=scene.render(np.eye(4));first_gray=scene.render_gray(np.eye(4),first);rows=[];checked=trials=reduced=unavailable=0;tampered=[]
++    for axis,angle,translation in ((0,.04,[.04,0,0]),(1,.08,[.06,.01,0]),(2,-.06,[.03,.01,0]),(0,0,[.09,0,0])):
++        t=np.eye(4);v=np.zeros(3);v[axis]=angle;t[:3,:3]=exp_rotation(v);t[:3,3]=translation
++        depth=scene.render(t);gray=scene.render_gray(t,depth);client=Client(args.binary,scene.CAMERA,configuration=dict(photometric='keyframe',step_control='fixed_support'))
++        try:
++            initial=client.frame(1.,first,image=dict(timestamp=1.001,gray=first_gray.ravel().tolist()))
++            update=client.frame(1.03,depth,image=dict(timestamp=1.031,gray=gray.ravel().tolist()));client.finish()
++        except BaseException:
++            client.abort();raise
++        require(initial['accepted'] and update['accepted'],'known motion remains available')
++        audit_sequence([dict(update=initial),dict(update=update)],[1.,1.03])
++        context=dict(target=first_gray,source=gray,source_timestamp=1.031,reference_timestamp=1.001,qualified=True,fresh=True)
++        reconstruct_update(first,(first>.3).astype(np.uint8),depth,scene.CAMERA,update,image_context=context)
++        error=np.linalg.inv(t)@pose(update['first_from_current']);position=float(np.linalg.norm(error[:3,3]));rotation=float(np.arccos(np.clip((np.trace(error[:3,:3])-1)/2,-1,1)))
++        require(position<=.004 and rotation<=.004,'known-motion 4mm/0.004rad gates')
++        controls=[s['step_control'] for s in update['iterations']];checked+=len(controls);trials+=sum(len(c['trial_costs_m2']) for c in controls)
++        reduced+=sum(0<c['applied_scale']<1 for c in controls);unavailable+=sum(v is None for c in controls for v in c['trial_costs_m2'])
++        rows.append(dict(expected=t.tolist(),initial=initial,update=update,position_error_m=position,rotation_error_rad=rotation))
++        if not tampered:
++            boundary=next((i for i,s in enumerate(update['iterations']) if s['step_control']['trial_costs_m2'][0] is None),None)
++            if boundary is not None:
++                altered=copy.deepcopy(update);altered['iterations'][boundary]['step_control']['trial_costs_m2'][0]=0.
++                try:reconstruct_update(first,(first>.3).astype(np.uint8),depth,scene.CAMERA,altered,image_context=context)
++                except (AssertionError,ValueError):tampered.append('discarded image pixels falsely produce a zero-cost trial')
++                else:raise ValueError('undetected fabricated boundary trial')
++    require(reduced>=3 and unavailable>=3 and len(tampered)==1,'exercise boundary backtracking and raw tamper rejection')
++    require(sha(args.binary.read_bytes())==digest,'binary unchanged during controls')
++    write(out/'controls.json',rows)
++    write(out/'summary.json',dict(pass_step_control=True,motions=4,raw_step_reports=checked,raw_trial_costs=trials,
++        reduced_steps=reduced,unavailable_trials=unavailable,rejected_corruptions=tampered,
++        binary_sha256=digest,checker_sha256=sha(Path(__file__).read_bytes()),
++        known_pose_role='synthetic measurement generation and scoring, never tracker input'))
++
++
++if __name__=='__main__':main()
+--- a/scripts/evaluate-projective-depth.py
++++ b/scripts/evaluate-projective-depth.py
+@@ -15,7 +15,7 @@
+ CASES = ('tum-fr1-room-temporal','tum-fr1-desk2-independent')
+ 
+ 
+-def evaluate(case, binary, output, reprojection='point', correspondence='forward', residual='target_plane', normals='central_difference', geometry='depth', photometric='disabled'):
++def evaluate(case, binary, output, reprojection='point', correspondence='forward', residual='target_plane', normals='central_difference', geometry='depth', photometric='disabled', step_control='disabled'):
+     base = ROOT/'data'/case
+     manifest_body = (base/'manifest.json').read_bytes()
+     manifest = json.loads(manifest_body)
+@@ -42,16 +42,17 @@
+                ROOT/'scripts/projective_depth_raw.py',
+                ROOT/'scripts/projective_vertex_raw.py',
+                ROOT/'scripts/projective_photo_raw.py',
++               ROOT/'scripts/projective_step_raw.py',
+                *sorted((ROOT/'integrations/projective-depth/src').rglob('*.rs')),
+                ROOT/'integrations/projective-depth/Cargo.toml',ROOT/'integrations/projective-depth/Cargo.lock']
+     write(output/'freeze.json',dict(schema_version=1,dataset=case,data_role='already viewed port regression',
+         manifest_sha256=sha(manifest_body),binary_sha256=sha(binary.read_bytes()),
+         source_sha256={str(p.relative_to(ROOT)):sha(p.read_bytes()) for p in sources},
+         inputs={name:dict(bytes=v['bytes'],sha256=v['sha256']) for name,v in inventory.items()},
+-        camera=CAMERA,reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric,primary_clock='depth; associated RGB decoded only in keyframe photometric mode',root_translation_gate_m=.1,
++        camera=CAMERA,reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric,step_control=step_control,primary_clock='depth; associated RGB decoded only in keyframe photometric mode',root_translation_gate_m=.1,
+         root_rotation_gate_rad=.1,reference_bracket_max_s=.02,pose_resets=0,ground_truth_operational=False,
+         selected_frames=180,updates=179,numpy_version=np.__version__))
+-    client = Client(binary,CAMERA,configuration=dict(reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric))
++    client = Client(binary,CAMERA,configuration=dict(reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric,step_control=step_control))
+     outcomes = []
+     try:
+         for frame in frames:
+@@ -143,6 +144,7 @@
+     parser.add_argument('--normals',choices=('central_difference','inverse_depth_plane'),default='central_difference')
+     parser.add_argument('--geometry',choices=('depth','vertices'),default='depth')
+     parser.add_argument('--photometric',choices=('disabled','keyframe'),default='disabled')
++    parser.add_argument('--step-control',choices=('disabled','fixed_support'),default='disabled')
+     args = parser.parse_args()
+     output = fresh(args.output)
+     summaries = {}
+@@ -151,7 +153,7 @@
+         require(sha(args.binary.read_bytes())==binary_digest,'one unchanged native binary across recordings')
+         folder = output/case
+         folder.mkdir()
+-        summaries[case] = evaluate(case,args.binary.absolute(),folder,args.reprojection,args.correspondence,args.residual,args.normals,args.geometry,args.photometric)
++        summaries[case] = evaluate(case,args.binary.absolute(),folder,args.reprojection,args.correspondence,args.residual,args.normals,args.geometry,args.photometric,args.step_control)
+     require(sha(args.binary.read_bytes())==binary_digest,'native binary unchanged through evaluation')
+     passed = all(v['complete_accuracy_pass'] for v in summaries.values())
+     write(output/'comparison.json',dict(summaries=summaries,complete_accuracy_pass=passed,exit_code=0 if passed else 1))
+--- a/scripts/projective_depth_common.py
++++ b/scripts/projective_depth_common.py
+@@ -101,7 +101,7 @@
+     require(len(steps) <= 22,'bounded geometric iteration count')
+     previous = None
+     levels = []
+-    for step in steps:
++    for index,step in enumerate(steps):
+         level = step['scale']
+         require(level in (4,2,1),'fixed pyramid level')
+         levels.append(level)
+@@ -143,6 +143,20 @@
+         d = np.asarray(step['delta'])
+         np.testing.assert_allclose(d,expected,atol=1e-10,rtol=1e-8)
+         require(np.linalg.norm(d[:3]) <= .1 and np.linalg.norm(d[3:]) <= .15,'bounded increments')
++        if 'step_control' in step:
++            control=step['step_control'];cost=control['before_cost_m2'];trials=control['trial_costs_m2']
++            require(control['geometric_count']==equation['count'] and control['photometric_count']==step.get('photometric',{}).get('count',0)
++                    and np.isfinite(cost) and cost>=0 and 1<=len(trials)<=5,'fixed-support step accounting')
++            accepted=[]
++            for i,value in enumerate(trials):
++                require(value is None or (np.isfinite(value) and value>=0),'finite or unavailable trial')
++                if value is not None and value<=cost+1e-12*(1+cost):accepted.append(i)
++            require(accepted==[len(trials)-1] if accepted else len(trials)==5,'first passing step or bounded halt')
++            factor=2.**(-(len(trials)-1)) if accepted else 0.
++            require(control['applied_scale']==factor,'verified applied step scale')
++            d=d*factor
++            if factor==0 and index+1<len(steps):
++                require(steps[index+1]['scale']<level,'halt ends this pyramid level')
+         increment = np.eye(4)
+         increment[:3,:3],increment[:3,3] = exp_rotation(d[3:]),d[:3]
+         np.testing.assert_allclose(after,increment@before,atol=1e-11,rtol=0)
+--- a/scripts/projective_depth_raw.py
++++ b/scripts/projective_depth_raw.py
+@@ -232,6 +232,10 @@
+         if colors is not None:
+             from projective_photo_raw import equation,compare
+             compare(step['photometric'],equation(target[scale],source[scale],colors[0][scale],colors[1][scale],pose(step['before']),scale,image_context['qualified'] and image_context['fresh'],affine='illumination' in step['photometric']))
++        if 'step_control' in step:
++            from projective_step_raw import reconstruct,compare
++            require('photometric' in update,'step control belongs to the RGB-D mode')
++            compare(step['step_control'],reconstruct(target[scale],source[scale],colors,step))
+     if not update['accepted']:
+         require(update['fusion'] is None and update['first_from_current'] is None,'no rejected-state commit')
+         return model,weights,dict(iterations=len(update['iterations']),final_equations=0,model_replaced=False)
+--- a/scripts/projective_step_raw.py
++++ b/scripts/projective_step_raw.py
+@@ -0,0 +1,80 @@
++"""Independent fixed-measurement, frozen-weight nonlinear step reconstruction."""
++import numpy as np
++from projective_depth_common import exp_rotation,pose,require
++
++SCALES=(1.,.5,.25,.125,.0625)
++
++
++def sample(gray,camera,q):
++    if np.any(q[:,2]<=.3):return None
++    u=camera['fx']*q[:,0]/q[:,2]+camera['cx'];v=camera['fy']*q[:,1]/q[:,2]+camera['cy']
++    u=np.where(abs(u-np.rint(u))<=1e-10,np.rint(u),u);v=np.where(abs(v-np.rint(v))<=1e-10,np.rint(v),v)
++    if not (np.isfinite(u).all() and np.isfinite(v).all() and np.all((u>=0)&(u<gray.shape[1]-1)&(v>=0)&(v<gray.shape[0]-1))):return None
++    x,y=np.floor(u).astype(np.int64),np.floor(v).astype(np.int64);dx,dy=u-x,v-y
++    a,b,d,e=gray[y,x],gray[y,x+1],gray[y+1,x],gray[y+1,x+1]
++    value=(1-dx)*(1-dy)*a+dx*(1-dy)*b+(1-dx)*dy*d+dx*dy*e
++    gx=(1-dy)*(b-a)+dy*(e-d);gy=(1-dx)*(d-a)+dx*(e-b)
++    return value,gx,gy
++
++
++def witnesses(target,source,transform,scale,colors,photo):
++    stride=2 if scale==1 else 1;c=target['camera']
++    xyz=source['vertices'][::stride,::stride].reshape(-1,3);ns=source['normals'][::stride,::stride].reshape(-1,3)
++    indices=np.arange(source['depth'].size).reshape(source['depth'].shape)[::stride,::stride].ravel()
++    valid=np.sum(ns*ns,axis=1)>.25;xyz,ns,indices=xyz[valid],ns[valid],indices[valid]
++    q=xyz@transform[:3,:3].T+transform[:3,3];ns=ns@transform[:3,:3].T
++    valid=np.isfinite(q).all(axis=1)&(q[:,2]>.3);q,ns,indices=q[valid],ns[valid],indices[valid]
++    u=np.rint(c['fx']*q[:,0]/q[:,2]+c['cx']);v=np.rint(c['fy']*q[:,1]/q[:,2]+c['cy'])
++    valid=(u>=1)&(u<c['width']-1)&(v>=1)&(v<c['height']-1)
++    q,ns,indices=q[valid],ns[valid],indices[valid];u,v=u[valid].astype(np.int64),v[valid].astype(np.int64)
++    p=target['vertices'][v,u];n=target['normals'][v,u]
++    valid=(np.sum(n*n,axis=1)>.25)&(np.linalg.norm(q-p,axis=1)<(.12 if scale==4 else .08))&(np.sum(ns*n,axis=1)>.8)
++    q,p,n,indices=q[valid],p[valid],n[valid],indices[valid];r=np.einsum('ij,ij->i',n,q-p);w=np.minimum(1.,.01/np.maximum(abs(r),1e-15))
++    image=None
++    if photo is not None and photo['used']:
++        require(colors is not None,'measured images for step witnesses')
++        target_gray,source_gray=colors[0][scale],colors[1][scale]
++        # Nearest geometry admission guarantees these coordinates are inside
++        # the original bilinear image domain, before any candidate motion.
++        value,gx,gy=sample(target_gray,c,q);color=source_gray.ravel()[indices]
++        e=photo['illumination'];r=value-e['gain']*color-e['offset_gray']
++        valid=(np.hypot(gx,gy)>=1)&(abs(r)<30);iw=(1-(r[valid]/30)**2)**2
++        image=dict(query=q[valid],source=color[valid],weights=iw,gray=target_gray,scale=photo['scale_m2_per_gray2'])
++    return dict(query=q,target=p,normal=n,weights=w,camera=c,image=image)
++
++
++def cost(fixed,delta):
++    rotation=exp_rotation(delta[3:]);translation=delta[:3]
++    q=fixed['query']@rotation.T+translation
++    if np.any(q[:,2]<=.3):return None
++    residual=np.einsum('ij,ij->i',fixed['normal'],q-fixed['target'])
++    value=.5*fixed['weights']@(residual*residual)
++    image=fixed['image']
++    if image is not None:
++        warped=image['query']@rotation.T+translation;sampled=sample(image['gray'],fixed['camera'],warped)
++        if sampled is None:return None
++        values=sampled[0];sqrt=np.sqrt(image['weights']);design=np.column_stack([image['source'],np.ones(len(values))])
++        gain_offset=np.linalg.lstsq(design*sqrt[:,None],values*sqrt,rcond=None)[0]
++        residual=values-design@gain_offset
++        value+=.5*image['scale']*(image['weights']@(residual*residual))
++    require(np.isfinite(value),'finite fixed-support cost')
++    return float(value)
++
++
++def reconstruct(target,source,colors,step):
++    fixed=witnesses(target,source,pose(step['before']),step['scale'],colors,step.get('photometric'))
++    d=np.asarray(step['delta']);before=cost(fixed,np.zeros(6));trials=[];applied=0.
++    for scale in SCALES:
++        candidate=cost(fixed,d*scale);trials.append(candidate)
++        if candidate is not None and candidate<=before+1e-12*(1+before):applied=scale;break
++    return dict(geometric_count=len(fixed['query']),photometric_count=0 if fixed['image'] is None else len(fixed['image']['query']),before_cost_m2=before,trial_costs_m2=trials,applied_scale=applied)
++
++
++def compare(actual,expected):
++    require(actual.keys()==expected.keys(),'complete step report')
++    for key in ('geometric_count','photometric_count','applied_scale'):require(actual[key]==expected[key],'raw step '+key)
++    np.testing.assert_allclose(actual['before_cost_m2'],expected['before_cost_m2'],atol=1e-10,rtol=1e-9,err_msg='raw initial step cost')
++    require(len(actual['trial_costs_m2'])==len(expected['trial_costs_m2']),'bounded, first successful trial')
++    for actual_cost,expected_cost in zip(actual['trial_costs_m2'],expected['trial_costs_m2'],strict=True):
++        if expected_cost is None:require(actual_cost is None,'no omitted trial image pixels')
++        else:np.testing.assert_allclose(actual_cost,expected_cost,atol=1e-10,rtol=1e-9,err_msg='raw trial cost')

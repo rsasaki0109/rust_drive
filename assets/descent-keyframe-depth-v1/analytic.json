@@ -1,0 +1,63 @@
+{
+  "analytic_pass": true,
+  "profile_equivalence_cases": 5,
+  "chart_angles_rad": [
+    1e-09,
+    0.0001,
+    0.3,
+    1.2
+  ],
+  "reports": {
+    "discard": {
+      "checked_reported_equations": 229,
+      "marginal_generations": 0,
+      "max_position_error_m": 5.918509190858207e-05
+    },
+    "retain": {
+      "checked_reported_equations": 223,
+      "marginal_generations": 9,
+      "max_position_error_m": 5.7843834752279054e-05
+    }
+  },
+  "discarded_information_control": true,
+  "no_fabricated_new_support": true,
+  "terminal_expiry": true,
+  "rejected_corruptions": [
+    "wrong Schur gradient",
+    "coherently scaled Schur H/g",
+    "duplicate factor history",
+    "wrong fixed origin",
+    "wrong linearization anchor",
+    "retained raw factors also marginalized",
+    "normal system scaled without changing its solve",
+    "moved first origin",
+    "wrong normal increment"
+  ],
+  "late_elimination_failure_atomic": true,
+  "clean_recovery_prior_parity": true,
+  "malformed_clock_and_depth_rejected": true,
+  "singular_elimination_rejected": true,
+  "descent_controls": {
+    "fixed_pixel_population_checked": true,
+    "backtracking_control_alpha": 0.125,
+    "backtracking_trials": 4,
+    "exhausted_search_trials": 8,
+    "objective_gradient_axes": 12,
+    "gradient_includes_transported_prior": true,
+    "rejected_search_corruptions": [
+      "wrong step length",
+      "wrong objective",
+      "wrong pixel population",
+      "missing candidate receipt",
+      "wrong directional derivative",
+      "wrong applied pose"
+    ],
+    "only_fitter_and_objective_import_changed": true,
+    "controlled_prior_is_engineered_not_calibrated": true
+  },
+  "source_sha256": {
+    "scripts/check-descent-keyframes.py": "1cd70803ea92a6f775b6e9e5a71bd1b9edf80d2e326e47ae71ae1d8a6c483793",
+    "scripts/frozen_depth_objective.py": "db6ba778a634fafca30ded4a96e7c565cc227149b13eae8a5de5fd65089a226e",
+    "scripts/descent_keyframe_depth.py": "a075f54a03729e17408435fa70f276d8bd263fd3896a56ab7a511125bfa6ff1d"
+  }
+}

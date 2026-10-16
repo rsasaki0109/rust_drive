@@ -1,0 +1,55 @@
+{
+  "pass_algebraic_symmetry": true,
+  "controls": [
+    {
+      "scale": 4,
+      "direction_counts": [
+        651,
+        636
+      ],
+      "matrix_transport_max_error": 4.547473508864641e-13,
+      "gradient_transport_max_error": 2.192690473634684e-15
+    },
+    {
+      "scale": 2,
+      "direction_counts": [
+        3421,
+        3391
+      ],
+      "matrix_transport_max_error": 1.8189894035458565e-12,
+      "gradient_transport_max_error": 3.0611797818824726e-14
+    },
+    {
+      "scale": 1,
+      "direction_counts": [
+        3925,
+        3816
+      ],
+      "matrix_transport_max_error": 3.637978807091713e-12,
+      "gradient_transport_max_error": 1.5612511283791264e-14
+    }
+  ],
+  "native_plane_controls": [
+    {
+      "residual": "symmetric_midpoint",
+      "rejected_weak_information": true,
+      "raw_failure_witness_checked": true,
+      "expiry_latched": true
+    },
+    {
+      "residual": "bidirectional_midpoint",
+      "rejected_weak_information": true,
+      "raw_failure_witness_checked": true,
+      "expiry_latched": true
+    }
+  ],
+  "binary_sha256": "5e40fa39410d486dafddf67d81aa90666e4fee2e9a6bffb056b1a15e06d72125",
+  "numeric_recorded_truth_decoded": false,
+  "source_sha256": {
+    "scripts/check-projective-surface-math.py": "da1298a5b42935c0ba7ec6568e2f5094d9208819978329545e1d4751e566d89a",
+    "scripts/check-projective-depth.py": "101b3eccf11146ef757504648ca0d013cc31b328d2153e066147757e6f31e83a",
+    "scripts/projective_depth_common.py": "63a91cfd1f18b6bbe72830e576fd84b7af01533925e70abba33ea11f94a57e7f",
+    "scripts/projective_depth_raw.py": "c771408498cf2bab90f26986d6ec9aa21ef8bba7d5a4684acb48d6a3a7127017"
+  },
+  "scope": "equation transport, reversed scalar objective and unequal visibility; native correctness is independently reconstructed from raw pixels"
+}

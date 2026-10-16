@@ -1,0 +1,31 @@
+{
+  "analytic_pass": true,
+  "inherited_source_proof": true,
+  "independently_checked_reported_systems": 13,
+  "additional_endpoint_system_checks": 4,
+  "independently_checked_pair_transitions": 4,
+  "rendered_fresh_converged": true,
+  "rendered_applied_corrections": 3,
+  "rendered_segments": 1,
+  "isolated_worst_case_applied_corrections": 30,
+  "isolated_later_guard_and_convergence_stop": true,
+  "fixtures_are_not_image_evidence": true,
+  "rejected_corruptions": [
+    "wrong extension cap",
+    "wrong segment cap",
+    "wrong total corrections",
+    "stale first anchor",
+    "false global convergence",
+    "wrong fresh proposal metric",
+    "wrong turnover count",
+    "wrong cost partition",
+    "segment after convergence",
+    "stale later segment anchor",
+    "coherent unexplained early stop"
+  ],
+  "input_roots_unchanged": true,
+  "source_sha256": {
+    "scripts/budget_depth_refinement.py": "65790d51523fdea1ee36c49bd49d30b5e2b26db2f7916035f963dd57b898b6a9",
+    "scripts/check-budget-depth-refinement.py": "6e031bf791f9c39282423b06cc738d8f44f0ec6d8a8ce3b28f54d0f02d7c2b3e"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "pass_timing_controls": true,
+  "raw_geometry_systems": 183,
+  "raw_photometric_systems": 183,
+  "accepted": {
+    "nonplanar asynchronous": 10,
+    "plane compensated": 8,
+    "plane uncorrected": 8,
+    "plane unavailable bootstrap": 1
+  },
+  "accurate": {
+    "nonplanar asynchronous": 10,
+    "plane compensated": 8,
+    "plane uncorrected": 2,
+    "plane unavailable bootstrap": 1
+  },
+  "rejected_corruptions": [
+    "current observation substituted into motion history",
+    "wrong signed exposure transform",
+    "newer rate substituted for frozen reference rate",
+    "incorrect phase qualification"
+  ],
+  "own_time_rendering": true,
+  "accepted_history_only": true,
+  "reference_rate_frozen": true,
+  "binary_sha256": "182627681cbd0102c1f25545c34610f749858e750b7d3cba42178cd2b41667e2",
+  "checker_sha256": "6ce8839700fae518de20bb9ca76fa39c506ebdaa47b73188829b32598e9e065a",
+  "known_pose_role": "static scene rendering at depth and RGB acquisition times and scoring only; never runtime inputs"
+}

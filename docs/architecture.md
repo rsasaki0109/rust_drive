@@ -80,6 +80,8 @@ Optional `local_route_geometry` uses bounded steering-radius corner fillets and 
 | `rustdriving-sim` | Reference sensors/plant, backend interface, independent evaluation and CLI | core + pipeline, serde / serde_json |
 | `rustdriving-dataset-eval` | Bounded PCD/LZF/VTK readers, measured-cloud evaluation and explicit semi-synthetic pose scoring | core + perception + localization, serde_json; Python SHA verification |
 | `rustdriving-rne` (optional standalone workspace) | RNE world/vehicle/sensor adapter | core + pipeline + sim, renderer-independent RNE crates |
+| `rustdriving-kitti-depth` (optional standalone workspace) | Sparse axial-depth cells from projected LiDAR reports, with all source-row assignments | serde, serde_json with float_roundtrip, sha2; no algorithm/runtime dependencies |
+| `rustdriving-projective-depth` (optional standalone workspace) | Dense optical-depth odometry and bounded projective keyframe fusion; offline research | serde; CLI adds serde_json with float_roundtrip; no OpenCV/runtime dependencies |
 
 Unsafe Rust is forbidden at workspace level. There is no global message bus, custom scheduling runtime, ROS dependency, model download, or external service. Algorithm crates can be embedded into another application; the simulator is the current application, not a universal runtime.
 
@@ -315,6 +317,90 @@ absolute tolerance 1e-5; the wrapper retains quality exit 1 despite passing
 integrity. Neither learned adapter provides metric depth, signal
 color or vehicle controls. [Frozen profile and limits](yolox-s-camera.md).
 
+An additional bounded [multi-view S adapter](yolox-tiles-camera.md) reuses one
+pinned plan for the whole image and up to three fixed square crops, with source
+pixel transforms, interior-edge rejection and deterministic global NMS. Its
+independent pixel/merge checks and repeated native inference preserve improved
+viewed recall and increased false positives. Its quality gate still fails;
+the optional output remains offline image boxes.
+
+The optional [vehicle-label report adapter](yolox-vehicle-context.md) validates
+the original tiled producer's identity and merge before reconciling cross-view
+car/bus/truck conflicts. It selects an unchanged original box only when all
+eligible full-image proposals support one class. Otherwise it preserves every
+hypothesis and exposes ambiguity. This adapter reads JSON only; its image/model
+read and inference flags are false. It remains outside driving controls.
+
+The optional [one-command camera analyzer](camera-analysis.md) performs the
+same detector and reconciliation in one process. Its report keeps both stages
+and explicitly records actual image/model reads and forward passes. It reserves
+sibling staging before reading inputs, bounds encoded images and serialized
+reports, and publishes completed JSON with a no-replacement hard link. It is
+an offline file interface; no camera messages enter the vehicle pipeline.
+
+The separate [image-space tracker](image-tracking.md) consumes those reports
+or caller-supplied pixel detections with one camera clock and fixed dimensions.
+It maintains bounded correspondence hypotheses using constant-center-velocity
+prediction and class-gated global assignment. Missing frames coast without
+renewing observations, while explicit failure retires all active tracks.
+Its library and JSON CLI have no inference or driving-crate dependency.
+Image velocities remain pixels/second, without metric projection or ego-motion
+compensation; no tracked image boxes enter vehicle planning.
+
+The optional [recorded-image sequencer](camera-sequence.md) compiles the same
+detector and independent tracker sources into one offline binary. It preflights
+all image identities, decoded dimensions and clocks before model loading, then
+streams verified images through a single CPU plan. Each event retains detector
+lineage and tracking state. Original decimal acquisition times are preserved;
+depth and reference poses remain outside this path. It neither projects image
+tracks into the vehicle frame nor changes driving algorithms.
+
+The optional [camera-result freshness CLI](camera-freshness.md) wraps the
+unchanged independent tracker with separate acquisition and delivery clocks.
+Polls extrapolate available image hypotheses without renewing observations or
+advancing backend acquisition time. Deadline expiry or explicit failure drains
+tracks and latches a barrier; only consecutive accepted fresh post-fault
+acquisitions restore availability. Each object also has an age bound. These
+offline JSON results grant no vehicle-control permission, and clock association
+and synchronization remain the caller's responsibility.
+
+The optional [complete camera pipeline](camera-pipeline.md) compiles those same
+detector/tracker/guard sources into one offline executable. It verifies all
+input images and dry clock/hash admission before opening a model, then detects
+only admitted images with one CPU plan and rechecks their bytes before use.
+Full detector lineage and every freshness/backend result remain in one bounded
+report. Both clocks are explicit supplied replay times; measured inference
+duration does not advance them. No live-camera or vehicle interface is added.
+
+The separate [measured camera replay](camera-latency.md) uses original source
+offsets to schedule files against a host `Instant` clock. It probes freshness
+at processing start, skips expired work, submits detections at actual completion
+and polls after tracking to catch deadline crossings. Startup/model load are
+measured separately. The final poll and audit-file publication are outside the
+reported processing boundary. Its first CPU trials miss the 200 ms limit and
+withhold all results; there is no live camera transport or driving connection.
+
+The optional [parallel fixed-view analyzer](camera-parallel.md) shares one
+immutable detector/plan across at most four scoped threads, each with separate
+tract invocation state. All workers are joined before ordered original-view
+results enter the unchanged merge and vehicle rules. Its distinct producer
+receipt preserves old serial-report admission. The same measured replay source
+can bind this analyzer; local processing is about 3.9× faster with exact
+16-image parity, while the 200 ms deadline remains unmet.
+
+The separate [CPU-specific build recipe](camera-cpu-build.md) compiles that
+same analyzer with O3, ThinLTO and native CPU features. Build metadata binds
+the compiler settings, executable, complete source map and CPU flags, without
+rewriting detector provenance. Sixteen images twice retain exact output; two
+paired timings show an inconsistent small change and still miss 200 ms. The
+normal portable-target release recipe remains the default.
+
+The separate [immutable measured-depth map localizer](projective-fixed-map.md)
+fits every acquisition directly to one qualified first-image pyramid with the
+last accepted absolute pose as its prior. No map fusion, reference replacement,
+pose reset or extrapolation occurs. Its complete viewed trials lose tracking
+and retain an inaccurate RPY match; it remains outside the driving EKF.
+
 The optional `rustdriving-kitti-project` CLI reads provided calibration and
 Velodyne bytes, with bounded parsing and exclusive JSON output. Its projection
 chain is the full selected `P_rect · embed(R_rect_00) · T_cam0_from_velo`;
@@ -326,3 +412,467 @@ geometry checks and byte-identical replay; malformed source/output controls
 fail closed. These are analytic checks, with no real KITTI acquisition,
 timing/deskew or operational fusion.
 [Authority, coordinate conventions and CLI](kitti-projection.md).
+
+The standalone projective-depth crate additionally exports an optional raw
+multi-reference tracker and `rustdriving-multireference-rgbd` transport. It
+retains the first optical-camera origin and at most five measured references;
+the RGB-D mode combines point-to-plane and phase-qualified bilinear intensity
+equations in that root frame. Explicit pixel-knot derivative conventions,
+independent raw reconstruction and all failed recorded variants are retained.
+This experiment does not replace the fused-depth tracker, inherit its
+idle-tick supervisor or feed vehicle controls.
+
+The maintained fused-depth `Tracker` accepts an explicit `TrackerConfig` for
+model reprojection, target correspondence, measured-plane residual and normal
+estimation policies.
+The default remains the original point/forward/target-plane combination. A full
+trajectory comparison binds sensor ledgers, unchanged physical gates, reference
+scores and independent raw-model reconstruction before default adoption. Four
+new native candidates fail that gate, while camera-only default input reproduces
+all original outcomes. [Configuration, failures and regression command](native-depth-regression.md).
+An additional inverse-depth planar-normal policy preserves coarse and curved
+support but regresses to63/179 room and85/179 desk2 accurate updates. Its failed
+strict-support predecessor and revised implementation remain source-bound;
+central-difference normals remain the default.
+An explicit [XYZ model](projective-vertices.md) retains complete transformed
+points and averages XYZ into model cells and pyramids. Its known-plane view-warp
+control prevents the depth-only resampling deformation. Recorded accuracy is
+67/179 room and 85/179 desk2, so depth geometry remains the default. Unsupported
+combinations with the other experimental policies reject before acknowledgment.
+An optional [fused RGB-D mode](projective-rgbd-fusion.md) adds measured,
+phase-qualified intensity systems against a raw color reference. RGB and depth
+keep independent acquisition clocks; repeated RGB cannot contribute intensity,
+and a reference change without fresh RGB clears its color anchor. The combined
+system recovers textured-plane motion absent geometric observability, but its
+original viewed 80/179 room and 75/179 desk2 result fails adoption. The maintained
+[exposure correction](projective-rgbd-exposure.md) estimates brightness gain and
+offset and removes both directions with a Schur complement. Its 84/179 room and
+124/179 desk2 result still fails adoption; depth-only remains the default.
+It remains outside
+vehicle control and the depth-only idle-tick supervisor.
+Explicit [fixed-support RGB-D step control](projective-step-control.md) checks
+each proposed increment without dropping difficult measurements, shrinks failed
+steps and records bounded level halts. It regresses recorded accuracy to83/179
+room and67/179 desk2, so step control defaults to disabled; original depth and
+ordinary exposure-aware RGB-D trajectories are retained.
+Optional [acquisition-time body-motion prediction](projective-motion.md) uses
+only two accepted depth poses to initialize ICP at variable frame intervals.
+Depth scores67/179 room and159/179 desk2; RGB-D scores75/179 and169/179.
+Neither passes adoption, so stationary initialization remains the default.
+An additional opt-in [temporal image compensation](projective-timing.md) projects
+both RGB samples at their own acquisition times using accepted body motion.
+Reference motion stays frozen to its own depth acquisition; unavailable rates
+withhold image constraints. Own-time synthetic controls pass, while recorded
+accuracy 80/179 room and 171/179 desk2 still fails the maximum-angle adoption gate.
+Neither motion option establishes qualified vehicle localization.
+Optional [relative axial-depth weighting and standardized robust loss](projective-range.md)
+use a bounded fourth-power depth variance hypothesis with the original raw-RMS,
+support and accepted-state gates. Both improve viewed room/RPY counts but regress
+desk2, so neither changes the default. This is an uncalibrated scalar weighting
+experiment, without modeled map/history or association uncertainty.
+
+Optional [visible-surface fusion](projective-fusion.md) averages compatible
+splats within the original nearest-surface visibility band. It reduces a signed
+selection bias in a prescribed noisy-plane control, while preserving frame
+support and accepted-state rules. Viewed scores67/161/74 room/desk2/RPY fail
+maximum-error adoption gates; nearest-Z rasterization remains the default.
+
+Optional [measured free-space evidence](projective-visibility.md) reduces support
+for old surfaces contradicted by accepted raw depth, before map warp and fusion.
+Missing or occluded observations leave support intact. Known disappearing
+foreground controls pass, while viewed scores67/161/74 fail room/desk2 maximum
+position gates. The default keeps this mode disabled.
+
+An offline [camera correction probe and independent auditor](projective-camera-fit.md)
+tests shared focal/depth perturbations before a trajectory trial. Raw-unit loss
+normalization prevents noisy pure rotations from inventing depth-scale
+information. Viewed training/validation checks reject both attempted corrections,
+so the native registered-grid camera and all runtime policies remain unchanged.
+
+Optional [midpoint surface residuals and bidirectional projective matching](projective-surface.md)
+separate measured-normal averaging from correspondence search in both directions.
+Both retain accepted-state and conditioning guards. Each bidirectional solve and
+returned pose requires separate support in both directions, with reported counts
+and independently transported reverse-frame equations. Three viewed recordings
+fail the fixed adoption rule, so the original target-plane default remains.
+
+A mandatory [physical directional-information guard](projective-information.md)
+now checks combined information before diagonal equilibration and again at the
+returned pose. It rejects the six weak planar fits previously marked accepted,
+with independently reconstructible failure witnesses and unchanged accepted
+history. All 1,080 preceding sensor outputs remain identical. A first frozen RPY
+trial still scores 74/179 depth and 61/179 compensated RGB-D; conditional uncertainty
+and scalar inflation also fail, so the guard is not a calibrated accuracy bound.
+[Contract and negative accuracy results](multireference-rgbd.md).
+
+The optional NumPy joint-keyframe evaluator separately optimizes up to five
+raw measured-depth camera poses while fixing the first optical-camera origin.
+Its full normal system includes source/target cross blocks; a matched control
+holds reference poses fixed. Measured reference selection, atomic accepted
+state and terminal expiry are independently audited, including failed fits.
+Both recorded joint trials fail and lose tracking. This diagnostic supplies
+no Rust pipeline or control integration, marginal prior or uncertainty model.
+[Fixed experiment, checks and failures](joint-keyframe-depth.md).
+
+The separate NumPy information-retention tracker adds a bounded derived
+quadratic when raw depth references are evicted. It eliminates only the
+previous prior and currently supported raw factors incident to removed nodes;
+retained-retained factors stay active and are excluded from elimination.
+Stored first-camera pose anchors define exact local-coordinate transport.
+Scaled Cholesky Schur elimination and unique factor identities preserve the
+declared linearized information without rank filling. Fitting, admission
+and elimination form one accepted-state transaction. The original Rust
+estimator, supervisor and driving pipeline are unchanged.
+[Marginal factor math, independent checks and limits](marginalized-keyframe-depth.md).
+
+The optional NumPy subpixel comparison uses that same retained-information
+engine with only its raw pair-function import replaced. Bilinear inverse axial
+depth and its exact projective derivative supply continuous interpolated values;
+its local metre normalizer and robust weights are frozen per linearization.
+Four measured corners, depth continuity and source/gradient-normal agreement
+qualify each factor. The independent oracle uses homogeneous projection and
+polynomial interpolation, while retaining the preceding QR/state audit.
+This changes raw support as well as interpolation and does not establish
+calibrated confidence or supply vehicle controls.
+[Subpixel factor, verification and recorded outcome](subpixel-keyframe-depth.md).
+
+The separate symmetric-normal comparison keeps the original nearest-pixel
+selection at fixed poses and uses the normalized sum of both measured normals.
+Its pose Jacobian includes the rotation of the measured normal, with opposite
+source/target blocks. The private independent audit differentiates normalized
+normals with matrix products. A preceding algebra-only diagnostic decomposes
+archived prior/raw matrices and confirms that new acquisitions have no direct
+prior block. These remain optional NumPy tools with unchanged Rust defaults.
+[Symmetric factor and prior-influence diagnostic](symmetric-keyframe-depth.md).
+
+The optional Tukey comparison keeps that symmetric residual and derivative,
+with scale-dependent redescending weights and a per-pair minimum weight mass.
+For admitted pairs, counts and unweighted RMS include zero-weight candidates;
+denied pairs supply no equation or RMS contribution. The new acquisition must
+still supply a supported measured edge. An image-based diagnostic reconstructs
+residual tails and measured normal differences at the symmetric control's saved
+poses, without pose fitting or numeric ground truth. These remain offline
+research measurements with unchanged Rust defaults.
+[Weighting, support contract and recorded result](robust-keyframe-depth.md).
+
+The separate local-plane normal frontend keeps the symmetric Huber factor
+and original depth vertices. Each 5×5 patch uses depth-gated points, a minimum
+13-sample majority, two-dimensional spread and a fixed planarity test. Its
+smallest covariance eigenvector is oriented along the optical view ray;
+there is no center-depth smoothing or missing-depth completion. A separate
+centered-patch SVD reconstructs the measured normals for the private raw/state
+auditor. Only frozen depth decimation, vertices and intrinsics are shared.
+The engine differs from the symmetric control by only its pyramid import.
+[Normal contract, independent verification and outcome](patch-keyframe-depth.md).
+
+The selective-level experiment changes only the patch tracker's fitting loop.
+An inadmissible coarse support, condition or increment proposal is recorded
+with unchanged poses, then the next finer level is attempted. Earlier valid
+local iterations remain tentative until all final and Schur guards pass.
+Finest-level skipping is forbidden. The private independent auditor verifies
+each skip's raw system, spectral decision, zero applied increment and exact
+level progression. The trace budget includes skips; final pose, prior ownership
+and atomic tracker commits retain their original contracts.
+[Level diagnostic, verification and result](selective-keyframe-depth.md).
+
+The reciprocal-association experiment changes only the pair import. After
+original forward projection and geometry gates, a selected target vertex must
+project back to the original sampled source pixel with return Z above 0.3 m.
+The operational code carries pixel coordinates; an independent oracle uses
+flattened IDs, relative camera matrices and the inverse transform. Exact
+rounding preserves at most one reciprocal source per target pixel. Finer
+source strides still make sampling asymmetric, and pixel reciprocity does not
+establish physical visibility. Residual, prior and selective-level contracts
+remain unchanged. [Diagnostic, rules and evaluation](reciprocal-keyframe-depth.md).
+
+The separate convergence diagnostic copies a saved reciprocal fit's accepted
+window poses and its original incoming prior. It attempts at most ten additional
+finest-level corrections, retaining the original support, scaled condition,
+increment and strict convergence thresholds. It commits no tracker state and
+performs no Schur elimination. A separate verifier reconstructs SVD normals,
+raw systems, spectral solves and Rodrigues updates, and requires either a
+reproduced guard failure, convergence, or the complete ten-update budget before
+termination. The fresh final system is checked even at budget exhaustion.
+[Diagnostic contract and result](depth-convergence.md).
+
+The descent variant preserves raw-factor construction, full-proposal guards
+and the 10/7/5 schedule, then freezes that iteration's reciprocal pixel pairs.
+It tries multipliers 1 through 1/128 against the nonlinear sum of measured
+Huber losses and the original marginal prior cost. The first candidate meeting
+the Armijo inequality and fixed roundoff allowance is applied; exhaustion
+rejects the fit without committing state. Each trace stores the full unscaled
+proposal, sample hashes and all attempted costs. Convergence uses that full
+proposal, so shortening a step cannot manufacture convergence. The next
+linearization and final admission re-associate the original measurements.
+An independent relative-camera objective, SVD normals, spectral solve and
+Rodrigues map verify each search. Descent on a frozen population does not
+establish descent across changing pixel associations or physical accuracy.
+[Rule, checks and measured outcome](descent-keyframe-depth.md).
+
+The correspondence diagnostic replays archived continuation before/after poses
+without calling the fitter. It materializes the frozen selectors' target and
+source pixel IDs, classifies exact retention, retargeting and source entry/exit,
+and distinguishes geometric membership from whole-factor admission at 200
+samples. It evaluates the old population before and after movement, then the
+new population at the same after poses. The reassociation cost difference
+must equal added-pair loss minus removed-pair loss; the transported prior
+cancels at the same poses. Dictionary/root-frame accounting is independently
+checked with structured arrays, relative-camera residuals and SVD normals.
+Counts overlap across pairs and iterations and are not physical outlier labels.
+[Result, identities and limits](depth-correspondence.md).
+
+The fixed-pair local refiner selects one admitted reciprocal population at the
+provided starting poses. It rebuilds the complete nonlinear raw-plus-prior
+system at each new pose and applies at most ten bounded Armijo corrections.
+Measurements are counted once in each fresh equation; no prior is accumulated
+or committed by repeated solving. It stops on the unscaled proposal and
+returns separate fixed-population and freshly associated equations/corrections.
+An independent matrix derivative, incidence construction, spectral solve,
+relative-camera objective and Rodrigues map verify every update. The tool
+copies poses and performs no tracker or Schur commit. Its convergence is a
+local optimization property, not tracker admission or physical accuracy.
+[Protocol, failed progression condition and evidence](fixed-depth-refinement.md).
+
+The alternating local refiner wraps the fixed solver in fresh-association
+batches. Each batch receives at most three applied corrections and only the
+remaining share of a ten-correction global allowance. A batch's fixed
+convergence permits re-association; only a freshly reconstructed system can
+establish global convergence. Guards, no progress or budget exhaustion end
+the local attempt without tracker state changes. An independent outer audit
+binds each population to its new starting poses, checks exact pose chaining
+and remaining budgets, and forbids later batches after termination. The inner
+derivative, weighting, line search and prior transport remain unchanged.
+[Bounded schedule, rendered success and recorded limit](alternating-depth-refinement.md).
+
+The optional budget diagnostic chains at most three unchanged ten-correction
+local calls, retaining the same original incoming prior and copied poses.
+Only budget exhaustion permits another segment; fresh convergence or a guard
+stops the chain. The complete first segment must equal its archived control.
+An independent outer audit checks chaining and termination, while separate
+relative-camera selection and array-set accounting verify the final batch's
+pixel turnover and exact cost partition at each checkpoint. It neither
+accumulates a posterior prior nor commits tracker/Schur state. Increasing
+this local allowance alone supplies no physical pose or control admission.
+[Thirty-correction protocol and failed convergence result](budget-depth-refinement.md).
+
+The continuous local experiment instead freezes initially qualified reciprocal
+source IDs and inverse-depth gradient normalizers for the complete attempt.
+Bilinear target inverse depth moves across valid interpolation cells; its exact
+projective derivative forms source/target incidence blocks in the first-camera
+root frame. Every initial sample must remain qualified. Invalid candidates have
+no cost and cannot remove a source to lower the objective; bounded Armijo
+exhaustion returns a local guard failure. Returned continuous convergence and
+original-discrete fresh convergence are separate fields. An independent
+polynomial/relative-camera oracle checks the fixed objective, matrix and search;
+a separately sourced post-hoc replay attributes candidate-domain losses without
+fitting more poses. It performs no tracker, clock or Schur commit.
+[Frozen objective, availability failure and replay](continuous-depth-refinement.md).
+
+The initial-margin variant changes only source selection before that frozen
+attempt. It probes the center and eight one-pixel target-image offsets while
+holding target optical Z fixed. All nine probes must qualify, and every
+admitted factor must still have at least 200 sources. Surviving sources retain
+their original center normalizers. The exact preceding solver body and shared
+objective/search functions remain unchanged; all candidate-domain guards run.
+A separate homogeneous-image stencil and polynomial sampler supply selection
+to a private unchanged verifier. Finite probes do not certify the region
+between them or later depth/rotation changes. No probe becomes another factor,
+and the local experiment commits no tracker or marginal state.
+[Selection policy, independent controls and support failure](margin-depth-refinement.md).
+
+The sampling-domain variant preserves center geometric matching, then restricts
+the initial nine-probe stencil and candidate checks to interpolation support.
+Corner depth, continuity, normal-validity and image/front-facing bounds remain
+active; source-normal/distance agreement is qualified initially rather than
+repeated inside the fixed objective. Every retained source still contributes,
+and invalid sampling rejects a candidate without a cost. The continuous
+objective/solve/search bodies and original-discrete fresh reconstruction remain
+unchanged. Separate private instances isolate the old initial qualifier and
+the new candidate-domain oracle. A defined sampled residual neither establishes
+physical correspondence nor grants tracker or vehicle pose admission.
+[Joint policy change, verification and recorded limit](sampling-depth-refinement.md).
+
+The extended fixed-observation solver changes only that method's correction
+cap to a bounded 10/20/30 setting. One original source population, its center
+normalizers and the same incoming prior persist throughout the solve. Checkpoint
+reconstruction uses the original selection anchor, requires exact population
+metadata and preserves proposal/convergence-before-cap ordering. A search for
+the next update cannot retroactively change a shorter cap's budget result.
+The complete reconstructed ten-update report must equal its archived control.
+Independent endpoint matrices, costs and event ordering supplement the unchanged
+fixed-objective audit. Earlier terminal states carry their actual update counts;
+no tracker or marginal state is committed by the extension.
+[Frozen-objective extension and partial convergence](long-depth-refinement.md).
+
+The read-only search diagnostic reconstructs that original initial population
+at four archived terminal poses. It verifies the full guarded proposal and
+failed search, then evaluates a fixed signed multiplier grid through 2^-20.
+Per-source Huber loss differences and a separate prior difference supplement
+full-cost subtraction. Endpoint-cell bookkeeping keeps interpolation changes
+visible without dropping sources. Independent relative-camera/polynomial
+costs and Rodrigues increments check every probe; no sampled candidate becomes
+an applied update or tracker state. [Directional evidence and bounds](depth-search-diagnostic.md).
+
+The deeper-search variant changes only the positive Armijo candidate range to
+21 multipliers through 2^-20. Its complete refiner body, fixed observations and
+weights, incoming prior, full-proposal guards/convergence and thirty-correction
+cap remain unchanged. A private frozen verifier binds an independently coded
+search with the same sole range change; the separate old verifier retains eight
+candidates. Full old trace equality and replay of each original failed search
+bind continuation to the same terminal matrix and proposal. Checkpoint ordering
+and actual terminal counts remain unchanged. The report exposes steps depending
+on the existing numerical slack, including tiny cost increases, and commits no
+tracker or marginal state. [Bounded continuation and convergence limit](deep-search-depth-refinement.md).
+
+The conditional damped variant keeps the original undamped proposal as the
+admissibility and convergence gate. An accepted GN multiplier below1/16 or
+exhausted GN search triggers eight fixed diagonal-scaled direction solves.
+Candidates use the original measured objective, with no damping penalty or
+new information. A candidate replaces the incumbent only after a resolved
+objective decrease. The unchanged GN fallback can still accept tiny increases
+within its recorded slack. The independent spectral audit reconstructs each
+diagonal modification and selection; no damping can precede original support,
+conditioning or proposal guards. [Bounded policy and failed comparison](damped-depth-refinement.md).
+
+The cell-slope diagnostic retains each original population at saved final poses
+and probes a fixed signed grid along its terminal undamped GN direction. It
+uses the exact pose-path tangent at nonzero multipliers and separately sums
+reported Huber branch slopes and nonlinear-prior slopes. Adjacent endpoint-cell
+changes partition that slope difference by exact source identity. Independent
+relative-camera calculations check costs, domains, slopes and membership;
+numeric cell-choice ambiguities remain explicit. Branch derivatives inside
+the integer-snap band are distinguished from differentiating the literal
+rounded operation. No probe becomes an applied update or convergence result.
+[Local interpolation barriers and scope](depth-cell-slopes.md).
+
+The optional cubic field uses 4×4 inverse-depth Catmull-Rom interpolation and
+exact projective derivatives, without integer snapping or a bilinear fallback.
+All 16 measured depths/normals and nine overlapping continuity tests qualify
+its sampling domain. The original bilinear population and metric weights seed
+initial cubic center qualification, then remain fixed during the unchanged
+bounded GN solve. An independent Hermite oracle replaces only the privately
+bound value/population dependencies of the existing fixed-objective audit.
+A separately frozen follow-up intersects nine initial cubic sampling stencils;
+private unchanged solver and audit functions bind that population. Selection
+probes supply no extra factors, and domain losses retain guards rather than
+dropping sources mid-solve. [C1 model, qualification and both failed progression results](cubic-depth-refinement.md).
+
+The measured-normal variant supplies each inverse-depth corner's image slopes
+from its existing measured tangent plane. Bicubic Hermite data share corner
+values, both slopes and zero mixed derivatives, making jointly supported cells
+C1 while sampling four corners. Existing 5×5 normal neighborhoods remain wider
+dependencies. Near-zero plane offsets, invalid corners and negative overshoot
+reject without clipping or fallback. The original bilinear source population
+and metric weights seed center qualification, then remain fixed. A separate
+oracle solves polynomial endpoint constraints and homogeneous plane covectors;
+unchanged solver and verifier bodies bind the new sampler/population. No local
+result commits tracker state. [Protocol, gain and remaining support failures](normal-hermite-depth-refinement.md).
+
+The local support experiment adds a separate precomputed sampling-normal array.
+Existing 5×5 normals remain unchanged; absent interior normals may get a 3×3
+full-nine-point plane after the original metric rank and plane-ratio gates.
+Raw depth, vertices, original source selection and fresh matching keep their
+original inputs. The unchanged Hermite sampler reads only the added normal
+field. An independent centered SVD constructs the audit field; private unchanged
+verification functions bind it without changing the old control. Lost source
+IDs and measured patch spectra audit saved failed candidates separately from
+applied updates. [Support extension and failed convergence progression](local-normal-depth-refinement.md).
+
+The depth-derived field estimates shared inverse-depth slopes from measured
+cardinal neighbors. Same-sign secants use a harmonic limiter; extrema get zero
+slope. The first field requires both neighbors per axis. Its separately frozen
+extension uses the measured eligible side when the opposite neighbor is absent
+or across a depth jump. Choices are cached per vertex before fitting, preserving
+all bilateral-valid slopes and C1 continuity on jointly supported cells. Four
+measured interpolation corners and depth continuity remain mandatory. Original
+normal-based initial selection and fixed metric weights remain separate from
+this target field. Independent reciprocal-mean slopes and polynomial basis
+constraints bind unchanged objective/solver/checkpoint verification. Neither
+variant commits tracking state. [Models, failed first trial and local gain](depth-slope-refinement.md).
+
+The extended-budget module imports the original one-sided field, population,
+objective, priors, solve, search and strict convergence unchanged. Its refiner
+and snapshot widen only the admitted fixed caps to 10/20/30/60/90 and default
+to 90. The original initial observations and metric weights stay fixed through
+the whole attempt, without resets at 30 or 60. Reconstructed cap30 reports and
+every original trace entry match exactly. Independent verifier bodies only
+widen cap admission; the unchanged old verifier separately checks controls.
+Checkpoint tests reject a later terminal state substituted at an earlier cap.
+[Budget ordering, additional convergence and scope](extended-slope-refinement.md).
+
+The admission experiment retains original raw reciprocal matching and bilinear
+center geometry/normalizers, then runs the same nine initial image probes with
+the fitted one-sided sampler. Original source coordinates, normals, minimum 200
+threshold and retained metric weights remain unchanged; additional sources
+come only from the original center-qualified seed. Private unchanged solver
+and audit functions bind the new population once per attempt. A separate
+independent center selector, legacy probe oracle and homogeneous new probes
+reconstruct raw/center/old/new counts even below the admission threshold.
+Prior ownership, fixed-source candidate support and checkpoint behavior retain
+their original guards. [Aligned admission, restored support and remaining limits](slope-admission-refinement.md).
+
+The read-only objective bridge reconstructs original frozen continuous sources,
+initial rounded target assignments and terminal reciprocal pairs. Five ordered
+vector terms account for source removal, shared residual influence, shared
+Jacobian change, target reassignment and source addition. The common nonlinear
+prior cancels; intermediate subsets are never solved or admitted as new factors.
+An independent flattened global-incidence construction verifies the per-factor
+array computation and three complete endpoint systems per window, including
+same-model reselection with its ordinary center normalizers. No update or state
+commit follows the diagnostic. [Accounting, correction norms and scope](depth-objective-bridge.md).
+
+The reselected continuous wrapper calls the original admission refiner for at
+most three 30-correction rounds. Each inner population and its metric weights
+stay frozen; a new center-qualified population and its usual normalizers are
+constructed only at the terminal pose between fits. The same nonlinear prior
+and prepared fields are reused without accumulation or state commits. Full
+source-transition receipts and independent fresh-system checks bind the next
+round's population. Fixed-and-fresh convergence, guards and inner/outer budgets
+have explicit stop precedence; original discrete fresh checks remain separate.
+Exact-grid identity support disagreements are preserved as unresolved auditor
+rejections. [Failed comparison, source turnover and evidence](reselected-slope-refinement.md).
+
+The boundary-support variant caches a Boolean validity map for every measured
+depth/slope cell. Four endpoint floors of a ±1e−9-pixel query rectangle must
+name supported cells before the original C1 sampler evaluates the original
+coordinates. A private unchanged objective/search/driver binds this conservative
+domain filter in both initial probes and candidate evaluations. Original center
+geometry and normalizers remain separate. Sliding-window cell maps and a
+homogeneous-projection oracle check the same policy without mutating old
+bindings. The two archived identity disagreements resolve through explicit
+source loss; all recorded control reports reproduce exactly.
+[Support convention, tests and limits](boundary-slope-refinement.md).
+
+The fitted-center comparison takes the union of the original bilinear center
+qualification and qualification against the actual boundary-guarded C1 field,
+before the unchanged nine domain probes and 200-source whole-factor cutoff.
+Legacy qualification retains its original gradient-length metric; only C1-only
+sources use an initial C1 gradient length. Raw reciprocal nearest measured-normal
+checks remain, while unused target corner normals are unnecessary for the added
+C1 branch. Population and metrics then stay fixed through the unchanged fit.
+Independent homogeneous projection, polynomial samplers and source-ID unions
+check selection; isolated bindings preserve the original solver and audit.
+All old admitted source values and metrics survive on the ten viewed windows,
+with local convergence 10/10; both fresh checks remain 0/10 and desk2 fresh RMS
+worsens. [Selection policy, comparison and limits](fitted-center-refinement.md).
+
+The fitted-center reselection variant privately binds that fixed solver into
+the original three-round driver, retaining its exact transition, stop and
+refinement bodies. The same population and ordinary metric policy runs at
+each round boundary; shared source values remain fixed while membership and
+normalizers can change. An isolated original outer verifier binds the independent
+fitted-center selector and checks fresh systems, transitions and stop ordering;
+additional start/end admission stages expose factor thresholds across rounds.
+Every first complete fit and first fresh system reproduce the fixed control.
+Later rounds retain all support guards, including an exhausted line search
+after selected support is lost. [Failed convergence comparison and scope](reselected-center-refinement.md).
+
+The interior-admission variant filters the original one-pixel center union with
+25 integer image-offset samples over ±2 pixels at each round start. It retains
+exact source values and metric ownership on the strict subset, then reuses
+unchanged fixed and outer solver bodies. Candidate domains stay unchanged;
+finite admission probes do not certify an entire optimization path. Independent
+homogeneous projection, calibrated image shifts and polynomial samples check
+the new filter. A separate original one-pixel terminal system remains alongside
+new-policy and rounded-discrete fresh checks, preventing narrower admission
+from replacing either original check. [Observed crossing, source losses and limits](interior-center-refinement.md).

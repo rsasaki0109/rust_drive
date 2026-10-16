@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "camera_id": "freshness-controls",
+  "width": 100,
+  "height": 100,
+  "config": {},
+  "policy": {},
+  "events": [
+    {
+      "now_s": 1800000000.0,
+      "input": {
+        "kind": "detections",
+        "acquired_s": 1800000000.0,
+        "image_sha256": "59505961941e567833fc67c8539d01cc58268e2028dc42531adfa2663099d260",
+        "detections": []
+      }
+    },
+    {
+      "now_s": 1800000000.1,
+      "input": {
+        "kind": "detections",
+        "acquired_s": 1800000000.1,
+        "image_sha256": "a484f5941cbd5a5e9c54351c6a96f3b32a946df011d2f417673ef38685e24bd8",
+        "detections": []
+      }
+    },
+    {
+      "now_s": 1800000000.3,
+      "input": {
+        "kind": "tick"
+      }
+    },
+    {
+      "now_s": 1800000000.30001,
+      "input": {
+        "kind": "tick"
+      }
+    }
+  ]
+}

@@ -1,0 +1,441 @@
+{
+  "algorithm": "image_iou_velocity_tracking_v1",
+  "camera_id": "freshness-controls",
+  "compiled_sources": {
+    "integrations/camera-tracking/Cargo.lock": "b361dc93aced50ba194ed4227e3d1624d30eeb291ab66104db8fdf933b072a2d",
+    "integrations/camera-tracking/Cargo.toml": "d235c784c3b4566cae8395425838e1145431c68d60d1c3f1544f8227bcdcf449",
+    "integrations/camera-tracking/producer-sources.json": "32a790788e886c4ea960eb7920f572f232a73d7008ae4ca8437ed6f444ddee5c",
+    "integrations/camera-tracking/src/assignment.rs": "e9b7223b4a6cab91bad4c11725a4e828d21a8cb10cc4ef8fd72b60dde0b6e179",
+    "integrations/camera-tracking/src/bin/rustdriving-camera-track.rs": "807750c4abe29f82c5272f89d673ce4277ec9f0cbc95608e3317c7f1503c143f",
+    "integrations/camera-tracking/src/lib.rs": "d2ef1e0649a64e16457b360e1871c81d3794cd38fef0600f1e5535200e8b2acc",
+    "integrations/camera-tracking/src/report_input.rs": "ff587ff13b218d720c03c90155a6387df7fc0c96a2a01147eba06823b11b0f0a",
+    "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed"
+  },
+  "config": {
+    "coast_seconds": 0.5,
+    "confirmation_hits": 2,
+    "max_tracks": 4,
+    "min_iou": 0.1,
+    "velocity_gain": 0.5
+  },
+  "height": 100,
+  "images_read": false,
+  "inference_run": false,
+  "inline_detection_events": 13,
+  "model_read": false,
+  "schema_version": 1,
+  "snapshots": [
+    {
+      "assignment_work": 0,
+      "health": "observed",
+      "retired": [],
+      "sequence_number": 1,
+      "source_image_sha256": "fbf2bf6bd9608a1e4c99fa156c4913be02ef53c49814349a1d57a529100c2b6b",
+      "timestamp_s": 0.0,
+      "tracks": [
+        {
+          "bbox": [
+            10.0,
+            10.0,
+            30.0,
+            30.0
+          ],
+          "class_index": 2,
+          "detection_index": 0,
+          "last_observed_bbox": [
+            10.0,
+            10.0,
+            30.0,
+            30.0
+          ],
+          "last_observed_confidence": 0.8,
+          "last_observed_timestamp_s": 0.0,
+          "observation_count": 1,
+          "phase": "tentative",
+          "track_id": 1,
+          "velocity_px_s": [
+            0.0,
+            0.0
+          ]
+        }
+      ],
+      "untracked_detection_indices": []
+    },
+    {
+      "assignment_work": 3,
+      "health": "observed",
+      "retired": [],
+      "sequence_number": 2,
+      "source_image_sha256": "1b81be9186075aad73078785a08acc0a3ebb05f434e6a06362c762557f754635",
+      "timestamp_s": 0.05,
+      "tracks": [
+        {
+          "bbox": [
+            10.05,
+            10.0,
+            30.05,
+            30.0
+          ],
+          "class_index": 2,
+          "detection_index": 0,
+          "last_observed_bbox": [
+            10.05,
+            10.0,
+            30.05,
+            30.0
+          ],
+          "last_observed_confidence": 0.8,
+          "last_observed_timestamp_s": 0.05,
+          "observation_count": 2,
+          "phase": "confirmed",
+          "track_id": 1,
+          "velocity_px_s": [
+            1.0000000000000142,
+            0.0
+          ]
+        }
+      ],
+      "untracked_detection_indices": []
+    },
+    {
+      "assignment_work": 0,
+      "health": "observed",
+      "retired": [],
+      "sequence_number": 3,
+      "source_image_sha256": "80106b5b3d7ebba2eb54ec56b8ca8b8b767751d6479016fecd6bf2921ba2cb27",
+      "timestamp_s": 0.11,
+      "tracks": [
+        {
+          "bbox": [
+            10.110000000000001,
+            10.0,
+            30.110000000000003,
+            30.0
+          ],
+          "class_index": 2,
+          "detection_index": null,
+          "last_observed_bbox": [
+            10.05,
+            10.0,
+            30.05,
+            30.0
+          ],
+          "last_observed_confidence": 0.8,
+          "last_observed_timestamp_s": 0.05,
+          "observation_count": 2,
+          "phase": "coasting",
+          "track_id": 1,
+          "velocity_px_s": [
+            1.0000000000000142,
+            0.0
+          ]
+        }
+      ],
+      "untracked_detection_indices": []
+    },
+    {
+      "assignment_work": 0,
+      "health": "observed",
+      "retired": [],
+      "sequence_number": 4,
+      "source_image_sha256": "b8cc128902b0bfe9b65e8ce19700e85db84367903293ebcbcd47fdcd8aa10db2",
+      "timestamp_s": 0.115,
+      "tracks": [
+        {
+          "bbox": [
+            10.115000000000002,
+            10.0,
+            30.115000000000002,
+            30.0
+          ],
+          "class_index": 2,
+          "detection_index": null,
+          "last_observed_bbox": [
+            10.05,
+            10.0,
+            30.05,
+            30.0
+          ],
+          "last_observed_confidence": 0.8,
+          "last_observed_timestamp_s": 0.05,
+          "observation_count": 2,
+          "phase": "coasting",
+          "track_id": 1,
+          "velocity_px_s": [
+            1.0000000000000142,
+            0.0
+          ]
+        }
+      ],
+      "untracked_detection_indices": []
+    },
+    {
+      "assignment_work": 3,
+      "health": "observed",
+      "retired": [],
+      "sequence_number": 5,
+      "source_image_sha256": "b3c17e17b555c521b6887babeaa4118b210053553be34a12151d6f89a5768c9a",
+      "timestamp_s": 0.15,
+      "tracks": [
+        {
+          "bbox": [
+            15.0,
+            10.0,
+            35.0,
+            30.0
+          ],
+          "class_index": 2,
+          "detection_index": 0,
+          "last_observed_bbox": [
+            15.0,
+            10.0,
+            35.0,
+            30.0
+          ],
+          "last_observed_confidence": 0.8,
+          "last_observed_timestamp_s": 0.15,
+          "observation_count": 3,
+          "phase": "confirmed",
+          "track_id": 1,
+          "velocity_px_s": [
+            25.250000000000007,
+            0.0
+          ]
+        }
+      ],
+      "untracked_detection_indices": []
+    },
+    {
+      "assignment_work": 3,
+      "health": "observed",
+      "retired": [],
+      "sequence_number": 6,
+      "source_image_sha256": "39afce0888b1b538a96155e0bd1565031b98c55995c80e379fd5c0c2ccb6cd79",
+      "timestamp_s": 0.255,
+      "tracks": [
+        {
+          "bbox": [
+            16.0,
+            10.0,
+            36.0,
+            30.0
+          ],
+          "class_index": 2,
+          "detection_index": 0,
+          "last_observed_bbox": [
+            16.0,
+            10.0,
+            36.0,
+            30.0
+          ],
+          "last_observed_confidence": 0.8,
+          "last_observed_timestamp_s": 0.255,
+          "observation_count": 4,
+          "phase": "confirmed",
+          "track_id": 1,
+          "velocity_px_s": [
+            17.386904761904766,
+            0.0
+          ]
+        }
+      ],
+      "untracked_detection_indices": []
+    },
+    {
+      "assignment_work": 0,
+      "health": "acquisition_failed",
+      "retired": [
+        {
+          "reason": "acquisition_failed",
+          "track_id": 1
+        }
+      ],
+      "sequence_number": 7,
+      "source_image_sha256": null,
+      "timestamp_s": 0.33,
+      "tracks": [],
+      "untracked_detection_indices": []
+    },
+    {
+      "assignment_work": 0,
+      "health": "observed",
+      "retired": [],
+      "sequence_number": 8,
+      "source_image_sha256": "dd5868ee9203e697d43d58a51ae6ccb0dbc1a1c87648ecaa42aa6222307a62c3",
+      "timestamp_s": 0.77,
+      "tracks": [],
+      "untracked_detection_indices": []
+    },
+    {
+      "assignment_work": 0,
+      "health": "observed",
+      "retired": [],
+      "sequence_number": 9,
+      "source_image_sha256": "5a590539e951b7107758d2865a590b9cc7b48f9d92ebabe97a64f72d917a9d2e",
+      "timestamp_s": 0.835,
+      "tracks": [],
+      "untracked_detection_indices": []
+    },
+    {
+      "assignment_work": 0,
+      "health": "observed",
+      "retired": [],
+      "sequence_number": 10,
+      "source_image_sha256": "fd6887587862e200ae6c3e36fec7b7a825c702649f1ea17af2f2ff019459765d",
+      "timestamp_s": 0.87,
+      "tracks": [],
+      "untracked_detection_indices": []
+    },
+    {
+      "assignment_work": 0,
+      "health": "acquisition_failed",
+      "retired": [],
+      "sequence_number": 11,
+      "source_image_sha256": null,
+      "timestamp_s": 1.07,
+      "tracks": [],
+      "untracked_detection_indices": []
+    },
+    {
+      "assignment_work": 0,
+      "health": "observed",
+      "retired": [],
+      "sequence_number": 12,
+      "source_image_sha256": "0dcf136a71431f13024db87a048bc0f50c9ed727aa2981f0a5f4292831b35a82",
+      "timestamp_s": 1.21,
+      "tracks": [
+        {
+          "bbox": [
+            29.0,
+            10.0,
+            49.0,
+            30.0
+          ],
+          "class_index": 2,
+          "detection_index": 0,
+          "last_observed_bbox": [
+            29.0,
+            10.0,
+            49.0,
+            30.0
+          ],
+          "last_observed_confidence": 0.8,
+          "last_observed_timestamp_s": 1.21,
+          "observation_count": 1,
+          "phase": "tentative",
+          "track_id": 2,
+          "velocity_px_s": [
+            0.0,
+            0.0
+          ]
+        }
+      ],
+      "untracked_detection_indices": []
+    },
+    {
+      "assignment_work": 0,
+      "health": "observed",
+      "retired": [
+        {
+          "reason": "tentative_miss",
+          "track_id": 2
+        }
+      ],
+      "sequence_number": 13,
+      "source_image_sha256": "d959edec4b92f27c2f35a380a6d24f397bccba7678473b0b41784e8965056305",
+      "timestamp_s": 1.22,
+      "tracks": [],
+      "untracked_detection_indices": []
+    },
+    {
+      "assignment_work": 0,
+      "health": "observed",
+      "retired": [],
+      "sequence_number": 14,
+      "source_image_sha256": "7581d1f9b9c3a1606de0bb85e6215f3bacc6d3521a15da295a721c1760f687a1",
+      "timestamp_s": 1.405,
+      "tracks": [
+        {
+          "bbox": [
+            33.0,
+            10.0,
+            53.0,
+            30.0
+          ],
+          "class_index": 2,
+          "detection_index": 0,
+          "last_observed_bbox": [
+            33.0,
+            10.0,
+            53.0,
+            30.0
+          ],
+          "last_observed_confidence": 0.8,
+          "last_observed_timestamp_s": 1.405,
+          "observation_count": 1,
+          "phase": "tentative",
+          "track_id": 3,
+          "velocity_px_s": [
+            0.0,
+            0.0
+          ]
+        }
+      ],
+      "untracked_detection_indices": []
+    },
+    {
+      "assignment_work": 0,
+      "health": "acquisition_failed",
+      "retired": [
+        {
+          "reason": "acquisition_failed",
+          "track_id": 3
+        }
+      ],
+      "sequence_number": 15,
+      "source_image_sha256": null,
+      "timestamp_s": 1.48,
+      "tracks": [],
+      "untracked_detection_indices": []
+    },
+    {
+      "assignment_work": 0,
+      "health": "observed",
+      "retired": [],
+      "sequence_number": 16,
+      "source_image_sha256": "78bcec5d0643b03f6b6c64b477d7a16f413ef4bafc90eeda7666f392eb1ee65f",
+      "timestamp_s": 1.72,
+      "tracks": [
+        {
+          "bbox": [
+            38.0,
+            10.0,
+            58.0,
+            30.0
+          ],
+          "class_index": 2,
+          "detection_index": 0,
+          "last_observed_bbox": [
+            38.0,
+            10.0,
+            58.0,
+            30.0
+          ],
+          "last_observed_confidence": 0.8,
+          "last_observed_timestamp_s": 1.72,
+          "observation_count": 1,
+          "phase": "tentative",
+          "track_id": 4,
+          "velocity_px_s": [
+            0.0,
+            0.0
+          ]
+        }
+      ],
+      "untracked_detection_indices": []
+    }
+  ],
+  "source_reports": [],
+  "source_sequence_sha256": "1b5bcae7f35459ed8b767e14e35a7300d6b31403123c96537dc7fd58c6b530ba",
+  "width": 100
+}

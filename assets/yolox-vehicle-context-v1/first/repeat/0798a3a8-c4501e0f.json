@@ -1,0 +1,1959 @@
+{
+  "algorithm": "yolox_s_vehicle_full_context_v1",
+  "base_prediction": {
+    "algorithm": "pinned_yolox_s_full_plus_three_squares_v1",
+    "compiled_sources": {
+      "integrations/onnx/Cargo.lock": "aa6f1b198ff4ad901f9547ef852dc0113b5c36624d43030a863af32b12f07a0c",
+      "integrations/onnx/Cargo.toml": "7459dc7d7fc0128214275703d48a4170d449edd559dc0cadab689f887d635c8d",
+      "integrations/onnx/fetch_s.py": "bbb3aa5a020e0bdf6054fc1fe1c58ccd64132547a68ab44e28a89d556a35f1ae",
+      "integrations/onnx/profile-s.json": "b6ea56bd4b6271dc4d54b379b101db7425f61adfcd184211932fd2de6160f573",
+      "integrations/onnx/profile-tiles-s.json": "005d8d0b0c06529886be51eee6e8f0de70068aa90e31865c1ef17ad5b3022a9f",
+      "integrations/onnx/src/bin/rustdriving-camera-detect-s.rs": "6d1c965968e4d7d735922b4369e6076bf9801aed081dd7e6693702b513d46138",
+      "integrations/onnx/src/bin/rustdriving-camera-detect-tiled-s.rs": "bbd41c052c5b3dcd497cc9fd23d29b338b5f95046d7c36cefb6333f937899e39",
+      "integrations/onnx/src/lib.rs": "b379dfba4c45b535f61284ea9fc7748f6317038976b5fb61221f6a8561ad4bbc",
+      "integrations/onnx/src/yolox_s.rs": "cd23f879d840627b23aa954530e9e39ca5c5cc05cb2e927453c74178fd8142f0",
+      "integrations/onnx/src/yolox_tiles.rs": "0babb6b0c669c5fdbde867b9e9cdebf2ec50843bb121cf4ce3b097f084d5de28",
+      "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed"
+    },
+    "detection_origins": [
+      {
+        "rank": 0,
+        "view": 1
+      },
+      {
+        "rank": 0,
+        "view": 0
+      },
+      {
+        "rank": 1,
+        "view": 1
+      },
+      {
+        "rank": 0,
+        "view": 3
+      },
+      {
+        "rank": 1,
+        "view": 2
+      },
+      {
+        "rank": 3,
+        "view": 3
+      },
+      {
+        "rank": 5,
+        "view": 0
+      },
+      {
+        "rank": 4,
+        "view": 3
+      },
+      {
+        "rank": 5,
+        "view": 3
+      },
+      {
+        "rank": 6,
+        "view": 3
+      },
+      {
+        "rank": 5,
+        "view": 2
+      },
+      {
+        "rank": 3,
+        "view": 1
+      },
+      {
+        "rank": 4,
+        "view": 1
+      },
+      {
+        "rank": 6,
+        "view": 1
+      },
+      {
+        "rank": 8,
+        "view": 1
+      },
+      {
+        "rank": 7,
+        "view": 2
+      },
+      {
+        "rank": 12,
+        "view": 0
+      },
+      {
+        "rank": 13,
+        "view": 0
+      },
+      {
+        "rank": 8,
+        "view": 2
+      },
+      {
+        "rank": 9,
+        "view": 1
+      },
+      {
+        "rank": 15,
+        "view": 0
+      }
+    ],
+    "detections": [
+      {
+        "bbox": [
+          0.7555656433105469,
+          381.49267578125,
+          95.52919006347656,
+          558.3038940429688
+        ],
+        "class_index": 2,
+        "confidence": 0.9195082187652588
+      },
+      {
+        "bbox": [
+          374.1435546875,
+          369.48779296875,
+          635.6922607421875,
+          568.8671264648438
+        ],
+        "class_index": 2,
+        "confidence": 0.9132633805274963
+      },
+      {
+        "bbox": [
+          15.721168518066406,
+          380.33074951171875,
+          214.09786987304688,
+          511.0889892578125
+        ],
+        "class_index": 2,
+        "confidence": 0.8878119587898254
+      },
+      {
+        "bbox": [
+          1150.995361328125,
+          348.0194396972656,
+          1211.904541015625,
+          455.7107238769531
+        ],
+        "class_index": 0,
+        "confidence": 0.8804283738136292
+      },
+      {
+        "bbox": [
+          695.0022583007812,
+          372.3988342285156,
+          851.4844970703125,
+          439.6955871582031
+        ],
+        "class_index": 2,
+        "confidence": 0.8749189376831055
+      },
+      {
+        "bbox": [
+          924.20263671875,
+          386.2190856933594,
+          1026.3890380859375,
+          431.0251159667969
+        ],
+        "class_index": 2,
+        "confidence": 0.8357622623443604
+      },
+      {
+        "bbox": [
+          236.32110595703125,
+          360.8456115722656,
+          375.65216064453125,
+          500.1575012207031
+        ],
+        "class_index": 7,
+        "confidence": 0.8089256882667542
+      },
+      {
+        "bbox": [
+          1064.766357421875,
+          363.92108154296875,
+          1106.6455078125,
+          453.2984619140625
+        ],
+        "class_index": 0,
+        "confidence": 0.7863022089004517
+      },
+      {
+        "bbox": [
+          893.0860595703125,
+          367.5209655761719,
+          925.5994873046875,
+          438.7392883300781
+        ],
+        "class_index": 0,
+        "confidence": 0.7818444967269897
+      },
+      {
+        "bbox": [
+          1018.0721435546875,
+          368.832763671875,
+          1057.4248046875,
+          444.78082275390625
+        ],
+        "class_index": 0,
+        "confidence": 0.759080171585083
+      },
+      {
+        "bbox": [
+          831.5966796875,
+          377.7635803222656,
+          892.17626953125,
+          434.6499938964844
+        ],
+        "class_index": 2,
+        "confidence": 0.7021180987358093
+      },
+      {
+        "bbox": [
+          663.7744750976562,
+          384.4107360839844,
+          689.0258178710938,
+          433.8998718261719
+        ],
+        "class_index": 0,
+        "confidence": 0.6824385523796082
+      },
+      {
+        "bbox": [
+          237.18307495117188,
+          361.81134033203125,
+          374.7900085449219,
+          493.21624755859375
+        ],
+        "class_index": 2,
+        "confidence": 0.6349611878395081
+      },
+      {
+        "bbox": [
+          219.2144012451172,
+          412.0174865722656,
+          249.28492736816406,
+          454.2007141113281
+        ],
+        "class_index": 2,
+        "confidence": 0.6230546236038208
+      },
+      {
+        "bbox": [
+          176.40011596679688,
+          282.1748046875,
+          189.21725463867188,
+          310.62042236328125
+        ],
+        "class_index": 9,
+        "confidence": 0.5207148790359497
+      },
+      {
+        "bbox": [
+          608.49462890625,
+          379.8601989746094,
+          638.6787109375,
+          429.5040588378906
+        ],
+        "class_index": 0,
+        "confidence": 0.4641534984111786
+      },
+      {
+        "bbox": [
+          698.418212890625,
+          386.9967041015625,
+          724.783935546875,
+          433.50567626953125
+        ],
+        "class_index": 0,
+        "confidence": 0.4514627456665039
+      },
+      {
+        "bbox": [
+          192.4762420654297,
+          398.9619445800781,
+          249.3132781982422,
+          452.0758972167969
+        ],
+        "class_index": 2,
+        "confidence": 0.41636788845062256
+      },
+      {
+        "bbox": [
+          386.6319580078125,
+          382.8150329589844,
+          415.68756103515625,
+          428.9537048339844
+        ],
+        "class_index": 2,
+        "confidence": 0.383968323469162
+      },
+      {
+        "bbox": [
+          199.25982666015625,
+          411.82330322265625,
+          232.71737670898438,
+          453.21142578125
+        ],
+        "class_index": 2,
+        "confidence": 0.3635116219520569
+      },
+      {
+        "bbox": [
+          853.0531005859375,
+          312.4444274902344,
+          883.3897705078125,
+          351.9595642089844
+        ],
+        "class_index": 9,
+        "confidence": 0.30859071016311646
+      }
+    ],
+    "height": 720,
+    "merge": {
+      "comparisons": 390,
+      "input_boxes": 46,
+      "interior_edge_rejected": 4,
+      "output_cap_reached": false,
+      "suppressed": 21
+    },
+    "model_sha256": "c5c2d13e59ae883e6af3b45daea64af4833a4951c92d116ec270d9ddbe998063",
+    "nms_iou_threshold": 0.44999998807907104,
+    "schema_version": 1,
+    "score_threshold": 0.30000001192092896,
+    "source_image_sha256": "df0ddad5b34b5defc639ae7768005f1c66e11b440727939b64840cf54552974c",
+    "views": [
+      {
+        "prediction": {
+          "algorithm": "pinned_yolox_s_cpu_image_triangle_argmax_classwise",
+          "compiled_sources": {
+            "integrations/onnx/Cargo.lock": "aa6f1b198ff4ad901f9547ef852dc0113b5c36624d43030a863af32b12f07a0c",
+            "integrations/onnx/Cargo.toml": "7459dc7d7fc0128214275703d48a4170d449edd559dc0cadab689f887d635c8d",
+            "integrations/onnx/fetch_s.py": "bbb3aa5a020e0bdf6054fc1fe1c58ccd64132547a68ab44e28a89d556a35f1ae",
+            "integrations/onnx/profile-s.json": "b6ea56bd4b6271dc4d54b379b101db7425f61adfcd184211932fd2de6160f573",
+            "integrations/onnx/src/bin/rustdriving-camera-detect-s.rs": "6d1c965968e4d7d735922b4369e6076bf9801aed081dd7e6693702b513d46138",
+            "integrations/onnx/src/lib.rs": "b379dfba4c45b535f61284ea9fc7748f6317038976b5fb61221f6a8561ad4bbc",
+            "integrations/onnx/src/yolox_s.rs": "cd23f879d840627b23aa954530e9e39ca5c5cc05cb2e927453c74178fd8142f0",
+            "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed"
+          },
+          "detections": [
+            {
+              "bbox": [
+                374.1435546875,
+                369.48779296875,
+                635.6922607421875,
+                568.8671264648438
+              ],
+              "class_index": 2,
+              "confidence": 0.9132633805274963
+            },
+            {
+              "bbox": [
+                0.7521820068359375,
+                381.482666015625,
+                95.6274642944336,
+                557.1371459960938
+              ],
+              "class_index": 2,
+              "confidence": 0.885974109172821
+            },
+            {
+              "bbox": [
+                11.300239562988281,
+                383.41021728515625,
+                215.3160400390625,
+                515.5099487304688
+              ],
+              "class_index": 2,
+              "confidence": 0.8833116292953491
+            },
+            {
+              "bbox": [
+                1149.369140625,
+                346.30279541015625,
+                1212.5244140625,
+                456.7952880859375
+              ],
+              "class_index": 0,
+              "confidence": 0.8711227774620056
+            },
+            {
+              "bbox": [
+                693.9920654296875,
+                373.53326416015625,
+                870.269775390625,
+                439.027099609375
+              ],
+              "class_index": 2,
+              "confidence": 0.8437197208404541
+            },
+            {
+              "bbox": [
+                236.32110595703125,
+                360.8456115722656,
+                375.65216064453125,
+                500.1575012207031
+              ],
+              "class_index": 7,
+              "confidence": 0.8089256882667542
+            },
+            {
+              "bbox": [
+                920.5493774414062,
+                381.80712890625,
+                1028.2042236328125,
+                433.50189208984375
+              ],
+              "class_index": 2,
+              "confidence": 0.7956502437591553
+            },
+            {
+              "bbox": [
+                895.339599609375,
+                367.6904602050781,
+                926.9908447265625,
+                435.8106994628906
+              ],
+              "class_index": 0,
+              "confidence": 0.6992758512496948
+            },
+            {
+              "bbox": [
+                1017.4044189453125,
+                369.7207946777344,
+                1055.2310791015625,
+                444.9383850097656
+              ],
+              "class_index": 0,
+              "confidence": 0.6537322998046875
+            },
+            {
+              "bbox": [
+                1074.6373291015625,
+                359.52679443359375,
+                1108.1807861328125,
+                453.44317626953125
+              ],
+              "class_index": 0,
+              "confidence": 0.6421864628791809
+            },
+            {
+              "bbox": [
+                236.35406494140625,
+                362.3583679199219,
+                377.69818115234375,
+                495.1837463378906
+              ],
+              "class_index": 2,
+              "confidence": 0.4739619791507721
+            },
+            {
+              "bbox": [
+                661.17431640625,
+                381.8363342285156,
+                687.9219970703125,
+                431.2206115722656
+              ],
+              "class_index": 0,
+              "confidence": 0.4726923406124115
+            },
+            {
+              "bbox": [
+                698.418212890625,
+                386.9967041015625,
+                724.783935546875,
+                433.50567626953125
+              ],
+              "class_index": 0,
+              "confidence": 0.4514627456665039
+            },
+            {
+              "bbox": [
+                192.4762420654297,
+                398.9619445800781,
+                249.3132781982422,
+                452.0758972167969
+              ],
+              "class_index": 2,
+              "confidence": 0.41636788845062256
+            },
+            {
+              "bbox": [
+                607.2949829101562,
+                378.2987976074219,
+                641.3888549804688,
+                431.0485534667969
+              ],
+              "class_index": 0,
+              "confidence": 0.31154555082321167
+            },
+            {
+              "bbox": [
+                853.0531005859375,
+                312.4444274902344,
+                883.3897705078125,
+                351.9595642089844
+              ],
+              "class_index": 9,
+              "confidence": 0.30859071016311646
+            }
+          ],
+          "height": 720,
+          "inference_seconds": 0.555370573,
+          "input_shape": [
+            1,
+            3,
+            640,
+            640
+          ],
+          "model_load_seconds": 0.229347459,
+          "model_profile": "yolox-s-v1",
+          "model_profile_sha256": "b6ea56bd4b6271dc4d54b379b101db7425f61adfcd184211932fd2de6160f573",
+          "model_sha256": "c5c2d13e59ae883e6af3b45daea64af4833a4951c92d116ec270d9ddbe998063",
+          "nms_iou_threshold": 0.44999998807907104,
+          "output_shape": [
+            1,
+            8400,
+            85
+          ],
+          "schema_version": 1,
+          "score_threshold": 0.30000001192092896,
+          "source_image_sha256": null,
+          "width": 1280
+        },
+        "rectangle": {
+          "height": 720,
+          "width": 1280,
+          "x": 0,
+          "y": 0
+        },
+        "rgb_sha256": "fc1f25e9c1335394f0091a7f3b5f188b554a2ad9f1b27af68a5f3ad41b9fbd66"
+      },
+      {
+        "prediction": {
+          "algorithm": "pinned_yolox_s_cpu_image_triangle_argmax_classwise",
+          "compiled_sources": {
+            "integrations/onnx/Cargo.lock": "aa6f1b198ff4ad901f9547ef852dc0113b5c36624d43030a863af32b12f07a0c",
+            "integrations/onnx/Cargo.toml": "7459dc7d7fc0128214275703d48a4170d449edd559dc0cadab689f887d635c8d",
+            "integrations/onnx/fetch_s.py": "bbb3aa5a020e0bdf6054fc1fe1c58ccd64132547a68ab44e28a89d556a35f1ae",
+            "integrations/onnx/profile-s.json": "b6ea56bd4b6271dc4d54b379b101db7425f61adfcd184211932fd2de6160f573",
+            "integrations/onnx/src/bin/rustdriving-camera-detect-s.rs": "6d1c965968e4d7d735922b4369e6076bf9801aed081dd7e6693702b513d46138",
+            "integrations/onnx/src/lib.rs": "b379dfba4c45b535f61284ea9fc7748f6317038976b5fb61221f6a8561ad4bbc",
+            "integrations/onnx/src/yolox_s.rs": "cd23f879d840627b23aa954530e9e39ca5c5cc05cb2e927453c74178fd8142f0",
+            "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed"
+          },
+          "detections": [
+            {
+              "bbox": [
+                0.7555656433105469,
+                381.49267578125,
+                95.52919006347656,
+                558.3038940429688
+              ],
+              "class_index": 2,
+              "confidence": 0.9195082187652588
+            },
+            {
+              "bbox": [
+                15.721168518066406,
+                380.33074951171875,
+                214.09786987304688,
+                511.0889892578125
+              ],
+              "class_index": 2,
+              "confidence": 0.8878119587898254
+            },
+            {
+              "bbox": [
+                382.8658447265625,
+                368.0010681152344,
+                636.5228271484375,
+                572.9965209960938
+              ],
+              "class_index": 2,
+              "confidence": 0.8811323046684265
+            },
+            {
+              "bbox": [
+                663.7744750976562,
+                384.4107360839844,
+                689.0258178710938,
+                433.8998718261719
+              ],
+              "class_index": 0,
+              "confidence": 0.6824385523796082
+            },
+            {
+              "bbox": [
+                237.18307495117188,
+                361.81134033203125,
+                374.7900085449219,
+                493.21624755859375
+              ],
+              "class_index": 2,
+              "confidence": 0.6349611878395081
+            },
+            {
+              "bbox": [
+                701.6967163085938,
+                388.0137939453125,
+                719.6925659179688,
+                433.40869140625
+              ],
+              "class_index": 0,
+              "confidence": 0.6339972019195557
+            },
+            {
+              "bbox": [
+                219.2144012451172,
+                412.0174865722656,
+                249.28492736816406,
+                454.2007141113281
+              ],
+              "class_index": 2,
+              "confidence": 0.6230546236038208
+            },
+            {
+              "bbox": [
+                239.8494873046875,
+                358.466796875,
+                375.67437744140625,
+                495.13946533203125
+              ],
+              "class_index": 7,
+              "confidence": 0.621846616268158
+            },
+            {
+              "bbox": [
+                176.40011596679688,
+                282.1748046875,
+                189.21725463867188,
+                310.62042236328125
+              ],
+              "class_index": 9,
+              "confidence": 0.5207148790359497
+            },
+            {
+              "bbox": [
+                199.25982666015625,
+                411.82330322265625,
+                232.71737670898438,
+                453.21142578125
+              ],
+              "class_index": 2,
+              "confidence": 0.3635116219520569
+            },
+            {
+              "bbox": [
+                608.7300415039062,
+                381.123046875,
+                637.3687133789062,
+                429.17510986328125
+              ],
+              "class_index": 0,
+              "confidence": 0.3223365843296051
+            }
+          ],
+          "height": 720,
+          "inference_seconds": 0.566565804,
+          "input_shape": [
+            1,
+            3,
+            640,
+            640
+          ],
+          "model_load_seconds": 0.229347459,
+          "model_profile": "yolox-s-v1",
+          "model_profile_sha256": "b6ea56bd4b6271dc4d54b379b101db7425f61adfcd184211932fd2de6160f573",
+          "model_sha256": "c5c2d13e59ae883e6af3b45daea64af4833a4951c92d116ec270d9ddbe998063",
+          "nms_iou_threshold": 0.44999998807907104,
+          "output_shape": [
+            1,
+            8400,
+            85
+          ],
+          "schema_version": 1,
+          "score_threshold": 0.30000001192092896,
+          "source_image_sha256": null,
+          "width": 720
+        },
+        "rectangle": {
+          "height": 720,
+          "width": 720,
+          "x": 0,
+          "y": 0
+        },
+        "rgb_sha256": "a6bacf48f0be969a915b3f07ae794d2b0e53d59cf533ec778dc273c4b212e433"
+      },
+      {
+        "prediction": {
+          "algorithm": "pinned_yolox_s_cpu_image_triangle_argmax_classwise",
+          "compiled_sources": {
+            "integrations/onnx/Cargo.lock": "aa6f1b198ff4ad901f9547ef852dc0113b5c36624d43030a863af32b12f07a0c",
+            "integrations/onnx/Cargo.toml": "7459dc7d7fc0128214275703d48a4170d449edd559dc0cadab689f887d635c8d",
+            "integrations/onnx/fetch_s.py": "bbb3aa5a020e0bdf6054fc1fe1c58ccd64132547a68ab44e28a89d556a35f1ae",
+            "integrations/onnx/profile-s.json": "b6ea56bd4b6271dc4d54b379b101db7425f61adfcd184211932fd2de6160f573",
+            "integrations/onnx/src/bin/rustdriving-camera-detect-s.rs": "6d1c965968e4d7d735922b4369e6076bf9801aed081dd7e6693702b513d46138",
+            "integrations/onnx/src/lib.rs": "b379dfba4c45b535f61284ea9fc7748f6317038976b5fb61221f6a8561ad4bbc",
+            "integrations/onnx/src/yolox_s.rs": "cd23f879d840627b23aa954530e9e39ca5c5cc05cb2e927453c74178fd8142f0",
+            "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed"
+          },
+          "detections": [
+            {
+              "bbox": [
+                103.81439971923828,
+                366.5595703125,
+                358.20684814453125,
+                570.6265869140625
+              ],
+              "class_index": 2,
+              "confidence": 0.8774818181991577
+            },
+            {
+              "bbox": [
+                415.00225830078125,
+                372.3988342285156,
+                571.4844970703125,
+                439.6955871582031
+              ],
+              "class_index": 2,
+              "confidence": 0.8749189376831055
+            },
+            {
+              "bbox": [
+                0.428558349609375,
+                361.5413513183594,
+                95.51117706298828,
+                491.9678039550781
+              ],
+              "class_index": 2,
+              "confidence": 0.8626761436462402
+            },
+            {
+              "bbox": [
+                642.0689697265625,
+                379.3221130371094,
+                720.0,
+                428.0358581542969
+              ],
+              "class_index": 2,
+              "confidence": 0.8216966986656189
+            },
+            {
+              "bbox": [
+                612.7387084960938,
+                367.5970458984375,
+                644.2156372070312,
+                437.40216064453125
+              ],
+              "class_index": 0,
+              "confidence": 0.7448834776878357
+            },
+            {
+              "bbox": [
+                551.5966796875,
+                377.7635803222656,
+                612.17626953125,
+                434.6499938964844
+              ],
+              "class_index": 2,
+              "confidence": 0.7021180987358093
+            },
+            {
+              "bbox": [
+                383.5110778808594,
+                383.8040466308594,
+                409.5777893066406,
+                432.7391052246094
+              ],
+              "class_index": 0,
+              "confidence": 0.6492111682891846
+            },
+            {
+              "bbox": [
+                328.4945983886719,
+                379.8601989746094,
+                358.6787414550781,
+                429.5040588378906
+              ],
+              "class_index": 0,
+              "confidence": 0.4641534984111786
+            },
+            {
+              "bbox": [
+                106.63197326660156,
+                382.8150329589844,
+                135.68756103515625,
+                428.9537048339844
+              ],
+              "class_index": 2,
+              "confidence": 0.383968323469162
+            }
+          ],
+          "height": 720,
+          "inference_seconds": 0.572387576,
+          "input_shape": [
+            1,
+            3,
+            640,
+            640
+          ],
+          "model_load_seconds": 0.229347459,
+          "model_profile": "yolox-s-v1",
+          "model_profile_sha256": "b6ea56bd4b6271dc4d54b379b101db7425f61adfcd184211932fd2de6160f573",
+          "model_sha256": "c5c2d13e59ae883e6af3b45daea64af4833a4951c92d116ec270d9ddbe998063",
+          "nms_iou_threshold": 0.44999998807907104,
+          "output_shape": [
+            1,
+            8400,
+            85
+          ],
+          "schema_version": 1,
+          "score_threshold": 0.30000001192092896,
+          "source_image_sha256": null,
+          "width": 720
+        },
+        "rectangle": {
+          "height": 720,
+          "width": 720,
+          "x": 280,
+          "y": 0
+        },
+        "rgb_sha256": "386b85f5a34a10f72e9d5157810f2f99003e28f109c72ea733171fce7883503f"
+      },
+      {
+        "prediction": {
+          "algorithm": "pinned_yolox_s_cpu_image_triangle_argmax_classwise",
+          "compiled_sources": {
+            "integrations/onnx/Cargo.lock": "aa6f1b198ff4ad901f9547ef852dc0113b5c36624d43030a863af32b12f07a0c",
+            "integrations/onnx/Cargo.toml": "7459dc7d7fc0128214275703d48a4170d449edd559dc0cadab689f887d635c8d",
+            "integrations/onnx/fetch_s.py": "bbb3aa5a020e0bdf6054fc1fe1c58ccd64132547a68ab44e28a89d556a35f1ae",
+            "integrations/onnx/profile-s.json": "b6ea56bd4b6271dc4d54b379b101db7425f61adfcd184211932fd2de6160f573",
+            "integrations/onnx/src/bin/rustdriving-camera-detect-s.rs": "6d1c965968e4d7d735922b4369e6076bf9801aed081dd7e6693702b513d46138",
+            "integrations/onnx/src/lib.rs": "b379dfba4c45b535f61284ea9fc7748f6317038976b5fb61221f6a8561ad4bbc",
+            "integrations/onnx/src/yolox_s.rs": "cd23f879d840627b23aa954530e9e39ca5c5cc05cb2e927453c74178fd8142f0",
+            "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed"
+          },
+          "detections": [
+            {
+              "bbox": [
+                590.9954223632812,
+                348.0194396972656,
+                651.9044799804688,
+                455.7107238769531
+              ],
+              "class_index": 0,
+              "confidence": 0.8804283738136292
+            },
+            {
+              "bbox": [
+                129.6123046875,
+                371.9354553222656,
+                287.64508056640625,
+                439.3498229980469
+              ],
+              "class_index": 2,
+              "confidence": 0.8691863417625427
+            },
+            {
+              "bbox": [
+                0.0,
+                371.2771911621094,
+                77.87297058105469,
+                555.16455078125
+              ],
+              "class_index": 2,
+              "confidence": 0.852654218673706
+            },
+            {
+              "bbox": [
+                364.20263671875,
+                386.2190856933594,
+                466.3890380859375,
+                431.0251159667969
+              ],
+              "class_index": 2,
+              "confidence": 0.8357622623443604
+            },
+            {
+              "bbox": [
+                504.7663269042969,
+                363.92108154296875,
+                546.6455078125,
+                453.2984619140625
+              ],
+              "class_index": 0,
+              "confidence": 0.7863022089004517
+            },
+            {
+              "bbox": [
+                333.0860900878906,
+                367.5209655761719,
+                365.5995178222656,
+                438.7392883300781
+              ],
+              "class_index": 0,
+              "confidence": 0.7818444967269897
+            },
+            {
+              "bbox": [
+                458.0721740722656,
+                368.832763671875,
+                497.4247741699219,
+                444.78082275390625
+              ],
+              "class_index": 0,
+              "confidence": 0.759080171585083
+            },
+            {
+              "bbox": [
+                271.1651916503906,
+                377.9049072265625,
+                331.3719787597656,
+                434.88897705078125
+              ],
+              "class_index": 2,
+              "confidence": 0.6942905783653259
+            },
+            {
+              "bbox": [
+                103.48684692382812,
+                383.7181091308594,
+                130.02426147460938,
+                432.8398742675781
+              ],
+              "class_index": 0,
+              "confidence": 0.6712519526481628
+            },
+            {
+              "bbox": [
+                139.3985137939453,
+                388.0086364746094,
+                163.28846740722656,
+                432.7250671386719
+              ],
+              "class_index": 0,
+              "confidence": 0.4023526608943939
+            }
+          ],
+          "height": 720,
+          "inference_seconds": 0.574060697,
+          "input_shape": [
+            1,
+            3,
+            640,
+            640
+          ],
+          "model_load_seconds": 0.229347459,
+          "model_profile": "yolox-s-v1",
+          "model_profile_sha256": "b6ea56bd4b6271dc4d54b379b101db7425f61adfcd184211932fd2de6160f573",
+          "model_sha256": "c5c2d13e59ae883e6af3b45daea64af4833a4951c92d116ec270d9ddbe998063",
+          "nms_iou_threshold": 0.44999998807907104,
+          "output_shape": [
+            1,
+            8400,
+            85
+          ],
+          "schema_version": 1,
+          "score_threshold": 0.30000001192092896,
+          "source_image_sha256": null,
+          "width": 720
+        },
+        "rectangle": {
+          "height": 720,
+          "width": 720,
+          "x": 560,
+          "y": 0
+        },
+        "rgb_sha256": "50d69399dc800850bf82a321cae80879aea8377030ab2aaa7981adf663e34324"
+      }
+    ],
+    "width": 1280
+  },
+  "compiled_sources": {
+    "integrations/onnx/Cargo.lock": "aa6f1b198ff4ad901f9547ef852dc0113b5c36624d43030a863af32b12f07a0c",
+    "integrations/onnx/Cargo.toml": "7459dc7d7fc0128214275703d48a4170d449edd559dc0cadab689f887d635c8d",
+    "integrations/onnx/fetch_s.py": "bbb3aa5a020e0bdf6054fc1fe1c58ccd64132547a68ab44e28a89d556a35f1ae",
+    "integrations/onnx/profile-s.json": "b6ea56bd4b6271dc4d54b379b101db7425f61adfcd184211932fd2de6160f573",
+    "integrations/onnx/profile-tiles-s.json": "005d8d0b0c06529886be51eee6e8f0de70068aa90e31865c1ef17ad5b3022a9f",
+    "integrations/onnx/profile-vehicle-context.json": "a9fd3fa5f18ba8f6ceb39c39cebed45d920f84a6de72f7ea1bf9b2b376bfdce8",
+    "integrations/onnx/profile-vehicle-vote.json": "2f13591deea2731b5736876d3e6612d92b45f6eba462e90df836e5ff15165e9d",
+    "integrations/onnx/src/bin/rustdriving-camera-detect-s.rs": "6d1c965968e4d7d735922b4369e6076bf9801aed081dd7e6693702b513d46138",
+    "integrations/onnx/src/bin/rustdriving-camera-detect-tiled-s.rs": "bbd41c052c5b3dcd497cc9fd23d29b338b5f95046d7c36cefb6333f937899e39",
+    "integrations/onnx/src/bin/rustdriving-camera-detect-vehicle-context.rs": "e5a5f75f7caa73a3fb44a599bcfd50c002f335b0cf815f04636441c72d34a297",
+    "integrations/onnx/src/bin/rustdriving-camera-detect-vehicle-vote.rs": "bbe06b8a90b15b07d58afa50e4d22b9c239d4ef6f7610f7541a63ce0fc2d38f0",
+    "integrations/onnx/src/lib.rs": "b379dfba4c45b535f61284ea9fc7748f6317038976b5fb61221f6a8561ad4bbc",
+    "integrations/onnx/src/yolox_s.rs": "cd23f879d840627b23aa954530e9e39ca5c5cc05cb2e927453c74178fd8142f0",
+    "integrations/onnx/src/yolox_tiles.rs": "0babb6b0c669c5fdbde867b9e9cdebf2ec50843bb121cf4ce3b097f084d5de28",
+    "integrations/onnx/src/yolox_vehicle_context.rs": "96edb357fc8a69e9fd3f8e5ea1fb37e5fb986904ab5d663c50e9fa5b764358c5",
+    "integrations/onnx/src/yolox_vehicle_vote.rs": "34831fb00dc15d46d5a7facc0742baa30c0e8fb804b8ce8707958baf513c8a4c",
+    "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed"
+  },
+  "result": {
+    "ambiguous_without_full_context": [],
+    "detection_origins": [
+      {
+        "rank": 0,
+        "view": 1
+      },
+      {
+        "rank": 0,
+        "view": 0
+      },
+      {
+        "rank": 1,
+        "view": 1
+      },
+      {
+        "rank": 0,
+        "view": 3
+      },
+      {
+        "rank": 1,
+        "view": 2
+      },
+      {
+        "rank": 3,
+        "view": 3
+      },
+      {
+        "rank": 5,
+        "view": 0
+      },
+      {
+        "rank": 4,
+        "view": 3
+      },
+      {
+        "rank": 5,
+        "view": 3
+      },
+      {
+        "rank": 6,
+        "view": 3
+      },
+      {
+        "rank": 5,
+        "view": 2
+      },
+      {
+        "rank": 3,
+        "view": 1
+      },
+      {
+        "rank": 6,
+        "view": 1
+      },
+      {
+        "rank": 8,
+        "view": 1
+      },
+      {
+        "rank": 7,
+        "view": 2
+      },
+      {
+        "rank": 12,
+        "view": 0
+      },
+      {
+        "rank": 13,
+        "view": 0
+      },
+      {
+        "rank": 8,
+        "view": 2
+      },
+      {
+        "rank": 9,
+        "view": 1
+      },
+      {
+        "rank": 15,
+        "view": 0
+      }
+    ],
+    "detections": [
+      {
+        "bbox": [
+          0.7555656433105469,
+          381.49267578125,
+          95.52919006347656,
+          558.3038940429688
+        ],
+        "class_index": 2,
+        "confidence": 0.9195082187652588
+      },
+      {
+        "bbox": [
+          374.1435546875,
+          369.48779296875,
+          635.6922607421875,
+          568.8671264648438
+        ],
+        "class_index": 2,
+        "confidence": 0.9132633805274963
+      },
+      {
+        "bbox": [
+          15.721168518066406,
+          380.33074951171875,
+          214.09786987304688,
+          511.0889892578125
+        ],
+        "class_index": 2,
+        "confidence": 0.8878119587898254
+      },
+      {
+        "bbox": [
+          1150.995361328125,
+          348.0194396972656,
+          1211.904541015625,
+          455.7107238769531
+        ],
+        "class_index": 0,
+        "confidence": 0.8804283738136292
+      },
+      {
+        "bbox": [
+          695.0022583007812,
+          372.3988342285156,
+          851.4844970703125,
+          439.6955871582031
+        ],
+        "class_index": 2,
+        "confidence": 0.8749189376831055
+      },
+      {
+        "bbox": [
+          924.20263671875,
+          386.2190856933594,
+          1026.3890380859375,
+          431.0251159667969
+        ],
+        "class_index": 2,
+        "confidence": 0.8357622623443604
+      },
+      {
+        "bbox": [
+          236.32110595703125,
+          360.8456115722656,
+          375.65216064453125,
+          500.1575012207031
+        ],
+        "class_index": 7,
+        "confidence": 0.8089256882667542
+      },
+      {
+        "bbox": [
+          1064.766357421875,
+          363.92108154296875,
+          1106.6455078125,
+          453.2984619140625
+        ],
+        "class_index": 0,
+        "confidence": 0.7863022089004517
+      },
+      {
+        "bbox": [
+          893.0860595703125,
+          367.5209655761719,
+          925.5994873046875,
+          438.7392883300781
+        ],
+        "class_index": 0,
+        "confidence": 0.7818444967269897
+      },
+      {
+        "bbox": [
+          1018.0721435546875,
+          368.832763671875,
+          1057.4248046875,
+          444.78082275390625
+        ],
+        "class_index": 0,
+        "confidence": 0.759080171585083
+      },
+      {
+        "bbox": [
+          831.5966796875,
+          377.7635803222656,
+          892.17626953125,
+          434.6499938964844
+        ],
+        "class_index": 2,
+        "confidence": 0.7021180987358093
+      },
+      {
+        "bbox": [
+          663.7744750976562,
+          384.4107360839844,
+          689.0258178710938,
+          433.8998718261719
+        ],
+        "class_index": 0,
+        "confidence": 0.6824385523796082
+      },
+      {
+        "bbox": [
+          219.2144012451172,
+          412.0174865722656,
+          249.28492736816406,
+          454.2007141113281
+        ],
+        "class_index": 2,
+        "confidence": 0.6230546236038208
+      },
+      {
+        "bbox": [
+          176.40011596679688,
+          282.1748046875,
+          189.21725463867188,
+          310.62042236328125
+        ],
+        "class_index": 9,
+        "confidence": 0.5207148790359497
+      },
+      {
+        "bbox": [
+          608.49462890625,
+          379.8601989746094,
+          638.6787109375,
+          429.5040588378906
+        ],
+        "class_index": 0,
+        "confidence": 0.4641534984111786
+      },
+      {
+        "bbox": [
+          698.418212890625,
+          386.9967041015625,
+          724.783935546875,
+          433.50567626953125
+        ],
+        "class_index": 0,
+        "confidence": 0.4514627456665039
+      },
+      {
+        "bbox": [
+          192.4762420654297,
+          398.9619445800781,
+          249.3132781982422,
+          452.0758972167969
+        ],
+        "class_index": 2,
+        "confidence": 0.41636788845062256
+      },
+      {
+        "bbox": [
+          386.6319580078125,
+          382.8150329589844,
+          415.68756103515625,
+          428.9537048339844
+        ],
+        "class_index": 2,
+        "confidence": 0.383968323469162
+      },
+      {
+        "bbox": [
+          199.25982666015625,
+          411.82330322265625,
+          232.71737670898438,
+          453.21142578125
+        ],
+        "class_index": 2,
+        "confidence": 0.3635116219520569
+      },
+      {
+        "bbox": [
+          853.0531005859375,
+          312.4444274902344,
+          883.3897705078125,
+          351.9595642089844
+        ],
+        "class_index": 9,
+        "confidence": 0.30859071016311646
+      }
+    ],
+    "retained_base_ranks": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+    ],
+    "selections": [
+      {
+        "base_ranks": [
+          6,
+          12
+        ],
+        "class_index": 7,
+        "full_image_source_rank": 5,
+        "selected_base_rank": 6
+      }
+    ],
+    "voting_result": {
+      "ambiguities": [],
+      "base_merged": {
+        "detection_origins": [
+          {
+            "rank": 0,
+            "view": 1
+          },
+          {
+            "rank": 0,
+            "view": 0
+          },
+          {
+            "rank": 1,
+            "view": 1
+          },
+          {
+            "rank": 0,
+            "view": 3
+          },
+          {
+            "rank": 1,
+            "view": 2
+          },
+          {
+            "rank": 3,
+            "view": 3
+          },
+          {
+            "rank": 5,
+            "view": 0
+          },
+          {
+            "rank": 4,
+            "view": 3
+          },
+          {
+            "rank": 5,
+            "view": 3
+          },
+          {
+            "rank": 6,
+            "view": 3
+          },
+          {
+            "rank": 5,
+            "view": 2
+          },
+          {
+            "rank": 3,
+            "view": 1
+          },
+          {
+            "rank": 4,
+            "view": 1
+          },
+          {
+            "rank": 6,
+            "view": 1
+          },
+          {
+            "rank": 8,
+            "view": 1
+          },
+          {
+            "rank": 7,
+            "view": 2
+          },
+          {
+            "rank": 12,
+            "view": 0
+          },
+          {
+            "rank": 13,
+            "view": 0
+          },
+          {
+            "rank": 8,
+            "view": 2
+          },
+          {
+            "rank": 9,
+            "view": 1
+          },
+          {
+            "rank": 15,
+            "view": 0
+          }
+        ],
+        "detections": [
+          {
+            "bbox": [
+              0.7555656433105469,
+              381.49267578125,
+              95.52919006347656,
+              558.3038940429688
+            ],
+            "class_index": 2,
+            "confidence": 0.9195082187652588
+          },
+          {
+            "bbox": [
+              374.1435546875,
+              369.48779296875,
+              635.6922607421875,
+              568.8671264648438
+            ],
+            "class_index": 2,
+            "confidence": 0.9132633805274963
+          },
+          {
+            "bbox": [
+              15.721168518066406,
+              380.33074951171875,
+              214.09786987304688,
+              511.0889892578125
+            ],
+            "class_index": 2,
+            "confidence": 0.8878119587898254
+          },
+          {
+            "bbox": [
+              1150.995361328125,
+              348.0194396972656,
+              1211.904541015625,
+              455.7107238769531
+            ],
+            "class_index": 0,
+            "confidence": 0.8804283738136292
+          },
+          {
+            "bbox": [
+              695.0022583007812,
+              372.3988342285156,
+              851.4844970703125,
+              439.6955871582031
+            ],
+            "class_index": 2,
+            "confidence": 0.8749189376831055
+          },
+          {
+            "bbox": [
+              924.20263671875,
+              386.2190856933594,
+              1026.3890380859375,
+              431.0251159667969
+            ],
+            "class_index": 2,
+            "confidence": 0.8357622623443604
+          },
+          {
+            "bbox": [
+              236.32110595703125,
+              360.8456115722656,
+              375.65216064453125,
+              500.1575012207031
+            ],
+            "class_index": 7,
+            "confidence": 0.8089256882667542
+          },
+          {
+            "bbox": [
+              1064.766357421875,
+              363.92108154296875,
+              1106.6455078125,
+              453.2984619140625
+            ],
+            "class_index": 0,
+            "confidence": 0.7863022089004517
+          },
+          {
+            "bbox": [
+              893.0860595703125,
+              367.5209655761719,
+              925.5994873046875,
+              438.7392883300781
+            ],
+            "class_index": 0,
+            "confidence": 0.7818444967269897
+          },
+          {
+            "bbox": [
+              1018.0721435546875,
+              368.832763671875,
+              1057.4248046875,
+              444.78082275390625
+            ],
+            "class_index": 0,
+            "confidence": 0.759080171585083
+          },
+          {
+            "bbox": [
+              831.5966796875,
+              377.7635803222656,
+              892.17626953125,
+              434.6499938964844
+            ],
+            "class_index": 2,
+            "confidence": 0.7021180987358093
+          },
+          {
+            "bbox": [
+              663.7744750976562,
+              384.4107360839844,
+              689.0258178710938,
+              433.8998718261719
+            ],
+            "class_index": 0,
+            "confidence": 0.6824385523796082
+          },
+          {
+            "bbox": [
+              237.18307495117188,
+              361.81134033203125,
+              374.7900085449219,
+              493.21624755859375
+            ],
+            "class_index": 2,
+            "confidence": 0.6349611878395081
+          },
+          {
+            "bbox": [
+              219.2144012451172,
+              412.0174865722656,
+              249.28492736816406,
+              454.2007141113281
+            ],
+            "class_index": 2,
+            "confidence": 0.6230546236038208
+          },
+          {
+            "bbox": [
+              176.40011596679688,
+              282.1748046875,
+              189.21725463867188,
+              310.62042236328125
+            ],
+            "class_index": 9,
+            "confidence": 0.5207148790359497
+          },
+          {
+            "bbox": [
+              608.49462890625,
+              379.8601989746094,
+              638.6787109375,
+              429.5040588378906
+            ],
+            "class_index": 0,
+            "confidence": 0.4641534984111786
+          },
+          {
+            "bbox": [
+              698.418212890625,
+              386.9967041015625,
+              724.783935546875,
+              433.50567626953125
+            ],
+            "class_index": 0,
+            "confidence": 0.4514627456665039
+          },
+          {
+            "bbox": [
+              192.4762420654297,
+              398.9619445800781,
+              249.3132781982422,
+              452.0758972167969
+            ],
+            "class_index": 2,
+            "confidence": 0.41636788845062256
+          },
+          {
+            "bbox": [
+              386.6319580078125,
+              382.8150329589844,
+              415.68756103515625,
+              428.9537048339844
+            ],
+            "class_index": 2,
+            "confidence": 0.383968323469162
+          },
+          {
+            "bbox": [
+              199.25982666015625,
+              411.82330322265625,
+              232.71737670898438,
+              453.21142578125
+            ],
+            "class_index": 2,
+            "confidence": 0.3635116219520569
+          },
+          {
+            "bbox": [
+              853.0531005859375,
+              312.4444274902344,
+              883.3897705078125,
+              351.9595642089844
+            ],
+            "class_index": 9,
+            "confidence": 0.30859071016311646
+          }
+        ],
+        "merge": {
+          "comparisons": 390,
+          "input_boxes": 46,
+          "interior_edge_rejected": 4,
+          "output_cap_reached": false,
+          "suppressed": 21
+        }
+      },
+      "comparison_work": 639,
+      "detection_origins": [
+        {
+          "rank": 0,
+          "view": 1
+        },
+        {
+          "rank": 0,
+          "view": 0
+        },
+        {
+          "rank": 1,
+          "view": 1
+        },
+        {
+          "rank": 0,
+          "view": 3
+        },
+        {
+          "rank": 1,
+          "view": 2
+        },
+        {
+          "rank": 3,
+          "view": 3
+        },
+        {
+          "rank": 5,
+          "view": 0
+        },
+        {
+          "rank": 4,
+          "view": 3
+        },
+        {
+          "rank": 5,
+          "view": 3
+        },
+        {
+          "rank": 6,
+          "view": 3
+        },
+        {
+          "rank": 5,
+          "view": 2
+        },
+        {
+          "rank": 3,
+          "view": 1
+        },
+        {
+          "rank": 6,
+          "view": 1
+        },
+        {
+          "rank": 8,
+          "view": 1
+        },
+        {
+          "rank": 7,
+          "view": 2
+        },
+        {
+          "rank": 12,
+          "view": 0
+        },
+        {
+          "rank": 13,
+          "view": 0
+        },
+        {
+          "rank": 8,
+          "view": 2
+        },
+        {
+          "rank": 9,
+          "view": 1
+        },
+        {
+          "rank": 15,
+          "view": 0
+        }
+      ],
+      "detections": [
+        {
+          "bbox": [
+            0.7555656433105469,
+            381.49267578125,
+            95.52919006347656,
+            558.3038940429688
+          ],
+          "class_index": 2,
+          "confidence": 0.9195082187652588
+        },
+        {
+          "bbox": [
+            374.1435546875,
+            369.48779296875,
+            635.6922607421875,
+            568.8671264648438
+          ],
+          "class_index": 2,
+          "confidence": 0.9132633805274963
+        },
+        {
+          "bbox": [
+            15.721168518066406,
+            380.33074951171875,
+            214.09786987304688,
+            511.0889892578125
+          ],
+          "class_index": 2,
+          "confidence": 0.8878119587898254
+        },
+        {
+          "bbox": [
+            1150.995361328125,
+            348.0194396972656,
+            1211.904541015625,
+            455.7107238769531
+          ],
+          "class_index": 0,
+          "confidence": 0.8804283738136292
+        },
+        {
+          "bbox": [
+            695.0022583007812,
+            372.3988342285156,
+            851.4844970703125,
+            439.6955871582031
+          ],
+          "class_index": 2,
+          "confidence": 0.8749189376831055
+        },
+        {
+          "bbox": [
+            924.20263671875,
+            386.2190856933594,
+            1026.3890380859375,
+            431.0251159667969
+          ],
+          "class_index": 2,
+          "confidence": 0.8357622623443604
+        },
+        {
+          "bbox": [
+            236.32110595703125,
+            360.8456115722656,
+            375.65216064453125,
+            500.1575012207031
+          ],
+          "class_index": 7,
+          "confidence": 0.8089256882667542
+        },
+        {
+          "bbox": [
+            1064.766357421875,
+            363.92108154296875,
+            1106.6455078125,
+            453.2984619140625
+          ],
+          "class_index": 0,
+          "confidence": 0.7863022089004517
+        },
+        {
+          "bbox": [
+            893.0860595703125,
+            367.5209655761719,
+            925.5994873046875,
+            438.7392883300781
+          ],
+          "class_index": 0,
+          "confidence": 0.7818444967269897
+        },
+        {
+          "bbox": [
+            1018.0721435546875,
+            368.832763671875,
+            1057.4248046875,
+            444.78082275390625
+          ],
+          "class_index": 0,
+          "confidence": 0.759080171585083
+        },
+        {
+          "bbox": [
+            831.5966796875,
+            377.7635803222656,
+            892.17626953125,
+            434.6499938964844
+          ],
+          "class_index": 2,
+          "confidence": 0.7021180987358093
+        },
+        {
+          "bbox": [
+            663.7744750976562,
+            384.4107360839844,
+            689.0258178710938,
+            433.8998718261719
+          ],
+          "class_index": 0,
+          "confidence": 0.6824385523796082
+        },
+        {
+          "bbox": [
+            219.2144012451172,
+            412.0174865722656,
+            249.28492736816406,
+            454.2007141113281
+          ],
+          "class_index": 2,
+          "confidence": 0.6230546236038208
+        },
+        {
+          "bbox": [
+            176.40011596679688,
+            282.1748046875,
+            189.21725463867188,
+            310.62042236328125
+          ],
+          "class_index": 9,
+          "confidence": 0.5207148790359497
+        },
+        {
+          "bbox": [
+            608.49462890625,
+            379.8601989746094,
+            638.6787109375,
+            429.5040588378906
+          ],
+          "class_index": 0,
+          "confidence": 0.4641534984111786
+        },
+        {
+          "bbox": [
+            698.418212890625,
+            386.9967041015625,
+            724.783935546875,
+            433.50567626953125
+          ],
+          "class_index": 0,
+          "confidence": 0.4514627456665039
+        },
+        {
+          "bbox": [
+            192.4762420654297,
+            398.9619445800781,
+            249.3132781982422,
+            452.0758972167969
+          ],
+          "class_index": 2,
+          "confidence": 0.41636788845062256
+        },
+        {
+          "bbox": [
+            386.6319580078125,
+            382.8150329589844,
+            415.68756103515625,
+            428.9537048339844
+          ],
+          "class_index": 2,
+          "confidence": 0.383968323469162
+        },
+        {
+          "bbox": [
+            199.25982666015625,
+            411.82330322265625,
+            232.71737670898438,
+            453.21142578125
+          ],
+          "class_index": 2,
+          "confidence": 0.3635116219520569
+        },
+        {
+          "bbox": [
+            853.0531005859375,
+            312.4444274902344,
+            883.3897705078125,
+            351.9595642089844
+          ],
+          "class_index": 9,
+          "confidence": 0.30859071016311646
+        }
+      ],
+      "resolutions": [
+        {
+          "base_ranks": [
+            6,
+            12
+          ],
+          "class_index": 7,
+          "full_image_tie_break": true,
+          "selected_base_rank": 6,
+          "votes": [
+            {
+              "class_index": 7,
+              "confidence": 0.8089256882667542,
+              "source_rank": 5,
+              "view": 0
+            },
+            {
+              "class_index": 2,
+              "confidence": 0.6349611878395081,
+              "source_rank": 4,
+              "view": 1
+            }
+          ]
+        }
+      ],
+      "retained_base_ranks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ]
+    }
+  },
+  "schema_version": 1
+}

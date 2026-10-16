@@ -1,0 +1,44 @@
+{
+  "source_sha256": {
+    "scripts/diagnose-projective-surface-bias.py": "21e473709c9d2ea0d0e37d9f558d16f7c772883c9a071f711d5780d3b5145485",
+    "scripts/projective_depth_common.py": "5a60294dd09f5b79c52deb7014464988c948c61e73d64ac62c578c304989cb65",
+    "scripts/projective_depth_raw.py": "6added0369f5ee4d4b68bd4d0a4a396404cb550d0b7521cd6ab23e6452d091ff",
+    "scripts/check-opencv-rgbd.py": "63e366ce4d83d1fd1512c13726c777d5d04aa24c8b22d6161ecbb33cf21df1ff"
+  },
+  "cases": [
+    "tum-fr1-room-temporal",
+    "tum-fr1-desk2-independent",
+    "tum-fr1-rpy-heldout"
+  ],
+  "selected_frame_offsets": [
+    1,
+    13,
+    25,
+    37,
+    49,
+    61,
+    73,
+    85,
+    97,
+    109,
+    121,
+    133,
+    145,
+    157,
+    169
+  ],
+  "scales": [
+    4,
+    2,
+    1
+  ],
+  "policies": [
+    "target_plane",
+    "symmetric_planes",
+    "symmetric_midpoint"
+  ],
+  "data_role": "viewed offline diagnosis",
+  "ground_truth_operational": false,
+  "reference_pose_probe": true,
+  "no_trajectory_accuracy_or_sensor_calibration_claim": true
+}

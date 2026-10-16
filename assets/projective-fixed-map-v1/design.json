@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "purpose": "immutable first measured-depth map local SE3 pose baseline without repeated fusion or keyframe changes",
+  "data_role": "all three previously viewed180-frame TUM intervals; no fresh holdout",
+  "datasets": [
+    "tum-fr1-room-temporal",
+    "tum-fr1-desk2-independent",
+    "tum-fr1-rpy-heldout"
+  ],
+  "camera": {
+    "width": 640,
+    "height": 480,
+    "fx": 525.0,
+    "fy": 525.0,
+    "cx": 319.5,
+    "cy": 239.5
+  },
+  "depth_scale": 5000,
+  "model": "one qualified raw first depth pyramid, never warped, fused, replaced or reset; timestamp stays original acquisition",
+  "initialization": "normal support plus self-fit with inherited physical information/residual guards; no ground-truth initialization",
+  "fitting": "existing exact three-level bounded point-to-target-plane fit, forward nearest correspondences, central normals, original fixed iteration caps and physical spectrum guard",
+  "prior": "last accepted absolute first-camera-from-current pose; no extrapolation or motion prior",
+  "temporal": "monotonic acquisition; rejected data cannot renew accepted timestamp or change map/prior; accepted-pose age>0.2s latches loss; no resets",
+  "admission": "inherited fit guards including0.03m RMS,0.5m root displacement and incremental limits; immutable map limits operating range",
+  "evaluations": "all179 updates per recording retained; root0.1m/0.1rad gates; numeric mocap parsed only after all native work",
+  "adoption": "all179 accepted and accurate in each viewed recording, no lost/expiry/reset; failure preserved; new holdout only after this gate",
+  "independent": "reconstruct immutable first pyramid and every raw normal equation, six-axis increments, root scores and temporal state; altered reports must fail",
+  "unchanged_default": "new explicit binary/API; rolling-fusion algorithm and camera remain default; run previous Rust checks and compare legacy native outputs",
+  "thirty_percent": "not established by this stage alone; unresolved automotive perception and heldout calibration remain"
+}

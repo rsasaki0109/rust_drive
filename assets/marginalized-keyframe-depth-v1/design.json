@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "role": "fixed viewed-data marginalization experiment; no held-out or driving claim",
+  "modes": [
+    "discard",
+    "retain"
+  ],
+  "window": "first + newest2 selected keys + latest accepted + current, deduplicated, at most5",
+  "first_pose": "identity forever; no reset",
+  "source_geometry": "same raw depth pyramid and newer-to-older Huber point-to-plane factors as joint-keyframe-depth-v1",
+  "raw_pair_min_support": 200,
+  "raw_pair_distance_m": {
+    "4": 0.12,
+    "2": 0.08,
+    "1": 0.08
+  },
+  "normal_dot_min": 0.8,
+  "huber_m": 0.01,
+  "source_strides": {
+    "4": 1,
+    "2": 2,
+    "1": 4
+  },
+  "iterations": [
+    10,
+    7,
+    5
+  ],
+  "max_scaled_condition": 1000000.0,
+  "max_node_increment_m_rad": [
+    0.1,
+    0.15
+  ],
+  "final_raw_rms_m": 0.03,
+  "final_system_spd_required": true,
+  "max_displacement_from_last_accepted_m": 0.5,
+  "accepted_pose_age_s": 0.2,
+  "keyframe_threshold_m_rad": [
+    0.1,
+    0.1
+  ],
+  "depth_units_per_metre": 5000,
+  "camera": {
+    "width": 640,
+    "height": 480,
+    "fx": 525.0,
+    "fy": 525.0,
+    "cx": 319.5,
+    "cy": 239.5
+  },
+  "prior": "derived from previous prior plus finest-scale currently supported raw factors incident to eliminated nodes only",
+  "elimination": "scaled Cholesky solve of removed principal block; Schur Hkk-Hke Hee^-1 Hek and gk-Hke Hee^-1 ge, no inversion/damping/rank filling",
+  "no_double_counting": "retained-retained raw factors excluded from elimination; consumed pair identities unique and cannot become active again",
+  "prior_chart": "left retraction delta: w=Log(R R_anchor^T); v=t-Exp(w)t_anchor; exact analytic chart Jacobian; first pose excluded",
+  "prior_transport": "J^T H J, J^T(H delta +g); Gauss-Newton, not full second-derivative Hessian",
+  "prior_rotation_chart_max_rad": 3.141591653589793,
+  "prior_psd_roundoff_relative_tolerance": 1e-10,
+  "nonlinear_relinearization": "marginal factors remain frozen at elimination; raw active factors recomputed; no global smoothing",
+  "prior_dimension_max": 18,
+  "fit_dimension_max": 24,
+  "max_acquisitions": 200,
+  "failure_atomic": "fit and marginalization must both succeed before committing pose/reference/prior/accepted clock; expiry terminal",
+  "control": "discard uses same fitter, gates and policy with no retained prior; final SPD admission shared by both",
+  "input": "original180 selected depth images only; RGB not decoded; numeric labels only after all4 operational branches and raw/state audits",
+  "records": [
+    "tum-fr1-room-temporal",
+    "tum-fr1-desk2-independent"
+  ],
+  "indices": [
+    100,
+    279
+  ],
+  "denominator_updates": 179,
+  "root_gates_m_rad": [
+    0.1,
+    0.1
+  ],
+  "reference_bracket_max_s": 0.02,
+  "numeric_audit_tolerances": {
+    "raw_h_atol": 1e-07,
+    "raw_g_atol": 1e-09,
+    "prior_h_atol": 1e-06,
+    "prior_g_atol": 1e-08,
+    "prior_rtol": 1e-08
+  },
+  "known_limitations": "fixed linearized marginal factors, data association/noise/calibration not solved; prior not calibrated uncertainty",
+  "helper_sha256": {
+    "scripts/joint_keyframe_depth.py": "08c27ec2e948cc8df28fefcc7e0c46d3e9fb1ea79f06234138ffcf38234c51e5",
+    "scripts/projective_depth_raw.py": "b64f7bc6a786dedd8900c72fa5c9248577e1485fd2b9263c6ff79805e785b927",
+    "scripts/projective_depth_common.py": "4d951fed622483de224666056b3fbabdd22902837cbdf8574cb500df9a86a29f",
+    "scripts/check-opencv-rgbd.py": "63e366ce4d83d1fd1512c13726c777d5d04aa24c8b22d6161ecbb33cf21df1ff"
+  }
+}

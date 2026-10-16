@@ -1,0 +1,52 @@
+{
+  "implementation_integrity_pass": true,
+  "accuracy_improvement_adopted": false,
+  "default_changed": false,
+  "complete_physical_accuracy_pass": false,
+  "default_full_outcomes_reproduced": 360,
+  "revised_raw_iteration_equations": 6898,
+  "revised_raw_final_equations": 358,
+  "native_rust_tests": 27,
+  "core_rust_tests": 371,
+  "core_scenarios_and_replays": 49,
+  "unchanged_core_outputs": 245,
+  "unchanged_previous_evidence_entries": 769,
+  "source_members": 36,
+  "changed_previously_pinned_sources": {
+    ".github/workflows/ci.yml": {
+      "before": "68063ec83fd517e5cc943bc458b377272ef0939e96a06dbbd57b109ce2738c06",
+      "after": "1a707cd7b48af73244dc2574c0970c0c839ed496a0ef8a69a37acbeab81a484e"
+    },
+    "docs/native-depth-regression.md": {
+      "before": "cca5d2a6dd22f99dac878f07d24087608c09563e13fbadbb5e00bb4fdd9b5ccb",
+      "after": "65b1719dc87c5251e164dbbcf91ad844da16d0cf97a1b6a97b5919a6626542a3"
+    },
+    "integrations/projective-depth/src/lib.rs": {
+      "before": "c2fb8d296eba277f4d5bd690c904c3f47b59dd9e8cfba7e64a1f6e4cc8b870ef",
+      "after": "9f2999b0bdaac14c106adabb6885799b5b0e291eacabcf299a16445a8c50ece2"
+    },
+    "integrations/projective-depth/src/main.rs": {
+      "before": "02bd94bfe6997f4fa1938017b042fbf145f42eca7f2a9b645c2acbf103eb3a96",
+      "after": "3b9d0d79d6cd5d71eed17703da418ce4e36a78f7531f141160b392930b748200"
+    },
+    "scripts/audit-projective-depth-raw.py": {
+      "before": "a00469cf2ba9c47a762fa60cd5b7898f821de745992a73d249f21c5803fdaf9b",
+      "after": "f3db28808462c8bbfff4974c6fae3c9d970a5508c18c9cb5ff95e5e078493b84"
+    },
+    "scripts/projective_depth_raw.py": {
+      "before": "ed231bec60e21a71073aba7f1f5cf3b944a03b8329d8c194caa0c193dd0254df",
+      "after": "3c92324d4289761de8d0aef6e6439f5973ef2efb3f29cbe6e82b82aded7994c9"
+    }
+  },
+  "current_binary_sha256": "0181149193e65c4a6ee5e108daece9cc6b32175a14010dcea883a3cec0badcab",
+  "native_cargo_pins_unchanged": true,
+  "subjectively_estimated_maturity_percent": 20,
+  "limits": [
+    "No adopted trajectory accuracy gain; both attempts fail the original relative adoption gate",
+    "First strict-support implementation also fails two known-motion controls and lacks complete raw auditing",
+    "Planar-patch selection uses its own plane-fit residual and is not independent normal truth",
+    "All physical recordings are already viewed indoor development data, without vehicle integration",
+    "Reference interpolation is shared; root rotation classification is separately checked with atan2",
+    "Historical evidence is unchanged; maintained native/checker sources intentionally evolve"
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "purpose": "One process, one CPU model plan, actual recorded RGB sequence through unchanged detector and tracker",
+  "dataset": "TUM RGB-D Freiburg3 sitting_xyz, previously viewed indoor recording",
+  "source_manifest_sha256": "3111ede92d129d650bd24be94f601616c74e78749e0c134d652b63ce7b64447f",
+  "source_rgb_table_sha256": "0858cf2c7eac2962e911e08da0388ce93697ce2aeaa3173f56af0cef1c34b38f",
+  "selection": "first8 consecutive original RGB indices starting at the first RGB associated in the existing viewed manifest; no pixel or detection-based selection",
+  "frames": [
+    {
+      "rgb_source_index": 102,
+      "timestamp_s": "1341845824.165751",
+      "file": "data/tum-fr3-sitting-visual/raw/rgb-1341845824.165751.png",
+      "sha256": "d0ac25cf1cadb0bb2194e85d899366e90fd7ffa97b8a6f9cb9ccebc01c69f65a",
+      "bytes": 550157
+    },
+    {
+      "rgb_source_index": 103,
+      "timestamp_s": "1341845824.197930",
+      "file": "data/tum-fr3-sitting-visual/raw/rgb-1341845824.197930.png",
+      "sha256": "13455dc28cb3f796f4da0758ee522db6868f2a0b129ddf8e5a502ed5ed2f9f7d",
+      "bytes": 589111
+    },
+    {
+      "rgb_source_index": 104,
+      "timestamp_s": "1341845824.229907",
+      "file": "data/tum-fr3-sitting-visual/raw/rgb-1341845824.229907.png",
+      "sha256": "db3ce4e52df01b4ba5e8bfcd55059105ca541a543f44a44d22a1f42ccef6bc50",
+      "bytes": 575469
+    },
+    {
+      "rgb_source_index": 105,
+      "timestamp_s": "1341845824.265800",
+      "file": "data/tum-fr3-sitting-visual/raw/rgb-1341845824.265800.png",
+      "sha256": "115cea1df25e2402545c48a6e86db8aee679b90254ecccc46ee80fbf9f3620dd",
+      "bytes": 544252
+    },
+    {
+      "rgb_source_index": 106,
+      "timestamp_s": "1341845824.298080",
+      "file": "data/tum-fr3-sitting-visual/raw/rgb-1341845824.298080.png",
+      "sha256": "e7f268fda337e3859db47b4ce222ed3eb928dc5bbf9c644d17246d2c52a0ebde",
+      "bytes": 537339
+    },
+    {
+      "rgb_source_index": 107,
+      "timestamp_s": "1341845824.333783",
+      "file": "data/tum-fr3-sitting-visual/raw/rgb-1341845824.333783.png",
+      "sha256": "bd13de9c67a356989e85ac9e7dc409789a85a8769515d10687615fc482aa4bab",
+      "bytes": 578941
+    },
+    {
+      "rgb_source_index": 108,
+      "timestamp_s": "1341845824.365821",
+      "file": "data/tum-fr3-sitting-visual/raw/rgb-1341845824.365821.png",
+      "sha256": "f6afcb881471a0d2d81ef0d598007cb39dfe243ab998ffbeb9ae126dbb1d9737",
+      "bytes": 593155
+    },
+    {
+      "rgb_source_index": 109,
+      "timestamp_s": "1341845824.398039",
+      "file": "data/tum-fr3-sitting-visual/raw/rgb-1341845824.398039.png",
+      "sha256": "898edc65fc5be0949695b58aaaf355b092a04fbf651f99959d58a7780cf5ff70",
+      "bytes": 569519
+    }
+  ],
+  "model": "same pinned YOLOX-S c5c2d13e59ae883e6af3b45daea64af4833a4951c92d116ec270d9ddbe998063",
+  "algorithm_changes": "none to detector, ambiguity-preserving consistency or image tracker; new orchestration only",
+  "validation": "preflight all image hashes/dimensions/clock/identity before model load; same8 actual images twice; exact local repeat except timing; all snapshots compared with standalone tracking and independent assignment/lifecycle checks",
+  "numeric_timestamp_input": "decimal string copied from original rgb.txt; Rust parse::<f64> preserves source precision",
+  "runtime_depth_or_pose_or_identity_labels": false,
+  "real_identity_accuracy_available": false,
+  "quality_and_maturity": "no automotive or MOT accuracy claim; about20%,30%unmet"
+}

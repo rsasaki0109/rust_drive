@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "role": "new algorithm on already viewed development data; no held-out claim",
+  "sources": {
+    "geometry_prototype_sha256": "9756b73c9a2d5d6be257dd0f30b828f61b1632dd38ce95753099400f9567fb2f"
+  },
+  "camera": {
+    "width": 640,
+    "height": 480,
+    "fx": 525.0,
+    "fy": 525.0,
+    "cx": 319.5,
+    "cy": 239.5
+  },
+  "depth_units_per_metre": 5000,
+  "depth_range_m": [
+    0.3,
+    5.0
+  ],
+  "geometry": "existing fused keyframe point-to-plane Huber ICP",
+  "photo": "bilinear target intensity and exact bilinear spatial derivative; Tukey biweight cutoff30 intensity levels",
+  "geometric_sigma_m": 0.005,
+  "photometric_sigma_intensity": 10.0,
+  "photometric_min_support": 200,
+  "photometric_gradient_min": 1.0,
+  "phase_gate_s": 0.005,
+  "phase_gate_definition": "absolute difference of RGB-minus-depth timestamp offsets between accepted keyframe and current acquisition",
+  "photo_freshness": "strictly new RGB source timestamp relative to every observed RGB; repeated RGB uses depth only",
+  "reference_image": "actual keyframe RGB, not warped or synthesized; depth model may be fused",
+  "keyframe_replacement_m": 0.1,
+  "keyframe_replacement_rad": 0.1,
+  "iterations": [
+    10,
+    7,
+    5
+  ],
+  "condition_max": 1000000.0,
+  "step_translation_max_m": 0.1,
+  "step_rotation_max_rad": 0.15,
+  "final_geometric_rms_max_m": 0.03,
+  "tracking_max_accepted_age_s": 0.2,
+  "primary_clock": "depth timestamp",
+  "pose_resets": 0,
+  "datasets": [
+    "tum-fr1-room-temporal",
+    "tum-fr1-desk2-independent"
+  ],
+  "selected_original_depth_indices": [
+    100,
+    279
+  ],
+  "updates_per_recording": 179,
+  "root_translation_gate_m": 0.1,
+  "root_rotation_gate_rad": 0.1,
+  "reference_bracket_max_s": 0.02,
+  "ground_truth_operational": false,
+  "operational_runs_before_reference_scoring": "both complete recordings",
+  "baseline": "immutable rust fused-depth v1",
+  "maturity_claim": false
+}

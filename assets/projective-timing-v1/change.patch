@@ -1,0 +1,1082 @@
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -152,6 +152,8 @@
+           python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --motion-model constant_velocity --output artifacts/projective-depth/motion-analytic
+           python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/motion-analytic --output artifacts/projective-depth/motion-raw-audit
+           python scripts/check-projective-motion.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/motion-lifecycle
++          python scripts/check-projective-timing.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/projective-depth/timing-controls
++          python scripts/check-projective-rgbd-lifecycle.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --timing previous_motion --output artifacts/projective-depth/timing-lifecycle
+           python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --photometric keyframe --step-control fixed_support --output artifacts/projective-depth/guarded-analytic
+           python scripts/audit-projective-depth-raw.py --analytic-only --analytic-reports artifacts/projective-depth/guarded-analytic --photometric keyframe --output artifacts/projective-depth/guarded-raw-audit
+           python scripts/check-projective-rgbd-lifecycle.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --step-control fixed_support --output artifacts/projective-depth/guarded-lifecycle
+@@ -200,6 +202,7 @@
+           python -m py_compile scripts/check-projective-rgbd-exposure.py
+           python -m py_compile scripts/projective_step_raw.py scripts/check-projective-step-control.py
+           python -m py_compile scripts/projective_motion_raw.py scripts/check-projective-motion.py
++          python -m py_compile scripts/projective_timing_raw.py scripts/check-projective-timing.py
+           python -m py_compile scripts/diagnose-projective-motion-timing.py
+           python -m py_compile scripts/multireference_rgbd_common.py scripts/evaluate-multireference-rgbd.py
+           python -m py_compile scripts/joint_keyframe_depth.py scripts/evaluate-joint-keyframe-depth.py
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -375,8 +375,12 @@
+ only two accepted depth poses to initialize ICP at variable frame intervals.
+ Depth scores67/179 room and159/179 desk2; RGB-D scores75/179 and169/179.
+ Neither passes adoption, so stationary initialization remains the default.
+-The accepted-history controls and independent SE(3) audit do not establish
+-RGB/depth temporal image compensation or vehicle localization.
++An additional opt-in [temporal image compensation](projective-timing.md) projects
++both RGB samples at their own acquisition times using accepted body motion.
++Reference motion stays frozen to its own depth acquisition; unavailable rates
++withhold image constraints. Own-time synthetic controls pass, while recorded
++accuracy 80/179 room and 171/179 desk2 still fails the maximum-angle adoption gate.
++Neither motion option establishes qualified vehicle localization.
+ [Contract and negative accuracy results](multireference-rgbd.md).
+ 
+ The optional NumPy joint-keyframe evaluator separately optimizes up to five
+--- a/docs/maturity.md
++++ b/docs/maturity.md
+@@ -615,3 +615,13 @@
+ unchanged. Timing diagnostics identify model-predicted image displacement, not
+ validated synchronization error or compensation. Subjective maturity stays
+ **about 20%** versus mature driving OSS.
++
++
++The [causal RGB/depth timing compensation](projective-timing.md) now resamples
++both images at their own acquisition times from previous accepted poses, with
++independently checked Jacobians and reference-rate ownership. Own-time plane
++accuracy improves from 2/8 to 8/8, while complete viewed results reach 80/179 room
++and 171/179 desk2. Maximum rotation error still fails adoption; ordinary RGB-D
++also retains a better room count. The default stays unchanged, with no held-out
++or automotive qualification. Subjective maturity remains **about 20%** versus
++mature driving OSS.
+--- a/docs/native-depth-regression.md
++++ b/docs/native-depth-regression.md
+@@ -62,11 +62,12 @@
+     photometric: Photometric::Disabled,
+     step_control: StepPolicy::Disabled,
+     motion_model: MotionModel::Stationary,
++    timing: Timing::Disabled,
+ }
+ ```
+ 
+ The JSON-lines `Configure` request accepts optional `reprojection`,
+-`correspondence`, `residual`, `normals`, `geometry`, `photometric`, `step_control` and `motion_model` fields. Missing fields use
++`correspondence`, `residual`, `normals`, `geometry`, `photometric`, `step_control`, `motion_model` and `timing` fields. Missing fields use
+ the original defaults; unknown fields and enum values reject. The version-1
+ acknowledgment, frame limits, optical coordinate convention and metre/second
+ units are unchanged. There are no new dependencies or Cargo lockfile changes.
+@@ -113,7 +114,13 @@
+   Its [controls and complete comparison](projective-motion.md) retain mixed
+   accuracy outcomes; stationary remains the default for both depth and RGB-D.
+ 
+-Only the individual configurations in the table have recorded trajectory
++* `timing`: `disabled` or `previous_motion`; the latter requires `keyframe`,
++  `constant_velocity` and disabled step control. It projects each measured image
++  at its own acquisition time using causal accepted-pose motion, and reports the
++  source/reference time warps. Its [controls and complete comparison](projective-timing.md)
++  give 80/179 room and 171/179 desk2, but maximum rotation error still fails adoption.
++
++Only the individual configurations documented here have recorded trajectory
+ results. Their combinations have no physical accuracy qualification. All modes
+ retain bounded pyramid work, normal/distance/support/condition/increment guards,
+ accepted acquisition clocks, atomic failure behavior and latched expiry.
+--- a/docs/projective-motion.md
++++ b/docs/projective-motion.md
+@@ -3,7 +3,9 @@
+ The optional Rust tracker now supports `motion_model: constant_velocity` as an
+ initializer. It predicts a camera pose from the last two **accepted** depth
+ poses and their actual acquisition intervals. It does not compensate RGB/depth
+-time offsets. The default remains `stationary`: complete cross-record accuracy
++time offsets; a separate [temporal image option](projective-timing.md) now adds
++that compensation with its own controls and recorded comparison. The default
++remains `stationary`: complete cross-record accuracy
+ still fails adoption.
+ 
+ ## Recorded outcomes
+--- a/docs/projective-timing.md
++++ b/docs/projective-timing.md
+@@ -0,0 +1,156 @@
++# Causal RGB/depth acquisition-time compensation
++
++The maintained Rust RGB-D tracker can now compensate the different acquisition
++times of a measured grayscale image and its associated depth. Select
++`photometric: keyframe`, `motion_model: constant_velocity`, and
++`timing: previous_motion`. Timing defaults to `disabled`. Fixed-support step
++control is rejected with this option because its retained measurement cost has
++not been extended to temporal image warps.
++
++This addresses an implemented measurement-model gap. It does not resolve
++sustained localization accuracy: the complete viewed recordings still fail
++physical accuracy and the fixed cross-record adoption rule. No default changes.
++
++## Complete recorded outcomes
++
++All rows use the same 180 original acquisitions, indices 100–279, K=525, first
++depth-camera root, zero resets and 0.1 m / 0.1 rad root gates. Every tracker below
++accepts all 179 updates in each recording without expiry. Numeric reference
++poses are decoded only after each operational ledger is saved.
++
++| Tracker | Accurate room / desk2, out of 179 | Max position room / desk2 (m) | Max rotation room / desk2 (rad) |
++|---|---|---|---|
++| Original depth default | 64 / 161 | 0.296290 / 0.114800 | 0.141286 / 0.090386 |
++| Ordinary exposure-aware RGB-D | 84 / 124 | 0.267082 / 0.121676 | 0.102433 / 0.149427 |
++| RGB-D with previous motion initialization | 75 / 169 | 0.270406 / 0.098134 | 0.117406 / 0.110973 |
++| RGB-D with previous motion and temporal image compensation | **80 / 171** | 0.282444 / 0.090224 | 0.111927 / 0.113717 |
++
++Compensation improves both accurate-update counts over its immediate motion
++initializer predecessor, but room remains worse than ordinary RGB-D. Relative
++to original depth, room passes the relative adoption gate. Desk2 exceeds the
++unchanged maximum-angle bound, so the combined adoption decision fails. Counts
++alone do not establish a general accuracy gain; the candidate also worsens
++room's maximum position error and desk2's maximum angle versus its immediate
++predecessor. These already-viewed indoor records are development regressions,
++not held-out or automotive evidence. Subjective maturity stays about 20%.
++
++The [source-bound packet](../assets/projective-timing-v1/summary.json) retains
++the design frozen before implementation, before/candidate/final source archives,
++complete sensor-only and scored trajectories, independent raw audits, controls,
++failed adoption decision and default replay receipts. No parameters were changed
++after candidate scores were viewed.
++
++## Coordinate and history contract
++
++All depth poses use optical x-right/y-down/z-forward and axial Z metres.
++Depth remains the primary acquisition clock. Image association must stay within
++20 ms, image timestamps cannot regress, and repeated RGB never contributes an
++intensity constraint. Spatially registered RGB/depth with the existing shared
++pinhole camera is assumed; this adds no extrinsic or distortion calibration.
++
++For the two last accepted depth poses `G0,G1` at `t0,t1`, the causal body twist is
++`xi=Log(G0^-1*G1)/(t1-t0)`. A measured depth point at `td` projects into its RGB
++image at `tr` through `Image_from_Depth=Exp(-xi*(tr-td))`. Translation and rotation
++are coupled by the SE(3) exponential. Each warp reports both acquisition times,
++both accepted motion-source timestamps, a status and its optional transform.
++
++For a source depth point `p`, fitted depth transform `T`, reference warp `A`, and
++source warp `B`, the image residual is
++`I_reference(project(A*T*p))-gain*I_source(project(B*p))-offset`.
++Both image samples are bilinear. Geometric admission, normals, depth distance
++and final geometric gates remain in the depth-reference frame. If `q=T*p` and
++`g_image` is the projected reference-image gradient, the depth-pose Jacobian is
++`[R_A^T*g_image, q cross (R_A^T*g_image)]`. Both warps are fixed before the current
++fit; the current fitted pose never supplies its own motion rate. The existing
++brightness gain/offset fit, nuisance projection and intensity scale are retained.
++
++The source rate uses only poses accepted before the current observation. The
++reference rate stays attached to its depth-reference acquisition, frozen when
++that reference is accepted. The initial reference has no motion history; it can
++be backfilled only after the first accepted interval starting at that reference.
++This helps later observations, never the fit that supplied the missing rate.
++Rejected fits and malformed or regressing observations never advance accepted
++history or reference motion. A reference change with repeated RGB still clears
++the color anchor until a subsequent fresh reference can be established.
++
++An exact zero time offset has a known identity warp without history. Nonzero
++offset with unavailable/ambiguous motion, or a warp exceeding 0.1 m or 0.15 rad,
++disables image constraints while keeping admissible depth available. Valid
++compensated pairs replace the old 5 ms difference-of-phases gate. These bounds
++are model guards, not calibrated synchronization-error or acceleration bounds.
++The existing 0.2 s accepted-depth expiry still latches loss before prediction.
++
++## Independent checks and limits
++
++The own-time renderer generates depth at the depth acquisition and grayscale
++at the RGB acquisition from one static analytic scene. Poses generate and score
++measurements only; runtime receives depth, gray bytes and their clocks.
++
++* A nonplanar sequence passes ten known-motion acquisitions through a reference
++  change and a rejected zero-depth observation, within 4 mm / 0.004 rad. Image
++  constraints are withheld at nonzero-phase bootstrap and resume after causal
++  history becomes available. Rejection never supplies a motion endpoint.
++* A planar sequence bootstraps with two simultaneous RGB/depth pairs, then varies
++  RGB offsets from -14 to +14 ms. Compensated tracking meets 4 mm / 0.004 rad on 8/8
++  acquisitions; the uncorrected control meets those gates on 2/8. Both accept 8/8,
++  so mere availability would hide the uncorrected drift. Without synchronous
++  bootstrap or observable depth, nonzero-phase plane motion is rejected rather
++  than inventing a rate.
++* All 183 geometric and 183 intensity systems in these controls are reconstructed
++  from raw images. Six-axis finite differences independently check the nonidentity
++  reference-warp Jacobian. Signed offsets, missing history, near-pi motion and
++  bounded-warp fallback have Rust controls. Four corrupted provenance reports
++  are rejected, including current-frame motion and a newer reference rate.
++* The color lifecycle control checks ten acquisitions, 84 raw geometric systems,
++  repeated RGB, reference clearing/resumption, five clock/image faults and
++  latched expiry. All 34 malformed transport/configuration cases reject; invalid
++  temporal combinations reject before configuration acknowledgment.
++
++The recorded raw audit independently rebuilds accepted history and reference
++ownership from the complete sensor ledger. It computes SE(3) logarithms with a
++quaternion eigensolve and Jacobian quadrature, exponentials with a matrix series,
++and image systems with NumPy weighted SVD nuisance projection. After independent
++causal verification within 1e-12, equations consume the reported rounded warp
++matrices, as they consume the verified reported per-step poses. An initial raw
++audit stopped at room index 126: independent warp differences below 3.9e-16 were
++amplified by a nearly canceling Schur gradient beyond its unchanged tolerance.
++The rounded-input correction reproduces that frame without changing any H/g,
++residual or physical accuracy tolerances. The first audit failure and its source
++version are retained. The complete auditor verifies every
++geometric/image normal system and depth-model generation without decoding
++numeric reference poses. Full geometric and photometric residual populations
++remain explicit. The two recordings pass 7,969 geometric and 7,478 image systems, 358 prediction
++reports and 358 fused-model generations. Source/binary/input hashes bind the
++audits to these runs.
++
++All 414 Rust tests (43 optional-native, 371 core), Clippy, formatting and 49 core
++scenario/replays pass. The 245 core outputs stay unchanged. Both stationary
++defaults reproduce all 720 historical sensor outcomes exactly. These checks
++establish the bounded implementation and regression behavior, not real-time
++performance, moving-scene robustness, acceleration accuracy or vehicle safety.
++The motion rate comes from drifting estimates and assumes locally constant body
++motion; compensation cannot be treated as measured synchronization truth.
++
++## Reproduction
++
++Use the existing [recorded inputs and pinned tools](projective-depth-rust.md#reproduction).
++Use fresh output directories. The evaluator exits 1 after saving a complete
++physical-accuracy failure; an exception before results is a different failure.
++
++```sh
++source scripts/env.sh
++cargo test --manifest-path integrations/projective-depth/Cargo.toml --offline
++cargo build --release --manifest-path integrations/projective-depth/Cargo.toml --offline
++python scripts/check-projective-timing.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --output artifacts/timing-controls
++python scripts/check-projective-rgbd-lifecycle.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --timing previous_motion --output artifacts/timing-lifecycle
++python scripts/check-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --photometric keyframe --motion-model constant_velocity --output artifacts/timing-analytic
++python scripts/evaluate-projective-depth.py --binary integrations/projective-depth/target/release/rustdriving-projective-depth --photometric keyframe --motion-model constant_velocity --timing previous_motion --output artifacts/timing-recorded
++python scripts/audit-projective-depth-raw.py --analytic-reports artifacts/timing-analytic --photometric keyframe --recorded-reports artifacts/timing-recorded --output artifacts/timing-raw
++python scripts/check-projective-depth-comparison.py --baseline artifacts/depth-default --candidate artifacts/timing-recorded --raw-audit artifacts/timing-raw --output artifacts/timing-adoption.json
++bash scripts/check.sh
++```
++
++Use the camera-only evaluator to produce `artifacts/depth-default` first. The
++comparison must bind every baseline outcome to the original frozen depth ledger;
++its nonzero exit preserves the failed adoption result. The NumPy/Pillow versions
++and native binary are pinned in the saved run files; no dataset is redistributed.
+--- a/integrations/projective-depth/src/lib.rs
++++ b/integrations/projective-depth/src/lib.rs
+@@ -7,7 +7,9 @@
+ mod motion;
+ pub mod multireference;
+ pub mod photometric;
+-pub use motion::{MotionModel, Prediction};
++pub use motion::{
++    MotionModel, Prediction, Status as PredictionStatus, TimeWarp, Timing, WarpStatus,
++};
+ mod step_control;
+ pub use step_control::StepPolicy;
+ pub mod supervision;
+@@ -84,6 +86,7 @@
+     pub photometric: Photometric,
+     pub step_control: StepPolicy,
+     pub motion_model: MotionModel,
++    pub timing: Timing,
+ }
+ 
+ #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+@@ -793,6 +796,8 @@
+     gray: Option<Vec<Gray>>,
+     rgb_timestamp: Option<f64>,
+     phase: f64,
++    depth_timestamp: f64,
++    interval: Option<motion::Interval>,
+ }
+ pub struct Tracker {
+     camera: Camera,
+@@ -804,6 +809,7 @@
+     photometric: Photometric,
+     step_policy: StepPolicy,
+     motion_model: MotionModel,
++    timing: Timing,
+     history: motion::History,
+     last_rgb: Option<f64>,
+     model: Option<Model>,
+@@ -836,12 +842,20 @@
+                 photometric: Photometric::default(),
+                 step_control: StepPolicy::default(),
+                 motion_model: MotionModel::default(),
++                timing: Timing::default(),
+             },
+         )
+     }
+     /// Configure measured residual/model policies with shared clock and fault guards.
+     pub fn with_config(camera: Camera, config: TrackerConfig) -> Result<Self, String> {
+         camera.validate()?;
++        if config.timing == Timing::PreviousMotion
++            && (config.photometric != Photometric::Keyframe
++                || config.motion_model != MotionModel::ConstantVelocity
++                || config.step_control != StepPolicy::Disabled)
++        {
++            return Err("previous-motion timing requires keyframe photometric, constant_velocity and disabled step control".into());
++        }
+         if config.step_control == StepPolicy::FixedSupport
+             && config.photometric != Photometric::Keyframe
+         {
+@@ -876,6 +890,7 @@
+             photometric: config.photometric,
+             step_policy: config.step_control,
+             motion_model: config.motion_model,
++            timing: config.timing,
+             history: motion::History::default(),
+             last_rgb: None,
+             model: None,
+@@ -958,7 +973,23 @@
+                                 && ((image.timestamp - timestamp) - m.phase).abs() <= 0.005
+                         }),
+                         fresh,
++                        timing: None,
+                     });
++                    if self.timing == Timing::PreviousMotion {
++                        let source =
++                            motion::time_warp(timestamp, image.timestamp, self.history.interval());
++                        let reference = self.model.as_ref().and_then(|m| {
++                            m.rgb_timestamp
++                                .map(|rgb| motion::time_warp(m.depth_timestamp, rgb, m.interval))
++                        });
++                        let state = out.photometric.as_mut().expect("image state");
++                        state.phase_qualified = source.image_from_depth.is_some()
++                            && reference
++                                .as_ref()
++                                .is_some_and(|r| r.image_from_depth.is_some())
++                            && self.model.as_ref().is_some_and(|m| m.gray.is_some());
++                        state.timing = Some(photometric::TimingState { source, reference });
++                    }
+                     (
+                         Some(gray_pyramid(self.camera, image.gray)),
+                         Some(image.timestamp),
+@@ -1005,6 +1036,8 @@
+                     gray,
+                     rgb_timestamp,
+                     phase,
++                    depth_timestamp: timestamp,
++                    interval: None,
+                 });
+                 out.first_from_current = Some(Pose::identity());
+                 out.initialized = true;
+@@ -1025,7 +1058,18 @@
+                     (Some(target), Some(source)) => Some(PhotoPair {
+                         target,
+                         source,
+-                        enabled: fresh && (phase - old.phase).abs() <= 0.005,
++                        enabled: fresh
++                            && out.photometric.as_ref().is_some_and(|s| s.phase_qualified),
++                        warps: out
++                            .photometric
++                            .as_ref()
++                            .and_then(|s| s.timing.as_ref())
++                            .and_then(|t| {
++                                Some((
++                                    t.reference.as_ref()?.image_from_depth?,
++                                    t.source.image_from_depth?,
++                                ))
++                            }),
+                     }),
+                     _ => None,
+                 };
+@@ -1119,6 +1163,12 @@
+                     gray: next_gray,
+                     rgb_timestamp: next_rgb_timestamp,
+                     phase: next_phase,
++                    depth_timestamp: if replace {
++                        timestamp
++                    } else {
++                        old.depth_timestamp
++                    },
++                    interval: if replace { None } else { old.interval },
+                 });
+                 out.first_from_current = Some(root);
+                 out.final_equation = Some(final_e);
+@@ -1129,6 +1179,14 @@
+             if self.motion_model == MotionModel::ConstantVelocity {
+                 self.history
+                     .observe(timestamp, out.first_from_current.expect("accepted pose"));
++                if self.timing == Timing::PreviousMotion
++                    && let Some(interval) = self.history.interval()
++                    && let Some(model) = self.model.as_mut()
++                    && (model.depth_timestamp == timestamp
++                        || (model.interval.is_none() && model.depth_timestamp == interval.previous))
++                {
++                    model.interval = Some(interval);
++                }
+             }
+             self.last_accepted = Some(timestamp);
+             out.accepted = true;
+--- a/integrations/projective-depth/src/main.rs
++++ b/integrations/projective-depth/src/main.rs
+@@ -1,7 +1,7 @@
+ //! Bounded synchronous JSON-lines evaluation transport; no external services.
+ use rustdriving_projective_depth::{
+     Camera, Correspondence, ModelGeometry, MotionModel, NormalEstimation, Reprojection, Residual,
+-    StepPolicy, Tracker, TrackerConfig,
++    StepPolicy, Timing, Tracker, TrackerConfig,
+ };
+ use rustdriving_projective_depth::{ImageObservation, photometric::Photometric};
+ use serde::Deserialize;
+@@ -28,6 +28,8 @@
+         step_control: StepPolicy,
+         #[serde(default)]
+         motion_model: MotionModel,
++        #[serde(default)]
++        timing: Timing,
+     },
+     Frame {
+         timestamp: f64,
+@@ -74,6 +76,7 @@
+                 photometric,
+                 step_control,
+                 motion_model,
++                timing,
+             } => {
+                 if tracker.is_some() {
+                     return Err("one configuration per process".into());
+@@ -89,6 +92,7 @@
+                         photometric,
+                         step_control,
+                         motion_model,
++                        timing,
+                     },
+                 )?);
+                 writeln!(output, "{{\"configured\":true,\"schema_version\":1}}")
+--- a/integrations/projective-depth/src/motion.rs
++++ b/integrations/projective-depth/src/motion.rs
+@@ -8,6 +8,63 @@
+     #[default]
+     Stationary,
+     ConstantVelocity,
++}
++#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
++#[serde(rename_all = "snake_case")]
++pub enum Timing {
++    #[default]
++    Disabled,
++    PreviousMotion,
++}
++#[derive(Clone, Copy)]
++pub(super) struct Interval {
++    pub previous: f64,
++    pub latest: f64,
++    twist: Option<[f64; 6]>,
++}
++#[derive(Debug, Serialize)]
++#[serde(rename_all = "snake_case")]
++pub enum WarpStatus {
++    Coincident,
++    Unavailable,
++    Compensated,
++    IncrementLimit,
++}
++#[derive(Debug, Serialize)]
++pub struct TimeWarp {
++    pub depth_timestamp: f64,
++    pub image_timestamp: f64,
++    pub previous_timestamp: Option<f64>,
++    pub latest_timestamp: Option<f64>,
++    pub status: WarpStatus,
++    pub image_from_depth: Option<Pose>,
++}
++pub(super) fn time_warp(depth: f64, image: f64, interval: Option<Interval>) -> TimeWarp {
++    let mut out = TimeWarp {
++        depth_timestamp: depth,
++        image_timestamp: image,
++        previous_timestamp: interval.map(|v| v.previous),
++        latest_timestamp: interval.map(|v| v.latest),
++        status: WarpStatus::Unavailable,
++        image_from_depth: None,
++    };
++    if depth == image {
++        out.status = WarpStatus::Coincident;
++        out.image_from_depth = Some(Pose::identity());
++    } else if let Some(rate) = interval
++        && let Some(twist) = rate.twist
++    {
++        let scaled = twist.map(|v| v * ((depth - image) / (rate.latest - rate.previous)));
++        out.status = WarpStatus::IncrementLimit;
++        if scaled.iter().all(|v| v.is_finite()) && norm([scaled[3], scaled[4], scaled[5]]) <= 0.15 {
++            let pose = exp_body(scaled);
++            if pose.finite_rigid() && norm(pose.translation) <= 0.1 {
++                out.status = WarpStatus::Compensated;
++                out.image_from_depth = Some(pose);
++            }
++        }
++    }
++    out
+ }
+ #[derive(Debug, Serialize)]
+ #[serde(rename_all = "snake_case")]
+@@ -33,6 +90,15 @@
+     latest: Option<(f64, Pose)>,
+ }
+ impl History {
++    pub(super) fn interval(&self) -> Option<Interval> {
++        let (a, first) = self.previous?;
++        let (b, last) = self.latest?;
++        Some(Interval {
++            previous: a,
++            latest: b,
++            twist: log_body(first.inverse().compose(last)),
++        })
++    }
+     pub(super) fn observe(&mut self, stamp: f64, pose: Pose) {
+         debug_assert!(self.latest.is_none_or(|(t, _)| stamp > t));
+         self.previous = self.latest;
+@@ -131,6 +197,36 @@
+ mod tests {
+     use super::*;
+     #[test]
++    fn signed_exposure_offsets_use_inverse_body_motion_and_bounded_history() {
++        let mut history = History::default();
++        assert!(time_warp(1., 1.01, None).image_from_depth.is_none());
++        assert!(matches!(
++            time_warp(1., 1., None).status,
++            WarpStatus::Coincident
++        ));
++        history.observe(1., Pose::identity());
++        history.observe(1.02, Pose::identity().increment([0.02, 0., 0., 0., 0., 0.]));
++        for offset in [-0.01, 0.01] {
++            let warp = time_warp(1.04, 1.04 + offset, history.interval());
++            assert!((warp.image_from_depth.unwrap().translation[0] + offset).abs() < 1e-12);
++            assert_eq!(warp.latest_timestamp, Some(1.02));
++        }
++        assert!(matches!(
++            time_warp(1.04, 1.24, history.interval()).status,
++            WarpStatus::IncrementLimit
++        ));
++        let mut ambiguous = History::default();
++        ambiguous.observe(1., Pose::identity());
++        ambiguous.observe(
++            1.02,
++            Pose::identity().increment([0., 0., 0., std::f64::consts::PI, 0., 0.]),
++        );
++        assert!(matches!(
++            time_warp(1.04, 1.05, ambiguous.interval()).status,
++            WarpStatus::Unavailable
++        ));
++    }
++    #[test]
+     fn irregular_prediction_follows_a_helix_in_a_rotated_origin() {
+         let origin = Pose::identity().increment([0.2, -0.1, 0.3, 0.1, -0.15, 0.2]);
+         let arc = |s: f64| Pose {
+--- a/integrations/projective-depth/src/photometric.rs
++++ b/integrations/projective-depth/src/photometric.rs
+@@ -157,11 +157,19 @@
+     pub reference_timestamp: Option<f64>,
+     pub phase_qualified: bool,
+     pub fresh: bool,
++    #[serde(skip_serializing_if = "Option::is_none")]
++    pub timing: Option<TimingState>,
++}
++#[derive(Debug, Serialize)]
++pub struct TimingState {
++    pub source: crate::motion::TimeWarp,
++    pub reference: Option<crate::motion::TimeWarp>,
+ }
+ pub(super) struct PhotoPair<'a> {
+     pub target: &'a [Gray],
+     pub source: &'a [Gray],
+     pub enabled: bool,
++    pub warps: Option<(Pose, Pose)>,
+ }
+ impl PhotoPair<'_> {
+     pub(super) fn equation(
+@@ -208,25 +216,61 @@
+                     continue;
+                 }
+                 let c = target.camera;
+-                let z = q[2];
+-                let Some((value, gx, gy)) =
+-                    self.target[level].sample(c.fx * q[0] / z + c.cx, c.fy * q[1] / z + c.cy)
++                let (reference_warp, source_warp) =
++                    self.warps.unwrap_or((Pose::identity(), Pose::identity()));
++                let image_q = if self.warps.is_some() {
++                    reference_warp.transform(q)
++                } else {
++                    q
++                };
++                let z = image_q[2];
++                if z <= 0.3 {
++                    continue;
++                }
++                let Some((value, gx, gy)) = self.target[level]
++                    .sample(c.fx * image_q[0] / z + c.cx, c.fy * image_q[1] / z + c.cy)
+                 else {
+                     continue;
+                 };
+                 if gx.hypot(gy) < 1. {
+                     continue;
+                 }
++                let source_value = if self.warps.is_some() {
++                    let p = source_warp.transform(source.vertices[i]);
++                    if p[2] <= 0.3 {
++                        continue;
++                    }
++                    let c = source.camera;
++                    let Some((value, _, _)) = self.source[level]
++                        .sample(c.fx * p[0] / p[2] + c.cx, c.fy * p[1] / p[2] + c.cy)
++                    else {
++                        continue;
++                    };
++                    value
++                } else {
++                    self.source[level].pixels[i]
++                };
+                 samples.push(Sample {
+                     target: value,
+-                    source: self.source[level].pixels[i],
+-                    jacobian: image_jacobian(c, q, gx, gy),
++                    source: source_value,
++                    jacobian: if self.warps.is_some() {
++                        warped_jacobian(c, q, reference_warp, gx, gy)
++                    } else {
++                        image_jacobian(c, q, gx, gy)
++                    },
+                 });
+             }
+         }
+         affine_equation(&samples, &mut out);
+         out
+     }
++}
++fn warped_jacobian(c: crate::Camera, depth_q: [f64; 3], warp: Pose, gx: f64, gy: f64) -> [f64; 6] {
++    let q = warp.transform(depth_q);
++    let image = image_jacobian(c, q, gx, gy);
++    let g = warp.inverse().rotate([image[0], image[1], image[2]]);
++    let r = cross(depth_q, g);
++    [g[0], g[1], g[2], r[0], r[1], r[2]]
+ }
+ fn image_jacobian(c: crate::Camera, q: [f64; 3], gx: f64, gy: f64) -> [f64; 6] {
+     let z = q[2];
+@@ -288,6 +332,24 @@
+         let expected = image_jacobian(c, q, 2., 3.);
+         let value = |delta: [f64; 6]| {
+             let p = Pose::identity().increment(delta).transform(q);
++            2. * (c.fx * p[0] / p[2] + c.cx) + 3. * (c.fy * p[1] / p[2] + c.cy)
++        };
++        for i in 0..6 {
++            let mut a = [0.; 6];
++            let mut b = [0.; 6];
++            a[i] = 1e-7;
++            b[i] = -1e-7;
++            assert!(((value(a) - value(b)) / 2e-7 - expected[i]).abs() < 2e-6);
++        }
++    }
++    #[test]
++    fn exposure_warp_jacobian_matches_all_six_depth_pose_directions() {
++        let c = camera();
++        let q = [0.17, -0.12, 2.3];
++        let warp = Pose::identity().increment([0.012, -0.008, 0.003, 0.008, -0.01, 0.015]);
++        let expected = warped_jacobian(c, q, warp, 2., 3.);
++        let value = |delta: [f64; 6]| {
++            let p = warp.transform(Pose::identity().increment(delta).transform(q));
+             2. * (c.fx * p[0] / p[2] + c.cx) + 3. * (c.fy * p[1] / p[2] + c.cy)
+         };
+         for i in 0..6 {
+--- a/scripts/audit-projective-depth-raw.py
++++ b/scripts/audit-projective-depth-raw.py
+@@ -17,7 +17,7 @@
+            ROOT/'scripts/projective_vertex_raw.py',
+            ROOT/'scripts/projective_photo_raw.py',
+            ROOT/'scripts/projective_step_raw.py',
+-           ROOT/'scripts/projective_motion_raw.py',
++           ROOT/'scripts/projective_motion_raw.py',ROOT/'scripts/projective_timing_raw.py',
+            ROOT/'scripts/check-projective-depth.py',ROOT/'scripts/requirements-visual.txt',
+            ROOT/'assets/projective-depth-raw-audit-v1/design.json')
+ SOURCE_PINS = {str(p.relative_to(ROOT)):sha(p.read_bytes()) for p in SOURCES}
+@@ -209,6 +209,9 @@
+     photometric = freeze.get('photometric','disabled')
+     step_policy=freeze.get('step_control')
+     motion_model=freeze.get('motion_model','stationary')
++    timing=freeze.get('timing','disabled')
++    require(timing in ('disabled','previous_motion'),'declared timing policy')
++    if timing=='previous_motion':require(photometric=='keyframe' and motion_model=='constant_velocity' and step_policy=='disabled','qualified temporal policies')
+     require(motion_model in ('stationary','constant_velocity'),'declared motion model')
+     require(step_policy in (None,'disabled','fixed_support'),'declared step policy')
+     require(photometric in ('disabled','keyframe'),'declared image policy')
+@@ -239,12 +242,14 @@
+         verified(frame)  # Hashes only; no pixel or reference label decoding yet.
+     require(all(sha(read(ROOT/n))==d for n,d in SOURCE_PINS.items()),'audit sources unchanged since process start')
+     write(output/'freeze.json',dict(dataset=case,source_sha256=SOURCE_PINS,
+-        manifest_sha256=sha(manifest_body),original_freeze_sha256=sha(read(freeze_path)),reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric,step_control=step_policy,motion_model=motion_model,
++        manifest_sha256=sha(manifest_body),original_freeze_sha256=sha(read(freeze_path)),reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric,step_control=step_policy,motion_model=motion_model,timing=timing,
+         original_sensor_ledger_sha256=sha(read(ledger_path,64*1024*1024)),depth_source_count=180,
+         ground_truth_decoded=False,raw_color_decoded=photometric=='keyframe'))
+     steps = audit_sequence(outcomes,[f['depth_timestamp'] for f in frames])
+     model = weights = None
+     key_gray=key_rgb=last_rgb=None;key_phase=0.
++    from projective_timing_raw import TimingHistory
++    timing_history=TimingHistory()
+     checked_frames = []
+     for frame,row in zip(frames,outcomes):
+         try:
+@@ -264,6 +269,7 @@
+                 phase=rgb-frame['depth_timestamp'];require(abs(phase)<=.02,'RGB association')
+                 context=dict(target=key_gray,source=current_gray,source_timestamp=rgb,reference_timestamp=key_rgb,
+                              qualified=key_gray is not None and abs(phase-key_phase)<=.005,fresh=fresh_rgb)
++                if timing=='previous_motion':timing_history.augment(context,frame['depth_timestamp'])
+             initial=model is None
+             if row['update']['iterations']:
+                 require(('prediction' in row['update'])==(motion_model=='constant_velocity'),'configured prediction provenance')
+@@ -278,6 +284,7 @@
+                     reduced_steps=sum(0<c['applied_scale']<1 for c in controls),halted_levels=sum(c['applied_scale']==0 for c in controls))
+             if photometric=='keyframe' and row['update']['accepted'] and (initial or row['update']['keyframe_replaced']):
+                 key_gray=current_gray if fresh_rgb else None;key_rgb=rgb if fresh_rgb else None;key_phase=phase if fresh_rgb else 0.
++            timing_history.observe(row['update'])
+             checked_frames.append(dict(source_index=frame['source_index'],**checked,
+                 supported_model_pixels=int(np.sum(weights > 0)),maximum_model_weight=int(weights.max())))
+         except (ValueError,AssertionError,KeyError,TypeError,IndexError) as error:
+--- a/scripts/check-projective-depth.py
++++ b/scripts/check-projective-depth.py
+@@ -125,6 +125,10 @@
+         'unknown geometry':json.dumps(dict(kind='Configure',camera=CAMERA,geometry='unknown'))+'\n',
+         'unknown photometric mode':json.dumps(dict(kind='Configure',camera=CAMERA,photometric='unknown'))+'\n',
+         'unknown step control':json.dumps(dict(kind='Configure',camera=CAMERA,step_control='unknown'))+'\n',
++        'unknown timing mode':json.dumps(dict(kind='Configure',camera=CAMERA,timing='truth'))+'\n',
++        'timing without photometric':json.dumps(dict(kind='Configure',camera=CAMERA,timing='previous_motion',motion_model='constant_velocity'))+'\n',
++        'timing without motion history':json.dumps(dict(kind='Configure',camera=CAMERA,timing='previous_motion',photometric='keyframe'))+'\n',
++        'timing with fixed support':json.dumps(dict(kind='Configure',camera=CAMERA,timing='previous_motion',photometric='keyframe',motion_model='constant_velocity',step_control='fixed_support'))+'\n',
+         'unknown motion model':json.dumps(dict(kind='Configure',camera=CAMERA,motion_model='truth'))+'\n',
+         'step control without RGB-D':json.dumps(dict(kind='Configure',camera=CAMERA,step_control='fixed_support'))+'\n',
+         'missing final newline':config.rstrip('\n'),
+--- a/scripts/check-projective-rgbd-lifecycle.py
++++ b/scripts/check-projective-rgbd-lifecycle.py
+@@ -10,10 +10,13 @@
+ def main():
+     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--binary',type=Path,required=True);p.add_argument('--output',type=Path,required=True)
+     p.add_argument('--step-control',choices=('disabled','fixed_support'),default='disabled')
++    p.add_argument('--timing',choices=('disabled','previous_motion'),default='disabled')
+     args=p.parse_args();out=fresh(args.output)
++    from projective_timing_raw import TimingHistory
++    history=TimingHistory()
+     spec=importlib.util.spec_from_file_location('synthetic_rgbd',ROOT/'scripts/check-projective-depth.py')
+     scene=importlib.util.module_from_spec(spec);spec.loader.exec_module(scene)
+-    client=Client(args.binary,scene.CAMERA,configuration=dict(photometric='keyframe',step_control=args.step_control))
++    client=Client(args.binary,scene.CAMERA,configuration=dict(photometric='keyframe',step_control=args.step_control,timing=args.timing,motion_model='constant_velocity' if args.timing=='previous_motion' else 'stationary'))
+     model=weights=key_gray=key_rgb=last_rgb=None;key_phase=0.;rows=[];times=[];checked=0
+     try:
+         for stamp,x in ((1.,0.),(1.004,.03),(1.008,.06),(1.012,.09),(1.016,.12),
+@@ -27,11 +30,13 @@
+             new_rgb=last_rgb is None or rgb_stamp>last_rgb;last_rgb=rgb_stamp;phase=rgb_stamp-stamp
+             context=dict(target=key_gray,source=gray,source_timestamp=rgb_stamp,reference_timestamp=key_rgb,
+                          qualified=key_gray is not None and abs(phase-key_phase)<=.005,fresh=new_rgb)
++            if args.timing=='previous_motion':history.augment(context,stamp)
+             initial=model is None
+             model,weights,counts=reconstruct_update(model,weights,raw,scene.CAMERA,update,image_context=context)
+             checked+=counts['iterations']+counts['final_equations']
+             if initial or update['keyframe_replaced']:
+                 key_gray=gray if new_rgb else None;key_rgb=rgb_stamp if new_rgb else None;key_phase=phase if new_rgb else 0.
++            history.observe(update)
+             rows.append(dict(expected=transform.tolist(),update=update));times.append(stamp)
+         require(any(r['update']['keyframe_replaced'] and not r['update']['photometric']['fresh'] for r in rows),'reference changes with a repeated image')
+         require(any(r['update']['photometric']['reference_timestamp'] is None and r['update']['iterations'] for r in rows),'no stale image anchor in new view')
+@@ -56,7 +61,7 @@
+     except BaseException:
+         client.abort();raise
+     write(out/'sequence.json',dict(frames=rows,repeated=repeated,faults=faults,expired=expired,recovery=recovery))
+-    write(out/'summary.json',dict(pass_lifecycle=True,measured_depth_frames=len(rows),raw_equations_checked=checked,step_control=args.step_control,
++    write(out/'summary.json',dict(pass_lifecycle=True,measured_depth_frames=len(rows),raw_equations_checked=checked,step_control=args.step_control,timing=args.timing,
+         repeated_rgb_never_contributes=True,color_anchor_cleared_and_resumed=True,faults_rejected=list(faults),
+         no_implicit_reset=True,binary_sha256=sha(args.binary.read_bytes()),checker_sha256=sha(Path(__file__).read_bytes()),
+         source='synthetic static scene; known poses generate measurements only'))
+--- a/scripts/check-projective-timing.py
++++ b/scripts/check-projective-timing.py
+@@ -0,0 +1,99 @@
++#!/usr/bin/env python3
++"""Own-time RGB/depth rendering, causal history faults and independent warp equations."""
++import argparse,copy,importlib.util
++from pathlib import Path
++import numpy as np
++from projective_depth_common import Client,ROOT,audit_sequence,fresh,pose,require,sha,write
++from projective_depth_raw import reconstruct_update
++from projective_photo_raw import metadata
++from projective_timing_raw import TimingHistory
++
++
++def trajectory(elapsed):
++    angle=.3*elapsed;t=np.eye(4);t[:2,:2]=[[np.cos(angle),-np.sin(angle)],[np.sin(angle),np.cos(angle)]]
++    t[:3,3]=[.5/.3*np.sin(angle),.5/.3*(1-np.cos(angle)),0.]
++    return t
++
++
++def main():
++    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--binary',type=Path,required=True);p.add_argument('--output',type=Path,required=True)
++    args=p.parse_args();out=fresh(args.output);digest=sha(args.binary.read_bytes())
++    spec=importlib.util.spec_from_file_location('timing_scene',ROOT/'scripts/check-projective-depth.py');scene=importlib.util.module_from_spec(spec);spec.loader.exec_module(scene)
++    results={};systems=0;witness=None
++    for name in ('nonplanar asynchronous','plane compensated','plane uncorrected','plane unavailable bootstrap'):
++        plane=name.startswith('plane');enabled=name!='plane uncorrected';config=dict(photometric='keyframe',motion_model='constant_velocity')
++        if enabled:config['timing']='previous_motion'
++        client=Client(args.binary,scene.CAMERA,configuration=config);history=TimingHistory()
++        model=weights=key_gray=key_rgb=last_rgb=None;key_phase=0.;rows=[];times=[];contexts=[]
++        def render(elapsed):
++            t=trajectory(elapsed);d=np.full((120,160),2.5) if plane else scene.render(t)
++            return d,scene.render_gray(t,d)
++        stamps=[1.+.03*i for i in range(10)] if not plane else [1.+.03*i for i in range(8)]
++        if name=='plane unavailable bootstrap':stamps=stamps[:2]
++        if not plane:stamps.insert(3,1.075)
++        try:
++            for i,stamp in enumerate(stamps):
++                if name=='plane unavailable bootstrap':phase=.01
++                elif plane:phase=(0.,0.,.014,-.014,.012,-.012,.014,-.014)[i]
++                else:phase=(.012,-.009,.014,.005,.013,-.01,.014,-.009,.012,-.009,.014)[i]
++                depth,_=render(stamp-1.);rgb=stamp+phase;_,gray=render(rgb-1.)
++                if stamp==1.075:depth[:]=0.
++                u=client.frame(stamp,depth,image=dict(timestamp=rgb,gray=gray.ravel().tolist()))
++                fresh_rgb=last_rgb is None or rgb>last_rgb;last_rgb=rgb
++                context=dict(target=key_gray,source=gray,source_timestamp=rgb,reference_timestamp=key_rgb,
++                    qualified=key_gray is not None and abs(phase-key_phase)<=.005,fresh=fresh_rgb)
++                if enabled:history.augment(context,stamp)
++                initial=model is None
++                model,weights,count=reconstruct_update(model,weights,depth,scene.CAMERA,u,image_context=context)
++                systems+=count['iterations']+count['final_equations'];contexts.append(copy.deepcopy(context))
++                if u['accepted'] and (initial or u['keyframe_replaced']):
++                    key_gray=gray if fresh_rgb else None;key_rgb=rgb if fresh_rgb else None;key_phase=phase if fresh_rgb else 0.
++                history.observe(u)
++                row=dict(update=u)
++                if u['accepted']:
++                    error=np.linalg.inv(trajectory(stamp-1.))@pose(u['first_from_current'])
++                    position=float(np.linalg.norm(error[:3,3]));rotation=float(np.arccos(np.clip((np.trace(error[:3,:3])-1)/2,-1,1)))
++                    row.update(position_error_m=position,rotation_error_rad=rotation)
++                    if enabled:require(position<.004 and rotation<.004,'own-time rendered motion 4mm/0.004rad: '+name)
++                rows.append(row);times.append(stamp)
++                if not plane and stamp==1.075:
++                    require(not u['accepted'] and u['last_accepted_timestamp']==1.06,'failed acquisition cannot advance motion or reference rate')
++                if not plane and stamp==1.09:
++                    require(u['photometric']['timing']['source']['latest_timestamp']==1.06,'rejected pose excluded from time warp')
++            client.finish()
++        except BaseException:
++            client.abort();raise
++        audit_sequence(rows,times)
++        accepted=sum(r['update']['accepted'] for r in rows)
++        if name=='nonplanar asynchronous':
++            require(accepted==10 and any(r['update']['keyframe_replaced'] for r in rows),'own-time scene tracks through keyframe change')
++            require(not rows[1]['update']['final_photometric']['used'],'nonzero-phase bootstrap withholds image before causal rate')
++            require(rows[2]['update']['final_photometric']['used'],'initial reference backfilled after accepted depth interval')
++            index=next(i for i,r in enumerate(rows) if i>2 and r['update'].get('final_photometric',{}).get('used',False) and r['update']['photometric']['timing']['reference']['latest_timestamp']>1.03)
++            witness=(rows[index]['update'],contexts[index])
++        elif name=='plane compensated':
++            require(accepted==8 and all(r['update']['final_photometric']['used'] for r in rows[1:]),'time compensation retains plane observability')
++        elif name=='plane uncorrected':require(sum(r.get('position_error_m',1.)<.004 and r.get('rotation_error_rad',1.)<.004 for r in rows)<8,'uncorrected asynchronous plane fails full known-motion accuracy')
++        else:require(accepted==1 and not rows[-1]['update'].get('final_photometric',{}).get('used',False),'asynchronous unobservable bootstrap cannot invent rate')
++        accurate=sum(r.get('position_error_m',1.)<.004 and r.get('rotation_error_rad',1.)<.004 for r in rows)
++        results[name]=dict(accepted=accepted,accurate=accurate,frames=rows)
++    require(witness is not None,'reference and source nonidentity compensation witness')
++    corruptions=[]
++    for name,change in (
++        ('current observation substituted into motion history',lambda u:u['photometric']['timing']['source'].update(latest_timestamp=u['timestamp'])),
++        ('wrong signed exposure transform',lambda u:u['photometric']['timing']['source']['image_from_depth']['translation'].__setitem__(0,.02)),
++        ('newer rate substituted for frozen reference rate',lambda u:u['photometric']['timing']['reference'].update(latest_timestamp=u['timestamp'])),
++        ('incorrect phase qualification',lambda u:u['photometric'].update(phase_qualified=False))):
++        altered=copy.deepcopy(witness[0]);change(altered)
++        try:metadata(altered,witness[1])
++        except (ValueError,AssertionError,KeyError,TypeError):corruptions.append(name)
++        else:raise ValueError('undetected timing corruption: '+name)
++    require(sha(args.binary.read_bytes())==digest,'one fixed binary across timing controls')
++    write(out/'controls.json',results)
++    write(out/'summary.json',dict(pass_timing_controls=True,raw_geometry_systems=systems,raw_photometric_systems=systems,
++        accepted={n:r['accepted'] for n,r in results.items()},accurate={n:r['accurate'] for n,r in results.items()},rejected_corruptions=corruptions,
++        own_time_rendering=True,accepted_history_only=True,reference_rate_frozen=True,binary_sha256=digest,
++        checker_sha256=sha(Path(__file__).read_bytes()),known_pose_role='static scene rendering at depth and RGB acquisition times and scoring only; never runtime inputs'))
++
++
++if __name__=='__main__':main()
+--- a/scripts/evaluate-projective-depth.py
++++ b/scripts/evaluate-projective-depth.py
+@@ -15,7 +15,7 @@
+ CASES = ('tum-fr1-room-temporal','tum-fr1-desk2-independent')
+ 
+ 
+-def evaluate(case, binary, output, reprojection='point', correspondence='forward', residual='target_plane', normals='central_difference', geometry='depth', photometric='disabled', step_control='disabled',motion_model='stationary'):
++def evaluate(case, binary, output, reprojection='point', correspondence='forward', residual='target_plane', normals='central_difference', geometry='depth', photometric='disabled', step_control='disabled',motion_model='stationary',timing='disabled'):
+     base = ROOT/'data'/case
+     manifest_body = (base/'manifest.json').read_bytes()
+     manifest = json.loads(manifest_body)
+@@ -44,16 +44,17 @@
+                ROOT/'scripts/projective_photo_raw.py',
+                ROOT/'scripts/projective_step_raw.py',
+                ROOT/'scripts/projective_motion_raw.py',
++               ROOT/'scripts/projective_timing_raw.py',
+                *sorted((ROOT/'integrations/projective-depth/src').rglob('*.rs')),
+                ROOT/'integrations/projective-depth/Cargo.toml',ROOT/'integrations/projective-depth/Cargo.lock']
+     write(output/'freeze.json',dict(schema_version=1,dataset=case,data_role='already viewed port regression',
+         manifest_sha256=sha(manifest_body),binary_sha256=sha(binary.read_bytes()),
+         source_sha256={str(p.relative_to(ROOT)):sha(p.read_bytes()) for p in sources},
+         inputs={name:dict(bytes=v['bytes'],sha256=v['sha256']) for name,v in inventory.items()},
+-        camera=CAMERA,reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric,step_control=step_control,motion_model=motion_model,primary_clock='depth; associated RGB decoded only in keyframe photometric mode',root_translation_gate_m=.1,
++        camera=CAMERA,reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric,step_control=step_control,motion_model=motion_model,timing=timing,primary_clock='depth; associated RGB decoded only in keyframe photometric mode',root_translation_gate_m=.1,
+         root_rotation_gate_rad=.1,reference_bracket_max_s=.02,pose_resets=0,ground_truth_operational=False,
+         selected_frames=180,updates=179,numpy_version=np.__version__))
+-    client = Client(binary,CAMERA,configuration=dict(reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric,step_control=step_control,motion_model=motion_model))
++    client = Client(binary,CAMERA,configuration=dict(reprojection=reprojection,correspondence=correspondence,residual=residual,normals=normals,geometry=geometry,photometric=photometric,step_control=step_control,motion_model=motion_model,timing=timing))
+     outcomes = []
+     try:
+         for frame in frames:
+@@ -147,6 +148,7 @@
+     parser.add_argument('--photometric',choices=('disabled','keyframe'),default='disabled')
+     parser.add_argument('--step-control',choices=('disabled','fixed_support'),default='disabled')
+     parser.add_argument('--motion-model',choices=('stationary','constant_velocity'),default='stationary')
++    parser.add_argument('--timing',choices=('disabled','previous_motion'),default='disabled')
+     args = parser.parse_args()
+     output = fresh(args.output)
+     summaries = {}
+@@ -155,7 +157,7 @@
+         require(sha(args.binary.read_bytes())==binary_digest,'one unchanged native binary across recordings')
+         folder = output/case
+         folder.mkdir()
+-        summaries[case] = evaluate(case,args.binary.absolute(),folder,args.reprojection,args.correspondence,args.residual,args.normals,args.geometry,args.photometric,args.step_control,args.motion_model)
++        summaries[case] = evaluate(case,args.binary.absolute(),folder,args.reprojection,args.correspondence,args.residual,args.normals,args.geometry,args.photometric,args.step_control,args.motion_model,args.timing)
+     require(sha(args.binary.read_bytes())==binary_digest,'native binary unchanged through evaluation')
+     passed = all(v['complete_accuracy_pass'] for v in summaries.values())
+     write(output/'comparison.json',dict(summaries=summaries,complete_accuracy_pass=passed,exit_code=0 if passed else 1))
+--- a/scripts/projective_depth_raw.py
++++ b/scripts/projective_depth_raw.py
+@@ -231,7 +231,7 @@
+         compare_equation(step['equation'],expected)
+         if colors is not None:
+             from projective_photo_raw import equation,compare
+-            compare(step['photometric'],equation(target[scale],source[scale],colors[0][scale],colors[1][scale],pose(step['before']),scale,image_context['qualified'] and image_context['fresh'],affine='illumination' in step['photometric']))
++            compare(step['photometric'],equation(target[scale],source[scale],colors[0][scale],colors[1][scale],pose(step['before']),scale,image_context['qualified'] and image_context['fresh'],affine='illumination' in step['photometric'],warps=image_context.get('warps')))
+         if 'step_control' in step:
+             from projective_step_raw import reconstruct,compare
+             require('photometric' in update,'step control belongs to the RGB-D mode')
+@@ -244,7 +244,7 @@
+     compare_equation(update['final_equation'],final)
+     if colors is not None:
+         from projective_photo_raw import equation,compare
+-        compare(update['final_photometric'],equation(target[1],source[1],colors[0][1],colors[1][1],relative,1,image_context['qualified'] and image_context['fresh'],affine='illumination' in update['final_photometric']))
++        compare(update['final_photometric'],equation(target[1],source[1],colors[0][1],colors[1][1],relative,1,image_context['qualified'] and image_context['fresh'],affine='illumination' in update['final_photometric'],warps=image_context.get('warps')))
+     warp = None
+     if update['keyframe_replaced']:
+         inverse = np.eye(4)
+--- a/scripts/projective_photo_raw.py
++++ b/scripts/projective_photo_raw.py
+@@ -37,7 +37,7 @@
+         illumination=dict(gain=float(gain),offset_gray=float(offset),candidate_count=len(source),source_variance_gray2=float(variance)))
+ 
+ 
+-def equation(target,source,target_gray,source_gray,transform,scale,enabled,affine=False):
++def legacy_equation(target,source,target_gray,source_gray,transform,scale,enabled,affine=False):
+     out=dict(count=0,rms_gray=None,used=False,scale_m2_per_gray2=.005**2/100,h=np.zeros((6,6)),g=np.zeros(6))
+     if affine:out['illumination']=None
+     if not enabled:return out
+@@ -78,6 +78,42 @@
+     return out
+ 
+ 
++def sample(gray,points,c):
++    z=points[:,2];safe=np.where(z>.3,z,1.)
++    u=c['fx']*points[:,0]/safe+c['cx'];v=c['fy']*points[:,1]/safe+c['cy']
++    u=np.where(abs(u-np.rint(u))<=1e-10,np.rint(u),u)
++    v=np.where(abs(v-np.rint(v))<=1e-10,np.rint(v),v)
++    valid=(z>.3)&np.isfinite(points).all(axis=1)&(u>=0)&(u<c['width']-1)&(v>=0)&(v<c['height']-1)
++    u=np.clip(u,0,c['width']-1.000001);v=np.clip(v,0,c['height']-1.000001)
++    x,y=np.floor(u).astype(int),np.floor(v).astype(int);dx,dy=u-x,v-y
++    a,b,d,e=gray[y,x],gray[y,x+1],gray[y+1,x],gray[y+1,x+1]
++    return ((1-dx)*(1-dy)*a+dx*(1-dy)*b+(1-dx)*dy*d+dx*dy*e,
++        (1-dy)*(b-a)+dy*(e-d),(1-dx)*(d-a)+dx*(e-b),valid)
++
++
++def equation(target,source,target_gray,source_gray,transform,scale,enabled,affine=False,warps=None):
++    if warps is None or not enabled:
++        return legacy_equation(target,source,target_gray,source_gray,transform,scale,enabled,affine)
++    require(affine,'exposure timing belongs to the affine intensity model')
++    out=dict(count=0,rms_gray=None,used=False,scale_m2_per_gray2=.005**2/100,h=np.zeros((6,6)),g=np.zeros(6),illumination=None)
++    a,b=warps;stride=2 if scale==1 else 1;c=target['camera']
++    xyz=source['vertices'][::stride,::stride].reshape(-1,3);n=source['normals'][::stride,::stride].reshape(-1,3)
++    q=xyz@transform[:3,:3].T+transform[:3,3];ns=n@transform[:3,:3].T
++    z=q[:,2];u=np.rint(c['fx']*q[:,0]/np.where(z>.3,z,1.)+c['cx']);v=np.rint(c['fy']*q[:,1]/np.where(z>.3,z,1.)+c['cy'])
++    valid=(np.sum(n*n,axis=1)>.25)&(z>.3)&np.isfinite(q).all(axis=1)&(u>=1)&(u<c['width']-1)&(v>=1)&(v<c['height']-1)
++    xyz,q,ns,u,v=xyz[valid],q[valid],ns[valid],u[valid].astype(int),v[valid].astype(int)
++    p=target['vertices'][v,u];nt=target['normals'][v,u]
++    valid=(np.sum(nt*nt,axis=1)>.25)&(np.linalg.norm(q-p,axis=1)<(.12 if scale==4 else .08))&(np.sum(ns*nt,axis=1)>.8)
++    xyz,q=xyz[valid],q[valid]
++    image_q=q@a[:3,:3].T+a[:3,3];image_p=xyz@b[:3,:3].T+b[:3,3]
++    value,gx,gy,ok=sample(target_gray,image_q,c);color,_,_,source_ok=sample(source_gray,image_p,source['camera'])
++    valid=ok&source_ok&(np.hypot(gx,gy)>=1)
++    q,image_q,value,color,gx,gy=q[valid],image_q[valid],value[valid],color[valid],gx[valid],gy[valid];z=image_q[:,2]
++    grad=np.column_stack([gx*c['fx']/z,gy*c['fy']/z,-(gx*c['fx']*image_q[:,0]+gy*c['fy']*image_q[:,1])/(z*z)])@a[:3,:3]
++    jac=np.column_stack([grad,np.cross(q,grad)])
++    out.update(affine_system(jac,color,value));return out
++
++
+ def compare(actual,expected):
+     require(actual['count']==expected['count'] and actual['used']==expected['used']
+             and actual['scale_m2_per_gray2']==expected['scale_m2_per_gray2'],'exact photometric support/usage/scale')
+@@ -97,4 +133,21 @@
+ 
+ def metadata(update,context):
+     expected=dict(source_timestamp=context['source_timestamp'],reference_timestamp=context['reference_timestamp'],phase_qualified=context['qualified'],fresh=context['fresh'])
+-    require(update.get('photometric')==expected,'measured image reference/phase provenance')
++    actual=update.get('photometric');require(actual is not None,'measured image state')
++    require(set(actual)==set(expected)|({'timing'} if 'timing' in context else set()),'complete image metadata')
++    require(all(actual[k]==v for k,v in expected.items()),'measured image reference/phase provenance')
++    if 'timing' in context:
++        from projective_timing_raw import compare_warp
++        require(set(actual['timing'])=={'source','reference'},'complete temporal pair')
++        for key in ('source','reference'):
++            a,e=actual['timing'][key],context['timing'][key]
++            if e is None:require(a is None,'no invented reference warp')
++            else:compare_warp(a,e)
++
++        if context.get('warps') is not None:
++            # Equations consume the serialized transforms only AFTER independent
++            # causal reconstruction and stricter 1e-12 pose verification above.
++            # Like step['before'], these rounded solver inputs avoid amplifying
++            # sub-ULP exp/log differences in near-canceling Schur gradients.
++            from projective_depth_common import pose
++            context['warps']=tuple(pose(actual['timing'][key]['image_from_depth']) for key in ('reference','source'))
+--- a/scripts/projective_timing_raw.py
++++ b/scripts/projective_timing_raw.py
+@@ -0,0 +1,54 @@
++"""Independent causal exposure warps from accepted depth poses, never pose labels."""
++import numpy as np
++from projective_depth_common import pose,require
++from projective_motion_raw import log_body,exp_body
++
++
++def warp(depth,image,interval):
++    out=dict(depth_timestamp=depth,image_timestamp=image,
++        previous_timestamp=interval[0][0] if interval else None,
++        latest_timestamp=interval[1][0] if interval else None,
++        status='unavailable',image_from_depth=None)
++    if depth==image:
++        out.update(status='coincident',image_from_depth=np.eye(4));return out
++    if interval is None:return out
++    (a,first),(b,last)=interval
++    twist=log_body(np.linalg.inv(first)@last)
++    if twist is None:return out
++    scaled=twist*((depth-image)/(b-a));out['status']='increment_limit'
++    if not np.isfinite(scaled).all() or np.linalg.norm(scaled[3:])>.15:return out
++    result=exp_body(scaled)
++    if np.isfinite(result).all() and np.linalg.norm(result[:3,3])<=.1:
++        out.update(status='compensated',image_from_depth=result)
++    return out
++
++
++def compare_warp(actual,expected):
++    require(actual.keys()==expected.keys(),'complete temporal warp provenance')
++    for key in expected:
++        if key=='image_from_depth':
++            if expected[key] is None:require(actual[key] is None,'no fabricated time warp')
++            else:np.testing.assert_allclose(pose(actual[key]),expected[key],atol=1e-12,rtol=0,err_msg='independent exposure time warp')
++        else:require(actual[key]==expected[key],'causal exposure provenance '+key+': '+repr(actual[key])+' != '+repr(expected[key]))
++
++
++class TimingHistory:
++    def __init__(self):
++        self.accepted=[];self.reference_depth=None;self.reference_interval=None
++
++    def augment(self,context,stamp):
++        source=warp(stamp,context['source_timestamp'],self.accepted if len(self.accepted)==2 else None)
++        reference=None if context['reference_timestamp'] is None else warp(self.reference_depth,context['reference_timestamp'],self.reference_interval)
++        context['timing']=dict(source=source,reference=reference)
++        context['qualified']=context['target'] is not None and source['image_from_depth'] is not None and reference is not None and reference['image_from_depth'] is not None
++        context['warps']=None if not context['qualified'] else (reference['image_from_depth'],source['image_from_depth'])
++        return context
++
++    def observe(self,update):
++        if not update['accepted']:return
++        stamp=update['timestamp']
++        if self.reference_depth is None or update['keyframe_replaced']:
++            self.reference_depth=stamp;self.reference_interval=None
++        self.accepted=(self.accepted+[(stamp,pose(update['first_from_current']))])[-2:]
++        if len(self.accepted)==2 and (self.reference_depth==stamp or (self.reference_interval is None and self.reference_depth==self.accepted[0][0])):
++            self.reference_interval=list(self.accepted)

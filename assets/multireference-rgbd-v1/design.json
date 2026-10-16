@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "role": "bounded multi-reference geometric and RGB-D development comparison on viewed data",
+  "preceding_failure": {
+    "room_accurate": 78,
+    "desk2_accurate": 75,
+    "baseline_room_accurate": 64,
+    "baseline_desk2_accurate": 161
+  },
+  "operational_inputs": "measured depth, associated grayscale and timestamps only",
+  "references": "first frame retained; newest3 motion-selected keyframes; last accepted frame, deduplicated, at most5",
+  "keyframe_translation_m": 0.1,
+  "keyframe_rotation_rad": 0.1,
+  "geometry": "raw measured keyframe surfaces; no depth fusion or surface-image mismatch",
+  "branches": [
+    "geometry-only",
+    "phase-gated-rgbd"
+  ],
+  "phase_gate_s": 0.005,
+  "photo_sigma": 10.0,
+  "geometry_sigma_m": 0.005,
+  "photo_tukey_cutoff": 30.0,
+  "photo_min_support_per_reference": 200,
+  "photo_gradient_min": 1.0,
+  "repeated_rgb_photo_disabled": true,
+  "source_strides": {
+    "scale4": 1,
+    "scale2": 2,
+    "scale1": 4
+  },
+  "iteration_caps": [
+    10,
+    7,
+    5
+  ],
+  "minimum_total_correspondences": 200,
+  "scaled_condition_max": 1000000.0,
+  "increment_translation_max_m": 0.1,
+  "increment_rotation_max_rad": 0.15,
+  "final_rms_max_m": 0.03,
+  "max_relative_translation_from_last_accepted_m": 0.5,
+  "accepted_pose_age_max_s": 0.2,
+  "pose_resets": 0,
+  "root_translation_gate_m": 0.1,
+  "root_rotation_gate_rad": 0.1,
+  "reference_bracket_max_s": 0.02,
+  "records": [
+    "tum-fr1-room-temporal",
+    "tum-fr1-desk2-independent"
+  ],
+  "original_depth_indices": [
+    100,
+    279
+  ],
+  "updates_per_branch_per_record": 179,
+  "numeric_truth_decoded": "only after all4 complete operational branches",
+  "calibration": "existing registered grid default K525, no new physical calibration",
+  "ground_truth_operational": false,
+  "held_out": false,
+  "source_pins": {
+    "artifacts/phase-aware-rgbd-dev/prototype.py": "563d212250ac0f8c2d714ff27b2385507870f0338656501d5c5d24db0c900279",
+    "artifacts/phase-aware-rgbd-dev/geometry-base.py": "8112c8cd8116fec9cb220670c5e123bc48c1c62791ddfd36a5451d34384006c4"
+  }
+}

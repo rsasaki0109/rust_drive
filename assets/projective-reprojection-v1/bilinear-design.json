@@ -1,0 +1,9 @@
+{
+  "scope": "Final candidate in this Rust component task: sample the target surface at continuous projected image coordinates rather than rounded pixel centers",
+  "configuration": "point model reprojection, bilinear target correspondence, target_plane residual",
+  "sampling": "Bilinearly interpolate four target vertices and measured normals, then normalize the blended normal. Require all four depths strictly0.3..5m, all four valid measured normals, depth spread at most0.05+0.01*minimumZ and blended normal length above0.5. Reject unsupported cells without filling or nearest-pixel fallback. Preserve original source sampling, normal agreement, distance, support and returned-pose gates",
+  "math": "Ordinary point-to-plane ICP with correspondences held constant in each linear solve; this does not claim the Jacobian differentiates the complete changing interpolation/selection operation",
+  "acceptance": "Same gate fixed before first comparison: room accurate above64, desk2 at least161, both179 accepted without loss, and no worse maximum position or rotation error in either recording. Require raw reconstructed equations/models, analytic/clock/fault checks and final-interface regression before default adoption",
+  "verification": "Known flat-plane subpixel identity and missing-corner rejection, four independently rendered motions, complete358-update physical scoring and independent PNG-derived four-corner sampling/matrices/fusion. Keep original0.1m/0.1rad root gates and all prior candidate outcomes",
+  "limits": "Viewed indoor development data. Bilinear sampling changes eligible population and is not C1 at cell boundaries. No convergence, driving, timing or safety guarantee"
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "reason": "retained pure-rotation/noise counterexample: physical-distance residual scales with a uniform depth multiplier, creating spurious scale sensitivity and preferring the lower bound",
+  "preserved_first_trial": "diagnosis; candidate-source.tar.gz; scale-gauge-first; audit-first and repaired audit",
+  "normalized_fit_residual": "physical point-plane residual / exp(log_depth_multiplier), in nominal original raw metres",
+  "derivatives": {
+    "focal": "physical focal derivative / exp(b)",
+    "depth": "- n(a) dot reference_translation / exp(b)"
+  },
+  "robust_loss": "Huber .01 in original nominal raw metres; scale the entire loss consistently",
+  "gauge_requirement": "for zero reference translation the fit objective must be invariant to uniform scale, and its scale Jacobian must be exactly zero even with noisy points",
+  "unchanged": "same75 source pairs, same samples, bounds, per-record weights, folds, validation using original physical residuals/pose corrections, original reference clocks and eligibility gates; one mathematical correction, no parameter sweep",
+  "certificate": "noise-normalization hypothesis and gauge repair; no calibrated physical camera certificate"
+}

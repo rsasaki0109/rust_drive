@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/workspace/rust_drive/integrations/onnx/bdd_tiles_check.py", line 373, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/workspace/rust_drive/integrations/onnx/bdd_tiles_check.py", line 366, in main
+    result = run(args)
+             ^^^^^^^^^
+  File "/workspace/rust_drive/integrations/onnx/bdd_tiles_check.py", line 305, in run
+    require((report['width'],report['height']) == (image['width'],image['height'])
+  File "/workspace/rust_drive/integrations/onnx/bdd_tiles_check.py", line 27, in require
+    raise ValueError(message)
+ValueError: fixed native thresholds/dimensions

@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "status": "blocked_missing_authorized_kitti_inputs",
+  "user_has_local_kitti_files": false,
+  "real_kitti_projection_run": false,
+  "real_kitti_depth_accuracy_run": false,
+  "measured_kitti_rmse_m": null,
+  "official_access_receipts": [
+    {
+      "url": "https://www.cvlibs.net/datasets/kitti/raw_data.php",
+      "status": 200,
+      "final_url": "https://www.cvlibs.net/datasets/kitti/raw_data.php",
+      "bytes": 11125,
+      "sha256": "869d1212a3280ad72da79f22743353b39b29e7acf129bdb60b21e73f0bf21f83",
+      "login_links": 4
+    },
+    {
+      "url": "https://www.cvlibs.net/datasets/kitti/eval_depth.php?benchmark=depth_completion",
+      "status": 200,
+      "final_url": "https://www.cvlibs.net/datasets/kitti/eval_depth.php?benchmark=depth_completion",
+      "bytes": 145396,
+      "sha256": "01bf48a52a8bd9b35cf78c2daa11835d1d0372e66b421bcfb991d871bc8fb862",
+      "login_links": 5
+    }
+  ],
+  "raw_data_download_requires_login": true,
+  "depth_download_links_require_login": true,
+  "historical_download_path_bypass_used": false,
+  "evaluator_tests": 13,
+  "evaluator_tests_scope": "Authored analytic data, hand metric witnesses, actual existing binaries; not real KITTI accuracy",
+  "available_alternative": "Official Argoverse1.1 sample, recorded points/calibration; independent mathematical consistency only; no physical reference depth",
+  "evaluator_sha256": "4789a48e72b3f1937b61243d9f91844221b6278ba0a03cf38fdbb5adc0eb958b",
+  "tests_sha256": "4a52fcd6c8e0964b38356a5c1048537bf310a158884ad06259e3e23a4a01d438"
+}

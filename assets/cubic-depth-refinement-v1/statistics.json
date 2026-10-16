@@ -1,0 +1,168 @@
+{
+  "summaries": {
+    "tum-fr1-room-temporal": {
+      "samples": 5,
+      "continuous_converged": 0,
+      "control_continuous_converged": 0,
+      "original_discrete_fresh_converged": 0,
+      "local_guard_failures": 5,
+      "original_discrete_guard_failures": 0,
+      "original_discrete_rms_gate_passes": 5,
+      "median_original_discrete_rms_m": 0.0024776698583121853,
+      "control_median_original_discrete_rms_m": 0.002454214162878936,
+      "source_occurrences_before": 10156,
+      "source_occurrences_after": 10156,
+      "source_retention": 1.0,
+      "factors_before": 20,
+      "factors_after": 20,
+      "budget_exhaustions": 0,
+      "total_applied_corrections": 26,
+      "shortened_steps": 26,
+      "invalid_candidate_trials": 470,
+      "valid_nonpassing_candidate_trials": 0,
+      "accepted_candidate_trials": 26,
+      "accepted_cost_increases": 0,
+      "checkpoints": {
+        "10": {
+          "continuous_converged": 0,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 5,
+          "budget_exhaustions": 0
+        },
+        "20": {
+          "continuous_converged": 0,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 5,
+          "budget_exhaustions": 0
+        },
+        "30": {
+          "continuous_converged": 0,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 5,
+          "budget_exhaustions": 0
+        }
+      },
+      "eligible_for_followup_full_trajectory": false
+    },
+    "tum-fr1-desk2-independent": {
+      "samples": 5,
+      "continuous_converged": 0,
+      "control_continuous_converged": 2,
+      "original_discrete_fresh_converged": 0,
+      "local_guard_failures": 5,
+      "original_discrete_guard_failures": 0,
+      "original_discrete_rms_gate_passes": 5,
+      "median_original_discrete_rms_m": 0.0027404641366715284,
+      "control_median_original_discrete_rms_m": 0.0027404641366715284,
+      "source_occurrences_before": 22351,
+      "source_occurrences_after": 22351,
+      "source_retention": 1.0,
+      "factors_before": 16,
+      "factors_after": 16,
+      "budget_exhaustions": 0,
+      "total_applied_corrections": 14,
+      "shortened_steps": 14,
+      "invalid_candidate_trials": 259,
+      "valid_nonpassing_candidate_trials": 0,
+      "accepted_candidate_trials": 14,
+      "accepted_cost_increases": 0,
+      "checkpoints": {
+        "10": {
+          "continuous_converged": 0,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 5,
+          "budget_exhaustions": 0
+        },
+        "20": {
+          "continuous_converged": 0,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 5,
+          "budget_exhaustions": 0
+        },
+        "30": {
+          "continuous_converged": 0,
+          "original_discrete_fresh_converged": 0,
+          "local_guards": 5,
+          "budget_exhaustions": 0
+        }
+      },
+      "eligible_for_followup_full_trajectory": false
+    }
+  },
+  "samples": {
+    "tum-fr1-room-temporal": [
+      {
+        "source_index": 120,
+        "applied_corrections": 8,
+        "guard_failure": "line search",
+        "source_occurrences": 1978,
+        "source_population_and_normalizers_equal_control": true
+      },
+      {
+        "source_index": 160,
+        "applied_corrections": 6,
+        "guard_failure": "line search",
+        "source_occurrences": 2582,
+        "source_population_and_normalizers_equal_control": true
+      },
+      {
+        "source_index": 200,
+        "applied_corrections": 0,
+        "guard_failure": "new frame needs measured support",
+        "source_occurrences": 0,
+        "source_population_and_normalizers_equal_control": true
+      },
+      {
+        "source_index": 240,
+        "applied_corrections": 6,
+        "guard_failure": "line search",
+        "source_occurrences": 4235,
+        "source_population_and_normalizers_equal_control": true
+      },
+      {
+        "source_index": 279,
+        "applied_corrections": 6,
+        "guard_failure": "line search",
+        "source_occurrences": 1361,
+        "source_population_and_normalizers_equal_control": true
+      }
+    ],
+    "tum-fr1-desk2-independent": [
+      {
+        "source_index": 120,
+        "applied_corrections": 0,
+        "guard_failure": "new frame needs measured support",
+        "source_occurrences": 1244,
+        "source_population_and_normalizers_equal_control": true
+      },
+      {
+        "source_index": 160,
+        "applied_corrections": 6,
+        "guard_failure": "line search",
+        "source_occurrences": 4905,
+        "source_population_and_normalizers_equal_control": true
+      },
+      {
+        "source_index": 200,
+        "applied_corrections": 8,
+        "guard_failure": "line search",
+        "source_occurrences": 16202,
+        "source_population_and_normalizers_equal_control": true
+      },
+      {
+        "source_index": 240,
+        "applied_corrections": 0,
+        "guard_failure": "new frame needs measured support",
+        "source_occurrences": 0,
+        "source_population_and_normalizers_equal_control": true
+      },
+      {
+        "source_index": 279,
+        "applied_corrections": 0,
+        "guard_failure": "new frame needs measured support",
+        "source_occurrences": 0,
+        "source_population_and_normalizers_equal_control": true
+      }
+    ]
+  }
+}

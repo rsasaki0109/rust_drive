@@ -1,0 +1,80 @@
+{
+  "analytic_pass": true,
+  "profile_equivalence_cases": 5,
+  "chart_angles_rad": [
+    1e-09,
+    0.0001,
+    0.3,
+    1.2
+  ],
+  "reports": {
+    "discard": {
+      "checked_reported_equations": 229,
+      "marginal_generations": 0,
+      "max_position_error_m": 5.918509190858207e-05
+    },
+    "retain": {
+      "checked_reported_equations": 223,
+      "marginal_generations": 9,
+      "max_position_error_m": 5.7843834752279054e-05
+    }
+  },
+  "discarded_information_control": true,
+  "no_fabricated_new_support": true,
+  "terminal_expiry": true,
+  "rejected_corruptions": [
+    "wrong Schur gradient",
+    "coherently scaled Schur H/g",
+    "duplicate factor history",
+    "wrong fixed origin",
+    "wrong linearization anchor",
+    "retained raw factors also marginalized",
+    "normal system scaled without changing its solve",
+    "moved first origin",
+    "wrong normal increment"
+  ],
+  "late_elimination_failure_atomic": true,
+  "clean_recovery_prior_parity": true,
+  "malformed_clock_and_depth_rejected": true,
+  "singular_elimination_rejected": true,
+  "reciprocal_association": {
+    "raw_oracle_layers_checked": 3,
+    "fixed_pose_counts": {
+      "4": {
+        "forward": 731,
+        "reciprocal": 729
+      },
+      "2": {
+        "forward": 980,
+        "reciprocal": 976
+      },
+      "1": {
+        "forward": 1078,
+        "reciprocal": 1078
+      }
+    },
+    "unstrided_endpoint_swap_invariance": true,
+    "out_of_image_return_and_collisions_rejected": true,
+    "return_depth_guard": true,
+    "identity_support_and_system_parity": true,
+    "parent_only_pair_import_changed": true
+  },
+  "symmetric_factor": {
+    "source_and_target_central_difference_axes": 12,
+    "swapped_residual_sign": true,
+    "common_rigid_frame_invariance": true,
+    "omitted_normal_rotation_detected": true,
+    "original_fixed_pose_support_counts": {
+      "4": 770,
+      "2": 973,
+      "1": 1081
+    },
+    "parent_engine_only_pair_import_changed": true
+  },
+  "source_sha256": {
+    "scripts/check-reciprocal-keyframes.py": "770326e8b3eda234f337324bbd263c7c0cf7d28f2be8d3bf218ad670010978f4",
+    "scripts/reciprocal_depth_factors.py": "5b60237d73b1c1b1eefc642100d7fdc527eef783996c83169a24db82e7cfb85f",
+    "scripts/reciprocal_depth_oracle.py": "6d5944f95853be6a0ea707bfdd847978d58fa758b10a33aa7aad874a25c3f9be",
+    "scripts/reciprocal_keyframe_depth.py": "f062416e0d50de8a98f951bc8068c7e72f9fa64b2c7133238153b911ed89e79b"
+  }
+}

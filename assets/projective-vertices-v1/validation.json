@@ -1,0 +1,82 @@
+{
+  "implementation_integrity_pass": true,
+  "accuracy_improvement_adopted": false,
+  "default_changed": false,
+  "complete_physical_accuracy_pass": false,
+  "default_full_outcomes_reproduced": 360,
+  "raw_iteration_equations": 6912,
+  "raw_final_equations": 358,
+  "native_rust_tests": 32,
+  "core_rust_tests": 371,
+  "core_scenarios_and_replays": 49,
+  "unchanged_core_outputs": 245,
+  "unchanged_previous_evidence_entries": 835,
+  "native_cargo_pins_unchanged": true,
+  "source_members": 41,
+  "changed_previously_pinned_sources": {
+    ".github/workflows/ci.yml": {
+      "before": "1a707cd7b48af73244dc2574c0970c0c839ed496a0ef8a69a37acbeab81a484e",
+      "after": "d23b3fc749ae488c66b89f215654474389f214b1ecbe2a909081369cf7a30e1a"
+    },
+    "docs/architecture.md": {
+      "before": "06c58a1629519cc9b636925e36093620c738fb8a44a6e4d1f0245dac2d02ba09",
+      "after": "49583bd2aa6312599c96d075522d8ca788663c47fdd7968ea5add47c3b1c1f0a"
+    },
+    "docs/capabilities.md": {
+      "before": "75afaa025fe2f76a5d8f8705597caa6815ce4bf16cc48b24aed6395a7ff98c03",
+      "after": "3bfbadb26ee7de4fe0d5d1bae662bc13bfd9937e3ac9e4e943cb3d8adde7371c"
+    },
+    "docs/maturity.md": {
+      "before": "6c7d5c9c6fd12e0a609af3eaf8c1142f4e51d575550e56fc78858cbe6f4ddef4",
+      "after": "5bf14565a16b2e3f1e28f114ad8f6a5298541c40a250ee7203e26ef5939df6a5"
+    },
+    "docs/native-depth-regression.md": {
+      "before": "65b1719dc87c5251e164dbbcf91ad844da16d0cf97a1b6a97b5919a6626542a3",
+      "after": "ffb36a6d25e2504671b4c208a4008fc3eb7bc292ba22a397fc57ad3da6b39a2e"
+    },
+    "docs/projective-depth-rust.md": {
+      "before": "81e35d5de046321c3e610dfdfc99ba5d01dfe46776c0c63498037a59cc388687",
+      "after": "513416909518db12e58cdd98620c2f73ba1fa1dfc6cd22270c12504e7ff7270d"
+    },
+    "integrations/projective-depth/src/lib.rs": {
+      "before": "9f2999b0bdaac14c106adabb6885799b5b0e291eacabcf299a16445a8c50ece2",
+      "after": "bebd2e5cc06f726cf743e6bbdd7d78f533f3f96a5582a3ec03a1a521d55a670e"
+    },
+    "integrations/projective-depth/src/main.rs": {
+      "before": "3b9d0d79d6cd5d71eed17703da418ce4e36a78f7531f141160b392930b748200",
+      "after": "5c2e758bd7271d5c4d3d5c5ef0444f5ca454f36efec21fec4daeff51c7f26bd1"
+    },
+    "scripts/audit-projective-depth-raw.py": {
+      "before": "f3db28808462c8bbfff4974c6fae3c9d970a5508c18c9cb5ff95e5e078493b84",
+      "after": "9946cee31e0e67110e0c7324f8a9b28f106634afe58cbde3e0c164e561dc50ad"
+    },
+    "scripts/check-projective-depth.py": {
+      "before": "a14569f0c0e7183a4fd33b3763a51a36dfc99345e3b5b1322742da41affe7a8a",
+      "after": "8614117922c155958ee5f38fa757433e9eeae12623fd46784b65ff5cce054a85"
+    },
+    "scripts/evaluate-projective-depth.py": {
+      "before": "37c951ddea3bd03b011fa5d7aae049e8e70751de2bbad711a1b9177faa75d8c2",
+      "after": "d2622add554c2a2e0c9664065c5029683f1dc25e86244acd3776735ddd52add6"
+    },
+    "scripts/projective_depth_raw.py": {
+      "before": "3c92324d4289761de8d0aef6e6439f5973ef2efb3f29cbe6e82b82aded7994c9",
+      "after": "da9bac49d1244fd30719bb9cebee21de177c762dc1f52f86f6ec9373972a84a5"
+    }
+  },
+  "current_binary_sha256": "a3f0f52e81a152fdc0f6e824e78fad9c936f17340b7f24585370753f4275ecdd",
+  "analytic_motion_controls": 4,
+  "transport_controls": 19,
+  "raw_report_mutations_rejected": 7,
+  "invalid_configuration_acceptance_mutant_detected": true,
+  "subjective_maturity_percent": 20,
+  "limits": [
+    "Geometric plane preservation is a supplied-transform control, not physical pose accuracy",
+    "Visible supports differ between XYZ and depth in the plane-warp control",
+    "XYZ regresses desk2 and both case maximum errors; no default adoption",
+    "Only the point/forward/target-plane/central-normal combination supports XYZ",
+    "All viewed data are indoor development recordings; no held-out or vehicle integration evidence",
+    "Reference interpolation is shared; root rotation is separately checked with atan2",
+    "Raw audits reconstruct reported systems and prescribed models; no full internal array dump",
+    "Historical evidence remains unchanged; maintained sources intentionally evolve"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "analytic_pass": true,
+  "source_proof": true,
+  "interpolation": {
+    "quadratic_samples": 7,
+    "xyz_finite_difference_axes": 3,
+    "interpolatory_integer_samples": 1,
+    "c1_authored_kink_samples": 3,
+    "missing_outer_corner_rejected": true
+  },
+  "rendered_continuous_converged": false,
+  "rendered_applied_corrections": 9,
+  "rendered_guard": "line search",
+  "reported_systems": 15,
+  "checkpoint_systems": 6,
+  "prior_system_checks": 1,
+  "objective_gradient_axes": 12,
+  "original_rendered_sources": 988,
+  "cubic_rendered_sources": 988,
+  "degenerate_guards": {
+    "missing": "new frame needs measured support",
+    "plane": "zero/nonfinite diagonal"
+  },
+  "rejected_corruptions": [
+    "false convergence",
+    "changed source identities",
+    "changed normalizer digest",
+    "wrong final matrix"
+  ],
+  "input_roots_unchanged": true,
+  "source_sha256": {
+    "scripts/cubic_depth_factors.py": "9b4bf51314f39b37ad1c6fbbdc5e3c6ed5ddcd8f6b9d5bcfb340e9d7d5c379a4",
+    "scripts/cubic_depth_refinement.py": "2aada774e7372294b86a31151fc3ac0f9e3c4102688d5d4c2deec390a7cc9224",
+    "scripts/check-cubic-depth-refinement.py": "a52786fad4ee3233e3e4f623cdde64ca7d9ade174ceba0aac78df87264703ab8"
+  }
+}

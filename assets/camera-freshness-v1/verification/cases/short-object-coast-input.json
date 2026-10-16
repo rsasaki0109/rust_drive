@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "camera_id": "freshness-controls",
+  "width": 100,
+  "height": 100,
+  "config": {
+    "coast_seconds": 0.05
+  },
+  "policy": {},
+  "events": [
+    {
+      "now_s": 0.0,
+      "input": {
+        "kind": "detections",
+        "acquired_s": 0.0,
+        "image_sha256": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
+        "detections": [
+          {
+            "class_index": 2,
+            "confidence": 0.8,
+            "bbox": [
+              10.0,
+              10.0,
+              30.0,
+              30.0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "now_s": 0.03,
+      "input": {
+        "kind": "detections",
+        "acquired_s": 0.03,
+        "image_sha256": "19d751351b9489ec70f7241b4edef60c7b44142f756305867ee2b39c75b06905",
+        "detections": [
+          {
+            "class_index": 2,
+            "confidence": 0.8,
+            "bbox": [
+              10.03,
+              10.0,
+              30.03,
+              30.0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "now_s": 0.06,
+      "input": {
+        "kind": "detections",
+        "acquired_s": 0.06,
+        "image_sha256": "2e1cfa82b035c26cbbbdae632cea070514eb8b773f616aaeaf668e2f0be8f10d",
+        "detections": []
+      }
+    },
+    {
+      "now_s": 0.09,
+      "input": {
+        "kind": "tick"
+      }
+    }
+  ]
+}

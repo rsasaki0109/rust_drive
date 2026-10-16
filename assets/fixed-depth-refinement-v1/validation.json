@@ -1,0 +1,190 @@
+{
+  "schema_version": 1,
+  "data_role": "already viewed development; local refinement only",
+  "pass_implementation_integrity": true,
+  "source_members": 45,
+  "source_archive_sha256": "9cd63d1137c5da81559d106297b502bad43009627c9c9787cbcc81cb03faca22",
+  "input_continuation_sha256": "1094d16dfdc53bb87a5d1c6d046afb370e263452d5ce3dfb7181b901c7c31b9c",
+  "new_reported_systems": 44,
+  "new_iteration_systems": 24,
+  "final_fixed_systems": 10,
+  "final_fresh_systems": 10,
+  "separately_reconstructed_control_systems": 20,
+  "fixed_converged_samples": 10,
+  "fresh_converged_samples": 0,
+  "control_fresh_converged_samples": 0,
+  "advance_to_full_trajectory": false,
+  "progression_failure": "Fresh-converged count stays zero in both cases",
+  "real_local_pose_fitting": true,
+  "new_trajectory_fitting": false,
+  "new_physical_accuracy_result": null,
+  "numeric_ground_truth_parsed": false,
+  "tracker_state_commits": false,
+  "tracker_integration": false,
+  "default_changed": false,
+  "rust_driving_changed": false,
+  "analytic_systems": 10,
+  "objective_gradient_axes": 12,
+  "report_corruptions_rejected": 9,
+  "original_input_roots_unchanged": true,
+  "core_rust_tests_passed": 371,
+  "core_scenario_runs_and_replays_passed": 49,
+  "unchanged_core_files": 245,
+  "unchanged_previous_evidence_files": 368,
+  "unchanged_pinned_native_sources": 16,
+  "statistics": {
+    "tum-fr1-room-temporal": {
+      "samples": 5,
+      "fixed_converged": 5,
+      "fresh_converged": 0,
+      "control_fresh_converged": 0,
+      "frozen_guard_failures": 0,
+      "fresh_guard_failures": 0,
+      "fresh_rms_gate_passes": 5,
+      "new_applied_iterations": 11,
+      "control_applied_iterations": 50,
+      "new_fresh_rms_m_median": 0.002460332092015914,
+      "control_fresh_rms_m_median": 0.0024642591557559397,
+      "advance_to_full_trajectory": false
+    },
+    "tum-fr1-desk2-independent": {
+      "samples": 5,
+      "fixed_converged": 5,
+      "fresh_converged": 0,
+      "control_fresh_converged": 0,
+      "frozen_guard_failures": 0,
+      "fresh_guard_failures": 0,
+      "fresh_rms_gate_passes": 5,
+      "new_applied_iterations": 13,
+      "control_applied_iterations": 50,
+      "new_fresh_rms_m_median": 0.002730905494487118,
+      "control_fresh_rms_m_median": 0.002768452853837115,
+      "advance_to_full_trajectory": false
+    }
+  },
+  "sample_details": {
+    "tum-fr1-room-temporal": [
+      {
+        "source_index": 120,
+        "applied_iterations": 2,
+        "fixed_max_node_translation_correction_m": 2.063415106479056e-07,
+        "fresh_max_node_translation_correction_m": 0.00015888631069370916,
+        "control_max_node_translation_correction_m": 0.00033417728202497955,
+        "final_fixed_cost": 0.03674195741527476,
+        "final_fresh_cost": 0.036597534408822414,
+        "fresh_rms_m": 0.0023010002603259887,
+        "control_fresh_rms_m": 0.00232220419442176
+      },
+      {
+        "source_index": 160,
+        "applied_iterations": 2,
+        "fixed_max_node_translation_correction_m": 6.295015312806286e-07,
+        "fresh_max_node_translation_correction_m": 0.0002679560805065189,
+        "control_max_node_translation_correction_m": 8.244359923893553e-05,
+        "final_fixed_cost": 0.04265044640628533,
+        "final_fresh_cost": 0.041919058629073185,
+        "fresh_rms_m": 0.002460332092015914,
+        "control_fresh_rms_m": 0.0024642591557559397
+      },
+      {
+        "source_index": 200,
+        "applied_iterations": 3,
+        "fixed_max_node_translation_correction_m": 4.730836332074952e-06,
+        "fresh_max_node_translation_correction_m": 0.0015337234400036957,
+        "control_max_node_translation_correction_m": 0.0011976757332948374,
+        "final_fixed_cost": 0.019686308787037168,
+        "final_fresh_cost": 0.01848214001537619,
+        "fresh_rms_m": 0.007945981507085427,
+        "control_fresh_rms_m": 0.008075759586120917
+      },
+      {
+        "source_index": 240,
+        "applied_iterations": 2,
+        "fixed_max_node_translation_correction_m": 2.2937881936347003e-07,
+        "fresh_max_node_translation_correction_m": 0.00047990623515199076,
+        "control_max_node_translation_correction_m": 4.226148726020922e-05,
+        "final_fixed_cost": 0.04666768744419842,
+        "final_fresh_cost": 0.04645570405757767,
+        "fresh_rms_m": 0.0023400830744799658,
+        "control_fresh_rms_m": 0.002348947087197469
+      },
+      {
+        "source_index": 279,
+        "applied_iterations": 2,
+        "fixed_max_node_translation_correction_m": 1.7172287153247053e-06,
+        "fresh_max_node_translation_correction_m": 0.0002025249753840357,
+        "control_max_node_translation_correction_m": 0.00012043356178134677,
+        "final_fixed_cost": 0.027749802331474522,
+        "final_fresh_cost": 0.027612560255727055,
+        "fresh_rms_m": 0.003262839911942091,
+        "control_fresh_rms_m": 0.003329029903745754
+      }
+    ],
+    "tum-fr1-desk2-independent": [
+      {
+        "source_index": 120,
+        "applied_iterations": 2,
+        "fixed_max_node_translation_correction_m": 2.6498558035454555e-07,
+        "fresh_max_node_translation_correction_m": 0.0002405146601934831,
+        "control_max_node_translation_correction_m": 0.00034022284196251826,
+        "final_fixed_cost": 0.023798165509373928,
+        "final_fresh_cost": 0.023637777896757604,
+        "fresh_rms_m": 0.002730905494487118,
+        "control_fresh_rms_m": 0.002768452853837115
+      },
+      {
+        "source_index": 160,
+        "applied_iterations": 1,
+        "fixed_max_node_translation_correction_m": 4.499016389565426e-06,
+        "fresh_max_node_translation_correction_m": 0.00025817759303925025,
+        "control_max_node_translation_correction_m": 0.00040973650413911577,
+        "final_fixed_cost": 0.03696020692017787,
+        "final_fresh_cost": 0.03704572163710324,
+        "fresh_rms_m": 0.0019776075504224517,
+        "control_fresh_rms_m": 0.001975891173297669
+      },
+      {
+        "source_index": 200,
+        "applied_iterations": 1,
+        "fixed_max_node_translation_correction_m": 6.181778133175776e-07,
+        "fresh_max_node_translation_correction_m": 0.00016783663173398284,
+        "control_max_node_translation_correction_m": 8.943057328949344e-05,
+        "final_fixed_cost": 0.04125690163537453,
+        "final_fresh_cost": 0.04132569088222832,
+        "fresh_rms_m": 0.0016025613962090623,
+        "control_fresh_rms_m": 0.0015946806751476197
+      },
+      {
+        "source_index": 240,
+        "applied_iterations": 5,
+        "fixed_max_node_translation_correction_m": 8.114095538380754e-06,
+        "fresh_max_node_translation_correction_m": 0.0015667003745407362,
+        "control_max_node_translation_correction_m": 0.001054336309285327,
+        "final_fixed_cost": 0.03799600379906349,
+        "final_fresh_cost": 0.03793314318018247,
+        "fresh_rms_m": 0.00587893984313601,
+        "control_fresh_rms_m": 0.005882706175838402
+      },
+      {
+        "source_index": 279,
+        "applied_iterations": 4,
+        "fixed_max_node_translation_correction_m": 3.2729898291289994e-06,
+        "fresh_max_node_translation_correction_m": 0.00041734807787485576,
+        "control_max_node_translation_correction_m": 0.000633654539944206,
+        "final_fixed_cost": 0.0514678797471525,
+        "final_fresh_cost": 0.04870677354636309,
+        "fresh_rms_m": 0.005219666992877657,
+        "control_fresh_rms_m": 0.005277169880409918
+      }
+    ]
+  },
+  "subjective_maturity_percent": 20,
+  "limits": [
+    "Viewed local windows initialized by existing sensor-only estimates, not new full trajectories or held-out data",
+    "Fixed-population convergence does not imply fresh-population convergence, tracker admission or physical accuracy",
+    "Lower RMS under changing sample populations is not a physical-accuracy gain",
+    "No clock, displacement, Schur or tracker-state commit by this local solver",
+    "Shared decimation, vertices, intrinsics and selection contract; independent SVD normals, matrix derivatives, incidence blocks, spectral solves, relative-camera objective and Rodrigues map",
+    "No calibrated uncertainty, new physical environment, vehicle integration or real-time evidence"
+  ]
+}

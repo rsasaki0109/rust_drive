@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "raw_mathematics_pass": true,
+  "recorded_auditor_exit_code": 0,
+  "core_check": {
+    "command": "bash scripts/check.sh",
+    "exit_code": 0,
+    "rust_tests": 371,
+    "scenario_runs_and_replays": 49,
+    "log_sha256": "e1bf34886e57013f5bd9eac5fae66e483eefeb320e2d17455efc141a8e9223cc"
+  },
+  "cases": {
+    "tum-fr1-room-temporal": {
+      "frames": 180,
+      "updates": 179,
+      "raw_iteration_equations": 3411,
+      "returned_pose_equations": 179,
+      "reference_view_warps": 44,
+      "fused_model_generations": 179,
+      "exact_discrete_counts": true,
+      "ground_truth_decoded": false,
+      "physical_accuracy_claim": false
+    },
+    "tum-fr1-desk2-independent": {
+      "frames": 180,
+      "updates": 179,
+      "raw_iteration_equations": 3450,
+      "returned_pose_equations": 179,
+      "reference_view_warps": 42,
+      "fused_model_generations": 179,
+      "exact_discrete_counts": true,
+      "ground_truth_decoded": false,
+      "physical_accuracy_claim": false
+    }
+  },
+  "raw_frames": 360,
+  "raw_iteration_equations": 6861,
+  "returned_pose_equations": 358,
+  "total_raw_equations": 7219,
+  "fused_generations": 358,
+  "reference_view_warps": 86,
+  "hand_controls": 7,
+  "analytic_motions": 4,
+  "rejected_report_corruptions": 6,
+  "current_binary_analytic_pipeline_pass": true,
+  "fixed_discrete_count_tolerance": 0,
+  "numerical_or_physical_gates_relaxed": false,
+  "prior_output_files_byte_identical": 245,
+  "previous_evidence_packets_unchanged": {
+    "projective-depth-rust-v1": 17,
+    "projective-depth-supervision-v1": 11
+  },
+  "operational_rust_changed": false,
+  "ground_truth_decoded": false,
+  "raw_color_decoded": false,
+  "python_compile_pass": true,
+  "actionlint_pass": true,
+  "git_diff_check_pass": true,
+  "scope": "Independent prescribed raw geometry, associations, H/g/RMS and fused-model reconstruction plus reported consequences; not direct internal-buffer comparison or physical motion accuracy.",
+  "source_sha256": {
+    "assets/projective-depth-raw-audit-v1/design.json": "4c19610beb7538d6b3c37082096edc4eba45ba633502cf20d8efdb0cdb5218e3",
+    "integrations/projective-depth/src/lib.rs": "22740a333d371b269524fd6c451f74c8af2b4931ebaff44f865b1849ebf1bb0e",
+    "scripts/audit-projective-depth-raw.py": "8aba79ba21caf4aac1c30789ffc024fd7d2bc86d4ba2d636c76d8512876bc0cd",
+    "scripts/check-projective-depth.py": "d38e17df85285f43bea569cd3410eabf5da9c0150f5bcab5c1802910625a87a4",
+    "scripts/projective_depth_common.py": "4d951fed622483de224666056b3fbabdd22902837cbdf8574cb500df9a86a29f",
+    "scripts/projective_depth_raw.py": "b64f7bc6a786dedd8900c72fa5c9248577e1485fd2b9263c6ff79805e785b927",
+    "scripts/requirements-visual.txt": "d8d4e85e0aa1f30325cb3fb9d39834a37e2e0894ecf2153d585e0631ed74d155"
+  },
+  "physical_accuracy_improvement_claim": false,
+  "subjective_maturity_percent": 20,
+  "requested_30_percent_reached": false
+}

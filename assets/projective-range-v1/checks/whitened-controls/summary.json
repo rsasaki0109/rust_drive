@@ -1,0 +1,134 @@
+{
+  "pass_range_controls": true,
+  "math_controls": {
+    "metre_floor": true,
+    "quadratic_depth_standard_deviation": true,
+    "symmetric_endpoint_variance": true,
+    "bounded_relative_weight": [
+      0.0016,
+      1.0
+    ],
+    "calibrated_noise_or_covariance": false
+  },
+  "standardized_math_controls": {
+    "standardized_quadratic_region": true,
+    "standardized_robust_tail": true,
+    "unit_variance_retains_original_huber": true,
+    "measured_noise_calibration": false
+  },
+  "weak_plane_raw_checked": true,
+  "rejected_corruptions": [
+    "unweighted equation substituted",
+    "weight attenuated raw RMS"
+  ],
+  "noisy_synthetic": {
+    "target_plane": {
+      "accepted_updates": 11,
+      "raw_equations": 152,
+      "max_position_error_m": 0.0034104816772391145,
+      "max_rotation_error_rad": 0.004768066713986657,
+      "physical_control_pass": true,
+      "errors": [
+        {
+          "position_error_m": 0.00015852883570566977,
+          "rotation_error_rad": 0.00032764175540935214
+        },
+        {
+          "position_error_m": 0.0015174999198547165,
+          "rotation_error_rad": 0.0009308724567105745
+        },
+        {
+          "position_error_m": 0.0027628722790102637,
+          "rotation_error_rad": 0.0006594128374619145
+        },
+        {
+          "position_error_m": 0.0015334109272042418,
+          "rotation_error_rad": 0.0012144587723309846
+        },
+        {
+          "position_error_m": 0.0034104816772391145,
+          "rotation_error_rad": 0.004768066713986657
+        },
+        {
+          "position_error_m": 0.002242805991116396,
+          "rotation_error_rad": 0.002913697495838548
+        },
+        {
+          "position_error_m": 0.0032199066847647673,
+          "rotation_error_rad": 0.002955610752490523
+        },
+        {
+          "position_error_m": 0.0027572033888865447,
+          "rotation_error_rad": 0.004685209933491636
+        },
+        {
+          "position_error_m": 0.002904487696240854,
+          "rotation_error_rad": 0.0033436218331777926
+        },
+        {
+          "position_error_m": 0.001974141137598791,
+          "rotation_error_rad": 0.0009607654548798708
+        },
+        {
+          "position_error_m": 0.002722305836618507,
+          "rotation_error_rad": 0.001512885022071904
+        }
+      ]
+    },
+    "depth_whitened_plane": {
+      "accepted_updates": 11,
+      "raw_equations": 114,
+      "max_position_error_m": 0.003704566797162756,
+      "max_rotation_error_rad": 0.0023391637098401238,
+      "physical_control_pass": true,
+      "errors": [
+        {
+          "position_error_m": 0.00030909546175790433,
+          "rotation_error_rad": 0.0003288964586580292
+        },
+        {
+          "position_error_m": 0.00038222174607610636,
+          "rotation_error_rad": 0.0008310619143035694
+        },
+        {
+          "position_error_m": 0.0005829199113422089,
+          "rotation_error_rad": 0.0007165887325722559
+        },
+        {
+          "position_error_m": 0.001125196838720169,
+          "rotation_error_rad": 0.0015565918108451904
+        },
+        {
+          "position_error_m": 0.003704566797162756,
+          "rotation_error_rad": 0.0023391637098401238
+        },
+        {
+          "position_error_m": 0.0028755937476193172,
+          "rotation_error_rad": 0.0009638598417288995
+        },
+        {
+          "position_error_m": 0.002982141560771643,
+          "rotation_error_rad": 0.002187440706342402
+        },
+        {
+          "position_error_m": 0.0023015702035311513,
+          "rotation_error_rad": 0.000679013777413575
+        },
+        {
+          "position_error_m": 0.002034070388106223,
+          "rotation_error_rad": 0.0007296246853883478
+        },
+        {
+          "position_error_m": 0.0016707905546302555,
+          "rotation_error_rad": 0.0013520455286309262
+        },
+        {
+          "position_error_m": 0.0022340812264053387,
+          "rotation_error_rad": 0.0010370823423532613
+        }
+      ]
+    }
+  },
+  "calibrated_physical_noise_claim": false,
+  "scope": "conditional synthetic accuracy, measured-weight algebra, raw matrices and failure-state integrity"
+}

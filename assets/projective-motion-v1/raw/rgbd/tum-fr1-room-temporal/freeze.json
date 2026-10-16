@@ -1,0 +1,29 @@
+{
+  "dataset": "tum-fr1-room-temporal",
+  "source_sha256": {
+    "scripts/audit-projective-depth-raw.py": "ee63dc74df42d6a3546b22e18167721a00792d20b5bb9d24b73abdab6b87d9a6",
+    "scripts/projective_depth_raw.py": "b6fab2b3e5c9da3caade84ecc0df7d38f58044f0ccda19b9da4d86fd4336e0a2",
+    "scripts/projective_depth_common.py": "f32de54d95f37835dbf63348d7f18676cf0bfc2264723af54525b36da856bac3",
+    "scripts/projective_vertex_raw.py": "04979366cf02fce38db2c06a26d3abd2bc31ef3b5693604ccb348ccb93d2a791",
+    "scripts/projective_photo_raw.py": "77ad7b5d4e08e3c5ce1591da07d45784958766786e8aaddee84c47d872a567ff",
+    "scripts/projective_step_raw.py": "e6a20afe04af0e04828856f21b5fc2b7a2cb3e1c8826d2ac8d91a7619732f3a8",
+    "scripts/projective_motion_raw.py": "10b4aeb64d5e011299a6d91cc79d08a5eee7048ce61ca2d1013936de039ba868",
+    "scripts/check-projective-depth.py": "594f53ecc82d39972f6638246b0809d7cb4eecfe51c0b21072173be3fabe1df7",
+    "scripts/requirements-visual.txt": "d8d4e85e0aa1f30325cb3fb9d39834a37e2e0894ecf2153d585e0631ed74d155",
+    "assets/projective-depth-raw-audit-v1/design.json": "4c19610beb7538d6b3c37082096edc4eba45ba633502cf20d8efdb0cdb5218e3"
+  },
+  "manifest_sha256": "c7fcc6dbaf72110858cb9225a238d5d0f52513662fe677b1a11cf72a7b7f7c52",
+  "original_freeze_sha256": "0e7aa9a389fc0ac792564f836faddef6e8ea920a125c48111e2c945c8c5eebc5",
+  "reprojection": "point",
+  "correspondence": "forward",
+  "residual": "target_plane",
+  "normals": "central_difference",
+  "geometry": "depth",
+  "photometric": "keyframe",
+  "step_control": "disabled",
+  "motion_model": "constant_velocity",
+  "original_sensor_ledger_sha256": "a70825a505b65a0ff7c60862ae9fb509f7b45abe0a97c0f055759a93ed3795e0",
+  "depth_source_count": 180,
+  "ground_truth_decoded": false,
+  "raw_color_decoded": true
+}

@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "parent": "assets/reciprocal-keyframe-depth-v1",
+  "data_role": "already viewed development; diagnostic only",
+  "selection": "Same fixed source indices as preceding association diagnostic",
+  "sample_indices": [
+    120,
+    160,
+    200,
+    240,
+    279
+  ],
+  "additional_finest_iteration_cap": 10,
+  "stop_translation_m": 1e-05,
+  "stop_rotation_rad": 1e-05,
+  "stop_rule": "All non-origin nodes below both strict thresholds, or unchanged support/condition/increment guards fail, or ten additional updates applied",
+  "initial_state": "Saved accepted final poses and unchanged prior_before of each reciprocal fit; not original update starting poses",
+  "new_trajectory_fitting": false,
+  "cache_clock_keys_prior_commits": false,
+  "numeric_ground_truth_parsed": false,
+  "admission_claim": false,
+  "selection_and_residual": "Frozen reciprocal factors, PCA normals and Huber unchanged",
+  "independent_audit": "Independent raw pixel-ID oracle, SVD normals, spectral solve and Rodrigues increment; ten-step budget encoded separately",
+  "pilot": "Initial exploratory continuation already viewed before certificate checker implementation; verified repeat uses the same indices and cap",
+  "default_changed": false,
+  "rust_driving_changed": false
+}

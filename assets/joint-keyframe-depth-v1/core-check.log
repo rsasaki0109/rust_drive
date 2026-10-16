@@ -1,0 +1,1794 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.05s
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.05s
+     Running unittests src/lib.rs (target/debug/deps/rustdriving_control-495a43ced644a14e)
+
+running 11 tests
+test tests::bounds_actuation ... ok
+test tests::emergency_recovery_starts_from_the_last_emitted_steering_command ... ok
+test tests::chassis_unreachable_curvature_saturates_finitely_and_invalid_offsets_brake ... ok
+test tests::feedforward_starts_from_rest_and_tracks_planned_braking ... ok
+test tests::invalid_profile_time_brakes ... ok
+test tests::interpolated_target_and_steering_match_a_known_circle ... ok
+test tests::local_preview_keeps_heading_on_the_straight_before_a_tight_turn ... ok
+test tests::route_handover_retains_steering_rate_continuity ... ok
+test tests::stale_data_and_nan_brake ... ok
+test tests::stationary_hold_does_not_command_acceleration ... ok
+test tests::chassis_course_circle_inverts_no_slip_rear_axle_steering_left_and_right ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/rustdriving_core-c76bec29f84c855b)
+
+running 3 tests
+test tests::angle_wrap ... ok
+test tests::rejects_bad_routes ... ok
+test tests::route_round_trip ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/rustdriving_dataset_eval-d2b1ef5f5b4c93e8)
+
+running 7 tests
+test tests::las_rejects_truncation_compression_invalid_scaling_and_offsets ... ok
+test tests::las_integer_scaling_and_labels_remain_separate ... ok
+test tests::compressed_pcd_uses_field_major_layout_and_validates_dimensions ... ok
+test tests::historical_pcl_padding_is_exactly_bounded_and_must_be_all_zero ... ok
+test tests::lzf_overlap_and_long_reference_are_real_copies ... ok
+test tests::malformed_lzf_cannot_reference_before_output_or_overflow ... ok
+test tests::vtk_points_are_bounded_and_attributes_do_not_supply_missing_xyz ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/rustdriving_dataset_eval-ac5c0928186649fc)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/rustdriving_localization-c74e0345d60ea055)
+
+running 66 tests
+test keyframes3d::tests::degenerate_initial_map_is_rejected_without_a_silent_origin_change ... ok
+test keyframes3d::tests::malformed_acquisition_cannot_hide_expiry_or_allow_retrograde_recovery ... ok
+test keyframes3d::tests::duplicate_or_invalid_acquisitions_never_refresh_permission ... ok
+test registration3d::tests::aabb_pruning_avoids_point_comparisons_in_distant_neighbor_cells ... ok
+test keyframes3d::tests::expiry_latches_loss_until_explicit_new_origin ... ok
+test registration3d::tests::horn_fit_handles_half_turns_and_all_rotation_axes ... ok
+test registration3d::tests::invalid_inputs_work_exhaustion_and_wrong_prior_rejected ... ok
+test registration3d::tests::inverse_compose_and_quaternion_sign_are_consistent ... ok
+test registration3d::tests::jacobi_eigenvectors_reconstruct_a_symmetric_information_matrix ... ok
+test keyframes3d::tests::rejected_cloud_keeps_map_and_pose_clock_then_a_measured_fit_can_recover ... ok
+test registration3d::tests::planes_lines_and_identical_points_do_not_establish_confidence ... ok
+test registration3d::tests::pruned_neighbors_match_brute_force_random_queries_and_large_origins ... ok
+test registration3d::tests::centered_large_coordinate_fit_is_deterministic ... ok
+test registration3d::tests::strict_aabb_pruning_preserves_equal_distance_index_ties_and_boundaries ... ok
+test keyframes3d::tests::replacing_measured_keyframes_preserves_the_original_coordinate_frame ... ok
+test registration::tests::asymmetric_cloud_recovers_known_pose_with_noise_and_far_outliers ... ok
+test registration::tests::bounded_multistart_recovers_a_better_fit_instead_of_calling_it_ambiguous ... ok
+test registration::tests::collinear_and_repeated_map_geometry_cannot_establish_a_pose ... ok
+test registration::tests::centered_fit_is_stable_with_large_world_coordinates ... ok
+test registration::tests::distinct_comparable_repeated_cloud_alignment_is_rejected_as_ambiguous ... ok
+test registration::tests::nearest_neighbor_ties_are_stable_and_do_not_escape_the_radius ... ok
+test reprojection3d::tests::analytic_left_jacobian_matches_independent_rodrigues_differences ... ok
+test reprojection3d::tests::degenerate_geometry_rejects_even_when_prior_reprojects_perfectly ... ok
+test reprojection3d::tests::huber_limits_pixel_outlier_influence_without_dropping_support ... ok
+test reprojection3d::tests::invalid_inputs_and_hard_resources_reject_transactionally ... ok
+test reprojection3d::tests::iteration_cap_is_reported_without_convergence_claim ... ok
+test reprojection3d::tests::known_planar_landmarks_are_observable_but_no_projection_may_be_dropped ... ok
+test reprojection3d::tests::line_search_failure_has_no_success_fallback ... ok
+test reprojection3d::tests::pixel_refinement_removes_measured_current_depth_bias ... ok
+test reprojection3d::tests::recovers_three_axis_motion_and_monotonic_bounded_trace ... ok
+test registration3d::tests::rigid_noisy_cloud_recovers_six_dof_with_outliers ... ok
+test registration::tests::invalid_oversized_wrong_initial_and_excessive_jump_inputs_are_rejected ... ok
+test registration3d::tests::repeated_3d_geometry_has_competing_local_fits ... ok
+test submap3d::tests::malformed_and_retrograde_acquisitions_do_not_refresh_permission ... ok
+test submap3d::tests::full_map_update_is_atomic_when_new_voxels_exceed_the_point_limit ... ok
+test submap3d::tests::representatives_average_raw_observations_in_deterministic_voxel_order ... ok
+test submap3d::tests::unobservable_initialization_and_invalid_resource_settings_are_rejected ... ok
+test submap3d::tests::malformed_late_acquisition_latches_loss_until_a_new_origin_is_declared ... ok
+test tests::chassis_covariance_stays_symmetric_and_positive_under_repeated_corrections ... ok
+test tests::chassis_turns_match_analytic_displacement_speed_and_covariance ... ok
+test tests::corrects_drift_and_rejects_outlier ... ok
+test tests::correlated_consistent_innovation_is_accepted ... ok
+test tests::correlated_innovation_is_rejected_without_mutation ... ok
+test tests::correlated_map_joseph_updates_stay_positive_and_symmetric ... ok
+test tests::covariance_stays_symmetric_positive ... ok
+test tests::extreme_numeric_fixes_are_finite_or_rejected_without_state_mutation ... ok
+test tests::invalid_chassis_offset_and_numeric_overflow_cannot_mutate_estimate ... ok
+test tests::invalid_or_gated_joint_map_fixes_do_not_mutate_estimate ... ok
+test tests::map_pose_covariance_floors_prevent_false_precision ... ok
+test tests::map_pose_diagonal_joint_correction_matches_analytic_posterior ... ok
+test tests::map_pose_wraps_yaw_and_preserves_gnss_freshness_and_diagnostics ... ok
+test tests::rejected_fixes_do_not_refresh_acceptance_or_allow_timestamp_rollback ... ok
+test tests::sequential_joseph_correction_matches_an_independent_joint_solution ... ok
+test tests::zero_chassis_offset_preserves_existing_predictor_and_corrector_exactly ... ok
+test visual_odometry3d::tests::collinear_or_duplicate_observations_are_rejected ... ok
+test visual_odometry3d::tests::equal_support_for_distinct_moving_groups_is_rejected_as_ambiguous ... ok
+test visual_odometry3d::tests::exhausted_work_budget_rejects_instead_of_returning_partial_consensus ... ok
+test visual_odometry3d::tests::finite_point_and_resource_bounds_apply_before_hypothesis_work ... ok
+test visual_odometry3d::tests::measured_associations_recover_all_three_rotation_axes_and_translation ... ok
+test visual_odometry3d::tests::noncollinear_planar_known_associations_recover_a_proper_rigid_transform ... ok
+test submap3d::tests::rejected_fit_does_not_fuse_points_or_renew_pose_age ... ok
+test visual_odometry3d::tests::seeded_triples_are_distinct_and_sampling_covers_the_input_range ... ok
+test visual_odometry3d::tests::outliers_and_bounded_noise_are_removed_without_losing_motion ... ok
+test visual_odometry3d::tests::unrelated_correspondences_or_excessive_motion_cannot_issue_a_pose ... ok
+test submap3d::tests::voxel_count_limit_preserves_existing_means_and_pose_can_remain_valid ... ok
+test submap3d::tests::fused_clouds_keep_poses_in_the_original_measured_origin ... ok
+
+test result: ok. 66 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.00s
+
+     Running unittests src/lib.rs (target/debug/deps/rustdriving_mapping-a4a09148bc0d8250)
+
+running 1 test
+test tests::marks_hit_and_clears_ray ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/rustdriving_perception-6cf52a45a0cf88fd)
+
+running 26 tests
+test ground3d::tests::invalid_and_resource_exhaustion_fail_without_partial_classification ... ok
+test ground3d::tests::sparse_and_steep_support_do_not_authorize_ground_removal ... ok
+test ground3d::tests::sloped_terrain_building_tree_and_low_outlier_are_separated ... ok
+test image_features::tests::hand_drawn_square_has_corners_and_blank_background_has_none ... ok
+test ground3d::tests::translation_and_input_order_preserve_geometric_labels ... ok
+test image_features::tests::match_count_limit_preserves_unique_correspondences ... ok
+test image_features::tests::strict_ratio_and_reverse_unique_match_are_required ... ok
+test image_features::tests::ties_single_candidates_and_nonfinite_features_fail_closed ... ok
+test image_features::tests::bounds_and_constant_image_do_not_create_features ... ok
+test objects3d::tests::euclidean_connectivity_crosses_voxels_and_never_merges_vertical_gaps ... ok
+test objects3d::tests::identical_dense_returns_use_linear_bounded_work ... ok
+test objects3d::tests::malformed_or_exhausted_input_cannot_return_partial_objects ... ok
+test objects3d::tests::measured_building_and_tree_components_preserve_xyz_bounds_and_noise ... ok
+test terrain_adaptive::tests::measured_distance_support_handles_different_sampling_densities ... ok
+test terrain_adaptive::tests::noisy_ground_survives_but_empty_space_is_not_extrapolated ... ok
+test image_features::tests::quarter_turn_texture_retains_geometrically_correct_matches ... ok
+test terrain_adaptive::tests::resource_and_invalid_data_rejections_return_no_partial_output ... ok
+test terrain_adaptive::tests::ordering_and_large_integer_translation_preserve_labels ... ok
+test terrain_adaptive::tests::slope_roof_tree_low_outlier_and_low_obstacle_are_separated ... ok
+test tests::circle_fit_recovers_hidden_center_from_visible_arc ... ok
+test tests::clusters_two_objects_without_labels ... ok
+test tests::nan_points_are_ignored ... ok
+test tests::tracks_velocity_and_expires ... ok
+test terrain_adaptive::tests::unknown_collinear_sparse_and_steep_geometry_stays_non_ground ... ok
+test image_features::tests::translated_texture_matches_actual_pixels_not_only_descriptors ... ok
+test image_features::tests::dense_image_respects_feature_and_tile_limits ... ok
+
+test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.94s
+
+     Running unittests src/lib.rs (target/debug/deps/rustdriving_pipeline-2d317dcd13a3f01e)
+
+running 48 tests
+test intersections::tests::fast_crossing_segments_block_even_when_no_prediction_sample_is_inside ... ok
+test intersections::tests::malformed_geometry_and_curved_routes_are_rejected ... ok
+test intersections::tests::duplicate_stale_or_unhealthy_scans_cannot_release_the_conflict_gate ... ok
+test intersections::tests::approach_budget_reserves_response_and_braking_distance_until_commit ... ok
+test intersections::tests::new_conflict_reblocks_before_commit_but_passed_zone_is_not_reversed ... ok
+test map_localization::tests::a_map_correction_cannot_invent_initial_gnss_acceptance ... ok
+test map_localization::tests::clock_and_invalid_observations_cannot_refresh_map_acceptance ... ok
+test map_localization::tests::accepted_map_does_not_clear_the_gnss_innovation_hold ... ok
+test map_localization::tests::omitted_map_fields_preserve_the_default_sensor_contract ... ok
+test map_localization::tests::accepted_map_bridges_only_a_bounded_actual_gnss_outage ... ok
+test navigation::tests::duplicate_and_reordered_updates_cannot_undo_pending_closures ... ok
+test navigation::tests::handover_requires_three_healthy_stopped_samples_before_the_divergence ... ok
+test navigation::tests::malformed_new_snapshots_latch_fault_until_a_valid_snapshot ... ok
+test navigation::tests::stopped_but_off_corridor_or_misaligned_estimates_cannot_switch ... ok
+test navigation::tests::unreachable_late_or_too_narrow_routes_never_handover ... ok
+test map_localization::tests::missing_and_delayed_scans_cannot_refresh_map_localization ... ok
+test map_localization::tests::rejected_and_degenerate_matches_do_not_cover_untrusted_pose_age ... ok
+test perception_3d::tests::adaptive_configuration_is_strict_bounded_and_omitted_from_legacy_json ... ok
+test perception_3d::tests::adaptive_unsupported_geometry_and_work_exhaustion_fail_without_fallback ... ok
+test map_localization::tests::map_localization_replays_actual_sensors_and_rejects_forged_acceptance ... ok
+test perception_3d::tests::calibration_roundtrips_strictly_and_excludes_double_ground_removal ... ok
+test perception_3d::tests::ordinal_fault_and_sparse_ground_are_errors_without_planar_fallback ... ok
+test perception_3d::tests::raw_sloped_xyz_yields_measured_aabbs_and_height_filtered_conservative_circles ... ok
+test scan_pose::tests::interpolates_translation_and_short_yaw_arc_without_extrapolation ... ok
+test scan_pose::tests::rejects_expired_history_and_bounds_memory_even_at_high_frequency ... ok
+test stop_signs::tests::only_a_continuous_healthy_near_line_stop_releases ... ok
+test stop_signs::tests::rolling_missing_motion_wrong_heading_and_early_crossing_never_release ... ok
+test tests::chassis_reference_is_explicit_bounded_and_replayable ... ok
+test tests::clock_rejection_does_not_mutate_and_gap_brakes ... ok
+test tests::duplicate_and_delayed_scans_cannot_refresh_health ... ok
+test tests::empty_scan_is_healthy_but_failed_acquisition_brakes ... ok
+test tests::invalid_and_future_sensor_samples_brake ... ok
+test tests::invalid_calibration_is_rejected_before_execution ... ok
+test tests::invalid_navigation_latches_braking_and_does_not_reset_localization ... ok
+test tests::local_route_geometry_is_opt_in_and_rejects_incompatible_coordinates ... ok
+test tests::map_route_mismatch_and_excessive_grid_extent_are_rejected ... ok
+test tests::missing_odometry_stops_even_with_other_sensors ... ok
+test tests::old_motion_limit_calibration_defaults_only_the_new_acceleration_field ... ok
+test tests::received_outliers_do_not_refresh_health_and_a_new_good_fix_recovers ... ok
+test tests::repeated_new_gnss_outliers_hold_until_a_new_accepted_fix ... ok
+test traffic_controls::tests::duplicates_reordered_samples_and_missing_updates_cannot_refresh_green ... ok
+test traffic_controls::tests::invalid_maps_are_rejected_and_stop_route_preserves_original_polyline ... ok
+test traffic_controls::tests::malformed_and_future_snapshots_latch_until_a_new_complete_snapshot ... ok
+test traffic_controls::tests::only_fresh_green_commits_a_crossing_and_nearest_blocked_line_wins ... ok
+test traffic_controls::tests::unhealthy_localization_cannot_commit_an_estimated_crossing ... ok
+test perception_3d::tests::adaptive_raw_sparse_and_dense_slopes_preserve_low_objects_and_roofs ... ok
+test perception_3d::tests::pipeline_measured_xyz_fault_latch_recovery_and_raw_replay ... ok
+test perception_3d::tests::adaptive_sensor_only_replay_preserves_fault_epoch_and_recovery ... ok
+
+test result: ok. 48 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.83s
+
+     Running tests/delayed_lidar.rs (target/debug/deps/delayed_lidar-210a3435dc558da5)
+
+running 3 tests
+test a_scan_before_history_start_is_rejected_and_a_current_acquisition_recovers ... ok
+test an_expired_new_scan_cannot_refresh_health_or_update_tracks ... ok
+test delayed_body_scan_keeps_a_stationary_world_track_while_ego_translates_and_turns ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/ground.rs (target/debug/deps/ground-61b9181f84b738f8)
+
+running 11 tests
+test every_xyz_return_is_validated_before_any_ground_is_removed ... ok
+test broad_elevated_plane_or_incomplete_spatial_support_cannot_be_assumed_ground ... ok
+test an_isolated_far_plane_point_is_preserved_without_local_measured_support ... ok
+test invalid_ground_calibration_is_rejected_before_a_step ... ok
+test measured_small_grade_recovers_plane_and_rejects_a_low_curb_as_ground ... ok
+test fit_failure_latches_through_missing_or_duplicate_scans_until_a_new_measured_plane ... ok
+test radial_measurement_noise_and_a_foreground_curb_do_not_bias_ground_into_obstacles ... ok
+test plane_estimation_does_not_depend_on_return_order ... ok
+test threshold_adjacent_native_returns_converge_to_the_reported_inliers_fit ... ok
+test actual_flat_ground_is_removed_from_mapping_and_driving_without_a_global_height_cut ... ok
+test ground_diagnostics_and_raw_cloud_replay_deterministically_and_old_mode_omits_fields ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+     Running tests/intersections.rs (target/debug/deps/intersections-d63a67774fd1149f)
+
+running 3 tests
+test acquisition_fault_interrupts_clear_time_and_recovery_requires_a_new_full_second ... ok
+test repeated_empty_scan_does_not_establish_fresh_clear_permission ... ok
+test replay_recomputes_clear_permission_and_a_new_sensed_conflict_revokes_it ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/lidar3d.rs (target/debug/deps/lidar3d-578bb06b69171ffa)
+
+running 10 tests
+test calibration_rejects_nonfinite_overflow_counts_and_invalid_physical_limits ... ok
+test mixed_input_modes_and_conflicting_calibration_are_rejected ... ok
+test acquisition_before_history_and_expired_new_stamp_are_rejected ... ok
+test actual_mid_height_returns_change_plan_and_map_but_overhead_returns_do_not ... ok
+test optional_3d_fields_are_absent_in_previous_frame_and_header_modes ... ok
+test ordinal_order_is_deterministic_and_overlapping_ring_projections_are_deduplicated ... ok
+test same_tilted_ray_has_different_measured_height_at_different_ranges ... ok
+test no_new_scan_duplicates_and_old_acquisitions_never_refresh_health_or_fault_latch ... ok
+test malformed_ordinals_xyz_directions_ranges_and_future_stamps_fail_closed ... ok
+test tilted_scan_uses_acquisition_pose_and_replay_detects_actual_point_corruption ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/multi_height_lidar.rs (target/debug/deps/multi_height_lidar-a651c98b0a07363f)
+
+running 11 tests
+test acquisition_failure_and_ambiguous_or_out_of_mode_inputs_brake ... ok
+test accepted_height_label_tolerance_cannot_remove_a_boundary_plane_from_fusion ... ok
+test expired_new_scan_or_acquisition_before_history_does_not_refresh ... ok
+test invalid_calibration_is_rejected_before_pipeline_creation ... ok
+test low_returns_alone_change_planning_and_map_but_overhead_returns_do_not ... ok
+test missing_new_scan_and_duplicate_stamps_cannot_extend_health ... ok
+test malformed_or_failed_bundle_holds_through_absence_duplicates_and_prefault_delays ... ok
+test optional_contract_does_not_change_ordinary_serialized_frames_or_configs ... ok
+test repeated_plane_returns_do_not_change_detections_and_plane_order_is_immaterial ... ok
+test malformed_missing_duplicate_nonfinite_and_oversized_planes_brake_without_updates ... ok
+test delayed_bundle_uses_acquisition_pose_for_stationary_world_tracks_and_replays ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/replay.rs (target/debug/deps/replay-bd67b8e898cc8c77)
+
+running 7 tests
+test changed_command_is_detected ... ok
+test replay_recomputes_outputs_from_sensor_only_log ... ok
+test changing_a_map_snapshot_is_detected_by_full_recomputation ... ok
+test writer_failures_are_reported ... ok
+test empty_and_truncated_logs_cannot_claim_verified ... ok
+test wrong_schema_and_hidden_truth_fields_are_rejected ... ok
+test gnss_input_and_correction_diagnostics_are_both_recomputed ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/signals.rs (target/debug/deps/signals-48cf8c226d7c9e6a)
+
+running 3 tests
+test future_signal_fault_brakes_until_a_new_valid_snapshot ... ok
+test repeated_green_samples_expire_without_refreshing_the_accepted_clock ... ok
+test constrained_stop_and_green_release_replay_from_observations_only ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/stop_signs.rs (target/debug/deps/stop_signs-b5334333652a3e50)
+
+running 3 tests
+test releasing_a_stop_sign_cannot_release_a_red_signal_or_duplicate_map_line ... ok
+test acquisition_failure_resets_elapsed_stop_time_before_recovery ... ok
+test held_stop_releases_from_measured_motion_and_recomputes_every_output ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running unittests src/lib.rs (target/debug/deps/rustdriving_planning-b02e1802946cb289)
+
+running 38 tests
+test collision::tests::geometric_crossing_at_different_times_is_clear ... ok
+test collision::tests::known_held_heading_preserves_parallel_clearance_and_crossing_reserve ... ok
+test collision::tests::analytic_entry_tangency_overlap_and_miss ... ok
+test collision::tests::intermediate_prediction_turn_is_not_replaced_with_an_endpoint_chord ... ok
+test collision::tests::parallel_and_static_traffic_keep_clearance_in_rotated_frames ... ok
+test collision::tests::synchronized_crossing_detected_between_clear_endpoints ... ok
+test collision::tests::stationary_hold_reserves_for_motion_without_an_arbitrary_heading ... ok
+test collision::tests::terminal_prediction_and_single_point_obstacles_remain_occupied ... ok
+test corners::tests::impossible_corner_or_overlapping_fillets_are_rejected ... ok
+test geometry::tests::offset_is_continuous_in_position_and_heading_at_a_route_knot ... ok
+test geometry::tests::straight_route_is_exact_even_with_unequal_segments ... ok
+test corners::tests::sparse_turn_remains_in_original_corridor_with_calibrated_curvature ... ok
+test speed::tests::a_local_curve_cap_allows_acceleration_after_the_curve ... ok
+test speed::tests::acceleration_from_rest_has_analytic_arrival_times ... ok
+test speed::tests::stop_has_exact_location_finite_time_and_stationary_hold ... ok
+test speed::tests::noisy_overspeed_recovers_without_an_instantaneous_speed_clamp ... ok
+test speed::tests::nominal_stop_reserves_braking_authority_without_weakening_the_hard_bound ... ok
+test speed::tests::unreachable_braking_bound_is_rejected_and_rest_does_not_move ... ok
+test tests::avoidance_speed_obeys_calibrated_curvature_bound ... ok
+test tests::blocked_narrow_road_slows ... ok
+test tests::a_lagging_vehicle_is_not_assumed_to_have_completed_the_lateral_maneuver ... ok
+test tests::an_object_clear_of_the_centerline_does_not_keep_the_vehicle_offset ... ok
+test tests::approaching_traffic_reserves_a_terminal_side_before_the_forecast_reaches_the_goal ... ok
+test tests::forecast_changes_do_not_abort_an_unfinished_pass ... ok
+test tests::invalid_motion_limits_stop_planning ... ok
+test tests::invalid_heading_rejects_the_candidate ... ok
+test tests::goal_stop_uses_candidate_arc_length_after_a_lateral_return ... ok
+test tests::goal_recovery_brakes_monotonically_within_the_remaining_corridor ... ok
+test tests::path_joins_the_measured_heading_and_recovers_to_the_route ... ok
+test tests::low_friction_high_speed_avoidance_uses_a_reachable_gentle_shift ... ok
+test tests::pass_preference_never_overrides_collision_feasibility ... ok
+test tests::reduced_braking_authority_reduces_reachable_obstacle_and_goal_speeds ... ok
+test tests::replan_keeps_maneuver_progress ... ok
+test tests::returns_to_center_when_obstacle_has_passed ... ok
+test tests::selects_avoidance_and_respects_road ... ok
+test tests::yields_inside_braking_distance_and_waits_until_candidate_clears ... ok
+test tests::tracking_correction_cannot_push_a_candidate_outside_the_road ... ok
+test tests::terminal_reservation_ignores_stationary_departing_and_off_center_tracks ... ok
+
+test result: ok. 38 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/swept_regression.rs (target/debug/deps/swept_regression-b5daeec66c4928d7)
+
+running 4 tests
+test malformed_forecasts_cannot_be_treated_as_a_clear_road ... ok
+test oncoming_obstacle_between_samples_requires_braking ... ok
+test a_second_crossing_at_the_stop_location_invalidates_the_retimed_path ... ok
+test accelerating_arrival_time_detects_a_crossing_missed_by_a_three_meter_per_second_floor ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/rustdriving_prediction-04ae3291708b105e)
+
+running 11 tests
+test tests::current_epoch_constant_velocity_propagates_acquisition_age ... ok
+test tests::a_short_braking_observation_does_not_change_constant_velocity ... ok
+test tests::delayed_low_speed_tracks_keep_the_observed_position ... ok
+test tests::delayed_duplicate_braking_does_not_renew_the_acquisition_budget ... ok
+test tests::extrapolates_velocity ... ok
+test tests::direction_change_or_interrupted_sensing_uses_the_baseline ... ok
+test tests::first_observed_reacceleration_withdraws_braking ... ok
+test tests::stale_braking_withdraws_and_propagates_valid_velocity_from_acquisition ... ok
+test tests::sustained_braking_is_bounded_then_coasts_without_reversing ... ok
+test tests::invalid_or_future_tracks_are_not_fabricated_into_valid_forecasts ... ok
+test tests::stale_duplicate_and_reacquired_tracks_cannot_supply_braking_evidence ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/rustdriving_routing-04018828f5a7b70e)
+
+running 35 tests
+test osm::tests::bad_geometry_missing_nodes_duplicates_tags_and_bounds_fail ... ok
+test osm::tests::a_closed_roundabout_keeps_forward_cycle_without_self_edges ... ok
+test osm::tests::ambiguous_interior_way_roles_and_unsupported_same_way_rules_fail ... ok
+test osm::tests::independent_wgs84_equatorial_distances_and_dateline_projection ... ok
+test osm::tests::applicable_missing_members_and_dangling_connectivity_are_never_ignored ... ok
+test osm::tests::filtered_roads_cannot_silently_remove_an_only_turn_rule ... ok
+test osm::tests::member_reference_accepts_legacy_decimal_strings_but_not_lossy_or_invalid_ids ... ok
+test osm::tests::motor_access_precedence_and_filter_reporting_are_explicit ... ok
+test osm::tests::malformed_relation_types_unknown_qualifiers_and_conflicting_imports_fail ... ok
+test osm::tests::only_turn_import_forbids_alternatives_even_when_selected_exit_is_closed ... ok
+test osm::tests::node_via_no_turns_choose_an_actual_legal_detour ... ok
+test osm::tests::relation_direction_minus_one_selects_only_real_incoming_and_outgoing_edges ... ok
+test osm::tests::restricted_nodes_and_physical_barriers_filter_connected_ways ... ok
+test osm::tests::reordered_elements_produce_identical_graph_and_route ... ok
+test osm::tests::restriction_order_does_not_affect_graph_report_or_plan ... ok
+test osm::tests::shared_via_u_turn_does_not_prohibit_a_different_way_exit ... ok
+test osm::tests::same_way_u_turn_splits_explicit_via_without_blocking_through_traffic ... ok
+test osm::tests::unsupported_applicable_conditions_modes_exceptions_and_values_are_rejected ... ok
+test osm::tests::yes_reverse_and_roundabout_direction_cannot_be_traversed_backwards ... ok
+test osm::tests::specific_motorcar_precedence_and_explicit_nonmotor_exemptions_are_bounded ... ok
+test tests::equal_cost_parallel_edges_are_deterministic_under_input_permutation ... ok
+test osm::tests::shared_junctions_split_but_keep_intermediate_way_geometry ... ok
+test tests::malformed_maps_are_rejected_before_search ... ok
+test tests::invalid_and_conflicting_turn_restrictions_are_rejected_before_search ... ok
+test tests::only_turn_restrictions_and_closures_never_fall_back_to_prohibited_turn ... ok
+test tests::restricted_search_retains_more_expensive_legal_arrival_at_same_node ... ok
+test tests::restricted_equal_cost_choices_ignore_input_order ... ok
+test tests::restriction_count_is_bounded ... ok
+test tests::shortest_path_and_closure_detour_follow_direction_and_geometry ... ok
+test tests::tolerance_is_canonicalized_without_duplicate_junction_points ... ok
+test tests::u_turns_are_directed_transitions_and_repeated_nodes_can_be_required ... ok
+test tests::unknown_inputs_and_stationary_requests_fail_explicitly ... ok
+test tests::restricted_search_matches_exhaustive_edge_paths_with_every_closure_subset ... ok
+test tests::search_matches_exhaustive_simple_paths_on_a_cyclic_graph ... ok
+test osm::tests::input_relation_limit_applies_even_to_explicitly_nonmotor_restrictions ... ok
+
+test result: ok. 35 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running unittests src/lib.rs (target/debug/deps/rustdriving_sim-a2df88e19f4b5d06)
+
+running 37 tests
+test intersections::tests::later_priority_arrival_and_open_final_intervals_are_also_scored ... ok
+test intersections::tests::exact_two_second_separation_passes_with_conservative_exit_sample ... ok
+test intersections::tests::body_radius_and_disappearance_define_physical_occupancy_endpoints ... ok
+test intersections::tests::overlap_and_insufficient_separation_are_rejected_without_driver_status ... ok
+test intersections::tests::repeated_occupancies_count_once_per_zone_and_absent_pairs_have_no_gap ... ok
+test sensor_timing::tests::calibration_rejects_unsupported_clocks_and_invalid_failure_windows ... ok
+test sensor_timing::tests::delayed_delivery_preserves_acquisition_stamp_points_and_cadence ... ok
+test sensor_timing::tests::explicit_and_scheduled_failure_flush_old_acquisitions_before_recovery ... ok
+test sensor_timing::tests::latest_eligible_scan_is_delivered_once_without_future_data ... ok
+test sensor_timing::tests::layered_queue_emits_latest_eligible_bundle_once_after_skipped_ticks ... ok
+test sensor_timing::tests::layered_delivery_preserves_every_plane_as_one_delayed_acquisition ... ok
+test sensor_timing::tests::partial_or_scheduled_failure_flushes_all_layers_before_fresh_recovery ... ok
+test sensor_timing::tests::tilted_cloud_partial_and_scheduled_failures_flush_before_new_acquisition ... ok
+test sensor_timing::tests::tilted_cloud_delay_preserves_xyz_indices_and_acquisition_stamp_atomically ... ok
+test sensor_timing::tests::tilted_cloud_skipped_delivery_emits_latest_eligible_acquisition_only_once ... ok
+test signals::tests::controller_ignoring_backend_cannot_hide_a_physical_red_crossing ... ok
+test signals::tests::green_crossings_and_later_red_behind_the_vehicle_are_permitted ... ok
+test signals::tests::physical_red_yellow_unknown_crossings_fail_even_without_driver_diagnostics ... ok
+test stop_signs::tests::complete_physical_hold_allows_crossing_without_any_planner_status ... ok
+test sensor_timing::tests::default_transport_is_identical_and_schedules_never_enter_replay_header ... ok
+test stop_signs::tests::rolling_far_or_interrupted_stops_cannot_satisfy_a_physical_crossing ... ok
+test tests::bicycle_turns_and_brakes ... ok
+test tests::gnss_acquisition_windows_are_bounded_and_recover_at_the_end_boundary ... ok
+test stop_signs::tests::controller_ignoring_backend_cannot_hide_a_missed_physical_stop ... ok
+test tests::sensor_has_occlusion_and_no_labels ... ok
+test traffic::tests::actor_stops_for_a_sensed_vehicle_without_position_clamping ... ok
+test traffic::tests::finite_sensor_range_does_not_grant_collision_avoidance_oracle ... ok
+test traffic::tests::inactive_actor_does_not_move_and_a_departing_lead_releases_the_follower ... ok
+test traffic::tests::missing_signal_feed_stops_but_bounded_controller_cannot_repair_infeasible_initial_state ... ok
+test traffic::tests::optional_actor_signal_control_stops_physical_front_on_red_and_resumes_observed_green ... ok
+test traffic::tests::policy_has_analytic_free_acceleration_and_bounded_emergency_braking ... ok
+test traffic::tests::prescribed_motion_until_stops_on_footpath_and_defaults_do_not_add_serialized_fields ... ok
+test traffic::tests::signal_calibration_and_motion_stop_validation_reject_incompatible_actors ... ok
+test traffic::tests::stale_cached_green_yellow_and_unknown_cannot_authorize_forward_crossing ... ok
+test intersections::tests::controller_ignoring_backend_cannot_hide_a_physical_priority_violation ... ok
+test sensor_timing::tests::transient_sensor_failure_brakes_then_recovers_after_new_acquisition ... ok
+test tests::opaque_adapter_body_ids_preserve_traffic_acceptance ... ok
+
+test result: ok. 37 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.29s
+
+     Running unittests src/main.rs (target/debug/deps/rustdriving-90cef7ec13b11a5c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/end_to_end.rs (target/debug/deps/end_to_end-db0da25990e107d9)
+
+running 27 tests
+test actors_exist_before_motion_begins ... ok
+test cli_replay_recomputes_and_rejects_corruption_without_stale_success ... ok
+test cli_reports_failure_and_writes_evidence ... ok
+test blocked_road_stops_without_collision ... ok
+test closed_or_invalid_map_rejected_before_driving ... ok
+test actual_collision_fails_acceptance ... ok
+test clearance_acceptance_rejects_a_collision_free_but_too_close_run ... ok
+test goal_hold_does_not_hide_a_collision_after_first_arrival ... ok
+test closed_loop_mission_across_seeds ... ok
+test identical_seed_replays_exactly ... ok
+test invalid_or_overlapping_gnss_bias_windows_are_rejected ... ok
+test late_closure_is_scored_as_failure_and_never_redirects_a_moving_vehicle ... ok
+test crossing_hazards_across_seeds ... ok
+test malformed_following_parameters_and_stop_windows_are_rejected ... ok
+test malformed_scenario_rejected ... ok
+test invalid_goal_residence_and_insufficient_episode_time_are_rejected ... ok
+test newly_appearing_and_terminal_overlaps_fail_acceptance ... ok
+test no_route_holds_before_the_closed_branch_across_seeds ... ok
+test reactive_traffic_stops_resumes_and_replays_from_ego_observations ... ok
+test stale_lidar_and_gnss_trigger_braking ... ok
+test stops_when_multiple_obstacles_block_all_lateral_alternatives ... ok
+test map_destinations_and_closure_detours_drive_and_replay_across_seeds ... ok
+test gnss_outliers_stop_and_recover_without_resetting_localization ... ok
+test unsupported_friction_is_not_silently_ignored ... ok
+test traffic_collisions_and_endpoint_overrun_fail_physical_acceptance ... ok
+test terminal_traffic_is_avoided_through_an_extended_physical_hold ... ok
+test live_map_closures_stop_then_handover_without_resetting_estimation ... ok
+
+test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 29.40s
+
+     Running tests/osm_cli.rs (target/debug/deps/osm_cli-3e9b9b9b41442a58)
+
+running 2 tests
+test unreachable_route_and_oversized_document_fail_without_generated_map ... ok
+test external_map_import_route_physical_goal_and_complete_sensor_replay ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.41s
+
+     Running tests/turn_restrictions.rs (target/debug/deps/turn_restrictions-e7054097107f18d7)
+
+running 4 tests
+test closing_the_only_allowed_turn_is_unreachable_without_a_forbidden_fallback ... ok
+test legacy_unrestricted_static_map_still_uses_resolved_route_replay ... ok
+test replay_rejects_removed_turn_rule_instead_of_trusting_resolved_geometry ... ok
+test prohibited_and_only_turns_select_and_drive_the_legal_detour ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.63s
+
+   Doc-tests rustdriving_control
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rustdriving_core
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rustdriving_dataset_eval
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rustdriving_localization
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rustdriving_mapping
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rustdriving_perception
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rustdriving_pipeline
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rustdriving_planning
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rustdriving_prediction
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rustdriving_routing
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rustdriving_sim
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+    Finished `release` profile [optimized] target(s) in 0.01s
+{
+  "scenario": "Curved-road obstacle avoidance",
+  "seed": 7,
+  "simulated_seconds": 38.400000000000006,
+  "steps": 769,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 0.854291919817626,
+  "localization_rmse": 0.062331271104452156,
+  "localization_max_error": 0.14357387900939314,
+  "final_speed": 0.14743702445559836,
+  "progress": 219.62674810851254,
+  "emergency_steps": 25,
+  "avoidance_steps": 308,
+  "max_tracks": 2,
+  "passed": true,
+  "failures": []
+}
+{
+  "source": "reference-2d",
+  "ticks": 769,
+  "verified": true
+}
+{
+  "scenario": "Blocked narrow road",
+  "seed": 7,
+  "simulated_seconds": 20.0,
+  "steps": 401,
+  "reached_goal": false,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 4.544735960178338,
+  "localization_rmse": 0.049057520775645645,
+  "localization_max_error": 0.1386092986321124,
+  "final_speed": 0.0,
+  "progress": 28.205282167053348,
+  "emergency_steps": 2,
+  "avoidance_steps": 0,
+  "max_tracks": 1,
+  "passed": true,
+  "failures": []
+}
+{
+  "source": "reference-2d",
+  "ticks": 401,
+  "verified": true
+}
+{
+  "scenario": "LiDAR freshness fault",
+  "seed": 7,
+  "simulated_seconds": 16.0,
+  "steps": 321,
+  "reached_goal": false,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 48.00286711413533,
+  "localization_rmse": 0.05453043025762119,
+  "localization_max_error": 0.1383241650546419,
+  "final_speed": 0.0,
+  "progress": 39.74715098498761,
+  "emergency_steps": 195,
+  "avoidance_steps": 0,
+  "max_tracks": 0,
+  "passed": true,
+  "failures": []
+}
+{
+  "source": "reference-2d",
+  "ticks": 321,
+  "verified": true
+}
+{
+  "scenario": "GNSS freshness fault",
+  "seed": 7,
+  "simulated_seconds": 16.0,
+  "steps": 321,
+  "reached_goal": false,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 45.62073681093059,
+  "localization_rmse": 0.15470225582240918,
+  "localization_max_error": 0.19934306786373063,
+  "final_speed": 0.0,
+  "progress": 42.12939365235853,
+  "emergency_steps": 189,
+  "avoidance_steps": 0,
+  "max_tracks": 0,
+  "passed": true,
+  "failures": []
+}
+{
+  "source": "reference-2d",
+  "ticks": 321,
+  "verified": true
+}
+{
+  "scenario": "Crossing object emerges from geometric occlusion",
+  "seed": 7,
+  "simulated_seconds": 21.400000000000002,
+  "steps": 429,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 1.7148309489287832,
+  "localization_rmse": 0.06226654075722581,
+  "localization_max_error": 0.1804787697821251,
+  "final_speed": 0.185577408804301,
+  "progress": 138.9870464762971,
+  "emergency_steps": 4,
+  "avoidance_steps": 133,
+  "max_tracks": 2,
+  "passed": true,
+  "failures": []
+}
+{
+  "source": "reference-2d",
+  "ticks": 429,
+  "verified": true
+}
+{
+  "scenario": "Late lateral crossing on a narrow road",
+  "seed": 7,
+  "simulated_seconds": 20.75,
+  "steps": 416,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 1.0754433953611608,
+  "localization_rmse": 0.061167568832889783,
+  "localization_max_error": 0.13864365127126707,
+  "final_speed": 0.137762089451199,
+  "progress": 119.00716323482831,
+  "emergency_steps": 24,
+  "avoidance_steps": 0,
+  "max_tracks": 1,
+  "passed": true,
+  "failures": []
+}
+{
+  "source": "reference-2d",
+  "ticks": 416,
+  "verified": true
+}
+{
+  "scenario": "Three obstacles block every lateral candidate",
+  "seed": 7,
+  "simulated_seconds": 25.0,
+  "steps": 501,
+  "reached_goal": false,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 3.664172751513221,
+  "localization_rmse": 0.05267169780068629,
+  "localization_max_error": 0.13832212613882636,
+  "final_speed": 0.0,
+  "progress": 34.08853601069359,
+  "emergency_steps": 4,
+  "avoidance_steps": 9,
+  "max_tracks": 4,
+  "passed": true,
+  "failures": []
+}
+{
+  "source": "reference-2d",
+  "ticks": 501,
+  "verified": true
+}
+{
+  "scenario": "Successive crossings from opposite sides",
+  "seed": 7,
+  "simulated_seconds": 23.450000000000003,
+  "steps": 470,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 1.2028466762821284,
+  "localization_rmse": 0.06414168153480165,
+  "localization_max_error": 0.13864365127126707,
+  "final_speed": 0.1706371947652805,
+  "progress": 139.0122426735145,
+  "emergency_steps": 26,
+  "avoidance_steps": 0,
+  "max_tracks": 2,
+  "passed": true,
+  "failures": []
+}
+{
+  "source": "reference-2d",
+  "ticks": 470,
+  "verified": true
+}
+{
+  "scenario": "route-direct",
+  "seed": 7,
+  "simulated_seconds": 28.85,
+  "steps": 578,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 0.838532393727565,
+  "localization_rmse": 0.058185421866760845,
+  "localization_max_error": 0.1383241650546419,
+  "final_speed": 0.1915177197511299,
+  "progress": 199.00958159572767,
+  "emergency_steps": 2,
+  "avoidance_steps": 92,
+  "max_tracks": 1,
+  "passed": true,
+  "failures": []
+}
+{
+  "source": "reference-2d",
+  "ticks": 578,
+  "verified": true
+}
+{
+  "scenario": "route-detour",
+  "seed": 7,
+  "simulated_seconds": 30.25,
+  "steps": 606,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 0.6548835284597745,
+  "localization_rmse": 0.06248563669313093,
+  "localization_max_error": 0.1383241650546419,
+  "final_speed": 0.13404806442961564,
+  "progress": 208.54905582747094,
+  "emergency_steps": 3,
+  "avoidance_steps": 95,
+  "max_tracks": 1,
+  "passed": true,
+  "failures": []
+}
+{
+  "source": "reference-2d",
+  "ticks": 606,
+  "verified": true
+}
+{
+  "scenario": "route-south",
+  "seed": 7,
+  "simulated_seconds": 24.35,
+  "steps": 488,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 0.8360744403790914,
+  "localization_rmse": 0.061776673949961995,
+  "localization_max_error": 0.14640771845404837,
+  "final_speed": 0.1811284469341316,
+  "progress": 162.56875070235031,
+  "emergency_steps": 3,
+  "avoidance_steps": 93,
+  "max_tracks": 1,
+  "passed": true,
+  "failures": []
+}
+{
+  "source": "reference-2d",
+  "ticks": 488,
+  "verified": true
+}
+{
+  "scenario": "Live closure: stop and detour",
+  "seed": 7,
+  "simulated_seconds": 55.650000000000006,
+  "steps": 1114,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 1.4158060246044655,
+  "localization_rmse": 0.06036805757842471,
+  "localization_max_error": 0.14359736983716836,
+  "final_speed": 0.11497054112243076,
+  "progress": 208.52011188573871,
+  "emergency_steps": 4,
+  "avoidance_steps": 203,
+  "max_tracks": 1,
+  "passed": true,
+  "failures": [],
+  "navigation_switches": 1
+}
+{
+  "source": "reference-2d",
+  "ticks": 1114,
+  "verified": true
+}
+{
+  "scenario": "Live closure: 6 m/s detour",
+  "seed": 7,
+  "simulated_seconds": 41.150000000000006,
+  "steps": 824,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 0.8072252135307703,
+  "localization_rmse": 0.06115194757654933,
+  "localization_max_error": 0.15659798435882386,
+  "final_speed": 0.19804452182290117,
+  "progress": 208.45237806132093,
+  "emergency_steps": 6,
+  "avoidance_steps": 137,
+  "max_tracks": 1,
+  "passed": true,
+  "failures": [],
+  "navigation_switches": 1
+}
+{
+  "source": "reference-2d",
+  "ticks": 824,
+  "verified": true
+}
+{
+  "scenario": "Live closure: no route remains",
+  "seed": 7,
+  "simulated_seconds": 20.0,
+  "steps": 401,
+  "reached_goal": false,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 64.01386402891171,
+  "localization_rmse": 0.05316972428345606,
+  "localization_max_error": 0.1383241650546419,
+  "final_speed": 0.0,
+  "progress": 36.80433519761347,
+  "emergency_steps": 1,
+  "avoidance_steps": 0,
+  "max_tracks": 0,
+  "passed": true,
+  "failures": []
+}
+{
+  "source": "reference-2d",
+  "ticks": 401,
+  "verified": true
+}
+{
+  "scenario": "Live closure: hold then reopened detour",
+  "seed": 7,
+  "simulated_seconds": 59.75,
+  "steps": 1196,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 0.7547307339396969,
+  "localization_rmse": 0.05685225585373797,
+  "localization_max_error": 0.1383241650546419,
+  "final_speed": 0.15899270047535885,
+  "progress": 208.51749490661777,
+  "emergency_steps": 5,
+  "avoidance_steps": 175,
+  "max_tracks": 1,
+  "passed": true,
+  "failures": [],
+  "navigation_switches": 1
+}
+{
+  "source": "reference-2d",
+  "ticks": 1196,
+  "verified": true
+}
+{
+  "scenario": "gnss-spike",
+  "seed": 7,
+  "simulated_seconds": 31.6,
+  "steps": 633,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 0.831930635323165,
+  "localization_rmse": 0.06062244161076815,
+  "localization_max_error": 0.13832419250728542,
+  "final_speed": 0.10430103207878992,
+  "progress": 219.69047436349615,
+  "emergency_steps": 2,
+  "avoidance_steps": 90,
+  "max_tracks": 1,
+  "passed": true,
+  "failures": []
+}
+{
+  "source": "reference-2d",
+  "ticks": 633,
+  "verified": true
+}
+{
+  "scenario": "gnss-burst",
+  "seed": 7,
+  "simulated_seconds": 35.7,
+  "steps": 715,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 0.8323107850601512,
+  "localization_rmse": 0.059198809540344524,
+  "localization_max_error": 0.13832419250728542,
+  "final_speed": 0.11107721360481101,
+  "progress": 219.59087958328612,
+  "emergency_steps": 60,
+  "avoidance_steps": 117,
+  "max_tracks": 1,
+  "passed": true,
+  "failures": []
+}
+{
+  "source": "reference-2d",
+  "ticks": 715,
+  "verified": true
+}
+{
+  "scenario": "gnss-persistent-bias",
+  "seed": 7,
+  "simulated_seconds": 20.0,
+  "steps": 401,
+  "reached_goal": false,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 25.556868907134064,
+  "localization_rmse": 0.04488104985787828,
+  "localization_max_error": 0.13832419250728542,
+  "final_speed": 0.0,
+  "progress": 30.489281260417492,
+  "emergency_steps": 297,
+  "avoidance_steps": 18,
+  "max_tracks": 1,
+  "passed": true,
+  "failures": []
+}
+{
+  "source": "reference-2d",
+  "ticks": 401,
+  "verified": true
+}
+{
+  "scenario": "GNSS burst with scheduled traffic",
+  "seed": 7,
+  "simulated_seconds": 36.0,
+  "steps": 721,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 0.8323107850601512,
+  "localization_rmse": 0.05727238227110113,
+  "localization_max_error": 0.13832419250728542,
+  "final_speed": 0.12439078306124324,
+  "progress": 219.69120154707258,
+  "emergency_steps": 58,
+  "avoidance_steps": 276,
+  "max_tracks": 2,
+  "passed": true,
+  "failures": []
+}
+{
+  "source": "reference-2d",
+  "ticks": 721,
+  "verified": true
+}
+{
+  "scenario": "GNSS burst, scheduled traffic and sixteen-second goal hold",
+  "seed": 7,
+  "simulated_seconds": 52.0,
+  "steps": 1041,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 0.8323107850601512,
+  "localization_rmse": 0.05302770447809237,
+  "localization_max_error": 0.13832419250728542,
+  "final_speed": 0.0,
+  "progress": 219.70120139919393,
+  "emergency_steps": 80,
+  "avoidance_steps": 276,
+  "max_tracks": 2,
+  "passed": true,
+  "failures": []
+}
+{
+  "source": "reference-2d",
+  "ticks": 1041,
+  "verified": true
+}
+{
+  "scenario": "Following a stopped lead and resuming",
+  "seed": 7,
+  "simulated_seconds": 65.0,
+  "steps": 1301,
+  "reached_goal": false,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 4.526793693243958,
+  "localization_rmse": 0.05238310634450125,
+  "localization_max_error": 0.1386092986321124,
+  "final_speed": 0.0,
+  "progress": 129.1999812557249,
+  "emergency_steps": 13,
+  "avoidance_steps": 0,
+  "max_tracks": 1,
+  "passed": true,
+  "failures": []
+}
+{
+  "source": "reference-2d",
+  "ticks": 1301,
+  "verified": true
+}
+{
+  "scenario": "Reactive follower during ego GNSS braking and recovery",
+  "seed": 7,
+  "simulated_seconds": 70.35000000000001,
+  "steps": 1408,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 2.995436842821589,
+  "localization_rmse": 0.055217519772839764,
+  "localization_max_error": 0.16193638857743084,
+  "final_speed": 0.0,
+  "progress": 159.05065482005776,
+  "emergency_steps": 357,
+  "avoidance_steps": 0,
+  "max_tracks": 1,
+  "passed": true,
+  "failures": []
+}
+{
+  "source": "reference-2d",
+  "ticks": 1408,
+  "verified": true
+}
+{
+  "scenario": "Reactive traffic queue behind a static obstacle",
+  "seed": 7,
+  "simulated_seconds": 65.0,
+  "steps": 1301,
+  "reached_goal": false,
+  "collisions": 0,
+  "road_violations": 0,
+  "traffic_min_clearance": 2.9959761693621374,
+  "min_clearance": 4.5445347863777465,
+  "localization_rmse": 0.05366939362493429,
+  "localization_max_error": 0.1386092986321124,
+  "final_speed": 0.0,
+  "progress": 78.21351185698637,
+  "emergency_steps": 10,
+  "avoidance_steps": 0,
+  "max_tracks": 1,
+  "passed": true,
+  "failures": []
+}
+{
+  "source": "reference-2d",
+  "ticks": 1301,
+  "verified": true
+}
+{
+  "scenario": "Reactive follower with a retained 65-second deadline",
+  "seed": 7,
+  "simulated_seconds": 64.15,
+  "steps": 1284,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 2.999026360665532,
+  "localization_rmse": 0.051586152870299544,
+  "localization_max_error": 0.1383241650546419,
+  "final_speed": 0.0,
+  "progress": 159.05440756251915,
+  "emergency_steps": 258,
+  "avoidance_steps": 0,
+  "max_tracks": 1,
+  "passed": true,
+  "failures": []
+}
+{
+  "source": "reference-2d",
+  "ticks": 1284,
+  "verified": true
+}
+{
+  "scenario": "Three reactive vehicles queue behind a static obstacle",
+  "seed": 7,
+  "simulated_seconds": 65.0,
+  "steps": 1301,
+  "reached_goal": false,
+  "collisions": 0,
+  "road_violations": 0,
+  "traffic_min_clearance": 2.995975132039561,
+  "min_clearance": 4.535781071311194,
+  "localization_rmse": 0.05238879481521838,
+  "localization_max_error": 0.13832212613882636,
+  "final_speed": 0.0,
+  "progress": 88.22618334398572,
+  "emergency_steps": 17,
+  "avoidance_steps": 0,
+  "max_tracks": 1,
+  "passed": true,
+  "failures": []
+}
+{
+  "source": "reference-2d",
+  "ticks": 1301,
+  "verified": true
+}
+{
+  "scenario": "Signal Red Green",
+  "seed": 7,
+  "simulated_seconds": 38.7,
+  "steps": 775,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 1000.0,
+  "localization_rmse": 0.053444488058102396,
+  "localization_max_error": 0.1383241650785392,
+  "final_speed": 0.1641741776702194,
+  "progress": 98.97329540639717,
+  "emergency_steps": 5,
+  "avoidance_steps": 0,
+  "max_tracks": 0,
+  "passed": true,
+  "failures": [],
+  "signal_min_stopline_margin_m": 1.9468966573796322
+}
+{
+  "source": "reference-2d",
+  "ticks": 775,
+  "verified": true
+}
+{
+  "scenario": "Signal Red Stop",
+  "seed": 7,
+  "simulated_seconds": 30.0,
+  "steps": 601,
+  "reached_goal": false,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 1000.0,
+  "localization_rmse": 0.05022183168118263,
+  "localization_max_error": 0.1383241650785392,
+  "final_speed": 0.0,
+  "progress": 31.803103342620368,
+  "emergency_steps": 2,
+  "avoidance_steps": 0,
+  "max_tracks": 0,
+  "passed": true,
+  "failures": [],
+  "signal_min_stopline_margin_m": 1.9468966573796322
+}
+{
+  "source": "reference-2d",
+  "ticks": 601,
+  "verified": true
+}
+{
+  "scenario": "Signal Stale Stop",
+  "seed": 7,
+  "simulated_seconds": 30.0,
+  "steps": 601,
+  "reached_goal": false,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 1000.0,
+  "localization_rmse": 0.05059053025094301,
+  "localization_max_error": 0.1383241650546419,
+  "final_speed": 0.0,
+  "progress": 41.80512973818069,
+  "emergency_steps": 5,
+  "avoidance_steps": 0,
+  "max_tracks": 0,
+  "passed": true,
+  "failures": []
+}
+{
+  "source": "reference-2d",
+  "ticks": 601,
+  "verified": true
+}
+{
+  "scenario": "Signal Stale Recovery",
+  "seed": 7,
+  "simulated_seconds": 34.2,
+  "steps": 685,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 1000.0,
+  "localization_rmse": 0.053937805313808915,
+  "localization_max_error": 0.1383241650546419,
+  "final_speed": 0.1071336783308724,
+  "progress": 99.00203556320464,
+  "emergency_steps": 8,
+  "avoidance_steps": 0,
+  "max_tracks": 0,
+  "passed": true,
+  "failures": []
+}
+{
+  "source": "reference-2d",
+  "ticks": 685,
+  "verified": true
+}
+{
+  "scenario": "Signal Two Stops",
+  "seed": 7,
+  "simulated_seconds": 56.95,
+  "steps": 1140,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 1000.0,
+  "localization_rmse": 0.05492991081347574,
+  "localization_max_error": 0.1383241650785392,
+  "final_speed": 0.1773020832200104,
+  "progress": 128.96514687219087,
+  "emergency_steps": 6,
+  "avoidance_steps": 0,
+  "max_tracks": 0,
+  "passed": true,
+  "failures": [],
+  "signal_min_stopline_margin_m": 1.9277856587253694
+}
+{
+  "source": "reference-2d",
+  "ticks": 1140,
+  "verified": true
+}
+{
+  "scenario": "Approaching green changes to yellow and red",
+  "seed": 7,
+  "simulated_seconds": 38.7,
+  "steps": 775,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 1000.0,
+  "localization_rmse": 0.053449501363910724,
+  "localization_max_error": 0.1383241650546419,
+  "final_speed": 0.18181888161558943,
+  "progress": 98.96828480252388,
+  "emergency_steps": 7,
+  "avoidance_steps": 0,
+  "max_tracks": 0,
+  "passed": true,
+  "failures": [],
+  "signal_min_stopline_margin_m": 1.9470010184313935
+}
+{
+  "source": "reference-2d",
+  "ticks": 775,
+  "verified": true
+}
+{
+  "scenario": "Single Stop Sign",
+  "seed": 7,
+  "simulated_seconds": 30.650000000000002,
+  "steps": 614,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 1000.0,
+  "localization_rmse": 0.05311039926043288,
+  "localization_max_error": 0.1383241650785392,
+  "final_speed": 0.18004542789762423,
+  "progress": 98.98173548939779,
+  "emergency_steps": 3,
+  "avoidance_steps": 0,
+  "max_tracks": 0,
+  "passed": true,
+  "failures": [],
+  "stop_sign_min_margin_m": 2.036893942412739
+}
+{
+  "source": "reference-2d",
+  "ticks": 614,
+  "verified": true
+}
+{
+  "scenario": "Two Stop Signs",
+  "seed": 7,
+  "simulated_seconds": 42.2,
+  "steps": 845,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 1000.0,
+  "localization_rmse": 0.05480314933458123,
+  "localization_max_error": 0.1383241650785392,
+  "final_speed": 0.1915446560616627,
+  "progress": 129.0588955952655,
+  "emergency_steps": 6,
+  "avoidance_steps": 0,
+  "max_tracks": 0,
+  "passed": true,
+  "failures": [],
+  "stop_sign_min_margin_m": 1.9669953834497989
+}
+{
+  "source": "reference-2d",
+  "ticks": 845,
+  "verified": true
+}
+{
+  "scenario": "Stop Sign Then Signal",
+  "seed": 7,
+  "simulated_seconds": 42.0,
+  "steps": 841,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 1000.0,
+  "localization_rmse": 0.053197290311078275,
+  "localization_max_error": 0.1383241650785392,
+  "final_speed": 0.1551639480529849,
+  "progress": 99.06398355106737,
+  "emergency_steps": 7,
+  "avoidance_steps": 0,
+  "max_tracks": 0,
+  "passed": true,
+  "failures": [],
+  "signal_min_stopline_margin_m": 1.9713531145075223,
+  "stop_sign_min_margin_m": 2.036893942412739
+}
+{
+  "source": "reference-2d",
+  "ticks": 841,
+  "verified": true
+}
+{
+  "scenario": "Stop Sign Then Blocked Road",
+  "seed": 7,
+  "simulated_seconds": 40.0,
+  "steps": 801,
+  "reached_goal": false,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 4.551908979664004,
+  "localization_rmse": 0.0526141636973874,
+  "localization_max_error": 0.1383241650785392,
+  "final_speed": 0.0,
+  "progress": 47.698313520992585,
+  "emergency_steps": 2,
+  "avoidance_steps": 0,
+  "max_tracks": 1,
+  "passed": true,
+  "failures": [],
+  "stop_sign_min_margin_m": 2.0608993684111425
+}
+{
+  "source": "reference-2d",
+  "ticks": 801,
+  "verified": true
+}
+{
+  "scenario": "Stop Sign GNSS Recovery",
+  "seed": 7,
+  "simulated_seconds": 34.7,
+  "steps": 695,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 1000.0,
+  "localization_rmse": 0.05388430703631074,
+  "localization_max_error": 0.1383241650785392,
+  "final_speed": 0.17200851877638124,
+  "progress": 99.01867491425737,
+  "emergency_steps": 79,
+  "avoidance_steps": 0,
+  "max_tracks": 0,
+  "passed": true,
+  "failures": [],
+  "stop_sign_min_margin_m": 2.036893942412739
+}
+{
+  "source": "reference-2d",
+  "ticks": 695,
+  "verified": true
+}
+{
+  "scenario": "Intersection Crossing",
+  "seed": 7,
+  "simulated_seconds": 38.15,
+  "steps": 764,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 11.06893949716861,
+  "localization_rmse": 0.0613284574071669,
+  "localization_max_error": 0.1467827315559555,
+  "final_speed": 0.08619703949372798,
+  "progress": 98.9718806825434,
+  "emergency_steps": 5,
+  "avoidance_steps": 0,
+  "max_tracks": 1,
+  "passed": true,
+  "failures": [],
+  "intersection_min_gap_s": 9.450000000000003
+}
+{
+  "source": "reference-2d",
+  "ticks": 764,
+  "verified": true
+}
+{
+  "scenario": "Intersection Successive",
+  "seed": 7,
+  "simulated_seconds": 42.75,
+  "steps": 856,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 10.967717824453615,
+  "localization_rmse": 0.05517110210155477,
+  "localization_max_error": 0.1467827315559555,
+  "final_speed": 0.1873431894351174,
+  "progress": 99.01910324310234,
+  "emergency_steps": 5,
+  "avoidance_steps": 0,
+  "max_tracks": 2,
+  "passed": true,
+  "failures": [],
+  "intersection_min_gap_s": 9.05
+}
+{
+  "source": "reference-2d",
+  "ticks": 856,
+  "verified": true
+}
+{
+  "scenario": "Intersection Blocked",
+  "seed": 7,
+  "simulated_seconds": 40.0,
+  "steps": 801,
+  "reached_goal": false,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 10.974228829096777,
+  "localization_rmse": 0.05340676092598212,
+  "localization_max_error": 0.13874881029832534,
+  "final_speed": 0.0,
+  "progress": 31.77577146900465,
+  "emergency_steps": 2,
+  "avoidance_steps": 0,
+  "max_tracks": 2,
+  "passed": true,
+  "failures": []
+}
+{
+  "source": "reference-2d",
+  "ticks": 801,
+  "verified": true
+}
+{
+  "scenario": "Intersection Gnss Recovery",
+  "seed": 7,
+  "simulated_seconds": 38.35,
+  "steps": 768,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 11.06893949716861,
+  "localization_rmse": 0.06978798558097192,
+  "localization_max_error": 0.1467827315559555,
+  "final_speed": 0.11796243597937858,
+  "progress": 98.95594530555218,
+  "emergency_steps": 78,
+  "avoidance_steps": 0,
+  "max_tracks": 1,
+  "passed": true,
+  "failures": [],
+  "intersection_min_gap_s": 9.75
+}
+{
+  "source": "reference-2d",
+  "ticks": 768,
+  "verified": true
+}
+{
+  "scenario": "Intersection Stop Sign",
+  "seed": 7,
+  "simulated_seconds": 39.800000000000004,
+  "steps": 797,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 12.014443204541756,
+  "localization_rmse": 0.06007507420903425,
+  "localization_max_error": 0.1383241650785392,
+  "final_speed": 0.15454314275795256,
+  "progress": 99.05164383222876,
+  "emergency_steps": 5,
+  "avoidance_steps": 0,
+  "max_tracks": 1,
+  "passed": true,
+  "failures": [],
+  "stop_sign_min_margin_m": 2.1056238628699475,
+  "intersection_min_gap_s": 9.5
+}
+{
+  "source": "reference-2d",
+  "ticks": 797,
+  "verified": true
+}
+{
+  "scenario": "Fast Wide Priority Crossing",
+  "seed": 7,
+  "simulated_seconds": 36.4,
+  "steps": 729,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 15.02702377799585,
+  "localization_rmse": 0.057648245846138355,
+  "localization_max_error": 0.1383241650546419,
+  "final_speed": 0.1652624501076707,
+  "progress": 128.9895373109041,
+  "emergency_steps": 7,
+  "avoidance_steps": 0,
+  "max_tracks": 1,
+  "passed": true,
+  "failures": [],
+  "intersection_min_gap_s": 9.35
+}
+{
+  "source": "reference-2d",
+  "ticks": 729,
+  "verified": true
+}
+{
+  "scenario": "Slow Narrow Priority Crossing",
+  "seed": 7,
+  "simulated_seconds": 39.25,
+  "steps": 786,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 13.044796608416007,
+  "localization_rmse": 0.05387847928000451,
+  "localization_max_error": 0.1383241650352595,
+  "final_speed": 0.13672448315828686,
+  "progress": 79.02545095635978,
+  "emergency_steps": 3,
+  "avoidance_steps": 0,
+  "max_tracks": 1,
+  "passed": true,
+  "failures": [],
+  "intersection_min_gap_s": 10.200000000000001
+}
+{
+  "source": "reference-2d",
+  "ticks": 786,
+  "verified": true
+}
+{
+  "scenario": "Two Sequential Priority Crossings",
+  "seed": 7,
+  "simulated_seconds": 55.95,
+  "steps": 1120,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 11.996000341216437,
+  "localization_rmse": 0.056270942779573,
+  "localization_max_error": 0.13832416503566114,
+  "final_speed": 0.09144693919451409,
+  "progress": 138.9666218487626,
+  "emergency_steps": 7,
+  "avoidance_steps": 0,
+  "max_tracks": 2,
+  "passed": true,
+  "failures": [],
+  "intersection_min_gap_s": 9.45
+}
+{
+  "source": "reference-2d",
+  "ticks": 1120,
+  "verified": true
+}
+{
+  "scenario": "Priority Crossing With Two Tick LiDAR Delivery Delay",
+  "seed": 7,
+  "simulated_seconds": 38.0,
+  "steps": 761,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 11.019756742192602,
+  "localization_rmse": 0.05215942848414298,
+  "localization_max_error": 0.13832212613882636,
+  "final_speed": 0.1435276750524762,
+  "progress": 98.97677865262844,
+  "emergency_steps": 8,
+  "avoidance_steps": 0,
+  "max_tracks": 1,
+  "passed": true,
+  "failures": [],
+  "intersection_min_gap_s": 9.25
+}
+{
+  "source": "reference-2d",
+  "ticks": 761,
+  "verified": true
+}
+{
+  "scenario": "Priority Crossing With Delayed LiDAR Acquisition Recovery",
+  "seed": 7,
+  "simulated_seconds": 38.85,
+  "steps": 778,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 11.068121546485589,
+  "localization_rmse": 0.055986088776504676,
+  "localization_max_error": 0.13832416580432821,
+  "final_speed": 0.1289582958912327,
+  "progress": 98.95334158147162,
+  "emergency_steps": 13,
+  "avoidance_steps": 0,
+  "max_tracks": 1,
+  "passed": true,
+  "failures": [],
+  "intersection_min_gap_s": 10.100000000000001
+}
+{
+  "source": "reference-2d",
+  "ticks": 778,
+  "verified": true
+}
+{
+  "scenario": "Priority Crossing With Five Hertz LiDAR",
+  "seed": 7,
+  "simulated_seconds": 38.050000000000004,
+  "steps": 762,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 11.040411311620982,
+  "localization_rmse": 0.05458967225959293,
+  "localization_max_error": 0.1467827315559555,
+  "final_speed": 0.0875526721091634,
+  "progress": 99.05380477380106,
+  "emergency_steps": 6,
+  "avoidance_steps": 0,
+  "max_tracks": 1,
+  "passed": true,
+  "failures": [],
+  "intersection_min_gap_s": 9.25
+}
+{
+  "source": "reference-2d",
+  "ticks": 762,
+  "verified": true
+}
+{
+  "scenario": "Known Failure: Late Observed Second Priority Crossing",
+  "seed": 7,
+  "simulated_seconds": 60.0,
+  "steps": 1201,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 11.996000341216437,
+  "localization_rmse": 0.052211758122905294,
+  "localization_max_error": 0.13832416503566114,
+  "final_speed": 0.07563016178944183,
+  "progress": 139.0163436418871,
+  "emergency_steps": 11,
+  "avoidance_steps": 0,
+  "max_tracks": 1,
+  "passed": true,
+  "failures": [],
+  "intersection_min_gap_s": 9.45
+}
+{
+  "source": "reference-2d",
+  "ticks": 1201,
+  "verified": true
+}
+{
+  "scenario": "Late Observed Second Priority Crossing With Delayed LiDAR",
+  "seed": 7,
+  "simulated_seconds": 60.0,
+  "steps": 1201,
+  "reached_goal": true,
+  "collisions": 0,
+  "road_violations": 0,
+  "min_clearance": 12.02968468237442,
+  "localization_rmse": 0.05602156394937722,
+  "localization_max_error": 0.1557979033333537,
+  "final_speed": 0.14053793013486066,
+  "progress": 138.9943657155001,
+  "emergency_steps": 10,
+  "avoidance_steps": 0,
+  "max_tracks": 1,
+  "passed": true,
+  "failures": [],
+  "intersection_min_gap_s": 9.400000000000002
+}
+{
+  "source": "reference-2d",
+  "ticks": 1201,
+  "verified": true
+}

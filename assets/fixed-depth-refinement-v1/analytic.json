@@ -1,0 +1,28 @@
+{
+  "analytic_pass": true,
+  "checked_systems": 10,
+  "gradient_axes": 12,
+  "gradient_includes_prior": true,
+  "warm_start_position_error_m": 2.60520998958311e-05,
+  "perturbed_start_iterations": 2,
+  "guards": {
+    "missing support": "new frame needs measured support",
+    "plane": "zero/nonfinite diagonal"
+  },
+  "rejected_corruptions": [
+    "changed frozen population",
+    "wrong inner system",
+    "wrong applied multiplier",
+    "wrong applied pose",
+    "false fixed convergence",
+    "false fresh convergence",
+    "wrong fresh system",
+    "wrong objective",
+    "extra correction"
+  ],
+  "input_roots_unchanged": true,
+  "source_sha256": {
+    "scripts/fixed_depth_refinement.py": "b33dab78c7e4c7b718eb06fe96440213d826a498e6d364dbaf1b10e6bff05943",
+    "scripts/check-fixed-depth-refinement.py": "5ab70fb873e0923a6a680aca177af9d5051f57eab6cfe098c1be51676a1ad232"
+  }
+}

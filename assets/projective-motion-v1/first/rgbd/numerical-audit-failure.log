@@ -1,0 +1,30 @@
+Traceback (most recent call last):
+  File "/workspace/rust_drive/scripts/evaluate-projective-depth.py", line 166, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/workspace/rust_drive/scripts/evaluate-projective-depth.py", line 158, in main
+    summaries[case] = evaluate(case,args.binary.absolute(),folder,args.reprojection,args.correspondence,args.residual,args.normals,args.geometry,args.photometric,args.step_control,args.motion_model)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/rust_drive/scripts/evaluate-projective-depth.py", line 126, in evaluate
+    checked_steps = audit_sequence(outcomes,[f['depth_timestamp'] for f in frames])
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/rust_drive/scripts/projective_depth_common.py", line 200, in audit_sequence
+    np.testing.assert_allclose(pose(steps[0]['before']),predicted_initial,atol=1e-10 if 'prediction' in update else 1e-11,rtol=0)
+  File "/workspace/.rustdrive-tools/demo-venv/lib/python3.12/site-packages/numpy/testing/_private/utils.py", line 1711, in assert_allclose
+    assert_array_compare(compare, actual, desired, err_msg=str(err_msg),
+  File "/workspace/.rustdrive-tools/demo-venv/lib/python3.12/site-packages/numpy/testing/_private/utils.py", line 919, in assert_array_compare
+    raise AssertionError(msg)
+AssertionError: 
+Not equal to tolerance rtol=0, atol=1e-10
+
+Mismatched elements: 2 / 16 (12.5%)
+Max absolute difference among violations: 1.41333278e-10
+Max relative difference among violations: 1.41343222e-10
+ ACTUAL: array([[ 0.999934,  0.00224 , -0.011285,  0.023687],
+       [-0.002281,  0.999991, -0.003653,  0.003142],
+       [ 0.011276,  0.003679,  0.99993 , -0.004231],
+       [ 0.      ,  0.      ,  0.      ,  1.      ]])
+ DESIRED: array([[ 0.999934,  0.00224 , -0.011285,  0.023687],
+       [-0.002281,  0.999991, -0.003653,  0.003142],
+       [ 0.011276,  0.003679,  0.99993 , -0.004231],
+       [ 0.      ,  0.      ,  0.      ,  1.      ]])

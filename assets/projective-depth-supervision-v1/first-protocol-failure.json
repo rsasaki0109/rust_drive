@@ -1,0 +1,9 @@
+{
+  "case": "unknown field on internally tagged unit event",
+  "expected_exit_code": 2,
+  "actual_exit_code": 0,
+  "stdout": "{\"configured\":true,\"schema_version\":1}\n{\"now\":1.0,\"status\":\"waiting\",\"reason\":null,\"last_accepted_timestamp\":null,\"accepted_age_s\":null,\"last_observed_acquisition\":null,\"fault_epoch\":null,\"first_from_last_accepted\":null,\"measurement\":null}\n",
+  "stderr": "",
+  "cli_sha256": "f8f7d160eb3a21743f112b3d280b5c0b7d3fbea51ee4ba40799479191acab8ac",
+  "fix": "use empty struct event variants so serde deny_unknown_fields validates idle/failure events"
+}

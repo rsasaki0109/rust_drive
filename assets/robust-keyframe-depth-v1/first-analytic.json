@@ -1,0 +1,74 @@
+{
+  "analytic_pass": true,
+  "profile_equivalence_cases": 5,
+  "chart_angles_rad": [
+    1e-09,
+    0.0001,
+    0.3,
+    1.2
+  ],
+  "reports": {
+    "discard": {
+      "checked_reported_equations": 133,
+      "marginal_generations": 0,
+      "max_position_error_m": 3.184718329532911e-05
+    },
+    "retain": {
+      "checked_reported_equations": 128,
+      "marginal_generations": 9,
+      "max_position_error_m": 3.503889209273296e-05
+    }
+  },
+  "discarded_information_control": true,
+  "no_fabricated_new_support": true,
+  "terminal_expiry": true,
+  "rejected_corruptions": [
+    "wrong Schur gradient",
+    "coherently scaled Schur H/g",
+    "duplicate factor history",
+    "wrong fixed origin",
+    "wrong linearization anchor",
+    "retained raw factors also marginalized",
+    "normal system scaled without changing its solve",
+    "moved first origin",
+    "wrong normal increment"
+  ],
+  "late_elimination_failure_atomic": true,
+  "clean_recovery_prior_parity": true,
+  "malformed_clock_and_depth_rejected": true,
+  "singular_elimination_rejected": true,
+  "robust_factor": {
+    "shared_symmetric_residual": {
+      "source_and_target_central_difference_axes": 12,
+      "swapped_residual_sign": true,
+      "common_rigid_frame_invariance": true,
+      "omitted_normal_rotation_detected": true,
+      "original_fixed_pose_support_counts": {
+        "4": 770,
+        "2": 973,
+        "1": 1081
+      },
+      "parent_engine_only_pair_import_changed": true
+    },
+    "known_weight_values_scales": [
+      4,
+      2,
+      1
+    ],
+    "known_1d_locations_m": {
+      "tukey": -0.004,
+      "huber": -0.006500000000000001
+    },
+    "zero_weight_support_rejected": true,
+    "insufficient_weight_mass_rejected": true,
+    "coarse_support_preserved": true,
+    "untrimmed_pair_rms_m": 0.046970439876822666,
+    "restored_tail_influence_detected": true,
+    "parent_engine_only_pair_import_changed": true
+  },
+  "source_sha256": {
+    "scripts/check-robust-keyframes.py": "2b6c9906c57952d1c735eaec017931ee9280a4c73083c10f47479185edbf89f5",
+    "scripts/robust_depth_factors.py": "01b02c04c4930aae6db383229c5e1c9b0ff4538d47759911e995886e17870127",
+    "scripts/robust_keyframe_depth.py": "5e5271c48932542ad8703fe954b8207c31b1ed791d4b79084ad5939d8f0300fd"
+  }
+}

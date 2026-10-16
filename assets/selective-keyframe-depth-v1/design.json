@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "role": "already viewed development comparison; not held out",
+  "parent": "assets/patch-keyframe-depth-v1",
+  "mode": "retain",
+  "hypothesis": "Allow a finer measured level to recover a coarse-only support/conditioning/increment failure, without relaxing finest or final admission.",
+  "change": "Only fit() differs from the frozen patch-normal engine; all other code and thresholds remain unchanged",
+  "factor": {
+    "source": "raw axial depth; original vertices and pyramid decimation; nearest target pixel; local patch normals",
+    "selection": "unchanged pair-selection code, but measured-normal validity and orientation change the selected candidates",
+    "normal": "n=(ns+nt)/L, L=norm(ns+nt), both normals in first optical-camera coordinates",
+    "residual_m": "r=n dot (qs-qt)",
+    "source_jacobian": "[n, qs cross n + ns cross ((qs-qt-r*n)/L)]",
+    "target_jacobian": "negative source Jacobian, including both normal-rotation effects",
+    "robust": "Huber0.01m, at least200 samples per pair",
+    "prior": "same incident-only Schur elimination, fixed-anchor coordinate transport and unique factor identities"
+  },
+  "work": {
+    "max_nodes": 5,
+    "max_variables": 24,
+    "max_retained_prior_variables": 18,
+    "iteration_caps": [
+      10,
+      7,
+      5
+    ],
+    "scaled_condition_max": 1000000.0,
+    "increment_m": 0.1,
+    "increment_rad": 0.15,
+    "returned_raw_rms_m": 0.03,
+    "accepted_displacement_m": 0.5,
+    "accepted_age_s": 0.2,
+    "pose_resets": 0
+  },
+  "evaluation": {
+    "cases": [
+      "tum-fr1-room-temporal",
+      "tum-fr1-desk2-independent"
+    ],
+    "updates": 179,
+    "initialization_outside_denominator": 1,
+    "root_translation_gate_m": 0.1,
+    "root_rotation_gate_rad": 0.1,
+    "reference_bracket_max_s": 0.02,
+    "ground_truth_operational": false,
+    "rgb_decoded": false,
+    "all_operations_and_raw_audits_before_numeric_labels": true
+  },
+  "audit": {
+    "h_atol": 1e-06,
+    "g_atol": 1e-08,
+    "rtol": 1e-08,
+    "exact_counts": true,
+    "finite_difference_both_pose_jacobians": true,
+    "independent_normal_layers_and_support": true,
+    "coarse_skip_equation_reason_proposal_and_unchanged_pose": true,
+    "strict_level_schedule_and_no_fine_skip": true
+  },
+  "default_changed": false,
+  "normal_estimator": {
+    "radius_pixels": 2,
+    "border_invalid_pixels": 2,
+    "center_and_neighbor_depth_m": "0.3 < z < 5",
+    "neighbor_depth_gate_m": "abs(z_neighbor-z_center) < 0.05+0.01*z_center",
+    "minimum_samples": 13,
+    "covariance": "population covariance of eligible vertex offsets to center; no smoothing of center vertices",
+    "normal": "smallest eigenvector; orient dot(normal,center_vertex) >= 0",
+    "middle_eigenvalue_min_m2": 1e-08,
+    "smallest_to_middle_eigenvalue_ratio_max": 0.1,
+    "all_levels_same_rule": true
+  },
+  "normal_controls": {
+    "oracle": "independent centered patch SVD; only original depth, vertices and intrinsics shared",
+    "fixtures": [
+      "tilted exact plane",
+      "Gaussian axial-depth noise sigma0.002m seed421016; same-pixel median and p95 angle compared to truth",
+      "0.4m depth step",
+      "missing centers",
+      "sparse line",
+      "rough checkerboard",
+      "12/13-sample majority",
+      "rank-one covariance"
+    ],
+    "noisy_plane_relative_error_limit": 0.5
+  },
+  "scheduling": {
+    "levels": [
+      4,
+      2,
+      1
+    ],
+    "attempt_caps": [
+      10,
+      7,
+      5
+    ],
+    "skippable_levels": [
+      4,
+      2
+    ],
+    "skip_reasons": [
+      "new frame needs measured support",
+      "zero/nonfinite diagonal",
+      "condition",
+      "increment"
+    ],
+    "skip_action": "record independently checkable system and proposal; apply no update; retain preceding admitted iterations; advance once to next finer level",
+    "finest_skip_allowed": false,
+    "final_gates_and_marginalization_unchanged": true,
+    "trace_budget_includes_skip_events": true
+  },
+  "audit_workers": 2
+}

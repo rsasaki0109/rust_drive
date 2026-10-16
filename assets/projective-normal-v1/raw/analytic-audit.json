@@ -1,0 +1,53 @@
+{
+  "hand_controls": {
+    "metre_axis_normal_witness": true,
+    "half_pixel_centers": true,
+    "invalid_discontinuous_reduction": true,
+    "exact_raster_tie_and_occlusion": true,
+    "four_fusion_partitions": true,
+    "capped_weight_arithmetic": true,
+    "hand_calculated_225_point_plane_equation": true,
+    "inverse_depth_plane_camera_normal": true,
+    "missing_discontinuous_plane_support_rejected": true,
+    "nonplanar_and_coarse_normal_support_preserved": true
+  },
+  "motions": [
+    {
+      "motion": 1,
+      "report_sha256": "d3ca498ee3d23d1f319b87cf4f0334a8fdae4ac28a5ecbd036d7291f83253f29",
+      "iterations": 3,
+      "final_equations": 1,
+      "model_replaced": false
+    },
+    {
+      "motion": 2,
+      "report_sha256": "b88e2a366f4d1167b9ff37949a15c0712bb54cb1a2b569ec6311e90b5cd93cd9",
+      "iterations": 8,
+      "final_equations": 1,
+      "model_replaced": false
+    },
+    {
+      "motion": 3,
+      "report_sha256": "1fd357b2899545514cb12f0fe871ea536173d768799dcc2df53ce08647d19282",
+      "iterations": 8,
+      "final_equations": 1,
+      "model_replaced": false
+    },
+    {
+      "motion": 4,
+      "report_sha256": "332e139a03c896f0158c4fb72397a988824dd2a9da0c0c2dd2a0ff122008bad9",
+      "iterations": 9,
+      "final_equations": 1,
+      "model_replaced": false
+    }
+  ],
+  "rejected_corruptions": [
+    "joint H/g rescaling with unchanged valid solve",
+    "false correspondence count",
+    "false per-iteration RMS",
+    "false final support",
+    "false returned-pose RMS",
+    "fusion category moved while total remains valid"
+  ],
+  "prior_solve_only_auditor_accepts_rescaled_Hg": true
+}

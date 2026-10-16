@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "parent": "assets/depth-correspondence-v1",
+  "initial_state": "Saved accepted poses and incoming priors from assets/depth-convergence-v1/summary.json",
+  "data_role": "already viewed development; local refinement only",
+  "sample_indices": [
+    120,
+    160,
+    200,
+    240,
+    279
+  ],
+  "cases": [
+    "tum-fr1-room-temporal",
+    "tum-fr1-desk2-independent"
+  ],
+  "cap": 10,
+  "scale": 1,
+  "association": "Select reciprocal pairs once at initial poses; admit at least200 samples per raw pair; preserve exact measured points/normals",
+  "linearization": "Recompute rotating symmetric-normal residual/Jacobian, Huber weights, transported nonlinear prior, H/g at every inner pose",
+  "solve": "Original scaled positive definite Cholesky, condition<=1e6; no damping, pseudoinverse or rank fill",
+  "increment_translation_m": 0.1,
+  "increment_rotation_rad": 0.15,
+  "strict_stop_translation_m": 1e-05,
+  "strict_stop_rotation_rad": 1e-05,
+  "search": "Original eight Armijo lengths1..1/128 on the same frozen Huber-plus-prior objective",
+  "final_checks": "Separate fixed-population and fresh-population equations, spectral conditions and remaining unscaled corrections; fixed convergence is not fresh convergence",
+  "comparison": "Same initial poses and prior; control is the previously archived ten fresh-association continuation updates",
+  "progression_rule": "Advance to full trajectories only if BOTH cases improve fresh-converged count, have no fixed/fresh guard failures, pass all fresh RMS<=0.03m gates, and have fresh median RMS no worse than the archived control",
+  "real_local_pose_fitting": true,
+  "new_trajectory_fitting": false,
+  "numeric_ground_truth_parsed": false,
+  "tracker_state_commits": false,
+  "fixed_convergence_is_not_tracker_admission": true,
+  "default_changed": false,
+  "rust_driving_changed": false
+}

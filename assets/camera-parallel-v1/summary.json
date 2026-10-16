@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "implemented": "Concurrent fixed image views through one shared immutable CPU plan; unchanged model/decode/ordered merge/consistency",
+  "max_scoped_view_workers": 4,
+  "shared_model_plans": 1,
+  "benchmark_order": [
+    "serial-first",
+    "parallel-first",
+    "parallel-repeat",
+    "serial-repeat"
+  ],
+  "serial_processing_s": [
+    2.260490985,
+    2.3947283699999997
+  ],
+  "parallel_processing_s": [
+    0.625559898,
+    0.5787626339999999
+  ],
+  "mean_speedup": 3.8654257736664186,
+  "mean_processing_reduction_fraction": 0.7412962869931186,
+  "deadline_gates": {
+    "serial-first": false,
+    "parallel-first": false,
+    "parallel-repeat": false,
+    "serial-repeat": false
+  },
+  "fixed_age_limit_s": 0.2,
+  "all_deadline_gates_pass": false,
+  "parity_images": 16,
+  "parity_runs_per_image": 2,
+  "all_view_pixels_detections_merge_and_consistency_results_identical": true,
+  "benchmark_actual_model_forwards": 16,
+  "parity_actual_model_forwards": 128,
+  "total_actual_model_forwards": 144,
+  "inherited_bdd_quality": {
+    "true_positives": 78,
+    "false_positives": 31,
+    "false_negatives": 60,
+    "precision": 0.7155963302752294,
+    "recall": 0.5652173913043478,
+    "mean_matched_iou": 0.7822587810258869
+  },
+  "inherited_quality_gates_pass": false,
+  "quality_metrics_inherited_from_exact_parity": true,
+  "new_accuracy_improvement_measured": false,
+  "new_unique_rust_tests": 5,
+  "binary_test_executions_including_shared_tests": 39,
+  "fatal_input_controls": 25,
+  "existing_output_protections": 2,
+  "legacy_profile_rejection": true,
+  "core_tests": 371,
+  "core_scenario_replays": 49,
+  "unchanged_core_output_files": 245,
+  "prior_packet_entries_verified": 3605,
+  "source_snapshot_files": 70,
+  "raw_recorded_images_depth_poses_weights_redistributed": false,
+  "live_camera_ingestion": false,
+  "vehicle_control_integration": false,
+  "github_ci_run_performed": false,
+  "subjective_maturity_percent": 20,
+  "waypoint_30_percent_met": false
+}

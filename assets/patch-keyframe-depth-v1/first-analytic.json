@@ -1,0 +1,79 @@
+{
+  "analytic_pass": true,
+  "profile_equivalence_cases": 5,
+  "chart_angles_rad": [
+    1e-09,
+    0.0001,
+    0.3,
+    1.2
+  ],
+  "reports": {
+    "discard": {
+      "checked_reported_equations": 228,
+      "marginal_generations": 0,
+      "max_position_error_m": 5.369070702075014e-05
+    },
+    "retain": {
+      "checked_reported_equations": 224,
+      "marginal_generations": 9,
+      "max_position_error_m": 5.508642593786189e-05
+    }
+  },
+  "discarded_information_control": true,
+  "no_fabricated_new_support": true,
+  "terminal_expiry": true,
+  "rejected_corruptions": [
+    "wrong Schur gradient",
+    "coherently scaled Schur H/g",
+    "duplicate factor history",
+    "wrong fixed origin",
+    "wrong linearization anchor",
+    "retained raw factors also marginalized",
+    "normal system scaled without changing its solve",
+    "moved first origin",
+    "wrong normal increment"
+  ],
+  "late_elimination_failure_atomic": true,
+  "clean_recovery_prior_parity": true,
+  "malformed_clock_and_depth_rejected": true,
+  "singular_elimination_rejected": true,
+  "patch_normals": {
+    "independent_normal_method": "centered patch SVD with zero rows for excluded samples",
+    "normal_layers_compared": 18,
+    "max_component_difference": 1.1074474670635936e-14,
+    "depth_vertices_intrinsics_unchanged": true,
+    "noisy_plane_common_pixels": 18096,
+    "noise_seed": 421016,
+    "axial_gaussian_sigma_m": 0.002,
+    "normal_error_rad_median_p95_before": [
+      0.10204124749776977,
+      0.2190987344059988
+    ],
+    "normal_error_rad_median_p95_after": [
+      0.021102982665502,
+      0.045123376391808474
+    ],
+    "exact_plane_and_depth_step": true,
+    "missing_center_and_sparse_line_rejected": true,
+    "minimum_13_samples_enforced": true,
+    "rank_and_roughness_rejected": true,
+    "parent_engine_only_pyramid_import_changed": true
+  },
+  "symmetric_factor": {
+    "source_and_target_central_difference_axes": 12,
+    "swapped_residual_sign": true,
+    "common_rigid_frame_invariance": true,
+    "omitted_normal_rotation_detected": true,
+    "original_fixed_pose_support_counts": {
+      "4": 770,
+      "2": 973,
+      "1": 1081
+    },
+    "parent_engine_only_pair_import_changed": true
+  },
+  "source_sha256": {
+    "scripts/check-patch-keyframes.py": "a1541a2049a33bac9d7e851f5e07e548c58ce87de696152dbdd2dd0551ce075d",
+    "scripts/patch_depth_normals.py": "a1d8ab57e7ceb28a57879b536023aaf7d7fa63ab0d5e3f5e1070675219138ffe",
+    "scripts/patch_keyframe_depth.py": "0c36ea764a13e2ef083bafb0dfc74db8d09e5edff3b74e82f0aadd2d54398e1e"
+  }
+}

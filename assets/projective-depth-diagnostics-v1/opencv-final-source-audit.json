@@ -1,0 +1,67 @@
+{
+  "integrity_pass": true,
+  "complete_accuracy_pass": false,
+  "cases": {
+    "tum-fr1-room-temporal": {
+      "summary": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 83,
+        "lost": false,
+        "max_position_error_m": 0.36828681888675513,
+        "max_rotation_error_rad": 0.1770833536763991,
+        "complete_accuracy_pass": false
+      },
+      "rejected_corruptions": [
+        "dropped outcome",
+        "changed error",
+        "changed gate",
+        "wrong acquisition",
+        "relabelled accuracy",
+        "altered pre-label pose",
+        "nonrigid pose in both ledgers",
+        "false summary",
+        "false loss state"
+      ],
+      "input_sha256": {
+        "freeze.json": "48eb6da368281b24db5aa96fa8b44b4b26f04cfacd0ee05a46764f36aa9f7012",
+        "results.json": "2d36cbb9b756c55d75a9ac53e4d26465ef3cfecafbf9cdab6c7f572db994dd3c",
+        "sensor-only.json": "b06cb8fca9ce528ebd10cd91b66fb3265fe10c6464d1f6acac71f0a9a3d0ec65"
+      }
+    },
+    "tum-fr1-desk2-independent": {
+      "summary": {
+        "total_updates": 179,
+        "accepted": 179,
+        "root_accurate": 15,
+        "lost": false,
+        "max_position_error_m": 0.32189362118281933,
+        "max_rotation_error_rad": 0.20533828410890645,
+        "complete_accuracy_pass": false
+      },
+      "rejected_corruptions": [
+        "dropped outcome",
+        "changed error",
+        "changed gate",
+        "wrong acquisition",
+        "relabelled accuracy",
+        "altered pre-label pose",
+        "nonrigid pose in both ledgers",
+        "false summary",
+        "false loss state"
+      ],
+      "input_sha256": {
+        "freeze.json": "e32ba673387d7fa61f571589b72da3937255c4ecf61d84de464bddf31defccc4",
+        "results.json": "4af2142d36f4c269eacbdef722a20bd2db07c7ce19e43c1a0fc9dad89d18e2b7",
+        "sensor-only.json": "fcb3b2f99ed5e4d82789a2a465fce2e0a383f2d079b6cd1b2d4642ee35aabc3d"
+      }
+    }
+  },
+  "controls": {
+    "hand_calculated_half_metre_45_degree_pose": true,
+    "quaternion_sign_invariance": true,
+    "extrapolation_and_bracket_rejections": 3
+  },
+  "auditor_sha256": "63e366ce4d83d1fd1512c13726c777d5d04aa24c8b22d6161ecbb33cf21df1ff",
+  "limitation": "audits source bindings, retention, clocks and root scoring; not OpenCV internals"
+}

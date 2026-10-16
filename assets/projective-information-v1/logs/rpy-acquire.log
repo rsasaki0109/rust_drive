@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/workspace/rust_drive/scripts/projective-heldout.py", line 171, in <module>
+    globals()[{'audit':'raw_audit'}.get(a.action,a.action)]()
+  File "/workspace/rust_drive/scripts/projective-heldout.py", line 83, in acquire
+    files.append(dict(file=source.local_filename(n),source_path=n,**pin))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: dict() got multiple values for keyword argument 'source_path'

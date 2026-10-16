@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "dataset": "tum-fr1-room-temporal",
+      "total_updates": 179,
+      "accepted": 24,
+      "root_accurate": 24,
+      "lost": true,
+      "max_position_error_m": 0.04130870694739162,
+      "max_rotation_error_rad": 0.0351768897033941,
+      "complete_accuracy_pass": false,
+      "pose_resets": 0,
+      "map_replacements": 0
+    },
+    {
+      "dataset": "tum-fr1-desk2-independent",
+      "total_updates": 179,
+      "accepted": 20,
+      "root_accurate": 20,
+      "lost": true,
+      "max_position_error_m": 0.03332332958481619,
+      "max_rotation_error_rad": 0.06112578005881185,
+      "complete_accuracy_pass": false,
+      "pose_resets": 0,
+      "map_replacements": 0
+    },
+    {
+      "dataset": "tum-fr1-rpy-heldout",
+      "total_updates": 179,
+      "accepted": 31,
+      "root_accurate": 17,
+      "lost": true,
+      "max_position_error_m": 0.5344379333058268,
+      "max_rotation_error_rad": 0.7045510233923834,
+      "complete_accuracy_pass": false,
+      "pose_resets": 0,
+      "map_replacements": 0
+    }
+  ],
+  "validation": {
+    "schema_version": 1,
+    "native_rust_tests": 62,
+    "core_rust_tests": 371,
+    "onnx_test_executions": 16,
+    "onnx_repeated_s_module_tests": 5,
+    "scenario_replays": 49,
+    "unchanged_core_output_files": 245,
+    "legacy_native_outcomes_identical": 1440,
+    "raw_recorded_systems": 1921,
+    "raw_analytic_systems": 75,
+    "analytic_corruptions_rejected": 30,
+    "rolling_algorithm_source_unchanged": true,
+    "default_native_rebuilt": true,
+    "before_default_native_sha256": "59332ed6601e8b7ff16759694f8c8fb4af1b23050efeb1982b0e065a5a47b426",
+    "default_native_sha256": "120a7c8250643116e7b7df777194eca671a14e79348ca9b7df34f4f82dd1c939",
+    "fixed_map_binary_sha256": "1058b0f51b5c80fd2fccefb55435fc061e4ed12df97208ea415d00164a373b80",
+    "cargo_manifests_and_locks_unchanged": true,
+    "ci_actionlint_passed": true,
+    "git_diff_check_passed": true,
+    "fixed_map_quality_exit": 1,
+    "raw_integrity_passed": true,
+    "new_default_adopted": false,
+    "subjective_maturity_percent": 20,
+    "goal_30_percent_complete": false
+  },
+  "goal_30_percent_complete": false,
+  "subjective_maturity_percent": 20,
+  "unresolved": [
+    "viewed multi-view camera overall/per-class recall floors fail",
+    "new independent camera holdout deferred by frozen quality gate",
+    "recorded fixed-map pose loses all three tracks; RPY includes inaccurate accepted poses",
+    "descriptive viewed detection reliability is not held-out confidence calibration",
+    "no qualified physical localization uncertainty or vehicle integration"
+  ]
+}

@@ -1,0 +1,682 @@
+{
+  "totals": {
+    "samples": 10,
+    "rounds": 27,
+    "applied_corrections": 378,
+    "first_round_corrections": 122,
+    "new_reported_systems": 459,
+    "rechecked_control_systems": 142,
+    "selection_converged": 0,
+    "final_fixed_converged": 7,
+    "same_model_fresh_converged": 0,
+    "original_discrete_fresh_converged": 0,
+    "initial_sources": 80428,
+    "terminal_reselected_sources": 80547,
+    "retained_initial_sources": 63984,
+    "removed_initial_sources": 16444,
+    "added_terminal_sources": 16563,
+    "invalid_trials": 138,
+    "valid_nonpassing_trials": 0,
+    "accepted_trials": 378,
+    "shortened_steps": 11,
+    "fixed_objective_cost_increases": 0,
+    "reselected_objective_cost_increases": 16,
+    "reselected_objective_checks": 27,
+    "inner_guard_stops": 1,
+    "selection_guard_stops": 0,
+    "inner_budget_stops": 2,
+    "round_budget_stops": 7,
+    "complete_first_reports_equal_except_cap": 10,
+    "complete_first_fresh_systems_equal": 10,
+    "independently_checked_stage_pairs": 336,
+    "converged_stops": 0,
+    "transition_source_occurrences_removed": 39890,
+    "transition_source_occurrences_added": 40009,
+    "changed_normalizers_on_shared": 164274,
+    "initial_source_retention": 0.7955438404535734,
+    "additional_corrections_after_first_round": 256
+  },
+  "per_case": {
+    "tum-fr1-room-temporal": {
+      "samples": 5,
+      "selection_converged": 0,
+      "final_fixed_converged": 3,
+      "terminal_same_model_fresh_converged": 0,
+      "original_discrete_fresh_converged": 0,
+      "control_fixed_converged": 5,
+      "control_original_discrete_fresh_converged": 0,
+      "total_association_rounds": 13,
+      "total_applied_corrections": 186,
+      "inner_guard_stops": 0,
+      "selection_guard_stops": 0,
+      "inner_budget_stops": 2,
+      "round_budget_stops": 3,
+      "original_discrete_guard_failures": 0,
+      "original_discrete_rms_gate_passes": 5,
+      "median_original_discrete_rms_m": 0.0024343407253290734,
+      "control_median_original_discrete_rms_m": 0.0024617915482624446,
+      "initial_source_occurrences": 33459,
+      "terminal_reselected_source_occurrences": 33742,
+      "retained_initial_source_occurrences": 26323,
+      "removed_initial_source_occurrences": 7136,
+      "added_terminal_source_occurrences": 7419,
+      "initial_source_retention": 0.7867240503302549,
+      "within_round_invalid_trials": 0,
+      "within_round_valid_nonpassing_trials": 0,
+      "within_round_accepted_trials": 186,
+      "within_round_shortened_steps": 0,
+      "within_round_cost_increases": 0,
+      "between_round_population_cost_increases": 7,
+      "eligible_for_followup_full_trajectory": false,
+      "independently_checked_stage_pairs": 150
+    },
+    "tum-fr1-desk2-independent": {
+      "samples": 5,
+      "selection_converged": 0,
+      "final_fixed_converged": 4,
+      "terminal_same_model_fresh_converged": 0,
+      "original_discrete_fresh_converged": 0,
+      "control_fixed_converged": 5,
+      "control_original_discrete_fresh_converged": 0,
+      "total_association_rounds": 14,
+      "total_applied_corrections": 192,
+      "inner_guard_stops": 1,
+      "selection_guard_stops": 0,
+      "inner_budget_stops": 0,
+      "round_budget_stops": 4,
+      "original_discrete_guard_failures": 0,
+      "original_discrete_rms_gate_passes": 5,
+      "median_original_discrete_rms_m": 0.002676902782023556,
+      "control_median_original_discrete_rms_m": 0.002826047419958025,
+      "initial_source_occurrences": 46969,
+      "terminal_reselected_source_occurrences": 46805,
+      "retained_initial_source_occurrences": 37661,
+      "removed_initial_source_occurrences": 9308,
+      "added_terminal_source_occurrences": 9144,
+      "initial_source_retention": 0.8018267367838362,
+      "within_round_invalid_trials": 138,
+      "within_round_valid_nonpassing_trials": 0,
+      "within_round_accepted_trials": 192,
+      "within_round_shortened_steps": 11,
+      "within_round_cost_increases": 0,
+      "between_round_population_cost_increases": 9,
+      "eligible_for_followup_full_trajectory": false,
+      "independently_checked_stage_pairs": 186
+    }
+  },
+  "samples": {
+    "tum-fr1-room-temporal": [
+      {
+        "source_index": 120,
+        "round_corrections": [
+          10,
+          10,
+          17
+        ],
+        "total_corrections": 37,
+        "termination": "round_budget",
+        "guard_failure": null,
+        "terminal_fixed_converged": true,
+        "selection_converged": false,
+        "original_discrete_fresh_converged": false,
+        "final_reselected_correction": {
+          "guard_failure": null,
+          "converged": false,
+          "delta": [
+            [
+              -7.022596505278924e-05,
+              1.0847284532837739e-05,
+              7.3267480554997545e-06,
+              3.747954289013403e-05,
+              5.2813075457387365e-05,
+              5.6241908778784666e-05
+            ],
+            [
+              0.00019518253009838217,
+              -2.2461568345325217e-05,
+              -8.650288258035318e-05,
+              -7.210397035112829e-05,
+              -0.00018054215105937224,
+              -8.222860291494427e-05
+            ],
+            [
+              0.00019334891146196464,
+              -0.00017802252961810267,
+              -0.00011410998764021366,
+              -0.0002209602610122564,
+              -0.0002100374498120058,
+              5.6432969502209536e-05
+            ],
+            [
+              0.0005400369314743345,
+              -0.00013012746335985635,
+              -0.00021535361074690118,
+              -0.00022272715496985535,
+              -0.0005402158193381572,
+              -9.305084606227139e-05
+            ]
+          ],
+          "condition": 1202.9741108261103
+        },
+        "initial_sources": 8364,
+        "terminal_reselected_sources": 8584,
+        "retained_initial_sources": 6275,
+        "removed_initial_sources": 2089,
+        "added_terminal_sources": 2309
+      },
+      {
+        "source_index": 160,
+        "round_corrections": [
+          15,
+          30
+        ],
+        "total_corrections": 45,
+        "termination": "inner_budget",
+        "guard_failure": null,
+        "terminal_fixed_converged": false,
+        "selection_converged": false,
+        "original_discrete_fresh_converged": false,
+        "final_reselected_correction": {
+          "guard_failure": null,
+          "converged": false,
+          "delta": [
+            [
+              -4.220329104726069e-05,
+              2.9330057085699786e-05,
+              -3.441017359317574e-06,
+              -8.180117465000644e-06,
+              1.1212407087857354e-05,
+              -2.2420517680061015e-05
+            ],
+            [
+              0.000296360832735343,
+              -0.00011941390051729682,
+              -2.977749738120758e-05,
+              2.401150077444156e-05,
+              -0.00014829665074203937,
+              2.693709439046332e-05
+            ],
+            [
+              -9.853673225561777e-05,
+              -0.0001182079518987051,
+              0.00018841481114727194,
+              0.0001818349360884086,
+              0.00022934084525457857,
+              0.00033991310073069913
+            ],
+            [
+              0.00014298402801493472,
+              0.0001482358733563542,
+              -0.00033334193833745344,
+              0.00045031799885348055,
+              -0.00021297805037820552,
+              0.0002916825706371725
+            ]
+          ],
+          "condition": 11055.221613036492
+        },
+        "initial_sources": 8881,
+        "terminal_reselected_sources": 8929,
+        "retained_initial_sources": 6998,
+        "removed_initial_sources": 1883,
+        "added_terminal_sources": 1931
+      },
+      {
+        "source_index": 200,
+        "round_corrections": [
+          6,
+          10,
+          5
+        ],
+        "total_corrections": 21,
+        "termination": "round_budget",
+        "guard_failure": null,
+        "terminal_fixed_converged": true,
+        "selection_converged": false,
+        "original_discrete_fresh_converged": false,
+        "final_reselected_correction": {
+          "guard_failure": null,
+          "converged": false,
+          "delta": [
+            [
+              -7.532946170131433e-17,
+              -1.5913453098633822e-17,
+              2.5532985196277835e-18,
+              -8.569237266371733e-17,
+              6.683559390128997e-17,
+              5.34441615469633e-17
+            ],
+            [
+              -1.2348348988945221e-16,
+              -5.915430620514201e-17,
+              -2.1625685542433106e-17,
+              -5.285708779374315e-17,
+              6.048211978179167e-17,
+              1.7037822577749248e-16
+            ],
+            [
+              0.00011086913292524487,
+              -7.324248306038267e-05,
+              -0.00037343981745743024,
+              -0.00029257302860912,
+              8.921220251933809e-05,
+              -0.00026666488343170285
+            ],
+            [
+              0.0008323264607058093,
+              -0.0013597206813549406,
+              -0.0029950219620809926,
+              -0.0020522138944142187,
+              9.002506016407176e-05,
+              -0.001006029480719604
+            ]
+          ],
+          "condition": 2302.9737950534877
+        },
+        "initial_sources": 506,
+        "terminal_reselected_sources": 512,
+        "retained_initial_sources": 404,
+        "removed_initial_sources": 102,
+        "added_terminal_sources": 108
+      },
+      {
+        "source_index": 240,
+        "round_corrections": [
+          10,
+          15,
+          20
+        ],
+        "total_corrections": 45,
+        "termination": "round_budget",
+        "guard_failure": null,
+        "terminal_fixed_converged": true,
+        "selection_converged": false,
+        "original_discrete_fresh_converged": false,
+        "final_reselected_correction": {
+          "guard_failure": null,
+          "converged": false,
+          "delta": [
+            [
+              -2.472787185766905e-05,
+              -2.4061326754787177e-05,
+              4.236189134054291e-06,
+              -4.4141163062403996e-05,
+              9.313550016651836e-06,
+              2.951077907353112e-05
+            ],
+            [
+              0.00015820615420733352,
+              7.011557597356949e-05,
+              -0.00013043041888035362,
+              -2.1994652335385362e-05,
+              -0.00014276396643988929,
+              -7.573062590810914e-05
+            ],
+            [
+              0.00045208147944479047,
+              0.0001937462319572919,
+              -0.0003115684882037058,
+              -6.092918880352703e-05,
+              -0.0003843493966393233,
+              -0.00029634223527059397
+            ],
+            [
+              0.00038637893826671713,
+              -0.00028625743668451536,
+              -0.0003122465169686629,
+              -0.00025866588145741036,
+              -0.00037799116889514667,
+              -4.3717228299999126e-05
+            ]
+          ],
+          "condition": 413923.42432204034
+        },
+        "initial_sources": 11589,
+        "terminal_reselected_sources": 11624,
+        "retained_initial_sources": 9278,
+        "removed_initial_sources": 2311,
+        "added_terminal_sources": 2346
+      },
+      {
+        "source_index": 279,
+        "round_corrections": [
+          8,
+          30
+        ],
+        "total_corrections": 38,
+        "termination": "inner_budget",
+        "guard_failure": null,
+        "terminal_fixed_converged": false,
+        "selection_converged": false,
+        "original_discrete_fresh_converged": false,
+        "final_reselected_correction": {
+          "guard_failure": null,
+          "converged": false,
+          "delta": [
+            [
+              0.0001205672541045407,
+              8.176564758109561e-05,
+              -5.428310437921297e-05,
+              9.055339119408738e-06,
+              -9.963118634849026e-05,
+              -8.290736748119743e-05
+            ],
+            [
+              -0.0004956482706785501,
+              -0.00027951103765679893,
+              0.00030308550788978256,
+              5.7783280870661695e-05,
+              0.0003673704131777071,
+              0.0004277075121238323
+            ],
+            [
+              -0.0009075137030579906,
+              -0.0002965631681110824,
+              0.0002848635741163271,
+              3.5914659578896385e-05,
+              0.0006100938642153139,
+              0.0008418739769323767
+            ]
+          ],
+          "condition": 104682.70104381934
+        },
+        "initial_sources": 4119,
+        "terminal_reselected_sources": 4093,
+        "retained_initial_sources": 3368,
+        "removed_initial_sources": 751,
+        "added_terminal_sources": 725
+      }
+    ],
+    "tum-fr1-desk2-independent": [
+      {
+        "source_index": 120,
+        "round_corrections": [
+          10,
+          16,
+          9
+        ],
+        "total_corrections": 35,
+        "termination": "round_budget",
+        "guard_failure": null,
+        "terminal_fixed_converged": true,
+        "selection_converged": false,
+        "original_discrete_fresh_converged": false,
+        "final_reselected_correction": {
+          "guard_failure": null,
+          "converged": false,
+          "delta": [
+            [
+              -1.762638662690438e-05,
+              -2.196081796613296e-06,
+              8.635456616036295e-07,
+              -8.026950579274489e-06,
+              9.499124425159888e-06,
+              3.48354172056764e-05
+            ],
+            [
+              -9.558202509577776e-05,
+              1.1061950281435692e-05,
+              -3.1336027043898946e-05,
+              0.00010442591968804678,
+              0.0001705347287162146,
+              -0.00019721284691046607
+            ],
+            [
+              4.964944242628854e-05,
+              9.616119694858238e-05,
+              -3.553239077083447e-05,
+              0.00020698872846305872,
+              -4.323704176673109e-05,
+              -0.0002918504923732229
+            ],
+            [
+              0.00047714291249282875,
+              -8.81201161892262e-05,
+              2.6903146539876296e-05,
+              -2.487346255801817e-05,
+              -0.0005076565282635026,
+              3.5378181080687e-05
+            ]
+          ],
+          "condition": 235.91726294164582
+        },
+        "initial_sources": 4446,
+        "terminal_reselected_sources": 4483,
+        "retained_initial_sources": 3834,
+        "removed_initial_sources": 612,
+        "added_terminal_sources": 649
+      },
+      {
+        "source_index": 160,
+        "round_corrections": [
+          14,
+          23,
+          11
+        ],
+        "total_corrections": 48,
+        "termination": "round_budget",
+        "guard_failure": null,
+        "terminal_fixed_converged": true,
+        "selection_converged": false,
+        "original_discrete_fresh_converged": false,
+        "final_reselected_correction": {
+          "guard_failure": null,
+          "converged": false,
+          "delta": [
+            [
+              5.324861087619646e-05,
+              -1.797670675272038e-05,
+              -5.88051837363071e-06,
+              -1.1617064753350645e-05,
+              -2.3340422781834647e-05,
+              -3.5560424027923456e-05
+            ],
+            [
+              -0.00028776722032482595,
+              0.00012303232142581448,
+              2.031097108630445e-05,
+              6.445540646591856e-05,
+              0.00013080179980786026,
+              0.00018124516845124738
+            ],
+            [
+              -0.00010437187310738805,
+              0.00018517432258856738,
+              0.00012324664566246463,
+              0.00016918936406577997,
+              5.657760592023532e-05,
+              8.119928846915155e-05
+            ],
+            [
+              0.0006039185590937887,
+              0.00011601941697856982,
+              0.000322779215139496,
+              0.00023442396669432893,
+              -0.00045578066557889146,
+              -0.0002422583415287724
+            ]
+          ],
+          "condition": 24929.673576526537
+        },
+        "initial_sources": 12886,
+        "terminal_reselected_sources": 12845,
+        "retained_initial_sources": 9479,
+        "removed_initial_sources": 3407,
+        "added_terminal_sources": 3366
+      },
+      {
+        "source_index": 200,
+        "round_corrections": [
+          18,
+          22
+        ],
+        "total_corrections": 40,
+        "termination": "inner_guard",
+        "guard_failure": "line search",
+        "terminal_fixed_converged": false,
+        "selection_converged": false,
+        "original_discrete_fresh_converged": false,
+        "final_reselected_correction": {
+          "guard_failure": null,
+          "converged": false,
+          "delta": [
+            [
+              -5.454157682685836e-05,
+              2.20583670803901e-05,
+              -1.9719063784688006e-05,
+              -4.047884356852741e-06,
+              2.876602848246084e-05,
+              4.0891295384717254e-05
+            ],
+            [
+              0.00022715849180265536,
+              -5.665903295246267e-05,
+              7.366621419341329e-05,
+              3.195144969875967e-05,
+              -0.00011830773536790562,
+              -0.00016385908095665862
+            ],
+            [
+              -4.232480819599823e-05,
+              0.00030298555480468963,
+              3.307550246533498e-05,
+              0.00014572319955999334,
+              -3.5262042587320476e-06,
+              0.00012737213959819612
+            ],
+            [
+              0.00023520604242231643,
+              3.4554684889244833e-05,
+              0.0001743662619299767,
+              6.519854995824817e-05,
+              -0.00018596355571207202,
+              -1.2000869855929211e-05
+            ]
+          ],
+          "condition": 98131.7111187667
+        },
+        "initial_sources": 24283,
+        "terminal_reselected_sources": 24126,
+        "retained_initial_sources": 19681,
+        "removed_initial_sources": 4602,
+        "added_terminal_sources": 4445
+      },
+      {
+        "source_index": 240,
+        "round_corrections": [
+          19,
+          8,
+          9
+        ],
+        "total_corrections": 36,
+        "termination": "round_budget",
+        "guard_failure": null,
+        "terminal_fixed_converged": true,
+        "selection_converged": false,
+        "original_discrete_fresh_converged": false,
+        "final_reselected_correction": {
+          "guard_failure": null,
+          "converged": false,
+          "delta": [
+            [
+              -0.0004523164849996674,
+              5.864168882941233e-05,
+              -0.00010786929126873131,
+              -1.3621837453349018e-05,
+              0.00016647158362286747,
+              0.00015441811189131972
+            ],
+            [
+              0.0012424085510342594,
+              3.813049666632319e-05,
+              0.00021495126345585886,
+              8.192596894622738e-05,
+              -0.00023034558502338173,
+              -0.00022670206260456992
+            ],
+            [
+              0.0016831605589242053,
+              6.282079857098778e-05,
+              0.00021731804324122032,
+              6.092324901469544e-05,
+              -0.0003188167544370119,
+              -0.00032903511680875617
+            ],
+            [
+              0.00043777484295622917,
+              0.00034401594528614307,
+              0.0001344987657932668,
+              0.00013668971802262828,
+              -2.9575734161673163e-05,
+              -4.0351843885730176e-05
+            ]
+          ],
+          "condition": 15228.551651461072
+        },
+        "initial_sources": 2138,
+        "terminal_reselected_sources": 2136,
+        "retained_initial_sources": 1796,
+        "removed_initial_sources": 342,
+        "added_terminal_sources": 340
+      },
+      {
+        "source_index": 279,
+        "round_corrections": [
+          12,
+          12,
+          9
+        ],
+        "total_corrections": 33,
+        "termination": "round_budget",
+        "guard_failure": null,
+        "terminal_fixed_converged": true,
+        "selection_converged": false,
+        "original_discrete_fresh_converged": false,
+        "final_reselected_correction": {
+          "guard_failure": null,
+          "converged": false,
+          "delta": [
+            [
+              9.182529058662014e-06,
+              2.2193605969908277e-05,
+              3.67843795574984e-05,
+              1.9324557732540107e-05,
+              -3.635657113760997e-05,
+              5.479057572454759e-07
+            ],
+            [
+              0.00016935580434613543,
+              -7.878891451506238e-05,
+              -8.742564070134548e-05,
+              -4.507552927694264e-05,
+              3.1849759012726312e-06,
+              -7.017520613700583e-05
+            ],
+            [
+              -0.00019630711363518744,
+              0.0001412155636543867,
+              -7.91657964678491e-05,
+              2.3683855889282882e-05,
+              -0.00014726172257262677,
+              0.0002196140990830051
+            ],
+            [
+              -0.001814555326554321,
+              0.0008749946595868127,
+              1.1216190845497612e-05,
+              0.00033232090550302027,
+              0.0007039943807291428,
+              0.00016947598716977142
+            ]
+          ],
+          "condition": 35823.5153219195
+        },
+        "initial_sources": 3216,
+        "terminal_reselected_sources": 3215,
+        "retained_initial_sources": 2871,
+        "removed_initial_sources": 345,
+        "added_terminal_sources": 344
+      }
+    ]
+  }
+}

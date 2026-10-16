@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "parent": "assets/long-depth-refinement-v1",
+  "data_role": "post-hoc diagnosis of already viewed fixed-objective search failures",
+  "case": "tum-fr1-room-temporal",
+  "focus_source_indices": [120, 160, 240],
+  "domain_control_source_index": 279,
+  "selection": "Three exhausted searches with eight valid candidates, plus the one invalid-sampling search as a domain control; no outcome-based new sample selection",
+  "anchor": "Exactly the archived final poses, original initial population/normalizers, original incoming prior and full guarded Gauss-Newton proposal; never reselect at the final poses",
+  "multipliers": "Both signs of 2^-e for all integer exponents0..20, including every original search candidate; no adaptive extension after seeing results",
+  "measurements": "Full objective, per-source Huber loss difference summed with math.fsum, prior difference, signed secants, central secant, endpoint interpolation-cell changes and pixel displacement",
+  "numerics": "Record original Armijo decisions both with its existing1e-12 max(1,abs(cost)) slack and without slack; tiny accepted steps alone do not establish descent or convergence. Paired residual differences reduce total-cost cancellation but are not certified error bounds",
+  "independent_validation": "Separate SVD image surfaces, initial relative-camera selector, polynomial inverse-depth sampler, incidence/prior system, Cholesky solve, Rodrigues increments and homogeneous projection; compare every objective, loss partition and cell count. Shared aggregation is not an independent implementation of the whole diagnostic",
+  "analytic_controls": "Authored smooth-cell, exact grid-knot and invalid-sampling fixtures exercise directional slopes, one-sided differences and no cost after lost support; their injected directions are not solver proposals or physical accuracy evidence",
+  "scope": "Read-only probes only: no optimizer continuation, accepted pose, new convergence, numeric ground truth, trajectory fitting, tracker/prior commits, guard relaxation or default change",
+  "subjective_maturity_percent": 20
+}

@@ -1,0 +1,48 @@
+{
+  "analytic_pass": true,
+  "source_proof": true,
+  "interpolation": {
+    "plane_samples": 7,
+    "harmonic_authored_cases": 6,
+    "nonaffine_xyz_finite_difference_axes": 3,
+    "c1_edge_axes": 2,
+    "integer_samples": 3,
+    "one_dimensional_monotone_samples": 241,
+    "zero_normal_sampling_supported": true,
+    "missing_corner_or_cardinal_rejections": 5,
+    "unused_diagonal_allowed": true,
+    "depth_jump_rejected": true,
+    "unprepared_field_rejected": true,
+    "source_geometry_and_normals_unchanged": true,
+    "rejected_field_corruptions": [
+      "valid",
+      "du"
+    ],
+    "limits": "one-dimensional monotonicity does not certify two-dimensional range preservation or physical surface accuracy"
+  },
+  "rendered_continuous_converged": true,
+  "rendered_applied_corrections": 1,
+  "rendered_guard": null,
+  "reported_systems": 7,
+  "checkpoint_systems": 6,
+  "prior_system_checks": 1,
+  "objective_gradient_axes": 12,
+  "original_rendered_sources": 988,
+  "depth_slope_rendered_sources": 988,
+  "degenerate_guards": {
+    "missing": "new frame needs measured support",
+    "plane": "zero/nonfinite diagonal"
+  },
+  "rejected_corruptions": [
+    "false convergence",
+    "changed source identities",
+    "changed normalizer digest",
+    "wrong final matrix"
+  ],
+  "input_roots_unchanged": true,
+  "source_sha256": {
+    "scripts/depth_slope_factors.py": "ed05338993fc89bc3e9ff0c60c08871cf8dd5deafbda96b4bdd260735903227e",
+    "scripts/depth_slope_refinement.py": "fb66de61fb6a7913005dc3ff9853d0db054e6f21415fadbdd847782b47de4555",
+    "scripts/check-depth-slope-refinement.py": "c9ccc3c4b7d7f50e3b341977ba18b6531f9b95727d286f118400b32c2a614bf3"
+  }
+}

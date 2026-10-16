@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "parent": "assets/deep-search-depth-refinement-v1",
+  "motivation": "Frozen cell-transition diagnosis found one source's changed bilinear cell dominating slope reversals at all six viewed budget states",
+  "data_role": "already viewed development; C1 interpolatory inverse-depth comparison",
+  "cases": ["tum-fr1-room-temporal", "tum-fr1-desk2-independent"],
+  "sample_indices": [120, 160, 200, 240, 279],
+  "interpolation": "Tensor Catmull-Rom cubic on inverse axial Z using a4x4 stencil, exact projective derivative, no integer snapping; interpolatory at grid points and C1 across jointly qualified neighboring cells",
+  "domain": "Same front/image bounds; require all16 depths0.3..5m and normals squared norm>0.25. Every one of nine overlapping2x2 subpatches must satisfy the original0.05+0.01*minimum-depth continuity bound. Positive finite interpolated inverse depth; no clipping or bilinear fallback",
+  "initial_population": "Start from the unchanged original sampling-domain population including its geometric matching and nine-probe bilinear stencil. Filter once for cubic center support and retain factors with at least200 sources; preserve original source identities and bilinear center normalizers. Report actual retained factors/sources",
+  "fixed_objective": "Freeze this initial population and original metric normalizers for the entire attempt; evaluate cubic residuals and derivatives with the same incoming nonlinear prior and Huber0.01m weight. No source dropout, new normalization or geometric reselection during fitting",
+  "unchanged_solver": "Original thirty-correction GN solver,21 Armijo candidates1..2^-20 and numerical slack, current support, SPD condition<=1e6, full proposal<=0.1m/0.15rad and strict full-proposal1e-5m/1e-5rad convergence; no damping",
+  "checkpoints": [10, 20, 30],
+  "independent_verification": "Separate Hermite interpolation with central endpoint slopes, homogeneous projection, SVD normals, original-population selection, incidence/prior matrices, spectral solve, Rodrigues search and independent endpoint audits; old bilinear control verified separately",
+  "analytic_controls": "Quadratic inverse-depth reproduction, exact integer values, C1 left/right derivatives, XYZ finite differences, invalid16-corner support, rendered local fits, nonzero-prior12-axis objective gradients and report corruptions",
+  "followup_eligibility_rule": "Both cases must converge all five cubic windows, improve original-discrete fresh convergence, have no local/fresh guards, pass all original0.03m RMS gates and have median original-discrete fresh RMS no worse than deep-search control",
+  "scope": "Local interpolation/objective/domain comparison, not a solver-only change; no new trajectory fitting, numeric real GT, physical scoring, tracker/prior/Schur commits, default/native-Rust adoption or timing claim",
+  "subjective_maturity_percent": 20
+}

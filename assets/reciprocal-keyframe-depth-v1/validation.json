@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "data_role": "already viewed development; not held out",
+  "algorithm": "optional NumPy retained-information tracker with exact reciprocal projected pixels and unchanged symmetric residual, selective levels and final guards",
+  "pass_implementation_integrity": true,
+  "complete_accuracy_pass": false,
+  "recorded_command_exit_code": 1,
+  "default_changed": false,
+  "rust_driving_changed": false,
+  "ground_truth_operational": false,
+  "rgb_decoded": false,
+  "parent_engine_only_pair_import_changed": true,
+  "input_manifests_camera_and_bytes_match_selective_control": true,
+  "source_archive_sha256": "cbb4410e5cee7af55059e2709ba60867fbf3237c6ed81c7c1fd16e77e70e486a",
+  "raw_reported_systems": 8103,
+  "iteration_systems": 7427,
+  "coarse_skip_systems": 47,
+  "returned_pose_systems": 355,
+  "elimination_input_systems": 274,
+  "schur_result_priors": 274,
+  "consumed_unique_raw_factors": 954,
+  "reproduced_fit_rejections": 3,
+  "rejected_after_expiry_without_fitting": 0,
+  "original_scored_report_bytes_reconstruct_from_trace_and_compact_scores": true,
+  "reconstruction": {
+    "tum-fr1-room-temporal-retain": {
+      "byte_exact_reconstruction": true,
+      "original_scored_report_sha256": "01478fdc5d97956fcb05e825fdf985b6fcc0357682d044760b053fbb3f8c42f6",
+      "iteration_systems": 3541,
+      "coarse_skip_systems": 45,
+      "returned_pose_systems": 176,
+      "elimination_input_systems": 135
+    },
+    "tum-fr1-desk2-independent-retain": {
+      "byte_exact_reconstruction": true,
+      "original_scored_report_sha256": "84b6c5181728b74b2ff849dcd163f6eba6102dcf19791900ce09031846734b2b",
+      "iteration_systems": 3886,
+      "coarse_skip_systems": 2,
+      "returned_pose_systems": 179,
+      "elimination_input_systems": 139
+    }
+  },
+  "analytic_pass": true,
+  "analytic_iteration_and_returned_pose_equations": 452,
+  "analytic_retained_marginal_generations": 9,
+  "corruption_controls_rejected": 9,
+  "association_controls": {
+    "raw_oracle_layers_checked": 3,
+    "fixed_pose_counts": {
+      "4": {
+        "forward": 731,
+        "reciprocal": 729
+      },
+      "2": {
+        "forward": 980,
+        "reciprocal": 976
+      },
+      "1": {
+        "forward": 1078,
+        "reciprocal": 1078
+      }
+    },
+    "unstrided_endpoint_swap_invariance": true,
+    "out_of_image_return_and_collisions_rejected": true,
+    "return_depth_guard": true,
+    "identity_support_and_system_parity": true,
+    "parent_only_pair_import_changed": true
+  },
+  "scheduler_unchanged": true,
+  "initialization_parity": {
+    "tum-fr1-room-temporal-retain": {
+      "identical_initialization": true,
+      "identical_prefix_acquisitions": 1,
+      "first_changed_source_index": 101
+    },
+    "tum-fr1-desk2-independent-retain": {
+      "identical_initialization": true,
+      "identical_prefix_acquisitions": 1,
+      "first_changed_source_index": 101
+    }
+  },
+  "core_rust_tests_passed": 371,
+  "core_scenario_runs_and_replays_passed": 49,
+  "unchanged_deterministic_core_files": 245,
+  "unchanged_previous_evidence_files": 301,
+  "summaries": {
+    "tum-fr1-room-temporal-retain": {
+      "total_updates": 179,
+      "accepted": 176,
+      "root_accurate": 88,
+      "lost": false,
+      "max_position_error_m": 0.28016927981556633,
+      "max_rotation_error_rad": 0.1978936434728806,
+      "integrity": {
+        "pass_integrity": true,
+        "checked_reported_systems": 3897,
+        "accepted_updates": 176,
+        "reproduced_fit_rejections": 3,
+        "marginal_generations": 135,
+        "consumed_unique_raw_factors": 451,
+        "rejections": {
+          "condition": 3
+        },
+        "lost": false,
+        "ground_truth_parsed": false,
+        "checked_coarse_skips": 45,
+        "coarse_skip_reasons": {
+          "condition": 45
+        }
+      },
+      "complete_accuracy_pass": false
+    },
+    "tum-fr1-desk2-independent-retain": {
+      "total_updates": 179,
+      "accepted": 179,
+      "root_accurate": 75,
+      "lost": false,
+      "max_position_error_m": 0.21198241113449937,
+      "max_rotation_error_rad": 0.23313499582203798,
+      "integrity": {
+        "pass_integrity": true,
+        "checked_reported_systems": 4206,
+        "accepted_updates": 179,
+        "reproduced_fit_rejections": 0,
+        "marginal_generations": 139,
+        "consumed_unique_raw_factors": 503,
+        "rejections": {},
+        "lost": false,
+        "ground_truth_parsed": false,
+        "checked_coarse_skips": 2,
+        "coarse_skip_reasons": {
+          "increment": 2
+        }
+      },
+      "complete_accuracy_pass": false
+    }
+  },
+  "subjective_maturity_percent": 20,
+  "remaining_limits": [
+    "Viewed indoor recordings",
+    "Reciprocal projected pixels are not true correspondence or visibility labels; finer-level source sampling remains asymmetric",
+    "Reciprocity, coarse skips and patch validity are engineering choices; no calibrated uncertainty",
+    "Shared original depth decimation, vertices and intrinsics; normal reconstruction independently uses SVD",
+    "No fresh physical environment, vehicle integration, idle watchdog or real-time evidence"
+  ]
+}

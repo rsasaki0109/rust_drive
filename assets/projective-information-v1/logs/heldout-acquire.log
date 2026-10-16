@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/workspace/rust_drive/scripts/projective-heldout.py", line 159, in <module>
+    globals()[{'audit':'raw_audit'}.get(a.action,a.action)]()
+  File "/workspace/rust_drive/scripts/projective-heldout.py", line 69, in acquire
+    qualifier=module('metadata_only',ROOT/'scripts/qualify-rgbd-independent.py');selected=qualifier.select_metadata(scanned['metadata'])
+                                                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/rust_drive/scripts/qualify-rgbd-independent.py", line 99, in select_metadata
+    width = bracket_width(gt_times, stamp)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/rust_drive/scripts/qualify-rgbd-independent.py", line 73, in bracket_width
+    raise ValueError('reference timestamp bracket exceeds 0.02 seconds')
+ValueError: reference timestamp bracket exceeds 0.02 seconds

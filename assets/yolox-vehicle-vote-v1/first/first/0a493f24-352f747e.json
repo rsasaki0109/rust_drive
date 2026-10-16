@@ -1,0 +1,571 @@
+{
+  "algorithm": "yolox_s_vehicle_view_vote_v1",
+  "base_prediction": {
+    "algorithm": "pinned_yolox_s_full_plus_three_squares_v1",
+    "compiled_sources": {
+      "integrations/onnx/Cargo.lock": "aa6f1b198ff4ad901f9547ef852dc0113b5c36624d43030a863af32b12f07a0c",
+      "integrations/onnx/Cargo.toml": "7459dc7d7fc0128214275703d48a4170d449edd559dc0cadab689f887d635c8d",
+      "integrations/onnx/fetch_s.py": "bbb3aa5a020e0bdf6054fc1fe1c58ccd64132547a68ab44e28a89d556a35f1ae",
+      "integrations/onnx/profile-s.json": "b6ea56bd4b6271dc4d54b379b101db7425f61adfcd184211932fd2de6160f573",
+      "integrations/onnx/profile-tiles-s.json": "005d8d0b0c06529886be51eee6e8f0de70068aa90e31865c1ef17ad5b3022a9f",
+      "integrations/onnx/src/bin/rustdriving-camera-detect-s.rs": "6d1c965968e4d7d735922b4369e6076bf9801aed081dd7e6693702b513d46138",
+      "integrations/onnx/src/bin/rustdriving-camera-detect-tiled-s.rs": "bbd41c052c5b3dcd497cc9fd23d29b338b5f95046d7c36cefb6333f937899e39",
+      "integrations/onnx/src/lib.rs": "b379dfba4c45b535f61284ea9fc7748f6317038976b5fb61221f6a8561ad4bbc",
+      "integrations/onnx/src/yolox_s.rs": "cd23f879d840627b23aa954530e9e39ca5c5cc05cb2e927453c74178fd8142f0",
+      "integrations/onnx/src/yolox_tiles.rs": "0babb6b0c669c5fdbde867b9e9cdebf2ec50843bb121cf4ce3b097f084d5de28",
+      "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed"
+    },
+    "detection_origins": [
+      {
+        "rank": 0,
+        "view": 0
+      },
+      {
+        "rank": 1,
+        "view": 3
+      },
+      {
+        "rank": 2,
+        "view": 3
+      },
+      {
+        "rank": 2,
+        "view": 2
+      }
+    ],
+    "detections": [
+      {
+        "bbox": [
+          612.19189453125,
+          333.5792236328125,
+          751.0662841796875,
+          454.9552001953125
+        ],
+        "class_index": 2,
+        "confidence": 0.8998340368270874
+      },
+      {
+        "bbox": [
+          814.8961181640625,
+          359.060791015625,
+          857.3995361328125,
+          395.4267578125
+        ],
+        "class_index": 2,
+        "confidence": 0.7345148324966431
+      },
+      {
+        "bbox": [
+          851.8226318359375,
+          355.1847839355469,
+          878.4075927734375,
+          373.1603698730469
+        ],
+        "class_index": 2,
+        "confidence": 0.3402721583843231
+      },
+      {
+        "bbox": [
+          612.3272094726562,
+          334.7794494628906,
+          745.138427734375,
+          455.7420349121094
+        ],
+        "class_index": 7,
+        "confidence": 0.3363535702228546
+      }
+    ],
+    "height": 720,
+    "merge": {
+      "comparisons": 22,
+      "input_boxes": 12,
+      "interior_edge_rejected": 1,
+      "output_cap_reached": false,
+      "suppressed": 7
+    },
+    "model_sha256": "c5c2d13e59ae883e6af3b45daea64af4833a4951c92d116ec270d9ddbe998063",
+    "nms_iou_threshold": 0.44999998807907104,
+    "schema_version": 1,
+    "score_threshold": 0.30000001192092896,
+    "source_image_sha256": "7eff37746d7ca8977dc9e86b420e5e82e3d1b27a410e743943c72cabaf6146ba",
+    "views": [
+      {
+        "prediction": {
+          "algorithm": "pinned_yolox_s_cpu_image_triangle_argmax_classwise",
+          "compiled_sources": {
+            "integrations/onnx/Cargo.lock": "aa6f1b198ff4ad901f9547ef852dc0113b5c36624d43030a863af32b12f07a0c",
+            "integrations/onnx/Cargo.toml": "7459dc7d7fc0128214275703d48a4170d449edd559dc0cadab689f887d635c8d",
+            "integrations/onnx/fetch_s.py": "bbb3aa5a020e0bdf6054fc1fe1c58ccd64132547a68ab44e28a89d556a35f1ae",
+            "integrations/onnx/profile-s.json": "b6ea56bd4b6271dc4d54b379b101db7425f61adfcd184211932fd2de6160f573",
+            "integrations/onnx/src/bin/rustdriving-camera-detect-s.rs": "6d1c965968e4d7d735922b4369e6076bf9801aed081dd7e6693702b513d46138",
+            "integrations/onnx/src/lib.rs": "b379dfba4c45b535f61284ea9fc7748f6317038976b5fb61221f6a8561ad4bbc",
+            "integrations/onnx/src/yolox_s.rs": "cd23f879d840627b23aa954530e9e39ca5c5cc05cb2e927453c74178fd8142f0",
+            "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed"
+          },
+          "detections": [
+            {
+              "bbox": [
+                612.19189453125,
+                333.5792236328125,
+                751.0662841796875,
+                454.9552001953125
+              ],
+              "class_index": 2,
+              "confidence": 0.8998340368270874
+            },
+            {
+              "bbox": [
+                812.0737915039062,
+                355.28485107421875,
+                857.3969116210938,
+                392.21026611328125
+              ],
+              "class_index": 2,
+              "confidence": 0.6886188387870789
+            },
+            {
+              "bbox": [
+                853.35595703125,
+                354.2693786621094,
+                886.546630859375,
+                377.2159118652344
+              ],
+              "class_index": 2,
+              "confidence": 0.3135482370853424
+            }
+          ],
+          "height": 720,
+          "inference_seconds": 0.559153092,
+          "input_shape": [
+            1,
+            3,
+            640,
+            640
+          ],
+          "model_load_seconds": 0.23681686,
+          "model_profile": "yolox-s-v1",
+          "model_profile_sha256": "b6ea56bd4b6271dc4d54b379b101db7425f61adfcd184211932fd2de6160f573",
+          "model_sha256": "c5c2d13e59ae883e6af3b45daea64af4833a4951c92d116ec270d9ddbe998063",
+          "nms_iou_threshold": 0.44999998807907104,
+          "output_shape": [
+            1,
+            8400,
+            85
+          ],
+          "schema_version": 1,
+          "score_threshold": 0.30000001192092896,
+          "source_image_sha256": null,
+          "width": 1280
+        },
+        "rectangle": {
+          "height": 720,
+          "width": 1280,
+          "x": 0,
+          "y": 0
+        },
+        "rgb_sha256": "70d4fa146c1bcaaef3bf7bc1af11043598753b35c16b6184a1b6b4ecb4560c6d"
+      },
+      {
+        "prediction": {
+          "algorithm": "pinned_yolox_s_cpu_image_triangle_argmax_classwise",
+          "compiled_sources": {
+            "integrations/onnx/Cargo.lock": "aa6f1b198ff4ad901f9547ef852dc0113b5c36624d43030a863af32b12f07a0c",
+            "integrations/onnx/Cargo.toml": "7459dc7d7fc0128214275703d48a4170d449edd559dc0cadab689f887d635c8d",
+            "integrations/onnx/fetch_s.py": "bbb3aa5a020e0bdf6054fc1fe1c58ccd64132547a68ab44e28a89d556a35f1ae",
+            "integrations/onnx/profile-s.json": "b6ea56bd4b6271dc4d54b379b101db7425f61adfcd184211932fd2de6160f573",
+            "integrations/onnx/src/bin/rustdriving-camera-detect-s.rs": "6d1c965968e4d7d735922b4369e6076bf9801aed081dd7e6693702b513d46138",
+            "integrations/onnx/src/lib.rs": "b379dfba4c45b535f61284ea9fc7748f6317038976b5fb61221f6a8561ad4bbc",
+            "integrations/onnx/src/yolox_s.rs": "cd23f879d840627b23aa954530e9e39ca5c5cc05cb2e927453c74178fd8142f0",
+            "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed"
+          },
+          "detections": [
+            {
+              "bbox": [
+                614.2203979492188,
+                334.34228515625,
+                719.9190063476562,
+                453.42755126953125
+              ],
+              "class_index": 2,
+              "confidence": 0.8234171271324158
+            }
+          ],
+          "height": 720,
+          "inference_seconds": 0.566049607,
+          "input_shape": [
+            1,
+            3,
+            640,
+            640
+          ],
+          "model_load_seconds": 0.23681686,
+          "model_profile": "yolox-s-v1",
+          "model_profile_sha256": "b6ea56bd4b6271dc4d54b379b101db7425f61adfcd184211932fd2de6160f573",
+          "model_sha256": "c5c2d13e59ae883e6af3b45daea64af4833a4951c92d116ec270d9ddbe998063",
+          "nms_iou_threshold": 0.44999998807907104,
+          "output_shape": [
+            1,
+            8400,
+            85
+          ],
+          "schema_version": 1,
+          "score_threshold": 0.30000001192092896,
+          "source_image_sha256": null,
+          "width": 720
+        },
+        "rectangle": {
+          "height": 720,
+          "width": 720,
+          "x": 0,
+          "y": 0
+        },
+        "rgb_sha256": "2cbb6a7ac94e9e0d20f041b9166fddb21e24f661d894f030c25fb78cd56fde82"
+      },
+      {
+        "prediction": {
+          "algorithm": "pinned_yolox_s_cpu_image_triangle_argmax_classwise",
+          "compiled_sources": {
+            "integrations/onnx/Cargo.lock": "aa6f1b198ff4ad901f9547ef852dc0113b5c36624d43030a863af32b12f07a0c",
+            "integrations/onnx/Cargo.toml": "7459dc7d7fc0128214275703d48a4170d449edd559dc0cadab689f887d635c8d",
+            "integrations/onnx/fetch_s.py": "bbb3aa5a020e0bdf6054fc1fe1c58ccd64132547a68ab44e28a89d556a35f1ae",
+            "integrations/onnx/profile-s.json": "b6ea56bd4b6271dc4d54b379b101db7425f61adfcd184211932fd2de6160f573",
+            "integrations/onnx/src/bin/rustdriving-camera-detect-s.rs": "6d1c965968e4d7d735922b4369e6076bf9801aed081dd7e6693702b513d46138",
+            "integrations/onnx/src/lib.rs": "b379dfba4c45b535f61284ea9fc7748f6317038976b5fb61221f6a8561ad4bbc",
+            "integrations/onnx/src/yolox_s.rs": "cd23f879d840627b23aa954530e9e39ca5c5cc05cb2e927453c74178fd8142f0",
+            "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed"
+          },
+          "detections": [
+            {
+              "bbox": [
+                334.08343505859375,
+                334.5524597167969,
+                466.2667236328125,
+                455.2810363769531
+              ],
+              "class_index": 2,
+              "confidence": 0.7971116900444031
+            },
+            {
+              "bbox": [
+                534.6470947265625,
+                359.3811950683594,
+                578.4254150390625,
+                394.2365417480469
+              ],
+              "class_index": 2,
+              "confidence": 0.7297660708427429
+            },
+            {
+              "bbox": [
+                332.32720947265625,
+                334.7794494628906,
+                465.138427734375,
+                455.7420349121094
+              ],
+              "class_index": 7,
+              "confidence": 0.3363535702228546
+            },
+            {
+              "bbox": [
+                572.6043090820312,
+                355.38848876953125,
+                598.9551391601562,
+                373.00634765625
+              ],
+              "class_index": 2,
+              "confidence": 0.3191494345664978
+            }
+          ],
+          "height": 720,
+          "inference_seconds": 0.544822652,
+          "input_shape": [
+            1,
+            3,
+            640,
+            640
+          ],
+          "model_load_seconds": 0.23681686,
+          "model_profile": "yolox-s-v1",
+          "model_profile_sha256": "b6ea56bd4b6271dc4d54b379b101db7425f61adfcd184211932fd2de6160f573",
+          "model_sha256": "c5c2d13e59ae883e6af3b45daea64af4833a4951c92d116ec270d9ddbe998063",
+          "nms_iou_threshold": 0.44999998807907104,
+          "output_shape": [
+            1,
+            8400,
+            85
+          ],
+          "schema_version": 1,
+          "score_threshold": 0.30000001192092896,
+          "source_image_sha256": null,
+          "width": 720
+        },
+        "rectangle": {
+          "height": 720,
+          "width": 720,
+          "x": 280,
+          "y": 0
+        },
+        "rgb_sha256": "3c72ed8ef2b7900df5823fd7491c8fb824ba005041b00300056411a4b7b36253"
+      },
+      {
+        "prediction": {
+          "algorithm": "pinned_yolox_s_cpu_image_triangle_argmax_classwise",
+          "compiled_sources": {
+            "integrations/onnx/Cargo.lock": "aa6f1b198ff4ad901f9547ef852dc0113b5c36624d43030a863af32b12f07a0c",
+            "integrations/onnx/Cargo.toml": "7459dc7d7fc0128214275703d48a4170d449edd559dc0cadab689f887d635c8d",
+            "integrations/onnx/fetch_s.py": "bbb3aa5a020e0bdf6054fc1fe1c58ccd64132547a68ab44e28a89d556a35f1ae",
+            "integrations/onnx/profile-s.json": "b6ea56bd4b6271dc4d54b379b101db7425f61adfcd184211932fd2de6160f573",
+            "integrations/onnx/src/bin/rustdriving-camera-detect-s.rs": "6d1c965968e4d7d735922b4369e6076bf9801aed081dd7e6693702b513d46138",
+            "integrations/onnx/src/lib.rs": "b379dfba4c45b535f61284ea9fc7748f6317038976b5fb61221f6a8561ad4bbc",
+            "integrations/onnx/src/yolox_s.rs": "cd23f879d840627b23aa954530e9e39ca5c5cc05cb2e927453c74178fd8142f0",
+            "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed"
+          },
+          "detections": [
+            {
+              "bbox": [
+                53.297096252441406,
+                334.18328857421875,
+                186.87088012695312,
+                455.6268310546875
+              ],
+              "class_index": 2,
+              "confidence": 0.7921692132949829
+            },
+            {
+              "bbox": [
+                254.89614868164062,
+                359.060791015625,
+                297.3995666503906,
+                395.4267578125
+              ],
+              "class_index": 2,
+              "confidence": 0.7345148324966431
+            },
+            {
+              "bbox": [
+                291.8226013183594,
+                355.1847839355469,
+                318.4076232910156,
+                373.1603698730469
+              ],
+              "class_index": 2,
+              "confidence": 0.3402721583843231
+            },
+            {
+              "bbox": [
+                53.40437316894531,
+                334.92791748046875,
+                187.97174072265625,
+                455.61138916015625
+              ],
+              "class_index": 7,
+              "confidence": 0.3151578903198242
+            }
+          ],
+          "height": 720,
+          "inference_seconds": 0.544161875,
+          "input_shape": [
+            1,
+            3,
+            640,
+            640
+          ],
+          "model_load_seconds": 0.23681686,
+          "model_profile": "yolox-s-v1",
+          "model_profile_sha256": "b6ea56bd4b6271dc4d54b379b101db7425f61adfcd184211932fd2de6160f573",
+          "model_sha256": "c5c2d13e59ae883e6af3b45daea64af4833a4951c92d116ec270d9ddbe998063",
+          "nms_iou_threshold": 0.44999998807907104,
+          "output_shape": [
+            1,
+            8400,
+            85
+          ],
+          "schema_version": 1,
+          "score_threshold": 0.30000001192092896,
+          "source_image_sha256": null,
+          "width": 720
+        },
+        "rectangle": {
+          "height": 720,
+          "width": 720,
+          "x": 560,
+          "y": 0
+        },
+        "rgb_sha256": "b6385cc814db16c7cc74f4357f26e83e3a7eb8ab17af0e517b5a6a780694e947"
+      }
+    ],
+    "width": 1280
+  },
+  "compiled_sources": {
+    "integrations/onnx/Cargo.lock": "aa6f1b198ff4ad901f9547ef852dc0113b5c36624d43030a863af32b12f07a0c",
+    "integrations/onnx/Cargo.toml": "7459dc7d7fc0128214275703d48a4170d449edd559dc0cadab689f887d635c8d",
+    "integrations/onnx/fetch_s.py": "bbb3aa5a020e0bdf6054fc1fe1c58ccd64132547a68ab44e28a89d556a35f1ae",
+    "integrations/onnx/profile-s.json": "b6ea56bd4b6271dc4d54b379b101db7425f61adfcd184211932fd2de6160f573",
+    "integrations/onnx/profile-tiles-s.json": "005d8d0b0c06529886be51eee6e8f0de70068aa90e31865c1ef17ad5b3022a9f",
+    "integrations/onnx/profile-vehicle-vote.json": "2f13591deea2731b5736876d3e6612d92b45f6eba462e90df836e5ff15165e9d",
+    "integrations/onnx/src/bin/rustdriving-camera-detect-s.rs": "6d1c965968e4d7d735922b4369e6076bf9801aed081dd7e6693702b513d46138",
+    "integrations/onnx/src/bin/rustdriving-camera-detect-tiled-s.rs": "bbd41c052c5b3dcd497cc9fd23d29b338b5f95046d7c36cefb6333f937899e39",
+    "integrations/onnx/src/bin/rustdriving-camera-detect-vehicle-vote.rs": "bbe06b8a90b15b07d58afa50e4d22b9c239d4ef6f7610f7541a63ce0fc2d38f0",
+    "integrations/onnx/src/lib.rs": "b379dfba4c45b535f61284ea9fc7748f6317038976b5fb61221f6a8561ad4bbc",
+    "integrations/onnx/src/yolox_s.rs": "cd23f879d840627b23aa954530e9e39ca5c5cc05cb2e927453c74178fd8142f0",
+    "integrations/onnx/src/yolox_tiles.rs": "0babb6b0c669c5fdbde867b9e9cdebf2ec50843bb121cf4ce3b097f084d5de28",
+    "integrations/onnx/src/yolox_vehicle_vote.rs": "34831fb00dc15d46d5a7facc0742baa30c0e8fb804b8ce8707958baf513c8a4c",
+    "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed"
+  },
+  "result": {
+    "ambiguities": [],
+    "base_merged": {
+      "detection_origins": [
+        {
+          "rank": 0,
+          "view": 0
+        },
+        {
+          "rank": 1,
+          "view": 3
+        },
+        {
+          "rank": 2,
+          "view": 3
+        },
+        {
+          "rank": 2,
+          "view": 2
+        }
+      ],
+      "detections": [
+        {
+          "bbox": [
+            612.19189453125,
+            333.5792236328125,
+            751.0662841796875,
+            454.9552001953125
+          ],
+          "class_index": 2,
+          "confidence": 0.8998340368270874
+        },
+        {
+          "bbox": [
+            814.8961181640625,
+            359.060791015625,
+            857.3995361328125,
+            395.4267578125
+          ],
+          "class_index": 2,
+          "confidence": 0.7345148324966431
+        },
+        {
+          "bbox": [
+            851.8226318359375,
+            355.1847839355469,
+            878.4075927734375,
+            373.1603698730469
+          ],
+          "class_index": 2,
+          "confidence": 0.3402721583843231
+        },
+        {
+          "bbox": [
+            612.3272094726562,
+            334.7794494628906,
+            745.138427734375,
+            455.7420349121094
+          ],
+          "class_index": 7,
+          "confidence": 0.3363535702228546
+        }
+      ],
+      "merge": {
+        "comparisons": 22,
+        "input_boxes": 12,
+        "interior_edge_rejected": 1,
+        "output_cap_reached": false,
+        "suppressed": 7
+      }
+    },
+    "comparison_work": 46,
+    "detection_origins": [
+      {
+        "rank": 0,
+        "view": 0
+      },
+      {
+        "rank": 1,
+        "view": 3
+      },
+      {
+        "rank": 2,
+        "view": 3
+      }
+    ],
+    "detections": [
+      {
+        "bbox": [
+          612.19189453125,
+          333.5792236328125,
+          751.0662841796875,
+          454.9552001953125
+        ],
+        "class_index": 2,
+        "confidence": 0.8998340368270874
+      },
+      {
+        "bbox": [
+          814.8961181640625,
+          359.060791015625,
+          857.3995361328125,
+          395.4267578125
+        ],
+        "class_index": 2,
+        "confidence": 0.7345148324966431
+      },
+      {
+        "bbox": [
+          851.8226318359375,
+          355.1847839355469,
+          878.4075927734375,
+          373.1603698730469
+        ],
+        "class_index": 2,
+        "confidence": 0.3402721583843231
+      }
+    ],
+    "resolutions": [
+      {
+        "base_ranks": [
+          0,
+          3
+        ],
+        "class_index": 2,
+        "full_image_tie_break": false,
+        "selected_base_rank": 0,
+        "votes": [
+          {
+            "class_index": 2,
+            "confidence": 0.8998340368270874,
+            "source_rank": 0,
+            "view": 0
+          },
+          {
+            "class_index": 2,
+            "confidence": 0.7971116900444031,
+            "source_rank": 0,
+            "view": 2
+          },
+          {
+            "class_index": 2,
+            "confidence": 0.7921692132949829,
+            "source_rank": 0,
+            "view": 3
+          }
+        ]
+      }
+    ],
+    "retained_base_ranks": [
+      0,
+      1,
+      2
+    ]
+  },
+  "schema_version": 1
+}

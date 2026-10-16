@@ -1,0 +1,41 @@
+{
+  "analytic_pass": true,
+  "source_proof": true,
+  "interpolation": {
+    "plane_samples": 7,
+    "xyz_finite_difference_axes": 3,
+    "nonaffine_xyz_finite_difference_axes": 3,
+    "interpolatory_integer_samples": 3,
+    "c1_inconsistent_edge_axes": 2,
+    "normal_sign_and_scale_checks": 2,
+    "missing_outer_corner_allowed": true,
+    "missing_corners_rejected": 4,
+    "invalid_normal_and_plane_guards": 3,
+    "negative_overshoot_guard": true
+  },
+  "rendered_continuous_converged": true,
+  "rendered_applied_corrections": 1,
+  "rendered_guard": null,
+  "reported_systems": 7,
+  "checkpoint_systems": 6,
+  "prior_system_checks": 1,
+  "objective_gradient_axes": 12,
+  "original_rendered_sources": 988,
+  "hermite_rendered_sources": 988,
+  "degenerate_guards": {
+    "missing": "new frame needs measured support",
+    "plane": "zero/nonfinite diagonal"
+  },
+  "rejected_corruptions": [
+    "false convergence",
+    "changed source identities",
+    "changed normalizer digest",
+    "wrong final matrix"
+  ],
+  "input_roots_unchanged": true,
+  "source_sha256": {
+    "scripts/normal_hermite_depth_factors.py": "7fefb6d2667b7aa000656bff5379e8e7e32437e0b1bee8d49340737173b14296",
+    "scripts/normal_hermite_depth_refinement.py": "da3e649abd48ec3bd8c1b17b5b8da6408714164ae21dfa57399dcd4ee8644d4e",
+    "scripts/check-normal-hermite-depth-refinement.py": "8d536c9d57c7a65bd48c67a77471cd2d0f1c80da2e78c1592106344f54e252f4"
+  }
+}

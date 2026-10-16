@@ -1,0 +1,20 @@
+{
+  "problem": "Repeated model warps retain only Z then rebuild XY on rounded target rays, perturbing measured geometry",
+  "change": "Keep complete camera-frame XYZ per model cell; z-buffer exact transformed points, average compatible XYZ with existing capped weights, and average XYZ into pyramids",
+  "default": "legacy depth initially unchanged; adoption requires physical improvement",
+  "support_and_gates": "original 0.3..5m, depth discontinuity gates, normal matching, Huber, iteration budgets, support, condition, increment, clocks and keyframe thresholds",
+  "comparison": {
+    "room_accurate_greater_than": 64,
+    "desk2_accurate_at_least": 161,
+    "accepted_each": 179,
+    "maximum_position_and_rotation_no_worse": true,
+    "no_resets": true
+  },
+  "physical_gates": {
+    "position_m": 0.1,
+    "rotation_rad": 0.1
+  },
+  "independent_raw_audit_required": true,
+  "depth_only": true,
+  "no_operational_truth": true
+}

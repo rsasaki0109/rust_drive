@@ -1,0 +1,17 @@
+[package]
+name = "rustdriving-image-tracking"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.90"
+license = "Apache-2.0"
+description = "Bounded offline image-space detection tracking; no vehicle controls"
+
+[workspace]
+
+[dependencies]
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = { version = "=1.0.151", features = ["float_roundtrip"] }
+sha2 = "=0.10.9"
+
+[lints.rust]
+unsafe_code = "forbid"

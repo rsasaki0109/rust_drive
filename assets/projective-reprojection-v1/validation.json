@@ -1,0 +1,44 @@
+{
+  "implementation_integrity_pass": true,
+  "accuracy_improvement_adopted": false,
+  "default_changed": false,
+  "complete_physical_accuracy_pass": false,
+  "default_full_outcomes_reproduced": 360,
+  "baseline_full_outcomes_reproduced": 360,
+  "candidate_trajectory_updates": 1432,
+  "raw_iteration_equations": 28036,
+  "raw_final_equations": 1432,
+  "native_rust_tests": 23,
+  "core_rust_tests": 371,
+  "core_scenarios_and_replays": 49,
+  "unchanged_core_outputs": 245,
+  "unchanged_previous_evidence_entries": 659,
+  "changed_previously_pinned_sources": {
+    "scripts/projective_depth_common.py": {
+      "before": "4d951fed622483de224666056b3fbabdd22902837cbdf8574cb500df9a86a29f",
+      "after": "eeca8a3c2f4b0f2d57d70d71753a5a0d5f6a37244d13abbfa7ab1c394dcd5469"
+    },
+    "scripts/projective_depth_raw.py": {
+      "before": "b64f7bc6a786dedd8900c72fa5c9248577e1485fd2b9263c6ff79805e785b927",
+      "after": "ed231bec60e21a71073aba7f1f5cf3b944a03b8329d8c194caa0c193dd0254df"
+    },
+    "integrations/projective-depth/src/lib.rs": {
+      "before": "fc565e23ec773f652d2bb9f77d5b5c32a17a125b44289740d9a0df77e4b807f1",
+      "after": "c2fb8d296eba277f4d5bd690c904c3f47b59dd9e8cfba7e64a1f6e4cc8b870ef"
+    },
+    "integrations/projective-depth/src/main.rs": {
+      "before": "60e574d1b7f4d5872cac858dd6ff5cfdfd07653b6ef4906071cba258c17eb78d",
+      "after": "02bd94bfe6997f4fa1938017b042fbf145f42eca7f2a9b645c2acbf103eb3a96"
+    }
+  },
+  "source_members": 24,
+  "current_binary_sha256": "97f7932aebfeaa9202570998e1ae8f4e6ef36014983cd257733e4b86da018ee7",
+  "cargo_pins_unchanged": true,
+  "subjective_maturity_percent": 20,
+  "limits": [
+    "All candidates fail the predeclared continuous default-adoption gate",
+    "Reference interpolation is shared; rotation classification is separately checked with atan2",
+    "Viewed indoor development only; no vehicle integration or accuracy gain adopted",
+    "Historical evidence bytes retained; current native and checker sources deliberately evolve"
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "role": "fixed viewed-data joint keyframe pose experiment; not held out",
+  "camera": {
+    "width": 640,
+    "height": 480,
+    "fx": 525.0,
+    "fy": 525.0,
+    "cx": 319.5,
+    "cy": 239.5
+  },
+  "depth_units_per_metre": 5000,
+  "inputs": "depth PNG and acquisition timestamps only; RGB and numeric labels not decoded operationally",
+  "modes": [
+    "fixed",
+    "joint"
+  ],
+  "max_nodes_including_current": 5,
+  "retained_references": "first plus newest2 motion-selected keys plus last accepted if distinct, at most4 references",
+  "fixed_origin": "first pose exactly identity; never optimized or reset",
+  "factors": "every newer-to-older node pair with at least200 raw geometric matches; graph must connect every node to first",
+  "joint_variables": "all non-first poses; fixed mode optimizes current pose only using identical window and factor definitions",
+  "target_jacobian": "negative source left-root Jacobian [n_root, q_source_root cross n_root]",
+  "geometry": "raw keyframes; no depth fusion, no external prior or synthetic measurements",
+  "source_strides_by_scale": {
+    "4": 1,
+    "2": 2,
+    "1": 4
+  },
+  "iteration_caps": [
+    10,
+    7,
+    5
+  ],
+  "huber_m": 0.01,
+  "max_scaled_condition": 1000000.0,
+  "minimum_edge_correspondences": 200,
+  "correspondence_distance_m": {
+    "4": 0.12,
+    "2": 0.08,
+    "1": 0.08
+  },
+  "normal_dot_min": 0.8,
+  "max_node_increment_translation_m": 0.1,
+  "max_node_increment_rotation_rad": 0.15,
+  "final_global_geometric_rms_max_m": 0.03,
+  "displacement_from_prior_last_accepted_max_m": 0.5,
+  "motion_key_translation_m": 0.1,
+  "motion_key_rotation_rad": 0.1,
+  "accepted_age_max_s": 0.2,
+  "failure_atomic": "no pose/reference/accepted clock changes on rejection; observed timestamp may advance; expiry latches",
+  "records": [
+    "tum-fr1-room-temporal",
+    "tum-fr1-desk2-independent"
+  ],
+  "original_depth_indices": [
+    100,
+    279
+  ],
+  "updates_per_branch": 179,
+  "primary_root_gates_m_rad": [
+    0.1,
+    0.1
+  ],
+  "reference_bracket_max_s": 0.02,
+  "pose_resets": 0,
+  "scoring": "only after all4 complete operational branches; all outcomes remain in denominators",
+  "promotion": "no default replacement unless both viewed records improve over original fused-depth64/161; held-out validation still required",
+  "helpers": {
+    "scripts/projective_depth_raw.py": "b64f7bc6a786dedd8900c72fa5c9248577e1485fd2b9263c6ff79805e785b927",
+    "scripts/projective_depth_common.py": "4d951fed622483de224666056b3fbabdd22902837cbdf8574cb500df9a86a29f",
+    "scripts/check-opencv-rgbd.py": "63e366ce4d83d1fd1512c13726c777d5d04aa24c8b22d6161ecbb33cf21df1ff"
+  }
+}

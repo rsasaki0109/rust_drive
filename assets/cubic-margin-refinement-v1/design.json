@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "parent": "assets/cubic-depth-refinement-v1",
+  "data_role": "viewed follow-up after frozen cubic domain failure; initial support margin comparison",
+  "motivation": "The first cubic result retains all initial sources but all six observable windows later lose16-corner sampling support; qualify neighboring cubic stencils once before freezing",
+  "cases": ["tum-fr1-room-temporal", "tum-fr1-desk2-independent"],
+  "sample_indices": [120, 160, 200, 240, 279],
+  "only_change": "From the original cubic-center-qualified population, require cubic sampling at the center and eight one-pixel target-image offsets holding optical Z fixed, then retain factors with at least200 surviving sources",
+  "normalizers": "Keep the original bilinear-center metric normalizers and source identities for survivors; probes are admission checks, not extra factors or new normalizers",
+  "solver": "Private unchanged cubic solver/objective/checkpoint functions bind the new initial population; C1 sampler, no snapping, all support/condition/proposal/full-convergence guards,21-candidate GN search and30-correction cap remain unchanged",
+  "audit": "Independent homogeneous-image stencil binds a separate unchanged cubic verifier's initial population; original cubic controls separately reverified, exact subset source coordinates/normals/normalizers checked",
+  "limits": "Finite initial probes do not certify all intervening or future projections. This is an outcome-informed development follow-up, not held-out evidence or an interpolation-only change",
+  "followup_eligibility_rule": "Same all-five convergence, improved original-discrete fresh convergence, no guards, all0.03m RMS gates and nonregressing median fresh RMS in both recordings versus cubic control",
+  "scope": "Local fitting only; no trajectory refit, numeric real GT, physical scoring, tracker/prior/Schur commits, native/default adoption or timing claim",
+  "subjective_maturity_percent": 20
+}

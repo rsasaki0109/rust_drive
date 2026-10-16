@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "data_role": "already viewed development; not held out",
+  "algorithm": "optional NumPy retained-information tracker with symmetric measured-normal raw factors with exact rotation derivatives",
+  "pass_implementation_integrity": true,
+  "complete_accuracy_pass": false,
+  "recorded_command_exit_code": 1,
+  "default_changed": false,
+  "rust_driving_changed": false,
+  "ground_truth_operational": false,
+  "rgb_decoded": false,
+  "parent_engine_only_pair_import_changed": true,
+  "input_manifests_camera_and_bytes_match_preceding_retained_control": true,
+  "source_archive_sha256": "5f9ddc8e165251eb7e9fe82390a3b9b2df9e97462d15848b20a84e68bc121bdd",
+  "raw_reported_systems": 7916,
+  "iteration_systems": 7285,
+  "returned_pose_systems": 358,
+  "elimination_input_systems": 273,
+  "schur_result_priors": 273,
+  "consumed_unique_raw_factors": 1193,
+  "reproduced_fit_rejections": 0,
+  "rejected_after_expiry_without_fitting": 0,
+  "original_scored_report_bytes_reconstruct_from_trace_and_compact_scores": true,
+  "reconstruction": {
+    "tum-fr1-room-temporal-retain": {
+      "byte_exact_reconstruction": true,
+      "original_scored_report_sha256": "0fb1e39edb20326f3df72df8aa214a356474a9d9762ee610b9777ec2ad5daf2b",
+      "iteration_systems": 3624,
+      "returned_pose_systems": 179,
+      "elimination_input_systems": 135
+    },
+    "tum-fr1-desk2-independent-retain": {
+      "byte_exact_reconstruction": true,
+      "original_scored_report_sha256": "f6f2ce442165dc9e81df35c0f8c6c82279826809adbe62451f796117e954ae28",
+      "iteration_systems": 3661,
+      "returned_pose_systems": 179,
+      "elimination_input_systems": 138
+    }
+  },
+  "analytic_pass": true,
+  "analytic_iteration_and_returned_pose_equations": 261,
+  "analytic_retained_marginal_generations": 9,
+  "corruption_controls_rejected": 9,
+  "symmetric_factor_controls": {
+    "source_and_target_central_difference_axes": 12,
+    "swapped_residual_sign": true,
+    "common_rigid_frame_invariance": true,
+    "omitted_normal_rotation_detected": true,
+    "original_fixed_pose_support_counts": {
+      "4": 770,
+      "2": 973,
+      "1": 1081
+    },
+    "parent_engine_only_pair_import_changed": true
+  },
+  "core_rust_tests_passed": 371,
+  "core_scenario_runs_and_replays_passed": 49,
+  "unchanged_deterministic_core_files": 245,
+  "unchanged_previous_evidence_files": 215,
+  "summaries": {
+    "tum-fr1-room-temporal-retain": {
+      "total_updates": 179,
+      "accepted": 179,
+      "root_accurate": 72,
+      "lost": false,
+      "max_position_error_m": 0.17267671039240842,
+      "max_rotation_error_rad": 0.13011143689626437,
+      "integrity": {
+        "pass_integrity": true,
+        "checked_reported_systems": 3938,
+        "accepted_updates": 179,
+        "reproduced_fit_rejections": 0,
+        "marginal_generations": 135,
+        "consumed_unique_raw_factors": 595,
+        "rejections": {},
+        "lost": false,
+        "ground_truth_parsed": false
+      },
+      "complete_accuracy_pass": false
+    },
+    "tum-fr1-desk2-independent-retain": {
+      "total_updates": 179,
+      "accepted": 179,
+      "root_accurate": 74,
+      "lost": false,
+      "max_position_error_m": 0.239760581926952,
+      "max_rotation_error_rad": 0.2322699462555486,
+      "integrity": {
+        "pass_integrity": true,
+        "checked_reported_systems": 3978,
+        "accepted_updates": 179,
+        "reproduced_fit_rejections": 0,
+        "marginal_generations": 138,
+        "consumed_unique_raw_factors": 598,
+        "rejections": {},
+        "lost": false,
+        "ground_truth_parsed": false
+      },
+      "complete_accuracy_pass": false
+    }
+  },
+  "subjective_maturity_percent": 20,
+  "remaining_limits": [
+    "Viewed indoor recordings",
+    "Fixed-pair residual is symmetric; nearest-pixel projective search remains one-way",
+    "Correspondences and Huber weights fixed per linearization; no calibrated uncertainty",
+    "Shared depth-pyramid frontend",
+    "No fresh physical environment, vehicle integration, idle watchdog or real-time evidence"
+  ],
+  "prior_diagnostic": "prior-diagnostic.json"
+}
