@@ -1,0 +1,48 @@
+{
+  "pass_checks": true,
+  "rejected_inputs": [
+    {
+      "name": "missing-image",
+      "exit": 2,
+      "stderr": "read image: No such file or directory (os error 2)\n"
+    },
+    {
+      "name": "corrupt-image",
+      "exit": 2,
+      "stderr": "read image: The image format could not be determined\n"
+    },
+    {
+      "name": "image-symlink",
+      "exit": 2,
+      "stderr": "read image: image must be a regular non-symlink file\n"
+    },
+    {
+      "name": "missing-model",
+      "exit": 2,
+      "stderr": "load model: No such file or directory (os error 2)\n"
+    },
+    {
+      "name": "invalid-model-size",
+      "exit": 2,
+      "stderr": "load model: model size differs from pinned YOLOX-S artifact\n"
+    },
+    {
+      "name": "invalid-model-hash",
+      "exit": 2,
+      "stderr": "load model: model SHA-256 differs from pinned YOLOX-S artifact\n"
+    },
+    {
+      "name": "model-symlink",
+      "exit": 2,
+      "stderr": "load model: model must be a regular non-symlink file\n"
+    },
+    {
+      "name": "unknown-cli",
+      "exit": 2,
+      "stderr": "expected [--repeat2x] [--reference-first] --model FILE --image FILE --output NEW; --executable-receipt --output NEW\n"
+    }
+  ],
+  "existing_output_protections": 2,
+  "executable_sha256": "3c2b8da84f5f59900ae6854935fc05bfd0a90a21958a232c70a97db192349dee",
+  "checker_sha256": "1ae35d774672535b266eff7ea52388ec9a5bd0efb7dc9f4be54b7a9d498489ad"
+}

@@ -1,0 +1,12 @@
+{
+  "schema_version": 2,
+  "algorithm": "yolox_s_cpu_operator_profile_v2",
+  "scope": "Diagnostic operator wall times, not a new detector profile or a deadline measurement",
+  "execution": "One pinned optimized tract plan; original fixed views in serial order; one instrumented forward followed by one ordinary reference forward per view",
+  "measurement": "Actual std::time::Instant nanoseconds around each unmodified tract eval call; state setup, graph scheduling and observer bookkeeping remain unattributed",
+  "numerics": "Compare every output f32 bit against the ordinary reference, independently decode both outputs, and publish both merges and consistency results. Current-host comparisons are exact; separately recorded historical confidence comparisons use the existing bounded CPU drift rule.",
+  "input": "Mirrors the existing Triangle/raw-BGR/top-left114/f32 preprocessing; preserve encoded, RGB, input-tensor and output-tensor hashes",
+  "bounds": {"graph_nodes": 4096, "views": 4, "model_forwards": 8, "output_bytes": 4194304},
+  "control_permission": false,
+  "optional_repeat2x": "Validate both original Resize protobuf attributes, static NCHW f32 shapes, absent/empty ROI and [1,1,2,2] scales. Replace only Resize_165/187 using standard AxisOp/MultiBroadcastTo/Reshape; compare against an independent original plan. Alternate per-view reference order across repeated image runs."
+}

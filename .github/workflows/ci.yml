@@ -583,6 +583,51 @@ jobs:
           assert proof["timing_speedup_required_for_execution_success"] is False
           assert proof["inherited_quality_gates_pass"] is False
           PY
+      - name: Audit guarded Resize lowering and every raw model output bit
+        if: ${{ !cancelled() }}
+        run: |
+          python -m unittest discover -s integrations/onnx -p test_camera_operators.py -v
+          python -B assets/camera-operators-v2/verify.py
+          mkdir -p artifacts/camera-operators-v2
+          cp assets/camera-cpu-v1/LICENSE-TUM-data.txt artifacts/camera-operators-v2/LICENSE-TUM-data.txt
+          cp assets/camera-cpu-v1/LICENSE-BDD-data.txt artifacts/camera-operators-v2/LICENSE-BDD-data.txt
+          python integrations/onnx/camera_operator_check.py controls --output artifacts/camera-operators-v2/controls
+          python integrations/onnx/camera_operator_check.py run --controls artifacts/camera-operators-v2/controls --output artifacts/camera-operators-v2/validation
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          proof = json.loads(Path("artifacts/camera-operators-v2/validation/summary.json").read_text())
+          assert proof["pass_checks"] is True
+          assert proof["original_images"] == 16 and proof["repeats_per_image"] == 2
+          assert proof["full_raw_tensor_bitwise_parity"] is True
+          assert proof["original_per_view_and_final_detections_identical"] is True
+          assert proof["current_host_reference_exact"] is True
+          assert proof["paired_order_alternated"] is True
+          assert proof["validation_actual_model_forwards"] == 264
+          assert proof["hardware_speedup_required_for_success"] is False
+          assert proof["deadline_measurement"] is False
+          assert proof["inherited_quality_gates_pass"] is False
+          PY
+      - name: Verify lowered parallel execution with the unchanged measured clock
+        if: ${{ !cancelled() }}
+        run: |
+          python integrations/onnx/camera_repeat_check.py controls --output artifacts/camera-operators-v2/parallel-controls
+          python integrations/onnx/camera_repeat_check.py run --controls artifacts/camera-operators-v2/parallel-controls --output artifacts/camera-operators-v2/parallel-validation
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          proof = json.loads(Path("artifacts/camera-operators-v2/parallel-validation/summary.json").read_text())
+          assert proof["pass_checks"] is True
+          assert proof["original_images"] == 16 and proof["repeats_per_image"] == 2
+          assert proof["complete_original_measurement_and_result_parity"] is True
+          assert proof["actual_measured_parallel_replay"] is True
+          assert proof["current_host_reference_exact"] is True
+          assert proof["current_reference_model_forwards"] == 64
+          assert proof["total_actual_model_forwards"] == 208
+          assert proof["age_limit_s"] == .2
+          assert proof["hardware_speedup_required_for_success"] is False
+          assert proof["inherited_quality_gates_pass"] is False
+          PY
       - name: Reproduce viewed pixel-refined RGB-D motion and independent reprojection checks
         run: |
           python scripts/fetch-reprojection-dataset.py tum-fr2-desk-reprojection
@@ -744,6 +789,7 @@ jobs:
             artifacts/camera-cpu-v1/build/build.log
             artifacts/camera-cpu-v1/controls/
             artifacts/camera-cpu-v1/verification/
+            artifacts/camera-operators-v2/
             artifacts/adaptive/
             artifacts/rgbd/
             artifacts/recorded-motion/

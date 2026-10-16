@@ -1,0 +1,69 @@
+//! One CPU plan for bounded recorded images; shared detector/tracker sources.
+#[allow(dead_code)]
+#[path = "../camera_analysis.rs"]
+mod camera_analysis;
+#[path = "../camera_sequence.rs"]
+mod camera_sequence;
+#[path = "../../../camera-tracking/src/lib.rs"]
+mod image_tracking;
+#[path = "../yolox_s.rs"]
+mod yolox_s;
+#[path = "../yolox_tiles.rs"]
+mod yolox_tiles;
+#[path = "../yolox_vehicle_consistency.rs"]
+mod yolox_vehicle_consistency;
+#[path = "../yolox_vehicle_context.rs"]
+mod yolox_vehicle_context;
+#[path = "../yolox_vehicle_vote.rs"]
+mod yolox_vehicle_vote;
+// The embedded independent assignment module resolves this crate-root type.
+use image_tracking::Detection;
+use sha2::{Digest, Sha256};
+use std::{env, fs, io::Read, path::Path};
+
+fn run() -> Result<(), String> {
+    let args: Vec<_> = env::args_os().skip(1).collect();
+    let destination = match args.as_slice() {
+        [m, _, s, _, o, d] if m == "--model" && s == "--sequence" && o == "--output" => d,
+        [m, _, o, d] if m == "--inspect-sequence" && o == "--output" => d,
+        [m, o, d] if m == "--executable-receipt" && o == "--output" => d,
+        _ => return Err("expected --model FILE --sequence FILE --output NEW; --inspect-sequence FILE --output NEW; --executable-receipt --output NEW".into()),
+    };
+    let output = camera_analysis::AtomicReport::reserve(Path::new(destination))?;
+    if args[0] == "--executable-receipt" {
+        let mut bytes = Vec::new();
+        fs::File::open(env::current_exe().map_err(|e| e.to_string())?)
+            .map_err(|e| e.to_string())?
+            .take(128 * 1024 * 1024 + 1)
+            .read_to_end(&mut bytes)
+            .map_err(|e| e.to_string())?;
+        if bytes.len() > 128 * 1024 * 1024 {
+            return Err("executable exceeds receipt budget".into());
+        }
+        return output.publish(&serde_json::json!({"compiled_sources":camera_sequence::compiled_sources(),
+            "executable_sha256":format!("{:x}",Sha256::digest(bytes)),"model_read":false,"images_read":false,"inference_run":false}));
+    }
+    let sequence_path = Path::new(if args[0] == "--model" {
+        &args[3]
+    } else {
+        &args[1]
+    });
+    let (sequence, sha) = camera_sequence::read_sequence(sequence_path)?;
+    let base = sequence_path.parent().unwrap_or(Path::new("."));
+    let checked = camera_sequence::preflight(&sequence, base)?;
+    if args[0] == "--inspect-sequence" {
+        output.publish(&serde_json::json!({"schema_version":1,"algorithm":"yolox_s_sequence_validation_v1",
+            "compiled_sources":camera_sequence::compiled_sources(),"source_sequence_sha256":sha,
+            "camera_id":sequence.camera_id,"width":sequence.width,"height":sequence.height,"config":sequence.config,
+            "events":checked,"model_read":false,"images_read":checked.iter().filter(|c|c.image_sha256.is_some()).count(),"inference_run":false}))
+    } else {
+        let report = camera_sequence::run(&sequence, base, Path::new(&args[1]), sha, &checked)?;
+        output.publish(&report)
+    }
+}
+fn main() {
+    if let Err(error) = run() {
+        eprintln!("{error}");
+        std::process::exit(2);
+    }
+}

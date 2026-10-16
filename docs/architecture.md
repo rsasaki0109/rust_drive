@@ -4,6 +4,13 @@
 
 RustDriving aims to become an independent Rust autonomous driving stack. Version 0.1 first establishes a small executable baseline: a vehicle follows a known curved route, avoids sensed objects, yields on a blocked narrow road, and brakes when required sensing becomes stale. The reference simulator is intentionally 2D, CPU-only, deterministic, and small enough to exercise in ordinary CI. These properties make a useful algorithm development harness; they do not establish physical or operational validity.
 
+The optional [camera graph optimization](camera-operators.md) replaces only
+two validated nearest/asymmetric/floor 2× Resize nodes with standard tract
+axis/broadcast/reshape operations. An independent original plan verifies every
+raw output bit; a distinct parallel producer uses the same measured-clock
+controller. This offline path improves local processing time but still misses
+the 200 ms budget and does not enter the driving dataflow.
+
 ## Current dataflow
 
 ```mermaid

@@ -1,0 +1,22 @@
+--- a/src/x86_64_fma.rs
++++ b/src/x86_64_fma.rs
+@@ -41,7 +41,7 @@
+         plug_avx2(ops);
+         if is_x86_feature_detected!("fma") {
+             plug_fma(ops);
+-            if is_x86_feature_detected!("avx512f") {
++            if false { // Diagnostic only: exercise the ordinary AVX2/FMA fallback.
+                 plug_avx512f(ops);
+             }
+         }
+--- a/src/x86_64_fma/mmm.rs
++++ b/src/x86_64_fma/mmm.rs
+@@ -51,7 +51,7 @@
+         plug_avx2(ops);
+         if is_x86_feature_detected!("fma") {
+             plug_fma(ops);
+-            if is_x86_feature_detected!("avx512f") {
++            if false { // Diagnostic only: exercise the ordinary AVX2/FMA fallback.
+                 plug_avx512f(ops);
+             }
+         }

@@ -1,0 +1,30 @@
+   Compiling rustdriving-camera-detect v0.1.0 (/workspace/rust_drive/integrations/onnx)
+    Finished `release` profile [optimized] target(s) in 2.68s
+     Running unittests src/bin/rustdriving-camera-profile.rs (integrations/onnx/target/release/deps/rustdriving_camera_profile-ef58467a1f72ad2e)
+
+running 22 tests
+test camera_analysis::tests::abandoning_reserved_output_removes_staging ... ok
+test camera_profile::tests::accounts_for_node_calls_and_unattributed_time ... ok
+test camera_analysis::tests::publication_race_preserves_the_other_writer_and_removes_staging ... ok
+test camera_profile::tests::raw_comparison_detects_signed_zero_and_distinct_nan_payloads ... ok
+test camera_profile::tests::rejects_impossible_or_duplicated_observations ... ok
+test camera_profile::tests::observer_executes_the_actual_graph_and_preserves_bits ... ok
+test camera_repeat2::tests::incomplete_original_graph_cannot_be_rewritten ... ok
+test camera_repeat2::tests::rejects_other_interpolation_coordinates_sizes_and_axes ... ok
+test camera_repeat2::tests::repeat_matches_independent_coordinate_oracle_for_all_float_bits ... ok
+test yolox_s::tests::independent_three_stride_geometry_restores_original_image_coordinates ... ok
+test camera_analysis::tests::oversized_serialization_never_publishes_a_truncated_report ... ok
+test yolox_s::tests::overlapping_boxes_are_classwise_suppressed_with_deterministic_class_ties ... ok
+test camera_profile::tests::input_uses_bgr_planes_and_bottom_114_padding ... ok
+test yolox_s::tests::hidden_corruption_shape_and_image_resource_violations_fail_closed ... ok
+test yolox_tiles::tests::fixed_views_cover_landscape_portrait_and_odd_gaps_without_duplicate_work ... ok
+test yolox_tiles::tests::interior_edges_reject_truncated_objects_and_global_nms_retains_class_identity ... ok
+test yolox_vehicle_context::tests::conflicting_hypotheses_remain_when_full_image_has_no_eligible_vote ... ok
+test yolox_vehicle_context::tests::full_image_overrides_correlated_crop_majority_without_inflating_confidence ... ok
+test yolox_vehicle_vote::tests::distinct_views_vote_once_and_non_clique_overlap_remains_ambiguous ... ok
+test yolox_vehicle_vote::tests::full_context_breaks_a_tie_without_changing_scores_or_geometry ... ok
+test yolox_s::tests::roundoff_threshold_and_retained_box_budget_remain_bounded ... ok
+test yolox_s::tests::raw_bgr_constant_pixels_and_letterbox_padding_are_not_normalized ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+

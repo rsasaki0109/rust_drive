@@ -1,0 +1,64 @@
+name: Camera pipeline contract
+on:
+  push:
+    paths:
+      - '.github/workflows/camera-contract.yml'
+      - 'integrations/onnx/**'
+      - 'integrations/camera-tracking/**'
+      - 'scripts/fetch-visual-datasets.py'
+      - 'assets/camera-ci-v1/**'
+      - 'rust-toolchain.toml'
+permissions:
+  contents: read
+env:
+  CARGO_INCREMENTAL: '0'
+jobs:
+  exact-camera-pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned Rust
+        run: rustup toolchain install 1.90.0 --profile minimal
+      - name: Record numeric environment without credentials
+        run: |
+          python - <<'PY'
+          import json, platform
+          from pathlib import Path
+          lines = Path('/proc/cpuinfo').read_text().splitlines()
+          model = next(line.split(':', 1)[1].strip() for line in lines if line.startswith('model name'))
+          flags = next(line.split(':', 1)[1].split() for line in lines if line.startswith('flags'))
+          print(json.dumps(dict(system=platform.system(), machine=platform.machine(), libc=platform.libc_ver(),
+              cpu_model=model, numeric_features=[flag for flag in ('avx2', 'fma', 'avx512f') if flag in flags])))
+          PY
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            integrations/onnx/target
+            integrations/camera-tracking/target
+          key: camera-contract-${{ runner.os }}-rust-1.90-${{ hashFiles('integrations/onnx/Cargo.lock', 'integrations/camera-tracking/Cargo.lock') }}
+      - name: Build the original independent camera tools
+        run: |
+          cargo build --release --locked --manifest-path integrations/onnx/Cargo.toml --bin rustdriving-camera-pipeline
+          cargo build --release --locked --manifest-path integrations/camera-tracking/Cargo.toml
+      - name: Check recorded AVX2 confidence drift and exact native replay
+        run: python -m unittest discover -s integrations/onnx -p test_camera_history.py -v
+      - name: Acquire pinned model and original indoor image cache
+        run: |
+          python integrations/onnx/fetch_s.py --output artifacts/camera-model-s
+          python scripts/fetch-visual-datasets.py tum-fr3-sitting-visual
+      - name: Check historical confidence and exact current-host pipeline replay
+        run: |
+          mkdir -p artifacts/camera-contract
+          cp assets/camera-pipeline-v1/LICENSE-data.txt artifacts/camera-contract/LICENSE-data.txt
+          python integrations/onnx/camera_pipeline_check.py controls --output artifacts/camera-contract/controls
+          python integrations/onnx/camera_pipeline_check.py run --controls artifacts/camera-contract/controls --output artifacts/camera-contract/recorded
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: camera-pipeline-contract
+          path: artifacts/camera-contract/

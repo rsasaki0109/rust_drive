@@ -2,6 +2,14 @@
 
 The current engineering estimate is **about 20%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
+The optional [guarded camera graph optimization](camera-operators.md) replaces
+two expensive Resize operations while checking all raw output bits against an
+independent original plan. Sixteen images run twice; the parallel version
+averages 7.14% less processing time across the latest two local pairs. It still takes
+0.60–0.63 seconds, failing every 200 ms gate; inherited quality gates also fail.
+There is no new holdout, identity scoring or driving integration. The estimate
+remains **about 20%**, with **30% unmet**.
+
 The optional [CPU-specific camera build](camera-cpu-build.md) adds an isolated
 native/O3/ThinLTO recipe with explicit compiler, binary, complete source and CPU
 receipts. Sixteen images twice preserve exact results. The two-pair mean is
