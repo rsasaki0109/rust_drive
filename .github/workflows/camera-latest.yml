@@ -1,0 +1,69 @@
+name: Latest-ready camera experiment
+on:
+  push:
+    paths:
+      - '.github/workflows/camera-latest.yml'
+      - 'integrations/onnx/**'
+      - 'integrations/camera-tracking/**'
+      - 'assets/camera-latest-v1/**'
+      - 'rust-toolchain.toml'
+permissions:
+  contents: read
+env:
+  CARGO_INCREMENTAL: '0'
+jobs:
+  latest-ready:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned tools and independent checker
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
+          python -m pip install -r scripts/requirements-visual.txt
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            integrations/onnx/target
+            integrations/camera-tracking/target
+          key: camera-latest-${{ runner.os }}-rust-1.90-${{ hashFiles('integrations/onnx/Cargo.lock', 'integrations/camera-tracking/Cargo.lock') }}
+      - name: Check original per-frame controller and latest-ready boundaries
+        run: |
+          cargo fmt --manifest-path integrations/onnx/Cargo.toml -- --check
+          cargo clippy --release --locked --manifest-path integrations/onnx/Cargo.toml --all-targets -- -D warnings
+          cargo test --release --locked --manifest-path integrations/onnx/Cargo.toml --bin rustdriving-camera-latest
+          cargo build --release --locked --manifest-path integrations/onnx/Cargo.toml --bin rustdriving-camera-latest --bin rustdriving-camera-nano
+          cargo build --release --locked --manifest-path integrations/camera-tracking/Cargo.toml
+          python -B assets/camera-latest-v1/verify.py
+          python -m unittest discover -s integrations/onnx -p test_camera_latest.py -v
+      - name: Acquire unchanged pinned models and recording
+        run: |
+          python integrations/onnx/fetch.py --output artifacts/camera-model
+          python integrations/onnx/fetch_s.py --output artifacts/camera-model-s
+          python scripts/fetch-visual-datasets.py tum-fr3-sitting-visual
+          mkdir -p artifacts/camera-latest-check
+          cp assets/camera-nano-v1/LICENSE-TUM-data.txt artifacts/camera-latest-check/LICENSE-TUM-data.txt
+      - name: Compare measured availability without relaxing any guard
+        run: |
+          python integrations/onnx/camera_latest_check.py controls --output artifacts/camera-latest-check/controls
+          python integrations/onnx/camera_latest_check.py run --controls artifacts/camera-latest-check/controls --output artifacts/camera-latest-check/validation
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          result = json.loads(Path('artifacts/camera-latest-check/validation/summary.json').read_text())
+          assert result['pass_checks'] and result['current_serial_measurement_bits_exact']
+          assert result['actual_model_forwards'] == 32 + result['timed_model_forwards']
+          assert result['independent_guard_replays'] == 4 and result['source_images_per_trial'] == 8
+          assert result['dropped_images_counted_unavailable'] is True
+          assert result['timing_or_availability_success_required_for_execution'] is False
+          assert result['new_holdout'] is False and result['driving_integration'] is False
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: camera-latest-ready
+          path: artifacts/camera-latest-check/
