@@ -1,0 +1,8 @@
+{
+ "schema_version": 1,
+ "algorithm": "yolox_nano_depthwise_v1",
+ "model": "Unchanged pinned Nano ONNX; original four views, decoder, score/NMS and consistency",
+ "optimization": "Original guarded Resize2x lowering plus safe Rust row-wise evaluation of exactly thirty validated 3x3 depthwise Conv nodes. Keep bias-first row-major valid-tap addition order; skip padding taps. No unsafe, fused multiply-add, quantization, custom runtime or dependency change.",
+ "admission": "Original measured FIFO/latest and independently supervised controllers. Original source acquisition times, 200ms age, two fresh recovery samples and fault epochs.",
+ "control_permission": false
+}
