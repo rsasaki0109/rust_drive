@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "algorithm": "yolox_nano_parallel_image_analysis_v1",
+  "model": "Original pinned 3659407-byte YOLOX nano ONNX, SHA-256 c789161ed43c8269fcd4e67c67eeeb4e80c622da2eb296a20bc6007bd18a0b7d",
+  "numerics": "Original unchanged Rust Nano library, 416x416 Triangle/raw-BGR/top-left114 input, 3549x85 output, score 0.3, classwise NMS IoU 0.45",
+  "views": "Original full image and three square views; original edge filter, global merge and ambiguity-preserving vehicle consistency",
+  "execution": "One ordinary Nano tract plan shared by at most four scoped workers. No graph lowering, quantization or warmup.",
+  "comparison": "Independent current serial Nano views and original Nano executable full-view measurements; no S-output parity claim",
+  "timing": "Original acquisition schedule, exact measured-clock controller, 0.2 second limit, two-sample recovery",
+  "evaluation": "All eight already viewed TUM and eight already viewed BDD images, fixed before first candidate inference; score original BDD labels independently; retain missed/false detections and every deadline outcome",
+  "control_permission": false,
+  "new_holdout": false,
+  "driving_integration": false
+}

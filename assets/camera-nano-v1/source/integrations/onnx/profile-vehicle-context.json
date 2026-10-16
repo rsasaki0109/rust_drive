@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "profile": "yolox-vehicle-context-v1",
+  "base_profile": "profile-vehicle-vote.json",
+  "class_selection": "eligible full-image vehicle vote; keep all hypotheses without full context",
+  "correlated_crop_votes": "diagnostic only; no probability aggregation",
+  "representative": "original highest-ranked box of the selected class, unchanged",
+  "scope": "post-failure viewed-data research; no fresh holdout, calibrated confidence or driving integration"
+}

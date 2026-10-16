@@ -1,0 +1,16 @@
+Measured s-first
+Measured nano-first
+Measured nano-repeat
+Measured s-repeat
+Nano serial/parallel/original comparison tum-0
+Traceback (most recent call last):
+  File "/workspace/rust_drive/integrations/onnx/camera_nano_check.py", line 244, in <module>
+    run(args)
+  File "/workspace/rust_drive/integrations/onnx/camera_nano_check.py", line 188, in run
+    check_image(serial, load(saved), parallel=False); parity_forwards += 4; current[name] = serial
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/rust_drive/integrations/onnx/camera_nano_check.py", line 73, in check_image
+    require(base['score_threshold'] == .3 and base['nms_iou_threshold'] == .45, 'unchanged thresholds')
+  File "/workspace/rust_drive/integrations/onnx/camera_parallel_check.py", line 31, in require
+    raise ValueError(message)
+ValueError: unchanged thresholds

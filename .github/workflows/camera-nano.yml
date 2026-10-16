@@ -1,0 +1,76 @@
+name: Fixed Nano camera candidate
+on:
+  push:
+    paths:
+      - '.github/workflows/camera-nano.yml'
+      - 'integrations/onnx/**'
+      - 'integrations/camera-tracking/**'
+      - 'assets/camera-nano-v1/**'
+      - 'rust-toolchain.toml'
+permissions:
+  contents: read
+env:
+  CARGO_INCREMENTAL: '0'
+jobs:
+  nano-candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned tools and independent numerical checker
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
+          python -m pip install -r scripts/requirements-visual.txt
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            integrations/onnx/target
+            integrations/camera-tracking/target
+          key: camera-nano-${{ runner.os }}-rust-1.90-${{ hashFiles('integrations/onnx/Cargo.lock', 'integrations/camera-tracking/Cargo.lock') }}
+      - name: Build and test the original and candidate tools
+        run: |
+          cargo fmt --manifest-path integrations/onnx/Cargo.toml -- --check
+          cargo clippy --release --locked --manifest-path integrations/onnx/Cargo.toml --all-targets -- -D warnings
+          cargo test --release --locked --manifest-path integrations/onnx/Cargo.toml --bin rustdriving-camera-nano
+          cargo build --release --locked --manifest-path integrations/onnx/Cargo.toml --bin rustdriving-camera-nano --bin rustdriving-camera-detect --bin rustdriving-camera-repeat2x
+          cargo build --release --locked --manifest-path integrations/camera-tracking/Cargo.toml
+      - name: Verify frozen observations and exact f32 and clock boundaries
+        run: |
+          python -B assets/camera-nano-v1/verify.py
+          python -m unittest discover -s integrations/onnx -p test_camera_nano.py -v
+      - name: Acquire existing pinned inputs and retain their licenses
+        run: |
+          python integrations/onnx/fetch.py --output artifacts/camera-model
+          python integrations/onnx/fetch_s.py --output artifacts/camera-model-s
+          python scripts/fetch-visual-datasets.py tum-fr3-sitting-visual
+          python integrations/onnx/bdd_fetch.py --output artifacts/bdd-camera
+          mkdir -p artifacts/camera-nano-check
+          cp assets/camera-nano-v1/LICENSE-TUM-data.txt artifacts/camera-nano-check/LICENSE-TUM-data.txt
+          cp assets/camera-nano-v1/LICENSE-BDD-data.txt artifacts/camera-nano-check/LICENSE-BDD-data.txt
+      - name: Measure both models and independently score all original BDD labels
+        run: |
+          python integrations/onnx/camera_nano_check.py controls --output artifacts/camera-nano-check/controls
+          python integrations/onnx/camera_nano_check.py run --controls artifacts/camera-nano-check/controls --output artifacts/camera-nano-check/validation
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          result = json.loads(Path('artifacts/camera-nano-check/validation/summary.json').read_text())
+          assert result['pass_checks']
+          assert result['nano_serial_and_parallel_exact'] and result['original_full_view_f32_bits_exact']
+          assert result['original_images'] == 16 and result['repeats'] == 2
+          assert result['parity_model_forwards'] == 208
+          assert result['actual_model_forwards'] == 208 + result['timed_model_forwards']
+          assert result['model_forwards_this_invocation'] == result['actual_model_forwards']
+          assert result['imported_model_forwards'] == 0
+          assert result['timing_or_quality_success_required_for_execution'] is False
+          assert result['new_holdout'] is False and result['driving_integration'] is False
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: camera-nano-candidate
+          path: artifacts/camera-nano-check/
