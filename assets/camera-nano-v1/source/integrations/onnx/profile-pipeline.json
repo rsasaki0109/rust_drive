@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "algorithm": "yolox_s_camera_pipeline_v1",
+  "scope": "Offline images through unchanged YOLOX-S analysis, image tracking and two-clock freshness; no vehicle controls",
+  "clock": "Caller-supplied replay acquisition/delivery decimal seconds; inference duration does not advance replay time",
+  "preflight": "Validate all image bytes, geometry, delivery clocks and dry admission before model loading; emit no synthetic object measurements",
+  "inference": "One CPU model plan iff any image is admitted; re-read admitted images; no inference for rejected image events",
+  "admission": "Reuse unchanged camera-tracking/src/freshness.rs and its bounded default policy; runtime decisions must match dry admission",
+  "output": "Every event retains original clock text, provenance, optional full analysis and complete freshness/backend updates",
+  "budgets": {"events": 32, "sequence_bytes": 524288, "encoded_image_bytes": 16777216, "image_pixels": 16000000, "output_bytes": 4194304},
+  "publication": "Existing AtomicReport: fresh sibling staging before input reads, bounded serialization, sync and no-replacement hard-link publication"
+}
