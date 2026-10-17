@@ -27,19 +27,22 @@ impl Ekf {
             diagnostics: LocalizationDiagnostics::default(),
         }
     }
+    /// Invalid inputs or nonfinite computed pose/covariance leave the filter unchanged.
     pub fn predict(&mut self, odom: Odometry, dt: f64) {
         if !dt.is_finite() || dt <= 0.0 || !odom.speed.is_finite() || !odom.yaw_rate.is_finite() {
             return;
         }
         let yaw = self.state.pose.yaw;
         let v = odom.speed.max(0.0);
-        self.state.pose.position = self
+        let position = self
             .state
             .pose
             .position
             .plus(Vec2::new(yaw.cos(), yaw.sin()).scaled(v * dt));
-        self.state.pose.yaw = wrap_angle(yaw + odom.yaw_rate * dt);
-        self.state.speed = v;
+        let next_yaw = wrap_angle(yaw + odom.yaw_rate * dt);
+        if !position.finite() || !next_yaw.is_finite() {
+            return;
+        }
         let f = [
             [1.0, 0.0, -v * dt * yaw.sin()],
             [0.0, 1.0, v * dt * yaw.cos()],
@@ -58,6 +61,16 @@ impl Ekf {
         for (i, row) in next.iter_mut().enumerate() {
             row[i] += [0.015, 0.015, 0.0005][i] * dt;
         }
+        if next.iter().flatten().any(|value| !value.is_finite()) {
+            return;
+        }
+        self.state = EgoState {
+            pose: Pose {
+                position,
+                yaw: next_yaw,
+            },
+            speed: v,
+        };
         self.covariance = next;
     }
     /// Low-speed no-slip chassis prediction. Wheel speed is body longitudinal
@@ -351,6 +364,106 @@ fn solve_cholesky3(lower: [[f64; 3]; 3], rhs: [f64; 3]) -> [f64; 3] {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn rejected_prediction_preserves_state_and_recovers(
+        odom: Odometry,
+        dt: f64,
+        zero_offset: bool,
+    ) {
+        let mut e = Ekf::new(Pose::default());
+        assert!(e.update(Gnss {
+            stamp: 0.0,
+            position: Vec2::default(),
+            variance: 0.02,
+        }));
+        let before = e.state();
+        let covariance = e.covariance;
+        if zero_offset {
+            e.predict_chassis(odom, dt, 0.0);
+        } else {
+            e.predict(odom, dt);
+        }
+        assert_eq!(e.state().pose.position, before.pose.position);
+        assert_eq!(e.state().pose.yaw.to_bits(), before.pose.yaw.to_bits());
+        assert_eq!(e.state().speed.to_bits(), before.speed.to_bits());
+        assert_eq!(e.covariance, covariance);
+        assert_eq!(e.last_gnss, 0.0);
+        assert_eq!(e.diagnostics().accepted_fixes, 1);
+        assert_eq!(e.diagnostics().rejected_fixes, 0);
+
+        e.predict(
+            Odometry {
+                stamp: 0.2,
+                speed: 2.0,
+                yaw_rate: 0.0,
+            },
+            0.05,
+        );
+        assert_eq!(e.state().pose.position, Vec2::new(0.1, 0.0));
+        assert_eq!(e.state().speed, 2.0);
+        assert!(e.update(Gnss {
+            stamp: 0.2,
+            position: Vec2::new(0.1, 0.0),
+            variance: 0.02,
+        }));
+        assert!(e.position_variance().is_finite());
+        assert_eq!(e.last_gnss, 0.2);
+    }
+
+    #[test]
+    fn prediction_state_overflow_cannot_poison_position_or_yaw() {
+        for (speed, yaw_rate) in [(f64::MAX, 0.0), (0.0, f64::MAX)] {
+            for zero_offset in [false, true] {
+                rejected_prediction_preserves_state_and_recovers(
+                    Odometry {
+                        stamp: 0.1,
+                        speed,
+                        yaw_rate,
+                    },
+                    2.0,
+                    zero_offset,
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn prediction_covariance_overflow_cannot_commit_a_finite_pose() {
+        for zero_offset in [false, true] {
+            rejected_prediction_preserves_state_and_recovers(
+                Odometry {
+                    stamp: 0.1,
+                    speed: 1e200,
+                    yaw_rate: 0.0,
+                },
+                0.05,
+                zero_offset,
+            );
+        }
+    }
+
+    #[test]
+    fn prediction_accepts_large_finite_results_without_arbitrary_motion_bounds() {
+        let mut e = Ekf::new(Pose::default());
+        let speed = 1e100;
+        let dt = 0.05;
+        e.predict(
+            Odometry {
+                stamp: 0.0,
+                speed,
+                yaw_rate: 0.0,
+            },
+            dt,
+        );
+        let distance = speed * dt;
+        assert_eq!(e.state().pose.position, Vec2::new(distance, 0.0));
+        assert_eq!(e.state().pose.yaw, 0.0);
+        assert_eq!(e.state().speed, speed);
+        assert!(e.covariance.iter().flatten().all(|v| v.is_finite()));
+        let expected_variance = 2.0 + 0.03 * distance * distance + 0.03 * dt;
+        assert!((e.position_variance() / expected_variance - 1.0).abs() < 1e-12);
+    }
+
     #[test]
     fn map_pose_diagonal_joint_correction_matches_analytic_posterior() {
         let mut e = Ekf::new(Pose::default());

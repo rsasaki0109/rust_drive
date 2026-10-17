@@ -89,6 +89,15 @@ being treated as high confidence or clamped to zero. Both range boundaries
 remain valid; healthy inputs retain the existing command bounds and sensor-age
 checks.
 
+Standalone EKF prediction checks the computed pose and all entries of the 3×3
+covariance before applying either result. Overflow leaves pose, speed,
+covariance and GNSS acceptance diagnostics unchanged, allowing the next valid
+prediction and correction to proceed. This includes the zero-offset chassis
+prediction that delegates to the default predictor. The existing void prediction
+API supplies no rejection status; embedding applications still need to validate
+odometry and enforce their health policy. The shared pipeline already bounds
+odometry and prediction time steps before calling the estimator.
+
 Ground-truth poses, object identities and physical collision results are not input fields. Unknown top-level fields are rejected. Synthetic sensors necessarily observe the simulator world; their noisy measurements cross this boundary.
 
 ## Bounded acquisition-time LiDAR reprojection
