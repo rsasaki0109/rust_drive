@@ -2,6 +2,8 @@
 use rustdriving_core::{
     ControlCommand, Controller, DrivingMode, EgoState, Trajectory, VehicleConfig, wrap_angle,
 };
+/// Uses a time-zero sample for the current target speed and the first segment
+/// for acceleration feedforward. A future-only trajectory is rejected.
 #[derive(Default)]
 pub struct PurePursuit {
     pub vehicle: VehicleConfig,
@@ -39,6 +41,7 @@ impl Controller for PurePursuit {
     fn control(&mut self, ego: EgoState, path: &Trajectory, dt: f64) -> ControlCommand {
         if path.mode == DrivingMode::Emergency
             || path.points.is_empty()
+            || path.points[0].time != 0.0
             || !ego.pose.position.finite()
             || !ego.pose.yaw.is_finite()
             || !ego.speed.is_finite()

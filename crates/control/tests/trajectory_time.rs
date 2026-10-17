@@ -52,6 +52,35 @@ fn negative_relative_times_cannot_schedule_past_motion_or_a_past_hold() {
     }
 }
 #[test]
+fn future_only_motion_brakes_and_clears_feedback() {
+    for start in [0.05, 1.0, 100.0] {
+        let mut controller = PurePursuit::default();
+        let mut before = ControlCommand::default();
+        for _ in 0..20 {
+            before = controller.control(EgoState::default(), &path(&[0.0, 1.0], 4.0), 0.05);
+        }
+        assert_eq!(before.acceleration, 2.0);
+        assert!(before.steering > 0.3);
+        // Increasing future times do not supply a target speed for the current frame.
+        stopped(controller.control(EgoState::default(), &path(&[start, start + 1.0], 4.0), 0.05));
+        let recovered = controller.control(EgoState::default(), &path(&[0.0, 1.0], 0.0), 0.05);
+        assert_eq!(recovered.acceleration, 0.0);
+        assert!(recovered.steering.abs() <= 0.7 * 0.05 + 1e-10);
+    }
+}
+#[test]
+fn future_stationary_points_do_not_establish_a_current_hold() {
+    for times in [&[1.0][..], &[1.0, 2.0][..]] {
+        let mut controller = PurePursuit::default();
+        let mut hold = path(times, 0.0);
+        hold.mode = DrivingMode::Goal;
+        for point in &mut hold.points {
+            point.position = Vec2::default();
+        }
+        stopped(controller.control(EgoState::default(), &hold, 0.05));
+    }
+}
+#[test]
 fn valid_nonuniform_tail_times_keep_the_original_prefix_commands() {
     let mut short = PurePursuit::default();
     let mut extended = PurePursuit::default();

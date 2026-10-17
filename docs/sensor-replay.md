@@ -72,12 +72,15 @@ limit and trigger a false emergency on the next call.
 
 Every declared trajectory point has a finite, nonnegative time in seconds from
 the current sensor frame, and every successive point must have a strictly
-later time. The standalone controller validates the entire timeline before
-computing a normal command, including points beyond its preview.
-A repeated or reversed later timestamp, or a negative relative time, emits
-the state-clearing emergency command. Valid nonuniform time intervals and
-stationary holds at repeated positions with increasing times remain supported;
-a single stationary point is also valid.
+later time. The first point must be at time 0: the controller uses its speed as
+the current target and the first segment for acceleration feedforward. It does
+not extrapolate a future-only trajectory back to the current frame, including
+for stationary holds. The standalone controller validates the entire timeline
+before computing a normal command, including points beyond its preview.
+A future-only trajectory, a repeated or reversed later timestamp, or a negative
+relative time emits the state-clearing emergency command. Valid nonuniform
+time intervals and stationary holds at repeated positions with increasing times
+remain supported; a single stationary point at time 0 is also valid.
 
 Ground-truth poses, object identities and physical collision results are not input fields. Unknown top-level fields are rejected. Synthetic sensors necessarily observe the simulator world; their noisy measurements cross this boundary.
 
