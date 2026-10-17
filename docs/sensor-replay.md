@@ -51,6 +51,17 @@ stationary single-point hold retain their behavior. This repairs standalone
 control-library error handling; it adds no physical steering-actuator model or
 real-vehicle validation.
 
+Each standalone controller call also checks the vehicle calibration it consumes:
+wheelbase must be finite and positive in meters, and the steering-angle limit
+must be finite and strictly between 0 and pi/2 radians. Invalid values return
+the state-clearing emergency command before angle clamps can panic. This is
+checked on every call because the public vehicle settings may change after
+construction. A nonfinite computed steering angle also stops and clears state.
+Repairing the calibration resumes from zero steering and integral feedback.
+These geometry checks accept valid small-vehicle calibrations; the pipeline's
+separate simulation-specific size and steering limits remain stricter. Vehicle
+radius is unused by this controller and remains a planning/pipeline input.
+
 Ground-truth poses, object identities and physical collision results are not input fields. Unknown top-level fields are rejected. Synthetic sensors necessarily observe the simulator world; their noisy measurements cross this boundary.
 
 ## Bounded acquisition-time LiDAR reprojection
