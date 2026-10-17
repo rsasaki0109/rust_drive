@@ -1,0 +1,62 @@
+name: Validate camera evaluation inputs before model startup
+on:
+  push:
+    paths:
+      - '.github/workflows/camera-preflight.yml'
+      - 'integrations/onnx/**'
+      - 'assets/camera-preflight-v1/**'
+      - 'rust-toolchain.toml'
+permissions:
+  contents: read
+env:
+  CARGO_INCREMENTAL: '0'
+jobs:
+  preflight-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned tools
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
+          python -m pip install -r scripts/requirements-visual.txt
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            integrations/onnx/target
+          key: camera-preflight-${{ runner.os }}-rust-1.90-${{ hashFiles('integrations/onnx/Cargo.lock') }}
+      - name: Verify model identity, complete views and unchanged support rules
+        run: |
+          cargo fmt --manifest-path integrations/onnx/Cargo.toml -- --check
+          cargo clippy --release --locked --manifest-path integrations/onnx/Cargo.toml --all-targets -- -D warnings
+          python -B -m unittest discover -s integrations/onnx -p test_camera_preflight.py -v
+          python -B assets/camera-preflight-v1/verify.py
+      - name: Acquire exactly pinned inputs
+        run: |
+          python -B integrations/onnx/bdd_fetch.py --output artifacts/bdd-camera
+          python -B integrations/onnx/camera_capacity_fetch.py
+          python -B integrations/onnx/camera_detail_fetch.py
+          python -B integrations/onnx/camera_preserved_fetch.py
+          python -B integrations/onnx/camera_preflight_fetch.py --output artifacts/camera-preflight-check/data
+      - name: Reject both malformed groups before any native or model command
+        run: |
+          python -B integrations/onnx/camera_preflight_check.py negative --output artifacts/camera-preflight-check/negative
+          set +e
+          python -B integrations/onnx/camera_preflight_check.py controls --data artifacts/camera-preflight-check/data --output artifacts/camera-preflight-check/controls
+          trial_status=$?
+          set -e
+          test "$trial_status" -eq 1
+          python -B integrations/onnx/camera_preflight_rejected.py --data artifacts/camera-preflight-check/data --controls artifacts/camera-preflight-check/controls --output artifacts/camera-preflight-check/rejection
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: camera-preflight-diagnostics
+          path: |
+            artifacts/camera-preflight-check/data/inputs.json
+            artifacts/camera-preflight-check/controls/preflight.json
+            artifacts/camera-preflight-check/negative/
+            artifacts/camera-preflight-check/rejection/
