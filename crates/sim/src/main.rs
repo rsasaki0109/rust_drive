@@ -8,7 +8,7 @@ use std::{
     env,
     error::Error,
     fs,
-    io::{BufReader, BufWriter},
+    io::{BufReader, BufWriter, Write},
     path::{Path, PathBuf},
     process,
 };
@@ -46,6 +46,15 @@ fn validate_replay_destinations(log: &Path, destinations: &[&Path]) -> Result<()
         }
     }
     Ok(())
+}
+
+fn remove_replay_artifact(path: &Path) -> std::io::Result<()> {
+    // Unlink the artifact itself, including dangling links, without touching its target.
+    match fs::remove_file(path) {
+        Ok(()) => Ok(()),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(error) => Err(error),
+    }
 }
 
 fn import_osm(args: &[String]) -> Result<bool, Box<dyn Error>> {
@@ -197,13 +206,12 @@ fn run() -> Result<bool, Box<dyn Error>> {
                 validate_replay_destinations(input, &[&summary, &outputs])?;
             }
             // Reports are written only on success; stale evidence cannot masquerade as this run.
-            if summary.exists() {
-                fs::remove_file(&summary)?;
-            }
+            remove_replay_artifact(&summary)?;
             let reader = BufReader::new(fs::File::open(log.ok_or("--log is required")?)?);
-            let report = verify(reader, BufWriter::new(fs::File::create(outputs)?))?;
+            remove_replay_artifact(&outputs)?;
+            let report = verify(reader, BufWriter::new(fs::File::create_new(outputs)?))?;
             let json = serde_json::to_string_pretty(&report)?;
-            fs::write(summary, &json)?;
+            fs::File::create_new(summary)?.write_all(json.as_bytes())?;
             println!("{json}");
             Ok(true)
         }

@@ -205,6 +205,13 @@ the input and existing replay artifacts. Canonical paths catch direct and
 symbolic-link aliases; on Unix, hard-link aliases are also rejected. A distinct
 input log in the same directory as the replay outputs remains supported.
 
+After these checks, the CLI unlinks existing artifact files and creates fresh
+files with exclusive creation. This replaces symbolic links (including dangling
+links) and hard links without writing to their targets. Links between the two
+artifact names cannot merge the command stream and success report. Directories
+at either artifact path cause an I/O error. The output directory and its ancestors
+must remain stable during replay; concurrent filesystem changes are not covered.
+
 ## Evidence and limits
 
 Unit/integration tests check actual recomputation, changed commands, empty/truncated/dropped tick streams, schema/version/truth-field rejection and failing output writers. CLI tests verify exit 2 and removal of a stale success report for corrupted and missing input. Reference and RNE-generated logs are verified end to end.
