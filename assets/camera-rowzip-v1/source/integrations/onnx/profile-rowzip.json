@@ -1,0 +1,7 @@
+{
+ "schema_version": 1,
+ "producer_variant": "nano_depthwise_rowzip_v1",
+ "mathematical_profile": "Unchanged Nano depthwise profile, Resize2x, four views, decoder and guard",
+ "execution_change": "Replace interior per-pixel indexed reads with one bounds-checked source slice and zipped stride iteration. Retain bias-first row-major valid-tap multiplication/addition order, boundary loops and all graph guards.",
+ "control_permission": false
+}
