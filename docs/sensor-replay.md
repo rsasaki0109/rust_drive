@@ -172,7 +172,13 @@ cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/demo/sensors.jsonl --output artifacts/replay
 ```
 
-Exit 0 means every tick matched and the count footer completed. Exit 2 means a mismatch, schema/input/clock error, empty/truncated log, extra data, or I/O failure. The reader limits each line to 8 MiB. It streams outputs and propagates flush errors. A previous `replay.json` is removed before reading the log; a new success report is written only after verification completes. `outputs.jsonl` may contain a partial prefix after failure and must not be interpreted as a verified run.
+Exit 0 means every tick matched and the count footer completed. Exit 2 means a mismatch, schema/input/clock error, empty/truncated log, extra data, or I/O failure. The reader limits each line to 8 MiB. It streams outputs and propagates flush errors. After the output-path checks below pass, a previous `replay.json` is removed before reading the log; a new success report is written only after verification completes. `outputs.jsonl` may contain a partial prefix after failure and must not be interpreted as a verified run.
+
+Before replacing either replay artifact, the CLI rejects output destinations
+that already refer to the input log. A collision returns exit 2 and preserves
+the input and existing replay artifacts. Canonical paths catch direct and
+symbolic-link aliases; on Unix, hard-link aliases are also rejected. A distinct
+input log in the same directory as the replay outputs remains supported.
 
 ## Evidence and limits
 

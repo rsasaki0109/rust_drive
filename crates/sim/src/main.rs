@@ -9,9 +9,45 @@ use std::{
     error::Error,
     fs,
     io::{BufReader, BufWriter},
-    path::PathBuf,
+    path::{Path, PathBuf},
     process,
 };
+
+fn validate_replay_destinations(log: &Path, destinations: &[&Path]) -> Result<(), Box<dyn Error>> {
+    let input = match fs::canonicalize(log) {
+        Ok(path) => path,
+        // Missing input still clears an unrelated previous success report below.
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+        Err(error) => return Err(error.into()),
+    };
+    #[cfg(unix)]
+    let input_metadata = fs::metadata(&input)?;
+    for destination in destinations {
+        let resolved = match fs::canonicalize(destination) {
+            Ok(path) => path,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => continue,
+            Err(error) => return Err(error.into()),
+        };
+        let same = input == resolved;
+        #[cfg(unix)]
+        let same = {
+            use std::os::unix::fs::MetadataExt;
+            let metadata = fs::metadata(&resolved)?;
+            same || (input_metadata.dev() == metadata.dev()
+                && input_metadata.ino() == metadata.ino())
+        };
+        if same {
+            return Err(format!(
+                "replay output {} aliases input log {}",
+                destination.display(),
+                log.display()
+            )
+            .into());
+        }
+    }
+    Ok(())
+}
+
 fn import_osm(args: &[String]) -> Result<bool, Box<dyn Error>> {
     let mut input = None;
     let mut output = None;
@@ -155,16 +191,17 @@ fn run() -> Result<bool, Box<dyn Error>> {
         }
         "replay" => {
             fs::create_dir_all(&output)?;
-            // Reports are written only on success; stale evidence cannot masquerade as this run.
             let summary = output.join("replay.json");
+            let outputs = output.join("outputs.jsonl");
+            if let Some(input) = log.as_deref() {
+                validate_replay_destinations(input, &[&summary, &outputs])?;
+            }
+            // Reports are written only on success; stale evidence cannot masquerade as this run.
             if summary.exists() {
                 fs::remove_file(&summary)?;
             }
             let reader = BufReader::new(fs::File::open(log.ok_or("--log is required")?)?);
-            let report = verify(
-                reader,
-                BufWriter::new(fs::File::create(output.join("outputs.jsonl"))?),
-            )?;
+            let report = verify(reader, BufWriter::new(fs::File::create(outputs)?))?;
             let json = serde_json::to_string_pretty(&report)?;
             fs::write(summary, &json)?;
             println!("{json}");
