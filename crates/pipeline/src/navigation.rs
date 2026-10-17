@@ -247,6 +247,7 @@ pub enum NavigationPhase {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct NavigationStatus {
     pub revision: u64,
     pub phase: NavigationPhase,

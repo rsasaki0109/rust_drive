@@ -98,7 +98,7 @@ API supplies no rejection status; embedding applications still need to validate
 odometry and enforce their health policy. The shared pipeline already bounds
 odometry and prediction time steps before calling the estimator.
 
-Ground-truth poses, object identities and physical collision results are not input fields. Unknown top-level fields are rejected. Synthetic sensors necessarily observe the simulator world; their noisy measurements cross this boundary.
+Ground-truth poses, object identities and physical collision results are not input fields. Unknown fields are rejected, including inside nested measurements, coordinates, configuration and expected outputs. Synthetic sensors necessarily observe the simulator world; their noisy measurements cross this boundary.
 
 ## Bounded acquisition-time LiDAR reprojection
 
@@ -166,6 +166,13 @@ The physical clearance/priority gates and replay checks are independent. The fin
 3. Mandatory `{"kind":"end","ticks":N}` count footer.
 
 The expected record contains the complete estimate, tracks, forecasts, trajectory, command, emergency state, health, position variance and optional navigation state. It never enters the pipeline. Replay constructs fresh state from the header, feeds only inputs, and compares reserialized outputs exactly. Serde's float-roundtrip parsing preserves recorded f64 values. No tolerance or success shortcut hides differences.
+
+Shared transport structs and navigation diagnostics reject unknown JSON fields
+instead of silently dropping them, both inside replay and when decoded directly.
+This catches misspelled or additional measurement, calibration and diagnostic
+fields before the affected record is processed. Known optional fields still
+accept explicit `null`, and existing defaulted fields may still be omitted.
+Valid schema-1 logs retain their encoding and recomputed outputs.
 
 `SensorLog::write` enforces the same 8 MiB encoded-line limit as the reader,
 including JSON escape sequences and the final newline. It reuses one bounded

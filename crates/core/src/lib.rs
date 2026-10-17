@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 
 #[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct Vec2 {
     pub x: f64,
     pub y: f64,
@@ -37,6 +38,7 @@ pub fn wrap_angle(a: f64) -> f64 {
     (a + PI).rem_euclid(2.0 * PI) - PI
 }
 #[derive(Clone, Copy, Debug, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Pose {
     pub position: Vec2,
     pub yaw: f64,
@@ -47,11 +49,13 @@ impl Pose {
     }
 }
 #[derive(Clone, Copy, Debug, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EgoState {
     pub pose: Pose,
     pub speed: f64,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct LidarScan {
     pub stamp: f64,
     pub points: Vec<Vec2>,
@@ -104,12 +108,14 @@ pub struct Lidar3dScan {
     pub returns: Vec<Lidar3dReturn>,
 }
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Odometry {
     pub stamp: f64,
     pub speed: f64,
     pub yaw_rate: f64,
 }
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Gnss {
     pub stamp: f64,
     pub position: Vec2,
@@ -124,6 +130,7 @@ pub enum GnssDecision {
 }
 /// GNSS correction diagnostics. Observation receipt is distinct from acceptance.
 #[derive(Clone, Copy, Debug, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct LocalizationDiagnostics {
     pub last_observed_stamp: Option<f64>,
     pub last_accepted_stamp: Option<f64>,
@@ -134,11 +141,13 @@ pub struct LocalizationDiagnostics {
     pub rejected_fixes: u64,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Detection {
     pub center: Vec2,
     pub radius: f64,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Track {
     pub id: u64,
     pub position: Vec2,
@@ -147,6 +156,7 @@ pub struct Track {
     pub last_seen: f64,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Prediction {
     pub id: u64,
     pub positions: Vec<Vec2>,
@@ -154,6 +164,7 @@ pub struct Prediction {
     pub dt: f64,
 }
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct TrajectoryPoint {
     pub position: Vec2,
     /// Planned speed in m/s at this position and relative time.
@@ -162,6 +173,7 @@ pub struct TrajectoryPoint {
     pub time: f64,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Trajectory {
     pub points: Vec<TrajectoryPoint>,
     pub mode: DrivingMode,
@@ -176,6 +188,7 @@ pub enum DrivingMode {
     Emergency,
 }
 #[derive(Clone, Copy, Debug, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ControlCommand {
     pub acceleration: f64,
     pub steering: f64,
@@ -192,6 +205,7 @@ impl ControlCommand {
     }
 }
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct VehicleConfig {
     pub wheelbase: f64,
     pub radius: f64,
@@ -208,6 +222,7 @@ impl Default for VehicleConfig {
 }
 /// Arc-length parameterized polyline, supplied by a map adapter rather than perception.
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Route {
     pub points: Vec<Vec2>,
     pub lengths: Vec<f64>,

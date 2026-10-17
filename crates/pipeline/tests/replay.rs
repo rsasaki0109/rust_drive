@@ -52,6 +52,193 @@ fn recompute(log: &mut SensorLog) {
         tick.expected = pipeline.step(&tick.input).unwrap();
     }
 }
+
+fn measured_log() -> Vec<u8> {
+    let mut log = recorded_log();
+    for tick in &mut log.ticks {
+        tick.input.lidar.as_mut().unwrap().points = (0..24)
+            .map(|i| {
+                let angle = i as f64 * std::f64::consts::TAU / 24.0;
+                Vec2::new(8.0 + 0.6 * angle.cos(), 0.6 * angle.sin())
+            })
+            .collect();
+    }
+    recompute(&mut log);
+    assert!(!log.ticks[0].expected.tracks.is_empty());
+    assert!(!log.ticks[0].expected.predictions[0].positions.is_empty());
+    let mut bytes = Vec::new();
+    log.write(&mut bytes).unwrap();
+    verify(Cursor::new(&bytes), std::io::sink()).unwrap();
+    bytes
+}
+
+fn records(bytes: &[u8]) -> Vec<serde_json::Value> {
+    std::str::from_utf8(bytes)
+        .unwrap()
+        .lines()
+        .map(|line| serde_json::from_str(line).unwrap())
+        .collect()
+}
+
+fn encode_records(records: &[serde_json::Value]) -> String {
+    records
+        .iter()
+        .map(|record| serde_json::to_string(record).unwrap() + "\n")
+        .collect()
+}
+
+fn assert_unknown_fields_rejected(bytes: &[u8], record_index: usize, paths: &[&str]) {
+    let original = records(bytes);
+    let mut accepted = Vec::new();
+    for (index, path) in paths.iter().enumerate() {
+        let mut edited = original.clone();
+        edited[record_index]
+            .pointer_mut(path)
+            .unwrap()
+            .as_object_mut()
+            .unwrap()
+            .insert(
+                "unexpected".into(),
+                if index % 2 == 0 {
+                    serde_json::json!({"truth": {"x": 1234.0, "y": 5678.0}})
+                } else {
+                    serde_json::Value::Null
+                },
+            );
+        let mut outputs = Vec::new();
+        match verify(Cursor::new(encode_records(&edited)), &mut outputs) {
+            Ok(_) => accepted.push(*path),
+            Err(error) => {
+                assert!(
+                    error.contains("unknown field `unexpected`"),
+                    "{path}: {error}"
+                );
+                assert!(
+                    error.starts_with(&format!("line {}:", record_index + 1)),
+                    "{path}: {error}"
+                );
+                assert!(outputs.is_empty(), "invalid first record emitted outputs");
+            }
+        }
+    }
+    assert!(
+        accepted.is_empty(),
+        "accepted unknown fields at {accepted:?}"
+    );
+}
+
+#[test]
+fn unknown_header_fields_cannot_hide_inside_configuration() {
+    assert_unknown_fields_rejected(
+        &log(),
+        0,
+        &[
+            "/header/config/route",
+            "/header/config/route/points/0",
+            "/header/config/initial_pose",
+            "/header/config/initial_pose/position",
+            "/header/config/vehicle",
+        ],
+    );
+}
+
+#[test]
+fn unknown_fields_in_nested_measurements_are_rejected() {
+    assert_unknown_fields_rejected(
+        &measured_log(),
+        1,
+        &[
+            "/tick/input/odometry",
+            "/tick/input/gnss",
+            "/tick/input/gnss/position",
+            "/tick/input/lidar",
+            "/tick/input/lidar/points/0",
+        ],
+    );
+}
+
+#[test]
+fn unknown_fields_in_expected_outputs_are_rejected() {
+    assert_unknown_fields_rejected(
+        &measured_log(),
+        1,
+        &[
+            "/tick/expected/estimate",
+            "/tick/expected/estimate/pose",
+            "/tick/expected/estimate/pose/position",
+            "/tick/expected/tracks/0",
+            "/tick/expected/tracks/0/position",
+            "/tick/expected/tracks/0/velocity",
+            "/tick/expected/predictions/0",
+            "/tick/expected/predictions/0/positions/0",
+            "/tick/expected/trajectory",
+            "/tick/expected/trajectory/points/0",
+            "/tick/expected/trajectory/points/0/position",
+            "/tick/expected/command",
+            "/tick/expected/localization",
+        ],
+    );
+}
+
+#[test]
+fn explicit_nulls_and_omitted_defaults_keep_schema_one_compatible() {
+    let bytes = log();
+    let mut original_outputs = Vec::new();
+    verify(Cursor::new(&bytes), &mut original_outputs).unwrap();
+    let mut edited = records(&bytes);
+    let config = edited[0]["header"]["config"].as_object_mut().unwrap();
+    for name in [
+        "rear_axle_offset_m",
+        "motion_limits",
+        "multi_height_lidar",
+        "lidar3d",
+        "localization_map",
+        "perception3d",
+        "navigation",
+    ] {
+        config.insert(name.into(), serde_json::Value::Null);
+    }
+    config.insert("local_route_geometry".into(), serde_json::json!(false));
+    for name in ["stop_lines", "stop_signs", "yield_intersections"] {
+        config.insert(name.into(), serde_json::json!([]));
+    }
+    for record in &mut edited[1..] {
+        if record["kind"] != "tick" {
+            continue;
+        }
+        let input = record["tick"]["input"].as_object_mut().unwrap();
+        input.remove("lidar_failed");
+        for name in [
+            "multi_height_lidar",
+            "lidar3d",
+            "navigation_update",
+            "traffic_signal",
+        ] {
+            input.insert(name.into(), serde_json::Value::Null);
+        }
+        let expected = record["tick"]["expected"].as_object_mut().unwrap();
+        for name in [
+            "ground",
+            "map_localization",
+            "perception3d",
+            "navigation",
+            "traffic_controls",
+            "stop_signs",
+            "intersections",
+        ] {
+            expected.insert(name.into(), serde_json::Value::Null);
+        }
+    }
+    let mut outputs = Vec::new();
+    assert_eq!(
+        verify(Cursor::new(encode_records(&edited)), &mut outputs)
+            .unwrap()
+            .ticks,
+        6
+    );
+    assert!(outputs == original_outputs);
+}
+
 #[test]
 fn replay_recomputes_outputs_from_sensor_only_log() {
     let mut outputs = vec![];
@@ -109,8 +296,7 @@ fn gnss_input_and_correction_diagnostics_are_both_recomputed() {
     }
 }
 
-#[test]
-fn changing_a_map_snapshot_is_detected_by_full_recomputation() {
+fn navigation_log() -> SensorLog {
     let scenario: serde_json::Value =
         serde_json::from_str(include_str!("../../../scenarios/route-handover.json")).unwrap();
     let nav: rustdriving_pipeline::navigation::NavigationConfig =
@@ -157,6 +343,20 @@ fn changing_a_map_snapshot_is_detected_by_full_recomputation() {
         let output = pipeline.step(&input).unwrap();
         log.record(input, output);
     }
+    log
+}
+
+#[test]
+fn unknown_fields_in_navigation_diagnostics_are_rejected() {
+    let mut bytes = Vec::new();
+    navigation_log().write(&mut bytes).unwrap();
+    verify(Cursor::new(&bytes), std::io::sink()).unwrap();
+    assert_unknown_fields_rejected(&bytes, 1, &["/tick/expected/navigation"]);
+}
+
+#[test]
+fn changing_a_map_snapshot_is_detected_by_full_recomputation() {
+    let mut log = navigation_log();
     let mut bytes = Vec::new();
     log.write(&mut bytes).unwrap();
     assert_eq!(
