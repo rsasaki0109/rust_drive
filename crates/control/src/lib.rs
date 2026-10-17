@@ -52,10 +52,10 @@ impl Controller for PurePursuit {
             || self.steering.abs() > self.vehicle.max_steer
             || !self.rear_axle_offset_m.is_finite()
             || self.rear_axle_offset_m < 0.0
-            || path
-                .points
-                .iter()
-                .any(|p| !p.position.finite() || !p.speed.is_finite() || !p.time.is_finite())
+            || path.points.iter().any(|p| {
+                !p.position.finite() || !p.speed.is_finite() || !p.time.is_finite() || p.time < 0.0
+            })
+            || path.points.windows(2).any(|p| p[1].time <= p[0].time)
         {
             return self.emergency_command();
         }

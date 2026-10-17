@@ -70,6 +70,15 @@ preserves steering continuity and PI feedback. Final normal steering is bounded
 again after the rate update so rounding near saturation cannot exceed the angle
 limit and trigger a false emergency on the next call.
 
+Every declared trajectory point has a finite, nonnegative time in seconds from
+the current sensor frame, and every successive point must have a strictly
+later time. The standalone controller validates the entire timeline before
+computing a normal command, including points beyond its preview.
+A repeated or reversed later timestamp, or a negative relative time, emits
+the state-clearing emergency command. Valid nonuniform time intervals and
+stationary holds at repeated positions with increasing times remain supported;
+a single stationary point is also valid.
+
 Ground-truth poses, object identities and physical collision results are not input fields. Unknown top-level fields are rejected. Synthetic sensors necessarily observe the simulator world; their noisy measurements cross this boundary.
 
 ## Bounded acquisition-time LiDAR reprojection
