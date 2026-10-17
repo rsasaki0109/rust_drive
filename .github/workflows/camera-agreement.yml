@@ -1,0 +1,47 @@
+name: Replay mutual scale agreement on frozen camera measurements
+on:
+  push:
+    paths:
+      - '.github/workflows/camera-agreement.yml'
+      - 'integrations/onnx/**'
+      - 'assets/camera-agreement-v1/**'
+      - 'rust-toolchain.toml'
+permissions:
+  contents: read
+env:
+  CARGO_INCREMENTAL: '0'
+jobs:
+  agreement-fixtures:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned tools
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
+          python -m pip install -r scripts/requirements-visual.txt
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            integrations/onnx/target
+          key: camera-agreement-${{ runner.os }}-rust-1.90-${{ hashFiles('integrations/onnx/Cargo.lock') }}
+      - name: Test and build the bounded model-free component
+        run: |
+          cargo fmt --manifest-path integrations/onnx/Cargo.toml -- --check
+          cargo clippy --release --locked --manifest-path integrations/onnx/Cargo.toml --all-targets -- -D warnings
+          cargo test --release --locked --manifest-path integrations/onnx/Cargo.toml --bin rustdriving-camera-agreement
+          cargo build --release --locked --manifest-path integrations/onnx/Cargo.toml --bin rustdriving-camera-agreement
+          python -B -m unittest discover -s integrations/onnx -p test_camera_agreement.py -v
+      - name: Replay measured fixtures and retained failures without model inference
+        run: |
+          python -B integrations/onnx/camera_agreement_check.py controls --output artifacts/camera-agreement-check/controls
+          python -B assets/camera-agreement-v1/verify.py --binary integrations/onnx/target/release/rustdriving-camera-agreement
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: camera-agreement-controls
+          path: artifacts/camera-agreement-check/controls/summary.json
