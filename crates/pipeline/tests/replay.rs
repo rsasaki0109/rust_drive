@@ -46,6 +46,12 @@ fn log() -> Vec<u8> {
     recorded_log().write(&mut bytes).unwrap();
     bytes
 }
+fn recompute(log: &mut SensorLog) {
+    let mut pipeline = DrivingPipeline::new(log.header.config.clone()).unwrap();
+    for tick in &mut log.ticks {
+        tick.expected = pipeline.step(&tick.input).unwrap();
+    }
+}
 #[test]
 fn replay_recomputes_outputs_from_sensor_only_log() {
     let mut outputs = vec![];
@@ -313,4 +319,101 @@ fn recording_propagates_write_and_flush_failures() {
             "record flush unavailable"
         }));
     }
+}
+
+#[test]
+fn nonfinite_header_numbers_cannot_become_null_or_disappear() {
+    for optional in [true, false] {
+        for bad in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            let mut log = recorded_log();
+            if optional {
+                log.header.config.rear_axle_offset_m = Some(bad);
+            } else {
+                log.header.config.vehicle.wheelbase = bad;
+            }
+            let mut written = Vec::new();
+            let result = log.write(&mut written);
+            assert!(
+                result.is_err(),
+                "nonfinite header was saved; replay result: {:?}",
+                verify(Cursor::new(&written), std::io::sink())
+            );
+            assert!(result.unwrap_err().contains("non-finite"));
+            assert!(written.is_empty());
+        }
+    }
+}
+
+#[test]
+fn nonfinite_sensor_sample_is_rejected_even_when_the_driver_brakes_correctly() {
+    for bad in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+        let mut log = recorded_log();
+        log.ticks[2].input.odometry.as_mut().unwrap().speed = bad;
+        recompute(&mut log);
+        assert!(log.ticks[2].expected.emergency);
+        assert!(log.ticks[2].expected.command.finite());
+        let mut written = Vec::new();
+        let error = log.write(&mut written).unwrap_err();
+        assert!(error.starts_with("tick 2:"));
+        assert!(error.contains("non-finite"));
+        assert_eq!(written.iter().filter(|&&b| b == b'\n').count(), 3);
+        assert!(verify(Cursor::new(written), std::io::sink()).is_err());
+    }
+}
+
+#[test]
+fn nonfinite_expected_numbers_in_sequences_and_optional_fields_are_rejected() {
+    for field in 0..3 {
+        for bad in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            let mut log = recorded_log();
+            let expected = &mut log.ticks[0].expected;
+            match field {
+                0 => expected.command.acceleration = bad,
+                1 => expected.trajectory.points[0].position.y = bad,
+                _ => expected.localization.as_mut().unwrap().last_nis = Some(bad),
+            }
+            let mut written = Vec::new();
+            let error = log.write(&mut written).unwrap_err();
+            assert!(error.starts_with("tick 0:"));
+            assert!(error.contains("non-finite"));
+            assert_eq!(written.iter().filter(|&&b| b == b'\n').count(), 1);
+        }
+    }
+}
+
+#[test]
+fn nulls_strings_and_finite_extremes_keep_their_recorded_meaning() {
+    let mut log = recorded_log();
+    log.header.source = "NaN Infinity -Infinity null".into();
+    log.ticks[1].input.odometry.as_mut().unwrap().yaw_rate = -0.0;
+    log.ticks[2].input.odometry.as_mut().unwrap().yaw_rate = f64::from_bits(1);
+    log.ticks[3].input.gnss.as_mut().unwrap().variance = f64::MAX;
+    log.ticks[4].input.gnss = None;
+    recompute(&mut log);
+    let mut written = Vec::new();
+    log.write(&mut written).unwrap();
+    let lines: Vec<_> = written.split(|&b| b == b'\n').collect();
+    for index in 1..=3 {
+        let LogRecord::Tick { tick } = serde_json::from_slice(lines[index + 1]).unwrap() else {
+            panic!("expected tick");
+        };
+        if index == 3 {
+            assert_eq!(
+                tick.input.gnss.unwrap().variance.to_bits(),
+                f64::MAX.to_bits()
+            );
+        } else {
+            assert_eq!(
+                tick.input.odometry.unwrap().yaw_rate.to_bits(),
+                log.ticks[index].input.odometry.unwrap().yaw_rate.to_bits()
+            );
+        }
+    }
+    let LogRecord::Tick { tick } = serde_json::from_slice(lines[5]).unwrap() else {
+        panic!("expected tick");
+    };
+    assert!(tick.input.gnss.is_none());
+    let report = verify(Cursor::new(written), std::io::sink()).unwrap();
+    assert_eq!(report.source, log.header.source);
+    assert_eq!(report.ticks, 6);
 }

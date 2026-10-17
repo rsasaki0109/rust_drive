@@ -175,6 +175,14 @@ complete records may remain without a footer and do not form a verified log.
 Destination write and final flush errors are still propagated. Valid records
 retain their existing schema and byte encoding.
 
+Before JSON encoding, the writer also rejects NaN and either infinity in every
+serialized numeric field, including nested sequences and `Some` values. JSON's
+normal conversion of nonfinite numbers to `null` must not erase optional
+calibration or diagnostics, or produce unreadable required numeric fields.
+Errors identify the header or tick index and leave that record unwritten.
+Legitimate absent options, text such as `"NaN"`, negative zero, subnormal values
+and other finite numbers keep their original meaning and encoding.
+
 ```sh
 cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/demo/sensors.jsonl --output artifacts/replay

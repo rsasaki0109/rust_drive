@@ -1,4 +1,5 @@
 //! Versioned JSONL sensor logs, streamed verification with a mandatory count footer.
+mod finite;
 use crate::{DrivingPipeline, PipelineConfig, PipelineOutput, SensorFrame};
 use serde::{Deserialize, Serialize};
 use std::io::{BufRead, Write};
@@ -51,7 +52,8 @@ impl SensorLog {
         self.ticks.push(RecordedTick { input, expected });
     }
     /// Each encoded line, including its newline, must fit the reader's 8 MiB limit.
-    /// Oversized records are not emitted; earlier complete records may remain.
+    /// Nonfinite numbers, including optional values, are rejected before JSON encoding.
+    /// Invalid/oversized records are not emitted; earlier complete records may remain.
     pub fn write(&self, mut writer: impl Write) -> Result<(), String> {
         if self.ticks.is_empty() {
             return Err("cannot write an empty sensor log".into());
@@ -104,6 +106,9 @@ fn write_record(
     buffer: &mut Vec<u8>,
 ) -> Result<(), String> {
     buffer.clear();
+    record
+        .serialize(finite::FiniteNumbers)
+        .map_err(|e| e.to_string())?;
     serde_json::to_writer(&mut RecordBuffer { bytes: buffer }, record)
         .map_err(|e| e.to_string())?;
     buffer.push(b'\n');
