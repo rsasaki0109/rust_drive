@@ -183,6 +183,15 @@ Errors identify the header or tick index and leave that record unwritten.
 Legitimate absent options, text such as `"NaN"`, negative zero, subnormal values
 and other finite numbers keep their original meaning and encoding.
 
+Before writing any record, the writer preflights every frame clock: it must be
+finite, nonnegative and strictly increasing. Each expected output time must have
+the same f64 bits as its input frame time, including the sign of zero. The header
+must use the supported schema, provide a nonempty source, and contain a
+configuration that can initialize a fresh pipeline. Invalid clocks or headers
+are rejected before any log bytes are written. Nonzero start times, nonuniform intervals,
+ClockGap health events and finite invalid sensor-acquisition stamps remain
+recordable. Replay still recomputes and compares every complete output.
+
 ```sh
 cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/demo/sensors.jsonl --output artifacts/replay

@@ -1,6 +1,6 @@
 use rustdriving_core::{Gnss, LidarScan, Odometry, Pose, Route, Vec2, VehicleConfig};
 use rustdriving_pipeline::{
-    DrivingPipeline, PipelineConfig, SensorFrame,
+    DrivingPipeline, HealthIssue, PipelineConfig, SensorFrame,
     replay::{LogRecord, SensorLog, verify},
 };
 use std::io::Cursor;
@@ -416,4 +416,109 @@ fn nulls_strings_and_finite_extremes_keep_their_recorded_meaning() {
     let report = verify(Cursor::new(written), std::io::sink()).unwrap();
     assert_eq!(report.source, log.header.source);
     assert_eq!(report.ticks, 6);
+}
+
+#[test]
+fn invalid_header_metadata_and_configuration_cannot_be_saved() {
+    for case in 0..5 {
+        let mut log = recorded_log();
+        match case {
+            0 => log.header.source.clear(),
+            1 => log.header.schema_version += 1,
+            2 => log.header.config.vehicle.wheelbase = 0.0,
+            3 => log.header.config.nominal_dt = 0.0,
+            _ => log.header.config.route.lengths[1] += 1.0,
+        }
+        let mut written = Vec::new();
+        let result = log.write(&mut written);
+        assert!(
+            result.is_err(),
+            "invalid header was saved; replay result: {:?}",
+            verify(Cursor::new(&written), std::io::sink())
+        );
+        assert!(result.unwrap_err().starts_with("log header:"));
+        assert!(written.is_empty());
+    }
+}
+
+#[test]
+fn invalid_frame_clock_is_rejected_before_any_record_is_written() {
+    for case in 0..6 {
+        let mut log = recorded_log();
+        let index = if case == 0 { 0 } else { 4 };
+        let time = match case {
+            0 => -0.1,
+            1 => log.ticks[3].input.time,
+            2 => log.ticks[3].input.time - 0.01,
+            3 => f64::NAN,
+            4 => f64::INFINITY,
+            _ => f64::NEG_INFINITY,
+        };
+        log.ticks[index].input.time = time;
+        log.ticks[index].expected.time = time;
+        let mut written = Vec::new();
+        let error = log.write(&mut written).unwrap_err();
+        assert!(error.starts_with(&format!("tick {index}:")));
+        assert!(written.is_empty());
+    }
+}
+
+#[test]
+fn output_clock_must_match_input_including_the_sign_of_zero() {
+    for case in 0..4 {
+        let mut log = recorded_log();
+        let index = if case == 1 { 0 } else { 2 };
+        log.ticks[index].expected.time = match case {
+            0 => log.ticks[index].input.time + 0.01,
+            1 => -0.0,
+            2 => f64::NAN,
+            _ => f64::INFINITY,
+        };
+        let mut written = Vec::new();
+        let error = log.write(&mut written).unwrap_err();
+        assert!(error.starts_with(&format!("tick {index}:")));
+        assert!(error.contains("output time"));
+        assert!(written.is_empty());
+    }
+}
+
+#[test]
+fn nonuniform_clocks_gaps_and_invalid_sensor_stamps_remain_recordable() {
+    for start in [-0.0, 5.0] {
+        let mut log = recorded_log();
+        for (index, offset) in [0.0, 1e-8, 0.05, 0.31, 0.4, 0.5].into_iter().enumerate() {
+            let time = if index == 0 { start } else { start + offset };
+            let input = &mut log.ticks[index].input;
+            input.time = time;
+            input.odometry.as_mut().unwrap().stamp = time;
+            input.gnss.as_mut().unwrap().stamp = time;
+            input.lidar.as_mut().unwrap().stamp = time;
+        }
+        log.ticks[4].input.gnss.as_mut().unwrap().stamp = -1.0;
+        recompute(&mut log);
+        assert!(
+            log.ticks[3]
+                .expected
+                .health
+                .contains(&HealthIssue::ClockGap)
+        );
+        assert!(
+            log.ticks[4]
+                .expected
+                .health
+                .contains(&HealthIssue::InvalidGnss)
+        );
+        let mut written = Vec::new();
+        log.write(&mut written).unwrap();
+        let first = written.split(|&b| b == b'\n').nth(1).unwrap();
+        let LogRecord::Tick { tick } = serde_json::from_slice(first).unwrap() else {
+            panic!("expected tick");
+        };
+        assert_eq!(tick.input.time.to_bits(), start.to_bits());
+        assert_eq!(tick.expected.time.to_bits(), start.to_bits());
+        assert_eq!(
+            verify(Cursor::new(written), std::io::sink()).unwrap().ticks,
+            6
+        );
+    }
 }

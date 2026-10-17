@@ -12,6 +12,14 @@ pub struct LogHeader {
     pub source: String,
     pub config: PipelineConfig,
 }
+impl LogHeader {
+    fn validate_metadata(&self) -> Result<(), String> {
+        if self.schema_version != LOG_SCHEMA_VERSION || self.source.is_empty() {
+            return Err("invalid/unsupported log header".into());
+        }
+        Ok(())
+    }
+}
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct RecordedTick {
@@ -54,10 +62,12 @@ impl SensorLog {
     /// Each encoded line, including its newline, must fit the reader's 8 MiB limit.
     /// Nonfinite numbers, including optional values, are rejected before JSON encoding.
     /// Invalid/oversized records are not emitted; earlier complete records may remain.
+    /// Frame clocks are preflighted before writing; the header must construct a pipeline.
     pub fn write(&self, mut writer: impl Write) -> Result<(), String> {
         if self.ticks.is_empty() {
             return Err("cannot write an empty sensor log".into());
         }
+        validate_frame_times(&self.ticks)?;
         let mut buffer = Vec::with_capacity(MAX_LINE_BYTES as usize);
         write_record(
             &mut writer,
@@ -81,6 +91,30 @@ impl SensorLog {
         .map_err(|e| format!("log footer: {e}"))?;
         writer.flush().map_err(|e| e.to_string())
     }
+}
+fn validate_frame_times(ticks: &[RecordedTick]) -> Result<(), String> {
+    let mut previous = None;
+    for (index, tick) in ticks.iter().enumerate() {
+        let time = tick.input.time;
+        if !time.is_finite() {
+            return Err(format!("tick {index}: non-finite frame time"));
+        }
+        if time < 0.0 || previous.is_some_and(|last| time <= last) {
+            return Err(format!(
+                "tick {index}: frame time must be nonnegative and strictly increasing"
+            ));
+        }
+        if !tick.expected.time.is_finite() {
+            return Err(format!("tick {index}: non-finite expected output time"));
+        }
+        if tick.expected.time.to_bits() != time.to_bits() {
+            return Err(format!(
+                "tick {index}: expected output time must match frame time exactly"
+            ));
+        }
+        previous = Some(time);
+    }
+    Ok(())
 }
 struct RecordBuffer<'a> {
     bytes: &'a mut Vec<u8>,
@@ -111,6 +145,12 @@ fn write_record(
         .map_err(|e| e.to_string())?;
     serde_json::to_writer(&mut RecordBuffer { bytes: buffer }, record)
         .map_err(|e| e.to_string())?;
+    if let LogRecordRef::Header { header } = record {
+        header.validate_metadata()?;
+        // Bound configuration collections before cloning and checking startup.
+        header.config.validate()?;
+        drop(DrivingPipeline::new(header.config.clone())?);
+    }
     buffer.push(b'\n');
     writer.write_all(buffer).map_err(|e| e.to_string())
 }
@@ -147,13 +187,10 @@ pub fn verify(mut reader: impl BufRead, mut outputs: impl Write) -> Result<Repla
             serde_json::from_str(&line).map_err(|e| format!("line {line_number}: {e}"))?;
         match record {
             LogRecord::Header { header } => {
-                if pipeline.is_some()
-                    || line_number != 1
-                    || header.schema_version != LOG_SCHEMA_VERSION
-                    || header.source.is_empty()
-                {
+                if pipeline.is_some() || line_number != 1 {
                     return Err("invalid/unsupported log header".into());
                 }
+                header.validate_metadata()?;
                 source = header.source;
                 pipeline = Some(DrivingPipeline::new(header.config)?);
             }
