@@ -82,6 +82,13 @@ relative time emits the state-clearing emergency command. Valid nonuniform
 time intervals and stationary holds at repeated positions with increasing times
 remain supported; a single stationary point at time 0 is also valid.
 
+The standalone command guard requires finite summed x/y position variance in
+the inclusive range 0–4 m², matching the pipeline's localization health check.
+A negative variance is invalid and returns the emergency command rather than
+being treated as high confidence or clamped to zero. Both range boundaries
+remain valid; healthy inputs retain the existing command bounds and sensor-age
+checks.
+
 Ground-truth poses, object identities and physical collision results are not input fields. Unknown top-level fields are rejected. Synthetic sensors necessarily observe the simulator world; their noisy measurements cross this boundary.
 
 ## Bounded acquisition-time LiDAR reprojection

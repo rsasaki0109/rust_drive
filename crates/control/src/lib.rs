@@ -164,6 +164,8 @@ fn pursuit_target(
     previous
 }
 /// Independent freshness / numeric guard; a simulation gate, not a certified safety system.
+/// Timestamps are seconds on one clock. Position variance is the sum of x/y
+/// variances in m² and must be finite and within the inclusive range 0..=4.
 pub fn guard(
     command: ControlCommand,
     now: f64,
@@ -180,7 +182,7 @@ pub fn guard(
         || now - last_gnss > 0.75
         || last_lidar > now + 0.01
         || last_gnss > now + 0.01
-        || position_variance > 4.0
+        || !(0.0..=4.0).contains(&position_variance)
     {
         ControlCommand::emergency()
     } else {
