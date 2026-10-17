@@ -24,6 +24,13 @@ pub enum LogRecord {
     Tick { tick: Box<RecordedTick> },
     End { ticks: usize },
 }
+#[derive(Serialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+enum LogRecordRef<'a> {
+    Header { header: &'a LogHeader },
+    Tick { tick: &'a RecordedTick },
+    End { ticks: usize },
+}
 #[derive(Clone, Debug)]
 pub struct SensorLog {
     pub header: LogHeader,
@@ -43,36 +50,64 @@ impl SensorLog {
     pub fn record(&mut self, input: SensorFrame, expected: PipelineOutput) {
         self.ticks.push(RecordedTick { input, expected });
     }
+    /// Each encoded line, including its newline, must fit the reader's 8 MiB limit.
+    /// Oversized records are not emitted; earlier complete records may remain.
     pub fn write(&self, mut writer: impl Write) -> Result<(), String> {
         if self.ticks.is_empty() {
             return Err("cannot write an empty sensor log".into());
         }
+        let mut buffer = Vec::with_capacity(MAX_LINE_BYTES as usize);
         write_record(
             &mut writer,
-            &LogRecord::Header {
-                header: Box::new(self.header.clone()),
+            &LogRecordRef::Header {
+                header: &self.header,
             },
-        )?;
-        for tick in &self.ticks {
-            write_record(
-                &mut writer,
-                &LogRecord::Tick {
-                    tick: Box::new(tick.clone()),
-                },
-            )?;
+            &mut buffer,
+        )
+        .map_err(|e| format!("log header: {e}"))?;
+        for (index, tick) in self.ticks.iter().enumerate() {
+            write_record(&mut writer, &LogRecordRef::Tick { tick }, &mut buffer)
+                .map_err(|e| format!("tick {index}: {e}"))?;
         }
         write_record(
             &mut writer,
-            &LogRecord::End {
+            &LogRecordRef::End {
                 ticks: self.ticks.len(),
             },
-        )?;
+            &mut buffer,
+        )
+        .map_err(|e| format!("log footer: {e}"))?;
         writer.flush().map_err(|e| e.to_string())
     }
 }
-fn write_record(writer: &mut impl Write, record: &LogRecord) -> Result<(), String> {
-    serde_json::to_writer(&mut *writer, record).map_err(|e| e.to_string())?;
-    writer.write_all(b"\n").map_err(|e| e.to_string())
+struct RecordBuffer<'a> {
+    bytes: &'a mut Vec<u8>,
+}
+impl Write for RecordBuffer<'_> {
+    fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
+        // Reserve one byte for the final newline, which the reader also counts.
+        if self.bytes.len().saturating_add(bytes.len()) >= MAX_LINE_BYTES as usize {
+            return Err(std::io::Error::other(
+                "sensor log record exceeds 8 MiB line size limit",
+            ));
+        }
+        self.bytes.extend_from_slice(bytes);
+        Ok(bytes.len())
+    }
+    fn flush(&mut self) -> std::io::Result<()> {
+        Ok(())
+    }
+}
+fn write_record(
+    writer: &mut impl Write,
+    record: &LogRecordRef<'_>,
+    buffer: &mut Vec<u8>,
+) -> Result<(), String> {
+    buffer.clear();
+    serde_json::to_writer(&mut RecordBuffer { bytes: buffer }, record)
+        .map_err(|e| e.to_string())?;
+    buffer.push(b'\n');
+    writer.write_all(buffer).map_err(|e| e.to_string())
 }
 #[derive(Debug, Serialize)]
 pub struct ReplayReport {

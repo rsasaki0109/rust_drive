@@ -1,10 +1,10 @@
 use rustdriving_core::{Gnss, LidarScan, Odometry, Pose, Route, Vec2, VehicleConfig};
 use rustdriving_pipeline::{
     DrivingPipeline, PipelineConfig, SensorFrame,
-    replay::{SensorLog, verify},
+    replay::{LogRecord, SensorLog, verify},
 };
 use std::io::Cursor;
-fn log() -> Vec<u8> {
+fn recorded_log() -> SensorLog {
     let config = PipelineConfig::new(
         Route::new(vec![Vec2::default(), Vec2::new(100.0, 0.0)], 5.5).unwrap(),
         Pose::default(),
@@ -39,8 +39,11 @@ fn log() -> Vec<u8> {
         let output = pipeline.step(&input).unwrap();
         log.record(input, output);
     }
+    log
+}
+fn log() -> Vec<u8> {
     let mut bytes = vec![];
-    log.write(&mut bytes).unwrap();
+    recorded_log().write(&mut bytes).unwrap();
     bytes
 }
 #[test]
@@ -223,4 +226,91 @@ fn writer_failures_are_reported() {
             .unwrap_err()
             .contains("disk unavailable")
     );
+}
+
+#[test]
+fn oversized_header_is_rejected_without_partial_output() {
+    let mut log = recorded_log();
+    log.header.source = "x".repeat(8 * 1024 * 1024);
+    let mut written = Vec::new();
+    assert!(log.write(&mut written).unwrap_err().contains("size limit"));
+    assert!(written.is_empty());
+}
+
+#[test]
+fn oversized_tick_retains_only_preceding_complete_records() {
+    let mut log = recorded_log();
+    let point = log.ticks[0].expected.trajectory.points[0];
+    log.ticks[0]
+        .expected
+        .trajectory
+        .points
+        .resize(200_000, point);
+    let mut written = Vec::new();
+    assert!(log.write(&mut written).unwrap_err().contains("size limit"));
+    assert_eq!(written.iter().filter(|&&b| b == b'\n').count(), 1);
+    assert!(matches!(
+        serde_json::from_slice::<LogRecord>(&written).unwrap(),
+        LogRecord::Header { .. }
+    ));
+    assert!(verify(Cursor::new(written), std::io::sink()).is_err());
+}
+
+#[test]
+fn encoded_line_limit_includes_newline_and_json_escaping() {
+    const LIMIT: usize = 8 * 1024 * 1024;
+    let mut log = recorded_log();
+    log.header.source.clear();
+    let fixed_bytes = serde_json::to_vec(&LogRecord::Header {
+        header: Box::new(log.header.clone()),
+    })
+    .unwrap()
+    .len()
+        + 1; // Count the final newline, as the reader does.
+    log.header.source = "x".repeat(LIMIT - fixed_bytes);
+    let mut written = Vec::new();
+    log.write(&mut written).unwrap();
+    assert_eq!(written.iter().position(|&b| b == b'\n').unwrap() + 1, LIMIT);
+    let report = verify(Cursor::new(written), std::io::sink()).unwrap();
+    assert_eq!(report.source.len(), LIMIT - fixed_bytes);
+    assert_eq!(report.ticks, 6);
+
+    log.header.source.push('x');
+    let mut written = Vec::new();
+    assert!(log.write(&mut written).is_err());
+    assert!(written.is_empty());
+
+    // This short source expands to more than 8 MiB of JSON escape sequences.
+    log.header.source = "\0".repeat(LIMIT / 6 + 1);
+    assert!(log.header.source.len() < LIMIT);
+    assert!(log.write(&mut written).is_err());
+    assert!(written.is_empty());
+}
+
+#[test]
+fn recording_propagates_write_and_flush_failures() {
+    struct Broken {
+        fail_write: bool,
+    }
+    impl std::io::Write for Broken {
+        fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
+            if self.fail_write {
+                Err(std::io::Error::other("record write unavailable"))
+            } else {
+                Ok(bytes.len())
+            }
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Err(std::io::Error::other("record flush unavailable"))
+        }
+    }
+    let log = recorded_log();
+    for fail_write in [false, true] {
+        let error = log.write(Broken { fail_write }).unwrap_err();
+        assert!(error.contains(if fail_write {
+            "record write unavailable"
+        } else {
+            "record flush unavailable"
+        }));
+    }
 }

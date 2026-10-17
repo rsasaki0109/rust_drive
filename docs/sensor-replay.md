@@ -167,6 +167,14 @@ The physical clearance/priority gates and replay checks are independent. The fin
 
 The expected record contains the complete estimate, tracks, forecasts, trajectory, command, emergency state, health, position variance and optional navigation state. It never enters the pipeline. Replay constructs fresh state from the header, feeds only inputs, and compares reserialized outputs exactly. Serde's float-roundtrip parsing preserves recorded f64 values. No tolerance or success shortcut hides differences.
 
+`SensorLog::write` enforces the same 8 MiB encoded-line limit as the reader,
+including JSON escape sequences and the final newline. It reuses one bounded
+record buffer and serializes borrowed header/tick data. An oversized record
+returns an error before any of that record reaches the destination; earlier
+complete records may remain without a footer and do not form a verified log.
+Destination write and final flush errors are still propagated. Valid records
+retain their existing schema and byte encoding.
+
 ```sh
 cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/demo/sensors.jsonl --output artifacts/replay
