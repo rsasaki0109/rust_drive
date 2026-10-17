@@ -15,6 +15,28 @@ Configuration supplies a validated arc-length route, calibrated initial pose, ve
 
 Absent samples do not refresh last accepted timestamps. Duplicate, out-of-order, future and invalid samples cannot refresh them either. Odometry older than 0.15 s, LiDAR older than 0.35 s or accepted GNSS older than 0.75 s brakes. Clock gaps over 0.25 s and excessive localization uncertainty brake. Regressing/non-finite clocks return an error before state mutation; adapters must stop on errors. This research health policy is intentionally conservative and does not support GNSS-denied navigation.
 
+Every LiDAR input mode retains `InvalidLidar` braking after an explicit acquisition
+failure, malformed or conflicting representation, or missing acquisition-pose
+transform. Recovery requires a complete valid acquisition whose stamp is strictly
+later than the most recent failure's delivery time. Absent samples, duplicates
+and pre-fault acquisitions do not clear this hold even while the last accepted
+scan remains within its normal age limit. A valid delayed post-fault acquisition
+can recover within the existing age/history bounds; a successful empty scan is
+valid. A simultaneous scan and failure flag cannot recover, and another failure
+advances the required recovery epoch. Rejected scans do not update tracks,
+occupancy or the last accepted acquisition stamp. This applies to ordinary 2D
+LiDAR as well as the existing multi-height and XYZ paths.
+
+The ordinary 2D hold repairs premature recovery on the frame after a fault.
+The JSONL schema remains 1, but prior ordinary-input recordings spanning faults
+may have different expected health/commands and must be recorded again for the
+updated behavior. Historical research packets are retained without rewriting
+their expected outputs. Six public-pipeline regression tests cover the hold,
+malformed returns, contradictory inputs, repeated failures, missing transforms,
+delayed recovery and full sensor-only replay including rejection of a forged
+pre-fault recovery stamp. This simulation policy does not establish real-vehicle
+safety or sensor-fault rates.
+
 Ground-truth poses, object identities and physical collision results are not input fields. Unknown top-level fields are rejected. Synthetic sensors necessarily observe the simulator world; their noisy measurements cross this boundary.
 
 ## Bounded acquisition-time LiDAR reprojection

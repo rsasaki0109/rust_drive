@@ -237,7 +237,8 @@ pub struct SensorFrame {
     pub multi_height_lidar: Option<MultiHeightLidarScan>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub lidar3d: Option<Lidar3dScan>,
-    /// Explicit adapter acquisition failure. Empty returns are otherwise valid.
+    /// Explicit adapter acquisition failure; recovery requires a valid newer acquisition.
+    /// Empty successful returns are otherwise valid in every input mode.
     #[serde(default)]
     pub lidar_failed: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -304,7 +305,8 @@ pub struct DrivingPipeline {
     previous_time: Option<f64>,
     last_odom: Option<Odometry>,
     last_lidar: Option<f64>,
-    advanced_lidar_fault: Option<f64>,
+    /// Latest failure delivery epoch, shared by ordinary, layered and XYZ inputs.
+    lidar_fault: Option<f64>,
     rejected_gnss_streak: u8,
     map_localization: Option<MapLocalization>,
     scan_poses: scan_pose::ScanPoseHistory,
@@ -382,7 +384,7 @@ impl DrivingPipeline {
             previous_time: None,
             last_odom: None,
             last_lidar: None,
-            advanced_lidar_fault: None,
+            lidar_fault: None,
             rejected_gnss_streak: 0,
             map_localization,
             scan_poses: scan_pose::ScanPoseHistory::default(),
@@ -458,9 +460,7 @@ impl DrivingPipeline {
         }
         if input.lidar_failed {
             health.push(HealthIssue::AcquisitionFailed);
-            if self.config.multi_height_lidar.is_some() || self.config.lidar3d.is_some() {
-                self.advanced_lidar_fault = Some(input.time);
-            }
+            self.lidar_fault = Some(input.time);
         }
         let fused;
         let mut ground = None;
@@ -480,7 +480,7 @@ impl DrivingPipeline {
                     }
                     Err(()) => {
                         health.push(HealthIssue::InvalidLidar);
-                        self.advanced_lidar_fault = Some(input.time);
+                        self.lidar_fault = Some(input.time);
                         None
                     }
                 }
@@ -516,7 +516,7 @@ impl DrivingPipeline {
                     Err(diagnostics) => {
                         ground = diagnostics.map(|diagnostic| *diagnostic);
                         health.push(HealthIssue::InvalidLidar);
-                        self.advanced_lidar_fault = Some(input.time);
+                        self.lidar_fault = Some(input.time);
                         None
                     }
                 }
@@ -527,9 +527,7 @@ impl DrivingPipeline {
             (None, None, None, None) => input.lidar.as_ref(),
             _ => {
                 health.push(HealthIssue::InvalidLidar);
-                if self.config.multi_height_lidar.is_some() || self.config.lidar3d.is_some() {
-                    self.advanced_lidar_fault = Some(input.time);
-                }
+                self.lidar_fault = Some(input.time);
                 None
             }
         };
@@ -545,7 +543,7 @@ impl DrivingPipeline {
                             .all(|p| p.finite() && p.x.hypot(p.y) <= 200.0)
                         && self.last_lidar.is_none_or(|last| scan.stamp > last)
                         && self
-                            .advanced_lidar_fault
+                            .lidar_fault
                             .is_none_or(|fault_time| scan.stamp > fault_time)
                 });
             map.update(scan, input.time, eligible, &mut self.ekf);
@@ -562,12 +560,10 @@ impl DrivingPipeline {
                     .any(|p| !p.finite() || p.x.hypot(p.y) > 200.0)
             {
                 health.push(HealthIssue::InvalidLidar);
-                if self.config.multi_height_lidar.is_some() || self.config.lidar3d.is_some() {
-                    self.advanced_lidar_fault = Some(input.time);
-                }
+                self.lidar_fault = Some(input.time);
             } else if self.last_lidar.is_none_or(|last| scan.stamp > last)
                 && self
-                    .advanced_lidar_fault
+                    .lidar_fault
                     .is_none_or(|fault_time| scan.stamp > fault_time)
             {
                 if let Some(acquisition_pose) = self.scan_poses.at(scan.stamp, input.time) {
@@ -579,16 +575,14 @@ impl DrivingPipeline {
                     self.tracks = self.tracker.update(&detections, scan.stamp);
                     self.grid.update(scan, acquisition_pose);
                     self.last_lidar = Some(scan.stamp);
-                    self.advanced_lidar_fault = None;
+                    self.lidar_fault = None;
                 } else {
                     health.push(HealthIssue::InvalidLidar);
-                    if self.config.multi_height_lidar.is_some() || self.config.lidar3d.is_some() {
-                        self.advanced_lidar_fault = Some(input.time);
-                    }
+                    self.lidar_fault = Some(input.time);
                 }
             }
         }
-        if self.advanced_lidar_fault.is_some() && !health.contains(&HealthIssue::InvalidLidar) {
+        if self.lidar_fault.is_some() && !health.contains(&HealthIssue::InvalidLidar) {
             health.push(HealthIssue::InvalidLidar);
         }
         if self.last_lidar.is_none_or(|t| input.time - t > 0.35 + 1e-9) {
