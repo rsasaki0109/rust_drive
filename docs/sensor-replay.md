@@ -62,6 +62,14 @@ These geometry checks accept valid small-vehicle calibrations; the pipeline's
 separate simulation-specific size and steering limits remain stricter. Vehicle
 radius is unused by this controller and remains a planning/pipeline input.
 
+When a valid runtime steering-limit reduction excludes the last emitted
+steering command, the controller emits one state-clearing emergency command.
+The next valid call resumes from zero within the new angle and normal rate
+limits. A reduction that still contains the last command, or an increase,
+preserves steering continuity and PI feedback. Final normal steering is bounded
+again after the rate update so rounding near saturation cannot exceed the angle
+limit and trigger a false emergency on the next call.
+
 Ground-truth poses, object identities and physical collision results are not input fields. Unknown top-level fields are rejected. Synthetic sensors necessarily observe the simulator world; their noisy measurements cross this boundary.
 
 ## Bounded acquisition-time LiDAR reprojection

@@ -49,6 +49,7 @@ impl Controller for PurePursuit {
             || !self.vehicle.max_steer.is_finite()
             || self.vehicle.max_steer <= 0.0
             || self.vehicle.max_steer >= std::f64::consts::FRAC_PI_2
+            || self.steering.abs() > self.vehicle.max_steer
             || !self.rear_axle_offset_m.is_finite()
             || self.rear_axle_offset_m < 0.0
             || path
@@ -92,6 +93,9 @@ impl Controller for PurePursuit {
             return self.emergency_command();
         }
         self.steering += (desired - self.steering).clamp(-0.7 * dt, 0.7 * dt);
+        self.steering = self
+            .steering
+            .clamp(-self.vehicle.max_steer, self.vehicle.max_steer);
         let initial = &path.points[0];
         let acceleration = if let Some(next) = path.points.get(1) {
             let duration = next.time - initial.time;

@@ -113,3 +113,81 @@ fn nonfinite_computed_steering_brakes_even_when_all_configuration_fields_are_fin
     assert!(after.finite());
     assert!(after.steering.abs() <= 0.7 * 0.05 + 1e-10);
 }
+
+#[test]
+fn a_reduced_limit_outside_the_last_command_brakes_then_recovers_within_the_new_limit() {
+    for direction in [-1.0, 1.0] {
+        let mut controller = PurePursuit::default();
+        let mut before = ControlCommand::default();
+        for _ in 0..20 {
+            before = controller.control(EgoState::default(), &path(4.0, direction), 0.05);
+        }
+        assert!(before.steering.abs() > 0.3);
+        controller.vehicle.max_steer = 0.1;
+        stopped(controller.control(EgoState::default(), &path(4.0, direction), 0.05));
+        let mut previous = 0.0;
+        for _ in 0..4 {
+            let command = controller.control(EgoState::default(), &path(0.0, direction), 0.05);
+            assert!(command.steering.abs() <= 0.1);
+            assert!((command.steering - previous).abs() <= 0.7 * 0.05 + 1e-10);
+            assert_eq!(command.acceleration, 0.0);
+            previous = command.steering;
+        }
+        assert!(previous * direction > 0.0);
+    }
+}
+
+#[test]
+fn a_smaller_limit_that_contains_the_last_command_keeps_feedback_and_rate_continuity() {
+    for direction in [-1.0, 1.0] {
+        let mut controller = PurePursuit::default();
+        let mut before = ControlCommand::default();
+        for _ in 0..3 {
+            before = controller.control(EgoState::default(), &path(4.0, direction), 0.05);
+        }
+        assert!(before.steering.abs() < 0.2);
+        controller.vehicle.max_steer = 0.2;
+        let after = controller.control(EgoState::default(), &path(0.0, direction), 0.05);
+        assert!((after.steering - before.steering).abs() <= 0.7 * 0.05 + 1e-10);
+        assert!(after.steering * direction > before.steering * direction);
+        assert!(after.steering.abs() <= 0.2);
+        assert!((after.acceleration - 0.09).abs() < 1e-12);
+    }
+}
+
+#[test]
+fn increasing_the_limit_preserves_feedback_and_the_last_emitted_steering() {
+    for direction in [-1.0, 1.0] {
+        let mut controller = PurePursuit::with_vehicle(VehicleConfig {
+            max_steer: 0.1,
+            ..VehicleConfig::default()
+        });
+        let mut before = ControlCommand::default();
+        for _ in 0..4 {
+            before = controller.control(EgoState::default(), &path(4.0, direction), 0.05);
+        }
+        controller.vehicle.max_steer = 0.55;
+        let after = controller.control(EgoState::default(), &path(0.0, direction), 0.05);
+        assert!((after.steering - before.steering).abs() <= 0.7 * 0.05 + 1e-10);
+        assert!(after.steering * direction > before.steering * direction);
+        assert!((after.acceleration - 0.12).abs() < 1e-12);
+    }
+}
+
+#[test]
+fn direction_changes_at_saturation_do_not_round_beyond_the_configured_limit() {
+    for direction in [-1.0, 1.0] {
+        let mut controller = PurePursuit::with_vehicle(VehicleConfig {
+            max_steer: 0.1,
+            ..VehicleConfig::default()
+        });
+        let before = controller.control(EgoState::default(), &path(0.0, -direction), 0.05 / 0.7);
+        assert!((before.steering + direction * 0.05).abs() < 1e-12);
+        for _ in 0..2 {
+            let command = controller.control(EgoState::default(), &path(0.0, direction), 0.25);
+            assert!(command.finite());
+            assert!(command.steering.abs() <= controller.vehicle.max_steer);
+            assert_eq!(command.acceleration, 0.0);
+        }
+    }
+}
