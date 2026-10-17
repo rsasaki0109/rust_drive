@@ -1,0 +1,590 @@
+{
+  "schema_version": 1,
+  "repository": "ViscaaBarca/MLops-City",
+  "revision": "a87c85607d023e3815ccb58bd80a62ab5a8a8dfd",
+  "tree_sha256": "c28560768cc7c379e511610aabe3bc1c6cfd544428224c82054da46b2fb25499",
+  "class_mapping": {
+    "person": 0,
+    "rider": 0,
+    "bike": 1,
+    "car": 2,
+    "motor": 3,
+    "bus": 5,
+    "truck": 7,
+    "train": 6,
+    "traffic light": 9
+  },
+  "unscored_category_reason": {
+    "traffic sign": "BDD generic signs do not correspond to COCO stop-sign class; retained and counted separately, never treated as road-user ground truth."
+  },
+  "quality_gates": {
+    "minimum_precision": 0.7,
+    "minimum_recall": 0.6,
+    "minimum_per_class_recall_when_present": 0.5
+  },
+  "confidence_threshold": 0.3,
+  "nms_iou_threshold": 0.45,
+  "match_iou_threshold": 0.5,
+  "input_byte_budget": 16777216,
+  "model_sha256": "c5c2d13e59ae883e6af3b45daea64af4833a4951c92d116ec270d9ddbe998063",
+  "model_bytes": 35858002,
+  "input_size": 640,
+  "output_shape": [
+    1,
+    8400,
+    85
+  ],
+  "limits": [
+    "Convenience sample, not BDD mAP, representative domain, independent crop probabilities or proof of upstream training non-overlap.",
+    "No new latency, guard availability, live ingestion, identity, metric-depth or driving-integration claim."
+  ],
+  "algorithm": "baseline_preserving_supported_measurements_v1",
+  "selection_before_image_acquisition_decode_or_inference": true,
+  "selection_method": "First16 lexicographic pinned BDD val JPEG/label pairs excluding all88 prior images and all cached JPEG stems, before acquisition, decoding, inference or numeric annotation parsing. No replacement.",
+  "excluded_image_stems": [
+    "000000058636",
+    "000000174482",
+    "000000226111",
+    "000000252219",
+    "000000303818",
+    "000000322864",
+    "00a395fe-d60c0b47",
+    "00a9cd6b-b39be004",
+    "00d79c0a-23bea078",
+    "012e0351-723ac360",
+    "01a4933a-252e566a",
+    "0204aad7-05dbee41",
+    "02133057-fc70cc0e",
+    "023d0f3c-564e6d31",
+    "026c7465-d54954fa",
+    "03343856-ebf78b5f",
+    "035cb512-77517657",
+    "042d4997-ba286e85",
+    "049dde52-19569c8c",
+    "0540f550-72c78702",
+    "054a8fc0-6f54c1d9",
+    "0573cc84-e67f61ef",
+    "05f899e8-b72038aa",
+    "064c84ab-5560b5a4",
+    "0672c229-4d6e08a2",
+    "06fc9e56-f4dc4049",
+    "072a5b71-13456ded",
+    "074496ba-19237a5b",
+    "0798a3a8-c4501e0f",
+    "07b5edf7-e4c83fc5",
+    "07dbeef2-301c99ae",
+    "09285422-34367b36",
+    "099071e5-fae1033c",
+    "09a3ff75-72315256",
+    "09cdd188-4e98738e",
+    "0a172b0e-136b7a63",
+    "0a493f24-352f747e",
+    "0a8368e0-41c6b3b3",
+    "0b2f5d0d-8fddc1fc",
+    "0d01bff2-38b969d3",
+    "0d13ae3d-f033a349",
+    "0d4268d5-3c617dd8",
+    "0d606092-486670ee",
+    "0e4066b2-9b16405b",
+    "0e946d23-8a9b41b7",
+    "0efe0129-c499802e",
+    "0f06d2de-7b9b4397",
+    "0f11e283-a34ec892",
+    "0f31361a-7020f98e",
+    "0fabbd93-2184c8fb",
+    "0ff834c6-eeda5d39",
+    "10c0c72d-dafc19cf",
+    "10c27164-370783f7",
+    "10c8f3c5-678d5b85",
+    "11886292-7b112025",
+    "11bf94bf-2fe7ae78",
+    "121f7fbc-08249914",
+    "1224364f-bbfb474c",
+    "1264e9c4-b4f2355e",
+    "13288932-6c2af1b1",
+    "1334859b-b87436bc",
+    "147745bb-f8c17b94",
+    "152a8c1e-3703737c",
+    "153cb04c-b2b79b91",
+    "15718870-1fe8f2e8",
+    "15905cba-d1eee7c8",
+    "1597fb15-140c0eac",
+    "1598acd3-9cb894c9",
+    "15c0edab-4cb3b2e1",
+    "167f11ee-0e320693",
+    "167f11ee-af68bd2a",
+    "1738c701-e02d1082",
+    "1770baac-3b0f3cb8",
+    "1797ecb1-84ee3c11",
+    "17d21997-6f076249",
+    "17fb67eb-28a14e3e",
+    "1834fe14-3afdfad3",
+    "189e3034-47ed56b8",
+    "18a650d6-c4e34bc5",
+    "19590021-13e5646e",
+    "1a3a8552-293f6a45",
+    "1b42cfb0-231ac07e",
+    "1bf7f3d2-15f95138",
+    "1c1de1e7-346d6219",
+    "1c1de1e7-ba93f9ae",
+    "1c5a5eec-b5894678",
+    "1caf91f0-ef1835eb",
+    "1cbc711c-205586b2",
+    "1d3ea1ee-1422b357",
+    "1d8a534a-eb837a5d",
+    "1db70110-e028541e",
+    "4899be53-dcc6c017",
+    "4dab8d2a-be9667d4",
+    "ab2360f2-7704a1bf",
+    "astronaut",
+    "bad"
+  ],
+  "all_previous_ids": [
+    "00a395fe-d60c0b47",
+    "00a9cd6b-b39be004",
+    "00d79c0a-23bea078",
+    "012e0351-723ac360",
+    "01a4933a-252e566a",
+    "0204aad7-05dbee41",
+    "02133057-fc70cc0e",
+    "023d0f3c-564e6d31",
+    "026c7465-d54954fa",
+    "03343856-ebf78b5f",
+    "035cb512-77517657",
+    "042d4997-ba286e85",
+    "049dde52-19569c8c",
+    "0540f550-72c78702",
+    "054a8fc0-6f54c1d9",
+    "0573cc84-e67f61ef",
+    "05f899e8-b72038aa",
+    "064c84ab-5560b5a4",
+    "0672c229-4d6e08a2",
+    "06fc9e56-f4dc4049",
+    "072a5b71-13456ded",
+    "074496ba-19237a5b",
+    "0798a3a8-c4501e0f",
+    "07b5edf7-e4c83fc5",
+    "07dbeef2-301c99ae",
+    "09285422-34367b36",
+    "099071e5-fae1033c",
+    "09a3ff75-72315256",
+    "09cdd188-4e98738e",
+    "0a172b0e-136b7a63",
+    "0a493f24-352f747e",
+    "0a8368e0-41c6b3b3",
+    "0b2f5d0d-8fddc1fc",
+    "0d01bff2-38b969d3",
+    "0d13ae3d-f033a349",
+    "0d4268d5-3c617dd8",
+    "0d606092-486670ee",
+    "0e4066b2-9b16405b",
+    "0e946d23-8a9b41b7",
+    "0efe0129-c499802e",
+    "0f06d2de-7b9b4397",
+    "0f11e283-a34ec892",
+    "0f31361a-7020f98e",
+    "0fabbd93-2184c8fb",
+    "0ff834c6-eeda5d39",
+    "10c0c72d-dafc19cf",
+    "10c27164-370783f7",
+    "10c8f3c5-678d5b85",
+    "11886292-7b112025",
+    "11bf94bf-2fe7ae78",
+    "121f7fbc-08249914",
+    "1224364f-bbfb474c",
+    "1264e9c4-b4f2355e",
+    "13288932-6c2af1b1",
+    "1334859b-b87436bc",
+    "147745bb-f8c17b94",
+    "152a8c1e-3703737c",
+    "153cb04c-b2b79b91",
+    "15718870-1fe8f2e8",
+    "15905cba-d1eee7c8",
+    "1597fb15-140c0eac",
+    "1598acd3-9cb894c9",
+    "15c0edab-4cb3b2e1",
+    "167f11ee-0e320693",
+    "167f11ee-af68bd2a",
+    "1738c701-e02d1082",
+    "1770baac-3b0f3cb8",
+    "1797ecb1-84ee3c11",
+    "17d21997-6f076249",
+    "17fb67eb-28a14e3e",
+    "1834fe14-3afdfad3",
+    "189e3034-47ed56b8",
+    "18a650d6-c4e34bc5",
+    "19590021-13e5646e",
+    "1a3a8552-293f6a45",
+    "1b42cfb0-231ac07e",
+    "1bf7f3d2-15f95138",
+    "1c1de1e7-346d6219",
+    "1c1de1e7-ba93f9ae",
+    "1c5a5eec-b5894678",
+    "1caf91f0-ef1835eb",
+    "1cbc711c-205586b2",
+    "1d3ea1ee-1422b357",
+    "1d8a534a-eb837a5d",
+    "1db70110-e028541e",
+    "4899be53-dcc6c017",
+    "4dab8d2a-be9667d4",
+    "ab2360f2-7704a1bf"
+  ],
+  "viewed_ids": [
+    "00a395fe-d60c0b47",
+    "026c7465-d54954fa",
+    "0798a3a8-c4501e0f",
+    "0a493f24-352f747e",
+    "17d21997-6f076249",
+    "4899be53-dcc6c017",
+    "4dab8d2a-be9667d4",
+    "ab2360f2-7704a1bf",
+    "1264e9c4-b4f2355e",
+    "13288932-6c2af1b1",
+    "1334859b-b87436bc",
+    "147745bb-f8c17b94",
+    "152a8c1e-3703737c",
+    "153cb04c-b2b79b91",
+    "15718870-1fe8f2e8",
+    "15905cba-d1eee7c8",
+    "1597fb15-140c0eac",
+    "1598acd3-9cb894c9",
+    "15c0edab-4cb3b2e1",
+    "167f11ee-0e320693",
+    "167f11ee-af68bd2a",
+    "1738c701-e02d1082",
+    "1770baac-3b0f3cb8",
+    "1797ecb1-84ee3c11",
+    "17fb67eb-28a14e3e",
+    "1834fe14-3afdfad3",
+    "189e3034-47ed56b8",
+    "18a650d6-c4e34bc5",
+    "19590021-13e5646e",
+    "1a3a8552-293f6a45",
+    "1b42cfb0-231ac07e",
+    "1bf7f3d2-15f95138",
+    "1c1de1e7-346d6219",
+    "1c1de1e7-ba93f9ae",
+    "1c5a5eec-b5894678",
+    "1caf91f0-ef1835eb",
+    "1cbc711c-205586b2",
+    "1d3ea1ee-1422b357",
+    "1d8a534a-eb837a5d",
+    "1db70110-e028541e"
+  ],
+  "images": [
+    {
+      "id": "1de6d5ff-8aba6383",
+      "image": {
+        "path": "bdd/images/val/1de6d5ff-8aba6383.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "4e0e47e023e1303e25f81421d7bbacd751df97cc",
+        "size": 89197,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/4e0e47e023e1303e25f81421d7bbacd751df97cc"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/1de6d5ff-8aba6383.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "f2fe646cceeaf286365aeaa52fe4b7626a935c95",
+        "size": 20978,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/f2fe646cceeaf286365aeaa52fe4b7626a935c95"
+      }
+    },
+    {
+      "id": "1e2d42a4-b1b0abcc",
+      "image": {
+        "path": "bdd/images/val/1e2d42a4-b1b0abcc.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3961c04d7866c280af3952d857afb7145ef9420a",
+        "size": 66045,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/3961c04d7866c280af3952d857afb7145ef9420a"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/1e2d42a4-b1b0abcc.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "2df388e31f059a82069c950815a9f0001ab61a2f",
+        "size": 29353,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/2df388e31f059a82069c950815a9f0001ab61a2f"
+      }
+    },
+    {
+      "id": "1e45de2a-609a28e9",
+      "image": {
+        "path": "bdd/images/val/1e45de2a-609a28e9.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "972291c7859a9be6f41c21950c266b4effd873ee",
+        "size": 68430,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/972291c7859a9be6f41c21950c266b4effd873ee"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/1e45de2a-609a28e9.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "9076d55a2a64834fdf4617e6b8299e3b50ee4eb1",
+        "size": 9486,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/9076d55a2a64834fdf4617e6b8299e3b50ee4eb1"
+      }
+    },
+    {
+      "id": "1e94156c-c7638e48",
+      "image": {
+        "path": "bdd/images/val/1e94156c-c7638e48.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "dc839045a742625de792def289420ec9f60cf296",
+        "size": 50860,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/dc839045a742625de792def289420ec9f60cf296"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/1e94156c-c7638e48.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "9b2a3298357fa7b2f3a16cacc9cbbea22d9492c4",
+        "size": 21942,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/9b2a3298357fa7b2f3a16cacc9cbbea22d9492c4"
+      }
+    },
+    {
+      "id": "1ea051e1-6b47f322",
+      "image": {
+        "path": "bdd/images/val/1ea051e1-6b47f322.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "418e3d01e6fb884d17b5602772c245c0f5ed3bf0",
+        "size": 60834,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/418e3d01e6fb884d17b5602772c245c0f5ed3bf0"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/1ea051e1-6b47f322.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "6c00a03124d02ae28a3baee7d188c5736e2fc614",
+        "size": 7059,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/6c00a03124d02ae28a3baee7d188c5736e2fc614"
+      }
+    },
+    {
+      "id": "1f0fbe36-cea49f67",
+      "image": {
+        "path": "bdd/images/val/1f0fbe36-cea49f67.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d357a460397a7cc3a920f308a61d379ed094929d",
+        "size": 67336,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/d357a460397a7cc3a920f308a61d379ed094929d"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/1f0fbe36-cea49f67.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "80dba47a487c2ed8fc824cedfaaacb5cdd50474d",
+        "size": 20170,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/80dba47a487c2ed8fc824cedfaaacb5cdd50474d"
+      }
+    },
+    {
+      "id": "1f45df68-26795801",
+      "image": {
+        "path": "bdd/images/val/1f45df68-26795801.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9844c6da9c05e2639e3efbcae4d8a920cd8f7b10",
+        "size": 80968,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/9844c6da9c05e2639e3efbcae4d8a920cd8f7b10"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/1f45df68-26795801.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "631f386483d27f964df2603f9bab97113a9b9b02",
+        "size": 15749,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/631f386483d27f964df2603f9bab97113a9b9b02"
+      }
+    },
+    {
+      "id": "1f8ea4b0-73e92d58",
+      "image": {
+        "path": "bdd/images/val/1f8ea4b0-73e92d58.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d3be9f0ac0601b314232ed3e25032183bd3b5330",
+        "size": 89034,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/d3be9f0ac0601b314232ed3e25032183bd3b5330"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/1f8ea4b0-73e92d58.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "e97fc618e0dfc875402f424a6354117c53eb35d7",
+        "size": 14406,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/e97fc618e0dfc875402f424a6354117c53eb35d7"
+      }
+    },
+    {
+      "id": "1ff90038-ff3d047b",
+      "image": {
+        "path": "bdd/images/val/1ff90038-ff3d047b.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d69349d913ac959ca346397cc8e02ea585a73a65",
+        "size": 54850,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/d69349d913ac959ca346397cc8e02ea585a73a65"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/1ff90038-ff3d047b.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "cd79d563a12569457cad5227d8937859a6b47048",
+        "size": 13196,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/cd79d563a12569457cad5227d8937859a6b47048"
+      }
+    },
+    {
+      "id": "2012cb38-2132fe03",
+      "image": {
+        "path": "bdd/images/val/2012cb38-2132fe03.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3af4146143b3aad6d5f72eb663c745e00c343d73",
+        "size": 87237,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/3af4146143b3aad6d5f72eb663c745e00c343d73"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/2012cb38-2132fe03.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "8d7dc33150c038a1d8f10075f557e662d62fc926",
+        "size": 2359,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/8d7dc33150c038a1d8f10075f557e662d62fc926"
+      }
+    },
+    {
+      "id": "2012cb38-e1a58f29",
+      "image": {
+        "path": "bdd/images/val/2012cb38-e1a58f29.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ec7697ae39cc2bd9a2ed7dde53536df78558d86e",
+        "size": 90124,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/ec7697ae39cc2bd9a2ed7dde53536df78558d86e"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/2012cb38-e1a58f29.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "bf32a3f2a001ab434cce42eb5687da778efaf0ec",
+        "size": 2354,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/bf32a3f2a001ab434cce42eb5687da778efaf0ec"
+      }
+    },
+    {
+      "id": "201587a9-f1157d3b",
+      "image": {
+        "path": "bdd/images/val/201587a9-f1157d3b.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e07fa06cda947237f6b2636210fae500ba3262df",
+        "size": 75275,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/e07fa06cda947237f6b2636210fae500ba3262df"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/201587a9-f1157d3b.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "ff9e22ca370fcf5a850ed8f97b91d56b615503d2",
+        "size": 10211,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/ff9e22ca370fcf5a850ed8f97b91d56b615503d2"
+      }
+    },
+    {
+      "id": "2024118e-4a7c3c7c",
+      "image": {
+        "path": "bdd/images/val/2024118e-4a7c3c7c.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "bf086f780ddf5b63797298ae054b5cbab8e31151",
+        "size": 63239,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/bf086f780ddf5b63797298ae054b5cbab8e31151"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/2024118e-4a7c3c7c.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "a58bba2194a52fb2e31d7ed1e6cf9dd86e9a16ed",
+        "size": 10147,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/a58bba2194a52fb2e31d7ed1e6cf9dd86e9a16ed"
+      }
+    },
+    {
+      "id": "2090dd9d-a480837f",
+      "image": {
+        "path": "bdd/images/val/2090dd9d-a480837f.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3a7e552792a0320a46a1e90790de44cc9073dfbd",
+        "size": 97201,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/3a7e552792a0320a46a1e90790de44cc9073dfbd"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/2090dd9d-a480837f.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "5a62c187da22919767953db9f0d1a90b2df96275",
+        "size": 12271,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/5a62c187da22919767953db9f0d1a90b2df96275"
+      }
+    },
+    {
+      "id": "20b675b9-aeb033a5",
+      "image": {
+        "path": "bdd/images/val/20b675b9-aeb033a5.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "73e2d6e764f89c98d02ef4fe0ed5ba306330b251",
+        "size": 64209,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/73e2d6e764f89c98d02ef4fe0ed5ba306330b251"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/20b675b9-aeb033a5.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "91ecdd1652e0bcdfccdc108787047f4feddda5ff",
+        "size": 17008,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/91ecdd1652e0bcdfccdc108787047f4feddda5ff"
+      }
+    },
+    {
+      "id": "20c9a2cb-412d3b16",
+      "image": {
+        "path": "bdd/images/val/20c9a2cb-412d3b16.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b864932353c4134e34382db104b25ee7e1bc613c",
+        "size": 88695,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/b864932353c4134e34382db104b25ee7e1bc613c"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/20c9a2cb-412d3b16.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "7f4df54ff7eed7f8cbbf2db3906357bab80610a8",
+        "size": 18107,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/7f4df54ff7eed7f8cbbf2db3906357bab80610a8"
+      }
+    }
+  ],
+  "policy": {
+    "anchor": "Keep every original S640 supported10 detection and origin in exact input order, without coordinate/class/confidence replacement.",
+    "proposals": "Use complete S640 detail-supported12 results from the same source image, with their original origins. These already obey the unchanged two-view support rule. No class-specific filtering or new threshold.",
+    "anchor_veto": "Reject any proposal overlapping any anchor at f32 IoU>.45, regardless of class.",
+    "addition_nms": "Sort proposals by confidence descending, class, left and input rank; classwise f32 IoU>.45 NMS only between accepted additions. Append to anchor, total<=300.",
+    "limits": "Source image positive dimensions <=16M pixels, each input list<=300 finite valid boxes, confidence in[.3,1], origins view<16/rank<300 with unique origins per input. <=180000 IoU comparisons. Complete JSON input/output<=4MiB; no clobber.",
+    "interpretation": "Explicit model-free measured-box postprocessing, not proof of model execution or admission of external inference reports. The evaluator separately verifies full original native parents and their common four-view prefix. Retaining predictions does not mathematically guarantee greedy ground-truth match retention."
+  },
+  "evaluation": "Viewed40: reuse first/repeat/original S640 supported10 and detail-supported12 parents,240 reports and2640 old forwards, never recounted. Fresh16: run each frozen producer twice optimized and once original graph:16*(10+12)*3=1056 new forwards. Postprocess all56 pairs in Rust on each of three passes:168 fixture runs, zero model forwards. Score same complete labels in coarse4, supported10, detail-supported12 and preserved union.",
+  "relative_adoption": "In both viewed40 and fresh16, preserved precision must not regress versus coarse4 or supported10, recall must exceed both, and every present-class recall must not regress versus either supported baseline. Every original supported10 matched reference must also be retained. Fresh16 must pass all unchanged absolute gates. Otherwise no default adoption."
+}

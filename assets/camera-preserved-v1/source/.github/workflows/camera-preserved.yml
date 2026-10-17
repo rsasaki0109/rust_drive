@@ -1,0 +1,63 @@
+name: Preserve camera baseline measurements
+on:
+  push:
+    paths:
+      - '.github/workflows/camera-preserved.yml'
+      - 'integrations/onnx/**'
+      - 'assets/camera-preserved-v1/**'
+      - 'rust-toolchain.toml'
+permissions:
+  contents: read
+env:
+  CARGO_INCREMENTAL: '0'
+jobs:
+  preserved-comparison:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned tools
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
+          python -m pip install -r scripts/requirements-visual.txt
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            integrations/onnx/target
+          key: camera-preserved-${{ runner.os }}-rust-1.90-${{ hashFiles('integrations/onnx/Cargo.lock') }}
+      - name: Verify model identity, complete views and unchanged support rules
+        run: |
+          cargo fmt --manifest-path integrations/onnx/Cargo.toml -- --check
+          cargo clippy --release --locked --manifest-path integrations/onnx/Cargo.toml --all-targets -- -D warnings
+          cargo test --release --locked --manifest-path integrations/onnx/Cargo.toml --bin rustdriving-camera-preserved
+          cargo build --release --locked --manifest-path integrations/onnx/Cargo.toml --bin rustdriving-camera-preserved --bin rustdriving-camera-linear --bin rustdriving-camera-capacity --bin rustdriving-camera-detail
+          python -B -m unittest discover -s integrations/onnx -p test_camera_preserved.py -v
+          python -B assets/camera-preserved-v1/verify.py
+      - name: Acquire exactly pinned inputs
+        run: |
+          python -B integrations/onnx/fetch_s.py --output artifacts/camera-model-s
+          python -B integrations/onnx/bdd_fetch.py --output artifacts/bdd-camera
+          python -B integrations/onnx/camera_capacity_fetch.py
+          python -B integrations/onnx/camera_detail_fetch.py
+          python -B integrations/onnx/camera_preserved_fetch.py --output artifacts/camera-preserved-check/data
+      - name: Compare three policies on the same complete measured views
+        run: |
+          python -B integrations/onnx/camera_preserved_check.py controls --data artifacts/camera-preserved-check/data --output artifacts/camera-preserved-check/controls
+          set +e
+          python -B integrations/onnx/camera_preserved_check.py run --data artifacts/camera-preserved-check/data --controls artifacts/camera-preserved-check/controls --output artifacts/camera-preserved-check/validation
+          trial_status=$?
+          set -e
+          test "$trial_status" -eq 1
+          python -B integrations/onnx/camera_preserved_failure.py --data artifacts/camera-preserved-check/data --controls artifacts/camera-preserved-check/controls --output artifacts/camera-preserved-check/validation
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: camera-preserved-diagnostics
+          path: |
+            artifacts/camera-preserved-check/data/inputs.json
+            artifacts/camera-preserved-check/controls/summary.json
+            artifacts/camera-preserved-check/validation/
