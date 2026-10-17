@@ -1,0 +1,441 @@
+{
+  "schema_version": 1,
+  "repository": "ViscaaBarca/MLops-City",
+  "revision": "a87c85607d023e3815ccb58bd80a62ab5a8a8dfd",
+  "tree_sha256": "c28560768cc7c379e511610aabe3bc1c6cfd544428224c82054da46b2fb25499",
+  "class_mapping": {
+    "person": 0,
+    "rider": 0,
+    "bike": 1,
+    "car": 2,
+    "motor": 3,
+    "bus": 5,
+    "truck": 7,
+    "train": 6,
+    "traffic light": 9
+  },
+  "unscored_category_reason": {
+    "traffic sign": "BDD generic signs do not correspond to COCO stop-sign class; retained and counted separately, never treated as road-user ground truth."
+  },
+  "quality_gates": {
+    "minimum_precision": 0.7,
+    "minimum_recall": 0.6,
+    "minimum_per_class_recall_when_present": 0.5
+  },
+  "confidence_threshold": 0.3,
+  "nms_iou_threshold": 0.45,
+  "match_iou_threshold": 0.5,
+  "input_byte_budget": 16777216,
+  "policy": {
+    "coarse": "Compute unchanged original four-view consistency, keep every coarse detection, score, coordinate, order and origin. For non-road-image shapes use the complete original1..4 prefix.",
+    "new_proposals": "Only non-interior-edge detections from supplemental small tiles. Transform to source pixel frame without changing scores or classes.",
+    "coarse_veto": "Reject any supplemental proposal at IoU>.45 with any coarse result, regardless of class. Coarse boxes are never removed or replaced.",
+    "support": "Require matching class and IoU>.45 against the same original proposal in at least two distinct supplemental views, including its own view. Count at most one best-confidence/lower-rank witness per view. No transitive chains.",
+    "vehicle_ambiguity": "For proposed car/bus/truck, reject if any supplemental view contains an overlapping IoU>.45 conflicting car/bus/truck label. Other physically overlapping class pairs are not vetoed.",
+    "ordering": "Sort supplemental proposals by score descending, class, left, view, rank. Apply classwise IoU>.45 NMS only between accepted additions. Append additions after the unmodified coarse result, up to total300.",
+    "limits": "Existing complete<=16 view inventory, <=300 detections/view, coarse consistency work<=1400000. Additional IoU work<=27000000, complete no-clobber report<=4MiB. No partial success.",
+    "interpretation": "Correlated crops of the same image provide support, not independent sensor evidence or calibrated probabilities."
+  },
+  "limits": [
+    "Convenience sample, not BDD mAP, representative domain, independent crop probabilities or proof of upstream training non-overlap.",
+    "No new latency, guard availability, live ingestion, identity, metric-depth or driving-integration claim."
+  ],
+  "algorithm": "s640_supported_grid_capacity_v1",
+  "model_sha256": "c5c2d13e59ae883e6af3b45daea64af4833a4951c92d116ec270d9ddbe998063",
+  "model_bytes": 35858002,
+  "input_size": 640,
+  "output_shape": [
+    1,
+    8400,
+    85
+  ],
+  "selection_before_image_acquisition_decode_or_inference": true,
+  "selection_method": "First16 lexicographic original BDD val JPEG/legacy-label pairs in the pinned complete tree, excluding all cached JPEG stems and every prior56 image. No pixel, annotation, category count or inference selection; no replacement.",
+  "excluded_image_stems": [
+    "000000058636",
+    "000000174482",
+    "000000226111",
+    "000000252219",
+    "000000303818",
+    "000000322864",
+    "00a395fe-d60c0b47",
+    "00a9cd6b-b39be004",
+    "00d79c0a-23bea078",
+    "012e0351-723ac360",
+    "01a4933a-252e566a",
+    "0204aad7-05dbee41",
+    "02133057-fc70cc0e",
+    "023d0f3c-564e6d31",
+    "026c7465-d54954fa",
+    "03343856-ebf78b5f",
+    "035cb512-77517657",
+    "042d4997-ba286e85",
+    "049dde52-19569c8c",
+    "0540f550-72c78702",
+    "054a8fc0-6f54c1d9",
+    "0573cc84-e67f61ef",
+    "05f899e8-b72038aa",
+    "064c84ab-5560b5a4",
+    "0672c229-4d6e08a2",
+    "06fc9e56-f4dc4049",
+    "072a5b71-13456ded",
+    "074496ba-19237a5b",
+    "0798a3a8-c4501e0f",
+    "07b5edf7-e4c83fc5",
+    "07dbeef2-301c99ae",
+    "09285422-34367b36",
+    "099071e5-fae1033c",
+    "09a3ff75-72315256",
+    "09cdd188-4e98738e",
+    "0a172b0e-136b7a63",
+    "0a493f24-352f747e",
+    "0a8368e0-41c6b3b3",
+    "0b2f5d0d-8fddc1fc",
+    "0d01bff2-38b969d3",
+    "0d13ae3d-f033a349",
+    "0d4268d5-3c617dd8",
+    "0d606092-486670ee",
+    "0e4066b2-9b16405b",
+    "0e946d23-8a9b41b7",
+    "0efe0129-c499802e",
+    "0f06d2de-7b9b4397",
+    "0f11e283-a34ec892",
+    "0f31361a-7020f98e",
+    "0fabbd93-2184c8fb",
+    "0ff834c6-eeda5d39",
+    "10c0c72d-dafc19cf",
+    "10c27164-370783f7",
+    "10c8f3c5-678d5b85",
+    "11886292-7b112025",
+    "11bf94bf-2fe7ae78",
+    "121f7fbc-08249914",
+    "1224364f-bbfb474c",
+    "17d21997-6f076249",
+    "4899be53-dcc6c017",
+    "4dab8d2a-be9667d4",
+    "ab2360f2-7704a1bf",
+    "astronaut",
+    "bad"
+  ],
+  "images": [
+    {
+      "id": "1264e9c4-b4f2355e",
+      "image": {
+        "path": "bdd/images/val/1264e9c4-b4f2355e.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ad8ffea3a919494aca15336f708728842621aef8",
+        "size": 67433,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/ad8ffea3a919494aca15336f708728842621aef8"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/1264e9c4-b4f2355e.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "d90270a517e3e56d2133ceeb4f1ad616254a307e",
+        "size": 5892,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/d90270a517e3e56d2133ceeb4f1ad616254a307e"
+      }
+    },
+    {
+      "id": "13288932-6c2af1b1",
+      "image": {
+        "path": "bdd/images/val/13288932-6c2af1b1.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "10f25a7db2611d259164c3783d51dd820a107f8b",
+        "size": 71230,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/10f25a7db2611d259164c3783d51dd820a107f8b"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/13288932-6c2af1b1.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "451776890bfa11b2b8a9283bc0417ffd3b539cd7",
+        "size": 27138,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/451776890bfa11b2b8a9283bc0417ffd3b539cd7"
+      }
+    },
+    {
+      "id": "1334859b-b87436bc",
+      "image": {
+        "path": "bdd/images/val/1334859b-b87436bc.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6bc22512ca5675b90bde47b78129997cc5dc64d9",
+        "size": 78759,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/6bc22512ca5675b90bde47b78129997cc5dc64d9"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/1334859b-b87436bc.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "cc7f9fa9666e83411a63afe5abe62a9d03a90c3b",
+        "size": 22497,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/cc7f9fa9666e83411a63afe5abe62a9d03a90c3b"
+      }
+    },
+    {
+      "id": "147745bb-f8c17b94",
+      "image": {
+        "path": "bdd/images/val/147745bb-f8c17b94.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "bf81e1772373369814c482794bc2f90f0960c754",
+        "size": 76373,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/bf81e1772373369814c482794bc2f90f0960c754"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/147745bb-f8c17b94.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "a676e315e70dbbc4094dd068e958c4c48b8ad9cd",
+        "size": 26047,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/a676e315e70dbbc4094dd068e958c4c48b8ad9cd"
+      }
+    },
+    {
+      "id": "152a8c1e-3703737c",
+      "image": {
+        "path": "bdd/images/val/152a8c1e-3703737c.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c17cedc12bcd593cdabd18b8f85cb26fa395d7be",
+        "size": 68641,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/c17cedc12bcd593cdabd18b8f85cb26fa395d7be"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/152a8c1e-3703737c.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "a90dea8ccb6a2b3756a7b81c35f961cd8aa44210",
+        "size": 13432,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/a90dea8ccb6a2b3756a7b81c35f961cd8aa44210"
+      }
+    },
+    {
+      "id": "153cb04c-b2b79b91",
+      "image": {
+        "path": "bdd/images/val/153cb04c-b2b79b91.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "866fb50b474dc4243f75fb07804d3f92b7ecbc22",
+        "size": 52777,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/866fb50b474dc4243f75fb07804d3f92b7ecbc22"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/153cb04c-b2b79b91.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "7e057e1e03f18f80589a68994dc12b81033ba833",
+        "size": 5804,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/7e057e1e03f18f80589a68994dc12b81033ba833"
+      }
+    },
+    {
+      "id": "15718870-1fe8f2e8",
+      "image": {
+        "path": "bdd/images/val/15718870-1fe8f2e8.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e9479b33af1ccf954e899ebd5aa2b657a1b8bc42",
+        "size": 80022,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/e9479b33af1ccf954e899ebd5aa2b657a1b8bc42"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/15718870-1fe8f2e8.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "c4c3619b30b555293fbeae0035414d1f07eadc1f",
+        "size": 25517,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/c4c3619b30b555293fbeae0035414d1f07eadc1f"
+      }
+    },
+    {
+      "id": "15905cba-d1eee7c8",
+      "image": {
+        "path": "bdd/images/val/15905cba-d1eee7c8.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "852c56407660a6fd8bbc44d13c6a627bb6652e1d",
+        "size": 62434,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/852c56407660a6fd8bbc44d13c6a627bb6652e1d"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/15905cba-d1eee7c8.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "dfb5b02e72d8c50adbc5766be86a2b9c17bf14c9",
+        "size": 23944,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/dfb5b02e72d8c50adbc5766be86a2b9c17bf14c9"
+      }
+    },
+    {
+      "id": "1597fb15-140c0eac",
+      "image": {
+        "path": "bdd/images/val/1597fb15-140c0eac.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "48f6a5f65204b038e7c747124bbea37424edc8c6",
+        "size": 62904,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/48f6a5f65204b038e7c747124bbea37424edc8c6"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/1597fb15-140c0eac.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "190f7b5a3bdef1f1884c9d51afa4ea2af2bb1d01",
+        "size": 15392,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/190f7b5a3bdef1f1884c9d51afa4ea2af2bb1d01"
+      }
+    },
+    {
+      "id": "1598acd3-9cb894c9",
+      "image": {
+        "path": "bdd/images/val/1598acd3-9cb894c9.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "7dc2f2fa0800dac43f3a351820ba28e20b177c0a",
+        "size": 77894,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/7dc2f2fa0800dac43f3a351820ba28e20b177c0a"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/1598acd3-9cb894c9.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "5683ca09e3e22442cd43b7a4a27e4f01cc8a5d19",
+        "size": 12540,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/5683ca09e3e22442cd43b7a4a27e4f01cc8a5d19"
+      }
+    },
+    {
+      "id": "15c0edab-4cb3b2e1",
+      "image": {
+        "path": "bdd/images/val/15c0edab-4cb3b2e1.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "80d8912ec6871d79f0aa6c57d1578d5d46601cd1",
+        "size": 52639,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/80d8912ec6871d79f0aa6c57d1578d5d46601cd1"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/15c0edab-4cb3b2e1.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "ec023ebe20fb064b991f5c03f1814f5e562983d9",
+        "size": 33450,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/ec023ebe20fb064b991f5c03f1814f5e562983d9"
+      }
+    },
+    {
+      "id": "167f11ee-0e320693",
+      "image": {
+        "path": "bdd/images/val/167f11ee-0e320693.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "1477134577df9a5d032362b70fb226d25f4f1a52",
+        "size": 76834,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/1477134577df9a5d032362b70fb226d25f4f1a52"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/167f11ee-0e320693.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "72b3efb2b21158bb11414f15e39c74e542462b54",
+        "size": 34404,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/72b3efb2b21158bb11414f15e39c74e542462b54"
+      }
+    },
+    {
+      "id": "167f11ee-af68bd2a",
+      "image": {
+        "path": "bdd/images/val/167f11ee-af68bd2a.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "bbf80a996c1de2a41ec8c7fde7f6584b79801c98",
+        "size": 71021,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/bbf80a996c1de2a41ec8c7fde7f6584b79801c98"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/167f11ee-af68bd2a.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "cfa1d4421cb7828bf6abb15849e8469a47a23d74",
+        "size": 19734,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/cfa1d4421cb7828bf6abb15849e8469a47a23d74"
+      }
+    },
+    {
+      "id": "1738c701-e02d1082",
+      "image": {
+        "path": "bdd/images/val/1738c701-e02d1082.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ee18dadfde0428fc8f330cbe68f98c146a08d514",
+        "size": 82064,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/ee18dadfde0428fc8f330cbe68f98c146a08d514"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/1738c701-e02d1082.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "549952d5f3d56692acc29ef6985706558225c8cf",
+        "size": 40003,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/549952d5f3d56692acc29ef6985706558225c8cf"
+      }
+    },
+    {
+      "id": "1770baac-3b0f3cb8",
+      "image": {
+        "path": "bdd/images/val/1770baac-3b0f3cb8.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "4ba712ffa73fb41c1ff2c5f2faf84331724ead73",
+        "size": 66590,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/4ba712ffa73fb41c1ff2c5f2faf84331724ead73"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/1770baac-3b0f3cb8.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "34e66bbc71f8d2fcd8ebfdd18b05d4b3a3bb8c75",
+        "size": 20075,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/34e66bbc71f8d2fcd8ebfdd18b05d4b3a3bb8c75"
+      }
+    },
+    {
+      "id": "1797ecb1-84ee3c11",
+      "image": {
+        "path": "bdd/images/val/1797ecb1-84ee3c11.jpg",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "69a42ae2d8c2d75b87d9fdd5a9e4eac20175d554",
+        "size": 50035,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/69a42ae2d8c2d75b87d9fdd5a9e4eac20175d554"
+      },
+      "annotation": {
+        "path": "bdd/json_labels/val/1797ecb1-84ee3c11.json",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "8858edb4fd5c1542b298230ce2a2ca0c27aecd23",
+        "size": 44643,
+        "url": "https://api.github.com/repos/ViscaaBarca/MLops-City/git/blobs/8858edb4fd5c1542b298230ce2a2ca0c27aecd23"
+      }
+    }
+  ],
+  "viewed_ids": [
+    "00a395fe-d60c0b47",
+    "026c7465-d54954fa",
+    "0798a3a8-c4501e0f",
+    "0a493f24-352f747e",
+    "17d21997-6f076249",
+    "4899be53-dcc6c017",
+    "4dab8d2a-be9667d4",
+    "ab2360f2-7704a1bf"
+  ],
+  "view_recipe": "Complete original1..4 views, then side=min(width,height,640) squares, stride=floor(3*side/4), evenly distributed integer offsets and y-major order; deduplicate with original prefix. Reject inventories over16. For1280x720: original4 plus six640px crops =10.",
+  "evaluation": "New inference on viewed original8 and fresh16: first and repeated optimized S Resize2x plans, then serial original S ONNX plan on all10 views. 24*10*3=720 forwards; no warmup. Score unchanged coarse4, naive10 and supported10 from the same measured views. This is an offline capacity/augmentation comparison, without a new timing or availability claim. Also run the frozen Nano four-view optimized detector twice on the same24 images (192 forwards) to separate model capacity from supplementation; total912 new forwards. Nano receives the unchanged original four views, not the640px supplemental grid.",
+  "relative_adoption": "In each group supported precision must not regress against coarse and must exceed naive, recall must exceed coarse without per-present-class recall regression. Fresh16 must also pass all original absolute quality gates. No adoption on partial success.",
+  "model_choice": "Reuse the independently pinned cached official YOLOX-S640 model and existing guarded Resize2x lowering. Fixed before new inputs; no training, score sweep, class-specific threshold or changed support rule.",
+  "capacity_comparison": "Report S coarse4 versus Nano coarse4 on the same fixed groups, independently from S supported versus S coarse. Fixed thresholds and complete mapped original labels; no capacity gain claim by comparisons on different images."
+}
