@@ -30,6 +30,10 @@ impl PurePursuit {
         self.integral = 0.0;
         self.steering = 0.0;
     }
+    fn emergency_command(&mut self) -> ControlCommand {
+        self.reset_emergency_state();
+        ControlCommand::emergency()
+    }
 }
 impl Controller for PurePursuit {
     fn control(&mut self, ego: EgoState, path: &Trajectory, dt: f64) -> ControlCommand {
@@ -47,8 +51,7 @@ impl Controller for PurePursuit {
                 .iter()
                 .any(|p| !p.position.finite() || !p.speed.is_finite() || !p.time.is_finite())
         {
-            self.reset_emergency_state();
-            return ControlCommand::emergency();
+            return self.emergency_command();
         }
         // Shorter preview follows the smooth lateral maneuver more closely.
         // Interpolate its circle intersection to avoid sample-index steering jumps.
@@ -59,8 +62,7 @@ impl Controller for PurePursuit {
         };
         let target = pursuit_target(path, ego.pose.position, lookahead);
         if !target.finite() {
-            self.reset_emergency_state();
-            return ControlCommand::emergency();
+            return self.emergency_command();
         }
         let delta = target.minus(ego.pose.position);
         let distance = delta.x.hypot(delta.y).max(0.1);
@@ -90,17 +92,31 @@ impl Controller for PurePursuit {
                 || !next.speed.is_finite()
                 || !initial.speed.is_finite()
             {
-                return ControlCommand::emergency();
+                return self.emergency_command();
             }
             let feedforward = (next.speed - initial.speed) / duration;
             let error = initial.speed - ego.speed;
-            self.integral = (self.integral + error * dt).clamp(-2.0, 2.0);
-            (feedforward + 1.5 * error + 0.15 * self.integral).clamp(-4.0, 2.0)
+            let integral = self.integral + error * dt;
+            let proportional = 1.5 * error;
+            if !feedforward.is_finite()
+                || !error.is_finite()
+                || !integral.is_finite()
+                || !proportional.is_finite()
+            {
+                return self.emergency_command();
+            }
+            let integral = integral.clamp(-2.0, 2.0);
+            let requested = feedforward + proportional + 0.15 * integral;
+            if !requested.is_finite() {
+                return self.emergency_command();
+            }
+            self.integral = integral;
+            requested.clamp(-4.0, 2.0)
         } else if initial.speed < 0.1 {
             self.integral = 0.0;
             -3.5
         } else {
-            return ControlCommand::emergency();
+            return self.emergency_command();
         };
         ControlCommand {
             acceleration,

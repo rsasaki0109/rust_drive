@@ -37,6 +37,20 @@ delayed recovery and full sensor-only replay including rejection of a forged
 pre-fault recovery stamp. This simulation policy does not establish real-vehicle
 safety or sensor-fault rates.
 
+The reusable pure-pursuit controller clears both its steering memory and PI
+speed integral whenever it emits an emergency command, including invalid first
+segment durations and moving single-point trajectories. The next valid call
+therefore starts from the emitted zero steering with the existing 0.7 rad/s
+normal steering-rate limit and no stale integral acceleration. The pipeline
+also synchronizes controller state after its independent command guard.
+Finite trajectory inputs can still overflow during feedforward, proportional
+feedback, integral accumulation or their unsaturated sum. These intermediate
+results are checked before actuator/integral clamps; a nonfinite result emits
+the same emergency command and clears state. Finite saturation and the existing
+stationary single-point hold retain their behavior. This repairs standalone
+control-library error handling; it adds no physical steering-actuator model or
+real-vehicle validation.
+
 Ground-truth poses, object identities and physical collision results are not input fields. Unknown top-level fields are rejected. Synthetic sensors necessarily observe the simulator world; their noisy measurements cross this boundary.
 
 ## Bounded acquisition-time LiDAR reprojection
