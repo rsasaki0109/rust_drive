@@ -1,10 +1,11 @@
 //! Fixed-route stop signs. Only map geometry and healthy measured motion enter here.
 use crate::traffic_controls::{StopLine, planning_prefix};
-use rustdriving_core::{EgoState, Route};
+use rustdriving_core::{EgoState, Odometry, Route};
 use serde::{Deserialize, Serialize};
 
 pub const STOP_HOLD_S: f64 = 2.0;
 pub const STOP_SPEED_M_S: f64 = 0.05;
+pub(crate) const MAX_STOP_MOTION_AGE_S: f64 = 0.05;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum StopPhase {
@@ -26,15 +27,23 @@ pub struct StopSignStatus {
     pub stops: Vec<ControlledStop>,
     pub stop_s_m: Option<f64>,
 }
+#[derive(Clone, Copy)]
+struct StopHold {
+    /// First qualifying delivery; earlier acquisition time is never credited.
+    started_at: f64,
+    last_stamp: f64,
+}
 pub(crate) struct StopSigns {
     lines: Vec<StopLine>,
-    since: Vec<Option<f64>>,
+    holds: Vec<Option<StopHold>>,
+    motion_watermark: Option<f64>,
     status: StopSignStatus,
 }
 impl StopSigns {
     pub fn new(lines: Vec<StopLine>) -> Self {
         Self {
-            since: vec![None; lines.len()],
+            holds: vec![None; lines.len()],
+            motion_watermark: None,
             status: StopSignStatus {
                 stops: lines
                     .iter()
@@ -55,19 +64,34 @@ impl StopSigns {
         now: f64,
         ego: EgoState,
         radius: f64,
-        measured_speed: Option<f64>,
+        measured_motion: Option<Odometry>,
         healthy: bool,
     ) {
+        let new_motion = measured_motion.filter(|motion| {
+            healthy
+                && self
+                    .motion_watermark
+                    .is_none_or(|stamp| motion.stamp > stamp)
+        });
+        let observed_stamp = if healthy {
+            measured_motion.map_or(now, |motion| motion.stamp)
+        } else {
+            now
+        };
+        self.motion_watermark = Some(
+            self.motion_watermark
+                .map_or(observed_stamp, |stamp| stamp.max(observed_stamp)),
+        );
         let (progress, lateral) = route.project(ego.pose.position);
         let heading = route.sample(progress, 0.0).1;
         let aligned = rustdriving_core::wrap_angle(ego.pose.yaw - heading).abs() < 0.2
             && lateral.abs() + radius <= route.half_width;
         self.status.stop_s_m = None;
-        for ((line, state), since) in self
+        for ((line, state), hold) in self
             .lines
             .iter()
             .zip(&mut self.status.stops)
-            .zip(&mut self.since)
+            .zip(&mut self.holds)
         {
             let margin = line.route_s_m - progress - radius;
             if state.phase == StopPhase::Released && healthy && aligned && margin <= 0.0 {
@@ -80,17 +104,28 @@ impl StopSigns {
                 && aligned
                 && (0.5..=3.5).contains(&margin)
                 && ego.speed.abs() <= STOP_SPEED_M_S
-                && measured_speed.is_some_and(|speed| speed.abs() <= STOP_SPEED_M_S);
+                && measured_motion.is_some_and(|motion| motion.speed.abs() <= STOP_SPEED_M_S);
             if stopped {
-                let start = *since.get_or_insert(now);
-                state.held_s = now - start;
-                state.phase = if state.held_s + 1e-9 >= STOP_HOLD_S {
-                    StopPhase::Released
-                } else {
-                    StopPhase::Holding
-                };
+                if let Some(motion) = new_motion {
+                    if hold.is_some_and(|held| {
+                        motion.stamp - held.last_stamp > MAX_STOP_MOTION_AGE_S + 1e-9
+                    }) {
+                        *hold = None;
+                    }
+                    let held = hold.get_or_insert(StopHold {
+                        started_at: now,
+                        last_stamp: motion.stamp,
+                    });
+                    held.last_stamp = motion.stamp;
+                    state.held_s = (held.last_stamp - held.started_at).max(0.0);
+                    state.phase = if state.held_s + 1e-9 >= STOP_HOLD_S {
+                        StopPhase::Released
+                    } else {
+                        StopPhase::Holding
+                    };
+                }
             } else {
-                *since = None;
+                *hold = None;
                 state.held_s = 0.0;
                 state.phase = StopPhase::Approaching;
             }
@@ -138,28 +173,49 @@ mod tests {
             speed,
         }
     }
+    fn step(
+        stops: &mut StopSigns,
+        route: &Route,
+        now: f64,
+        ego: EgoState,
+        measured_speed: Option<f64>,
+        healthy: bool,
+    ) {
+        stops.step(
+            route,
+            now,
+            ego,
+            1.25,
+            measured_speed.map(|speed| Odometry {
+                stamp: now,
+                speed,
+                yaw_rate: 0.0,
+            }),
+            healthy,
+        );
+    }
     #[test]
     fn only_a_continuous_healthy_near_line_stop_releases() {
         let mut s = stops();
         let r = route();
         for i in 0..60 {
-            s.step(&r, i as f64 * 0.05, ego(10.0, 0.0), 1.25, Some(0.0), true);
+            step(&mut s, &r, i as f64 * 0.05, ego(10.0, 0.0), Some(0.0), true);
         }
         assert_eq!(s.status().stops[0].phase, StopPhase::Approaching);
         for i in 60..100 {
-            s.step(&r, i as f64 * 0.05, ego(33.0, 0.0), 1.25, Some(0.0), true);
+            step(&mut s, &r, i as f64 * 0.05, ego(33.0, 0.0), Some(0.0), true);
         }
         assert_eq!(s.status().stops[0].phase, StopPhase::Holding);
-        s.step(&r, 5.0, ego(33.0, 0.0), 1.25, None, false);
+        step(&mut s, &r, 5.0, ego(33.0, 0.0), None, false);
         assert_eq!(s.status().stops[0].held_s, 0.0);
         for i in 101..142 {
-            s.step(&r, i as f64 * 0.05, ego(33.0, 0.0), 1.25, Some(0.0), true);
+            step(&mut s, &r, i as f64 * 0.05, ego(33.0, 0.0), Some(0.0), true);
         }
         assert_eq!(s.status().stops[0].phase, StopPhase::Released);
         assert!(s.endpoint().is_none());
-        s.step(&r, 7.15, ego(36.0, 1.0), 1.25, Some(1.0), false);
+        step(&mut s, &r, 7.15, ego(36.0, 1.0), Some(1.0), false);
         assert_eq!(s.status().stops[0].phase, StopPhase::Released);
-        s.step(&r, 7.2, ego(36.0, 1.0), 1.25, Some(1.0), true);
+        step(&mut s, &r, 7.2, ego(36.0, 1.0), Some(1.0), true);
         assert_eq!(s.status().stops[0].phase, StopPhase::Passed);
     }
     #[test]
@@ -175,11 +231,11 @@ mod tests {
                 if mode == 2 {
                     e.pose.yaw = 1.0;
                 }
-                s.step(
+                step(
+                    &mut s,
                     &r,
                     i as f64 * 0.05,
                     e,
-                    1.25,
                     if mode == 1 { None } else { Some(e.speed) },
                     true,
                 );

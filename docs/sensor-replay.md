@@ -296,6 +296,21 @@ required on every frame. Unconfigured signal input invalidates confirmation
 before the route can switch. Replay recomputes these decisions from recorded
 motion; older logs that switched using repeated motion need new expected outputs.
 
+## Stop-sign motion evidence
+
+An unserved stop sign needs two seconds supported by distinct accepted odometry
+acquisitions, each at most 0.05 seconds old and at most 0.05 seconds apart. Both
+measured and estimated absolute speed must be at most 0.05 m/s, with the existing
+healthy sensing, near-line margin, heading and corridor checks. Confirmation
+starts at the first qualifying delivery time and advances only to a newer motion
+acquisition time. Cached, duplicate and reordered motion cannot advance `held_s`
+or release the sign. An acquisition gap restarts confirmation even when no
+pipeline call observed the gap. Unhealthy sensing resets it and requires motion
+acquired after that frame; a sign already served remains released. Replay
+recomputes the interval, and older logs that credited unobserved time need new
+expected outputs. This is the fixed 20 Hz research policy, not a claim of
+continuous physical standstill between observations.
+
 ## GNSS acceptance diagnostics
 
 Optional output `localization` reports last observed/accepted GNSS stamps, the latest valid-new-fix decision and finite NIS, and accepted/rejected counts. Rejected fixes cannot refresh health; their receipt prevents subsequent duplicate/older observations from being processed. Invalid input continues to use health diagnostics. Replay recomputes the joint gate and all diagnostics. Changing a GNSS observation or its expected counters is covered by mismatch tests. Fault-window labels exist only in simulator configuration; recorded sensor observations contain the actual bias without labels. Schema 1 remains readable, but new correction arithmetic and output diagnostics require regenerated expected outputs. Boxed record payloads preserve JSON encoding. [GNSS baseline recovery](gnss-robustness.md) and [current terminal stopping](terminal-stopping.md).

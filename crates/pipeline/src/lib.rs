@@ -676,16 +676,15 @@ impl DrivingPipeline {
             health.push(HealthIssue::InvalidTrafficSignal);
         }
         if let Some(stops) = &mut self.stop_signs {
-            let measured_speed = self
+            let measured_motion = self
                 .last_odom
-                .filter(|o| input.time - o.stamp <= 0.05 + 1e-9)
-                .map(|o| o.speed);
+                .filter(|o| input.time - o.stamp <= stop_signs::MAX_STOP_MOTION_AGE_S + 1e-9);
             stops.step(
                 &self.config.route,
                 input.time,
                 estimate,
                 self.config.vehicle.radius,
-                measured_speed,
+                measured_motion,
                 health.is_empty(),
             );
         }
