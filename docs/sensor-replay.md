@@ -153,6 +153,16 @@ The acquisition stamp is also retained for tracking and freshness. Priority-cros
 
 This is bounded reprojection through past estimates, not a full delayed-sensor estimator. Later GNSS corrections do not retroactively smooth history; delayed odometry/GNSS fusion, per-point LiDAR deskew and covariance propagation are absent. Current-time motion forecasts separately propagate acquired tracks to the control clock, as described below. Neither step establishes general latency tolerance from an accepted replay or the authored timing fixtures.
 
+## Per-track observation intervals
+
+Track velocity correction uses the elapsed acquisition time since that identity
+was last observed, including intervening missed detections. Empty scans or
+other visible objects cannot shorten this interval. The 0.6 s observation expiry
+and zero initial velocity for a new identity remain in force. [The timing
+repair and independent log audit](tracker-observation-time.md) document this
+contract and the expected mismatch for historical logs affected by the old
+scan-interval correction.
+
 ## Forecast time origin
 
 Tracks retain their acquisition-time position, velocity and `last_seen` stamp. The shared pipeline calls `ObservedBraking` with the enclosing frame's current `time`; every returned forecast begins at that control time, with 41 positions spaced 0.2 s apart through the next eight seconds. Its samples evaluate acquired motion at `age + future_offset`, where `age = time - last_seen`. Tracks and acquisition stamps are not overwritten by extrapolated estimates. Both the collision planner and priority-zone sweeps consume these same current-time forecasts.

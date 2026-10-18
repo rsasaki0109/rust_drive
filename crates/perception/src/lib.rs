@@ -123,14 +123,11 @@ fn fit_circle(points: &[Vec2]) -> Option<(Vec2, f64)> {
 pub struct Tracker {
     tracks: Vec<Track>,
     next_id: u64,
-    last_stamp: Option<f64>,
 }
 impl Tracker {
+    /// Updates from a successful scan with a strictly increasing acquisition time.
+    /// Missing detections do not renew a track's observation time.
     pub fn update(&mut self, detections: &[Detection], stamp: f64) -> Vec<Track> {
-        let dt = self
-            .last_stamp
-            .map_or(0.1, |s| (stamp - s).clamp(0.01, 1.0));
-        self.last_stamp = Some(stamp);
         self.tracks.retain(|t| stamp - t.last_seen < 0.6);
         let mut matched = vec![false; self.tracks.len()];
         for d in detections {
@@ -151,12 +148,15 @@ impl Tracker {
                 .min_by(|a, b| a.1.total_cmp(&b.1));
             if let Some((i, _)) = best {
                 let track = &mut self.tracks[i];
-                let predicted = track
-                    .position
-                    .plus(track.velocity.scaled(stamp - track.last_seen));
+                // The residual spans this track's missed observations, even
+                // when other objects were detected in intervening scans.
+                let elapsed = stamp - track.last_seen;
+                let predicted = track.position.plus(track.velocity.scaled(elapsed));
                 let residual = d.center.minus(predicted);
                 track.position = predicted.plus(residual.scaled(0.75));
-                track.velocity = track.velocity.plus(residual.scaled(0.12 / dt));
+                track.velocity = track
+                    .velocity
+                    .plus(residual.scaled(0.12 / elapsed.clamp(0.01, 1.0)));
                 let speed = track.velocity.x.hypot(track.velocity.y);
                 if speed > 15.0 {
                     track.velocity = track.velocity.scaled(15.0 / speed);
