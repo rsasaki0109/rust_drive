@@ -64,6 +64,9 @@ pub struct PipelineConfig {
     pub vehicle: VehicleConfig,
     pub nominal_dt: f64,
     pub cruise_speed: f64,
+    /// Experimental history-confirmed slow-object forecasts; default off.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub confirm_slow_motion: bool,
     #[serde(default, skip_serializing_if = "is_false")]
     pub local_route_geometry: bool,
     /// Optional chassis-to-rear-axle distance for low-speed no-slip motion.
@@ -98,6 +101,7 @@ impl PipelineConfig {
             vehicle,
             nominal_dt: 0.05,
             cruise_speed: 8.0,
+            confirm_slow_motion: false,
             local_route_geometry: false,
             rear_axle_offset_m: None,
             motion_limits: None,
@@ -407,6 +411,11 @@ impl DrivingPipeline {
         }
         let grid = OccupancyGrid::new(Vec2::new(min_x, min_y), width, height, 0.5);
         let ekf = Ekf::new(config.initial_pose);
+        let predictor = if config.confirm_slow_motion {
+            ObservedBraking::with_slow_motion()
+        } else {
+            ObservedBraking::default()
+        };
         let tracking_frame = tracking_frame::TrackingFrame::new(config.initial_pose);
         let map_localization = config.localization_map.clone().map(MapLocalization::new);
         let navigator = config.navigation.clone().map(Navigator::new).transpose()?;
@@ -419,7 +428,7 @@ impl DrivingPipeline {
             ekf,
             perception: LidarClusters,
             tracker: Tracker::default(),
-            predictor: ObservedBraking::default(),
+            predictor,
             planner,
             controller,
             grid,

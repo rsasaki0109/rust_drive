@@ -1,15 +1,25 @@
 //! Motion forecasts from tracked observations; no simulator behavior or intentions.
+mod slow_motion;
 use rustdriving_core::{Prediction, Predictor, Track};
 use std::collections::{BTreeMap, VecDeque};
 
-/// Uses sustained measured braking for at most one second, then coasts.
+/// Optionally confirms slow motion and uses measured braking for at most one second.
 /// This is a motion hypothesis, not a guarantee that another driver will brake.
 #[derive(Default)]
 pub struct ObservedBraking {
     baseline: ConstantVelocity,
     history: BTreeMap<u64, VecDeque<Track>>,
+    confirm_slow_motion: bool,
 }
 impl ObservedBraking {
+    /// Experimental persistent low-speed motion. Default retains the established
+    /// deadband: this mode can delay terminal completion behind a slow follower.
+    pub fn with_slow_motion() -> Self {
+        Self {
+            confirm_slow_motion: true,
+            ..Self::default()
+        }
+    }
     /// Produces samples starting at `time`, extrapolated from each observation's
     /// acquisition timestamp. The braking hypothesis also starts at acquisition;
     /// repeated calls do not renew its one-second braking interval.
@@ -37,23 +47,6 @@ impl ObservedBraking {
                 prediction.positions.clear();
                 continue;
             }
-            for (i, position) in prediction.positions.iter_mut().enumerate() {
-                let elapsed = if speed < 0.7 {
-                    0.0
-                } else {
-                    age + i as f64 * prediction.dt
-                };
-                *position = track.position.plus(track.velocity.scaled(elapsed));
-            }
-            if prediction
-                .positions
-                .iter()
-                .any(|position| !position.finite())
-            {
-                history.clear();
-                prediction.positions.clear();
-                continue;
-            }
             if history
                 .back()
                 .is_some_and(|old| track.last_seen < old.last_seen)
@@ -73,10 +66,29 @@ impl ObservedBraking {
             {
                 history.pop_front();
             }
+            let moving = speed >= 0.7
+                || (self.confirm_slow_motion && slow_motion::supported(track, history));
+            for (i, position) in prediction.positions.iter_mut().enumerate() {
+                let elapsed = if moving {
+                    age + i as f64 * prediction.dt
+                } else {
+                    0.
+                };
+                *position = track.position.plus(track.velocity.scaled(elapsed));
+            }
+            if prediction
+                .positions
+                .iter()
+                .any(|position| !position.finite())
+            {
+                history.clear();
+                prediction.positions.clear();
+                continue;
+            }
             if age > 0.15 + 1e-9 {
                 continue;
             }
-            if speed < 0.7 {
+            if !moving {
                 continue;
             }
             // Withdraw braking on the first fresh non-decreasing speed sample.

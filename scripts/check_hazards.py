@@ -1051,14 +1051,43 @@ def check_speed_profiles(log):
             'max_deceleration_m_s2': max_deceleration}
 
 
+def supported_slow_motion(samples, current):
+    """Check four spaced observations as chronological displacement intervals."""
+    speed = math.hypot(*xy(current['velocity']))
+    if not .1 <= speed < .7:
+        return False
+    direction = tuple(v/speed for v in xy(current['velocity']))
+    anchors = []
+    for age in [.6, .4, .2]:
+        wanted = current['last_seen']-age
+        candidates = [s for s in samples if abs(s['last_seen']-wanted) <= .025+1e-9]
+        if not candidates:
+            return False
+        anchors.append(min(candidates, key=lambda s: abs(s['last_seen']-wanted)))
+    anchors.append(current)
+    for old in anchors[:-1]:
+        old_speed = math.hypot(*xy(old['velocity']))
+        if old_speed < .1 or sum(v*d for v, d in zip(xy(old['velocity']), direction)) < .95*old_speed:
+            return False
+    for old, new in zip(anchors, anchors[1:]):
+        elapsed = new['last_seen']-old['last_seen']
+        delta = tuple(b-a for a, b in zip(xy(old['position']), xy(new['position'])))
+        forward = sum(v*d for v, d in zip(delta, direction))
+        if elapsed <= 0 or forward+1e-9 < .1*elapsed or forward+1e-9 < .9*math.hypot(*delta):
+            return False
+    return True
+
+
 def check_motion_predictions(log):
     """Reconstruct current-epoch forecasts from timestamped measured tracks only."""
     history = {}
     forecasts = braking_forecasts = stale_fallbacks = reacceleration_fallbacks = 0
     aged_forecasts = rebased_moving_forecasts = 0
+    slow_forecasts = unconfirmed_slow_forecasts = 0
     max_deceleration = max_epoch_age = 0.0
     with log.open() as stream:
-        next(stream)
+        config = json.loads(next(stream))['header']['config']
+        confirm_slow_motion = config.get('confirm_slow_motion', False)
         for line in stream:
             record = json.loads(line)
             if record.get('kind') != 'tick':
@@ -1094,13 +1123,17 @@ def check_motion_predictions(log):
                     continue
                 if len(positions) != 41 or abs(dt-0.2) > 1e-9:
                     raise ValueError('forecast horizon or spacing changed')
+                slow = confirm_slow_motion and supported_slow_motion(samples, track)
+                moving = speed >= .7 or slow
+                slow_forecasts += int(slow)
+                unconfirmed_slow_forecasts += int(speed < .7 and not slow)
                 aged_forecasts += int(age > 1e-9)
-                rebased_moving_forecasts += int(age > 1e-9 and speed >= .7)
+                rebased_moving_forecasts += int(age > 1e-9 and moving)
                 max_epoch_age = max(max_epoch_age, age)
                 stale = age > .15+1e-9
                 reaccelerating = len(samples) >= 2 and speed >= math.hypot(*xy(samples[-2]['velocity']))
                 braking = None
-                if not stale and not reaccelerating and speed >= .7 and len(samples) >= 2:
+                if not stale and not reaccelerating and moving and len(samples) >= 2:
                     direction = (track['velocity']['x']/speed, track['velocity']['y']/speed)
                     previous = track
                     supported = []
@@ -1122,9 +1155,9 @@ def check_motion_predictions(log):
                 stale_fallbacks += int(stale)
                 reacceleration_fallbacks += int(reaccelerating)
                 braking_forecasts += int(braking is not None)
-                direction = (track['velocity']['x']/speed, track['velocity']['y']/speed) if speed >= .7 else (0.0, 0.0)
+                direction = (track['velocity']['x']/speed, track['velocity']['y']/speed) if moving else (0.0, 0.0)
                 def displacement(elapsed):
-                    if speed < .7:
+                    if not moving:
                         return 0.0
                     if braking is None:
                         return speed*elapsed
@@ -1149,6 +1182,7 @@ def check_motion_predictions(log):
                 if coast and max(coast)-min(coast) > 1e-8:
                     raise ValueError('braking assumption persisted beyond acquisition plus one second')
     return {'verified': True, 'forecasts': forecasts, 'braking_forecasts': braking_forecasts,
+            'confirmed_slow_forecasts': slow_forecasts, 'unconfirmed_slow_forecasts': unconfirmed_slow_forecasts,
             'stale_fallbacks': stale_fallbacks, 'reacceleration_fallbacks': reacceleration_fallbacks,
             'max_forecast_deceleration_m_s2': max_deceleration,
             'aged_forecasts': aged_forecasts, 'rebased_moving_forecasts': rebased_moving_forecasts,

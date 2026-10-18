@@ -20,10 +20,7 @@ pub(super) fn first_contact_time(
     if first.position.distance(position_at(object, first.time))
         <= vehicle_radius
             + object.radius
-            + margin(
-                first.time,
-                transverse_speed(velocity_at(object, first.time), initial_tangent),
-            )
+            + margin(first.time, velocity_at(object, first.time), initial_tangent)
     {
         return Some(first.time);
     }
@@ -56,20 +53,31 @@ pub(super) fn first_contact_time(
     None
 }
 
-fn margin(time: f64, transverse_speed: f64) -> f64 {
+fn margin(time: f64, velocity: Vec2, tangent: Vec2) -> f64 {
     // Moving across the candidate needs more empirical clearance than static or
     // parallel traffic. This reserve is not a certified prediction-error bound.
-    0.30 + 0.06 * time.min(5.0) + 0.40 * transverse_speed.min(1.0)
+    // The transverse reserve follows direction, rather than vanishing with a
+    // slow crossing's speed. Perpendicular motion retains 1 m at time zero.
+    let fraction = transverse_fraction(velocity, tangent);
+    let transverse_speed = velocity.x.hypot(velocity.y) * fraction;
+    let motion_reserve = (0.40 * transverse_speed.min(1.)).max(0.70 * fraction);
+    0.30 + 0.06 * time.min(5.0) + motion_reserve
 }
 
-fn transverse_speed(velocity: Vec2, tangent: Vec2) -> f64 {
+fn transverse_fraction(velocity: Vec2, tangent: Vec2) -> f64 {
+    let speed = velocity.x.hypot(velocity.y);
+    if speed == 0. {
+        return 0.;
+    }
     let length = tangent.x.hypot(tangent.y);
     if length > 1e-6 {
-        (velocity.x * (tangent.y / length) - velocity.y * (tangent.x / length)).abs()
+        ((velocity.x / speed) * (tangent.y / length) - (velocity.y / speed) * (tangent.x / length))
+            .abs()
+            .min(1.)
     } else {
         // A stationary hold has no segment heading. Reserve for any observed
         // motion rather than choosing an arbitrary world-frame axis.
-        velocity.x.hypot(velocity.y)
+        1.
     }
 }
 
@@ -128,10 +136,7 @@ fn segment_contact(
         // by at most |delta_v| * duration / 8. Inflate the circle by this bound.
         vehicle_radius
             + object.radius
-            + margin(
-                end,
-                transverse_speed(velocity_at(object, 0.5 * start + 0.5 * end), tangent),
-            )
+            + margin(end, velocity_at(object, 0.5 * start + 0.5 * end), tangent)
             + (b.speed - a.speed).abs() * (b.time - a.time) / 8.0,
     )
     .map(|fraction| start + (end - start) * fraction)
@@ -211,10 +216,10 @@ mod tests {
             radius: 0.5,
             dt: 1.0,
         };
-        assert!(ego[0].position.distance(object.positions[0]) > 1.76);
-        assert!(ego[1].position.distance(object.positions[1]) > 1.76);
+        assert!(ego[0].position.distance(object.positions[0]) > 2.06);
+        assert!(ego[1].position.distance(object.positions[1]) > 2.06);
         let time = first_contact_time(&ego, &object, 0.5, Vec2::default()).unwrap();
-        assert!((time - (0.5 - 1.76 / 200.0_f64.sqrt())).abs() < 1e-12);
+        assert!((time - (0.5 - 2.06 / 200.0_f64.sqrt())).abs() < 1e-12);
     }
 
     #[test]
@@ -243,6 +248,53 @@ mod tests {
             };
             assert!(first_contact_time(&ego, &stationary, 0.5, Vec2::default()).is_none());
         }
+    }
+
+    #[test]
+    fn slow_crossing_motion_retains_a_meter_of_directional_reserve() {
+        for angle in [0., 0.7, 2.4] {
+            let ego = path(Vec2::default(), Vec2::default(), [0., 1.]);
+            let heading = Vec2::new(1., 0.).rotated(angle);
+            for speed in [0.1, 0.2, 0.5, 2.5] {
+                let crossing = Prediction {
+                    id: 1,
+                    positions: vec![
+                        Vec2::new(1.8, 0.).rotated(angle),
+                        Vec2::new(1.8, speed).rotated(angle),
+                    ],
+                    radius: 0.5,
+                    dt: 1.,
+                };
+                // The physical gap is 0.8 m at time zero. Measured transverse
+                // motion needs the same geometric reserve at either speed.
+                assert_eq!(first_contact_time(&ego, &crossing, 0.5, heading), Some(0.));
+                let parallel = Prediction {
+                    positions: vec![
+                        Vec2::new(0., 1.8).rotated(angle),
+                        Vec2::new(speed, 1.8).rotated(angle),
+                    ],
+                    ..crossing
+                };
+                assert!(first_contact_time(&ego, &parallel, 0.5, heading).is_none());
+            }
+        }
+    }
+
+    #[test]
+    fn fast_almost_parallel_motion_keeps_the_previous_transverse_speed_reserve() {
+        let ego = path(Vec2::default(), Vec2::default(), [0., 1.]);
+        let object = Prediction {
+            id: 1,
+            positions: vec![Vec2::new(1.48, 0.), Vec2::new(9.48, 0.5)],
+            radius: 0.5,
+            dt: 1.,
+        };
+        // The earlier 0.5 m reserve already rejects this 0.48 m initial gap.
+        // A small crossing angle cannot narrow that existing speed envelope.
+        assert_eq!(
+            first_contact_time(&ego, &object, 0.5, Vec2::new(1., 0.)),
+            Some(0.)
+        );
     }
 
     #[test]

@@ -99,6 +99,9 @@ fn is_false(value: &bool) -> bool {
 #[serde(deny_unknown_fields)]
 pub struct Scenario {
     pub name: String,
+    /// Explicit experimental forecast policy, independent of actor identities.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub confirm_slow_motion: bool,
     #[serde(default, skip_serializing_if = "is_false")]
     pub local_route_geometry: bool,
     pub duration: f64,
@@ -640,6 +643,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     let route = scenario.route();
     let (position, yaw) = route.sample(0.0, 0.0);
     let mut config = PipelineConfig::new(route, Pose { position, yaw }, VehicleConfig::default());
+    config.confirm_slow_motion = scenario.confirm_slow_motion;
     if let Some(speed) = scenario.cruise_speed {
         config.cruise_speed = speed;
     }
