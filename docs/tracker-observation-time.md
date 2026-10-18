@@ -15,7 +15,9 @@ denominator retains its 0.01 s floor; inferred speed remains capped at 15 m/s.
 Tracks still expire when an accepted scan is at least 0.6 s after their last
 observation. A reappearing object after expiry gets a new identity and zero
 initial velocity. There is no prediction-only renewal during a long wait.
-Association, circle fitting and the prediction model are unchanged.
+Circle fitting and the prediction model are unchanged by the timing repair.
+The subsequent [global association repair](tracker-global-assignment.md) separately
+replaces greedy matching while retaining this per-track time contract.
 
 The public tracker accepts successful scans in strictly increasing
 acquisition-time order. The driving pipeline validates this order
@@ -99,5 +101,5 @@ expectations does not migrate or repair their historical outputs.
 
 This repair supplies no occlusion-aware free-space evidence, uncertainty model,
 global assignment or independent automotive tracking benchmark. The existing
-0.6 s expiry, greedy association and low-speed forecast deadband retain their
+0.6 s expiry, distance-only association and low-speed forecast deadband retain their
 limitations. It establishes no real-vehicle or real-time capability.

@@ -1,4 +1,5 @@
-//! Range-adaptive Euclidean clustering and nearest-neighbor alpha-beta tracking.
+//! Range-adaptive clustering and globally associated alpha-beta tracking.
+mod association;
 pub mod ground3d;
 pub mod image_features;
 pub mod objects3d;
@@ -131,6 +132,7 @@ pub enum TrackerUpdateError {
     InvalidTimestamp,
     InvalidDetection { index: usize },
     IdentifierExhausted,
+    AssociationLimit,
 }
 
 impl std::fmt::Display for TrackerUpdateError {
@@ -145,6 +147,9 @@ impl std::fmt::Display for TrackerUpdateError {
                 "tracking detection {index} requires a finite center and finite nonnegative radius"
             ),
             Self::IdentifierExhausted => write!(f, "tracking identifier space exhausted"),
+            Self::AssociationLimit => {
+                write!(f, "tracking association work or component limit exceeded")
+            }
         }
     }
 }
@@ -192,24 +197,9 @@ impl Tracker {
 
     fn apply(&mut self, detections: &[Detection], stamp: f64) -> Result<(), TrackerUpdateError> {
         self.tracks.retain(|t| stamp - t.last_seen < 0.6);
-        let mut matched = vec![false; self.tracks.len()];
-        for d in detections {
-            let best = self
-                .tracks
-                .iter()
-                .enumerate()
-                .filter(|(i, _)| !matched[*i])
-                .map(|(i, t)| {
-                    (
-                        i,
-                        t.position
-                            .plus(t.velocity.scaled(stamp - t.last_seen))
-                            .distance(d.center),
-                    )
-                })
-                .filter(|(_, dist)| *dist < 3.0)
-                .min_by(|a, b| a.1.total_cmp(&b.1));
-            if let Some((i, _)) = best {
+        let matches = association::associate(&self.tracks, detections, stamp)?;
+        for (d, matched) in detections.iter().zip(matches) {
+            if let Some(i) = matched {
                 let track = &mut self.tracks[i];
                 // The residual spans this track's missed observations, even
                 // when other objects were detected in intervening scans.
@@ -226,7 +216,6 @@ impl Tracker {
                 }
                 track.radius = 0.8 * track.radius + 0.2 * d.radius;
                 track.last_seen = stamp;
-                matched[i] = true;
             } else {
                 self.next_id = self
                     .next_id
@@ -239,7 +228,6 @@ impl Tracker {
                     radius: d.radius,
                     last_seen: stamp,
                 });
-                matched.push(true);
             }
         }
         Ok(())
