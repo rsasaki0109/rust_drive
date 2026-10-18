@@ -4,7 +4,8 @@
 gate. A new target-lane conflict can select a curve back to the source centerline
 and stop there. It applies while the vehicle circle still fits inside source,
 with fresh motion and confirmed source observations. It does not return from
-the middle of a change or resume the mission.
+the middle of a change. An additional opt-in [resume policy](lane-change-resumes.md)
+can retry the mission once after the measured return stop.
 
 ## Reproduce
 
@@ -81,7 +82,8 @@ resets; controller steering history remains intact. Newly observed traffic and
 sensor faults continue through normal collision checks and emergency braking.
 `Aborted` needs three distinct fresh measured stops near the endpoint, low
 estimated speed and source-circle containment. Braking then holds the stop;
-the original change is not retried. Telemetry retains the request, curvature
+the original change is not retried unless the separate resume policy is enabled.
+Telemetry retains the request, curvature
 bound, preview clearance, source blockers and decision. Sensor replay rebuilds
 the curve and compares every output.
 
@@ -108,5 +110,5 @@ Three cases run with seeds 1, 7 and 42. Return requires actual lateral movement,
 source containment, a measured stop and physical hold; rejection cases must
 record their reason. Every case requires 1 m swept clearance, no collision/road
 violation and exact replay. Occlusion, unknown acceleration, forecast expiry,
-mid-change return, stopping-place selection and mission resumption remain open.
+mid-change return, stopping-place selection and general mission recovery remain open.
 No camera, CARLA, RNE or real-vehicle validation is established.

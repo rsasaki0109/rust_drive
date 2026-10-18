@@ -2,7 +2,9 @@
 use crate::traffic_controls::planning_prefix;
 use rustdriving_core::{EgoState, Prediction, Route, Vec2, VehicleConfig, wrap_angle};
 use serde::{Deserialize, Serialize};
+mod resuming;
 mod returning;
+pub use resuming::{LaneChangeResumeConfig, LaneChangeResumeStatus, ResumeDecision};
 use returning::ReturnMonitor;
 pub(crate) use returning::ReturnObservation;
 pub use returning::{LaneChangeReturnConfig, LaneChangeReturnStatus, ReturnDecision};
@@ -125,6 +127,7 @@ pub enum LaneChangePhase {
     Completed,
     Aborting,
     Aborted,
+    Resuming,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -287,7 +290,7 @@ impl LaneChangeGate {
         let (progress, lateral) = route.project(ego.pose.position);
         if matches!(
             self.state.phase,
-            LaneChangePhase::Aborting | LaneChangePhase::Aborted
+            LaneChangePhase::Aborting | LaneChangePhase::Aborted | LaneChangePhase::Resuming
         ) {
             return;
         }
@@ -386,8 +389,8 @@ impl LaneChangeGate {
         )
     }
     pub fn planning_route(&self, route: &Route) -> Option<Route> {
-        if self.returning() {
-            return self.return_monitor.as_ref()?.route().cloned();
+        if let Some(route) = self.return_monitor.as_ref().and_then(ReturnMonitor::route) {
+            return Some(route.clone());
         }
         planning_prefix(route, self.state.stop_s_m?)
     }

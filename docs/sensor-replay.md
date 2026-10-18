@@ -207,6 +207,13 @@ The selected return request and clearance diagnostics are recomputed from those
 inputs. Original destination geometry remains in the header; expected return
 decisions never enter the driver. [Early return contract](lane-change-returns.md).
 
+Optional `resume_after_return` inside that policy starts a new observation epoch
+after the measured return stop. It reconstructs one stationary-pose connector
+to the original target tail using fresh post-stop scans and motion. Resume
+requests and decisions remain comparison outputs; they are never inputs to the
+driver. Missing configuration preserves the return-and-hold serialization.
+[Resume contract and independent audit](lane-change-resumes.md).
+
 An optional `lane_change` header configuration supplies the authored target-lane
 axis and connector entry/exit arc lengths. The shared observed-gap gate derives
 waiting/ready/changing/completed state and front/rear gap diagnostics from the

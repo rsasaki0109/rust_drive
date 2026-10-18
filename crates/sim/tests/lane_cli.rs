@@ -37,6 +37,95 @@ fn cli() -> Command {
 }
 
 #[test]
+fn resume_export_requires_return_mode_and_rejects_invalid_distance_before_creation() {
+    let workspace = Workspace::new();
+    let map = workspace.0.join("resume-map.json");
+    fs::write(
+        &map,
+        include_str!("../../../maps/lanes/two-lane-change.json"),
+    )
+    .unwrap();
+    let options = [
+        "--start",
+        "source",
+        "--goal",
+        "target-exit",
+        "--change-side",
+        "left",
+        "--change-start",
+        "25",
+        "--change-length",
+        "30",
+        "--wait-for-gap",
+    ];
+    let scenario = workspace.0.join("resume.json");
+    let output = cli()
+        .arg("lane-route")
+        .arg("--map")
+        .arg(&map)
+        .args(options)
+        .args([
+            "--return-on-conflict",
+            "--resume-after-return",
+            "--resume-distance",
+            "27.5",
+        ])
+        .arg("--scenario-output")
+        .arg(&scenario)
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let exported: serde_json::Value =
+        serde_json::from_slice(&fs::read(&scenario).unwrap()).unwrap();
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(exported["lane_change"], report["lane_change_gate"]);
+    assert_eq!(
+        exported["lane_change"]["return_on_conflict"]["resume_after_return"]["max_change_distance_m"],
+        27.5
+    );
+    let invalid = workspace.0.join("not-written.json");
+    for extra in [
+        vec!["--resume-after-return"],
+        vec!["--return-on-conflict", "--resume-distance", "30"],
+        vec![
+            "--return-on-conflict",
+            "--resume-after-return",
+            "--resume-distance",
+            "NaN",
+        ],
+        vec![
+            "--return-on-conflict",
+            "--resume-after-return",
+            "--resume-distance",
+            "9.9",
+        ],
+        vec![
+            "--return-on-conflict",
+            "--resume-after-return",
+            "--resume-distance",
+            "60.1",
+        ],
+    ] {
+        let output = cli()
+            .arg("lane-route")
+            .arg("--map")
+            .arg(&map)
+            .args(options)
+            .args(extra)
+            .arg("--scenario-output")
+            .arg(&invalid)
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(2));
+        assert!(!invalid.exists());
+    }
+}
+
+#[test]
 fn early_return_export_requires_reverse_permission_gap_mode_and_bounded_distance() {
     let workspace = Workspace::new();
     let map = workspace.0.join("return-map.json");

@@ -71,7 +71,8 @@ route; new traffic continues through the existing collision-aware planner and
 sensor-health braking. It does not reintroduce a prefix behind the vehicle or
 generate a return-to-source maneuver by default. The optional
 [early return policy](lane-change-returns.md) can return and stop while the circle
-still fits inside source. `Completed` requires the estimated rear to
+still fits inside source; a separate [resume policy](lane-change-resumes.md) can
+retry once after the measured stop and fresh gap confirmation. `Completed` requires the estimated rear to
 clear the connector and its circle to fit inside the target lane. State,
 blocking track IDs, current forecast front/rear bumper gaps and clear-acquisition
 origin are included in telemetry and exact sensor-only replay.

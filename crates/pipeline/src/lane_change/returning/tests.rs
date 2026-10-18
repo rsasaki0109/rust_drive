@@ -15,6 +15,7 @@ fn gate() -> LaneChangeGate {
                 source_end: Vec2::new(80.0, 0.0),
                 source_width_m: 3.5,
                 max_return_distance_m: 30.0,
+                resume_after_return: None,
             }),
         },
         VehicleConfig::default(),

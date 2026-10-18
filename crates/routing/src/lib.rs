@@ -1,4 +1,5 @@
 //! Directed map routing in world ENU meters, independent of sensing and simulation.
+pub mod lane_resume;
 pub mod lane_return;
 pub mod lanes;
 pub mod osm;

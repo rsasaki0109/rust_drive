@@ -35,6 +35,7 @@ fn scenario(case: &str) -> Scenario {
             source_end: Vec2::new(80., 0.),
             source_width_m: 3.5,
             max_return_distance_m: 30.,
+            resume_after_return: None,
         }),
     };
     let activation = if case == "late" { 24. } else { 20. };

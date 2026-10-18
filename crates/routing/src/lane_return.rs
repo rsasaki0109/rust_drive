@@ -21,6 +21,20 @@ pub struct LaneReturnPlan {
 }
 
 pub fn plan(request: LaneReturnRequest, vehicle: VehicleConfig) -> Result<LaneReturnPlan, String> {
+    plan_with_start_offset(
+        request,
+        vehicle,
+        request.half_width_m - vehicle.radius - 0.05,
+    )
+}
+
+// The resume adapter separately validates source containment and the complete
+// two-lane envelope. This helper remains private to the routing crate.
+pub(crate) fn plan_with_start_offset(
+    request: LaneReturnRequest,
+    vehicle: VehicleConfig,
+    max_start_offset_m: f64,
+) -> Result<LaneReturnPlan, String> {
     let r = request;
     if !r.start.position.finite()
         || !r.start.yaw.is_finite()
@@ -64,7 +78,7 @@ pub fn plan(request: LaneReturnRequest, vehicle: VehicleConfig) -> Result<LaneRe
     let heading = wrap_angle(r.start.yaw - axis.y.atan2(axis.x));
     if x < 0.0
         || x + r.distance_m + vehicle.radius + 1.0 > length
-        || y.abs() > r.half_width_m - vehicle.radius - 0.05
+        || y.abs() > max_start_offset_m
         || heading.abs() > 0.35
     {
         return Err("return requires an early aligned pose and forward stopping room".into());

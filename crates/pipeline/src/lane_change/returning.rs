@@ -1,4 +1,5 @@
 //! Optional early return. Monitoring uses accepted scans and measured motion only.
+use super::resuming::{LaneChangeResumeConfig, LaneChangeResumeStatus, ResumeMonitor};
 use super::{
     LaneChangeConfig, LaneChangePhase, LaneChangeStatus, blocks, blocks_with_lateral_extra,
 };
@@ -9,8 +10,8 @@ use rustdriving_core::{
 use rustdriving_planning::LatticePlanner;
 use rustdriving_routing::lane_return::{self, LaneReturnRequest};
 use serde::{Deserialize, Serialize};
-const RETURN_CLEARANCE_M: f64 = 1.0;
-const RETURN_TRACKING_RESERVE_M: f64 = 0.3;
+pub(super) const RETURN_CLEARANCE_M: f64 = 1.0;
+pub(super) const RETURN_TRACKING_RESERVE_M: f64 = 0.3;
 
 fn point_segment(point: Vec2, a: Vec2, b: Vec2) -> f64 {
     let d = b.minus(a);
@@ -41,7 +42,7 @@ fn segment_distance(a: Vec2, b: Vec2, c: Vec2, d: Vec2) -> f64 {
         .min(point_segment(c, a, b))
         .min(point_segment(d, a, b))
 }
-fn observed_clearance(
+pub(super) fn observed_clearance(
     path: &[rustdriving_core::TrajectoryPoint],
     predictions: &[Prediction],
     radius: f64,
@@ -71,6 +72,8 @@ pub struct LaneChangeReturnConfig {
     pub source_end: Vec2,
     pub source_width_m: f64,
     pub max_return_distance_m: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resume_after_return: Option<LaneChangeResumeConfig>,
 }
 impl LaneChangeReturnConfig {
     pub fn validate(
@@ -79,6 +82,9 @@ impl LaneChangeReturnConfig {
         route: &Route,
         vehicle: VehicleConfig,
     ) -> Result<(), String> {
+        if let Some(config) = &self.resume_after_return {
+            config.validate()?;
+        }
         let a = self.source_end.minus(self.source_start);
         let b = gate.target_end.minus(gate.target_start);
         let length = a.x.hypot(a.y);
@@ -141,6 +147,8 @@ pub struct LaneChangeReturnStatus {
     pub request: Option<LaneReturnRequest>,
     pub curvature_bound_m_inv: Option<f64>,
     pub observed_clearance_m: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resume_state: Option<LaneChangeResumeStatus>,
 }
 
 pub(crate) struct ReturnObservation<'a> {
@@ -167,6 +175,7 @@ pub(crate) struct ReturnMonitor {
     clear_samples: usize,
     last_motion: Option<f64>,
     stopped_samples: usize,
+    resume: Option<ResumeMonitor>,
 }
 impl ReturnMonitor {
     pub fn new(target: &LaneChangeConfig, vehicle: VehicleConfig, cruise: f64) -> Option<Self> {
@@ -176,6 +185,7 @@ impl ReturnMonitor {
         source.target_end = config.source_end;
         source.target_width_m = config.source_width_m;
         source.return_on_conflict = None;
+        let resume = ResumeMonitor::new(target, &source, vehicle, cruise);
         Some(Self {
             config,
             source,
@@ -191,22 +201,34 @@ impl ReturnMonitor {
                 request: None,
                 curvature_bound_m_inv: None,
                 observed_clearance_m: None,
+                resume_state: None,
             },
             last_scan: None,
             after_fault: None,
             clear_samples: 0,
             last_motion: None,
             stopped_samples: 0,
+            resume,
         })
     }
     pub fn status(&self) -> LaneChangeReturnStatus {
-        self.status.clone()
+        let mut status = self.status.clone();
+        status.resume_state = self.resume.as_ref().map(ResumeMonitor::status);
+        status
     }
     pub fn route(&self) -> Option<&Route> {
-        self.route.as_ref()
+        self.resume
+            .as_ref()
+            .and_then(ResumeMonitor::route)
+            .or(self.route.as_ref())
     }
     pub fn step(&mut self, state: &mut LaneChangeStatus, o: ReturnObservation<'_>) -> bool {
-        if state.phase == LaneChangePhase::Aborted {
+        if state.phase == LaneChangePhase::Aborted
+            || self.resume.as_ref().is_some_and(|m| m.route().is_some())
+        {
+            if let Some(resume) = &mut self.resume {
+                return resume.step(state, &o, self.route.as_ref().expect("returned route"));
+            }
             return false;
         }
         let fresh = o.healthy
@@ -285,6 +307,9 @@ impl ReturnMonitor {
             if self.stopped_samples >= 3 {
                 state.phase = LaneChangePhase::Aborted;
                 self.status.decision = ReturnDecision::Stopped;
+                if let Some(resume) = &mut self.resume {
+                    resume.arm(o.now);
+                }
             }
             return false;
         }

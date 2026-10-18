@@ -735,7 +735,7 @@ impl DrivingPipeline {
                 self.last_lidar,
                 health.is_empty(),
             );
-            let returned = change.observe_return(lane_change::ReturnObservation {
+            let changed_route = change.observe_return(lane_change::ReturnObservation {
                 route: &self.config.route,
                 ego: estimate,
                 predictions: &predictions,
@@ -750,7 +750,7 @@ impl DrivingPipeline {
                     .motion_limits
                     .expect("validated local-route calibration"),
             });
-            if returned {
+            if changed_route {
                 // Reset only route-dependent planning state. Preserve controller
                 // steering history so the normal steering-rate bound still applies.
                 let mut planner = LatticePlanner::default();

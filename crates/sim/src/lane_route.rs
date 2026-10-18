@@ -1,6 +1,8 @@
 //! CLI bridge from a validated lane itinerary to an existing resolved-route simulation.
 use rustdriving_core::VehicleConfig;
-use rustdriving_pipeline::lane_change::{LaneChangeConfig, LaneChangeReturnConfig};
+use rustdriving_pipeline::lane_change::{
+    LaneChangeConfig, LaneChangeResumeConfig, LaneChangeReturnConfig,
+};
 use rustdriving_routing::lanes::{LaneChangeRequest, LaneMapSpec, LaneNetwork, LaneSide};
 use rustdriving_sim::Scenario;
 use std::{
@@ -24,8 +26,15 @@ pub(crate) fn run(args: &[String]) -> Result<bool, Box<dyn Error>> {
     let mut wait_for_gap = false;
     let mut return_on_conflict = false;
     let mut return_distance = None;
+    let mut resume_after_return = false;
+    let mut resume_distance = None;
     let mut i = 1;
     while i < args.len() {
+        if args[i] == "--resume-after-return" {
+            resume_after_return = true;
+            i += 1;
+            continue;
+        }
         if args[i] == "--wait-for-gap" {
             wait_for_gap = true;
             i += 1;
@@ -57,6 +66,7 @@ pub(crate) fn run(args: &[String]) -> Result<bool, Box<dyn Error>> {
             "--change-start" => change_start = Some(value.parse::<f64>()?),
             "--change-length" => change_length = Some(value.parse::<f64>()?),
             "--return-distance" => return_distance = Some(value.parse::<f64>()?),
+            "--resume-distance" => resume_distance = Some(value.parse::<f64>()?),
             _ => return Err(format!("invalid lane-route option {}", args[i]).into()),
         }
         i += 2;
@@ -69,6 +79,12 @@ pub(crate) fn run(args: &[String]) -> Result<bool, Box<dyn Error>> {
     }
     if return_distance.is_some() && !return_on_conflict {
         return Err("--return-distance requires --return-on-conflict".into());
+    }
+    if resume_after_return && !return_on_conflict {
+        return Err("--resume-after-return requires --return-on-conflict".into());
+    }
+    if resume_distance.is_some() && !resume_after_return {
+        return Err("--resume-distance requires --resume-after-return".into());
     }
     let change_request = match (change_side, change_start, change_length) {
         (None, None, None) => None,
@@ -133,6 +149,9 @@ pub(crate) fn run(args: &[String]) -> Result<bool, Box<dyn Error>> {
                 source_end: *source.centerline.last().unwrap(),
                 source_width_m: source.width_m,
                 max_return_distance_m: return_distance.unwrap_or(30.0),
+                resume_after_return: resume_after_return.then_some(LaneChangeResumeConfig {
+                    max_change_distance_m: resume_distance.unwrap_or(30.0),
+                }),
             })
         } else {
             None
