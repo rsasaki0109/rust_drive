@@ -626,10 +626,18 @@ impl DrivingPipeline {
                     } else {
                         self.perception.detect(scan, acquisition_pose)
                     };
-                    self.tracks = self.tracker.update(&detections, scan.stamp);
-                    self.grid.update(scan, acquisition_pose);
-                    self.last_lidar = Some(scan.stamp);
-                    self.lidar_fault = None;
+                    match self.tracker.try_update(&detections, scan.stamp) {
+                        Ok(tracks) => {
+                            self.tracks = tracks;
+                            self.grid.update(scan, acquisition_pose);
+                            self.last_lidar = Some(scan.stamp);
+                            self.lidar_fault = None;
+                        }
+                        Err(_) => {
+                            health.push(HealthIssue::InvalidLidar);
+                            self.lidar_fault = Some(input.time);
+                        }
+                    }
                 } else {
                     health.push(HealthIssue::InvalidLidar);
                     self.lidar_fault = Some(input.time);
@@ -980,6 +988,48 @@ mod tests {
             traffic_signal: None,
         }
     }
+    #[test]
+    fn tracker_rejection_brakes_without_refreshing_tracks_grid_or_lidar_age() {
+        let mut p = pipeline();
+        let with_circle = |time, x| {
+            let mut frame = healthy(time);
+            frame.lidar.as_mut().unwrap().points = (0..32)
+                .map(|i| {
+                    let a = i as f64 * std::f64::consts::TAU / 32.;
+                    Vec2::new(x + a.cos(), 3. + a.sin())
+                })
+                .collect();
+            frame
+        };
+        let initial = p.step(&with_circle(0., 20.)).unwrap();
+        assert!(initial.health.is_empty());
+        assert_eq!(initial.tracks.len(), 1);
+        let tracks = serde_json::to_value(initial.tracks).unwrap();
+        let grid = p.occupied_cells();
+        assert!(!grid.is_empty());
+        // Inject a dependency clock disagreement through its public API to
+        // exercise failure propagation after ordinary scan preflight succeeds.
+        p.tracker.try_update(&[], 0.1).unwrap();
+        for time in [0.05, 0.1] {
+            let output = p.step(&with_circle(time, 30.)).unwrap();
+            assert!(output.health.contains(&HealthIssue::InvalidLidar));
+            assert!(output.emergency);
+            assert_eq!(output.command.acceleration, -6.);
+            assert!(output.command.finite());
+            assert_eq!(serde_json::to_value(output.tracks).unwrap(), tracks);
+            assert_eq!(p.occupied_cells(), grid);
+            assert_eq!(p.last_lidar, Some(0.));
+            assert_eq!(p.lidar_fault, Some(time));
+        }
+        let recovered = p.step(&with_circle(0.15, 20.1)).unwrap();
+        assert!(recovered.health.is_empty());
+        assert!(!recovered.emergency);
+        assert_eq!(p.last_lidar, Some(0.15));
+        assert!(p.lidar_fault.is_none());
+        assert_eq!(recovered.tracks[0].id, 1);
+        assert_eq!(recovered.tracks[0].last_seen, 0.15);
+    }
+
     #[test]
     fn chassis_reference_is_explicit_bounded_and_replayable() {
         let route = Route::new(vec![Vec2::default(), Vec2::new(100.0, 0.0)], 3.0).unwrap();

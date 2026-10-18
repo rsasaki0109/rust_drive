@@ -123,11 +123,74 @@ fn fit_circle(points: &[Vec2]) -> Option<(Vec2, f64)> {
 pub struct Tracker {
     tracks: Vec<Track>,
     next_id: u64,
+    accepted_scan_stamp: Option<f64>,
 }
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TrackerUpdateError {
+    InvalidTimestamp,
+    InvalidDetection { index: usize },
+    IdentifierExhausted,
+}
+
+impl std::fmt::Display for TrackerUpdateError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::InvalidTimestamp => write!(
+                f,
+                "tracking timestamp must be finite, nonnegative and newer than the last accepted scan"
+            ),
+            Self::InvalidDetection { index } => write!(
+                f,
+                "tracking detection {index} requires a finite center and finite nonnegative radius"
+            ),
+            Self::IdentifierExhausted => write!(f, "tracking identifier space exhausted"),
+        }
+    }
+}
+impl std::error::Error for TrackerUpdateError {}
+
 impl Tracker {
-    /// Updates from a successful scan with a strictly increasing acquisition time.
-    /// Missing detections do not renew a track's observation time.
+    /// Updates from a successful scan. Rejected inputs return the unchanged
+    /// tracks; use `try_update` to distinguish rejection from a successful scan.
     pub fn update(&mut self, detections: &[Detection], stamp: f64) -> Vec<Track> {
+        self.try_update(detections, stamp)
+            .unwrap_or_else(|_| self.tracks.clone())
+    }
+
+    /// Accepts finite, nonnegative, strictly increasing acquisition timestamps
+    /// and finite detections with nonnegative radii. Any error leaves tracks,
+    /// identity allocation and the accepted scan time unchanged. A successful
+    /// empty scan advances acceptance time without renewing track observations.
+    pub fn try_update(
+        &mut self,
+        detections: &[Detection],
+        stamp: f64,
+    ) -> Result<Vec<Track>, TrackerUpdateError> {
+        if !stamp.is_finite()
+            || stamp < 0.
+            || self.accepted_scan_stamp.is_some_and(|last| stamp <= last)
+        {
+            return Err(TrackerUpdateError::InvalidTimestamp);
+        }
+        if let Some(index) = detections
+            .iter()
+            .position(|d| !d.center.finite() || !d.radius.is_finite() || d.radius < 0.)
+        {
+            return Err(TrackerUpdateError::InvalidDetection { index });
+        }
+        let mut next = Self {
+            tracks: self.tracks.clone(),
+            next_id: self.next_id,
+            accepted_scan_stamp: Some(stamp),
+        };
+        next.apply(detections, stamp)?;
+        let result = next.tracks.clone();
+        *self = next;
+        Ok(result)
+    }
+
+    fn apply(&mut self, detections: &[Detection], stamp: f64) -> Result<(), TrackerUpdateError> {
         self.tracks.retain(|t| stamp - t.last_seen < 0.6);
         let mut matched = vec![false; self.tracks.len()];
         for d in detections {
@@ -165,7 +228,10 @@ impl Tracker {
                 track.last_seen = stamp;
                 matched[i] = true;
             } else {
-                self.next_id += 1;
+                self.next_id = self
+                    .next_id
+                    .checked_add(1)
+                    .ok_or(TrackerUpdateError::IdentifierExhausted)?;
                 self.tracks.push(Track {
                     id: self.next_id,
                     position: d.center,
@@ -176,12 +242,42 @@ impl Tracker {
                 matched.push(true);
             }
         }
-        self.tracks.clone()
+        Ok(())
     }
 }
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn exhausted_ids_reject_without_partial_track_or_clock_updates() {
+        let mut t = Tracker::default();
+        let detection = |x| Detection {
+            center: Vec2::new(x, 0.),
+            radius: 1.,
+        };
+        let before = t.try_update(&[detection(0.)], 0.).unwrap();
+        t.next_id = u64::MAX - 1;
+        assert_eq!(
+            t.try_update(&[detection(0.2), detection(20.), detection(40.)], 0.1)
+                .unwrap_err(),
+            TrackerUpdateError::IdentifierExhausted
+        );
+        assert_eq!(t.next_id, u64::MAX - 1);
+        assert_eq!(t.accepted_scan_stamp, Some(0.));
+        assert_eq!(t.tracks.len(), 1);
+        assert_eq!(t.tracks[0].position, before[0].position);
+        assert_eq!(t.tracks[0].velocity, before[0].velocity);
+        assert_eq!(t.tracks[0].last_seen, before[0].last_seen);
+        let repaired = t
+            .try_update(&[detection(0.2), detection(20.)], 0.1)
+            .unwrap();
+        assert_eq!(repaired[1].id, u64::MAX);
+        assert!(
+            t.try_update(&[detection(0.3), detection(20.1)], 0.2)
+                .is_ok()
+        );
+    }
+
     #[test]
     fn clusters_two_objects_without_labels() {
         let scan = LidarScan {

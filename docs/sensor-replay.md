@@ -163,6 +163,15 @@ repair and independent log audit](tracker-observation-time.md) document this
 contract and the expected mismatch for historical logs affected by the old
 scan-interval correction.
 
+The pipeline uses `Tracker::try_update` to distinguish accepted acquisitions
+from tracking rejection. Rejection preserves tracks, occupancy and the last
+accepted LiDAR stamp, activates `InvalidLidar` braking and requires a new valid
+post-fault acquisition. The standalone checked API also rejects duplicate/older
+times and invalid detections without partially updating or expiring tracks.
+The legacy `update` method returns cached tracks on rejection; callers must not
+interpret that return value alone as a successful scan. [API and failure
+checks](tracker-observation-time.md#rejected-acquisitions).
+
 ## Forecast time origin
 
 Tracks retain their acquisition-time position, velocity and `last_seen` stamp. The shared pipeline calls `ObservedBraking` with the enclosing frame's current `time`; every returned forecast begins at that control time, with 41 positions spaced 0.2 s apart through the next eight seconds. Its samples evaluate acquired motion at `age + future_offset`, where `age = time - last_seen`. Tracks and acquisition stamps are not overwritten by extrapolated estimates. Both the collision planner and priority-zone sweeps consume these same current-time forecasts.

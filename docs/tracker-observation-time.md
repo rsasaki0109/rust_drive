@@ -17,17 +17,51 @@ observation. A reappearing object after expiry gets a new identity and zero
 initial velocity. There is no prediction-only renewal during a long wait.
 Association, circle fitting and the prediction model are unchanged.
 
-The public `Tracker::update` contract requires successful scans in strictly
-increasing acquisition-time order. The driving pipeline validates this order
+The public tracker accepts successful scans in strictly increasing
+acquisition-time order. The driving pipeline validates this order
 and transforms points at acquisition time before calling the tracker. Delayed
 delivery does not change the measured interval. Forecasts subsequently advance
 the resulting track from its acquisition time to the control clock.
+
+## Rejected acquisitions
+
+`Tracker::try_update(&detections, acquisition_stamp)` returns
+`Result<Vec<Track>, TrackerUpdateError>`. It rejects nonfinite or negative times,
+duplicate/older scans, nonfinite detection centers and nonfinite or negative
+radii. Errors identify a timestamp failure or the first invalid detection index.
+Validation covers the whole batch before expiry or matching. A rejected batch
+leaves every track, the accepted scan time and identity allocation unchanged;
+repaired measurements can retry the same acquisition time. Identifier exhaustion
+also rejects the complete staged update without wrapping or partially committing.
+
+Successful empty scans advance the accepted **scan** time while retaining each
+track's original observation time until it is seen again or expires. This scan
+clock rejects reordered acquisitions; velocity correction continues to use the
+separate per-track interval. Rejected scans advance neither clock.
+
+The existing `update` signature remains available. On rejection it returns the
+unchanged cached tracks. Callers needing to distinguish successful acquisition
+from rejection must use `try_update`; an unchanged track vector is not evidence
+of a successful scan.
+
+The driving pipeline uses the checked API. A tracker rejection activates
+`InvalidLidar` and emergency braking, preserving its published tracks, occupancy
+grid and last accepted LiDAR time. Recovery needs a new valid scan acquired after
+the latest fault control time. Other pipeline state, including localization,
+continues its ordinary frame processing. This is not a transaction across the
+entire pipeline.
+
+Standalone callers supply the acquisition clock. The tracker cannot infer a
+delivery time or identify a finite forward jump as a future observation; the
+pipeline separately checks scan time against its control clock. The checked API
+does not impose detection-count limits or establish bounded processing latency.
 
 ## Reproduce the arithmetic audit
 
 ```sh
 source scripts/env.sh
 cargo test --locked -p rustdriving-perception --test tracker_intervals
+cargo test --locked -p rustdriving-perception --test tracker_inputs
 cargo test --locked -p rustdriving-pipeline --test tracker_reacquisition
 bash scripts/check.sh
 python3 scripts/check_tracker_intervals.py \
@@ -46,6 +80,16 @@ intervening empty scans or other detections. Another scan updates two tracks
 whose observation intervals differ. A 200-second empty wait checks expiry.
 The pipeline check uses known circular point sets, a delayed reacquisition,
 hand-calculated track/forecast values and exact replay.
+
+Input rejection checks retain four original failures: duplicate/reversed
+corrections, loss of tracks on a NaN clock, partial invalid batches and reordered
+data after a successful empty scan. They also interleave 500 rejected scans with
+100 accepted scans and compare the entire result with processing only accepted
+measurements. A dependency-failure unit check deliberately advances the private
+tracker's scan clock ahead of the enclosing pipeline, then verifies braking,
+unchanged tracks/grid/accepted-LiDAR time and post-fault recovery. This injected
+internal clock disagreement is not a measured live-sensor failure or a replayable
+external input sequence. Normal pipeline inputs already had clock validation.
 
 Old source, executable and failed regression results remain in the local
 evidence packet. Historical recordings remain readable, but recordings affected
