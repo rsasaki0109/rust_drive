@@ -85,6 +85,7 @@ fn observation<'a>(
 }
 fn obstacle(x: f64, y: f64) -> Prediction {
     Prediction {
+        additional_radius_m: vec![],
         id: 1,
         positions: vec![Vec2::new(x, y); 41],
         dt: 0.2,

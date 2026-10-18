@@ -126,9 +126,9 @@ def retry_checks(frames, ticks, first):
     path = [xy(p['position']) for p in ticks[index]['expected']['trajectory']['points']]
     assert math.dist(path[0], xy(start['position'])) < 1e-12
     predictions = ticks[index]['expected']['predictions']
-    observed = min((segment_distance(a, b, xy(c), xy(d))-1.25-p['radius']
+    observed = min((segment_distance(a, b, xy(c), xy(d))-1.25-max(check_hazards.prediction_radius_at(p, i*p['dt']), check_hazards.prediction_radius_at(p, (i+1)*p['dt']))
                     for a, b in zip(path, path[1:]) for p in predictions
-                    for c, d in zip(p['positions'], p['positions'][1:])), default=1000.)
+                    for i, (c, d) in enumerate(zip(p['positions'], p['positions'][1:]))), default=1000.)
     assert observed >= 1.3-1e-9 and abs(observed-state['observed_clearance_m']) < 1e-8
     course = curve+[(80., 3.5), (160., 3.5)]
     margin = min(.5-min(point_segment(xy(f['truth']['pose']['position']), a, b)

@@ -81,6 +81,7 @@ fn the_full_hold_still_rejects_a_future_crossing_and_does_not_restart_after_it_c
     let state = ego(98.7, 0.0, 0.0);
     let mut planner = LatticePlanner::default();
     let crossing = Prediction {
+        additional_radius_m: vec![],
         id: 1,
         radius: 0.7,
         dt: 0.2,
@@ -136,6 +137,7 @@ fn a_feasible_settled_refuge_remains_preferred_on_a_wide_road() {
     let route = Route::new(vec![Vec2::default(), Vec2::new(100.0, 0.0)], 5.5).unwrap();
     let mut planner = LatticePlanner::default();
     let traffic = Prediction {
+        additional_radius_m: vec![],
         id: 1,
         radius: 1.0,
         dt: 0.2,

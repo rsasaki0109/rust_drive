@@ -46,6 +46,18 @@ The default `ObservedBraking` and stateless `ConstantVelocity` retain their
 original deadband. The replay header records the explicit opt-in; omitting it
 selects the established policy, and changing it invalidates affected expectations.
 
+## Unconfirmed occupancy
+
+With the experimental option enabled, a current speed from 0.1 to less than
+0.7 m/s that lacks confirmation now retains both a stopped and a continuing
+hypothesis. The per-knot center lies halfway from the acquired position toward
+constant-velocity continuation; an additional radius of half that displacement
+covers both endpoints and intermediate positions. Acquisition age is included.
+An actual zero/sub-0.1 m/s observation retains the static deadband. Confirmation
+still requires every observation-window check above; unsupported histories do
+not authorize the braking hypothesis. See [the occupancy contract and measured
+comparison](slow-occupancy.md). The default remains off.
+
 ## Crossing reserve
 
 Prediction alone eliminated contacts in the new 0.5 m/s crossing, but an intermediate

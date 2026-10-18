@@ -60,8 +60,7 @@ impl Planner for LatticePlanner {
                 object.positions.is_empty()
                     || !object.dt.is_finite()
                     || object.dt <= 0.0
-                    || !object.radius.is_finite()
-                    || object.radius < 0.0
+                    || !object.valid_radii()
                     || !(object.dt * (object.positions.len() - 1) as f64).is_finite()
                     || object.positions.iter().any(|position| !position.finite())
             })
@@ -118,7 +117,7 @@ impl Planner for LatticePlanner {
             && objects.iter().any(|object| {
                 let (object_s, object_lateral) = route.project(object.positions[0]);
                 object_s >= s - 40.0
-                    && object_lateral.abs() < object.radius + 0.3
+                    && object_lateral.abs() < object.radius_at(0.0) + 0.3
                     && object
                         .positions
                         .get(1)
@@ -379,6 +378,7 @@ mod tests {
     }
     fn obstacle() -> Prediction {
         Prediction {
+            additional_radius_m: vec![],
             id: 1,
             positions: vec![Vec2::new(20.0, 0.0); 50],
             radius: 1.0,
@@ -415,6 +415,7 @@ mod tests {
         };
         ego.pose.position.x = 70.0;
         let traffic = Prediction {
+            additional_radius_m: vec![],
             id: 1,
             radius: 1.0,
             dt: 0.2,
@@ -471,6 +472,7 @@ mod tests {
         ego.pose.position.x = 70.0;
         for (velocity, y) in [(0.0, 0.0), (-2.5, 0.0), (2.5, 3.0)] {
             let object = Prediction {
+                additional_radius_m: vec![],
                 id: 1,
                 radius: 1.0,
                 dt: 0.2,

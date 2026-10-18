@@ -2,6 +2,7 @@ use rustdriving_core::{Prediction, Track, Vec2};
 use rustdriving_prediction::ObservedBraking;
 
 fn assert_constant_velocity(prediction: &Prediction, track: &Track, age: f64) {
+    assert!(prediction.additional_radius_m.is_empty());
     assert_eq!(prediction.positions.len(), 41);
     for (i, point) in prediction.positions.iter().enumerate() {
         let expected = track
@@ -41,12 +42,20 @@ fn intervening_stops_turns_and_backward_steps_withdraw_slow_motion_until_they_le
                 // velocity remains contradictory at the earliest anchor itself.
                 if (6..9).contains(&i) || (i == 9 && contradiction != 2) {
                     assert!(
-                        prediction[0].positions.iter().all(|p| *p == track.position),
+                        !prediction[0].additional_radius_m.is_empty(),
                         "intervening contradiction {contradiction} was ignored at {time}"
                     );
                     // Cached calls cannot erase the contradictory acquisition.
                     let cached = predictor.predict(std::slice::from_ref(&track), time + 0.05);
-                    assert!(cached[0].positions.iter().all(|p| *p == track.position));
+                    assert!(!cached[0].additional_radius_m.is_empty());
+                    for (j, center) in cached[0].positions.iter().enumerate() {
+                        let continued = track
+                            .position
+                            .plus(track.velocity.scaled(0.05 + j as f64 * 0.2));
+                        let extra = cached[0].additional_radius_m[j];
+                        assert!(center.distance(track.position) <= extra + 1e-10);
+                        assert!(center.distance(continued) <= extra + 1e-10);
+                    }
                 }
                 if i == 10 {
                     assert_constant_velocity(&prediction[0], &track, 0.0);

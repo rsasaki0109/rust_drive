@@ -135,8 +135,8 @@ def audit_cycle(frames, ticks, indices, points, deceleration, expected_history):
     last = next(i for i, p in enumerate(expected['trajectory']['points']) if progress(xy(p['position']), points) >= crossing_end)
     assert expected['trajectory']['mode'] != 'Emergency' and expected['trajectory']['points'][last]['speed'] > .05
     path = [xy(p['position']) for p in expected['trajectory']['points'][:last+1]]
-    clearance = min((segment_distance(a, b, xy(c), xy(d))-1.25-p['radius']
-                     for a, b in zip(path, path[1:]) for p in expected['predictions'] for c, d in zip(p['positions'], p['positions'][1:])), default=1000.)
+    clearance = min((segment_distance(a, b, xy(c), xy(d))-1.25-max(check_hazards.prediction_radius_at(p, i*p['dt']), check_hazards.prediction_radius_at(p, (i+1)*p['dt']))
+                     for a, b in zip(path, path[1:]) for p in expected['predictions'] for i, (c, d) in enumerate(zip(p['positions'], p['positions'][1:]))), default=1000.)
     assert clearance >= 1.3-1e-9 and abs(clearance-event['crossing_preview_clearance_m']) < 1e-8
     row.update(released_at=event['released_at'], stop_confirmed_at=event['stopped_at'],
                after_fault_at=event['after_fault_at'], clear_since=event['clear_since'],

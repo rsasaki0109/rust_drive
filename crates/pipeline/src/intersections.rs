@@ -129,14 +129,13 @@ pub struct IntersectionStatus {
 fn forecast_blocks(bounds: &ConflictBounds, prediction: &Prediction) -> bool {
     if !prediction.dt.is_finite()
         || prediction.dt <= 0.0
-        || !prediction.radius.is_finite()
-        || prediction.radius < 0.0
+        || !prediction.valid_radii()
         || prediction.positions.is_empty()
         || prediction.positions.iter().any(|p| !p.finite())
     {
         return true;
     }
-    let inflation = prediction.radius + FORECAST_MARGIN_M;
+    let inflation = prediction.radius_at(0.0) + FORECAST_MARGIN_M;
     if bounds.intersects_segment(prediction.positions[0], prediction.positions[0], inflation) {
         return true;
     }
@@ -147,6 +146,10 @@ fn forecast_blocks(bounds: &ConflictBounds, prediction: &Prediction) -> bool {
         }
         let fraction = ((FORECAST_HORIZON_S - start) / prediction.dt).min(1.0);
         let end = points[0].plus(points[1].minus(points[0]).scaled(fraction));
+        let inflation = prediction
+            .radius_at(start)
+            .max(prediction.radius_at(start + fraction * prediction.dt))
+            + FORECAST_MARGIN_M;
         if bounds.intersects_segment(points[0], end, inflation) {
             return true;
         }
@@ -331,9 +334,26 @@ mod tests {
         }
     }
     #[test]
+    fn expanding_occupancy_blocks_even_when_the_center_stays_outside() {
+        let mut p = Prediction {
+            id: 8,
+            positions: vec![Vec2::new(45., 6.); 3],
+            radius: 0.7,
+            dt: 4.,
+            additional_radius_m: vec![],
+        };
+        assert!(!forecast_blocks(&zone().conflict_bounds, &p));
+        p.additional_radius_m = vec![0., 3., 0.];
+        assert!(forecast_blocks(&zone().conflict_bounds, &p));
+        p.additional_radius_m = vec![0.];
+        assert!(forecast_blocks(&zone().conflict_bounds, &p));
+    }
+
+    #[test]
     fn fast_crossing_segments_block_even_when_no_prediction_sample_is_inside() {
         let b = zone().conflict_bounds;
         let p = Prediction {
+            additional_radius_m: vec![],
             id: 1,
             positions: vec![Vec2::new(45.0, 10.0), Vec2::new(45.0, -10.0)],
             radius: 1.0,
@@ -370,6 +390,7 @@ mod tests {
             y.step(t, ego(33.0), 1.25, &[], Some(t), true);
         }
         let p = Prediction {
+            additional_radius_m: vec![],
             id: 7,
             positions: vec![Vec2::new(45.0, 0.0)],
             radius: 1.0,

@@ -722,3 +722,42 @@ fn nonuniform_clocks_gaps_and_invalid_sensor_stamps_remain_recordable() {
         );
     }
 }
+
+#[test]
+fn uncertain_occupancy_replays_and_a_shrunken_envelope_is_rejected() {
+    let mut log = recorded_log();
+    log.header.config.confirm_slow_motion = true;
+    for tick in &mut log.ticks {
+        let time = tick.input.time;
+        tick.input.lidar.as_mut().unwrap().points = (0..24)
+            .map(|i| {
+                let angle = i as f64 * std::f64::consts::TAU / 24.;
+                Vec2::new(8. + 0.5 * time + 0.6 * angle.cos(), 0.6 * angle.sin())
+            })
+            .collect();
+    }
+    recompute(&mut log);
+    let changed_tick = log
+        .ticks
+        .iter()
+        .position(|tick| {
+            tick.expected
+                .predictions
+                .iter()
+                .any(|p| !p.additional_radius_m.is_empty())
+        })
+        .expect("measured slow motion needs uncertain occupancy");
+    let mut bytes = vec![];
+    log.write(&mut bytes).unwrap();
+    verify(Cursor::new(&bytes), std::io::sink()).unwrap();
+    let mut rows = records(&bytes);
+    let predictions = rows[changed_tick + 1]["tick"]["expected"]["predictions"]
+        .as_array_mut()
+        .unwrap();
+    let p = predictions
+        .iter_mut()
+        .find(|p| p.get("additional_radius_m").is_some())
+        .unwrap();
+    p["additional_radius_m"][40] = serde_json::json!(0.);
+    assert!(verify(Cursor::new(encode_records(&rows)), std::io::sink()).is_err());
+}

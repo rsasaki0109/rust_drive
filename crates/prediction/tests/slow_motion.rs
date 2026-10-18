@@ -1,4 +1,4 @@
-use rustdriving_core::{Predictor, Track, Vec2};
+use rustdriving_core::{Prediction, Predictor, Track, Vec2};
 use rustdriving_prediction::{ConstantVelocity, ObservedBraking};
 
 fn sample(time: f64, speed: f64, direction: Vec2) -> Track {
@@ -8,6 +8,27 @@ fn sample(time: f64, speed: f64, direction: Vec2) -> Track {
         velocity: direction.scaled(speed),
         radius: 0.7,
         last_seen: time,
+    }
+}
+
+fn assert_uncertain(prediction: &Prediction, track: &Track, age: f64) {
+    let speed = track.velocity.x.hypot(track.velocity.y);
+    if speed < 0.1 {
+        assert!(prediction.additional_radius_m.is_empty());
+        assert!(prediction.positions.iter().all(|p| *p == track.position));
+        return;
+    }
+    assert_eq!(
+        prediction.additional_radius_m.len(),
+        prediction.positions.len()
+    );
+    for (i, center) in prediction.positions.iter().enumerate() {
+        let continued = track
+            .position
+            .plus(track.velocity.scaled(age + i as f64 * prediction.dt));
+        let allowance = prediction.radius_at(i as f64 * prediction.dt) - track.radius;
+        assert!(center.distance(track.position) <= allowance + 1e-10);
+        assert!(center.distance(continued) <= allowance + 1e-10);
     }
 }
 
@@ -25,7 +46,7 @@ fn persistent_low_speed_motion_forecasts_displacement_and_delivery_age() {
             for time in [0., 0.2, 0.4] {
                 let track = sample(time, speed, direction);
                 let p = predictor.predict(std::slice::from_ref(&track), time);
-                assert!(p[0].positions.iter().all(|p| *p == track.position));
+                assert_uncertain(&p[0], &track, 0.0);
             }
             let track = sample(0.6, speed, direction);
             let p = predictor.predict(std::slice::from_ref(&track), 0.75);
@@ -65,7 +86,7 @@ fn cached_calls_cannot_replace_distinct_acquisitions_or_change_the_forecast() {
     let track = sample(0., 0.5, Vec2::new(1., 0.));
     for i in 0..100 {
         let p = unconfirmed.predict(std::slice::from_ref(&track), i as f64 * 0.01);
-        assert!(p[0].positions.iter().all(|p| *p == track.position));
+        assert_uncertain(&p[0], &track, i as f64 * 0.01);
     }
 }
 
@@ -89,7 +110,7 @@ fn velocity_alone_contradictory_positions_and_missing_samples_cannot_confirm_mot
                 t.velocity = Vec2::new(0., 0.5);
             }
             let p = predictor.predict(std::slice::from_ref(&t), time);
-            assert!(p[0].positions.iter().all(|p| *p == t.position));
+            assert_uncertain(&p[0], &t, 0.0);
             latest = Some(t);
         }
         assert!(latest.is_some());
@@ -120,7 +141,7 @@ fn gaps_absence_reordered_samples_and_stops_withdraw_low_speed_support() {
             }
         }
         let p = predictor.predict(std::slice::from_ref(&t), t.last_seen);
-        assert!(p[0].positions.iter().all(|p| *p == t.position));
+        assert_uncertain(&p[0], &t, 0.0);
     }
 }
 

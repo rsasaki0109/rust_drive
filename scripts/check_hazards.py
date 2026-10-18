@@ -10,6 +10,29 @@ import sys
 from tracking_frame import continuous_observations
 
 ROOT = Path(__file__).resolve().parent.parent
+
+
+def prediction_radius_at(prediction, time):
+    """Independent radius interpolation; malformed occupancy blocks clearance."""
+    extra = prediction.get('additional_radius_m', [])
+    radius, dt = prediction['radius'], prediction['dt']
+    positions = prediction['positions']
+    if (not positions or not math.isfinite(time) or time < 0 or not math.isfinite(dt) or dt <= 0
+            or not math.isfinite(radius) or radius < 0
+            or (extra and len(extra) != len(positions))
+            or any(not math.isfinite(r) or r < 0 or not math.isfinite(radius+r) for r in extra)):
+        return math.inf
+    if not extra:
+        return radius
+    step = time/dt
+    if not math.isfinite(step):
+        return radius+extra[-1]
+    index = min(math.floor(step), len(extra)-1)
+    if index == len(extra)-1:
+        return radius+extra[-1]
+    fraction = step-index
+    return radius+(1-fraction)*extra[index]+fraction*extra[index+1]
+
 CASES = {
     'reference': ['occluded-crossing', 'cut-in', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue', 'traffic-follower-deadline', 'traffic-fleet-queue', 'signal-red-green', 'signal-red-stop', 'signal-stale-stop', 'signal-stale-recovery', 'signal-two-stops', 'signal-approach-change', 'stop-sign-single', 'stop-sign-two', 'stop-sign-signal', 'stop-sign-obstacle', 'stop-sign-gnss-recovery'],
     'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue', 'traffic-follower-deadline', 'traffic-fleet-queue', 'signal-red-green', 'signal-red-stop', 'signal-stale-stop', 'signal-stale-recovery', 'signal-two-stops', 'signal-approach-change', 'stop-sign-single', 'stop-sign-two', 'stop-sign-signal', 'stop-sign-obstacle', 'stop-sign-gnss-recovery'],
@@ -368,11 +391,16 @@ def check_intersections(run, log):
                 dt = prediction['dt']
                 points = prediction['positions']
                 horizon = min(len(points)-1, math.floor((8.0+1e-9)/dt))
-                inflation = prediction['radius']+.5
-                conservative = {'min': {axis: bounds['min'][axis]-inflation for axis in ['x', 'y']},
-                                'max': {axis: bounds['max'][axis]+inflation for axis in ['x', 'y']}}
-                if any(segment_rectangle_distance_squared(a, b, conservative) <= 1e-12
-                       for a, b in zip(points[:horizon+1], points[1:horizon+1])):
+                def blocked(a, b, start, end):
+                    inflation = max(prediction_radius_at(prediction, start), prediction_radius_at(prediction, end))+.5
+                    if not math.isfinite(inflation):
+                        return True
+                    conservative = {'min': {axis: bounds['min'][axis]-inflation for axis in ['x', 'y']},
+                                    'max': {axis: bounds['max'][axis]+inflation for axis in ['x', 'y']}}
+                    return segment_rectangle_distance_squared(a, b, conservative) <= 1e-12
+                if (blocked(points[0], points[0], 0., 0.)
+                        or any(blocked(a, b, i*dt, (i+1)*dt)
+                               for i, (a, b) in enumerate(zip(points[:horizon+1], points[1:horizon+1])))):
                     blockers.append(prediction['id'])
             blockers.sort()
             if not state['committed']:
@@ -1092,7 +1120,7 @@ def check_motion_predictions(log):
     history = {}
     forecasts = braking_forecasts = stale_fallbacks = reacceleration_fallbacks = 0
     aged_forecasts = rebased_moving_forecasts = 0
-    slow_forecasts = unconfirmed_slow_forecasts = 0
+    slow_forecasts = unconfirmed_slow_forecasts = uncertain_slow_forecasts = 0
     max_deceleration = max_epoch_age = 0.0
     intermediate_braking_vetoes = 0
     with log.open() as stream:
@@ -1121,6 +1149,12 @@ def check_motion_predictions(log):
                 speed = math.hypot(*xy(track['velocity']))
                 dt = forecast['dt']
                 positions = list(map(xy, forecast['positions']))
+                radii = forecast.get('additional_radius_m', [])
+                if (radii and len(radii) != len(positions)) or any(
+                        not math.isfinite(r) or r < 0 for r in radii):
+                    raise ValueError('malformed additional occupied radii')
+                if not math.isfinite(forecast['radius']) or abs(forecast['radius']-track['radius']) > 1e-10:
+                    raise ValueError('forecast changed the observed physical radius')
                 origin = xy(track['position'])
                 age = now-track['last_seen']
                 valid = (all(math.isfinite(v) for v in [now, age, speed, track['radius'], *origin])
@@ -1135,6 +1169,11 @@ def check_motion_predictions(log):
                     raise ValueError('forecast horizon or spacing changed')
                 slow = confirm_slow_motion and supported_slow_motion(samples, track)
                 moving = speed >= .7 or slow
+                uncertain = confirm_slow_motion and not moving and speed >= .1
+                uncertain_slow_forecasts += int(uncertain)
+                expected_radii = [speed*(age+i*dt)/2 for i in range(41)] if uncertain else []
+                if len(radii) != len(expected_radii) or any(abs(a-b) > 1e-8 for a, b in zip(radii, expected_radii)):
+                    raise ValueError('occupied radii do not cover the required stopping/continuation envelope')
                 slow_forecasts += int(slow)
                 unconfirmed_slow_forecasts += int(speed < .7 and not slow)
                 aged_forecasts += int(age > 1e-9)
@@ -1172,8 +1211,10 @@ def check_motion_predictions(log):
                 stale_fallbacks += int(stale)
                 reacceleration_fallbacks += int(reaccelerating)
                 braking_forecasts += int(braking is not None)
-                direction = (track['velocity']['x']/speed, track['velocity']['y']/speed) if moving else (0.0, 0.0)
+                direction = (track['velocity']['x']/speed, track['velocity']['y']/speed) if moving or uncertain else (0.0, 0.0)
                 def displacement(elapsed):
+                    if uncertain:
+                        return speed*elapsed/2
                     if not moving:
                         return 0.0
                     if braking is None:
@@ -1200,6 +1241,7 @@ def check_motion_predictions(log):
                     raise ValueError('braking assumption persisted beyond acquisition plus one second')
     return {'verified': True, 'forecasts': forecasts, 'braking_forecasts': braking_forecasts,
             'confirmed_slow_forecasts': slow_forecasts, 'unconfirmed_slow_forecasts': unconfirmed_slow_forecasts,
+            'uncertain_slow_forecasts': uncertain_slow_forecasts,
             'stale_fallbacks': stale_fallbacks, 'reacceleration_fallbacks': reacceleration_fallbacks,
             'intermediate_braking_vetoes': intermediate_braking_vetoes,
             'max_forecast_deceleration_m_s2': max_deceleration,

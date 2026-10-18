@@ -162,6 +162,54 @@ pub struct Prediction {
     pub positions: Vec<Vec2>,
     pub radius: f64,
     pub dt: f64,
+    /// Additional occupied radius in meters at each position knot. Empty means
+    /// zero. Interpolate linearly and hold the last value after the horizon.
+    /// This geometric envelope is not a calibrated probability or covariance.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub additional_radius_m: Vec<f64>,
+}
+impl Prediction {
+    /// Validate the whole radius sequence before consuming any forecast knot.
+    pub fn valid_radii(&self) -> bool {
+        self.radius.is_finite()
+            && self.radius >= 0.0
+            && (self.additional_radius_m.is_empty()
+                || (self.additional_radius_m.len() == self.positions.len()
+                    && self.additional_radius_m.iter().all(|extra| {
+                        extra.is_finite() && *extra >= 0.0 && (self.radius + extra).is_finite()
+                    })))
+    }
+
+    /// Occupied radius at seconds from forecast origin. Malformed arguments or
+    /// sampled radii return infinity so geometric consumers fail closed.
+    /// Consumers must also call `valid_radii` to validate unsampled knots.
+    pub fn radius_at(&self, time: f64) -> f64 {
+        if !time.is_finite()
+            || time < 0.0
+            || !self.dt.is_finite()
+            || self.dt <= 0.0
+            || self.positions.is_empty()
+            || !self.radius.is_finite()
+            || self.radius < 0.0
+        {
+            return f64::INFINITY;
+        }
+        if self.additional_radius_m.is_empty() {
+            return self.radius;
+        }
+        if self.additional_radius_m.len() != self.positions.len() {
+            return f64::INFINITY;
+        }
+        let step = time / self.dt;
+        let index = (step.floor() as usize).min(self.positions.len() - 1);
+        let next = (index + 1).min(self.positions.len() - 1);
+        let a = self.additional_radius_m[index];
+        let b = self.additional_radius_m[next];
+        if !a.is_finite() || a < 0.0 || !b.is_finite() || b < 0.0 {
+            return f64::INFINITY;
+        }
+        self.radius + a + (b - a) * (step - index as f64).clamp(0.0, 1.0)
+    }
 }
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]

@@ -68,6 +68,24 @@ impl ObservedBraking {
             }
             let moving = speed >= 0.7
                 || (self.confirm_slow_motion && slow_motion::supported(track, history));
+            if self.confirm_slow_motion && !moving && speed >= 0.1 {
+                // Until motion is confirmed, cover both stopping at acquisition
+                // and continuing at observed velocity, and every point between.
+                // The acquisition age consumes the same envelope budget.
+                for (i, position) in prediction.positions.iter_mut().enumerate() {
+                    let half_elapsed = (age + i as f64 * prediction.dt) * 0.5;
+                    *position = track.position.plus(track.velocity.scaled(half_elapsed));
+                    prediction.additional_radius_m.push(speed * half_elapsed);
+                }
+                if prediction.positions.iter().any(|point| !point.finite())
+                    || !prediction.valid_radii()
+                {
+                    history.clear();
+                    prediction.positions.clear();
+                    prediction.additional_radius_m.clear();
+                }
+                continue;
+            }
             for (i, position) in prediction.positions.iter_mut().enumerate() {
                 let elapsed = if moving {
                     age + i as f64 * prediction.dt
@@ -195,6 +213,7 @@ impl Predictor for ConstantVelocity {
         tracks
             .iter()
             .map(|track| Prediction {
+                additional_radius_m: vec![],
                 id: track.id,
                 positions: (0..=(self.horizon / self.dt).ceil() as usize)
                     .map(|i| {

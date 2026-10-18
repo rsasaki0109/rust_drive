@@ -92,6 +92,7 @@ fn observation<'a>(
 }
 fn rear() -> Prediction {
     Prediction {
+        additional_radius_m: vec![],
         id: 9,
         radius: 1.1,
         dt: 0.2,

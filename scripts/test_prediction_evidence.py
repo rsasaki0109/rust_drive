@@ -29,9 +29,13 @@ def fixture(slow):
         previous_speed = speed
         if slow and i == 3:
             current['velocity'] = {'x': 0., 'y': .5}
+        velocity = current['velocity']
         predictions = [{'id': 11, 'dt': .2, 'radius': .7,
-                        'positions': [{'x': position+(0. if slow else speed*j*.2), 'y': 3.}
+                        'positions': [{'x': position+velocity['x']*j*.2*(.5 if slow else 1.),
+                                       'y': 3.+velocity['y']*j*.2*(.5 if slow else 1.)}
                                       for j in range(41)]}]
+        if slow:
+            predictions[0]['additional_radius_m'] = [.5*j*.2/2 for j in range(41)]
         rows.append({'kind': 'tick', 'tick': {'input': {'time': time},
                     'expected': {'tracks': [current], 'predictions': predictions}}})
     return rows
@@ -45,6 +49,14 @@ def audit(rows):
 
 
 class ObservationEvidenceTests(unittest.TestCase):
+    def test_independent_occupied_radius_interpolation_and_held_endpoint(self):
+        prediction = {'positions': [{}, {}, {}], 'radius': .7, 'dt': .2,
+                      'additional_radius_m': [0., 1., .5]}
+        for time, expected in [(0., .7), (.1, 1.2), (.2, 1.7), (.3, 1.45), (10., 1.2)]:
+            self.assertAlmostEqual(auditor.prediction_radius_at(prediction, time), expected)
+        prediction['additional_radius_m'] = [0.]
+        self.assertEqual(auditor.prediction_radius_at(prediction, 0.), float('inf'))
+
     def test_intermediate_stop_turn_and_backward_step_are_not_erased_by_anchors(self):
         for contradiction in range(3):
             samples = [track(i*.1, .5) for i in range(7)]
@@ -72,11 +84,12 @@ class ObservationEvidenceTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             audit(changed)
 
-    def test_a_slow_turn_uses_the_deadband_and_the_old_confirmed_motion_is_rejected(self):
+    def test_a_slow_turn_uses_uncertain_occupancy_and_unjustified_confirmation_is_rejected(self):
         rows = fixture(True)
         result = audit(rows)
         self.assertTrue(result['verified'])
         self.assertEqual(result['confirmed_slow_forecasts'], 0)
+        self.assertEqual(result['uncertain_slow_forecasts'], 7)
         changed = copy.deepcopy(rows)
         output = changed[-1]['tick']['expected']
         origin = output['tracks'][0]['position']['x']
@@ -84,6 +97,19 @@ class ObservationEvidenceTests(unittest.TestCase):
             point['x'] = origin+.5*i*.2
         with self.assertRaises(ValueError):
             audit(changed)
+
+    def test_missing_shrunken_negative_or_misaligned_occupancy_is_rejected(self):
+        for corruption in ['missing', 'short', 'negative', 'nan', 'shrunken']:
+            rows = fixture(True)
+            prediction = rows[-1]['tick']['expected']['predictions'][0]
+            if corruption == 'missing':
+                del prediction['additional_radius_m']
+            elif corruption == 'short':
+                prediction['additional_radius_m'].pop()
+            else:
+                prediction['additional_radius_m'][20] = {'negative': -1., 'nan': float('nan'), 'shrunken': 0.}[corruption]
+            with self.subTest(corruption=corruption), self.assertRaises(ValueError):
+                audit(rows)
 
 
 if __name__ == '__main__':

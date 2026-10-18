@@ -13,6 +13,7 @@ fn config() -> LaneChangeConfig {
 }
 fn forecast(x: f64, y: f64, vx: f64, vy: f64) -> Prediction {
     Prediction {
+        additional_radius_m: vec![],
         id: 7,
         positions: (0..=30)
             .map(|i| Vec2::new(x + vx * i as f64 * 0.2, y + vy * i as f64 * 0.2))
@@ -43,6 +44,7 @@ fn rear_closing_and_front_traffic_block_but_departing_and_other_lane_traffic_do_
 #[test]
 fn continuous_segment_clipping_catches_a_crossing_with_both_samples_outside_the_lane() {
     let p = Prediction {
+        additional_radius_m: vec![],
         id: 1,
         positions: vec![Vec2::new(35.0, -100.0), Vec2::new(35.0, 100.0)],
         radius: 1.0,
@@ -165,4 +167,14 @@ fn missed_acquisition_gaps_with_fresh_deliveries_restart_the_full_clear_interval
     gate.step(&route, ego, &[], 1.5, Some(1.5), true);
     assert_eq!(gate.status().phase, LaneChangePhase::Ready);
     assert_eq!(gate.status().clear_since, Some(0.5));
+}
+
+#[test]
+fn uncertain_occupancy_blocks_lane_entry_and_malformed_shapes_fail_closed() {
+    let mut p = forecast(35., 0., 0., 0.);
+    assert!(!blocks(&config(), &p, 20., 2.5, 1.25));
+    p.additional_radius_m = (0..p.positions.len()).map(|i| i as f64 * 0.1).collect();
+    assert!(blocks(&config(), &p, 20., 2.5, 1.25));
+    p.additional_radius_m = vec![0.];
+    assert!(blocks(&config(), &p, 20., 2.5, 1.25));
 }

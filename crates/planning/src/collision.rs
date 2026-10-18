@@ -19,7 +19,7 @@ pub(super) fn first_contact_time(
         .unwrap_or(held_heading);
     if first.position.distance(position_at(object, first.time))
         <= vehicle_radius
-            + object.radius
+            + object.radius_at(first.time)
             + margin(first.time, velocity_at(object, first.time), initial_tangent)
     {
         return Some(first.time);
@@ -135,7 +135,7 @@ fn segment_contact(
         // Constant acceleration along a segment differs from its temporal chord
         // by at most |delta_v| * duration / 8. Inflate the circle by this bound.
         vehicle_radius
-            + object.radius
+            + object.radius_at(start).max(object.radius_at(end))
             + margin(end, velocity_at(object, 0.5 * start + 0.5 * end), tangent)
             + (b.speed - a.speed).abs() * (b.time - a.time) / 8.0,
     )
@@ -184,6 +184,26 @@ mod tests {
     }
 
     #[test]
+    fn radius_growth_and_an_interior_peak_block_a_stationary_hold() {
+        let hold = path(Vec2::default(), Vec2::default(), [0., 8.]);
+        let mut object = Prediction {
+            id: 9,
+            positions: vec![Vec2::new(5., 0.); 3],
+            radius: 0.5,
+            additional_radius_m: vec![],
+            dt: 4.,
+        };
+        assert_eq!(
+            first_contact_time(&hold, &object, 1., Vec2::new(1., 0.)),
+            None
+        );
+        for envelope in [vec![0., 2., 4.], vec![0., 4., 0.]] {
+            object.additional_radius_m = envelope;
+            assert!(first_contact_time(&hold, &object, 1., Vec2::new(1., 0.)).is_some());
+        }
+    }
+
+    #[test]
     fn analytic_entry_tangency_overlap_and_miss() {
         assert_eq!(
             contact_fraction(Vec2::new(-5.0, 0.0), Vec2::new(5.0, 0.0), 1.0),
@@ -211,6 +231,7 @@ mod tests {
     fn synchronized_crossing_detected_between_clear_endpoints() {
         let ego = path(Vec2::default(), Vec2::new(10.0, 0.0), [0.0, 1.0]);
         let object = Prediction {
+            additional_radius_m: vec![],
             id: 1,
             positions: vec![Vec2::new(5.0, 5.0), Vec2::new(5.0, -5.0)],
             radius: 0.5,
@@ -234,6 +255,7 @@ mod tests {
                 [0.0, 1.0],
             );
             let parallel = Prediction {
+                additional_radius_m: vec![],
                 id: 1,
                 positions: vec![rotate(Vec2::new(0.0, 1.5)), rotate(Vec2::new(10.0, 1.5))],
                 radius: 0.5,
@@ -241,6 +263,7 @@ mod tests {
             };
             assert!(first_contact_time(&ego, &parallel, 0.5, Vec2::default()).is_none());
             let stationary = Prediction {
+                additional_radius_m: vec![],
                 id: 2,
                 positions: vec![rotate(Vec2::new(5.0, 1.5))],
                 radius: 0.5,
@@ -257,6 +280,7 @@ mod tests {
             let heading = Vec2::new(1., 0.).rotated(angle);
             for speed in [0.1, 0.2, 0.5, 2.5] {
                 let crossing = Prediction {
+                    additional_radius_m: vec![],
                     id: 1,
                     positions: vec![
                         Vec2::new(1.8, 0.).rotated(angle),
@@ -284,6 +308,7 @@ mod tests {
     fn fast_almost_parallel_motion_keeps_the_previous_transverse_speed_reserve() {
         let ego = path(Vec2::default(), Vec2::default(), [0., 1.]);
         let object = Prediction {
+            additional_radius_m: vec![],
             id: 1,
             positions: vec![Vec2::new(1.48, 0.), Vec2::new(9.48, 0.5)],
             radius: 0.5,
@@ -301,6 +326,7 @@ mod tests {
     fn stationary_hold_reserves_for_motion_without_an_arbitrary_heading() {
         let ego = path(Vec2::default(), Vec2::default(), [0.0, 1.0]);
         let moving = Prediction {
+            additional_radius_m: vec![],
             id: 1,
             positions: vec![Vec2::new(1.5, 5.0), Vec2::new(1.5, -5.0)],
             radius: 0.5,
@@ -323,6 +349,7 @@ mod tests {
             let ego = path(Vec2::default(), Vec2::default(), [0.0, 1.0]);
             let heading = rotate(Vec2::new(1.0, 0.0));
             let parallel = Prediction {
+                additional_radius_m: vec![],
                 id: 1,
                 positions: vec![rotate(Vec2::new(-5.0, 1.5)), rotate(Vec2::new(5.0, 1.5))],
                 radius: 0.5,
@@ -342,6 +369,7 @@ mod tests {
     fn geometric_crossing_at_different_times_is_clear() {
         let ego = path(Vec2::default(), Vec2::new(10.0, 0.0), [0.0, 1.0]);
         let object = Prediction {
+            additional_radius_m: vec![],
             id: 1,
             positions: vec![Vec2::new(5.0, 5.0), Vec2::new(5.0, 0.0)],
             radius: 0.5,
@@ -354,6 +382,7 @@ mod tests {
     fn intermediate_prediction_turn_is_not_replaced_with_an_endpoint_chord() {
         let ego = path(Vec2::default(), Vec2::default(), [0.0, 1.0]);
         let object = Prediction {
+            additional_radius_m: vec![],
             id: 1,
             positions: vec![Vec2::new(-5.0, 2.0), Vec2::default(), Vec2::new(-5.0, 2.0)],
             radius: 0.5,
@@ -366,6 +395,7 @@ mod tests {
     fn terminal_prediction_and_single_point_obstacles_remain_occupied() {
         let ego = path(Vec2::default(), Vec2::new(10.0, 0.0), [2.0, 3.0]);
         let mut object = Prediction {
+            additional_radius_m: vec![],
             id: 1,
             positions: vec![Vec2::new(5.0, 5.0), Vec2::new(5.0, 0.0)],
             radius: 0.5,

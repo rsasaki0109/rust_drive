@@ -52,12 +52,16 @@ pub(super) fn observed_clearance(
     predictions
         .iter()
         .map(|p| {
+            if !p.valid_radii() || p.positions.len() < 2 || !p.dt.is_finite() || p.dt <= 0.0 {
+                return f64::NEG_INFINITY;
+            }
             path.windows(2)
                 .flat_map(|a| {
-                    p.positions.windows(2).map(move |b| {
+                    p.positions.windows(2).enumerate().map(move |(i, b)| {
                         segment_distance(a[0].position, a[1].position, b[0], b[1])
                             - radius
-                            - p.radius
+                            - p.radius_at(i as f64 * p.dt)
+                                .max(p.radius_at((i + 1) as f64 * p.dt))
                     })
                 })
                 .fold(1000.0_f64, f64::min)

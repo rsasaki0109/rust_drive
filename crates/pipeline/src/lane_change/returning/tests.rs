@@ -45,6 +45,7 @@ fn ego() -> EgoState {
 }
 fn obstacle(x: f64, y: f64, id: u64) -> Prediction {
     Prediction {
+        additional_radius_m: vec![],
         id,
         positions: vec![Vec2::new(x, y); 41],
         radius: 1.0,
@@ -273,6 +274,7 @@ fn preview_clearance_covers_crossings_between_both_sets_of_sampled_endpoints() {
         },
     ];
     let crossing = Prediction {
+        additional_radius_m: vec![],
         id: 1,
         positions: vec![p(5., -10.), p(5., 10.)],
         radius: 1.,
@@ -293,4 +295,20 @@ fn neighboring_track_outside_the_source_band_does_not_erase_source_evidence() {
     assert!(s.source_blocking_tracks.is_empty());
     assert_eq!(s.source_clear_since, Some(0.0));
     assert!(s.observed_clearance_m.unwrap() >= 1.3);
+}
+
+#[test]
+fn return_preview_subtracts_the_forecast_occupancy_envelope() {
+    let path = [0., 10.].map(|x| rustdriving_core::TrajectoryPoint {
+        position: Vec2::new(x, 0.),
+        speed: 0.,
+        time: x,
+    });
+    let mut p = obstacle(5., 5., 9);
+    let base = observed_clearance(&path, std::slice::from_ref(&p), 1.25);
+    p.additional_radius_m = vec![2.; p.positions.len()];
+    let expanded = observed_clearance(&path, std::slice::from_ref(&p), 1.25);
+    assert!((base - expanded - 2.).abs() < 1e-12);
+    p.additional_radius_m.pop();
+    assert_eq!(observed_clearance(&path, &[p], 1.25), f64::NEG_INFINITY);
 }

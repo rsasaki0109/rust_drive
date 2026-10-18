@@ -10,6 +10,7 @@ fn oncoming_obstacle_between_samples_requires_braking() {
     planner.vehicle.radius = 0.2;
     let route = Route::new(vec![Vec2::default(), Vec2::new(100.0, 0.0)], 2.1).unwrap();
     let object = Prediction {
+        additional_radius_m: vec![],
         id: 1,
         positions: vec![Vec2::new(1.25, 0.0), Vec2::new(-1.15, 0.0)],
         radius: 0.2,
@@ -29,12 +30,29 @@ fn oncoming_obstacle_between_samples_requires_braking() {
 fn malformed_forecasts_cannot_be_treated_as_a_clear_road() {
     let route = Route::new(vec![Vec2::default(), Vec2::new(100.0, 0.0)], 2.1).unwrap();
     let valid = Prediction {
+        additional_radius_m: vec![],
         id: 1,
         positions: vec![Vec2::new(20.0, 0.0)],
         radius: 1.0,
         dt: 0.2,
     };
     for invalid in [
+        Prediction {
+            additional_radius_m: vec![0., 1.],
+            ..valid.clone()
+        },
+        Prediction {
+            additional_radius_m: vec![-1.],
+            ..valid.clone()
+        },
+        Prediction {
+            additional_radius_m: vec![f64::NAN],
+            ..valid.clone()
+        },
+        Prediction {
+            additional_radius_m: vec![f64::INFINITY],
+            ..valid.clone()
+        },
         Prediction {
             positions: vec![],
             ..valid.clone()
@@ -66,6 +84,7 @@ fn malformed_forecasts_cannot_be_treated_as_a_clear_road() {
 fn accelerating_arrival_time_detects_a_crossing_missed_by_a_three_meter_per_second_floor() {
     let route = Route::new(vec![Vec2::default(), Vec2::new(100.0, 0.0)], 2.1).unwrap();
     let object = Prediction {
+        additional_radius_m: vec![],
         id: 1,
         positions: (0..=40)
             .map(|i| Vec2::new(16.0, 16.0 - 0.8 * i as f64))
@@ -86,12 +105,14 @@ fn accelerating_arrival_time_detects_a_crossing_missed_by_a_three_meter_per_seco
 fn a_second_crossing_at_the_stop_location_invalidates_the_retimed_path() {
     let route = Route::new(vec![Vec2::default(), Vec2::new(100.0, 0.0)], 2.1).unwrap();
     let stationary = Prediction {
+        additional_radius_m: vec![],
         id: 1,
         positions: vec![Vec2::new(25.0, 0.0)],
         radius: 1.0,
         dt: 0.2,
     };
     let crossing = Prediction {
+        additional_radius_m: vec![],
         id: 2,
         positions: (0..=40)
             .map(|i| Vec2::new(18.0, 12.0 - 0.4 * i as f64))

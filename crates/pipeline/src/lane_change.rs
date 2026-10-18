@@ -185,6 +185,7 @@ fn blocks_with_lateral_extra(
         || prediction.positions.len() > 1024
         || prediction.dt * ((prediction.positions.len() - 1) as f64) < HORIZON_S
         || !prediction.radius.is_finite()
+        || !prediction.valid_radii()
         || !(0.0..=200.0).contains(&prediction.radius)
         || prediction
             .positions
@@ -211,10 +212,6 @@ fn blocks_with_lateral_extra(
     if !rear_speed.is_finite() || rear_speed > 30.0 {
         return true;
     }
-    let body = radius + prediction.radius;
-    let behind = body + MIN_GAP_M + rear_speed * HEADWAY_S;
-    let ahead = body + MIN_GAP_M + speed * HEADWAY_S;
-    let lateral = config.target_width_m / 2.0 + prediction.radius + lateral_extra;
     // Ego's assumed forward travel spans [0, speed*t]. Segment clipping covers
     // continuous traffic motion, including a lateral crossing between samples.
     for (i, pair) in positions.windows(2).enumerate() {
@@ -223,6 +220,11 @@ fn blocks_with_lateral_extra(
             break;
         }
         let t1 = ((i + 1) as f64 * prediction.dt).min(HORIZON_S);
+        let occupied_radius = prediction.radius_at(t0).max(prediction.radius_at(t1));
+        let body = radius + occupied_radius;
+        let behind = body + MIN_GAP_M + rear_speed * HEADWAY_S;
+        let ahead = body + MIN_GAP_M + speed * HEADWAY_S;
+        let lateral = config.target_width_m / 2.0 + occupied_radius + lateral_extra;
         let fraction = (t1 - t0) / prediction.dt;
         let a = pair[0];
         let b = (
@@ -340,10 +342,11 @@ impl LaneChangeGate {
             }
             if let Some(first) = p.positions.first().filter(|p| p.finite()) {
                 let (x, y) = self.config.coordinates(*first);
-                if p.radius.is_finite()
-                    && y.abs() <= self.config.target_width_m / 2.0 + p.radius + 0.5
+                let occupied_radius = p.radius_at(0.0);
+                if occupied_radius.is_finite()
+                    && y.abs() <= self.config.target_width_m / 2.0 + occupied_radius + 0.5
                 {
-                    let distance = (x - ego_x).abs() - vehicle.radius - p.radius;
+                    let distance = (x - ego_x).abs() - vehicle.radius - occupied_radius;
                     let field = if x >= ego_x {
                         &mut self.state.front_gap_m
                     } else {
