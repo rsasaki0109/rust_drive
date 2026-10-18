@@ -207,7 +207,19 @@ fn blocks_with_lateral_extra(
     }
     let rear_speed = positions
         .windows(2)
-        .map(|p| (p[1].0 - p[0].0) / prediction.dt)
+        .enumerate()
+        .map(|(i, p)| {
+            // An uncertain forecast's center can move more slowly than its
+            // forward occupied edge. Include radius growth in closing headway;
+            // shrinking uncertainty must not discount measured center motion.
+            let growth = if prediction.additional_radius_m.is_empty() {
+                0.0
+            } else {
+                (prediction.additional_radius_m[i + 1] - prediction.additional_radius_m[i]).max(0.0)
+                    / prediction.dt
+            };
+            (p[1].0 - p[0].0) / prediction.dt + growth
+        })
         .fold(0.0_f64, f64::max);
     if !rear_speed.is_finite() || rear_speed > 30.0 {
         return true;

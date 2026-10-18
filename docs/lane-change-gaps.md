@@ -49,12 +49,23 @@ mapped controls. The entry must leave at least `vehicle.radius + 5 m` of prefix.
 The target-lane axis is the coordinate frame for the gate. Its forecast window
 is 6 s. A forward-travel interval covers ego displacement from zero to
 `(max(cruise, current speed) + 0.5 m/s) * time`. It expands behind by combined
-circle radii, 6 m and 2 s of the fastest predicted forward actor speed; expansion
+circle radii, 6 m and 2 s of the fastest forward approach of the predicted
+occupied body; expansion
 ahead uses combined radii, 6 m and 2 s of the ego speed bound. The target band
 expands laterally by the actor radius and 0.5 m. A forecast intersecting this
 moving interval blocks admission. Linear segment clipping checks between forecast
 samples, including lateral crossings; malformed or incomplete 6 s forecasts block.
 This is a bounded admission hypothesis, not a forecast of the entire maneuver.
+
+For a time-varying occupancy radius, forward approach includes the center's
+longitudinal speed plus positive radius growth on each forecast interval.
+The largest nonnegative sum supplies rear headway. Shrinking uncertainty does
+not discount center motion; backward center motion can offset growth when the
+forward occupied edge stays still. Empty additional radii retain the original
+center-speed calculation. The existing 30 m/s validity limit, 6 s sweep, 6 m gap,
+2 s headway and acquisition confirmation rules remain unchanged. The same helper
+also gates optional return/resume/launch decisions. [Counterexample, independent
+contained-motion witnesses and measured comparison](lane-occupancy-headway.md).
 
 `Waiting` supplies a temporary route prefix ending before entry. The unchanged
 planner/controller brakes toward it; an explicit low-speed brake prevents hold

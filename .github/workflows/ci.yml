@@ -26,6 +26,8 @@ jobs:
           python-version: '3.12'
       - name: Check adversarial prediction evidence
         run: python scripts/test_prediction_evidence.py
+      - name: Check contained lane-conflict witnesses
+        run: python scripts/test_lane_occupancy.py
       - run: cargo fmt --all --check
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - run: cargo test --workspace --locked

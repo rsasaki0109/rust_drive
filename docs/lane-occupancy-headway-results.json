@@ -1,0 +1,974 @@
+{
+  "physical_inputs_frozen_before_evaluation": {
+    "clearance_floor_m": 1.0,
+    "frozen_at": "2026-10-18T23:39:32.850797+09:00",
+    "goal_deadline_seconds": 120.0,
+    "inputs": [
+      {
+        "case": "rear",
+        "frozen_before_paired_evaluation": true,
+        "path": "artifacts/lane-occupancy-headway-v1/scenarios/rear.json",
+        "seeds": [
+          1,
+          7,
+          42
+        ],
+        "sha256": "1941ea74fb924c2a8d81c9599889a2fe862b0c4c442c06084879ab7fb1174e36"
+      },
+      {
+        "case": "release",
+        "frozen_before_paired_evaluation": true,
+        "path": "artifacts/lane-occupancy-headway-v1/scenarios/release.json",
+        "seeds": [
+          1,
+          7,
+          42
+        ],
+        "sha256": "73faf151e26aeff424e7c3425f04b9a354fe920a66792e8aa1148d86a060a2be"
+      },
+      {
+        "case": "blocked",
+        "frozen_before_paired_evaluation": true,
+        "path": "artifacts/lane-occupancy-headway-v1/scenarios/blocked.json",
+        "seeds": [
+          1,
+          7,
+          42
+        ],
+        "sha256": "e0ee63a111b8fb83ecf873dde8caa0539bcd962f2fdbd090e19b488a5752bec7"
+      },
+      {
+        "case": "slow-rear-12",
+        "frozen_before_paired_evaluation": true,
+        "path": "artifacts/lane-occupancy-headway-v1/scenarios/slow-rear-12.json",
+        "seeds": [
+          1,
+          7,
+          42
+        ],
+        "sha256": "aa6e283f4a65854e7dd83deb0a001022ba5299d492493714e3f38505018d454f"
+      },
+      {
+        "case": "slow-rear-10",
+        "frozen_before_paired_evaluation": true,
+        "path": "artifacts/lane-occupancy-headway-v1/scenarios/slow-rear-10.json",
+        "seeds": [
+          1,
+          7,
+          42
+        ],
+        "sha256": "6dfefeedde91f8bdf83b6d49454f25a9627fff9876839df9725f0f54c3d0a397"
+      },
+      {
+        "case": "slow-rear-08",
+        "frozen_before_paired_evaluation": true,
+        "path": "artifacts/lane-occupancy-headway-v1/scenarios/slow-rear-08.json",
+        "seeds": [
+          1,
+          7,
+          42
+        ],
+        "sha256": "e22ecc03146298157b0f38e87e2bae1d18f11a065921112dba9d999e2b2ddf5b"
+      }
+    ],
+    "no_gate_threshold_changes": true,
+    "stop_deadline_seconds": 35.0
+  },
+  "physical_results": [
+    {
+      "all_five_recorded_outputs_identical": true,
+      "case": "rear",
+      "clearance_change_m": 0.0,
+      "clearance_m": 1.1670404756163788,
+      "independent_full_tick_sweep": {
+        "contact_intervals": 0,
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1.1670404756163788,
+        "passed": true,
+        "ticks": 1989
+      },
+      "parent_passed": true,
+      "passed": true,
+      "seconds": 99.4,
+      "seed": 1,
+      "sensor_replay": {
+        "source": "reference-2d",
+        "ticks": 1989,
+        "verified": true
+      }
+    },
+    {
+      "all_five_recorded_outputs_identical": true,
+      "case": "rear",
+      "clearance_change_m": 0.0,
+      "clearance_m": 1.1692290066887265,
+      "independent_full_tick_sweep": {
+        "contact_intervals": 0,
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1.1692290066887265,
+        "passed": true,
+        "ticks": 1992
+      },
+      "parent_passed": true,
+      "passed": true,
+      "seconds": 99.55000000000001,
+      "seed": 7,
+      "sensor_replay": {
+        "source": "reference-2d",
+        "ticks": 1992,
+        "verified": true
+      }
+    },
+    {
+      "all_five_recorded_outputs_identical": true,
+      "case": "rear",
+      "clearance_change_m": 0.0,
+      "clearance_m": 1.1005530689378236,
+      "independent_full_tick_sweep": {
+        "contact_intervals": 0,
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1.1005530689378236,
+        "passed": true,
+        "ticks": 1993
+      },
+      "parent_passed": true,
+      "passed": true,
+      "seconds": 99.60000000000001,
+      "seed": 42,
+      "sensor_replay": {
+        "source": "reference-2d",
+        "ticks": 1993,
+        "verified": true
+      }
+    },
+    {
+      "all_five_recorded_outputs_identical": true,
+      "case": "release",
+      "clearance_change_m": 0.0,
+      "clearance_m": 4.931302842239752,
+      "independent_full_tick_sweep": {
+        "contact_intervals": 0,
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 4.931302842239752,
+        "passed": true,
+        "ticks": 1825
+      },
+      "parent_passed": true,
+      "passed": true,
+      "seconds": 91.2,
+      "seed": 1,
+      "sensor_replay": {
+        "source": "reference-2d",
+        "ticks": 1825,
+        "verified": true
+      }
+    },
+    {
+      "all_five_recorded_outputs_identical": true,
+      "case": "release",
+      "clearance_change_m": 0.0,
+      "clearance_m": 4.839488525951111,
+      "independent_full_tick_sweep": {
+        "contact_intervals": 0,
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 4.839488525951111,
+        "passed": true,
+        "ticks": 1828
+      },
+      "parent_passed": true,
+      "passed": true,
+      "seconds": 91.35000000000001,
+      "seed": 7,
+      "sensor_replay": {
+        "source": "reference-2d",
+        "ticks": 1828,
+        "verified": true
+      }
+    },
+    {
+      "all_five_recorded_outputs_identical": true,
+      "case": "release",
+      "clearance_change_m": 0.0,
+      "clearance_m": 4.83377906438249,
+      "independent_full_tick_sweep": {
+        "contact_intervals": 0,
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 4.83377906438249,
+        "passed": true,
+        "ticks": 1827
+      },
+      "parent_passed": true,
+      "passed": true,
+      "seconds": 91.30000000000001,
+      "seed": 42,
+      "sensor_replay": {
+        "source": "reference-2d",
+        "ticks": 1827,
+        "verified": true
+      }
+    },
+    {
+      "all_five_recorded_outputs_identical": true,
+      "case": "blocked",
+      "clearance_change_m": 0.0,
+      "clearance_m": 4.931302842239752,
+      "independent_full_tick_sweep": {
+        "contact_intervals": 0,
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 4.931302842239752,
+        "passed": true,
+        "ticks": 701
+      },
+      "parent_passed": true,
+      "passed": true,
+      "seconds": 35.0,
+      "seed": 1,
+      "sensor_replay": {
+        "source": "reference-2d",
+        "ticks": 701,
+        "verified": true
+      }
+    },
+    {
+      "all_five_recorded_outputs_identical": true,
+      "case": "blocked",
+      "clearance_change_m": 0.0,
+      "clearance_m": 4.839488525951111,
+      "independent_full_tick_sweep": {
+        "contact_intervals": 0,
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 4.839488525951111,
+        "passed": true,
+        "ticks": 701
+      },
+      "parent_passed": true,
+      "passed": true,
+      "seconds": 35.0,
+      "seed": 7,
+      "sensor_replay": {
+        "source": "reference-2d",
+        "ticks": 701,
+        "verified": true
+      }
+    },
+    {
+      "all_five_recorded_outputs_identical": true,
+      "case": "blocked",
+      "clearance_change_m": 0.0,
+      "clearance_m": 4.83377906438249,
+      "independent_full_tick_sweep": {
+        "contact_intervals": 0,
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 4.83377906438249,
+        "passed": true,
+        "ticks": 701
+      },
+      "parent_passed": true,
+      "passed": true,
+      "seconds": 35.0,
+      "seed": 42,
+      "sensor_replay": {
+        "source": "reference-2d",
+        "ticks": 701,
+        "verified": true
+      }
+    },
+    {
+      "all_five_recorded_outputs_identical": true,
+      "case": "slow-rear-12",
+      "clearance_change_m": 0.0,
+      "clearance_m": 10.04203647100248,
+      "independent_full_tick_sweep": {
+        "contact_intervals": 0,
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 10.04203647100248,
+        "passed": true,
+        "ticks": 1690
+      },
+      "parent_passed": true,
+      "passed": true,
+      "seconds": 84.45,
+      "seed": 1,
+      "sensor_replay": {
+        "source": "reference-2d",
+        "ticks": 1690,
+        "verified": true
+      }
+    },
+    {
+      "all_five_recorded_outputs_identical": true,
+      "case": "slow-rear-12",
+      "clearance_change_m": 0.0,
+      "clearance_m": 10.042039609169018,
+      "independent_full_tick_sweep": {
+        "contact_intervals": 0,
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 10.042039609169018,
+        "passed": true,
+        "ticks": 1685
+      },
+      "parent_passed": true,
+      "passed": true,
+      "seconds": 84.2,
+      "seed": 7,
+      "sensor_replay": {
+        "source": "reference-2d",
+        "ticks": 1685,
+        "verified": true
+      }
+    },
+    {
+      "all_five_recorded_outputs_identical": true,
+      "case": "slow-rear-12",
+      "clearance_change_m": 0.0,
+      "clearance_m": 10.0420407469534,
+      "independent_full_tick_sweep": {
+        "contact_intervals": 0,
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 10.0420407469534,
+        "passed": true,
+        "ticks": 1686
+      },
+      "parent_passed": true,
+      "passed": true,
+      "seconds": 84.25,
+      "seed": 42,
+      "sensor_replay": {
+        "source": "reference-2d",
+        "ticks": 1686,
+        "verified": true
+      }
+    },
+    {
+      "all_five_recorded_outputs_identical": false,
+      "case": "slow-rear-10",
+      "clearance_change_m": 0.0,
+      "clearance_m": 8.138687680368218,
+      "independent_full_tick_sweep": {
+        "contact_intervals": 0,
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 8.138687680368218,
+        "passed": true,
+        "ticks": 1688
+      },
+      "parent_passed": true,
+      "passed": true,
+      "seconds": 84.35000000000001,
+      "seed": 1,
+      "sensor_replay": {
+        "source": "reference-2d",
+        "ticks": 1688,
+        "verified": true
+      }
+    },
+    {
+      "all_five_recorded_outputs_identical": false,
+      "case": "slow-rear-10",
+      "clearance_change_m": 0.0,
+      "clearance_m": 8.138688497712648,
+      "independent_full_tick_sweep": {
+        "contact_intervals": 0,
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 8.138688497712648,
+        "passed": true,
+        "ticks": 1685
+      },
+      "parent_passed": true,
+      "passed": true,
+      "seconds": 84.2,
+      "seed": 7,
+      "sensor_replay": {
+        "source": "reference-2d",
+        "ticks": 1685,
+        "verified": true
+      }
+    },
+    {
+      "all_five_recorded_outputs_identical": false,
+      "case": "slow-rear-10",
+      "clearance_change_m": 0.0,
+      "clearance_m": 8.138692637704125,
+      "independent_full_tick_sweep": {
+        "contact_intervals": 0,
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 8.138692637704125,
+        "passed": true,
+        "ticks": 1683
+      },
+      "parent_passed": true,
+      "passed": true,
+      "seconds": 84.10000000000001,
+      "seed": 42,
+      "sensor_replay": {
+        "source": "reference-2d",
+        "ticks": 1683,
+        "verified": true
+      }
+    },
+    {
+      "all_five_recorded_outputs_identical": true,
+      "case": "slow-rear-08",
+      "clearance_change_m": 0.0,
+      "clearance_m": 6.279168556516915,
+      "independent_full_tick_sweep": {
+        "contact_intervals": 0,
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 6.279168556516915,
+        "passed": true,
+        "ticks": 1688
+      },
+      "parent_passed": true,
+      "passed": true,
+      "seconds": 84.35000000000001,
+      "seed": 1,
+      "sensor_replay": {
+        "source": "reference-2d",
+        "ticks": 1688,
+        "verified": true
+      }
+    },
+    {
+      "all_five_recorded_outputs_identical": true,
+      "case": "slow-rear-08",
+      "clearance_change_m": 0.0,
+      "clearance_m": 6.279172110165838,
+      "independent_full_tick_sweep": {
+        "contact_intervals": 0,
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 6.279172110165838,
+        "passed": true,
+        "ticks": 1688
+      },
+      "parent_passed": true,
+      "passed": true,
+      "seconds": 84.35000000000001,
+      "seed": 7,
+      "sensor_replay": {
+        "source": "reference-2d",
+        "ticks": 1688,
+        "verified": true
+      }
+    },
+    {
+      "all_five_recorded_outputs_identical": true,
+      "case": "slow-rear-08",
+      "clearance_change_m": 0.0,
+      "clearance_m": 6.279175180880426,
+      "independent_full_tick_sweep": {
+        "contact_intervals": 0,
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 6.279175180880426,
+        "passed": true,
+        "ticks": 1690
+      },
+      "parent_passed": true,
+      "passed": true,
+      "seconds": 84.45,
+      "seed": 42,
+      "sensor_replay": {
+        "source": "reference-2d",
+        "ticks": 1690,
+        "verified": true
+      }
+    }
+  ],
+  "pins_and_fixed_worlds_sha256": {
+    "Cargo.lock": "de8e6afb2c8f59be7f68f0ccf8604e4d43d9951d6902314f46f16b8121dbccf7",
+    "Cargo.toml": "2975b0cc0fbaed1397dc5d575fe95466d29ce773400eb1ce8f4fbec37bac0d65",
+    "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed",
+    "scenarios/slow-crossing.json": "1e055857da813ecf32151c35405a8016ae10a4785baa20b9f87de11abed90e5b",
+    "scenarios/traffic-follower-deadline.json": "43772d2041782740f0cef6588393f3e1649a98773865d426ce6909a3770e31f3",
+    "scenarios/traffic-follower-short-range.json": "b2b91fc50d21a8d85894925964c940330ecb460fd6dcd8e06547849260811ef0"
+  },
+  "provenance": {
+    "checked_changed_source_sha256": {
+      ".github/workflows/ci.yml": "7a95f69d96780bdfa522123b840f529d74d3022eb357cf0099607d4c0b44b088",
+      "crates/pipeline/src/lane_change.rs": "36c2668253e4311103a806e49c23b7d56d1261e546ee25487942cd1b2f685aff",
+      "crates/pipeline/src/lane_change/tests.rs": "67f4bc046d39173dc20e90662c33d38e79f83130125b8567e970c8ca9ca480e7",
+      "docs/architecture.md": "9c65d36173da37c79ddfe95be158ed7f8723186052df8a62793ed08cc187ef9d",
+      "docs/lane-change-gaps.md": "6e439624ad836e5783a0af526f270c42c30dd4aedf46554fb37ea9df5c5fe3a7",
+      "docs/lane-occupancy-headway.md": "541a74c3e0107299ef68558d0898b4ea4a65014be3f49ea0641927b80f3c511d",
+      "scripts/check.sh": "c2927ea08969e12aa67666b6e254c54acf5aec83b096f702c647e29f709450a4",
+      "scripts/check_lane_occupancy.py": "f52a64052d6b308b9ceea424fefb3003ba484878c87b661ec9201807d78520e8",
+      "scripts/test_lane_occupancy.py": "c7b4d1c97dce3c90b2830b5bdf12e51dbcff28cf08f286398a42cbca81bb4a87"
+    },
+    "evidence_recovery": {
+      "all_245_current_outputs_verified_before_further_restore": true,
+      "all_checked_sources_unchanged": true,
+      "changed_baseline_outputs": 0,
+      "check_exit_code": 0,
+      "checks_or_algorithms_rerun_or_relaxed_for_packaging": false,
+      "current_baseline_changes": [],
+      "initial_packaging_failure": "ENOSPC after all checks and 49 replays completed",
+      "initial_wrapper_exit_code": 1,
+      "live_and_backup_inodes_distinct": true,
+      "missing_outputs": [],
+      "only_generated_dev_build_cache_removed": true,
+      "parent_gzip_reused_only_after_current_sha256_equality": true,
+      "passed_tests": 591,
+      "previous_245_outputs_restored_unchanged": true,
+      "python_auditor_tests": 8,
+      "recovered_at": "2026-10-18T23:48:22.593972+09:00",
+      "source_closure_matches_expected": true,
+      "verified_replays": 49
+    },
+    "initial_cli_exit_code_receipt_assertion_repaired_without_algorithm_changes": true,
+    "local_packet": "artifacts/lane-occupancy-headway-v1",
+    "parent_failed_test_log_sha256": "70cbf901d9327d5a0c91ab748c8337c23dba2f240a4f0f26ae785e0ba60959a5",
+    "parent_failed_test_sha256": {
+      "parent/failed-test": "986e874f6bc823b61f4d387b33103bb4d123b5cb6edd815b4f428c0d33866789",
+      "parent/failed-test-source.rs": "5374c43b2249ee48f7709f91301ed079977a7a765c1ff0293dc25bfb4c1ee4b4"
+    },
+    "physical_storage_index_sha256": "5a10942a87729cbe89dab13ae80765efa5d9f577debed7e85c2ed797a8459ceb",
+    "raw_storage_index_sha256": "4fa1788f0ffd5aff2842f19e8004e2791be1ed046aa78899f1d3d59206fb3b96",
+    "required_check_log_sha256": "e2bbd9f8636accce5281de49c1b287e4c9c0644ac165589cce77d2515f2e4711",
+    "standard_storage_index_sha256": "2609f0643f1d377734dc41aedcd58bb50610bf04f7c674d8d600a7a5307a90d2"
+  },
+  "qualification": {
+    "additional_current_physical_runs_and_replays": 18,
+    "checked_source_sha256": {
+      "crates/pipeline/src/lane_change.rs": "36c2668253e4311103a806e49c23b7d56d1261e546ee25487942cd1b2f685aff",
+      "scripts/check_hazards.py": "29e89f30e97c2475e26416f4b11129cb5f7bfea42b38d682ab5a26dc23ba8373",
+      "scripts/check_lane_occupancy.py": "f52a64052d6b308b9ceea424fefb3003ba484878c87b661ec9201807d78520e8",
+      "scripts/check_tracker_intervals.py": "c06905eb2eb676cccbf88f6fd573431bf9a8abdca674351fa86515a47f85c60d",
+      "scripts/test_lane_occupancy.py": "c7b4d1c97dce3c90b2830b5bdf12e51dbcff28cf08f286398a42cbca81bb4a87",
+      "scripts/tracking_frame.py": "2dd53853aad6e4f46d6b5f88c1b86de61ac0152c8a3b5bdc108d24ab5eaf0b64"
+    },
+    "created_at": "2026-10-18T23:49:12.766526+09:00",
+    "current_additional_physical_conflict_witnesses": 66,
+    "current_additional_sensor_ticks_independently_audited": 28740,
+    "current_physical_episodes": 67,
+    "current_physical_passes": 67,
+    "evidence_packaging_recovered_after_ENOSPC_without_source_changes": true,
+    "evidence_recovery_check_summary_sha256": "7f1c75c48194d487afad4dbfda9eadfadf00eeb09ff6252b41ada34fc7842ab1",
+    "external_automotive_RNE_real_vehicle_or_real_time_qualification": false,
+    "final_binary_sha256": "647dafddd310294d534605d80c1ad65cfacefbbb23ad7a368203e35e06390d68",
+    "historical_245_outputs_and_distinct_backups_preserved": true,
+    "hosted_CI_executed": false,
+    "maximum_absolute_physical_clearance_change_m": 0.0,
+    "minimum_additional_physical_clearance_m": 1.1005530689378236,
+    "new_paired_full_tick_sweeps": 36,
+    "new_python_auditor_tests": 3,
+    "new_rust_tests": 4,
+    "paired_parent_physical_runs_and_replays": 18,
+    "paired_physical_worlds_with_five_identical_output_files": 15,
+    "parent_rejects_changed_raw_logs": 9,
+    "previous_short_range_failures_preserved_not_rerun": 2,
+    "published": false,
+    "python_auditor_tests": 8,
+    "raw_contained_conflicts": 324,
+    "raw_current_missing_conflicts": 0,
+    "raw_paired_inputs": 12,
+    "raw_parent_missing_conflicts": 149,
+    "raw_physical_driving_evidence": false,
+    "raw_ticks_per_version": 972,
+    "raw_unchanged_controls": 3,
+    "reviewed_guard_updates": [
+      ".github/workflows/ci.yml",
+      "docs/architecture.md",
+      "scripts/check.sh"
+    ],
+    "slow_motion_default_enabled": false,
+    "source_guard_unchanged_files": 228,
+    "standard_245_outputs_byte_identical_to_parent": true,
+    "standard_current_physical_runs_and_replays": 49,
+    "standard_independent_audits_reused_for_identical_bytes_and_unchanged_auditors": true,
+    "standard_prior_audit_sha256": "087e7ca32c50bc13b962ea0dc582e6e745e9a3fc9a88dd1e0102e16404b52143",
+    "starting_commit": "03783c6dab4769d35b9d57b5ae6da08e537c7a27",
+    "workspace_rust_tests": 591
+  },
+  "raw_authoring": {
+    "alternating_lateral_offset_m": [
+      0,
+      0.03,
+      0.05,
+      0.08
+    ],
+    "binary_sha256": "647dafddd310294d534605d80c1ad65cfacefbbb23ad7a368203e35e06390d68",
+    "control_hz": 20,
+    "ego_odometry_speed_m_s": 0,
+    "forward_speed_m_s": 0.5,
+    "initial_ego_position_m": [
+      20,
+      0
+    ],
+    "initial_object_x_m": [
+      6.5,
+      7,
+      7.25
+    ],
+    "lateral_center_m": 3.5,
+    "lidar_hz": 10,
+    "object_radius_m": 0.7,
+    "physical_driving_evidence": false,
+    "points_per_circle": 32,
+    "probe_lock_uses_root_dependency_versions": true,
+    "probe_sources": {
+      "raw-probe/Cargo.lock": "2e9b404284967a85d7de202c7a3d89f57c90d44f743fa98b7da554668f7265b6",
+      "raw-probe/Cargo.toml": "07a2fd5f79c747e7d7d8ffde04b3bfe1808f1c1b782546781ce901999ded2321",
+      "raw-probe/src/main.rs": "19907a320a2bef64934d119f0958fb0dfd17d784a06d251376af0c67c7381493"
+    }
+  },
+  "raw_results": [
+    {
+      "case": "rear-0-jitter-00",
+      "changed_gate_ticks": 0,
+      "current_conflict_witnesses": 0,
+      "current_missing_conflicts": 0,
+      "identical_sensor_inputs_and_forecasts": true,
+      "parent_missing_conflicts": 0,
+      "release_cli": {
+        "current": {
+          "binary_sha256": "647dafddd310294d534605d80c1ad65cfacefbbb23ad7a368203e35e06390d68",
+          "exit_code": 0,
+          "no_success_report_on_expected_rejection": false,
+          "verified_ticks": 81
+        },
+        "parent": {
+          "binary_sha256": "1859e3aa788e2debeaf97c14b5393c2569376456138fe7b4415e677a02f528f6",
+          "exit_code": 0,
+          "no_success_report_on_expected_rejection": false,
+          "verified_ticks": 81
+        },
+        "parent-on-current": {
+          "binary_sha256": "1859e3aa788e2debeaf97c14b5393c2569376456138fe7b4415e677a02f528f6",
+          "exit_code": 0,
+          "no_success_report_on_expected_rejection": false,
+          "verified_ticks": 81
+        }
+      },
+      "sensor_input_sha256": "a0fd273105d4bfe97ca4d1cb84f1e437381bd686cee9203bf7e4ff7aef7858f4",
+      "ticks": 81
+    },
+    {
+      "case": "rear-0-jitter-03",
+      "changed_gate_ticks": 20,
+      "current_conflict_witnesses": 23,
+      "current_missing_conflicts": 0,
+      "identical_sensor_inputs_and_forecasts": true,
+      "parent_missing_conflicts": 20,
+      "release_cli": {
+        "current": {
+          "binary_sha256": "647dafddd310294d534605d80c1ad65cfacefbbb23ad7a368203e35e06390d68",
+          "exit_code": 0,
+          "no_success_report_on_expected_rejection": false,
+          "verified_ticks": 81
+        },
+        "parent": {
+          "binary_sha256": "1859e3aa788e2debeaf97c14b5393c2569376456138fe7b4415e677a02f528f6",
+          "exit_code": 0,
+          "no_success_report_on_expected_rejection": false,
+          "verified_ticks": 81
+        },
+        "parent-on-current": {
+          "binary_sha256": "1859e3aa788e2debeaf97c14b5393c2569376456138fe7b4415e677a02f528f6",
+          "exit_code": 2,
+          "no_success_report_on_expected_rejection": true,
+          "verified_ticks": 0
+        }
+      },
+      "sensor_input_sha256": "316a197856c39ec4586a296f33f8195ba0e81df08de0ca2cfa22b5800074a3e1",
+      "ticks": 81
+    },
+    {
+      "case": "rear-0-jitter-05",
+      "changed_gate_ticks": 20,
+      "current_conflict_witnesses": 23,
+      "current_missing_conflicts": 0,
+      "identical_sensor_inputs_and_forecasts": true,
+      "parent_missing_conflicts": 20,
+      "release_cli": {
+        "current": {
+          "binary_sha256": "647dafddd310294d534605d80c1ad65cfacefbbb23ad7a368203e35e06390d68",
+          "exit_code": 0,
+          "no_success_report_on_expected_rejection": false,
+          "verified_ticks": 81
+        },
+        "parent": {
+          "binary_sha256": "1859e3aa788e2debeaf97c14b5393c2569376456138fe7b4415e677a02f528f6",
+          "exit_code": 0,
+          "no_success_report_on_expected_rejection": false,
+          "verified_ticks": 81
+        },
+        "parent-on-current": {
+          "binary_sha256": "1859e3aa788e2debeaf97c14b5393c2569376456138fe7b4415e677a02f528f6",
+          "exit_code": 2,
+          "no_success_report_on_expected_rejection": true,
+          "verified_ticks": 0
+        }
+      },
+      "sensor_input_sha256": "d549440d7e1bc8800ea57c3aba17f4db2ba7400dde7aa9be0b4c762c3e98a5be",
+      "ticks": 81
+    },
+    {
+      "case": "rear-0-jitter-08",
+      "changed_gate_ticks": 19,
+      "current_conflict_witnesses": 23,
+      "current_missing_conflicts": 0,
+      "identical_sensor_inputs_and_forecasts": true,
+      "parent_missing_conflicts": 19,
+      "release_cli": {
+        "current": {
+          "binary_sha256": "647dafddd310294d534605d80c1ad65cfacefbbb23ad7a368203e35e06390d68",
+          "exit_code": 0,
+          "no_success_report_on_expected_rejection": false,
+          "verified_ticks": 81
+        },
+        "parent": {
+          "binary_sha256": "1859e3aa788e2debeaf97c14b5393c2569376456138fe7b4415e677a02f528f6",
+          "exit_code": 0,
+          "no_success_report_on_expected_rejection": false,
+          "verified_ticks": 81
+        },
+        "parent-on-current": {
+          "binary_sha256": "1859e3aa788e2debeaf97c14b5393c2569376456138fe7b4415e677a02f528f6",
+          "exit_code": 2,
+          "no_success_report_on_expected_rejection": true,
+          "verified_ticks": 0
+        }
+      },
+      "sensor_input_sha256": "7f9216c70ee7671c54e4675ba2434716ce162bb42778eb82e2a24b3240c1eec8",
+      "ticks": 81
+    },
+    {
+      "case": "rear-1-jitter-00",
+      "changed_gate_ticks": 0,
+      "current_conflict_witnesses": 0,
+      "current_missing_conflicts": 0,
+      "identical_sensor_inputs_and_forecasts": true,
+      "parent_missing_conflicts": 0,
+      "release_cli": {
+        "current": {
+          "binary_sha256": "647dafddd310294d534605d80c1ad65cfacefbbb23ad7a368203e35e06390d68",
+          "exit_code": 0,
+          "no_success_report_on_expected_rejection": false,
+          "verified_ticks": 81
+        },
+        "parent": {
+          "binary_sha256": "1859e3aa788e2debeaf97c14b5393c2569376456138fe7b4415e677a02f528f6",
+          "exit_code": 0,
+          "no_success_report_on_expected_rejection": false,
+          "verified_ticks": 81
+        },
+        "parent-on-current": {
+          "binary_sha256": "1859e3aa788e2debeaf97c14b5393c2569376456138fe7b4415e677a02f528f6",
+          "exit_code": 0,
+          "no_success_report_on_expected_rejection": false,
+          "verified_ticks": 81
+        }
+      },
+      "sensor_input_sha256": "f7b87743a549c9bb6926127e9cb7a5a2a2d53274b2aadfce4d225d7db5d0230a",
+      "ticks": 81
+    },
+    {
+      "case": "rear-1-jitter-03",
+      "changed_gate_ticks": 16,
+      "current_conflict_witnesses": 39,
+      "current_missing_conflicts": 0,
+      "identical_sensor_inputs_and_forecasts": true,
+      "parent_missing_conflicts": 16,
+      "release_cli": {
+        "current": {
+          "binary_sha256": "647dafddd310294d534605d80c1ad65cfacefbbb23ad7a368203e35e06390d68",
+          "exit_code": 0,
+          "no_success_report_on_expected_rejection": false,
+          "verified_ticks": 81
+        },
+        "parent": {
+          "binary_sha256": "1859e3aa788e2debeaf97c14b5393c2569376456138fe7b4415e677a02f528f6",
+          "exit_code": 0,
+          "no_success_report_on_expected_rejection": false,
+          "verified_ticks": 81
+        },
+        "parent-on-current": {
+          "binary_sha256": "1859e3aa788e2debeaf97c14b5393c2569376456138fe7b4415e677a02f528f6",
+          "exit_code": 2,
+          "no_success_report_on_expected_rejection": true,
+          "verified_ticks": 0
+        }
+      },
+      "sensor_input_sha256": "25eef0c1f77b13e7e74ca61532308743b7d015e1f7abe132936208053d5d6560",
+      "ticks": 81
+    },
+    {
+      "case": "rear-1-jitter-05",
+      "changed_gate_ticks": 17,
+      "current_conflict_witnesses": 39,
+      "current_missing_conflicts": 0,
+      "identical_sensor_inputs_and_forecasts": true,
+      "parent_missing_conflicts": 16,
+      "release_cli": {
+        "current": {
+          "binary_sha256": "647dafddd310294d534605d80c1ad65cfacefbbb23ad7a368203e35e06390d68",
+          "exit_code": 0,
+          "no_success_report_on_expected_rejection": false,
+          "verified_ticks": 81
+        },
+        "parent": {
+          "binary_sha256": "1859e3aa788e2debeaf97c14b5393c2569376456138fe7b4415e677a02f528f6",
+          "exit_code": 0,
+          "no_success_report_on_expected_rejection": false,
+          "verified_ticks": 81
+        },
+        "parent-on-current": {
+          "binary_sha256": "1859e3aa788e2debeaf97c14b5393c2569376456138fe7b4415e677a02f528f6",
+          "exit_code": 2,
+          "no_success_report_on_expected_rejection": true,
+          "verified_ticks": 0
+        }
+      },
+      "sensor_input_sha256": "b203e7df030fb13d12ab6cea8deb829e0972600c59753ce73391dfb671145247",
+      "ticks": 81
+    },
+    {
+      "case": "rear-1-jitter-08",
+      "changed_gate_ticks": 17,
+      "current_conflict_witnesses": 39,
+      "current_missing_conflicts": 0,
+      "identical_sensor_inputs_and_forecasts": true,
+      "parent_missing_conflicts": 16,
+      "release_cli": {
+        "current": {
+          "binary_sha256": "647dafddd310294d534605d80c1ad65cfacefbbb23ad7a368203e35e06390d68",
+          "exit_code": 0,
+          "no_success_report_on_expected_rejection": false,
+          "verified_ticks": 81
+        },
+        "parent": {
+          "binary_sha256": "1859e3aa788e2debeaf97c14b5393c2569376456138fe7b4415e677a02f528f6",
+          "exit_code": 0,
+          "no_success_report_on_expected_rejection": false,
+          "verified_ticks": 81
+        },
+        "parent-on-current": {
+          "binary_sha256": "1859e3aa788e2debeaf97c14b5393c2569376456138fe7b4415e677a02f528f6",
+          "exit_code": 2,
+          "no_success_report_on_expected_rejection": true,
+          "verified_ticks": 0
+        }
+      },
+      "sensor_input_sha256": "9d593dcf8e7e5b07641b8bfb9b5cd181e80740efdc7749add2d8ce84ef547899",
+      "ticks": 81
+    },
+    {
+      "case": "rear-2-jitter-00",
+      "changed_gate_ticks": 0,
+      "current_conflict_witnesses": 0,
+      "current_missing_conflicts": 0,
+      "identical_sensor_inputs_and_forecasts": true,
+      "parent_missing_conflicts": 0,
+      "release_cli": {
+        "current": {
+          "binary_sha256": "647dafddd310294d534605d80c1ad65cfacefbbb23ad7a368203e35e06390d68",
+          "exit_code": 0,
+          "no_success_report_on_expected_rejection": false,
+          "verified_ticks": 81
+        },
+        "parent": {
+          "binary_sha256": "1859e3aa788e2debeaf97c14b5393c2569376456138fe7b4415e677a02f528f6",
+          "exit_code": 0,
+          "no_success_report_on_expected_rejection": false,
+          "verified_ticks": 81
+        },
+        "parent-on-current": {
+          "binary_sha256": "1859e3aa788e2debeaf97c14b5393c2569376456138fe7b4415e677a02f528f6",
+          "exit_code": 0,
+          "no_success_report_on_expected_rejection": false,
+          "verified_ticks": 81
+        }
+      },
+      "sensor_input_sha256": "3c0b0d910df81052298f6c6a46870d6e02db75256ba4ebe502a96339b9836e1d",
+      "ticks": 81
+    },
+    {
+      "case": "rear-2-jitter-03",
+      "changed_gate_ticks": 14,
+      "current_conflict_witnesses": 46,
+      "current_missing_conflicts": 0,
+      "identical_sensor_inputs_and_forecasts": true,
+      "parent_missing_conflicts": 14,
+      "release_cli": {
+        "current": {
+          "binary_sha256": "647dafddd310294d534605d80c1ad65cfacefbbb23ad7a368203e35e06390d68",
+          "exit_code": 0,
+          "no_success_report_on_expected_rejection": false,
+          "verified_ticks": 81
+        },
+        "parent": {
+          "binary_sha256": "1859e3aa788e2debeaf97c14b5393c2569376456138fe7b4415e677a02f528f6",
+          "exit_code": 0,
+          "no_success_report_on_expected_rejection": false,
+          "verified_ticks": 81
+        },
+        "parent-on-current": {
+          "binary_sha256": "1859e3aa788e2debeaf97c14b5393c2569376456138fe7b4415e677a02f528f6",
+          "exit_code": 2,
+          "no_success_report_on_expected_rejection": true,
+          "verified_ticks": 0
+        }
+      },
+      "sensor_input_sha256": "1539fb6705e549ec306713798392a5ae429173e819c8d1bca7f829c71d15cd3f",
+      "ticks": 81
+    },
+    {
+      "case": "rear-2-jitter-05",
+      "changed_gate_ticks": 15,
+      "current_conflict_witnesses": 46,
+      "current_missing_conflicts": 0,
+      "identical_sensor_inputs_and_forecasts": true,
+      "parent_missing_conflicts": 14,
+      "release_cli": {
+        "current": {
+          "binary_sha256": "647dafddd310294d534605d80c1ad65cfacefbbb23ad7a368203e35e06390d68",
+          "exit_code": 0,
+          "no_success_report_on_expected_rejection": false,
+          "verified_ticks": 81
+        },
+        "parent": {
+          "binary_sha256": "1859e3aa788e2debeaf97c14b5393c2569376456138fe7b4415e677a02f528f6",
+          "exit_code": 0,
+          "no_success_report_on_expected_rejection": false,
+          "verified_ticks": 81
+        },
+        "parent-on-current": {
+          "binary_sha256": "1859e3aa788e2debeaf97c14b5393c2569376456138fe7b4415e677a02f528f6",
+          "exit_code": 2,
+          "no_success_report_on_expected_rejection": true,
+          "verified_ticks": 0
+        }
+      },
+      "sensor_input_sha256": "9974ef77906c7291a116662d39d1a11251cf463eb20892eee3fbc36ae7ce522d",
+      "ticks": 81
+    },
+    {
+      "case": "rear-2-jitter-08",
+      "changed_gate_ticks": 15,
+      "current_conflict_witnesses": 46,
+      "current_missing_conflicts": 0,
+      "identical_sensor_inputs_and_forecasts": true,
+      "parent_missing_conflicts": 14,
+      "release_cli": {
+        "current": {
+          "binary_sha256": "647dafddd310294d534605d80c1ad65cfacefbbb23ad7a368203e35e06390d68",
+          "exit_code": 0,
+          "no_success_report_on_expected_rejection": false,
+          "verified_ticks": 81
+        },
+        "parent": {
+          "binary_sha256": "1859e3aa788e2debeaf97c14b5393c2569376456138fe7b4415e677a02f528f6",
+          "exit_code": 0,
+          "no_success_report_on_expected_rejection": false,
+          "verified_ticks": 81
+        },
+        "parent-on-current": {
+          "binary_sha256": "1859e3aa788e2debeaf97c14b5393c2569376456138fe7b4415e677a02f528f6",
+          "exit_code": 2,
+          "no_success_report_on_expected_rejection": true,
+          "verified_ticks": 0
+        }
+      },
+      "sensor_input_sha256": "4b2ebbd94a80c3a328ef8d9b27df2835678ad8921b2d4aadea6f4be577b18f9e",
+      "ticks": 81
+    }
+  ]
+}

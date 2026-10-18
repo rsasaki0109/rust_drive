@@ -147,7 +147,9 @@ an empty sequence means zero, otherwise it has one nonnegative finite value per
 position, with linear interpolation and endpoint hold. Planning, priority-zone
 gates, lane-change entry and return/launch previews consume the occupied radius.
 Sweeps split at every forecast knot and use the maximum endpoint radius on each
-subinterval. This envelope adds no evidence of confirmed motion or braking and
+subinterval. Lane-change rear headway also includes positive occupied-radius
+growth in the forward approach-speed bound; shrinking uncertainty never
+discounts center motion. [Admission correction and limits](lane-occupancy-headway.md). This envelope adds no evidence of confirmed motion or braking and
 is not a calibrated uncertainty bound. The default predictor retains its
 established deadband. [Method, comparison and limits](slow-occupancy.md).
 
