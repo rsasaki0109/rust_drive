@@ -9,6 +9,7 @@ import hashlib
 import json
 import math
 from pathlib import Path
+from tracking_frame import continuous_observations
 
 
 def vector(point):
@@ -48,7 +49,8 @@ def audit(path):
             if not math.isfinite(now) or now < 0. or (clock is not None and now <= clock) or output['time'] != now:
                 raise ValueError(f'{path}: invalid frame clock')
             current = {}
-            for track in output['tracks']:
+            tracks, _ = continuous_observations(output)
+            for track in tracks:
                 identity, stamp = track['id'], track['last_seen']
                 if identity in current or not math.isfinite(stamp) or not 0. <= stamp <= now:
                     raise ValueError(f'{path}: invalid track identity/time at tick {ticks}')
@@ -63,7 +65,11 @@ def audit(path):
                     if elapsed < 0. or elapsed >= 0.6:
                         raise ValueError(f'{path}: invalid retained-track interval at tick {ticks}')
                     if elapsed == 0.:
-                        if track != old:
+                        # World values may have been reprojected by a new pose
+                        # correction. Compare in the unchanged continuous frame.
+                        if (any(track[n] != old[n] for n in ['id', 'radius', 'last_seen'])
+                                or math.dist(position, vector(old['position'])) > 1e-8
+                                or math.dist(velocity, vector(old['velocity'])) > 1e-8):
                             raise ValueError(f'{path}: cached track changed at tick {ticks}')
                         coasts += 1
                         continue

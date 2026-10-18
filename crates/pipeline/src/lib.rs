@@ -22,6 +22,7 @@ pub mod navigation;
 pub mod replay;
 mod scan_pose;
 pub mod stop_signs;
+mod tracking_frame;
 pub mod traffic_controls;
 use intersections::{IntersectionStatus, YieldIntersection, YieldIntersections};
 use navigation::{
@@ -287,6 +288,10 @@ pub enum HealthIssue {
 pub struct PipelineOutput {
     pub time: f64,
     pub estimate: EgoState,
+    /// Continuous wheel/gyro frame expressed in the current world frame.
+    /// Present in new logs; tracks and forecasts remain world-coordinate values.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tracking_frame: Option<Pose>,
     pub tracks: Vec<Track>,
     pub predictions: Vec<Prediction>,
     pub trajectory: Trajectory,
@@ -339,6 +344,8 @@ pub struct DrivingPipeline {
     rejected_gnss_streak: u8,
     map_localization: Option<MapLocalization>,
     scan_poses: scan_pose::ScanPoseHistory,
+    tracking_frame: tracking_frame::TrackingFrame,
+    tracking_tracks: Vec<Track>,
     tracks: Vec<Track>,
     navigator: Option<Navigator>,
     traffic_controls: Option<TrafficControls>,
@@ -400,6 +407,7 @@ impl DrivingPipeline {
         }
         let grid = OccupancyGrid::new(Vec2::new(min_x, min_y), width, height, 0.5);
         let ekf = Ekf::new(config.initial_pose);
+        let tracking_frame = tracking_frame::TrackingFrame::new(config.initial_pose);
         let map_localization = config.localization_map.clone().map(MapLocalization::new);
         let navigator = config.navigation.clone().map(Navigator::new).transpose()?;
         let lane_change = config
@@ -424,6 +432,8 @@ impl DrivingPipeline {
             rejected_gnss_streak: 0,
             map_localization,
             scan_poses: scan_pose::ScanPoseHistory::default(),
+            tracking_frame,
+            tracking_tracks: vec![],
             tracks: vec![],
             navigator,
             traffic_controls,
@@ -475,11 +485,13 @@ impl DrivingPipeline {
                 health.push(HealthIssue::StaleOdometry)
             }
             Some(odom) if !first && dt <= 0.25 => {
+                let before = self.ekf.state().pose;
                 if let Some(offset) = self.config.rear_axle_offset_m {
                     self.ekf.predict_chassis(odom, dt, offset);
                 } else {
                     self.ekf.predict(odom, dt);
                 }
+                self.tracking_frame.advance(before, self.ekf.state().pose);
             }
             _ => {}
         }
@@ -603,7 +615,8 @@ impl DrivingPipeline {
             map.update(scan, input.time, eligible, &mut self.ekf);
         }
         let estimate = self.ekf.state();
-        self.scan_poses.record(input.time, estimate.pose);
+        let tracking_to_world = self.tracking_frame.to_world(estimate.pose);
+        self.scan_poses.record(input.time, self.tracking_frame.pose);
         if let Some(scan) = scan {
             if input.lidar_failed
                 || !stamp_valid(scan.stamp, input.time)
@@ -628,8 +641,11 @@ impl DrivingPipeline {
                     };
                     match self.tracker.try_update(&detections, scan.stamp) {
                         Ok(tracks) => {
-                            self.tracks = tracks;
-                            self.grid.update(scan, acquisition_pose);
+                            self.tracking_tracks = tracks;
+                            self.grid.update(
+                                scan,
+                                tracking_frame::pose_to_world(tracking_to_world, acquisition_pose),
+                            );
                             self.last_lidar = Some(scan.stamp);
                             self.lidar_fault = None;
                         }
@@ -665,7 +681,20 @@ impl DrivingPipeline {
         if !variance.is_finite() || !(0.0..=4.0).contains(&variance) {
             health.push(HealthIssue::LocalizationUncertain);
         }
-        let predictions = self.predictor.predict(&self.tracks, input.time);
+        // Keep the tracker and its braking-history samples in one continuous
+        // frame. Reproject cached observations too, without refreshing stamps.
+        self.tracks = self
+            .tracking_tracks
+            .iter()
+            .cloned()
+            .map(|track| tracking_frame::track_to_world(tracking_to_world, track))
+            .collect();
+        let predictions: Vec<_> = self
+            .predictor
+            .predict(&self.tracking_tracks, input.time)
+            .into_iter()
+            .map(|prediction| tracking_frame::prediction_to_world(tracking_to_world, prediction))
+            .collect();
         let unexpected_signal = self.traffic_controls.is_none() && input.traffic_signal.is_some();
         let mut switched = false;
         if let Some(nav) = &mut self.navigator {
@@ -919,6 +948,7 @@ impl DrivingPipeline {
         Ok(PipelineOutput {
             time: input.time,
             estimate,
+            tracking_frame: Some(tracking_to_world),
             tracks: self.tracks.clone(),
             predictions,
             trajectory,

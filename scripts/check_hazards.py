@@ -7,6 +7,7 @@ import math
 from pathlib import Path
 import subprocess
 import sys
+from tracking_frame import continuous_observations
 
 ROOT = Path(__file__).resolve().parent.parent
 CASES = {
@@ -268,6 +269,7 @@ def check_intersections(run, log):
     accepted_scans = 0
     fault_reset = False
     last_scan = None
+    clear_after = None
     minimum_margin = math.inf
     previous_status = {}
     approach_profiles = approach_points = approach_creep_ticks = waiting_prefix_profiles = 0
@@ -294,12 +296,15 @@ def check_intersections(run, log):
                         and len(scan['points']) <= 20_000
                         and all(all(math.isfinite(v) for v in xy(p)) and math.hypot(*xy(p)) <= 200
                                 for p in scan['points']))
+        scan_gap = new_scan and last_scan is not None and scan['stamp']-last_scan > .2+1e-9
         if new_scan:
             last_scan = scan['stamp']
             accepted_scans += 1
         pose = out['estimate']['pose']
         aligned = abs(math.remainder(pose['yaw'], 2*math.pi)) < .2 and abs(pose['position']['y'])+radius <= run['route']['half_width']
         healthy = not out['health'] and last_scan is not None and now-last_scan <= .15+1e-9 and aligned
+        if not healthy:
+            clear_after = now
         front = frame['truth']['pose']['position']['x']+radius
         estimated_front = out['estimate']['pose']['position']['x']+radius
         waiting_zones = [z for z, s in zip(zones, status['zones'])
@@ -381,7 +386,12 @@ def check_intersections(run, log):
                     if state['clear_since'] is not None or state['phase'] != 'Waiting':
                         raise ValueError('fault/conflict did not revoke uncommitted yield permission')
                 else:
-                    if new_scan:
+                    # A delivered pre-recovery acquisition cannot credit clear
+                    # time, even after its arrival restores ordinary health.
+                    if new_scan and (clear_after is None or last_scan > clear_after):
+                        if scan_gap:
+                            clear_since[id] = None
+                            clear_scans[id].clear()
                         if clear_since[id] is None: clear_since[id] = last_scan
                         clear_scans[id].add(last_scan)
                     if state['clear_since'] != clear_since[id]:
@@ -1055,12 +1065,13 @@ def check_motion_predictions(log):
                 continue
             tick = record['tick']
             now = tick['input']['time']
-            tracks = {t['id']: t for t in tick['expected']['tracks']}
-            prediction_ids = [p['id'] for p in tick['expected']['predictions']]
+            observations, predictions = continuous_observations(tick['expected'])
+            tracks = {t['id']: t for t in observations}
+            prediction_ids = [p['id'] for p in predictions]
             if sorted(prediction_ids) != sorted(tracks):
                 raise ValueError('motion forecasts dropped, duplicated or invented a track identity')
             history = {id: samples for id, samples in history.items() if id in tracks}
-            for forecast in tick['expected']['predictions']:
+            for forecast in predictions:
                 track = tracks[forecast['id']]
                 samples = history.setdefault(track['id'], [])
                 if samples and track['last_seen'] < samples[-1]['last_seen']:

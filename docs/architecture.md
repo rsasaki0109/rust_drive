@@ -26,18 +26,21 @@ flowchart LR
   S --> HP
   HP --> P
   HP --> M
-  L --> H[Bounded EKF acquisition-pose history]
+  L -->|Prediction increments only| H[Bounded continuous odometry history]
   H --> P
   P --> T[Alpha-beta tracking]
   T --> F[Observed braking / constant-velocity prediction]
   S --> M[Log-odds occupancy map]
-  H --> M
+  H --> X[Current continuous-to-world transform]
+  L --> X
+  X --> M
   O[Optional OSM data / bounded WGS84 to ENU import] --> N[Supplied road graph + destination + closure snapshots]
   N --> D[Dijkstra with incoming-edge state for restricted maps]
   D --> R[Resolved route]
   R --> A[Lateral lattice planning]
   L --> A
-  F --> A
+  F --> X
+  X --> A
   A --> C[Pure pursuit + acceleration feedforward / PI]
   S --> G[Freshness and numeric guard]
   L --> G
@@ -53,7 +56,7 @@ Ground truth never flows into obstacle prediction or planning. The simulator ini
 
 The optional RNE `--scene` input installs upright yaw-rotated cuboids in native Rapier queries. By default, the existing 0.6 m horizontal LiDAR plane remains the sole operational scan. Two additional horizontal planes and 200 Hz native positions are recorded only in `scene.json`, outside the sensor-only replay contract. A post-run conservative vertical-capsule evaluator adds physical scene failures to acceptance; it cannot command the vehicle. An independent Python slab-ray and rectangle-edge oracle checks the evidence. Native ego motion remains planar, without contact forces or suspension. [Scene contract](native-scenes.md).
 
-With the additional explicit `--multi-height` option, all three measured horizontal planes enter `SensorFrame.multi_height_lidar`; the ordinary scan is absent. The sensor-only header supplies bounded plane-height calibration and the vehicle's vertical collision interval. After validating the entire synchronized bundle, the pipeline selects relevant calibrated heights, removes duplicate XY cells and uses its acquisition-time EKF pose for the existing planar perception and mapping. Malformed or failed bundles latch braking until a strictly newer complete acquisition after the fault epoch. Delay, cadence and failure injection transport the entire bundle atomically. Scene labels and geometry remain outside the driver. This is sparse measured-height projection, without volumetric object reconstruction or coverage between planes. [Contract and limits](multi-height-lidar.md).
+With the additional explicit `--multi-height` option, all three measured horizontal planes enter `SensorFrame.multi_height_lidar`; the ordinary scan is absent. The sensor-only header supplies bounded plane-height calibration and the vehicle's vertical collision interval. After validating the entire synchronized bundle, the pipeline selects relevant calibrated heights, removes duplicate XY cells and uses continuous acquisition-time odometry poses plus the current world transform for planar perception and mapping. Malformed or failed bundles latch braking until a strictly newer complete acquisition after the fault epoch. Delay, cadence and failure injection transport the entire bundle atomically. Scene labels and geometry remain outside the driver. This is sparse measured-height projection, without volumetric object reconstruction or coverage between planes. [Contract and limits](multi-height-lidar.md).
 
 ## Crates and ownership
 
@@ -96,7 +99,7 @@ Unsafe Rust is forbidden at workspace level. There is no global message bus, cus
 
 - Length in meters, speed in m/s, acceleration in m/s², time in seconds, angles in radians.
 - World frame is planar ENU (`x` east, `y` north), right-handed yaw positive counterclockwise.
-- LiDAR points are body-frame (`x` forward, `y` left). Detections, tracks, route points, and trajectories are world-frame.
+- LiDAR points are body-frame (`x` forward, `y` left). Internal detection, tracking and motion-history coordinates use a continuous wheel/gyro frame, excluding absolute localization corrections. Published tracks/predictions, route points and trajectories use world coordinates; `tracking_frame` records the continuous-to-world transform. [Tracking frame contract](tracker-localization-frame.md).
 - Timestamps refer to one monotonically advancing simulation clock. Duplicate/out-of-order observations cannot refresh health. Clock regressions fail before mutation; clock gaps over 0.25 s brake. LiDAR detections and map rays use a bounded acquisition-time pose estimate, described below; general delayed-sensor fusion is absent.
 - Vehicle/control and EKF prediction: 20 Hz. Default LiDAR/perception/tracking/map: 10 Hz. GNSS: 5 Hz. Prediction and planning: 20 Hz. Simulator-only timing injection can thin delivered LiDAR observations and delay them without changing their acquisition stamps or body-frame points.
 - Lidar scan timestamps are checked independently of an empty scan: no returns are a valid observation, not a sensor failure.
@@ -127,9 +130,9 @@ fits remain in their denominators; uncertainty allowances are provisional.
 
 **Perception.** A 720-ray first-return LiDAR has a 45 m range and ±0.015 m bounded range noise. Connected components use a range-adaptive point distance. Components smaller than three returns are discarded. At least five points allow an algebraic circle fit with residual and radius bounds; other clusters use an inflated surface envelope. Circular objects are the demonstrated shape class; semantic classification is absent. Alpha-beta tracking expires observations after 0.6 s, bounds inferred velocity, and updates on accepted scans, normally at 10 Hz. Within the strict 3 m distance gate, component-wise global association maximizes the number of matched existing tracks, then minimizes total predicted-to-measured distance. Deterministic tie ordering preserves established-track results under detection permutations. Association limits reject the complete scan and activate existing health braking; clustering remains quadratic in hit points. This distance objective does not qualify physical object identity. [Assignment, independent oracle and limits](tracker-global-assignment.md).
 
-**Acquisition-time LiDAR transform.** The pipeline retains at most 64 timestamped EKF poses over a 0.35 s lookup window, keeping one predecessor for interpolation at the age boundary. History begins at the first pipeline step and records the pose after that step's prediction and GNSS correction. Exact acquisition timestamps use the stored pose directly; intermediate timestamps interpolate position and the shortest wrapped yaw arc between estimates no more than 0.25 s apart. The pipeline never extrapolates before history or across an uncovered clock gap. A new scan older than 0.35 s or without a covered pose is invalid and cannot update tracks, map rays or accepted-LiDAR age. Both world-frame detections and occupancy ray origins use this acquisition pose. Acquisition timestamps remain the tracker observation times.
+**Acquisition-time LiDAR transform.** The pipeline retains at most 64 continuous wheel/gyro poses over a 0.35 s lookup window, keeping one predecessor for interpolation at the age boundary. History begins at the first pipeline step and advances only by accepted EKF prediction increments. Exact acquisition timestamps use the stored pose directly; intermediate timestamps interpolate position and the shortest wrapped yaw arc between estimates no more than 0.25 s apart. The pipeline never extrapolates before history or across an uncovered clock gap. A new scan older than 0.35 s or without a covered pose is invalid and cannot update continuous-frame tracks, map rays or accepted-LiDAR age. Detection association and braking-history samples retain continuous coordinates. The current localized world transform projects published tracks, predictions and occupancy ray origins; velocity vectors rotate without acquiring pose-correction velocity. Acquisition timestamps remain the tracker observation times, including during cached world-coordinate reprojection.
 
-This corrects transforming delayed body-frame returns with the latest ego pose. It does not smooth past poses after later GNSS fixes, fuse delayed odometry/GNSS at their acquisition times, deskew individual rays or propagate pose covariance. Motion prediction separately advances acquired tracks to the current control time without changing their observation stamps. These bounded steps do not establish complete latency compensation or general delayed-scene safety. [Sensor contract and reproduction](sensor-replay.md).
+This avoids transforming delayed body-frame returns with the delivery-time body pose and avoids interpreting GNSS/map correction jumps as object motion. It does not correct odometry drift within the history, rebuild historical occupancy cells, fuse delayed odometry/GNSS at their acquisition times, deskew individual rays or propagate pose covariance. Motion prediction separately advances acquired tracks to the current control time without changing their observation stamps. These bounded steps do not establish complete latency compensation or general delayed-scene safety. [Sensor contract and reproduction](sensor-replay.md); [tracking frame and evidence](tracker-localization-frame.md).
 
 **Mapping.** A 0.5 m world-aligned log-odds grid records ray free-space and hit endpoints. It exports occupied cells for debugging. No-return beams are not exported by the sensor and therefore do not clear the entire sensing horizon. Dynamic-object ghost cells and repeated discretized ray cells remain limitations. The grid does not supply the current planner's collision geometry and does not perform SLAM or route discovery.
 

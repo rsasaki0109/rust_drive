@@ -21,7 +21,8 @@ replaces greedy matching while retaining this per-track time contract.
 
 The public tracker accepts successful scans in strictly increasing
 acquisition-time order. The driving pipeline validates this order
-and transforms points at acquisition time before calling the tracker. Delayed
+and transforms body points into continuous acquisition-time coordinates before
+calling the tracker. Delayed
 delivery does not change the measured interval. Forecasts subsequently advance
 the resulting track from its acquisition time to the control clock.
 
@@ -47,8 +48,11 @@ from rejection must use `try_update`; an unchanged track vector is not evidence
 of a successful scan.
 
 The driving pipeline uses the checked API. A tracker rejection activates
-`InvalidLidar` and emergency braking, preserving its published tracks, occupancy
-grid and last accepted LiDAR time. Recovery needs a new valid scan acquired after
+`InvalidLidar` and emergency braking, preserving its continuous-frame tracks,
+occupancy grid and last accepted LiDAR time. A localization correction can still
+reproject cached world-coordinate tracks without changing their observation times;
+see the [tracking frame contract](tracker-localization-frame.md).
+Recovery needs a new valid scan acquired after
 the latest fault control time. Other pipeline state, including localization,
 continues its ordinary frame processing. This is not a transaction across the
 entire pipeline.
@@ -72,8 +76,10 @@ python3 scripts/check_tracker_intervals.py \
 
 The auditor streams complete schema-1 logs and checks each correction using
 consecutive positions and original observation timestamps, independently of the
-reported new velocity. It also checks that cached tracks remain unchanged and
-new identities have zero velocity. It refuses an existing output. This checks
+reported new velocity. It uses the optional logged `tracking_frame` transform to
+compare values in continuous coordinates; older logs without it retain world-frame
+arithmetic. It also checks that cached observations remain unchanged in their
+tracking frame and new identities have zero velocity. It refuses an existing output. This checks
 filter timing, without independently estimating cluster centers or qualifying
 object identities or physical velocity accuracy.
 
