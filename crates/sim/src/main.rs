@@ -1,3 +1,4 @@
+mod lane_route;
 use rustdriving_pipeline::replay::verify;
 use rustdriving_routing::{
     RoadNetwork,
@@ -156,12 +157,15 @@ fn run() -> Result<bool, Box<dyn Error>> {
     let args: Vec<_> = env::args().skip(1).collect();
     if args.is_empty() || args[0] == "--help" || args[0] == "-h" {
         println!(
-            "RustDriving sensor-driven simulator\nUsage:\n  rustdriving run --scenario FILE [--seed N] [--output DIR]\n  rustdriving replay --log FILE [--output DIR]\n  rustdriving import-osm --input FILE --output MAP.json --origin-lat N --origin-lon E [--default-half-width METERS] [--scenario-output FILE --start osm-node-ID --goal osm-node-ID --closed-edge ID --cruise-speed MPS --duration SECONDS --local-route-geometry]\nExit 0: acceptance/replay/import passed; 1: scenario acceptance failed; 2: invalid input, replay mismatch or I/O failure."
+            "RustDriving sensor-driven simulator\nUsage:\n  rustdriving run --scenario FILE [--seed N] [--output DIR]\n  rustdriving replay --log FILE [--output DIR]\n  rustdriving import-osm --input FILE --output MAP.json --origin-lat N --origin-lon E [--default-half-width METERS] [--scenario-output FILE --start osm-node-ID --goal osm-node-ID --closed-edge ID --cruise-speed MPS --duration SECONDS --local-route-geometry]\n  rustdriving lane-route --map FILE --start LANE --goal LANE [--closed-lane ID] [--scenario-output FILE --cruise-speed MPS --duration SECONDS]\nExit 0: acceptance/replay/import/lane routing passed; 1: scenario acceptance failed; 2: invalid input, replay mismatch or I/O failure."
         );
         return Ok(true);
     }
     if args[0] == "import-osm" {
         return import_osm(&args);
+    }
+    if args[0] == "lane-route" {
+        return lane_route::run(&args);
     }
     let mut scenario = None;
     let mut log = None;
@@ -215,7 +219,7 @@ fn run() -> Result<bool, Box<dyn Error>> {
             println!("{json}");
             Ok(true)
         }
-        _ => Err("expected 'run' or 'replay' subcommand".into()),
+        _ => Err("expected 'run', 'replay', 'import-osm' or 'lane-route' subcommand".into()),
     }
 }
 fn main() {

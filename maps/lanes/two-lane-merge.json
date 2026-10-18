@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "lanes": [
+    {
+      "id": "east-right-in",
+      "centerline": [{"x": 0.0, "y": 0.0}, {"x": 40.0, "y": 0.0}],
+      "width_m": 3.5,
+      "speed_limit_m_s": 4.0,
+      "successors": ["east-right-merge", "east-bypass"],
+      "left": {"lane_id": "east-left-in", "change_allowed": true}
+    },
+    {
+      "id": "east-left-in",
+      "centerline": [{"x": 0.0, "y": 3.5}, {"x": 40.0, "y": 3.5}],
+      "width_m": 3.5,
+      "speed_limit_m_s": 4.0,
+      "successors": ["east-left-merge"],
+      "right": {"lane_id": "east-right-in", "change_allowed": false}
+    },
+    {
+      "id": "east-right-merge",
+      "centerline": [{"x": 40.0, "y": 0.0}, {"x": 100.0, "y": 0.0}],
+      "width_m": 3.5,
+      "speed_limit_m_s": 4.0,
+      "successors": ["east-exit"]
+    },
+    {
+      "id": "east-left-merge",
+      "centerline": [{"x": 40.0, "y": 3.5}, {"x": 80.0, "y": 3.5}, {"x": 100.0, "y": 0.0}],
+      "width_m": 3.5,
+      "speed_limit_m_s": 3.0,
+      "successors": ["east-exit"]
+    },
+    {
+      "id": "east-bypass",
+      "centerline": [{"x": 40.0, "y": 0.0}, {"x": 60.0, "y": -3.5}, {"x": 100.0, "y": 0.0}],
+      "width_m": 3.5,
+      "speed_limit_m_s": 2.0,
+      "successors": ["east-exit"]
+    },
+    {
+      "id": "east-exit",
+      "centerline": [{"x": 100.0, "y": 0.0}, {"x": 140.0, "y": 0.0}],
+      "width_m": 3.5,
+      "speed_limit_m_s": 3.0,
+      "successors": []
+    }
+  ]
+}

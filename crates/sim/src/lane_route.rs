@@ -1,0 +1,89 @@
+//! CLI bridge from a validated lane itinerary to an existing resolved-route simulation.
+use rustdriving_routing::lanes::{LaneMapSpec, LaneNetwork};
+use rustdriving_sim::Scenario;
+use std::{
+    error::Error,
+    fs,
+    io::{Read, Write},
+    path::PathBuf,
+};
+
+pub(crate) fn run(args: &[String]) -> Result<bool, Box<dyn Error>> {
+    let mut input = None;
+    let mut start = None;
+    let mut goal = None;
+    let mut closed = Vec::new();
+    let mut scenario_output = None;
+    let mut cruise = None;
+    let mut duration = None;
+    let mut i = 1;
+    while i < args.len() {
+        let value = args
+            .get(i + 1)
+            .ok_or("lane-route option requires a value")?;
+        match args[i].as_str() {
+            "--map" => input = Some(PathBuf::from(value)),
+            "--start" => start = Some(value.clone()),
+            "--goal" => goal = Some(value.clone()),
+            "--closed-lane" => closed.push(value.clone()),
+            "--scenario-output" => scenario_output = Some(PathBuf::from(value)),
+            "--cruise-speed" => cruise = Some(value.parse::<f64>()?),
+            "--duration" => duration = Some(value.parse::<f64>()?),
+            _ => return Err(format!("invalid lane-route option {}", args[i]).into()),
+        }
+        i += 2;
+    }
+    if scenario_output.is_none() && (cruise.is_some() || duration.is_some()) {
+        return Err("--cruise-speed and --duration require --scenario-output".into());
+    }
+    if duration.is_some_and(|seconds| !seconds.is_finite() || !(1.0..=300.0).contains(&seconds)) {
+        return Err("scenario duration must be finite and in 1..300 seconds".into());
+    }
+    let input = input.ok_or("--map is required")?;
+    let mut bytes = Vec::new();
+    fs::File::open(&input)?
+        .take(16 * 1024 * 1024 + 1)
+        .read_to_end(&mut bytes)?;
+    if bytes.len() > 16 * 1024 * 1024 {
+        return Err("lane map input exceeds 16 MiB".into());
+    }
+    let network = LaneNetwork::new(serde_json::from_slice::<LaneMapSpec>(&bytes)?)?;
+    let start = start.ok_or("--start lane is required")?;
+    let goal = goal.ok_or("--goal lane is required")?;
+    let plan = network.following_route(&start, &goal, &closed)?;
+    let scenario = if scenario_output.is_some() {
+        let requested_cruise = cruise.unwrap_or(2.0);
+        if !requested_cruise.is_finite() || !(0.1..=8.0).contains(&requested_cruise) {
+            return Err("requested cruise speed must be finite and in 0.1..8 m/s".into());
+        }
+        let scenario: Scenario = serde_json::from_value(serde_json::json!({
+            "name":"Authored lane route", "duration":duration.unwrap_or(120.0),
+            "road_length":plan.distance_m, "half_width":plan.route.half_width,
+            "local_route_geometry":true,
+            "expected":"goal", "cruise_speed":requested_cruise.min(plan.speed_limit_m_s),
+            "motion_limits":{"max_acceleration_m_s2":1.0,"max_deceleration_m_s2":2.5,"max_lateral_acceleration_m_s2":1.0},
+            "navigation":{"network":plan.network,"start":plan.start_node,"goal":plan.goal_node,"closed_edges":[]},
+            "objects":[]
+        }))?;
+        scenario.validate()?;
+        Some(scenario)
+    } else {
+        None
+    };
+    // All map, route and scenario validation precedes output creation. Never clobber an input or link.
+    if let (Some(path), Some(scenario)) = (scenario_output, scenario) {
+        if let Some(parent) = path.parent().filter(|p| !p.as_os_str().is_empty()) {
+            fs::create_dir_all(parent)?;
+        }
+        let bytes = serde_json::to_vec_pretty(&scenario)?;
+        fs::File::create_new(path)?.write_all(&bytes)?;
+    }
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&serde_json::json!({
+            "schema_version":1, "start_lane":start, "goal_lane":goal, "closed_lanes":closed,
+            "plan":plan
+        }))?
+    );
+    Ok(true)
+}

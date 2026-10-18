@@ -1,4 +1,5 @@
 //! Directed map routing in world ENU meters, independent of sensing and simulation.
+pub mod lanes;
 pub mod osm;
 use rustdriving_core::{Route, Vec2};
 use serde::{Deserialize, Serialize};
