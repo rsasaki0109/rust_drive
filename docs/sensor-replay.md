@@ -311,6 +311,22 @@ recomputes the interval, and older logs that credited unobserved time need new
 expected outputs. This is the fixed 20 Hz research policy, not a claim of
 continuous physical standstill between observations.
 
+## Intersection clear evidence
+
+Uncommitted intersection permission needs clear scans acquired strictly after
+the latest unhealthy, stale or unaligned permission check. A delayed scan from
+before or at that control time cannot start a new confirmation interval.
+Distinct accepted acquisitions must span at least one second, include at least
+three scans and stay at most 0.2 seconds apart. A longer acquisition gap restarts
+confirmation and revokes uncommitted permission, even when no intervening
+pipeline call observed stale data. The existing 0.15-second scan-age limit,
+forecast conflict checks and committed-crossing behavior still apply. Regular
+5 Hz scans and 10 Hz scans with bounded delay remain supported; startup or
+recovery may wait for an additional post-failure acquisition. Replay recomputes
+this evidence, so logs that used earlier or interrupted clear intervals need
+new expected outputs. These sampled checks do not establish continuous physical
+visibility or general right-of-way safety.
+
 ## GNSS acceptance diagnostics
 
 Optional output `localization` reports last observed/accepted GNSS stamps, the latest valid-new-fix decision and finite NIS, and accepted/rejected counts. Rejected fixes cannot refresh health; their receipt prevents subsequent duplicate/older observations from being processed. Invalid input continues to use health diagnostics. Replay recomputes the joint gate and all diagnostics. Changing a GNSS observation or its expected counters is covered by mismatch tests. Fault-window labels exist only in simulator configuration; recorded sensor observations contain the actual bias without labels. Schema 1 remains readable, but new correction arithmetic and output diagnostics require regenerated expected outputs. Boxed record payloads preserve JSON encoding. [GNSS baseline recovery](gnss-robustness.md) and [current terminal stopping](terminal-stopping.md).

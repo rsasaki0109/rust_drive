@@ -8,6 +8,7 @@ pub const FORECAST_HORIZON_S: f64 = 8.0;
 pub const FORECAST_MARGIN_M: f64 = 0.5;
 pub const CLEAR_CONFIRM_S: f64 = 1.0;
 pub const MAX_SCAN_AGE_S: f64 = 0.15;
+pub const MAX_CLEAR_SCAN_GAP_S: f64 = 0.2;
 pub const APPROACH_RESERVE_M: f64 = 2.0;
 pub const APPROACH_REACTION_S: f64 = 0.25;
 pub const APPROACH_CREEP_M_S: f64 = 0.5;
@@ -158,6 +159,8 @@ pub(crate) struct YieldIntersections {
     route: Route,
     clear_samples: Vec<usize>,
     last_scan: Option<f64>,
+    /// Latest control time without usable clear evidence; recovery needs a later acquisition.
+    clear_after: Option<f64>,
     status: IntersectionStatus,
 }
 impl YieldIntersections {
@@ -166,6 +169,7 @@ impl YieldIntersections {
             route,
             clear_samples: vec![0; zones.len()],
             last_scan: None,
+            clear_after: None,
             status: IntersectionStatus {
                 zones: zones
                     .iter()
@@ -199,8 +203,16 @@ impl YieldIntersections {
             && aligned
             && scan_stamp.is_some_and(|s| now - s <= MAX_SCAN_AGE_S + 1e-9 && s <= now);
         let new_scan = scan_stamp.is_some_and(|s| self.last_scan.is_none_or(|old| s > old));
+        let scan_gap = new_scan
+            && self
+                .last_scan
+                .zip(scan_stamp)
+                .is_some_and(|(old, stamp)| stamp - old > MAX_CLEAR_SCAN_GAP_S + 1e-9);
         if new_scan {
             self.last_scan = scan_stamp;
+        }
+        if !fresh {
+            self.clear_after = Some(now);
         }
         self.status.stop_s_m = None;
         for ((zone, state), samples) in self
@@ -222,7 +234,16 @@ impl YieldIntersections {
                     state.phase = IntersectionPhase::Waiting;
                     state.clear_since = None;
                     *samples = 0;
-                } else if new_scan {
+                } else if new_scan
+                    && self
+                        .clear_after
+                        .is_none_or(|after| scan_stamp.unwrap() > after)
+                {
+                    if scan_gap {
+                        state.phase = IntersectionPhase::Waiting;
+                        state.clear_since = None;
+                        *samples = 0;
+                    }
                     let stamp = scan_stamp.unwrap();
                     let start = *state.clear_since.get_or_insert(stamp);
                     *samples += 1;
@@ -369,12 +390,19 @@ mod tests {
         }
         y.step(2.15, ego(36.0), 1.25, &[], Some(2.15), true);
         assert!(y.status().zones[0].committed);
+        y.step(2.2, ego(36.0), 1.25, &[], Some(2.2), false);
+        assert!(y.status().zones[0].committed);
+        assert_eq!(y.status().zones[0].phase, IntersectionPhase::Proceeding);
+        assert!(y.endpoint().is_none());
+        y.step(2.45, ego(36.0), 1.25, &[], Some(2.45), true);
+        assert!(y.status().zones[0].committed);
+        assert_eq!(y.status().zones[0].phase, IntersectionPhase::Proceeding);
         y.step(
-            2.2,
+            2.5,
             ego(51.0),
             1.25,
             std::slice::from_ref(&p),
-            Some(2.2),
+            Some(2.5),
             true,
         );
         assert_eq!(y.status().zones[0].phase, IntersectionPhase::Passed);
