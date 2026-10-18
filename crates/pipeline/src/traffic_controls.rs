@@ -73,6 +73,8 @@ pub(crate) struct TrafficControls {
     lines: Vec<StopLine>,
     status: TrafficControlStatus,
     accepted: Vec<SignalState>,
+    /// Latest invalid snapshot delivery time; recovery needs a fresh later acquisition.
+    fault_epoch: Option<f64>,
 }
 impl TrafficControls {
     pub fn new(lines: Vec<StopLine>) -> Self {
@@ -87,6 +89,7 @@ impl TrafficControls {
         Self {
             lines,
             accepted: vec![],
+            fault_epoch: None,
             status: TrafficControlStatus {
                 last_accepted_stamp: None,
                 fault: false,
@@ -104,27 +107,30 @@ impl TrafficControls {
         healthy: bool,
     ) {
         if let Some(snapshot) = observation {
-            if !snapshot.stamp.is_finite() || snapshot.stamp < 0.0 || snapshot.stamp > now + 1e-9 {
-                self.status.fault = true;
+            if !snapshot.stamp.is_finite()
+                || snapshot.stamp < 0.0
+                || snapshot.stamp > now + 1e-9
+                || snapshot.states.len() != self.lines.len()
+                || self
+                    .lines
+                    .iter()
+                    .any(|line| snapshot.states.iter().filter(|s| s.id == line.id).count() != 1)
+            {
+                self.fault_epoch = Some(now);
             } else if self
                 .status
                 .last_accepted_stamp
                 .is_none_or(|last| snapshot.stamp > last)
+                && self.fault_epoch.is_none_or(|fault| {
+                    snapshot.stamp > fault && now - snapshot.stamp <= MAX_SIGNAL_AGE_S + 1e-9
+                })
             {
-                if snapshot.states.len() != self.lines.len()
-                    || self
-                        .lines
-                        .iter()
-                        .any(|line| snapshot.states.iter().filter(|s| s.id == line.id).count() != 1)
-                {
-                    self.status.fault = true;
-                } else {
-                    self.accepted = snapshot.states.clone();
-                    self.status.last_accepted_stamp = Some(snapshot.stamp);
-                    self.status.fault = false;
-                }
+                self.accepted = snapshot.states.clone();
+                self.status.last_accepted_stamp = Some(snapshot.stamp);
+                self.fault_epoch = None;
             }
         }
+        self.status.fault = self.fault_epoch.is_some();
         let fresh = !self.status.fault
             && self
                 .status

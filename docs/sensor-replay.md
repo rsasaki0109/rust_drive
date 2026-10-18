@@ -34,8 +34,19 @@ ordinary outage and the existing consecutive-innovation policy are unchanged.
 A single structurally valid innovation outlier alone does not create this
 malformed-observation hold.
 
+An invalid infrastructure-signal snapshot retains `InvalidTrafficSignal` braking
+until a complete valid snapshot arrives with an acquisition time strictly after
+the latest failure's delivery time and an age within 0.5 s. Missing, duplicate,
+pre-fault and expired snapshots cannot replace the accepted snapshot or clear
+the fault. Every malformed snapshot advances the cutoff, including one carrying
+an old timestamp. A fresh post-fault red or unknown snapshot clears the format
+fault but still imposes its normal stop constraint. The fault also keeps
+uncommitted intersection clear-confirmation timers reset; only recovery can
+start a new full confirmation interval.
+
 Schema 1 remains readable, but earlier recordings spanning malformed odometry
-or GNSS may require regenerated expected outputs for the extended braking hold.
+or GNSS, or invalid signals, may require regenerated expected outputs for the
+extended braking hold.
 
 Every LiDAR input mode retains `InvalidLidar` braking after an explicit acquisition
 failure, malformed or conflicting representation, or missing acquisition-pose
