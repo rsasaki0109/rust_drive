@@ -69,12 +69,14 @@ impl Controller for PurePursuit {
         } else {
             (3.0 + ego.speed * 0.45).clamp(3.0, 8.0)
         };
-        let target = pursuit_target(path, ego.pose.position, lookahead);
-        if !target.finite() {
+        let Some(target) = pursuit_target(path, ego.pose.position, lookahead) else {
             return self.emergency_command();
-        }
+        };
         let delta = target.minus(ego.pose.position);
         let distance = delta.x.hypot(delta.y).max(0.1);
+        if !delta.finite() || !distance.is_finite() {
+            return self.emergency_command();
+        }
         let alpha = wrap_angle(delta.y.atan2(delta.x) - ego.pose.yaw);
         let desired = if self.rear_axle_offset_m == 0.0 {
             // Retain the original arithmetic, including rounding, by default.
@@ -143,25 +145,45 @@ fn pursuit_target(
     path: &Trajectory,
     origin: rustdriving_core::Vec2,
     lookahead: f64,
-) -> rustdriving_core::Vec2 {
+) -> Option<rustdriving_core::Vec2> {
     let mut previous = path.points[0].position;
-    if previous.distance(origin) >= lookahead {
-        return previous;
+    let distance = previous.distance(origin);
+    if !distance.is_finite() {
+        return None;
+    }
+    if distance >= lookahead {
+        return Some(previous);
     }
     for point in path.points.iter().skip(1) {
         let next = point.position;
-        if next.distance(origin) >= lookahead {
+        let distance = next.distance(origin);
+        if !distance.is_finite() {
+            return None;
+        }
+        if distance >= lookahead {
             let relative = previous.minus(origin);
             let delta = next.minus(previous);
             let a = delta.x * delta.x + delta.y * delta.y;
             let b = relative.x * delta.x + relative.y * delta.y;
             let c = relative.x * relative.x + relative.y * relative.y - lookahead * lookahead;
-            let u = ((-b + (b * b - a * c).max(0.0).sqrt()) / a).clamp(0.0, 1.0);
-            return previous.plus(delta.scaled(u));
+            let discriminant = b * b - a * c;
+            if a <= 0.0
+                || [a, b, c, discriminant]
+                    .iter()
+                    .any(|value| !value.is_finite())
+            {
+                return None;
+            }
+            let fraction = (-b + discriminant.max(0.0).sqrt()) / a;
+            if !fraction.is_finite() {
+                return None;
+            }
+            let target = previous.plus(delta.scaled(fraction.clamp(0.0, 1.0)));
+            return target.finite().then_some(target);
         }
         previous = next;
     }
-    previous
+    Some(previous)
 }
 /// Independent freshness / numeric guard; a simulation gate, not a certified safety system.
 /// Timestamps are seconds on one clock. Position variance is the sum of x/y
@@ -379,7 +401,7 @@ mod tests {
                 }
             })
             .collect();
-        let target = pursuit_target(&path, rustdriving_core::Vec2::default(), 4.8);
+        let target = pursuit_target(&path, rustdriving_core::Vec2::default(), 4.8).unwrap();
         assert!((target.x.hypot(target.y) - 4.8).abs() < 1e-10);
         let mut controller = PurePursuit::default();
         let ego = EgoState {

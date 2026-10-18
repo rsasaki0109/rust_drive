@@ -51,6 +51,14 @@ stationary single-point hold retain their behavior. This repairs standalone
 control-library error handling; it adds no physical steering-actuator model or
 real-vehicle validation.
 
+The controller also rejects nonfinite intermediate displacements, distances
+and circle-intersection arithmetic when selecting its pursuit target. Finite
+coordinates can still overflow these calculations; interpolation clamps must
+not turn that failure into a normal acceleration command. Rejection emits the
+same state-clearing emergency command, so the next valid trajectory resumes
+from zero steering and integral feedback. Large coordinates whose required
+calculations remain finite retain normal control and feedback.
+
 Each standalone controller call also checks the vehicle calibration it consumes:
 wheelbase must be finite and positive in meters, and the steering-angle limit
 must be finite and strictly between 0 and pi/2 radians. Invalid values return
