@@ -37,6 +37,82 @@ fn cli() -> Command {
 }
 
 #[test]
+fn observed_gap_option_exports_calibration_and_rejects_missing_change_or_short_approach() {
+    let workspace = Workspace::new();
+    let map = workspace.0.join("gap-map.json");
+    fs::write(
+        &map,
+        include_str!("../../../maps/lanes/two-lane-change.json"),
+    )
+    .unwrap();
+    let scenario = workspace.0.join("gap-scenario.json");
+    let output = cli()
+        .arg("lane-route")
+        .arg("--map")
+        .arg(&map)
+        .args([
+            "--start",
+            "source",
+            "--goal",
+            "target-exit",
+            "--change-side",
+            "left",
+            "--change-start",
+            "25",
+            "--change-length",
+            "30",
+            "--wait-for-gap",
+        ])
+        .arg("--scenario-output")
+        .arg(&scenario)
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    let exported: serde_json::Value =
+        serde_json::from_slice(&fs::read(&scenario).unwrap()).unwrap();
+    assert_eq!(exported["lane_change"], report["lane_change_gate"]);
+    assert_eq!(exported["lane_change"]["entry_s_m"], 25.0);
+    assert_eq!(
+        exported["lane_change"]["target_end"],
+        serde_json::json!({"x":80.0,"y":3.5})
+    );
+    assert_eq!(exported["cruise_speed"], 2.0);
+    let invalid = workspace.0.join("not-exported.json");
+    for options in [
+        vec!["--goal", "source-exit", "--wait-for-gap"],
+        vec![
+            "--goal",
+            "target-exit",
+            "--change-side",
+            "left",
+            "--change-start",
+            "5",
+            "--change-length",
+            "30",
+            "--wait-for-gap",
+        ],
+    ] {
+        let output = cli()
+            .arg("lane-route")
+            .arg("--map")
+            .arg(&map)
+            .args(["--start", "source"])
+            .args(options)
+            .arg("--scenario-output")
+            .arg(&invalid)
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(2));
+        assert!(!invalid.exists());
+    }
+}
+
+#[test]
 fn permitted_left_right_and_rotated_lane_changes_drive_into_the_target_and_replay() {
     let workspace = Workspace::new();
     let original: serde_json::Value =

@@ -1,5 +1,7 @@
 //! Shared sensor-to-command stack. No simulator, truth objects or physical world types.
 mod ground;
+pub mod lane_change;
+use lane_change::{LaneChangeConfig, LaneChangeGate, LaneChangeStatus};
 pub mod intersections;
 pub use ground::{GroundConfig, GroundDiagnostics, GroundPlane};
 mod lidar3d;
@@ -84,6 +86,8 @@ pub struct PipelineConfig {
     pub stop_signs: Vec<StopLine>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub yield_intersections: Vec<YieldIntersection>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub lane_change: Option<LaneChangeConfig>,
 }
 impl PipelineConfig {
     pub fn new(route: Route, initial_pose: Pose, vehicle: VehicleConfig) -> Self {
@@ -104,6 +108,7 @@ impl PipelineConfig {
             stop_lines: vec![],
             stop_signs: vec![],
             yield_intersections: vec![],
+            lane_change: None,
         }
     }
     pub fn validate(&self) -> Result<(), String> {
@@ -140,6 +145,20 @@ impl PipelineConfig {
         }
         if canonical.lengths != self.route.lengths || canonical.length() > 1500.0 {
             return Err("invalid route arc-length metadata or excessive route length".into());
+        }
+        if let Some(change) = &self.lane_change {
+            change.validate(&self.route, self.vehicle)?;
+            if !self.local_route_geometry
+                || self.navigation.is_some()
+                || !self.stop_lines.is_empty()
+                || !self.stop_signs.is_empty()
+                || !self.yield_intersections.is_empty()
+                || self.route.project(self.initial_pose.position).0
+                    > change.entry_s_m - self.vehicle.radius - 3.0
+                || self.cruise_speed > 4.0
+            {
+                return Err("lane-change gate requires a fixed local route, pre-entry spawn and cruise <=4 m/s without other mapped controls".into());
+            }
         }
         if self.motion_limits.is_some_and(|limits| {
             !limits.max_acceleration_m_s2.is_finite()
@@ -291,6 +310,8 @@ pub struct PipelineOutput {
     pub stop_signs: Option<StopSignStatus>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub intersections: Option<IntersectionStatus>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub lane_change: Option<LaneChangeStatus>,
 }
 const MAX_ODOMETRY_AGE_S: f64 = 0.15;
 const MAX_GNSS_AGE_S: f64 = 0.75;
@@ -322,6 +343,7 @@ pub struct DrivingPipeline {
     traffic_controls: Option<TrafficControls>,
     stop_signs: Option<StopSigns>,
     intersections: Option<YieldIntersections>,
+    lane_change: Option<LaneChangeGate>,
 }
 impl DrivingPipeline {
     pub fn new(config: PipelineConfig) -> Result<Self, String> {
@@ -379,6 +401,10 @@ impl DrivingPipeline {
         let ekf = Ekf::new(config.initial_pose);
         let map_localization = config.localization_map.clone().map(MapLocalization::new);
         let navigator = config.navigation.clone().map(Navigator::new).transpose()?;
+        let lane_change = config
+            .lane_change
+            .clone()
+            .map(|c| LaneChangeGate::new(c, config.vehicle, config.cruise_speed));
         Ok(Self {
             config,
             ekf,
@@ -402,6 +428,7 @@ impl DrivingPipeline {
             traffic_controls,
             stop_signs,
             intersections,
+            lane_change,
         })
     }
     /// Clock errors return Err before mutation; callers must apply emergency braking on Err.
@@ -698,6 +725,16 @@ impl DrivingPipeline {
                 health.is_empty(),
             );
         }
+        if let Some(change) = &mut self.lane_change {
+            change.step(
+                &self.config.route,
+                estimate,
+                &predictions,
+                input.time,
+                self.last_lidar,
+                health.is_empty(),
+            );
+        }
         let stop_route = self
             .navigator
             .as_ref()
@@ -715,12 +752,29 @@ impl DrivingPipeline {
                     .intersections
                     .as_ref()
                     .and_then(|c| c.planning_route(&self.config.route));
-                [signal_route, sign_route, intersection_route]
-                    .into_iter()
-                    .flatten()
-                    .min_by(|a, b| a.length().total_cmp(&b.length()))
+                let lane_change_route = self
+                    .lane_change
+                    .as_ref()
+                    .and_then(|c| c.planning_route(&self.config.route));
+                [
+                    signal_route,
+                    sign_route,
+                    intersection_route,
+                    lane_change_route,
+                ]
+                .into_iter()
+                .flatten()
+                .min_by(|a, b| a.length().total_cmp(&b.length()))
             });
         let configured_cruise = self.planner.cruise_speed;
+        if let Some(change) = &self.lane_change {
+            self.planner.cruise_speed = configured_cruise.min(change.approach_speed_limit(
+                &self.config.route,
+                estimate,
+                self.config.vehicle.radius,
+                self.planner.max_deceleration_m_s2,
+            ));
+        }
         if let Some(zones) = &self.intersections {
             self.planner.cruise_speed = configured_cruise.min(zones.approach_speed_limit(
                 estimate,
@@ -776,6 +830,14 @@ impl DrivingPipeline {
         {
             trajectory.mode = DrivingMode::Yield;
         }
+        if self
+            .lane_change
+            .as_ref()
+            .is_some_and(|c| c.status().stop_s_m.is_some())
+            && trajectory.mode != DrivingMode::Emergency
+        {
+            trajectory.mode = DrivingMode::Yield;
+        }
         let command = if health.is_empty() {
             let mut requested = self.controller.control(motion_estimate, &trajectory, dt);
             if self
@@ -786,6 +848,10 @@ impl DrivingPipeline {
                     .intersections
                     .as_ref()
                     .is_some_and(|s| s.holding_brake(&self.config.route, estimate))
+                || self
+                    .lane_change
+                    .as_ref()
+                    .is_some_and(|c| c.holding_brake(&self.config.route, estimate))
             {
                 // Keep requesting braking while waiting. A noisy
                 // low-speed feedback correction must not creep through the hold.
@@ -830,6 +896,7 @@ impl DrivingPipeline {
             traffic_controls: self.traffic_controls.as_ref().map(TrafficControls::status),
             stop_signs: self.stop_signs.as_ref().map(StopSigns::status),
             intersections: self.intersections.as_ref().map(YieldIntersections::status),
+            lane_change: self.lane_change.as_ref().map(LaneChangeGate::status),
         })
     }
     pub fn occupied_cells(&self) -> Vec<Vec2> {

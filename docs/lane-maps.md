@@ -9,7 +9,8 @@ sensor-driven reference simulator and sensor-only replay.
 
 This is an authored-map feature. An optional [single lane-change route](lane-changes.md)
 now joins an allowed neighbor before continuing along explicit successors.
-OSM lane import, traffic-gap acceptance, merge priority and general lane-level navigation during
+An optional [observed-gap gate](lane-change-gaps.md) checks tracked front/rear traffic before entry.
+OSM lane import, general traffic-gap acceptance, merge priority and lane-level navigation during
 driving are future work. The demonstrated merge follows a supplied centerline
 into a shared successor in an empty world; it does not negotiate with traffic.
 

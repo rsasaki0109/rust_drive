@@ -3,9 +3,10 @@
 `lane-route` can generate one map-permitted lane change from its start lane,
 then follow directed successors from the neighboring lane to the goal. The
 generated geometry runs through the existing sensor-driven reference simulator
-and sensor-only replay. This is pre-departure route construction: it does not
-choose a traffic gap, initiate a change while driving, negotiate merge priority,
-or search for an arbitrary sequence of lane changes.
+and sensor-only replay. An optional [observed-gap gate](lane-change-gaps.md) now
+holds the vehicle on its source lane until measured traffic clears its admission
+conditions. Geometry remains fixed before departure; merge negotiation, abort
+trajectories and search for arbitrary sequences of changes remain future work.
 
 ## Run
 
@@ -87,6 +88,8 @@ entry of the vehicle circle into the target lane before its end, and exact
 sensor-only recomputation. Independent lane-band checks inspect the retained
 truth samples; the existing simulator evaluates physical failures every tick.
 
-These are empty authored reference worlds. Surrounding-traffic gap acceptance,
-execution/abort state, live closure handling during a change, repeated changes,
-camera integration, CARLA and real-vehicle validation remain unimplemented.
+These geometry examples are empty authored reference worlds. Separate
+[observed-gap examples](lane-change-gaps.md) add tracked front/rear traffic and
+waiting/ready/changing/completed state. Abort trajectories, live closure handling
+during a change, repeated changes, camera integration, CARLA and real-vehicle
+validation remain unimplemented.

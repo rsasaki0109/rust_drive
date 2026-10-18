@@ -7,6 +7,7 @@ pub mod traffic;
 use intersections::IntersectionRuleEvaluator;
 use rustdriving_core::*;
 use rustdriving_pipeline::intersections::{IntersectionStatus, YieldIntersection};
+use rustdriving_pipeline::lane_change::{LaneChangeConfig, LaneChangeStatus};
 use rustdriving_pipeline::navigation::{NavigationConfig, NavigationStatus, NavigationUpdate};
 use rustdriving_pipeline::replay::SensorLog;
 use rustdriving_pipeline::stop_signs::StopSignStatus;
@@ -21,6 +22,12 @@ use std::f64::consts::PI;
 use stop_signs::StopRuleEvaluator;
 use traffic::{FollowingSpec, TrafficTelemetry, TrafficWorld};
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct WorldMotion {
+    pub position: Vec2,
+    pub velocity: Vec2,
+}
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct ObjectSpec {
@@ -41,6 +48,9 @@ pub struct ObjectSpec {
     pub moving_until: Option<f64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub following: Option<FollowingSpec>,
+    /// Prescribed world ENU motion, independent of the ego route; simulator-only.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub world_motion: Option<WorldMotion>,
 }
 /// Plant calibration, supported only by the native dynamic RNE adapter.
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
@@ -136,6 +146,8 @@ pub struct Scenario {
     pub stop_signs: Vec<StopLine>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub yield_intersections: Vec<YieldIntersection>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub lane_change: Option<LaneChangeConfig>,
 }
 impl Scenario {
     pub fn validate(&self) -> Result<(), String> {
@@ -257,6 +269,20 @@ impl Scenario {
             }
         }
         for o in &self.objects {
+            if let Some(motion) = &o.world_motion
+                && (!motion.position.finite()
+                    || motion.position.x.abs() > 1e6
+                    || motion.position.y.abs() > 1e6
+                    || !motion.velocity.finite()
+                    || motion.velocity.x.hypot(motion.velocity.y) > 15.0
+                    || o.s != 0.0
+                    || o.lateral != 0.0
+                    || o.speed != 0.0
+                    || o.lateral_speed != 0.0
+                    || o.following.is_some())
+            {
+                return Err("world-motion actors require bounded ENU position/velocity, zero route motion and no following policy".into());
+            }
             if let Some(following) = &o.following {
                 following.validate(o)?;
             }
@@ -387,6 +413,8 @@ pub struct Frame {
     pub stop_signs: Option<StopSignStatus>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub intersections: Option<IntersectionStatus>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub lane_change: Option<LaneChangeStatus>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Summary {
@@ -619,6 +647,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     config.localization_map = scenario.localization_map.clone();
     config.stop_signs = scenario.stop_signs.clone();
     config.yield_intersections = scenario.yield_intersections.clone();
+    config.lane_change = scenario.lane_change.clone();
     config.stop_lines = scenario
         .traffic_signals
         .iter()
@@ -796,6 +825,7 @@ pub fn simulate_with_backend(
         let traffic_control_status = result.traffic_controls.clone();
         let stop_sign_status = result.stop_signs.clone();
         let intersection_status = result.intersections.clone();
+        let lane_change_status = result.lane_change.clone();
         if let Some(status) = &navigation_status
             && status.switches > navigation_switches
         {
@@ -875,7 +905,8 @@ pub fn simulate_with_backend(
                 traffic_road_violations += 1;
             }
         }
-        if !traffic.is_empty()
+        if scenario.lane_change.is_some()
+            || !traffic.is_empty()
             || !scenario.traffic_signals.is_empty()
             || !scenario.stop_signs.is_empty()
             || !scenario.yield_intersections.is_empty()
@@ -904,6 +935,7 @@ pub fn simulate_with_backend(
                 traffic_controls: traffic_control_status,
                 stop_signs: stop_sign_status,
                 intersections: intersection_status,
+                lane_change: lane_change_status,
             });
         }
         if finished {

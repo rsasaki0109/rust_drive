@@ -200,6 +200,14 @@ The physical clearance/priority gates and replay checks are independent. The fin
 
 ## Log schema 1
 
+An optional `lane_change` header configuration supplies the authored target-lane
+axis and connector entry/exit arc lengths. The shared observed-gap gate derives
+waiting/ready/changing/completed state and front/rear gap diagnostics from the
+usual accepted LiDAR forecasts and sensor health; its complete output is compared
+exactly during replay. Simulator `world_motion` actor paths and schedules remain
+outside the operational header. Old logs omit these optional fields and retain
+their encoding. [Admission contract and limits](lane-change-gaps.md).
+
 `sensors.jsonl` is separate from the evaluation/display `run.json`. It contains one JSON object per line:
 
 1. `{"kind":"header","header":{"schema_version":1,"source":"...","config":...}}`

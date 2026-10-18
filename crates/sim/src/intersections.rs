@@ -277,6 +277,7 @@ mod tests {
             moving_from: 0.0,
             moving_until: None,
             following: None,
+            world_motion: None,
         }];
         let config = pipeline_config(&scenario);
         let backend = IgnoreControl(ReferenceBackend {
