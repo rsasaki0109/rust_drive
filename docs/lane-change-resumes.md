@@ -91,6 +91,11 @@ planner and emergency brake. There is no second return/retry loop. Telemetry
 retains stop/clear/start acquisition times, blockers, request, curvature bound,
 connector length and preview clearance in `return_state.resume_state`.
 
+During the early part of this connector, an [observed-gap hold](lane-change-launch-holds.md)
+can pause while a calibrated stop still fits inside source. It confirms a new
+measured stop and fresh post-stop gap before restoring the same fixed connector.
+It adds no second lane-change request or return/retry loop.
+
 ## Evidence and limits
 
 Three cases run with seeds 1, 7 and 42, requiring a physical source stop, no hold

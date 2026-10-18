@@ -214,6 +214,12 @@ requests and decisions remain comparison outputs; they are never inputs to the
 driver. Missing configuration preserves the return-and-hold serialization.
 [Resume contract and independent audit](lane-change-resumes.md).
 
+An early resume hold may temporarily select a source-contained prefix of the
+fixed connector. Stop/fault/clear epochs and release decisions are recomputed
+from observations in replay. `launch_hold` diagnostics are absent until a hold
+occurs; they are comparison outputs, never authorization inputs.
+[Launch hold contract](lane-change-launch-holds.md).
+
 An optional `lane_change` header configuration supplies the authored target-lane
 axis and connector entry/exit arc lengths. The shared observed-gap gate derives
 waiting/ready/changing/completed state and front/rear gap diagnostics from the

@@ -1,7 +1,7 @@
 use rustdriving_core::{Vec2, VehicleConfig};
 use rustdriving_pipeline::lane_change::{
     LaneChangeConfig, LaneChangePhase, LaneChangeResumeConfig, LaneChangeReturnConfig,
-    ResumeDecision,
+    LaunchHoldPhase, ResumeDecision,
 };
 use rustdriving_pipeline::replay::verify;
 use rustdriving_routing::lanes::{LaneChangeRequest, LaneMapSpec, LaneNetwork, LaneSide};
@@ -52,9 +52,137 @@ fn scenario(case: &str) -> Scenario {
     if case == "reblocked" {
         actors.push(serde_json::json!({"s":0.,"lateral":0.,"radius":1.1,"active_from":54.,"world_motion":{"position":{"x":66.,"y":3.5},"velocity":{"x":0.,"y":0.}}}));
     }
-    serde_json::from_value(serde_json::json!({"name":format!("Mission retry {case}"),"duration":120.,"expected":if case=="release" {"goal"}else{"stop"},"road_length":p.distance_m,"half_width":1.75,"local_route_geometry":true,
+    if matches!(
+        case,
+        "rear" | "rear-slow" | "launch-blocked" | "launch-recovery"
+    ) {
+        let (x, v) = match case {
+            "rear-slow" => (35., 4.),
+            "launch-blocked" => (54., 0.),
+            _ => (30., 6.),
+        };
+        actors.push(serde_json::json!({"s":0.,"lateral":0.,"radius":1.1,"active_from":49.,"world_motion":{"position":{"x":x,"y":3.5},"velocity":{"x":v,"y":0.}}}));
+    }
+    let mut scenario = serde_json::json!({"name":format!("Mission retry {case}"),"duration":120.,"expected":if matches!(case,"release"|"rear"|"rear-slow"|"launch-recovery") {"goal"}else{"stop"},"road_length":p.distance_m,"half_width":1.75,"local_route_geometry":true,
         "lane_change":gate,"min_clearance_m":1.,"cruise_speed":2.,"motion_limits":{"max_acceleration_m_s2":1.,"max_deceleration_m_s2":2.5,"max_lateral_acceleration_m_s2":1.},
-        "navigation":{"network":p.network,"start":p.start_node,"goal":p.goal_node,"closed_edges":[]},"objects":actors})).unwrap()
+        "navigation":{"network":p.network,"start":p.start_node,"goal":p.goal_node,"closed_edges":[]},"objects":actors});
+    if case == "launch-recovery" {
+        scenario["sensor_timing"] = serde_json::json!({"lidar_period_ticks":2,"lidar_delay_ticks":0,"lidar_failure_windows":[{"from":50.,"until":51.}]});
+    }
+    serde_json::from_value(scenario).unwrap()
+}
+
+#[test]
+fn early_resume_conflicts_hold_source_then_reconfirm_the_same_crossing_across_seeds() {
+    for case in ["rear", "rear-slow", "launch-blocked", "launch-recovery"] {
+        for seed in [1, 7, 42] {
+            let result = simulate(scenario(case), seed).unwrap();
+            assert!(
+                result.summary.passed,
+                "{case} seed {seed}: {:?}",
+                result.summary.failures
+            );
+            assert_eq!(result.summary.collisions, 0);
+            assert_eq!(result.summary.road_violations, 0);
+            assert!(result.summary.min_clearance >= 1.);
+            assert_eq!(result.summary.reached_goal, case != "launch-blocked");
+            let mut stopped_position = None;
+            let mut held_since = None;
+            let mut latest_hold = None;
+            let mut selected = None;
+            let mut release_at = None;
+            let mut initiation_at = None;
+            let mut initial_speed = None;
+            let mut stopped_duration = 0.0_f64;
+            let mut recovery_seen = false;
+            for f in &result.frames {
+                let retry = f
+                    .lane_change
+                    .as_ref()
+                    .unwrap()
+                    .return_state
+                    .as_ref()
+                    .unwrap()
+                    .resume_state
+                    .as_ref()
+                    .unwrap();
+                if let Some(request) = retry.request {
+                    let selected = selected.get_or_insert(serde_json::to_value(request).unwrap());
+                    assert_eq!(
+                        *selected,
+                        serde_json::to_value(request).unwrap(),
+                        "connector was replaced"
+                    );
+                }
+                if let Some(hold) = &retry.launch_hold {
+                    let initiated = *initiation_at.get_or_insert(hold.initiated_at);
+                    assert_eq!(initiated, hold.initiated_at);
+                    if hold.phase != LaunchHoldPhase::Released {
+                        assert!(f.command.acceleration <= -hold.deceleration_m_s2 + 1e-9);
+                        assert!(f.truth.pose.position.y.abs() + result.vehicle.radius <= 1.75);
+                        let speed = *initial_speed.get_or_insert(f.truth.speed);
+                        assert!(f.truth.speed <= speed + 1e-9, "accelerated during hold");
+                        initial_speed = Some(f.truth.speed);
+                        if f.truth.speed <= 0.05 {
+                            let p = *stopped_position.get_or_insert(f.truth.pose.position);
+                            assert!(p.distance(f.truth.pose.position) < 0.05, "hold creep");
+                            let start = *held_since.get_or_insert(f.time);
+                            stopped_duration = stopped_duration.max(f.time - start);
+                        }
+                    } else {
+                        let released = *release_at.get_or_insert(f.time);
+                        assert_eq!(hold.released_at, Some(released));
+                        assert!(hold.clear_since.unwrap() > hold.after_fault_at);
+                        assert!(released - hold.clear_since.unwrap() >= 1. - 1e-9);
+                        assert!(hold.crossing_preview_clearance_m.unwrap() >= 1.3);
+                    }
+                    recovery_seen |= case == "launch-recovery" && hold.after_fault_at >= 51.;
+                    latest_hold = Some(hold.clone());
+                }
+            }
+            assert!(
+                initiation_at.is_some_and(|t| (49.0..50.0).contains(&t)),
+                "{case} seed {seed} did not pause"
+            );
+            assert!(
+                stopped_duration >= 1.,
+                "{case} seed {seed}: no physical source hold"
+            );
+            let hold = latest_hold.unwrap();
+            assert!(hold.planning_endpoint_s_m <= hold.source_limit_s_m);
+            if case == "launch-blocked" {
+                assert!(release_at.is_none());
+                assert!(!hold.target_blocking_tracks.is_empty());
+                assert!(result.frames.last().unwrap().truth.speed <= 0.05);
+            } else {
+                assert!(release_at.is_some());
+                assert_eq!(hold.phase, LaunchHoldPhase::Released);
+                let last = result.frames.last().unwrap();
+                assert_eq!(
+                    last.lane_change.as_ref().unwrap().phase,
+                    LaneChangePhase::Completed
+                );
+                assert!(
+                    last.truth.pose.position.x >= 157.
+                        && (last.truth.pose.position.y - 3.5).abs() < 0.25
+                );
+                if case == "launch-recovery" {
+                    assert!(recovery_seen);
+                    assert!(hold.clear_since.unwrap() > 51.);
+                }
+            }
+            let mut bytes = vec![];
+            result
+                .sensor_log
+                .as_ref()
+                .unwrap()
+                .write(&mut bytes)
+                .unwrap();
+            let replay = verify(std::io::Cursor::new(bytes), std::io::sink()).unwrap();
+            assert!(replay.verified);
+            assert_eq!(replay.ticks, result.summary.steps);
+        }
+    }
 }
 
 #[test]

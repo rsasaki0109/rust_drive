@@ -2,8 +2,10 @@
 use crate::traffic_controls::planning_prefix;
 use rustdriving_core::{EgoState, Prediction, Route, Vec2, VehicleConfig, wrap_angle};
 use serde::{Deserialize, Serialize};
+mod launch;
 mod resuming;
 mod returning;
+pub use launch::{LaneChangeLaunchHoldStatus, LaunchHoldPhase};
 pub use resuming::{LaneChangeResumeConfig, LaneChangeResumeStatus, ResumeDecision};
 use returning::ReturnMonitor;
 pub(crate) use returning::ReturnObservation;
@@ -387,6 +389,11 @@ impl LaneChangeGate {
             self.state.phase,
             LaneChangePhase::Aborting | LaneChangePhase::Aborted
         )
+    }
+    pub fn launch_braking_limit(&self) -> Option<f64> {
+        self.return_monitor
+            .as_ref()
+            .and_then(ReturnMonitor::braking_limit)
     }
     pub fn planning_route(&self, route: &Route) -> Option<Route> {
         if let Some(route) = self.return_monitor.as_ref().and_then(ReturnMonitor::route) {

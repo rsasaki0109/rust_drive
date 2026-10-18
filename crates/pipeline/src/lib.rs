@@ -858,11 +858,9 @@ impl DrivingPipeline {
         {
             trajectory.mode = DrivingMode::Yield;
         }
-        if self
-            .lane_change
-            .as_ref()
-            .is_some_and(|c| c.status().stop_s_m.is_some() || c.returning())
-            && trajectory.mode != DrivingMode::Emergency
+        if self.lane_change.as_ref().is_some_and(|c| {
+            c.status().stop_s_m.is_some() || c.returning() || c.launch_braking_limit().is_some()
+        }) && trajectory.mode != DrivingMode::Emergency
         {
             trajectory.mode = DrivingMode::Yield;
         }
@@ -884,6 +882,13 @@ impl DrivingPipeline {
                 // Keep requesting braking while waiting. A noisy
                 // low-speed feedback correction must not creep through the hold.
                 requested.acceleration = requested.acceleration.min(-0.5);
+            }
+            if let Some(limit) = self
+                .lane_change
+                .as_ref()
+                .and_then(LaneChangeGate::launch_braking_limit)
+            {
+                requested.acceleration = requested.acceleration.min(limit);
             }
             guard(
                 requested,

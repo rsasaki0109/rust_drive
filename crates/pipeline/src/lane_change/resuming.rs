@@ -1,4 +1,5 @@
 //! A single opt-in mission retry after a measured early-return stop.
+use super::launch::{LaneChangeLaunchHoldStatus, LaunchGuard};
 use super::returning::{
     RETURN_CLEARANCE_M, RETURN_TRACKING_RESERVE_M, ReturnObservation, observed_clearance,
 };
@@ -52,6 +53,8 @@ pub struct LaneChangeResumeStatus {
     pub curvature_bound_m_inv: Option<f64>,
     pub observed_clearance_m: Option<f64>,
     pub connector_length_m: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub launch_hold: Option<LaneChangeLaunchHoldStatus>,
 }
 
 pub(super) struct ResumeMonitor {
@@ -66,6 +69,7 @@ pub(super) struct ResumeMonitor {
     last_motion: Option<f64>,
     after_fault: Option<f64>,
     clear_samples: usize,
+    launch: Option<LaunchGuard>,
 }
 impl ResumeMonitor {
     pub fn new(
@@ -90,6 +94,7 @@ impl ResumeMonitor {
             last_motion: None,
             after_fault: None,
             clear_samples: 0,
+            launch: None,
             status: LaneChangeResumeStatus {
                 decision: ResumeDecision::AwaitingStop,
                 source_blocking_tracks: vec![],
@@ -101,6 +106,7 @@ impl ResumeMonitor {
                 curvature_bound_m_inv: None,
                 observed_clearance_m: None,
                 connector_length_m: None,
+                launch_hold: None,
             },
         })
     }
@@ -111,10 +117,18 @@ impl ResumeMonitor {
         self.clear_samples = 0;
     }
     pub fn status(&self) -> LaneChangeResumeStatus {
-        self.status.clone()
+        let mut status = self.status.clone();
+        status.launch_hold = self.launch.as_ref().and_then(LaunchGuard::status);
+        status
     }
     pub fn route(&self) -> Option<&Route> {
-        self.route.as_ref()
+        self.launch
+            .as_ref()
+            .and_then(LaunchGuard::route)
+            .or(self.route.as_ref())
+    }
+    pub fn braking_limit(&self) -> Option<f64> {
+        self.launch.as_ref().and_then(LaunchGuard::braking_limit)
     }
     pub fn step(
         &mut self,
@@ -123,6 +137,11 @@ impl ResumeMonitor {
         stopped_route: &Route,
     ) -> bool {
         if let Some(route) = &self.route {
+            if state.phase == LaneChangePhase::Resuming
+                && self.launch.as_mut().is_some_and(|g| g.step(route, o))
+            {
+                return true;
+            }
             if state.phase == LaneChangePhase::Resuming
                 && o.healthy
                 && route.project(o.ego.pose.position).0 - self.vehicle.radius
@@ -239,6 +258,15 @@ impl ResumeMonitor {
                     self.status.curvature_bound_m_inv = Some(plan.curvature_bound_m_inv);
                     self.status.observed_clearance_m = Some(clearance);
                     self.status.connector_length_m = Some(plan.connector_length_m);
+                    self.launch = Some(LaunchGuard::new(
+                        &self.source,
+                        &self.target,
+                        self.vehicle,
+                        self.cruise,
+                        &plan.route,
+                        plan.connector_length_m,
+                        o,
+                    ));
                     self.route = Some(plan.route);
                     state.phase = LaneChangePhase::Resuming;
                     state.blocking_tracks.clear();
@@ -288,7 +316,11 @@ impl ResumeMonitor {
     }
 }
 
-fn calibrated_planner(vehicle: VehicleConfig, cruise: f64, limits: MotionLimits) -> LatticePlanner {
+pub(super) fn calibrated_planner(
+    vehicle: VehicleConfig,
+    cruise: f64,
+    limits: MotionLimits,
+) -> LatticePlanner {
     let mut p = LatticePlanner::default();
     p.vehicle = vehicle;
     p.local_route_geometry = true;

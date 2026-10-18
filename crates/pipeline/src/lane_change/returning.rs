@@ -222,6 +222,9 @@ impl ReturnMonitor {
             .and_then(ResumeMonitor::route)
             .or(self.route.as_ref())
     }
+    pub fn braking_limit(&self) -> Option<f64> {
+        self.resume.as_ref().and_then(ResumeMonitor::braking_limit)
+    }
     pub fn step(&mut self, state: &mut LaneChangeStatus, o: ReturnObservation<'_>) -> bool {
         if state.phase == LaneChangePhase::Aborted
             || self.resume.as_ref().is_some_and(|m| m.route().is_some())
