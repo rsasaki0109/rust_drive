@@ -200,6 +200,13 @@ The physical clearance/priority gates and replay checks are independent. The fin
 
 ## Log schema 1
 
+Optional `lane_change.return_on_conflict` supplies surveyed source-lane geometry
+and a maximum early-return length. Fresh measured motion supplies initial
+curvature; accepted scans/forecasts supply source confirmation and conflicts.
+The selected return request and clearance diagnostics are recomputed from those
+inputs. Original destination geometry remains in the header; expected return
+decisions never enter the driver. [Early return contract](lane-change-returns.md).
+
 An optional `lane_change` header configuration supplies the authored target-lane
 axis and connector entry/exit arc lengths. The shared observed-gap gate derives
 waiting/ready/changing/completed state and front/rear gap diagnostics from the

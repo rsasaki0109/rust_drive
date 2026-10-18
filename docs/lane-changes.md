@@ -5,8 +5,9 @@ then follow directed successors from the neighboring lane to the goal. The
 generated geometry runs through the existing sensor-driven reference simulator
 and sensor-only replay. An optional [observed-gap gate](lane-change-gaps.md) now
 holds the vehicle on its source lane until measured traffic clears its admission
-conditions. Geometry remains fixed before departure; merge negotiation, abort
-trajectories and search for arbitrary sequences of changes remain future work.
+conditions. An optional [early return](lane-change-returns.md) can react to a new
+conflict before the circle leaves source. Merge negotiation, mid-change returns
+and arbitrary sequences of changes remain future work.
 
 ## Run
 
@@ -90,6 +91,7 @@ truth samples; the existing simulator evaluates physical failures every tick.
 
 These geometry examples are empty authored reference worlds. Separate
 [observed-gap examples](lane-change-gaps.md) add tracked front/rear traffic and
-waiting/ready/changing/completed state. Abort trajectories, live closure handling
+waiting/ready/changing/completed state. Optional early returns add aborting/aborted
+state and a source-lane stop. General return trajectories, live closure handling
 during a change, repeated changes, camera integration, CARLA and real-vehicle
 validation remain unimplemented.

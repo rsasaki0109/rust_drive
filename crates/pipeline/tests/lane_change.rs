@@ -37,6 +37,7 @@ fn config() -> PipelineConfig {
         target_start: Vec2::new(0.0, 3.5),
         target_end: Vec2::new(80.0, 3.5),
         target_width_m: 3.5,
+        return_on_conflict: None,
     });
     c
 }

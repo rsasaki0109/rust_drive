@@ -69,7 +69,9 @@ creep floor; it does not guarantee a stop for arbitrary late threats.
 Crossing entry with permission changes state to `Changing`. It retains the full
 route; new traffic continues through the existing collision-aware planner and
 sensor-health braking. It does not reintroduce a prefix behind the vehicle or
-generate a return-to-source maneuver. `Completed` requires the estimated rear to
+generate a return-to-source maneuver by default. The optional
+[early return policy](lane-change-returns.md) can return and stop while the circle
+still fits inside source. `Completed` requires the estimated rear to
 clear the connector and its circle to fit inside the target lane. State,
 blocking track IDs, current forecast front/rear bumper gaps and clear-acquisition
 origin are included in telemetry and exact sensor-only replay.
@@ -88,7 +90,7 @@ The gate relies on the existing finite-range synthetic LiDAR and tracker. It
 does not establish free space behind occlusions, detect every road user, bound
 unobserved acceleration, or guarantee gap availability after the 6 s window.
 Track expiry retains the existing 0.6 s policy. There is no negotiated priority,
-abort trajectory, live closure response during the change or automotive sensor
+general mid-change return, live closure response during the change or automotive sensor
 validation. The tested outcomes apply to these authored reference worlds.
 
 `ObjectSpec.world_motion` is simulator-only `{position, velocity}` in world ENU

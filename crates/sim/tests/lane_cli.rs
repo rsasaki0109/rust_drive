@@ -37,6 +37,102 @@ fn cli() -> Command {
 }
 
 #[test]
+fn early_return_export_requires_reverse_permission_gap_mode_and_bounded_distance() {
+    let workspace = Workspace::new();
+    let map = workspace.0.join("return-map.json");
+    let mut authored: serde_json::Value =
+        serde_json::from_str(include_str!("../../../maps/lanes/two-lane-change.json")).unwrap();
+    fs::write(&map, serde_json::to_vec(&authored).unwrap()).unwrap();
+    let scenario = workspace.0.join("return-scenario.json");
+    let options = [
+        "--start",
+        "source",
+        "--goal",
+        "target-exit",
+        "--change-side",
+        "left",
+        "--change-start",
+        "25",
+        "--change-length",
+        "30",
+    ];
+    let output = cli()
+        .arg("lane-route")
+        .arg("--map")
+        .arg(&map)
+        .args(options)
+        .args(["--wait-for-gap", "--return-on-conflict"])
+        .arg("--scenario-output")
+        .arg(&scenario)
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let exported: serde_json::Value =
+        serde_json::from_slice(&fs::read(&scenario).unwrap()).unwrap();
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(exported["lane_change"], report["lane_change_gate"]);
+    assert_eq!(
+        exported["lane_change"]["return_on_conflict"]["max_return_distance_m"],
+        30.0
+    );
+    assert_eq!(
+        exported["lane_change"]["return_on_conflict"]["source_width_m"],
+        3.5
+    );
+    let invalid = workspace.0.join("not-written.json");
+    for extra in [
+        vec!["--return-on-conflict"],
+        vec!["--return-distance", "30"],
+        vec![
+            "--wait-for-gap",
+            "--return-on-conflict",
+            "--return-distance",
+            "NaN",
+        ],
+        vec![
+            "--wait-for-gap",
+            "--return-on-conflict",
+            "--return-distance",
+            "60",
+        ],
+    ] {
+        let output = cli()
+            .arg("lane-route")
+            .arg("--map")
+            .arg(&map)
+            .args(options)
+            .args(extra)
+            .arg("--scenario-output")
+            .arg(&invalid)
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(2));
+        assert!(!invalid.exists());
+    }
+    authored["lanes"][1]["right"]["change_allowed"] = false.into();
+    fs::write(&map, serde_json::to_vec(&authored).unwrap()).unwrap();
+    let output = cli()
+        .arg("lane-route")
+        .arg("--map")
+        .arg(&map)
+        .args(options)
+        .args(["--wait-for-gap", "--return-on-conflict"])
+        .arg("--scenario-output")
+        .arg(&invalid)
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(2));
+    assert!(!invalid.exists());
+    assert!(
+        String::from_utf8_lossy(&output.stderr).contains("map does not permit the return crossing")
+    );
+}
+
+#[test]
 fn observed_gap_option_exports_calibration_and_rejects_missing_change_or_short_approach() {
     let workspace = Workspace::new();
     let map = workspace.0.join("gap-map.json");

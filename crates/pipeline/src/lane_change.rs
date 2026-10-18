@@ -2,6 +2,10 @@
 use crate::traffic_controls::planning_prefix;
 use rustdriving_core::{EgoState, Prediction, Route, Vec2, VehicleConfig, wrap_angle};
 use serde::{Deserialize, Serialize};
+mod returning;
+use returning::ReturnMonitor;
+pub(crate) use returning::ReturnObservation;
+pub use returning::{LaneChangeReturnConfig, LaneChangeReturnStatus, ReturnDecision};
 
 const HORIZON_S: f64 = 6.0;
 const MIN_GAP_M: f64 = 6.0;
@@ -20,6 +24,8 @@ pub struct LaneChangeConfig {
     pub target_start: Vec2,
     pub target_end: Vec2,
     pub target_width_m: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub return_on_conflict: Option<LaneChangeReturnConfig>,
 }
 impl LaneChangeConfig {
     fn coordinates(&self, point: Vec2) -> (f64, f64) {
@@ -101,6 +107,9 @@ impl LaneChangeConfig {
             previous_x = x;
             previous_y = y;
         }
+        if let Some(config) = &self.return_on_conflict {
+            config.validate(self, route, vehicle)?;
+        }
         Ok(())
     }
 }
@@ -114,6 +123,8 @@ pub enum LaneChangePhase {
     Ready,
     Changing,
     Completed,
+    Aborting,
+    Aborted,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -125,6 +136,8 @@ pub struct LaneChangeStatus {
     pub rear_gap_m: Option<f64>,
     pub clear_since: Option<f64>,
     pub stop_s_m: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub return_state: Option<LaneChangeReturnStatus>,
 }
 
 // Clip a segment's parameter against a linear inequality value >= 0.
@@ -146,6 +159,17 @@ fn blocks(
     ego_x: f64,
     speed: f64,
     radius: f64,
+) -> bool {
+    blocks_with_lateral_extra(config, prediction, ego_x, speed, radius, 0.5)
+}
+
+fn blocks_with_lateral_extra(
+    config: &LaneChangeConfig,
+    prediction: &Prediction,
+    ego_x: f64,
+    speed: f64,
+    radius: f64,
+    lateral_extra: f64,
 ) -> bool {
     if !prediction.dt.is_finite()
         || prediction.dt <= 0.0
@@ -182,7 +206,7 @@ fn blocks(
     let body = radius + prediction.radius;
     let behind = body + MIN_GAP_M + rear_speed * HEADWAY_S;
     let ahead = body + MIN_GAP_M + speed * HEADWAY_S;
-    let lateral = config.target_width_m / 2.0 + prediction.radius + 0.5;
+    let lateral = config.target_width_m / 2.0 + prediction.radius + lateral_extra;
     // Ego's assumed forward travel spans [0, speed*t]. Segment clipping covers
     // continuous traffic motion, including a lateral crossing between samples.
     for (i, pair) in positions.windows(2).enumerate() {
@@ -226,9 +250,11 @@ pub(crate) struct LaneChangeGate {
     clear_samples: usize,
     vehicle: VehicleConfig,
     cruise: f64,
+    return_monitor: Option<ReturnMonitor>,
 }
 impl LaneChangeGate {
     pub fn new(config: LaneChangeConfig, vehicle: VehicleConfig, cruise: f64) -> Self {
+        let return_monitor = ReturnMonitor::new(&config, vehicle, cruise);
         Self {
             config,
             state: LaneChangeStatus {
@@ -238,12 +264,14 @@ impl LaneChangeGate {
                 rear_gap_m: None,
                 clear_since: None,
                 stop_s_m: None,
+                return_state: None,
             },
             last_scan: None,
             after_fault: None,
             clear_samples: 0,
             vehicle,
             cruise,
+            return_monitor,
         }
     }
     pub fn step(
@@ -257,6 +285,12 @@ impl LaneChangeGate {
     ) {
         let vehicle = self.vehicle;
         let (progress, lateral) = route.project(ego.pose.position);
+        if matches!(
+            self.state.phase,
+            LaneChangePhase::Aborting | LaneChangePhase::Aborted
+        ) {
+            return;
+        }
         if matches!(
             self.state.phase,
             LaneChangePhase::Changing | LaneChangePhase::Completed
@@ -336,12 +370,37 @@ impl LaneChangeGate {
             .then_some(self.config.entry_s_m - vehicle.radius - 1.0);
     }
     pub fn status(&self) -> LaneChangeStatus {
-        self.state.clone()
+        let mut status = self.state.clone();
+        status.return_state = self.return_monitor.as_ref().map(ReturnMonitor::status);
+        status
+    }
+    pub fn observe_return(&mut self, observation: ReturnObservation<'_>) -> bool {
+        self.return_monitor
+            .as_mut()
+            .is_some_and(|m| m.step(&mut self.state, observation))
+    }
+    pub fn returning(&self) -> bool {
+        matches!(
+            self.state.phase,
+            LaneChangePhase::Aborting | LaneChangePhase::Aborted
+        )
     }
     pub fn planning_route(&self, route: &Route) -> Option<Route> {
+        if self.returning() {
+            return self.return_monitor.as_ref()?.route().cloned();
+        }
         planning_prefix(route, self.state.stop_s_m?)
     }
     pub fn holding_brake(&self, route: &Route, ego: EgoState) -> bool {
+        if self.returning() {
+            return self
+                .return_monitor
+                .as_ref()
+                .and_then(ReturnMonitor::route)
+                .is_some_and(|r| {
+                    r.length() - r.project(ego.pose.position).0 <= 3.5 && ego.speed.abs() <= 0.2
+                });
+        }
         self.state.stop_s_m.is_some_and(|end| {
             end + 1.0 - route.project(ego.pose.position).0 <= 3.5 && ego.speed.abs() <= 0.2
         })

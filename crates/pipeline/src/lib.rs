@@ -156,6 +156,7 @@ impl PipelineConfig {
                 || self.route.project(self.initial_pose.position).0
                     > change.entry_s_m - self.vehicle.radius - 3.0
                 || self.cruise_speed > 4.0
+                || (change.return_on_conflict.is_some() && self.rear_axle_offset_m.is_some())
             {
                 return Err("lane-change gate requires a fixed local route, pre-entry spawn and cruise <=4 m/s without other mapped controls".into());
             }
@@ -734,6 +735,33 @@ impl DrivingPipeline {
                 self.last_lidar,
                 health.is_empty(),
             );
+            let returned = change.observe_return(lane_change::ReturnObservation {
+                route: &self.config.route,
+                ego: estimate,
+                predictions: &predictions,
+                now: input.time,
+                scan: self.last_lidar,
+                healthy: health.is_empty(),
+                motion: self
+                    .last_odom
+                    .filter(|m| input.time - m.stamp <= 0.05 + 1e-9),
+                limits: self
+                    .config
+                    .motion_limits
+                    .expect("validated local-route calibration"),
+            });
+            if returned {
+                // Reset only route-dependent planning state. Preserve controller
+                // steering history so the normal steering-rate bound still applies.
+                let mut planner = LatticePlanner::default();
+                planner.cruise_speed = self.planner.cruise_speed;
+                planner.local_route_geometry = self.planner.local_route_geometry;
+                planner.vehicle = self.planner.vehicle;
+                planner.max_acceleration_m_s2 = self.planner.max_acceleration_m_s2;
+                planner.max_deceleration_m_s2 = self.planner.max_deceleration_m_s2;
+                planner.max_lateral_acceleration_m_s2 = self.planner.max_lateral_acceleration_m_s2;
+                self.planner = planner;
+            }
         }
         let stop_route = self
             .navigator
@@ -833,7 +861,7 @@ impl DrivingPipeline {
         if self
             .lane_change
             .as_ref()
-            .is_some_and(|c| c.status().stop_s_m.is_some())
+            .is_some_and(|c| c.status().stop_s_m.is_some() || c.returning())
             && trajectory.mode != DrivingMode::Emergency
         {
             trajectory.mode = DrivingMode::Yield;

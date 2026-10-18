@@ -1,6 +1,6 @@
 //! CLI bridge from a validated lane itinerary to an existing resolved-route simulation.
 use rustdriving_core::VehicleConfig;
-use rustdriving_pipeline::lane_change::LaneChangeConfig;
+use rustdriving_pipeline::lane_change::{LaneChangeConfig, LaneChangeReturnConfig};
 use rustdriving_routing::lanes::{LaneChangeRequest, LaneMapSpec, LaneNetwork, LaneSide};
 use rustdriving_sim::Scenario;
 use std::{
@@ -22,10 +22,17 @@ pub(crate) fn run(args: &[String]) -> Result<bool, Box<dyn Error>> {
     let mut change_start = None;
     let mut change_length = None;
     let mut wait_for_gap = false;
+    let mut return_on_conflict = false;
+    let mut return_distance = None;
     let mut i = 1;
     while i < args.len() {
         if args[i] == "--wait-for-gap" {
             wait_for_gap = true;
+            i += 1;
+            continue;
+        }
+        if args[i] == "--return-on-conflict" {
+            return_on_conflict = true;
             i += 1;
             continue;
         }
@@ -49,12 +56,19 @@ pub(crate) fn run(args: &[String]) -> Result<bool, Box<dyn Error>> {
             }
             "--change-start" => change_start = Some(value.parse::<f64>()?),
             "--change-length" => change_length = Some(value.parse::<f64>()?),
+            "--return-distance" => return_distance = Some(value.parse::<f64>()?),
             _ => return Err(format!("invalid lane-route option {}", args[i]).into()),
         }
         i += 2;
     }
     if scenario_output.is_none() && (cruise.is_some() || duration.is_some()) {
         return Err("--cruise-speed and --duration require --scenario-output".into());
+    }
+    if return_on_conflict && !wait_for_gap {
+        return Err("--return-on-conflict requires --wait-for-gap".into());
+    }
+    if return_distance.is_some() && !return_on_conflict {
+        return Err("--return-distance requires --return-on-conflict".into());
     }
     let change_request = match (change_side, change_start, change_length) {
         (None, None, None) => None,
@@ -102,12 +116,34 @@ pub(crate) fn run(args: &[String]) -> Result<bool, Box<dyn Error>> {
             start.plus(end.minus(start).scaled(
                 (maneuver.request.start_m + maneuver.request.length_m) / start.distance(end),
             ));
+        let return_config = if return_on_conflict {
+            let source = network.lane(&maneuver.from_lane).unwrap();
+            let reverse = match maneuver.request.side {
+                LaneSide::Left => LaneSide::Right,
+                LaneSide::Right => LaneSide::Left,
+            };
+            if network
+                .lane_change_target(&target.id, reverse, &closed)?
+                .is_none_or(|lane| lane.id != source.id)
+            {
+                return Err("map does not permit the return crossing".into());
+            }
+            Some(LaneChangeReturnConfig {
+                source_start: source.centerline[0],
+                source_end: *source.centerline.last().unwrap(),
+                source_width_m: source.width_m,
+                max_return_distance_m: return_distance.unwrap_or(30.0),
+            })
+        } else {
+            None
+        };
         let config = LaneChangeConfig {
             entry_s_m: maneuver.request.start_m,
             exit_s_m: plan.route.project(finish).0,
             target_start: start,
             target_end: end,
             target_width_m: target.width_m,
+            return_on_conflict: return_config,
         };
         config.validate(&plan.route, VehicleConfig::default())?;
         Some(config)

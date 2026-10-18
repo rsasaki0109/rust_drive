@@ -1,5 +1,6 @@
 //! Deterministic closed-loop simulator. Only sensor observations enter the stack.
 pub mod intersections;
+mod lane_change_surface;
 pub mod sensor_timing;
 pub mod signals;
 pub mod stop_signs;
@@ -867,7 +868,17 @@ pub fn simulate_with_backend(
         }
         max_tracks = max_tracks.max(tracks.len());
         let (progress, lateral) = route.project(truth.pose.position);
-        if lateral.abs() + vehicle.radius > route.half_width {
+        let off_road = if let Some(gate) = scenario
+            .lane_change
+            .as_ref()
+            .filter(|c| c.return_on_conflict.is_some())
+        {
+            lane_change_surface::circle_margin(&route, gate, truth.pose.position, vehicle.radius)
+                < 0.0
+        } else {
+            lateral.abs() + vehicle.radius > route.half_width
+        };
+        if off_road {
             road_violations += 1;
         }
         let error = truth.pose.position.distance(estimate.pose.position);
