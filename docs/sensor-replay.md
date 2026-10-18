@@ -220,6 +220,13 @@ from observations in replay. `launch_hold` diagnostics are absent until a hold
 occurs; they are comparison outputs, never authorization inputs.
 [Launch hold contract](lane-change-launch-holds.md).
 
+Successive source holds independently reset their stop/clear epochs. Optional
+`cycle` and `previous_holds` diagnostics identify the current hold and at most
+four completed holds; they are omitted for the preceding single-hold format.
+An optional `limit_event` reports a later conflict after stopping-room commitment.
+Replay recomputes its commitment budget and observation from inputs. These
+diagnostics remain comparison evidence rather than operational permissions.
+
 An optional `lane_change` header configuration supplies the authored target-lane
 axis and connector entry/exit arc lengths. The shared observed-gap gate derives
 waiting/ready/changing/completed state and front/rear gap diagnostics from the

@@ -5,7 +5,10 @@ use serde::{Deserialize, Serialize};
 mod launch;
 mod resuming;
 mod returning;
-pub use launch::{LaneChangeLaunchHoldStatus, LaunchHoldPhase};
+pub use launch::{
+    LaneChangeLaunchHoldRecord, LaneChangeLaunchHoldStatus, LaneChangeLaunchLimitEvent,
+    LaunchHoldPhase,
+};
 pub use resuming::{LaneChangeResumeConfig, LaneChangeResumeStatus, ResumeDecision};
 use returning::ReturnMonitor;
 pub(crate) use returning::ReturnObservation;

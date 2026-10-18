@@ -6,6 +6,8 @@ from pathlib import Path
 from lane_change_return_demo import ROOT, invoke
 
 CASES = {'rear': (30., 6.), 'rear-slow': (35., 4.), 'launch-blocked': (54., 0.), 'launch-recovery': (30., 6.)}
+DEFAULT_CASES = list(CASES)
+CASES.update({'second-rear': (30., 6.), 'second-blocked': (30., 6.), 'second-fault': (30., 6.)})
 
 
 def main():
@@ -13,16 +15,20 @@ def main():
     parser.add_argument('--output', type=Path, default=ROOT / 'artifacts/lane-change-launch-demo')
     parser.add_argument('--seed', type=int, default=7)
     parser.add_argument('--binary', type=Path, default=ROOT / 'target/release/rustdriving')
+    parser.add_argument('--cases', nargs='+', choices=list(CASES), default=DEFAULT_CASES)
     args = parser.parse_args()
     if not 0 <= args.seed < 2**64:
         parser.error('seed must be in 0..2^64-1')
+    if len(args.cases) != len(set(args.cases)):
+        parser.error('cases must be unique')
     binary = args.binary.resolve()
     if not binary.is_file():
         parser.error('build first: cargo build --release --locked --bin rustdriving')
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=False)
     rows = []
-    for case, (x, speed) in CASES.items():
+    for case in args.cases:
+        x, speed = CASES[case]
         folder = output / case
         folder.mkdir()
         scenario = folder / 'scenario.json'
@@ -35,11 +41,18 @@ def main():
                    'world_motion': {'position': {'x': 52., 'y': 3.5}, 'velocity': {'x': 4., 'y': 0.}}},
                   {'s': 0., 'lateral': 0., 'radius': 1.1, 'active_from': 49.,
                    'world_motion': {'position': {'x': x, 'y': 3.5}, 'velocity': {'x': speed, 'y': 0.}}}]
+        if case in ('second-rear', 'second-blocked'):
+            x, speed = (36., 15.) if case == 'second-rear' else (54., 0.)
+            actors.append({'s': 0., 'lateral': 0., 'radius': 1.1, 'active_from': 56.,
+                           'world_motion': {'position': {'x': x, 'y': 3.5}, 'velocity': {'x': speed, 'y': 0.}}})
         authored.update(name=f'Early resume hold {case}', duration=120., min_clearance_m=1.,
-                        expected='stop' if case == 'launch-blocked' else 'goal', objects=actors)
+                        expected='stop' if case in ('launch-blocked', 'second-blocked') else 'goal', objects=actors)
         if case == 'launch-recovery':
             authored['sensor_timing'] = {'lidar_period_ticks': 2, 'lidar_delay_ticks': 0,
                                          'lidar_failure_windows': [{'from': 50., 'until': 51.}]}
+        if case == 'second-fault':
+            authored['sensor_timing'] = {'lidar_period_ticks': 2, 'lidar_delay_ticks': 0,
+                                         'lidar_failure_windows': [{'from': 56., 'until': 57.}]}
         scenario.write_text(json.dumps(authored, indent=2) + '\n')
         invoke(binary, ['run', '--scenario', scenario, '--seed', args.seed, '--output', folder / 'run'], folder / 'run.stdout')
         invoke(binary, ['replay', '--log', folder / 'run/sensors.jsonl', '--output', folder / 'replay'], folder / 'replay.stdout')
@@ -49,7 +62,15 @@ def main():
         if not holds or not any(h['stopped_at'] is not None for h in holds):
             raise RuntimeError(f'{case}: required measured launch stop missing; evidence retained in {folder}')
         final = holds[-1]
-        if (final['released_at'] is None) != (case == 'launch-blocked'):
+        if case.startswith('second-'):
+            if final.get('cycle', 1) == 2:
+                if len(final.get('previous_holds', [])) != 1 or ((final['released_at'] is None) != (case == 'second-blocked')):
+                    raise RuntimeError(f'{case}: wrong second-hold history/release; evidence retained in {folder}')
+            else:
+                event = final.get('limit_event')
+                if not event or not (event['required_endpoint_s_m'] > final['source_limit_s_m'] or not event['source_fits_at_commit']):
+                    raise RuntimeError(f'{case}: second hold and stopping-room witness both missing; evidence retained in {folder}')
+        elif (final['released_at'] is None) != (case == 'launch-blocked'):
             raise RuntimeError(f'{case}: wrong release behavior; evidence retained in {folder}')
         rows.append({'case': case, 'seed': args.seed, 'passed': run['summary']['passed'],
                      'min_clearance_m': run['summary']['min_clearance'], 'initiated_at': final['initiated_at'],

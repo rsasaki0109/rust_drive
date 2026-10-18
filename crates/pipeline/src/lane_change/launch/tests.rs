@@ -122,6 +122,158 @@ fn stop(g: &mut LaunchGuard, route: &Route, original: &Route, start: f64) {
     assert!(g.status().unwrap().stopped_at.is_some());
 }
 
+fn release_current(g: &mut LaunchGuard, route: &Route, original: &Route, stop_start: f64) -> f64 {
+    stop(g, route, original, stop_start);
+    for i in 0..=10 {
+        let changed = g.step(
+            route,
+            &observation(
+                original,
+                route,
+                stop_start + 0.2 + i as f64 * 0.1,
+                0.5,
+                0.,
+                &[],
+            ),
+        );
+        assert_eq!(changed, i == 10);
+    }
+    stop_start + 1.2
+}
+
+#[test]
+fn a_second_fault_resets_both_stop_and_clear_acquisitions_without_losing_the_first_record() {
+    let (mut g, route, original) = fixture();
+    pause(&mut g, &route, &original);
+    let first_release = release_current(&mut g, &route, &original, 11.3);
+    let mut fault = observation(&original, &route, 12.6, 0.5, 0., &[]);
+    fault.healthy = false;
+    fault.scan = None;
+    assert!(g.step(&route, &fault));
+    let status = g.status().unwrap();
+    assert_eq!(status.cycle, 2);
+    assert_eq!(status.previous_holds.len(), 1);
+    assert!((status.previous_holds[0].released_at - first_release).abs() < 1e-9);
+    assert!(
+        status.stopped_at.is_none() && status.clear_since.is_none() && status.released_at.is_none()
+    );
+    for now in [12.65, 12.67, 12.69] {
+        let mut cached = observation(&original, &route, now, 0.5, 0., &[]);
+        cached.motion.as_mut().unwrap().stamp = 12.65;
+        assert!(!g.step(&route, &cached));
+    }
+    assert!(
+        g.status().unwrap().stopped_at.is_none(),
+        "old stop counter was reused"
+    );
+    for (now, scan) in [(12.7, 12.59), (12.75, 12.6), (12.8, 12.7)] {
+        let mut delayed = observation(&original, &route, now, 0.5, 0., &[]);
+        delayed.scan = Some(scan);
+        assert!(!g.step(&route, &delayed));
+    }
+    assert_eq!(g.status().unwrap().stopped_at, Some(12.75));
+    assert!(g.status().unwrap().clear_since.is_none());
+    for i in 0..=10 {
+        let changed = g.step(
+            &route,
+            &observation(&original, &route, 12.9 + i as f64 * 0.1, 0.5, 0., &[]),
+        );
+        assert_eq!(changed, i == 10);
+    }
+    let status = g.status().unwrap();
+    assert_eq!(status.phase, LaunchHoldPhase::Released);
+    assert_eq!(status.clear_since, Some(12.9));
+    assert_eq!(status.released_at, Some(13.9));
+    assert!((status.previous_holds[0].released_at - first_release).abs() < 1e-9);
+}
+
+#[test]
+fn a_persistent_second_conflict_cannot_inherit_the_first_release() {
+    let (mut g, route, original) = fixture();
+    pause(&mut g, &route, &original);
+    let first = release_current(&mut g, &route, &original, 11.3);
+    assert!(g.step(
+        &route,
+        &observation(&original, &route, 12.6, 0.5, 0., &[rear()])
+    ));
+    stop(&mut g, &route, &original, 12.7);
+    for i in 0..40 {
+        assert!(!g.step(
+            &route,
+            &observation(&original, &route, 12.9 + i as f64 * 0.1, 0.5, 0., &[rear()])
+        ));
+    }
+    let status = g.status().unwrap();
+    assert_eq!(status.cycle, 2);
+    assert!(status.clear_since.is_none() && status.released_at.is_none());
+    assert_eq!(g.braking_limit(), Some(-1.25));
+    assert!((status.previous_holds[0].released_at - first).abs() < 1e-9);
+}
+
+#[test]
+fn repeated_holds_retain_only_the_four_most_recent_completed_cycles() {
+    let (mut g, route, original) = fixture();
+    for cycle in 1..=7 {
+        let now = 11.2 + 2. * (cycle - 1) as f64;
+        assert!(g.step(
+            &route,
+            &observation(&original, &route, now, 0.5, 0., &[rear()])
+        ));
+        release_current(&mut g, &route, &original, now + 0.1);
+        let status = g.status().unwrap();
+        assert_eq!(status.cycle, cycle);
+        assert_eq!(status.previous_holds.len(), ((cycle - 1) as usize).min(4));
+        let expected: Vec<_> = (cycle.saturating_sub(4).max(1)..cycle).collect();
+        assert_eq!(
+            status
+                .previous_holds
+                .iter()
+                .map(|h| h.cycle)
+                .collect::<Vec<_>>(),
+            expected
+        );
+        assert!(
+            status
+                .previous_holds
+                .windows(2)
+                .all(|h| h[0].released_at < h[1].initiated_at)
+        );
+    }
+    assert!(g.route().is_none() && !g.committed);
+}
+
+#[test]
+fn actual_braking_room_still_commits_a_crossing_after_any_release() {
+    let (mut g, route, original) = fixture();
+    pause(&mut g, &route, &original);
+    let first = release_current(&mut g, &route, &original, 11.3);
+    let traffic = [rear()];
+    let mut late = observation(
+        &original,
+        &route,
+        12.6,
+        g.source_limit_s_m - 0.5,
+        2.,
+        &traffic,
+    );
+    late.healthy = false;
+    assert!(!g.step(&route, &late));
+    assert!(g.committed);
+    assert!(g.route().is_none() && g.braking_limit().is_none());
+    assert!(!g.step(
+        &route,
+        &observation(&original, &route, 12.7, 0.5, 0., &[rear()])
+    ));
+    let status = g.status().unwrap();
+    assert_eq!(status.cycle, 1);
+    assert!(status.previous_holds.is_empty());
+    assert!((status.released_at.unwrap() - first).abs() < 1e-9);
+    let event = status.limit_event.unwrap();
+    assert_eq!(event.committed_at, 12.6);
+    assert_eq!(event.observed_at, 12.6);
+    assert!(event.required_endpoint_s_m > g.source_limit_s_m);
+}
+
 #[test]
 fn a_fresh_rear_conflict_brakes_then_requires_distinct_stops_and_post_stop_clear_scans() {
     let (mut g, route, original) = fixture();
@@ -150,12 +302,15 @@ fn a_fresh_rear_conflict_brakes_then_requires_distinct_stops_and_post_stop_clear
     assert_eq!(status.released_at, Some(12.5));
     assert!(status.crossing_preview_clearance_m.unwrap() >= 1.3);
     assert!(g.route().is_none() && g.braking_limit().is_none());
-    // One fixed connector, with no second pause/retry after release.
-    assert!(!g.step(
+    // A second conflict can revoke release while another source stop fits.
+    assert!(g.step(
         &route,
         &observation(&original, &route, 12.6, 0.5, 0., &[rear()])
     ));
-    assert_eq!(g.status().unwrap().released_at, Some(12.5));
+    let status = g.status().unwrap();
+    assert_eq!(status.cycle, 2);
+    assert!(status.released_at.is_none());
+    assert_eq!(status.previous_holds[0].released_at, 12.5);
 }
 
 #[test]
