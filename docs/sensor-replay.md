@@ -44,9 +44,9 @@ fault but still imposes its normal stop constraint. The fault also keeps
 uncommitted intersection clear-confirmation timers reset; only recovery can
 start a new full confirmation interval.
 
-Schema 1 remains readable, but earlier recordings spanning malformed odometry
-or GNSS, or invalid signals, may require regenerated expected outputs for the
-extended braking hold.
+Schema 1 remains readable, but earlier recordings spanning invalid sensor,
+signal or navigation observations may require regenerated expected outputs for
+the extended braking hold.
 
 Every LiDAR input mode retains `InvalidLidar` braking after an explicit acquisition
 failure, malformed or conflicting representation, or missing acquisition-pose
@@ -275,6 +275,15 @@ Acceleration calibration now includes `max_acceleration_m_s2` (0.1–2.0 m/s²).
 ## Map-aware navigation replay
 
 Optional `PipelineConfig.navigation` records the known graph/start/goal/initial closures and must match the initial route. Map-configured logs record `SensorFrame.navigation_update` snapshots and complete `PipelineOutput.navigation` state. Replay reruns initial routing, each accepted snapshot, stop-before-divergence transitions and route switching. It does not substitute expected routes or navigator states. Existing resolved-route logs omit these optional fields and still replay local computation without Dijkstra. A changed closure snapshot is covered by a mismatch test. Schema 1 remains readable; exact outputs are tied to this implementation. [Contract and physical evidence](handover.md).
+
+Malformed newer navigation updates retain `Fault` and `InvalidNavigation`
+braking until a valid snapshot arrives with an acquisition time strictly after
+the latest failure's delivery time. The existing one-second delivery-age limit and increasing
+accepted revision/stamp requirements still apply. A valid pre-fault update
+cannot clear the fault or alter accepted closures, even with a higher revision.
+Each new malformed update advances the cutoff and cancels any pending handover.
+Recovery starts its own three healthy stopped samples before a route change;
+a valid snapshot that leaves no usable route remains `Blocked`.
 
 ## GNSS acceptance diagnostics
 

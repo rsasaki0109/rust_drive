@@ -265,6 +265,8 @@ pub(crate) struct Navigator {
     pending: Option<RoutePlan>,
     status: NavigationStatus,
     last_stamp: Option<f64>,
+    /// Latest malformed newer-update delivery time; recovery needs a later acquisition.
+    fault_epoch: Option<f64>,
     stopped_ticks: usize,
 }
 impl Navigator {
@@ -287,6 +289,7 @@ impl Navigator {
             pending: None,
             status,
             last_stamp: None,
+            fault_epoch: None,
             stopped_ticks: 0,
         })
     }
@@ -296,8 +299,9 @@ impl Navigator {
     pub fn status(&self) -> NavigationStatus {
         self.status.clone()
     }
-    pub fn fault(&mut self) {
+    pub fn fault(&mut self, now: f64) {
         self.status.phase = NavigationPhase::Fault;
+        self.fault_epoch = Some(now);
         self.pending = None;
         self.status.pending_edges.clear();
         self.stopped_ticks = 0;
@@ -314,7 +318,7 @@ impl Navigator {
     ) -> bool {
         if let Some(update) = update {
             if update.revision > self.status.revision && !update.stamp.is_finite() {
-                self.fault();
+                self.fault(now);
                 return false;
             }
             // Repeated or reordered snapshots never roll back a valid decision.
@@ -331,11 +335,12 @@ impl Navigator {
                     || now - update.stamp > 1.0
                     || unknown
                 {
-                    self.fault();
-                } else {
+                    self.fault(now);
+                } else if self.fault_epoch.is_none_or(|fault| update.stamp > fault) {
                     self.status.revision = update.revision;
                     self.status.closed_edges = update.closed_edges.clone();
                     self.last_stamp = Some(update.stamp);
+                    self.fault_epoch = None;
                     self.stopped_ticks = 0;
                     self.pending = None;
                     self.status.pending_edges.clear();
