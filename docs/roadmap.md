@@ -27,6 +27,9 @@ cruise after passing them. Independent full-tick physical scoring and exact
 sensor replay cover short, overlapping, stop-sign and rotated-route cases.
 An opt-in lane-route exporter now compiles the selected lanes' original speed
 limits into these intervals, retaining requested cruise outside lower limits.
+A fixed lane-change connector now maps source, shared connector and target/tail
+limits in actual arc length, including observed-gap admission without alternate
+returns. [Reference trial and preserved audit error](lane-change-speeds.md).
 This does not supply sign detection, live speed-map remapping or general road
 rule understanding. [Contract and evidence](route-speed-zones.md).
 

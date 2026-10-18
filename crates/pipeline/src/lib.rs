@@ -161,7 +161,11 @@ impl PipelineConfig {
                 .iter()
                 .any(|zone| !zone.valid() || zone.end_s_m > canonical.length())
             || (!self.speed_zones.is_empty()
-                && (self.navigation.is_some() || self.lane_change.is_some()))
+                && (self.navigation.is_some()
+                    || self
+                        .lane_change
+                        .as_ref()
+                        .is_some_and(|change| change.return_on_conflict.is_some())))
         {
             return Err(
                 "invalid speed zones or unsupported live/alternate-route speed zones".into(),

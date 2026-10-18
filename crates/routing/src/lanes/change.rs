@@ -47,6 +47,19 @@ impl LaneNetwork {
         request: LaneChangeRequest,
         vehicle: VehicleConfig,
     ) -> Result<LaneChangeRoutePlan, String> {
+        self.lane_change_route_parts(start_lane, goal_lane, closed_lanes, request, vehicle)
+            .map(|(change, _)| change)
+    }
+
+    /// Internal boundary indices: source-prefix end, connector end, target-section end.
+    pub(super) fn lane_change_route_parts(
+        &self,
+        start_lane: &str,
+        goal_lane: &str,
+        closed_lanes: &[String],
+        request: LaneChangeRequest,
+        vehicle: VehicleConfig,
+    ) -> Result<(LaneChangeRoutePlan, [usize; 3]), String> {
         if !request.start_m.is_finite()
             || request.start_m < 0.0
             || !request.length_m.is_finite()
@@ -121,6 +134,7 @@ impl LaneNetwork {
         if request.start_m > 0.0 {
             points.push(lane_point(source_start, source_vector, request.start_m));
         }
+        let prefix_end = points.len() - 1;
         let segments = segments as usize;
         for i in 1..=segments {
             let u = i as f64 / segments as f64;
@@ -134,11 +148,13 @@ impl LaneNetwork {
                 from.plus(to.minus(from).scaled(f))
             });
         }
+        let connector_end = points.len() - 1;
         if end_m < section_length {
             points.push(target_end);
         } else {
             *points.last_mut().unwrap() = target_end;
         }
+        let target_section_end = points.len() - 1;
         // Replace the whole target section with source prefix + transition + target suffix.
         points.extend(
             tail.route
@@ -174,26 +190,29 @@ impl LaneNetwork {
             turn_restrictions: vec![],
         };
         tail.lane_ids.insert(0, source.id.clone());
-        Ok(LaneChangeRoutePlan {
-            maneuver: LaneChangeManeuver {
-                from_lane: source.id.clone(),
-                to_lane: target.id.clone(),
-                request,
-                vehicle,
-                curvature_bound_m_inv: curvature_bound,
-                steering_curvature_limit_m_inv: curvature_limit,
-                corridor_tracking_margin_m: margin,
+        Ok((
+            LaneChangeRoutePlan {
+                maneuver: LaneChangeManeuver {
+                    from_lane: source.id.clone(),
+                    to_lane: target.id.clone(),
+                    request,
+                    vehicle,
+                    curvature_bound_m_inv: curvature_bound,
+                    steering_curvature_limit_m_inv: curvature_limit,
+                    corridor_tracking_margin_m: margin,
+                },
+                plan: LaneRoutePlan {
+                    lane_ids: tail.lane_ids,
+                    distance_m: route.length(),
+                    speed_limit_m_s: source.speed_limit_m_s.min(tail.speed_limit_m_s),
+                    route,
+                    network,
+                    start_node,
+                    goal_node,
+                },
             },
-            plan: LaneRoutePlan {
-                lane_ids: tail.lane_ids,
-                distance_m: route.length(),
-                speed_limit_m_s: source.speed_limit_m_s.min(tail.speed_limit_m_s),
-                route,
-                network,
-                start_node,
-                goal_node,
-            },
-        })
+            [prefix_end, connector_end, target_section_end],
+        ))
     }
 }
 

@@ -3,8 +3,9 @@
 `lane-route --local-speed-limits` compiles authored lane speed limits into the
 fixed-route speed intervals used by the driving pipeline. A low-speed section
 then affects its own route interval and braking approach, while later faster
-sections can regain the requested cruise. The option applies to whole-lane
-following routes; lane-change connectors and live remapping remain unsupported.
+sections can regain the requested cruise. Whole-lane following routes and one
+fixed lane-change connector are supported. [Connector rules and observed-gap
+admission](lane-change-speeds.md). Live remapping remains unsupported.
 
 ```sh
 source scripts/env.sh
@@ -52,7 +53,7 @@ geometry and intervals, rather than rerunning the original lane search.
 Without `--scenario-output`, the option previews the same compiled intervals
 in the JSON report. With an output file, all validation occurs before file
 creation; existing outputs and input maps are never overwritten. Combining
-the option with a lane-change request fails before output creation. Without
+the option with an alternate-route return/retry request fails before output creation. Without
 the new option, existing reports and exports retain their mission-wide
 minimum speed and omit the new report property.
 
@@ -87,6 +88,7 @@ separate regressions, not replaced by this trial.
 
 These are authored empty roads in the reference bicycle plant with synthetic
 sensors. This connects supplied map policy to driving; it does not qualify
-general curved roads, variable width, interactive traffic, lane-change speed
-mapping, native RNE dynamics, perception-derived limits or real vehicles.
+general curved roads, variable width, interactive traffic, native RNE dynamics,
+perception-derived limits or real vehicles. Fixed lane-change speed mapping has
+its own [separate reference trial](lane-change-speeds.md).
 No existing short-range follower failure is repaired by this addition.

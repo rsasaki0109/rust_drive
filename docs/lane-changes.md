@@ -73,8 +73,12 @@ the existing acceleration, lateral acceleration and obstacle constraints.
 The report adds `lane_change` metadata: source/target IDs, request, vehicle
 calibration, continuous curvature bound, steering bound and corridor margin.
 `plan.lane_ids` lists the partially traversed source and target followed by whole
-successor lanes. `plan.distance_m` measures the actual sampled route. Width and
-speed remain conservative minima over the entire itinerary. The exported road
+successor lanes. `plan.distance_m` measures the actual sampled route. Width
+remains the conservative minimum over the entire itinerary. Without local speed
+limits, cruise also retains the itinerary minimum. Optional `--local-speed-limits`
+uses source, connector and target/successor caps instead, and supports fixed gap
+admission without alternate returns. [Speed mapping and measured limits](lane-change-speeds.md).
+The exported road
 network is one resolved edge; original map search and permissions are not rerun
 by sensor replay. Retain the map and plan report as selection provenance.
 

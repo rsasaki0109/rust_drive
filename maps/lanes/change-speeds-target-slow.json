@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "lanes": [
+    {
+      "id": "source",
+      "centerline": [
+        {
+          "x": 0.0,
+          "y": 0.0
+        },
+        {
+          "x": 80.0,
+          "y": 0.0
+        }
+      ],
+      "width_m": 3.5,
+      "speed_limit_m_s": 4.0,
+      "successors": [
+        "source-exit"
+      ],
+      "left": {
+        "lane_id": "target",
+        "change_allowed": true
+      }
+    },
+    {
+      "id": "target",
+      "centerline": [
+        {
+          "x": 0.0,
+          "y": 3.5
+        },
+        {
+          "x": 80.0,
+          "y": 3.5
+        }
+      ],
+      "width_m": 3.5,
+      "speed_limit_m_s": 2.0,
+      "successors": [
+        "target-exit"
+      ],
+      "right": {
+        "lane_id": "source",
+        "change_allowed": true
+      }
+    },
+    {
+      "id": "source-exit",
+      "centerline": [
+        {
+          "x": 80.0,
+          "y": 0.0
+        },
+        {
+          "x": 120.0,
+          "y": 0.0
+        }
+      ],
+      "width_m": 3.5,
+      "speed_limit_m_s": 4.0,
+      "successors": []
+    },
+    {
+      "id": "target-exit",
+      "centerline": [
+        {
+          "x": 80.0,
+          "y": 3.5
+        },
+        {
+          "x": 120.0,
+          "y": 3.5
+        }
+      ],
+      "width_m": 3.5,
+      "speed_limit_m_s": 4.0,
+      "successors": []
+    }
+  ]
+}

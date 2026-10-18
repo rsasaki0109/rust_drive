@@ -1,0 +1,99 @@
+{
+  "additional_ci_reproduction_episodes": 6,
+  "all_recordings_reaudited_at_final_source": true,
+  "alternate_return_or_live_speed_remapping_supported": false,
+  "auditor_correction": {
+    "changed_decoder_names": [
+      "completed -> Completed",
+      "waiting -> Waiting"
+    ],
+    "driver_or_scenarios_changed": false,
+    "initial_rejected_audits": 20,
+    "numeric_gates_changed": false,
+    "original_error_source": "initial-check_lane_change_speeds.py",
+    "original_results": "physical-results.json",
+    "physical_rerun": false,
+    "reason": "existing LaneChangePhase enum serializes PascalCase; initial Python auditor expected lowercase",
+    "same_30_archived_episodes_rescored": true
+  },
+  "changed_standard_outputs": 0,
+  "ci_recordings_identical_to_original_seed_7": 42,
+  "created_at": "2026-10-18T23:18:33.623355+00:00",
+  "current_unique_acceptance_episodes": 73,
+  "existing_short_range_follower_failures_preserved_not_rerun": 2,
+  "feature_branch": "feat/lane-change-speed-zones-20261018",
+  "fixed_clearance_floor_m": 1.0,
+  "fixed_post_zone_required_max_speed_m_s": 3.5,
+  "fixed_speed_tolerance_m_s": 0.15,
+  "frozen_before_physical_results": true,
+  "historical_245_live_outputs_restored_unchanged": true,
+  "initial_auditor_rejections_preserved": 20,
+  "initial_driver_source_and_scenarios_unchanged_after_viewing_results": true,
+  "legacy_byte_identical_cli_reports": 6,
+  "legacy_byte_identical_json_recordings": 42,
+  "legacy_current_episodes": 6,
+  "legacy_parent_episodes": 6,
+  "local_physical_frames": 17922,
+  "local_speed_current_episodes": 18,
+  "local_speed_violation_intervals": 0,
+  "lockfile_toolchain_and_older_fixtures_preserved": true,
+  "maximum_physical_speed_excess_m_s": 0.06644014414615973,
+  "minimum_post_zone_observed_max_speed_m_s": 4.016820942057615,
+  "minimum_traffic_swept_clearance_m": 16.58709685809818,
+  "native_RNE_or_real_vehicle_qualification": false,
+  "new_python_tests": 3,
+  "new_rust_tests": 7,
+  "parent_capability_rejection_preserved": {
+    "exit_code": 2,
+    "local_speed_limits_supported": false,
+    "output_created": false
+  },
+  "python_auditor_tests": 16,
+  "qualification_scope": "six authored fixed lane changes, reference bicycle, synthetic sensors; one prescribed world-ENU front actor",
+  "release_binary_sha256": "3bb075124feb3ea8afe0e25c759e34c45c91ac106ae2c7d60188bf76fff7fe9c",
+  "remote_CI_claimed": false,
+  "required_check_command": "bash scripts/check.sh",
+  "required_check_exit_code": 0,
+  "standard_outputs_compared": 245,
+  "standard_reference_runs_and_exact_replays": 49,
+  "starting_commit": "46ee0cdc019db41d994d586ce484cd1b3983327e",
+  "storage_recovery": {
+    "cache_cleanup_command": "cargo clean --profile dev",
+    "cache_cleanup_log": "logs/cache-cleanup.log",
+    "current_245_hashes_match_parent": true,
+    "current_outputs_losslessly_retained": true,
+    "initial_wrapper_exit_code": 1,
+    "original_245_live_outputs_restored": true,
+    "partial_archive_attempts_retained": [],
+    "reason": "ENOSPC during evidence archival; generated dev build cache removed",
+    "release_binary_preserved": true,
+    "source_or_numeric_gates_changed": false,
+    "tests_or_physical_runs_repeated_for_storage_repair": false,
+    "underlying_required_check_exit_code": 0
+  },
+  "subjective_oss_maturity_percent": 20,
+  "traffic_source_hold_results": [
+    {
+      "first_physical_source_leave_s": 24.25,
+      "passed": true,
+      "seed": 1,
+      "source_contained_until_s": 12.0,
+      "stationary_blocked_frames": 102
+    },
+    {
+      "first_physical_source_leave_s": 24.450000000000003,
+      "passed": true,
+      "seed": 7,
+      "source_contained_until_s": 12.0,
+      "stationary_blocked_frames": 101
+    },
+    {
+      "first_physical_source_leave_s": 24.200000000000003,
+      "passed": true,
+      "seed": 42,
+      "source_contained_until_s": 12.0,
+      "stationary_blocked_frames": 102
+    }
+  ],
+  "workspace_rust_tests": 616
+}

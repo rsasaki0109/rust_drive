@@ -128,13 +128,15 @@ fn unsupported_changes_and_existing_outputs_are_rejected_without_writing() {
             "--change-length",
             "30",
             "--local-speed-limits",
+            "--wait-for-gap",
+            "--return-on-conflict",
         ])
         .arg("--scenario-output")
         .arg(&destination)
         .output()
         .unwrap();
     assert_eq!(result.status.code(), Some(2));
-    assert!(String::from_utf8_lossy(&result.stderr).contains("following route"));
+    assert!(String::from_utf8_lossy(&result.stderr).contains("alternate-route"));
     assert!(!destination.parent().unwrap().exists());
     let map = w.map();
     let original = fs::read(&map).unwrap();
@@ -199,4 +201,53 @@ fn exported_map_limits_drive_physically_and_replay_from_sensors() {
     let replay = rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), vec![]).unwrap();
     assert!(replay.verified);
     assert_eq!(replay.ticks, run.summary.steps);
+}
+
+#[test]
+fn fixed_lane_change_speed_export_keeps_gap_admission_and_records_the_policy() {
+    let w = Workspace::new();
+    let map = w.0.join("change-speeds.json");
+    fs::write(
+        &map,
+        include_str!("../../../maps/lanes/change-speeds-target-slow.json"),
+    )
+    .unwrap();
+    let path = w.0.join("scenario.json");
+    let output = cli()
+        .arg("lane-route")
+        .arg("--map")
+        .arg(map)
+        .args([
+            "--start",
+            "source",
+            "--goal",
+            "target-exit",
+            "--change-side",
+            "left",
+            "--change-start",
+            "25",
+            "--change-length",
+            "30",
+            "--wait-for-gap",
+            "--local-speed-limits",
+            "--cruise-speed",
+            "4",
+        ])
+        .arg("--scenario-output")
+        .arg(&path)
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let scenario: serde_json::Value = serde_json::from_slice(&fs::read(path).unwrap()).unwrap();
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(scenario["cruise_speed"], 4.);
+    assert_eq!(scenario["speed_zones"], report["speed_zones"]);
+    assert_eq!(scenario["lane_change"], report["lane_change_gate"]);
+    assert!(scenario["lane_change"]["return_on_conflict"].is_null());
+    assert_eq!(report["lane_change"]["to_lane"], "target");
+    assert!(scenario["speed_zones"][1]["end_s_m"].as_f64().unwrap() > 80.2);
 }

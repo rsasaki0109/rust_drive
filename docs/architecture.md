@@ -181,8 +181,10 @@ remaining limits](route-speed-zones.md).
 
 The optional `lane-route --local-speed-limits` compiler derives these intervals
 from selected whole-lane boundaries and original map limits. It merges equal
-adjacent effective caps, preserves requested cruise, and rejects unsupported
-lane-change connectors or an excessive interval budget. The option-free
+adjacent effective caps and preserves requested cruise. A fixed lane-change
+connector uses the minimum of source and target limits over its actual arc,
+including with observed-gap admission. Alternate returns, live remapping and
+an excessive interval budget are rejected. [Connector contract](lane-change-speeds.md). The option-free
 exporter keeps its mission-wide minimum. [Map-to-speed contract and independent
 reference reconstruction](lane-speed-zones.md).
 

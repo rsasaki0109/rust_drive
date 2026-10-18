@@ -694,6 +694,8 @@ northbound route have independent physical scoring and sensor-only replay.
 [Configuration, reproduction and limits](docs/route-speed-zones.md).
 The optional `lane-route --local-speed-limits` exporter derives these intervals
 from the selected lanes' mapped speeds. [Map-to-driving contract and checks](docs/lane-speed-zones.md).
+It also supports one fixed lane-change connector with observed-gap admission,
+using both lanes' lower limit while changing. [Speed mapping and validation](docs/lane-change-speeds.md).
 
 ## Reproduce the GIF
 

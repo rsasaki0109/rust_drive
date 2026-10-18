@@ -106,9 +106,9 @@ pub(crate) fn run(args: &[String]) -> Result<bool, Box<dyn Error>> {
             );
         }
     };
-    if local_speed_limits && change_request.is_some() {
+    if local_speed_limits && return_on_conflict {
         return Err(
-            "--local-speed-limits currently requires a following route without lane changes".into(),
+            "--local-speed-limits does not support alternate-route returns or retries".into(),
         );
     }
     if duration.is_some_and(|seconds| !seconds.is_finite() || !(1.0..=300.0).contains(&seconds)) {
@@ -126,9 +126,29 @@ pub(crate) fn run(args: &[String]) -> Result<bool, Box<dyn Error>> {
     let start = start.ok_or("--start lane is required")?;
     let goal = goal.ok_or("--goal lane is required")?;
     let (plan, maneuver, speed_zones) = if let Some(request) = change_request {
-        let change =
-            network.lane_change_route(&start, &goal, &closed, request, VehicleConfig::default())?;
-        (change.plan, Some(change.maneuver), vec![])
+        if local_speed_limits {
+            let compiled = network.lane_change_route_with_speed_zones(
+                &start,
+                &goal,
+                &closed,
+                request,
+                VehicleConfig::default(),
+            )?;
+            (
+                compiled.change.plan,
+                Some(compiled.change.maneuver),
+                compiled.speed_zones,
+            )
+        } else {
+            let change = network.lane_change_route(
+                &start,
+                &goal,
+                &closed,
+                request,
+                VehicleConfig::default(),
+            )?;
+            (change.plan, Some(change.maneuver), vec![])
+        }
     } else if local_speed_limits {
         let compiled = network.following_route_with_speed_zones(&start, &goal, &closed)?;
         (compiled.plan, None, compiled.speed_zones)
