@@ -722,6 +722,8 @@ GIF bytes may differ between Blender/Pillow/font versions; sensor replay is dete
 
 ## Validation
 
+The required check uses Python 3's standard library for independent forecast-evidence tests. No additional Python packages are needed for those tests.
+
 ```sh
 bash scripts/check.sh
 cargo run --release --locked --bin rustdriving -- run \

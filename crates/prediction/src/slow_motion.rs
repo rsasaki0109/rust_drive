@@ -35,5 +35,27 @@ pub(super) fn supported(track: &Track, history: &VecDeque<Track>) -> bool {
         }
         previous = old;
     }
+    // Spaced anchors cannot erase contrary observations between them. Check
+    // every acquired velocity and displacement in the same support window.
+    let earliest = previous.last_seen;
+    let mut newer = track;
+    for old in history
+        .iter()
+        .rev()
+        .filter(|old| old.last_seen >= earliest && old.last_seen < track.last_seen)
+    {
+        let old_speed = old.velocity.x.hypot(old.velocity.y);
+        let alignment =
+            (old.velocity.x * direction.x + old.velocity.y * direction.y) / old_speed.max(1e-9);
+        let displacement = newer.position.minus(old.position);
+        let progress = displacement.x * direction.x + displacement.y * direction.y;
+        if old_speed < 0.1
+            || alignment < 0.95
+            || progress + 1e-9 < 0.9 * displacement.x.hypot(displacement.y)
+        {
+            return false;
+        }
+        newer = old;
+    }
     true
 }

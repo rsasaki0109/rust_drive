@@ -1052,7 +1052,7 @@ def check_speed_profiles(log):
 
 
 def supported_slow_motion(samples, current):
-    """Check four spaced observations as chronological displacement intervals."""
+    """Check spaced displacement support and every intervening observation."""
     speed = math.hypot(*xy(current['velocity']))
     if not .1 <= speed < .7:
         return False
@@ -1075,6 +1075,15 @@ def supported_slow_motion(samples, current):
         forward = sum(v*d for v, d in zip(delta, direction))
         if elapsed <= 0 or forward+1e-9 < .1*elapsed or forward+1e-9 < .9*math.hypot(*delta):
             return False
+    recent = [s for s in samples if anchors[0]['last_seen'] <= s['last_seen'] < current['last_seen']]+[current]
+    for sample in recent:
+        measured_speed = math.hypot(*xy(sample['velocity']))
+        if measured_speed < .1 or sum(v*d for v, d in zip(xy(sample['velocity']), direction)) < .95*measured_speed:
+            return False
+    for old, new in zip(recent, recent[1:]):
+        delta = tuple(b-a for a, b in zip(xy(old['position']), xy(new['position'])))
+        if sum(v*d for v, d in zip(delta, direction))+1e-9 < .9*math.hypot(*delta):
+            return False
     return True
 
 
@@ -1085,6 +1094,7 @@ def check_motion_predictions(log):
     aged_forecasts = rebased_moving_forecasts = 0
     slow_forecasts = unconfirmed_slow_forecasts = 0
     max_deceleration = max_epoch_age = 0.0
+    intermediate_braking_vetoes = 0
     with log.open() as stream:
         config = json.loads(next(stream))['header']['config']
         confirm_slow_motion = config.get('confirm_slow_motion', False)
@@ -1151,7 +1161,14 @@ def check_motion_predictions(log):
                         supported.append(deceleration)
                         previous = old
                     if len(supported) == 3:
-                        braking = min(2.0, .5*min(supported))
+                        recent = [s for s in samples if previous['last_seen'] <= s['last_seen'] < track['last_seen']]+[track]
+                        speeds = [math.hypot(*xy(s['velocity'])) for s in recent]
+                        contrary = (any(b > a+1e-9 for a, b in zip(speeds, speeds[1:]))
+                                    or any(sum(v*d for v, d in zip(xy(s['velocity']), direction)) < .98*v
+                                           for s, v in zip(recent, speeds)))
+                        intermediate_braking_vetoes += int(contrary)
+                        if not contrary:
+                            braking = min(2.0, .5*min(supported))
                 stale_fallbacks += int(stale)
                 reacceleration_fallbacks += int(reaccelerating)
                 braking_forecasts += int(braking is not None)
@@ -1184,6 +1201,7 @@ def check_motion_predictions(log):
     return {'verified': True, 'forecasts': forecasts, 'braking_forecasts': braking_forecasts,
             'confirmed_slow_forecasts': slow_forecasts, 'unconfirmed_slow_forecasts': unconfirmed_slow_forecasts,
             'stale_fallbacks': stale_fallbacks, 'reacceleration_fallbacks': reacceleration_fallbacks,
+            'intermediate_braking_vetoes': intermediate_braking_vetoes,
             'max_forecast_deceleration_m_s2': max_deceleration,
             'aged_forecasts': aged_forecasts, 'rebased_moving_forecasts': rebased_moving_forecasts,
             'max_epoch_age_s': max_epoch_age, 'current_epoch_reconstruction_verified': True}

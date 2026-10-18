@@ -13,7 +13,7 @@ pub struct ObservedBraking {
 }
 impl ObservedBraking {
     /// Experimental persistent low-speed motion. Default retains the established
-    /// deadband: this mode can delay terminal completion behind a slow follower.
+    /// deadband pending broader forecast and adoption qualification.
     pub fn with_slow_motion() -> Self {
         Self {
             confirm_slow_motion: true,
@@ -133,6 +133,26 @@ impl ObservedBraking {
                 // Use half the weakest observed braking, capped at 2 m/s².
                 braking = braking.min(deceleration * 0.5);
                 previous = old;
+            }
+            if supported {
+                // Net braking between 0.2 s anchors is insufficient if an
+                // intervening acquisition observed acceleration or a turn.
+                let earliest = previous.last_seen;
+                let mut newer_speed = speed;
+                for old in history
+                    .iter()
+                    .rev()
+                    .filter(|old| old.last_seen >= earliest && old.last_seen < track.last_seen)
+                {
+                    let old_speed = old.velocity.x.hypot(old.velocity.y);
+                    let alignment = (old.velocity.x * direction.x + old.velocity.y * direction.y)
+                        / old_speed.max(1e-9);
+                    if old_speed + 1e-9 < newer_speed || alignment < 0.98 {
+                        supported = false;
+                        break;
+                    }
+                    newer_speed = old_speed;
+                }
             }
             if supported {
                 for (i, position) in prediction.positions.iter_mut().enumerate() {

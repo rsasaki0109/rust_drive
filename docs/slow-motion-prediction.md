@@ -22,12 +22,22 @@ Each chronological position interval must show forward progress of at least
 0.1 m/s and displacement direction cosine at least 0.9. A 1e-9 positional/time
 tolerance handles floating-point comparisons.
 
+The [complete observation-window check](prediction-observation-window.md) also
+examines every intervening acquisition. A measured stop or changed velocity
+direction withdraws confirmation even when all four spaced anchors agree.
+Adjacent position increments must retain displacement-direction cosine at least
+0.9; their roundoff tolerance is 1e-9 m. A zero increment is allowed, while the
+spaced intervals still require the minimum 0.1 m/s forward progress. Only
+distinct acquisition timestamps contribute evidence.
+
 Confirmed motion uses the measured velocity, beginning at acquisition age plus
 future offset. It retains the 41 samples, 0.2 s spacing and eight-second horizon.
 Confirmed slow motion may also use the existing sustained-braking hypothesis:
 three aligned intervals must each show at least 0.3 m/s² deceleration, half the
 weakest is used for at most one second from acquisition, and fresh reacceleration
-or observation age over 0.15 s withdraws braking. This avoids a discontinuity
+or observation age over 0.15 s withdraws braking. Every intervening velocity
+must also agree with the current direction and contain no measured speed increase
+beyond 1e-9 m/s. This avoids a discontinuity
 when a braking track crosses below 0.7 m/s. Missing motion support,
 contradictory positions, changed directions, an observed stop or an absent identity
 withdraw confirmation; duplicate control calls cannot supply observations. This
