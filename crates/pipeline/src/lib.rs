@@ -865,6 +865,9 @@ impl DrivingPipeline {
             motion_estimate.pose.yaw =
                 wrap_angle(estimate.pose.yaw + (offset * odom.yaw_rate).atan2(odom.speed));
         }
+        // Temporary stopping positions retain their exact approach profile;
+        // terminal position tolerance applies only to the active destination.
+        self.planner.terminal_settling = stop_route.is_none();
         let mut trajectory = self.planner.plan(
             motion_estimate,
             stop_route.as_ref().unwrap_or(&self.config.route),

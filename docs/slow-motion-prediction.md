@@ -3,8 +3,10 @@
 The shared pipeline offers experimental extrapolation of sustained observed motion
 below 0.7 m/s. Set `confirm_slow_motion: true` in pipeline configuration or a
 simulation scenario, or construct `ObservedBraking::with_slow_motion()` directly.
-The default is **off**: the experiment improves slow crossings but can miss the
-existing 65-second reactive-follower completion deadline. Directional crossing
+The default is **off**, pending broader forecast and adoption qualification. The
+original experiment missed the existing 65-second reactive-follower deadline;
+the later [terminal-settling correction](terminal-settling.md) repairs the tested
+deadline cases without changing the predictor. Directional crossing
 reserve is strengthened in the default planner independently of this opt-in.
 The established speed deadband freezes every forecast point at the last measured
 position, even after a long sequence of consistent moving observations. A slow
@@ -85,6 +87,9 @@ reproduce those expectations.
 
 ## Reference measurements
 
+These measurements describe `d50f351` before the terminal-settling correction.
+Its failed recordings and executables remain unchanged.
+
 The required check passed **568 tests and 49 default scenario/replay pairs**.
 The full current comparison covers 77 reference episodes: **74 physical passes
 and three retained deadline failures**. All 77 replay exactly and pass independent
@@ -138,11 +143,14 @@ A slow follower can remain on course toward the stopped vehicle under a single
 constant-velocity hypothesis, even when the simulated actor will subsequently
 stop. Continuing the existing bounded braking model into confirmed slow motion
 reduces that discontinuity, but does not establish its eventual stopping intent.
-The resulting repeated stops/restarts can exceed the retained 65-second deadline
-despite collision-free physical clearance. The original failed runs and the
-experimental regression are preserved. Automatic default adoption is withheld;
-the experiment does not supply interaction-aware following or general terminal
-negotiation.
+The original repeated stops/restarts exceeded the retained 65-second deadline
+despite collision-free physical clearance. Terminal settling repairs the tested
+completion regressions by maintaining an already reached stopping place;
+it does not infer the follower's intent or relax a rejected hold. The original
+failed runs and experimental regression are preserved. Automatic default adoption
+remains withheld: these authored fixtures do not qualify forecast error across
+general traffic. The experiment does not supply interaction-aware following or
+general terminal negotiation.
 
 There is no semantic pedestrian detection or intent model. Motion below 0.1 m/s,
 unobserved starts/turns, shape/occlusion errors, insufficient timing support and

@@ -10,6 +10,9 @@ pub struct LatticePlanner {
     pub cruise_speed: f64,
     /// Opt-in locally bounded fillets for sparse imported road polylines.
     pub local_route_geometry: bool,
+    /// Finish a near-stationary goal within the terminal position tolerance.
+    /// Disable for temporary regulatory or route-handover stopping prefixes.
+    pub terminal_settling: bool,
     pub vehicle: VehicleConfig,
     /// Forward acceleration authority used for reachable speed profiles.
     pub max_acceleration_m_s2: f64,
@@ -27,6 +30,7 @@ impl Default for LatticePlanner {
         Self {
             cruise_speed: 8.0,
             local_route_geometry: false,
+            terminal_settling: true,
             vehicle: VehicleConfig::default(),
             max_acceleration_m_s2: 2.0,
             max_deceleration_m_s2: 2.5,
@@ -121,7 +125,7 @@ impl Planner for LatticePlanner {
                         .is_some_and(|next| route.project(*next).0 - object_s > 0.7 * object.dt)
             });
         let reserve_terminal_side = terminal_traffic || self.terminal_side_reserved;
-        let mut best: Option<(f64, Trajectory)> = None;
+        let mut best: Option<((bool, f64), Trajectory)> = None;
         for target in [0.0_f64, 3.5, -3.5] {
             if target.abs() + self.vehicle.radius > route.half_width
                 || (target * lateral < 0.0 && lateral.abs() > 1.0)
@@ -191,8 +195,27 @@ impl Planner for LatticePlanner {
             // longer candidate using the route's longitudinal distance.
             let goal_stop =
                 (remaining <= 41.0).then(|| geometry.windows(2).map(|p| p[0].distance(p[1])).sum());
+            // Once almost stopped and aligned within 0.5 m of the desired goal,
+            // finish braking instead of accelerating to correct tiny position
+            // errors. Other lateral candidates can still escape a forecast
+            // conflict. A stop/hold that fails the sweep remains infeasible.
+            let settling_goal = self.terminal_settling
+                && (remaining - 1.0).abs() <= 0.5
+                && ego.speed <= 0.2
+                && (target - lateral).abs() <= 0.2
+                && rustdriving_core::wrap_angle(
+                    ego.pose.yaw - base_tangent.y.atan2(base_tangent.x),
+                )
+                .abs()
+                    <= 0.1;
+            let candidate_limits = speed::Limits {
+                cruise: if settling_goal { 0.0 } else { limits.cruise },
+                acceleration: limits.acceleration,
+                deceleration: limits.deceleration,
+                lateral: limits.lateral,
+            };
             let Some(mut points) =
-                speed::profile(&geometry, ego.speed.max(0.0), &limits, goal_stop)
+                speed::profile(&geometry, ego.speed.max(0.0), &candidate_limits, goal_stop)
             else {
                 continue;
             };
@@ -220,7 +243,7 @@ impl Planner for LatticePlanner {
                     (speed::distance_at(&points, first_contact) - 4.0).max(0.0)
                 };
                 let Some(stopped) =
-                    speed::profile(&geometry, ego.speed.max(0.0), &limits, Some(stop))
+                    speed::profile(&geometry, ego.speed.max(0.0), &candidate_limits, Some(stop))
                 else {
                     continue;
                 };
@@ -286,8 +309,11 @@ impl Planner for LatticePlanner {
                 mode,
                 lateral_target: target,
             };
-            if best.as_ref().is_none_or(|(cost, _)| score < *cost) {
-                best = Some((score, traj));
+            // Prefer an already settled stopping place when its complete hold
+            // is feasible. Speed rewards must not restart a completed maneuver.
+            let cost = (!settling_goal, score);
+            if best.as_ref().is_none_or(|(previous, _)| cost < *previous) {
+                best = Some((cost, traj));
             }
         }
         let trajectory = best.map(|(_, t)| t).unwrap_or(Trajectory {
