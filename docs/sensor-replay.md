@@ -15,6 +15,18 @@ Configuration supplies a validated arc-length route, calibrated initial pose, ve
 
 Absent samples do not refresh last accepted timestamps. Duplicate, out-of-order, future and invalid samples cannot refresh them either. Odometry older than 0.15 s, LiDAR older than 0.35 s or accepted GNSS older than 0.75 s brakes. Clock gaps over 0.25 s and excessive localization uncertainty brake. Regressing/non-finite clocks return an error before state mutation; adapters must stop on errors. This research health policy is intentionally conservative and does not support GNSS-denied navigation.
 
+Malformed odometry retains `InvalidOdometry` braking until a valid acquisition
+strictly later than the latest failure's delivery time arrives within the normal
+0.15 s age limit. Missing, duplicate, pre-fault and expired observations cannot
+clear this hold or replace the last accepted measurement. Another malformed
+observation advances the recovery cutoff. Estimation may continue from the
+accepted cache within its normal age limit while commands remain emergency
+braking. Ordinary missing samples without a preceding malformed observation
+retain their existing age-based grace and recovery behavior.
+
+Schema 1 remains readable, but earlier recordings spanning malformed odometry
+may require regenerated expected outputs for the extended braking hold.
+
 Every LiDAR input mode retains `InvalidLidar` braking after an explicit acquisition
 failure, malformed or conflicting representation, or missing acquisition-pose
 transform. Recovery requires a complete valid acquisition whose stamp is strictly

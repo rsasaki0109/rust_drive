@@ -292,6 +292,8 @@ pub struct PipelineOutput {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub intersections: Option<IntersectionStatus>,
 }
+const MAX_ODOMETRY_AGE_S: f64 = 0.15;
+
 /// Owns algorithm state; adapters supply observations and apply resulting commands.
 pub struct DrivingPipeline {
     config: PipelineConfig,
@@ -304,6 +306,8 @@ pub struct DrivingPipeline {
     grid: OccupancyGrid,
     previous_time: Option<f64>,
     last_odom: Option<Odometry>,
+    /// Latest malformed odometry delivery epoch; recovery needs a fresh later acquisition.
+    odometry_fault: Option<f64>,
     last_lidar: Option<f64>,
     /// Latest failure delivery epoch, shared by ordinary, layered and XYZ inputs.
     lidar_fault: Option<f64>,
@@ -383,6 +387,7 @@ impl DrivingPipeline {
             grid,
             previous_time: None,
             last_odom: None,
+            odometry_fault: None,
             last_lidar: None,
             lidar_fault: None,
             rejected_gnss_streak: 0,
@@ -419,14 +424,22 @@ impl DrivingPipeline {
                 || !(-0.1..=20.0).contains(&odom.speed)
                 || odom.yaw_rate.abs() > 3.0
             {
-                health.push(HealthIssue::InvalidOdometry);
-            } else if self.last_odom.is_none_or(|last| odom.stamp > last.stamp) {
+                self.odometry_fault = Some(input.time);
+            } else if self.last_odom.is_none_or(|last| odom.stamp > last.stamp)
+                && self.odometry_fault.is_none_or(|fault| {
+                    odom.stamp > fault && input.time - odom.stamp <= MAX_ODOMETRY_AGE_S + 1e-9
+                })
+            {
                 self.last_odom = Some(odom);
+                self.odometry_fault = None;
             }
+        }
+        if self.odometry_fault.is_some() {
+            health.push(HealthIssue::InvalidOdometry);
         }
         match self.last_odom {
             None => health.push(HealthIssue::MissingOdometry),
-            Some(odom) if input.time - odom.stamp > 0.15 + 1e-9 => {
+            Some(odom) if input.time - odom.stamp > MAX_ODOMETRY_AGE_S + 1e-9 => {
                 health.push(HealthIssue::StaleOdometry)
             }
             Some(odom) if !first && dt <= 0.25 => {
