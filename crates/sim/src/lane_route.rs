@@ -28,8 +28,14 @@ pub(crate) fn run(args: &[String]) -> Result<bool, Box<dyn Error>> {
     let mut return_distance = None;
     let mut resume_after_return = false;
     let mut resume_distance = None;
+    let mut local_speed_limits = false;
     let mut i = 1;
     while i < args.len() {
+        if args[i] == "--local-speed-limits" {
+            local_speed_limits = true;
+            i += 1;
+            continue;
+        }
         if args[i] == "--resume-after-return" {
             resume_after_return = true;
             i += 1;
@@ -100,6 +106,11 @@ pub(crate) fn run(args: &[String]) -> Result<bool, Box<dyn Error>> {
             );
         }
     };
+    if local_speed_limits && change_request.is_some() {
+        return Err(
+            "--local-speed-limits currently requires a following route without lane changes".into(),
+        );
+    }
     if duration.is_some_and(|seconds| !seconds.is_finite() || !(1.0..=300.0).contains(&seconds)) {
         return Err("scenario duration must be finite and in 1..300 seconds".into());
     }
@@ -114,12 +125,19 @@ pub(crate) fn run(args: &[String]) -> Result<bool, Box<dyn Error>> {
     let network = LaneNetwork::new(serde_json::from_slice::<LaneMapSpec>(&bytes)?)?;
     let start = start.ok_or("--start lane is required")?;
     let goal = goal.ok_or("--goal lane is required")?;
-    let (plan, maneuver) = if let Some(request) = change_request {
+    let (plan, maneuver, speed_zones) = if let Some(request) = change_request {
         let change =
             network.lane_change_route(&start, &goal, &closed, request, VehicleConfig::default())?;
-        (change.plan, Some(change.maneuver))
+        (change.plan, Some(change.maneuver), vec![])
+    } else if local_speed_limits {
+        let compiled = network.following_route_with_speed_zones(&start, &goal, &closed)?;
+        (compiled.plan, None, compiled.speed_zones)
     } else {
-        (network.following_route(&start, &goal, &closed)?, None)
+        (
+            network.following_route(&start, &goal, &closed)?,
+            None,
+            vec![],
+        )
     };
     let gap_config = if wait_for_gap {
         let maneuver = maneuver
@@ -174,16 +192,20 @@ pub(crate) fn run(args: &[String]) -> Result<bool, Box<dyn Error>> {
         if !requested_cruise.is_finite() || !(0.1..=8.0).contains(&requested_cruise) {
             return Err("requested cruise speed must be finite and in 0.1..8 m/s".into());
         }
-        let scenario: Scenario = serde_json::from_value(serde_json::json!({
+        let mut value = serde_json::json!({
             "name":"Authored lane route", "duration":duration.unwrap_or(120.0),
             "road_length":plan.distance_m, "half_width":plan.route.half_width,
             "local_route_geometry":true,
             "lane_change":gap_config,
-            "expected":"goal", "cruise_speed":requested_cruise.min(plan.speed_limit_m_s),
+            "expected":"goal", "cruise_speed":if local_speed_limits { requested_cruise } else { requested_cruise.min(plan.speed_limit_m_s) },
             "motion_limits":{"max_acceleration_m_s2":1.0,"max_deceleration_m_s2":2.5,"max_lateral_acceleration_m_s2":1.0},
             "navigation":{"network":plan.network,"start":plan.start_node,"goal":plan.goal_node,"closed_edges":[]},
             "objects":[]
-        }))?;
+        });
+        if local_speed_limits {
+            value["speed_zones"] = serde_json::to_value(&speed_zones)?;
+        }
+        let scenario: Scenario = serde_json::from_value(value)?;
         scenario.validate()?;
         Some(scenario)
     } else {
@@ -203,6 +225,9 @@ pub(crate) fn run(args: &[String]) -> Result<bool, Box<dyn Error>> {
     });
     if let Some(maneuver) = maneuver {
         report["lane_change"] = serde_json::to_value(maneuver)?;
+    }
+    if local_speed_limits {
+        report["speed_zones"] = serde_json::to_value(speed_zones)?;
     }
     if let Some(config) = gap_config {
         report["lane_change_gate"] = serde_json::to_value(config)?;

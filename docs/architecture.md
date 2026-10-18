@@ -179,6 +179,13 @@ remapping exists. A separate full-tick physical evaluator rejects excess over
 the fixed 0.15 m/s acceptance tolerance. [Contract, independent evaluation and
 remaining limits](route-speed-zones.md).
 
+The optional `lane-route --local-speed-limits` compiler derives these intervals
+from selected whole-lane boundaries and original map limits. It merges equal
+adjacent effective caps, preserves requested cruise, and rejects unsupported
+lane-change connectors or an excessive interval budget. The option-free
+exporter keeps its mission-wide minimum. [Map-to-speed contract and independent
+reference reconstruction](lane-speed-zones.md).
+
 ## Simulator traffic boundary
 
 `TrafficWorld` owns optional route-following actors and is shared by both backends. Actors consume ideal finite-range scalar gap/range-change observations and their own speed/target calibration; IDM-style bounded acceleration integrates speed and route distance at 20 Hz. Each reads the same pre-step scene. Ego truth is used in simulator sensor synthesis, never as an ego planner/localization input. Traffic sensing is ideal route-aligned geometry, not native actor LiDAR or interaction-aware ego prediction. Scheduled actors retain analytic timing and existing endpoint behavior; reactive actors do not clamp to obstacle gaps or hide endpoint overrun. Native RNE dynamics remain the ego plant; actor motion is the common one-dimensional integrator.

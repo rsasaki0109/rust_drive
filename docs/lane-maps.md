@@ -75,9 +75,11 @@ input order. The same lane as start and goal means traversing that whole lane.
 it does not check traffic or authorize an actual maneuver.
 
 The plan exports lane IDs, distance, resolved geometry, the narrowest width and
-lowest speed limit, plus a road-network chain for existing consumers. Scenario
-cruise is conservatively capped by the lowest selected-lane limit for the entire
-trip. Piecewise speed limits and widths are not yet used by the planner. Export
+lowest speed limit, plus a road-network chain for existing consumers. By default,
+scenario cruise is capped by the lowest selected-lane limit for the entire trip.
+Optional `--local-speed-limits` compiles whole-lane limits into fixed-route speed
+intervals while retaining requested cruise. Width remains the itinerary minimum.
+[Compilation, commands and measured limits](lane-speed-zones.md). Export
 enables the existing calibrated local corner fillets and rejects corners that
 cannot fit the unchanged corridor and default vehicle. This does not guarantee
 tracking feasibility for arbitrary maps.

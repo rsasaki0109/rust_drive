@@ -30,6 +30,8 @@ jobs:
         run: python scripts/test_lane_occupancy.py
       - name: Check swept physical speed intervals
         run: python scripts/test_speed_zones.py
+      - name: Check original lane-map speed reconstruction
+        run: python scripts/test_lane_speed_zones.py
       - run: cargo fmt --all --check
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - run: cargo test --workspace --locked
@@ -37,6 +39,9 @@ jobs:
       - name: Drive and independently score fixed-route speed intervals
         shell: bash
         run: python scripts/check_speed_zones.py --output artifacts/speed-zones
+      - name: Compile lane-map speeds and independently score reference driving
+        shell: bash
+        run: python scripts/check_lane_speed_zones.py --output artifacts/lane-speed-zones
       - name: Evaluate pinned measured clouds and independently reconstruct scores
         shell: bash
         run: |
@@ -84,6 +89,7 @@ jobs:
             artifacts/datasets/*.json
             artifacts/map-localization/
             artifacts/speed-zones/
+            artifacts/lane-speed-zones/
   image-tracking:
     runs-on: ubuntu-latest
     steps:

@@ -25,6 +25,8 @@ Physical road query surfaces and optional measured local ground removal now exte
 Surveyed fixed-route speed intervals now anticipate lower limits and restore
 cruise after passing them. Independent full-tick physical scoring and exact
 sensor replay cover short, overlapping, stop-sign and rotated-route cases.
+An opt-in lane-route exporter now compiles the selected lanes' original speed
+limits into these intervals, retaining requested cruise outside lower limits.
 This does not supply sign detection, live speed-map remapping or general road
 rule understanding. [Contract and evidence](route-speed-zones.md).
 

@@ -20,6 +20,10 @@ Each list has at most 128 entries. Each finite interval must satisfy
 `[0.1, 8] m/s`. Invalid configuration is rejected before driving. Overlapping
 intervals apply their lowest speed; a zone cannot raise the cruise target.
 
+The lane-route exporter can also generate these intervals directly from a
+selected whole-lane itinerary with `--local-speed-limits`.
+[Map compilation and validation](lane-speed-zones.md).
+
 ## Planning contract
 
 The planner projects candidate positions onto the supplied route. It expands

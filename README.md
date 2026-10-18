@@ -692,6 +692,8 @@ Surveyed fixed-route speed intervals now anticipate lower limits and restore
 cruise after passing them. Short and overlapping intervals, a stop sign and a
 northbound route have independent physical scoring and sensor-only replay.
 [Configuration, reproduction and limits](docs/route-speed-zones.md).
+The optional `lane-route --local-speed-limits` exporter derives these intervals
+from the selected lanes' mapped speeds. [Map-to-driving contract and checks](docs/lane-speed-zones.md).
 
 ## Reproduce the GIF
 

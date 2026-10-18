@@ -7,6 +7,8 @@ use std::collections::{BTreeMap, BTreeSet, BinaryHeap};
 
 mod change;
 pub use change::{LaneChangeManeuver, LaneChangeRequest, LaneChangeRoutePlan};
+mod speeds;
+pub use speeds::LaneSpeedRoutePlan;
 
 pub const MAX_LANES: usize = 4096;
 pub const MAX_LANE_POINTS: usize = 2048;
