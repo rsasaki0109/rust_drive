@@ -168,6 +168,26 @@ pub struct Prediction {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub additional_radius_m: Vec<f64>,
 }
+
+/// Surveyed speed interval on a fixed route, in arc-length meters and m/s.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RouteSpeedZone {
+    pub start_s_m: f64,
+    pub end_s_m: f64,
+    pub speed_m_s: f64,
+}
+impl RouteSpeedZone {
+    pub fn valid(&self) -> bool {
+        self.start_s_m.is_finite()
+            && self.end_s_m.is_finite()
+            && self.speed_m_s.is_finite()
+            && self.start_s_m >= 0.0
+            && self.end_s_m > self.start_s_m
+            && self.end_s_m <= 1500.0
+            && (0.1..=8.0).contains(&self.speed_m_s)
+    }
+}
 impl Prediction {
     /// Validate the whole radius sequence before consuming any forecast knot.
     pub fn valid_radii(&self) -> bool {

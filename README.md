@@ -688,6 +688,11 @@ cargo run --release --locked --bin rustdriving -- run \
 
 The occupancy grid is built and exported for inspection; the current planner uses the supplied route and tracked obstacles, not the occupancy grid. Initial heading and route are supplied calibration / navigation inputs. Runtime simulator obstacle labels and ground-truth poses are used by sensing, rendering, and evaluation, never by planning.
 
+Surveyed fixed-route speed intervals now anticipate lower limits and restore
+cruise after passing them. Short and overlapping intervals, a stop sign and a
+northbound route have independent physical scoring and sensor-only replay.
+[Configuration, reproduction and limits](docs/route-speed-zones.md).
+
 ## Reproduce the GIF
 
 Python and Blender are optional visualization tools. Install Blender (4.3.2 verified locally; Cycles CPU requires no GPU), then:

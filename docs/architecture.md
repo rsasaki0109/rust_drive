@@ -167,6 +167,18 @@ For accelerated segments, the circular sweep additionally covers the deviation f
 
 **Simulation and evaluation.** A kinematic bicycle with bounded speed, acceleration and steering is integrated every 0.05 s. The ego and obstacles have circular collision footprints; relative swept segments test collision between integration endpoints. Current and terminal overlaps are also scored, and newly active actors receive endpoint checks. Each evaluated tick counts at most one collision; exact continuous activation-time checking remains absent. Road containment uses the ego center plus circular radius against route half-width. Tire friction and actuator lag are outside the reference model. The optional RNE dynamic plant adds a friction limit and steering lag; road elevation, suspension, rectangular collision evaluation, weather, camera imagery and general priority/traffic-law reasoning remain outside the demonstrated operating domain. See the [adapter boundaries](../integrations/rne/README.md). Optional `goal_hold_seconds` keeps the entire loop and independent physical evaluator running after first arrival; leaving the goal or exceeding its speed threshold resets residence. The final truth frame is retained at termination. The 16-second traffic regression observes the lead reaching the endpoint after ego stops. No throughput or real-time guarantee is claimed.
 
+## Fixed-route speed intervals
+
+Optional surveyed `speed_zones` cap candidate segment endpoints over mapped
+arc-length intervals, expanded by the circular ego footprint. Overlapping
+limits use the minimum, including zones wholly between geometric samples.
+The existing reachable speed passes anticipate braking and restore cruise
+after release. The same configuration is recorded for sensor-only replay;
+live route changes and alternate lane routes are rejected until explicit
+remapping exists. A separate full-tick physical evaluator rejects excess over
+the fixed 0.15 m/s acceptance tolerance. [Contract, independent evaluation and
+remaining limits](route-speed-zones.md).
+
 ## Simulator traffic boundary
 
 `TrafficWorld` owns optional route-following actors and is shared by both backends. Actors consume ideal finite-range scalar gap/range-change observations and their own speed/target calibration; IDM-style bounded acceleration integrates speed and route distance at 20 Hz. Each reads the same pre-step scene. Ego truth is used in simulator sensor synthesis, never as an ego planner/localization input. Traffic sensing is ideal route-aligned geometry, not native actor LiDAR or interaction-aware ego prediction. Scheduled actors retain analytic timing and existing endpoint behavior; reactive actors do not clamp to obstacle gaps or hide endpoint overrun. Native RNE dynamics remain the ego plant; actor motion is the common one-dimensional integrator.

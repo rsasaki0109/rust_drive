@@ -3,10 +3,13 @@ mod collision;
 mod corners;
 mod geometry;
 mod speed;
+mod speed_zones;
 use rustdriving_core::{
     DrivingMode, EgoState, Planner, Prediction, Route, Trajectory, VehicleConfig,
 };
 pub struct LatticePlanner {
+    /// Known fixed-route arc intervals; overlaps use the lowest cap.
+    pub speed_zones: Vec<rustdriving_core::RouteSpeedZone>,
     pub cruise_speed: f64,
     /// Opt-in locally bounded fillets for sparse imported road polylines.
     pub local_route_geometry: bool,
@@ -28,6 +31,7 @@ pub struct LatticePlanner {
 impl Default for LatticePlanner {
     fn default() -> Self {
         Self {
+            speed_zones: vec![],
             cruise_speed: 8.0,
             local_route_geometry: false,
             terminal_settling: true,
@@ -53,6 +57,8 @@ impl Planner for LatticePlanner {
             || self.max_acceleration_m_s2 <= 0.0
             || !self.max_deceleration_m_s2.is_finite()
             || self.max_deceleration_m_s2 <= 0.0
+            || self.speed_zones.len() > 128
+            || self.speed_zones.iter().any(|zone| !zone.valid())
             || self
                 .max_lateral_acceleration_m_s2
                 .is_some_and(|a| !a.is_finite() || a <= 0.0)
@@ -105,6 +111,11 @@ impl Planner for LatticePlanner {
         };
         let horizon = 40.0_f64.min(goal_distance);
         let limits = speed::Limits {
+            zones: (!self.speed_zones.is_empty()).then_some((
+                supplied_route,
+                self.speed_zones.as_slice(),
+                self.vehicle.radius,
+            )),
             acceleration: self.max_acceleration_m_s2,
             deceleration: self.max_deceleration_m_s2,
             lateral: self.max_lateral_acceleration_m_s2,
@@ -208,6 +219,7 @@ impl Planner for LatticePlanner {
                 .abs()
                     <= 0.1;
             let candidate_limits = speed::Limits {
+                zones: limits.zones,
                 cruise: if settling_goal { 0.0 } else { limits.cruise },
                 acceleration: limits.acceleration,
                 deceleration: limits.deceleration,

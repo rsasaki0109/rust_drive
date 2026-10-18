@@ -22,10 +22,16 @@ The same verified revision adds earlier braking after sustained GNSS innovation 
 
 Physical road query surfaces and optional measured local ground removal now extend native XYZ sensing. An explicit research body adds swept upright-box clearance and force-free native overlap witnesses. A bounded importer converts a pinned genuine OpenStreetMap extract into the ordinary ENU road graph, preserving source attribution and explicit simulation width calibration. These steps still retain planar driving and perception after projection. [Ground/body boundaries](ground-lidar.md); [map import and actual route limitations](osm-import.md). The tested native sharp branch now completes with explicit chassis-reference odometry and course-based steering, while retaining original widths/deadlines and default output bytes. [Repair and scope](chassis-reference.md).
 
+Surveyed fixed-route speed intervals now anticipate lower limits and restore
+cruise after passing them. Independent full-tick physical scoring and exact
+sensor replay cover short, overlapping, stop-sign and rotated-route cases.
+This does not supply sign detection, live speed-map remapping or general road
+rule understanding. [Contract and evidence](route-speed-zones.md).
+
 Remaining:
 
 - Covariance/forecast uncertainty propagation, delayed odometry/GNSS fusion, per-point LiDAR deskew and trace migrations. Bounded acquisition-time LiDAR reprojection and current-time motion extrapolation are narrower implemented steps, not complete delayed-sensor fusion.
-- Continuous moving-route handover, routing from arbitrary mid-edge positions, general external map/lane import, variable-width/lane topology, turn/speed restrictions and A* for larger maps. Bounded OSM road-graph import is implemented.
+- Continuous moving-route handover, routing from arbitrary mid-edge positions, general external map/lane import, variable-width/lane topology, general turn rules, live speed-limit remapping and A* for larger maps. Bounded OSM road-graph import and fixed-route speed intervals are implemented.
 - Continuous lateral offsets and controller-feasibility validation.
 - Oriented-body planning, measured vehicle/actuator calibration, combined longitudinal/lateral friction feasibility and optimized speed profiles. An authored rectangular evaluation body and conservative planar envelope are implemented.
 - General goal-area stopping/escape, constrained destinations and blocked lateral refuges; the authored GNSS-burst traffic regression is repaired.

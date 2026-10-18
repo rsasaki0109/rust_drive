@@ -64,6 +64,9 @@ pub struct PipelineConfig {
     pub vehicle: VehicleConfig,
     pub nominal_dt: f64,
     pub cruise_speed: f64,
+    /// Surveyed intervals on the configured fixed route; not observed actor data.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub speed_zones: Vec<RouteSpeedZone>,
     /// Experimental history-confirmed slow-object forecasts; default off.
     #[serde(default, skip_serializing_if = "is_false")]
     pub confirm_slow_motion: bool,
@@ -101,6 +104,7 @@ impl PipelineConfig {
             vehicle,
             nominal_dt: 0.05,
             cruise_speed: 8.0,
+            speed_zones: vec![],
             confirm_slow_motion: false,
             local_route_geometry: false,
             rear_axle_offset_m: None,
@@ -150,6 +154,18 @@ impl PipelineConfig {
         }
         if canonical.lengths != self.route.lengths || canonical.length() > 1500.0 {
             return Err("invalid route arc-length metadata or excessive route length".into());
+        }
+        if self.speed_zones.len() > 128
+            || self
+                .speed_zones
+                .iter()
+                .any(|zone| !zone.valid() || zone.end_s_m > canonical.length())
+            || (!self.speed_zones.is_empty()
+                && (self.navigation.is_some() || self.lane_change.is_some()))
+        {
+            return Err(
+                "invalid speed zones or unsupported live/alternate-route speed zones".into(),
+            );
         }
         if let Some(change) = &self.lane_change {
             change.validate(&self.route, self.vehicle)?;
@@ -369,6 +385,7 @@ impl DrivingPipeline {
         });
         let mut planner = LatticePlanner::default();
         planner.cruise_speed = config.cruise_speed;
+        planner.speed_zones = config.speed_zones.clone();
         planner.local_route_geometry = config.local_route_geometry;
         planner.vehicle = config.vehicle;
         if let Some(limits) = config.motion_limits {

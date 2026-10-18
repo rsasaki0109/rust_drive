@@ -3,6 +3,7 @@ pub mod intersections;
 mod lane_change_surface;
 pub mod sensor_timing;
 pub mod signals;
+pub mod speed_zones;
 pub mod stop_signs;
 pub mod traffic;
 use intersections::IntersectionRuleEvaluator;
@@ -132,6 +133,8 @@ pub struct Scenario {
     pub navigation_updates: Vec<NavigationUpdate>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub cruise_speed: Option<f64>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub speed_zones: Vec<rustdriving_core::RouteSpeedZone>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub motion_limits: Option<rustdriving_pipeline::MotionLimits>,
     /// Independent swept-circle acceptance floor in meters; never a planner input.
@@ -644,6 +647,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     let (position, yaw) = route.sample(0.0, 0.0);
     let mut config = PipelineConfig::new(route, Pose { position, yaw }, VehicleConfig::default());
     config.confirm_slow_motion = scenario.confirm_slow_motion;
+    config.speed_zones = scenario.speed_zones.clone();
     if let Some(speed) = scenario.cruise_speed {
         config.cruise_speed = speed;
     }
@@ -744,6 +748,7 @@ pub fn simulate_with_backend(
     let mut signal_rules = RuleEvaluator::default();
     let mut stop_rules = StopRuleEvaluator::new(scenario.stop_signs.len());
     let mut intersection_rules = IntersectionRuleEvaluator::new(scenario.yield_intersections.len());
+    let mut speed_rules = speed_zones::SpeedZoneEvaluator::default();
     let mut sensor_delivery = SensorDelivery::default();
     let mut evaluation_closures = scenario
         .navigation
@@ -773,6 +778,9 @@ pub fn simulate_with_backend(
                 traffic_minimum = Some(traffic_minimum.map_or(separation, |v| v.min(separation)));
                 traffic_collided |= separation < 0.0;
             }
+        }
+        if !scenario.speed_zones.is_empty() {
+            speed_rules.observe(&route, truth, vehicle.radius, &scenario.speed_zones);
         }
         // Evaluate true physical crossings against the external phase schedule.
         // Neither this evaluator nor its phase schedule enters the driver.
@@ -920,7 +928,8 @@ pub fn simulate_with_backend(
                 traffic_road_violations += 1;
             }
         }
-        if scenario.lane_change.is_some()
+        if !scenario.speed_zones.is_empty()
+            || scenario.lane_change.is_some()
             || !traffic.is_empty()
             || !scenario.traffic_signals.is_empty()
             || !scenario.stop_signs.is_empty()
@@ -1005,6 +1014,12 @@ pub fn simulate_with_backend(
     let truth = backend.state();
     let progress = route.project(truth.pose.position).0;
     let mut failures = Vec::new();
+    if speed_rules.violations != 0 {
+        failures.push(format!(
+            "{} physical speed-zone violation intervals (maximum excess {:.6} m/s, tolerance {:.3} m/s)",
+            speed_rules.violations, speed_rules.maximum_excess_m_s, speed_zones::SPEED_TOLERANCE_M_S,
+        ));
+    }
     if collisions > 0 {
         failures.push(format!("{collisions} colliding integration steps"));
     }
