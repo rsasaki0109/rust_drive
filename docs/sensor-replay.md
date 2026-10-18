@@ -24,8 +24,18 @@ accepted cache within its normal age limit while commands remain emergency
 braking. Ordinary missing samples without a preceding malformed observation
 retain their existing age-based grace and recovery behavior.
 
+Malformed GNSS retains `InvalidGnss` braking until the EKF accepts a valid fix
+acquired strictly after the latest failure's delivery time and within the normal
+0.75 s age limit. Missing, duplicate, pre-fault and expired fixes cannot clear
+the hold or enter GNSS correction. A new malformed observation advances the
+cutoff. A post-fault innovation rejection keeps the hold; accepted map updates
+also cannot clear it. Normal missing-fix grace, bounded map coverage of an
+ordinary outage and the existing consecutive-innovation policy are unchanged.
+A single structurally valid innovation outlier alone does not create this
+malformed-observation hold.
+
 Schema 1 remains readable, but earlier recordings spanning malformed odometry
-may require regenerated expected outputs for the extended braking hold.
+or GNSS may require regenerated expected outputs for the extended braking hold.
 
 Every LiDAR input mode retains `InvalidLidar` braking after an explicit acquisition
 failure, malformed or conflicting representation, or missing acquisition-pose

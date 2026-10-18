@@ -293,6 +293,7 @@ pub struct PipelineOutput {
     pub intersections: Option<IntersectionStatus>,
 }
 const MAX_ODOMETRY_AGE_S: f64 = 0.15;
+const MAX_GNSS_AGE_S: f64 = 0.75;
 
 /// Owns algorithm state; adapters supply observations and apply resulting commands.
 pub struct DrivingPipeline {
@@ -311,6 +312,8 @@ pub struct DrivingPipeline {
     last_lidar: Option<f64>,
     /// Latest failure delivery epoch, shared by ordinary, layered and XYZ inputs.
     lidar_fault: Option<f64>,
+    /// Latest malformed GNSS delivery epoch; only a fresh accepted fix clears it.
+    gnss_fault: Option<f64>,
     rejected_gnss_streak: u8,
     map_localization: Option<MapLocalization>,
     scan_poses: scan_pose::ScanPoseHistory,
@@ -390,6 +393,7 @@ impl DrivingPipeline {
             odometry_fault: None,
             last_lidar: None,
             lidar_fault: None,
+            gnss_fault: None,
             rejected_gnss_streak: 0,
             map_localization,
             scan_poses: scan_pose::ScanPoseHistory::default(),
@@ -457,16 +461,25 @@ impl DrivingPipeline {
                 || !fix.variance.is_finite()
                 || fix.variance <= 0.0
             {
-                health.push(HealthIssue::InvalidGnss);
-            } else {
+                self.gnss_fault = Some(input.time);
+            } else if self.gnss_fault.is_none_or(|fault| {
+                fix.stamp > fault && input.time - fix.stamp <= MAX_GNSS_AGE_S + 1e-9
+            }) {
                 match self.ekf.correct(fix) {
                     GnssDecision::RejectedInnovation => {
                         self.rejected_gnss_streak = self.rejected_gnss_streak.saturating_add(1);
                     }
-                    GnssDecision::Accepted => self.rejected_gnss_streak = 0,
-                    GnssDecision::IgnoredTimestamp | GnssDecision::Invalid => {}
+                    GnssDecision::Accepted => {
+                        self.rejected_gnss_streak = 0;
+                        self.gnss_fault = None;
+                    }
+                    GnssDecision::Invalid => self.gnss_fault = Some(input.time),
+                    GnssDecision::IgnoredTimestamp => {}
                 }
             }
+        }
+        if self.gnss_fault.is_some() {
+            health.push(HealthIssue::InvalidGnss);
         }
         if self.rejected_gnss_streak >= 2 {
             health.push(HealthIssue::GnssInnovationHold);
@@ -607,7 +620,9 @@ impl DrivingPipeline {
             .map_or(self.ekf.last_gnss, |map| {
                 map.effective_fix_stamp(self.ekf.last_gnss)
             });
-        if !effective_fix_stamp.is_finite() || input.time - effective_fix_stamp > 0.75 + 1e-9 {
+        if !effective_fix_stamp.is_finite()
+            || input.time - effective_fix_stamp > MAX_GNSS_AGE_S + 1e-9
+        {
             health.push(HealthIssue::StaleGnss);
         }
         let variance = self.ekf.position_variance();
