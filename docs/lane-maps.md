@@ -7,8 +7,9 @@ between whole start and goal lanes while excluding requested lane closures.
 The CLI can export that itinerary as a runnable scenario for the existing
 sensor-driven reference simulator and sensor-only replay.
 
-This is an authored-map feature. OSM lane import, moving lane-change trajectories,
-traffic-gap acceptance, merge priority and general lane-level navigation during
+This is an authored-map feature. An optional [single lane-change route](lane-changes.md)
+now joins an allowed neighbor before continuing along explicit successors.
+OSM lane import, traffic-gap acceptance, merge priority and general lane-level navigation during
 driving are future work. The demonstrated merge follows a supplied centerline
 into a shared successor in an empty world; it does not negotiate with traffic.
 
@@ -36,6 +37,9 @@ the neighboring `east-left-in` as a goal does not invent a lane-change connector
 Scenario export accepts optional `--cruise-speed` (default 2 m/s) and `--duration`
 (default 120 s). It validates the complete request before creating a new file
 and refuses to overwrite an existing output, including an input path or link.
+Supply `--change-side left|right --change-start METERS --change-length METERS`
+together to explicitly request one change from the start lane. Without these
+options, following-route selection never uses a lateral connection.
 
 ## Contract
 

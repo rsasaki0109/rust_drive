@@ -5,6 +5,9 @@ use rustdriving_core::{Route, Vec2};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet, BinaryHeap};
 
+mod change;
+pub use change::{LaneChangeManeuver, LaneChangeRequest, LaneChangeRoutePlan};
+
 pub const MAX_LANES: usize = 4096;
 pub const MAX_LANE_POINTS: usize = 2048;
 pub const MAX_MAP_POINTS: usize = 65_536;
@@ -41,7 +44,8 @@ pub struct LaneNeighbor {
     pub change_allowed: bool,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum LaneSide {
     Left,
     Right,
@@ -52,8 +56,8 @@ pub struct LaneNetwork {
     lanes: BTreeMap<String, (Lane, f64)>,
 }
 
-/// A complete start-lane to goal-lane traversal using only explicit successors.
-/// The exported road network is the selected chain, for existing route consumers.
+/// A resolved lane itinerary for existing route consumers. `following_route` traverses
+/// whole lanes; `lane_change_route` replaces the first two sections with a connector.
 #[derive(Clone, Debug, Serialize)]
 pub struct LaneRoutePlan {
     pub lane_ids: Vec<String>,
