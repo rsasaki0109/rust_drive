@@ -1,5 +1,5 @@
 //! Known map updates and a conservative stop-before-divergence route handover.
-use rustdriving_core::{EgoState, Route, wrap_angle};
+use rustdriving_core::{EgoState, Odometry, Route, wrap_angle};
 use rustdriving_routing::{RoadNetwork, RoadNetworkSpec, RoutePlan};
 use serde::{Deserialize, Serialize};
 
@@ -45,7 +45,18 @@ mod tests {
         e: EgoState,
         healthy: bool,
     ) -> bool {
-        n.step(u, t, e, healthy, 1.25, 2.5)
+        n.step(
+            u,
+            t,
+            e,
+            healthy.then_some(Odometry {
+                stamp: t,
+                speed: e.speed,
+                yaw_rate: 0.0,
+            }),
+            1.25,
+            2.5,
+        )
     }
     #[test]
     fn handover_requires_three_healthy_stopped_samples_before_the_divergence() {
@@ -267,7 +278,9 @@ pub(crate) struct Navigator {
     last_stamp: Option<f64>,
     /// Latest malformed newer-update delivery time; recovery needs a later acquisition.
     fault_epoch: Option<f64>,
-    stopped_ticks: usize,
+    /// Last examined motion acquisition, advanced to the control time on unhealthy frames.
+    motion_watermark: Option<f64>,
+    stopped_samples: usize,
 }
 impl Navigator {
     pub fn new(config: NavigationConfig) -> Result<Self, String> {
@@ -290,7 +303,8 @@ impl Navigator {
             status,
             last_stamp: None,
             fault_epoch: None,
-            stopped_ticks: 0,
+            motion_watermark: None,
+            stopped_samples: 0,
         })
     }
     pub fn plan(&self) -> &RoutePlan {
@@ -304,18 +318,32 @@ impl Navigator {
         self.fault_epoch = Some(now);
         self.pending = None;
         self.status.pending_edges.clear();
-        self.stopped_ticks = 0;
+        self.invalidate_stop_confirmation(now);
+    }
+    fn invalidate_stop_confirmation(&mut self, now: f64) {
+        self.stopped_samples = 0;
+        self.motion_watermark = Some(self.motion_watermark.map_or(now, |stamp| stamp.max(now)));
     }
     /// Returns true only when the active route changes at a healthy stopped state.
+    /// `healthy_motion` is accepted, unexpired odometry after the pipeline's sensor checks.
     pub fn step(
         &mut self,
         update: Option<&NavigationUpdate>,
         now: f64,
         ego: EgoState,
-        healthy: bool,
+        healthy_motion: Option<Odometry>,
         radius: f64,
         deceleration: f64,
     ) -> bool {
+        let new_motion = healthy_motion.filter(|motion| {
+            self.motion_watermark
+                .is_none_or(|stamp| motion.stamp > stamp)
+        });
+        let observed_stamp = healthy_motion.map_or(now, |motion| motion.stamp);
+        self.motion_watermark = Some(
+            self.motion_watermark
+                .map_or(observed_stamp, |stamp| stamp.max(observed_stamp)),
+        );
         if let Some(update) = update {
             if update.revision > self.status.revision && !update.stamp.is_finite() {
                 self.fault(now);
@@ -341,7 +369,7 @@ impl Navigator {
                     self.status.closed_edges = update.closed_edges.clone();
                     self.last_stamp = Some(update.stamp);
                     self.fault_epoch = None;
-                    self.stopped_ticks = 0;
+                    self.stopped_samples = 0;
                     self.pending = None;
                     self.status.pending_edges.clear();
                     match self.network.shortest_route(
@@ -406,7 +434,14 @@ impl Navigator {
                 }
             }
         }
-        if self.status.phase == NavigationPhase::Braking && healthy && ego.speed.abs() <= 0.05 {
+        if self.status.phase == NavigationPhase::Fault {
+            self.invalidate_stop_confirmation(now);
+            return false;
+        }
+        if self.status.phase == NavigationPhase::Braking
+            && healthy_motion.is_some_and(|motion| motion.speed.abs() <= 0.05)
+            && ego.speed.abs() <= 0.05
+        {
             let (s, lateral) = self.active.route.project(ego.pose.position);
             let stop = self.status.stop_s.unwrap();
             let yaw = self.active.route.sample(s, 0.0).1;
@@ -414,22 +449,26 @@ impl Navigator {
                 && lateral.abs() + radius + 0.2 < self.active.route.half_width
                 && wrap_angle(ego.pose.yaw - yaw).abs() < 0.35
             {
-                self.stopped_ticks += 1;
-                if self.stopped_ticks >= 3 {
+                // Cached motion can maintain a healthy estimate, but is not another sample.
+                if new_motion.is_none() {
+                    return false;
+                }
+                self.stopped_samples += 1;
+                if self.stopped_samples >= 3 {
                     self.active = self.pending.take().unwrap();
                     self.status.active_edges = self.active.edge_ids.clone();
                     self.status.pending_edges.clear();
                     self.status.stop_s = None;
                     self.status.switches += 1;
                     self.status.phase = NavigationPhase::Following;
-                    self.stopped_ticks = 0;
+                    self.stopped_samples = 0;
                     return true;
                 }
             } else {
-                self.stopped_ticks = 0;
+                self.stopped_samples = 0;
             }
         } else {
-            self.stopped_ticks = 0;
+            self.stopped_samples = 0;
         }
         false
     }

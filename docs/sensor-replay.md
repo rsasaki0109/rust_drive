@@ -285,6 +285,17 @@ Each new malformed update advances the cutoff and cancels any pending handover.
 Recovery starts its own three healthy stopped samples before a route change;
 a valid snapshot that leaves no usable route remains `Blocked`.
 
+Route handover counts three distinct accepted odometry acquisitions with both
+measured and estimated absolute speed at most 0.05 m/s. Cached, duplicate or
+reordered observations do not advance the count, including a cached stop from
+before the closure request. The existing 0.15-second odometry age bound still
+applies. Within that bound, a healthy cached stop can retain earlier confirmation;
+an unhealthy frame resets the count and requires acquisitions strictly after
+that frame before confirmation resumes. Corridor and heading checks remain
+required on every frame. Unconfigured signal input invalidates confirmation
+before the route can switch. Replay recomputes these decisions from recorded
+motion; older logs that switched using repeated motion need new expected outputs.
+
 ## GNSS acceptance diagnostics
 
 Optional output `localization` reports last observed/accepted GNSS stamps, the latest valid-new-fix decision and finite NIS, and accepted/rejected counts. Rejected fixes cannot refresh health; their receipt prevents subsequent duplicate/older observations from being processed. Invalid input continues to use health diagnostics. Replay recomputes the joint gate and all diagnostics. Changing a GNSS observation or its expected counters is covered by mismatch tests. Fault-window labels exist only in simulator configuration; recorded sensor observations contain the actual bias without labels. Schema 1 remains readable, but new correction arithmetic and output diagnostics require regenerated expected outputs. Boxed record payloads preserve JSON encoding. [GNSS baseline recovery](gnss-robustness.md) and [current terminal stopping](terminal-stopping.md).

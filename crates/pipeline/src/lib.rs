@@ -630,13 +630,15 @@ impl DrivingPipeline {
             health.push(HealthIssue::LocalizationUncertain);
         }
         let predictions = self.predictor.predict(&self.tracks, input.time);
+        let unexpected_signal = self.traffic_controls.is_none() && input.traffic_signal.is_some();
         let mut switched = false;
         if let Some(nav) = &mut self.navigator {
             switched = nav.step(
                 input.navigation_update.as_ref(),
                 input.time,
                 estimate,
-                health.is_empty(),
+                self.last_odom
+                    .filter(|_| health.is_empty() && !unexpected_signal),
                 self.config.vehicle.radius,
                 self.planner.max_deceleration_m_s2,
             );
@@ -670,7 +672,7 @@ impl DrivingPipeline {
             if controls.status().fault {
                 health.push(HealthIssue::InvalidTrafficSignal);
             }
-        } else if input.traffic_signal.is_some() {
+        } else if unexpected_signal {
             health.push(HealthIssue::InvalidTrafficSignal);
         }
         if let Some(stops) = &mut self.stop_signs {
