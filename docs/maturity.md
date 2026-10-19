@@ -1,6 +1,16 @@
 # Path toward a broader Rust driving stack
 
-The current engineering estimate is **about 22%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
+The current engineering estimate is **about 23%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
+
+The increment from about 22% reflects a concrete startup and tracking improvement:
+[explicit initial pose covariance and complete posterior reconstruction](initial-pose-covariance.md)
+compose with delayed GNSS/map fusion, while physical heading perturbations expose
+and repair unfinished local side-path avoidance in both plants. The declared
+±3-degree heading model is an authored assumption; automatic initialization and
+measured uncertainty calibration remain absent. The unchanged default prior still
+retains its seven previous launch-heading failures. The published protocol keeps
+failed development trials and separate new-seed confirmation. This modest
+engineering increase leaves the **30% waypoint unmet**.
 
 The increment from about 21% reflects an end-to-end navigation capability:
 [directed origins and destinations inside road edges](mid-edge-routing.md),

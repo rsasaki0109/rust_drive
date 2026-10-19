@@ -45,6 +45,7 @@ impl Controller for PurePursuit {
             || !ego.pose.position.finite()
             || !ego.pose.yaw.is_finite()
             || !ego.speed.is_finite()
+            || !path.lateral_target.is_finite()
             || !dt.is_finite()
             || dt <= 0.0
             || !self.vehicle.wheelbase.is_finite()
@@ -64,11 +65,21 @@ impl Controller for PurePursuit {
         }
         // Shorter preview follows the smooth lateral maneuver more closely.
         // Interpolate its circle intersection to avoid sample-index steering jumps.
-        let lookahead = if self.local_route_geometry {
+        let mut lookahead = if self.local_route_geometry {
             (0.8 + ego.speed * 0.15).clamp(0.8, 1.5)
         } else {
             (3.0 + ego.speed * 0.45).clamp(3.0, 8.0)
         };
+        if self.local_route_geometry && path.lateral_target.abs() > 0.1 {
+            // A rebuilt heading-joined prefix can hide lateral error from the
+            // short corner preview. Side paths use the existing road preview;
+            // centerline turning retains its short local preview. With a full
+            // preview, twice the lever arm bounds the chassis conversion below.
+            lookahead = (3.0 + ego.speed * 0.45)
+                .clamp(3.0, 8.0)
+                .max(self.vehicle.wheelbase)
+                .max(2.0 * self.rear_axle_offset_m);
+        }
         let Some(target) = pursuit_target(path, ego.pose.position, lookahead) else {
             return self.emergency_command();
         };
@@ -217,6 +228,80 @@ pub fn guard(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn local_side_path_preview_spans_both_vehicle_reference_geometries() {
+        for (direction, rear) in [(-1., 0.), (1., 0.), (-1., 1.2), (1., 1.2)] {
+            let path = Trajectory {
+                points: [
+                    (0., 0.),
+                    (1., 0.002),
+                    (2., 0.05),
+                    (3., 0.2),
+                    (4., 0.5),
+                    (6., 1.5),
+                    (8., 2.8),
+                    (10., 3.5),
+                ]
+                .into_iter()
+                .map(|(x, y)| rustdriving_core::TrajectoryPoint {
+                    position: rustdriving_core::Vec2::new(x, y * direction),
+                    speed: 2.,
+                    time: x / 2.,
+                })
+                .collect(),
+                mode: DrivingMode::Avoid,
+                lateral_target: 3.5 * direction,
+            };
+            let mut controller = PurePursuit {
+                local_route_geometry: true,
+                rear_axle_offset_m: rear,
+                ..PurePursuit::default()
+            };
+            let preview: f64 = 3.9; // Existing road preview at 2 m/s.
+            // Independent circle/segment intersection on (3,.2) -> (4,.5).
+            let a: f64 = 1. + 0.3 * 0.3;
+            let b: f64 = 6. + 2. * 0.2 * 0.3;
+            let c = 9. + 0.2 * 0.2 - preview * preview;
+            let fraction = (-b + (b * b - 4. * a * c).sqrt()) / (2. * a);
+            assert!((0.0..=1.0).contains(&fraction));
+            let curvature = 2. * (0.2 + 0.3 * fraction) * direction / (preview * preview);
+            let expected = (controller.vehicle.wheelbase * curvature
+                / (1. - (rear * curvature).powi(2)).sqrt())
+            .atan();
+            let ego = EgoState {
+                speed: 2.,
+                ..EgoState::default()
+            };
+            let command = controller.control(ego, &path, 1.);
+            assert!((command.steering - expected).abs() < 1e-12);
+            let mut center = path;
+            center.lateral_target = 0.;
+            let short = PurePursuit {
+                local_route_geometry: true,
+                rear_axle_offset_m: rear,
+                ..PurePursuit::default()
+            }
+            .control(ego, &center, 1.);
+            assert!(short.steering.abs() < command.steering.abs() / 2.);
+        }
+    }
+    #[test]
+    fn nonfinite_lateral_policy_is_rejected_before_preview_selection() {
+        for target in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            let mut path = profile(2., 2., 1.);
+            path.lateral_target = target;
+            let command = PurePursuit::default().control(
+                EgoState {
+                    speed: 2.,
+                    ..EgoState::default()
+                },
+                &path,
+                0.05,
+            );
+            assert_eq!(command.acceleration, -6.);
+            assert_eq!(command.steering, 0.);
+        }
+    }
     #[test]
     fn chassis_course_circle_inverts_no_slip_rear_axle_steering_left_and_right() {
         let radius = 6.0_f64;

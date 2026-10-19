@@ -377,7 +377,7 @@ impl RneBackend {
         }
         let mut world = World::new();
         let ego = spawn_named(&mut world, "rustdriving_ego");
-        let pose = config.initial_pose;
+        let pose = scenario.spawn_pose(config.initial_pose);
         let ego_collider = if vehicle_body {
             let mut collider = body_calibration.collider();
             collider.sensor = true;
@@ -2130,6 +2130,62 @@ mod tests {
                     .unwrap()
                     .verified
             );
+        }
+    }
+    #[test]
+    fn explicit_prior_and_physical_heading_offset_are_separate() {
+        let mut s = scenario("mid-edge-same-edge");
+        s.initial_pose_covariance = Some([
+            [1., 0., 0.],
+            [0., 1., 0.],
+            [0., 0., (3_f64.to_radians()).powi(2) / 3.],
+        ]);
+        s.initial_heading_offset_rad = Some(-2_f64.to_radians());
+        let r = run(s, 7, Plant::Dynamic).unwrap();
+        assert!(r.summary.passed, "{:?}", r.summary);
+        assert!((r.frames[0].truth.pose.yaw + 2_f64.to_radians()).abs() < 1e-14);
+        let log = r.sensor_log.as_ref().unwrap();
+        assert_eq!(log.header.config.initial_pose.yaw, 0.);
+        assert!(
+            serde_json::to_value(&log.header.config)
+                .unwrap()
+                .get("initial_heading_offset_rad")
+                .is_none()
+        );
+        assert!(r.frames.iter().all(|f| {
+            rustdriving_core::wrap_angle(f.truth.pose.yaw - f.estimate.pose.yaw).abs() <= 0.1
+        }));
+        let mut bytes = vec![];
+        log.write(&mut bytes).unwrap();
+        assert!(
+            rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), vec![])
+                .unwrap()
+                .verified
+        );
+    }
+    #[test]
+    fn chassis_lateral_tracking_recovers_both_viewed_offset_obstacles() {
+        for offset in [-2_f64.to_radians(), 2_f64.to_radians()] {
+            for explicit_prior in [false, true] {
+                let mut s = scenario("mid-edge-obstacle");
+                s.initial_heading_offset_rad = Some(offset);
+                if explicit_prior {
+                    s.initial_pose_covariance = Some([
+                        [1., 0., 0.],
+                        [0., 1., 0.],
+                        [0., 0., (3_f64.to_radians()).powi(2) / 3.],
+                    ]);
+                }
+                let r = run(s, 303, Plant::Dynamic).unwrap();
+                assert!(
+                    r.summary.passed,
+                    "offset {offset}, explicit prior {explicit_prior}: {:?}",
+                    r.summary
+                );
+                assert!(r.summary.reached_goal);
+                assert!(r.summary.min_clearance >= 1.);
+                assert!(r.summary.simulated_seconds <= 65.);
+            }
         }
     }
     #[test]

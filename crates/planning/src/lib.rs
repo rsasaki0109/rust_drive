@@ -13,6 +13,9 @@ pub struct LatticePlanner {
     pub cruise_speed: f64,
     /// Opt-in locally bounded fillets for sparse imported road polylines.
     pub local_route_geometry: bool,
+    /// Opt-in anchored recovery for a point/rear-axle pose reference. Chassis
+    /// course tracking retains the original joined prefix pending qualification.
+    pub point_reference_recovery: bool,
     /// Finish a near-stationary goal within the terminal position tolerance.
     /// Disable for temporary regulatory or route-handover stopping prefixes.
     pub terminal_settling: bool,
@@ -34,6 +37,7 @@ impl Default for LatticePlanner {
             speed_zones: vec![],
             cruise_speed: 8.0,
             local_route_geometry: false,
+            point_reference_recovery: false,
             terminal_settling: true,
             vehicle: VehicleConfig::default(),
             max_acceleration_m_s2: 2.0,
@@ -171,6 +175,32 @@ impl Planner for LatticePlanner {
                 rustdriving_core::Vec2::new(ego.pose.yaw.cos(), ego.pose.yaw.sin())
                     .scaled(base_tangent.x.hypot(base_tangent.y));
             let tangent_error = desired_tangent.minus(base_tangent);
+            // Retain the maneuver's original completion arc. Reapplying its
+            // whole transition at every local side-path tick would continually
+            // defer correction of the remaining tracking error. A wheelbase
+            // floor leaves a finite recovery span after the anchor has passed.
+            let correction_transition = if self.local_route_geometry
+                && self.point_reference_recovery
+                && target.abs() > 0.1
+            {
+                // Reuse the quintic's existing second-derivative bound for
+                // the residual shift as well. A short recovery span must not
+                // ignore the configured plant's lateral acceleration budget.
+                let recovery_floor =
+                    self.max_lateral_acceleration_m_s2
+                        .map_or(self.vehicle.wheelbase, |limit| {
+                            self.vehicle.wheelbase.max(
+                                ego.speed
+                                    * (6.0 * position_error.x.hypot(position_error.y) / limit)
+                                        .sqrt(),
+                            )
+                        });
+                (start_s + transition - s)
+                    .max(recovery_floor)
+                    .min(transition)
+            } else {
+                transition
+            };
             let mut geometry = Vec::new();
             let mut contained = true;
             for i in 0..=80 {
@@ -179,8 +209,11 @@ impl Planner for LatticePlanner {
                     ego.pose.position
                 } else {
                     base(ds)
-                        .plus(position_error.scaled(1.0 - quintic(ds / transition)))
-                        .plus(tangent_error.scaled(geometry::heading_weight(ds, transition)))
+                        .plus(position_error.scaled(1.0 - quintic(ds / correction_transition)))
+                        .plus(
+                            tangent_error
+                                .scaled(geometry::heading_weight(ds, correction_transition)),
+                        )
                 };
                 // Interpolation and heading correction may leave the supplied corridor;
                 // check the actual candidate against the unchanged route evaluator.
@@ -400,6 +433,38 @@ mod tests {
             positions: vec![Vec2::new(20.0, 0.0); 50],
             radius: 1.0,
             dt: 0.2,
+        }
+    }
+    #[test]
+    fn local_side_path_reanchoring_does_not_defer_the_original_completion_arc() {
+        for direction in [-1., 1.] {
+            for s in [9., 12.] {
+                let mut planner = LatticePlanner {
+                    local_route_geometry: true,
+                    point_reference_recovery: true,
+                    previous_lateral: direction * 3.5,
+                    maneuver_start: Some((0., 0., 10.)),
+                    ..LatticePlanner::default()
+                };
+                let ego = EgoState {
+                    pose: rustdriving_core::Pose {
+                        position: Vec2::new(s, direction * 2.),
+                        yaw: 0.,
+                    },
+                    speed: 2.,
+                };
+                let path = planner.plan(ego, &road(5.5), &[obstacle()]);
+                assert_eq!(path.lateral_target, direction * 3.5);
+                assert_eq!(path.points[0].position, ego.pose.position);
+                // The original anchor is finished at x=10. Reanchoring must
+                // disappear within one wheelbase here, rather than ten meters
+                // later at every successive planning tick.
+                for point in &path.points {
+                    if point.position.x >= s + planner.vehicle.wheelbase {
+                        assert!((point.position.y - direction * 3.5).abs() < 1e-12);
+                    }
+                }
+            }
         }
     }
     #[test]

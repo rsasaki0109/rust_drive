@@ -100,6 +100,12 @@ fn is_false(value: &bool) -> bool {
 #[serde(deny_unknown_fields)]
 pub struct Scenario {
     pub name: String,
+    /// Explicit externally supplied initial pose calibration, copied into the pipeline.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub initial_pose_covariance: Option<[[f64; 3]; 3]>,
+    /// Simulator-only physical spawn misalignment; never an estimator input.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub initial_heading_offset_rad: Option<f64>,
     /// Explicit experimental forecast policy, independent of actor identities.
     #[serde(default, skip_serializing_if = "is_false")]
     pub confirm_slow_motion: bool,
@@ -160,6 +166,14 @@ pub struct Scenario {
 }
 impl Scenario {
     pub fn validate(&self) -> Result<(), String> {
+        if self
+            .initial_heading_offset_rad
+            .is_some_and(|offset| !offset.is_finite() || offset.abs() > 0.2)
+        {
+            return Err(
+                "simulated initial heading offset must be finite and within +/- 0.2 rad".into(),
+            );
+        }
         if self.name.is_empty()
             || !self.duration.is_finite()
             || !(1.0..=300.0).contains(&self.duration)
@@ -345,6 +359,14 @@ impl Scenario {
             self.half_width,
         )
         .unwrap()
+    }
+    /// Physics initialization only. The operational pose retains its supplied
+    /// calibration; this perturbation is not exposed through PipelineConfig.
+    pub fn spawn_pose(&self, mut calibrated: Pose) -> Pose {
+        if let Some(offset) = self.initial_heading_offset_rad {
+            calibrated.yaw = wrap_angle(calibrated.yaw + offset);
+        }
+        calibrated
     }
     /// Acquisition-time availability shared by the reference and native plants.
     pub fn gnss_available(&self, time: f64) -> bool {
@@ -648,6 +670,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     let route = scenario.route();
     let (position, yaw) = route.sample(0.0, 0.0);
     let mut config = PipelineConfig::new(route, Pose { position, yaw }, VehicleConfig::default());
+    config.initial_pose_covariance = scenario.initial_pose_covariance;
     config.confirm_slow_motion = scenario.confirm_slow_motion;
     config.gnss_latency_compensation = scenario.gnss_latency_compensation;
     config.speed_zones = scenario.speed_zones.clone();
@@ -698,7 +721,7 @@ pub fn simulate(scenario: Scenario, seed: u64) -> Result<Run, String> {
         scenario: scenario.clone(),
         traffic: TrafficWorld::new(scenario.clone(), config.route.clone()),
         truth: EgoState {
-            pose: config.initial_pose,
+            pose: scenario.spawn_pose(config.initial_pose),
             speed: 0.0,
         },
         vehicle: config.vehicle,

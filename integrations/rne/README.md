@@ -9,6 +9,19 @@ failures retained. The same failures reproduce in equivalent-node parent replay.
 
 ## Reproduce
 
+The optional `initial_pose_covariance` supplies an external ENU x/y/yaw
+calibration prior to the shared EKF and records its complete posterior.
+Simulator-only `initial_heading_offset_rad` perturbs the physical spawn while
+the operational initial pose retains its supplied calibration. This separates
+initialization research from an assumption of perfect physical heading;
+measured real-vehicle calibration remains unverified.
+[Prior contract, rejected tracking variants and complete results](../../docs/initial-pose-covariance.md).
+
+Local side-path tracking uses the existing standard road preview in both plants,
+with wheelbase/lever-arm floors, while centerline corner tracking retains the
+short local preview. The earlier short preview could leave lateral avoidance
+unfinished and cause insufficient passing clearance or a prolonged stop.
+
 From the RustDriving checkout, with Git, Rust, a C linker and network access:
 
 ```sh

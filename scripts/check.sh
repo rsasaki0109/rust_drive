@@ -14,6 +14,7 @@ python3 scripts/test_gnss_latency.py
 python3 scripts/test_gnss_map_history.py
 python3 scripts/test_delayed_map.py
 python3 scripts/test_mid_edge.py
+python3 scripts/test_initial_pose.py
 cargo fmt --all --check
 cargo clippy --workspace --all-targets --locked -- -D warnings
 cargo test --workspace --locked

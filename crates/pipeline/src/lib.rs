@@ -62,6 +62,9 @@ fn default_acceleration() -> f64 {
 pub struct PipelineConfig {
     pub route: Route,
     pub initial_pose: Pose,
+    /// Externally supplied initial ENU x/y/yaw calibration covariance.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub initial_pose_covariance: Option<[[f64; 3]; 3]>,
     pub vehicle: VehicleConfig,
     pub nominal_dt: f64,
     pub cruise_speed: f64,
@@ -105,6 +108,7 @@ impl PipelineConfig {
         Self {
             route,
             initial_pose,
+            initial_pose_covariance: None,
             vehicle,
             nominal_dt: 0.05,
             cruise_speed: 8.0,
@@ -126,6 +130,9 @@ impl PipelineConfig {
         }
     }
     pub fn validate(&self) -> Result<(), String> {
+        if let Some(covariance) = self.initial_pose_covariance {
+            Ekf::with_pose_covariance(self.initial_pose, covariance)?;
+        }
         if let Some(map) = &self.localization_map {
             map.validate()?;
             if map.allow_delayed_scans && !self.gnss_latency_compensation {
@@ -354,6 +361,9 @@ pub struct PipelineOutput {
     pub emergency: bool,
     pub health: Vec<HealthIssue>,
     pub position_variance: f64,
+    /// Full ENU posterior, published when explicit initialization is requested.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pose_covariance: Option<[[f64; 3]; 3]>,
     /// Measured plane fit for this acquisition, absent on frames without one.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ground: Option<GroundDiagnostics>,
@@ -430,6 +440,7 @@ impl DrivingPipeline {
             |nav| nav.speed_zones().to_vec(),
         );
         planner.local_route_geometry = config.local_route_geometry;
+        planner.point_reference_recovery = config.rear_axle_offset_m.is_none();
         planner.vehicle = config.vehicle;
         if let Some(limits) = config.motion_limits {
             planner.max_acceleration_m_s2 = limits.max_acceleration_m_s2;
@@ -470,7 +481,10 @@ impl DrivingPipeline {
             return Err("map exceeds the occupancy allocation bound".into());
         }
         let grid = OccupancyGrid::new(Vec2::new(min_x, min_y), width, height, 0.5);
-        let ekf = Ekf::new(config.initial_pose);
+        let ekf = match config.initial_pose_covariance {
+            Some(covariance) => Ekf::with_pose_covariance(config.initial_pose, covariance)?,
+            None => Ekf::new(config.initial_pose),
+        };
         let gnss_history = config.gnss_latency_compensation.then(|| {
             if config
                 .localization_map
@@ -855,6 +869,7 @@ impl DrivingPipeline {
             let mut planner = LatticePlanner::default();
             planner.cruise_speed = self.planner.cruise_speed;
             planner.local_route_geometry = self.planner.local_route_geometry;
+            planner.point_reference_recovery = self.planner.point_reference_recovery;
             planner.vehicle = self.planner.vehicle;
             planner.max_acceleration_m_s2 = self.planner.max_acceleration_m_s2;
             planner.max_deceleration_m_s2 = self.planner.max_deceleration_m_s2;
@@ -931,6 +946,7 @@ impl DrivingPipeline {
                 let mut planner = LatticePlanner::default();
                 planner.cruise_speed = self.planner.cruise_speed;
                 planner.local_route_geometry = self.planner.local_route_geometry;
+                planner.point_reference_recovery = self.planner.point_reference_recovery;
                 planner.vehicle = self.planner.vehicle;
                 planner.max_acceleration_m_s2 = self.planner.max_acceleration_m_s2;
                 planner.max_deceleration_m_s2 = self.planner.max_deceleration_m_s2;
@@ -1102,6 +1118,10 @@ impl DrivingPipeline {
             emergency,
             health,
             position_variance: variance,
+            pose_covariance: self
+                .config
+                .initial_pose_covariance
+                .map(|_| self.ekf.pose_covariance()),
             ground,
             localization: Some(self.ekf.diagnostics()),
             gnss_latency: self

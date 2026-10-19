@@ -6,7 +6,7 @@ import math
 import os
 from pathlib import Path
 
-from check_gnss_latency import angle
+from check_gnss_latency import angle, verify_pose_covariance
 from check_gnss_map_history import MapFilter, archive
 from check_lane_change_speeds import sweep
 from check_speed_zones import execute
@@ -147,6 +147,7 @@ def verify_ticks(config, ticks):
             raise ValueError(f'full-history pose/speed disagreement at {now}: {delta}')
         if abs(out['position_variance']-oracle.p[0][0]-oracle.p[1][1]) > 1e-8:
             raise ValueError('posterior covariance differs from independent matrix reconstruction')
+        verify_pose_covariance(out, oracle.p, config)
         for key, value in [('accepted_fixes', accepted), ('rejected_fixes', rejected), ('last_observed_stamp', observed),
                            ('last_accepted_stamp', accepted_stamp), ('last_decision', decision)]:
             if out['localization'][key] != value:

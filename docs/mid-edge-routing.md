@@ -126,3 +126,8 @@ The final `bash scripts/check.sh` passes 665 Rust tests, 39 Python tests and
 102 previous sensor-fusion recordings replay exactly. Native format, Clippy
 and all 59 integration tests pass, including the existing explicit rejection
 of the two short-range follower clearance failures.
+
+A subsequent opt-in [initial pose covariance protocol](initial-pose-covariance.md)
+addresses the launch-heading sensitivity under a separately declared startup
+model and repairs side-path tracking. The original 41/48 result and default-prior
+failures above remain historical evidence; they are not replaced by that protocol.

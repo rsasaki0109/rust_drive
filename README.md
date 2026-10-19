@@ -2,7 +2,7 @@
 
 **A Rust-native autonomous driving stack.**
 
-Current comparative engineering maturity is **about 22%** (subjective), with
+Current comparative engineering maturity is **about 23%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
 [Acquisition-time GNSS fusion](docs/gnss-latency.md) now reduces delayed-fix
 errors in both reference and native RNE driving, with bounded history,
@@ -15,6 +15,10 @@ acquisition pose and replays intervening GNSS corrections in either arrival orde
 and destinations inside unchanged road maps, retaining legal turns, closures,
 speed caps and stopped handover in both plants. Its complete fixed qualification
 passes 41/48 episodes; seven native launch-heading failures remain recorded.
+An optional [explicit initial pose covariance](docs/initial-pose-covariance.md)
+now supports declared startup uncertainty and complete posterior replay.
+Physical heading perturbations also exposed and repaired incomplete local
+side-path tracking in both plants; the original failed protocols remain recorded.
 
 ![Recorded left-hand RNE driving through Japanese urban intersections with signals, roadworks and diverse road users](assets/japan-city-demo.gif)
 

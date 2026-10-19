@@ -33,7 +33,8 @@ class Filter:
     def __init__(self, config):
         pose = config['initial_pose']
         self.x = [pose['position']['x'], pose['position']['y'], pose['yaw']]
-        self.p = [[1., 0., 0.], [0., 1., 0.], [0., 0., .03]]
+        initial = config.get('initial_pose_covariance')
+        self.p = [list(row) for row in (initial if initial is not None else [[1., 0., 0.], [0., 1., 0.], [0., 0., .03]])]
         self.speed = 0.
         self.offset = config.get('rear_axle_offset_m') or 0.
         self.accepted, self.rejected = 0, 0
@@ -137,6 +138,7 @@ def verify_ticks(config, ticks):
             raise ValueError(f'pose differs from chronological oracle at {now}: {delta}')
         if abs(out['position_variance']-oracle.p[0][0]-oracle.p[1][1]) > 1e-8:
             raise ValueError('posterior covariance differs from independent joint solution')
+        verify_pose_covariance(out, oracle.p, config)
         diagnostics = out['localization']
         for key, value in [('accepted_fixes', oracle.accepted), ('rejected_fixes', oracle.rejected),
                            ('last_accepted_stamp', oracle.accepted_stamp), ('last_observed_stamp', oracle.observed),
@@ -155,6 +157,24 @@ def verify_ticks(config, ticks):
         previous = now
     return {'passed': True, 'verified_ticks': len(ticks), 'maximum_pose_difference': maximum,
             'compensated_fixes': compensated, 'accepted_fixes': oracle.accepted, 'rejected_fixes': oracle.rejected}
+
+
+def verify_pose_covariance(output, expected, config):
+    """Independent full-matrix comparison and Sylvester positivity check."""
+    if config.get('initial_pose_covariance') is None:
+        if output.get('pose_covariance') is not None: raise ValueError('legacy output unexpectedly claims a full covariance')
+        return 0.
+    p = output.get('pose_covariance')
+    if p is None or len(p) != 3 or any(len(row) != 3 for row in p): raise ValueError('explicit prior requires a full posterior')
+    if any(not math.isfinite(p[i][j]) or abs(p[i][j]-p[j][i]) > 1e-12 for i in range(3) for j in range(3)):
+        raise ValueError('nonfinite or asymmetric posterior')
+    determinant = (p[0][0]*(p[1][1]*p[2][2]-p[1][2]*p[2][1])
+                   -p[0][1]*(p[1][0]*p[2][2]-p[1][2]*p[2][0])+p[0][2]*(p[1][0]*p[2][1]-p[1][1]*p[2][0]))
+    if p[0][0] <= 0. or p[0][0]*p[1][1]-p[0][1]*p[1][0] <= 0. or determinant <= 0.:
+        raise ValueError('posterior is not positive definite')
+    difference = max(abs(p[i][j]-expected[i][j]) for i in range(3) for j in range(3))
+    if difference > 1e-8: raise ValueError('full posterior differs from independent reconstruction')
+    return difference
 
 
 def audit(run, sensor_path, case):

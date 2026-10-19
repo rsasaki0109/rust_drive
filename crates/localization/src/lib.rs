@@ -1,6 +1,8 @@
 //! Three-state EKF: wheel speed / gyro prediction and scalar GNSS updates.
 pub mod keyframes3d;
 pub mod latency;
+#[cfg(test)]
+mod pose_prior_tests;
 pub mod registration;
 pub mod registration3d;
 pub mod reprojection3d;
@@ -28,6 +30,31 @@ impl Ekf {
             last_gnss: f64::NEG_INFINITY,
             diagnostics: LocalizationDiagnostics::default(),
         }
+    }
+    /// Initial x/y/yaw covariance in world ENU (m², m·rad, rad²).
+    /// This is externally supplied calibration, not a runtime truth estimate.
+    /// Reject malformed matrices rather than silently replacing a caller's prior.
+    pub fn with_pose_covariance(pose: Pose, covariance: [[f64; 3]; 3]) -> Result<Self, String> {
+        if !pose.position.finite()
+            || !pose.yaw.is_finite()
+            || !(covariance[0][0] + covariance[1][1]).is_finite()
+            || covariance[2][2] > std::f64::consts::PI.powi(2)
+            || (0..3).any(|i| (0..i).any(|j| covariance[i][j] != covariance[j][i]))
+            || cholesky3(covariance).is_none()
+        {
+            return Err(
+                "initial pose covariance requires finite trace, symmetry, positive definiteness and yaw variance <= pi squared"
+                    .into(),
+            );
+        }
+        Ok(Self {
+            covariance,
+            ..Self::new(pose)
+        })
+    }
+    /// Posterior x/y/yaw covariance in the same world frame and units as the prior.
+    pub fn pose_covariance(&self) -> [[f64; 3]; 3] {
+        self.covariance
     }
     /// Invalid inputs or nonfinite computed pose/covariance leave the filter unchanged.
     pub fn predict(&mut self, odom: Odometry, dt: f64) {

@@ -74,7 +74,7 @@ importer supports bounded motorcar node-via relations and rejects relevant
 unsupported semantics. Navigation and fixed-route mapped stop controls remain
 separate configurations. [Turn contract and evidence](turn-restrictions.md).
 
-Optional `local_route_geometry` uses bounded steering-radius corner fillets and a shorter pursuit preview for sparse external roads. Its internal planning arc differs from the original map arc; candidate containment and physical evaluation still use the supplied unchanged corridor. Impossible/overlapping fillets fail validation. Mapped signal, sign and priority-zone coordinates are currently excluded from this mode; their existing route-coordinate behavior remains separate. Optional `rear_axle_offset_m` calibrates low-speed chassis odometry prediction and temporary planning/control course while retaining body yaw for sensors. The native dynamic local mode selects its declared rear-axle distance; default/reference behavior is unchanged. [Reference contract and evidence](chassis-reference.md).
+Optional `local_route_geometry` uses bounded steering-radius corner fillets and a shorter pursuit preview for sparse external roads. Its internal planning arc differs from the original map arc; candidate containment and physical evaluation still use the supplied unchanged corridor. Impossible/overlapping fillets fail validation. Mapped signal, sign and priority-zone coordinates are currently excluded from this mode; their existing route-coordinate behavior remains separate. Optional `rear_axle_offset_m` calibrates low-speed chassis odometry prediction and temporary planning/control course while retaining body yaw for sensors. The native dynamic local mode selects its declared rear-axle distance. Local side paths now use the existing standard road preview with wheelbase/lever-arm floors in both plants; local centerline turning retains the short preview. Point/rear-axle reference side paths also retain the original maneuver completion arc when reanchoring tracking error, with wheelbase and configured lateral-acceleration recovery bounds. Native chassis/course tracking retains its preceding joined prefix after rejected recovery probes. [Tracking failure and repair](initial-pose-covariance.md). [Reference contract and evidence](chassis-reference.md).
 
 | Crate | Responsibility | Depends on |
 |---|---|---|
@@ -111,6 +111,13 @@ Unsafe Rust is forbidden at workspace level. There is no global message bus, cus
 `DrivingPipeline::step(&SensorFrame)` owns EKF, perception/tracking, occupancy, predictor, planner and controller state. Input contains only a monotonic clock, optional timestamped odometry/GNSS/body-frame LiDAR, and explicit LiDAR acquisition failure. Output contains estimate, tracks, predictions, trajectory, command, health diagnostics and GNSS observed/accepted timestamp, decision, NIS and count diagnostics. It has no simulator object/pose inputs. Configuration supplies route, initial pose calibration, vehicle dimensions and optional calibrated forward/braking/lateral acceleration limits; this is a known-route demonstration.
 
 Missing/stale odometry, LiDAR or GNSS, invalid samples, excessive covariance and acquisition failure select finite emergency braking. Healthy empty LiDAR is accepted; a failed acquisition brakes immediately. An invalid clock returns `Err`; callers must stop rather than reuse a command. The reference and RNE backends implement observation/advance boundaries and share the same independent evaluator. Runtime truth stays inside sensor synthesis and evaluation/rendering.
+
+Optional `initial_pose_covariance` supplies a finite, symmetric positive definite
+ENU x/y/yaw matrix (m², m·rad, rad²). It is external initialization calibration.
+When present, output records every full posterior and replay checks it; absent
+or null retains the original prior and serialization. Physical initial heading
+perturbations are simulation inputs and never enter operational configuration.
+[Validation, composition and research limits](initial-pose-covariance.md).
 
 ## Algorithms
 

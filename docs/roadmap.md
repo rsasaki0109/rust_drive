@@ -43,6 +43,12 @@ rule understanding. [Contract and evidence](route-speed-zones.md).
 
 Acquisition-time GNSS fusion now corrects up to 0.5 s of delayed fixes using bounded wheel/gyro history in the shared pipeline. Reference and native RNE accuracy and fault-recovery trials pass independent chronological reconstruction, with all preceding default outputs retained. Synchronous accepted map-pose/covariance events can be replayed atomically; an explicit option also retains GNSS events and admits map scans up to 0.2 s old in either arrival order. Delayed odometry, clock-offset estimation and broader external correction types remain unsupported. [GNSS improvement](gnss-latency.md), [combined synchronous map history](gnss-map-history.md), [delayed-map mode](delayed-map.md).
 
+Optional [initial pose covariance](initial-pose-covariance.md) now records complete
+posterior matrices and composes with temporal fusion. Physical heading offsets
+also expose and repair incomplete side-path tracking in both plants. The supplied
+±3-degree prior remains authored calibration; measured initialization uncertainty
+and automatic sensor-only initialization remain open.
+
 Remaining:
 
 - Covariance/forecast uncertainty propagation, delayed odometry and general multi-sensor correction-event replay, per-point LiDAR deskew and trace migrations. Bounded acquisition-time LiDAR reprojection and current-time motion extrapolation are narrower implemented steps, not complete delayed-sensor fusion.
