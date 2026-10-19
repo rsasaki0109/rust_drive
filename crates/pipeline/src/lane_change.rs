@@ -413,6 +413,11 @@ impl LaneChangeGate {
             .as_ref()
             .and_then(ReturnMonitor::braking_limit)
     }
+    pub fn return_speed_zones(&self) -> Vec<rustdriving_core::RouteSpeedZone> {
+        self.return_monitor
+            .as_ref()
+            .map_or_else(Vec::new, ReturnMonitor::speed_zones)
+    }
     pub fn planning_route(&self, route: &Route) -> Option<Route> {
         if let Some(route) = self.return_monitor.as_ref().and_then(ReturnMonitor::route) {
             return Some(route.clone());

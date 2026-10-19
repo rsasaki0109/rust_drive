@@ -51,12 +51,10 @@ a lower local speed does not reduce that bound. The existing 4 m/s cruise
 ceiling for gated changes remains. Sensor-only replay records and recomputes
 both admission and speed configuration.
 
-`--return-on-conflict` and `--resume-after-return` remain incompatible with
-nonempty speed intervals. They can create a different route origin/geometry
-and need explicit speed remapping. Live navigation is also rejected. The
-pipeline accepts speed intervals with fixed admission only when no alternate
-return policy is configured. This does not implement aborting or resuming
-speed-map handover.
+`--return-on-conflict` can also compile an explicit cap for the alternate
+return-and-stop route. [Return contract and independent acceptance](lane-return-speeds.md).
+`--resume-after-return` and live navigation remain incompatible with nonempty
+speed intervals; they need separate tail remapping.
 
 ## Independent reference acceptance
 
@@ -89,6 +87,6 @@ worlds and driver code are unchanged. [Final measurements and retained audit
 error](../assets/lane-change-speeds-results.json).
 
 This is a bounded authored reference-plant trial. Variable topology, arbitrary
-sequences of changes, alternate-route speed remapping, general traffic
+sequences of changes, mission-retry speed remapping, general traffic
 interaction, native RNE qualification and real vehicles remain outside it.
 Earlier short-range follower failures remain preserved and are not repaired.

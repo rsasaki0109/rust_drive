@@ -48,7 +48,7 @@ fn config() -> PipelineConfig {
 }
 
 #[test]
-fn fixed_admission_accepts_limits_but_an_alternate_return_route_is_rejected() {
+fn alternate_speed_policy_is_required_and_cannot_be_reused_for_a_mission_retry() {
     let mut config = config();
     assert!(config.validate().is_ok());
     config.lane_change.as_mut().unwrap().return_on_conflict = Some(LaneChangeReturnConfig {
@@ -56,10 +56,52 @@ fn fixed_admission_accepts_limits_but_an_alternate_return_route_is_rejected() {
         source_end: Vec2::new(80., 0.),
         source_width_m: 3.5,
         max_return_distance_m: 30.,
+        speed_limit_m_s: None,
         resume_after_return: None,
     });
     assert!(config.validate().unwrap_err().contains("alternate-route"));
+    config
+        .lane_change
+        .as_mut()
+        .unwrap()
+        .return_on_conflict
+        .as_mut()
+        .unwrap()
+        .speed_limit_m_s = Some(2.);
+    assert!(config.validate().is_ok());
+    for speed in [0., 8.01, f64::NAN, f64::INFINITY] {
+        let mut invalid = config.clone();
+        invalid
+            .lane_change
+            .as_mut()
+            .unwrap()
+            .return_on_conflict
+            .as_mut()
+            .unwrap()
+            .speed_limit_m_s = Some(speed);
+        assert!(invalid.validate().is_err());
+    }
+    let mut retry = config.clone();
+    retry
+        .lane_change
+        .as_mut()
+        .unwrap()
+        .return_on_conflict
+        .as_mut()
+        .unwrap()
+        .resume_after_return = Some(rustdriving_pipeline::lane_change::LaneChangeResumeConfig {
+        max_change_distance_m: 30.,
+    });
+    assert!(retry.validate().is_err());
     config.speed_zones.clear();
+    config
+        .lane_change
+        .as_mut()
+        .unwrap()
+        .return_on_conflict
+        .as_mut()
+        .unwrap()
+        .speed_limit_m_s = None;
     assert!(config.validate().is_ok());
 }
 

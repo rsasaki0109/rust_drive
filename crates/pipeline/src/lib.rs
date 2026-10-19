@@ -165,7 +165,10 @@ impl PipelineConfig {
                     || self
                         .lane_change
                         .as_ref()
-                        .is_some_and(|change| change.return_on_conflict.is_some())))
+                        .and_then(|change| change.return_on_conflict.as_ref())
+                        .is_some_and(|config| {
+                            config.speed_limit_m_s.is_none() || config.resume_after_return.is_some()
+                        })))
         {
             return Err(
                 "invalid speed zones or unsupported live/alternate-route speed zones".into(),
@@ -827,6 +830,7 @@ impl DrivingPipeline {
                 planner.max_acceleration_m_s2 = self.planner.max_acceleration_m_s2;
                 planner.max_deceleration_m_s2 = self.planner.max_deceleration_m_s2;
                 planner.max_lateral_acceleration_m_s2 = self.planner.max_lateral_acceleration_m_s2;
+                planner.speed_zones = change.return_speed_zones();
                 self.planner = planner;
             }
         }

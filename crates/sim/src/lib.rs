@@ -749,6 +749,7 @@ pub fn simulate_with_backend(
     let mut stop_rules = StopRuleEvaluator::new(scenario.stop_signs.len());
     let mut intersection_rules = IntersectionRuleEvaluator::new(scenario.yield_intersections.len());
     let mut speed_rules = speed_zones::SpeedZoneEvaluator::default();
+    let mut return_speed_limit = None;
     let mut sensor_delivery = SensorDelivery::default();
     let mut evaluation_closures = scenario
         .navigation
@@ -779,7 +780,18 @@ pub fn simulate_with_backend(
                 traffic_collided |= separation < 0.0;
             }
         }
-        if !scenario.speed_zones.is_empty() {
+        if let Some(speed_m_s) = return_speed_limit {
+            speed_rules.observe(
+                &route,
+                truth,
+                vehicle.radius,
+                &[rustdriving_core::RouteSpeedZone {
+                    start_s_m: 0.,
+                    end_s_m: route.length(),
+                    speed_m_s,
+                }],
+            );
+        } else if !scenario.speed_zones.is_empty() {
             speed_rules.observe(&route, truth, vehicle.radius, &scenario.speed_zones);
         }
         // Evaluate true physical crossings against the external phase schedule.
@@ -839,6 +851,36 @@ pub fn simulate_with_backend(
         let stop_sign_status = result.stop_signs.clone();
         let intersection_status = result.intersections.clone();
         let lane_change_status = result.lane_change.clone();
+        if return_speed_limit.is_none()
+            && lane_change_status.as_ref().is_some_and(|status| {
+                matches!(
+                    status.phase,
+                    rustdriving_pipeline::lane_change::LaneChangePhase::Aborting
+                        | rustdriving_pipeline::lane_change::LaneChangePhase::Aborted
+                )
+            })
+        {
+            return_speed_limit = scenario
+                .lane_change
+                .as_ref()
+                .and_then(|gate| gate.return_on_conflict.as_ref())
+                .and_then(|config| config.speed_limit_m_s);
+            if let Some(speed_m_s) = return_speed_limit {
+                // The switch occurs at this state. Score it under both
+                // policies; the following integration interval uses the return
+                // cap. Do not apply the new cap backward before the switch.
+                speed_rules.observe(
+                    &route,
+                    truth,
+                    vehicle.radius,
+                    &[rustdriving_core::RouteSpeedZone {
+                        start_s_m: 0.,
+                        end_s_m: route.length(),
+                        speed_m_s,
+                    }],
+                );
+            }
+        }
         if let Some(status) = &navigation_status
             && status.switches > navigation_switches
         {

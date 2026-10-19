@@ -106,10 +106,8 @@ pub(crate) fn run(args: &[String]) -> Result<bool, Box<dyn Error>> {
             );
         }
     };
-    if local_speed_limits && return_on_conflict {
-        return Err(
-            "--local-speed-limits does not support alternate-route returns or retries".into(),
-        );
+    if local_speed_limits && resume_after_return {
+        return Err("--local-speed-limits does not support mission retries after a return".into());
     }
     if duration.is_some_and(|seconds| !seconds.is_finite() || !(1.0..=300.0).contains(&seconds)) {
         return Err("scenario duration must be finite and in 1..300 seconds".into());
@@ -187,6 +185,8 @@ pub(crate) fn run(args: &[String]) -> Result<bool, Box<dyn Error>> {
                 source_end: *source.centerline.last().unwrap(),
                 source_width_m: source.width_m,
                 max_return_distance_m: return_distance.unwrap_or(30.0),
+                speed_limit_m_s: local_speed_limits
+                    .then_some(source.speed_limit_m_s.min(target.speed_limit_m_s).min(8.0)),
                 resume_after_return: resume_after_return.then_some(LaneChangeResumeConfig {
                     max_change_distance_m: resume_distance.unwrap_or(30.0),
                 }),

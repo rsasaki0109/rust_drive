@@ -53,7 +53,8 @@ geometry and intervals, rather than rerunning the original lane search.
 Without `--scenario-output`, the option previews the same compiled intervals
 in the JSON report. With an output file, all validation occurs before file
 creation; existing outputs and input maps are never overwritten. Combining
-the option with an alternate-route return/retry request fails before output creation. Without
+the option with a mission retry request fails before output creation. An early
+return requires a separate [mapped stopping-route cap](lane-return-speeds.md). Without
 the new option, existing reports and exports retain their mission-wide
 minimum speed and omit the new report property.
 

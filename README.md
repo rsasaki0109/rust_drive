@@ -696,6 +696,8 @@ The optional `lane-route --local-speed-limits` exporter derives these intervals
 from the selected lanes' mapped speeds. [Map-to-driving contract and checks](docs/lane-speed-zones.md).
 It also supports one fixed lane-change connector with observed-gap admission,
 using both lanes' lower limit while changing. [Speed mapping and validation](docs/lane-change-speeds.md).
+An opt-in early return now retains a separate mapped speed cap until it stops
+in the original lane. [Return behavior and limits](docs/lane-return-speeds.md).
 
 ## Reproduce the GIF
 

@@ -7,6 +7,7 @@ python3 scripts/test_lane_occupancy.py
 python3 scripts/test_speed_zones.py
 python3 scripts/test_lane_speed_zones.py
 python3 scripts/test_lane_change_speeds.py
+python3 scripts/test_lane_return_speeds.py
 cargo fmt --all --check
 cargo clippy --workspace --all-targets --locked -- -D warnings
 cargo test --workspace --locked

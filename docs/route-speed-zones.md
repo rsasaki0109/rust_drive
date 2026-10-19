@@ -48,8 +48,9 @@ initial conditions or with an uncalibrated vehicle/controller.
 
 Intervals currently require a fixed route. A statically resolved navigation
 request is supported, including a northbound route. Live navigation updates
-and lane-change alternate routes are rejected with nonempty intervals;
-their different route origins would require explicit remapping. Regulatory
+are rejected with nonempty intervals. An early lane-change return requires
+an explicit surveyed cap for its complete alternate route; mission retries
+remain unsupported with speed intervals. [Return contract](lane-return-speeds.md). Regulatory
 stopping prefixes retain the original route origin and configured full
 intervals. A zone beyond a temporary stop prefix remains valid after release.
 The stop-sign combination is a physical regression fixture.

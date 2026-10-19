@@ -15,6 +15,7 @@ fn gate() -> LaneChangeGate {
                 source_end: Vec2::new(80.0, 0.0),
                 source_width_m: 3.5,
                 max_return_distance_m: 30.0,
+                speed_limit_m_s: None,
                 resume_after_return: None,
             }),
         },
@@ -311,4 +312,35 @@ fn return_preview_subtracts_the_forecast_occupancy_envelope() {
     assert!((base - expanded - 2.).abs() < 1e-12);
     p.additional_radius_m.pop();
     assert_eq!(observed_clearance(&path, &[p], 1.25), f64::NEG_INFINITY);
+}
+
+#[test]
+fn return_preview_and_active_policy_use_the_new_route_origin_and_its_entire_length() {
+    let r = route();
+    let mut g = gate();
+    g.return_monitor.as_mut().unwrap().config.speed_limit_m_s = Some(1.2);
+    mature(&mut g, &r);
+    assert!(g.return_speed_zones().is_empty());
+    let traffic = [obstacle(52., 3.5, 1)];
+    let mut o = observation(&r, &traffic, 1.1);
+    o.ego.speed = 1.;
+    o.motion.as_mut().unwrap().speed = 1.;
+    assert!(g.observe_return(o));
+    let returned = g.planning_route(&r).unwrap();
+    let zones = g.return_speed_zones();
+    assert_eq!(zones.len(), 1);
+    assert_eq!(zones[0].start_s_m, 0.);
+    assert_eq!(zones[0].end_s_m, returned.length());
+    let mut planner = super::super::resuming::calibrated_planner(
+        VehicleConfig::default(),
+        4.,
+        observation(&r, &traffic, 1.1).limits,
+    );
+    planner.speed_zones = zones;
+    let mut e = ego();
+    e.speed = 1.;
+    let trajectory = planner.plan(e, &returned, &traffic);
+    assert_ne!(trajectory.mode, DrivingMode::Emergency);
+    assert!(trajectory.points.iter().all(|p| p.speed <= 1.2 + 1e-9));
+    assert!(trajectory.points.last().unwrap().speed <= 0.05);
 }

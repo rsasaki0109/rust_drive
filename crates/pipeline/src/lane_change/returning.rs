@@ -5,7 +5,8 @@ use super::{
 };
 use crate::MotionLimits;
 use rustdriving_core::{
-    DrivingMode, EgoState, Odometry, Planner, Prediction, Route, Vec2, VehicleConfig,
+    DrivingMode, EgoState, Odometry, Planner, Prediction, Route, RouteSpeedZone, Vec2,
+    VehicleConfig,
 };
 use rustdriving_planning::LatticePlanner;
 use rustdriving_routing::lane_return::{self, LaneReturnRequest};
@@ -76,6 +77,9 @@ pub struct LaneChangeReturnConfig {
     pub source_end: Vec2,
     pub source_width_m: f64,
     pub max_return_distance_m: f64,
+    /// Surveyed cap for the entire alternate return-and-stop route.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub speed_limit_m_s: Option<f64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub resume_after_return: Option<LaneChangeResumeConfig>,
 }
@@ -86,6 +90,13 @@ impl LaneChangeReturnConfig {
         route: &Route,
         vehicle: VehicleConfig,
     ) -> Result<(), String> {
+        if self
+            .speed_limit_m_s
+            .is_some_and(|speed| !speed.is_finite() || !(0.1..=8.0).contains(&speed))
+            || (self.speed_limit_m_s.is_some() && self.resume_after_return.is_some())
+        {
+            return Err("return speed limit must be in 0.1..8 m/s without a mission retry".into());
+        }
         if let Some(config) = &self.resume_after_return {
             config.validate()?;
         }
@@ -125,6 +136,16 @@ impl LaneChangeReturnConfig {
             );
         }
         Ok(())
+    }
+    fn speed_zones(&self, route: &Route) -> Vec<RouteSpeedZone> {
+        self.speed_limit_m_s
+            .map(|speed_m_s| RouteSpeedZone {
+                start_s_m: 0.,
+                end_s_m: route.length(),
+                speed_m_s,
+            })
+            .into_iter()
+            .collect()
     }
 }
 
@@ -228,6 +249,11 @@ impl ReturnMonitor {
     }
     pub fn braking_limit(&self) -> Option<f64> {
         self.resume.as_ref().and_then(ResumeMonitor::braking_limit)
+    }
+    pub fn speed_zones(&self) -> Vec<RouteSpeedZone> {
+        self.route
+            .as_ref()
+            .map_or_else(Vec::new, |route| self.config.speed_zones(route))
     }
     pub fn step(&mut self, state: &mut LaneChangeStatus, o: ReturnObservation<'_>) -> bool {
         if state.phase == LaneChangePhase::Aborted
@@ -430,6 +456,7 @@ impl ReturnMonitor {
         preview.vehicle = self.vehicle;
         preview.local_route_geometry = true;
         preview.cruise_speed = self.cruise;
+        preview.speed_zones = self.config.speed_zones(&plan.route);
         preview.max_acceleration_m_s2 = o.limits.max_acceleration_m_s2;
         preview.max_deceleration_m_s2 = o.limits.max_deceleration_m_s2;
         preview.max_lateral_acceleration_m_s2 = Some(o.limits.max_lateral_acceleration_m_s2);
