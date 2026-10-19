@@ -66,6 +66,92 @@ fn held(output: &PipelineOutput, revision: u64) {
 }
 
 #[test]
+fn optional_stopped_confirmation_reaches_the_controller_and_exact_replay() {
+    let mut config = config();
+    config.navigation.as_mut().unwrap().hold_for_handover = true;
+    let mut pipeline = DrivingPipeline::new(config.clone()).unwrap();
+    let mut log = SensorLog::new("stopped-handover-hold", config);
+    for (i, time) in [0., 0.025, 0.05, 0.1].into_iter().enumerate() {
+        let mut input = frame(time, (i == 0).then(|| update(time, 1, &["main"])));
+        if i == 1 {
+            input.odometry = None;
+        }
+        let output = pipeline.step(&input).unwrap();
+        assert!(output.health.is_empty());
+        let nav = output.navigation.as_ref().unwrap();
+        assert_eq!(nav.handover_hold, i < 3);
+        assert_eq!(nav.switches, usize::from(i == 3));
+        if i < 3 {
+            assert!(output.command.acceleration <= -0.5);
+        } else {
+            assert!(output.command.acceleration > 0.);
+        }
+        log.record(input, output);
+    }
+    let mut bytes = Vec::new();
+    log.write(&mut bytes).unwrap();
+    assert!(
+        verify(Cursor::new(&bytes), std::io::sink())
+            .unwrap()
+            .verified
+    );
+    log.ticks[0]
+        .expected
+        .navigation
+        .as_mut()
+        .unwrap()
+        .handover_hold = false;
+    let mut forged = Vec::new();
+    log.write(&mut forged).unwrap();
+    assert!(verify(Cursor::new(forged), std::io::sink()).is_err());
+}
+
+#[test]
+fn navigation_fault_recovery_retains_a_previously_confirming_brake_hold() {
+    let mut config = config();
+    config.navigation.as_mut().unwrap().hold_for_handover = true;
+    let mut pipeline = DrivingPipeline::new(config.clone()).unwrap();
+    let mut log = SensorLog::new("held-navigation-fault-recovery", config);
+    for (i, (revision, closed)) in [
+        (1, vec!["main"]),
+        (2, vec!["unknown"]),
+        (2, vec!["main", "detour"]),
+        (3, vec![]),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let now = i as f64 * 0.05;
+        let input = frame(now, Some(update(now, revision, &closed)));
+        let output = pipeline.step(&input).unwrap();
+        let nav = output.navigation.as_ref().unwrap();
+        assert_eq!(nav.handover_hold, i < 3);
+        assert_eq!(nav.switches, 0);
+        if i == 1 {
+            held(&output, 1);
+        } else {
+            assert!(output.health.is_empty());
+            if i == 2 {
+                assert_eq!(nav.phase, NavigationPhase::Blocked);
+            }
+            if i < 3 {
+                assert!(output.command.acceleration <= -0.5);
+            } else {
+                assert!(output.command.acceleration > 0.);
+            }
+        }
+        log.record(input, output);
+    }
+    let mut bytes = Vec::new();
+    log.write(&mut bytes).unwrap();
+    assert!(
+        verify(Cursor::new(bytes), std::io::sink())
+            .unwrap()
+            .verified
+    );
+}
+
+#[test]
 fn malformed_updates_hold_until_a_post_fault_snapshot_arrives() {
     for case in 0..6 {
         let mut driver = DrivingPipeline::new(config()).unwrap();

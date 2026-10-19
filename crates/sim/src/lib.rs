@@ -78,6 +78,8 @@ pub struct NavigationSpec {
     pub goal: rustdriving_routing::RouteEndpoint,
     #[serde(default)]
     pub closed_edges: Vec<String>,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub hold_for_handover: bool,
 }
 /// Simulator-only GNSS position fault; never supplied as pipeline calibration.
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
@@ -731,7 +733,8 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     // so replay recomputes the legal route instead of trusting resolved geometry.
     if !scenario.navigation_updates.is_empty()
         || scenario.navigation.as_ref().is_some_and(|nav| {
-            matches!(nav.start, rustdriving_routing::RouteEndpoint::Edge(_))
+            nav.hold_for_handover
+                || matches!(nav.start, rustdriving_routing::RouteEndpoint::Edge(_))
                 || matches!(nav.goal, rustdriving_routing::RouteEndpoint::Edge(_))
                 || !nav.network.turn_restrictions.is_empty()
                 || nav
@@ -746,6 +749,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
             start: nav.start.clone(),
             goal: nav.goal.clone(),
             closed_edges: nav.closed_edges.clone(),
+            hold_for_handover: nav.hold_for_handover,
         });
     }
     config
@@ -1261,6 +1265,20 @@ pub fn simulate_with_backend(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn static_mission_records_an_explicit_handover_policy_for_replay() {
+        let mut scenario: Scenario =
+            serde_json::from_str(include_str!("../../../scenarios/route-direct.json")).unwrap();
+        assert!(scenario.navigation_updates.is_empty());
+        assert!(pipeline_config(&scenario).navigation.is_none());
+        scenario.navigation.as_mut().unwrap().hold_for_handover = true;
+        let config = pipeline_config(&scenario);
+        assert!(config.navigation.as_ref().unwrap().hold_for_handover);
+        assert!(config.validate().is_ok());
+        let encoded = serde_json::to_value(config).unwrap();
+        assert_eq!(encoded["navigation"]["hold_for_handover"], true);
+        assert!(encoded.get("navigation_updates").is_none());
+    }
     #[test]
     fn gnss_acquisition_windows_are_bounded_and_recover_at_the_end_boundary() {
         let mut s: Scenario =

@@ -89,7 +89,7 @@ def verify_navigation(config,ticks,reset_stamp=None):
     nav=config['navigation'];radius=config['vehicle']['radius'];decel=(config.get('motion_limits') or {}).get('max_deceleration_m_s2',2.5)
     closed=list(nav.get('closed_edges',[]));active=reference(nav,closed);pending=None
     phase='Following';revision=switches=votes=0;stop=None;last_stamp=fault=watermark=wheel=None;blocked_hold=False
-    reset_evidence=None;events=[];reset_ownership=None
+    reset_evidence=None;events=[];reset_ownership=None;handover_hold=False;held_ticks=0
     def replan(ego):
         nonlocal phase,pending,stop
         wanted=reference(nav,closed)
@@ -114,7 +114,7 @@ def verify_navigation(config,ticks,reset_stamp=None):
             admitted=abs(ego['speed'])<=.05 and distance+radius+.2<active['half_width'] and yaw_error<.35
             reset_evidence=dict(stamp=now,progress_s_m=s,lateral_m=lateral,distance_to_route_m=distance,yaw_error_rad=yaw_error,admitted=admitted)
             reset_ownership=dict(revision=revision,closed_edges=list(closed),active_edges=list(active['edge_ids']),switches=switches,phase_before=phase)
-            votes=0;watermark=now;blocked_hold=False
+            votes=0;watermark=now;blocked_hold=False;handover_hold=False
             if not admitted:phase='Fault';fault=now;pending=None
             elif phase in ['Braking','Blocked']:pending=None;replan(ego)
         if reset_evidence is None or reset_evidence['admitted']:
@@ -129,19 +129,22 @@ def verify_navigation(config,ticks,reset_stamp=None):
                     revision=update['revision'];closed=list(update['closed_edges']);last_stamp=update['stamp'];fault=None;votes=0;pending=None;replan(ego)
             if phase=='Fault':votes=0;watermark=max(watermark,now)
             else:
-                if phase=='Following':blocked_hold=False
+                if phase=='Following':blocked_hold=False;handover_hold=False
                 _,s,lateral,yaw=projection(active['points'],ego['pose']['position'])
                 if phase=='Blocked' and fresh and abs(motion['speed'])<=.05 and abs(ego['speed'])<=.05 and stop-s<=3.5:blocked_hold=True
                 if phase=='Braking' and motion is not None and abs(motion['speed'])<=.05 and abs(ego['speed'])<=.05:
                     aligned=s<=stop+.5 and abs(lateral)+radius+.2<active['half_width'] and abs(angle(ego['pose']['yaw']-yaw))<.35
                     if not aligned:votes=0
                     elif fresh:
+                        handover_hold=handover_hold or nav.get('hold_for_handover',False)
                         votes+=1
                         if votes>=3:
-                            active=pending;pending=None;stop=None;switches+=1;phase='Following';blocked_hold=False;votes=0
+                            active=pending;pending=None;stop=None;switches+=1;phase='Following';blocked_hold=False;votes=0;handover_hold=False
                             events.append(dict(stamp=now,active_edges=list(active['edge_ids']),revision=revision,after_reset=reset_stamp is not None and now>reset_stamp))
                 else:votes=0
         actual=out['navigation']
+        if actual.get('handover_hold',False)!=handover_hold:raise ValueError('unproved handover brake hold')
+        held_ticks+=int(handover_hold)
         expected=dict(revision=revision,phase=phase,active_edges=active['edge_ids'],pending_edges=[] if pending is None else pending['edge_ids'],closed_edges=closed,stop_s=stop,switches=switches)
         for key,value in expected.items():
             if isinstance(value,float):
@@ -156,8 +159,8 @@ def verify_navigation(config,ticks,reset_stamp=None):
                     if evidence[key]!=value:raise ValueError('route admission changed')
                 elif abs(evidence[key]-value)>1e-8:raise ValueError('measured route admission differs: '+key)
         minimum_brake=-5.99 if phase=='Fault' else -.5
-        if (phase=='Fault' or blocked_hold) and out['command']['acceleration']>minimum_brake+1e-9:raise ValueError('navigation hold failed to brake')
-    return dict(passed=True,verified_ticks=len(ticks),reset_ownership=reset_ownership,switch_events=events,final_revision=revision,final_switches=switches,final_phase=phase)
+        if (phase=='Fault' or blocked_hold or handover_hold) and out['command']['acceleration']>minimum_brake+1e-9:raise ValueError('navigation hold failed to brake')
+    return dict(passed=True,verified_ticks=len(ticks),reset_ownership=reset_ownership,switch_events=events,final_revision=revision,final_switches=switches,final_phase=phase,verified_handover_hold_ticks=held_ticks)
 
 
 def scenario_matches(actual,frozen):

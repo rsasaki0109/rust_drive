@@ -2,6 +2,18 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
+The latest [braked handover confirmation](navigation-handover.md) keeps this
+estimate at **about 29%**. All 32 physical cases pass their individual checks;
+twelve recovery handovers complete in 0.20 s at actual standstill. Arrival is
+1.90–2.85 s earlier in every pair, but only five of twelve meet the frozen
+2 s improvement requirement, so that comparison remains unmet. A viewed input
+fault/recovery regression also changes a +2.0 m/s² restart into retained
+-0.5 m/s² braking while keeping -6.0 m/s² fault braking. Its original failed
+recording is retained. All 24 global invalid-epoch CLI accuracy failures remain
+scored. This strengthens the existing authored domain; independent automotive
+sensing, measured uncertainty and vehicle operation remain open.
+The final runtime reproduces all 578 preceding and 32 current recordings exactly.
+
 The increment from about 28% reflects [live navigation preservation through
 measured relocalization](navigation-relocalization.md). Twenty missions recover
 and reach their original goals while retaining accepted closures, active routes,

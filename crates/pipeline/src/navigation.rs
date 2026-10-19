@@ -11,6 +11,13 @@ pub struct NavigationConfig {
     pub goal: RouteEndpoint,
     #[serde(default)]
     pub closed_edges: Vec<String>,
+    /// Retain braking once a healthy stopped handover confirmation begins.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub hold_for_handover: bool,
+}
+
+fn is_false(value: &bool) -> bool {
+    !*value
 }
 
 #[cfg(test)]
@@ -21,6 +28,12 @@ mod tests {
         let value: serde_json::Value =
             serde_json::from_str(include_str!("../../../scenarios/route-direct.json")).unwrap();
         serde_json::from_value(value["navigation"].clone()).unwrap()
+    }
+    fn held_config() -> NavigationConfig {
+        NavigationConfig {
+            hold_for_handover: true,
+            ..config()
+        }
     }
     fn ego(x: f64, speed: f64) -> EgoState {
         EgoState {
@@ -57,6 +70,157 @@ mod tests {
             1.25,
             2.5,
         )
+    }
+    #[test]
+    fn stopped_handover_holds_braking_without_counting_cached_motion() {
+        let mut n = Navigator::new(held_config()).unwrap();
+        assert!(!step(
+            &mut n,
+            Some(&update(0., 1, &["main"])),
+            0.,
+            ego(10., 0.),
+            true
+        ));
+        assert!(n.holding_brake());
+        assert!(n.status.handover_hold);
+        assert!(!n.step(
+            None,
+            0.025,
+            ego(10., 0.),
+            Some(Odometry {
+                stamp: 0.,
+                speed: 0.,
+                yaw_rate: 0.
+            }),
+            1.25,
+            2.5
+        ));
+        assert_eq!(n.stopped_samples, 1);
+        assert!(n.holding_brake());
+        assert!(!step(&mut n, None, 0.05, ego(10., 0.), true));
+        assert!(n.holding_brake());
+        assert!(step(&mut n, None, 0.1, ego(10., 0.), true));
+        assert!(!n.holding_brake());
+        assert!(!n.status.handover_hold);
+        assert_eq!(n.status.switches, 1);
+    }
+    #[test]
+    fn interrupted_confirmation_retains_the_hold_but_discards_votes() {
+        let mut n = Navigator::new(held_config()).unwrap();
+        step(
+            &mut n,
+            Some(&update(0., 1, &["main"])),
+            0.,
+            ego(10., 0.),
+            true,
+        );
+        for (t, speed, healthy) in [(0.05, 0.1, true), (0.1, 0., false)] {
+            assert!(!step(&mut n, None, t, ego(10., speed), healthy));
+            assert_eq!(n.stopped_samples, 0);
+            assert!(n.holding_brake());
+        }
+        let misaligned = EgoState {
+            pose: rustdriving_core::Pose {
+                yaw: 0.5,
+                ..ego(10., 0.).pose
+            },
+            speed: 0.,
+        };
+        assert!(!step(&mut n, None, 0.15, misaligned, true));
+        assert_eq!(n.stopped_samples, 0);
+        assert!(n.holding_brake());
+        for (i, t) in [0.2, 0.25, 0.3].into_iter().enumerate() {
+            assert_eq!(step(&mut n, None, t, ego(10., 0.), true), i == 2);
+        }
+    }
+    #[test]
+    fn closure_replacement_keeps_a_hold_and_cancellation_releases_it() {
+        let mut n = Navigator::new(held_config()).unwrap();
+        step(
+            &mut n,
+            Some(&update(0., 1, &["main"])),
+            0.,
+            ego(10., 0.),
+            true,
+        );
+        step(
+            &mut n,
+            Some(&update(0.05, 2, &["main", "detour"])),
+            0.05,
+            ego(10., 0.),
+            true,
+        );
+        assert_eq!(n.status.phase, NavigationPhase::Blocked);
+        assert!(n.holding_brake());
+        step(&mut n, Some(&update(0.1, 3, &[])), 0.1, ego(10., 0.), true);
+        assert_eq!(n.status.phase, NavigationPhase::Following);
+        assert!(!n.holding_brake());
+        assert!(!n.status.handover_hold);
+        assert_eq!(n.status.switches, 0);
+        step(
+            &mut n,
+            Some(&update(0.15, 4, &["main"])),
+            0.15,
+            ego(10., 0.),
+            true,
+        );
+        assert!(n.status.handover_hold);
+        step(
+            &mut n,
+            Some(&update(0.2, 5, &["unknown"])),
+            0.2,
+            ego(10., 0.),
+            true,
+        );
+        assert_eq!(n.status.phase, NavigationPhase::Fault);
+        assert!(n.status.handover_hold);
+    }
+    #[test]
+    fn measured_reset_discards_a_hold_and_requires_new_acquisitions() {
+        let mut n = Navigator::new(held_config()).unwrap();
+        step(
+            &mut n,
+            Some(&update(0., 1, &["main"])),
+            0.,
+            ego(10., 0.),
+            true,
+        );
+        step(&mut n, None, 0.05, ego(10., 0.), true);
+        n.relocalize(0.1, ego(10., 0.), 1.25, 2.5);
+        assert!(!n.status.handover_hold);
+        assert_eq!(n.stopped_samples, 0);
+        assert!(!step(&mut n, None, 0.1, ego(10., 0.), true));
+        assert!(!n.holding_brake());
+        for (i, t) in [0.15, 0.2, 0.25].into_iter().enumerate() {
+            assert_eq!(step(&mut n, None, t, ego(10., 0.), true), i == 2);
+            assert_eq!(n.holding_brake(), i != 2);
+        }
+    }
+    #[test]
+    fn absent_policy_retains_legacy_serialization_and_no_early_brake_hold() {
+        let c = config();
+        assert!(!c.hold_for_handover);
+        assert!(
+            serde_json::to_value(&c)
+                .unwrap()
+                .get("hold_for_handover")
+                .is_none()
+        );
+        let mut n = Navigator::new(c).unwrap();
+        step(
+            &mut n,
+            Some(&update(0., 1, &["main"])),
+            0.,
+            ego(10., 0.),
+            true,
+        );
+        assert!(!n.holding_brake());
+        assert!(
+            serde_json::to_value(n.status())
+                .unwrap()
+                .get("handover_hold")
+                .is_none()
+        );
     }
     fn partial_config() -> NavigationConfig {
         let mut c = config();
@@ -580,6 +744,8 @@ pub struct NavigationStatus {
     pub switches: usize,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub localization_reset: Option<NavigationResetDiagnostics>,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub handover_hold: bool,
 }
 
 pub(crate) struct Navigator {
@@ -613,6 +779,7 @@ impl Navigator {
             stop_s: None,
             switches: 0,
             localization_reset: None,
+            handover_hold: false,
         };
         Ok(Self {
             config,
@@ -670,6 +837,7 @@ impl Navigator {
         });
         self.invalidate_stop_confirmation(now);
         self.blocked_hold = false;
+        self.status.handover_hold = false;
         if !admitted {
             self.fault(now);
         } else if matches!(
@@ -748,6 +916,7 @@ impl Navigator {
         }
         if self.status.phase == NavigationPhase::Following {
             self.blocked_hold = false;
+            self.status.handover_hold = false;
         }
         // Preserve the approach and latch only after a fresh healthy measured
         // stop. Low-speed feedback noise must not restart an unreachable route.
@@ -775,6 +944,9 @@ impl Navigator {
                 if new_motion.is_none() {
                     return false;
                 }
+                // Hold through confirmation interruptions. Only a successful
+                // switch or an accepted cancellation may authorize acceleration.
+                self.status.handover_hold |= self.config.hold_for_handover;
                 self.stopped_samples += 1;
                 if self.stopped_samples >= 3 {
                     self.active = self.pending.take().unwrap();
@@ -784,6 +956,7 @@ impl Navigator {
                     self.status.switches += 1;
                     self.status.phase = NavigationPhase::Following;
                     self.blocked_hold = false;
+                    self.status.handover_hold = false;
                     self.stopped_samples = 0;
                     return true;
                 }
@@ -882,6 +1055,6 @@ impl Navigator {
         matches!(
             self.status.phase,
             NavigationPhase::Blocked | NavigationPhase::Braking
-        ) && self.blocked_hold
+        ) && (self.blocked_hold || self.status.handover_hold)
     }
 }

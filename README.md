@@ -70,6 +70,14 @@ holds. First checker exceptions and all invalid-epoch errors remain recorded;
 546 previous logs retain exact replay bytes. This expands the authored mission
 recovery scope; comparative engineering maturity is now about 29%.
 
+Optional [braked handover confirmation](docs/navigation-handover.md) retains
+braking while three fresh stopped observations confirm a pending route change,
+including after measured recovery and through navigation-fault recovery. All
+32 individual cases pass; twelve handovers take 0.20 s at standstill. Arrival
+improves 1.90–2.85 s, with 5/12 pairs meeting the frozen two-second criterion.
+That comparison remains unmet; comparative maturity stays about 29%.
+All 578 preceding and 32 current recordings retain exact final-runtime replay.
+
 ![Recorded left-hand RNE driving through Japanese urban intersections with signals, roadworks and diverse road users](assets/japan-city-demo.gif)
 
 An original, modular driving stack with a working, deterministic closed-loop simulation. The vehicle processes synthetic LiDAR, fuses noisy GNSS and odometry, tracks and predicts obstacles, and plans steering and braking. The opening GIF records CPU-only Robot Native Engine (RNE) driving on the left side of an authored Japanese urban street: two intersections, horizontal signals, storefronts and a guarded construction site. Twenty-three recorded road users include seven passenger vehicles, three trucks, eight pedestrians, four bicycles and a leashed dog, with a child, parent pushing a stroller, elder with a cane and construction worker. Ego waits at red, resumes on green and completely exits both intersections. Vehicles use fixed SI display dimensions and a fixed-scale camera. Original meshes visualize recorded positions; their articulated animation is cosmetic, while physical actors use capsule/circle proxies. Blender Cycles renders the 46-second episode at 3× playback. The work-zone cuboid is physical, but is occluded by traffic in this recording; construction recognition and negotiation are unimplemented. [Checks, meshes and limitations](docs/japanese-city-demo.md); [reproduce the GIF](#reproduce-the-gif).

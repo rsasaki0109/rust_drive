@@ -129,6 +129,9 @@ jobs:
       - name: Verify navigation missions through measured localization resets
         shell: bash
         run: python scripts/check_navigation_relocalization.py --plant reference-2d --smoke --output artifacts/navigation-relocalization
+      - name: Verify braked stopped-route confirmation
+        shell: bash
+        run: python scripts/check_navigation_handover.py --plant reference-2d --smoke --output artifacts/navigation-handover
       - name: Verify delayed map acquisitions and transient fault recovery
         shell: bash
         run: python scripts/check_delayed_map.py --output artifacts/delayed-map --controls
@@ -204,6 +207,7 @@ jobs:
             artifacts/relocalization-map-only/
             artifacts/gnss-handoff/
             artifacts/navigation-relocalization/
+            artifacts/navigation-handover/
             artifacts/gnss-latency/
   image-tracking:
     runs-on: ubuntu-latest
@@ -1059,6 +1063,9 @@ jobs:
       - name: Verify native navigation missions through measured localization resets
         working-directory: rust_drive
         run: python3 scripts/check_navigation_relocalization.py --plant rne-dynamic --smoke --output artifacts/navigation-relocalization-native
+      - name: Verify native braked stopped-route confirmation
+        working-directory: rust_drive
+        run: python3 scripts/check_navigation_handover.py --plant rne-dynamic --smoke --output artifacts/navigation-handover-native
       - name: Verify legal turn routes in the native dynamic plant
         working-directory: rust_drive
         run: python3 scripts/check-turn-restrictions.py --backend native --seeds 7 --compact --output artifacts/turn-restrictions
@@ -1145,6 +1152,7 @@ jobs:
             rust_drive/artifacts/relocalization-map-only-native/
             rust_drive/artifacts/gnss-handoff-native/
             rust_drive/artifacts/navigation-relocalization-native/
+            rust_drive/artifacts/navigation-handover-native/
             rust_drive/artifacts/japan-city-demo/
       - uses: actions/upload-artifact@v4
         with:

@@ -72,6 +72,16 @@ four recovered no-route controls stop, and four healthy/four disabled controls
 pass. This extends recovery to authored directed live missions. Mapped traffic
 controls, moving handover and global initialization remain open.
 
+An explicit [braked handover confirmation](navigation-handover.md) now keeps a
+healthy stopped vehicle braked while three new observations confirm a pending
+route. Interruptions discard votes without authorizing acceleration; accepted
+cancellation and confirmed switching release the hold. This also applies after
+measured recovery and preserves the previous default mission behavior.
+All 32 individual cases pass, with 0.20 s recovery handovers at standstill.
+All twelve arrivals improve 1.90–2.85 s; five meet the frozen 2 s requirement,
+so that comparison remains unmet. A separate viewed navigation-fault regression
+now retains the hold through a valid still-blocked recovery snapshot.
+
 Remaining:
 
 - Covariance/forecast uncertainty propagation, delayed odometry and general multi-sensor correction-event replay, per-point LiDAR deskew and trace migrations. Bounded acquisition-time LiDAR reprojection and current-time motion extrapolation are narrower implemented steps, not complete delayed-sensor fusion.

@@ -155,6 +155,14 @@ Pending/blocked routes are recomputed from the measured pose. Stop votes reset
 and three new healthy stopped acquisitions are needed to switch routes. Existing
 navigation faults persist. [Ownership, independent checks and outcomes](navigation-relocalization.md).
 
+Optional `navigation.hold_for_handover` latches brake retention at the first new
+healthy stopped handover vote. Interruptions clear votes while retaining the
+hold; a successful switch or accepted cancellation to the active route releases
+it. A measured localization reset discards the pose-dependent hold and votes.
+The existing final command path requests at most -0.5 m/s² while holding, with
+ordinary -6 m/s² health-fault braking. False/omitted keeps preceding behavior.
+[Contract and qualification](navigation-handover.md).
+
 Optional `initial_pose_covariance` supplies a finite, symmetric positive definite
 ENU x/y/yaw matrix (m², m·rad, rad²). It is external initialization calibration.
 When present, output records every full posterior and replay checks it; absent

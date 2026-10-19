@@ -57,6 +57,12 @@ routes. A repeated acquisition cannot count. Prior navigation faults persist;
 ordinary valid newer external snapshots retain their existing recovery rules.
 Failed localization-to-route admission stays latched through those snapshots.
 
+A subsequent optional [`navigation.hold_for_handover`](navigation-handover.md)
+retains braking during those new stopped votes. This prevents the common-prefix
+planner from accelerating before it can finish confirmation after recovery.
+The original 32-case qualification below uses the preceding default behavior;
+the linked evaluation records the separate fixed comparison.
+
 Optional map-only grace and confirmed GNSS handoff retain their separate
 acquisition clocks, transaction ownership and reset-anchored deadlines.
 Navigation permission never fabricates accepted GNSS. Holding, route closure,
