@@ -413,7 +413,7 @@ impl LaneChangeGate {
             .as_ref()
             .and_then(ReturnMonitor::braking_limit)
     }
-    pub fn return_speed_zones(&self) -> Vec<rustdriving_core::RouteSpeedZone> {
+    pub fn alternate_speed_zones(&self) -> Vec<rustdriving_core::RouteSpeedZone> {
         self.return_monitor
             .as_ref()
             .map_or_else(Vec::new, ReturnMonitor::speed_zones)

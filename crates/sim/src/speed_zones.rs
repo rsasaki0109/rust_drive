@@ -1,5 +1,6 @@
 //! Simulation scoring only; measured driver commands never read these truth states.
 use rustdriving_core::{EgoState, Route, RouteSpeedZone};
+use rustdriving_pipeline::lane_change::{LaneChangePhase, LaneChangeStatus};
 pub const SPEED_TOLERANCE_M_S: f64 = 0.15;
 
 #[derive(Default)]
@@ -37,6 +38,82 @@ impl SpeedZoneEvaluator {
     }
 }
 
+/// Evaluation-only policy selection. No physical state or score enters driving.
+pub(crate) struct AlternateSpeedPolicy {
+    cap: Option<f64>,
+    resumed: bool,
+    current: Option<(Route, Vec<RouteSpeedZone>)>,
+}
+impl AlternateSpeedPolicy {
+    pub fn new(cap: Option<f64>) -> Self {
+        Self {
+            cap,
+            resumed: false,
+            current: None,
+        }
+    }
+    pub fn observe(
+        &self,
+        score: &mut SpeedZoneEvaluator,
+        original: &Route,
+        ego: EgoState,
+        radius: f64,
+        zones: &[RouteSpeedZone],
+    ) {
+        if let Some((route, zones)) = &self.current {
+            score.observe(route, ego, radius, zones);
+        } else if !zones.is_empty() {
+            score.observe(original, ego, radius, zones);
+        }
+    }
+    pub fn update(
+        &mut self,
+        score: &mut SpeedZoneEvaluator,
+        original: &Route,
+        ego: EgoState,
+        vehicle: rustdriving_core::VehicleConfig,
+        zones: &[RouteSpeedZone],
+        status: Option<&LaneChangeStatus>,
+    ) -> Result<(), String> {
+        let (Some(cap), Some(status)) = (self.cap, status) else {
+            return Ok(());
+        };
+        let request = status
+            .return_state
+            .as_ref()
+            .and_then(|r| r.resume_state.as_ref())
+            .and_then(|r| r.request);
+        if let Some(request) = request.filter(|_| !self.resumed) {
+            let plan = rustdriving_routing::lane_resume::plan(request, original, vehicle)?;
+            let zones = plan.speed_zones(original, zones, cap)?;
+            self.current = Some((plan.route, zones));
+            self.resumed = true;
+        } else if self.current.is_none()
+            && matches!(
+                status.phase,
+                LaneChangePhase::Aborting | LaneChangePhase::Aborted
+            )
+        {
+            self.current = Some((
+                original.clone(),
+                vec![RouteSpeedZone {
+                    start_s_m: 0.,
+                    end_s_m: original.length(),
+                    speed_m_s: cap,
+                }],
+            ));
+        } else {
+            return Ok(());
+        }
+        // Score the switching instant under the new policy. Its preceding
+        // interval was already scored above; different route origins must not
+        // be interpolated together.
+        score.previous = None;
+        self.observe(score, original, ego, vehicle.radius, zones);
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -49,6 +126,62 @@ mod tests {
             },
             speed,
         }
+    }
+    #[test]
+    fn resume_switch_does_not_interpolate_progress_from_different_route_origins() {
+        use rustdriving_core::VehicleConfig;
+        use rustdriving_routing::lane_resume::{self, LaneResumeRequest};
+        let original = Route::new(
+            vec![
+                Vec2::default(),
+                Vec2::new(25., 0.),
+                Vec2::new(55., 3.5),
+                Vec2::new(80., 3.5),
+                Vec2::new(160., 3.5),
+            ],
+            1.75,
+        )
+        .unwrap();
+        let request = LaneResumeRequest {
+            start: ego(42., 0.).pose,
+            source_start: Vec2::default(),
+            source_end: Vec2::new(80., 0.),
+            source_width_m: 3.5,
+            target_start: Vec2::new(0., 3.5),
+            target_end: Vec2::new(80., 3.5),
+            target_width_m: 3.5,
+            original_exit_s_m: original.project(Vec2::new(55., 3.5)).0,
+            distance_m: 30.,
+        };
+        let zone_start = original.project(Vec2::new(80., 3.5)).0;
+        let zones = [RouteSpeedZone {
+            start_s_m: zone_start,
+            end_s_m: zone_start + 0.01,
+            speed_m_s: 1.,
+        }];
+        let status: LaneChangeStatus = serde_json::from_value(serde_json::json!({"phase":"Resuming","blocking_tracks":[],
+            "return_state":{"decision":"Stopped","source_blocking_tracks":[],"resume_state":{
+                "decision":"Resuming","source_blocking_tracks":[],"target_blocking_tracks":[],"request":request}}})).unwrap();
+        let mut score = SpeedZoneEvaluator::default();
+        let mut policy = AlternateSpeedPolicy::new(Some(4.));
+        policy.observe(&mut score, &original, ego(42., 3.), 1.25, &zones);
+        policy
+            .update(
+                &mut score,
+                &original,
+                ego(42., 3.),
+                VehicleConfig::default(),
+                &zones,
+                Some(&status),
+            )
+            .unwrap();
+        assert_eq!(score.violations, 0);
+        let plan = lane_resume::plan(request, &original, VehicleConfig::default()).unwrap();
+        let mut speeding = ego(80., 3.);
+        speeding.pose.position.y = 3.5;
+        policy.observe(&mut score, &original, speeding, 1.25, &zones);
+        assert_eq!(score.violations, 1);
+        assert!(plan.connector_length_m > 30.);
     }
     #[test]
     fn a_zone_crossed_completely_between_frames_is_still_scored() {

@@ -93,9 +93,8 @@ impl LaneChangeReturnConfig {
         if self
             .speed_limit_m_s
             .is_some_and(|speed| !speed.is_finite() || !(0.1..=8.0).contains(&speed))
-            || (self.speed_limit_m_s.is_some() && self.resume_after_return.is_some())
         {
-            return Err("return speed limit must be in 0.1..8 m/s without a mission retry".into());
+            return Err("return speed limit must be in 0.1..8 m/s".into());
         }
         if let Some(config) = &self.resume_after_return {
             config.validate()?;
@@ -178,6 +177,7 @@ pub struct LaneChangeReturnStatus {
 
 pub(crate) struct ReturnObservation<'a> {
     pub route: &'a Route,
+    pub speed_zones: &'a [RouteSpeedZone],
     pub ego: EgoState,
     pub predictions: &'a [Prediction],
     pub now: f64,
@@ -251,6 +251,9 @@ impl ReturnMonitor {
         self.resume.as_ref().and_then(ResumeMonitor::braking_limit)
     }
     pub fn speed_zones(&self) -> Vec<RouteSpeedZone> {
+        if let Some(zones) = self.resume.as_ref().and_then(ResumeMonitor::speed_zones) {
+            return zones.to_vec();
+        }
         self.route
             .as_ref()
             .map_or_else(Vec::new, |route| self.config.speed_zones(route))

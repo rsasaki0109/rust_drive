@@ -174,8 +174,8 @@ arc-length intervals, expanded by the circular ego footprint. Overlapping
 limits use the minimum, including zones wholly between geometric samples.
 The existing reachable speed passes anticipate braking and restore cruise
 after release. The same configuration is recorded for sensor-only replay;
-live route changes and mission retries are rejected until explicit remapping
-exists. An early return requires a separate surveyed cap over its complete
+live route changes are rejected until explicit remapping exists. An early
+return requires a separate surveyed cap over its complete
 alternate stopping route. A full-tick physical evaluator rejects excess over
 the fixed 0.15 m/s acceptance tolerance. [Contract, independent evaluation and
 remaining limits](route-speed-zones.md).
@@ -185,9 +185,11 @@ from selected whole-lane boundaries and original map limits. It merges equal
 adjacent effective caps and preserves requested cruise. A fixed lane-change
 connector uses the minimum of source and target limits over its actual arc,
 including with observed-gap admission. An early return uses a separate
-surveyed cap over its complete new route. Speed intervals with mission retries,
-live remapping or an excessive interval budget are rejected.
-[Return contract](lane-return-speeds.md); [connector contract](lane-change-speeds.md). The option-free
+surveyed cap over its complete new route. A bounded retry caps its new connector
+and rebases the unchanged original tail, retaining that policy during launch
+holds. Live remapping and an excessive interval budget are rejected.
+[Retry contract](lane-resume-speeds.md); [return contract](lane-return-speeds.md);
+[connector contract](lane-change-speeds.md). The option-free
 exporter keeps its mission-wide minimum. [Map-to-speed contract and independent
 reference reconstruction](lane-speed-zones.md).
 

@@ -106,9 +106,6 @@ pub(crate) fn run(args: &[String]) -> Result<bool, Box<dyn Error>> {
             );
         }
     };
-    if local_speed_limits && resume_after_return {
-        return Err("--local-speed-limits does not support mission retries after a return".into());
-    }
     if duration.is_some_and(|seconds| !seconds.is_finite() || !(1.0..=300.0).contains(&seconds)) {
         return Err("scenario duration must be finite and in 1..300 seconds".into());
     }

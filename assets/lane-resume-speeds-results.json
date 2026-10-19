@@ -1,0 +1,123 @@
+{
+  "altered_original_tail_limit_replay_negative": {
+    "changed_speed_m_s": 4.0,
+    "exit_code": 2,
+    "only_original_tail_zone_changed": {
+      "end_s_m": 100.29912449793362,
+      "speed_m_s": 1.5,
+      "start_s_m": 100.28912449793361
+    },
+    "passed": true,
+    "stderr": "rustdriving: replay mismatch at tick 1162 (time 58.100)\n"
+  },
+  "blocked_target_stops": 3,
+  "bounded_mission_retry_speed_mapping_supported": true,
+  "candidate_runtime_sources_worlds_and_gates_unchanged_after_results": true,
+  "changed_standard_outputs": 0,
+  "completed_original_missions": 12,
+  "created_at": "2026-10-19T00:37:13.349277+00:00",
+  "current_unique_acceptance_episodes": 73,
+  "existing_pins_and_fixtures_unchanged": 122,
+  "existing_short_range_follower_failures_preserved_not_rerun": 2,
+  "feature_branch": "feat/lane-resume-speed-zones-20261019",
+  "fixed_clearance_floor_m": 1.0,
+  "fixed_post_limit_required_max_speed_m_s": 3.5,
+  "fixed_source_standstill_floor_s": 1.0,
+  "fixed_speed_tolerance_m_s": 0.15,
+  "frozen_before_physical_results": true,
+  "historical_245_live_outputs_restored_unchanged": true,
+  "legacy_byte_identical_json_recordings": 42,
+  "legacy_byte_identical_process_streams": 36,
+  "legacy_control_scope": "six option-free empty-world controls with original mission-wide cruise minimum; seed 7",
+  "legacy_current_episodes": 6,
+  "legacy_parent_episodes": 6,
+  "live_speed_map_remapping_supported": false,
+  "local_physical_frames": 35024,
+  "local_speed_current_episodes": 18,
+  "local_speed_violation_intervals": 0,
+  "maximum_physical_speed_excess_m_s": 0.0900265806863445,
+  "minimum_post_limit_maximum_speed_m_s": 4.014779998165007,
+  "minimum_source_return_standstill_s": 22.35,
+  "minimum_swept_clearance_m": 7.528677844464255,
+  "native_RNE_or_real_vehicle_qualification": false,
+  "new_python_tests": 3,
+  "new_rust_tests": 5,
+  "parent_new_option_exit_code": 2,
+  "per_case": [
+    {
+      "case": "left",
+      "completed_goals": 3,
+      "passed": true,
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "right",
+      "completed_goals": 3,
+      "passed": true,
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "north",
+      "completed_goals": 3,
+      "passed": true,
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "thin-tail",
+      "completed_goals": 3,
+      "passed": true,
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "blocked",
+      "completed_goals": 0,
+      "passed": true,
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "launch-blocked",
+      "completed_goals": 0,
+      "passed": true,
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    }
+  ],
+  "persistent_launch_holds": 3,
+  "predecessor_speed_return_recording_verified": true,
+  "python_auditor_tests": 22,
+  "qualification_scope": "six authored early-return/retry worlds, fixed surveyed lane map, reference bicycle and synthetic sensor-only driving",
+  "qualified": true,
+  "release_binary_sha256": "bdfafb80d5059ffb450aaa83a34a43044a985645c855fade6af88f254dac2f7a",
+  "remote_CI_claimed": false,
+  "required_check_command": "bash scripts/check.sh",
+  "required_check_exit_code": 0,
+  "retries_started": 15,
+  "standard_outputs_compared": 245,
+  "standard_reference_runs_and_exact_replays": 49,
+  "starting_commit": "60b663ac8a7d07e15573472245d83c30c5949672",
+  "subjective_oss_maturity_percent": 20,
+  "workspace_rust_tests": 623
+}

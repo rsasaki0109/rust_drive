@@ -59,6 +59,7 @@ fn observation<'a>(
     now: f64,
 ) -> ReturnObservation<'a> {
     ReturnObservation {
+        speed_zones: &[],
         route,
         ego: ego(),
         predictions,
@@ -320,14 +321,14 @@ fn return_preview_and_active_policy_use_the_new_route_origin_and_its_entire_leng
     let mut g = gate();
     g.return_monitor.as_mut().unwrap().config.speed_limit_m_s = Some(1.2);
     mature(&mut g, &r);
-    assert!(g.return_speed_zones().is_empty());
+    assert!(g.alternate_speed_zones().is_empty());
     let traffic = [obstacle(52., 3.5, 1)];
     let mut o = observation(&r, &traffic, 1.1);
     o.ego.speed = 1.;
     o.motion.as_mut().unwrap().speed = 1.;
     assert!(g.observe_return(o));
     let returned = g.planning_route(&r).unwrap();
-    let zones = g.return_speed_zones();
+    let zones = g.alternate_speed_zones();
     assert_eq!(zones.len(), 1);
     assert_eq!(zones[0].start_s_m, 0.);
     assert_eq!(zones[0].end_s_m, returned.length());

@@ -48,7 +48,7 @@ fn config() -> PipelineConfig {
 }
 
 #[test]
-fn alternate_speed_policy_is_required_and_cannot_be_reused_for_a_mission_retry() {
+fn alternate_speed_policy_is_required_and_supports_a_mission_retry() {
     let mut config = config();
     assert!(config.validate().is_ok());
     config.lane_change.as_mut().unwrap().return_on_conflict = Some(LaneChangeReturnConfig {
@@ -92,7 +92,7 @@ fn alternate_speed_policy_is_required_and_cannot_be_reused_for_a_mission_retry()
         .resume_after_return = Some(rustdriving_pipeline::lane_change::LaneChangeResumeConfig {
         max_change_distance_m: 30.,
     });
-    assert!(retry.validate().is_err());
+    assert!(retry.validate().is_ok());
     config.speed_zones.clear();
     config
         .lane_change

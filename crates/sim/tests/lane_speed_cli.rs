@@ -103,7 +103,7 @@ fn local_speed_export_is_opt_in_preserves_cruise_and_matches_the_preview() {
 }
 
 #[test]
-fn unsupported_changes_and_existing_outputs_are_rejected_without_writing() {
+fn invalid_retry_distances_and_existing_outputs_are_rejected_without_writing() {
     let w = Workspace::new();
     let change_map = w.0.join("change.json");
     fs::write(
@@ -131,13 +131,15 @@ fn unsupported_changes_and_existing_outputs_are_rejected_without_writing() {
             "--wait-for-gap",
             "--return-on-conflict",
             "--resume-after-return",
+            "--resume-distance",
+            "9",
         ])
         .arg("--scenario-output")
         .arg(&destination)
         .output()
         .unwrap();
     assert_eq!(result.status.code(), Some(2));
-    assert!(String::from_utf8_lossy(&result.stderr).contains("mission retries"));
+    assert!(String::from_utf8_lossy(&result.stderr).contains("resume distance"));
     assert!(!destination.parent().unwrap().exists());
     let map = w.map();
     let original = fs::read(&map).unwrap();
@@ -303,6 +305,64 @@ fn returning_lane_change_exports_a_separate_map_derived_speed_cap() {
         2.
     );
     assert!(scenario["lane_change"]["return_on_conflict"]["resume_after_return"].is_null());
+    assert_eq!(report["lane_change"]["to_lane"], "target");
+    assert!(scenario["speed_zones"][1]["end_s_m"].as_f64().unwrap() > 80.2);
+}
+
+#[test]
+fn resuming_lane_change_keeps_original_intervals_and_an_explicit_connector_cap() {
+    let w = Workspace::new();
+    let map = w.0.join("change-speeds.json");
+    fs::write(
+        &map,
+        include_str!("../../../maps/lanes/change-speeds-target-slow.json"),
+    )
+    .unwrap();
+    let path = w.0.join("scenario.json");
+    let output = cli()
+        .arg("lane-route")
+        .arg("--map")
+        .arg(map)
+        .args([
+            "--start",
+            "source",
+            "--goal",
+            "target-exit",
+            "--change-side",
+            "left",
+            "--change-start",
+            "25",
+            "--change-length",
+            "30",
+            "--wait-for-gap",
+            "--local-speed-limits",
+            "--return-on-conflict",
+            "--resume-after-return",
+            "--cruise-speed",
+            "4",
+        ])
+        .arg("--scenario-output")
+        .arg(&path)
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let scenario: serde_json::Value = serde_json::from_slice(&fs::read(path).unwrap()).unwrap();
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(scenario["cruise_speed"], 4.);
+    assert_eq!(scenario["speed_zones"], report["speed_zones"]);
+    assert_eq!(scenario["lane_change"], report["lane_change_gate"]);
+    assert_eq!(
+        scenario["lane_change"]["return_on_conflict"]["speed_limit_m_s"],
+        2.
+    );
+    assert_eq!(
+        scenario["lane_change"]["return_on_conflict"]["resume_after_return"]["max_change_distance_m"],
+        30.
+    );
     assert_eq!(report["lane_change"]["to_lane"], "target");
     assert!(scenario["speed_zones"][1]["end_s_m"].as_f64().unwrap() > 80.2);
 }

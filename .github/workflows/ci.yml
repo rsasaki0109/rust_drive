@@ -36,6 +36,8 @@ jobs:
         run: python scripts/test_lane_change_speeds.py
       - name: Check alternate return-policy speed scoring
         run: python scripts/test_lane_return_speeds.py
+      - name: Check independent retry-route speed remapping
+        run: python scripts/test_lane_resume_speeds.py
       - run: cargo fmt --all --check
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - run: cargo test --workspace --locked
@@ -52,6 +54,9 @@ jobs:
       - name: Drive early returns with map-derived alternate speed caps
         shell: bash
         run: python scripts/check_lane_return_speeds.py --output artifacts/lane-return-speeds
+      - name: Drive mission retries with mapped connector and tail speeds
+        shell: bash
+        run: python scripts/check_lane_resume_speeds.py --output artifacts/lane-resume-speeds
       - name: Evaluate pinned measured clouds and independently reconstruct scores
         shell: bash
         run: |
@@ -102,6 +107,7 @@ jobs:
             artifacts/lane-speed-zones/
             artifacts/lane-change-speeds/
             artifacts/lane-return-speeds/
+            artifacts/lane-resume-speeds/
   image-tracking:
     runs-on: ubuntu-latest
     steps:

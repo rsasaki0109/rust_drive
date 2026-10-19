@@ -2,6 +2,7 @@
 use crate::lane_return::{LaneReturnRequest, plan_with_start_offset};
 use rustdriving_core::{Pose, Route, Vec2, VehicleConfig};
 use serde::{Deserialize, Serialize};
+mod speeds;
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]

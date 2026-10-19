@@ -27,11 +27,11 @@ continue to apply before the switch. They cannot be reused with the alternate
 origin. Requested cruise and measured initial motion remain unchanged.
 
 The lower cap remains active after the vehicle is wholly back in the source
-lane. This deliberately conservative return ends at a stop, with no subsequent
-source-lane acceleration or mission retry. An already excessive measured speed
+lane. This deliberately conservative return ends at a stop. An optional
+[mission retry](lane-resume-speeds.md) can then connect to the original target
+tail, with its own rebased policy. An already excessive measured speed
 uses the planner's bounded recovery; arbitrary switching conditions cannot
-guarantee immediate physical compliance. `--resume-after-return` with local
-speed limits, live speed-map handover and arbitrary alternate-route intervals
+guarantee immediate physical compliance. Live speed-map handover and arbitrary alternate-route intervals
 remain unsupported. Absent optional fields preserve existing serialization.
 
 The simulator scores original intervals through the switching instant, then

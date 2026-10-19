@@ -53,8 +53,9 @@ both admission and speed configuration.
 
 `--return-on-conflict` can also compile an explicit cap for the alternate
 return-and-stop route. [Return contract and independent acceptance](lane-return-speeds.md).
-`--resume-after-return` and live navigation remain incompatible with nonempty
-speed intervals; they need separate tail remapping.
+`--resume-after-return` also supports bounded [retry connector and unchanged
+tail remapping](lane-resume-speeds.md). Live navigation remains incompatible
+with nonempty speed intervals.
 
 ## Independent reference acceptance
 
@@ -87,6 +88,6 @@ worlds and driver code are unchanged. [Final measurements and retained audit
 error](../assets/lane-change-speeds-results.json).
 
 This is a bounded authored reference-plant trial. Variable topology, arbitrary
-sequences of changes, mission-retry speed remapping, general traffic
+sequences of changes, arbitrary alternate-route speed remapping, general traffic
 interaction, native RNE qualification and real vehicles remain outside it.
 Earlier short-range follower failures remain preserved and are not repaired.

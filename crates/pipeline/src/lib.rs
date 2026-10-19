@@ -166,9 +166,7 @@ impl PipelineConfig {
                         .lane_change
                         .as_ref()
                         .and_then(|change| change.return_on_conflict.as_ref())
-                        .is_some_and(|config| {
-                            config.speed_limit_m_s.is_none() || config.resume_after_return.is_some()
-                        })))
+                        .is_some_and(|config| config.speed_limit_m_s.is_none())))
         {
             return Err(
                 "invalid speed zones or unsupported live/alternate-route speed zones".into(),
@@ -807,6 +805,7 @@ impl DrivingPipeline {
             );
             let changed_route = change.observe_return(lane_change::ReturnObservation {
                 route: &self.config.route,
+                speed_zones: &self.config.speed_zones,
                 ego: estimate,
                 predictions: &predictions,
                 now: input.time,
@@ -830,7 +829,7 @@ impl DrivingPipeline {
                 planner.max_acceleration_m_s2 = self.planner.max_acceleration_m_s2;
                 planner.max_deceleration_m_s2 = self.planner.max_deceleration_m_s2;
                 planner.max_lateral_acceleration_m_s2 = self.planner.max_lateral_acceleration_m_s2;
-                planner.speed_zones = change.return_speed_zones();
+                planner.speed_zones = change.alternate_speed_zones();
                 self.planner = planner;
             }
         }

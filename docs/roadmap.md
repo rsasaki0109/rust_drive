@@ -30,6 +30,9 @@ limits into these intervals, retaining requested cruise outside lower limits.
 A fixed lane-change connector now maps source, shared connector and target/tail
 limits in actual arc length, including observed-gap admission. An early return
 now carries an explicit lower-lane cap onto its alternate stopping route.
+A bounded retry then preserves the connector cap and rebases the unchanged
+original target tail, including short intervals and launch stopping prefixes.
+[Retry contract](lane-resume-speeds.md).
 [Return contract](lane-return-speeds.md); [fixed-change trial and preserved audit error](lane-change-speeds.md).
 This does not supply sign detection, live speed-map remapping or general road
 rule understanding. [Contract and evidence](route-speed-zones.md).

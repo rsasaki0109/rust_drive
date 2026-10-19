@@ -60,6 +60,7 @@ fn observation<'a>(
     predictions: &'a [Prediction],
 ) -> ReturnObservation<'a> {
     ReturnObservation {
+        speed_zones: &[],
         route,
         now,
         predictions,
@@ -117,6 +118,42 @@ fn resume_needs_post_stop_acquisitions_then_reaches_target_once_and_keeps_the_ne
     assert_eq!(state.phase, LaneChangePhase::Completed);
     assert_eq!(m.route().unwrap().points, selected.points);
     assert_eq!(m.status.started_at, Some(11.1));
+}
+
+#[test]
+fn retry_and_launch_previews_keep_the_rebased_tail_policy() {
+    let (mut monitor, mut state, route, stop) = fixture();
+    monitor.cruise = 4.;
+    monitor
+        .target
+        .return_on_conflict
+        .as_mut()
+        .unwrap()
+        .speed_limit_m_s = Some(2.);
+    let zones = [rustdriving_core::RouteSpeedZone {
+        start_s_m: route.project(Vec2::new(80., 3.5)).0,
+        end_s_m: route.project(Vec2::new(80., 3.5)).0 + 0.01,
+        speed_m_s: 1.,
+    }];
+    for i in 0..=11 {
+        let mut o = observation(&route, 10. + i as f64 * 0.1, &[]);
+        o.speed_zones = &zones;
+        monitor.step(&mut state, &o, &stop);
+    }
+    assert_eq!(state.phase, LaneChangePhase::Resuming);
+    let active = monitor.speed_zones().unwrap();
+    assert_eq!(active.len(), 2);
+    assert_eq!(active[0].start_s_m, 0.);
+    assert_eq!(
+        active[0].end_s_m,
+        monitor.status.connector_length_m.unwrap()
+    );
+    assert_eq!(active[0].speed_m_s, 2.);
+    assert!((active[1].end_s_m - active[1].start_s_m - 0.01).abs() < 1e-12);
+    assert_eq!(
+        serde_json::to_value(active).unwrap(),
+        serde_json::to_value(&monitor.launch.as_ref().unwrap().speed_zones).unwrap()
+    );
 }
 
 #[test]

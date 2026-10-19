@@ -5,7 +5,7 @@ use super::returning::{
 };
 use super::{LaneChangeConfig, blocks, blocks_with_lateral_extra};
 use crate::traffic_controls::planning_prefix;
-use rustdriving_core::{DrivingMode, Planner, Route, VehicleConfig};
+use rustdriving_core::{DrivingMode, Planner, Route, RouteSpeedZone, VehicleConfig};
 use serde::{Deserialize, Serialize};
 
 const MAX_PREVIOUS_HOLDS: usize = 4;
@@ -111,6 +111,7 @@ impl LaneChangeLaunchHoldRecord {
 }
 
 pub(super) struct LaunchGuard {
+    pub(super) speed_zones: Vec<RouteSpeedZone>,
     source: LaneChangeConfig,
     target: LaneChangeConfig,
     vehicle: VehicleConfig,
@@ -137,6 +138,7 @@ impl LaunchGuard {
         o: &ReturnObservation<'_>,
     ) -> Self {
         Self {
+            speed_zones: vec![],
             source: source.clone(),
             target: target.clone(),
             vehicle,
@@ -343,6 +345,7 @@ impl LaunchGuard {
             return false;
         }
         let mut preview = calibrated_planner(self.vehicle, self.cruise, o.limits);
+        preview.speed_zones = self.speed_zones.clone();
         let trajectory = preview.plan(o.ego, route, o.predictions);
         let crossing_end = self.connector_length_m + self.vehicle.radius + 0.5;
         let Some(last) = trajectory

@@ -118,3 +118,61 @@ fn resume_rejects_wrong_source_short_room_and_a_forged_or_missing_target_tail() 
         );
     }
 }
+
+#[test]
+fn resumed_speed_intervals_clip_at_the_join_and_preserve_overlapping_and_thin_tail_limits() {
+    let (request, original) = fixture();
+    let plan = plan(request, &original, VehicleConfig::default()).unwrap();
+    let zone = |a, b, speed_m_s| rustdriving_core::RouteSpeedZone {
+        start_s_m: a,
+        end_s_m: b,
+        speed_m_s,
+    };
+    let input = [
+        zone(0., plan.join_s_m, 1.),
+        zone(plan.join_s_m - 1., plan.join_s_m + 2., 1.5),
+        zone(plan.join_s_m + 1., plan.join_s_m + 1.01, 1.),
+        zone(original.length() - 10., original.length(), 4.),
+    ];
+    let zones = plan.speed_zones(&original, &input, 2.).unwrap();
+    assert_eq!(zones.len(), 4);
+    assert_eq!(zones[0].start_s_m, 0.);
+    assert_eq!(zones[0].end_s_m, plan.connector_length_m);
+    assert!((zones[1].start_s_m - plan.connector_length_m).abs() < 1e-12);
+    assert!((zones[1].end_s_m - plan.connector_length_m - 2.).abs() < 1e-12);
+    assert!((zones[2].end_s_m - zones[2].start_s_m - 0.01).abs() < 1e-12);
+    assert_eq!(zones[2].speed_m_s, 1.);
+    assert_eq!(zones[3].end_s_m, plan.route.length());
+    assert!(
+        zones
+            .iter()
+            .all(|z| z.valid() && z.end_s_m <= plan.route.length())
+    );
+}
+
+#[test]
+fn resumed_speed_mapping_rejects_invalid_metadata_and_excessive_interval_budgets() {
+    let (request, original) = fixture();
+    let plan = plan(request, &original, VehicleConfig::default()).unwrap();
+    for cap in [0., 8.1, f64::NAN, f64::INFINITY] {
+        assert!(plan.speed_zones(&original, &[], cap).is_err());
+    }
+    let zones: Vec<_> = (0..128)
+        .map(|i| rustdriving_core::RouteSpeedZone {
+            start_s_m: plan.join_s_m + 1.,
+            end_s_m: plan.join_s_m + 2.,
+            speed_m_s: 1. + (i % 2) as f64,
+        })
+        .collect();
+    assert!(
+        plan.speed_zones(&original, &zones, 2.)
+            .unwrap_err()
+            .contains("128")
+    );
+    let mut bad = plan.clone();
+    bad.join_s_m += 1.;
+    assert!(bad.speed_zones(&original, &[], 2.).is_err());
+    let mut bad = original.clone();
+    bad.lengths[1] += 0.1;
+    assert!(plan.speed_zones(&bad, &[], 2.).is_err());
+}

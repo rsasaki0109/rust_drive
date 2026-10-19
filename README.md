@@ -698,6 +698,8 @@ It also supports one fixed lane-change connector with observed-gap admission,
 using both lanes' lower limit while changing. [Speed mapping and validation](docs/lane-change-speeds.md).
 An opt-in early return now retains a separate mapped speed cap until it stops
 in the original lane. [Return behavior and limits](docs/lane-return-speeds.md).
+A bounded retry after that stop now preserves the connector limit and the
+original target-tail limits. [Retry speed mapping](docs/lane-resume-speeds.md).
 
 ## Reproduce the GIF
 

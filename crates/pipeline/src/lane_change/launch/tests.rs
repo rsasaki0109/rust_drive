@@ -69,6 +69,7 @@ fn observation<'a>(
 ) -> ReturnObservation<'a> {
     let (position, yaw) = route.sample(progress, 0.);
     ReturnObservation {
+        speed_zones: &[],
         route: original,
         ego: EgoState {
             pose: Pose { position, yaw },

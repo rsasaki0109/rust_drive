@@ -7,7 +7,7 @@ use super::{
     LaneChangeConfig, LaneChangePhase, LaneChangeStatus, blocks, blocks_with_lateral_extra,
 };
 use crate::MotionLimits;
-use rustdriving_core::{DrivingMode, Planner, Route, VehicleConfig, wrap_angle};
+use rustdriving_core::{DrivingMode, Planner, Route, RouteSpeedZone, VehicleConfig, wrap_angle};
 use rustdriving_planning::LatticePlanner;
 use rustdriving_routing::lane_resume::{self, LaneResumeRequest};
 use serde::{Deserialize, Serialize};
@@ -64,12 +64,19 @@ pub(super) struct ResumeMonitor {
     vehicle: VehicleConfig,
     cruise: f64,
     route: Option<Route>,
+    speed_zones: Vec<RouteSpeedZone>,
     status: LaneChangeResumeStatus,
     last_scan: Option<f64>,
     last_motion: Option<f64>,
     after_fault: Option<f64>,
     clear_samples: usize,
     launch: Option<LaunchGuard>,
+}
+struct ResumeCandidate {
+    request: LaneResumeRequest,
+    plan: lane_resume::LaneResumePlan,
+    clearance: f64,
+    speed_zones: Vec<RouteSpeedZone>,
 }
 impl ResumeMonitor {
     pub fn new(
@@ -90,6 +97,7 @@ impl ResumeMonitor {
             vehicle,
             cruise,
             route: None,
+            speed_zones: vec![],
             last_scan: None,
             last_motion: None,
             after_fault: None,
@@ -129,6 +137,9 @@ impl ResumeMonitor {
     }
     pub fn braking_limit(&self) -> Option<f64> {
         self.launch.as_ref().and_then(LaunchGuard::braking_limit)
+    }
+    pub fn speed_zones(&self) -> Option<&[RouteSpeedZone]> {
+        self.route.as_ref().map(|_| self.speed_zones.as_slice())
     }
     pub fn step(
         &mut self,
@@ -251,14 +262,19 @@ impl ResumeMonitor {
         }
         for distance in distances {
             match self.candidate(o, distance) {
-                Ok((request, plan, clearance)) => {
+                Ok(ResumeCandidate {
+                    request,
+                    plan,
+                    clearance,
+                    speed_zones,
+                }) => {
                     self.status.decision = ResumeDecision::Resuming;
                     self.status.started_at = Some(o.now);
                     self.status.request = Some(request);
                     self.status.curvature_bound_m_inv = Some(plan.curvature_bound_m_inv);
                     self.status.observed_clearance_m = Some(clearance);
                     self.status.connector_length_m = Some(plan.connector_length_m);
-                    self.launch = Some(LaunchGuard::new(
+                    let mut launch = LaunchGuard::new(
                         &self.source,
                         &self.target,
                         self.vehicle,
@@ -266,7 +282,10 @@ impl ResumeMonitor {
                         &plan.route,
                         plan.connector_length_m,
                         o,
-                    ));
+                    );
+                    launch.speed_zones = speed_zones.clone();
+                    self.launch = Some(launch);
+                    self.speed_zones = speed_zones;
                     self.route = Some(plan.route);
                     state.phase = LaneChangePhase::Resuming;
                     state.blocking_tracks.clear();
@@ -282,7 +301,7 @@ impl ResumeMonitor {
         &self,
         o: &ReturnObservation<'_>,
         distance: f64,
-    ) -> Result<(LaneResumeRequest, lane_resume::LaneResumePlan, f64), ResumeDecision> {
+    ) -> Result<ResumeCandidate, ResumeDecision> {
         let r = self.target.return_on_conflict.as_ref().unwrap();
         let request = LaneResumeRequest {
             start: o.ego.pose,
@@ -297,7 +316,15 @@ impl ResumeMonitor {
         };
         let plan = lane_resume::plan(request, o.route, self.vehicle)
             .map_err(|_| ResumeDecision::InfeasibleGeometry)?;
+        let speed_zones = r
+            .speed_limit_m_s
+            .map_or_else(
+                || Ok(vec![]),
+                |cap| plan.speed_zones(o.route, o.speed_zones, cap),
+            )
+            .map_err(|_| ResumeDecision::InfeasibleTrajectory)?;
         let mut preview = calibrated_planner(self.vehicle, self.cruise, o.limits);
+        preview.speed_zones = speed_zones.clone();
         let trajectory = preview.plan(o.ego, &plan.route, o.predictions);
         if trajectory.mode == DrivingMode::Emergency
             || trajectory.points.last().is_none_or(|p| {
@@ -312,7 +339,12 @@ impl ResumeMonitor {
         if clearance < RETURN_CLEARANCE_M + RETURN_TRACKING_RESERVE_M {
             return Err(ResumeDecision::InfeasibleTrajectory);
         }
-        Ok((request, plan, clearance))
+        Ok(ResumeCandidate {
+            request,
+            plan,
+            clearance,
+            speed_zones,
+        })
     }
 }
 
