@@ -13,10 +13,14 @@ error and is repaired using the declared plant geometry and motion calibration.
 All 245 standard outputs remain byte-identical, and 56 native integration
 tests pass. [Implementation, fixed gates and results](gnss-latency.md).
 
+The next integration supports [synchronous map corrections in delayed-GNSS
+history](gnss-map-history.md), retaining their full covariances and original
+freshness. Conflicting replay is atomic and brakes. This closes the previous
+configuration incompatibility while keeping the estimate at **about 21%**.
 The 30% waypoint remains unmet: independent automotive perception/localization,
-calibrated uncertainty, delayed-odometry and external-correction replay remain
-unresolved. Earlier research notes below retain the estimates recorded at
-their respective revisions.
+calibrated uncertainty, delayed odometry, asynchronous external corrections
+and sustained operational evidence remain unresolved. Earlier research notes
+below retain the estimates recorded at their respective revisions.
 
 The optional [guarded camera graph optimization](camera-operators.md) replaces
 two expensive Resize operations while checking all raw output bits against an

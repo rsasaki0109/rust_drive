@@ -31,7 +31,7 @@ use navigation::{
 use rustdriving_control::{PurePursuit, guard};
 use rustdriving_core::*;
 use rustdriving_localization::Ekf;
-use rustdriving_localization::latency::GnssHistory;
+use rustdriving_localization::latency::{GnssHistory, HistoryError};
 use rustdriving_mapping::OccupancyGrid;
 use rustdriving_perception::{LidarClusters, Tracker};
 use rustdriving_planning::LatticePlanner;
@@ -126,11 +126,6 @@ impl PipelineConfig {
         }
     }
     pub fn validate(&self) -> Result<(), String> {
-        if self.gnss_latency_compensation && self.localization_map.is_some() {
-            return Err(
-                "GNSS latency compensation cannot replay external map-pose corrections".into(),
-            );
-        }
         if let Some(map) = &self.localization_map {
             map.validate()?;
         }
@@ -326,6 +321,15 @@ pub struct GnssLatencyDiagnostics {
     pub history_unavailable_fixes: u64,
     pub history_predictions: usize,
     pub last_accepted_delay_s: Option<f64>,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub history_conflict_fixes: u64,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub history_map_corrections: u64,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub replayed_map_corrections: u64,
+}
+fn is_zero(value: &u64) -> bool {
+    *value == 0
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -586,6 +590,11 @@ impl DrivingPipeline {
                 let decision = if let Some(history) = &mut self.gnss_history {
                     match history.correct(&mut self.ekf, fix, input.time) {
                         Ok(decision) => decision,
+                        Err(HistoryError::MapCorrectionConflict) => {
+                            self.gnss_latency.history_conflict_fixes =
+                                self.gnss_latency.history_conflict_fixes.saturating_add(1);
+                            GnssDecision::Invalid
+                        }
                         Err(_) => {
                             self.gnss_latency.history_unavailable_fixes = self
                                 .gnss_latency
@@ -712,7 +721,13 @@ impl DrivingPipeline {
                             .lidar_fault
                             .is_none_or(|fault_time| scan.stamp > fault_time)
                 });
-            map.update(scan, input.time, eligible, &mut self.ekf);
+            map.update(
+                scan,
+                input.time,
+                eligible,
+                &mut self.ekf,
+                self.gnss_history.as_mut(),
+            );
         }
         let estimate = self.ekf.state();
         let tracking_to_world = self.tracking_frame.to_world(estimate.pose);
@@ -1074,6 +1089,8 @@ impl DrivingPipeline {
                 .as_ref()
                 .map(|history| GnssLatencyDiagnostics {
                     history_predictions: history.len(),
+                    history_map_corrections: history.map_corrections() as u64,
+                    replayed_map_corrections: history.replayed_map_corrections(),
                     ..self.gnss_latency
                 }),
             map_localization: self

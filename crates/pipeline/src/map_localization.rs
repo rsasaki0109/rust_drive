@@ -2,6 +2,7 @@
 use rustdriving_core::{LidarScan, Pose, Vec2};
 use rustdriving_localization::{
     Ekf,
+    latency::GnssHistory,
     registration::{RegistrationConfig, match_scan},
 };
 use serde::{Deserialize, Serialize};
@@ -130,6 +131,7 @@ impl MapLocalization {
         now: f64,
         eligible: bool,
         ekf: &mut Ekf,
+        history: Option<&mut GnssHistory>,
     ) {
         if let Some(scan) = scan {
             if scan.stamp != now {
@@ -180,7 +182,14 @@ impl MapLocalization {
                             Some(result.conditioning.ambiguity_probes);
                         self.diagnostic.registration_covariance = Some(result.covariance);
                         self.diagnostic.covariance = Some(covariance);
-                        if ekf.correct_map_pose(result.pose, covariance) {
+                        let accepted = if let Some(history) = history {
+                            history
+                                .correct_map_pose(ekf, result.pose, covariance, now)
+                                .unwrap_or(false)
+                        } else {
+                            ekf.correct_map_pose(result.pose, covariance)
+                        };
+                        if accepted {
                             self.diagnostic.last_accepted_stamp = Some(scan.stamp);
                             self.diagnostic.decision = MapLocalizationDecision::Accepted;
                         } else {

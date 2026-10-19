@@ -39,9 +39,11 @@ preceding output bit except the added diagnostics.
 The mode requires the pipeline's validated wheel/gyro samples and common
 monotonic clock. It replays the motion intervals actually used by the pipeline;
 it does not implement delayed-odometry fusion, clock-offset estimation or
-per-point LiDAR deskew. External fixed-map corrections are explicitly rejected
-in combination with this mode until their correction-event history can also
-be replayed. Low-level users must reset history after an external correction.
+per-point LiDAR deskew. Synchronous accepted fixed-map pose/covariance events
+can now enter the same bounded history. Conflicts refuse the whole GNSS
+transaction and brake without renewing either observation clock.
+[Combined map-event contract](gnss-map-history.md). Low-level users must use
+the history wrapper for map corrections, or reset after other external updates.
 
 The simulator's optional `sensor_timing.gnss_delay_ticks` delays only delivery,
 keeping raw GNSS values, variance and acquisition stamps intact. It is

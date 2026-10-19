@@ -1,10 +1,11 @@
 //! Bounded acquisition-time GNSS correction with measured-motion replay.
 use crate::Ekf;
-use rustdriving_core::{Gnss, GnssDecision, Odometry};
+use rustdriving_core::{Gnss, GnssDecision, Odometry, Pose};
 use std::collections::VecDeque;
 
 pub const MAX_GNSS_DELAY_S: f64 = 0.5;
 pub const MAX_PREDICTIONS: usize = 64;
+pub const MAX_MAP_CORRECTIONS: usize = 64;
 const EPS: f64 = 1e-9;
 
 #[derive(Clone)]
@@ -16,19 +17,57 @@ struct Prediction {
     rear_axle_offset_m: f64,
 }
 
+#[derive(Clone)]
+struct MapCorrection {
+    stamp: f64,
+    before: Ekf,
+    pose: Pose,
+    covariance: [[f64; 3]; 3],
+}
+
+#[derive(Clone)]
+enum Event {
+    Prediction(Prediction),
+    Map(MapCorrection),
+}
+impl Event {
+    fn start(&self) -> f64 {
+        match self {
+            Self::Prediction(p) => p.start,
+            Self::Map(m) => m.stamp,
+        }
+    }
+    fn end(&self) -> f64 {
+        match self {
+            Self::Prediction(p) => p.end,
+            Self::Map(m) => m.stamp,
+        }
+    }
+    fn before(&self) -> &Ekf {
+        match self {
+            Self::Prediction(p) => &p.before,
+            Self::Map(m) => &m.before,
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum HistoryError {
     InvalidClockOrMotion,
     Unavailable,
+    /// The delayed fix would invalidate a previously accepted map correction.
+    MapCorrectionConflict,
 }
 
 /// No measurements or calibration enter from evaluation truth. Only this
-/// wrapper may correct the supplied EKF while its history is active; external
-/// pose corrections require `reset` and a new covered acquisition interval.
+/// wrapper may correct the supplied EKF while its history is active. Synchronous
+/// map measurements must enter through `correct_map_pose`; other external
+/// corrections require `reset` and a new covered acquisition interval.
 #[derive(Default)]
 pub struct GnssHistory {
-    predictions: VecDeque<Prediction>,
+    events: VecDeque<Event>,
     current_time: Option<f64>,
+    replayed_map_corrections: u64,
 }
 
 fn advance(filter: &mut Ekf, odometry: Odometry, dt: f64, offset: f64) {
@@ -37,16 +76,73 @@ fn advance(filter: &mut Ekf, odometry: Odometry, dt: f64, offset: f64) {
 
 impl GnssHistory {
     pub fn reset(&mut self, now: f64) {
-        self.predictions.clear();
+        self.events.clear();
         self.current_time = now.is_finite().then_some(now);
     }
 
     pub fn len(&self) -> usize {
-        self.predictions.len()
+        self.events
+            .iter()
+            .filter(|e| matches!(e, Event::Prediction(_)))
+            .count()
     }
 
     pub fn is_empty(&self) -> bool {
-        self.predictions.is_empty()
+        self.len() == 0
+    }
+
+    pub fn map_corrections(&self) -> usize {
+        self.events.len() - self.len()
+    }
+
+    pub fn replayed_map_corrections(&self) -> u64 {
+        self.replayed_map_corrections
+    }
+
+    fn prune(&mut self, now: f64) {
+        while self.len() > MAX_PREDICTIONS
+            || self.map_corrections() > MAX_MAP_CORRECTIONS
+            || self
+                .events
+                .front()
+                .is_some_and(|e| e.end() < now - MAX_GNSS_DELAY_S - EPS)
+        {
+            self.events.pop_front();
+        }
+    }
+
+    /// Admit a new synchronous map measurement once, with the ordinary EKF
+    /// gate. Rejected matches are never revived by later GNSS delivery.
+    pub fn correct_map_pose(
+        &mut self,
+        filter: &mut Ekf,
+        pose: Pose,
+        covariance: [[f64; 3]; 3],
+        now: f64,
+    ) -> Result<bool, HistoryError> {
+        if !now.is_finite()
+            || self
+                .current_time
+                .is_none_or(|time| (time - now).abs() > EPS)
+            || self
+                .events
+                .iter()
+                .any(|e| matches!(e, Event::Map(m) if m.stamp >= now - EPS))
+        {
+            return Err(HistoryError::InvalidClockOrMotion);
+        }
+        let before = filter.clone();
+        if !filter.correct_map_pose(pose, covariance) {
+            return Ok(false);
+        }
+        self.events.push_back(Event::Map(MapCorrection {
+            stamp: now,
+            before,
+            pose,
+            covariance,
+        }));
+        self.prune(now);
+        Ok(true)
     }
 
     /// Record exactly the prediction applied by the ordinary filter. A missing
@@ -80,25 +176,15 @@ impl GnssHistory {
         }
         let before = filter.clone();
         advance(filter, odometry, end - start, rear_axle_offset_m);
-        if self.predictions.len() == MAX_PREDICTIONS {
-            self.predictions.pop_front();
-        }
-        self.predictions.push_back(Prediction {
+        self.events.push_back(Event::Prediction(Prediction {
             start,
             end,
             before,
             odometry,
             rear_axle_offset_m,
-        });
+        }));
         self.current_time = Some(end);
-        while self.predictions.len() > MAX_PREDICTIONS
-            || self
-                .predictions
-                .front()
-                .is_some_and(|p| p.end < end - MAX_GNSS_DELAY_S - EPS)
-        {
-            self.predictions.pop_front();
-        }
+        self.prune(end);
         Ok(())
     }
 
@@ -131,27 +217,33 @@ impl GnssHistory {
         {
             return Ok(GnssDecision::IgnoredTimestamp);
         }
-        if now - fix.stamp <= EPS {
+        let map_at_now = self
+            .events
+            .back()
+            .is_some_and(|e| matches!(e, Event::Map(m) if (m.stamp - now).abs() <= EPS));
+        if now - fix.stamp <= EPS && !map_at_now {
             let decision = filter.correct(fix);
-            self.predictions.clear();
+            self.events.clear();
             return Ok(decision);
         }
         if now - fix.stamp > MAX_GNSS_DELAY_S + EPS {
             return Err(HistoryError::Unavailable);
         }
         let Some(index) = self
-            .predictions
+            .events
             .iter()
-            .position(|p| p.start <= fix.stamp + EPS && fix.stamp <= p.end + EPS)
+            .position(|e| e.start() <= fix.stamp + EPS && fix.stamp <= e.end() + EPS)
         else {
             return Err(HistoryError::Unavailable);
         };
-        let step = &self.predictions[index];
-        let mut candidate = step.before.clone();
+        let step = &self.events[index];
+        let mut candidate = step.before().clone();
         candidate.diagnostics = filter.diagnostics;
         candidate.last_gnss = filter.last_gnss;
-        let prefix = fix.stamp - step.start;
-        if prefix > EPS {
+        let prefix = fix.stamp - step.start();
+        if let Event::Prediction(step) = step
+            && prefix > EPS
+        {
             advance(
                 &mut candidate,
                 step.odometry,
@@ -166,30 +258,49 @@ impl GnssHistory {
             return Ok(decision);
         }
         let mut replayed = VecDeque::new();
-        for (i, original) in self.predictions.iter().enumerate().skip(index) {
-            let start = if i == index {
-                fix.stamp
-            } else {
-                original.start
-            };
-            if original.end - start <= EPS {
-                continue;
+        let mut map_count = 0_u64;
+        for (i, original) in self.events.iter().enumerate().skip(index) {
+            match original {
+                Event::Prediction(original) => {
+                    let start = if i == index {
+                        fix.stamp
+                    } else {
+                        original.start
+                    };
+                    if original.end - start <= EPS {
+                        continue;
+                    }
+                    let before = candidate.clone();
+                    advance(
+                        &mut candidate,
+                        original.odometry,
+                        original.end - start,
+                        original.rear_axle_offset_m,
+                    );
+                    replayed.push_back(Event::Prediction(Prediction {
+                        start,
+                        before,
+                        ..original.clone()
+                    }));
+                }
+                Event::Map(original) => {
+                    let before = candidate.clone();
+                    if !candidate.correct_map_pose(original.pose, original.covariance) {
+                        // Atomic refusal: keep the live filter, history and all
+                        // observation ownership unchanged, including freshness.
+                        return Err(HistoryError::MapCorrectionConflict);
+                    }
+                    replayed.push_back(Event::Map(MapCorrection {
+                        before,
+                        ..original.clone()
+                    }));
+                    map_count += 1;
+                }
             }
-            let before = candidate.clone();
-            advance(
-                &mut candidate,
-                original.odometry,
-                original.end - start,
-                original.rear_axle_offset_m,
-            );
-            replayed.push_back(Prediction {
-                start,
-                before,
-                ..original.clone()
-            });
         }
         *filter = candidate;
-        self.predictions = replayed;
+        self.events = replayed;
+        self.replayed_map_corrections = self.replayed_map_corrections.saturating_add(map_count);
         Ok(decision)
     }
 }

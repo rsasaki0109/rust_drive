@@ -132,7 +132,7 @@ fits remain in their denominators; uncertainty allowances are provisional.
 
 **Acquisition-time LiDAR transform.** The pipeline retains at most 64 continuous wheel/gyro poses over a 0.35 s lookup window, keeping one predecessor for interpolation at the age boundary. History begins at the first pipeline step and advances only by accepted EKF prediction increments. Exact acquisition timestamps use the stored pose directly; intermediate timestamps interpolate position and the shortest wrapped yaw arc between estimates no more than 0.25 s apart. The pipeline never extrapolates before history or across an uncovered clock gap. A new scan older than 0.35 s or without a covered pose is invalid and cannot update continuous-frame tracks, map rays or accepted-LiDAR age. Detection association and braking-history samples retain continuous coordinates. The current localized world transform projects published tracks, predictions and occupancy ray origins; velocity vectors rotate without acquiring pose-correction velocity. Acquisition timestamps remain the tracker observation times, including during cached world-coordinate reprojection.
 
-This avoids transforming delayed body-frame returns with the delivery-time body pose and avoids interpreting GNSS/map correction jumps as object motion. It does not correct odometry drift within the history, rebuild historical occupancy cells, fuse delayed odometry/GNSS at their acquisition times, deskew individual rays or propagate pose covariance. Motion prediction separately advances acquired tracks to the current control time without changing their observation stamps. These bounded steps do not establish complete latency compensation or general delayed-scene safety. [Sensor contract and reproduction](sensor-replay.md); [tracking frame and evidence](tracker-localization-frame.md).
+This avoids transforming delayed body-frame returns with the delivery-time body pose and avoids interpreting GNSS/map correction jumps as object motion. This LiDAR history does not correct odometry drift within its retained frame, rebuild historical occupancy cells, fuse delayed odometry, deskew individual rays or propagate pose covariance. Acquisition-time GNSS and synchronous map corrections are handled by the separate optional filter history below. Motion prediction separately advances acquired tracks to the current control time without changing their observation stamps. These bounded steps do not establish complete latency compensation or general delayed-scene safety. [Sensor contract and reproduction](sensor-replay.md); [tracking frame and evidence](tracker-localization-frame.md).
 
 **Mapping.** A 0.5 m world-aligned log-odds grid records ray free-space and hit endpoints. It exports occupied cells for debugging. No-return beams are not exported by the sensor and therefore do not clear the entire sensing horizon. Dynamic-object ghost cells and repeated discretized ray cells remain limitations. The grid does not supply the current planner's collision geometry and does not perform SLAM or route discovery.
 
@@ -175,9 +175,12 @@ acquisition time, including fractional intervals, before motion and covariance
 are replayed to the current clock. Accepted timestamps/counts retain observation
 ownership; delivery cannot renew freshness. Uncovered history brakes and requires
 a post-fault acquisition. Zero-delay outputs retain existing arithmetic.
-External map-pose corrections are rejected in combination until correction-event
-replay is implemented. Delayed odometry and clock-offset estimation remain
-outside this mode. [Implementation and independent evidence](gnss-latency.md).
+Synchronous accepted map-pose/covariance events can also be retained (at most
+64) and replayed through their original EKF gates. A conflicting replay refuses
+the complete GNSS transaction and latches braking; accepted map clocks remain
+owned by their original scans. Delayed map scans, delayed odometry and
+clock-offset estimation remain outside this mode. [GNSS contract](gnss-latency.md)
+and [combined map-event history](gnss-map-history.md).
 
 ## Fixed-route speed intervals
 

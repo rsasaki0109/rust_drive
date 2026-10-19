@@ -2011,6 +2011,49 @@ mod tests {
         }
     }
     #[test]
+    fn delayed_gnss_and_map_updates_bridge_outage_then_stop_when_map_is_lost() {
+        for name in ["gnss-map-recovery", "gnss-map-lidar-loss"] {
+            let r = run(scenario(name), 7, Plant::Dynamic).unwrap();
+            assert!(r.summary.passed, "{:?}", r.summary);
+            assert!(r.summary.min_clearance >= 1.0);
+            let log = r.sensor_log.as_ref().unwrap();
+            assert!(log.ticks.iter().any(|t| {
+                t.expected.gnss_latency.unwrap().replayed_map_corrections > 0
+                    && t.expected
+                        .map_localization
+                        .as_ref()
+                        .unwrap()
+                        .gnss_outage_covered
+            }));
+            if name == "gnss-map-recovery" {
+                assert!(r.summary.reached_goal);
+                assert!(r.summary.localization_rmse <= 0.2);
+                assert!(r.summary.localization_max_error <= 0.4);
+                assert!(
+                    r.frames
+                        .iter()
+                        .filter(|f| (3.0..8.0).contains(&f.time))
+                        .all(|f| f.truth.speed >= 2.0)
+                );
+            } else {
+                assert!(!r.summary.reached_goal);
+                assert!(r.summary.final_speed <= 0.2);
+                assert!(
+                    log.ticks
+                        .iter()
+                        .any(|t| t.input.time > 6.25 && t.expected.emergency)
+                );
+            }
+            let mut bytes = vec![];
+            log.write(&mut bytes).unwrap();
+            assert!(
+                rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), vec![])
+                    .unwrap()
+                    .verified
+            );
+        }
+    }
+    #[test]
     fn insufficient_follower_sensing_still_fails_the_physical_clearance_floor() {
         for seed in [1, 42] {
             let r = run(

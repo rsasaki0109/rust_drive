@@ -7,6 +7,8 @@ the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
 [Acquisition-time GNSS fusion](docs/gnss-latency.md) now reduces delayed-fix
 errors in both reference and native RNE driving, with bounded history,
 fault-stop recovery and independent covariance reconstruction.
+It can now [retain synchronous map corrections during GNSS replay](docs/gnss-map-history.md),
+including bounded outage support and conservative refusal of conflicting updates.
 
 ![Recorded left-hand RNE driving through Japanese urban intersections with signals, roadworks and diverse road users](assets/japan-city-demo.gif)
 

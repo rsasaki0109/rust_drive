@@ -389,14 +389,19 @@ reconstructs a GNSS correction at its acquisition time and replays at most
 gate, Joseph correction and acquisition-based freshness remain in force.
 `gnss_latency` output diagnostics record compensated fixes, unavailable history,
 current interval count and last accepted delay. Missing coverage brakes and
-requires a covered post-fault acquisition. External fixed-map corrections
-cannot be combined with this mode.
+requires a covered post-fault acquisition. Synchronous accepted fixed-map
+pose/covariance events can be retained and replayed too, with at most 64 map
+events. Additional zero-omitted diagnostics report retained/replayed maps and
+conflicting transactions. A conflict keeps the live state/history and original
+observation clocks unchanged, latches invalid-GNSS braking and requires a new
+post-fault acquisition. Delayed map scans remain unsupported.
 
 The transport delay, fault schedule and physical truth are absent from the
 header. Both the original configuration and raw delivered observations are
 required for exact replay. Option-off records remain byte-identical; enabled
 records require a reader that supports the new configuration and diagnostics.
 [Independent chronological reconstruction and driving results](gnss-latency.md).
+[Combined GNSS/map history and freshness contract](gnss-map-history.md).
 
 ## GNSS acceptance diagnostics
 
