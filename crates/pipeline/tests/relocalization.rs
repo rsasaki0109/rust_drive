@@ -56,6 +56,130 @@ fn lost(p: &mut DrivingPipeline) {
     assert!(out.emergency);
 }
 
+fn stop_recovery_config() -> PipelineConfig {
+    let mut c = config();
+    c.stop_signs = vec![StopLine {
+        id: "near".into(),
+        route_s_m: 7.,
+    }];
+    c.relocalization.as_mut().unwrap().preserve_stop_signs = true;
+    c
+}
+
+#[test]
+fn measured_stop_recovery_restarts_dwell_and_replays_complete_outputs() {
+    use rustdriving_pipeline::stop_signs::StopPhase;
+    let c = stop_recovery_config();
+    let mut p = DrivingPipeline::new(c.clone()).unwrap();
+    let mut log = SensorLog::new("stop-preserving-relocalization", c);
+    let mut reset = None;
+    let mut release = None;
+    for i in 0..=100 {
+        if (1..8).contains(&i) {
+            continue;
+        }
+        let now = i as f64 * 0.05;
+        let input = frame(
+            now,
+            if i == 0 {
+                Pose::default()
+            } else {
+                measured_pose()
+            },
+        );
+        let out = p.step(&input).unwrap();
+        if out.localization_epoch == 1 {
+            let stops = out.stop_signs.as_ref().unwrap();
+            if reset.is_none() {
+                reset = Some(now);
+                assert!(stops.localization_reset.as_ref().unwrap().admitted);
+                assert_eq!(stops.stops[0].held_s, 0.);
+                assert_eq!(out.command.acceleration, -6.);
+            }
+            if stops.stops[0].phase == StopPhase::Released {
+                release.get_or_insert(now);
+            } else {
+                assert!(out.command.acceleration <= -0.5);
+            }
+        }
+        log.record(input, out);
+    }
+    assert!(release.unwrap() >= reset.unwrap() + 2.05 - 1e-9);
+    let mut bytes = Vec::new();
+    log.write(&mut bytes).unwrap();
+    assert!(
+        verify(Cursor::new(bytes), std::io::sink())
+            .unwrap()
+            .verified
+    );
+    log.ticks
+        .iter_mut()
+        .find(|t| t.expected.localization_epoch == 1)
+        .unwrap()
+        .expected
+        .stop_signs
+        .as_mut()
+        .unwrap()
+        .stops[0]
+        .held_s = 2.;
+    let mut bytes = Vec::new();
+    log.write(&mut bytes).unwrap();
+    assert!(verify(Cursor::new(bytes), std::io::sink()).is_err());
+}
+
+#[test]
+fn measured_unserved_stop_crossing_keeps_braking_through_fresh_gnss() {
+    let mut c = stop_recovery_config();
+    c.initial_pose = measured_pose();
+    let mut p = DrivingPipeline::new(c).unwrap();
+    p.step(&frame(0., measured_pose())).unwrap();
+    let mut rejected = false;
+    for i in 8..=100 {
+        let now = i as f64 * 0.05;
+        let mut pose = measured_pose();
+        pose.position.x = 6.5;
+        let out = p.step(&frame(now, pose)).unwrap();
+        if out.localization_epoch == 1 {
+            rejected = true;
+            assert!(out.health.contains(&HealthIssue::InvalidStopSignRecovery));
+            assert_eq!(out.command.acceleration, -6.);
+            assert!(
+                !out.stop_signs
+                    .as_ref()
+                    .unwrap()
+                    .localization_reset
+                    .as_ref()
+                    .unwrap()
+                    .admitted
+            );
+            assert_eq!(out.stop_signs.as_ref().unwrap().stops[0].held_s, 0.);
+        }
+    }
+    assert!(rejected);
+}
+
+#[test]
+fn mapped_stops_require_explicit_recovery_and_other_control_types_stay_excluded() {
+    let mut c = stop_recovery_config();
+    c.relocalization.as_mut().unwrap().preserve_stop_signs = false;
+    assert!(
+        serde_json::to_value(&c).unwrap()["relocalization"]
+            .get("preserve_stop_signs")
+            .is_none()
+    );
+    assert!(DrivingPipeline::new(c).is_err());
+    let mut c = config();
+    c.relocalization.as_mut().unwrap().preserve_stop_signs = true;
+    assert!(DrivingPipeline::new(c).is_err());
+    let mut c = stop_recovery_config();
+    c.stop_lines.push(StopLine {
+        id: "signal".into(),
+        route_s_m: 30.,
+    });
+    assert!(DrivingPipeline::new(c).is_err());
+    assert!(DrivingPipeline::new(stop_recovery_config()).is_ok());
+}
+
 #[test]
 fn consistent_measured_scans_create_a_new_epoch_and_pre_reset_fixes_cannot_resume_it() {
     let mut p = DrivingPipeline::new(config()).unwrap();

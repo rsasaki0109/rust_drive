@@ -2,7 +2,7 @@
 
 RustDriving's long-term target is a practical independent autonomous driving OSS. Milestones are capability gates, not release dates or claims of parity with Autoware, Apollo or openpilot.
 
-The near-term user goal is a **50% engineering maturity estimate**. [Capability waypoints and evidence requirements](maturity.md) define the development direction; the percentage is subjective and does not imply road safety or parity. The current estimate is about 21%; this remains a subjective simulation-prototype estimate. Bounded turn-rule routing and richer intersection recordings add reproducible behavior, while general driving, perception accuracy and planar/terrain limits remain.
+The near-term user goal is a **50% engineering maturity estimate**. [Capability waypoints and evidence requirements](maturity.md) define the development direction; the percentage is subjective and does not imply road safety or parity. The current estimate is about 29%; this remains a subjective simulation-prototype estimate. Bounded turn-rule routing and richer intersection recordings add reproducible behavior, while general driving, perception accuracy and planar/terrain limits remain.
 
 ## M0 — Executable Rust baseline (implemented)
 
@@ -81,6 +81,14 @@ All 32 individual cases pass, with 0.20 s recovery handovers at standstill.
 All twelve arrivals improve 1.90–2.85 s; five meet the frozen 2 s requirement,
 so that comparison remains unmet. A separate viewed navigation-fault regression
 now retains the hold through a valid still-blocked recovery snapshot.
+
+Optional [fixed-stop preservation during measured recovery](stop-sign-relocalization.md)
+now retains served stops, rearms duties ahead and requires a new full healthy
+two-second standstill. Invalid admission keeps emergency braking through fresh
+GNSS. Fixed stops also support native chassis/local-route calibration using the
+original surveyed prefixes. All 32 follow-up cases pass; original coverage misses,
+launch failures and invalid-epoch accuracy failures remain recorded. This extends
+fixed-rule simulation recovery and keeps the subjective estimate at about 29%.
 
 Remaining:
 

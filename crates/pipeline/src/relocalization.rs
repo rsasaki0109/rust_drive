@@ -25,6 +25,9 @@ pub struct RelocalizationConfig {
     /// Preserve the live navigation mission and recheck it at the measured pose.
     #[serde(skip_serializing_if = "is_false")]
     pub preserve_navigation: bool,
+    /// Retain served fixed-route stops and restart unfinished stop confirmations.
+    #[serde(skip_serializing_if = "is_false")]
+    pub preserve_stop_signs: bool,
 }
 fn is_false(value: &bool) -> bool {
     !*value
@@ -41,6 +44,7 @@ impl Default for RelocalizationConfig {
             map_only_grace_s: None,
             confirm_gnss_handoff: false,
             preserve_navigation: false,
+            preserve_stop_signs: false,
         }
     }
 }

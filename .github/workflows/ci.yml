@@ -132,6 +132,9 @@ jobs:
       - name: Verify braked stopped-route confirmation
         shell: bash
         run: python scripts/check_navigation_handover.py --plant reference-2d --smoke --output artifacts/navigation-handover
+      - name: Verify stop-sign obligations after measured localization recovery
+        shell: bash
+        run: python scripts/check_stop_relocalization.py --plant reference-2d --smoke --output artifacts/stop-relocalization
       - name: Verify delayed map acquisitions and transient fault recovery
         shell: bash
         run: python scripts/check_delayed_map.py --output artifacts/delayed-map --controls
@@ -208,6 +211,7 @@ jobs:
             artifacts/gnss-handoff/
             artifacts/navigation-relocalization/
             artifacts/navigation-handover/
+            artifacts/stop-relocalization/
             artifacts/gnss-latency/
   image-tracking:
     runs-on: ubuntu-latest
@@ -1066,6 +1070,9 @@ jobs:
       - name: Verify native braked stopped-route confirmation
         working-directory: rust_drive
         run: python3 scripts/check_navigation_handover.py --plant rne-dynamic --smoke --output artifacts/navigation-handover-native
+      - name: Verify native stop-sign obligations after measured localization recovery
+        working-directory: rust_drive
+        run: python3 scripts/check_stop_relocalization.py --plant rne-dynamic --smoke --output artifacts/stop-relocalization-native
       - name: Verify legal turn routes in the native dynamic plant
         working-directory: rust_drive
         run: python3 scripts/check-turn-restrictions.py --backend native --seeds 7 --compact --output artifacts/turn-restrictions
@@ -1153,6 +1160,7 @@ jobs:
             rust_drive/artifacts/gnss-handoff-native/
             rust_drive/artifacts/navigation-relocalization-native/
             rust_drive/artifacts/navigation-handover-native/
+            rust_drive/artifacts/stop-relocalization-native/
             rust_drive/artifacts/japan-city-demo/
       - uses: actions/upload-artifact@v4
         with:

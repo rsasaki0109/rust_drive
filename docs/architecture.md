@@ -129,8 +129,9 @@ observations and three consistent scan confirmations. A shared comparison
 budget and distinct-fit ambiguity check reject incomplete/ambiguous proposals.
 The confirming frame brakes, old GNSS/LiDAR acquisitions cannot renew freshness,
 and `localization_epoch` scopes new scene identities. This supports fixed routes
-and synchronous XY scans; lane changes, mapped traffic controls and
-XYZ/multi-height configurations are rejected before driving. New GNSS is
+and synchronous XY scans; lane changes, signals/yielding controls and
+XYZ/multi-height configurations are rejected before driving. Live navigation and
+fixed stop signs need separate explicit preservation options below. New GNSS is
 required by default after reset. An explicit `map_only_grace_s` can qualify new
 synchronous accepted map corrections for at most five seconds from that measured
 reset. Their actual acquisition stamps reach health and final control freshness
@@ -162,6 +163,16 @@ it. A measured localization reset discards the pose-dependent hold and votes.
 The existing final command path requests at most -0.5 m/s² while holding, with
 ordinary -6 m/s² health-fault braking. False/omitted keeps preceding behavior.
 [Contract and qualification](navigation-handover.md).
+
+Explicit `relocalization.preserve_stop_signs` retains served fixed-route stops
+behind the measured front, rearms served stops now ahead, and resets every
+unfinished dwell and its acquisition watermark. A new full healthy two-second
+stop is required. Corridor/heading admission or an unserved margin below 0.5 m
+latches `InvalidStopSignRecovery`; fresh GNSS cannot clear it. Fixed stops also
+support local route fitting: truncate in original surveyed arc coordinates
+before fitting, retain that endpoint, and evaluate stop geometry on the original
+route. Signals, yielding and live navigation with controls remain excluded.
+[Ownership, physical evaluation and retained first failures](stop-sign-relocalization.md).
 
 Optional `initial_pose_covariance` supplies a finite, symmetric positive definite
 ENU x/y/yaw matrix (m², m·rad, rad²). It is external initialization calibration.

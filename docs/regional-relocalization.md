@@ -5,9 +5,11 @@ lost wheel/gyro motion. Its default is disabled: the motion-continuity guard kee
 braking. This experimental policy supports supplied fixed routes and surveyed
 maps with ordinary synchronous body-XY LiDAR. An explicit
 [navigation-preservation option](navigation-relocalization.md) can retain a live
-mission and recheck its active route. Other navigation combinations, lane changes,
-mapped signals/signs/intersections and XYZ/multi-height configurations are
-rejected so a reset cannot silently discard ongoing mission/control state.
+mission and recheck its active route. A separate explicit
+[fixed-stop preservation option](stop-sign-relocalization.md) retains served signs
+and restarts unfinished confirmation. Other navigation combinations, lane changes,
+signals/yielding intersections and XYZ/multi-height configurations are rejected
+so a reset cannot silently discard ongoing mission/control state.
 
 ## Operational contract
 

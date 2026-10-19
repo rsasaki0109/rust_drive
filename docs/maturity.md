@@ -2,7 +2,21 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest [braked handover confirmation](navigation-handover.md) keeps this
+The latest [fixed-stop preservation through measured reset](stop-sign-relocalization.md)
+keeps the estimate at **about 29%**. All 32 follow-up cases pass: 24 recovered
+goals, four healthy goals and four disabled holds. New physical standstill
+checks independently verify every post-reset release. Unserved crossings or
+invalid route admission keep emergency braking through fresh GNSS. The native
+chassis/local-route composition now preserves original surveyed stop coordinates.
+The first reference classification passes 14/16 after its schema repair; two
+state-coverage misses and all native launch failures remain recorded. Follow-up
+fault timings use viewed healthy data with unchanged gates. All 646 preceding
+and current physical recordings retain exact replay, and every global
+invalid-epoch accuracy failure remains scored. This extends fixed-rule authored
+simulation recovery; independent automotive sensing, measured uncertainty and
+vehicle operation remain open. The **30% waypoint remains unmet**.
+
+The preceding [braked handover confirmation](navigation-handover.md) keeps this
 estimate at **about 29%**. All 32 physical cases pass their individual checks;
 twelve recovery handovers complete in 0.20 s at actual standstill. Arrival is
 1.90–2.85 s earlier in every pair, but only five of twelve meet the frozen

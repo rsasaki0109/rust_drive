@@ -4,7 +4,9 @@ use rustdriving_pipeline::stop_signs::StopPhase;
 use rustdriving_pipeline::traffic_controls::{
     SignalColor, SignalObservation, SignalState, StopLine,
 };
-use rustdriving_pipeline::{DrivingPipeline, HealthIssue, PipelineConfig, SensorFrame};
+use rustdriving_pipeline::{
+    DrivingPipeline, HealthIssue, MotionLimits, PipelineConfig, SensorFrame,
+};
 
 fn config() -> PipelineConfig {
     let mut c = PipelineConfig::new(
@@ -43,6 +45,77 @@ fn frame(time: f64) -> SensorFrame {
         lidar_failed: false,
         navigation_update: None,
         traffic_signal: None,
+    }
+}
+#[test]
+fn local_geometry_keeps_surveyed_stop_arcs_before_and_after_a_turn() {
+    for rotated in [false, true] {
+        let rotate = |p: Vec2| {
+            if rotated { Vec2::new(-p.y, p.x) } else { p }
+        };
+        let route = Route::new(
+            [Vec2::default(), Vec2::new(40., 0.), Vec2::new(40., 40.)]
+                .into_iter()
+                .map(rotate)
+                .collect(),
+            5.5,
+        )
+        .unwrap();
+        for line_s in [30., 60.] {
+            for chassis in [None, Some(1.5)] {
+                let (position, yaw) = route.sample(line_s - 3.25, 0.);
+                let mut c = config();
+                c.route = route.clone();
+                c.initial_pose = Pose { position, yaw };
+                c.local_route_geometry = true;
+                c.rear_axle_offset_m = chassis;
+                c.gnss_latency_compensation = true;
+                c.motion_limits = Some(MotionLimits {
+                    max_acceleration_m_s2: 2.,
+                    max_deceleration_m_s2: 2.5,
+                    max_lateral_acceleration_m_s2: 2.5,
+                });
+                c.stop_signs[0].route_s_m = line_s;
+                let mut p = DrivingPipeline::new(c.clone()).unwrap();
+                let mut log = SensorLog::new("surveyed-stop-with-local-corners", c);
+                for i in 0..43 {
+                    let mut input = frame(i as f64 * 0.05);
+                    input.gnss.as_mut().unwrap().position = position;
+                    let out = p.step(&input).unwrap();
+                    assert!(out.health.is_empty());
+                    assert_eq!(p.active_route().points, route.points);
+                    let stops = out.stop_signs.as_ref().unwrap();
+                    if i < 40 {
+                        assert_eq!(stops.stops[0].phase, StopPhase::Holding);
+                        assert_eq!(stops.stop_s_m, Some(line_s - 2.25));
+                        assert!(out.command.acceleration <= -0.5);
+                        assert!(!out.trajectory.points.is_empty());
+                        assert!(
+                            out.trajectory
+                                .points
+                                .iter()
+                                .all(|point| { route.project(point.position).0 + 1.25 < line_s })
+                        );
+                    } else {
+                        assert_eq!(stops.stops[0].phase, StopPhase::Released);
+                        assert!(
+                            out.trajectory
+                                .points
+                                .iter()
+                                .any(|point| { route.project(point.position).0 > line_s })
+                        );
+                    }
+                    log.record(input, out);
+                }
+                let mut bytes = vec![];
+                log.write(&mut bytes).unwrap();
+                assert!(
+                    verify(std::io::Cursor::new(bytes), Vec::new())
+                        .unwrap()
+                        .verified
+                );
+            }
+        }
     }
 }
 #[test]

@@ -164,6 +164,9 @@ impl PipelineConfig {
                     "navigation-preserving relocalization requires a navigation mission".into(),
                 );
             }
+            if policy.preserve_stop_signs && self.stop_signs.is_empty() {
+                return Err("stop-preserving relocalization requires mapped stop signs".into());
+            }
             if policy.confirm_gnss_handoff
                 && (policy.map_only_grace_s.is_none()
                     || self.gnss_recovery.is_none()
@@ -187,12 +190,12 @@ impl PipelineConfig {
                 || (self.navigation.is_some() && !policy.preserve_navigation)
                 || self.lane_change.is_some()
                 || !self.stop_lines.is_empty()
-                || !self.stop_signs.is_empty()
+                || (!self.stop_signs.is_empty() && !policy.preserve_stop_signs)
                 || !self.yield_intersections.is_empty()
                 || self.lidar3d.is_some()
                 || self.multi_height_lidar.is_some()
             {
-                return Err("regional relocalization requires a surveyed map and ordinary XY LiDAR, explicit navigation preservation for live missions, and no lane changes or mapped controls".into());
+                return Err("regional relocalization requires a surveyed map and ordinary XY LiDAR, explicit preservation for navigation or fixed-route stop signs, and no lane changes, signals or yielding intersections".into());
             }
         }
         if let Some(offset) = self.gnss_antenna_offset_m {
@@ -304,10 +307,11 @@ impl PipelineConfig {
                 );
             }
             rustdriving_planning::validate_local_route_geometry(&self.route, self.vehicle)?;
-            if !self.stop_lines.is_empty()
-                || !self.stop_signs.is_empty()
-                || !self.yield_intersections.is_empty()
-            {
+            // Fixed stop signs truncate the supplied route at the original
+            // surveyed arc before planner-local fillets are fitted. The fit
+            // preserves that endpoint, and stop admission still projects onto
+            // the original route. Signals and yielding remain unqualified.
+            if !self.stop_lines.is_empty() || !self.yield_intersections.is_empty() {
                 return Err(
                     "local route geometry currently excludes mapped traffic-rule coordinates"
                         .into(),
@@ -397,6 +401,7 @@ pub enum HealthIssue {
     ClockGap,
     MotionDiscontinuity,
     InvalidNavigation,
+    InvalidStopSignRecovery,
     InvalidTrafficSignal,
 }
 
@@ -1177,6 +1182,9 @@ impl DrivingPipeline {
                 measured_motion,
                 health.is_empty(),
             );
+            if stops.recovery_fault() {
+                health.push(HealthIssue::InvalidStopSignRecovery);
+            }
         }
         if let Some(zones) = &mut self.intersections {
             zones.step(
@@ -1457,6 +1465,16 @@ impl DrivingPipeline {
             fresh.config.route = navigation.plan().route.clone();
             fresh.planner.speed_zones = navigation.speed_zones().to_vec();
             fresh.navigator = Some(navigation);
+        }
+        if self.config.relocalization.unwrap().preserve_stop_signs {
+            let mut stops = self.stop_signs.take().unwrap();
+            stops.relocalize(
+                &fresh.config.route,
+                input.time,
+                fresh.ekf.state(),
+                fresh.config.vehicle.radius,
+            );
+            fresh.stop_signs = Some(stops);
         }
         if self.config.relocalization.unwrap().confirm_gnss_handoff {
             fresh

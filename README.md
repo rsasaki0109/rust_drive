@@ -45,8 +45,9 @@ remain recorded. Recovery requires a supplied map, synchronous XY LiDAR, fresh
 stopped motion observations and, by default, a later fresh GNSS fix. An explicit
 [map-only grace window](docs/relocalization-map-only.md) can use new accepted map
 observations for at most five seconds from the reset, with separate actual GNSS
-clocks and an absolute stopping deadline. Recovery across mapped traffic controls and global
-initialization remain open.
+clocks and an absolute stopping deadline. Recovery across signals/yielding controls
+and global initialization remain open; fixed stop signs use a separate explicit
+preservation option described below.
 All 24 map-support cases pass the feature protocol in both plants: handoff cases
 travel 13.798–13.932 m before GNSS returns, matching defaults hold, and eight
 loss/expiry cases stop. Four paired goals finish 3.90–4.25 s earlier. Global
@@ -77,6 +78,15 @@ including after measured recovery and through navigation-fault recovery. All
 improves 1.90–2.85 s, with 5/12 pairs meeting the frozen two-second criterion.
 That comparison remains unmet; comparative maturity stays about 29%.
 All 578 preceding and 32 current recordings retain exact final-runtime replay.
+
+Optional [stop-sign preservation through measured reset](docs/stop-sign-relocalization.md)
+now retains served stops behind the measured front and requires a new two-second
+healthy stop for unfinished or rearmed signs. Inadmissible recovery keeps emergency
+braking through later GNSS. Fixed stops also compose with native chassis/local-route
+calibration while retaining original surveyed stop coordinates. All 32 follow-up
+cases pass; the original two reference coverage misses and native launch failures
+remain recorded. All 646 preceding/current physical recordings retain exact replay.
+Comparative maturity stays about 29%; automotive sensing and calibration remain open.
 
 ![Recorded left-hand RNE driving through Japanese urban intersections with signals, roadworks and diverse road users](assets/japan-city-demo.gif)
 

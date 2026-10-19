@@ -28,7 +28,9 @@ Supply the existing `navigation` graph/endpoint request, surveyed
 `localization_map`, and acquisition-time GNSS calibration as usual. The new flag
 requires a navigation mission and defaults to false/omitted. Lane changes,
 mapped signals/stop signs/intersections and XYZ/multi-height relocalization
-remain excluded. This extends the authored directed planar-map domain.
+remain excluded from live navigation. Fixed routes can separately opt into
+[stop preservation](stop-sign-relocalization.md), without enabling navigation
+with controls. This extends the authored directed planar-map domain.
 
 ## Ownership and route admission
 
