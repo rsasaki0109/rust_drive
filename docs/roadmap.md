@@ -41,7 +41,7 @@ work. [Navigation speed contract](navigation-speeds.md).
 This does not supply sign detection, live speed-map remapping or general road
 rule understanding. [Contract and evidence](route-speed-zones.md).
 
-Acquisition-time GNSS fusion now corrects up to 0.5 s of delayed fixes using bounded wheel/gyro history in the shared pipeline. Reference and native RNE accuracy and fault-recovery trials pass independent chronological reconstruction, with all preceding default outputs retained. Synchronous accepted map-pose/covariance events can now be replayed atomically; asynchronous map corrections and delayed odometry remain outside this mode. [GNSS improvement](gnss-latency.md), [combined map history](gnss-map-history.md).
+Acquisition-time GNSS fusion now corrects up to 0.5 s of delayed fixes using bounded wheel/gyro history in the shared pipeline. Reference and native RNE accuracy and fault-recovery trials pass independent chronological reconstruction, with all preceding default outputs retained. Synchronous accepted map-pose/covariance events can be replayed atomically; an explicit option also retains GNSS events and admits map scans up to 0.2 s old in either arrival order. Delayed odometry, clock-offset estimation and broader external correction types remain unsupported. [GNSS improvement](gnss-latency.md), [combined synchronous map history](gnss-map-history.md), [delayed-map mode](delayed-map.md).
 
 Remaining:
 

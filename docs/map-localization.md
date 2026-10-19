@@ -14,6 +14,13 @@ are gated again during replay without refreshing map acquisition clocks.
 A conflicting replay refuses the whole GNSS transaction and brakes.
 [Combined event contract and independent qualification](gnss-map-history.md).
 
+Explicit `allow_delayed_scans: true` additionally admits scans up to 0.2 s old
+when GNSS event history is enabled. Registration uses the acquisition prior,
+then the accepted map correction and subsequent GNSS/map updates are replayed
+atomically. Original map acquisition age, genuine GNSS timestamps and fault
+epochs remain unchanged. The default retains synchronous matching.
+[Delayed-map contract, physical recovery and independent numerical audit](delayed-map.md).
+
 ```sh
 source scripts/env.sh
 cargo build --workspace --release --locked

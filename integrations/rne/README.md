@@ -66,8 +66,16 @@ Optional `gnss_latency_compensation` uses acquisition-time GNSS correction and b
 The same mode can now retain accepted synchronous map pose/covariance events.
 Native moving-outage recovery and map-loss braking are exercised without
 changing engine or plant calibration; the complete native library suite now
-has 57 passing tests. Conflicting event replay refuses the GNSS transaction and
+had 57 passing tests at the synchronous stage. Conflicting event replay refuses the GNSS transaction and
 brakes. [Combined event contract and qualification](../../docs/gnss-map-history.md).
+
+Explicit `localization_map.allow_delayed_scans` also retains GNSS corrections,
+seeds registration at acquisition time and inserts map updates before or after
+already delivered GNSS. It preserves the 0.2 s map age limit and the native
+plant calibration. Native tests exercise both arrival orders and a physical
+stop/map-only recovery after transient LiDAR failure.
+The complete native library suite passes all 58 tests.
+[Asynchronous map contract and results](../../docs/delayed-map.md).
 
 ## Occlusion, crossing and low-friction regressions
 

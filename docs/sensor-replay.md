@@ -394,7 +394,12 @@ pose/covariance events can be retained and replayed too, with at most 64 map
 events. Additional zero-omitted diagnostics report retained/replayed maps and
 conflicting transactions. A conflict keeps the live state/history and original
 observation clocks unchanged, latches invalid-GNSS braking and requires a new
-post-fault acquisition. Delayed map scans remain unsupported.
+post-fault acquisition. Explicit `localization_map.allow_delayed_scans` now
+retains accepted GNSS events too and admits map scans up to 0.2 s old. The
+recorded acquisition prior and delay are recomputed from raw motion and admitted
+corrections; replayed GNSS cannot rewrite original-delivery NIS/count evidence.
+Additional zero-omitted diagnostics count retained/replayed GNSS corrections.
+[Asynchronous map contract](delayed-map.md).
 
 The transport delay, fault schedule and physical truth are absent from the
 header. Both the original configuration and raw delivered observations are

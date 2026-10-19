@@ -18,9 +18,16 @@ history](gnss-map-history.md), retaining their full covariances and original
 freshness. Conflicting replay is atomic and brakes. This closes the previous
 configuration incompatibility while keeping the estimate at **about 21%**.
 The 30% waypoint remains unmet: independent automotive perception/localization,
-calibrated uncertainty, delayed odometry, asynchronous external corrections
-and sustained operational evidence remain unresolved. Earlier research notes
-below retain the estimates recorded at their respective revisions.
+calibrated uncertainty, delayed odometry, clock-offset estimation, broader
+external corrections and sustained operational evidence remain unresolved.
+Earlier research notes below retain the estimates recorded at their respective revisions.
+
+An additional [delayed-map mode](delayed-map.md) reconstructs acquisition poses,
+retains accepted GNSS events and replays both correction types in either arrival
+order. Original NIS/count ownership, atomic conflict rejection and post-fault
+scan admission are tested. This is a concrete temporal-fusion integration
+improvement within the same authored simulation domain; the estimate remains
+**about 21%** pending broader automotive and uncertainty validation.
 
 The optional [guarded camera graph optimization](camera-operators.md) replaces
 two expensive Resize operations while checking all raw output bits against an

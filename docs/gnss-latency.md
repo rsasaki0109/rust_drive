@@ -44,6 +44,9 @@ can now enter the same bounded history. Conflicts refuse the whole GNSS
 transaction and brake without renewing either observation clock.
 [Combined map-event contract](gnss-map-history.md). Low-level users must use
 the history wrapper for map corrections, or reset after other external updates.
+The additional [delayed-map option](delayed-map.md) retains accepted GNSS events
+too, allowing map scans to arrive after already delivered GNSS while preserving
+original GNSS counts, freshness and NIS evidence.
 
 The simulator's optional `sensor_timing.gnss_delay_ticks` delays only delivery,
 keeping raw GNSS values, variance and acquisition stamps intact. It is

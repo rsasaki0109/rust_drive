@@ -37,8 +37,11 @@ corrections do not enter the continuous wheel/gyro tracking history.
 Additional optional diagnostics count retained map corrections, successfully
 replayed map corrections and refused conflicting fixes. Zero-valued new fields
 are omitted for compatibility with preceding map-free delayed-GNSS logs.
-The mode remains opt-in. Delayed map scans, delayed odometry, clock-offset
-estimation, global localization and real vehicle integration are unsupported.
+The mode remains opt-in. A separate explicit
+[`localization_map.allow_delayed_scans` option](delayed-map.md) now retains GNSS
+events too and handles bounded delayed map scans in either arrival order.
+Delayed odometry, clock-offset estimation, global localization and real vehicle
+integration remain unsupported.
 
 ```sh
 source scripts/env.sh

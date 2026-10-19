@@ -128,6 +128,9 @@ impl PipelineConfig {
     pub fn validate(&self) -> Result<(), String> {
         if let Some(map) = &self.localization_map {
             map.validate()?;
+            if map.allow_delayed_scans && !self.gnss_latency_compensation {
+                return Err("delayed map scans require GNSS correction-event history".into());
+            }
         }
         if let Some(perception) = &self.perception3d {
             perception.validate(
@@ -327,6 +330,10 @@ pub struct GnssLatencyDiagnostics {
     pub history_map_corrections: u64,
     #[serde(default, skip_serializing_if = "is_zero")]
     pub replayed_map_corrections: u64,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub history_gnss_corrections: u64,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub replayed_gnss_corrections: u64,
 }
 fn is_zero(value: &u64) -> bool {
     *value == 0
@@ -464,7 +471,17 @@ impl DrivingPipeline {
         }
         let grid = OccupancyGrid::new(Vec2::new(min_x, min_y), width, height, 0.5);
         let ekf = Ekf::new(config.initial_pose);
-        let gnss_history = config.gnss_latency_compensation.then(GnssHistory::default);
+        let gnss_history = config.gnss_latency_compensation.then(|| {
+            if config
+                .localization_map
+                .as_ref()
+                .is_some_and(|map| map.allow_delayed_scans)
+            {
+                GnssHistory::with_delayed_maps()
+            } else {
+                GnssHistory::default()
+            }
+        });
         let predictor = if config.confirm_slow_motion {
             ObservedBraking::with_slow_motion()
         } else {
@@ -590,7 +607,10 @@ impl DrivingPipeline {
                 let decision = if let Some(history) = &mut self.gnss_history {
                     match history.correct(&mut self.ekf, fix, input.time) {
                         Ok(decision) => decision,
-                        Err(HistoryError::MapCorrectionConflict) => {
+                        Err(
+                            HistoryError::MapCorrectionConflict
+                            | HistoryError::GnssCorrectionConflict,
+                        ) => {
                             self.gnss_latency.history_conflict_fixes =
                                 self.gnss_latency.history_conflict_fixes.saturating_add(1);
                             GnssDecision::Invalid
@@ -1091,6 +1111,8 @@ impl DrivingPipeline {
                     history_predictions: history.len(),
                     history_map_corrections: history.map_corrections() as u64,
                     replayed_map_corrections: history.replayed_map_corrections(),
+                    history_gnss_corrections: history.gnss_corrections() as u64,
+                    replayed_gnss_corrections: history.replayed_gnss_corrections(),
                     ..self.gnss_latency
                 }),
             map_localization: self

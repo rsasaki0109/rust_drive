@@ -9,6 +9,8 @@ errors in both reference and native RNE driving, with bounded history,
 fault-stop recovery and independent covariance reconstruction.
 It can now [retain synchronous map corrections during GNSS replay](docs/gnss-map-history.md),
 including bounded outage support and conservative refusal of conflicting updates.
+An additional [delayed-map mode](docs/delayed-map.md) reconstructs the scan's
+acquisition pose and replays intervening GNSS corrections in either arrival order.
 
 ![Recorded left-hand RNE driving through Japanese urban intersections with signals, roadworks and diverse road users](assets/japan-city-demo.gif)
 

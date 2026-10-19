@@ -44,6 +44,8 @@ jobs:
         run: python scripts/test_gnss_latency.py
       - name: Check chronological GNSS and map reconstruction
         run: python scripts/test_gnss_map_history.py
+      - name: Check asynchronous map and original GNSS evidence reconstruction
+        run: python scripts/test_delayed_map.py
       - run: cargo fmt --all --check
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - run: cargo test --workspace --locked
@@ -72,6 +74,9 @@ jobs:
       - name: Verify combined delayed GNSS and map localization
         shell: bash
         run: python scripts/check_gnss_map_history.py --output artifacts/gnss-map-history
+      - name: Verify delayed map acquisitions and transient fault recovery
+        shell: bash
+        run: python scripts/check_delayed_map.py --output artifacts/delayed-map --controls
       - name: Evaluate pinned measured clouds and independently reconstruct scores
         shell: bash
         run: |

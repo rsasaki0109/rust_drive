@@ -6,7 +6,10 @@ use std::collections::VecDeque;
 pub const MAX_GNSS_DELAY_S: f64 = 0.5;
 pub const MAX_PREDICTIONS: usize = 64;
 pub const MAX_MAP_CORRECTIONS: usize = 64;
+pub const MAX_GNSS_CORRECTIONS: usize = 64;
+pub const MAX_MAP_DELAY_S: f64 = 0.2;
 const EPS: f64 = 1e-9;
+mod asynchronous;
 
 #[derive(Clone)]
 struct Prediction {
@@ -26,27 +29,37 @@ struct MapCorrection {
 }
 
 #[derive(Clone)]
+struct GnssCorrection {
+    before: Ekf,
+    fix: Gnss,
+}
+
+#[derive(Clone)]
 enum Event {
     Prediction(Prediction),
     Map(MapCorrection),
+    Gnss(GnssCorrection),
 }
 impl Event {
     fn start(&self) -> f64 {
         match self {
             Self::Prediction(p) => p.start,
             Self::Map(m) => m.stamp,
+            Self::Gnss(g) => g.fix.stamp,
         }
     }
     fn end(&self) -> f64 {
         match self {
             Self::Prediction(p) => p.end,
             Self::Map(m) => m.stamp,
+            Self::Gnss(g) => g.fix.stamp,
         }
     }
     fn before(&self) -> &Ekf {
         match self {
             Self::Prediction(p) => &p.before,
             Self::Map(m) => &m.before,
+            Self::Gnss(g) => &g.before,
         }
     }
 }
@@ -57,6 +70,8 @@ pub enum HistoryError {
     Unavailable,
     /// The delayed fix would invalidate a previously accepted map correction.
     MapCorrectionConflict,
+    /// A new earlier map observation would invalidate an accepted GNSS fix.
+    GnssCorrectionConflict,
 }
 
 /// No measurements or calibration enter from evaluation truth. Only this
@@ -68,6 +83,8 @@ pub struct GnssHistory {
     events: VecDeque<Event>,
     current_time: Option<f64>,
     replayed_map_corrections: u64,
+    replayed_gnss_corrections: u64,
+    retain_gnss: bool,
 }
 
 fn advance(filter: &mut Ekf, odometry: Odometry, dt: f64, offset: f64) {
@@ -75,9 +92,18 @@ fn advance(filter: &mut Ekf, odometry: Odometry, dt: f64, offset: f64) {
 }
 
 impl GnssHistory {
+    /// Retain accepted GNSS events too, permitting later map observations to
+    /// arrive before or after them. Default history keeps its original behavior.
+    pub fn with_delayed_maps() -> Self {
+        Self {
+            retain_gnss: true,
+            ..Self::default()
+        }
+    }
+
     pub fn reset(&mut self, now: f64) {
         self.events.clear();
-        self.current_time = now.is_finite().then_some(now);
+        self.current_time = (now.is_finite() && now >= 0.).then_some(now);
     }
 
     pub fn len(&self) -> usize {
@@ -92,7 +118,21 @@ impl GnssHistory {
     }
 
     pub fn map_corrections(&self) -> usize {
-        self.events.len() - self.len()
+        self.events
+            .iter()
+            .filter(|e| matches!(e, Event::Map(_)))
+            .count()
+    }
+
+    pub fn gnss_corrections(&self) -> usize {
+        self.events
+            .iter()
+            .filter(|e| matches!(e, Event::Gnss(_)))
+            .count()
+    }
+
+    pub fn replayed_gnss_corrections(&self) -> u64 {
+        self.replayed_gnss_corrections
     }
 
     pub fn replayed_map_corrections(&self) -> u64 {
@@ -102,6 +142,7 @@ impl GnssHistory {
     fn prune(&mut self, now: f64) {
         while self.len() > MAX_PREDICTIONS
             || self.map_corrections() > MAX_MAP_CORRECTIONS
+            || self.gnss_corrections() > MAX_GNSS_CORRECTIONS
             || self
                 .events
                 .front()
@@ -120,6 +161,9 @@ impl GnssHistory {
         covariance: [[f64; 3]; 3],
         now: f64,
     ) -> Result<bool, HistoryError> {
+        if self.retain_gnss {
+            return self.correct_map_pose_at(filter, pose, covariance, now, now);
+        }
         if !now.is_finite()
             || self
                 .current_time
@@ -217,6 +261,9 @@ impl GnssHistory {
         {
             return Ok(GnssDecision::IgnoredTimestamp);
         }
+        if self.retain_gnss {
+            return self.correct_retained_gnss(filter, fix, now);
+        }
         let map_at_now = self
             .events
             .back()
@@ -296,6 +343,7 @@ impl GnssHistory {
                     }));
                     map_count += 1;
                 }
+                Event::Gnss(_) => return Err(HistoryError::InvalidClockOrMotion),
             }
         }
         *filter = candidate;

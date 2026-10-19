@@ -178,9 +178,12 @@ a post-fault acquisition. Zero-delay outputs retain existing arithmetic.
 Synchronous accepted map-pose/covariance events can also be retained (at most
 64) and replayed through their original EKF gates. A conflicting replay refuses
 the complete GNSS transaction and latches braking; accepted map clocks remain
-owned by their original scans. Delayed map scans, delayed odometry and
-clock-offset estimation remain outside this mode. [GNSS contract](gnss-latency.md)
-and [combined map-event history](gnss-map-history.md).
+owned by their original scans. An additional explicit map option retains GNSS
+events too and admits scans up to 0.2 s old, reconstructing their acquisition
+priors and replaying corrections in either arrival order. Counts and last NIS
+retain original-delivery ownership. Delayed odometry and clock-offset estimation
+remain unsupported. [GNSS contract](gnss-latency.md), [synchronous map-event
+history](gnss-map-history.md) and [delayed map mode](delayed-map.md).
 
 ## Fixed-route speed intervals
 

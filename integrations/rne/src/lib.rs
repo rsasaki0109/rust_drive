@@ -2054,6 +2054,60 @@ mod tests {
         }
     }
     #[test]
+    fn asynchronous_map_updates_replay_gnss_and_recover_from_lidar_failure() {
+        for name in ["delayed-map-gnss-early", "delayed-map-recovery"] {
+            let r = run(scenario(name), 7, Plant::Dynamic).unwrap();
+            assert!(r.summary.passed, "{:?}", r.summary);
+            assert!(r.summary.reached_goal);
+            assert!(r.summary.localization_rmse <= 0.2);
+            assert!(r.summary.localization_max_error <= 0.4);
+            assert!(r.summary.min_clearance >= 1.0);
+            let log = r.sensor_log.as_ref().unwrap();
+            assert!(log.ticks.iter().any(|t| {
+                t.expected
+                    .map_localization
+                    .as_ref()
+                    .unwrap()
+                    .last_accepted_stamp
+                    .is_some_and(|stamp| t.input.time - stamp > 0.05)
+            }));
+            if name == "delayed-map-gnss-early" {
+                assert!(
+                    log.ticks
+                        .last()
+                        .unwrap()
+                        .expected
+                        .gnss_latency
+                        .unwrap()
+                        .replayed_gnss_corrections
+                        > 0
+                );
+            } else {
+                assert!(
+                    r.frames
+                        .iter()
+                        .any(|f| (4.8..5.5).contains(&f.time) && f.truth.speed <= 0.05)
+                );
+                assert!(log.ticks.iter().any(|t| {
+                    (6.0..8.0).contains(&t.input.time)
+                        && t.expected.health.is_empty()
+                        && t.expected
+                            .map_localization
+                            .as_ref()
+                            .unwrap()
+                            .gnss_outage_covered
+                }));
+            }
+            let mut bytes = vec![];
+            log.write(&mut bytes).unwrap();
+            assert!(
+                rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), vec![])
+                    .unwrap()
+                    .verified
+            );
+        }
+    }
+    #[test]
     fn insufficient_follower_sensing_still_fails_the_physical_clearance_floor() {
         for seed in [1, 42] {
             let r = run(
