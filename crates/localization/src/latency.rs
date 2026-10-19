@@ -78,7 +78,7 @@ pub enum HistoryError {
 /// wrapper may correct the supplied EKF while its history is active. Synchronous
 /// map measurements must enter through `correct_map_pose`; other external
 /// corrections require `reset` and a new covered acquisition interval.
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct GnssHistory {
     events: VecDeque<Event>,
     current_time: Option<f64>,

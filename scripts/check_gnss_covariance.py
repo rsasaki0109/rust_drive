@@ -95,7 +95,7 @@ def contains_declared(actual, declared):
     return actual == declared
 
 
-def audit(run, config, ticks, spec, frozen):
+def audit(run, config, ticks, spec, frozen, reconstruction=None):
     recorded = copy.deepcopy(run['scenario'])
     if recorded.get('sensor_timing') is not None:
         # SensorTiming explicitly omits a zero GNSS delay on serialization.
@@ -135,12 +135,12 @@ def audit(run, config, ticks, spec, frozen):
     rmse, maximum = math.sqrt(sum(e*e for e in errors)/len(errors)), max(errors)
     if abs(rmse-summary['localization_rmse']) > 1e-10 or abs(maximum-summary['localization_max_error']) > 1e-10:
         raise ValueError('truth error score differs from independent full-interval score')
-    oracle = verify_map_ticks(config, ticks) if config.get('localization_map') else verify_ticks(config, ticks)
+    oracle = reconstruction if reconstruction is not None else (verify_map_ticks(config, ticks) if config.get('localization_map') else verify_ticks(config, ticks))
     clearance = sweep(run)
     failed = []
     if not summary['passed']:
         failed.append('source_acceptance')
-    if (not summary['reached_goal'] or summary['collisions'] or summary['road_violations']
+    if ((frozen['expected'] == 'goal' and not summary['reached_goal']) or summary['collisions'] or summary['road_violations']
             or summary['simulated_seconds'] > frozen['duration'] or summary['min_clearance'] < GATES['clearance_m']):
         failed.append('physical_goal_clearance_deadline')
     if spec['calibrated'] and (rmse > GATES['rmse_m'] or maximum > GATES['maximum_error_m']):

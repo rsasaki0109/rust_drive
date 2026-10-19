@@ -125,6 +125,8 @@ pub struct Gnss {
 pub enum GnssDecision {
     Accepted,
     RejectedInnovation,
+    /// A valid proposal is deferred by the explicitly configured recovery policy.
+    RecoveryHeld,
     Invalid,
     IgnoredTimestamp,
 }

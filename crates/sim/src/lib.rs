@@ -113,6 +113,9 @@ pub struct Scenario {
     /// Simulator-only noise shape; never inferred as operational calibration.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub gnss_noise_shape: Option<[[f64; 2]; 2]>,
+    /// External recovery policy calibration; distinct from simulated faults.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gnss_recovery: Option<rustdriving_pipeline::GnssRecoveryConfig>,
     /// Explicit experimental forecast policy, independent of actor identities.
     #[serde(default, skip_serializing_if = "is_false")]
     pub confirm_slow_motion: bool,
@@ -685,6 +688,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     let mut config = PipelineConfig::new(route, Pose { position, yaw }, VehicleConfig::default());
     config.initial_pose_covariance = scenario.initial_pose_covariance;
     config.gnss_covariance_shape = scenario.gnss_covariance_shape;
+    config.gnss_recovery = scenario.gnss_recovery;
     config.confirm_slow_motion = scenario.confirm_slow_motion;
     config.gnss_latency_compensation = scenario.gnss_latency_compensation;
     config.speed_zones = scenario.speed_zones.clone();

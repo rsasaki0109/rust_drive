@@ -371,6 +371,33 @@ impl Ekf {
         self.diagnostics.accepted_fixes = self.diagnostics.accepted_fixes.saturating_add(1);
         GnssDecision::Accepted
     }
+    /// Record an otherwise accepted proposal withheld by an external recovery
+    /// policy. Pose, covariance, accepted count and accepted clock stay intact.
+    /// `nis` must come from the original acquisition-time correction proposal.
+    pub fn hold_recovery_fix(&mut self, fix: Gnss, nis: f64) -> GnssDecision {
+        if !fix.stamp.is_finite()
+            || fix.stamp < 0.
+            || !fix.position.finite()
+            || !fix.variance.is_finite()
+            || fix.variance <= 0.
+            || !nis.is_finite()
+            || !(0. ..=36.).contains(&nis)
+        {
+            return GnssDecision::Invalid;
+        }
+        if self
+            .diagnostics
+            .last_observed_stamp
+            .is_some_and(|stamp| fix.stamp <= stamp)
+        {
+            return GnssDecision::IgnoredTimestamp;
+        }
+        self.diagnostics.last_observed_stamp = Some(fix.stamp);
+        self.diagnostics.last_nis = Some(nis);
+        self.diagnostics.last_decision = Some(GnssDecision::RecoveryHeld);
+        self.diagnostics.rejected_fixes = self.diagnostics.rejected_fixes.saturating_add(1);
+        GnssDecision::RecoveryHeld
+    }
     pub fn diagnostics(&self) -> LocalizationDiagnostics {
         self.diagnostics
     }

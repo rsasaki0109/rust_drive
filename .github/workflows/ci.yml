@@ -44,6 +44,8 @@ jobs:
         run: python scripts/test_gnss_latency.py
       - name: Check correlated GNSS calibration oracle and frozen paired controls
         run: python scripts/test_gnss_covariance.py
+      - name: Check deferred GNSS recovery proposals against independent closed forms
+        run: python scripts/test_gnss_recovery.py
       - name: Check chronological GNSS and map reconstruction
         run: python scripts/test_gnss_map_history.py
       - name: Check asynchronous map and original GNSS evidence reconstruction
@@ -98,6 +100,9 @@ jobs:
       - name: Verify combined delayed GNSS and map localization
         shell: bash
         run: python scripts/check_gnss_map_history.py --output artifacts/gnss-map-history
+      - name: Verify bounded GNSS recovery and preserve no-guard and expiry controls
+        shell: bash
+        run: python scripts/check_gnss_recovery.py --plant reference-2d --smoke --output artifacts/gnss-recovery
       - name: Verify delayed map acquisitions and transient fault recovery
         shell: bash
         run: python scripts/check_delayed_map.py --output artifacts/delayed-map --controls
@@ -166,6 +171,7 @@ jobs:
             artifacts/mid-edge-corpus/
             artifacts/initial-pose/
             artifacts/gnss-covariance/
+            artifacts/gnss-recovery/
             artifacts/gnss-latency/
   image-tracking:
     runs-on: ubuntu-latest
@@ -998,6 +1004,9 @@ jobs:
       - name: Independently verify experimental XYZ terrain and measured actor AABBs
         working-directory: rust_drive
         run: python3 scripts/check-terrain-objects.py --compact --output artifacts/terrain-objects
+      - name: Verify native bounded GNSS recovery with map, no-guard and expiry controls
+        working-directory: rust_drive
+        run: python3 scripts/check_gnss_recovery.py --plant rne-dynamic --smoke --output artifacts/gnss-recovery-native
       - name: Verify legal turn routes in the native dynamic plant
         working-directory: rust_drive
         run: python3 scripts/check-turn-restrictions.py --backend native --seeds 7 --compact --output artifacts/turn-restrictions
@@ -1077,6 +1086,7 @@ jobs:
             rust_drive/artifacts/mid-edge-native/
             rust_drive/artifacts/initial-pose-native/
             rust_drive/artifacts/gnss-covariance-native/
+            rust_drive/artifacts/gnss-recovery-native/
             rust_drive/artifacts/japan-city-demo/
       - uses: actions/upload-artifact@v4
         with:

@@ -1,15 +1,26 @@
 # Path toward a broader Rust driving stack
 
-The current engineering estimate is **about 23%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
+The current engineering estimate is **about 24%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The optional [ENU GNSS covariance calibration](gnss-covariance.md) handles
+The increment from about 23% reflects [bounded GNSS recovery after innovation
+rejection](gnss-recovery-guard.md). Full pose/history proposals are withheld
+until several fresh corrections satisfy explicit position/yaw bounds; expiry
+or uncovered motion keeps braking latched. All 16 previous persistent-bias
+failures now pass unchanged accuracy/physical-stop gates, with at least 70.128%
+paired maximum-error reduction. Eight new map-bias compositions, eight new-seed
+confirmations and 32 nominal cases also pass; four expiry controls stay stopped
+after healthy signals return. All 254 prior logs retain exact replay outputs.
+This optional authored recovery model does not detect every bias or qualify
+uncertainty/vehicle operation. The **30% waypoint remains unmet**.
+
+The earlier optional [ENU GNSS covariance calibration](gnss-covariance.md) handles
 directional/correlated observation noise through the shared delayed GNSS/map
 history. All 32 ordinary/map episodes pass, but all 16 calibrated persistent-bias
 episodes fail the frozen accuracy/physical-stop gates, and none of the 16 paired
 comparisons meets the 40% maximum-error reduction requirement. All 64 recordings
 pass full joint-matrix reconstruction and exact replay. Correct nominal
 covariance modeling does not qualify sustained-bias protection or measured
-uncertainty, so the estimate stays **about 23%**, with 30% still unmet.
+uncertainty, so that revision kept the estimate at **about 23%**, with 30% unmet.
 
 The [replay publication improvement](sensor-replay.md) prevents failed verification
 from exposing a partial command stream under the final output name. It retains

@@ -162,7 +162,7 @@ def verify_ticks(config, ticks):
 
 def verify_pose_covariance(output, expected, config):
     """Independent full-matrix comparison and Sylvester positivity check."""
-    if config.get('initial_pose_covariance') is None and config.get('gnss_covariance_shape') is None:
+    if all(config.get(key) is None for key in ['initial_pose_covariance', 'gnss_covariance_shape', 'gnss_recovery']):
         if output.get('pose_covariance') is not None: raise ValueError('legacy output unexpectedly claims a full covariance')
         return 0.
     p = output.get('pose_covariance')

@@ -7,6 +7,11 @@ option. The frozen evaluation passes its 32 ordinary/map driving episodes but
 fails all 16 calibrated persistent-bias episodes. It does not qualify stronger
 fault stopping or measured GNSS uncertainty.
 
+The separate opt-in [bounded recovery policy](gnss-recovery-guard.md) now repairs
+those 16 stopping/accuracy failures without changing covariance calibration.
+The covariance-only recordings and no-guard failures below remain retained;
+supplying a covariance shape does not implicitly enable recovery protection.
+
 ## Configuration and measurement contract
 
 `PipelineConfig.gnss_covariance_shape` is an optional symmetric positive definite
@@ -38,7 +43,8 @@ map/GNSS rewinds keep their original ages, bounds and conflict handling.
 
 Supplying either an initial pose covariance or this GNSS shape publishes the
 complete 3×3 `PipelineOutput.pose_covariance` in every tick. Its x/y trace remains
-`position_variance`; replay checks all entries. Omitting both options keeps the
+`position_variance`; replay checks all entries. The optional recovery policy
+also publishes the full posterior. Omitting all three options keeps the
 original scalar arithmetic and omitted JSON fields.
 
 ## Simulation boundary and fixed evaluation

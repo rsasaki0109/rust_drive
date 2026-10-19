@@ -202,6 +202,16 @@ all 16 calibrated persistent-bias cases fail their physical stop/accuracy gates.
 This is experimental covariance modeling, without qualified bias rejection or
 measured receiver calibration. [Contract and retained failures](gnss-covariance.md).
 
+A separate optional `gnss_recovery` policy guards release after two innovation
+rejections. It probes complete current-pose corrections, including delayed event
+replay, and commits only the last of several bounded, fresh confirmations. Held
+proposals restore the filter/history and preserve genuine accepted clocks;
+their NIS/observed clock is recorded as `RecoveryHeld`. Exceeding the configured
+hold budget or losing measured-motion coverage latches expiry until external
+pipeline reinitialization. All 64 positive reference/native episodes pass;
+four expiry controls remain stopped after healthy signals return. The original
+covariance-only failures above omit this policy. [Bounds and limits](gnss-recovery-guard.md).
+
 ## Fixed-route speed intervals
 
 Optional surveyed `speed_zones` cap candidate segment endpoints over mapped

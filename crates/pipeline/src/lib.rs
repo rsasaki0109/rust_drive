@@ -1,5 +1,8 @@
 //! Shared sensor-to-command stack. No simulator, truth objects or physical world types.
+mod gnss_recovery;
 mod ground;
+use gnss_recovery::Recovery;
+pub use gnss_recovery::{GnssRecoveryConfig, GnssRecoveryDiagnostics, RecoveryPhase};
 pub mod lane_change;
 use lane_change::{LaneChangeConfig, LaneChangeGate, LaneChangeStatus};
 pub mod intersections;
@@ -69,6 +72,9 @@ pub struct PipelineConfig {
     /// Each fix retains its scalar mean variance; R = variance * shape.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub gnss_covariance_shape: Option<[[f64; 2]; 2]>,
+    /// Explicit bounded-proposal confirmation after an innovation brake hold.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gnss_recovery: Option<GnssRecoveryConfig>,
     pub vehicle: VehicleConfig,
     pub nominal_dt: f64,
     pub cruise_speed: f64,
@@ -114,6 +120,7 @@ impl PipelineConfig {
             initial_pose,
             initial_pose_covariance: None,
             gnss_covariance_shape: None,
+            gnss_recovery: None,
             vehicle,
             nominal_dt: 0.05,
             cruise_speed: 8.0,
@@ -135,6 +142,9 @@ impl PipelineConfig {
         }
     }
     pub fn validate(&self) -> Result<(), String> {
+        if let Some(recovery) = self.gnss_recovery {
+            recovery.validate()?;
+        }
         if let Some(shape) = self.gnss_covariance_shape {
             rustdriving_localization::validate_gnss_covariance_shape(shape)?;
         }
@@ -380,6 +390,8 @@ pub struct PipelineOutput {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub gnss_latency: Option<GnssLatencyDiagnostics>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gnss_recovery: Option<GnssRecoveryDiagnostics>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub map_localization: Option<MapLocalizationDiagnostics>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub perception3d: Option<Perception3dDiagnostics>,
@@ -403,6 +415,7 @@ pub struct DrivingPipeline {
     ekf: Ekf,
     gnss_history: Option<GnssHistory>,
     gnss_latency: GnssLatencyDiagnostics,
+    gnss_recovery: Option<Recovery>,
     perception: LidarClusters,
     tracker: Tracker,
     predictor: ObservedBraking,
@@ -516,11 +529,13 @@ impl DrivingPipeline {
             .lane_change
             .clone()
             .map(|c| LaneChangeGate::new(c, config.vehicle, config.cruise_speed));
+        let gnss_recovery = config.gnss_recovery.map(Recovery::new);
         Ok(Self {
             config,
             ekf,
             gnss_history,
             gnss_latency: GnssLatencyDiagnostics::default(),
+            gnss_recovery,
             perception: LidarClusters,
             tracker: Tracker::default(),
             predictor,
@@ -617,6 +632,21 @@ impl DrivingPipeline {
         if !recorded_motion && let Some(history) = &mut self.gnss_history {
             history.reset(input.time);
         }
+        let uncovered_recovery_motion = health.iter().any(|issue| {
+            matches!(
+                issue,
+                HealthIssue::MissingOdometry
+                    | HealthIssue::StaleOdometry
+                    | HealthIssue::InvalidOdometry
+                    | HealthIssue::ClockGap
+            )
+        });
+        if let Some(recovery) = &mut self.gnss_recovery {
+            recovery.advance(input.time);
+            if uncovered_recovery_motion {
+                recovery.expire();
+            }
+        }
         if let Some(fix) = input.gnss {
             if !stamp_valid(fix.stamp, input.time)
                 || !fix.position.finite()
@@ -624,10 +654,20 @@ impl DrivingPipeline {
                 || fix.variance <= 0.0
             {
                 self.gnss_fault = Some(input.time);
+                if let Some(recovery) = &mut self.gnss_recovery {
+                    recovery.interrupt();
+                }
             } else if self.gnss_fault.is_none_or(|fault| {
                 fix.stamp > fault && input.time - fix.stamp <= MAX_GNSS_AGE_S + 1e-9
             }) {
-                let decision = if let Some(history) = &mut self.gnss_history {
+                // A held proposal must not change pose/covariance, event snapshots
+                // or replay counters. Normal/default updates use the existing path.
+                let saved = self
+                    .gnss_recovery
+                    .as_ref()
+                    .filter(|r| r.active())
+                    .map(|_| (self.ekf.clone(), self.gnss_history.clone()));
+                let mut decision = if let Some(history) = &mut self.gnss_history {
                     match history.correct(&mut self.ekf, fix, input.time) {
                         Ok(decision) => decision,
                         Err(
@@ -649,9 +689,28 @@ impl DrivingPipeline {
                 } else {
                     self.ekf.correct(fix)
                 };
+                if decision == GnssDecision::Accepted
+                    && let Some((original, history)) = saved
+                    && !self.gnss_recovery.as_mut().unwrap().consider(
+                        input.time,
+                        fix.stamp,
+                        original.state().pose,
+                        self.ekf.state().pose,
+                    )
+                {
+                    let nis = self.ekf.diagnostics().last_nis.unwrap();
+                    self.ekf = original;
+                    self.gnss_history = history;
+                    decision = self.ekf.hold_recovery_fix(fix, nis);
+                }
                 match decision {
-                    GnssDecision::RejectedInnovation => {
+                    GnssDecision::RejectedInnovation | GnssDecision::RecoveryHeld => {
                         self.rejected_gnss_streak = self.rejected_gnss_streak.saturating_add(1);
+                        if decision == GnssDecision::RejectedInnovation
+                            && let Some(recovery) = &mut self.gnss_recovery
+                        {
+                            recovery.rejected(input.time, self.rejected_gnss_streak);
+                        }
                     }
                     GnssDecision::Accepted => {
                         if self.gnss_history.is_some() {
@@ -665,10 +724,18 @@ impl DrivingPipeline {
                         self.rejected_gnss_streak = 0;
                         self.gnss_fault = None;
                     }
-                    GnssDecision::Invalid => self.gnss_fault = Some(input.time),
+                    GnssDecision::Invalid => {
+                        self.gnss_fault = Some(input.time);
+                        if let Some(recovery) = &mut self.gnss_recovery {
+                            recovery.interrupt();
+                        }
+                    }
                     GnssDecision::IgnoredTimestamp => {}
                 }
             }
+        }
+        if uncovered_recovery_motion && let Some(recovery) = &mut self.gnss_recovery {
+            recovery.expire();
         }
         if self.gnss_fault.is_some() {
             health.push(HealthIssue::InvalidGnss);
@@ -1128,10 +1195,12 @@ impl DrivingPipeline {
             health,
             position_variance: variance,
             pose_covariance: (self.config.initial_pose_covariance.is_some()
-                || self.config.gnss_covariance_shape.is_some())
+                || self.config.gnss_covariance_shape.is_some()
+                || self.config.gnss_recovery.is_some())
             .then(|| self.ekf.pose_covariance()),
             ground,
             localization: Some(self.ekf.diagnostics()),
+            gnss_recovery: self.gnss_recovery.as_ref().map(|r| r.diagnostics),
             gnss_latency: self
                 .gnss_history
                 .as_ref()

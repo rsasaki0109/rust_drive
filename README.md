@@ -2,7 +2,7 @@
 
 **A Rust-native autonomous driving stack.**
 
-Current comparative engineering maturity is **about 23%** (subjective), with
+Current comparative engineering maturity is **about 24%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
 [Acquisition-time GNSS fusion](docs/gnss-latency.md) now reduces delayed-fix
 errors in both reference and native RNE driving, with bounded history,
@@ -21,8 +21,12 @@ Physical heading perturbations also exposed and repaired incomplete local
 side-path tracking in both plants; the original failed protocols remain recorded.
 An experimental [ENU GNSS covariance calibration](docs/gnss-covariance.md) now
 handles directional and correlated observation errors through GNSS/map replay.
-Its 32 ordinary/map episodes pass; all 16 persistent-bias episodes fail the
-frozen stop/accuracy requirements. The option does not qualify bias protection.
+Its 32 ordinary/map episodes pass; without the separate recovery policy, all 16
+persistent-bias episodes fail the frozen stop/accuracy requirements.
+An optional [bounded GNSS recovery guard](docs/gnss-recovery-guard.md) now repairs
+those 16 failures, confirms recovery with new observations and keeps expired
+holds stopped. All 64 positive episodes pass, including map compositions and
+new-seed confirmation; uncertainty calibration and general bias detection remain open.
 
 ![Recorded left-hand RNE driving through Japanese urban intersections with signals, roadworks and diverse road users](assets/japan-city-demo.gif)
 
