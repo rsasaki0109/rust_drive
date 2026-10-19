@@ -62,6 +62,14 @@ impl Recovery {
     pub fn active(&self) -> bool {
         self.diagnostics.phase != RecoveryPhase::Ready
     }
+    /// Start a measured epoch's handoff without inventing rejected GNSS fixes.
+    /// Calls while holding or expired cannot renew the original deadline.
+    pub fn arm_handoff(&mut self, now: f64) {
+        if !self.active() {
+            self.diagnostics.phase = RecoveryPhase::Holding;
+            self.diagnostics.hold_started_at = Some(now);
+        }
+    }
     pub fn expire(&mut self) {
         if self.active() {
             self.diagnostics.phase = RecoveryPhase::Expired;
@@ -147,6 +155,19 @@ mod tests {
             confirmation_fixes: 3,
             max_hold_s: 5.,
         })
+    }
+    #[test]
+    fn arming_has_no_observation_and_does_not_renew_an_active_or_expired_deadline() {
+        let mut r = monitor();
+        r.arm_handoff(1.);
+        r.arm_handoff(2.);
+        assert_eq!(r.diagnostics.hold_started_at, Some(1.));
+        assert_eq!(r.diagnostics.last_candidate_stamp, None);
+        assert_eq!(r.diagnostics.held_fixes, 0);
+        r.advance(6.1);
+        r.arm_handoff(7.);
+        assert_eq!(r.diagnostics.phase, RecoveryPhase::Expired);
+        assert_eq!(r.diagnostics.hold_started_at, Some(1.));
     }
     #[test]
     fn candidates_need_new_stamps_and_rejections_break_the_confirmation_sequence() {

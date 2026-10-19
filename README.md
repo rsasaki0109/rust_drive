@@ -53,6 +53,14 @@ loss/expiry cases stop. Four paired goals finish 3.90–4.25 s earlier. Global
 invalid-epoch accuracy failures remain recorded; all 498 previous logs retain
 exact replay outputs. [Results and boundaries](docs/relocalization-map-only.md).
 
+An optional [confirmed GNSS handoff](docs/confirmed-gnss-handoff.md) now arms the
+configured recovery confirmations at that measured reset. Returning fixes stay
+transactional until confirmed; the reset-anchored deadline brakes even before
+any fix arrives and stays expired after late GNSS returns. Twenty guarded/healthy/
+expiry cases pass; four paired controls retain their unconfirmed-handoff failures.
+All 522 previous logs retain exact replay bytes. This strengthens the existing
+simulation domain; comparative maturity remains about 28%.
+
 ![Recorded left-hand RNE driving through Japanese urban intersections with signals, roadworks and diverse road users](assets/japan-city-demo.gif)
 
 An original, modular driving stack with a working, deterministic closed-loop simulation. The vehicle processes synthetic LiDAR, fuses noisy GNSS and odometry, tracks and predicts obstacles, and plans steering and braking. The opening GIF records CPU-only Robot Native Engine (RNE) driving on the left side of an authored Japanese urban street: two intersections, horizontal signals, storefronts and a guarded construction site. Twenty-three recorded road users include seven passenger vehicles, three trucks, eight pedestrians, four bicycles and a leashed dog, with a child, parent pushing a stroller, elder with a cane and construction worker. Ego waits at red, resumes on green and completely exits both intersections. Vehicles use fixed SI display dimensions and a fixed-scale camera. Original meshes visualize recorded positions; their articulated animation is cosmetic, while physical actors use capsule/circle proxies. Blender Cycles renders the 46-second episode at 3× playback. The work-zone cuboid is physical, but is occluded by traffic in this recording; construction recognition and negotiation are unimplemented. [Checks, meshes and limitations](docs/japanese-city-demo.md); [reproduce the GIF](#reproduce-the-gif).

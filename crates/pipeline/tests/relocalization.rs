@@ -1,7 +1,8 @@
 use rustdriving_core::*;
 use rustdriving_pipeline::{
-    DrivingPipeline, HealthIssue, MapLocalizationConfig, MapOnlySupportStatus, PipelineConfig,
-    PipelineOutput, RelocalizationConfig, RelocalizationPhase, SensorFrame,
+    DrivingPipeline, GnssRecoveryConfig, HealthIssue, MapLocalizationConfig, MapOnlySupportStatus,
+    PipelineConfig, PipelineOutput, RecoveryPhase, RelocalizationConfig, RelocalizationPhase,
+    SensorFrame,
     replay::{SensorLog, verify},
     traffic_controls::StopLine,
 };
@@ -217,7 +218,10 @@ fn map_only_config(grace: f64) -> PipelineConfig {
     cfg
 }
 fn map_only_reset(grace: f64) -> (DrivingPipeline, PipelineOutput) {
-    let mut pipeline = DrivingPipeline::new(map_only_config(grace)).unwrap();
+    reset_with_config(map_only_config(grace))
+}
+fn reset_with_config(cfg: PipelineConfig) -> (DrivingPipeline, PipelineOutput) {
+    let mut pipeline = DrivingPipeline::new(cfg).unwrap();
     lost(&mut pipeline);
     for i in 9..=60 {
         let output = pipeline.step(&without_gnss(i as f64 * 0.05)).unwrap();
@@ -426,6 +430,218 @@ fn replay_checks_map_only_evidence_and_rejects_a_forged_deadline() {
         })
         .unwrap();
     support.expires_at += 1.;
+    let mut bytes = Vec::new();
+    log.write(&mut bytes).unwrap();
+    assert!(
+        verify(Cursor::new(bytes), std::io::sink())
+            .unwrap_err()
+            .contains("mismatch")
+    );
+}
+
+fn confirmed_handoff_config() -> PipelineConfig {
+    let mut cfg = map_only_config(5.);
+    cfg.relocalization.as_mut().unwrap().confirm_gnss_handoff = true;
+    cfg.gnss_recovery = Some(GnssRecoveryConfig {
+        max_position_correction_m: 0.4,
+        max_yaw_correction_rad: 0.1,
+        confirmation_fixes: 3,
+        max_hold_s: 5.,
+    });
+    cfg
+}
+
+#[test]
+fn handoff_is_armed_without_fake_rejections_and_commits_only_the_last_delayed_candidate() {
+    let cfg = confirmed_handoff_config();
+    let (mut p, reset) = reset_with_config(cfg.clone());
+    let (mut no_fix, _) = reset_with_config(cfg);
+    let armed = reset.gnss_recovery.unwrap();
+    assert_eq!(armed.phase, RecoveryPhase::Holding);
+    assert_eq!(armed.hold_started_at, Some(reset.time));
+    assert_eq!(armed.last_candidate_stamp, None);
+    assert_eq!(armed.held_fixes, 0);
+    assert_eq!(reset.localization.unwrap().rejected_fixes, 0);
+    let active = p.step(&without_gnss(reset.time + 0.05)).unwrap();
+    no_fix.step(&without_gnss(reset.time + 0.05)).unwrap();
+    assert!(!active.emergency);
+    for i in 2..=4 {
+        let now = reset.time + i as f64 * 0.05;
+        let reference = no_fix.step(&without_gnss(now)).unwrap();
+        let mut input = frame(now, measured_pose());
+        input.gnss.as_mut().unwrap().stamp = now - 0.05;
+        if i == 2 {
+            input.gnss.as_mut().unwrap().position.y += 0.3;
+        }
+        let output = p.step(&input).unwrap();
+        let diagnostic = output.gnss_recovery.unwrap();
+        let actual = output.localization.unwrap();
+        if i < 4 {
+            assert!(output.emergency);
+            assert_eq!(actual.last_decision, Some(GnssDecision::RecoveryHeld));
+            assert_eq!(actual.accepted_fixes, 0);
+            assert_eq!(actual.last_accepted_stamp, None);
+            assert_eq!(diagnostic.consecutive_candidates, (i - 1) as u8);
+            assert_eq!(
+                output.estimate.pose.position.x,
+                reference.estimate.pose.position.x
+            );
+            assert_eq!(
+                output.estimate.pose.position.y,
+                reference.estimate.pose.position.y
+            );
+            assert_eq!(output.estimate.pose.yaw, reference.estimate.pose.yaw);
+            assert_eq!(output.pose_covariance, reference.pose_covariance);
+            assert_eq!(output.gnss_latency.unwrap().history_gnss_corrections, 0);
+            assert_eq!(output.gnss_latency.unwrap().replayed_map_corrections, 0);
+        } else {
+            assert!(!output.emergency, "{:?}", output.health);
+            assert_eq!(actual.accepted_fixes, 1);
+            assert_eq!(actual.rejected_fixes, 2);
+            assert_eq!(actual.last_accepted_stamp, Some(now - 0.05));
+            assert_eq!(diagnostic.phase, RecoveryPhase::Ready);
+            assert_eq!(diagnostic.completed_recoveries, 1);
+            // Synchronous-map history folds the accepted fix into its anchor;
+            // separate GNSS events are retained only for delayed map mode.
+            assert_eq!(output.gnss_latency.unwrap().history_gnss_corrections, 0);
+            assert_eq!(output.gnss_latency.unwrap().compensated_fixes, 1);
+            assert!(output.gnss_latency.unwrap().replayed_map_corrections > 0);
+            assert_eq!(
+                output
+                    .relocalization
+                    .unwrap()
+                    .map_only_support
+                    .unwrap()
+                    .status,
+                MapOnlySupportStatus::GnssAccepted
+            );
+        }
+    }
+}
+
+#[test]
+fn handoff_deadline_expires_before_any_fix_and_fresh_scans_or_fixes_cannot_renew_it() {
+    let mut cfg = confirmed_handoff_config();
+    cfg.gnss_recovery.as_mut().unwrap().max_hold_s = 0.2;
+    let (mut p, reset) = reset_with_config(cfg);
+    for i in 1..=14 {
+        let now = reset.time + i as f64 * 0.05;
+        let input = if i < 7 {
+            without_gnss(now)
+        } else {
+            frame(now, measured_pose())
+        };
+        let output = p.step(&input).unwrap();
+        let recovery = output.gnss_recovery.unwrap();
+        assert_eq!(recovery.hold_started_at, Some(reset.time));
+        assert_eq!(output.localization.unwrap().accepted_fixes, 0);
+        if i <= 4 {
+            assert!(!output.emergency);
+        } else {
+            assert!(output.emergency);
+            assert!(output.health.contains(&HealthIssue::GnssHandoffExpired));
+            assert_eq!(recovery.phase, RecoveryPhase::Expired);
+            assert_eq!(recovery.consecutive_candidates, 0);
+        }
+    }
+}
+
+#[test]
+fn late_repeated_or_malformed_fixes_cannot_supply_the_handoff_confirmations() {
+    let (mut p, reset) = reset_with_config(confirmed_handoff_config());
+    let mut old = frame(reset.time + 0.05, measured_pose());
+    old.gnss.as_mut().unwrap().stamp = reset.time;
+    let output = p.step(&old).unwrap();
+    assert_eq!(output.localization.unwrap().last_observed_stamp, None);
+    assert_eq!(output.gnss_recovery.unwrap().consecutive_candidates, 0);
+    let first = frame(reset.time + 0.1, measured_pose());
+    assert_eq!(
+        p.step(&first)
+            .unwrap()
+            .gnss_recovery
+            .unwrap()
+            .consecutive_candidates,
+        1
+    );
+    let mut repeat = frame(reset.time + 0.15, measured_pose());
+    repeat.gnss = first.gnss;
+    assert_eq!(
+        p.step(&repeat)
+            .unwrap()
+            .gnss_recovery
+            .unwrap()
+            .consecutive_candidates,
+        1
+    );
+    let mut malformed = frame(reset.time + 0.2, measured_pose());
+    malformed.gnss.as_mut().unwrap().variance = -1.;
+    let output = p.step(&malformed).unwrap();
+    assert!(output.emergency);
+    assert_eq!(output.gnss_recovery.unwrap().consecutive_candidates, 0);
+    assert_eq!(output.gnss_recovery.unwrap().phase, RecoveryPhase::Holding);
+}
+
+#[test]
+fn handoff_dependencies_are_checked_and_existing_recovery_without_the_flag_stays_ready() {
+    for mode in 0..3 {
+        let mut cfg = confirmed_handoff_config();
+        match mode {
+            0 => cfg.gnss_recovery = None,
+            1 => cfg.gnss_latency_compensation = false,
+            _ => cfg.relocalization.as_mut().unwrap().map_only_grace_s = None,
+        }
+        assert!(DrivingPipeline::new(cfg).is_err());
+    }
+    let mut cfg = confirmed_handoff_config();
+    cfg.relocalization.as_mut().unwrap().confirm_gnss_handoff = false;
+    assert!(
+        serde_json::to_value(&cfg).unwrap()["relocalization"]
+            .get("confirm_gnss_handoff")
+            .is_none()
+    );
+    let (mut p, reset) = reset_with_config(cfg);
+    assert_eq!(reset.gnss_recovery.unwrap().phase, RecoveryPhase::Ready);
+    let output = p.step(&frame(reset.time + 0.05, measured_pose())).unwrap();
+    assert_eq!(output.localization.unwrap().accepted_fixes, 1);
+    assert_eq!(output.gnss_recovery.unwrap().completed_recoveries, 0);
+}
+
+#[test]
+fn replay_rejects_a_forged_handoff_confirmation_counter() {
+    let cfg = confirmed_handoff_config();
+    let mut p = DrivingPipeline::new(cfg.clone()).unwrap();
+    let mut log = SensorLog::new("confirmed-gnss-handoff", cfg);
+    for time in [0., 0.4]
+        .into_iter()
+        .chain((9..=40).map(|i| i as f64 * 0.05))
+    {
+        let input = if time == 0. {
+            frame(time, Pose::default())
+        } else if time < 1.6 {
+            without_gnss(time)
+        } else {
+            frame(time, measured_pose())
+        };
+        let output = p.step(&input).unwrap();
+        log.record(input, output);
+    }
+    let mut bytes = Vec::new();
+    log.write(&mut bytes).unwrap();
+    assert!(
+        verify(Cursor::new(bytes), std::io::sink())
+            .unwrap()
+            .verified
+    );
+    let tick = log
+        .ticks
+        .iter_mut()
+        .find(|t| t.expected.gnss_recovery.unwrap().phase == RecoveryPhase::Confirming)
+        .unwrap();
+    tick.expected
+        .gnss_recovery
+        .as_mut()
+        .unwrap()
+        .consecutive_candidates += 1;
     let mut bytes = Vec::new();
     log.write(&mut bytes).unwrap();
     assert!(

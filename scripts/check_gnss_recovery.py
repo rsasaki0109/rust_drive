@@ -10,7 +10,7 @@ from pathlib import Path
 from check_delayed_map import Conflict, pose_difference, rebuild
 from check_gnss_covariance import audit as physical, scenario as covariance_scenario
 from check_gnss_latency import angle, verify_pose_covariance
-from check_gnss_map_history import MapFilter, archive, sha
+from check_gnss_map_history import MapFilter, MapOnlyOracle, archive, sha
 from check_speed_zones import execute
 
 REPO = Path(__file__).resolve().parents[1]
@@ -76,7 +76,7 @@ def freeze(output, specs):
     return manifest
 
 
-def verify_ticks(config, ticks):
+def verify_ticks(config, ticks, measured_reset_stamp=None):
     """Unbounded time-ordered filter; only finally admitted fixes enter history.
 
     Recovery is folded from delivery events and independent complete proposals.
@@ -85,9 +85,15 @@ def verify_ticks(config, ticks):
     """
     policy = config.get('gnss_recovery')
     motions, fixes, maps = [], [], []
-    previous = observed = accepted_stamp = decision = nis = None
+    previous = observed = accepted_stamp = decision = nis = wheel = None
     accepted = rejected = streak = compensated = replayed_maps = replayed_gnss = 0
     since = last_candidate = last_distance = last_yaw = None
+    regional = config.get('relocalization') or {}
+    if regional.get('confirm_gnss_handoff') and measured_reset_stamp is not None:
+        since = measured_reset_stamp
+    grace = regional.get('map_only_grace_s')
+    support = MapOnlyOracle(measured_reset_stamp, grace) if grace is not None and measured_reset_stamp is not None else None
+    support_ticks, last_lidar, proposals = 0, None, []
     confirmations = []
     expired = False
     held = recovered = covered_ticks = 0
@@ -97,9 +103,10 @@ def verify_ticks(config, ticks):
     for tick in ticks:
         inp, out = tick['input'], tick['expected']
         now = inp['time']
+        wheel = inp.get('odometry') or wheel
         if previous is not None:
-            motion = inp['odometry']
-            if now-motion['stamp'] > .15+1e-9 or now-previous > .25+1e-9:
+            motion = wheel
+            if motion is None or now-motion['stamp'] > .15+1e-9 or now-previous > .25+1e-9:
                 raise ValueError('this physical protocol requires healthy measured motion')
             motions.append((previous, now, motion))
             oracle.predict(motion, now-previous)
@@ -115,6 +122,8 @@ def verify_ticks(config, ticks):
             prior.correct(fix)
             observed, decision, nis = fix['stamp'], prior.decision, prior.nis
             proposal = rebuild(config, motions, fixes+[fix], maps, now) if decision == 'Accepted' else None
+            proposal_distance = math.dist(oracle.x[:2], proposal.x[:2]) if proposal else None
+            proposal_yaw = abs(angle(proposal.x[2]-oracle.x[2])) if proposal else None
             if decision == 'Accepted' and policy and since is not None:
                 last_distance = math.dist(oracle.x[:2], proposal.x[:2])
                 last_yaw = abs(angle(proposal.x[2]-oracle.x[2]))
@@ -141,6 +150,10 @@ def verify_ticks(config, ticks):
                     confirmations = []
                     if streak >= 2 and since is None:
                         since = now
+            if measured_reset_stamp is not None:
+                proposals.append(dict(delivery=now, acquisition=fix['stamp'], decision=decision,
+                                      nis=nis, position_correction_m=proposal_distance, yaw_correction_rad=proposal_yaw,
+                                      accepted_fixes=accepted, consecutive_candidates=len(confirmations)))
         diagnostic, scan = out.get('map_localization'), inp.get('lidar')
         if map_config and map_config.get('allow_delayed_scans') and scan and diagnostic['last_observed_stamp'] == scan['stamp'] and diagnostic.get('acquisition_prior') is not None:
             stamp = scan['stamp']
@@ -166,6 +179,16 @@ def verify_ticks(config, ticks):
                     oracle = candidate
                     maps.append(measurement)
                     replayed_gnss += sum(g['stamp'] > stamp+1e-9 for g in fixes)
+        elif map_config and diagnostic['last_observed_stamp'] == now and diagnostic['matched_pose'] is not None:
+            admitted = oracle.map_correct(diagnostic['matched_pose'], diagnostic['covariance'])
+            if admitted != (diagnostic['decision'] == 'Accepted'):
+                raise ValueError('synchronous map innovation gate differs')
+            if admitted:
+                if not scan or scan['stamp'] != now or inp['lidar_failed']:
+                    raise ValueError('synchronous map correction lacks a fresh raw scan')
+                if any(diagnostic['covariance'][i][i]+1e-12 < floor for i, floor in enumerate([.01,.01,1e-4])):
+                    raise ValueError('synchronous map covariance bypassed conservative floors')
+                maps.append((now, diagnostic['matched_pose'], diagnostic['covariance']))
         last_map = maps[-1][0] if maps else None
         covered = bool(map_config and accepted_stamp is not None and .75+1e-9 < now-accepted_stamp
                        <= map_config.get('max_gnss_outage_s', 10.)+1e-9 and diagnostic['decision'] == 'Accepted'
@@ -173,10 +196,21 @@ def verify_ticks(config, ticks):
         covered_ticks += covered
         if map_config and (diagnostic['last_accepted_stamp'] != last_map or diagnostic['gnss_outage_covered'] != covered):
             raise ValueError('map clocks or outage coverage changed during a proposal')
-        stale = accepted_stamp is None or (now-accepted_stamp > .75+1e-9 and not covered)
+        if scan and not inp['lidar_failed'] and (measured_reset_stamp is None or scan['stamp'] > measured_reset_stamp):
+            last_lidar = scan['stamp']
+        handoff_expired = measured_reset_stamp is not None and regional.get('confirm_gnss_handoff', False) and expired
+        if ('GnssHandoffExpired' in out['health']) != handoff_expired:
+            raise ValueError('measured handoff deadline differs from raw delivery time')
+        map_only = support.verify(out, now, last_map, bool(diagnostic and diagnostic['decision'] == 'Accepted'),
+                                  accepted_stamp, interrupted=rejected > 0 or handoff_expired,
+                                  healthy=not handoff_expired and not inp['lidar_failed'] and last_lidar is not None and now-last_lidar <= .35+1e-9) if support else False
+        if not support and (out.get('relocalization') or {}).get('map_only_support') is not None:
+            raise ValueError('map-only support lacks a proved measured reset')
+        support_ticks += map_only
+        stale = not map_only and (accepted_stamp is None or (now-accepted_stamp > .75+1e-9 and not covered))
         if ('StaleGnss' in out['health']) != stale or ('GnssInnovationHold' in out['health']) != (streak >= 2):
             raise ValueError('held/rejected observations refreshed localization health')
-        if (stale or streak >= 2) and out['command']['acceleration'] > -5.99:
+        if (stale or streak >= 2 or handoff_expired) and out['command']['acceleration'] > -5.99:
             raise ValueError('recovery hold did not brake')
         delta = pose_difference(out['estimate']['pose'], oracle.x)
         maximum = max(maximum, delta)
@@ -210,11 +244,14 @@ def verify_ticks(config, ticks):
         elif out.get('gnss_recovery') is not None:
             raise ValueError('default mode unexpectedly enabled recovery')
         previous = now
-    return dict(passed=True, verified_ticks=len(ticks), maximum_pose_difference=maximum,
+    result = dict(passed=True, verified_ticks=len(ticks), maximum_pose_difference=maximum,
                 maximum_acquisition_prior_difference=maximum_prior, accepted_fixes=accepted, rejected_fixes=rejected,
                 compensated_fixes=compensated, admitted_map_acquisitions=len(maps), replayed_map_corrections=replayed_maps,
                 replayed_gnss_corrections=replayed_gnss, covered_outage_ticks=covered_ticks,
                 held_proposals=held, completed_recoveries=recovered, expired=expired)
+    if measured_reset_stamp is not None:
+        result.update(map_only_support_ticks=support_ticks, gnss_proposals=proposals)
+    return result
 
 
 def run_case(output, spec, binary, replay_binary):

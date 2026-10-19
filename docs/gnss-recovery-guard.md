@@ -65,6 +65,12 @@ expiry requires constructing a new pipeline with externally supplied pose
 calibration; automatic global relocalization is not implemented. Default
 `gnss_recovery: null`/absence retains the original behavior and omitted fields.
 
+The optional [measured-reset GNSS handoff](confirmed-gnss-handoff.md) also arms
+this policy before any post-reset fix commits. With that option enabled, the
+measured reset starts the same hold budget, including when no GNSS arrives;
+expiry explicitly brakes and stays latched through late fixes. The existing
+proposal bounds, confirmation count and full transaction ownership apply.
+
 ## Frozen evaluation and recorded outcomes
 
 The policy above, all 92 case files and their hashes were fixed before physical

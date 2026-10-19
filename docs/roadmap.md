@@ -57,6 +57,13 @@ expiry, interrupted motion and sensor failures retain braking. This improves
 authored fixed-route recovery availability; it does not establish automotive
 uncertainty or general GNSS-denied driving.
 
+Optional [confirmed GNSS handoff](confirmed-gnss-handoff.md) now starts the
+existing recovery policy at the measured reset. Returning proposals remain
+withheld until the configured new-fix count; a reset-anchored deadline expires
+without a delivery and stays latched through late healthy GNSS. Twenty guarded,
+healthy and expiry cases pass, while four paired controls retain premature
+acceptance failures. This adds failure handling within the same simulation scope.
+
 Remaining:
 
 - Covariance/forecast uncertainty propagation, delayed odometry and general multi-sensor correction-event replay, per-point LiDAR deskew and trace migrations. Bounded acquisition-time LiDAR reprojection and current-time motion extrapolation are narrower implemented steps, not complete delayed-sensor fusion.

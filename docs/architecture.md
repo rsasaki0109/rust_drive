@@ -139,6 +139,14 @@ motion/GNSS faults interrupt permission and expiry brakes until ordinary GNSS
 recovery. [Reset contract](regional-relocalization.md);
 [bounded support and failure evidence](relocalization-map-only.md).
 
+An additional `confirm_gnss_handoff` option arms the configured GNSS recovery
+policy at that measured reset. Full returning-fix proposals remain withheld
+until the configured fresh confirmations pass. Actual observation/NIS counters
+record held fixes; accepted clocks, posterior and history remain transactional.
+The `max_hold_s` budget starts at reset even without a GNSS delivery.
+`GnssHandoffExpired` brakes after that absolute deadline and stays latched through
+late fixes. [Configuration, comparisons and retained checker failures](confirmed-gnss-handoff.md).
+
 Optional `initial_pose_covariance` supplies a finite, symmetric positive definite
 ENU x/y/yaw matrix (m², m·rad, rad²). It is external initialization calibration.
 When present, output records every full posterior and replay checks it; absent

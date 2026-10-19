@@ -19,6 +19,12 @@ pub struct RelocalizationConfig {
     /// Optional absolute map-only window after a measured epoch reset (seconds).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub map_only_grace_s: Option<f64>,
+    /// Arm the configured GNSS recovery policy before any post-reset fix commits.
+    #[serde(skip_serializing_if = "is_false")]
+    pub confirm_gnss_handoff: bool,
+}
+fn is_false(value: &bool) -> bool {
+    !*value
 }
 impl Default for RelocalizationConfig {
     fn default() -> Self {
@@ -30,6 +36,7 @@ impl Default for RelocalizationConfig {
             confirmations: 3,
             retry_interval_s: 0.5,
             map_only_grace_s: None,
+            confirm_gnss_handoff: false,
         }
     }
 }

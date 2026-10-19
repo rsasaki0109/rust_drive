@@ -43,6 +43,13 @@ first frame after the absolute deadline brakes, even when every new map fit
 continues to succeed. Expiry alone does not prevent a later genuine GNSS fix
 from recovering normal localization health.
 
+The separate opt-in [confirmed GNSS handoff](confirmed-gnss-handoff.md) arms the
+configured recovery policy at the measured reset. It requires several bounded
+fresh returning fixes and gives confirmation its own reset-anchored, latched
+deadline. When enabled, expiry of that confirmation budget prevents late GNSS
+from resuming control. The ordinary late-fix behavior above applies with this
+additional option omitted.
+
 `relocalization.map_only_support` records the reset, fixed deadline, actual last
 accepted map stamp and `WaitingForMap`, `Active`, `Expired`, `Interrupted` or
 `GnssAccepted` status. Actual GNSS acquisition clocks, accepted/rejected counts

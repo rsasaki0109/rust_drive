@@ -249,6 +249,13 @@ def verify_search(search,inp,mapped,policy,map_config):
     return True
 
 
+def verify_epoch_ticks(config,ticks,measured_reset_stamp=None):
+    if config.get('gnss_recovery'):
+        from check_gnss_recovery import verify_ticks
+        return verify_ticks(config,ticks,measured_reset_stamp=measured_reset_stamp)
+    return verify_map_ticks(config,ticks,measured_reset_stamp=measured_reset_stamp)
+
+
 def verify_epochs(config,ticks):
     policy=config.get('relocalization');wheel=None;gap=None;previous=None
     gap_index=None
@@ -260,8 +267,8 @@ def verify_epochs(config,ticks):
         previous=now
     if gap_index is None:
         if any(t['expected'].get('motion_discontinuity') or t['expected'].get('localization_epoch',0) for t in ticks):raise ValueError('covered motion claimed an epoch reset')
-        return dict(passed=True,prefix=verify_map_ticks(config,ticks),reset_stamp=None,searches=0,valid_indices=list(range(len(ticks))))
-    prefix=verify_map_ticks(config,ticks[:gap_index]);prior=ticks[gap_index-1]['expected']
+        return dict(passed=True,prefix=verify_epoch_ticks(config,ticks),reset_stamp=None,searches=0,valid_indices=list(range(len(ticks))))
+    prefix=verify_epoch_ticks(config,ticks[:gap_index]);prior=ticks[gap_index-1]['expected']
     attempts=stopped=confirmed=0;last_motion=last_attempt=last_confirmation=None;last_pose=None;reset=None;searches=0
     for index in range(gap_index,len(ticks)):
         inp,out=ticks[index]['input'],ticks[index]['expected'];now=inp['time'];diagnostic=out.get('relocalization')
@@ -311,7 +318,7 @@ def verify_epochs(config,ticks):
         for tick in segment:
             if tick['input'].get('gnss') and tick['input']['gnss']['stamp']<=stamp:tick['input']['gnss']=None
             if tick['expected'].get('localization_epoch')!=1 or tick['expected'].get('motion_discontinuity'):raise ValueError('reinitialized epoch silently changed')
-        post=verify_map_ticks(newconfig,segment,measured_reset_stamp=stamp);valid+=list(range(index,len(ticks)))
+        post=verify_epoch_ticks(newconfig,segment,measured_reset_stamp=stamp);valid+=list(range(index,len(ticks)))
     return dict(passed=True,prefix=prefix,post_epoch=post,reset_stamp=reset[1] if reset else None,searches=searches,valid_indices=valid)
 
 

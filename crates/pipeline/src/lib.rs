@@ -159,6 +159,13 @@ impl PipelineConfig {
     pub fn validate(&self) -> Result<(), String> {
         if let Some(policy) = self.relocalization {
             policy.validate()?;
+            if policy.confirm_gnss_handoff
+                && (policy.map_only_grace_s.is_none()
+                    || self.gnss_recovery.is_none()
+                    || !self.gnss_latency_compensation)
+            {
+                return Err("confirmed GNSS handoff requires map-only grace, a GNSS recovery policy and acquisition-time GNSS fusion".into());
+            }
             if policy.map_only_grace_s.is_some()
                 && self
                     .localization_map
@@ -376,6 +383,7 @@ pub enum HealthIssue {
     StaleLidar,
     StaleGnss,
     GnssInnovationHold,
+    GnssHandoffExpired,
     InvalidOdometry,
     InvalidLidar,
     InvalidGnss,
@@ -880,6 +888,18 @@ impl DrivingPipeline {
         if self.rejected_gnss_streak >= 2 {
             health.push(HealthIssue::GnssInnovationHold);
         }
+        let gnss_handoff_expired = self.localization_epoch > 0
+            && self
+                .config
+                .relocalization
+                .is_some_and(|policy| policy.confirm_gnss_handoff)
+            && self
+                .gnss_recovery
+                .as_ref()
+                .is_some_and(|r| r.diagnostics.phase == RecoveryPhase::Expired);
+        if gnss_handoff_expired {
+            health.push(HealthIssue::GnssHandoffExpired);
+        }
         if input.lidar_failed {
             health.push(HealthIssue::AcquisitionFailed);
             self.lidar_fault = Some(input.time);
@@ -1054,6 +1074,7 @@ impl DrivingPipeline {
                 self.ekf.last_gnss.is_finite(),
                 self.gnss_fault.is_some()
                     || self.rejected_gnss_streak > 0
+                    || gnss_handoff_expired
                     || self.motion_discontinuity.is_some()
                     || uncovered_recovery_motion,
                 health.is_empty(),
@@ -1417,6 +1438,13 @@ impl DrivingPipeline {
         // This constructs fresh histories, grid, tracks, planner and controller.
         let mut fresh = Self::new(config)?;
         fresh.localization_epoch = epoch;
+        if self.config.relocalization.unwrap().confirm_gnss_handoff {
+            fresh
+                .gnss_recovery
+                .as_mut()
+                .unwrap()
+                .arm_handoff(input.time);
+        }
         if self
             .config
             .relocalization

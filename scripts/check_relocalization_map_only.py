@@ -47,10 +47,10 @@ def materialize(spec):
     return source, scenario
 
 
-def freeze(output, specs):
-    manifest = dict(gates=GATES, episodes=[])
+def freeze(output, specs, *, factory=materialize, gates=GATES):
+    manifest = dict(gates=gates, episodes=[])
     for index, spec in enumerate(specs):
-        source, scenario = materialize(spec)
+        source, scenario = factory(spec)
         path = output/'frozen'/f'{index:03d}.json'
         path.parent.mkdir(parents=True, exist_ok=True)
         encoded = json.dumps(scenario, indent=2)+'\n'
@@ -172,7 +172,7 @@ def audit(run, config, ticks, spec, frozen):
                 failed_gates=failed)
 
 
-def run_case(output, spec, binary, replay_binary):
+def run_case(output, spec, binary, replay_binary, *, auditor=audit):
     folder = output/'episodes'/spec['plant']/f"{spec['world']}-{spec['mode']}-seed-{spec['seed']}"
     folder.mkdir(parents=True, exist_ok=False)
     source = output/spec['scenario']
@@ -188,7 +188,7 @@ def run_case(output, spec, binary, replay_binary):
         with (folder/'run/sensors.jsonl').open() as stream:
             config = json.loads(next(stream))['header']['config']
             ticks = [r['tick'] for line in stream if 'tick' in (r := json.loads(line))]
-        row.update(audit(run, config, ticks, spec, json.loads(source.read_text())))
+        row.update(auditor(run, config, ticks, spec, json.loads(source.read_text())))
         row['passed'] = (row['run_exit_code'] == row['expected_run_exit_code'] and row['replay_exit_code'] == 0
                          and row['replay']['verified'] and row['replay']['ticks'] == len(ticks) and not row['failed_gates'])
     except Exception as error:

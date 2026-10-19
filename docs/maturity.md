@@ -2,6 +2,19 @@
 
 The current engineering estimate is **about 28%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
+The latest [confirmed GNSS handoff](confirmed-gnss-handoff.md) keeps this estimate
+at **about 28%**. It arms transactional confirmation at a measured reset and
+expires the confirmation budget even before any GNSS arrives. Sixteen guarded/
+healthy cases reach their original goals after two withheld proposals; four
+expiry controls brake from about 6 m/s and remain stopped through late fixes.
+Four paired controls retain their premature-acceptance quality failures. All
+522 previous logs reproduce exact bytes, and all 24 invalid-epoch CLI accuracy
+failures remain scored. First launch failures and a complete failed checker
+classification are retained; the repaired checker reuses unchanged physical
+streams. This strengthens candidate ownership within the existing authored
+simulation domain. Automotive uncertainty, independent road sensing, real-time
+performance and vehicle operation remain open; the **30% waypoint is unmet**.
+
 The increment from about 27% reflects
 [bounded map-only support after a measured reset](relocalization-map-only.md).
 Twelve cases drive 13.798–13.932 m before post-reset GNSS arrives; four otherwise
