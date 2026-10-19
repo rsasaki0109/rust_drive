@@ -311,7 +311,7 @@ def verify_epochs(config,ticks):
         for tick in segment:
             if tick['input'].get('gnss') and tick['input']['gnss']['stamp']<=stamp:tick['input']['gnss']=None
             if tick['expected'].get('localization_epoch')!=1 or tick['expected'].get('motion_discontinuity'):raise ValueError('reinitialized epoch silently changed')
-        post=verify_map_ticks(newconfig,segment);valid+=list(range(index,len(ticks)))
+        post=verify_map_ticks(newconfig,segment,measured_reset_stamp=stamp);valid+=list(range(index,len(ticks)))
     return dict(passed=True,prefix=prefix,post_epoch=post,reset_stamp=reset[1] if reset else None,searches=searches,valid_indices=valid)
 
 

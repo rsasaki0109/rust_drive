@@ -199,22 +199,24 @@ fn pursuit_target(
 /// Independent freshness / numeric guard; a simulation gate, not a certified safety system.
 /// Timestamps are seconds on one clock. Position variance is the sum of x/y
 /// variances in m² and must be finite and within the inclusive range 0..=4.
+/// Localization freshness may come from GNSS or an explicitly qualified map
+/// observation; selecting that basis must not change actual GNSS diagnostics.
 pub fn guard(
     command: ControlCommand,
     now: f64,
     last_lidar: f64,
-    last_gnss: f64,
+    last_localization: f64,
     position_variance: f64,
 ) -> ControlCommand {
     if !command.finite()
         || !now.is_finite()
         || !last_lidar.is_finite()
-        || !last_gnss.is_finite()
+        || !last_localization.is_finite()
         || !position_variance.is_finite()
         || now - last_lidar > 0.35
-        || now - last_gnss > 0.75
+        || now - last_localization > 0.75
         || last_lidar > now + 0.01
-        || last_gnss > now + 0.01
+        || last_localization > now + 0.01
         || !(0.0..=4.0).contains(&position_variance)
     {
         ControlCommand::emergency()

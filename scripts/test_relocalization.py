@@ -5,6 +5,8 @@ from pathlib import Path
 import tempfile
 import unittest
 from check_relocalization import POLICY, freeze, hypotheses, materialize, raw_fit, specifications, verify_candidate, verify_search
+from check_gnss_map_history import MapOnlyOracle
+import check_relocalization_map_only as map_only
 
 
 class RelocalizationTests(unittest.TestCase):
@@ -54,6 +56,50 @@ class RelocalizationTests(unittest.TestCase):
         with self.assertRaises(ValueError):verify_candidate(scan,scan,seed,candidate,config,max_iterations=1)
         proof=verify_candidate(scan,scan,seed,candidate,config,max_iterations=2)
         self.assertEqual(proof['rms_m'],0.)
+
+    def test_map_only_cohort_freezes_all_24_inputs_and_keeps_a_matching_default_control(self):
+        specs = map_only.specifications(['reference-2d', 'rne-dynamic'])
+        self.assertEqual(len(specs), 24)
+        self.assertEqual(sum(s['mode'] == 'handoff' for s in specs), 12)
+        self.assertEqual(len(map_only.specifications(['reference-2d'], True)), 8)
+        for spec in (s for s in specs if s['mode'] == 'default'):
+            _, default = map_only.materialize(spec)
+            _, enabled = map_only.materialize(dict(spec, mode='handoff'))
+            default.pop('name'); enabled.pop('name')
+            self.assertEqual(enabled['relocalization'].pop('map_only_grace_s'), 5.)
+            self.assertEqual(enabled, default)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            manifest = map_only.freeze(root, specs)
+            self.assertEqual(map_only.freeze(root, specs), manifest)
+            (root/manifest['episodes'][0]['scenario']).write_text('{}')
+            with self.assertRaises(ValueError): map_only.freeze(root, specs)
+
+    def test_map_only_oracle_requires_post_reset_map_and_never_slides_the_deadline(self):
+        def output(status, stamp, expiry=15.):
+            return dict(relocalization=dict(map_only_support=dict(reset_stamp=10., expires_at=expiry,
+                        last_accepted_map_stamp=stamp, status=status)))
+        oracle = MapOnlyOracle(10., 5.)
+        self.assertFalse(oracle.verify(output('WaitingForMap', 10.), 10., 10., True, None))
+        self.assertTrue(oracle.verify(output('Active', 10.1), 10.1, 10.1, True, None))
+        self.assertFalse(oracle.verify(output('WaitingForMap', 10.1), 10.35, 10.1, True, None))
+        self.assertTrue(oracle.verify(output('Active', 15.), 15., 15., True, None))
+        with self.assertRaises(ValueError):
+            oracle.verify(output('Active', 15.05, expiry=20.05), 15.05, 15.05, True, None)
+        self.assertFalse(oracle.verify(output('Expired', 15.1), 15.1, 15.1, True, None))
+        self.assertFalse(oracle.verify(output('GnssAccepted', 15.2), 15.2, 15.2, True, 15.2))
+
+    def test_map_only_oracle_refuses_forged_activity_and_latches_a_real_interruption(self):
+        def output(status):
+            return dict(relocalization=dict(map_only_support=dict(reset_stamp=10., expires_at=15.,
+                        last_accepted_map_stamp=10.1, status=status)))
+        with self.assertRaises(ValueError):
+            MapOnlyOracle(10., 5.).verify(output('Active'), 10.1, 10.1, False, None)
+        with self.assertRaises(ValueError):
+            MapOnlyOracle(10., 5.).verify(output('Active'), 10.1, 10.1, True, None, healthy=False)
+        oracle = MapOnlyOracle(10., 5.)
+        self.assertFalse(oracle.verify(output('Interrupted'), 10.1, 10.1, True, None, interrupted=True))
+        self.assertFalse(oracle.verify(output('Interrupted'), 10.15, 10.1, True, None))
 
 
 if __name__=='__main__':unittest.main()

@@ -1,6 +1,23 @@
 # Path toward a broader Rust driving stack
 
-The current engineering estimate is **about 27%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
+The current engineering estimate is **about 28%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
+
+The increment from about 27% reflects
+[bounded map-only support after a measured reset](relocalization-map-only.md).
+Twelve cases drive 13.798–13.932 m before post-reset GNSS arrives; four otherwise
+matching default controls hold at 0 m. All 16 reach their original goals, with
+four seed-7 paired completions 3.90–4.25 s earlier. Eight negative controls
+brake from actual 3.9–6.01 m/s motion and hold at 0 m/s after absolute expiry or
+LiDAR loss. Actual GNSS clocks/counters remain empty until real acquisitions.
+The first integration's six classified movement failures remain saved, alongside
+its incomplete first cohort and in-flight raw streams. Revision B repairs the
+final control guard's freshness basis, preserving the original 24 inputs and
+gates and strengthening negative controls with actual prior motion. All 498
+previous logs retain exact replay bytes, while all 24 global invalid-epoch CLI
+accuracy failures remain scored. This improves recovery availability within the
+authored planar fixed-route domain. It does not establish independent automotive
+perception/localization, measured uncertainty, real-time operation or vehicle
+deployment. The **30% waypoint remains unmet**.
 
 The increment from about 26% reflects [stopped regional measured-map
 relocalization](regional-relocalization.md). After missing motion, a bounded

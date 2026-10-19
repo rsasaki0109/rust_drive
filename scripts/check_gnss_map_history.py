@@ -88,13 +88,41 @@ def chronological(config, motions, fixes, maps):
     return result
 
 
-def verify_ticks(config, ticks):
+class MapOnlyOracle:
+    """Absolute deadline from an independently proved measured reset, never a fix."""
+    def __init__(self, reset_stamp, grace):
+        self.reset_stamp, self.expires_at = reset_stamp, reset_stamp+grace
+        self.status = 'WaitingForMap'
+
+    def verify(self, out, now, last_map, accepted_map, gnss_stamp, interrupted=False, healthy=True):
+        if gnss_stamp is not None:
+            self.status = 'GnssAccepted'
+        elif self.status not in ['Expired', 'Interrupted', 'GnssAccepted']:
+            if now > self.expires_at+1e-9:
+                self.status = 'Expired'
+            elif interrupted:
+                self.status = 'Interrupted'
+            else:
+                self.status = ('Active' if healthy and accepted_map and last_map is not None
+                               and self.reset_stamp < last_map <= now and now-last_map <= .2+1e-9
+                               else 'WaitingForMap')
+        expected = dict(reset_stamp=self.reset_stamp, expires_at=self.expires_at,
+                        last_accepted_map_stamp=last_map, status=self.status)
+        if out.get('relocalization', {}).get('map_only_support') != expected:
+            raise ValueError('map-only evidence differs from measured reset, actual map age or absolute deadline')
+        return self.status == 'Active'
+
+
+def verify_ticks(config, ticks, measured_reset_stamp=None):
     if not config.get('gnss_latency_compensation'):
         raise ValueError('this protocol requires acquisition-time fusion')
     motions, fixes, maps = [], [], []
     previous, wheel = None, None
     oracle, maximum = MapFilter(config), 0.
     compensated = replayed_maps = covered_ticks = 0
+    grace = (config.get('relocalization') or {}).get('map_only_grace_s')
+    support = MapOnlyOracle(measured_reset_stamp, grace) if grace is not None and measured_reset_stamp is not None else None
+    support_ticks, last_lidar = 0, None
     for tick in ticks:
         inp, out = tick['input'], tick['expected']
         now = inp['time']
@@ -138,7 +166,19 @@ def verify_ticks(config, ticks):
         if diagnostic and diagnostic['gnss_outage_covered'] != covered:
             raise ValueError('map outage permission differs from actual acquisition clocks')
         covered_ticks += covered
-        stale = oracle.accepted_stamp is None or (now-oracle.accepted_stamp > .75+1e-9 and not covered)
+        scan = inp.get('lidar')
+        if scan and not inp.get('lidar_failed') and (measured_reset_stamp is None or scan['stamp'] > measured_reset_stamp):
+            last_lidar = scan['stamp']
+        map_only = False
+        if support:
+            map_only = support.verify(out, now, maps[-1][0] if maps else None,
+                                      bool(diagnostic and diagnostic['decision'] == 'Accepted'),
+                                      oracle.accepted_stamp, interrupted=oracle.rejected > 0,
+                                      healthy=not inp.get('lidar_failed') and last_lidar is not None and now-last_lidar <= .35+1e-9)
+        elif out.get('relocalization', {}).get('map_only_support') is not None:
+            raise ValueError('map-only support lacks an independently proved measured reset')
+        support_ticks += map_only
+        stale = not map_only and (oracle.accepted_stamp is None or (now-oracle.accepted_stamp > .75+1e-9 and not covered))
         if ('StaleGnss' in out['health']) != stale or (stale and out['command']['acceleration'] > -5.99):
             raise ValueError('stale localization did not retain the original braking rule')
         pose = out['estimate']['pose']
@@ -166,6 +206,7 @@ def verify_ticks(config, ticks):
     return {'passed': True, 'verified_ticks': len(ticks), 'maximum_pose_difference': maximum,
             'accepted_map_measurements': len(maps), 'replayed_map_corrections': replayed_maps,
             'compensated_fixes': compensated, 'covered_outage_ticks': covered_ticks,
+            'map_only_support_ticks': support_ticks,
             'accepted_fixes': oracle.accepted, 'rejected_fixes': oracle.rejected}
 
 

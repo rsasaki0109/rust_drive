@@ -1,7 +1,7 @@
 use rustdriving_core::*;
 use rustdriving_pipeline::{
-    DrivingPipeline, MapLocalizationConfig, PipelineConfig, RelocalizationConfig,
-    RelocalizationPhase, SensorFrame,
+    DrivingPipeline, HealthIssue, MapLocalizationConfig, MapOnlySupportStatus, PipelineConfig,
+    PipelineOutput, RelocalizationConfig, RelocalizationPhase, SensorFrame,
     replay::{SensorLog, verify},
     traffic_controls::StopLine,
 };
@@ -197,6 +197,235 @@ fn replay_reconstructs_the_measured_reset_and_rejects_a_forged_epoch() {
         .find(|t| t.expected.localization_epoch == 1)
         .unwrap();
     tick.expected.localization_epoch = 0;
+    let mut bytes = Vec::new();
+    log.write(&mut bytes).unwrap();
+    assert!(
+        verify(Cursor::new(bytes), std::io::sink())
+            .unwrap_err()
+            .contains("mismatch")
+    );
+}
+
+fn without_gnss(time: f64) -> SensorFrame {
+    let mut input = frame(time, measured_pose());
+    input.gnss = None;
+    input
+}
+fn map_only_config(grace: f64) -> PipelineConfig {
+    let mut cfg = config();
+    cfg.relocalization.as_mut().unwrap().map_only_grace_s = Some(grace);
+    cfg
+}
+fn map_only_reset(grace: f64) -> (DrivingPipeline, PipelineOutput) {
+    let mut pipeline = DrivingPipeline::new(map_only_config(grace)).unwrap();
+    lost(&mut pipeline);
+    for i in 9..=60 {
+        let output = pipeline.step(&without_gnss(i as f64 * 0.05)).unwrap();
+        if output.localization_epoch == 1 {
+            assert!(output.emergency);
+            assert_eq!(output.localization.unwrap().accepted_fixes, 0);
+            assert_eq!(
+                output
+                    .relocalization
+                    .as_ref()
+                    .unwrap()
+                    .map_only_support
+                    .as_ref()
+                    .unwrap()
+                    .status,
+                MapOnlySupportStatus::WaitingForMap
+            );
+            return (pipeline, output);
+        }
+    }
+    panic!("measured reset required");
+}
+
+#[test]
+fn map_only_support_uses_new_scans_without_minting_gnss_and_hands_off_to_a_real_fix() {
+    let (mut pipeline, reset) = map_only_reset(5.);
+    for i in 1..=4 {
+        let mut input = without_gnss(reset.time + i as f64 * 0.05);
+        // A late pre-reset fix cannot enter the new history or close the window.
+        if i == 2 {
+            input.gnss = frame(reset.time - 0.1, measured_pose()).gnss;
+        }
+        let output = pipeline.step(&input).unwrap();
+        assert!(output.health.is_empty(), "{:?}", output.health);
+        assert!(!output.emergency);
+        assert!(output.command.acceleration > 0.);
+        let gnss = output.localization.unwrap();
+        assert_eq!(gnss.accepted_fixes, 0);
+        assert_eq!(gnss.last_observed_stamp, None);
+        assert_eq!(gnss.last_accepted_stamp, None);
+        assert!(!output.map_localization.unwrap().gnss_outage_covered);
+        let support = output.relocalization.unwrap().map_only_support.unwrap();
+        assert_eq!(support.status, MapOnlySupportStatus::Active);
+        assert_eq!(support.expires_at, reset.time + 5.);
+    }
+    let output = pipeline
+        .step(&frame(reset.time + 0.25, measured_pose()))
+        .unwrap();
+    assert!(output.health.is_empty());
+    assert_eq!(output.localization.unwrap().accepted_fixes, 1);
+    assert_eq!(
+        output
+            .relocalization
+            .unwrap()
+            .map_only_support
+            .unwrap()
+            .status,
+        MapOnlySupportStatus::GnssAccepted
+    );
+}
+
+#[test]
+fn fresh_maps_cannot_renew_the_absolute_deadline_and_later_gnss_can_recover() {
+    let (mut pipeline, reset) = map_only_reset(0.5);
+    for i in 1..=14 {
+        let output = pipeline
+            .step(&without_gnss(reset.time + i as f64 * 0.05))
+            .unwrap();
+        let support = output.relocalization.unwrap().map_only_support.unwrap();
+        assert_eq!(support.expires_at, reset.time + 0.5);
+        assert_eq!(output.localization.unwrap().accepted_fixes, 0);
+        if i <= 10 {
+            assert!(output.health.is_empty(), "{:?}", output.health);
+            assert_eq!(support.status, MapOnlySupportStatus::Active);
+        } else {
+            assert!(output.emergency);
+            assert!(output.health.contains(&HealthIssue::StaleGnss));
+            assert_eq!(support.status, MapOnlySupportStatus::Expired);
+        }
+    }
+    let output = pipeline
+        .step(&frame(reset.time + 0.75, measured_pose()))
+        .unwrap();
+    assert!(output.health.is_empty());
+    assert_eq!(output.localization.unwrap().accepted_fixes, 1);
+}
+
+#[test]
+fn failed_repeated_delayed_or_stale_maps_cannot_support_the_new_epoch() {
+    for mode in 0..5 {
+        let (mut pipeline, reset) = map_only_reset(5.);
+        let active = pipeline.step(&without_gnss(reset.time + 0.05)).unwrap();
+        assert!(active.health.is_empty());
+        assert_eq!(
+            active
+                .relocalization
+                .unwrap()
+                .map_only_support
+                .unwrap()
+                .status,
+            MapOnlySupportStatus::Active
+        );
+        let mut last = None;
+        for i in 2..=7 {
+            let mut input = without_gnss(reset.time + i as f64 * 0.05);
+            match mode {
+                0 => input.lidar_failed = true,
+                1 => input.lidar.as_mut().unwrap().stamp = reset.time + 0.05,
+                2 => input.lidar.as_mut().unwrap().stamp -= 0.05,
+                3 => input.lidar = None,
+                _ => input.lidar.as_mut().unwrap().points.clear(),
+            }
+            last = Some(pipeline.step(&input).unwrap());
+        }
+        let output = last.unwrap();
+        assert!(output.emergency);
+        assert!(output.health.contains(&HealthIssue::StaleGnss));
+        assert_ne!(
+            output
+                .relocalization
+                .unwrap()
+                .map_only_support
+                .unwrap()
+                .status,
+            MapOnlySupportStatus::Active
+        );
+    }
+}
+
+#[test]
+fn malformed_rejected_gnss_and_missing_motion_interrupt_support() {
+    for mode in 0..3 {
+        let (mut pipeline, reset) = map_only_reset(5.);
+        for i in 1..=8 {
+            let mut input = without_gnss(reset.time + i as f64 * 0.05);
+            if mode == 2 {
+                input.odometry = None;
+            } else if i == 1 {
+                input.gnss = frame(input.time, measured_pose()).gnss;
+                if mode == 0 {
+                    input.gnss.as_mut().unwrap().variance = -1.;
+                } else {
+                    input.gnss.as_mut().unwrap().position.x += 100.;
+                }
+            }
+            let output = pipeline.step(&input).unwrap();
+            if mode != 2 || i >= 4 {
+                assert!(output.emergency);
+                assert_eq!(
+                    output
+                        .relocalization
+                        .unwrap()
+                        .map_only_support
+                        .unwrap()
+                        .status,
+                    MapOnlySupportStatus::Interrupted
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn map_only_bounds_and_synchronous_scan_contract_are_validated() {
+    for grace in [0., 0.49, 5.01, f64::INFINITY, f64::NAN] {
+        assert!(DrivingPipeline::new(map_only_config(grace)).is_err());
+    }
+    let mut cfg = map_only_config(5.);
+    cfg.localization_map.as_mut().unwrap().allow_delayed_scans = true;
+    assert!(DrivingPipeline::new(cfg).is_err());
+}
+
+#[test]
+fn replay_checks_map_only_evidence_and_rejects_a_forged_deadline() {
+    let cfg = map_only_config(5.);
+    let mut pipeline = DrivingPipeline::new(cfg.clone()).unwrap();
+    let mut log = SensorLog::new("post-reset-map-only", cfg);
+    for time in [0., 0.4]
+        .into_iter()
+        .chain((9..=36).map(|i| i as f64 * 0.05))
+    {
+        let input = if time == 0. {
+            frame(time, Pose::default())
+        } else {
+            without_gnss(time)
+        };
+        let output = pipeline.step(&input).unwrap();
+        log.record(input, output);
+    }
+    let mut bytes = Vec::new();
+    log.write(&mut bytes).unwrap();
+    assert!(
+        verify(Cursor::new(bytes), std::io::sink())
+            .unwrap()
+            .verified
+    );
+    let support = log
+        .ticks
+        .iter_mut()
+        .find_map(|tick| {
+            tick.expected
+                .relocalization
+                .as_mut()?
+                .map_only_support
+                .as_mut()
+        })
+        .unwrap();
+    support.expires_at += 1.;
     let mut bytes = Vec::new();
     log.write(&mut bytes).unwrap();
     assert!(

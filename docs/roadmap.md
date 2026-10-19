@@ -49,6 +49,14 @@ also expose and repair incomplete side-path tracking in both plants. The supplie
 ±3-degree prior remains authored calibration; measured initialization uncertainty
 and automatic sensor-only initialization remain open.
 
+After measured stopped regional recovery, an opt-in
+[bounded map-only window](relocalization-map-only.md) can support a new epoch
+before fresh GNSS arrives. Fresh synchronous accepted maps must continue;
+neither scans nor missing fixes can extend the five-second maximum. Absolute
+expiry, interrupted motion and sensor failures retain braking. This improves
+authored fixed-route recovery availability; it does not establish automotive
+uncertainty or general GNSS-denied driving.
+
 Remaining:
 
 - Covariance/forecast uncertainty propagation, delayed odometry and general multi-sensor correction-event replay, per-point LiDAR deskew and trace migrations. Bounded acquisition-time LiDAR reprojection and current-time motion extrapolation are narrower implemented steps, not complete delayed-sensor fusion.

@@ -27,8 +27,9 @@ pub mod replay;
 mod scan_pose;
 use relocalization::Relocalizer;
 pub use relocalization::{
-    RegionalSearchDiagnostics, RelocalizationCandidate, RelocalizationConfig,
-    RelocalizationDiagnostics, RelocalizationPhase, RelocalizationSeed,
+    MapOnlySupportDiagnostics, MapOnlySupportStatus, RegionalSearchDiagnostics,
+    RelocalizationCandidate, RelocalizationConfig, RelocalizationDiagnostics, RelocalizationPhase,
+    RelocalizationSeed,
 };
 pub mod stop_signs;
 mod tracking_frame;
@@ -158,6 +159,14 @@ impl PipelineConfig {
     pub fn validate(&self) -> Result<(), String> {
         if let Some(policy) = self.relocalization {
             policy.validate()?;
+            if policy.map_only_grace_s.is_some()
+                && self
+                    .localization_map
+                    .as_ref()
+                    .is_some_and(|map| map.allow_delayed_scans)
+            {
+                return Err("post-reset map-only support requires synchronous map scans".into());
+            }
             if self.localization_map.is_none()
                 || self
                     .localization_map
@@ -488,6 +497,8 @@ pub struct DrivingPipeline {
     lidar_fault: Option<f64>,
     /// Latest malformed GNSS delivery epoch; only a fresh accepted fix clears it.
     gnss_fault: Option<f64>,
+    /// Acquisition cutoff for the opt-in measured epoch, separate from faults.
+    gnss_reset_cutoff: Option<f64>,
     rejected_gnss_streak: u8,
     map_localization: Option<MapLocalization>,
     scan_poses: scan_pose::ScanPoseHistory,
@@ -612,6 +623,7 @@ impl DrivingPipeline {
             last_lidar: None,
             lidar_fault: None,
             gnss_fault: None,
+            gnss_reset_cutoff: None,
             rejected_gnss_streak: 0,
             map_localization,
             scan_poses: scan_pose::ScanPoseHistory::default(),
@@ -778,9 +790,13 @@ impl DrivingPipeline {
                 if let Some(recovery) = &mut self.gnss_recovery {
                     recovery.interrupt();
                 }
-            } else if self.gnss_fault.is_none_or(|fault| {
-                fix.stamp > fault && input.time - fix.stamp <= MAX_GNSS_AGE_S + 1e-9
-            }) {
+            } else if self
+                .gnss_reset_cutoff
+                .is_none_or(|cutoff| fix.stamp > cutoff)
+                && self.gnss_fault.is_none_or(|fault| {
+                    fix.stamp > fault && input.time - fix.stamp <= MAX_GNSS_AGE_S + 1e-9
+                })
+            {
                 // A held proposal must not change pose/covariance, event snapshots
                 // or replay counters. Normal/default updates use the existing path.
                 let saved = self
@@ -1027,8 +1043,33 @@ impl DrivingPipeline {
             .map_or(self.ekf.last_gnss, |map| {
                 map.effective_fix_stamp(self.ekf.last_gnss)
             });
-        if !effective_fix_stamp.is_finite()
-            || input.time - effective_fix_stamp > MAX_GNSS_AGE_S + 1e-9
+        let map_diagnostic = self
+            .map_localization
+            .as_ref()
+            .map(MapLocalization::diagnostics);
+        let map_only_support = self.relocalizer.as_mut().is_some_and(|observer| {
+            observer.map_only_support(
+                input.time,
+                map_diagnostic.as_ref(),
+                self.ekf.last_gnss.is_finite(),
+                self.gnss_fault.is_some()
+                    || self.rejected_gnss_streak > 0
+                    || self.motion_discontinuity.is_some()
+                    || uncovered_recovery_motion,
+                health.is_empty(),
+            )
+        });
+        // This is control freshness from an admitted localization observation,
+        // separate from actual GNSS clocks/counters. The same qualified basis
+        // must reach the final independent guard as well as the health check.
+        let control_localization_stamp = map_diagnostic
+            .as_ref()
+            .filter(|_| map_only_support)
+            .and_then(|map| map.last_accepted_stamp)
+            .unwrap_or(effective_fix_stamp);
+        if !map_only_support
+            && (!effective_fix_stamp.is_finite()
+                || input.time - effective_fix_stamp > MAX_GNSS_AGE_S + 1e-9)
         {
             health.push(HealthIssue::StaleGnss);
         }
@@ -1299,7 +1340,7 @@ impl DrivingPipeline {
                 requested,
                 input.time,
                 self.last_lidar.unwrap(),
-                effective_fix_stamp,
+                control_localization_stamp,
                 variance,
             )
         } else {
@@ -1376,7 +1417,17 @@ impl DrivingPipeline {
         // This constructs fresh histories, grid, tracks, planner and controller.
         let mut fresh = Self::new(config)?;
         fresh.localization_epoch = epoch;
-        fresh.gnss_fault = Some(input.time);
+        if self
+            .config
+            .relocalization
+            .unwrap()
+            .map_only_grace_s
+            .is_some()
+        {
+            fresh.gnss_reset_cutoff = Some(input.time);
+        } else {
+            fresh.gnss_fault = Some(input.time);
+        }
         fresh.lidar_fault = Some(input.time);
         // The confirming scan supplies initialization once. Old or same-stamp
         // fixes/scans must not fuse again or renew the new epoch's freshness.

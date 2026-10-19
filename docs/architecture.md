@@ -130,8 +130,14 @@ budget and distinct-fit ambiguity check reject incomplete/ambiguous proposals.
 The confirming frame brakes, old GNSS/LiDAR acquisitions cannot renew freshness,
 and `localization_epoch` scopes new scene identities. This supports fixed routes
 and synchronous XY scans; navigation, lane changes, mapped traffic controls and
-XYZ/multi-height configurations are rejected before driving. New GNSS is still
-required for normal health after reset. [Contract and evidence](regional-relocalization.md).
+XYZ/multi-height configurations are rejected before driving. New GNSS is
+required by default after reset. An explicit `map_only_grace_s` can qualify new
+synchronous accepted map corrections for at most five seconds from that measured
+reset. Their actual acquisition stamps reach health and final control freshness
+guards; GNSS clocks/counters remain separate. Scans cannot renew the deadline;
+motion/GNSS faults interrupt permission and expiry brakes until ordinary GNSS
+recovery. [Reset contract](regional-relocalization.md);
+[bounded support and failure evidence](relocalization-map-only.md).
 
 Optional `initial_pose_covariance` supplies a finite, symmetric positive definite
 ENU x/y/yaw matrix (m², m·rad, rad²). It is external initialization calibration.

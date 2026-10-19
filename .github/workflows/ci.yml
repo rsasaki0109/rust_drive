@@ -120,6 +120,9 @@ jobs:
         run: |
           python -m pip install -r scripts/requirements-relocalization.txt
           python scripts/check_relocalization.py --plant reference-2d --smoke --output artifacts/regional-relocalization
+      - name: Verify bounded map-only driving after a measured reset
+        shell: bash
+        run: python scripts/check_relocalization_map_only.py --plant reference-2d --smoke --output artifacts/relocalization-map-only
       - name: Verify delayed map acquisitions and transient fault recovery
         shell: bash
         run: python scripts/check_delayed_map.py --output artifacts/delayed-map --controls
@@ -192,6 +195,7 @@ jobs:
             artifacts/gnss-antenna/
             artifacts/motion-continuity/
             artifacts/regional-relocalization/
+            artifacts/relocalization-map-only/
             artifacts/gnss-latency/
   image-tracking:
     runs-on: ubuntu-latest
@@ -1038,6 +1042,9 @@ jobs:
         run: |
           python3 -m pip install -r scripts/requirements-relocalization.txt
           python3 scripts/check_relocalization.py --plant rne-dynamic --smoke --output artifacts/regional-relocalization-native
+      - name: Verify native map-only driving, GNSS handoff and bounded stops
+        working-directory: rust_drive
+        run: python3 scripts/check_relocalization_map_only.py --plant rne-dynamic --smoke --output artifacts/relocalization-map-only-native
       - name: Verify legal turn routes in the native dynamic plant
         working-directory: rust_drive
         run: python3 scripts/check-turn-restrictions.py --backend native --seeds 7 --compact --output artifacts/turn-restrictions
@@ -1121,6 +1128,7 @@ jobs:
             rust_drive/artifacts/gnss-antenna-native/
             rust_drive/artifacts/motion-continuity-native/
             rust_drive/artifacts/regional-relocalization-native/
+            rust_drive/artifacts/relocalization-map-only-native/
             rust_drive/artifacts/japan-city-demo/
       - uses: actions/upload-artifact@v4
         with:

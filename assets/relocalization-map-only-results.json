@@ -1,0 +1,4791 @@
+{
+  "feature": "Opt-in bounded map-only support after a measured localization epoch reset",
+  "qualification_passed": true,
+  "parent_commit": "6b8f352e0c3a0f665b723c565ed2075d52345a03",
+  "scope": "Authored fixed planar routes and surveyed maps, synchronous body-XY LiDAR. No global initialization, automotive uncertainty or real-vehicle/real-time qualification.",
+  "design": {
+    "runtime_contract": {
+      "configured_grace_seconds": [
+        0.5,
+        5.0
+      ],
+      "anchor": "independently confirmed measured reset, never renewed by a scan",
+      "requires": "new post-reset accepted synchronous map measurement, age <= 0.2 s; healthy LiDAR/motion; finite covariance guard remains",
+      "cutoff": "GNSS stamp must be strictly after reset; confirming scan is initialization only",
+      "terminal_interruption": "Malformed/rejected GNSS or missing motion; accepted real GNSS may recover normally",
+      "timeout": "First frame after absolute expiry brakes if real GNSS absent; later real GNSS may recover through existing gates",
+      "normal_handoff": "Real GNSS switches to ordinary actual-GNSS-based map outage policy; no GNSS clocks/counters are minted",
+      "default_compatibility": "map_only_grace_s None and map_only_support None omitted; existing relocalization/default logs expected identical"
+    },
+    "review_notes": [
+      "Existing GNSS/map outage flag retains its original actual-GNSS basis.",
+      "Relocalization attempt/ICP budgets and stopping rules unchanged.",
+      "Fresh map acceptance does not compel planner to drive; independent physical movement gate required.",
+      "Repeated, delayed, empty, failed and missing scans are covered by unit controls.",
+      "Stop/accuracy gates retain invalid-epoch global CLI failures.",
+      "Authored fixed planar route and map only, no automotive/real-time qualification."
+    ]
+  },
+  "repair": {
+    "problem": "Revision A health admitted map-only support but final independent control guard still received absent actual GNSS time, so frozen handoff trials moved 0 m before GNSS.",
+    "fix": "Send the qualified accepted map observation stamp to final control guard; keep all actual GNSS diagnostics unchanged.",
+    "original_matrix_inputs_unchanged": true,
+    "original_gates_unchanged": true,
+    "additional_negative_control_gate": "Actual speed >= 1 m/s before fault, added before any revision B physical run",
+    "first_cohort_A_incomplete": true,
+    "all_completed_and_inflight_first_bytes_retained": true,
+    "first_report": "cohort-A/report.json",
+    "interruption": "revision-A-stop.json"
+  },
+  "frozen_manifest": {
+    "gates": {
+      "valid_rmse_m": 0.2,
+      "valid_max_error_m": 0.4,
+      "valid_max_yaw_rad": 0.1,
+      "clearance_m": 1.0,
+      "stop_window_s": [
+        10.5,
+        11.2
+      ],
+      "stop_speed_m_s": 0.05,
+      "recovery_window_s": [
+        11.0,
+        15.0
+      ],
+      "negative_hold_after_s": 12.0,
+      "grace_s": 5.0,
+      "gnss_resume_acquisition_s": 16.0,
+      "lidar_loss_s": 14.0,
+      "movement_window_s": [
+        12.3,
+        16.0
+      ],
+      "minimum_map_only_distance_m": 5.0,
+      "expiry_stop_margin_s": 1.5,
+      "lidar_loss_brake_window_s": [
+        14.1,
+        14.3
+      ],
+      "lidar_loss_hold_after_s": 15.6,
+      "minimum_pre_fault_speed_m_s": 1.0
+    },
+    "episodes": [
+      {
+        "plant": "reference-2d",
+        "world": "straight",
+        "seed": 1,
+        "mode": "handoff",
+        "scenario": "frozen/000.json",
+        "sha256": "de898de4fba9895876b1e65a15c7012b8c89c94e7e2eae31b8c91afdeede5786",
+        "source": "scenarios/gnss-delay-straight.json",
+        "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19"
+      },
+      {
+        "plant": "reference-2d",
+        "world": "straight",
+        "seed": 7,
+        "mode": "handoff",
+        "scenario": "frozen/001.json",
+        "sha256": "de898de4fba9895876b1e65a15c7012b8c89c94e7e2eae31b8c91afdeede5786",
+        "source": "scenarios/gnss-delay-straight.json",
+        "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19"
+      },
+      {
+        "plant": "reference-2d",
+        "world": "straight",
+        "seed": 42,
+        "mode": "handoff",
+        "scenario": "frozen/002.json",
+        "sha256": "de898de4fba9895876b1e65a15c7012b8c89c94e7e2eae31b8c91afdeede5786",
+        "source": "scenarios/gnss-delay-straight.json",
+        "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19"
+      },
+      {
+        "plant": "reference-2d",
+        "world": "straight",
+        "seed": 7,
+        "mode": "default",
+        "scenario": "frozen/003.json",
+        "sha256": "bf5b886519b0d9c5a5f68119fe942e6c7c681e40ace9b6376f7b1e283dad1be2",
+        "source": "scenarios/gnss-delay-straight.json",
+        "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19"
+      },
+      {
+        "plant": "reference-2d",
+        "world": "straight",
+        "seed": 7,
+        "mode": "expiry",
+        "scenario": "frozen/004.json",
+        "sha256": "8de46c7fc1113660f13fbd3c12a4dd64a0b09fe5a2747c5c4ceffba4701c35b0",
+        "source": "scenarios/gnss-delay-straight.json",
+        "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19"
+      },
+      {
+        "plant": "reference-2d",
+        "world": "straight",
+        "seed": 7,
+        "mode": "lidar-loss",
+        "scenario": "frozen/005.json",
+        "sha256": "358513acb252e7712f9906b1d560069a8e9dec8fdc51333c845d727eb07d7933",
+        "source": "scenarios/gnss-delay-straight.json",
+        "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19"
+      },
+      {
+        "plant": "reference-2d",
+        "world": "curve",
+        "seed": 1,
+        "mode": "handoff",
+        "scenario": "frozen/006.json",
+        "sha256": "0a8fec1c3b714e7578f43b3f6ab9cfe64ff035b739acc7b9bdf0383f34cbb897",
+        "source": "scenarios/gnss-delay-curve.json",
+        "source_sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24"
+      },
+      {
+        "plant": "reference-2d",
+        "world": "curve",
+        "seed": 7,
+        "mode": "handoff",
+        "scenario": "frozen/007.json",
+        "sha256": "0a8fec1c3b714e7578f43b3f6ab9cfe64ff035b739acc7b9bdf0383f34cbb897",
+        "source": "scenarios/gnss-delay-curve.json",
+        "source_sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24"
+      },
+      {
+        "plant": "reference-2d",
+        "world": "curve",
+        "seed": 42,
+        "mode": "handoff",
+        "scenario": "frozen/008.json",
+        "sha256": "0a8fec1c3b714e7578f43b3f6ab9cfe64ff035b739acc7b9bdf0383f34cbb897",
+        "source": "scenarios/gnss-delay-curve.json",
+        "source_sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24"
+      },
+      {
+        "plant": "reference-2d",
+        "world": "curve",
+        "seed": 7,
+        "mode": "default",
+        "scenario": "frozen/009.json",
+        "sha256": "cb7045c1e7c8e547906fe6c178265d0e70bea7305464f7063c919e1c8131bc07",
+        "source": "scenarios/gnss-delay-curve.json",
+        "source_sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24"
+      },
+      {
+        "plant": "reference-2d",
+        "world": "curve",
+        "seed": 7,
+        "mode": "expiry",
+        "scenario": "frozen/010.json",
+        "sha256": "a99a80468a926131bc459343138e1c78b927c1658f9941e333c328fe62aad83d",
+        "source": "scenarios/gnss-delay-curve.json",
+        "source_sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24"
+      },
+      {
+        "plant": "reference-2d",
+        "world": "curve",
+        "seed": 7,
+        "mode": "lidar-loss",
+        "scenario": "frozen/011.json",
+        "sha256": "ae072a7d9935c1c6a950bebb948128f10744938f8e86d9b60a5f4d799d148aa9",
+        "source": "scenarios/gnss-delay-curve.json",
+        "source_sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24"
+      },
+      {
+        "plant": "rne-dynamic",
+        "world": "straight",
+        "seed": 1,
+        "mode": "handoff",
+        "scenario": "frozen/012.json",
+        "sha256": "de898de4fba9895876b1e65a15c7012b8c89c94e7e2eae31b8c91afdeede5786",
+        "source": "scenarios/gnss-delay-straight.json",
+        "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19"
+      },
+      {
+        "plant": "rne-dynamic",
+        "world": "straight",
+        "seed": 7,
+        "mode": "handoff",
+        "scenario": "frozen/013.json",
+        "sha256": "de898de4fba9895876b1e65a15c7012b8c89c94e7e2eae31b8c91afdeede5786",
+        "source": "scenarios/gnss-delay-straight.json",
+        "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19"
+      },
+      {
+        "plant": "rne-dynamic",
+        "world": "straight",
+        "seed": 42,
+        "mode": "handoff",
+        "scenario": "frozen/014.json",
+        "sha256": "de898de4fba9895876b1e65a15c7012b8c89c94e7e2eae31b8c91afdeede5786",
+        "source": "scenarios/gnss-delay-straight.json",
+        "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19"
+      },
+      {
+        "plant": "rne-dynamic",
+        "world": "straight",
+        "seed": 7,
+        "mode": "default",
+        "scenario": "frozen/015.json",
+        "sha256": "bf5b886519b0d9c5a5f68119fe942e6c7c681e40ace9b6376f7b1e283dad1be2",
+        "source": "scenarios/gnss-delay-straight.json",
+        "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19"
+      },
+      {
+        "plant": "rne-dynamic",
+        "world": "straight",
+        "seed": 7,
+        "mode": "expiry",
+        "scenario": "frozen/016.json",
+        "sha256": "8de46c7fc1113660f13fbd3c12a4dd64a0b09fe5a2747c5c4ceffba4701c35b0",
+        "source": "scenarios/gnss-delay-straight.json",
+        "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19"
+      },
+      {
+        "plant": "rne-dynamic",
+        "world": "straight",
+        "seed": 7,
+        "mode": "lidar-loss",
+        "scenario": "frozen/017.json",
+        "sha256": "358513acb252e7712f9906b1d560069a8e9dec8fdc51333c845d727eb07d7933",
+        "source": "scenarios/gnss-delay-straight.json",
+        "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19"
+      },
+      {
+        "plant": "rne-dynamic",
+        "world": "curve",
+        "seed": 1,
+        "mode": "handoff",
+        "scenario": "frozen/018.json",
+        "sha256": "0a8fec1c3b714e7578f43b3f6ab9cfe64ff035b739acc7b9bdf0383f34cbb897",
+        "source": "scenarios/gnss-delay-curve.json",
+        "source_sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24"
+      },
+      {
+        "plant": "rne-dynamic",
+        "world": "curve",
+        "seed": 7,
+        "mode": "handoff",
+        "scenario": "frozen/019.json",
+        "sha256": "0a8fec1c3b714e7578f43b3f6ab9cfe64ff035b739acc7b9bdf0383f34cbb897",
+        "source": "scenarios/gnss-delay-curve.json",
+        "source_sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24"
+      },
+      {
+        "plant": "rne-dynamic",
+        "world": "curve",
+        "seed": 42,
+        "mode": "handoff",
+        "scenario": "frozen/020.json",
+        "sha256": "0a8fec1c3b714e7578f43b3f6ab9cfe64ff035b739acc7b9bdf0383f34cbb897",
+        "source": "scenarios/gnss-delay-curve.json",
+        "source_sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24"
+      },
+      {
+        "plant": "rne-dynamic",
+        "world": "curve",
+        "seed": 7,
+        "mode": "default",
+        "scenario": "frozen/021.json",
+        "sha256": "cb7045c1e7c8e547906fe6c178265d0e70bea7305464f7063c919e1c8131bc07",
+        "source": "scenarios/gnss-delay-curve.json",
+        "source_sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24"
+      },
+      {
+        "plant": "rne-dynamic",
+        "world": "curve",
+        "seed": 7,
+        "mode": "expiry",
+        "scenario": "frozen/022.json",
+        "sha256": "a99a80468a926131bc459343138e1c78b927c1658f9941e333c328fe62aad83d",
+        "source": "scenarios/gnss-delay-curve.json",
+        "source_sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24"
+      },
+      {
+        "plant": "rne-dynamic",
+        "world": "curve",
+        "seed": 7,
+        "mode": "lidar-loss",
+        "scenario": "frozen/023.json",
+        "sha256": "ae072a7d9935c1c6a950bebb948128f10744938f8e86d9b60a5f4d799d148aa9",
+        "source": "scenarios/gnss-delay-curve.json",
+        "source_sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24"
+      }
+    ]
+  },
+  "frozen_manifest_sha256": "461681025973dcf2d7e19a65518c0e6ba7813e948dd514a2162bb8e1eefd8e9c",
+  "source_closure": {
+    "reference_sha256": "1d676e788ebe024e2574856e66ea00d3cbe2ee5318e80eaea5567d2ce12ecba5",
+    "native_sha256": "06c31a25978b5293364fc70aebaf08502706a2fa33d4b6b07e9e11fc9bc45b91",
+    "sources_sha256": "dc1e38e626556d0d1c100e7dad0b9c39fc3ce1a2d7951742d874a7d534ea07b3",
+    "all_sources_inputs_and_binaries_frozen_before_first_physical_case": true
+  },
+  "primary_sources_sha256": {
+    "crates/control/src/lib.rs": "701ba1ab409c77e793980f254e2ea3284ec23a35c06004b62ce03654c4d4e19c",
+    "crates/pipeline/src/lib.rs": "e0d72e50d45e79a258e81f919590ef73f2002699379a66f7478e1328315cd0cc",
+    "crates/pipeline/src/relocalization.rs": "e328c26441415160d6a3d9aaeaaf5b6c0a390dee0110f270a34150f5f27c0502",
+    "crates/pipeline/tests/relocalization.rs": "9bce9393cf4de743cd0b5b49b1849a772d91101acd8d1a68dd1fd5546d25a468",
+    "scripts/check_relocalization_map_only.py": "284bdfbdc0844271de5db5a933603481b8939641f7c3821514981cd2b9e13294",
+    "scripts/check_relocalization.py": "a0ced406868d096a8ed7f78da0a00b3b86f394f1b7d6878ad01735d4ffa1daef",
+    "scripts/check_gnss_map_history.py": "39605e8c330d37d2d83f5f603b3354d61fbc6e9070efa9f618d0ea1d317035eb",
+    "scripts/test_relocalization.py": "908dc9dbd82ac05fe32dd7612c2b93bf09bc86e9c91ccaf679cd1d3940f88a47",
+    ".github/workflows/ci.yml": "13ae9676a2ff3a49e1cc15e5f23456dddadb473a7551f36d22eaa39b139bb3b0",
+    "Cargo.lock": "de8e6afb2c8f59be7f68f0ccf8604e4d43d9951d6902314f46f16b8121dbccf7",
+    "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed",
+    "integrations/rne/Cargo.lock": "c15e499bc74ddcf213bb0ac22cb22280c68d49ead2e203b8a7213e5a9f38f2ff"
+  },
+  "summary": {
+    "cases": 24,
+    "passed": 24,
+    "modes": {
+      "handoff": 12,
+      "default": 4,
+      "expiry": 4,
+      "lidar-loss": 4
+    },
+    "goals": 16,
+    "full_audited_and_replayed_ticks": 16562,
+    "minimum_map_only_window_distance_m": 13.798431283663486,
+    "maximum_map_only_window_distance_m": 13.932495183920064,
+    "maximum_default_window_distance_m": 0.0,
+    "actual_gnss_acceptance_range_s": [
+      16.2,
+      16.400000000000002
+    ],
+    "maximum_valid_epoch_rmse_m": 0.05688856821702925,
+    "maximum_valid_epoch_position_error_m": 0.11393888393365405,
+    "maximum_valid_epoch_yaw_error_rad": 0.0015360177087804239,
+    "general_cli_accuracy_failures_retained": 24,
+    "maximum_global_invalid_epoch_error_m": 3.2749986129396715,
+    "physical_repeats_within_revision_B": 0,
+    "paired_seed7_goal_time_improvements": [
+      {
+        "plant": "reference-2d",
+        "world": "straight",
+        "seed": 7,
+        "default_goal_s": 32.4,
+        "enabled_goal_s": 28.25,
+        "improvement_s": 4.149999999999999
+      },
+      {
+        "plant": "reference-2d",
+        "world": "curve",
+        "seed": 7,
+        "default_goal_s": 32.15,
+        "enabled_goal_s": 28.1,
+        "improvement_s": 4.049999999999997
+      },
+      {
+        "plant": "rne-dynamic",
+        "world": "straight",
+        "seed": 7,
+        "default_goal_s": 32.45,
+        "enabled_goal_s": 28.200000000000003,
+        "improvement_s": 4.25
+      },
+      {
+        "plant": "rne-dynamic",
+        "world": "curve",
+        "seed": 7,
+        "default_goal_s": 32.050000000000004,
+        "enabled_goal_s": 28.150000000000002,
+        "improvement_s": 3.900000000000002
+      }
+    ]
+  },
+  "physical_stop_measurements": [
+    {
+      "plant": "reference-2d",
+      "world": "straight",
+      "mode": "expiry",
+      "first_brake_s": 17.150000000000002,
+      "maximum_pre_fault_speed_m_s": 3.5000000000000018,
+      "speed_at_first_brake_m_s": 6.008325488858144,
+      "hold_after_s": 18.6,
+      "maximum_held_speed_m_s": 0.0
+    },
+    {
+      "plant": "reference-2d",
+      "world": "straight",
+      "mode": "lidar-loss",
+      "first_brake_s": 14.15,
+      "maximum_pre_fault_speed_m_s": 3.5000000000000018,
+      "speed_at_first_brake_m_s": 3.9000000000000017,
+      "hold_after_s": 15.6,
+      "maximum_held_speed_m_s": 0.0
+    },
+    {
+      "plant": "reference-2d",
+      "world": "curve",
+      "mode": "expiry",
+      "first_brake_s": 17.150000000000002,
+      "maximum_pre_fault_speed_m_s": 3.5000000000000013,
+      "speed_at_first_brake_m_s": 6.002245652421941,
+      "hold_after_s": 18.6,
+      "maximum_held_speed_m_s": 0.0
+    },
+    {
+      "plant": "reference-2d",
+      "world": "curve",
+      "mode": "lidar-loss",
+      "first_brake_s": 14.15,
+      "maximum_pre_fault_speed_m_s": 3.5000000000000013,
+      "speed_at_first_brake_m_s": 3.9000000000000017,
+      "hold_after_s": 15.6,
+      "maximum_held_speed_m_s": 0.0
+    },
+    {
+      "plant": "rne-dynamic",
+      "world": "straight",
+      "mode": "expiry",
+      "first_brake_s": 17.150000000000002,
+      "maximum_pre_fault_speed_m_s": 3.499999999999968,
+      "speed_at_first_brake_m_s": 5.99630538279481,
+      "hold_after_s": 18.6,
+      "maximum_held_speed_m_s": 0.0
+    },
+    {
+      "plant": "rne-dynamic",
+      "world": "straight",
+      "mode": "lidar-loss",
+      "first_brake_s": 14.15,
+      "maximum_pre_fault_speed_m_s": 3.499999999999968,
+      "speed_at_first_brake_m_s": 3.8999999999999595,
+      "hold_after_s": 15.6,
+      "maximum_held_speed_m_s": 0.0
+    },
+    {
+      "plant": "rne-dynamic",
+      "world": "curve",
+      "mode": "expiry",
+      "first_brake_s": 17.150000000000002,
+      "maximum_pre_fault_speed_m_s": 3.499999999999968,
+      "speed_at_first_brake_m_s": 5.996184864630658,
+      "hold_after_s": 18.6,
+      "maximum_held_speed_m_s": 0.0
+    },
+    {
+      "plant": "rne-dynamic",
+      "world": "curve",
+      "mode": "lidar-loss",
+      "first_brake_s": 14.15,
+      "maximum_pre_fault_speed_m_s": 3.499999999999968,
+      "speed_at_first_brake_m_s": 3.8999999999999595,
+      "hold_after_s": 15.6,
+      "maximum_held_speed_m_s": 0.0
+    }
+  ],
+  "episodes": [
+    {
+      "plant": "reference-2d",
+      "world": "straight",
+      "seed": 1,
+      "mode": "handoff",
+      "scenario": "frozen/000.json",
+      "sha256": "de898de4fba9895876b1e65a15c7012b8c89c94e7e2eae31b8c91afdeede5786",
+      "source": "scenarios/gnss-delay-straight.json",
+      "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19",
+      "passed": true,
+      "recordings": "episodes/reference-2d/straight-handoff-seed-1",
+      "run_exit_code": 1,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "Post-reset map-only straight handoff",
+        "seed": 1,
+        "simulated_seconds": 28.25,
+        "steps": 566,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.251928313888196,
+        "localization_rmse": 1.1084730184527243,
+        "localization_max_error": 3.153287177547076,
+        "final_speed": 0.09702240908671153,
+        "progress": 119.01404658166174,
+        "emergency_steps": 94,
+        "avoidance_steps": 0,
+        "max_tracks": 10,
+        "passed": false,
+        "failures": [
+          "localization max error 3.153 m exceeds 1 m"
+        ]
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 566,
+        "verified": true
+      },
+      "oracle": {
+        "passed": true,
+        "prefix": {
+          "passed": true,
+          "verified_ticks": 163,
+          "maximum_pose_difference": 7.105427357601002e-15,
+          "accepted_map_measurements": 82,
+          "replayed_map_corrections": 156,
+          "compensated_fixes": 39,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 39,
+          "rejected_fixes": 0
+        },
+        "post_epoch": {
+          "passed": true,
+          "verified_ticks": 324,
+          "maximum_pose_difference": 1.4210854715202004e-14,
+          "accepted_map_measurements": 161,
+          "replayed_map_corrections": 240,
+          "compensated_fixes": 60,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 84,
+          "accepted_fixes": 60,
+          "rejected_fixes": 0
+        },
+        "reset_stamp": 12.100000000000001,
+        "searches": 3
+      },
+      "global_rmse_m": 1.1084730184527245,
+      "global_maximum_error_m": 3.153287177547076,
+      "valid_epoch_rmse_m": 0.003927857237288257,
+      "valid_epoch_maximum_error_m": 0.011082262442816156,
+      "valid_epoch_maximum_yaw_rad": 0.000869158624582589,
+      "invalid_pose_ticks": 79,
+      "source_accuracy_failures_retained": [
+        "localization max error 3.153 m exceeds 1 m"
+      ],
+      "expected_run_exit_code": 1,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 2.251928313888196,
+        "contact_intervals": 0
+      },
+      "map_only_window_distance_m": 13.92989455007624,
+      "first_actual_gnss_acceptance_s": 16.400000000000002,
+      "first_post_support_brake_s": null,
+      "failed_gates": [],
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.xz",
+          "sha256": "1d7c3bb89ab3e7f9fc871364878958cde9c63a9aaf710b07da242367ee460694",
+          "stored_sha256": "13bf90c9b8250b74199b80eea5ffbae9a3c0a1f6ba8723f5293437bb82206d55",
+          "encoding": "xz"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.xz",
+          "sha256": "f50845e6ea89857cc5388c65f8a2b2196f49acba53c6b6e839e680c593a8faa3",
+          "stored_sha256": "ddd24bf0331f5cf1817bcdd4dd741b0e886efe658f5cbba84eea390898aedc0b",
+          "encoding": "xz"
+        },
+        "run/run.json": {
+          "path": "run/run.json.xz",
+          "sha256": "62df4d28f0653c634c971e94808d8da09a8000bf25495d182dfeb2d816a41693",
+          "stored_sha256": "98483a61211a738eb06b3057cf59b8075c03aa62a703fa4bdba5b723bd3bd9a6",
+          "encoding": "xz"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.xz",
+          "sha256": "ae79d7a3259bdc9ee05c0b377db67d966f2fd2a2c63748a22aaac58b6873d16e",
+          "stored_sha256": "2f1c5e80f5cbd2adc731d3277afc866401fb446eac26f1de463f55f183d59c00",
+          "encoding": "xz"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.xz",
+          "sha256": "1ead466397ed96eb080b8768c038a795ec4d6153b7025a4dd715bcfc39a404a1",
+          "stored_sha256": "689dfbea590851409fb894f483b4c6ddf989ed1a0667481c1cb13805904c5299",
+          "encoding": "xz"
+        }
+      }
+    },
+    {
+      "plant": "reference-2d",
+      "world": "straight",
+      "seed": 7,
+      "mode": "handoff",
+      "scenario": "frozen/001.json",
+      "sha256": "de898de4fba9895876b1e65a15c7012b8c89c94e7e2eae31b8c91afdeede5786",
+      "source": "scenarios/gnss-delay-straight.json",
+      "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19",
+      "passed": true,
+      "recordings": "episodes/reference-2d/straight-handoff-seed-7",
+      "run_exit_code": 1,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "Post-reset map-only straight handoff",
+        "seed": 7,
+        "simulated_seconds": 28.25,
+        "steps": 566,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.250880726825093,
+        "localization_rmse": 1.104265287088823,
+        "localization_max_error": 3.141045498790852,
+        "final_speed": 0.10797253130039838,
+        "progress": 119.01706864814986,
+        "emergency_steps": 90,
+        "avoidance_steps": 0,
+        "max_tracks": 10,
+        "passed": false,
+        "failures": [
+          "localization max error 3.141 m exceeds 1 m"
+        ]
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 566,
+        "verified": true
+      },
+      "oracle": {
+        "passed": true,
+        "prefix": {
+          "passed": true,
+          "verified_ticks": 163,
+          "maximum_pose_difference": 3.552713678800501e-15,
+          "accepted_map_measurements": 82,
+          "replayed_map_corrections": 156,
+          "compensated_fixes": 39,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 39,
+          "rejected_fixes": 0
+        },
+        "post_epoch": {
+          "passed": true,
+          "verified_ticks": 324,
+          "maximum_pose_difference": 1.4210854715202004e-14,
+          "accepted_map_measurements": 161,
+          "replayed_map_corrections": 240,
+          "compensated_fixes": 60,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 84,
+          "accepted_fixes": 60,
+          "rejected_fixes": 0
+        },
+        "reset_stamp": 12.100000000000001,
+        "searches": 3
+      },
+      "global_rmse_m": 1.104265287088823,
+      "global_maximum_error_m": 3.141045498790852,
+      "valid_epoch_rmse_m": 0.003516152164526032,
+      "valid_epoch_maximum_error_m": 0.00791178895393881,
+      "valid_epoch_maximum_yaw_rad": 0.0005674085760416503,
+      "invalid_pose_ticks": 79,
+      "source_accuracy_failures_retained": [
+        "localization max error 3.141 m exceeds 1 m"
+      ],
+      "expected_run_exit_code": 1,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 2.250880726825093,
+        "contact_intervals": 0
+      },
+      "map_only_window_distance_m": 13.928883890044265,
+      "first_actual_gnss_acceptance_s": 16.400000000000002,
+      "first_post_support_brake_s": null,
+      "failed_gates": [],
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.xz",
+          "sha256": "6fccf24bfbd80576216d2346640f9e5fa5c085e6afeb0d29d99f03ab549dffce",
+          "stored_sha256": "493fa753b51ba78d468af0dff28ecd038bdcad5317c0bcd96257b54a9cad609c",
+          "encoding": "xz"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.xz",
+          "sha256": "f50845e6ea89857cc5388c65f8a2b2196f49acba53c6b6e839e680c593a8faa3",
+          "stored_sha256": "ddd24bf0331f5cf1817bcdd4dd741b0e886efe658f5cbba84eea390898aedc0b",
+          "encoding": "xz"
+        },
+        "run/run.json": {
+          "path": "run/run.json.xz",
+          "sha256": "ede33820d8026423b65d60b01651b158e72673c9ba3cd7b7dcedf285a4645a3b",
+          "stored_sha256": "b575d76d511dd74c4994b098efcb5d2a254e9b8289be05d083b076a941799563",
+          "encoding": "xz"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.xz",
+          "sha256": "b7b72736a27bbe8cfb7f446f2e3857abad8e32db59e8fe45838dc67cc88e511e",
+          "stored_sha256": "caaf98f12ebc1cf50e071b703df0a5d9ec264e56a88096ab150269c39e4f843e",
+          "encoding": "xz"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.xz",
+          "sha256": "a908cbd00b5024885d4261289b34694e6de423f7a0b2e5b86b5b321e5f00e42a",
+          "stored_sha256": "d1b2538d16d3f7c9c777f4bd596f313314702369e3104c7d0163837bdd577956",
+          "encoding": "xz"
+        }
+      }
+    },
+    {
+      "plant": "reference-2d",
+      "world": "straight",
+      "seed": 42,
+      "mode": "handoff",
+      "scenario": "frozen/002.json",
+      "sha256": "de898de4fba9895876b1e65a15c7012b8c89c94e7e2eae31b8c91afdeede5786",
+      "source": "scenarios/gnss-delay-straight.json",
+      "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19",
+      "passed": true,
+      "recordings": "episodes/reference-2d/straight-handoff-seed-42",
+      "run_exit_code": 1,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "Post-reset map-only straight handoff",
+        "seed": 42,
+        "simulated_seconds": 28.25,
+        "steps": 566,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.2497082841686105,
+        "localization_rmse": 1.091616434344547,
+        "localization_max_error": 3.1041807580655023,
+        "final_speed": 0.18086859137650665,
+        "progress": 119.01543786026298,
+        "emergency_steps": 89,
+        "avoidance_steps": 0,
+        "max_tracks": 10,
+        "passed": false,
+        "failures": [
+          "localization max error 3.104 m exceeds 1 m"
+        ]
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 566,
+        "verified": true
+      },
+      "oracle": {
+        "passed": true,
+        "prefix": {
+          "passed": true,
+          "verified_ticks": 163,
+          "maximum_pose_difference": 7.105427357601002e-15,
+          "accepted_map_measurements": 82,
+          "replayed_map_corrections": 156,
+          "compensated_fixes": 39,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 39,
+          "rejected_fixes": 0
+        },
+        "post_epoch": {
+          "passed": true,
+          "verified_ticks": 324,
+          "maximum_pose_difference": 1.4210854715202004e-14,
+          "accepted_map_measurements": 161,
+          "replayed_map_corrections": 240,
+          "compensated_fixes": 60,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 84,
+          "accepted_fixes": 60,
+          "rejected_fixes": 0
+        },
+        "reset_stamp": 12.100000000000001,
+        "searches": 3
+      },
+      "global_rmse_m": 1.0916164343445451,
+      "global_maximum_error_m": 3.1041807580655023,
+      "valid_epoch_rmse_m": 0.0035941327698575157,
+      "valid_epoch_maximum_error_m": 0.009451935488259207,
+      "valid_epoch_maximum_yaw_rad": 0.0005868258383214808,
+      "invalid_pose_ticks": 79,
+      "source_accuracy_failures_retained": [
+        "localization max error 3.104 m exceeds 1 m"
+      ],
+      "expected_run_exit_code": 1,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 2.2497082841686105,
+        "contact_intervals": 0
+      },
+      "map_only_window_distance_m": 13.93069359223286,
+      "first_actual_gnss_acceptance_s": 16.400000000000002,
+      "first_post_support_brake_s": null,
+      "failed_gates": [],
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.xz",
+          "sha256": "46431dc0a95069a13fab42ab8f2651eda359d14a118db442950bcc17a9cc5df0",
+          "stored_sha256": "b9d07abf34fe5bdf5f1f8c621d6cd79ec7a7d207248661f5cb3d6b692748d130",
+          "encoding": "xz"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.xz",
+          "sha256": "f50845e6ea89857cc5388c65f8a2b2196f49acba53c6b6e839e680c593a8faa3",
+          "stored_sha256": "ddd24bf0331f5cf1817bcdd4dd741b0e886efe658f5cbba84eea390898aedc0b",
+          "encoding": "xz"
+        },
+        "run/run.json": {
+          "path": "run/run.json.xz",
+          "sha256": "6e5886377252161a0e928cc76964158436efb22d3970387b38f112f1deacc22c",
+          "stored_sha256": "53de6cf79fede5a9e3af93c7ab0abd02e7b0924f40017988169b2d48785116aa",
+          "encoding": "xz"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.xz",
+          "sha256": "dcff1ac16cecb1f6d15f8b48ba4675176ac9a6e645e83c64a67fc4ccbf8b6cd1",
+          "stored_sha256": "a421435e68575216e17a3175dc4848a27ba389a68eb6e0960696309e20bba2b3",
+          "encoding": "xz"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.xz",
+          "sha256": "75cfb911b9a2fdce3675ae695d6a7be5b2013493e22441d6317dfc6c475c2798",
+          "stored_sha256": "a4f633eeb96406863a06313f7ca526fb04b57282f9fc53fd031a3192ed2ee8ec",
+          "encoding": "xz"
+        }
+      }
+    },
+    {
+      "plant": "reference-2d",
+      "world": "straight",
+      "seed": 7,
+      "mode": "default",
+      "scenario": "frozen/003.json",
+      "sha256": "bf5b886519b0d9c5a5f68119fe942e6c7c681e40ace9b6376f7b1e283dad1be2",
+      "source": "scenarios/gnss-delay-straight.json",
+      "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19",
+      "passed": true,
+      "recordings": "episodes/reference-2d/straight-default-seed-7",
+      "run_exit_code": 1,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "Post-reset map-only straight default",
+        "seed": 7,
+        "simulated_seconds": 32.4,
+        "steps": 649,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.2492474405190475,
+        "localization_rmse": 1.0312393853503892,
+        "localization_max_error": 3.141045498790852,
+        "final_speed": 0.14984415891134412,
+        "progress": 118.99896249943284,
+        "emergency_steps": 174,
+        "avoidance_steps": 0,
+        "max_tracks": 10,
+        "passed": false,
+        "failures": [
+          "localization max error 3.141 m exceeds 1 m"
+        ]
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 649,
+        "verified": true
+      },
+      "oracle": {
+        "passed": true,
+        "prefix": {
+          "passed": true,
+          "verified_ticks": 163,
+          "maximum_pose_difference": 3.552713678800501e-15,
+          "accepted_map_measurements": 82,
+          "replayed_map_corrections": 156,
+          "compensated_fixes": 39,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 39,
+          "rejected_fixes": 0
+        },
+        "post_epoch": {
+          "passed": true,
+          "verified_ticks": 407,
+          "maximum_pose_difference": 1.4210854715202004e-14,
+          "accepted_map_measurements": 203,
+          "replayed_map_corrections": 324,
+          "compensated_fixes": 81,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 81,
+          "rejected_fixes": 0
+        },
+        "reset_stamp": 12.100000000000001,
+        "searches": 3
+      },
+      "global_rmse_m": 1.0312393853503898,
+      "global_maximum_error_m": 3.141045498790852,
+      "valid_epoch_rmse_m": 0.003420569109814073,
+      "valid_epoch_maximum_error_m": 0.0074376328047233795,
+      "valid_epoch_maximum_yaw_rad": 0.0005674085760416503,
+      "invalid_pose_ticks": 79,
+      "source_accuracy_failures_retained": [
+        "localization max error 3.141 m exceeds 1 m"
+      ],
+      "expected_run_exit_code": 1,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 2.2492474405190475,
+        "contact_intervals": 0
+      },
+      "map_only_window_distance_m": 0.0,
+      "first_actual_gnss_acceptance_s": 16.400000000000002,
+      "first_post_support_brake_s": null,
+      "failed_gates": [],
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.xz",
+          "sha256": "1a945dacbf3f530419881c104a81614a6413d3473fb9cac109ccab87aba9c7d8",
+          "stored_sha256": "993ca42c85f5a22d45db76070f2c4e1b8075463c5a22f46ce41d6dac6b226660",
+          "encoding": "xz"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.xz",
+          "sha256": "eb1a64ded9fa31b48c19756bd87cfe02a0c8d0c96eb3e7dc1c8e96f603cebd15",
+          "stored_sha256": "b6141bce5560937baa837c4a0ec101a49a9122de01723ff525366313266e235d",
+          "encoding": "xz"
+        },
+        "run/run.json": {
+          "path": "run/run.json.xz",
+          "sha256": "bacf2aebc99c77cf522305231eb4c546f5a44740369dfcafeceba5f36c89e092",
+          "stored_sha256": "0078da4709f4cf0a3cff9733341d4c4f8fcbd1575baa30a2a5a01cb83dbd3f68",
+          "encoding": "xz"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.xz",
+          "sha256": "4a25ae689705031db5eec4deb81f822caccb13417f2436b919d6326fb5c4a4d4",
+          "stored_sha256": "4283b10c06d1408329109e1a2feffa424345e4a67a4b7214493d2f57b9cd69cd",
+          "encoding": "xz"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.xz",
+          "sha256": "0c0fc702ae601102342e5893282ca36eb432dae4e96165861ff56b9d17d14c4e",
+          "stored_sha256": "de7d2184a8b9b4cfea5dc17b2a96d03e0fc27d792cc3531a09df72d4f9ea9702",
+          "encoding": "xz"
+        }
+      }
+    },
+    {
+      "plant": "reference-2d",
+      "world": "straight",
+      "seed": 7,
+      "mode": "expiry",
+      "scenario": "frozen/004.json",
+      "sha256": "8de46c7fc1113660f13fbd3c12a4dd64a0b09fe5a2747c5c4ceffba4701c35b0",
+      "source": "scenarios/gnss-delay-straight.json",
+      "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19",
+      "passed": true,
+      "recordings": "episodes/reference-2d/straight-expiry-seed-7",
+      "run_exit_code": 1,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "Post-reset map-only straight expiry",
+        "seed": 7,
+        "simulated_seconds": 45.0,
+        "steps": 901,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.449093684454806,
+        "localization_rmse": 0.8752231739438203,
+        "localization_max_error": 3.141045498790852,
+        "final_speed": 0.0,
+        "progress": 64.18515719071225,
+        "emergency_steps": 647,
+        "avoidance_steps": 0,
+        "max_tracks": 10,
+        "passed": false,
+        "failures": [
+          "localization max error 3.141 m exceeds 1 m"
+        ]
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 901,
+        "verified": true
+      },
+      "oracle": {
+        "passed": true,
+        "prefix": {
+          "passed": true,
+          "verified_ticks": 163,
+          "maximum_pose_difference": 3.552713678800501e-15,
+          "accepted_map_measurements": 82,
+          "replayed_map_corrections": 156,
+          "compensated_fixes": 39,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 39,
+          "rejected_fixes": 0
+        },
+        "post_epoch": {
+          "passed": true,
+          "verified_ticks": 659,
+          "maximum_pose_difference": 6.456966038237422e-16,
+          "accepted_map_measurements": 329,
+          "replayed_map_corrections": 0,
+          "compensated_fixes": 0,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 99,
+          "accepted_fixes": 0,
+          "rejected_fixes": 0
+        },
+        "reset_stamp": 12.100000000000001,
+        "searches": 3
+      },
+      "global_rmse_m": 0.8752231739438194,
+      "global_maximum_error_m": 3.141045498790852,
+      "valid_epoch_rmse_m": 0.0023778670740270623,
+      "valid_epoch_maximum_error_m": 0.006751066848226058,
+      "valid_epoch_maximum_yaw_rad": 0.0005674085760416503,
+      "invalid_pose_ticks": 79,
+      "source_accuracy_failures_retained": [
+        "localization max error 3.141 m exceeds 1 m"
+      ],
+      "expected_run_exit_code": 1,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 2.449093684454806,
+        "contact_intervals": 0
+      },
+      "map_only_window_distance_m": 13.928883890044265,
+      "first_actual_gnss_acceptance_s": null,
+      "first_post_support_brake_s": 17.150000000000002,
+      "failed_gates": [],
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.xz",
+          "sha256": "a8caa4d8f9d7531d4853ad4f3abd5310eb24ccf07890130ab7c5ca91e34fb8f2",
+          "stored_sha256": "988be15f95245e8f4b1aa340d4f05d30d107e31afa7aa26f0716e9c148e331f9",
+          "encoding": "xz"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.xz",
+          "sha256": "74fcb742c4dd50c63a49f6a24d1b74c54696967f03021e1f8696155e76d0c554",
+          "stored_sha256": "dcf84ad9e98fba502cc83fba0af1da132b351a0388f48d60e9a9eac977a8f1d8",
+          "encoding": "xz"
+        },
+        "run/run.json": {
+          "path": "run/run.json.xz",
+          "sha256": "96a231fa54161dbb80c5b9da3d5958647a8a8a020b39271bd7c1d5a028a1699f",
+          "stored_sha256": "52aa2fd3dd3e71200ccc3460ad3f241f50f8f3301eed3cf38084cdd5f6f54e44",
+          "encoding": "xz"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.xz",
+          "sha256": "ccb97ef6bbdf08f0788337e5c241483127a9ca970e81c4e38cd067700d19ad9f",
+          "stored_sha256": "0656cda27ecc7c51378084898f4cd78c9bfdfdfb248d22bae254b699baabac14",
+          "encoding": "xz"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.xz",
+          "sha256": "159e8accb712baaf9e948366f49e446c774231b1d347dc0bdae3b1c914f3c94d",
+          "stored_sha256": "bd9299efa638904a92bf9935c4cf83da372c24e489c42c65e6c23f098e70539d",
+          "encoding": "xz"
+        }
+      }
+    },
+    {
+      "plant": "reference-2d",
+      "world": "straight",
+      "seed": 7,
+      "mode": "lidar-loss",
+      "scenario": "frozen/005.json",
+      "sha256": "358513acb252e7712f9906b1d560069a8e9dec8fdc51333c845d727eb07d7933",
+      "source": "scenarios/gnss-delay-straight.json",
+      "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19",
+      "passed": true,
+      "recordings": "episodes/reference-2d/straight-lidar-loss-seed-7",
+      "run_exit_code": 1,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "Post-reset map-only straight lidar-loss",
+        "seed": 7,
+        "simulated_seconds": 45.0,
+        "steps": 901,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.5505283613878165,
+        "localization_rmse": 0.87667434033224,
+        "localization_max_error": 3.141045498790852,
+        "final_speed": 0.0,
+        "progress": 45.554350132175216,
+        "emergency_steps": 707,
+        "avoidance_steps": 0,
+        "max_tracks": 9,
+        "passed": false,
+        "failures": [
+          "localization max error 3.141 m exceeds 1 m"
+        ]
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 901,
+        "verified": true
+      },
+      "oracle": {
+        "passed": true,
+        "prefix": {
+          "passed": true,
+          "verified_ticks": 163,
+          "maximum_pose_difference": 3.552713678800501e-15,
+          "accepted_map_measurements": 82,
+          "replayed_map_corrections": 156,
+          "compensated_fixes": 39,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 39,
+          "rejected_fixes": 0
+        },
+        "post_epoch": {
+          "passed": true,
+          "verified_ticks": 659,
+          "maximum_pose_difference": 4.322280380830712e-15,
+          "accepted_map_measurements": 18,
+          "replayed_map_corrections": 0,
+          "compensated_fixes": 0,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 39,
+          "accepted_fixes": 0,
+          "rejected_fixes": 0
+        },
+        "reset_stamp": 12.100000000000001,
+        "searches": 3
+      },
+      "global_rmse_m": 0.8766743403322397,
+      "global_maximum_error_m": 3.141045498790852,
+      "valid_epoch_rmse_m": 0.05284204299628312,
+      "valid_epoch_maximum_error_m": 0.1118553832400028,
+      "valid_epoch_maximum_yaw_rad": 0.0005674085760416503,
+      "invalid_pose_ticks": 79,
+      "source_accuracy_failures_retained": [
+        "localization max error 3.141 m exceeds 1 m"
+      ],
+      "expected_run_exit_code": 1,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 2.5505283613878165,
+        "contact_intervals": 0
+      },
+      "map_only_window_distance_m": 5.054999999999999,
+      "first_actual_gnss_acceptance_s": null,
+      "first_post_support_brake_s": 14.15,
+      "failed_gates": [],
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.xz",
+          "sha256": "d986a2545b5717eee268867bed08224112d7538df31c78365a56f22e679be018",
+          "stored_sha256": "318dee428c5ce97a64b5cb59a815b8b69a16f95794ed519e2b6e191e8be55c6e",
+          "encoding": "xz"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.xz",
+          "sha256": "74fcb742c4dd50c63a49f6a24d1b74c54696967f03021e1f8696155e76d0c554",
+          "stored_sha256": "dcf84ad9e98fba502cc83fba0af1da132b351a0388f48d60e9a9eac977a8f1d8",
+          "encoding": "xz"
+        },
+        "run/run.json": {
+          "path": "run/run.json.xz",
+          "sha256": "eb09492e57a709a25615deabb5d43ef22d6831350b5865ff9a8f6f03a0c8d7a8",
+          "stored_sha256": "1a97a6a250b27281578e1a856b368a69a50848568c96c796f69dcd8af9647254",
+          "encoding": "xz"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.xz",
+          "sha256": "854ce2e921f8da861b4c2c51f8f961c772400baafec27f15573fb363177eb041",
+          "stored_sha256": "1927780d9b3d052ba4bdacc564ef6b461a75cdfdb8b0785eb1e5bdd30280c992",
+          "encoding": "xz"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.xz",
+          "sha256": "2c777b763285f64f9bce820099e417a6683379833914e353a72c65984fe65c3e",
+          "stored_sha256": "8ed6ce2d1b78c573ba486bbbb70d0634732dbfa2405a77b8894c87bd74bd65a9",
+          "encoding": "xz"
+        }
+      }
+    },
+    {
+      "plant": "reference-2d",
+      "world": "curve",
+      "seed": 1,
+      "mode": "handoff",
+      "scenario": "frozen/006.json",
+      "sha256": "0a8fec1c3b714e7578f43b3f6ab9cfe64ff035b739acc7b9bdf0383f34cbb897",
+      "source": "scenarios/gnss-delay-curve.json",
+      "source_sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24",
+      "passed": true,
+      "recordings": "episodes/reference-2d/curve-handoff-seed-1",
+      "run_exit_code": 1,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "Post-reset map-only curve handoff",
+        "seed": 1,
+        "simulated_seconds": 28.150000000000002,
+        "steps": 564,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.2416414778205143,
+        "localization_rmse": 1.1113640648843917,
+        "localization_max_error": 3.1559147400313923,
+        "final_speed": 0.16388245422311812,
+        "progress": 119.67725881223879,
+        "emergency_steps": 85,
+        "avoidance_steps": 0,
+        "max_tracks": 10,
+        "passed": false,
+        "failures": [
+          "localization max error 3.156 m exceeds 1 m"
+        ]
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 564,
+        "verified": true
+      },
+      "oracle": {
+        "passed": true,
+        "prefix": {
+          "passed": true,
+          "verified_ticks": 163,
+          "maximum_pose_difference": 7.105427357601002e-15,
+          "accepted_map_measurements": 82,
+          "replayed_map_corrections": 80,
+          "compensated_fixes": 40,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 40,
+          "rejected_fixes": 0
+        },
+        "post_epoch": {
+          "passed": true,
+          "verified_ticks": 322,
+          "maximum_pose_difference": 1.4210854715202004e-14,
+          "accepted_map_measurements": 160,
+          "replayed_map_corrections": 120,
+          "compensated_fixes": 60,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 80,
+          "accepted_fixes": 60,
+          "rejected_fixes": 0
+        },
+        "reset_stamp": 12.100000000000001,
+        "searches": 3
+      },
+      "global_rmse_m": 1.1113640648843914,
+      "global_maximum_error_m": 3.1559147400313923,
+      "valid_epoch_rmse_m": 0.006891865388538706,
+      "valid_epoch_maximum_error_m": 0.0163801661022915,
+      "valid_epoch_maximum_yaw_rad": 0.0009079360782306978,
+      "invalid_pose_ticks": 79,
+      "source_accuracy_failures_retained": [
+        "localization max error 3.156 m exceeds 1 m"
+      ],
+      "expected_run_exit_code": 1,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 2.2416414778205143,
+        "contact_intervals": 0
+      },
+      "map_only_window_distance_m": 13.932231716283912,
+      "first_actual_gnss_acceptance_s": 16.2,
+      "first_post_support_brake_s": null,
+      "failed_gates": [],
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.xz",
+          "sha256": "7c72971add1ae1120381512388e65352c4dabe23a604f03a9b2c992f40e2fad2",
+          "stored_sha256": "c5ed991d4377458c81e6baec081ce7b031309fe08367f7bcbf56e767fc6d14a8",
+          "encoding": "xz"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.xz",
+          "sha256": "abeedbdc14ce70a133212a7e77811e505d1100ac00ed0d7d5215f6f90af04174",
+          "stored_sha256": "f84fda7c0f5c1a6267e96467c5047b15ac60a0085f8186d68c7cce4687027fd1",
+          "encoding": "xz"
+        },
+        "run/run.json": {
+          "path": "run/run.json.xz",
+          "sha256": "81935f5573ba43b865b0384bdd6088bd946e65210bc395388a2318fa6e03e6ef",
+          "stored_sha256": "e1abbc2f2e7d96c0712c441319e34661e7428b5db8a8a04a1218cd95a6910a4a",
+          "encoding": "xz"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.xz",
+          "sha256": "6889b0eb9a5d17fc07dfd7099f65bcff242d0d46e904a030923f9238531229cc",
+          "stored_sha256": "30e6207711b90662583505b480aea3f39d8651cc1800bee34ccbea677cae8e31",
+          "encoding": "xz"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.xz",
+          "sha256": "d8c349e07ebb1e2fcec836a4c2d5e1b0bc02bd7f1c52e341195a7589e69dc78b",
+          "stored_sha256": "5fcad6c7ee159d36ce3d6b5eaa519d4bef952a06e9594821b3bcbb322dbf2020",
+          "encoding": "xz"
+        }
+      }
+    },
+    {
+      "plant": "reference-2d",
+      "world": "curve",
+      "seed": 7,
+      "mode": "handoff",
+      "scenario": "frozen/007.json",
+      "sha256": "0a8fec1c3b714e7578f43b3f6ab9cfe64ff035b739acc7b9bdf0383f34cbb897",
+      "source": "scenarios/gnss-delay-curve.json",
+      "source_sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24",
+      "passed": true,
+      "recordings": "episodes/reference-2d/curve-handoff-seed-7",
+      "run_exit_code": 1,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "Post-reset map-only curve handoff",
+        "seed": 7,
+        "simulated_seconds": 28.1,
+        "steps": 563,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.2393837964197427,
+        "localization_rmse": 1.1230661594702451,
+        "localization_max_error": 3.187010890284562,
+        "final_speed": 0.10432242255648376,
+        "progress": 119.65031627796952,
+        "emergency_steps": 87,
+        "avoidance_steps": 0,
+        "max_tracks": 10,
+        "passed": false,
+        "failures": [
+          "localization max error 3.187 m exceeds 1 m"
+        ]
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 563,
+        "verified": true
+      },
+      "oracle": {
+        "passed": true,
+        "prefix": {
+          "passed": true,
+          "verified_ticks": 163,
+          "maximum_pose_difference": 7.105427357601002e-15,
+          "accepted_map_measurements": 82,
+          "replayed_map_corrections": 80,
+          "compensated_fixes": 40,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 40,
+          "rejected_fixes": 0
+        },
+        "post_epoch": {
+          "passed": true,
+          "verified_ticks": 321,
+          "maximum_pose_difference": 1.4210854715202004e-14,
+          "accepted_map_measurements": 160,
+          "replayed_map_corrections": 120,
+          "compensated_fixes": 60,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 80,
+          "accepted_fixes": 60,
+          "rejected_fixes": 0
+        },
+        "reset_stamp": 12.100000000000001,
+        "searches": 3
+      },
+      "global_rmse_m": 1.123066159470245,
+      "global_maximum_error_m": 3.187010890284562,
+      "valid_epoch_rmse_m": 0.007086490059406268,
+      "valid_epoch_maximum_error_m": 0.015022390109656178,
+      "valid_epoch_maximum_yaw_rad": 0.0007139836916052467,
+      "invalid_pose_ticks": 79,
+      "source_accuracy_failures_retained": [
+        "localization max error 3.187 m exceeds 1 m"
+      ],
+      "expected_run_exit_code": 1,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 2.2393837964197427,
+        "contact_intervals": 0
+      },
+      "map_only_window_distance_m": 13.931258337264675,
+      "first_actual_gnss_acceptance_s": 16.2,
+      "first_post_support_brake_s": null,
+      "failed_gates": [],
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.xz",
+          "sha256": "98c561502d8b312a386139515ec7367a7a1e465e3d10677d316a49bee0aac696",
+          "stored_sha256": "ab4796727b3c7a589139c75b6e0beb15023b08f2da33825114f23ad5949309cc",
+          "encoding": "xz"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.xz",
+          "sha256": "c945a840d036cf5d2e4b0566c771a8e08fb8821b0f0dc0a4c3094b1155c9b083",
+          "stored_sha256": "eb77b1241f5cd89b4da0021a46c29a7b896a3b8474a80ac4a6347b96a8be60fb",
+          "encoding": "xz"
+        },
+        "run/run.json": {
+          "path": "run/run.json.xz",
+          "sha256": "ef8cad527452ec0c394bb8c9a261a6b434c70b515d70b01d0ec3b2f52558a581",
+          "stored_sha256": "eed760f18b223c240f0f5b251fa13576628495836c5915c78d5ff16d11b996a0",
+          "encoding": "xz"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.xz",
+          "sha256": "890b31e2f7a3a52703daacc7ec7cd57de72fed19f64dbf6a65b7a8d6f67b2944",
+          "stored_sha256": "67efa82560f39c68ecac6d23630dc2de67ade375a12901f3d485ea597776f095",
+          "encoding": "xz"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.xz",
+          "sha256": "c83bf66a7bd554d03de0f73fa3c4823fb6e0fcebdabdc81e69d956a08b030055",
+          "stored_sha256": "8962b26c88ad498450ec89bf1fcc350134cde433fb23d4845d47c9c9c5c6edb2",
+          "encoding": "xz"
+        }
+      }
+    },
+    {
+      "plant": "reference-2d",
+      "world": "curve",
+      "seed": 42,
+      "mode": "handoff",
+      "scenario": "frozen/008.json",
+      "sha256": "0a8fec1c3b714e7578f43b3f6ab9cfe64ff035b739acc7b9bdf0383f34cbb897",
+      "source": "scenarios/gnss-delay-curve.json",
+      "source_sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24",
+      "passed": true,
+      "recordings": "episodes/reference-2d/curve-handoff-seed-42",
+      "run_exit_code": 1,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "Post-reset map-only curve handoff",
+        "seed": 42,
+        "simulated_seconds": 28.150000000000002,
+        "steps": 564,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.2424112809304786,
+        "localization_rmse": 1.1165083226786074,
+        "localization_max_error": 3.1712712624860915,
+        "final_speed": 0.10112657439796131,
+        "progress": 119.68499076180619,
+        "emergency_steps": 88,
+        "avoidance_steps": 0,
+        "max_tracks": 10,
+        "passed": false,
+        "failures": [
+          "localization max error 3.171 m exceeds 1 m"
+        ]
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 564,
+        "verified": true
+      },
+      "oracle": {
+        "passed": true,
+        "prefix": {
+          "passed": true,
+          "verified_ticks": 163,
+          "maximum_pose_difference": 7.105427357601002e-15,
+          "accepted_map_measurements": 82,
+          "replayed_map_corrections": 80,
+          "compensated_fixes": 40,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 40,
+          "rejected_fixes": 0
+        },
+        "post_epoch": {
+          "passed": true,
+          "verified_ticks": 322,
+          "maximum_pose_difference": 1.4210854715202004e-14,
+          "accepted_map_measurements": 160,
+          "replayed_map_corrections": 120,
+          "compensated_fixes": 60,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 80,
+          "accepted_fixes": 60,
+          "rejected_fixes": 0
+        },
+        "reset_stamp": 12.100000000000001,
+        "searches": 3
+      },
+      "global_rmse_m": 1.1165083226786077,
+      "global_maximum_error_m": 3.1712712624860915,
+      "valid_epoch_rmse_m": 0.00723248603313313,
+      "valid_epoch_maximum_error_m": 0.020966237996657245,
+      "valid_epoch_maximum_yaw_rad": 0.0015360177087804239,
+      "invalid_pose_ticks": 79,
+      "source_accuracy_failures_retained": [
+        "localization max error 3.171 m exceeds 1 m"
+      ],
+      "expected_run_exit_code": 1,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 2.2424112809304786,
+        "contact_intervals": 0
+      },
+      "map_only_window_distance_m": 13.932495183920064,
+      "first_actual_gnss_acceptance_s": 16.2,
+      "first_post_support_brake_s": null,
+      "failed_gates": [],
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.xz",
+          "sha256": "4bfda9e816b8e9011e2adf5e64fcc9c9642187b0530be78524b28db09a5429fb",
+          "stored_sha256": "ea890d1bb901208982cbcba583c9c7adf80a95edea6130d51261b58983c1b498",
+          "encoding": "xz"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.xz",
+          "sha256": "abeedbdc14ce70a133212a7e77811e505d1100ac00ed0d7d5215f6f90af04174",
+          "stored_sha256": "f84fda7c0f5c1a6267e96467c5047b15ac60a0085f8186d68c7cce4687027fd1",
+          "encoding": "xz"
+        },
+        "run/run.json": {
+          "path": "run/run.json.xz",
+          "sha256": "129f87462b6e6bb1ce2b47c832dde126ca495ba2c673db6dfb12e034cf0a3814",
+          "stored_sha256": "9696ed9107a30e571daee8085fa284c16b4b6820e14a49154316d41d86d64a3d",
+          "encoding": "xz"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.xz",
+          "sha256": "741b5d7a13c1c313e71f67557300ad1b6aff16e4e8b18f66683e9629fc2e81f7",
+          "stored_sha256": "db2b2067b0fb9bd21a41e45b9f1fac6ed4ad1074fd3b61005fba7b4d61d4e48b",
+          "encoding": "xz"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.xz",
+          "sha256": "0e3798e66e0326f12ad5f95bf8919055d4eb11870255b3331f1e22753085008e",
+          "stored_sha256": "f285156c851b64f3299b25c54a6ba392174a44f498f31480a02c8235ed674c16",
+          "encoding": "xz"
+        }
+      }
+    },
+    {
+      "plant": "reference-2d",
+      "world": "curve",
+      "seed": 7,
+      "mode": "default",
+      "scenario": "frozen/009.json",
+      "sha256": "cb7045c1e7c8e547906fe6c178265d0e70bea7305464f7063c919e1c8131bc07",
+      "source": "scenarios/gnss-delay-curve.json",
+      "source_sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24",
+      "passed": true,
+      "recordings": "episodes/reference-2d/curve-default-seed-7",
+      "run_exit_code": 1,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "Post-reset map-only curve default",
+        "seed": 7,
+        "simulated_seconds": 32.15,
+        "steps": 644,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.2436841920419672,
+        "localization_rmse": 1.0500703095941386,
+        "localization_max_error": 3.187010890284562,
+        "final_speed": 0.16514840065055442,
+        "progress": 119.68256410902283,
+        "emergency_steps": 170,
+        "avoidance_steps": 0,
+        "max_tracks": 10,
+        "passed": false,
+        "failures": [
+          "localization max error 3.187 m exceeds 1 m"
+        ]
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 644,
+        "verified": true
+      },
+      "oracle": {
+        "passed": true,
+        "prefix": {
+          "passed": true,
+          "verified_ticks": 163,
+          "maximum_pose_difference": 7.105427357601002e-15,
+          "accepted_map_measurements": 82,
+          "replayed_map_corrections": 80,
+          "compensated_fixes": 40,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 40,
+          "rejected_fixes": 0
+        },
+        "post_epoch": {
+          "passed": true,
+          "verified_ticks": 402,
+          "maximum_pose_difference": 1.4210854715202004e-14,
+          "accepted_map_measurements": 200,
+          "replayed_map_corrections": 160,
+          "compensated_fixes": 80,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 80,
+          "rejected_fixes": 0
+        },
+        "reset_stamp": 12.100000000000001,
+        "searches": 3
+      },
+      "global_rmse_m": 1.0500703095941384,
+      "global_maximum_error_m": 3.187010890284562,
+      "valid_epoch_rmse_m": 0.007299845289595292,
+      "valid_epoch_maximum_error_m": 0.01707670521137983,
+      "valid_epoch_maximum_yaw_rad": 0.0007139836916052467,
+      "invalid_pose_ticks": 79,
+      "source_accuracy_failures_retained": [
+        "localization max error 3.187 m exceeds 1 m"
+      ],
+      "expected_run_exit_code": 1,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 2.2436841920419672,
+        "contact_intervals": 0
+      },
+      "map_only_window_distance_m": 0.0,
+      "first_actual_gnss_acceptance_s": 16.2,
+      "first_post_support_brake_s": null,
+      "failed_gates": [],
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.xz",
+          "sha256": "32c47fd5f20b817caa0821655fa4c4a2297e883d1f221b404c6f31d5b5abd33e",
+          "stored_sha256": "2763b50006041dfe3b8d5d44ccd63302adde48e563bbcdabddd65b6990aac4d3",
+          "encoding": "xz"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.xz",
+          "sha256": "8801d50d6fbbd383fb1c3a5aba319b540d6a192515b04f6f323369f28f56f0e6",
+          "stored_sha256": "f54fef4a704fe9c2a0c272ca0bd9661b78f203aa54bbf2a6c902cd430cbb3228",
+          "encoding": "xz"
+        },
+        "run/run.json": {
+          "path": "run/run.json.xz",
+          "sha256": "6326fd25913557ce7bb3e2b4e5f424089ae3d1c974d029df6c985788b97d5934",
+          "stored_sha256": "70262a1542fb3b8844b4de7a9060e4bf416aa3b5e5011c78c3280a760b6fd8e3",
+          "encoding": "xz"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.xz",
+          "sha256": "0b69bfd60e147ad8961450414013c6fe5a50b9546f512e350444404691942a62",
+          "stored_sha256": "c27bdeee72cffd82e5dc294e567ac099257312064f5b389b52e7ee6210acbd96",
+          "encoding": "xz"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.xz",
+          "sha256": "dd36095299f6839e1fb0e5038e08abc68f4cc51c45292911c15e39d1144b7eea",
+          "stored_sha256": "3773400e00ba6ee53f32aa0ca7c3a005fa5fd3dd68d9bb8a2b2d060518a4bf39",
+          "encoding": "xz"
+        }
+      }
+    },
+    {
+      "plant": "reference-2d",
+      "world": "curve",
+      "seed": 7,
+      "mode": "expiry",
+      "scenario": "frozen/010.json",
+      "sha256": "a99a80468a926131bc459343138e1c78b927c1658f9941e333c328fe62aad83d",
+      "source": "scenarios/gnss-delay-curve.json",
+      "source_sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24",
+      "passed": true,
+      "recordings": "episodes/reference-2d/curve-expiry-seed-7",
+      "run_exit_code": 1,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "Post-reset map-only curve expiry",
+        "seed": 7,
+        "simulated_seconds": 45.0,
+        "steps": 901,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.498686365516618,
+        "localization_rmse": 0.8877556423523988,
+        "localization_max_error": 3.187010890284562,
+        "final_speed": 0.0,
+        "progress": 65.42259996309556,
+        "emergency_steps": 643,
+        "avoidance_steps": 0,
+        "max_tracks": 10,
+        "passed": false,
+        "failures": [
+          "localization max error 3.187 m exceeds 1 m"
+        ]
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 901,
+        "verified": true
+      },
+      "oracle": {
+        "passed": true,
+        "prefix": {
+          "passed": true,
+          "verified_ticks": 163,
+          "maximum_pose_difference": 7.105427357601002e-15,
+          "accepted_map_measurements": 82,
+          "replayed_map_corrections": 80,
+          "compensated_fixes": 40,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 40,
+          "rejected_fixes": 0
+        },
+        "post_epoch": {
+          "passed": true,
+          "verified_ticks": 659,
+          "maximum_pose_difference": 7.105427357601002e-15,
+          "accepted_map_measurements": 329,
+          "replayed_map_corrections": 0,
+          "compensated_fixes": 0,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 99,
+          "accepted_fixes": 0,
+          "rejected_fixes": 0
+        },
+        "reset_stamp": 12.100000000000001,
+        "searches": 3
+      },
+      "global_rmse_m": 0.8877556423523977,
+      "global_maximum_error_m": 3.187010890284562,
+      "valid_epoch_rmse_m": 0.003852551736736129,
+      "valid_epoch_maximum_error_m": 0.0148917921245247,
+      "valid_epoch_maximum_yaw_rad": 0.0007139836916052467,
+      "invalid_pose_ticks": 79,
+      "source_accuracy_failures_retained": [
+        "localization max error 3.187 m exceeds 1 m"
+      ],
+      "expected_run_exit_code": 1,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 2.498686365516618,
+        "contact_intervals": 0
+      },
+      "map_only_window_distance_m": 13.931258337264675,
+      "first_actual_gnss_acceptance_s": null,
+      "first_post_support_brake_s": 17.150000000000002,
+      "failed_gates": [],
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.xz",
+          "sha256": "1936deefd0480bab5ca25908758b45bde4c792122c8b7aac67850ed683df552f",
+          "stored_sha256": "add748f7357ee73c85db9bdc504ca92fc6d489e48b31372f29af6c8de00977c7",
+          "encoding": "xz"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.xz",
+          "sha256": "74fcb742c4dd50c63a49f6a24d1b74c54696967f03021e1f8696155e76d0c554",
+          "stored_sha256": "dcf84ad9e98fba502cc83fba0af1da132b351a0388f48d60e9a9eac977a8f1d8",
+          "encoding": "xz"
+        },
+        "run/run.json": {
+          "path": "run/run.json.xz",
+          "sha256": "51e961cadd59ec3a0fd50246e6eb103e8c81150293b2433757ce6f7aa09ea94e",
+          "stored_sha256": "8408f495534f6585255b8d37fe9f088e11e8b8b123bf87f70429fd6bb33add63",
+          "encoding": "xz"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.xz",
+          "sha256": "aeff30f1cf19bea04203825fbfc56f93760dde97d84f1ae8ba38146b0f235432",
+          "stored_sha256": "23e071afcc4e40b6d0c2e5c74359c9e414374a3b9da28b496fd53fdee7b54283",
+          "encoding": "xz"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.xz",
+          "sha256": "f6695b9e857c4ef7ccd4a2a1cd0e4b1c651669f73a47a4da3d33c4bfd78745ab",
+          "stored_sha256": "b8949345a762aba923849dbf0ada4e89ff09f48f4ee76c4eec8ecb653d242f46",
+          "encoding": "xz"
+        }
+      }
+    },
+    {
+      "plant": "reference-2d",
+      "world": "curve",
+      "seed": 7,
+      "mode": "lidar-loss",
+      "scenario": "frozen/011.json",
+      "sha256": "ae072a7d9935c1c6a950bebb948128f10744938f8e86d9b60a5f4d799d148aa9",
+      "source": "scenarios/gnss-delay-curve.json",
+      "source_sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24",
+      "passed": true,
+      "recordings": "episodes/reference-2d/curve-lidar-loss-seed-7",
+      "run_exit_code": 1,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "Post-reset map-only curve lidar-loss",
+        "seed": 7,
+        "simulated_seconds": 45.0,
+        "steps": 901,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.5085806527347936,
+        "localization_rmse": 0.8894094041516016,
+        "localization_max_error": 3.187010890284562,
+        "final_speed": 0.0,
+        "progress": 46.795939525606826,
+        "emergency_steps": 703,
+        "avoidance_steps": 0,
+        "max_tracks": 9,
+        "passed": false,
+        "failures": [
+          "localization max error 3.187 m exceeds 1 m"
+        ]
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 901,
+        "verified": true
+      },
+      "oracle": {
+        "passed": true,
+        "prefix": {
+          "passed": true,
+          "verified_ticks": 163,
+          "maximum_pose_difference": 7.105427357601002e-15,
+          "accepted_map_measurements": 82,
+          "replayed_map_corrections": 80,
+          "compensated_fixes": 40,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 40,
+          "rejected_fixes": 0
+        },
+        "post_epoch": {
+          "passed": true,
+          "verified_ticks": 659,
+          "maximum_pose_difference": 2.392183673372017e-15,
+          "accepted_map_measurements": 18,
+          "replayed_map_corrections": 0,
+          "compensated_fixes": 0,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 39,
+          "accepted_fixes": 0,
+          "rejected_fixes": 0
+        },
+        "reset_stamp": 12.100000000000001,
+        "searches": 3
+      },
+      "global_rmse_m": 0.889409404151602,
+      "global_maximum_error_m": 3.187010890284562,
+      "valid_epoch_rmse_m": 0.05688856821702925,
+      "valid_epoch_maximum_error_m": 0.11393888393365405,
+      "valid_epoch_maximum_yaw_rad": 0.0007139836916052467,
+      "invalid_pose_ticks": 79,
+      "source_accuracy_failures_retained": [
+        "localization max error 3.187 m exceeds 1 m"
+      ],
+      "expected_run_exit_code": 1,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 2.5085806527347936,
+        "contact_intervals": 0
+      },
+      "map_only_window_distance_m": 5.054999999999991,
+      "first_actual_gnss_acceptance_s": null,
+      "first_post_support_brake_s": 14.15,
+      "failed_gates": [],
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.xz",
+          "sha256": "81ed278db15610a8e4cc8a81619eb73f5242eb53f5b990c2edd7921b427ca579",
+          "stored_sha256": "bea7cf58d8a87a9b8be91474c55924bfed640405ddb55f6f80bdc74f30413aa3",
+          "encoding": "xz"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.xz",
+          "sha256": "74fcb742c4dd50c63a49f6a24d1b74c54696967f03021e1f8696155e76d0c554",
+          "stored_sha256": "dcf84ad9e98fba502cc83fba0af1da132b351a0388f48d60e9a9eac977a8f1d8",
+          "encoding": "xz"
+        },
+        "run/run.json": {
+          "path": "run/run.json.xz",
+          "sha256": "5698aca7ed56cda8e059ef994d8ce9290cfbb825c529900c7512e30fa7bc9dbe",
+          "stored_sha256": "6ac87c7304d5e558d90ad1374bfa0e425231a55d247f10a69a745fcedc1b7b09",
+          "encoding": "xz"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.xz",
+          "sha256": "e43bc02edef88f54ac7e29135fedc4e9e0f2323427e51aee164421c2b036b58d",
+          "stored_sha256": "13b74ce52a060b348b3b15b9565cd7832ed29db0d1bf70f27e132d0e4cd8fe38",
+          "encoding": "xz"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.xz",
+          "sha256": "da2b0a4d825c0524b1e7098ba327531d33285c1d918dd90def63bc681aa06874",
+          "stored_sha256": "e346cdb518e2b601be3e668637ad4bb20a66b116c1c625e06a9be85bf38c6c34",
+          "encoding": "xz"
+        }
+      }
+    },
+    {
+      "plant": "rne-dynamic",
+      "world": "straight",
+      "seed": 1,
+      "mode": "handoff",
+      "scenario": "frozen/012.json",
+      "sha256": "de898de4fba9895876b1e65a15c7012b8c89c94e7e2eae31b8c91afdeede5786",
+      "source": "scenarios/gnss-delay-straight.json",
+      "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19",
+      "passed": true,
+      "recordings": "episodes/rne-dynamic/straight-handoff-seed-1",
+      "run_exit_code": 1,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "Post-reset map-only straight handoff",
+        "seed": 1,
+        "simulated_seconds": 28.150000000000002,
+        "steps": 564,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.249914307735396,
+        "localization_rmse": 1.15159443713087,
+        "localization_max_error": 3.2749986129396715,
+        "final_speed": 0.10595470456484862,
+        "progress": 119.00531212900813,
+        "emergency_steps": 93,
+        "avoidance_steps": 0,
+        "max_tracks": 10,
+        "passed": false,
+        "failures": [
+          "localization max error 3.275 m exceeds 1 m"
+        ]
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 564,
+        "verified": true
+      },
+      "oracle": {
+        "passed": true,
+        "prefix": {
+          "passed": true,
+          "verified_ticks": 163,
+          "maximum_pose_difference": 3.552713678800501e-15,
+          "accepted_map_measurements": 82,
+          "replayed_map_corrections": 156,
+          "compensated_fixes": 39,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 39,
+          "rejected_fixes": 0
+        },
+        "post_epoch": {
+          "passed": true,
+          "verified_ticks": 322,
+          "maximum_pose_difference": 1.4210854715202004e-14,
+          "accepted_map_measurements": 160,
+          "replayed_map_corrections": 236,
+          "compensated_fixes": 59,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 84,
+          "accepted_fixes": 59,
+          "rejected_fixes": 0
+        },
+        "reset_stamp": 12.100000000000001,
+        "searches": 3
+      },
+      "global_rmse_m": 1.1515944371308704,
+      "global_maximum_error_m": 3.2749986129396715,
+      "valid_epoch_rmse_m": 0.007381497080063969,
+      "valid_epoch_maximum_error_m": 0.019602049266929822,
+      "valid_epoch_maximum_yaw_rad": 0.0006367157891448278,
+      "invalid_pose_ticks": 79,
+      "source_accuracy_failures_retained": [
+        "localization max error 3.275 m exceeds 1 m"
+      ],
+      "expected_run_exit_code": 1,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 2.249914307735396,
+        "contact_intervals": 0
+      },
+      "map_only_window_distance_m": 13.802316703533162,
+      "first_actual_gnss_acceptance_s": 16.400000000000002,
+      "first_post_support_brake_s": null,
+      "failed_gates": [],
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.xz",
+          "sha256": "b91ca0c00792e016fb5da51522a52146eb14f02999b337352f58e17bf3ac4446",
+          "stored_sha256": "55b4f6eb1391f6dcf7a782fc3c223a4c17839161130ae9642cec5dfc40564652",
+          "encoding": "xz"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.xz",
+          "sha256": "023aabb4be8bfab066c932e9ac5207d7d2436ff5067a3754a26a9343ac8181a2",
+          "stored_sha256": "fcab6eddebad18a276a5f5cf67617f92de343c3e820a38fe2d7645620b12d323",
+          "encoding": "xz"
+        },
+        "run/run.json": {
+          "path": "run/run.json.xz",
+          "sha256": "42e1cab36af0b6429a120c5900d89558f774640676d13ff62a6129ba3676cbc4",
+          "stored_sha256": "457e7558d01c1908f77ff480ea739c647d75ac2e43d5934b86e4b34a1d7df149",
+          "encoding": "xz"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.xz",
+          "sha256": "06b4fea9dacf9421772db949bdaff351911c4196b4b6eed05ec65066dd008493",
+          "stored_sha256": "7df68de91530372003e935156ac3cf5d88b427cc7c0f68ac4f9811d610f77d72",
+          "encoding": "xz"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.xz",
+          "sha256": "afe437f7210c67427d22608adeeafb6da6de8b235a9cc5a6d18dc1eba1c34769",
+          "stored_sha256": "f7c9f65440bc0604c09e2e49bc55236cb4cfee741ad3daf8cc186bbcc5c65ddf",
+          "encoding": "xz"
+        }
+      }
+    },
+    {
+      "plant": "rne-dynamic",
+      "world": "straight",
+      "seed": 7,
+      "mode": "handoff",
+      "scenario": "frozen/013.json",
+      "sha256": "de898de4fba9895876b1e65a15c7012b8c89c94e7e2eae31b8c91afdeede5786",
+      "source": "scenarios/gnss-delay-straight.json",
+      "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19",
+      "passed": true,
+      "recordings": "episodes/rne-dynamic/straight-handoff-seed-7",
+      "run_exit_code": 1,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "Post-reset map-only straight handoff",
+        "seed": 7,
+        "simulated_seconds": 28.200000000000003,
+        "steps": 565,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.25120964647102,
+        "localization_rmse": 1.1447851918123597,
+        "localization_max_error": 3.2584838887058805,
+        "final_speed": 0.18395142211767648,
+        "progress": 119.04145936417669,
+        "emergency_steps": 90,
+        "avoidance_steps": 0,
+        "max_tracks": 10,
+        "passed": false,
+        "failures": [
+          "localization max error 3.258 m exceeds 1 m"
+        ]
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 565,
+        "verified": true
+      },
+      "oracle": {
+        "passed": true,
+        "prefix": {
+          "passed": true,
+          "verified_ticks": 163,
+          "maximum_pose_difference": 1.7763568394002505e-15,
+          "accepted_map_measurements": 82,
+          "replayed_map_corrections": 156,
+          "compensated_fixes": 39,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 39,
+          "rejected_fixes": 0
+        },
+        "post_epoch": {
+          "passed": true,
+          "verified_ticks": 323,
+          "maximum_pose_difference": 1.4210854715202004e-14,
+          "accepted_map_measurements": 161,
+          "replayed_map_corrections": 240,
+          "compensated_fixes": 60,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 84,
+          "accepted_fixes": 60,
+          "rejected_fixes": 0
+        },
+        "reset_stamp": 12.100000000000001,
+        "searches": 3
+      },
+      "global_rmse_m": 1.1447851918123597,
+      "global_maximum_error_m": 3.2584838887058805,
+      "valid_epoch_rmse_m": 0.007558602799682367,
+      "valid_epoch_maximum_error_m": 0.01845124764176593,
+      "valid_epoch_maximum_yaw_rad": 0.0005987374876601013,
+      "invalid_pose_ticks": 79,
+      "source_accuracy_failures_retained": [
+        "localization max error 3.258 m exceeds 1 m"
+      ],
+      "expected_run_exit_code": 1,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 2.25120964647102,
+        "contact_intervals": 0
+      },
+      "map_only_window_distance_m": 13.799903191622173,
+      "first_actual_gnss_acceptance_s": 16.400000000000002,
+      "first_post_support_brake_s": null,
+      "failed_gates": [],
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.xz",
+          "sha256": "3c568aaa91ece7fb1c25d7f287b489a7cb426bc4ae1cf919d9a5ac69259a8cda",
+          "stored_sha256": "fb76a39e2e19d4810250f513a3eb0fb520271ed9b0b123694706518ddb829025",
+          "encoding": "xz"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.xz",
+          "sha256": "4562195e567f2ad4b02b04085733024037d1b87d260c2e2d92acae7c95b83cc6",
+          "stored_sha256": "1875cfe511f9ef6e6c789c9693450c864a407acf1e681037ba630f0dd7184fb2",
+          "encoding": "xz"
+        },
+        "run/run.json": {
+          "path": "run/run.json.xz",
+          "sha256": "52bf30061cec8af04b589dee5858bd9288b1384278a2e8cbb7a8a91d9d7f04fa",
+          "stored_sha256": "908275d7a41e1e963c30a27d16c38b062719e06069735cb3e18192dec19a3277",
+          "encoding": "xz"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.xz",
+          "sha256": "b46a429495bba00a71b390b2a6fe39f7c53a05197329b1b6b3ecc16688d69c8f",
+          "stored_sha256": "eb3a3cb69b0fbe8a732771e545da2b122f4ae14520bd76030cb0a1fb5592bbbd",
+          "encoding": "xz"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.xz",
+          "sha256": "325fefe21a97994b5cc2a90843fadcb498e134cf09fa76bb636b1eff1f8fa771",
+          "stored_sha256": "27dafed5748ccb16d40505499e496e2bd3c49d2d9f54a3e37c9088b4da003af4",
+          "encoding": "xz"
+        }
+      }
+    },
+    {
+      "plant": "rne-dynamic",
+      "world": "straight",
+      "seed": 42,
+      "mode": "handoff",
+      "scenario": "frozen/014.json",
+      "sha256": "de898de4fba9895876b1e65a15c7012b8c89c94e7e2eae31b8c91afdeede5786",
+      "source": "scenarios/gnss-delay-straight.json",
+      "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19",
+      "passed": true,
+      "recordings": "episodes/rne-dynamic/straight-handoff-seed-42",
+      "run_exit_code": 1,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "Post-reset map-only straight handoff",
+        "seed": 42,
+        "simulated_seconds": 28.150000000000002,
+        "steps": 564,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.248403310717494,
+        "localization_rmse": 1.142394800313248,
+        "localization_max_error": 3.248141556961613,
+        "final_speed": 0.09752555328058637,
+        "progress": 118.99677559227945,
+        "emergency_steps": 90,
+        "avoidance_steps": 0,
+        "max_tracks": 10,
+        "passed": false,
+        "failures": [
+          "localization max error 3.248 m exceeds 1 m"
+        ]
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 564,
+        "verified": true
+      },
+      "oracle": {
+        "passed": true,
+        "prefix": {
+          "passed": true,
+          "verified_ticks": 163,
+          "maximum_pose_difference": 6.860831347488272e-16,
+          "accepted_map_measurements": 82,
+          "replayed_map_corrections": 156,
+          "compensated_fixes": 39,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 39,
+          "rejected_fixes": 0
+        },
+        "post_epoch": {
+          "passed": true,
+          "verified_ticks": 322,
+          "maximum_pose_difference": 1.4210854715202004e-14,
+          "accepted_map_measurements": 160,
+          "replayed_map_corrections": 236,
+          "compensated_fixes": 59,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 84,
+          "accepted_fixes": 59,
+          "rejected_fixes": 0
+        },
+        "reset_stamp": 12.100000000000001,
+        "searches": 3
+      },
+      "global_rmse_m": 1.1423948003132463,
+      "global_maximum_error_m": 3.248141556961613,
+      "valid_epoch_rmse_m": 0.006968204846726368,
+      "valid_epoch_maximum_error_m": 0.015924950381548512,
+      "valid_epoch_maximum_yaw_rad": 0.0007784562397457999,
+      "invalid_pose_ticks": 79,
+      "source_accuracy_failures_retained": [
+        "localization max error 3.248 m exceeds 1 m"
+      ],
+      "expected_run_exit_code": 1,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 2.248403310717494,
+        "contact_intervals": 0
+      },
+      "map_only_window_distance_m": 13.798431283663486,
+      "first_actual_gnss_acceptance_s": 16.400000000000002,
+      "first_post_support_brake_s": null,
+      "failed_gates": [],
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.xz",
+          "sha256": "22ccecf7c4e4cb75acddb92eb7fe1f05ff45b2b473d2f5c3b11e4bd47867451a",
+          "stored_sha256": "6510bb997fe143d3251423c3ff96a55517ed9b9d14e21cd3016d249fa9814886",
+          "encoding": "xz"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.xz",
+          "sha256": "023aabb4be8bfab066c932e9ac5207d7d2436ff5067a3754a26a9343ac8181a2",
+          "stored_sha256": "fcab6eddebad18a276a5f5cf67617f92de343c3e820a38fe2d7645620b12d323",
+          "encoding": "xz"
+        },
+        "run/run.json": {
+          "path": "run/run.json.xz",
+          "sha256": "6b4afc23674032c23efbebeb664802ffb254eb91cd2fb40ebda34bbaff575d2f",
+          "stored_sha256": "7bbeb6848b5faa20a6f5df0fbe1a521b74d465febe5545081bfa50d239a56da3",
+          "encoding": "xz"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.xz",
+          "sha256": "a35ae84dde6bf4a69d2129795885c8b550eafed0a6d0f11f25e3be0201245730",
+          "stored_sha256": "a519652dc4264c233368d704e9425ff45feb8d326348e00fe656748d36637e11",
+          "encoding": "xz"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.xz",
+          "sha256": "3a42ec8b4471949f0617b0934a6b0b957ea3f9006b5bc5983c2e58a5bb047e06",
+          "stored_sha256": "d461e9db0357d0d84a4ba3996357692bbe39e73c9cb8197665f48256cb096861",
+          "encoding": "xz"
+        }
+      }
+    },
+    {
+      "plant": "rne-dynamic",
+      "world": "straight",
+      "seed": 7,
+      "mode": "default",
+      "scenario": "frozen/015.json",
+      "sha256": "bf5b886519b0d9c5a5f68119fe942e6c7c681e40ace9b6376f7b1e283dad1be2",
+      "source": "scenarios/gnss-delay-straight.json",
+      "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19",
+      "passed": true,
+      "recordings": "episodes/rne-dynamic/straight-default-seed-7",
+      "run_exit_code": 1,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "Post-reset map-only straight default",
+        "seed": 7,
+        "simulated_seconds": 32.45,
+        "steps": 650,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.2513707412782953,
+        "localization_rmse": 1.067312271995662,
+        "localization_max_error": 3.2584838887058805,
+        "final_speed": 0.0808260118075227,
+        "progress": 119.03943587419806,
+        "emergency_steps": 174,
+        "avoidance_steps": 0,
+        "max_tracks": 10,
+        "passed": false,
+        "failures": [
+          "localization max error 3.258 m exceeds 1 m"
+        ]
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 650,
+        "verified": true
+      },
+      "oracle": {
+        "passed": true,
+        "prefix": {
+          "passed": true,
+          "verified_ticks": 163,
+          "maximum_pose_difference": 1.7763568394002505e-15,
+          "accepted_map_measurements": 82,
+          "replayed_map_corrections": 156,
+          "compensated_fixes": 39,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 39,
+          "rejected_fixes": 0
+        },
+        "post_epoch": {
+          "passed": true,
+          "verified_ticks": 408,
+          "maximum_pose_difference": 1.4210854715202004e-14,
+          "accepted_map_measurements": 203,
+          "replayed_map_corrections": 324,
+          "compensated_fixes": 81,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 81,
+          "rejected_fixes": 0
+        },
+        "reset_stamp": 12.100000000000001,
+        "searches": 3
+      },
+      "global_rmse_m": 1.0673122719956614,
+      "global_maximum_error_m": 3.2584838887058805,
+      "valid_epoch_rmse_m": 0.006953782331868544,
+      "valid_epoch_maximum_error_m": 0.017537140427129744,
+      "valid_epoch_maximum_yaw_rad": 0.0005987374876601013,
+      "invalid_pose_ticks": 79,
+      "source_accuracy_failures_retained": [
+        "localization max error 3.258 m exceeds 1 m"
+      ],
+      "expected_run_exit_code": 1,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 2.2513707412782953,
+        "contact_intervals": 0
+      },
+      "map_only_window_distance_m": 0.0,
+      "first_actual_gnss_acceptance_s": 16.400000000000002,
+      "first_post_support_brake_s": null,
+      "failed_gates": [],
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.xz",
+          "sha256": "52140b5b7a5298887cabfb658f609c66b45d1ad7f897b0308ec0e2e145975d3b",
+          "stored_sha256": "8d8ac6e400d1552f492a84376a67189c79a0ede78003805deaa559c215a2e0f6",
+          "encoding": "xz"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.xz",
+          "sha256": "c2de5167efab9bdaee95a9f905610188a1018f433b0bc25305b32ba12fe7030a",
+          "stored_sha256": "97311f42635775a9c36a03b8daa00884c4b2a5186d9395e90296d62096d7d72f",
+          "encoding": "xz"
+        },
+        "run/run.json": {
+          "path": "run/run.json.xz",
+          "sha256": "39ccb6ba944131b9fbad787758daeb3dac69a766309ec8fb7ec159b04eb7e707",
+          "stored_sha256": "cfc581a212a00e143cdb9d1781852e40f72621c0dd1a12fa44ec78cbd2f1a8c8",
+          "encoding": "xz"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.xz",
+          "sha256": "bbe6ff15145735e5940009c43e212f7d43b9474441734e8621c6703437950216",
+          "stored_sha256": "9634b04baadb72c923ebd6b5fa6140d4b57e3d602a1e854ea3f497fb851e61f3",
+          "encoding": "xz"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.xz",
+          "sha256": "c6d1a7fdad80b52274dd47c4b35512adeb510b2064b16ca4e406add7656a5e94",
+          "stored_sha256": "b2380334e13fc1d638b63c0da3caf26f5562948f8a44af6f8ca7f8765d2a3466",
+          "encoding": "xz"
+        }
+      }
+    },
+    {
+      "plant": "rne-dynamic",
+      "world": "straight",
+      "seed": 7,
+      "mode": "expiry",
+      "scenario": "frozen/016.json",
+      "sha256": "8de46c7fc1113660f13fbd3c12a4dd64a0b09fe5a2747c5c4ceffba4701c35b0",
+      "source": "scenarios/gnss-delay-straight.json",
+      "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19",
+      "passed": true,
+      "recordings": "episodes/rne-dynamic/straight-expiry-seed-7",
+      "run_exit_code": 1,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "Post-reset map-only straight expiry",
+        "seed": 7,
+        "simulated_seconds": 45.0,
+        "steps": 901,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.451090361608414,
+        "localization_rmse": 0.9065412739270151,
+        "localization_max_error": 3.2584838887058805,
+        "final_speed": 0.0,
+        "progress": 64.16754617968864,
+        "emergency_steps": 647,
+        "avoidance_steps": 0,
+        "max_tracks": 10,
+        "passed": false,
+        "failures": [
+          "localization max error 3.258 m exceeds 1 m"
+        ]
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 901,
+        "verified": true
+      },
+      "oracle": {
+        "passed": true,
+        "prefix": {
+          "passed": true,
+          "verified_ticks": 163,
+          "maximum_pose_difference": 1.7763568394002505e-15,
+          "accepted_map_measurements": 82,
+          "replayed_map_corrections": 156,
+          "compensated_fixes": 39,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 39,
+          "rejected_fixes": 0
+        },
+        "post_epoch": {
+          "passed": true,
+          "verified_ticks": 659,
+          "maximum_pose_difference": 7.684689473305695e-16,
+          "accepted_map_measurements": 329,
+          "replayed_map_corrections": 0,
+          "compensated_fixes": 0,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 99,
+          "accepted_fixes": 0,
+          "rejected_fixes": 0
+        },
+        "reset_stamp": 12.100000000000001,
+        "searches": 3
+      },
+      "global_rmse_m": 0.9065412739270154,
+      "global_maximum_error_m": 3.2584838887058805,
+      "valid_epoch_rmse_m": 0.006406274271525387,
+      "valid_epoch_maximum_error_m": 0.03602992684325795,
+      "valid_epoch_maximum_yaw_rad": 0.0005987374876601013,
+      "invalid_pose_ticks": 79,
+      "source_accuracy_failures_retained": [
+        "localization max error 3.258 m exceeds 1 m"
+      ],
+      "expected_run_exit_code": 1,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 2.451090361608414,
+        "contact_intervals": 0
+      },
+      "map_only_window_distance_m": 13.799903191622173,
+      "first_actual_gnss_acceptance_s": null,
+      "first_post_support_brake_s": 17.150000000000002,
+      "failed_gates": [],
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.xz",
+          "sha256": "6d7239dd470dc69418c0f518cdbe0103ee7e83757f31cb41608f11b41b50f8b1",
+          "stored_sha256": "38e8fc7aeae96aa771ad2eb52a5dae63381201f33ff1efba9ba3bcc046a84645",
+          "encoding": "xz"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.xz",
+          "sha256": "9427e36a3be32726b28e4a0e6075a4b70247a46de696ce374c49495af1d7b0e5",
+          "stored_sha256": "403404f4dc516921f18f1ef39214db67ad3afd315bf22c0f864602e13f8dc5e3",
+          "encoding": "xz"
+        },
+        "run/run.json": {
+          "path": "run/run.json.xz",
+          "sha256": "5e51e58d906d2d44a8982b2f91b0c1b6507ae1740d41b7dff30cd59eeda2ca49",
+          "stored_sha256": "d9df3ef8c240f78bbab02fbf9f29bc96d2c48dac9f11a76f6bdcb9e732629c00",
+          "encoding": "xz"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.xz",
+          "sha256": "ee9d75c81e8eccc114db73b0473095d480737a6e1124c66483047b36b810d2c7",
+          "stored_sha256": "e2b10a3f9d12432c59eb440a758b25574e832e918094048d3a9764bd3cdbd739",
+          "encoding": "xz"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.xz",
+          "sha256": "0aa37704c07c68686fd7f2045a76e5be01a913cd0d896dbd28e0ab76189de5a5",
+          "stored_sha256": "e1069b6cc8765b11176f53b7507b3c2f2dabf98e5e591d01bf91ec0a06b8a9e1",
+          "encoding": "xz"
+        }
+      }
+    },
+    {
+      "plant": "rne-dynamic",
+      "world": "straight",
+      "seed": 7,
+      "mode": "lidar-loss",
+      "scenario": "frozen/017.json",
+      "sha256": "358513acb252e7712f9906b1d560069a8e9dec8fdc51333c845d727eb07d7933",
+      "source": "scenarios/gnss-delay-straight.json",
+      "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19",
+      "passed": true,
+      "recordings": "episodes/rne-dynamic/straight-lidar-loss-seed-7",
+      "run_exit_code": 1,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "Post-reset map-only straight lidar-loss",
+        "seed": 7,
+        "simulated_seconds": 45.0,
+        "steps": 901,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.551313340325218,
+        "localization_rmse": 0.9070022593573676,
+        "localization_max_error": 3.2584838887058805,
+        "final_speed": 0.0,
+        "progress": 45.54402613360104,
+        "emergency_steps": 707,
+        "avoidance_steps": 0,
+        "max_tracks": 9,
+        "passed": false,
+        "failures": [
+          "localization max error 3.258 m exceeds 1 m"
+        ]
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 901,
+        "verified": true
+      },
+      "oracle": {
+        "passed": true,
+        "prefix": {
+          "passed": true,
+          "verified_ticks": 163,
+          "maximum_pose_difference": 1.7763568394002505e-15,
+          "accepted_map_measurements": 82,
+          "replayed_map_corrections": 156,
+          "compensated_fixes": 39,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 39,
+          "rejected_fixes": 0
+        },
+        "post_epoch": {
+          "passed": true,
+          "verified_ticks": 659,
+          "maximum_pose_difference": 6.428343100883804e-15,
+          "accepted_map_measurements": 18,
+          "replayed_map_corrections": 0,
+          "compensated_fixes": 0,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 39,
+          "accepted_fixes": 0,
+          "rejected_fixes": 0
+        },
+        "reset_stamp": 12.100000000000001,
+        "searches": 3
+      },
+      "global_rmse_m": 0.9070022593573681,
+      "global_maximum_error_m": 3.2584838887058805,
+      "valid_epoch_rmse_m": 0.03094195602812438,
+      "valid_epoch_maximum_error_m": 0.0663457355766864,
+      "valid_epoch_maximum_yaw_rad": 0.0008114826226207241,
+      "invalid_pose_ticks": 79,
+      "source_accuracy_failures_retained": [
+        "localization max error 3.258 m exceeds 1 m"
+      ],
+      "expected_run_exit_code": 1,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 2.551313340325218,
+        "contact_intervals": 0
+      },
+      "map_only_window_distance_m": 5.059500012459049,
+      "first_actual_gnss_acceptance_s": null,
+      "first_post_support_brake_s": 14.15,
+      "failed_gates": [],
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.xz",
+          "sha256": "5b2bc7f8d1f289b5fd719e2d78aeece7c3a56c465e447dcf99287a93a64d1b32",
+          "stored_sha256": "50a99b335a20894227699ac91e27db4d98d767a29e18963e70842251ba03da4f",
+          "encoding": "xz"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.xz",
+          "sha256": "9427e36a3be32726b28e4a0e6075a4b70247a46de696ce374c49495af1d7b0e5",
+          "stored_sha256": "403404f4dc516921f18f1ef39214db67ad3afd315bf22c0f864602e13f8dc5e3",
+          "encoding": "xz"
+        },
+        "run/run.json": {
+          "path": "run/run.json.xz",
+          "sha256": "1376fc357cac7244db29c876a9214187faf8fbbf05601433c90141c65eae5605",
+          "stored_sha256": "b9b949fbb7f3ba034d74854d826b08b6ef97ea829f12dddce73ab4a0353c61ca",
+          "encoding": "xz"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.xz",
+          "sha256": "ca13fa53a6b13ca43de5d09144930a147fd7a20acf9d6d2b05bc14eefb501072",
+          "stored_sha256": "49a7883b5372ce8ec9b3ea4eff11fdaa59a3652b1fb26e39d260337ec56955ad",
+          "encoding": "xz"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.xz",
+          "sha256": "6014be56887600ed350b7b75d6429dc602fb1388ee5896581d766919dd93ad9a",
+          "stored_sha256": "9cac0f2113ff2383ed0804c33d8b7c7af7d9d7348c358298cb97b73fe8284750",
+          "encoding": "xz"
+        }
+      }
+    },
+    {
+      "plant": "rne-dynamic",
+      "world": "curve",
+      "seed": 1,
+      "mode": "handoff",
+      "scenario": "frozen/018.json",
+      "sha256": "0a8fec1c3b714e7578f43b3f6ab9cfe64ff035b739acc7b9bdf0383f34cbb897",
+      "source": "scenarios/gnss-delay-curve.json",
+      "source_sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24",
+      "passed": true,
+      "recordings": "episodes/rne-dynamic/curve-handoff-seed-1",
+      "run_exit_code": 1,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "Post-reset map-only curve handoff",
+        "seed": 1,
+        "simulated_seconds": 28.0,
+        "steps": 561,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.238587528677768,
+        "localization_rmse": 1.1538706623245198,
+        "localization_max_error": 3.272758144656481,
+        "final_speed": 0.1480819504837208,
+        "progress": 119.64522078575718,
+        "emergency_steps": 88,
+        "avoidance_steps": 0,
+        "max_tracks": 10,
+        "passed": false,
+        "failures": [
+          "localization max error 3.273 m exceeds 1 m"
+        ]
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 561,
+        "verified": true
+      },
+      "oracle": {
+        "passed": true,
+        "prefix": {
+          "passed": true,
+          "verified_ticks": 163,
+          "maximum_pose_difference": 3.552713678800501e-15,
+          "accepted_map_measurements": 82,
+          "replayed_map_corrections": 80,
+          "compensated_fixes": 40,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 40,
+          "rejected_fixes": 0
+        },
+        "post_epoch": {
+          "passed": true,
+          "verified_ticks": 319,
+          "maximum_pose_difference": 1.4210854715202004e-14,
+          "accepted_map_measurements": 159,
+          "replayed_map_corrections": 120,
+          "compensated_fixes": 60,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 80,
+          "accepted_fixes": 60,
+          "rejected_fixes": 0
+        },
+        "reset_stamp": 12.100000000000001,
+        "searches": 3
+      },
+      "global_rmse_m": 1.1538706623245216,
+      "global_maximum_error_m": 3.272758144656481,
+      "valid_epoch_rmse_m": 0.009746563718427028,
+      "valid_epoch_maximum_error_m": 0.022774943542546243,
+      "valid_epoch_maximum_yaw_rad": 0.0011355621080232914,
+      "invalid_pose_ticks": 79,
+      "source_accuracy_failures_retained": [
+        "localization max error 3.273 m exceeds 1 m"
+      ],
+      "expected_run_exit_code": 1,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 2.238587528677768,
+        "contact_intervals": 0
+      },
+      "map_only_window_distance_m": 13.80262117203414,
+      "first_actual_gnss_acceptance_s": 16.2,
+      "first_post_support_brake_s": null,
+      "failed_gates": [],
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.xz",
+          "sha256": "43f32536bcb75c741c62962b461e13d603d0a14fa3b696e47dd6d4fdec101c9d",
+          "stored_sha256": "d96dfcef144e1829f8d1a60123b9509157cd52b1472da6c1ad2ba5f8c4a7d26d",
+          "encoding": "xz"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.xz",
+          "sha256": "d2f716a42fe9fd2873398ea1bcc3fccce15c2c8dc70531e9645e48546148282c",
+          "stored_sha256": "2d9c319d93e1c6c6cdcf340b1f26eb60ab88a72417bd673415066086ed020f3b",
+          "encoding": "xz"
+        },
+        "run/run.json": {
+          "path": "run/run.json.xz",
+          "sha256": "7e65c9dfd50fb303e12e8a3a787d03160dd04f3596f64a7d344ceebc1cd30eb5",
+          "stored_sha256": "69ed7ab855beaeabc77fdafaea57b5a40e948c10df7c15dbc43abd21c40d5772",
+          "encoding": "xz"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.xz",
+          "sha256": "f934773d6b0143b0b0289dcd0ddebf12f0df1595b06d88e984da3f6eac1879c0",
+          "stored_sha256": "f961e59da0fab8b134fece4a6b641409c1d910dea8ab4eac49bbde5011dff66e",
+          "encoding": "xz"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.xz",
+          "sha256": "b9cf8d7cc7e2a2cb8386d3fe8f6f6fffd3008c2cc64acd8c9fcaa3b87cdf808d",
+          "stored_sha256": "fa2088827eb7771c05e2a911bcabe554805c93a7b0d929b5431936c425e14513",
+          "encoding": "xz"
+        }
+      }
+    },
+    {
+      "plant": "rne-dynamic",
+      "world": "curve",
+      "seed": 7,
+      "mode": "handoff",
+      "scenario": "frozen/019.json",
+      "sha256": "0a8fec1c3b714e7578f43b3f6ab9cfe64ff035b739acc7b9bdf0383f34cbb897",
+      "source": "scenarios/gnss-delay-curve.json",
+      "source_sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24",
+      "passed": true,
+      "recordings": "episodes/rne-dynamic/curve-handoff-seed-7",
+      "run_exit_code": 1,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "Post-reset map-only curve handoff",
+        "seed": 7,
+        "simulated_seconds": 28.150000000000002,
+        "steps": 564,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.241616587138836,
+        "localization_rmse": 1.143855050132503,
+        "localization_max_error": 3.2531083174901947,
+        "final_speed": 0.09069117461311678,
+        "progress": 119.70279649745471,
+        "emergency_steps": 85,
+        "avoidance_steps": 0,
+        "max_tracks": 10,
+        "passed": false,
+        "failures": [
+          "localization max error 3.253 m exceeds 1 m"
+        ]
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 564,
+        "verified": true
+      },
+      "oracle": {
+        "passed": true,
+        "prefix": {
+          "passed": true,
+          "verified_ticks": 163,
+          "maximum_pose_difference": 3.552713678800501e-15,
+          "accepted_map_measurements": 82,
+          "replayed_map_corrections": 80,
+          "compensated_fixes": 40,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 40,
+          "rejected_fixes": 0
+        },
+        "post_epoch": {
+          "passed": true,
+          "verified_ticks": 322,
+          "maximum_pose_difference": 1.4210854715202004e-14,
+          "accepted_map_measurements": 160,
+          "replayed_map_corrections": 120,
+          "compensated_fixes": 60,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 80,
+          "accepted_fixes": 60,
+          "rejected_fixes": 0
+        },
+        "reset_stamp": 12.100000000000001,
+        "searches": 3
+      },
+      "global_rmse_m": 1.1438550501325044,
+      "global_maximum_error_m": 3.2531083174901947,
+      "valid_epoch_rmse_m": 0.009771306134698165,
+      "valid_epoch_maximum_error_m": 0.025395745890373404,
+      "valid_epoch_maximum_yaw_rad": 0.001091544868993155,
+      "invalid_pose_ticks": 79,
+      "source_accuracy_failures_retained": [
+        "localization max error 3.253 m exceeds 1 m"
+      ],
+      "expected_run_exit_code": 1,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 2.241616587138836,
+        "contact_intervals": 0
+      },
+      "map_only_window_distance_m": 13.800216732004934,
+      "first_actual_gnss_acceptance_s": 16.2,
+      "first_post_support_brake_s": null,
+      "failed_gates": [],
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.xz",
+          "sha256": "7c38ab81c4ddd3c822de0b76b9c78735463e20fdf29a16503858edf7c0db2f20",
+          "stored_sha256": "3b93f40f096e87d125ac118bda16a8b99ea3e085cff5425f275746db93750c94",
+          "encoding": "xz"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.xz",
+          "sha256": "023aabb4be8bfab066c932e9ac5207d7d2436ff5067a3754a26a9343ac8181a2",
+          "stored_sha256": "fcab6eddebad18a276a5f5cf67617f92de343c3e820a38fe2d7645620b12d323",
+          "encoding": "xz"
+        },
+        "run/run.json": {
+          "path": "run/run.json.xz",
+          "sha256": "8a6d4f5cd1c5cdb92d6b0088801811f1288cd525acf6608b93ea196eca83ce50",
+          "stored_sha256": "50d47daff11651d7c8e10decc492789e2a8b79063923a5b830b038ba6280686f",
+          "encoding": "xz"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.xz",
+          "sha256": "61f25cba776c6dfe8d1bf69a6a4a24416be8266aa9e48d7cc3157062eb855354",
+          "stored_sha256": "dc759401ddfa96065463d42d99eaecbbc227d0db268d95c1ddd01cfb11ed6d2c",
+          "encoding": "xz"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.xz",
+          "sha256": "0b4453761d5380053882b1bf42a3d2069982f6bd20df80fd9e98e2f8874dc6a9",
+          "stored_sha256": "262de43c2bb02a77231e08884c046e7a81c557b3274ec14b548858b75a41fcae",
+          "encoding": "xz"
+        }
+      }
+    },
+    {
+      "plant": "rne-dynamic",
+      "world": "curve",
+      "seed": 42,
+      "mode": "handoff",
+      "scenario": "frozen/020.json",
+      "sha256": "0a8fec1c3b714e7578f43b3f6ab9cfe64ff035b739acc7b9bdf0383f34cbb897",
+      "source": "scenarios/gnss-delay-curve.json",
+      "source_sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24",
+      "passed": true,
+      "recordings": "episodes/rne-dynamic/curve-handoff-seed-42",
+      "run_exit_code": 1,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "Post-reset map-only curve handoff",
+        "seed": 42,
+        "simulated_seconds": 28.05,
+        "steps": 562,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.2357566969473854,
+        "localization_rmse": 1.1429412572708226,
+        "localization_max_error": 3.244033104966881,
+        "final_speed": 0.15944711598983086,
+        "progress": 119.66451304994219,
+        "emergency_steps": 89,
+        "avoidance_steps": 0,
+        "max_tracks": 10,
+        "passed": false,
+        "failures": [
+          "localization max error 3.244 m exceeds 1 m"
+        ]
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 562,
+        "verified": true
+      },
+      "oracle": {
+        "passed": true,
+        "prefix": {
+          "passed": true,
+          "verified_ticks": 163,
+          "maximum_pose_difference": 7.105427357601002e-15,
+          "accepted_map_measurements": 82,
+          "replayed_map_corrections": 80,
+          "compensated_fixes": 40,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 40,
+          "rejected_fixes": 0
+        },
+        "post_epoch": {
+          "passed": true,
+          "verified_ticks": 320,
+          "maximum_pose_difference": 1.4210854715202004e-14,
+          "accepted_map_measurements": 159,
+          "replayed_map_corrections": 120,
+          "compensated_fixes": 60,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 80,
+          "accepted_fixes": 60,
+          "rejected_fixes": 0
+        },
+        "reset_stamp": 12.100000000000001,
+        "searches": 3
+      },
+      "global_rmse_m": 1.1429412572708224,
+      "global_maximum_error_m": 3.244033104966881,
+      "valid_epoch_rmse_m": 0.008936646224082754,
+      "valid_epoch_maximum_error_m": 0.025061583687121327,
+      "valid_epoch_maximum_yaw_rad": 0.0014684199858318592,
+      "invalid_pose_ticks": 79,
+      "source_accuracy_failures_retained": [
+        "localization max error 3.244 m exceeds 1 m"
+      ],
+      "expected_run_exit_code": 1,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 2.2357566969473854,
+        "contact_intervals": 0
+      },
+      "map_only_window_distance_m": 13.798738966068125,
+      "first_actual_gnss_acceptance_s": 16.2,
+      "first_post_support_brake_s": null,
+      "failed_gates": [],
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.xz",
+          "sha256": "62dac1e198902555ad64bed28916b0b249befc100978ceae03a4ab859ab0d328",
+          "stored_sha256": "9809bb997e4acab320f460c7ddf180f17c8f2c87aa25e1bafa6ddc5608e6201c",
+          "encoding": "xz"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.xz",
+          "sha256": "2bddecb6c7bbef77e5b98df5fdf3f27d5640e1f1891b00ff1f4eff8bc0853521",
+          "stored_sha256": "1c4bc485d54938ccdf3ef0e93134f4b692ccee5a88883cb5cf7e1f23e0da77d0",
+          "encoding": "xz"
+        },
+        "run/run.json": {
+          "path": "run/run.json.xz",
+          "sha256": "7d727bdc80579cd4d5cb3665d3658c2dc5ad1ae604f0f323d3d63fae1dc06530",
+          "stored_sha256": "7cbee9cf08152506a38cafff8f42deba03386dd8afdeb767761b1193729dcdfe",
+          "encoding": "xz"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.xz",
+          "sha256": "4da3d2a862843167412fa00c3692c5bee409510ae1651f803664c8d47e8a4417",
+          "stored_sha256": "490d32ab1c86f7468c1552dd6c6b6cb452d51f31cacd9eb7170be95e8641555d",
+          "encoding": "xz"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.xz",
+          "sha256": "59b537369db9c8856aac61a177bc45fea657d33fe91117a50db5f9332b9a0252",
+          "stored_sha256": "780829039cb936012a43cb0e3476e3a4122aa5f6d995cc4d87639199014bf7d4",
+          "encoding": "xz"
+        }
+      }
+    },
+    {
+      "plant": "rne-dynamic",
+      "world": "curve",
+      "seed": 7,
+      "mode": "default",
+      "scenario": "frozen/021.json",
+      "sha256": "cb7045c1e7c8e547906fe6c178265d0e70bea7305464f7063c919e1c8131bc07",
+      "source": "scenarios/gnss-delay-curve.json",
+      "source_sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24",
+      "passed": true,
+      "recordings": "episodes/rne-dynamic/curve-default-seed-7",
+      "run_exit_code": 1,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "Post-reset map-only curve default",
+        "seed": 7,
+        "simulated_seconds": 32.050000000000004,
+        "steps": 642,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.2392658843304334,
+        "localization_rmse": 1.0721210201281475,
+        "localization_max_error": 3.2531083174901947,
+        "final_speed": 0.14139942453384283,
+        "progress": 119.66862660712863,
+        "emergency_steps": 169,
+        "avoidance_steps": 0,
+        "max_tracks": 10,
+        "passed": false,
+        "failures": [
+          "localization max error 3.253 m exceeds 1 m"
+        ]
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 642,
+        "verified": true
+      },
+      "oracle": {
+        "passed": true,
+        "prefix": {
+          "passed": true,
+          "verified_ticks": 163,
+          "maximum_pose_difference": 3.552713678800501e-15,
+          "accepted_map_measurements": 82,
+          "replayed_map_corrections": 80,
+          "compensated_fixes": 40,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 40,
+          "rejected_fixes": 0
+        },
+        "post_epoch": {
+          "passed": true,
+          "verified_ticks": 400,
+          "maximum_pose_difference": 1.4210854715202004e-14,
+          "accepted_map_measurements": 199,
+          "replayed_map_corrections": 160,
+          "compensated_fixes": 80,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 80,
+          "rejected_fixes": 0
+        },
+        "reset_stamp": 12.100000000000001,
+        "searches": 3
+      },
+      "global_rmse_m": 1.0721210201281486,
+      "global_maximum_error_m": 3.2531083174901947,
+      "valid_epoch_rmse_m": 0.009324850671408707,
+      "valid_epoch_maximum_error_m": 0.024808982928504978,
+      "valid_epoch_maximum_yaw_rad": 0.001091544868993155,
+      "invalid_pose_ticks": 79,
+      "source_accuracy_failures_retained": [
+        "localization max error 3.253 m exceeds 1 m"
+      ],
+      "expected_run_exit_code": 1,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 2.2392658843304334,
+        "contact_intervals": 0
+      },
+      "map_only_window_distance_m": 0.0,
+      "first_actual_gnss_acceptance_s": 16.2,
+      "first_post_support_brake_s": null,
+      "failed_gates": [],
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.xz",
+          "sha256": "742e48bc96ba11e42ab1cb329dd76709d704cb1e9077ed0f0ad040c7872e0efb",
+          "stored_sha256": "9c50e52f8aa74745f392f8ef8279eaf976cba0450cd4e775c6da40a5764c9d39",
+          "encoding": "xz"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.xz",
+          "sha256": "5246bc2aa9df093efa3cbdda6fea052b88db4b6b50b206820970a252add064ec",
+          "stored_sha256": "548c47604ab4ba710f8d2bc65e90a8d4c94cfd49b5f8b76252788fa948030805",
+          "encoding": "xz"
+        },
+        "run/run.json": {
+          "path": "run/run.json.xz",
+          "sha256": "f2acbcbb068ffdfc1b826a5ae15352d2fa3076048db99b2aba49f975ee53fb6c",
+          "stored_sha256": "641568c521218a2a39d8f95e10e6bf6e22d884b56511c405be0b7e00abb1433e",
+          "encoding": "xz"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.xz",
+          "sha256": "8da976d35056b1a4137e61583251726a119618245a42d6f1e631aae23ada3d9e",
+          "stored_sha256": "aed29e23472f34f1ff06e47869b222d997eaae9e46a15b7effa259f80e32b70e",
+          "encoding": "xz"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.xz",
+          "sha256": "acaf82e0cb64e00743ec4b11fe363a66a00c78b2ea5e78521e05de48b07e9d6f",
+          "stored_sha256": "e8d102faba902553fede554358496f5d4d933c238baa61cce7ef31b0f3712075",
+          "encoding": "xz"
+        }
+      }
+    },
+    {
+      "plant": "rne-dynamic",
+      "world": "curve",
+      "seed": 7,
+      "mode": "expiry",
+      "scenario": "frozen/022.json",
+      "sha256": "a99a80468a926131bc459343138e1c78b927c1658f9941e333c328fe62aad83d",
+      "source": "scenarios/gnss-delay-curve.json",
+      "source_sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24",
+      "passed": true,
+      "recordings": "episodes/rne-dynamic/curve-expiry-seed-7",
+      "run_exit_code": 1,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "Post-reset map-only curve expiry",
+        "seed": 7,
+        "simulated_seconds": 45.0,
+        "steps": 901,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.5197715369630638,
+        "localization_rmse": 0.9049955089591564,
+        "localization_max_error": 3.2531083174901947,
+        "final_speed": 0.0,
+        "progress": 65.3605863448138,
+        "emergency_steps": 643,
+        "avoidance_steps": 0,
+        "max_tracks": 10,
+        "passed": false,
+        "failures": [
+          "localization max error 3.253 m exceeds 1 m"
+        ]
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 901,
+        "verified": true
+      },
+      "oracle": {
+        "passed": true,
+        "prefix": {
+          "passed": true,
+          "verified_ticks": 163,
+          "maximum_pose_difference": 3.552713678800501e-15,
+          "accepted_map_measurements": 82,
+          "replayed_map_corrections": 80,
+          "compensated_fixes": 40,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 40,
+          "rejected_fixes": 0
+        },
+        "post_epoch": {
+          "passed": true,
+          "verified_ticks": 659,
+          "maximum_pose_difference": 6.106226635438361e-16,
+          "accepted_map_measurements": 329,
+          "replayed_map_corrections": 0,
+          "compensated_fixes": 0,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 99,
+          "accepted_fixes": 0,
+          "rejected_fixes": 0
+        },
+        "reset_stamp": 12.100000000000001,
+        "searches": 3
+      },
+      "global_rmse_m": 0.9049955089591575,
+      "global_maximum_error_m": 3.2531083174901947,
+      "valid_epoch_rmse_m": 0.007014073166610746,
+      "valid_epoch_maximum_error_m": 0.03594010006822888,
+      "valid_epoch_maximum_yaw_rad": 0.001091544868993155,
+      "invalid_pose_ticks": 79,
+      "source_accuracy_failures_retained": [
+        "localization max error 3.253 m exceeds 1 m"
+      ],
+      "expected_run_exit_code": 1,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 2.5197715369630638,
+        "contact_intervals": 0
+      },
+      "map_only_window_distance_m": 13.800216732004934,
+      "first_actual_gnss_acceptance_s": null,
+      "first_post_support_brake_s": 17.150000000000002,
+      "failed_gates": [],
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.xz",
+          "sha256": "1c52586ca8acbed549dc0494e45e5b404d0173570b769487db830bae45c43767",
+          "stored_sha256": "cfacbc905baf8450d9f05a150bcac80836c3c00e3713b560bc4d8e510b97b8af",
+          "encoding": "xz"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.xz",
+          "sha256": "9427e36a3be32726b28e4a0e6075a4b70247a46de696ce374c49495af1d7b0e5",
+          "stored_sha256": "403404f4dc516921f18f1ef39214db67ad3afd315bf22c0f864602e13f8dc5e3",
+          "encoding": "xz"
+        },
+        "run/run.json": {
+          "path": "run/run.json.xz",
+          "sha256": "028e7625559b69502d44efbc24111658512302ccb32cb40b74945070717fde34",
+          "stored_sha256": "5c16cb440fcc4126734f6352a48cdb2fdaa94ca5f418fb24dc51160313d3934f",
+          "encoding": "xz"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.xz",
+          "sha256": "6276934cf1c79aaa0b883e53feeaac32e95493088e9d4d73cf853c40aa826d28",
+          "stored_sha256": "14cbd48e4cf0628ddb7c351bebe9657852d2fc359024ab495d9bc147462ee11c",
+          "encoding": "xz"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.xz",
+          "sha256": "7abf189dc17540298a245e6d029cd5de084aefd772c842734dc878863d97d163",
+          "stored_sha256": "98fd4963e8273fada097d6dde6bdf35096a5b31f6ebddfb41530fa0fe0f58569",
+          "encoding": "xz"
+        }
+      }
+    },
+    {
+      "plant": "rne-dynamic",
+      "world": "curve",
+      "seed": 7,
+      "mode": "lidar-loss",
+      "scenario": "frozen/023.json",
+      "sha256": "ae072a7d9935c1c6a950bebb948128f10744938f8e86d9b60a5f4d799d148aa9",
+      "source": "scenarios/gnss-delay-curve.json",
+      "source_sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24",
+      "passed": true,
+      "recordings": "episodes/rne-dynamic/curve-lidar-loss-seed-7",
+      "run_exit_code": 1,
+      "replay_exit_code": 0,
+      "summary": {
+        "scenario": "Post-reset map-only curve lidar-loss",
+        "seed": 7,
+        "simulated_seconds": 45.0,
+        "steps": 901,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 2.5374600458800725,
+        "localization_rmse": 0.9054570932656009,
+        "localization_max_error": 3.2531083174901947,
+        "final_speed": 0.0,
+        "progress": 46.74141180210342,
+        "emergency_steps": 703,
+        "avoidance_steps": 0,
+        "max_tracks": 9,
+        "passed": false,
+        "failures": [
+          "localization max error 3.253 m exceeds 1 m"
+        ]
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 901,
+        "verified": true
+      },
+      "oracle": {
+        "passed": true,
+        "prefix": {
+          "passed": true,
+          "verified_ticks": 163,
+          "maximum_pose_difference": 3.552713678800501e-15,
+          "accepted_map_measurements": 82,
+          "replayed_map_corrections": 80,
+          "compensated_fixes": 40,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 0,
+          "accepted_fixes": 40,
+          "rejected_fixes": 0
+        },
+        "post_epoch": {
+          "passed": true,
+          "verified_ticks": 659,
+          "maximum_pose_difference": 5.689025639465939e-15,
+          "accepted_map_measurements": 18,
+          "replayed_map_corrections": 0,
+          "compensated_fixes": 0,
+          "covered_outage_ticks": 0,
+          "map_only_support_ticks": 39,
+          "accepted_fixes": 0,
+          "rejected_fixes": 0
+        },
+        "reset_stamp": 12.100000000000001,
+        "searches": 3
+      },
+      "global_rmse_m": 0.9054570932656013,
+      "global_maximum_error_m": 3.2531083174901947,
+      "valid_epoch_rmse_m": 0.03106747720889962,
+      "valid_epoch_maximum_error_m": 0.06610843749531937,
+      "valid_epoch_maximum_yaw_rad": 0.0012757625303512357,
+      "invalid_pose_ticks": 79,
+      "source_accuracy_failures_retained": [
+        "localization max error 3.253 m exceeds 1 m"
+      ],
+      "expected_run_exit_code": 1,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 2.5374600458800725,
+        "contact_intervals": 0
+      },
+      "map_only_window_distance_m": 5.059706735111756,
+      "first_actual_gnss_acceptance_s": null,
+      "first_post_support_brake_s": 14.15,
+      "failed_gates": [],
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.xz",
+          "sha256": "2d24218e422fd240445bfc96ca0f9f6a027440b0e864d78ef7079d263feb78fb",
+          "stored_sha256": "fc01caf882d3c57d76d1dad1b2509410ef097ed15c3c1533d0823101587460c5",
+          "encoding": "xz"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.xz",
+          "sha256": "9427e36a3be32726b28e4a0e6075a4b70247a46de696ce374c49495af1d7b0e5",
+          "stored_sha256": "403404f4dc516921f18f1ef39214db67ad3afd315bf22c0f864602e13f8dc5e3",
+          "encoding": "xz"
+        },
+        "run/run.json": {
+          "path": "run/run.json.xz",
+          "sha256": "2f412ea398e301d5c9688ebc318f8615312bc4e2836ea824aadd6fef0c938b75",
+          "stored_sha256": "4ac23e63079d259f09fab1f5f008dffc6907c191e94444f7aa81b0737b9fc31d",
+          "encoding": "xz"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.xz",
+          "sha256": "df8180673b140dff61c60e47af0d42a5c2acaefa7c705171f81210cfe7134ebc",
+          "stored_sha256": "700c3716aebb8949e4774187586eefda56606c5e96cc96a67902604d70215ff3",
+          "encoding": "xz"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.xz",
+          "sha256": "575661c445edd879314591c7e8e272b8291868b4b4260203f0a7e03a1223d09c",
+          "stored_sha256": "69fa0029c9876c054900b9749032f5601c3eccaa5713db411ec22f1e34ff4bc3",
+          "encoding": "xz"
+        }
+      }
+    }
+  ],
+  "first_revision_A": {
+    "report": {
+      "passed": false,
+      "complete": false,
+      "manifest_sha256": "1b6840cab99a63d9f1271c541918a74a7064fddab20779b949ca0c85fb7e1208",
+      "binaries": {
+        "reference-2d": {
+          "path": "/workspace/rust_drive/artifacts/relocalization-map-grace-v1/candidate-rustdriving",
+          "sha256": "a4d622dc9fb68673956d8225ab79050e8bb3b61eb146b54d4baf1c3550b30ad2"
+        },
+        "rne-dynamic": {
+          "path": "/workspace/rust_drive/artifacts/relocalization-map-grace-v1/candidate-native",
+          "sha256": "389d892b20f7a266988ebe7a7f69e42ae40c31e63856bd29cd6f11e4217dc552"
+        }
+      },
+      "gates": {
+        "valid_rmse_m": 0.2,
+        "valid_max_error_m": 0.4,
+        "valid_max_yaw_rad": 0.1,
+        "clearance_m": 1.0,
+        "stop_window_s": [
+          10.5,
+          11.2
+        ],
+        "stop_speed_m_s": 0.05,
+        "recovery_window_s": [
+          11.0,
+          15.0
+        ],
+        "negative_hold_after_s": 12.0,
+        "grace_s": 5.0,
+        "gnss_resume_acquisition_s": 16.0,
+        "lidar_loss_s": 14.0,
+        "movement_window_s": [
+          12.3,
+          16.0
+        ],
+        "minimum_map_only_distance_m": 5.0,
+        "expiry_stop_margin_s": 1.5,
+        "lidar_loss_brake_window_s": [
+          14.1,
+          14.3
+        ],
+        "lidar_loss_hold_after_s": 15.6
+      },
+      "episodes": [
+        {
+          "plant": "reference-2d",
+          "world": "straight",
+          "seed": 1,
+          "mode": "handoff",
+          "scenario": "frozen/000.json",
+          "sha256": "de898de4fba9895876b1e65a15c7012b8c89c94e7e2eae31b8c91afdeede5786",
+          "source": "scenarios/gnss-delay-straight.json",
+          "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19",
+          "passed": false,
+          "recordings": "episodes/reference-2d/straight-handoff-seed-1",
+          "run_exit_code": 1,
+          "replay_exit_code": 0,
+          "summary": {
+            "scenario": "Post-reset map-only straight handoff",
+            "seed": 1,
+            "simulated_seconds": 32.45,
+            "steps": 650,
+            "reached_goal": true,
+            "collisions": 0,
+            "road_violations": 0,
+            "min_clearance": 2.248498323649211,
+            "localization_rmse": 1.0343725156573151,
+            "localization_max_error": 3.153287177547076,
+            "final_speed": 0.10620200825283344,
+            "progress": 119.02071148139412,
+            "emergency_steps": 175,
+            "avoidance_steps": 0,
+            "max_tracks": 10,
+            "passed": false,
+            "failures": [
+              "localization max error 3.153 m exceeds 1 m"
+            ]
+          },
+          "replay": {
+            "source": "reference-2d",
+            "ticks": 650,
+            "verified": true
+          },
+          "oracle": {
+            "passed": true,
+            "prefix": {
+              "passed": true,
+              "verified_ticks": 163,
+              "maximum_pose_difference": 7.105427357601002e-15,
+              "accepted_map_measurements": 82,
+              "replayed_map_corrections": 156,
+              "compensated_fixes": 39,
+              "covered_outage_ticks": 0,
+              "map_only_support_ticks": 0,
+              "accepted_fixes": 39,
+              "rejected_fixes": 0
+            },
+            "post_epoch": {
+              "passed": true,
+              "verified_ticks": 408,
+              "maximum_pose_difference": 1.4210854715202004e-14,
+              "accepted_map_measurements": 203,
+              "replayed_map_corrections": 324,
+              "compensated_fixes": 81,
+              "covered_outage_ticks": 0,
+              "map_only_support_ticks": 84,
+              "accepted_fixes": 81,
+              "rejected_fixes": 0
+            },
+            "reset_stamp": 12.100000000000001,
+            "searches": 3
+          },
+          "global_rmse_m": 1.0343725156573162,
+          "global_maximum_error_m": 3.153287177547076,
+          "valid_epoch_rmse_m": 0.0038587901337859996,
+          "valid_epoch_maximum_error_m": 0.011082262442816156,
+          "valid_epoch_maximum_yaw_rad": 0.000869158624582589,
+          "invalid_pose_ticks": 79,
+          "source_accuracy_failures_retained": [
+            "localization max error 3.153 m exceeds 1 m"
+          ],
+          "expected_run_exit_code": 1,
+          "independent_clearance": {
+            "full_tick_coverage": true,
+            "minimum_swept_clearance_m": 2.248498323649211,
+            "contact_intervals": 0
+          },
+          "map_only_window_distance_m": 0.0,
+          "first_actual_gnss_acceptance_s": 16.400000000000002,
+          "first_post_support_brake_s": null,
+          "failed_gates": [
+            "actual_map_only_movement"
+          ],
+          "storage": {
+            "replay/outputs.jsonl": {
+              "path": "replay/outputs.jsonl.xz",
+              "sha256": "4f62198394afb05e69d8954ade36ea451ac4e0ad24b44ccccf62859ac14d1185",
+              "stored_sha256": "8a939c7f7230a69a4bc9e271a3cfe59f32ba769ed4ea35d7c26819297ea499cd",
+              "encoding": "xz"
+            },
+            "replay/replay.json": {
+              "path": "replay/replay.json.xz",
+              "sha256": "35ffc1067d13a5a43b1b28eedfd417f58e2e74794064ded7ae534ac5f24a3fce",
+              "stored_sha256": "20ff0e3f020e486113a4ad130b0939728e163145074c6fcddf2a72e3ed839229",
+              "encoding": "xz"
+            },
+            "run/run.json": {
+              "path": "run/run.json.xz",
+              "sha256": "a50af888d5a9b527c215943caa73bd0f8fb85ec112609a805b378130b8d1f2b2",
+              "stored_sha256": "c31d40dce228566627beba9f0448143a51a7f22ea7efce3501d8ef60872ee241",
+              "encoding": "xz"
+            },
+            "run/sensors.jsonl": {
+              "path": "run/sensors.jsonl.xz",
+              "sha256": "3a95e84b3be5fbd8b3eccb4c15935ad1a130fe7d0f3513796bee76ec5a5c4f91",
+              "stored_sha256": "374bb9572d638bfe24afe825de0426b1a1ff07b80f5be70763dee8cae52c4fc4",
+              "encoding": "xz"
+            },
+            "run/summary.json": {
+              "path": "run/summary.json.xz",
+              "sha256": "0b0d701d6a5d2283238ca3a2deb4649247cd9111901fc2088a2da0e7df20ef5d",
+              "stored_sha256": "de358a53c701a17c66db71039f6160ba45c1dc592567a475ab19b3c1b79bca2a",
+              "encoding": "xz"
+            }
+          }
+        },
+        {
+          "plant": "reference-2d",
+          "world": "straight",
+          "seed": 7,
+          "mode": "handoff",
+          "scenario": "frozen/001.json",
+          "sha256": "de898de4fba9895876b1e65a15c7012b8c89c94e7e2eae31b8c91afdeede5786",
+          "source": "scenarios/gnss-delay-straight.json",
+          "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19",
+          "passed": false,
+          "recordings": "episodes/reference-2d/straight-handoff-seed-7",
+          "run_exit_code": 1,
+          "replay_exit_code": 0,
+          "summary": {
+            "scenario": "Post-reset map-only straight handoff",
+            "seed": 7,
+            "simulated_seconds": 32.4,
+            "steps": 649,
+            "reached_goal": true,
+            "collisions": 0,
+            "road_violations": 0,
+            "min_clearance": 2.2492474405190475,
+            "localization_rmse": 1.0312393853503892,
+            "localization_max_error": 3.141045498790852,
+            "final_speed": 0.14984415891134412,
+            "progress": 118.99896249943284,
+            "emergency_steps": 174,
+            "avoidance_steps": 0,
+            "max_tracks": 10,
+            "passed": false,
+            "failures": [
+              "localization max error 3.141 m exceeds 1 m"
+            ]
+          },
+          "replay": {
+            "source": "reference-2d",
+            "ticks": 649,
+            "verified": true
+          },
+          "oracle": {
+            "passed": true,
+            "prefix": {
+              "passed": true,
+              "verified_ticks": 163,
+              "maximum_pose_difference": 3.552713678800501e-15,
+              "accepted_map_measurements": 82,
+              "replayed_map_corrections": 156,
+              "compensated_fixes": 39,
+              "covered_outage_ticks": 0,
+              "map_only_support_ticks": 0,
+              "accepted_fixes": 39,
+              "rejected_fixes": 0
+            },
+            "post_epoch": {
+              "passed": true,
+              "verified_ticks": 407,
+              "maximum_pose_difference": 1.4210854715202004e-14,
+              "accepted_map_measurements": 203,
+              "replayed_map_corrections": 324,
+              "compensated_fixes": 81,
+              "covered_outage_ticks": 0,
+              "map_only_support_ticks": 84,
+              "accepted_fixes": 81,
+              "rejected_fixes": 0
+            },
+            "reset_stamp": 12.100000000000001,
+            "searches": 3
+          },
+          "global_rmse_m": 1.0312393853503898,
+          "global_maximum_error_m": 3.141045498790852,
+          "valid_epoch_rmse_m": 0.003420569109814073,
+          "valid_epoch_maximum_error_m": 0.0074376328047233795,
+          "valid_epoch_maximum_yaw_rad": 0.0005674085760416503,
+          "invalid_pose_ticks": 79,
+          "source_accuracy_failures_retained": [
+            "localization max error 3.141 m exceeds 1 m"
+          ],
+          "expected_run_exit_code": 1,
+          "independent_clearance": {
+            "full_tick_coverage": true,
+            "minimum_swept_clearance_m": 2.2492474405190475,
+            "contact_intervals": 0
+          },
+          "map_only_window_distance_m": 0.0,
+          "first_actual_gnss_acceptance_s": 16.400000000000002,
+          "first_post_support_brake_s": null,
+          "failed_gates": [
+            "actual_map_only_movement"
+          ],
+          "storage": {
+            "replay/outputs.jsonl": {
+              "path": "replay/outputs.jsonl.xz",
+              "sha256": "e1cd16262286d156de1715342b63bdde0756b1f2148429267806097d9426d584",
+              "stored_sha256": "73ce1edfecea592d861bd313a431a9b91870afe2e237c17ac1cdac822b733a8e",
+              "encoding": "xz"
+            },
+            "replay/replay.json": {
+              "path": "replay/replay.json.xz",
+              "sha256": "eb1a64ded9fa31b48c19756bd87cfe02a0c8d0c96eb3e7dc1c8e96f603cebd15",
+              "stored_sha256": "b6141bce5560937baa837c4a0ec101a49a9122de01723ff525366313266e235d",
+              "encoding": "xz"
+            },
+            "run/run.json": {
+              "path": "run/run.json.xz",
+              "sha256": "ebce519ea452dae90564600c555fac4ef1286a7a73875f0c29a6f4326baa90eb",
+              "stored_sha256": "44ac61319f2d630cab19f7a72d0596dbbc1d6b621440f4ae3f3cad4a5946249f",
+              "encoding": "xz"
+            },
+            "run/sensors.jsonl": {
+              "path": "run/sensors.jsonl.xz",
+              "sha256": "8a284df4a1365a9b4fb57f11c5fa627c545b9da89205f4c3bff9076a52a1bc4b",
+              "stored_sha256": "c5e1c660029720254124b313adf338b0068a850bdd2f9da3fcc3708d3b061200",
+              "encoding": "xz"
+            },
+            "run/summary.json": {
+              "path": "run/summary.json.xz",
+              "sha256": "5e911605aed557999108874cd0f9fc3eb118614a029510dc5c224028aa835a4c",
+              "stored_sha256": "a163857f3584276378b7b7f739619c709eec9161efcc605b6d13a00884ef1dba",
+              "encoding": "xz"
+            }
+          }
+        },
+        {
+          "plant": "reference-2d",
+          "world": "straight",
+          "seed": 42,
+          "mode": "handoff",
+          "scenario": "frozen/002.json",
+          "sha256": "de898de4fba9895876b1e65a15c7012b8c89c94e7e2eae31b8c91afdeede5786",
+          "source": "scenarios/gnss-delay-straight.json",
+          "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19",
+          "passed": false,
+          "recordings": "episodes/reference-2d/straight-handoff-seed-42",
+          "run_exit_code": 1,
+          "replay_exit_code": 0,
+          "summary": {
+            "scenario": "Post-reset map-only straight handoff",
+            "seed": 42,
+            "simulated_seconds": 32.4,
+            "steps": 649,
+            "reached_goal": true,
+            "collisions": 0,
+            "road_violations": 0,
+            "min_clearance": 2.251246190018467,
+            "localization_rmse": 1.0194275254666239,
+            "localization_max_error": 3.1041807580655023,
+            "final_speed": 0.08812661149830292,
+            "progress": 118.97490294451752,
+            "emergency_steps": 175,
+            "avoidance_steps": 0,
+            "max_tracks": 10,
+            "passed": false,
+            "failures": [
+              "localization max error 3.104 m exceeds 1 m"
+            ]
+          },
+          "replay": {
+            "source": "reference-2d",
+            "ticks": 649,
+            "verified": true
+          },
+          "oracle": {
+            "passed": true,
+            "prefix": {
+              "passed": true,
+              "verified_ticks": 163,
+              "maximum_pose_difference": 7.105427357601002e-15,
+              "accepted_map_measurements": 82,
+              "replayed_map_corrections": 156,
+              "compensated_fixes": 39,
+              "covered_outage_ticks": 0,
+              "map_only_support_ticks": 0,
+              "accepted_fixes": 39,
+              "rejected_fixes": 0
+            },
+            "post_epoch": {
+              "passed": true,
+              "verified_ticks": 407,
+              "maximum_pose_difference": 1.4210854715202004e-14,
+              "accepted_map_measurements": 203,
+              "replayed_map_corrections": 324,
+              "compensated_fixes": 81,
+              "covered_outage_ticks": 0,
+              "map_only_support_ticks": 84,
+              "accepted_fixes": 81,
+              "rejected_fixes": 0
+            },
+            "reset_stamp": 12.100000000000001,
+            "searches": 3
+          },
+          "global_rmse_m": 1.0194275254666234,
+          "global_maximum_error_m": 3.1041807580655023,
+          "valid_epoch_rmse_m": 0.0036527777893970593,
+          "valid_epoch_maximum_error_m": 0.009451935488259207,
+          "valid_epoch_maximum_yaw_rad": 0.0005868258383214808,
+          "invalid_pose_ticks": 79,
+          "source_accuracy_failures_retained": [
+            "localization max error 3.104 m exceeds 1 m"
+          ],
+          "expected_run_exit_code": 1,
+          "independent_clearance": {
+            "full_tick_coverage": true,
+            "minimum_swept_clearance_m": 2.251246190018467,
+            "contact_intervals": 0
+          },
+          "map_only_window_distance_m": 0.0,
+          "first_actual_gnss_acceptance_s": 16.400000000000002,
+          "first_post_support_brake_s": null,
+          "failed_gates": [
+            "actual_map_only_movement"
+          ],
+          "storage": {
+            "replay/outputs.jsonl": {
+              "path": "replay/outputs.jsonl.xz",
+              "sha256": "20f219122caff6970d58982c12137813ab3f733028c1663341c65363b5810386",
+              "stored_sha256": "2c309739788d03bd74c8ae364e0335412d1874a4bfac3c6b53ff93ab1be63294",
+              "encoding": "xz"
+            },
+            "replay/replay.json": {
+              "path": "replay/replay.json.xz",
+              "sha256": "eb1a64ded9fa31b48c19756bd87cfe02a0c8d0c96eb3e7dc1c8e96f603cebd15",
+              "stored_sha256": "b6141bce5560937baa837c4a0ec101a49a9122de01723ff525366313266e235d",
+              "encoding": "xz"
+            },
+            "run/run.json": {
+              "path": "run/run.json.xz",
+              "sha256": "cf7e5da47f4241be578087f06decf04510e97c2c4a37cce7ad9d420ee0863bfc",
+              "stored_sha256": "d2a1f2ce3ed226ede2a8e9a18763ade672b5dbf19b7e4b357b55add9a6f400b4",
+              "encoding": "xz"
+            },
+            "run/sensors.jsonl": {
+              "path": "run/sensors.jsonl.xz",
+              "sha256": "c31ff7b8c54f08042ce25c33b43691151b1e3932b128d01d8d66b95d8fb44b52",
+              "stored_sha256": "3dad8045a81f5ea74a930927c0cb211e9279298878433d42950f61abcaf088f7",
+              "encoding": "xz"
+            },
+            "run/summary.json": {
+              "path": "run/summary.json.xz",
+              "sha256": "d506d6fc47d3432bcc4abe76fb257e5aa3ee45cbf186222eb01ae0b84686d890",
+              "stored_sha256": "c896029cc9ec075ce4b25bb58edff8212fbdd5373e326b78683f7fa61f6a40d6",
+              "encoding": "xz"
+            }
+          }
+        },
+        {
+          "plant": "reference-2d",
+          "world": "straight",
+          "seed": 7,
+          "mode": "default",
+          "scenario": "frozen/003.json",
+          "sha256": "bf5b886519b0d9c5a5f68119fe942e6c7c681e40ace9b6376f7b1e283dad1be2",
+          "source": "scenarios/gnss-delay-straight.json",
+          "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19",
+          "passed": true,
+          "recordings": "episodes/reference-2d/straight-default-seed-7",
+          "run_exit_code": 1,
+          "replay_exit_code": 0,
+          "summary": {
+            "scenario": "Post-reset map-only straight default",
+            "seed": 7,
+            "simulated_seconds": 32.4,
+            "steps": 649,
+            "reached_goal": true,
+            "collisions": 0,
+            "road_violations": 0,
+            "min_clearance": 2.2492474405190475,
+            "localization_rmse": 1.0312393853503892,
+            "localization_max_error": 3.141045498790852,
+            "final_speed": 0.14984415891134412,
+            "progress": 118.99896249943284,
+            "emergency_steps": 174,
+            "avoidance_steps": 0,
+            "max_tracks": 10,
+            "passed": false,
+            "failures": [
+              "localization max error 3.141 m exceeds 1 m"
+            ]
+          },
+          "replay": {
+            "source": "reference-2d",
+            "ticks": 649,
+            "verified": true
+          },
+          "oracle": {
+            "passed": true,
+            "prefix": {
+              "passed": true,
+              "verified_ticks": 163,
+              "maximum_pose_difference": 3.552713678800501e-15,
+              "accepted_map_measurements": 82,
+              "replayed_map_corrections": 156,
+              "compensated_fixes": 39,
+              "covered_outage_ticks": 0,
+              "map_only_support_ticks": 0,
+              "accepted_fixes": 39,
+              "rejected_fixes": 0
+            },
+            "post_epoch": {
+              "passed": true,
+              "verified_ticks": 407,
+              "maximum_pose_difference": 1.4210854715202004e-14,
+              "accepted_map_measurements": 203,
+              "replayed_map_corrections": 324,
+              "compensated_fixes": 81,
+              "covered_outage_ticks": 0,
+              "map_only_support_ticks": 0,
+              "accepted_fixes": 81,
+              "rejected_fixes": 0
+            },
+            "reset_stamp": 12.100000000000001,
+            "searches": 3
+          },
+          "global_rmse_m": 1.0312393853503898,
+          "global_maximum_error_m": 3.141045498790852,
+          "valid_epoch_rmse_m": 0.003420569109814073,
+          "valid_epoch_maximum_error_m": 0.0074376328047233795,
+          "valid_epoch_maximum_yaw_rad": 0.0005674085760416503,
+          "invalid_pose_ticks": 79,
+          "source_accuracy_failures_retained": [
+            "localization max error 3.141 m exceeds 1 m"
+          ],
+          "expected_run_exit_code": 1,
+          "independent_clearance": {
+            "full_tick_coverage": true,
+            "minimum_swept_clearance_m": 2.2492474405190475,
+            "contact_intervals": 0
+          },
+          "map_only_window_distance_m": 0.0,
+          "first_actual_gnss_acceptance_s": 16.400000000000002,
+          "first_post_support_brake_s": null,
+          "failed_gates": [],
+          "storage": {
+            "replay/outputs.jsonl": {
+              "path": "replay/outputs.jsonl.xz",
+              "sha256": "1a945dacbf3f530419881c104a81614a6413d3473fb9cac109ccab87aba9c7d8",
+              "stored_sha256": "993ca42c85f5a22d45db76070f2c4e1b8075463c5a22f46ce41d6dac6b226660",
+              "encoding": "xz"
+            },
+            "replay/replay.json": {
+              "path": "replay/replay.json.xz",
+              "sha256": "eb1a64ded9fa31b48c19756bd87cfe02a0c8d0c96eb3e7dc1c8e96f603cebd15",
+              "stored_sha256": "b6141bce5560937baa837c4a0ec101a49a9122de01723ff525366313266e235d",
+              "encoding": "xz"
+            },
+            "run/run.json": {
+              "path": "run/run.json.xz",
+              "sha256": "bacf2aebc99c77cf522305231eb4c546f5a44740369dfcafeceba5f36c89e092",
+              "stored_sha256": "0078da4709f4cf0a3cff9733341d4c4f8fcbd1575baa30a2a5a01cb83dbd3f68",
+              "encoding": "xz"
+            },
+            "run/sensors.jsonl": {
+              "path": "run/sensors.jsonl.xz",
+              "sha256": "4a25ae689705031db5eec4deb81f822caccb13417f2436b919d6326fb5c4a4d4",
+              "stored_sha256": "4283b10c06d1408329109e1a2feffa424345e4a67a4b7214493d2f57b9cd69cd",
+              "encoding": "xz"
+            },
+            "run/summary.json": {
+              "path": "run/summary.json.xz",
+              "sha256": "0c0fc702ae601102342e5893282ca36eb432dae4e96165861ff56b9d17d14c4e",
+              "stored_sha256": "de7d2184a8b9b4cfea5dc17b2a96d03e0fc27d792cc3531a09df72d4f9ea9702",
+              "encoding": "xz"
+            }
+          }
+        },
+        {
+          "plant": "reference-2d",
+          "world": "straight",
+          "seed": 7,
+          "mode": "expiry",
+          "scenario": "frozen/004.json",
+          "sha256": "8de46c7fc1113660f13fbd3c12a4dd64a0b09fe5a2747c5c4ceffba4701c35b0",
+          "source": "scenarios/gnss-delay-straight.json",
+          "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19",
+          "passed": true,
+          "recordings": "episodes/reference-2d/straight-expiry-seed-7",
+          "run_exit_code": 1,
+          "replay_exit_code": 0,
+          "summary": {
+            "scenario": "Post-reset map-only straight expiry",
+            "seed": 7,
+            "simulated_seconds": 45.0,
+            "steps": 901,
+            "reached_goal": false,
+            "collisions": 0,
+            "road_violations": 0,
+            "min_clearance": 2.5505283613878165,
+            "localization_rmse": 0.8752233604369868,
+            "localization_max_error": 3.141045498790852,
+            "final_speed": 0.0,
+            "progress": 40.4843501363307,
+            "emergency_steps": 746,
+            "avoidance_steps": 0,
+            "max_tracks": 9,
+            "passed": false,
+            "failures": [
+              "localization max error 3.141 m exceeds 1 m"
+            ]
+          },
+          "replay": {
+            "source": "reference-2d",
+            "ticks": 901,
+            "verified": true
+          },
+          "oracle": {
+            "passed": true,
+            "prefix": {
+              "passed": true,
+              "verified_ticks": 163,
+              "maximum_pose_difference": 3.552713678800501e-15,
+              "accepted_map_measurements": 82,
+              "replayed_map_corrections": 156,
+              "compensated_fixes": 39,
+              "covered_outage_ticks": 0,
+              "map_only_support_ticks": 0,
+              "accepted_fixes": 39,
+              "rejected_fixes": 0
+            },
+            "post_epoch": {
+              "passed": true,
+              "verified_ticks": 659,
+              "maximum_pose_difference": 5.799397420624963e-16,
+              "accepted_map_measurements": 329,
+              "replayed_map_corrections": 0,
+              "compensated_fixes": 0,
+              "covered_outage_ticks": 0,
+              "map_only_support_ticks": 99,
+              "accepted_fixes": 0,
+              "rejected_fixes": 0
+            },
+            "reset_stamp": 12.100000000000001,
+            "searches": 3
+          },
+          "global_rmse_m": 0.8752233604369863,
+          "global_maximum_error_m": 3.141045498790852,
+          "valid_epoch_rmse_m": 0.0024519526777924128,
+          "valid_epoch_maximum_error_m": 0.006751066848226058,
+          "valid_epoch_maximum_yaw_rad": 0.0005674085760416503,
+          "invalid_pose_ticks": 79,
+          "source_accuracy_failures_retained": [
+            "localization max error 3.141 m exceeds 1 m"
+          ],
+          "expected_run_exit_code": 1,
+          "independent_clearance": {
+            "full_tick_coverage": true,
+            "minimum_swept_clearance_m": 2.5505283613878165,
+            "contact_intervals": 0
+          },
+          "map_only_window_distance_m": 0.0,
+          "first_actual_gnss_acceptance_s": null,
+          "first_post_support_brake_s": 17.150000000000002,
+          "failed_gates": [],
+          "storage": {
+            "replay/outputs.jsonl": {
+              "path": "replay/outputs.jsonl.xz",
+              "sha256": "b35eade37737f272c260d6ba531b771135369dbef9d0e8e3e0ddccd08bc1bf13",
+              "stored_sha256": "b02058ed11b3fc4cdb71571963aaa03fddc6bf4894f79a7f5ddd53bf248d5b29",
+              "encoding": "xz"
+            },
+            "replay/replay.json": {
+              "path": "replay/replay.json.xz",
+              "sha256": "74fcb742c4dd50c63a49f6a24d1b74c54696967f03021e1f8696155e76d0c554",
+              "stored_sha256": "dcf84ad9e98fba502cc83fba0af1da132b351a0388f48d60e9a9eac977a8f1d8",
+              "encoding": "xz"
+            },
+            "run/run.json": {
+              "path": "run/run.json.xz",
+              "sha256": "3861adce9c7690882e955eb1bc44cce402a1d731669a695793ee15919ddef860",
+              "stored_sha256": "9bdf91d20b5c6790681023419b452a34d640baa7cce665d2443bc09075b6765a",
+              "encoding": "xz"
+            },
+            "run/sensors.jsonl": {
+              "path": "run/sensors.jsonl.xz",
+              "sha256": "b46996aafd829ae5c2a7f5335c27216ad3af98c9ce92fe3456fe16c455efa2f6",
+              "stored_sha256": "4c4e8cd34201965c73ac1c18b663296d06100d9afbe36d958b4923d22a22e22b",
+              "encoding": "xz"
+            },
+            "run/summary.json": {
+              "path": "run/summary.json.xz",
+              "sha256": "a24521d274dd8989009f0208192deb2efc7dcae13a1563221d687b03f9b97cde",
+              "stored_sha256": "3181f78da5dd172d53142899deadc76b930f851ff8ed4062b683fb1ea74283e0",
+              "encoding": "xz"
+            }
+          }
+        },
+        {
+          "plant": "reference-2d",
+          "world": "straight",
+          "seed": 7,
+          "mode": "lidar-loss",
+          "scenario": "frozen/005.json",
+          "sha256": "358513acb252e7712f9906b1d560069a8e9dec8fdc51333c845d727eb07d7933",
+          "source": "scenarios/gnss-delay-straight.json",
+          "source_sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19",
+          "passed": true,
+          "recordings": "episodes/reference-2d/straight-lidar-loss-seed-7",
+          "run_exit_code": 1,
+          "replay_exit_code": 0,
+          "summary": {
+            "scenario": "Post-reset map-only straight lidar-loss",
+            "seed": 7,
+            "simulated_seconds": 45.0,
+            "steps": 901,
+            "reached_goal": false,
+            "collisions": 0,
+            "road_violations": 0,
+            "min_clearance": 2.5505283613878165,
+            "localization_rmse": 0.8768634300833019,
+            "localization_max_error": 3.141045498790852,
+            "final_speed": 0.0,
+            "progress": 40.4843501363307,
+            "emergency_steps": 746,
+            "avoidance_steps": 0,
+            "max_tracks": 9,
+            "passed": false,
+            "failures": [
+              "localization max error 3.141 m exceeds 1 m"
+            ]
+          },
+          "replay": {
+            "source": "reference-2d",
+            "ticks": 901,
+            "verified": true
+          },
+          "oracle": {
+            "passed": true,
+            "prefix": {
+              "passed": true,
+              "verified_ticks": 163,
+              "maximum_pose_difference": 3.552713678800501e-15,
+              "accepted_map_measurements": 82,
+              "replayed_map_corrections": 156,
+              "compensated_fixes": 39,
+              "covered_outage_ticks": 0,
+              "map_only_support_ticks": 0,
+              "accepted_fixes": 39,
+              "rejected_fixes": 0
+            },
+            "post_epoch": {
+              "passed": true,
+              "verified_ticks": 659,
+              "maximum_pose_difference": 5.456193222924677e-15,
+              "accepted_map_measurements": 18,
+              "replayed_map_corrections": 0,
+              "compensated_fixes": 0,
+              "covered_outage_ticks": 0,
+              "map_only_support_ticks": 39,
+              "accepted_fixes": 0,
+              "rejected_fixes": 0
+            },
+            "reset_stamp": 12.100000000000001,
+            "searches": 3
+          },
+          "global_rmse_m": 0.8768634300833033,
+          "global_maximum_error_m": 3.141045498790852,
+          "valid_epoch_rmse_m": 0.0561758339828228,
+          "valid_epoch_maximum_error_m": 0.11667714567905563,
+          "valid_epoch_maximum_yaw_rad": 0.0005674085760416503,
+          "invalid_pose_ticks": 79,
+          "source_accuracy_failures_retained": [
+            "localization max error 3.141 m exceeds 1 m"
+          ],
+          "expected_run_exit_code": 1,
+          "independent_clearance": {
+            "full_tick_coverage": true,
+            "minimum_swept_clearance_m": 2.5505283613878165,
+            "contact_intervals": 0
+          },
+          "map_only_window_distance_m": 0.0,
+          "first_actual_gnss_acceptance_s": null,
+          "first_post_support_brake_s": 14.15,
+          "failed_gates": [],
+          "storage": {
+            "replay/outputs.jsonl": {
+              "path": "replay/outputs.jsonl.xz",
+              "sha256": "98349bfbcd149a56e268be01261719649686568209092ddb5b1412f82843d3b0",
+              "stored_sha256": "dd00b9a644504083daaefc18c0574aead776fd62e24714a5e198e37ce26b7700",
+              "encoding": "xz"
+            },
+            "replay/replay.json": {
+              "path": "replay/replay.json.xz",
+              "sha256": "74fcb742c4dd50c63a49f6a24d1b74c54696967f03021e1f8696155e76d0c554",
+              "stored_sha256": "dcf84ad9e98fba502cc83fba0af1da132b351a0388f48d60e9a9eac977a8f1d8",
+              "encoding": "xz"
+            },
+            "run/run.json": {
+              "path": "run/run.json.xz",
+              "sha256": "0183d6ef113eb4394a505f43f0d328c7bcc74780f5e3cf16d095d0a97e26ab23",
+              "stored_sha256": "ddf5f0b86ba811917c57aacea199f7b6c3c5f36811fa4edcf0ea1deb18a5628b",
+              "encoding": "xz"
+            },
+            "run/sensors.jsonl": {
+              "path": "run/sensors.jsonl.xz",
+              "sha256": "930476f0a81eec1cb6be8cf953487f6e5124b7adbc33be7cc072d72a5e20a498",
+              "stored_sha256": "5e35f339376c6aed7dec8aa4a56883a2e097b598958565f1ab801e343dc5c53a",
+              "encoding": "xz"
+            },
+            "run/summary.json": {
+              "path": "run/summary.json.xz",
+              "sha256": "992eb548d81f6a0fc7a56fe2a2b499decab083f6aa1e42cc64b2ff195f9c1714",
+              "stored_sha256": "11f0b5ab4135d9da39784926b7612878e68250401fdbd46e5fcfe21078870409",
+              "encoding": "xz"
+            }
+          }
+        },
+        {
+          "plant": "reference-2d",
+          "world": "curve",
+          "seed": 1,
+          "mode": "handoff",
+          "scenario": "frozen/006.json",
+          "sha256": "0a8fec1c3b714e7578f43b3f6ab9cfe64ff035b739acc7b9bdf0383f34cbb897",
+          "source": "scenarios/gnss-delay-curve.json",
+          "source_sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24",
+          "passed": false,
+          "recordings": "episodes/reference-2d/curve-handoff-seed-1",
+          "run_exit_code": 1,
+          "replay_exit_code": 0,
+          "summary": {
+            "scenario": "Post-reset map-only curve handoff",
+            "seed": 1,
+            "simulated_seconds": 32.050000000000004,
+            "steps": 642,
+            "reached_goal": true,
+            "collisions": 0,
+            "road_violations": 0,
+            "min_clearance": 2.2432619129422404,
+            "localization_rmse": 1.0416675839675256,
+            "localization_max_error": 3.1559147400313923,
+            "final_speed": 0.14185288342098265,
+            "progress": 119.6335754512709,
+            "emergency_steps": 168,
+            "avoidance_steps": 0,
+            "max_tracks": 10,
+            "passed": false,
+            "failures": [
+              "localization max error 3.156 m exceeds 1 m"
+            ]
+          },
+          "replay": {
+            "source": "reference-2d",
+            "ticks": 642,
+            "verified": true
+          },
+          "oracle": {
+            "passed": true,
+            "prefix": {
+              "passed": true,
+              "verified_ticks": 163,
+              "maximum_pose_difference": 7.105427357601002e-15,
+              "accepted_map_measurements": 82,
+              "replayed_map_corrections": 80,
+              "compensated_fixes": 40,
+              "covered_outage_ticks": 0,
+              "map_only_support_ticks": 0,
+              "accepted_fixes": 40,
+              "rejected_fixes": 0
+            },
+            "post_epoch": {
+              "passed": true,
+              "verified_ticks": 400,
+              "maximum_pose_difference": 1.4210854715202004e-14,
+              "accepted_map_measurements": 199,
+              "replayed_map_corrections": 160,
+              "compensated_fixes": 80,
+              "covered_outage_ticks": 0,
+              "map_only_support_ticks": 80,
+              "accepted_fixes": 80,
+              "rejected_fixes": 0
+            },
+            "reset_stamp": 12.100000000000001,
+            "searches": 3
+          },
+          "global_rmse_m": 1.0416675839675262,
+          "global_maximum_error_m": 3.1559147400313923,
+          "valid_epoch_rmse_m": 0.006727225362425167,
+          "valid_epoch_maximum_error_m": 0.0163801661022915,
+          "valid_epoch_maximum_yaw_rad": 0.0010417649896710124,
+          "invalid_pose_ticks": 79,
+          "source_accuracy_failures_retained": [
+            "localization max error 3.156 m exceeds 1 m"
+          ],
+          "expected_run_exit_code": 1,
+          "independent_clearance": {
+            "full_tick_coverage": true,
+            "minimum_swept_clearance_m": 2.2432619129422404,
+            "contact_intervals": 0
+          },
+          "map_only_window_distance_m": 0.0,
+          "first_actual_gnss_acceptance_s": 16.2,
+          "first_post_support_brake_s": null,
+          "failed_gates": [
+            "actual_map_only_movement"
+          ],
+          "storage": {
+            "replay/outputs.jsonl": {
+              "path": "replay/outputs.jsonl.xz",
+              "sha256": "d6915d9b27b7f2432e78dfc3da3e7c680c6f078dd2b9161452c174b0fcb00179",
+              "stored_sha256": "04eb47df2928e4a4b5c63e78ce0dcd297c1bb91b0935949a07a95bab6f8f14f0",
+              "encoding": "xz"
+            },
+            "replay/replay.json": {
+              "path": "replay/replay.json.xz",
+              "sha256": "342b94bcbeb30138f58c5926acf62cb48bb88762d90e5e854cc944a2f3718e84",
+              "stored_sha256": "f22a5674f676a16ccdeb3f2aa3e302cc1bc8ff51bb5a77398c18320418b07779",
+              "encoding": "xz"
+            },
+            "run/run.json": {
+              "path": "run/run.json.xz",
+              "sha256": "20d67038d5a840556c20620747b9a2bc881d10d39d9341e5728dab6546f8d94d",
+              "stored_sha256": "e7be1cf652a23d1d35af04154181b27ba0f5d241c80745037b3172b3baaf409b",
+              "encoding": "xz"
+            },
+            "run/sensors.jsonl": {
+              "path": "run/sensors.jsonl.xz",
+              "sha256": "8214b3d59d583fb788c9aee5ebfc406fe051e20cd46dd1a5f4de479598750e87",
+              "stored_sha256": "27978b8ce034b42c40d719e23417768b47d44e0d3ba678477c971af7efa9dc5a",
+              "encoding": "xz"
+            },
+            "run/summary.json": {
+              "path": "run/summary.json.xz",
+              "sha256": "820745e6690b56aa41380205211464233253943a5037e8827b97d271bb005047",
+              "stored_sha256": "753365306c813ef75d1ac747896325ec3a3c5472cfa2219229105719514c622f",
+              "encoding": "xz"
+            }
+          }
+        },
+        {
+          "plant": "reference-2d",
+          "world": "curve",
+          "seed": 7,
+          "mode": "handoff",
+          "scenario": "frozen/007.json",
+          "sha256": "0a8fec1c3b714e7578f43b3f6ab9cfe64ff035b739acc7b9bdf0383f34cbb897",
+          "source": "scenarios/gnss-delay-curve.json",
+          "source_sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24",
+          "passed": false,
+          "recordings": "episodes/reference-2d/curve-handoff-seed-7",
+          "run_exit_code": 1,
+          "replay_exit_code": 0,
+          "summary": {
+            "scenario": "Post-reset map-only curve handoff",
+            "seed": 7,
+            "simulated_seconds": 32.15,
+            "steps": 644,
+            "reached_goal": true,
+            "collisions": 0,
+            "road_violations": 0,
+            "min_clearance": 2.2436841920419672,
+            "localization_rmse": 1.0500703095941386,
+            "localization_max_error": 3.187010890284562,
+            "final_speed": 0.16514840065055442,
+            "progress": 119.68256410902283,
+            "emergency_steps": 170,
+            "avoidance_steps": 0,
+            "max_tracks": 10,
+            "passed": false,
+            "failures": [
+              "localization max error 3.187 m exceeds 1 m"
+            ]
+          },
+          "replay": {
+            "source": "reference-2d",
+            "ticks": 644,
+            "verified": true
+          },
+          "oracle": {
+            "passed": true,
+            "prefix": {
+              "passed": true,
+              "verified_ticks": 163,
+              "maximum_pose_difference": 7.105427357601002e-15,
+              "accepted_map_measurements": 82,
+              "replayed_map_corrections": 80,
+              "compensated_fixes": 40,
+              "covered_outage_ticks": 0,
+              "map_only_support_ticks": 0,
+              "accepted_fixes": 40,
+              "rejected_fixes": 0
+            },
+            "post_epoch": {
+              "passed": true,
+              "verified_ticks": 402,
+              "maximum_pose_difference": 1.4210854715202004e-14,
+              "accepted_map_measurements": 200,
+              "replayed_map_corrections": 160,
+              "compensated_fixes": 80,
+              "covered_outage_ticks": 0,
+              "map_only_support_ticks": 80,
+              "accepted_fixes": 80,
+              "rejected_fixes": 0
+            },
+            "reset_stamp": 12.100000000000001,
+            "searches": 3
+          },
+          "global_rmse_m": 1.0500703095941384,
+          "global_maximum_error_m": 3.187010890284562,
+          "valid_epoch_rmse_m": 0.007299845289595292,
+          "valid_epoch_maximum_error_m": 0.01707670521137983,
+          "valid_epoch_maximum_yaw_rad": 0.0007139836916052467,
+          "invalid_pose_ticks": 79,
+          "source_accuracy_failures_retained": [
+            "localization max error 3.187 m exceeds 1 m"
+          ],
+          "expected_run_exit_code": 1,
+          "independent_clearance": {
+            "full_tick_coverage": true,
+            "minimum_swept_clearance_m": 2.2436841920419672,
+            "contact_intervals": 0
+          },
+          "map_only_window_distance_m": 0.0,
+          "first_actual_gnss_acceptance_s": 16.2,
+          "first_post_support_brake_s": null,
+          "failed_gates": [
+            "actual_map_only_movement"
+          ],
+          "storage": {
+            "replay/outputs.jsonl": {
+              "path": "replay/outputs.jsonl.xz",
+              "sha256": "75560911d1a3ded99db8e7a38c806fed602ce20639663783ebcb468359e5fdd8",
+              "stored_sha256": "5f9cf3e200db54f046950dde125cdc87740ebdd7309f324b87f0bfa64bd1ff1c",
+              "encoding": "xz"
+            },
+            "replay/replay.json": {
+              "path": "replay/replay.json.xz",
+              "sha256": "8801d50d6fbbd383fb1c3a5aba319b540d6a192515b04f6f323369f28f56f0e6",
+              "stored_sha256": "f54fef4a704fe9c2a0c272ca0bd9661b78f203aa54bbf2a6c902cd430cbb3228",
+              "encoding": "xz"
+            },
+            "run/run.json": {
+              "path": "run/run.json.xz",
+              "sha256": "745856929c191771e7f046e0c724ecb52c5481a1c65d44b586daef21575f889e",
+              "stored_sha256": "daf36a1186b2e0967c936590c61e300be63428ad718d45c58bd07bcaa7723bf3",
+              "encoding": "xz"
+            },
+            "run/sensors.jsonl": {
+              "path": "run/sensors.jsonl.xz",
+              "sha256": "dacdf4e3c7902c981179471a125673f918669cfdb4b033359a6599534ff84910",
+              "stored_sha256": "331c5ea13d61b896dd06ebb793f3350e1465548b44337d561ea9a6330c7ea680",
+              "encoding": "xz"
+            },
+            "run/summary.json": {
+              "path": "run/summary.json.xz",
+              "sha256": "6b461aa830fc2d88904636e339d4da4a82196eb82411e8c6029c957c43a093ab",
+              "stored_sha256": "2af7a73018e7157884e94705dab8274d20da553d2dbc8a8149dfeee50d2b4dcc",
+              "encoding": "xz"
+            }
+          }
+        },
+        {
+          "plant": "reference-2d",
+          "world": "curve",
+          "seed": 42,
+          "mode": "handoff",
+          "scenario": "frozen/008.json",
+          "sha256": "0a8fec1c3b714e7578f43b3f6ab9cfe64ff035b739acc7b9bdf0383f34cbb897",
+          "source": "scenarios/gnss-delay-curve.json",
+          "source_sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24",
+          "passed": false,
+          "recordings": "episodes/reference-2d/curve-handoff-seed-42",
+          "run_exit_code": 1,
+          "replay_exit_code": 0,
+          "summary": {
+            "scenario": "Post-reset map-only curve handoff",
+            "seed": 42,
+            "simulated_seconds": 32.15,
+            "steps": 644,
+            "reached_goal": true,
+            "collisions": 0,
+            "road_violations": 0,
+            "min_clearance": 2.2394036536520083,
+            "localization_rmse": 1.0448680695246682,
+            "localization_max_error": 3.1712712624860915,
+            "final_speed": 0.11380111454979985,
+            "progress": 119.67465343174572,
+            "emergency_steps": 168,
+            "avoidance_steps": 0,
+            "max_tracks": 10,
+            "passed": false,
+            "failures": [
+              "localization max error 3.171 m exceeds 1 m"
+            ]
+          },
+          "replay": {
+            "source": "reference-2d",
+            "ticks": 644,
+            "verified": true
+          },
+          "oracle": {
+            "passed": true,
+            "prefix": {
+              "passed": true,
+              "verified_ticks": 163,
+              "maximum_pose_difference": 7.105427357601002e-15,
+              "accepted_map_measurements": 82,
+              "replayed_map_corrections": 80,
+              "compensated_fixes": 40,
+              "covered_outage_ticks": 0,
+              "map_only_support_ticks": 0,
+              "accepted_fixes": 40,
+              "rejected_fixes": 0
+            },
+            "post_epoch": {
+              "passed": true,
+              "verified_ticks": 402,
+              "maximum_pose_difference": 1.4210854715202004e-14,
+              "accepted_map_measurements": 200,
+              "replayed_map_corrections": 160,
+              "compensated_fixes": 80,
+              "covered_outage_ticks": 0,
+              "map_only_support_ticks": 80,
+              "accepted_fixes": 80,
+              "rejected_fixes": 0
+            },
+            "reset_stamp": 12.100000000000001,
+            "searches": 3
+          },
+          "global_rmse_m": 1.0448680695246682,
+          "global_maximum_error_m": 3.1712712624860915,
+          "valid_epoch_rmse_m": 0.007834249807990619,
+          "valid_epoch_maximum_error_m": 0.020966237996657245,
+          "valid_epoch_maximum_yaw_rad": 0.0015360177087804239,
+          "invalid_pose_ticks": 79,
+          "source_accuracy_failures_retained": [
+            "localization max error 3.171 m exceeds 1 m"
+          ],
+          "expected_run_exit_code": 1,
+          "independent_clearance": {
+            "full_tick_coverage": true,
+            "minimum_swept_clearance_m": 2.2394036536520083,
+            "contact_intervals": 0
+          },
+          "map_only_window_distance_m": 0.0,
+          "first_actual_gnss_acceptance_s": 16.2,
+          "first_post_support_brake_s": null,
+          "failed_gates": [
+            "actual_map_only_movement"
+          ],
+          "storage": {
+            "replay/outputs.jsonl": {
+              "path": "replay/outputs.jsonl.xz",
+              "sha256": "0d80d141466dfac2a1e7b83770206fc0768d9d431aa485974a8c1af64fefe731",
+              "stored_sha256": "a00445a847bac2169666e20819d8199bc676e8210b6e85ba113f015c40dddec5",
+              "encoding": "xz"
+            },
+            "replay/replay.json": {
+              "path": "replay/replay.json.xz",
+              "sha256": "8801d50d6fbbd383fb1c3a5aba319b540d6a192515b04f6f323369f28f56f0e6",
+              "stored_sha256": "f54fef4a704fe9c2a0c272ca0bd9661b78f203aa54bbf2a6c902cd430cbb3228",
+              "encoding": "xz"
+            },
+            "run/run.json": {
+              "path": "run/run.json.xz",
+              "sha256": "17e57e3b5f5d5aa393c8863b82545af3c62109a57fc943951847f52d999414b5",
+              "stored_sha256": "0ca64d2400609773d57bf1d660ec633846e0d3d9e8cf240b5718321fdf2482ce",
+              "encoding": "xz"
+            },
+            "run/sensors.jsonl": {
+              "path": "run/sensors.jsonl.xz",
+              "sha256": "4f486a80b2dc97cbeae50363420d3818c8d0bf9ba11f9d2aa29aee110db1abaf",
+              "stored_sha256": "ae7069fc2bfe5490e1a225a997df3b04ff344d6dadb61fce8a7b57501b48d6a7",
+              "encoding": "xz"
+            },
+            "run/summary.json": {
+              "path": "run/summary.json.xz",
+              "sha256": "fbbcf9a5baf5612b852ad12d83b4d2effda36f3a22746a0412763e518450d8b2",
+              "stored_sha256": "f30cf0870ed97ad762afbdc1ef6bd420404210977a469beafc34b4a404ad8965",
+              "encoding": "xz"
+            }
+          }
+        }
+      ]
+    },
+    "report_sha256": "2b56342ed7a59a76c9d13a851a0ed2386f78d29c8ec18c5c3012b88c3c43e9cd",
+    "stopped": {
+      "reason": "Frozen revision A demonstrates active map diagnostics but zero actual movement: final control guard still receives the absent GNSS clock. Stop remaining obsolete trials/checks, preserve all completed/in-flight bytes, repair integration and qualify revision B on the complete frozen matrix.",
+      "first_report_complete": false,
+      "first_report_rows": 9,
+      "physical_runner_pid": 197037,
+      "physical_children_allowed_to_finish": [
+        200945,
+        200946
+      ],
+      "obsolete_cargo_pids": [
+        200910,
+        197957
+      ],
+      "first_required_check_passed": true
+    },
+    "inflight_storage": [
+      {
+        "original_path": "cohort-A/episodes/reference-2d/curve-expiry-seed-7/run/run.json",
+        "path": "cohort-A/episodes/reference-2d/curve-expiry-seed-7/run/run.json.xz",
+        "sha256": "f963ec0afe978527544e3c8652b0e92f8488df84e68f168778f9d3dd56a9f809",
+        "stored_sha256": "df0ce21036d5529768ce1a376f444dc60a64c88f87e97918c419dc5f78c3fbe6",
+        "bytes": 29931650,
+        "decoded_verified": true
+      },
+      {
+        "original_path": "cohort-A/episodes/reference-2d/curve-expiry-seed-7/run/sensors.jsonl",
+        "path": "cohort-A/episodes/reference-2d/curve-expiry-seed-7/run/sensors.jsonl.xz",
+        "sha256": "03064044179bfe0a710591337f02230134827d23f262f9607c954ef07fa5dfab",
+        "stored_sha256": "c2a388f5d352734aa23a3f2ccb3e48acf203c57ccd859a0cb942386a87de2a84",
+        "bytes": 27858622,
+        "decoded_verified": true
+      },
+      {
+        "original_path": "cohort-A/episodes/reference-2d/curve-expiry-seed-7/run/summary.json",
+        "path": "cohort-A/episodes/reference-2d/curve-expiry-seed-7/run/summary.json.xz",
+        "sha256": "81f0eb942ec738305aba88839d8c04e778ff3e0f1b5c5d0e88dc09a0b6adb22f",
+        "stored_sha256": "3b78ddcfcbaa112dc4df2c3f0a3899924f39a2c107039477d0f6b5813e204b25",
+        "bytes": 519,
+        "decoded_verified": true
+      },
+      {
+        "original_path": "cohort-A/episodes/reference-2d/curve-default-seed-7/run/run.json",
+        "path": "cohort-A/episodes/reference-2d/curve-default-seed-7/run/run.json.xz",
+        "sha256": "6326fd25913557ce7bb3e2b4e5f424089ae3d1c974d029df6c985788b97d5934",
+        "stored_sha256": "f8d9a24602e7e355f01870481d8cd8eb4d945ada9609e7f2fc37adb7b9500de7",
+        "bytes": 18975707,
+        "decoded_verified": true
+      },
+      {
+        "original_path": "cohort-A/episodes/reference-2d/curve-default-seed-7/run/sensors.jsonl",
+        "path": "cohort-A/episodes/reference-2d/curve-default-seed-7/run/sensors.jsonl.xz",
+        "sha256": "0b69bfd60e147ad8961450414013c6fe5a50b9546f512e350444404691942a62",
+        "stored_sha256": "45865eec31258152b9e24ffbe3c4d58f6d475bcd7bba75c49ef1c95bcd2c5d65",
+        "bytes": 17771204,
+        "decoded_verified": true
+      },
+      {
+        "original_path": "cohort-A/episodes/reference-2d/curve-default-seed-7/run/summary.json",
+        "path": "cohort-A/episodes/reference-2d/curve-default-seed-7/run/summary.json.xz",
+        "sha256": "dd36095299f6839e1fb0e5038e08abc68f4cc51c45292911c15e39d1144b7eea",
+        "stored_sha256": "fca24fa5ddb1b5fd6201534ab687f574d080bc41a78f13e2b1eeefb95a076371",
+        "bytes": 539,
+        "decoded_verified": true
+      }
+    ],
+    "classified_cases": 9,
+    "unclassified_started_cases": 2,
+    "not_started_cases": 13,
+    "all_first_bytes_retained": true
+  },
+  "validation": {
+    "required_command": "bash scripts/check.sh",
+    "required_check": {
+      "check_exit_code": 0,
+      "passed_tests": 724,
+      "python_auditor_tests": 60,
+      "verified_replays": 49,
+      "current_baseline_changes": [],
+      "changed_baseline_outputs": 0,
+      "completed_standard_cases": 49,
+      "verified_current_output_files": 245,
+      "archive_errors": [],
+      "historical_245_outputs_retained_unchanged": true,
+      "mutable_live_duplicates_vacated": true,
+      "source_closure_matches_expected": true,
+      "storage_policy": "Retain every current raw byte in immutable verified archives and every historical byte in original immutable backups. Do not restore duplicate mutable live outputs in this constrained workspace."
+    },
+    "native": {
+      "complete": true,
+      "passed": true,
+      "settings": {
+        "CARGO_INCREMENTAL": "0",
+        "CARGO_PROFILE_RELEASE_CODEGEN_UNITS": "1",
+        "CARGO_BUILD_JOBS": "2"
+      },
+      "commands": [
+        {
+          "name": "fmt",
+          "command": "cargo +1.95.0 fmt --manifest-path integrations/rne/Cargo.toml --check",
+          "exit_code": 0
+        },
+        {
+          "name": "build",
+          "command": "cargo +1.95.0 build --release --locked --manifest-path integrations/rne/Cargo.toml",
+          "exit_code": 0
+        },
+        {
+          "name": "test",
+          "command": "cargo +1.95.0 test --release --locked --manifest-path integrations/rne/Cargo.toml",
+          "exit_code": 0
+        },
+        {
+          "name": "clippy",
+          "command": "cargo +1.95.0 clippy --release --locked --all-targets --manifest-path integrations/rne/Cargo.toml -- -D warnings",
+          "exit_code": 0
+        }
+      ],
+      "cache_errors": [],
+      "runtime_sha256": "06c31a25978b5293364fc70aebaf08502706a2fa33d4b6b07e9e11fc9bc45b91"
+    },
+    "native_tests": 63,
+    "synthetic_epoch_reconstruction": {
+      "passed": true,
+      "prefix": {
+        "passed": true,
+        "verified_ticks": 1,
+        "maximum_pose_difference": 0.0,
+        "accepted_map_measurements": 1,
+        "replayed_map_corrections": 0,
+        "compensated_fixes": 0,
+        "covered_outage_ticks": 0,
+        "map_only_support_ticks": 0,
+        "accepted_fixes": 1,
+        "rejected_fixes": 0
+      },
+      "post_epoch": {
+        "passed": true,
+        "verified_ticks": 111,
+        "maximum_pose_difference": 1.6653345369377348e-16,
+        "accepted_map_measurements": 110,
+        "replayed_map_corrections": 0,
+        "compensated_fixes": 0,
+        "covered_outage_ticks": 0,
+        "map_only_support_ticks": 100,
+        "accepted_fixes": 2,
+        "rejected_fixes": 0
+      },
+      "reset_stamp": 1.55,
+      "searches": 3,
+      "actual_positive_map_only_commands": 100
+    },
+    "previous_replay_compatibility": {
+      "episodes": 498,
+      "all_passed": true,
+      "complete": true,
+      "all_outputs_exact_parent_bytes": true,
+      "report_sha256": "90f738217a6e495fa709ebabc531b5aa5226517443e1bdc4de86f58df24064ed",
+      "binary_sha256": "1d676e788ebe024e2574856e66ea00d3cbe2ee5318e80eaea5567d2ce12ecba5"
+    },
+    "workflow": {
+      "parsed": true,
+      "native_working_directory": "rust_drive",
+      "workflow_sha256": "13ae9676a2ff3a49e1cc15e5f23456dddadb473a7551f36d22eaa39b139bb3b0"
+    },
+    "first_required_check": {
+      "check_exit_code": 0,
+      "passed_tests": 724,
+      "python_auditor_tests": 60,
+      "verified_replays": 49,
+      "current_baseline_changes": [],
+      "changed_baseline_outputs": 0,
+      "completed_standard_cases": 49,
+      "verified_current_output_files": 245,
+      "archive_errors": [],
+      "historical_245_outputs_retained_unchanged": true,
+      "mutable_live_duplicates_vacated": true,
+      "source_closure_matches_expected": true,
+      "storage_policy": "Retain every current raw byte in immutable verified archives and every historical byte in original immutable backups. Do not restore duplicate mutable live outputs in this constrained workspace."
+    },
+    "obsolete_A_check_interrupted": {
+      "check_exit_code": 143,
+      "passed_tests": 679,
+      "python_auditor_tests": 60,
+      "verified_replays": 0,
+      "current_baseline_changes": [
+        "incomplete capture"
+      ],
+      "changed_baseline_outputs": null,
+      "completed_standard_cases": 0,
+      "verified_current_output_files": 0,
+      "archive_errors": [],
+      "historical_245_outputs_retained_unchanged": true,
+      "mutable_live_duplicates_vacated": true,
+      "source_closure_matches_expected": true,
+      "storage_policy": "Retain every current raw byte in immutable verified archives and every historical byte in original immutable backups. Do not restore duplicate mutable live outputs in this constrained workspace."
+    }
+  },
+  "storage": {
+    "encoding": "XZ",
+    "all_revision_B_raw_input_output_truth_replay_streams_retained_and_decoded_hash_verified": true,
+    "historical_lossless_migration": [
+      {
+        "original_path": "artifacts/marginalized-keyframe-depth/first/tum-fr1-room-temporal-retain/results.json",
+        "path": "artifacts/marginalized-keyframe-depth/first/tum-fr1-room-temporal-retain/results.json.xz",
+        "encoding": "xz",
+        "sha256": "5798e422701c456070a81a7df1901dc2776ca869818de5d1b22188add62150fb",
+        "stored_sha256": "7f0bf8790c3a22f71f6dbdc67839488027e7bd569d9cd8c503f933a5bf749e01",
+        "original_bytes": 130051514,
+        "stored_bytes": 17803144,
+        "decoded_verified": true,
+        "first_outcome_unchanged": true
+      },
+      {
+        "original_path": "artifacts/marginalized-keyframe-depth/first/tum-fr1-room-temporal-retain/sensor-only.json",
+        "path": "artifacts/marginalized-keyframe-depth/first/tum-fr1-room-temporal-retain/sensor-only.json.xz",
+        "encoding": "xz",
+        "sha256": "6f39894f32ca43bfe2aed0fd1d9a9a125842d77634f640107da7087dcbb2d85d",
+        "stored_sha256": "6191eccd10a1f23f5458566b0bb350895965def1286a28f4e4dbf2cf12994efa",
+        "original_bytes": 130029380,
+        "stored_bytes": 17798264,
+        "decoded_verified": true,
+        "first_outcome_unchanged": true
+      },
+      {
+        "original_path": "artifacts/selective-keyframe-depth/first/tum-fr1-desk2-independent-retain/results.json",
+        "path": "artifacts/selective-keyframe-depth/first/tum-fr1-desk2-independent-retain/results.json.xz",
+        "encoding": "xz",
+        "sha256": "3b323d770844a34454feaa81a979e1b4ccfa296f5dda8721f1562c7c018a65ba",
+        "stored_sha256": "d0a0cea9a87acc8640e84783856a6c4b9fdc3b799c2dd4d57d10c21e099bfac7",
+        "original_bytes": 129544053,
+        "stored_bytes": 17657316,
+        "decoded_verified": true,
+        "first_outcome_unchanged": true
+      },
+      {
+        "original_path": "artifacts/selective-keyframe-depth/first/tum-fr1-desk2-independent-retain/sensor-only.json",
+        "path": "artifacts/selective-keyframe-depth/first/tum-fr1-desk2-independent-retain/sensor-only.json.xz",
+        "encoding": "xz",
+        "sha256": "131ad404370ba982f6220b0dec422898bd1b43b42af85be90d469cb1e2983c11",
+        "stored_sha256": "bbd6e2644f7863c1ebe061d20ad14497f6e7386df7e4fd1eea90fb14a540fb9c",
+        "original_bytes": 129521840,
+        "stored_bytes": 17652224,
+        "decoded_verified": true,
+        "first_outcome_unchanged": true
+      },
+      {
+        "original_path": "artifacts/descent-keyframe-depth/first/tum-fr1-room-temporal-retain/results.json",
+        "path": "artifacts/descent-keyframe-depth/first/tum-fr1-room-temporal-retain/results.json.xz",
+        "encoding": "xz",
+        "sha256": "d205837b11adf6925c048fac384eee357c15b5afeda72b7043cf797bae66ef5e",
+        "stored_sha256": "89a106f0952e9f37c169e4cdfb084bca530702dfdde868f733401301a4cef047",
+        "original_bytes": 128106602,
+        "stored_bytes": 18113708,
+        "decoded_verified": true,
+        "first_outcome_unchanged": true
+      },
+      {
+        "original_path": "artifacts/descent-keyframe-depth/first/tum-fr1-room-temporal-retain/sensor-only.json",
+        "path": "artifacts/descent-keyframe-depth/first/tum-fr1-room-temporal-retain/sensor-only.json.xz",
+        "encoding": "xz",
+        "sha256": "db482cfc11c00e79becb9b0f24c5e7bf71d9d174491108e63908f7c6bcef9f21",
+        "stored_sha256": "f5712f2287dbf3fa2911f0b2b8f44aa5503c66a44fef4a537dcfca2410004034",
+        "original_bytes": 128084707,
+        "stored_bytes": 18108820,
+        "decoded_verified": true,
+        "first_outcome_unchanged": true
+      }
+    ]
+  },
+  "platform": {
+    "os": "Linux-6.18.55-x86_64-with-glibc2.41",
+    "machine": "x86_64",
+    "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+    "engine_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
+    "numpy": "2.3.5",
+    "root_rustc": "rustc 1.90.0 (1159e78c4 2025-09-14)",
+    "native_rustc": "rustc 1.95.0 (59807616e 2026-04-14)",
+    "observed_platform": "Linux x86_64 only; configured CI platforms not locally observed"
+  },
+  "local_packet": "artifacts/relocalization-map-grace-v1",
+  "comparative_maturity": {
+    "percent": 28,
+    "subjective": true,
+    "comparison": [
+      "Autoware",
+      "Apollo",
+      "openpilot"
+    ],
+    "benchmark_or_safety_score": false,
+    "waypoint_30_percent_met": false
+  }
+}

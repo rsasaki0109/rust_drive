@@ -1,5 +1,8 @@
 //! Measured-map proposals after loss. No scene labels or evaluation pose enter.
-use crate::{MapLocalizationConfig, MotionDiscontinuity, SensorFrame};
+use crate::{
+    MapLocalizationConfig, MapLocalizationDecision, MapLocalizationDiagnostics,
+    MotionDiscontinuity, SensorFrame,
+};
 use rustdriving_core::{Pose, wrap_angle};
 use rustdriving_localization::registration::regional::{RegionalSearchConfig, search_region};
 use serde::{Deserialize, Serialize};
@@ -13,6 +16,9 @@ pub struct RelocalizationConfig {
     pub max_attempts: usize,
     pub confirmations: usize,
     pub retry_interval_s: f64,
+    /// Optional absolute map-only window after a measured epoch reset (seconds).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub map_only_grace_s: Option<f64>,
 }
 impl Default for RelocalizationConfig {
     fn default() -> Self {
@@ -23,6 +29,7 @@ impl Default for RelocalizationConfig {
             max_attempts: 8,
             confirmations: 3,
             retry_interval_s: 0.5,
+            map_only_grace_s: None,
         }
     }
 }
@@ -41,6 +48,9 @@ impl RelocalizationConfig {
             || self.confirmations > self.max_attempts
             || !self.retry_interval_s.is_finite()
             || !(0.5..=0.6).contains(&self.retry_interval_s)
+            || self
+                .map_only_grace_s
+                .is_some_and(|s| !s.is_finite() || !(0.5..=5.).contains(&s))
         {
             return Err("invalid bounded relocalization confirmation policy".into());
         }
@@ -57,6 +67,22 @@ pub enum RelocalizationPhase {
     Rejected,
     Exhausted,
     Reinitialized,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub enum MapOnlySupportStatus {
+    WaitingForMap,
+    Active,
+    Expired,
+    Interrupted,
+    GnssAccepted,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapOnlySupportDiagnostics {
+    pub reset_stamp: f64,
+    pub expires_at: f64,
+    pub last_accepted_map_stamp: Option<f64>,
+    pub status: MapOnlySupportStatus,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -100,6 +126,9 @@ pub struct RelocalizationDiagnostics {
     /// Full finite-hypothesis evidence appears only on an actual search frame.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub search: Option<RegionalSearchDiagnostics>,
+    /// Separate from GNSS freshness: never changes a GNSS clock or counter.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub map_only_support: Option<MapOnlySupportDiagnostics>,
 }
 impl Default for RelocalizationDiagnostics {
     fn default() -> Self {
@@ -113,6 +142,7 @@ impl Default for RelocalizationDiagnostics {
             last_gap: None,
             rejection: None,
             search: None,
+            map_only_support: None,
         }
     }
 }
@@ -143,12 +173,62 @@ impl Relocalizer {
         self.diagnostic.rejection = Some(reason.into());
         self.confirmation = None;
     }
+    /// Only a new post-reset accepted map correction can support a fresh epoch.
+    /// Neither later scans nor a second call can extend the absolute deadline.
+    pub fn map_only_support(
+        &mut self,
+        now: f64,
+        map: Option<&MapLocalizationDiagnostics>,
+        gnss_accepted: bool,
+        interrupted: bool,
+        healthy: bool,
+    ) -> bool {
+        let Some(support) = &mut self.diagnostic.map_only_support else {
+            return false;
+        };
+        support.last_accepted_map_stamp = map.and_then(|m| m.last_accepted_stamp);
+        if gnss_accepted {
+            support.status = MapOnlySupportStatus::GnssAccepted;
+        } else if matches!(
+            support.status,
+            MapOnlySupportStatus::Expired
+                | MapOnlySupportStatus::Interrupted
+                | MapOnlySupportStatus::GnssAccepted
+        ) {
+            return false;
+        } else if now > support.expires_at + 1e-9 {
+            support.status = MapOnlySupportStatus::Expired;
+        } else if interrupted {
+            support.status = MapOnlySupportStatus::Interrupted;
+        } else if healthy
+            && map.is_some_and(|m| {
+                m.decision == MapLocalizationDecision::Accepted
+                    && m.last_accepted_stamp.is_some_and(|stamp| {
+                        stamp > support.reset_stamp && now - stamp <= 0.2 + 1e-9
+                    })
+            })
+        {
+            support.status = MapOnlySupportStatus::Active;
+        } else {
+            support.status = MapOnlySupportStatus::WaitingForMap;
+        }
+        support.status == MapOnlySupportStatus::Active
+    }
     pub fn reinitialized(&mut self, now: f64) {
         self.diagnostic.phase = RelocalizationPhase::Reinitialized;
         self.diagnostic.last_reinitialized_stamp = Some(now);
         self.diagnostic.rejection = None;
         self.last_motion = None;
         self.confirmation = None;
+        self.diagnostic.map_only_support =
+            self.config
+                .map_only_grace_s
+                .map(|grace| MapOnlySupportDiagnostics {
+                    reset_stamp: now,
+                    expires_at: now + grace,
+                    last_accepted_map_stamp: None,
+                    status: MapOnlySupportStatus::WaitingForMap,
+                });
     }
     pub fn observe(
         &mut self,
@@ -164,9 +244,11 @@ impl Relocalizer {
             .is_none_or(|old| old.detected_at != gap.detected_at)
         {
             let previous_reset = self.diagnostic.last_reinitialized_stamp;
+            let previous_support = self.diagnostic.map_only_support.take();
             self.diagnostic = RelocalizationDiagnostics {
                 last_gap: Some(gap.clone()),
                 last_reinitialized_stamp: previous_reset,
+                map_only_support: previous_support,
                 ..RelocalizationDiagnostics::default()
             };
             self.last_motion = None;

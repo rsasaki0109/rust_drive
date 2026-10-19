@@ -48,8 +48,10 @@ must be interpreted within that epoch. Filter histories, occupancy, tracks,
 predictions, planner and controller are newly constructed. The confirming frame
 brakes. GNSS/LiDAR acquisitions at or before the reset cannot fuse again or renew
 freshness; subsequent fresh measurements must satisfy the normal health gates.
-The new filter has no accepted GNSS fix, so driving currently also requires a
-fresh post-reset GNSS acquisition.
+The new filter has no accepted GNSS fix, so the default policy also requires a
+fresh post-reset GNSS acquisition. A separate opt-in
+[bounded map-support window](relocalization-map-only.md) can support that new
+epoch for at most five seconds before GNSS returns.
 
 The optional `relocalization` diagnostic records attempts, confirmation status,
 last gap/reset and the finite seed/candidate evidence on search frames.
