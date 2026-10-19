@@ -108,6 +108,9 @@ jobs:
       - name: Verify calibrated GNSS antenna mounts with delayed GNSS and maps
         shell: bash
         run: python scripts/check_gnss_antenna.py --plant reference-2d --smoke --output artifacts/gnss-antenna
+      - name: Verify stopped motion discontinuities and healthy scene continuity
+        shell: bash
+        run: python scripts/check_motion_continuity.py --plant reference-2d --smoke --output artifacts/motion-continuity
       - name: Verify delayed map acquisitions and transient fault recovery
         shell: bash
         run: python scripts/check_delayed_map.py --output artifacts/delayed-map --controls
@@ -178,6 +181,7 @@ jobs:
             artifacts/gnss-covariance/
             artifacts/gnss-recovery/
             artifacts/gnss-antenna/
+            artifacts/motion-continuity/
             artifacts/gnss-latency/
   image-tracking:
     runs-on: ubuntu-latest
@@ -1016,6 +1020,9 @@ jobs:
       - name: Verify native calibrated GNSS antenna mounts and preserve controls
         working-directory: rust_drive
         run: python3 scripts/check_gnss_antenna.py --plant rne-dynamic --smoke --output artifacts/gnss-antenna-native
+      - name: Verify native physical stops after motion continuity loss
+        working-directory: rust_drive
+        run: python3 scripts/check_motion_continuity.py --plant rne-dynamic --smoke --output artifacts/motion-continuity-native
       - name: Verify legal turn routes in the native dynamic plant
         working-directory: rust_drive
         run: python3 scripts/check-turn-restrictions.py --backend native --seeds 7 --compact --output artifacts/turn-restrictions
@@ -1097,6 +1104,7 @@ jobs:
             rust_drive/artifacts/gnss-covariance-native/
             rust_drive/artifacts/gnss-recovery-native/
             rust_drive/artifacts/gnss-antenna-native/
+            rust_drive/artifacts/motion-continuity-native/
             rust_drive/artifacts/japan-city-demo/
       - uses: actions/upload-artifact@v4
         with:

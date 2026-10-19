@@ -112,6 +112,17 @@ Unsafe Rust is forbidden at workspace level. There is no global message bus, cus
 
 Missing/stale odometry, LiDAR or GNSS, invalid samples, excessive covariance and acquisition failure select finite emergency braking. Healthy empty LiDAR is accepted; a failed acquisition brakes immediately. An invalid clock returns `Err`; callers must stop rather than reuse a command. The reference and RNE backends implement observation/advance boundaries and share the same independent evaluator. Runtime truth stays inside sensor synthesis and evaluation/rendering.
 
+An uncovered post-initial wheel/gyro interval additionally latches
+`MotionDiscontinuity`. It invalidates scene history and prohibits subsequent
+GNSS/LiDAR/map admission. Pose, speed, covariance and GNSS diagnostics retain
+their last covered values and cannot be treated as current estimates. Later
+healthy sensors cannot reconstruct the missing rigid motion or clear the stop;
+external pose calibration and a new pipeline instance are required. The existing
+0.15s accepted-motion cache grace and short malformed-input recovery remain
+while predictions cover every interval. Simulation-only motion delay/dropout
+transport preserves raw acquisition stamps/values and stays out of the header.
+[Epoch diagnostic, fixed stop protocol and limitations](motion-continuity.md).
+
 Optional `initial_pose_covariance` supplies a finite, symmetric positive definite
 ENU x/y/yaw matrix (m², m·rad, rad²). It is external initialization calibration.
 When present, output records every full posterior and replay checks it; absent

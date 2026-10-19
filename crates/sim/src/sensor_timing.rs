@@ -1,5 +1,5 @@
 //! Simulator-only sensor transport. Acquisition values and stamps are immutable.
-use rustdriving_core::{Gnss, Lidar3dScan, LidarScan, MultiHeightLidarScan};
+use rustdriving_core::{Gnss, Lidar3dScan, LidarScan, MultiHeightLidarScan, Odometry};
 use rustdriving_pipeline::SensorFrame;
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
@@ -12,7 +12,7 @@ pub struct SensorFailureWindow {
     pub until: f64,
 }
 
-/// Both adapters acquire at 10 Hz; selecting every Nth existing scan reduces the cadence.
+/// Both adapters acquire LiDAR at 10 Hz and motion at 20 Hz; transport preserves acquisition.
 /// Ticks are the common 0.05-second simulator steps, not wall-clock time.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -21,6 +21,10 @@ pub struct SensorTiming {
     pub lidar_delay_ticks: usize,
     #[serde(default, skip_serializing_if = "is_zero")]
     pub gnss_delay_ticks: usize,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub odometry_delay_ticks: usize,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub odometry_dropout_windows: Vec<SensorFailureWindow>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub lidar_failure_windows: Vec<SensorFailureWindow>,
 }
@@ -31,6 +35,25 @@ impl SensorTiming {
     pub fn validate(&self, duration: f64) -> Result<(), String> {
         if self.gnss_delay_ticks > 20 {
             return Err("GNSS transport delay must be at most 20 ticks".into());
+        }
+        if self.odometry_delay_ticks > 20 {
+            return Err("odometry transport delay must be at most 20 ticks".into());
+        }
+        if self.odometry_dropout_windows.len() > 32 {
+            return Err("at most 32 odometry dropout windows are supported".into());
+        }
+        let mut odometry_end = 0.;
+        for window in &self.odometry_dropout_windows {
+            if !window.from.is_finite()
+                || !window.until.is_finite()
+                || window.from < odometry_end
+                || window.from >= duration
+                || window.until <= window.from
+                || window.until > duration
+            {
+                return Err("invalid or overlapping odometry dropout window".into());
+            }
+            odometry_end = window.until;
         }
         if !(2..=10).contains(&self.lidar_period_ticks)
             || !self.lidar_period_ticks.is_multiple_of(2)
@@ -64,6 +87,7 @@ impl SensorTiming {
 pub(crate) struct SensorDelivery {
     pending: VecDeque<PendingScan>,
     pending_gnss: VecDeque<(usize, Gnss)>,
+    pending_odometry: VecDeque<(usize, Odometry)>,
 }
 struct PendingScan {
     ready_tick: usize,
@@ -73,6 +97,28 @@ struct PendingScan {
 }
 impl SensorDelivery {
     pub(crate) fn apply(&mut self, timing: &SensorTiming, tick: usize, input: &mut SensorFrame) {
+        // Suppress failed acquisitions before transport. Already acquired wheel
+        // and gyro samples retain their original values and stamps in the queue.
+        if timing
+            .odometry_dropout_windows
+            .iter()
+            .any(|window| input.time + 1e-9 >= window.from && input.time < window.until - 1e-9)
+        {
+            input.odometry = None;
+        }
+        if timing.odometry_delay_ticks != 0 {
+            if let Some(motion) = input.odometry.take() {
+                self.pending_odometry
+                    .push_back((tick + timing.odometry_delay_ticks, motion));
+            }
+            while self
+                .pending_odometry
+                .front()
+                .is_some_and(|(ready, _)| *ready <= tick)
+            {
+                input.odometry = self.pending_odometry.pop_front().map(|(_, motion)| motion);
+            }
+        }
         // GNSS transport is independent of LiDAR failure epochs. Preserve raw
         // acquisition timestamps and measurement values, including outliers.
         if timing.gnss_delay_ticks != 0 {
@@ -141,6 +187,8 @@ mod tests {
             lidar_period_ticks: period,
             lidar_delay_ticks: delay,
             gnss_delay_ticks: 0,
+            odometry_delay_ticks: 0,
+            odometry_dropout_windows: vec![],
             lidar_failure_windows: vec![],
         }
     }
@@ -160,6 +208,80 @@ mod tests {
             navigation_update: None,
             traffic_signal: None,
         }
+    }
+
+    #[test]
+    fn motion_transport_keeps_acquisition_values_and_pre_dropout_samples() {
+        let mut timing = timing(2, 0);
+        timing.odometry_delay_ticks = 2;
+        timing.odometry_dropout_windows = vec![SensorFailureWindow {
+            from: 0.1,
+            until: 0.2,
+        }];
+        timing.lidar_failure_windows = vec![SensorFailureWindow {
+            from: 0.,
+            until: 0.5,
+        }];
+        let mut delivery = SensorDelivery::default();
+        for tick in 0..8 {
+            let mut input = frame(tick);
+            input.odometry = Some(Odometry {
+                stamp: input.time,
+                speed: tick as f64 + 1.,
+                yaw_rate: -(tick as f64) * 0.01,
+            });
+            delivery.apply(&timing, tick, &mut input);
+            assert!(input.lidar_failed);
+            // Failed acquisitions at ticks 2 and 3 produce no delivery at 4/5;
+            // the preceding acquisitions still arrive during the dropout.
+            if tick < 2 || (4..6).contains(&tick) {
+                assert!(input.odometry.is_none());
+            } else {
+                let acquired = tick - 2;
+                let sample = input.odometry.unwrap();
+                assert_eq!(sample.stamp, acquired as f64 * 0.05);
+                assert_eq!(sample.speed, acquired as f64 + 1.);
+                assert_eq!(sample.yaw_rate, -(acquired as f64) * 0.01);
+            }
+        }
+    }
+
+    #[test]
+    fn motion_fault_configuration_is_bounded_and_defaults_preserve_old_schema() {
+        let mut value = timing(2, 0);
+        let encoded = serde_json::to_value(&value).unwrap();
+        assert!(encoded.get("odometry_delay_ticks").is_none());
+        assert!(encoded.get("odometry_dropout_windows").is_none());
+        assert!(serde_json::from_value::<SensorTiming>(encoded).is_ok());
+        value.odometry_delay_ticks = 21;
+        assert!(value.validate(1.).is_err());
+        value.odometry_delay_ticks = 20;
+        assert!(value.validate(1.).is_ok());
+        for (from, until) in [(-0.1, 0.2), (0.2, 0.2), (0.9, 1.1), (f64::NAN, 0.2)] {
+            value.odometry_dropout_windows = vec![SensorFailureWindow { from, until }];
+            assert!(value.validate(1.).is_err());
+        }
+        value.odometry_dropout_windows = vec![
+            SensorFailureWindow {
+                from: 0.,
+                until: 0.2,
+            },
+            SensorFailureWindow {
+                from: 0.1,
+                until: 0.3,
+            },
+        ];
+        assert!(value.validate(1.).is_err());
+        value.odometry_dropout_windows[1].from = 0.2;
+        assert!(value.validate(1.).is_ok());
+        value.odometry_dropout_windows = vec![
+            SensorFailureWindow {
+                from: 0.,
+                until: 0.1
+            };
+            33
+        ];
+        assert!(value.validate(1.).is_err());
     }
 
     #[test]
@@ -494,6 +616,8 @@ mod tests {
             lidar_period_ticks: 2,
             lidar_delay_ticks: 2,
             gnss_delay_ticks: 0,
+            odometry_delay_ticks: 0,
+            odometry_dropout_windows: vec![],
             lidar_failure_windows: vec![SensorFailureWindow {
                 from: 3.0,
                 until: 4.0,

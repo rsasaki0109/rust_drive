@@ -706,7 +706,11 @@ fn nonuniform_clocks_gaps_and_invalid_sensor_stamps_remain_recordable() {
             log.ticks[4]
                 .expected
                 .health
-                .contains(&HealthIssue::InvalidGnss)
+                .contains(&HealthIssue::MotionDiscontinuity)
+        );
+        assert_eq!(
+            log.ticks[4].expected.localization.unwrap().accepted_fixes,
+            log.ticks[2].expected.localization.unwrap().accepted_fixes
         );
         let mut written = Vec::new();
         log.write(&mut written).unwrap();

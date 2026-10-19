@@ -1043,10 +1043,11 @@ pub fn simulate_with_backend(
         }
         if !scenario.speed_zones.is_empty()
             || scenario.gnss_latency_compensation
-            || scenario
-                .sensor_timing
-                .as_ref()
-                .is_some_and(|timing| timing.gnss_delay_ticks > 0)
+            || scenario.sensor_timing.as_ref().is_some_and(|timing| {
+                timing.gnss_delay_ticks > 0
+                    || timing.odometry_delay_ticks > 0
+                    || !timing.odometry_dropout_windows.is_empty()
+            })
             || mapped_speed_limits
             || scenario.navigation.as_ref().is_some_and(|nav| {
                 matches!(nav.start, rustdriving_routing::RouteEndpoint::Edge(_))

@@ -119,8 +119,8 @@ fn pre_fault_duplicate_and_expired_samples_cannot_replace_accepted_motion() {
     }
     held(&driver.step(&frame(0.35, None)).unwrap());
     let recovered = driver.step(&frame(0.4, Some(0.3))).unwrap();
-    assert!(recovered.health.is_empty());
-    assert!(!recovered.emergency);
+    assert!(recovered.health.contains(&HealthIssue::MotionDiscontinuity));
+    assert!(recovered.emergency);
 }
 
 #[test]
@@ -131,15 +131,15 @@ fn each_new_invalid_observation_advances_the_recovery_cutoff() {
     let mut second = frame(0.1, Some(0.0));
     second.odometry.as_mut().unwrap().yaw_rate = 4.0;
     held(&driver.step(&second).unwrap());
+    held(&driver.step(&frame(0.125, Some(0.1))).unwrap());
     held(&driver.step(&frame(0.15, Some(0.075))).unwrap());
-    held(&driver.step(&frame(0.2, Some(0.1))).unwrap());
-    let recovered = driver.step(&frame(0.25, Some(0.2))).unwrap();
+    let recovered = driver.step(&frame(0.175, Some(0.15))).unwrap();
     assert!(recovered.health.is_empty());
     assert!(!recovered.emergency);
 }
 
 #[test]
-fn ordinary_missing_samples_keep_the_existing_cache_grace_and_delayed_recovery() {
+fn ordinary_missing_samples_keep_grace_but_an_uncovered_interval_latches() {
     let mut driver = DrivingPipeline::new(config()).unwrap();
     driver.step(&frame(0.0, Some(0.0))).unwrap();
     for time in [0.05, 0.1, 0.15] {
@@ -151,10 +151,10 @@ fn ordinary_missing_samples_keep_the_existing_cache_grace_and_delayed_recovery()
     assert!(stale.health.contains(&HealthIssue::StaleOdometry));
     assert!(!stale.health.contains(&HealthIssue::InvalidOdometry));
     assert!(stale.emergency);
-    // A merely stale cache has no malformed-observation cutoff.
+    // A new sample cannot retroactively cover the missing motion interval.
     let recovered = driver.step(&frame(0.25, Some(0.15))).unwrap();
-    assert!(recovered.health.is_empty());
-    assert!(!recovered.emergency);
+    assert!(recovered.health.contains(&HealthIssue::MotionDiscontinuity));
+    assert!(recovered.emergency);
 }
 
 #[test]

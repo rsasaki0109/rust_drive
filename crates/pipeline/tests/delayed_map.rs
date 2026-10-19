@@ -137,7 +137,7 @@ fn a_clock_gap_cannot_seed_registration_from_uncovered_history() {
     assert!(gap.health.contains(&HealthIssue::ClockGap));
     assert!(gap.emergency);
     let map = gap.map_localization.unwrap();
-    assert_eq!(map.decision, MapLocalizationDecision::UnsupportedTiming);
+    assert_eq!(map.decision, MapLocalizationDecision::Rejected);
     assert_eq!(map.last_accepted_stamp, Some(0.));
     let old = pipeline
         .step(&stationary(1.05, Some(1.), Some(1.05)))
@@ -146,10 +146,11 @@ fn a_clock_gap_cannot_seed_registration_from_uncovered_history() {
     let fresh = pipeline
         .step(&stationary(1.1, Some(1.05), Some(1.1)))
         .unwrap();
-    assert!(fresh.health.is_empty(), "{:?}", fresh.health);
+    assert!(fresh.health.contains(&HealthIssue::MotionDiscontinuity));
+    assert!(fresh.emergency);
     assert_eq!(
         fresh.map_localization.unwrap().last_accepted_stamp,
-        Some(1.05)
+        Some(0.)
     );
 }
 

@@ -345,8 +345,20 @@ pub enum HealthIssue {
     LocalizationUncertain,
     AcquisitionFailed,
     ClockGap,
+    MotionDiscontinuity,
     InvalidNavigation,
     InvalidTrafficSignal,
+}
+
+/// The last valid motion epoch ended; only external pose reinitialization can
+/// create a new operational pipeline. Later estimates retain the last state.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MotionDiscontinuity {
+    pub last_covered_time: f64,
+    pub detected_at: f64,
+    pub last_accepted_odometry_stamp: Option<f64>,
+    pub cause: HealthIssue,
 }
 
 #[derive(Clone, Copy, Debug, Default, Serialize, Deserialize)]
@@ -399,6 +411,8 @@ pub struct PipelineOutput {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub gnss_recovery: Option<GnssRecoveryDiagnostics>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub motion_discontinuity: Option<MotionDiscontinuity>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub map_localization: Option<MapLocalizationDiagnostics>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub perception3d: Option<Perception3dDiagnostics>,
@@ -433,6 +447,7 @@ pub struct DrivingPipeline {
     last_odom: Option<Odometry>,
     /// Latest malformed odometry delivery epoch; recovery needs a fresh later acquisition.
     odometry_fault: Option<f64>,
+    motion_discontinuity: Option<MotionDiscontinuity>,
     last_lidar: Option<f64>,
     /// Latest failure delivery epoch, shared by ordinary, layered and XYZ inputs.
     lidar_fault: Option<f64>,
@@ -555,6 +570,7 @@ impl DrivingPipeline {
             previous_time: None,
             last_odom: None,
             odometry_fault: None,
+            motion_discontinuity: None,
             last_lidar: None,
             lidar_fault: None,
             gnss_fault: None,
@@ -608,13 +624,15 @@ impl DrivingPipeline {
         if self.odometry_fault.is_some() {
             health.push(HealthIssue::InvalidOdometry);
         }
+        let motion_allowed = self.motion_discontinuity.is_none();
+        let mut motion_covered = first;
         let mut recorded_motion = false;
         match self.last_odom {
             None => health.push(HealthIssue::MissingOdometry),
             Some(odom) if input.time - odom.stamp > MAX_ODOMETRY_AGE_S + 1e-9 => {
                 health.push(HealthIssue::StaleOdometry)
             }
-            Some(odom) if !first && dt <= 0.25 => {
+            Some(odom) if !first && dt <= 0.25 && motion_allowed => {
                 let before = self.ekf.state().pose;
                 if let Some(history) = &mut self.gnss_history {
                     recorded_motion = history
@@ -626,14 +644,17 @@ impl DrivingPipeline {
                             self.config.rear_axle_offset_m.unwrap_or(0.),
                         )
                         .is_ok();
+                    motion_covered = recorded_motion;
                     if !recorded_motion {
                         self.odometry_fault = Some(input.time);
                         health.push(HealthIssue::InvalidOdometry);
                     }
                 } else if let Some(offset) = self.config.rear_axle_offset_m {
                     self.ekf.predict_chassis(odom, dt, offset);
+                    motion_covered = true;
                 } else {
                     self.ekf.predict(odom, dt);
+                    motion_covered = true;
                 }
                 self.tracking_frame.advance(before, self.ekf.state().pose);
             }
@@ -641,6 +662,42 @@ impl DrivingPipeline {
         }
         if !recorded_motion && let Some(history) = &mut self.gnss_history {
             history.reset(input.time);
+        }
+        if !first && motion_allowed && !motion_covered {
+            let cause = health
+                .iter()
+                .find(|issue| {
+                    matches!(
+                        issue,
+                        HealthIssue::ClockGap
+                            | HealthIssue::MissingOdometry
+                            | HealthIssue::StaleOdometry
+                            | HealthIssue::InvalidOdometry
+                    )
+                })
+                .cloned()
+                .unwrap_or(HealthIssue::InvalidOdometry);
+            self.motion_discontinuity = Some(MotionDiscontinuity {
+                last_covered_time: self.previous_time.unwrap(),
+                detected_at: input.time,
+                last_accepted_odometry_stamp: self.last_odom.map(|odom| odom.stamp),
+                cause,
+            });
+            // The missing rigid motion cannot be inferred from later scalar
+            // readings. Discard scene history and never bridge this epoch.
+            self.scan_poses = scan_pose::ScanPoseHistory::default();
+            self.tracker = Tracker::default();
+            self.tracking_tracks.clear();
+            self.tracks.clear();
+            self.predictor = if self.config.confirm_slow_motion {
+                ObservedBraking::with_slow_motion()
+            } else {
+                ObservedBraking::default()
+            };
+            self.lidar_fault = Some(input.time);
+        }
+        if self.motion_discontinuity.is_some() {
+            health.push(HealthIssue::MotionDiscontinuity);
         }
         let uncovered_recovery_motion = health.iter().any(|issue| {
             matches!(
@@ -657,7 +714,9 @@ impl DrivingPipeline {
                 recovery.expire();
             }
         }
-        if let Some(fix) = input.gnss {
+        if let Some(fix) = input.gnss
+            && self.motion_discontinuity.is_none()
+        {
             if !stamp_valid(fix.stamp, input.time)
                 || !fix.position.finite()
                 || !fix.variance.is_finite()
@@ -761,73 +820,80 @@ impl DrivingPipeline {
         let mut ground = None;
         let mut perception3d = None;
         let mut measured_acquisition = None;
-        let scan = match (
-            &self.config.multi_height_lidar,
-            &self.config.lidar3d,
-            &input.multi_height_lidar,
-            &input.lidar3d,
-        ) {
-            (Some(calibration), None, Some(layered), None) if input.lidar.is_none() => {
-                match calibration.fuse(layered) {
-                    Ok(scan) => {
-                        fused = scan;
-                        Some(&fused)
-                    }
-                    Err(()) => {
-                        health.push(HealthIssue::InvalidLidar);
-                        self.lidar_fault = Some(input.time);
-                        None
+        let scan = if self.motion_discontinuity.is_some() {
+            None
+        } else {
+            match (
+                &self.config.multi_height_lidar,
+                &self.config.lidar3d,
+                &input.multi_height_lidar,
+                &input.lidar3d,
+            ) {
+                (Some(calibration), None, Some(layered), None) if input.lidar.is_none() => {
+                    match calibration.fuse(layered) {
+                        Ok(scan) => {
+                            fused = scan;
+                            Some(&fused)
+                        }
+                        Err(()) => {
+                            health.push(HealthIssue::InvalidLidar);
+                            self.lidar_fault = Some(input.time);
+                            None
+                        }
                     }
                 }
-            }
-            (None, Some(calibration), None, Some(cloud)) if input.lidar.is_none() => {
-                let projected = if (calibration.ground.is_some()
-                    || self.config.perception3d.is_some())
-                    && (input.lidar_failed || !stamp_valid(cloud.stamp, input.time))
+                (None, Some(calibration), None, Some(cloud)) if input.lidar.is_none() => {
+                    let projected = if (calibration.ground.is_some()
+                        || self.config.perception3d.is_some())
+                        && (input.lidar_failed || !stamp_valid(cloud.stamp, input.time))
+                    {
+                        Err(None)
+                    } else if let Some(config) = &self.config.perception3d {
+                        match perception_3d::process(calibration, config, cloud) {
+                            Ok(acquisition) => {
+                                let scan = acquisition.scan.clone();
+                                perception3d = Some(acquisition.diagnostics.clone());
+                                measured_acquisition = Some(acquisition);
+                                Ok((scan, None))
+                            }
+                            Err(diagnostic) => {
+                                perception3d = Some(*diagnostic);
+                                Err(None)
+                            }
+                        }
+                    } else {
+                        calibration.project(cloud)
+                    };
+                    match projected {
+                        Ok((scan, diagnostics)) => {
+                            ground = diagnostics;
+                            fused = scan;
+                            Some(&fused)
+                        }
+                        Err(diagnostics) => {
+                            ground = diagnostics.map(|diagnostic| *diagnostic);
+                            health.push(HealthIssue::InvalidLidar);
+                            self.lidar_fault = Some(input.time);
+                            None
+                        }
+                    }
+                }
+                (Some(_), None, None, None) | (None, Some(_), None, None)
+                    if input.lidar.is_none() =>
                 {
-                    Err(None)
-                } else if let Some(config) = &self.config.perception3d {
-                    match perception_3d::process(calibration, config, cloud) {
-                        Ok(acquisition) => {
-                            let scan = acquisition.scan.clone();
-                            perception3d = Some(acquisition.diagnostics.clone());
-                            measured_acquisition = Some(acquisition);
-                            Ok((scan, None))
-                        }
-                        Err(diagnostic) => {
-                            perception3d = Some(*diagnostic);
-                            Err(None)
-                        }
-                    }
-                } else {
-                    calibration.project(cloud)
-                };
-                match projected {
-                    Ok((scan, diagnostics)) => {
-                        ground = diagnostics;
-                        fused = scan;
-                        Some(&fused)
-                    }
-                    Err(diagnostics) => {
-                        ground = diagnostics.map(|diagnostic| *diagnostic);
-                        health.push(HealthIssue::InvalidLidar);
-                        self.lidar_fault = Some(input.time);
-                        None
-                    }
+                    None
                 }
-            }
-            (Some(_), None, None, None) | (None, Some(_), None, None) if input.lidar.is_none() => {
-                None
-            }
-            (None, None, None, None) => input.lidar.as_ref(),
-            _ => {
-                health.push(HealthIssue::InvalidLidar);
-                self.lidar_fault = Some(input.time);
-                None
+                (None, None, None, None) => input.lidar.as_ref(),
+                _ => {
+                    health.push(HealthIssue::InvalidLidar);
+                    self.lidar_fault = Some(input.time);
+                    None
+                }
             }
         };
         if let Some(map) = &mut self.map_localization {
-            let eligible = !input.lidar_failed
+            let eligible = self.motion_discontinuity.is_none()
+                && !input.lidar_failed
                 && !health.contains(&HealthIssue::InvalidLidar)
                 && scan.is_none_or(|scan| {
                     stamp_valid(scan.stamp, input.time)
@@ -851,7 +917,9 @@ impl DrivingPipeline {
         }
         let estimate = self.ekf.state();
         let tracking_to_world = self.tracking_frame.to_world(estimate.pose);
-        self.scan_poses.record(input.time, self.tracking_frame.pose);
+        if self.motion_discontinuity.is_none() {
+            self.scan_poses.record(input.time, self.tracking_frame.pose);
+        }
         if let Some(scan) = scan {
             if input.lidar_failed
                 || !stamp_valid(scan.stamp, input.time)
@@ -1212,6 +1280,7 @@ impl DrivingPipeline {
             ground,
             localization: Some(self.ekf.diagnostics()),
             gnss_recovery: self.gnss_recovery.as_ref().map(|r| r.diagnostics),
+            motion_discontinuity: self.motion_discontinuity.clone(),
             gnss_latency: self
                 .gnss_history
                 .as_ref()

@@ -22,7 +22,20 @@ clear this hold or replace the last accepted measurement. Another malformed
 observation advances the recovery cutoff. Estimation may continue from the
 accepted cache within its normal age limit while commands remain emergency
 braking. Ordinary missing samples without a preceding malformed observation
-retain their existing age-based grace and recovery behavior.
+retain their existing age-based grace while every interval remains covered.
+
+If a post-initial interval has no usable motion prediction (missing/expired
+wheel cache, clock gap over 0.25 s or failed history prediction), the pipeline
+now latches `MotionDiscontinuity`. Scan-pose history, tracks and predictor
+evidence are discarded; new GNSS/LiDAR/map observations cannot update the
+invalid epoch or resume driving. `motion_discontinuity` records the fixed
+last-covered/detection times, last accepted motion stamp and cause. Pose,
+speed, covariance and GNSS clocks remain the last covered values, **invalid
+as current state**. Emergency acceleration −6 m/s² and steering zero persist
+until external pose calibration creates a new pipeline instance. First-step
+initialization and the ordinary 0.15 s cache grace remain. Covered-motion logs
+omit the new field; older fault logs expecting automatic resume after an
+uncovered interval require new expectations. [Protocol and limits](motion-continuity.md).
 
 Malformed GNSS retains `InvalidGnss` braking until the EKF accepts a valid fix
 acquired strictly after the latest failure's delivery time and within the normal

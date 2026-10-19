@@ -1,6 +1,19 @@
 # Path toward a broader Rust driving stack
 
-The current engineering estimate is **about 25%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
+The current engineering estimate is **about 26%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
+
+The increment from about 25% reflects the default [motion-continuity
+guard](motion-continuity.md). Missing body motion can no longer connect old
+scene identities or resume driving on fresh scalar observations. Eight healthy
+controls reach their goals; 28 motion-loss controls hold an actual 0 m/s stop,
+including all frames after returned observations. All 24 dropout runs retain
+their global CLI localization failures (maximum errors 3.10–3.32 m): stopping
+does not recover a valid current pose. A checker-only repair aligns classification
+with the predeclared stopping-only protocol; original failed classifications and
+raw streams remain. All 434 prior recordings retain exact replay outputs.
+This strengthens failure handling in the existing authored simulation domain,
+without automatic relocalization or automotive evidence. The **30% waypoint
+remains unmet**.
 
 The increment from about 24% reflects [explicit GNSS antenna mounting
 calibration](gnss-antenna.md). The observation model includes the antenna's

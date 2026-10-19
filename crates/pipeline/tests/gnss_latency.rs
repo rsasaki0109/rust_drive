@@ -59,16 +59,28 @@ fn unavailable_history_latches_fault_until_a_covered_post_fault_acquisition() {
 }
 
 #[test]
-fn uncovered_clock_gap_is_not_replayed_and_a_fresh_covered_fix_recovers() {
+fn uncovered_clock_gap_is_not_replayed_or_cleared_by_a_fresh_position_fix() {
     let mut pipeline = DrivingPipeline::new(config()).unwrap();
     pipeline.step(&frame(0., Some(0.))).unwrap();
     let gap = pipeline.step(&frame(1., Some(0.9))).unwrap();
     assert!(gap.health.contains(&HealthIssue::ClockGap));
-    assert!(gap.health.contains(&HealthIssue::InvalidGnss));
+    assert!(gap.health.contains(&HealthIssue::MotionDiscontinuity));
     assert_eq!(gap.estimate.pose.position, Vec2::default());
+    let still_held = pipeline.step(&frame(1.05, Some(1.02))).unwrap();
     assert!(
-        pipeline
-            .step(&frame(1.05, Some(1.02)))
+        still_held
+            .health
+            .contains(&HealthIssue::MotionDiscontinuity)
+    );
+    assert!(still_held.emergency);
+    assert_eq!(
+        still_held.localization.unwrap().last_accepted_stamp,
+        Some(0.)
+    );
+    let mut reinitialized = DrivingPipeline::new(config()).unwrap();
+    assert!(
+        reinitialized
+            .step(&frame(1.1, Some(1.1)))
             .unwrap()
             .health
             .is_empty()

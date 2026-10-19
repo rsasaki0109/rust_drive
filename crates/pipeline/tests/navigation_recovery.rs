@@ -402,7 +402,7 @@ fn a_health_interruption_requires_new_motion_before_confirmation_resumes() {
 }
 
 #[test]
-fn expired_motion_restarts_confirmation_from_three_new_acquisitions() {
+fn expired_motion_prevents_handover_until_pose_reinitialization() {
     let mut driver = DrivingPipeline::new(config()).unwrap();
     driver.step(&frame(0.0, None)).unwrap();
     for time in [0.05, 0.1] {
@@ -420,19 +420,13 @@ fn expired_motion_restarts_confirmation_from_three_new_acquisitions() {
     assert!(output.health.contains(&HealthIssue::StaleOdometry));
     assert!(output.emergency);
     assert_eq!(output.navigation.unwrap().phase, NavigationPhase::Braking);
-    for (index, time) in [0.3, 0.325, 0.35].into_iter().enumerate() {
+    for time in [0.3, 0.325, 0.35] {
         let output = driver.step(&frame(time, None)).unwrap();
-        assert!(output.health.is_empty());
+        assert!(output.health.contains(&HealthIssue::MotionDiscontinuity));
+        assert!(output.emergency);
         let status = output.navigation.unwrap();
-        assert_eq!(status.switches, usize::from(index == 2));
-        assert_eq!(
-            status.phase,
-            if index < 2 {
-                NavigationPhase::Braking
-            } else {
-                NavigationPhase::Following
-            }
-        );
+        assert_eq!(status.switches, 0);
+        assert_eq!(status.phase, NavigationPhase::Braking);
     }
 }
 
