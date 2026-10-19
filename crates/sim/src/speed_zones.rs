@@ -10,6 +10,16 @@ pub(crate) struct SpeedZoneEvaluator {
     pub maximum_excess_m_s: f64,
 }
 impl SpeedZoneEvaluator {
+    pub fn switch_route(
+        &mut self,
+        route: &Route,
+        ego: EgoState,
+        radius: f64,
+        zones: &[RouteSpeedZone],
+    ) {
+        self.previous = None;
+        self.observe(route, ego, radius, zones);
+    }
     pub fn observe(&mut self, route: &Route, ego: EgoState, radius: f64, zones: &[RouteSpeedZone]) {
         let end = (route.project(ego.pose.position).0, ego.speed);
         let start = self.previous.replace(end).unwrap_or(end);
@@ -36,6 +46,45 @@ impl SpeedZoneEvaluator {
         }
         self.violations += usize::from(violated);
     }
+}
+
+/// Evaluation-only compilation from the original map and selected edge IDs.
+/// Per-edge distances are summed independently of the planner's knot indexing.
+pub(crate) fn road_zones(
+    network: &rustdriving_routing::RoadNetworkSpec,
+    plan: &rustdriving_routing::RoutePlan,
+) -> Vec<RouteSpeedZone> {
+    let mut zones = vec![];
+    let mut distance = 0.;
+    for id in &plan.edge_ids {
+        let edge = network.edges.iter().find(|edge| &edge.id == id).unwrap();
+        let mut points = edge.points.clone();
+        points[0] = network
+            .nodes
+            .iter()
+            .find(|node| node.id == edge.from)
+            .unwrap()
+            .position;
+        *points.last_mut().unwrap() = network
+            .nodes
+            .iter()
+            .find(|node| node.id == edge.to)
+            .unwrap()
+            .position;
+        let start = distance;
+        distance += points
+            .windows(2)
+            .map(|pair| pair[0].distance(pair[1]))
+            .sum::<f64>();
+        if let Some(speed) = edge.speed_limit_m_s {
+            zones.push(RouteSpeedZone {
+                start_s_m: start,
+                end_s_m: distance,
+                speed_m_s: speed.min(8.),
+            });
+        }
+    }
+    zones
 }
 
 /// Evaluation-only policy selection. No physical state or score enters driving.

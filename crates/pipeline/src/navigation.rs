@@ -1,6 +1,6 @@
 //! Known map updates and a conservative stop-before-divergence route handover.
 use rustdriving_core::{EgoState, Odometry, Route, wrap_angle};
-use rustdriving_routing::{RoadNetwork, RoadNetworkSpec, RoutePlan};
+use rustdriving_routing::{RoadNetwork, RoadNetworkSpec, RoutePlan, SpeedRoutePlan};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -229,14 +229,93 @@ mod tests {
         }
         assert_eq!(n.status.switches, 0);
     }
+
+    #[test]
+    fn speed_policy_changes_atomically_with_the_healthy_stopped_route_handover() {
+        let mut c = config();
+        for edge in &mut c.network.edges {
+            edge.speed_limit_m_s = Some(if edge.id == "detour" { 2. } else { 4. });
+        }
+        let mut n = Navigator::new(c).unwrap();
+        assert_eq!(n.speed_zones().len(), 1);
+        step(
+            &mut n,
+            Some(&update(1., 1, &["main"])),
+            1.,
+            ego(10., 4.),
+            true,
+        );
+        assert!(
+            n.pending
+                .as_ref()
+                .unwrap()
+                .speed_zones
+                .iter()
+                .any(|z| z.speed_m_s == 2.)
+        );
+        assert!(n.speed_zones().iter().all(|z| z.speed_m_s == 4.));
+        for i in 1..=3 {
+            let switched = step(&mut n, None, 2. + i as f64 * 0.05, ego(36., 0.), true);
+            assert_eq!(switched, i == 3);
+            if i < 3 {
+                assert!(n.speed_zones().iter().all(|z| z.speed_m_s == 4.));
+            }
+        }
+        assert_eq!(n.speed_zones().len(), 3);
+        assert_eq!(n.speed_zones()[1].start_s_m, 40.);
+        assert!(n.speed_zones()[1].end_s_m > 160.);
+        assert_eq!(n.speed_zones()[1].speed_m_s, 2.);
+    }
+
+    #[test]
+    fn no_route_hold_latches_after_measured_standstill_until_the_route_is_accepted() {
+        let mut n = Navigator::new(config()).unwrap();
+        step(
+            &mut n,
+            Some(&update(1., 1, &["main", "detour"])),
+            1.,
+            ego(10., 4.),
+            true,
+        );
+        assert!(!n.holding_brake());
+        step(&mut n, None, 1.025, ego(36., 0.1), true);
+        assert!(!n.holding_brake());
+        step(&mut n, None, 1.05, ego(36., 0.), false);
+        assert!(!n.holding_brake());
+        step(&mut n, None, 1.1, ego(36., 0.), true);
+        assert!(n.holding_brake());
+        step(&mut n, None, 1.15, ego(36., 0.1), true);
+        assert!(n.holding_brake());
+        // A reopening snapshot is still pending until all three fresh stopped
+        // samples arrive. Releasing on that snapshot would restart too early.
+        assert!(!step(
+            &mut n,
+            Some(&update(2., 2, &["main"])),
+            2.,
+            ego(36., 0.),
+            true
+        ));
+        assert!(n.holding_brake());
+        assert!(!step(&mut n, None, 2.05, ego(36., 0.), true));
+        assert!(n.holding_brake());
+        assert!(step(&mut n, None, 2.1, ego(36., 0.), true));
+        assert!(!n.holding_brake());
+        step(
+            &mut n,
+            Some(&update(2.2, 3, &["detour"])),
+            2.2,
+            ego(36., 0.),
+            true,
+        );
+        assert_eq!(n.status.phase, NavigationPhase::Braking);
+        assert!(!n.holding_brake());
+    }
 }
 impl NavigationConfig {
     pub fn initial_plan(&self) -> Result<RoutePlan, String> {
-        RoadNetwork::new(self.network.clone())?.shortest_route(
-            &self.start,
-            &self.goal,
-            &self.closed_edges,
-        )
+        RoadNetwork::new(self.network.clone())?
+            .shortest_route_with_speed_zones(&self.start, &self.goal, &self.closed_edges)
+            .map(|compiled| compiled.plan)
     }
 }
 
@@ -272,8 +351,8 @@ pub struct NavigationStatus {
 pub(crate) struct Navigator {
     config: NavigationConfig,
     network: RoadNetwork,
-    active: RoutePlan,
-    pending: Option<RoutePlan>,
+    active: SpeedRoutePlan,
+    pending: Option<SpeedRoutePlan>,
     status: NavigationStatus,
     last_stamp: Option<f64>,
     /// Latest malformed newer-update delivery time; recovery needs a later acquisition.
@@ -281,15 +360,20 @@ pub(crate) struct Navigator {
     /// Last examined motion acquisition, advanced to the control time on unhealthy frames.
     motion_watermark: Option<f64>,
     stopped_samples: usize,
+    blocked_hold: bool,
 }
 impl Navigator {
     pub fn new(config: NavigationConfig) -> Result<Self, String> {
         let network = RoadNetwork::new(config.network.clone())?;
-        let active = config.initial_plan()?;
+        let active = network.shortest_route_with_speed_zones(
+            &config.start,
+            &config.goal,
+            &config.closed_edges,
+        )?;
         let status = NavigationStatus {
             revision: 0,
             phase: NavigationPhase::Following,
-            active_edges: active.edge_ids.clone(),
+            active_edges: active.plan.edge_ids.clone(),
             pending_edges: vec![],
             closed_edges: config.closed_edges.clone(),
             stop_s: None,
@@ -305,10 +389,14 @@ impl Navigator {
             fault_epoch: None,
             motion_watermark: None,
             stopped_samples: 0,
+            blocked_hold: false,
         })
     }
     pub fn plan(&self) -> &RoutePlan {
-        &self.active
+        &self.active.plan
+    }
+    pub fn speed_zones(&self) -> &[rustdriving_core::RouteSpeedZone] {
+        &self.active.speed_zones
     }
     pub fn status(&self) -> NavigationStatus {
         self.status.clone()
@@ -317,6 +405,7 @@ impl Navigator {
         self.status.phase = NavigationPhase::Fault;
         self.fault_epoch = Some(now);
         self.pending = None;
+        self.blocked_hold = false;
         self.status.pending_edges.clear();
         self.invalidate_stop_confirmation(now);
     }
@@ -372,20 +461,20 @@ impl Navigator {
                     self.stopped_samples = 0;
                     self.pending = None;
                     self.status.pending_edges.clear();
-                    match self.network.shortest_route(
+                    match self.network.shortest_route_with_speed_zones(
                         &self.config.start,
                         &self.config.goal,
                         &update.closed_edges,
                     ) {
-                        Ok(plan) if plan.edge_ids == self.active.edge_ids => {
+                        Ok(plan) if plan.plan.edge_ids == self.active.plan.edge_ids => {
                             self.status.phase = NavigationPhase::Following;
                             self.status.stop_s = None;
                         }
                         candidate => {
-                            let mut boundary = self.active.route.length();
+                            let mut boundary = self.active.plan.route.length();
                             let mut length = 0.0;
                             let mut prefix = 0.0;
-                            for (i, id) in self.active.edge_ids.iter().enumerate() {
+                            for (i, id) in self.active.plan.edge_ids.iter().enumerate() {
                                 if update.closed_edges.contains(id) {
                                     boundary = boundary.min(length);
                                 }
@@ -400,7 +489,7 @@ impl Navigator {
                                     edge.points.windows(2).map(|p| p[0].distance(p[1])).sum();
                                 if candidate
                                     .as_ref()
-                                    .is_ok_and(|p| p.edge_ids.get(i) == Some(id))
+                                    .is_ok_and(|p| p.plan.edge_ids.get(i) == Some(id))
                                     && (prefix - length).abs() < 1e-6
                                 {
                                     prefix += edge_length;
@@ -412,19 +501,19 @@ impl Navigator {
                             }
                             let stop = (boundary - radius - 2.0).max(0.0);
                             self.status.stop_s = Some(stop);
-                            let progress = self.active.route.project(ego.pose.position).0;
+                            let progress = self.active.plan.route.project(ego.pose.position).0;
                             // Do not redirect onto a branch already passed or an unreachable stopping point.
                             let reachable = stop - progress
                                 >= ego.speed.max(0.0).powi(2) / (1.6 * deceleration) + 1.0
                                 || (ego.speed.abs() <= 0.05 && progress <= stop + 0.5);
                             if let Ok(plan) = candidate
                                 && reachable
-                                && plan.route.half_width > radius
-                                && plan.route.points.len() <= 5000
-                                && plan.route.length() <= 1500.0
+                                && plan.plan.route.half_width > radius
+                                && plan.plan.route.points.len() <= 5000
+                                && plan.plan.route.length() <= 1500.0
                             {
                                 self.status.phase = NavigationPhase::Braking;
-                                self.status.pending_edges = plan.edge_ids.clone();
+                                self.status.pending_edges = plan.plan.edge_ids.clone();
                                 self.pending = Some(plan);
                             } else {
                                 self.status.phase = NavigationPhase::Blocked;
@@ -438,15 +527,29 @@ impl Navigator {
             self.invalidate_stop_confirmation(now);
             return false;
         }
+        if self.status.phase == NavigationPhase::Following {
+            self.blocked_hold = false;
+        }
+        // Preserve the approach and latch only after a fresh healthy measured
+        // stop. Low-speed feedback noise must not restart an unreachable route.
+        if self.status.phase == NavigationPhase::Blocked
+            && new_motion.is_some_and(|motion| motion.speed.abs() <= 0.05)
+            && ego.speed.abs() <= 0.05
+            && self.status.stop_s.is_some_and(|stop| {
+                stop - self.active.plan.route.project(ego.pose.position).0 <= 3.5
+            })
+        {
+            self.blocked_hold = true;
+        }
         if self.status.phase == NavigationPhase::Braking
             && healthy_motion.is_some_and(|motion| motion.speed.abs() <= 0.05)
             && ego.speed.abs() <= 0.05
         {
-            let (s, lateral) = self.active.route.project(ego.pose.position);
+            let (s, lateral) = self.active.plan.route.project(ego.pose.position);
             let stop = self.status.stop_s.unwrap();
-            let yaw = self.active.route.sample(s, 0.0).1;
+            let yaw = self.active.plan.route.sample(s, 0.0).1;
             if s <= stop + 0.5
-                && lateral.abs() + radius + 0.2 < self.active.route.half_width
+                && lateral.abs() + radius + 0.2 < self.active.plan.route.half_width
                 && wrap_angle(ego.pose.yaw - yaw).abs() < 0.35
             {
                 // Cached motion can maintain a healthy estimate, but is not another sample.
@@ -456,11 +559,12 @@ impl Navigator {
                 self.stopped_samples += 1;
                 if self.stopped_samples >= 3 {
                     self.active = self.pending.take().unwrap();
-                    self.status.active_edges = self.active.edge_ids.clone();
+                    self.status.active_edges = self.active.plan.edge_ids.clone();
                     self.status.pending_edges.clear();
                     self.status.stop_s = None;
                     self.status.switches += 1;
                     self.status.phase = NavigationPhase::Following;
+                    self.blocked_hold = false;
                     self.stopped_samples = 0;
                     return true;
                 }
@@ -478,17 +582,24 @@ impl Navigator {
         }
         let stop = self.status.stop_s?;
         // The local planner stops one meter before its endpoint.
-        let end = (stop + 1.0).min(self.active.route.length());
+        let end = (stop + 1.0).min(self.active.plan.route.length());
         let mut points: Vec<_> = self
             .active
+            .plan
             .route
             .points
             .iter()
-            .zip(&self.active.route.lengths)
+            .zip(&self.active.plan.route.lengths)
             .filter(|(_, s)| **s < end - 1e-6)
             .map(|(p, _)| *p)
             .collect();
-        points.push(self.active.route.sample(end, 0.0).0);
-        Route::new(points, self.active.route.half_width).ok()
+        points.push(self.active.plan.route.sample(end, 0.0).0);
+        Route::new(points, self.active.plan.route.half_width).ok()
+    }
+    pub fn holding_brake(&self) -> bool {
+        matches!(
+            self.status.phase,
+            NavigationPhase::Blocked | NavigationPhase::Braking
+        ) && self.blocked_hold
     }
 }

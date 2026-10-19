@@ -665,10 +665,14 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     // Keep legacy static logs unchanged. Restricted maps also record navigation
     // so replay recomputes the legal route instead of trusting resolved geometry.
     if !scenario.navigation_updates.is_empty()
-        || scenario
-            .navigation
-            .as_ref()
-            .is_some_and(|nav| !nav.network.turn_restrictions.is_empty())
+        || scenario.navigation.as_ref().is_some_and(|nav| {
+            !nav.network.turn_restrictions.is_empty()
+                || nav
+                    .network
+                    .edges
+                    .iter()
+                    .any(|edge| edge.speed_limit_m_s.is_some())
+        })
     {
         config.navigation = scenario.navigation.as_ref().map(|nav| NavigationConfig {
             network: nav.network.clone(),
@@ -713,6 +717,20 @@ pub fn simulate_with_backend(
     }
     let mut route = config.route.clone();
     let mut navigation = scenario.navigation_plan()?;
+    let mapped_speed_limits = scenario.navigation.as_ref().is_some_and(|nav| {
+        nav.network
+            .edges
+            .iter()
+            .any(|edge| edge.speed_limit_m_s.is_some())
+    });
+    let mut route_speed_zones = if mapped_speed_limits {
+        speed_zones::road_zones(
+            &scenario.navigation.as_ref().unwrap().network,
+            navigation.as_ref().unwrap(),
+        )
+    } else {
+        scenario.speed_zones.clone()
+    };
     if let Some(plan) = &navigation
         && (plan.route.points != route.points || plan.route.half_width != route.half_width)
     {
@@ -791,7 +809,7 @@ pub fn simulate_with_backend(
             &route,
             truth,
             vehicle.radius,
-            &scenario.speed_zones,
+            &route_speed_zones,
         );
         // Evaluate true physical crossings against the external phase schedule.
         // Neither this evaluator nor its phase schedule enters the driver.
@@ -870,6 +888,13 @@ pub fn simulate_with_backend(
                 true_speed: truth.speed,
             });
             navigation_switches = status.switches;
+            if mapped_speed_limits {
+                route_speed_zones = speed_zones::road_zones(
+                    &scenario.navigation.as_ref().unwrap().network,
+                    navigation.as_ref().unwrap(),
+                );
+                speed_rules.switch_route(&route, truth, vehicle.radius, &route_speed_zones);
+            }
         }
         // Score external closures independently of the navigator's reported closure state.
         if !scenario.navigation_updates.is_empty()
@@ -948,6 +973,7 @@ pub fn simulate_with_backend(
             }
         }
         if !scenario.speed_zones.is_empty()
+            || mapped_speed_limits
             || scenario.lane_change.is_some()
             || !traffic.is_empty()
             || !scenario.traffic_signals.is_empty()

@@ -3,8 +3,10 @@ pub mod lane_resume;
 pub mod lane_return;
 pub mod lanes;
 pub mod osm;
+mod speeds;
 use rustdriving_core::{Route, Vec2};
 use serde::{Deserialize, Serialize};
+pub use speeds::SpeedRoutePlan;
 use std::{
     cmp::Ordering,
     collections::{BTreeMap, BTreeSet, BinaryHeap},
@@ -26,6 +28,9 @@ pub struct RoadEdge {
     pub to: String,
     pub points: Vec<Vec2>,
     pub half_width: f64,
+    /// Optional surveyed whole-edge limit in SI units; absent means no map cap.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub speed_limit_m_s: Option<f64>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -160,6 +165,9 @@ impl RoadNetwork {
                 || geometry.points[0].distance(*from) > 1e-6
                 || geometry.points.last().unwrap().distance(*to) > 1e-6
                 || !geometry.length().is_finite()
+                || edge
+                    .speed_limit_m_s
+                    .is_some_and(|speed| !speed.is_finite() || !(0.1..=20.0).contains(&speed))
             {
                 return Err("invalid edge ID, endpoints or length".into());
             }

@@ -271,19 +271,24 @@ impl Planner for LatticePlanner {
             } else {
                 0.0
             };
-            // Forecast jitter should not abort an unfinished lateral shift while
-            // the sensed object still spans the centerline ahead. This is a preference,
-            // not a feasibility override: every candidate remains swept/retimed.
+            // Keep the passing side through an unfinished shift and until a
+            // slower centerline object is behind the vehicle. Completing the
+            // lateral shift alone must not trigger an early return alongside it.
+            // This remains a preference; every candidate is swept and retimed.
+            let unfinished_pass = self
+                .maneuver_start
+                .is_some_and(|(start_s, _, transition)| s < start_s + transition);
             let abandoning_pass = target.abs() < 0.01
                 && self.previous_lateral.abs() > 0.1
-                && self
-                    .maneuver_start
-                    .is_some_and(|(start_s, _, transition)| s < start_s + transition)
                 && objects.iter().any(|object| {
                     let (object_s, object_lateral) = route.project(object.positions[0]);
                     object_s + object.radius + self.vehicle.radius >= s
                         && object_s <= s + horizon
                         && object_lateral.abs() < object.radius + 0.3
+                        && (unfinished_pass
+                            || object.positions.get(1).is_none_or(|next| {
+                                route.project(*next).0 - object_s <= ego.speed * object.dt
+                            }))
                 });
             let terminal_center_cost = if reserve_terminal_side && target.abs() < 0.01 {
                 5.0
@@ -559,6 +564,35 @@ mod tests {
         let passed = planner.plan(ego, &route, &[obstacle()]);
         assert_eq!(passed.lateral_target, 0.0);
         assert_eq!(passed.mode, DrivingMode::Cruise);
+    }
+
+    #[test]
+    fn a_completed_lateral_shift_keeps_its_side_until_the_slower_object_is_passed() {
+        let route = road(5.5);
+        let mut planner = LatticePlanner {
+            cruise_speed: 4.,
+            ..LatticePlanner::default()
+        };
+        let mut ego = EgoState {
+            speed: 4.,
+            ..EgoState::default()
+        };
+        let object = obstacle();
+        let first = planner.plan(ego, &route, std::slice::from_ref(&object));
+        assert_ne!(first.lateral_target, 0.);
+        // The original ten-meter lateral transition has finished. A return is
+        // collision-free here, yet would cut back before the object is passed.
+        ego.pose.position = Vec2::new(18., first.lateral_target);
+        let fresh = LatticePlanner {
+            cruise_speed: 4.,
+            ..LatticePlanner::default()
+        }
+        .plan(ego, &route, std::slice::from_ref(&object));
+        assert_eq!(fresh.lateral_target, 0.);
+        let continued = planner.plan(ego, &route, std::slice::from_ref(&object));
+        assert_eq!(continued.lateral_target, first.lateral_target);
+        ego.pose.position.x = 25.;
+        assert_eq!(planner.plan(ego, &route, &[object]).lateral_target, 0.);
     }
 
     #[test]

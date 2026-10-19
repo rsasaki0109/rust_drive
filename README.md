@@ -700,6 +700,8 @@ An opt-in early return now retains a separate mapped speed cap until it stops
 in the original lane. [Return behavior and limits](docs/lane-return-speeds.md).
 A bounded retry after that stop now preserves the connector limit and the
 original target-tail limits. [Retry speed mapping](docs/lane-resume-speeds.md).
+Optional road-edge speed limits now follow stopped route switches after known
+closures. [Mapped navigation speeds](docs/navigation-speeds.md).
 
 ## Reproduce the GIF
 

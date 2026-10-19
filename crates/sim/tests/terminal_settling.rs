@@ -13,7 +13,7 @@ fn temporary_navigation_stops_preserve_the_detour_obstacle_clearance() {
         assert_eq!(run.summary.road_violations, 0);
         // An intermediate terminal tolerance changed the temporary stop and
         // left only 0.633/0.654 m here. Preserve the preceding >1 m clearance.
-        assert!(run.summary.min_clearance > 1.0);
+        assert!(run.summary.min_clearance > 1.0, "{:?}", run.summary);
         let mut bytes = vec![];
         run.sensor_log.as_ref().unwrap().write(&mut bytes).unwrap();
         assert!(

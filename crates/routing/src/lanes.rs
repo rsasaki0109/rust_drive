@@ -273,6 +273,7 @@ impl LaneNetwork {
                 to,
                 points: lane.centerline.clone(),
                 half_width: lane.width_m / 2.0,
+                speed_limit_m_s: None,
             });
             points.extend(
                 lane.centerline

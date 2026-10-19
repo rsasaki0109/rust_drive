@@ -186,6 +186,7 @@ impl LaneNetwork {
                 to: goal_node.clone(),
                 points: route.points.clone(),
                 half_width,
+                speed_limit_m_s: None,
             }],
             turn_restrictions: vec![],
         };

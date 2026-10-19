@@ -388,9 +388,13 @@ impl DrivingPipeline {
         let intersections = (!config.yield_intersections.is_empty()).then(|| {
             YieldIntersections::new(config.yield_intersections.clone(), config.route.clone())
         });
+        let navigator = config.navigation.clone().map(Navigator::new).transpose()?;
         let mut planner = LatticePlanner::default();
         planner.cruise_speed = config.cruise_speed;
-        planner.speed_zones = config.speed_zones.clone();
+        planner.speed_zones = navigator.as_ref().map_or_else(
+            || config.speed_zones.clone(),
+            |nav| nav.speed_zones().to_vec(),
+        );
         planner.local_route_geometry = config.local_route_geometry;
         planner.vehicle = config.vehicle;
         if let Some(limits) = config.motion_limits {
@@ -440,7 +444,6 @@ impl DrivingPipeline {
         };
         let tracking_frame = tracking_frame::TrackingFrame::new(config.initial_pose);
         let map_localization = config.localization_map.clone().map(MapLocalization::new);
-        let navigator = config.navigation.clone().map(Navigator::new).transpose()?;
         let lane_change = config
             .lane_change
             .clone()
@@ -746,6 +749,7 @@ impl DrivingPipeline {
         }
         if switched {
             self.config.route = self.navigator.as_ref().unwrap().plan().route.clone();
+            let speed_zones = self.navigator.as_ref().unwrap().speed_zones().to_vec();
             // Keep EKF, sensor ages, tracks and occupancy. Reset only route-dependent actuation state.
             let mut planner = LatticePlanner::default();
             planner.cruise_speed = self.planner.cruise_speed;
@@ -754,6 +758,7 @@ impl DrivingPipeline {
             planner.max_acceleration_m_s2 = self.planner.max_acceleration_m_s2;
             planner.max_deceleration_m_s2 = self.planner.max_deceleration_m_s2;
             planner.max_lateral_acceleration_m_s2 = self.planner.max_lateral_acceleration_m_s2;
+            planner.speed_zones = speed_zones;
             self.planner = planner;
             self.controller.reset_route_state();
         }
@@ -951,6 +956,10 @@ impl DrivingPipeline {
                     .lane_change
                     .as_ref()
                     .is_some_and(|c| c.holding_brake(&self.config.route, estimate))
+                || self
+                    .navigator
+                    .as_ref()
+                    .is_some_and(Navigator::holding_brake)
             {
                 // Keep requesting braking while waiting. A noisy
                 // low-speed feedback correction must not creep through the hold.
@@ -1355,6 +1364,7 @@ mod tests {
             to: "remote".into(),
             points: vec![Vec2::new(200.0, 0.0), Vec2::new(100000.0, 0.0)],
             half_width: 5.5,
+            speed_limit_m_s: None,
         });
         assert!(DrivingPipeline::new(c).is_err());
     }
