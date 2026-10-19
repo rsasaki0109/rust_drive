@@ -1,6 +1,18 @@
 # Path toward a broader Rust driving stack
 
-The current engineering estimate is **about 24%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
+The current engineering estimate is **about 25%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
+
+The increment from about 24% reflects [explicit GNSS antenna mounting
+calibration](gnss-antenna.md). The observation model includes the antenna's
+body-frame displacement and yaw sensitivity through delayed GNSS/map history
+and bounded recovery. All 80 calibrated episodes pass; eight otherwise identical
+uncalibrated controls miss the accuracy gates, with at least 71.7% paired
+maximum-position-error reduction. All 24 bias compositions stop at 0 m/s and
+recover; all 346 prior recordings retain exact replay outputs. Mounting and
+startup uncertainty remain external authored assumptions, and the extra seed
+values were used in earlier unmounted experiments. This is new simulation
+integration evidence, without automatic calibration or independent automotive
+data. The **30% waypoint remains unmet**.
 
 The increment from about 23% reflects [bounded GNSS recovery after innovation
 rejection](gnss-recovery-guard.md). Full pose/history proposals are withheld

@@ -102,10 +102,12 @@ def audit(run, config, ticks, spec, frozen, reconstruction=None):
         recorded['sensor_timing'].setdefault('gnss_delay_ticks', 0)
     if not contains_declared(recorded, frozen):
         raise ValueError('physical scenario differs from frozen inputs')
-    if {'gnss_noise_shape', 'gnss_bias_windows', 'sensor_timing', 'truth', 'objects'} & config.keys():
+    if {'gnss_noise_shape', 'gnss_bias_windows', 'sensor_timing', 'truth', 'objects', 'gnss_antenna_mount_m'} & config.keys():
         raise ValueError('simulation truth or noise model leaked into operational calibration')
     if config.get('gnss_covariance_shape') != frozen.get('gnss_covariance_shape'):
         raise ValueError('operational shape was inferred or changed')
+    if config.get('gnss_antenna_offset_m') != frozen.get('gnss_antenna_offset_m'):
+        raise ValueError('operational antenna calibration was inferred or changed')
     frames, summary = run['frames'], run['summary']
     if len(frames) != len(ticks) or len(frames) != summary['steps']:
         raise ValueError('missing full physical/control coverage')
@@ -126,6 +128,11 @@ def audit(run, config, ticks, spec, frozen, reconstruction=None):
         if fix:
             original = frames[index-delay]['truth']['pose']['position']
             modeled = noise(spec['seed'], index-delay, frozen['gnss_noise_shape'])
+            mount = frozen.get('gnss_antenna_mount_m')
+            if mount is not None:
+                yaw = frames[index-delay]['truth']['pose']['yaw']
+                modeled[0] += mount['x']*math.cos(yaw)-mount['y']*math.sin(yaw)
+                modeled[1] += mount['x']*math.sin(yaw)+mount['y']*math.cos(yaw)
             for w in frozen.get('gnss_bias_windows', []):
                 if w['from'] <= fix['stamp'] < w['until']:
                     modeled = [modeled[i]+w['offset'][k] for i, k in enumerate(['x', 'y'])]

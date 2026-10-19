@@ -113,6 +113,12 @@ pub struct Scenario {
     /// Simulator-only noise shape; never inferred as operational calibration.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub gnss_noise_shape: Option<[[f64; 2]; 2]>,
+    /// External GNSS antenna calibration, copied independently of physical mounting.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gnss_antenna_offset_m: Option<Vec2>,
+    /// Simulator-only physical antenna location in body forward/left meters.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gnss_antenna_mount_m: Option<Vec2>,
     /// External recovery policy calibration; distinct from simulated faults.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub gnss_recovery: Option<rustdriving_pipeline::GnssRecoveryConfig>,
@@ -229,6 +235,11 @@ impl Scenario {
         signals::validate(self)?;
         let c = pipeline_config(self);
         c.validate()?;
+        if let Some(mount) = self.gnss_antenna_mount_m {
+            let mut physical = c.clone();
+            physical.gnss_antenna_offset_m = Some(mount);
+            physical.validate()?;
+        }
         if let Some(shape) = self.gnss_noise_shape {
             let mut noise_config = c;
             noise_config.gnss_covariance_shape = Some(shape);
@@ -382,6 +393,12 @@ impl Scenario {
             calibrated.yaw = wrap_angle(calibrated.yaw + offset);
         }
         calibrated
+    }
+    /// Simulation-only antenna position at acquisition, shared by both plants.
+    /// Operational calibration is deliberately independent of physical mounting.
+    pub fn gnss_antenna_position(&self, pose: Pose) -> Vec2 {
+        self.gnss_antenna_mount_m
+            .map_or(pose.position, |mount| pose.to_world(mount))
     }
     /// Acquisition-time availability shared by the reference and native plants.
     pub fn gnss_available(&self, time: f64) -> bool {
@@ -642,7 +659,7 @@ impl SimulationBackend for ReferenceBackend {
         let gnss = if tick.is_multiple_of(4) && self.scenario.gnss_available(time) {
             Some(Gnss {
                 stamp: time,
-                position: self.truth.pose.position.plus(
+                position: self.scenario.gnss_antenna_position(self.truth.pose).plus(
                     self.scenario
                         .gnss_noise(self.seed, tick)
                         .unwrap_or_else(|| Vec2::new(self.rng.noise(0.14), self.rng.noise(0.14))),
@@ -688,6 +705,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     let mut config = PipelineConfig::new(route, Pose { position, yaw }, VehicleConfig::default());
     config.initial_pose_covariance = scenario.initial_pose_covariance;
     config.gnss_covariance_shape = scenario.gnss_covariance_shape;
+    config.gnss_antenna_offset_m = scenario.gnss_antenna_offset_m;
     config.gnss_recovery = scenario.gnss_recovery;
     config.confirm_slow_motion = scenario.confirm_slow_motion;
     config.gnss_latency_compensation = scenario.gnss_latency_compensation;

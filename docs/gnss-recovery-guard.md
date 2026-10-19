@@ -55,7 +55,8 @@ advances. Pose, covariance, accepted-fix clock/count and complete event history
 are restored. Compensated-fix/map-replay counters do not count a probe. Process
 noise continues growing uncertainty normally; covariance is neither frozen nor
 contracted using withheld observations. Full posterior output is available when
-this recovery option, an explicit initial covariance or GNSS shape is supplied.
+this recovery option, an explicit initial covariance, GNSS shape or antenna
+mounting calibration is supplied.
 
 The hold budget starts at the second rejection's delivery time. Expiry is
 latched: healthy GNSS cannot reset it. Missing/stale/invalid measured motion or a

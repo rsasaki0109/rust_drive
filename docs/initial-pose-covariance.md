@@ -20,7 +20,8 @@ When the option is absent or JSON `null`, initialization retains the original
 `diag(1, 1, 0.03)` and omits the initial-prior field. The full posterior is
 omitted when none of this prior, the optional
 [GNSS covariance shape](gnss-covariance.md) or
-[recovery policy](gnss-recovery-guard.md) is supplied. With an explicit prior,
+[recovery policy](gnss-recovery-guard.md) or
+[antenna mounting calibration](gnss-antenna.md) is supplied. With an explicit prior,
 every `PipelineOutput.pose_covariance` contains all nine posterior entries;
 `position_variance` remains the x/y trace. Existing health thresholds, GNSS NIS
 gating, process noise and observation covariance are retained. The declared

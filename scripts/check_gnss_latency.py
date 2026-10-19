@@ -38,6 +38,7 @@ class Filter:
         self.speed = 0.
         self.offset = config.get('rear_axle_offset_m') or 0.
         self.gnss_shape = config.get('gnss_covariance_shape') or [[1., 0.], [0., 1.]]
+        self.antenna = config.get('gnss_antenna_offset_m') or {'x': 0., 'y': 0.}
         self.accepted, self.rejected = 0, 0
         self.observed, self.accepted_stamp, self.nis, self.decision = None, None, None, None
 
@@ -64,10 +65,15 @@ class Filter:
         if self.observed is not None and fix['stamp'] <= self.observed:
             return
         self.observed = fix['stamp']
-        innovation = [fix['position'][key]-self.x[i] for i, key in enumerate(['x', 'y'])]
+        yaw = self.x[2]
+        forward, left = self.antenna['x'], self.antenna['y']
+        arm = [forward*math.cos(yaw)-left*math.sin(yaw), forward*math.sin(yaw)+left*math.cos(yaw)]
+        h = [[1., 0., -arm[1]], [0., 1., arm[0]]]
+        innovation = [fix['position'][key]-self.x[i]-arm[i] for i, key in enumerate(['x', 'y'])]
         r = fix['variance']
         noise = [[r*v for v in row] for row in self.gnss_shape]
-        a, b, c = self.p[0][0]+noise[0][0], self.p[0][1]+noise[0][1], self.p[1][1]+noise[1][1]
+        s = add(product(product(h, self.p), transpose(h)), noise)
+        a, b, c = s[0][0], s[0][1], s[1][1]
         determinant = a*c-b*b
         inverse = [[c/determinant, -b/determinant], [-b/determinant, a/determinant]]
         self.nis = sum(innovation[i]*inverse[i][j]*innovation[j] for i in range(2) for j in range(2))
@@ -75,8 +81,9 @@ class Filter:
             self.rejected += 1
             self.decision = 'RejectedInnovation'
             return
-        gain = product([row[:2] for row in self.p], inverse)
-        residual = [[float(i==j)-(gain[i][j] if j<2 else 0.) for j in range(3)] for i in range(3)]
+        gain = product(product(self.p, transpose(h)), inverse)
+        kh = product(gain, h)
+        residual = [[float(i==j)-kh[i][j] for j in range(3)] for i in range(3)]
         self.p = add(product(product(residual, self.p), transpose(residual)), product(product(gain, noise), transpose(gain)))
         self.x = [self.x[i]+sum(gain[i][j]*innovation[j] for j in range(2)) for i in range(3)]
         self.x[2] = angle(self.x[2])
@@ -162,7 +169,7 @@ def verify_ticks(config, ticks):
 
 def verify_pose_covariance(output, expected, config):
     """Independent full-matrix comparison and Sylvester positivity check."""
-    if all(config.get(key) is None for key in ['initial_pose_covariance', 'gnss_covariance_shape', 'gnss_recovery']):
+    if all(config.get(key) is None for key in ['initial_pose_covariance', 'gnss_covariance_shape', 'gnss_recovery', 'gnss_antenna_offset_m']):
         if output.get('pose_covariance') is not None: raise ValueError('legacy output unexpectedly claims a full covariance')
         return 0.
     p = output.get('pose_covariance')

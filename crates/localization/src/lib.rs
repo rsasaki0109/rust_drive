@@ -1,7 +1,9 @@
 //! Three-state EKF: wheel speed / gyro prediction and scalar GNSS updates.
+mod gnss_antenna;
 mod gnss_shape;
 pub mod keyframes3d;
 pub mod latency;
+pub use gnss_antenna::validate_gnss_antenna_offset;
 pub use gnss_shape::validate_gnss_covariance_shape;
 #[cfg(test)]
 mod pose_prior_tests;
@@ -23,6 +25,7 @@ pub struct Ekf {
     pub last_gnss: f64,
     diagnostics: LocalizationDiagnostics,
     gnss_covariance_shape: Option<[[f64; 2]; 2]>,
+    gnss_antenna_offset_m: Option<Vec2>,
 }
 impl Ekf {
     /// Initial heading comes from the configured spawn calibration, not live simulator truth.
@@ -33,6 +36,7 @@ impl Ekf {
             last_gnss: f64::NEG_INFINITY,
             diagnostics: LocalizationDiagnostics::default(),
             gnss_covariance_shape: None,
+            gnss_antenna_offset_m: None,
         }
     }
     /// Initial x/y/yaw covariance in world ENU (m², m·rad, rad²).
@@ -299,6 +303,11 @@ impl Ekf {
             .is_some_and(|stamp| fix.stamp <= stamp)
         {
             return GnssDecision::IgnoredTimestamp;
+        }
+        if let Some(offset) = self.gnss_antenna_offset_m
+            && (offset.x != 0. || offset.y != 0.)
+        {
+            return self.correct_antenna(fix, offset);
         }
         if let Some(shape) = self.gnss_covariance_shape {
             return self.correct_shaped(fix, shape);

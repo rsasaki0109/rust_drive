@@ -119,6 +119,15 @@ or null retains the original prior and serialization. Physical initial heading
 perturbations are simulation inputs and never enter operational configuration.
 [Validation, composition and research limits](initial-pose-covariance.md).
 
+Optional `gnss_antenna_offset_m` supplies the GNSS antenna displacement from
+that estimated body reference in forward/left meters. The EKF predicts the
+rotated antenna position and includes yaw sensitivity in the observation
+Jacobian and full covariance update. Acquisition-time GNSS/map history retains
+this calibration, and recovery bounds still apply to the complete current body
+pose. Simulation-only `gnss_antenna_mount_m` controls physical synthesis
+independently and stays outside the operational header.
+[Observation model, checks and limits](gnss-antenna.md).
+
 ## Algorithms
 
 Optional fixed-map localization registers synchronous measured body-XY scans to an offline supplied world map, fuses accepted XY/body-yaw poses and preserves genuine GNSS timestamps. Fresh accepted map scans bridge only bounded post-fix outages; stale/rejected scans and the ten-second maximum restore normal braking. [Timing, covariance assumptions and failures](map-localization.md).

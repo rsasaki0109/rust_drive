@@ -601,7 +601,7 @@ impl SimulationBackend for RneBackend {
         let gnss = if tick.is_multiple_of(4) && self.scenario.gnss_available(time) {
             Some(Gnss {
                 stamp: time,
-                position: truth.pose.position.plus(
+                position: self.scenario.gnss_antenna_position(truth.pose).plus(
                     self.scenario
                         .gnss_noise(self.seed, tick)
                         .unwrap_or_else(|| {
@@ -1274,6 +1274,48 @@ mod tests {
                     let expected = s.gnss_noise(7, i).unwrap();
                     let noise = g.position.minus(frame.truth.pose.position);
                     assert!(noise.distance(expected) < 1e-12);
+                }
+                assert!(tick.expected.pose_covariance.is_some());
+            }
+            let mut bytes = vec![];
+            log.write(&mut bytes).unwrap();
+            assert!(
+                rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), vec![])
+                    .unwrap()
+                    .verified
+            );
+        }
+    }
+    #[test]
+    fn antenna_mount_synthesis_and_operational_offset_remain_independent_in_both_plants() {
+        let mut s = scenario("gnss-delay-curve");
+        s.duration = 1.;
+        s.sensor_timing = None;
+        s.initial_heading_offset_rad = Some(0.05);
+        s.gnss_noise_shape = Some([[1., 0.9], [0.9, 1.]]);
+        s.gnss_covariance_shape = s.gnss_noise_shape;
+        s.gnss_antenna_mount_m = Some(Vec2::new(1.2, 0.35));
+        s.gnss_antenna_offset_m = Some(Vec2::new(-0.4, 0.2));
+        for r in [
+            rustdriving_sim::simulate(s.clone(), 31313).unwrap(),
+            run(s.clone(), 31313, Plant::Dynamic).unwrap(),
+        ] {
+            let log = r.sensor_log.as_ref().unwrap();
+            assert_eq!(
+                log.header.config.gnss_antenna_offset_m,
+                s.gnss_antenna_offset_m
+            );
+            assert!(
+                serde_json::to_value(&log.header.config)
+                    .unwrap()
+                    .get("gnss_antenna_mount_m")
+                    .is_none()
+            );
+            for (i, (tick, frame)) in log.ticks.iter().zip(&r.frames).enumerate() {
+                if let Some(g) = tick.input.gnss {
+                    let antenna = frame.truth.pose.to_world(Vec2::new(1.2, 0.35));
+                    let noise = g.position.minus(antenna);
+                    assert!(noise.distance(s.gnss_noise(31313, i).unwrap()) < 1e-12);
                 }
                 assert!(tick.expected.pose_covariance.is_some());
             }

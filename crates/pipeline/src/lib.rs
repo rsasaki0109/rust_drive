@@ -72,6 +72,9 @@ pub struct PipelineConfig {
     /// Each fix retains its scalar mean variance; R = variance * shape.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub gnss_covariance_shape: Option<[[f64; 2]; 2]>,
+    /// GNSS antenna displacement from estimated pose origin in body forward/left meters.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gnss_antenna_offset_m: Option<Vec2>,
     /// Explicit bounded-proposal confirmation after an innovation brake hold.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub gnss_recovery: Option<GnssRecoveryConfig>,
@@ -120,6 +123,7 @@ impl PipelineConfig {
             initial_pose,
             initial_pose_covariance: None,
             gnss_covariance_shape: None,
+            gnss_antenna_offset_m: None,
             gnss_recovery: None,
             vehicle,
             nominal_dt: 0.05,
@@ -142,6 +146,9 @@ impl PipelineConfig {
         }
     }
     pub fn validate(&self) -> Result<(), String> {
+        if let Some(offset) = self.gnss_antenna_offset_m {
+            rustdriving_localization::validate_gnss_antenna_offset(offset)?;
+        }
         if let Some(recovery) = self.gnss_recovery {
             recovery.validate()?;
         }
@@ -379,7 +386,7 @@ pub struct PipelineOutput {
     pub emergency: bool,
     pub health: Vec<HealthIssue>,
     pub position_variance: f64,
-    /// Full ENU posterior for explicit initial covariance or GNSS shape calibration.
+    /// Full ENU posterior for explicit initialization or GNSS calibration/policy.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub pose_covariance: Option<[[f64; 3]; 3]>,
     /// Measured plane fit for this acquisition, absent on frames without one.
@@ -502,11 +509,14 @@ impl DrivingPipeline {
             return Err("map exceeds the occupancy allocation bound".into());
         }
         let grid = OccupancyGrid::new(Vec2::new(min_x, min_y), width, height, 0.5);
-        let ekf = Ekf::with_calibration(
+        let mut ekf = Ekf::with_calibration(
             config.initial_pose,
             config.initial_pose_covariance,
             config.gnss_covariance_shape,
         )?;
+        if let Some(offset) = config.gnss_antenna_offset_m {
+            ekf = ekf.with_gnss_antenna_offset(offset)?;
+        }
         let gnss_history = config.gnss_latency_compensation.then(|| {
             if config
                 .localization_map
@@ -1196,6 +1206,7 @@ impl DrivingPipeline {
             position_variance: variance,
             pose_covariance: (self.config.initial_pose_covariance.is_some()
                 || self.config.gnss_covariance_shape.is_some()
+                || self.config.gnss_antenna_offset_m.is_some()
                 || self.config.gnss_recovery.is_some())
             .then(|| self.ekf.pose_covariance()),
             ground,

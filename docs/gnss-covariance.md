@@ -44,8 +44,8 @@ map/GNSS rewinds keep their original ages, bounds and conflict handling.
 Supplying either an initial pose covariance or this GNSS shape publishes the
 complete 3×3 `PipelineOutput.pose_covariance` in every tick. Its x/y trace remains
 `position_variance`; replay checks all entries. The optional recovery policy
-also publishes the full posterior. Omitting all three options keeps the
-original scalar arithmetic and omitted JSON fields.
+and antenna mounting calibration also publish the full posterior. Omitting all
+four options keeps the original scalar arithmetic and omitted JSON fields.
 
 ## Simulation boundary and fixed evaluation
 
