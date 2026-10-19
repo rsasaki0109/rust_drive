@@ -1,4 +1,5 @@
 //! Deterministic closed-loop simulator. Only sensor observations enter the stack.
+mod gnss_noise;
 pub mod intersections;
 mod lane_change_surface;
 pub mod sensor_timing;
@@ -106,6 +107,12 @@ pub struct Scenario {
     /// Simulator-only physical spawn misalignment; never an estimator input.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub initial_heading_offset_rad: Option<f64>,
+    /// Externally supplied constant world ENU covariance shape, copied to the pipeline.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gnss_covariance_shape: Option<[[f64; 2]; 2]>,
+    /// Simulator-only noise shape; never inferred as operational calibration.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gnss_noise_shape: Option<[[f64; 2]; 2]>,
     /// Explicit experimental forecast policy, independent of actor identities.
     #[serde(default, skip_serializing_if = "is_false")]
     pub confirm_slow_motion: bool,
@@ -219,6 +226,11 @@ impl Scenario {
         signals::validate(self)?;
         let c = pipeline_config(self);
         c.validate()?;
+        if let Some(shape) = self.gnss_noise_shape {
+            let mut noise_config = c;
+            noise_config.gnss_covariance_shape = Some(shape);
+            noise_config.validate()?;
+        }
         let mut previous_end = 0.0;
         for window in &self.gnss_bias_windows {
             if !window.from.is_finite()
@@ -596,6 +608,7 @@ struct ReferenceBackend {
     truth: EgoState,
     vehicle: VehicleConfig,
     rng: Rng,
+    seed: u64,
     command: ControlCommand,
 }
 impl SimulationBackend for ReferenceBackend {
@@ -626,11 +639,11 @@ impl SimulationBackend for ReferenceBackend {
         let gnss = if tick.is_multiple_of(4) && self.scenario.gnss_available(time) {
             Some(Gnss {
                 stamp: time,
-                position: self
-                    .truth
-                    .pose
-                    .position
-                    .plus(Vec2::new(self.rng.noise(0.14), self.rng.noise(0.14))),
+                position: self.truth.pose.position.plus(
+                    self.scenario
+                        .gnss_noise(self.seed, tick)
+                        .unwrap_or_else(|| Vec2::new(self.rng.noise(0.14), self.rng.noise(0.14))),
+                ),
                 variance: 0.02,
             })
         } else {
@@ -671,6 +684,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     let (position, yaw) = route.sample(0.0, 0.0);
     let mut config = PipelineConfig::new(route, Pose { position, yaw }, VehicleConfig::default());
     config.initial_pose_covariance = scenario.initial_pose_covariance;
+    config.gnss_covariance_shape = scenario.gnss_covariance_shape;
     config.confirm_slow_motion = scenario.confirm_slow_motion;
     config.gnss_latency_compensation = scenario.gnss_latency_compensation;
     config.speed_zones = scenario.speed_zones.clone();
@@ -726,6 +740,7 @@ pub fn simulate(scenario: Scenario, seed: u64) -> Result<Run, String> {
         },
         vehicle: config.vehicle,
         rng: Rng::new(seed),
+        seed,
         command: ControlCommand::default(),
     };
     simulate_with_backend(scenario, seed, backend, config, "reference-2d")
@@ -1316,6 +1331,7 @@ mod tests {
             },
             vehicle: config.vehicle,
             rng: Rng::new(7),
+            seed: 7,
             command: ControlCommand::default(),
         };
         let renamed =

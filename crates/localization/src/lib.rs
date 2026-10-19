@@ -1,6 +1,8 @@
 //! Three-state EKF: wheel speed / gyro prediction and scalar GNSS updates.
+mod gnss_shape;
 pub mod keyframes3d;
 pub mod latency;
+pub use gnss_shape::validate_gnss_covariance_shape;
 #[cfg(test)]
 mod pose_prior_tests;
 pub mod registration;
@@ -20,6 +22,7 @@ pub struct Ekf {
     covariance: [[f64; 3]; 3],
     pub last_gnss: f64,
     diagnostics: LocalizationDiagnostics,
+    gnss_covariance_shape: Option<[[f64; 2]; 2]>,
 }
 impl Ekf {
     /// Initial heading comes from the configured spawn calibration, not live simulator truth.
@@ -29,6 +32,7 @@ impl Ekf {
             covariance: [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 0.03]],
             last_gnss: f64::NEG_INFINITY,
             diagnostics: LocalizationDiagnostics::default(),
+            gnss_covariance_shape: None,
         }
     }
     /// Initial x/y/yaw covariance in world ENU (m², m·rad, rad²).
@@ -55,6 +59,26 @@ impl Ekf {
     /// Posterior x/y/yaw covariance in the same world frame and units as the prior.
     pub fn pose_covariance(&self) -> [[f64; 3]; 3] {
         self.covariance
+    }
+    /// Fixed external ENU calibration: per-fix R is variance times the optional
+    /// dimensionless shape. Both calibrations survive history snapshot clones.
+    pub fn with_calibration(
+        pose: Pose,
+        prior: Option<[[f64; 3]; 3]>,
+        gnss_shape: Option<[[f64; 2]; 2]>,
+    ) -> Result<Self, String> {
+        if let Some(shape) = gnss_shape {
+            validate_gnss_covariance_shape(shape)?;
+        }
+        let mut filter = match prior {
+            Some(covariance) => Self::with_pose_covariance(pose, covariance)?,
+            None => Self::new(pose),
+        };
+        if !pose.position.finite() || !pose.yaw.is_finite() {
+            return Err("nonfinite initial pose calibration".into());
+        }
+        filter.gnss_covariance_shape = gnss_shape;
+        Ok(filter)
     }
     /// Invalid inputs or nonfinite computed pose/covariance leave the filter unchanged.
     pub fn predict(&mut self, odom: Odometry, dt: f64) {
@@ -275,6 +299,9 @@ impl Ekf {
             .is_some_and(|stamp| fix.stamp <= stamp)
         {
             return GnssDecision::IgnoredTimestamp;
+        }
+        if let Some(shape) = self.gnss_covariance_shape {
+            return self.correct_shaped(fix, shape);
         }
         let residual = fix.position.minus(self.state.pose.position);
         // LDL^T whitening of S = H P H^T + R, including x/y correlation.

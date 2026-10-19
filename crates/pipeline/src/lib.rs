@@ -65,6 +65,10 @@ pub struct PipelineConfig {
     /// Externally supplied initial ENU x/y/yaw calibration covariance.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub initial_pose_covariance: Option<[[f64; 3]; 3]>,
+    /// Optional dimensionless ENU GNSS covariance shape (symmetric SPD, trace 2).
+    /// Each fix retains its scalar mean variance; R = variance * shape.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gnss_covariance_shape: Option<[[f64; 2]; 2]>,
     pub vehicle: VehicleConfig,
     pub nominal_dt: f64,
     pub cruise_speed: f64,
@@ -109,6 +113,7 @@ impl PipelineConfig {
             route,
             initial_pose,
             initial_pose_covariance: None,
+            gnss_covariance_shape: None,
             vehicle,
             nominal_dt: 0.05,
             cruise_speed: 8.0,
@@ -130,6 +135,9 @@ impl PipelineConfig {
         }
     }
     pub fn validate(&self) -> Result<(), String> {
+        if let Some(shape) = self.gnss_covariance_shape {
+            rustdriving_localization::validate_gnss_covariance_shape(shape)?;
+        }
         if let Some(covariance) = self.initial_pose_covariance {
             Ekf::with_pose_covariance(self.initial_pose, covariance)?;
         }
@@ -361,7 +369,7 @@ pub struct PipelineOutput {
     pub emergency: bool,
     pub health: Vec<HealthIssue>,
     pub position_variance: f64,
-    /// Full ENU posterior, published when explicit initialization is requested.
+    /// Full ENU posterior for explicit initial covariance or GNSS shape calibration.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub pose_covariance: Option<[[f64; 3]; 3]>,
     /// Measured plane fit for this acquisition, absent on frames without one.
@@ -481,10 +489,11 @@ impl DrivingPipeline {
             return Err("map exceeds the occupancy allocation bound".into());
         }
         let grid = OccupancyGrid::new(Vec2::new(min_x, min_y), width, height, 0.5);
-        let ekf = match config.initial_pose_covariance {
-            Some(covariance) => Ekf::with_pose_covariance(config.initial_pose, covariance)?,
-            None => Ekf::new(config.initial_pose),
-        };
+        let ekf = Ekf::with_calibration(
+            config.initial_pose,
+            config.initial_pose_covariance,
+            config.gnss_covariance_shape,
+        )?;
         let gnss_history = config.gnss_latency_compensation.then(|| {
             if config
                 .localization_map
@@ -1118,10 +1127,9 @@ impl DrivingPipeline {
             emergency,
             health,
             position_variance: variance,
-            pose_covariance: self
-                .config
-                .initial_pose_covariance
-                .map(|_| self.ekf.pose_covariance()),
+            pose_covariance: (self.config.initial_pose_covariance.is_some()
+                || self.config.gnss_covariance_shape.is_some())
+            .then(|| self.ekf.pose_covariance()),
             ground,
             localization: Some(self.ekf.diagnostics()),
             gnss_latency: self

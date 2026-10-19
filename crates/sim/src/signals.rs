@@ -203,6 +203,7 @@ mod tests {
             },
             vehicle: config.vehicle,
             rng: crate::Rng::new(7),
+            seed: 7,
             command: ControlCommand::default(),
         });
         let run =

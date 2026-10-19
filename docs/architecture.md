@@ -192,6 +192,16 @@ retain original-delivery ownership. Delayed odometry and clock-offset estimation
 remain unsupported. [GNSS contract](gnss-latency.md), [synchronous map-event
 history](gnss-map-history.md) and [delayed map mode](delayed-map.md).
 
+Optional constant `gnss_covariance_shape` supplies a symmetric positive definite
+world ENU 2×2 matrix with trace two. Each raw fix retains its scalar mean
+horizontal variance; the effective measurement covariance is variance times
+that matrix. The shape survives history snapshots, and requesting it publishes
+the full posterior covariance. Simulator noise shape is separate and never
+inferred into operational calibration. The 32 ordinary/map cases pass, while
+all 16 calibrated persistent-bias cases fail their physical stop/accuracy gates.
+This is experimental covariance modeling, without qualified bias rejection or
+measured receiver calibration. [Contract and retained failures](gnss-covariance.md).
+
 ## Fixed-route speed intervals
 
 Optional surveyed `speed_zones` cap candidate segment endpoints over mapped

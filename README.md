@@ -19,6 +19,10 @@ An optional [explicit initial pose covariance](docs/initial-pose-covariance.md)
 now supports declared startup uncertainty and complete posterior replay.
 Physical heading perturbations also exposed and repaired incomplete local
 side-path tracking in both plants; the original failed protocols remain recorded.
+An experimental [ENU GNSS covariance calibration](docs/gnss-covariance.md) now
+handles directional and correlated observation errors through GNSS/map replay.
+Its 32 ordinary/map episodes pass; all 16 persistent-bias episodes fail the
+frozen stop/accuracy requirements. The option does not qualify bias protection.
 
 ![Recorded left-hand RNE driving through Japanese urban intersections with signals, roadworks and diverse road users](assets/japan-city-demo.gif)
 

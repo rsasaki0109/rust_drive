@@ -2,6 +2,15 @@
 
 The current engineering estimate is **about 23%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
+The optional [ENU GNSS covariance calibration](gnss-covariance.md) handles
+directional/correlated observation noise through the shared delayed GNSS/map
+history. All 32 ordinary/map episodes pass, but all 16 calibrated persistent-bias
+episodes fail the frozen accuracy/physical-stop gates, and none of the 16 paired
+comparisons meets the 40% maximum-error reduction requirement. All 64 recordings
+pass full joint-matrix reconstruction and exact replay. Correct nominal
+covariance modeling does not qualify sustained-bias protection or measured
+uncertainty, so the estimate stays **about 23%**, with 30% still unmet.
+
 The [replay publication improvement](sensor-replay.md) prevents failed verification
 from exposing a partial command stream under the final output name. It retains
 exact successful bytes, input/link protection and explicit failure exit codes.

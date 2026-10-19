@@ -37,6 +37,7 @@ class Filter:
         self.p = [list(row) for row in (initial if initial is not None else [[1., 0., 0.], [0., 1., 0.], [0., 0., .03]])]
         self.speed = 0.
         self.offset = config.get('rear_axle_offset_m') or 0.
+        self.gnss_shape = config.get('gnss_covariance_shape') or [[1., 0.], [0., 1.]]
         self.accepted, self.rejected = 0, 0
         self.observed, self.accepted_stamp, self.nis, self.decision = None, None, None, None
 
@@ -65,7 +66,8 @@ class Filter:
         self.observed = fix['stamp']
         innovation = [fix['position'][key]-self.x[i] for i, key in enumerate(['x', 'y'])]
         r = fix['variance']
-        a, b, c = self.p[0][0]+r, self.p[0][1], self.p[1][1]+r
+        noise = [[r*v for v in row] for row in self.gnss_shape]
+        a, b, c = self.p[0][0]+noise[0][0], self.p[0][1]+noise[0][1], self.p[1][1]+noise[1][1]
         determinant = a*c-b*b
         inverse = [[c/determinant, -b/determinant], [-b/determinant, a/determinant]]
         self.nis = sum(innovation[i]*inverse[i][j]*innovation[j] for i in range(2) for j in range(2))
@@ -75,7 +77,6 @@ class Filter:
             return
         gain = product([row[:2] for row in self.p], inverse)
         residual = [[float(i==j)-(gain[i][j] if j<2 else 0.) for j in range(3)] for i in range(3)]
-        noise = [[r, 0.], [0., r]]
         self.p = add(product(product(residual, self.p), transpose(residual)), product(product(gain, noise), transpose(gain)))
         self.x = [self.x[i]+sum(gain[i][j]*innovation[j] for j in range(2)) for i in range(3)]
         self.x[2] = angle(self.x[2])
@@ -161,11 +162,11 @@ def verify_ticks(config, ticks):
 
 def verify_pose_covariance(output, expected, config):
     """Independent full-matrix comparison and Sylvester positivity check."""
-    if config.get('initial_pose_covariance') is None:
+    if config.get('initial_pose_covariance') is None and config.get('gnss_covariance_shape') is None:
         if output.get('pose_covariance') is not None: raise ValueError('legacy output unexpectedly claims a full covariance')
         return 0.
     p = output.get('pose_covariance')
-    if p is None or len(p) != 3 or any(len(row) != 3 for row in p): raise ValueError('explicit prior requires a full posterior')
+    if p is None or len(p) != 3 or any(len(row) != 3 for row in p): raise ValueError('explicit localization calibration requires a full posterior')
     if any(not math.isfinite(p[i][j]) or abs(p[i][j]-p[j][i]) > 1e-12 for i in range(3) for j in range(3)):
         raise ValueError('nonfinite or asymmetric posterior')
     determinant = (p[0][0]*(p[1][1]*p[2][2]-p[1][2]*p[2][1])

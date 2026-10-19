@@ -601,10 +601,13 @@ impl SimulationBackend for RneBackend {
         let gnss = if tick.is_multiple_of(4) && self.scenario.gnss_available(time) {
             Some(Gnss {
                 stamp: time,
-                position: truth.pose.position.plus(Vec2::new(
-                    self.noisy(tick, 2, 0.14),
-                    self.noisy(tick, 3, 0.14),
-                )),
+                position: truth.pose.position.plus(
+                    self.scenario
+                        .gnss_noise(self.seed, tick)
+                        .unwrap_or_else(|| {
+                            Vec2::new(self.noisy(tick, 2, 0.14), self.noisy(tick, 3, 0.14))
+                        }),
+                ),
                 variance: 0.02,
             })
         } else {
@@ -1243,6 +1246,45 @@ mod tests {
         let rotation = Quat::from_rotation_y(std::f64::consts::FRAC_PI_2);
         assert!((yaw_rad(rotation) - std::f64::consts::FRAC_PI_2).abs() < 1e-10);
         assert!(from_rne(rotation * Vec3::X).y > 0.99);
+    }
+    #[test]
+    fn native_and_reference_use_identical_keyed_gnss_noise_without_truth_calibration() {
+        let mut s = scenario("gnss-delay-straight");
+        s.duration = 1.;
+        s.sensor_timing = None;
+        s.gnss_noise_shape = Some([[1., 0.9], [0.9, 1.]]);
+        s.gnss_covariance_shape = Some([[1., 0.9], [0.9, 1.]]);
+        for r in [
+            rustdriving_sim::simulate(s.clone(), 7).unwrap(),
+            run(s.clone(), 7, Plant::Dynamic).unwrap(),
+        ] {
+            let log = r.sensor_log.as_ref().unwrap();
+            assert_eq!(
+                log.header.config.gnss_covariance_shape,
+                s.gnss_covariance_shape
+            );
+            assert!(
+                serde_json::to_value(&log.header.config)
+                    .unwrap()
+                    .get("gnss_noise_shape")
+                    .is_none()
+            );
+            for (i, (tick, frame)) in log.ticks.iter().zip(&r.frames).enumerate() {
+                if let Some(g) = tick.input.gnss {
+                    let expected = s.gnss_noise(7, i).unwrap();
+                    let noise = g.position.minus(frame.truth.pose.position);
+                    assert!(noise.distance(expected) < 1e-12);
+                }
+                assert!(tick.expected.pose_covariance.is_some());
+            }
+            let mut bytes = vec![];
+            log.write(&mut bytes).unwrap();
+            assert!(
+                rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), vec![])
+                    .unwrap()
+                    .verified
+            );
+        }
     }
     #[test]
     fn overhead_scene_preserves_operational_trace_and_default_pipeline_header() {

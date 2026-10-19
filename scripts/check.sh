@@ -11,6 +11,7 @@ python3 scripts/test_lane_return_speeds.py
 python3 scripts/test_lane_resume_speeds.py
 python3 scripts/test_navigation_speeds.py
 python3 scripts/test_gnss_latency.py
+python3 scripts/test_gnss_covariance.py
 python3 scripts/test_gnss_map_history.py
 python3 scripts/test_delayed_map.py
 python3 scripts/test_mid_edge.py
