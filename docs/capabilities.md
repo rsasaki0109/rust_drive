@@ -6,14 +6,15 @@
 |---|---|---|
 | Closed-loop perception → prediction → planning → control | Implemented / tested | Reference and optional CPU RNE plants |
 | Noisy GNSS + speed / gyro EKF | Implemented / tested | Full x/y innovation gate, Joseph covariance updates, observed/accepted diagnostics; hold after two new rejected innovations until acceptance; configured initial heading, no bias state |
+| Acquisition-time delayed GNSS fusion | Implemented / independently checked in shared driving | Optional 0.5 s / 64-interval pose/covariance rewind and odometry replay; 42 reference/native positive episodes and 18 old-error controls; declared native chassis calibration for turning accuracy; stale/history faults brake; external-map correction replay and delayed odometry remain unsupported; [contract](gnss-latency.md) |
 | Optional local scan-to-fixed-map EKF corrections | Implemented / independently checked | Synchronous XY LiDAR, bounded local SE(2) registration/ambiguity checks; five-second GNSS-denied reference/native driving; ten-second maximum since genuine fix, no global localization/SLAM/6DOF or real-motion dataset pose accuracy |
 | Measured-data terrain baseline | Implemented / failed generalization | Frozen PMF on 15 genuine airborne clouds: held-out F1 0.2592 and six zero-F1 sites; licensed/versioned acquisition, no automotive road-semantics claim |
 | Measured XYZ components and AABBs | Implemented / tested experimentally | Bounded 3D Euclidean geometry, no semantic labels/hidden-object reconstruction; optional pipeline maps observed AABBs to planar envelopes; sparse native acquisition initially misses actor clusters and blocks on residual ground |
 | Unlabeled LiDAR and occlusion | Implemented / tested | 720 rays, 45 m range, circular targets and opt-in native cuboids |
 | Clustering / circle fitting / alpha-beta tracking | Implemented / tested | No semantic classes; nearest-neighbor association |
-| Acquisition-time LiDAR reprojection | Implemented / tested | At most 0.35 s / 64 EKF estimates; world detections and map rays use historical pose; no retroactive GNSS smoothing, delayed odometry/GNSS fusion or covariance propagation |
+| Acquisition-time LiDAR reprojection | Implemented / tested | At most 0.35 s / 64 EKF estimates; world detections and map rays use historical pose; LiDAR history excludes absolute-correction increments; separate optional GNSS fixed-lag fusion is available, with no delayed odometry or point deskew |
 | Current-time motion forecasts | Implemented / tested | Acquired tracks retain stamps; CV / observed braking advances to the control clock, consuming acquisition age from the one-second braking budget; unchanged low-speed deadband, no uncertainty growth or actor intent |
-| Simulator LiDAR timing / explicit transient failure | Implemented / tested | Observation thinning, immutable acquisition stamps and queued delivery; failures flush queued scans; simulated time, no resource-latency benchmark |
+| Simulator sensor timing / explicit transient failure | Implemented / tested | LiDAR thinning/queued failure recovery and independent immutable GNSS delivery delay; simulated time, no resource-latency benchmark |
 | Log-odds occupancy map | Implemented / tested | Exported diagnostic; not a planner input; no SLAM |
 | Static obstacle avoidance | Implemented / tested | Wide supplied road, three candidate offsets |
 | Moving lead / crossing object sensing | Implemented / tested in mission | CV / observed-braking ego forecast; optional simulator actors react to scalar proximity observations |

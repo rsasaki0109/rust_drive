@@ -1,5 +1,6 @@
 //! Three-state EKF: wheel speed / gyro prediction and scalar GNSS updates.
 pub mod keyframes3d;
+pub mod latency;
 pub mod registration;
 pub mod registration3d;
 pub mod reprojection3d;
@@ -11,6 +12,7 @@ use rustdriving_core::{
 /// Conservative observation floors for an externally registered fixed-map pose.
 pub const MAP_POSITION_VARIANCE_FLOOR_M2: f64 = 0.01;
 pub const MAP_YAW_VARIANCE_FLOOR_RAD2: f64 = 1e-4;
+#[derive(Clone)]
 pub struct Ekf {
     state: EgoState,
     covariance: [[f64; 3]; 3],

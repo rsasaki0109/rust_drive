@@ -31,6 +31,7 @@ use navigation::{
 use rustdriving_control::{PurePursuit, guard};
 use rustdriving_core::*;
 use rustdriving_localization::Ekf;
+use rustdriving_localization::latency::GnssHistory;
 use rustdriving_mapping::OccupancyGrid;
 use rustdriving_perception::{LidarClusters, Tracker};
 use rustdriving_planning::LatticePlanner;
@@ -70,6 +71,9 @@ pub struct PipelineConfig {
     /// Experimental history-confirmed slow-object forecasts; default off.
     #[serde(default, skip_serializing_if = "is_false")]
     pub confirm_slow_motion: bool,
+    /// Opt-in bounded acquisition-time GNSS correction and odometry replay.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub gnss_latency_compensation: bool,
     #[serde(default, skip_serializing_if = "is_false")]
     pub local_route_geometry: bool,
     /// Optional chassis-to-rear-axle distance for low-speed no-slip motion.
@@ -106,6 +110,7 @@ impl PipelineConfig {
             cruise_speed: 8.0,
             speed_zones: vec![],
             confirm_slow_motion: false,
+            gnss_latency_compensation: false,
             local_route_geometry: false,
             rear_axle_offset_m: None,
             motion_limits: None,
@@ -121,6 +126,11 @@ impl PipelineConfig {
         }
     }
     pub fn validate(&self) -> Result<(), String> {
+        if self.gnss_latency_compensation && self.localization_map.is_some() {
+            return Err(
+                "GNSS latency compensation cannot replay external map-pose corrections".into(),
+            );
+        }
         if let Some(map) = &self.localization_map {
             map.validate()?;
         }
@@ -308,6 +318,15 @@ pub enum HealthIssue {
     InvalidNavigation,
     InvalidTrafficSignal,
 }
+
+#[derive(Clone, Copy, Debug, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct GnssLatencyDiagnostics {
+    pub compensated_fixes: u64,
+    pub history_unavailable_fixes: u64,
+    pub history_predictions: usize,
+    pub last_accepted_delay_s: Option<f64>,
+}
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct PipelineOutput {
@@ -330,6 +349,8 @@ pub struct PipelineOutput {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub localization: Option<LocalizationDiagnostics>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gnss_latency: Option<GnssLatencyDiagnostics>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub map_localization: Option<MapLocalizationDiagnostics>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub perception3d: Option<Perception3dDiagnostics>,
@@ -351,6 +372,8 @@ const MAX_GNSS_AGE_S: f64 = 0.75;
 pub struct DrivingPipeline {
     config: PipelineConfig,
     ekf: Ekf,
+    gnss_history: Option<GnssHistory>,
+    gnss_latency: GnssLatencyDiagnostics,
     perception: LidarClusters,
     tracker: Tracker,
     predictor: ObservedBraking,
@@ -437,6 +460,7 @@ impl DrivingPipeline {
         }
         let grid = OccupancyGrid::new(Vec2::new(min_x, min_y), width, height, 0.5);
         let ekf = Ekf::new(config.initial_pose);
+        let gnss_history = config.gnss_latency_compensation.then(GnssHistory::default);
         let predictor = if config.confirm_slow_motion {
             ObservedBraking::with_slow_motion()
         } else {
@@ -451,6 +475,8 @@ impl DrivingPipeline {
         Ok(Self {
             config,
             ekf,
+            gnss_history,
+            gnss_latency: GnssLatencyDiagnostics::default(),
             perception: LidarClusters,
             tracker: Tracker::default(),
             predictor,
@@ -513,6 +539,7 @@ impl DrivingPipeline {
         if self.odometry_fault.is_some() {
             health.push(HealthIssue::InvalidOdometry);
         }
+        let mut recorded_motion = false;
         match self.last_odom {
             None => health.push(HealthIssue::MissingOdometry),
             Some(odom) if input.time - odom.stamp > MAX_ODOMETRY_AGE_S + 1e-9 => {
@@ -520,7 +547,21 @@ impl DrivingPipeline {
             }
             Some(odom) if !first && dt <= 0.25 => {
                 let before = self.ekf.state().pose;
-                if let Some(offset) = self.config.rear_axle_offset_m {
+                if let Some(history) = &mut self.gnss_history {
+                    recorded_motion = history
+                        .predict(
+                            &mut self.ekf,
+                            odom,
+                            self.previous_time.unwrap(),
+                            input.time,
+                            self.config.rear_axle_offset_m.unwrap_or(0.),
+                        )
+                        .is_ok();
+                    if !recorded_motion {
+                        self.odometry_fault = Some(input.time);
+                        health.push(HealthIssue::InvalidOdometry);
+                    }
+                } else if let Some(offset) = self.config.rear_axle_offset_m {
                     self.ekf.predict_chassis(odom, dt, offset);
                 } else {
                     self.ekf.predict(odom, dt);
@@ -528,6 +569,9 @@ impl DrivingPipeline {
                 self.tracking_frame.advance(before, self.ekf.state().pose);
             }
             _ => {}
+        }
+        if !recorded_motion && let Some(history) = &mut self.gnss_history {
+            history.reset(input.time);
         }
         if let Some(fix) = input.gnss {
             if !stamp_valid(fix.stamp, input.time)
@@ -539,11 +583,33 @@ impl DrivingPipeline {
             } else if self.gnss_fault.is_none_or(|fault| {
                 fix.stamp > fault && input.time - fix.stamp <= MAX_GNSS_AGE_S + 1e-9
             }) {
-                match self.ekf.correct(fix) {
+                let decision = if let Some(history) = &mut self.gnss_history {
+                    match history.correct(&mut self.ekf, fix, input.time) {
+                        Ok(decision) => decision,
+                        Err(_) => {
+                            self.gnss_latency.history_unavailable_fixes = self
+                                .gnss_latency
+                                .history_unavailable_fixes
+                                .saturating_add(1);
+                            GnssDecision::Invalid
+                        }
+                    }
+                } else {
+                    self.ekf.correct(fix)
+                };
+                match decision {
                     GnssDecision::RejectedInnovation => {
                         self.rejected_gnss_streak = self.rejected_gnss_streak.saturating_add(1);
                     }
                     GnssDecision::Accepted => {
+                        if self.gnss_history.is_some() {
+                            let delay = (input.time - fix.stamp).max(0.);
+                            self.gnss_latency.last_accepted_delay_s = Some(delay);
+                            if delay > 1e-9 {
+                                self.gnss_latency.compensated_fixes =
+                                    self.gnss_latency.compensated_fixes.saturating_add(1);
+                            }
+                        }
                         self.rejected_gnss_streak = 0;
                         self.gnss_fault = None;
                     }
@@ -1003,6 +1069,13 @@ impl DrivingPipeline {
             position_variance: variance,
             ground,
             localization: Some(self.ekf.diagnostics()),
+            gnss_latency: self
+                .gnss_history
+                .as_ref()
+                .map(|history| GnssLatencyDiagnostics {
+                    history_predictions: history.len(),
+                    ..self.gnss_latency
+                }),
             map_localization: self
                 .map_localization
                 .as_ref()

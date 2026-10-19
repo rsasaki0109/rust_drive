@@ -1,6 +1,22 @@
 # Path toward a broader Rust driving stack
 
-The current engineering estimate is **about 20%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
+The current engineering estimate is **about 21%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
+
+The increment from about 20% reflects integrated acquisition-time GNSS fusion:
+the shared driving pipeline now corrects delayed fixes at their acquisition
+pose/covariance and replays bounded measured motion. Forty-two frozen reference
+and native RNE episodes pass accuracy, fault-stop/recovery, independent
+chronological reconstruction and exact replay. Eighteen paired uncompensated
+controls reproduce the old meter-scale error; minimum RMSE reduction is 92.7%.
+A failed native obstacle composition additionally exposes chassis-reference
+error and is repaired using the declared plant geometry and motion calibration.
+All 245 standard outputs remain byte-identical, and 56 native integration
+tests pass. [Implementation, fixed gates and results](gnss-latency.md).
+
+The 30% waypoint remains unmet: independent automotive perception/localization,
+calibrated uncertainty, delayed-odometry and external-correction replay remain
+unresolved. Earlier research notes below retain the estimates recorded at
+their respective revisions.
 
 The optional [guarded camera graph optimization](camera-operators.md) replaces
 two expensive Resize operations while checking all raw output bits against an

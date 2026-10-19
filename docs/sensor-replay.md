@@ -381,6 +381,23 @@ this evidence, so logs that used earlier or interrupted clear intervals need
 new expected outputs. These sampled checks do not establish continuous physical
 visibility or general right-of-way safety.
 
+## Acquisition-time GNSS replay
+
+Optional `gnss_latency_compensation: true` in the sensor-only configuration
+reconstructs a GNSS correction at its acquisition time and replays at most
+0.5 seconds / 64 accepted wheel/gyro prediction intervals. The original NIS
+gate, Joseph correction and acquisition-based freshness remain in force.
+`gnss_latency` output diagnostics record compensated fixes, unavailable history,
+current interval count and last accepted delay. Missing coverage brakes and
+requires a covered post-fault acquisition. External fixed-map corrections
+cannot be combined with this mode.
+
+The transport delay, fault schedule and physical truth are absent from the
+header. Both the original configuration and raw delivered observations are
+required for exact replay. Option-off records remain byte-identical; enabled
+records require a reader that supports the new configuration and diagnostics.
+[Independent chronological reconstruction and driving results](gnss-latency.md).
+
 ## GNSS acceptance diagnostics
 
 Optional output `localization` reports last observed/accepted GNSS stamps, the latest valid-new-fix decision and finite NIS, and accepted/rejected counts. Rejected fixes cannot refresh health; their receipt prevents subsequent duplicate/older observations from being processed. Invalid input continues to use health diagnostics. Replay recomputes the joint gate and all diagnostics. Changing a GNSS observation or its expected counters is covered by mismatch tests. Fault-window labels exist only in simulator configuration; recorded sensor observations contain the actual bias without labels. Schema 1 remains readable, but new correction arithmetic and output diagnostics require regenerated expected outputs. Boxed record payloads preserve JSON encoding. [GNSS baseline recovery](gnss-robustness.md) and [current terminal stopping](terminal-stopping.md).

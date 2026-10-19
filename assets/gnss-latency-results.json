@@ -1,0 +1,481 @@
+{
+  "actual_automotive_data_or_hardware_qualification": false,
+  "all_positive_expected_outcomes_completed": true,
+  "assessment_basis": "operational temporal fusion now removes demonstrated meter-scale delayed-GNSS errors, with historical covariance, fault-stop recovery, both simulated plants and unchanged default outputs",
+  "candidate_source_sha256": {
+    ".github/workflows/ci.yml": "1e0303bf67a3e4b366dfffd91e59184e5f3369e16e021bf55252609c43dbc43c",
+    "crates/localization/src/latency.rs": "2ded58e2834a02bf99a21e5af08b285c9a0a915d555fb4ad07edb8abe0b9bfa2",
+    "crates/localization/src/latency/tests.rs": "9456278b9949ad2b0b735630193f3e460c83327f8e216e432c1705f2039c2e4b",
+    "crates/localization/src/lib.rs": "5634d53f3bbea7a60bc1d238d345e262d2aa3e850c4ae37bf216a832baceaf1e",
+    "crates/pipeline/src/lib.rs": "e34557b4497ea515fb86b4844b759d7ef985387d88e3fc3588d40c34545f7297",
+    "crates/pipeline/tests/gnss_latency.rs": "2d4a27aab89b9640ff95ff11dc1e7e8232e19d39ed2f6318c3c63cddd54cfe4e",
+    "crates/sim/src/lib.rs": "83b545c76737155e46dce6ad0a963c5f4d60e1bbc51c3720ddeac1bf257f9fd3",
+    "crates/sim/src/sensor_timing.rs": "f322b0fff87c8163da128eea3e70f3d5af8e261bb893866c4f30acf2246a76b4",
+    "integrations/rne/src/lib.rs": "8ceecaa897da36713f73f8b30126eabc79fb6c28aadcb13e4d15bb5f0054f0c4",
+    "scenarios/gnss-delay-curve-fast.json": "17925342748350089b4ff482ae4a9350c234a060f9d877ad8681cb773f5f7841",
+    "scenarios/gnss-delay-curve.json": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24",
+    "scenarios/gnss-delay-dropout.json": "958742f77dbdd5df0bed928e395351fd43b2d1988c521df182287b74105cef1a",
+    "scenarios/gnss-delay-lead.json": "488ad068104e13dde6658742ee3da010a3159cb0daaf01bb255be34fa1cb5018",
+    "scenarios/gnss-delay-obstacle.json": "bf74453d79083f86d112fcb4a9af574b562eb11bbea2eaddd073ac1adad74858",
+    "scenarios/gnss-delay-outlier.json": "fb49ee323800acb4598fc9ca8b2c8466bf9dae3646e35736dca9f594c29d1825",
+    "scenarios/gnss-delay-straight.json": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19",
+    "scripts/check.sh": "8dc8ff891e28f3edb5433e217201aa7221e19b1c7ce787ef83157717ff28e16c",
+    "scripts/check_gnss_latency.py": "21f1ff3c4be3971b8b7edcf9c7a458ee95ae17ee0825ade4e289a510d3f07f74",
+    "scripts/test_gnss_latency.py": "f892401a04f4bb267d3deeb28ce298c8b8ae610be6755e4259dea86b479d970a"
+  },
+  "changed_standard_outputs": 0,
+  "composition_frozen_before_its_first_physical_results": true,
+  "composition_frozen_cases": [
+    {
+      "case": "obstacle",
+      "deadline_s": 45.0,
+      "expected": "goal",
+      "path": "scenarios/gnss-delay-obstacle.json",
+      "sha256": "bf74453d79083f86d112fcb4a9af574b562eb11bbea2eaddd073ac1adad74858"
+    },
+    {
+      "case": "lead",
+      "deadline_s": 65,
+      "expected": "stop",
+      "path": "scenarios/gnss-delay-lead.json",
+      "sha256": "488ad068104e13dde6658742ee3da010a3159cb0daaf01bb255be34fa1cb5018"
+    }
+  ],
+  "created_at": "2026-10-19T11:51:49.306085+09:00",
+  "delayed_odometry_or_clock_offset_estimation_supported": false,
+  "existing_map_and_scenario_files_unchanged": 132,
+  "external_map_correction_combination_supported": false,
+  "fault_stop_and_healthy_recovery_episodes": 12,
+  "feature_branch": "feat/gnss-delay-fusion-20261019",
+  "final_native_candidate_frozen_before_native_repeat": true,
+  "fixed_clearance_floor_m": 1.0,
+  "fixed_minimum_paired_rmse_reduction": 0.6,
+  "fixed_positive_accuracy_max_error_m": 0.4,
+  "fixed_positive_accuracy_rmse_max_m": 0.2,
+  "frozen_cases": [
+    {
+      "case": "straight",
+      "path": "scenarios/gnss-delay-straight.json",
+      "sha256": "0a82c85246e5199170b9dcef40ced364235222a3c8ba45679195142370e0ec19"
+    },
+    {
+      "case": "curve",
+      "path": "scenarios/gnss-delay-curve.json",
+      "sha256": "c079c62bc755de0f05d3a4a4a4b6c2f15fec35ae2fc6dc6f04c57dc4270fdf24"
+    },
+    {
+      "case": "curve-fast",
+      "path": "scenarios/gnss-delay-curve-fast.json",
+      "sha256": "17925342748350089b4ff482ae4a9350c234a060f9d877ad8681cb773f5f7841"
+    },
+    {
+      "case": "dropout",
+      "path": "scenarios/gnss-delay-dropout.json",
+      "sha256": "958742f77dbdd5df0bed928e395351fd43b2d1988c521df182287b74105cef1a"
+    },
+    {
+      "case": "outlier",
+      "path": "scenarios/gnss-delay-outlier.json",
+      "sha256": "fb49ee323800acb4598fc9ca8b2c8466bf9dae3646e35736dca9f594c29d1825"
+    }
+  ],
+  "historical_245_live_outputs_restored_unchanged": true,
+  "history_max_predictions": 64,
+  "history_max_seconds": 0.5,
+  "initial_native_obstacle_accuracy_rejections": [
+    {
+      "case": "obstacle",
+      "maximum_error_m": 0.671363745809123,
+      "plant": "rne-dynamic",
+      "rmse_m": 0.18179725480072048,
+      "seed": 1
+    },
+    {
+      "case": "obstacle",
+      "maximum_error_m": 0.6469668514780685,
+      "plant": "rne-dynamic",
+      "rmse_m": 0.1866383703151763,
+      "seed": 7
+    },
+    {
+      "case": "obstacle",
+      "maximum_error_m": 0.6853554547175,
+      "plant": "rne-dynamic",
+      "rmse_m": 0.16934716187800358,
+      "seed": 42
+    }
+  ],
+  "known_short_range_follower_failure_controls_rechecked_in_native_tests": 2,
+  "lead_composition_fixed_deadline_s": 65.0,
+  "maximum_independent_pose_difference": 5.684341886080802e-14,
+  "maximum_positive_position_error_m": 0.25262882428988415,
+  "maximum_positive_rmse_m": 0.08805355158285011,
+  "minimum_obstacle_composition_swept_clearance_m": 1.2274873428751394,
+  "minimum_paired_rmse_reduction": 0.9279322316160104,
+  "native_comparison_scope": "reference comparisons isolate GNSS timing; native comparisons include the enabled calibrated chassis/geometry mode while controls retain preceding native calibration",
+  "native_engine_checkout_clean": true,
+  "native_engine_revision": "df6007aa40315e81d12ae00fc1f60369e393a178",
+  "native_integration_tests": 56,
+  "native_repair": "record the declared chassis/rear-axle reference, local geometry/course-based pursuit and explicit adapter motion limits together; all original gates preserved",
+  "negative_control_sensor_ticks": 7820,
+  "negative_replay": {
+    "all_expected_pose_covariance_and_existing_outputs_unchanged": true,
+    "all_raw_sensor_inputs_unchanged": true,
+    "change": "disable compensation in original sensor-only configuration",
+    "exit_code": 2,
+    "expected_latency_diagnostics_removed_to_avoid_a_presence_only_mismatch": 464,
+    "mismatch_time_s": 0.4,
+    "passed": true,
+    "stderr": "rustdriving: replay mismatch at tick 8 (time 0.400)\n"
+  },
+  "negative_uncompensated_accuracy_controls": 18,
+  "new_native_regression_tests": 1,
+  "new_python_tests": 3,
+  "new_workspace_rust_tests": 9,
+  "old_control_outputs_recomputed_byte_identically_by_parent": 18,
+  "paired_accuracy": [
+    {
+      "case": "straight",
+      "passed": true,
+      "plant": "reference-2d",
+      "rmse_reduction": 0.9683483398179275,
+      "seed": 1
+    },
+    {
+      "case": "straight",
+      "passed": true,
+      "plant": "reference-2d",
+      "rmse_reduction": 0.9697660272849661,
+      "seed": 7
+    },
+    {
+      "case": "straight",
+      "passed": true,
+      "plant": "reference-2d",
+      "rmse_reduction": 0.9674850410439396,
+      "seed": 42
+    },
+    {
+      "case": "curve",
+      "passed": true,
+      "plant": "reference-2d",
+      "rmse_reduction": 0.9398315755804458,
+      "seed": 1
+    },
+    {
+      "case": "curve",
+      "passed": true,
+      "plant": "reference-2d",
+      "rmse_reduction": 0.9441595498863401,
+      "seed": 7
+    },
+    {
+      "case": "curve",
+      "passed": true,
+      "plant": "reference-2d",
+      "rmse_reduction": 0.9396317125439388,
+      "seed": 42
+    },
+    {
+      "case": "curve-fast",
+      "passed": true,
+      "plant": "reference-2d",
+      "rmse_reduction": 0.9734546803229902,
+      "seed": 1
+    },
+    {
+      "case": "curve-fast",
+      "passed": true,
+      "plant": "reference-2d",
+      "rmse_reduction": 0.9740826606855467,
+      "seed": 7
+    },
+    {
+      "case": "curve-fast",
+      "passed": true,
+      "plant": "reference-2d",
+      "rmse_reduction": 0.9721903823639554,
+      "seed": 42
+    },
+    {
+      "case": "straight",
+      "passed": true,
+      "plant": "rne-dynamic",
+      "rmse_reduction": 0.9671345514743893,
+      "seed": 1
+    },
+    {
+      "case": "straight",
+      "passed": true,
+      "plant": "rne-dynamic",
+      "rmse_reduction": 0.9609287065143044,
+      "seed": 7
+    },
+    {
+      "case": "straight",
+      "passed": true,
+      "plant": "rne-dynamic",
+      "rmse_reduction": 0.9635868445164021,
+      "seed": 42
+    },
+    {
+      "case": "curve",
+      "passed": true,
+      "plant": "rne-dynamic",
+      "rmse_reduction": 0.9383377019696336,
+      "seed": 1
+    },
+    {
+      "case": "curve",
+      "passed": true,
+      "plant": "rne-dynamic",
+      "rmse_reduction": 0.9279322316160104,
+      "seed": 7
+    },
+    {
+      "case": "curve",
+      "passed": true,
+      "plant": "rne-dynamic",
+      "rmse_reduction": 0.9327565461966131,
+      "seed": 42
+    },
+    {
+      "case": "curve-fast",
+      "passed": true,
+      "plant": "rne-dynamic",
+      "rmse_reduction": 0.9716560705304457,
+      "seed": 1
+    },
+    {
+      "case": "curve-fast",
+      "passed": true,
+      "plant": "rne-dynamic",
+      "rmse_reduction": 0.9676549006355036,
+      "seed": 7
+    },
+    {
+      "case": "curve-fast",
+      "passed": true,
+      "plant": "rne-dynamic",
+      "rmse_reduction": 0.9684043686854769,
+      "seed": 42
+    }
+  ],
+  "per_case": [
+    {
+      "case": "straight",
+      "maximum_position_error_m": 0.19991060693753618,
+      "maximum_rmse_m": 0.07085494864823813,
+      "passed": true,
+      "plant": "reference-2d",
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "straight",
+      "maximum_position_error_m": 0.2509175377651322,
+      "maximum_rmse_m": 0.08473625018249228,
+      "passed": true,
+      "plant": "rne-dynamic",
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "curve",
+      "maximum_position_error_m": 0.18273958403496945,
+      "maximum_rmse_m": 0.06591784095867816,
+      "passed": true,
+      "plant": "reference-2d",
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "curve",
+      "maximum_position_error_m": 0.22875259981702914,
+      "maximum_rmse_m": 0.07810840907703041,
+      "passed": true,
+      "plant": "rne-dynamic",
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "curve-fast",
+      "maximum_position_error_m": 0.23049781034824535,
+      "maximum_rmse_m": 0.07582870666927201,
+      "passed": true,
+      "plant": "reference-2d",
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "curve-fast",
+      "maximum_position_error_m": 0.25001136326359774,
+      "maximum_rmse_m": 0.08805355158285011,
+      "passed": true,
+      "plant": "rne-dynamic",
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "dropout",
+      "maximum_position_error_m": 0.21724497778320062,
+      "maximum_rmse_m": 0.06917812967993957,
+      "passed": true,
+      "plant": "reference-2d",
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "dropout",
+      "maximum_position_error_m": 0.25262882428988415,
+      "maximum_rmse_m": 0.08783657071554421,
+      "passed": true,
+      "plant": "rne-dynamic",
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "outlier",
+      "maximum_position_error_m": 0.21724497778320062,
+      "maximum_rmse_m": 0.06899352924437445,
+      "passed": true,
+      "plant": "reference-2d",
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "outlier",
+      "maximum_position_error_m": 0.25262882428988415,
+      "maximum_rmse_m": 0.08444069862579856,
+      "passed": true,
+      "plant": "rne-dynamic",
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "obstacle",
+      "maximum_position_error_m": 0.21034449966053356,
+      "maximum_rmse_m": 0.07465340745487367,
+      "passed": true,
+      "plant": "reference-2d",
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "obstacle",
+      "maximum_position_error_m": 0.25262882428988415,
+      "maximum_rmse_m": 0.07496772057911472,
+      "passed": true,
+      "plant": "rne-dynamic",
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "lead",
+      "maximum_position_error_m": 0.18149228324881309,
+      "maximum_rmse_m": 0.06148095340023512,
+      "passed": true,
+      "plant": "reference-2d",
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "lead",
+      "maximum_position_error_m": 0.2509175377651322,
+      "maximum_rmse_m": 0.06422898091175733,
+      "passed": true,
+      "plant": "rne-dynamic",
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    }
+  ],
+  "pins_unchanged": {
+    "Cargo.lock": "de8e6afb2c8f59be7f68f0ccf8604e4d43d9951d6902314f46f16b8121dbccf7",
+    "Cargo.toml": "2975b0cc0fbaed1397dc5d575fe95466d29ce773400eb1ce8f4fbec37bac0d65",
+    "integrations/rne/Cargo.lock": "c15e499bc74ddcf213bb0ac22cb22280c68d49ead2e203b8a7213e5a9f38f2ff",
+    "integrations/rne/Cargo.toml": "fcfeefae0ba2531576de908f5d267779d0f928ce824657acd77804efa0d58d33",
+    "integrations/rne/rne-revision.txt": "18a0b41bc51d35a964f9dc922ee44cf1c485b34765c8ddfe82c93649c440404e",
+    "integrations/rne/rust-toolchain.toml": "7d21c66a15f41bad66b82ed06a289f5dc8a6e3751951d2696bbf20ce296f2b0f",
+    "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed"
+  },
+  "positive_completed_goals": 36,
+  "positive_current_feature_episodes": 42,
+  "positive_feature_collisions": 0,
+  "positive_feature_road_violations": 0,
+  "positive_feature_sensor_ticks": 26015,
+  "positive_lead_terminal_stops": 6,
+  "previous_subjective_oss_maturity_percent": 20,
+  "primary_fixed_deadline_s": 45.0,
+  "primary_frozen_before_first_physical_results": true,
+  "primary_native_initial_passes_superseded": 15,
+  "python_auditor_tests": 28,
+  "qualification_scope": "bounded GNSS acquisition-time correction in shared sensor-only driving; seven authored worlds, 200/400 ms delivery, 4/6/8 m/s cruise, reference and native RNE dynamic plants",
+  "qualified": true,
+  "recorded_current_cli_physical_episodes": 109,
+  "recorded_current_cli_positive_acceptance_episodes": 91,
+  "reference_runtime_unchanged_through_native_repair": true,
+  "release_binaries_match_physical_candidates": true,
+  "release_binary_sha256": {
+    "rustdriving": "c51cc683cce5c3322de58e83a89f6ee99c4d2ae2a980ddcbbf3cd02bb9de3286",
+    "rustdriving-rne": "f832aa936ac5f7d66d2408fe361eebbc9106c9409a8af8589b4b0190855ae916"
+  },
+  "remote_CI_claimed": false,
+  "required_check_command": "bash scripts/check.sh",
+  "required_check_exit_code": 0,
+  "standard_outputs_compared": 245,
+  "standard_reference_runs_and_exact_replays": 49,
+  "starting_commit": "6381fd5945add484fae9141217edc3fbd5dbab27",
+  "subjective_oss_maturity_percent": 21,
+  "thirty_percent_waypoint_met": false,
+  "uncompensated_maximum_error_range_m": [
+    1.2544231090691274,
+    3.2881186511660108
+  ],
+  "uncompensated_rmse_range_m": [
+    1.0838188947499408,
+    2.737768524836586
+  ],
+  "workspace_rust_tests": 638
+}

@@ -104,6 +104,8 @@ pub struct Scenario {
     #[serde(default, skip_serializing_if = "is_false")]
     pub confirm_slow_motion: bool,
     #[serde(default, skip_serializing_if = "is_false")]
+    pub gnss_latency_compensation: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
     pub local_route_geometry: bool,
     pub duration: f64,
     pub road_length: f64,
@@ -647,6 +649,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     let (position, yaw) = route.sample(0.0, 0.0);
     let mut config = PipelineConfig::new(route, Pose { position, yaw }, VehicleConfig::default());
     config.confirm_slow_motion = scenario.confirm_slow_motion;
+    config.gnss_latency_compensation = scenario.gnss_latency_compensation;
     config.speed_zones = scenario.speed_zones.clone();
     if let Some(speed) = scenario.cruise_speed {
         config.cruise_speed = speed;
@@ -973,6 +976,11 @@ pub fn simulate_with_backend(
             }
         }
         if !scenario.speed_zones.is_empty()
+            || scenario.gnss_latency_compensation
+            || scenario
+                .sensor_timing
+                .as_ref()
+                .is_some_and(|timing| timing.gnss_delay_ticks > 0)
             || mapped_speed_limits
             || scenario.lane_change.is_some()
             || !traffic.is_empty()

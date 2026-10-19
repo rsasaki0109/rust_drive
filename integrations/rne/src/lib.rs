@@ -268,8 +268,16 @@ impl RneBackend {
         let mut config = pipeline_config(&scenario);
         // Dynamic RNE reports a chassis/COM pose, not a rear-axle pose. This
         // opt-in low-speed model uses declared plant geometry and noisy odometry.
-        if scenario.local_route_geometry && plant == Plant::Dynamic {
+        if (scenario.local_route_geometry || scenario.gnss_latency_compensation)
+            && plant == Plant::Dynamic
+        {
+            config.local_route_geometry = true;
             config.rear_axle_offset_m = Some(VehicleDynamics::default().rear_axle_m);
+            config.motion_limits.get_or_insert(MotionLimits {
+                max_acceleration_m_s2: 2.0,
+                max_deceleration_m_s2: 2.5,
+                max_lateral_acceleration_m_s2: 2.5,
+            });
         }
         let ground_segmentation = ground_mode != GroundMode::Disabled;
         let vehicle_body = ground_mode == GroundMode::VehicleBody;
@@ -1983,6 +1991,23 @@ mod tests {
                 assert!(frame.truth.speed < 0.2);
                 assert!(frame.truth.pose.position.x >= 158.0);
             }
+        }
+    }
+    #[test]
+    fn delayed_gnss_keeps_native_chassis_accuracy_during_obstacle_passing() {
+        for seed in [1, 7, 42] {
+            let r = run(scenario("gnss-delay-obstacle"), seed, Plant::Dynamic).unwrap();
+            assert!(r.summary.passed, "{:?}", r.summary);
+            assert!(r.summary.localization_rmse <= 0.2);
+            assert!(r.summary.localization_max_error <= 0.4);
+            assert!(r.summary.min_clearance >= 1.0);
+            let mut bytes = vec![];
+            r.sensor_log.as_ref().unwrap().write(&mut bytes).unwrap();
+            assert!(
+                rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), vec![])
+                    .unwrap()
+                    .verified
+            );
         }
     }
     #[test]

@@ -2,7 +2,7 @@
 
 RustDriving's long-term target is a practical independent autonomous driving OSS. Milestones are capability gates, not release dates or claims of parity with Autoware, Apollo or openpilot.
 
-The near-term user goal is a **50% engineering maturity estimate**. [Capability waypoints and evidence requirements](maturity.md) define the development direction; the percentage is subjective and does not imply road safety or parity. The current estimate is about 20%; this remains a subjective simulation-prototype estimate. Bounded turn-rule routing and richer intersection recordings add reproducible behavior, while general driving, perception accuracy and planar/terrain limits remain.
+The near-term user goal is a **50% engineering maturity estimate**. [Capability waypoints and evidence requirements](maturity.md) define the development direction; the percentage is subjective and does not imply road safety or parity. The current estimate is about 21%; this remains a subjective simulation-prototype estimate. Bounded turn-rule routing and richer intersection recordings add reproducible behavior, while general driving, perception accuracy and planar/terrain limits remain.
 
 ## M0 — Executable Rust baseline (implemented)
 
@@ -41,9 +41,11 @@ work. [Navigation speed contract](navigation-speeds.md).
 This does not supply sign detection, live speed-map remapping or general road
 rule understanding. [Contract and evidence](route-speed-zones.md).
 
+Acquisition-time GNSS fusion now corrects up to 0.5 s of delayed fixes using bounded wheel/gyro history in the shared pipeline. Reference and native RNE accuracy and fault-recovery trials pass independent chronological reconstruction, with all preceding default outputs retained. External map corrections and delayed odometry remain outside this mode. [Contract and measured improvement](gnss-latency.md).
+
 Remaining:
 
-- Covariance/forecast uncertainty propagation, delayed odometry/GNSS fusion, per-point LiDAR deskew and trace migrations. Bounded acquisition-time LiDAR reprojection and current-time motion extrapolation are narrower implemented steps, not complete delayed-sensor fusion.
+- Covariance/forecast uncertainty propagation, delayed odometry and general multi-sensor correction-event replay, per-point LiDAR deskew and trace migrations. Bounded acquisition-time LiDAR reprojection and current-time motion extrapolation are narrower implemented steps, not complete delayed-sensor fusion.
 - Continuous moving-route handover, routing from arbitrary mid-edge positions, general external map/lane import, variable-width/lane topology, general turn rules, live speed-limit remapping and A* for larger maps. Bounded OSM road-graph import and fixed-route speed intervals are implemented.
 - Continuous lateral offsets and controller-feasibility validation.
 - Oriented-body planning, measured vehicle/actuator calibration, combined longitudinal/lateral friction feasibility and optimized speed profiles. An authored rectangular evaluation body and conservative planar envelope are implemented.

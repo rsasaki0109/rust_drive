@@ -167,6 +167,18 @@ For accelerated segments, the circular sweep additionally covers the deviation f
 
 **Simulation and evaluation.** A kinematic bicycle with bounded speed, acceleration and steering is integrated every 0.05 s. The ego and obstacles have circular collision footprints; relative swept segments test collision between integration endpoints. Current and terminal overlaps are also scored, and newly active actors receive endpoint checks. Each evaluated tick counts at most one collision; exact continuous activation-time checking remains absent. Road containment uses the ego center plus circular radius against route half-width. Tire friction and actuator lag are outside the reference model. The optional RNE dynamic plant adds a friction limit and steering lag; road elevation, suspension, rectangular collision evaluation, weather, camera imagery and general priority/traffic-law reasoning remain outside the demonstrated operating domain. See the [adapter boundaries](../integrations/rne/README.md). Optional `goal_hold_seconds` keeps the entire loop and independent physical evaluator running after first arrival; leaving the goal or exceeding its speed threshold resets residence. The final truth frame is retained at termination. The 16-second traffic regression observes the lead reaching the endpoint after ego stops. No throughput or real-time guarantee is claimed.
 
+## Acquisition-time GNSS correction
+
+Optional `gnss_latency_compensation` retains at most 0.5 seconds / 64 validated
+wheel/gyro prediction intervals. GNSS is gated and corrected at its original
+acquisition time, including fractional intervals, before motion and covariance
+are replayed to the current clock. Accepted timestamps/counts retain observation
+ownership; delivery cannot renew freshness. Uncovered history brakes and requires
+a post-fault acquisition. Zero-delay outputs retain existing arithmetic.
+External map-pose corrections are rejected in combination until correction-event
+replay is implemented. Delayed odometry and clock-offset estimation remain
+outside this mode. [Implementation and independent evidence](gnss-latency.md).
+
 ## Fixed-route speed intervals
 
 Optional surveyed `speed_zones` cap candidate segment endpoints over mapped

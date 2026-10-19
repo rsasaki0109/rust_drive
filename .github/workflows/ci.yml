@@ -40,6 +40,8 @@ jobs:
         run: python scripts/test_lane_resume_speeds.py
       - name: Check closure-aware mapped speed scoring
         run: python scripts/test_navigation_speeds.py
+      - name: Check acquisition-time GNSS reconstruction
+        run: python scripts/test_gnss_latency.py
       - run: cargo fmt --all --check
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - run: cargo test --workspace --locked
@@ -62,6 +64,9 @@ jobs:
       - name: Drive stopped route handovers with original road speed limits
         shell: bash
         run: python scripts/check_navigation_speeds.py --output artifacts/navigation-speeds
+      - name: Verify delayed GNSS fusion and fault recovery from original observations
+        shell: bash
+        run: python scripts/check_gnss_latency.py --output artifacts/gnss-latency
       - name: Evaluate pinned measured clouds and independently reconstruct scores
         shell: bash
         run: |
@@ -114,6 +119,7 @@ jobs:
             artifacts/lane-return-speeds/
             artifacts/lane-resume-speeds/
             artifacts/navigation-speeds/
+            artifacts/gnss-latency/
   image-tracking:
     runs-on: ubuntu-latest
     steps:

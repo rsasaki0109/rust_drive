@@ -1,5 +1,5 @@
-//! Simulator-only LiDAR transport. Acquisition stamps and body-frame points are immutable.
-use rustdriving_core::{Lidar3dScan, LidarScan, MultiHeightLidarScan};
+//! Simulator-only sensor transport. Acquisition values and stamps are immutable.
+use rustdriving_core::{Gnss, Lidar3dScan, LidarScan, MultiHeightLidarScan};
 use rustdriving_pipeline::SensorFrame;
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
@@ -19,11 +19,19 @@ pub struct SensorFailureWindow {
 pub struct SensorTiming {
     pub lidar_period_ticks: usize,
     pub lidar_delay_ticks: usize,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub gnss_delay_ticks: usize,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub lidar_failure_windows: Vec<SensorFailureWindow>,
 }
+fn is_zero(value: &usize) -> bool {
+    *value == 0
+}
 impl SensorTiming {
     pub fn validate(&self, duration: f64) -> Result<(), String> {
+        if self.gnss_delay_ticks > 20 {
+            return Err("GNSS transport delay must be at most 20 ticks".into());
+        }
         if !(2..=10).contains(&self.lidar_period_ticks)
             || !self.lidar_period_ticks.is_multiple_of(2)
             || self.lidar_delay_ticks > 6
@@ -55,6 +63,7 @@ impl SensorTiming {
 #[derive(Default)]
 pub(crate) struct SensorDelivery {
     pending: VecDeque<PendingScan>,
+    pending_gnss: VecDeque<(usize, Gnss)>,
 }
 struct PendingScan {
     ready_tick: usize,
@@ -64,6 +73,21 @@ struct PendingScan {
 }
 impl SensorDelivery {
     pub(crate) fn apply(&mut self, timing: &SensorTiming, tick: usize, input: &mut SensorFrame) {
+        // GNSS transport is independent of LiDAR failure epochs. Preserve raw
+        // acquisition timestamps and measurement values, including outliers.
+        if timing.gnss_delay_ticks != 0 {
+            if let Some(fix) = input.gnss.take() {
+                self.pending_gnss
+                    .push_back((tick + timing.gnss_delay_ticks, fix));
+            }
+            while self
+                .pending_gnss
+                .front()
+                .is_some_and(|(ready, _)| *ready <= tick)
+            {
+                input.gnss = self.pending_gnss.pop_front().map(|(_, fix)| fix);
+            }
+        }
         let failure = input.lidar_failed
             || timing
                 .lidar_failure_windows
@@ -116,6 +140,7 @@ mod tests {
         SensorTiming {
             lidar_period_ticks: period,
             lidar_delay_ticks: delay,
+            gnss_delay_ticks: 0,
             lidar_failure_windows: vec![],
         }
     }
@@ -155,6 +180,34 @@ mod tests {
             }
             assert!(!input.lidar_failed);
         }
+    }
+
+    #[test]
+    fn gnss_transport_keeps_acquisition_values_during_independent_lidar_failure() {
+        let mut delivery = SensorDelivery::default();
+        let mut timing = timing(2, 0);
+        timing.gnss_delay_ticks = 4;
+        let original = Gnss {
+            stamp: 0.,
+            position: Vec2::new(30., -25.),
+            variance: 0.02,
+        };
+        for tick in 0..=4 {
+            let mut input = frame(tick);
+            input.gnss = (tick == 0).then_some(original);
+            input.lidar_failed = tick == 4;
+            delivery.apply(&timing, tick, &mut input);
+            if tick < 4 {
+                assert!(input.gnss.is_none());
+            } else {
+                let delivered = input.gnss.unwrap();
+                assert_eq!(delivered.stamp, original.stamp);
+                assert_eq!(delivered.position, original.position);
+                assert!(input.lidar_failed);
+            }
+        }
+        timing.gnss_delay_ticks = 21;
+        assert!(timing.validate(45.).is_err());
     }
 
     fn layered_frame(tick: usize) -> SensorFrame {
@@ -440,6 +493,7 @@ mod tests {
         scenario.sensor_timing = Some(SensorTiming {
             lidar_period_ticks: 2,
             lidar_delay_ticks: 2,
+            gnss_delay_ticks: 0,
             lidar_failure_windows: vec![SensorFailureWindow {
                 from: 3.0,
                 until: 4.0,

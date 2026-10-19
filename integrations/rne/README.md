@@ -61,6 +61,8 @@ This is a planar known-route research integration. It does not establish realist
 
 RNE is dual MIT/Apache-2.0. Optional locked dependency licenses are inventoried in [THIRD_PARTY.md](THIRD_PARTY.md).
 
+Optional `gnss_latency_compensation` uses acquisition-time GNSS correction and bounded wheel/gyro replay. Dynamic mode also records the declared chassis/rear-axle reference, existing local route/course steering model and explicit motion calibration; caller limits are retained, with research defaults 2.0/2.5/2.5 m/s² and the existing friction clamp. Seven authored worlds pass frozen accuracy/physical gates across three seeds, including a repaired 0.69 m obstacle-passing localization failure. The new native regression joins 55 preceding integration tests. [Contract, rejected trials and results](../../docs/gnss-latency.md).
+
 ## Occlusion, crossing and low-friction regressions
 
 Run `bash scripts/check-hazards.sh` from RustDriving for the seeded reference/RNE hazard suite and complete replay. The dynamic adapter accepts optional scenario `dynamics` calibration for friction and steering lag, adds a longitudinal `mu*g` actuation clamp, and supplies conservative fixed forward/braking/lateral limits to the shared planner. Reference/kinematic backends reject this calibration. Combined longitudinal/lateral friction coupling and online friction estimation are absent. [Measured outcomes and the repaired braking failure](../../docs/hazard-validation.md).
