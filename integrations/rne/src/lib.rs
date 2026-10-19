@@ -2108,6 +2108,31 @@ mod tests {
         }
     }
     #[test]
+    fn directed_partial_routes_drive_avoid_and_replan_with_native_dynamics() {
+        for name in [
+            "same-edge",
+            "obstacle",
+            "restricted",
+            "handover",
+            "reopen",
+            "blocked-goal",
+            "osm",
+        ] {
+            let r = run(scenario(&format!("mid-edge-{name}")), 7, Plant::Dynamic).unwrap();
+            assert!(r.summary.passed, "{name}: {:?}", r.summary);
+            assert_eq!(r.summary.reached_goal, name != "blocked-goal");
+            assert_eq!(r.frames.len(), r.summary.steps);
+            assert!(r.summary.min_clearance >= 1.);
+            let mut bytes = vec![];
+            r.sensor_log.as_ref().unwrap().write(&mut bytes).unwrap();
+            assert!(
+                rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), vec![])
+                    .unwrap()
+                    .verified
+            );
+        }
+    }
+    #[test]
     fn insufficient_follower_sensing_still_fails_the_physical_clearance_floor() {
         for seed in [1, 42] {
             let r = run(

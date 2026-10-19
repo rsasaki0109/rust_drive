@@ -1,14 +1,14 @@
 //! Known map updates and a conservative stop-before-divergence route handover.
 use rustdriving_core::{EgoState, Odometry, Route, wrap_angle};
-use rustdriving_routing::{RoadNetwork, RoadNetworkSpec, RoutePlan, SpeedRoutePlan};
+use rustdriving_routing::{RoadNetwork, RoadNetworkSpec, RouteEndpoint, RoutePlan, SpeedRoutePlan};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct NavigationConfig {
     pub network: RoadNetworkSpec,
-    pub start: String,
-    pub goal: String,
+    pub start: RouteEndpoint,
+    pub goal: RouteEndpoint,
     #[serde(default)]
     pub closed_edges: Vec<String>,
 }
@@ -57,6 +57,76 @@ mod tests {
             1.25,
             2.5,
         )
+    }
+    fn partial_config() -> NavigationConfig {
+        let mut c = config();
+        c.start = rustdriving_routing::RouteEndpoint::Edge(rustdriving_routing::EdgePosition {
+            edge: "approach".into(),
+            s_m: 12.5,
+        });
+        c.goal = rustdriving_routing::RouteEndpoint::Edge(rustdriving_routing::EdgePosition {
+            edge: "east-exit".into(),
+            s_m: 25.25,
+        });
+        c
+    }
+    #[test]
+    fn partial_origin_rebases_closure_stop_and_handover_geometry() {
+        let mut n = Navigator::new(partial_config()).unwrap();
+        assert!(!step(
+            &mut n,
+            Some(&update(0., 1, &["main"])),
+            0.,
+            ego(12.5, 4.),
+            true
+        ));
+        assert_eq!(n.status.stop_s, Some(24.25));
+        assert_eq!(n.status.phase, NavigationPhase::Braking);
+        for i in 1..=3 {
+            let switched = step(&mut n, None, i as f64 * 0.05, ego(30., 0.), true);
+            assert_eq!(switched, i == 3);
+        }
+        assert_eq!(n.plan().edge_ids, ["approach", "detour", "east-exit"]);
+        assert_eq!(n.plan().route.points[0], Vec2::new(12.5, 0.));
+        assert_eq!(
+            *n.plan().route.points.last().unwrap(),
+            Vec2::new(185.25, 0.)
+        );
+        assert_eq!(n.status.switches, 1);
+    }
+    #[test]
+    fn partial_destination_closure_holds_before_its_actual_entry() {
+        let mut n = Navigator::new(partial_config()).unwrap();
+        step(
+            &mut n,
+            Some(&update(0., 1, &["east-exit"])),
+            0.,
+            ego(12.5, 2.),
+            true,
+        );
+        assert_eq!(n.status.phase, NavigationPhase::Blocked);
+        assert_eq!(n.status.stop_s, Some(144.25));
+        assert!(n.status.pending_edges.is_empty());
+        assert_eq!(n.plan().edge_ids, ["approach", "main", "east-exit"]);
+    }
+    #[test]
+    fn endpoint_json_retains_node_strings_and_rejects_ambiguous_objects() {
+        let c = config();
+        let value = serde_json::to_value(&c).unwrap();
+        assert_eq!(value["start"], "start");
+        assert_eq!(value["goal"], "east");
+        assert!(
+            serde_json::from_str::<RouteEndpoint>(r#"{"edge":"approach","s_m":1,"node":"start"}"#)
+                .is_err()
+        );
+        assert!(serde_json::from_str::<RouteEndpoint>(r#"{"edge":"approach"}"#).is_err());
+        let p = serde_json::to_value(c.initial_plan().unwrap()).unwrap();
+        assert!(p.get("traversals").is_none());
+        let partial = partial_config();
+        let copy: NavigationConfig =
+            serde_json::from_value(serde_json::to_value(&partial).unwrap()).unwrap();
+        assert_eq!(copy.start, partial.start);
+        assert_eq!(copy.goal, partial.goal);
     }
     #[test]
     fn handover_requires_three_healthy_stopped_samples_before_the_divergence() {
@@ -314,7 +384,7 @@ mod tests {
 impl NavigationConfig {
     pub fn initial_plan(&self) -> Result<RoutePlan, String> {
         RoadNetwork::new(self.network.clone())?
-            .shortest_route_with_speed_zones(&self.start, &self.goal, &self.closed_edges)
+            .shortest_route_between_with_speed_zones(&self.start, &self.goal, &self.closed_edges)
             .map(|compiled| compiled.plan)
     }
 }
@@ -365,7 +435,7 @@ pub(crate) struct Navigator {
 impl Navigator {
     pub fn new(config: NavigationConfig) -> Result<Self, String> {
         let network = RoadNetwork::new(config.network.clone())?;
-        let active = network.shortest_route_with_speed_zones(
+        let active = network.shortest_route_between_with_speed_zones(
             &config.start,
             &config.goal,
             &config.closed_edges,
@@ -461,7 +531,7 @@ impl Navigator {
                     self.stopped_samples = 0;
                     self.pending = None;
                     self.status.pending_edges.clear();
-                    match self.network.shortest_route_with_speed_zones(
+                    match self.network.shortest_route_between_with_speed_zones(
                         &self.config.start,
                         &self.config.goal,
                         &update.closed_edges,
@@ -486,7 +556,15 @@ impl Navigator {
                                     .find(|e| &e.id == id)
                                     .unwrap();
                                 let edge_length: f64 =
-                                    edge.points.windows(2).map(|p| p[0].distance(p[1])).sum();
+                                    self.active.plan.traversals.get(i).map_or_else(
+                                        || {
+                                            edge.points
+                                                .windows(2)
+                                                .map(|p| p[0].distance(p[1]))
+                                                .sum()
+                                        },
+                                        |span| span.end_s_m - span.start_s_m,
+                                    );
                                 if candidate
                                     .as_ref()
                                     .is_ok_and(|p| p.plan.edge_ids.get(i) == Some(id))

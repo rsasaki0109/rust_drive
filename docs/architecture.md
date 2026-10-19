@@ -221,6 +221,15 @@ Evaluation adds circular sweeps and clearance floors for actor pairs involving a
 
 ## Map navigation
 
+An endpoint can also be an explicit directed edge and an interior arc distance.
+The partial-route search retains the origin's arrival-edge context and checks
+the turn into a partial destination. Traversal intervals clip geometry, speed
+caps and stopped-handover boundaries without changing the original map. Both
+plants log the original request for recomputation; node-only requests retain
+the preceding algorithm and serialization. Automatic live-position map matching
+and moving handover remain unimplemented. [Contract and retained qualification
+failure](mid-edge-routing.md).
+
 The independent routing crate resolves a directed map and known edge closures before departure. The simulator records selected node/edge IDs and supplies the route to the local pipeline; minimum edge width defines its conservative corridor. Search uses standard-library Dijkstra with deterministic equal-cost choices and rejects invalid or unreachable requests. Authored fork/merge and alternative-destination fixtures run in both plants. Resolved-route replay recomputes the local stack. Map-configured replay additionally recomputes Dijkstra and stopped handover from timestamped closure snapshots. The pipeline preserves estimation/tracking state and steering continuity while resetting route-dependent planner state and longitudinal feedback. [Live handover and retained failure](handover.md). [Map format, actual results and limitations](routing.md).
 
 ## Extension decisions

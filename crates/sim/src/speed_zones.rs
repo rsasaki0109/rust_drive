@@ -56,7 +56,7 @@ pub(crate) fn road_zones(
 ) -> Vec<RouteSpeedZone> {
     let mut zones = vec![];
     let mut distance = 0.;
-    for id in &plan.edge_ids {
+    for (i, id) in plan.edge_ids.iter().enumerate() {
         let edge = network.edges.iter().find(|edge| &edge.id == id).unwrap();
         let mut points = edge.points.clone();
         points[0] = network
@@ -72,10 +72,15 @@ pub(crate) fn road_zones(
             .unwrap()
             .position;
         let start = distance;
-        distance += points
-            .windows(2)
-            .map(|pair| pair[0].distance(pair[1]))
-            .sum::<f64>();
+        distance += plan.traversals.get(i).map_or_else(
+            || {
+                points
+                    .windows(2)
+                    .map(|pair| pair[0].distance(pair[1]))
+                    .sum::<f64>()
+            },
+            |span| span.end_s_m - span.start_s_m,
+        );
         if let Some(speed) = edge.speed_limit_m_s {
             zones.push(RouteSpeedZone {
                 start_s_m: start,

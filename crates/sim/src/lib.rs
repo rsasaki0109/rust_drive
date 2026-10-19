@@ -73,8 +73,8 @@ pub enum Expected {
 #[serde(deny_unknown_fields)]
 pub struct NavigationSpec {
     pub network: RoadNetworkSpec,
-    pub start: String,
-    pub goal: String,
+    pub start: rustdriving_routing::RouteEndpoint,
+    pub goal: rustdriving_routing::RouteEndpoint,
     #[serde(default)]
     pub closed_edges: Vec<String>,
 }
@@ -358,7 +358,7 @@ impl Scenario {
         self.navigation
             .as_ref()
             .map(|nav| {
-                RoadNetwork::new(nav.network.clone())?.shortest_route(
+                RoadNetwork::new(nav.network.clone())?.shortest_route_between(
                     &nav.start,
                     &nav.goal,
                     &nav.closed_edges,
@@ -669,7 +669,9 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     // so replay recomputes the legal route instead of trusting resolved geometry.
     if !scenario.navigation_updates.is_empty()
         || scenario.navigation.as_ref().is_some_and(|nav| {
-            !nav.network.turn_restrictions.is_empty()
+            matches!(nav.start, rustdriving_routing::RouteEndpoint::Edge(_))
+                || matches!(nav.goal, rustdriving_routing::RouteEndpoint::Edge(_))
+                || !nav.network.turn_restrictions.is_empty()
                 || nav
                     .network
                     .edges
@@ -905,17 +907,21 @@ pub fn simulate_with_backend(
         {
             let progress = route.project(truth.pose.position).0;
             let mut start_s = 0.0;
-            for id in &plan.edge_ids {
+            for (edge_index, id) in plan.edge_ids.iter().enumerate() {
                 let edge = nav.network.edges.iter().find(|e| &e.id == id).unwrap();
                 if evaluation_closures.contains(id) && progress + vehicle.radius >= start_s {
                     closure_violations += 1;
                     break;
                 }
-                start_s += edge
-                    .points
-                    .windows(2)
-                    .map(|p| p[0].distance(p[1]))
-                    .sum::<f64>();
+                start_s += plan.traversals.get(edge_index).map_or_else(
+                    || {
+                        edge.points
+                            .windows(2)
+                            .map(|p| p[0].distance(p[1]))
+                            .sum::<f64>()
+                    },
+                    |span| span.end_s_m - span.start_s_m,
+                );
             }
         }
         sensor_log.record(input, result);
@@ -982,6 +988,10 @@ pub fn simulate_with_backend(
                 .as_ref()
                 .is_some_and(|timing| timing.gnss_delay_ticks > 0)
             || mapped_speed_limits
+            || scenario.navigation.as_ref().is_some_and(|nav| {
+                matches!(nav.start, rustdriving_routing::RouteEndpoint::Edge(_))
+                    || matches!(nav.goal, rustdriving_routing::RouteEndpoint::Edge(_))
+            })
             || scenario.lane_change.is_some()
             || !traffic.is_empty()
             || !scenario.traffic_signals.is_empty()

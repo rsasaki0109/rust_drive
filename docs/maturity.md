@@ -1,6 +1,17 @@
 # Path toward a broader Rust driving stack
 
-The current engineering estimate is **about 21%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
+The current engineering estimate is **about 22%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
+
+The increment from about 21% reflects an end-to-end navigation capability:
+[directed origins and destinations inside road edges](mid-edge-routing.md),
+without requiring callers to rewrite the original map. Incoming-edge turn rules,
+partial-destination admission, clipped speed caps and stopped closure handover
+operate in both plants. All 768 exhaustive routing controls agree, and all 48
+physical episodes meet the routing/clearance/speed/replay contract. Complete
+qualification still passes only 41/48: seven native launch-heading errors exceed
+the unchanged 0.1 rad gate and also reproduce in equivalent-node parent controls.
+This modest scope increase does not qualify localization uncertainty, general
+live routing or automotive operation; the 30% waypoint remains unmet.
 
 The increment from about 20% reflects integrated acquisition-time GNSS fusion:
 the shared driving pipeline now corrects delayed fixes at their acquisition

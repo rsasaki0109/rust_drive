@@ -119,6 +119,7 @@
 | Learned prediction and training | Planned | No model/data/runtime packaged |
 | 3D mapping / SLAM / global localization | Planned | Optional local XY fixed-map matching is implemented separately; no truth-as-localization substitution |
 | Directed road graph / shortest-distance routing | Implemented / tested | Authored planar maps, deterministic Dijkstra, known pre-departure closure detours, 3 route fixtures × 2 plants × 3 seeds |
+| Directed mid-edge origins and destinations | Implemented / independently checked | Original-map edge/arc requests, incoming and destination turn rules, clipped speeds and stopped closure handover; 768 exhaustive requests, 48 route/physical passes with 41 complete quality passes and seven retained native launch-heading failures; [contract](mid-edge-routing.md) |
 | Bounded OpenStreetMap import | Implemented / tested | Versioned real ODbL extract, local WGS84/ENU, shared junctions and directed motor-road graph; explicit simulation widths, no lanes/elevation/turn-restriction interpretation |
 | Minimum-clearance regression conditions | Implemented / tested | Fixed swept-circle fixture floors; no real-driving clearance specification |
 | Live closures / stopped route handover | Implemented / tested | Common-prefix policy, three healthy stopped estimates, no-route hold/reopening, 4 m/s fixtures with conservative curvature limits and a 6 m/s fixture without an optional curvature cap |

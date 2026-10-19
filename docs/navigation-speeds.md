@@ -56,8 +56,9 @@ and lane-change gates remain in force for this navigation path.
 
 This supports fixed map speed values during closure-driven routing. Closure
 snapshots still contain edge IDs, timestamps and revisions; they cannot update
-the speed values themselves. Moving handover, arbitrary mid-edge routing and
-live speed-value updates remain outside this feature.
+the speed values themselves. Moving handover and live speed-value updates remain
+outside this feature. The subsequent [explicit mid-edge routing](mid-edge-routing.md)
+clips these same caps and stopped-handover boundaries to directed partial requests.
 
 ```sh
 source scripts/env.sh

@@ -3,7 +3,9 @@ pub mod lane_resume;
 pub mod lane_return;
 pub mod lanes;
 pub mod osm;
+mod positions;
 mod speeds;
+pub use positions::{EdgePosition, EdgeTraversal, RouteEndpoint};
 use rustdriving_core::{Route, Vec2};
 use serde::{Deserialize, Serialize};
 pub use speeds::SpeedRoutePlan;
@@ -42,8 +44,8 @@ pub struct RoadNetworkSpec {
     pub turn_restrictions: Vec<TurnRestriction>,
 }
 
-/// A directed transition constraint at a junction. No restriction applies to a
-/// route's first edge, because the request has no specified arrival edge.
+/// A directed transition constraint at a junction. Node origins have no arrival
+/// edge; an origin inside an edge preserves that incoming edge at its first turn.
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct TurnRestriction {
@@ -68,6 +70,10 @@ pub struct RoutePlan {
     pub edge_ids: Vec<String>,
     pub distance_m: f64,
     pub route: Route,
+    /// Present for requests with an edge position, in traversal order. Repeated
+    /// edge IDs are possible when a directed cycle reaches a goal behind origin.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub traversals: Vec<EdgeTraversal>,
 }
 
 /// Validated immutable map. No simulator state or obstacle labels enter routing.
@@ -321,6 +327,7 @@ impl RoadNetwork {
             edge_ids,
             distance_m,
             route,
+            traversals: vec![],
         })
     }
 
@@ -404,6 +411,7 @@ impl RoadNetwork {
             edge_ids,
             distance_m,
             route: Route::new(points, half_width)?,
+            traversals: vec![],
         })
     }
 }

@@ -2,6 +2,11 @@
 
 This standalone Cargo workspace embeds [RobotNativeEngine](https://github.com/rsasaki0109/RobotNativeEngine) native vehicle systems and Rapier LiDAR queries into the **same RustDriving pipeline** used by the reference simulator and replay. It is executable code with integration tests, not a mock or renderer-driven vehicle animation.
 
+[Explicit directed mid-edge routes](../../docs/mid-edge-routing.md) also use this
+native plant. All 24 frozen native episodes pass routing/physical/replay checks;
+only 17 pass complete quality acceptance, with seven seed-7 launch-heading
+failures retained. The same failures reproduce in equivalent-node parent replay.
+
 ## Reproduce
 
 From the RustDriving checkout, with Git, Rust, a C linker and network access:

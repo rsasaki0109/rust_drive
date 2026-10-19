@@ -46,7 +46,7 @@ Acquisition-time GNSS fusion now corrects up to 0.5 s of delayed fixes using bou
 Remaining:
 
 - Covariance/forecast uncertainty propagation, delayed odometry and general multi-sensor correction-event replay, per-point LiDAR deskew and trace migrations. Bounded acquisition-time LiDAR reprojection and current-time motion extrapolation are narrower implemented steps, not complete delayed-sensor fusion.
-- Continuous moving-route handover, routing from arbitrary mid-edge positions, general external map/lane import, variable-width/lane topology, general turn rules, live speed-limit remapping and A* for larger maps. Bounded OSM road-graph import and fixed-route speed intervals are implemented.
+- Continuous moving-route handover and automatic live-position map matching, general external map/lane import, variable-width/lane topology, general turn rules, live speed-limit remapping and A* for larger maps. Explicit directed interior-edge origin/destination routing, bounded OSM road-graph import and fixed-route speed intervals are implemented. [Partial-route evidence and retained heading failure](mid-edge-routing.md).
 - Continuous lateral offsets and controller-feasibility validation.
 - Oriented-body planning, measured vehicle/actuator calibration, combined longitudinal/lateral friction feasibility and optimized speed profiles. An authored rectangular evaluation body and conservative planar envelope are implemented.
 - General goal-area stopping/escape, constrained destinations and blocked lateral refuges; the authored GNSS-burst traffic regression is repaired.
