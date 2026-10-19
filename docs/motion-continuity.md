@@ -1,7 +1,7 @@
 # Motion continuity and latched localization loss
 
-The default shared driving pipeline now stops permanently after a post-initial
-control interval cannot be propagated from valid wheel/gyro motion. Previously,
+With recovery disabled, the shared driving pipeline stops permanently after a
+post-initial control interval cannot be propagated from valid wheel/gyro motion. Previously,
 a missing interval could enter scan-pose history as no movement, retain object
 identities and later resume on fresh scalar observations. A new GNSS position
 or wheel speed does not reconstruct the lost rigid-body displacement/heading.
@@ -29,9 +29,13 @@ remain developer evidence; no new rays update them. Commands remain acceleration
 −6 m/s² and steering zero. Fresh GNSS, LiDAR, map or wheel observations cannot
 clear the latch or reconnect object identities.
 
-Restart requires an externally supplied current pose calibration and a new
-`DrivingPipeline` instance. There is no automatic relocalization, pose-reset
-service, delayed-odometry fusion or covariance recovery policy in this change.
+By default, restart requires an externally supplied current pose calibration
+and a new `DrivingPipeline` instance.
+A separate explicit [stopped regional map policy](regional-relocalization.md)
+now provides measured reinitialization within a bounded region for supported
+fixed-route/XY-LiDAR configurations. The default guard and the original results
+below retain their stopping-only contract.
+
 Normal covered-motion frames omit the new field. JSONL schema remains 1;
 historical fault logs that expected automatic resume after a motion gap now
 need new expectations, while their original evidence must remain unchanged.

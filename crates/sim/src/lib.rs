@@ -122,6 +122,8 @@ pub struct Scenario {
     /// External recovery policy calibration; distinct from simulated faults.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub gnss_recovery: Option<rustdriving_pipeline::GnssRecoveryConfig>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub relocalization: Option<rustdriving_pipeline::RelocalizationConfig>,
     /// Explicit experimental forecast policy, independent of actor identities.
     #[serde(default, skip_serializing_if = "is_false")]
     pub confirm_slow_motion: bool,
@@ -707,6 +709,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     config.gnss_covariance_shape = scenario.gnss_covariance_shape;
     config.gnss_antenna_offset_m = scenario.gnss_antenna_offset_m;
     config.gnss_recovery = scenario.gnss_recovery;
+    config.relocalization = scenario.relocalization;
     config.confirm_slow_motion = scenario.confirm_slow_motion;
     config.gnss_latency_compensation = scenario.gnss_latency_compensation;
     config.speed_zones = scenario.speed_zones.clone();

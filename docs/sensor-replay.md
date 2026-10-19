@@ -37,6 +37,18 @@ initialization and the ordinary 0.15 s cache grace remain. Covered-motion logs
 omit the new field; older fault logs expecting automatic resume after an
 uncovered interval require new expectations. [Protocol and limits](motion-continuity.md).
 
+With an explicit `relocalization` policy and supplied map, new synchronous
+stopped wheel/gyro observations plus three consistent current scan fits can
+initialize a new measured pose/covariance. Configurations with live navigation,
+lane changes, mapped controls or XYZ/multi-height scans are rejected. Output
+records optional `relocalization` admission/search diagnostics, full posterior
+covariance and nonzero `localization_epoch`; consumers scope track IDs by epoch.
+The confirming frame brakes and acquisitions at or before the reset cannot fuse
+again or renew GNSS/LiDAR freshness. Ordinary health requires a new GNSS fix.
+Exact replay recomputes regional hypotheses, confirmations, reset and subsequent
+state, and rejects a forged epoch. With this policy disabled, the new epoch and
+relocalization fields are omitted and old bytes are retained. [Bounds, first failed revision and final qualification](regional-relocalization.md).
+
 Malformed GNSS retains `InvalidGnss` braking until the EKF accepts a valid fix
 acquired strictly after the latest failure's delivery time and within the normal
 0.75 s age limit. Missing, duplicate, pre-fault and expired fixes cannot clear

@@ -9,7 +9,7 @@ import os
 from pathlib import Path
 import shutil
 
-from check_gnss_latency import Filter, add, angle, product, transpose
+from check_gnss_latency import Filter, add, angle, product, transpose, verify_pose_covariance
 from check_lane_change_speeds import sweep
 from check_speed_zones import execute
 
@@ -148,6 +148,7 @@ def verify_ticks(config, ticks):
             raise ValueError(f'pose differs from full-history joint reconstruction at {now}: {delta}')
         if abs(out['position_variance']-oracle.p[0][0]-oracle.p[1][1]) > 1e-8:
             raise ValueError('posterior covariance differs from independent joint reconstruction')
+        verify_pose_covariance(out, oracle.p, config)
         for key, value in [('accepted_fixes', oracle.accepted), ('rejected_fixes', oracle.rejected),
                            ('last_accepted_stamp', oracle.accepted_stamp), ('last_observed_stamp', oracle.observed),
                            ('last_decision', oracle.decision)]:

@@ -123,6 +123,16 @@ while predictions cover every interval. Simulation-only motion delay/dropout
 transport preserves raw acquisition stamps/values and stays out of the header.
 [Epoch diagnostic, fixed stop protocol and limitations](motion-continuity.md).
 
+An explicit `relocalization` policy can construct that new instance from a
+bounded measured scan-to-map pose/covariance after fresh stopped wheel/gyro
+observations and three consistent scan confirmations. A shared comparison
+budget and distinct-fit ambiguity check reject incomplete/ambiguous proposals.
+The confirming frame brakes, old GNSS/LiDAR acquisitions cannot renew freshness,
+and `localization_epoch` scopes new scene identities. This supports fixed routes
+and synchronous XY scans; navigation, lane changes, mapped traffic controls and
+XYZ/multi-height configurations are rejected before driving. New GNSS is still
+required for normal health after reset. [Contract and evidence](regional-relocalization.md).
+
 Optional `initial_pose_covariance` supplies a finite, symmetric positive definite
 ENU x/y/yaw matrix (m², m·rad, rad²). It is external initialization calibration.
 When present, output records every full posterior and replay checks it; absent

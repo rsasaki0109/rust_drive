@@ -22,8 +22,14 @@ pub use perception_3d::{
     Perception3dDiagnostics, TerrainSupportDiagnostics,
 };
 pub mod navigation;
+mod relocalization;
 pub mod replay;
 mod scan_pose;
+use relocalization::Relocalizer;
+pub use relocalization::{
+    RegionalSearchDiagnostics, RelocalizationCandidate, RelocalizationConfig,
+    RelocalizationDiagnostics, RelocalizationPhase, RelocalizationSeed,
+};
 pub mod stop_signs;
 mod tracking_frame;
 pub mod traffic_controls;
@@ -103,6 +109,9 @@ pub struct PipelineConfig {
     pub lidar3d: Option<Lidar3dConfig>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub localization_map: Option<MapLocalizationConfig>,
+    /// Opt-in stopped regional map relocalization after motion continuity loss.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub relocalization: Option<RelocalizationConfig>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub perception3d: Option<Perception3dConfig>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -137,6 +146,7 @@ impl PipelineConfig {
             multi_height_lidar: None,
             lidar3d: None,
             localization_map: None,
+            relocalization: None,
             perception3d: None,
             navigation: None,
             stop_lines: vec![],
@@ -146,6 +156,24 @@ impl PipelineConfig {
         }
     }
     pub fn validate(&self) -> Result<(), String> {
+        if let Some(policy) = self.relocalization {
+            policy.validate()?;
+            if self.localization_map.is_none()
+                || self
+                    .localization_map
+                    .as_ref()
+                    .is_some_and(|map| map.min_pairs > 128)
+                || self.navigation.is_some()
+                || self.lane_change.is_some()
+                || !self.stop_lines.is_empty()
+                || !self.stop_signs.is_empty()
+                || !self.yield_intersections.is_empty()
+                || self.lidar3d.is_some()
+                || self.multi_height_lidar.is_some()
+            {
+                return Err("regional relocalization requires a surveyed map and fixed route with ordinary XY LiDAR, without live navigation or mapped controls".into());
+            }
+        }
         if let Some(offset) = self.gnss_antenna_offset_m {
             rustdriving_localization::validate_gnss_antenna_offset(offset)?;
         }
@@ -412,6 +440,11 @@ pub struct PipelineOutput {
     pub gnss_recovery: Option<GnssRecoveryDiagnostics>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub motion_discontinuity: Option<MotionDiscontinuity>,
+    /// Track identities are scoped to this localization epoch; zero is legacy.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub localization_epoch: u64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub relocalization: Option<RelocalizationDiagnostics>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub map_localization: Option<MapLocalizationDiagnostics>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -448,6 +481,8 @@ pub struct DrivingPipeline {
     /// Latest malformed odometry delivery epoch; recovery needs a fresh later acquisition.
     odometry_fault: Option<f64>,
     motion_discontinuity: Option<MotionDiscontinuity>,
+    relocalizer: Option<Relocalizer>,
+    localization_epoch: u64,
     last_lidar: Option<f64>,
     /// Latest failure delivery epoch, shared by ordinary, layered and XYZ inputs.
     lidar_fault: Option<f64>,
@@ -555,6 +590,7 @@ impl DrivingPipeline {
             .clone()
             .map(|c| LaneChangeGate::new(c, config.vehicle, config.cruise_speed));
         let gnss_recovery = config.gnss_recovery.map(Recovery::new);
+        let relocalizer = config.relocalization.map(Relocalizer::new);
         Ok(Self {
             config,
             ekf,
@@ -571,6 +607,8 @@ impl DrivingPipeline {
             last_odom: None,
             odometry_fault: None,
             motion_discontinuity: None,
+            relocalizer,
+            localization_epoch: 0,
             last_lidar: None,
             lidar_fault: None,
             gnss_fault: None,
@@ -600,6 +638,20 @@ impl DrivingPipeline {
             .previous_time
             .map_or(self.config.nominal_dt, |t| input.time - t);
         let first = self.previous_time.is_none();
+        if let Some(observer) = &mut self.relocalizer {
+            observer.begin_frame();
+            if let Some(gap) = &self.motion_discontinuity {
+                let proposal = observer.observe(
+                    input,
+                    gap,
+                    self.ekf.state().pose,
+                    self.config.localization_map.as_ref().unwrap(),
+                );
+                if let Some((pose, covariance)) = proposal {
+                    return self.start_localization_epoch(input, pose, covariance);
+                }
+            }
+        }
         let mut health = Vec::new();
         if dt > 0.25 {
             health.push(HealthIssue::ClockGap);
@@ -1275,12 +1327,15 @@ impl DrivingPipeline {
             pose_covariance: (self.config.initial_pose_covariance.is_some()
                 || self.config.gnss_covariance_shape.is_some()
                 || self.config.gnss_antenna_offset_m.is_some()
-                || self.config.gnss_recovery.is_some())
+                || self.config.gnss_recovery.is_some()
+                || self.config.relocalization.is_some())
             .then(|| self.ekf.pose_covariance()),
             ground,
             localization: Some(self.ekf.diagnostics()),
             gnss_recovery: self.gnss_recovery.as_ref().map(|r| r.diagnostics),
             motion_discontinuity: self.motion_discontinuity.clone(),
+            localization_epoch: self.localization_epoch,
+            relocalization: self.relocalizer.as_ref().map(Relocalizer::diagnostics),
             gnss_latency: self
                 .gnss_history
                 .as_ref()
@@ -1303,6 +1358,35 @@ impl DrivingPipeline {
             intersections: self.intersections.as_ref().map(YieldIntersections::status),
             lane_change: self.lane_change.as_ref().map(LaneChangeGate::status),
         })
+    }
+    fn start_localization_epoch(
+        &mut self,
+        input: &SensorFrame,
+        pose: Pose,
+        covariance: [[f64; 3]; 3],
+    ) -> Result<PipelineOutput, String> {
+        let epoch = self
+            .localization_epoch
+            .checked_add(1)
+            .ok_or("localization epoch exhausted")?;
+        let mut config = self.config.clone();
+        config.initial_pose = pose;
+        config.initial_pose_covariance = Some(covariance);
+        // Unsupported mission/control configurations were rejected at startup.
+        // This constructs fresh histories, grid, tracks, planner and controller.
+        let mut fresh = Self::new(config)?;
+        fresh.localization_epoch = epoch;
+        fresh.gnss_fault = Some(input.time);
+        fresh.lidar_fault = Some(input.time);
+        // The confirming scan supplies initialization once. Old or same-stamp
+        // fixes/scans must not fuse again or renew the new epoch's freshness.
+        let mut output = fresh.step(input)?;
+        let mut observer = self.relocalizer.take().unwrap();
+        observer.reinitialized(input.time);
+        output.relocalization = Some(observer.diagnostics());
+        fresh.relocalizer = Some(observer);
+        *self = fresh;
+        Ok(output)
     }
     pub fn occupied_cells(&self) -> Vec<Vec2> {
         self.grid.occupied_cells()

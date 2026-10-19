@@ -41,7 +41,7 @@ impl Default for MapLocalizationConfig {
     }
 }
 impl MapLocalizationConfig {
-    fn registration(&self) -> RegistrationConfig {
+    pub(crate) fn registration(&self) -> RegistrationConfig {
         RegistrationConfig {
             max_correspondence_m: self.max_correspondence_m,
             max_rms_m: self.max_rms_m,

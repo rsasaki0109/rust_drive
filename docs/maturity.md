@@ -1,6 +1,22 @@
 # Path toward a broader Rust driving stack
 
-The current engineering estimate is **about 26%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
+The current engineering estimate is **about 27%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
+
+The increment from about 26% reflects [stopped regional measured-map
+relocalization](regional-relocalization.md). After missing motion, a bounded
+LiDAR/map search and three fresh stopped scan confirmations can initialize a new
+pose/full covariance and localization epoch. All 12 recovery cases stop and reach
+the original goal in both plants; four healthy and 12 negative controls also
+pass. The complete first revision's 12 comparison-budget failures remain saved;
+an exact nearest-neighbor index repairs the work while preserving the same
+scenario inputs, bounds, budget and physical gates. A separate checker repair
+reconstructs the declared ICP stopping rule; its original 27/28 classification
+is retained without repeated physical runs. All invalid-epoch errors and 24 general CLI
+accuracy failures remain scored. All 470 previous logs retain exact replay bytes.
+This adds measured regional recovery within authored planar fixed routes. It
+does not qualify global initialization, live mission recovery, measured
+automotive uncertainty, real-time latency or real-vehicle operation. The
+**30% waypoint remains unmet**.
 
 The increment from about 25% reflects the default [motion-continuity
 guard](motion-continuity.md). Missing body motion can no longer connect old

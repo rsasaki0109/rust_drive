@@ -2,7 +2,7 @@
 
 **A Rust-native autonomous driving stack.**
 
-Current comparative engineering maturity is **about 26%** (subjective), with
+Current comparative engineering maturity is **about 27%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
 [Acquisition-time GNSS fusion](docs/gnss-latency.md) now reduces delayed-fix
 errors in both reference and native RNE driving, with bounded history,
@@ -36,6 +36,14 @@ scene history after an uncovered wheel/gyro interval and holds braking until
 external pose reinitialization. Eight healthy controls reach their goals and
 28 motion-loss controls stay stopped; all 24 dropout localization failures remain
 recorded and do not qualify current-pose accuracy.
+An optional [stopped regional map recovery](docs/regional-relocalization.md)
+now restores a measured pose/covariance after motion loss and starts a new
+localization epoch. All 12 recovery cases reach their original goals, four
+healthy controls pass and 12 negative controls stay stopped in both plants.
+The first revision's 12 budget failures and every invalid-epoch accuracy failure
+remain recorded. Recovery requires a supplied map, synchronous XY LiDAR, fresh
+stopped motion observations and a later fresh GNSS fix; live mission recovery
+and global initialization remain open.
 
 ![Recorded left-hand RNE driving through Japanese urban intersections with signals, roadworks and diverse road users](assets/japan-city-demo.gif)
 
