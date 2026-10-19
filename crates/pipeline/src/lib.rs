@@ -159,6 +159,11 @@ impl PipelineConfig {
     pub fn validate(&self) -> Result<(), String> {
         if let Some(policy) = self.relocalization {
             policy.validate()?;
+            if policy.preserve_navigation && self.navigation.is_none() {
+                return Err(
+                    "navigation-preserving relocalization requires a navigation mission".into(),
+                );
+            }
             if policy.confirm_gnss_handoff
                 && (policy.map_only_grace_s.is_none()
                     || self.gnss_recovery.is_none()
@@ -179,7 +184,7 @@ impl PipelineConfig {
                     .localization_map
                     .as_ref()
                     .is_some_and(|map| map.min_pairs > 128)
-                || self.navigation.is_some()
+                || (self.navigation.is_some() && !policy.preserve_navigation)
                 || self.lane_change.is_some()
                 || !self.stop_lines.is_empty()
                 || !self.stop_signs.is_empty()
@@ -187,7 +192,7 @@ impl PipelineConfig {
                 || self.lidar3d.is_some()
                 || self.multi_height_lidar.is_some()
             {
-                return Err("regional relocalization requires a surveyed map and fixed route with ordinary XY LiDAR, without live navigation or mapped controls".into());
+                return Err("regional relocalization requires a surveyed map and ordinary XY LiDAR, explicit navigation preservation for live missions, and no lane changes or mapped controls".into());
             }
         }
         if let Some(offset) = self.gnss_antenna_offset_m {
@@ -1434,10 +1439,25 @@ impl DrivingPipeline {
         let mut config = self.config.clone();
         config.initial_pose = pose;
         config.initial_pose_covariance = Some(covariance);
-        // Unsupported mission/control configurations were rejected at startup.
+        // Construction validates the original mission. Its active plan may have
+        // changed since startup, and is restored with its live semantic state below.
+        if let Some(navigation) = &config.navigation {
+            config.route = navigation.initial_plan()?.route;
+        }
         // This constructs fresh histories, grid, tracks, planner and controller.
         let mut fresh = Self::new(config)?;
         fresh.localization_epoch = epoch;
+        if let Some(mut navigation) = self.navigator.take() {
+            navigation.relocalize(
+                input.time,
+                fresh.ekf.state(),
+                fresh.config.vehicle.radius,
+                fresh.planner.max_deceleration_m_s2,
+            );
+            fresh.config.route = navigation.plan().route.clone();
+            fresh.planner.speed_zones = navigation.speed_zones().to_vec();
+            fresh.navigator = Some(navigation);
+        }
         if self.config.relocalization.unwrap().confirm_gnss_handoff {
             fresh
                 .gnss_recovery

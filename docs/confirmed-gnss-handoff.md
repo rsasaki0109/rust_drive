@@ -5,7 +5,9 @@ policy at a stopped, independently measured localization reset. A single
 otherwise admissible returning fix can no longer resume normal GNSS control.
 The option defaults to false and requires `map_only_grace_s`, `gnss_recovery`
 and acquisition-time GNSS fusion. The existing synchronous body-XY, supplied
-map and fixed-route restrictions still apply.
+map and synchronous-XY restrictions still apply. A separate
+[navigation-preservation option](navigation-relocalization.md) can retain the
+actual live mission through the measured reset.
 
 ```json
 {

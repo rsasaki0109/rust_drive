@@ -2,7 +2,7 @@
 
 **A Rust-native autonomous driving stack.**
 
-Current comparative engineering maturity is **about 28%** (subjective), with
+Current comparative engineering maturity is **about 29%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
 [Acquisition-time GNSS fusion](docs/gnss-latency.md) now reduces delayed-fix
 errors in both reference and native RNE driving, with bounded history,
@@ -45,7 +45,7 @@ remain recorded. Recovery requires a supplied map, synchronous XY LiDAR, fresh
 stopped motion observations and, by default, a later fresh GNSS fix. An explicit
 [map-only grace window](docs/relocalization-map-only.md) can use new accepted map
 observations for at most five seconds from the reset, with separate actual GNSS
-clocks and an absolute stopping deadline. Live mission recovery and global
+clocks and an absolute stopping deadline. Recovery across mapped traffic controls and global
 initialization remain open.
 All 24 map-support cases pass the feature protocol in both plants: handoff cases
 travel 13.798–13.932 m before GNSS returns, matching defaults hold, and eight
@@ -59,7 +59,16 @@ transactional until confirmed; the reset-anchored deadline brakes even before
 any fix arrives and stays expired after late GNSS returns. Twenty guarded/healthy/
 expiry cases pass; four paired controls retain their unconfirmed-handoff failures.
 All 522 previous logs retain exact replay bytes. This strengthens the existing
-simulation domain; comparative maturity remains about 28%.
+simulation domain; that revision kept comparative maturity at about 28%.
+
+An explicit [navigation-preserving reset](docs/navigation-relocalization.md)
+now retains the destination, active detour, accepted closures and original speed
+policy after measured relocalization. Route admission and three new healthy
+stopped observations protect handover. All 32 fixed cases pass: 20 recovered
+goals, four recovered closed-mission stops, four healthy goals and four disabled
+holds. First checker exceptions and all invalid-epoch errors remain recorded;
+546 previous logs retain exact replay bytes. This expands the authored mission
+recovery scope; comparative engineering maturity is now about 29%.
 
 ![Recorded left-hand RNE driving through Japanese urban intersections with signals, roadworks and diverse road users](assets/japan-city-demo.gif)
 

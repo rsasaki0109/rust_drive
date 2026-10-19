@@ -3,9 +3,11 @@
 An optional measured-map recovery policy can start a new localization epoch after
 lost wheel/gyro motion. Its default is disabled: the motion-continuity guard keeps
 braking. This experimental policy supports supplied fixed routes and surveyed
-maps with ordinary synchronous body-XY LiDAR. It rejects live navigation, lane
-changes, mapped signals/signs/intersections and XYZ/multi-height configurations,
-so a reset cannot silently discard ongoing mission/control state.
+maps with ordinary synchronous body-XY LiDAR. An explicit
+[navigation-preservation option](navigation-relocalization.md) can retain a live
+mission and recheck its active route. Other navigation combinations, lane changes,
+mapped signals/signs/intersections and XYZ/multi-height configurations are
+rejected so a reset cannot silently discard ongoing mission/control state.
 
 ## Operational contract
 
@@ -154,5 +156,5 @@ These are authored planar Linux x86_64 simulation results. Search/confirmation
 can fail outside the bounded region, with aliases or insufficient measured
 geometry. Stopped wheel observations and the supplied map remain assumptions;
 real-time latency, automotive uncertainty, global initialization, delayed
-odometry, live mission-state recovery and real-vehicle safety remain unqualified.
+odometry, general live mission-state recovery and real-vehicle safety remain unqualified.
 The 30% maturity waypoint remains unmet.

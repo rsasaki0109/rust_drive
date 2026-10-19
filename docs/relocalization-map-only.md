@@ -18,7 +18,8 @@ ordinary synchronous body-XY LiDAR, under the existing
 Place that policy beside the externally supplied `localization_map`. The
 simulator's dropout schedule is evaluation input and never enters the operational
 pipeline header. Delayed map scans are rejected when this option is enabled.
-The existing navigation, mapped-control and XYZ/multi-height exclusions remain.
+Mapped-control and XYZ/multi-height exclusions remain. Live navigation needs the
+explicit [mission-preservation option](navigation-relocalization.md).
 
 ## Freshness and control
 

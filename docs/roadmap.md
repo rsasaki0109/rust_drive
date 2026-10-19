@@ -64,6 +64,14 @@ without a delivery and stays latched through late healthy GNSS. Twenty guarded,
 healthy and expiry cases pass, while four paired controls retain premature
 acceptance failures. This adds failure handling within the same simulation scope.
 
+Explicit [navigation preservation during measured recovery](navigation-relocalization.md)
+now keeps original endpoints, accepted closure revisions, an already switched
+active detour and its speed policy. Route admission and fresh stopped handover
+confirmations are checked again. Twenty recovered missions reach their goals;
+four recovered no-route controls stop, and four healthy/four disabled controls
+pass. This extends recovery to authored directed live missions. Mapped traffic
+controls, moving handover and global initialization remain open.
+
 Remaining:
 
 - Covariance/forecast uncertainty propagation, delayed odometry and general multi-sensor correction-event replay, per-point LiDAR deskew and trace migrations. Bounded acquisition-time LiDAR reprojection and current-time motion extrapolation are narrower implemented steps, not complete delayed-sensor fusion.

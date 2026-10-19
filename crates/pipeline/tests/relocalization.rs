@@ -3,6 +3,7 @@ use rustdriving_pipeline::{
     DrivingPipeline, GnssRecoveryConfig, HealthIssue, MapLocalizationConfig, MapOnlySupportStatus,
     PipelineConfig, PipelineOutput, RecoveryPhase, RelocalizationConfig, RelocalizationPhase,
     SensorFrame,
+    navigation::{NavigationConfig, NavigationPhase, NavigationUpdate},
     replay::{SensorLog, verify},
     traffic_controls::StopLine,
 };
@@ -649,4 +650,145 @@ fn replay_rejects_a_forged_handoff_confirmation_counter() {
             .unwrap_err()
             .contains("mismatch")
     );
+}
+
+fn navigation_recovery_config() -> PipelineConfig {
+    let mut cfg = config();
+    let value: serde_json::Value =
+        serde_json::from_str(include_str!("../../../scenarios/route-direct.json")).unwrap();
+    let mut navigation: NavigationConfig =
+        serde_json::from_value(value["navigation"].clone()).unwrap();
+    navigation
+        .network
+        .edges
+        .iter_mut()
+        .find(|edge| edge.id == "detour")
+        .unwrap()
+        .speed_limit_m_s = Some(2.5);
+    cfg.route = navigation.initial_plan().unwrap().route;
+    cfg.navigation = Some(navigation);
+    cfg.relocalization.as_mut().unwrap().preserve_navigation = true;
+    cfg.relocalization.as_mut().unwrap().map_only_grace_s = Some(5.);
+    cfg
+}
+fn closure(time: f64, revision: u64, closed: &[&str]) -> NavigationUpdate {
+    NavigationUpdate {
+        stamp: time,
+        revision,
+        closed_edges: closed.iter().map(|id| (*id).into()).collect(),
+    }
+}
+
+#[test]
+fn measured_reset_preserves_an_already_changed_mission_and_newer_closure_revision() {
+    let cfg = navigation_recovery_config();
+    let mut p = DrivingPipeline::new(cfg.clone()).unwrap();
+    let mut log = SensorLog::new("measured-navigation-mission-recovery", cfg);
+    for i in 0..=2 {
+        let mut input = frame(i as f64 * 0.05, Pose::default());
+        if i == 0 {
+            input.navigation_update = Some(closure(input.time, 17, &["main"]));
+        }
+        let output = p.step(&input).unwrap();
+        log.record(input, output);
+    }
+    assert_eq!(
+        p.navigation_plan().unwrap().edge_ids,
+        ["approach", "detour", "east-exit"]
+    );
+    let input = frame(0.4, measured_pose());
+    let output = p.step(&input).unwrap();
+    assert!(output.motion_discontinuity.is_some());
+    log.record(input, output);
+    let reset = (9..=50)
+        .find_map(|i| {
+            let input = frame(i as f64 * 0.05, measured_pose());
+            let out = p.step(&input).unwrap();
+            let stamp = (out.localization_epoch == 1).then_some(out.time);
+            if stamp.is_some() {
+                let nav = out.navigation.as_ref().unwrap();
+                assert_eq!(nav.revision, 17);
+                assert_eq!(nav.switches, 1);
+                assert_eq!(nav.closed_edges, ["main"]);
+                assert_eq!(nav.active_edges, ["approach", "detour", "east-exit"]);
+                let evidence = nav.localization_reset.as_ref().unwrap();
+                assert_eq!(evidence.stamp, out.time);
+                assert!(evidence.admitted);
+                assert_eq!(out.localization.unwrap().accepted_fixes, 0);
+                assert!(out.emergency);
+            }
+            log.record(input, out);
+            stamp
+        })
+        .unwrap();
+    let mut input = frame(reset + 0.05, measured_pose());
+    input.navigation_update = Some(closure(input.time, 1, &[]));
+    let out = p.step(&input).unwrap();
+    assert!(out.health.is_empty(), "{:?}", out.health);
+    assert_eq!(out.navigation.as_ref().unwrap().revision, 17);
+    assert_eq!(
+        out.navigation.as_ref().unwrap().active_edges,
+        ["approach", "detour", "east-exit"]
+    );
+    log.record(input, out);
+    let mut bytes = Vec::new();
+    log.write(&mut bytes).unwrap();
+    assert!(verify(Cursor::new(bytes), std::io::sink()).is_ok());
+    let tick = log
+        .ticks
+        .iter_mut()
+        .find(|t| {
+            t.expected
+                .navigation
+                .as_ref()
+                .is_some_and(|n| n.localization_reset.is_some())
+        })
+        .unwrap();
+    tick.expected.navigation.as_mut().unwrap().revision = 0;
+    let mut bytes = Vec::new();
+    log.write(&mut bytes).unwrap();
+    assert!(verify(Cursor::new(bytes), std::io::sink()).is_err());
+}
+
+#[test]
+fn navigation_fault_survives_measured_recovery_and_fresh_localization() {
+    let mut p = DrivingPipeline::new(navigation_recovery_config()).unwrap();
+    p.step(&frame(0., Pose::default())).unwrap();
+    let mut input = frame(0.4, measured_pose());
+    input.navigation_update = Some(closure(0.4, 1, &["unknown"]));
+    assert_eq!(
+        p.step(&input).unwrap().navigation.unwrap().phase,
+        NavigationPhase::Fault
+    );
+    let reset = (9..=50)
+        .find_map(|i| {
+            let out = p.step(&frame(i as f64 * 0.05, measured_pose())).unwrap();
+            (out.localization_epoch == 1).then_some(out.time)
+        })
+        .unwrap();
+    for i in 1..=5 {
+        let out = p
+            .step(&frame(reset + i as f64 * 0.05, measured_pose()))
+            .unwrap();
+        assert!(out.emergency);
+        assert!(out.health.contains(&HealthIssue::InvalidNavigation));
+        assert_eq!(out.navigation.unwrap().phase, NavigationPhase::Fault);
+        assert!(out.localization.unwrap().accepted_fixes > 0);
+    }
+}
+
+#[test]
+fn navigation_preservation_requires_the_explicit_mission_opt_in() {
+    let mut cfg = navigation_recovery_config();
+    cfg.relocalization.as_mut().unwrap().preserve_navigation = false;
+    assert!(
+        serde_json::to_value(&cfg).unwrap()["relocalization"]
+            .get("preserve_navigation")
+            .is_none()
+    );
+    assert!(DrivingPipeline::new(cfg).is_err());
+    let mut cfg = config();
+    cfg.relocalization.as_mut().unwrap().preserve_navigation = true;
+    assert!(DrivingPipeline::new(cfg).is_err());
+    assert!(DrivingPipeline::new(navigation_recovery_config()).is_ok());
 }

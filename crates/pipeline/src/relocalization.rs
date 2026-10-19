@@ -22,6 +22,9 @@ pub struct RelocalizationConfig {
     /// Arm the configured GNSS recovery policy before any post-reset fix commits.
     #[serde(skip_serializing_if = "is_false")]
     pub confirm_gnss_handoff: bool,
+    /// Preserve the live navigation mission and recheck it at the measured pose.
+    #[serde(skip_serializing_if = "is_false")]
+    pub preserve_navigation: bool,
 }
 fn is_false(value: &bool) -> bool {
     !*value
@@ -37,6 +40,7 @@ impl Default for RelocalizationConfig {
             retry_interval_s: 0.5,
             map_only_grace_s: None,
             confirm_gnss_handoff: false,
+            preserve_navigation: false,
         }
     }
 }

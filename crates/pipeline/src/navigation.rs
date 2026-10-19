@@ -380,6 +380,157 @@ mod tests {
         assert_eq!(n.status.phase, NavigationPhase::Braking);
         assert!(!n.holding_brake());
     }
+    #[test]
+    fn measured_reset_clears_handover_votes_and_preserves_closure_ownership() {
+        let mut n = Navigator::new(partial_config()).unwrap();
+        step(
+            &mut n,
+            Some(&update(0., 7, &["main"])),
+            0.,
+            ego(20., 0.),
+            true,
+        );
+        step(&mut n, None, 0.05, ego(20., 0.), true);
+        assert_eq!(n.stopped_samples, 2);
+        n.relocalize(0.1, ego(22., 0.), 1.25, 2.5);
+        assert_eq!(n.stopped_samples, 0);
+        assert_eq!(n.status.revision, 7);
+        assert_eq!(n.status.closed_edges, ["main"]);
+        assert!(n.status.localization_reset.as_ref().unwrap().admitted);
+        assert!(!n.step(
+            None,
+            0.15,
+            ego(22., 0.),
+            Some(Odometry {
+                stamp: 0.1,
+                speed: 0.,
+                yaw_rate: 0.
+            }),
+            1.25,
+            2.5
+        ));
+        for i in 0..3 {
+            assert_eq!(
+                step(&mut n, None, 0.2 + i as f64 * 0.05, ego(22., 0.), true),
+                i == 2
+            );
+        }
+        assert_eq!(n.status.switches, 1);
+        assert_eq!(n.plan().route.points[0], Vec2::new(12.5, 0.));
+        assert_eq!(
+            *n.plan().route.points.last().unwrap(),
+            Vec2::new(185.25, 0.)
+        );
+        assert!(n.plan().edge_ids.contains(&"detour".into()));
+    }
+    #[test]
+    fn measured_reset_keeps_the_changed_active_plan_and_its_speed_limits() {
+        let mut c = config();
+        c.network
+            .edges
+            .iter_mut()
+            .find(|e| e.id == "detour")
+            .unwrap()
+            .speed_limit_m_s = Some(2.);
+        let mut n = Navigator::new(c).unwrap();
+        step(
+            &mut n,
+            Some(&update(0., 11, &["main"])),
+            0.,
+            ego(10., 0.),
+            true,
+        );
+        step(&mut n, None, 0.05, ego(10., 0.), true);
+        assert!(step(&mut n, None, 0.1, ego(10., 0.), true));
+        let before = serde_json::to_value(n.speed_zones()).unwrap();
+        let plan = serde_json::to_value(n.plan()).unwrap();
+        n.relocalize(0.2, ego(12., 0.), 1.25, 2.5);
+        assert_eq!(serde_json::to_value(n.plan()).unwrap(), plan);
+        assert_eq!(serde_json::to_value(n.speed_zones()).unwrap(), before);
+        assert!(n.speed_zones().iter().any(|z| z.speed_m_s == 2.));
+        assert_eq!(n.status.phase, NavigationPhase::Following);
+        assert_eq!(n.status.revision, 11);
+        assert_eq!(n.status.switches, 1);
+    }
+    #[test]
+    fn measured_reset_rechecks_a_pending_branch_against_the_new_pose() {
+        let mut n = Navigator::new(config()).unwrap();
+        step(
+            &mut n,
+            Some(&update(0., 1, &["main"])),
+            0.,
+            ego(10., 4.),
+            true,
+        );
+        assert_eq!(n.status.phase, NavigationPhase::Braking);
+        n.relocalize(0.1, ego(60., 0.), 1.25, 2.5);
+        assert_eq!(n.status.phase, NavigationPhase::Blocked);
+        assert!(n.pending.is_none());
+        assert!(n.status.pending_edges.is_empty());
+        assert_eq!(n.status.closed_edges, ["main"]);
+        for i in 2..=6 {
+            assert!(!step(&mut n, None, i as f64 * 0.1, ego(60., 0.), true));
+        }
+        assert_eq!(n.status.switches, 0);
+    }
+    #[test]
+    fn localization_reset_does_not_clear_an_existing_navigation_fault() {
+        let mut n = Navigator::new(config()).unwrap();
+        step(
+            &mut n,
+            Some(&update(0.1, 3, &["unknown"])),
+            0.1,
+            ego(10., 0.),
+            true,
+        );
+        assert_eq!(n.status.phase, NavigationPhase::Fault);
+        n.relocalize(0.2, ego(10., 0.), 1.25, 2.5);
+        step(&mut n, Some(&update(0.1, 4, &[])), 0.25, ego(10., 0.), true);
+        assert_eq!(n.status.phase, NavigationPhase::Fault);
+        step(&mut n, Some(&update(0.3, 4, &[])), 0.3, ego(10., 0.), true);
+        assert_eq!(n.status.phase, NavigationPhase::Following);
+        assert_eq!(n.status.revision, 4);
+    }
+    #[test]
+    fn failed_route_admission_latches_through_updates_until_measured_initialization() {
+        for pose in [
+            Pose {
+                position: Vec2::new(10., 5.),
+                yaw: 0.,
+            },
+            Pose {
+                position: Vec2::new(10., 0.),
+                yaw: 0.36,
+            },
+            Pose {
+                position: Vec2::new(250., 0.),
+                yaw: 0.,
+            },
+        ] {
+            let mut n = Navigator::new(config()).unwrap();
+            n.relocalize(0.1, EgoState { pose, speed: 0. }, 1.25, 2.5);
+            assert!(!n.status.localization_reset.as_ref().unwrap().admitted);
+            for i in 2..=4 {
+                let now = i as f64 * 0.1;
+                step(&mut n, Some(&update(now, i, &[])), now, ego(10., 0.), true);
+                assert_eq!(n.status.phase, NavigationPhase::Fault);
+                assert_eq!(n.status.revision, 0);
+            }
+            n.relocalize(0.5, ego(10., 0.), 1.25, 2.5);
+            step(&mut n, Some(&update(0.6, 5, &[])), 0.6, ego(10., 0.), true);
+            assert_eq!(n.status.phase, NavigationPhase::Following);
+        }
+    }
+    #[test]
+    fn default_navigation_status_omits_localization_reset_evidence() {
+        let n = Navigator::new(config()).unwrap();
+        assert!(
+            serde_json::to_value(n.status())
+                .unwrap()
+                .get("localization_reset")
+                .is_none()
+        );
+    }
 }
 impl NavigationConfig {
     pub fn initial_plan(&self) -> Result<RoutePlan, String> {
@@ -408,6 +559,17 @@ pub enum NavigationPhase {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
+pub struct NavigationResetDiagnostics {
+    pub stamp: f64,
+    pub progress_s_m: f64,
+    pub lateral_m: f64,
+    pub distance_to_route_m: f64,
+    pub yaw_error_rad: f64,
+    pub admitted: bool,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct NavigationStatus {
     pub revision: u64,
     pub phase: NavigationPhase,
@@ -416,6 +578,8 @@ pub struct NavigationStatus {
     pub closed_edges: Vec<String>,
     pub stop_s: Option<f64>,
     pub switches: usize,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub localization_reset: Option<NavigationResetDiagnostics>,
 }
 
 pub(crate) struct Navigator {
@@ -448,6 +612,7 @@ impl Navigator {
             closed_edges: config.closed_edges.clone(),
             stop_s: None,
             switches: 0,
+            localization_reset: None,
         };
         Ok(Self {
             config,
@@ -483,6 +648,39 @@ impl Navigator {
         self.stopped_samples = 0;
         self.motion_watermark = Some(self.motion_watermark.map_or(now, |stamp| stamp.max(now)));
     }
+    /// Keep accepted mission knowledge, but discard pose-dependent handover votes.
+    /// Route admission is latched: an unrelated closure snapshot cannot repair
+    /// a measured pose outside the active corridor.
+    pub fn relocalize(&mut self, now: f64, ego: EgoState, radius: f64, deceleration: f64) {
+        let route = &self.active.plan.route;
+        let (progress, lateral) = route.project(ego.pose.position);
+        let (center, heading) = route.sample(progress, 0.);
+        let distance = center.distance(ego.pose.position);
+        let yaw_error = wrap_angle(ego.pose.yaw - heading).abs();
+        let admitted = ego.speed.abs() <= 0.05
+            && distance + radius + 0.2 < route.half_width
+            && yaw_error < 0.35;
+        self.status.localization_reset = Some(NavigationResetDiagnostics {
+            stamp: now,
+            progress_s_m: progress,
+            lateral_m: lateral,
+            distance_to_route_m: distance,
+            yaw_error_rad: yaw_error,
+            admitted,
+        });
+        self.invalidate_stop_confirmation(now);
+        self.blocked_hold = false;
+        if !admitted {
+            self.fault(now);
+        } else if matches!(
+            self.status.phase,
+            NavigationPhase::Braking | NavigationPhase::Blocked
+        ) {
+            self.pending = None;
+            self.status.pending_edges.clear();
+            self.replan(ego, radius, deceleration);
+        }
+    }
     /// Returns true only when the active route changes at a healthy stopped state.
     /// `healthy_motion` is accepted, unexpired odometry after the pipeline's sensor checks.
     pub fn step(
@@ -494,6 +692,15 @@ impl Navigator {
         radius: f64,
         deceleration: f64,
     ) -> bool {
+        if self
+            .status
+            .localization_reset
+            .as_ref()
+            .is_some_and(|reset| !reset.admitted)
+        {
+            self.invalidate_stop_confirmation(now);
+            return false;
+        }
         let new_motion = healthy_motion.filter(|motion| {
             self.motion_watermark
                 .is_none_or(|stamp| motion.stamp > stamp)
@@ -531,73 +738,7 @@ impl Navigator {
                     self.stopped_samples = 0;
                     self.pending = None;
                     self.status.pending_edges.clear();
-                    match self.network.shortest_route_between_with_speed_zones(
-                        &self.config.start,
-                        &self.config.goal,
-                        &update.closed_edges,
-                    ) {
-                        Ok(plan) if plan.plan.edge_ids == self.active.plan.edge_ids => {
-                            self.status.phase = NavigationPhase::Following;
-                            self.status.stop_s = None;
-                        }
-                        candidate => {
-                            let mut boundary = self.active.plan.route.length();
-                            let mut length = 0.0;
-                            let mut prefix = 0.0;
-                            for (i, id) in self.active.plan.edge_ids.iter().enumerate() {
-                                if update.closed_edges.contains(id) {
-                                    boundary = boundary.min(length);
-                                }
-                                let edge = self
-                                    .config
-                                    .network
-                                    .edges
-                                    .iter()
-                                    .find(|e| &e.id == id)
-                                    .unwrap();
-                                let edge_length: f64 =
-                                    self.active.plan.traversals.get(i).map_or_else(
-                                        || {
-                                            edge.points
-                                                .windows(2)
-                                                .map(|p| p[0].distance(p[1]))
-                                                .sum()
-                                        },
-                                        |span| span.end_s_m - span.start_s_m,
-                                    );
-                                if candidate
-                                    .as_ref()
-                                    .is_ok_and(|p| p.plan.edge_ids.get(i) == Some(id))
-                                    && (prefix - length).abs() < 1e-6
-                                {
-                                    prefix += edge_length;
-                                }
-                                length += edge_length;
-                            }
-                            if candidate.is_ok() {
-                                boundary = boundary.min(prefix);
-                            }
-                            let stop = (boundary - radius - 2.0).max(0.0);
-                            self.status.stop_s = Some(stop);
-                            let progress = self.active.plan.route.project(ego.pose.position).0;
-                            // Do not redirect onto a branch already passed or an unreachable stopping point.
-                            let reachable = stop - progress
-                                >= ego.speed.max(0.0).powi(2) / (1.6 * deceleration) + 1.0
-                                || (ego.speed.abs() <= 0.05 && progress <= stop + 0.5);
-                            if let Ok(plan) = candidate
-                                && reachable
-                                && plan.plan.route.half_width > radius
-                                && plan.plan.route.points.len() <= 5000
-                                && plan.plan.route.length() <= 1500.0
-                            {
-                                self.status.phase = NavigationPhase::Braking;
-                                self.status.pending_edges = plan.plan.edge_ids.clone();
-                                self.pending = Some(plan);
-                            } else {
-                                self.status.phase = NavigationPhase::Blocked;
-                            }
-                        }
-                    }
+                    self.replan(ego, radius, deceleration);
                 }
             }
         }
@@ -653,6 +794,69 @@ impl Navigator {
             self.stopped_samples = 0;
         }
         false
+    }
+    fn replan(&mut self, ego: EgoState, radius: f64, deceleration: f64) {
+        match self.network.shortest_route_between_with_speed_zones(
+            &self.config.start,
+            &self.config.goal,
+            &self.status.closed_edges,
+        ) {
+            Ok(plan) if plan.plan.edge_ids == self.active.plan.edge_ids => {
+                self.status.phase = NavigationPhase::Following;
+                self.status.stop_s = None;
+            }
+            candidate => {
+                let mut boundary = self.active.plan.route.length();
+                let mut length = 0.0;
+                let mut prefix = 0.0;
+                for (i, id) in self.active.plan.edge_ids.iter().enumerate() {
+                    if self.status.closed_edges.contains(id) {
+                        boundary = boundary.min(length);
+                    }
+                    let edge = self
+                        .config
+                        .network
+                        .edges
+                        .iter()
+                        .find(|e| &e.id == id)
+                        .unwrap();
+                    let edge_length: f64 = self.active.plan.traversals.get(i).map_or_else(
+                        || edge.points.windows(2).map(|p| p[0].distance(p[1])).sum(),
+                        |span| span.end_s_m - span.start_s_m,
+                    );
+                    if candidate
+                        .as_ref()
+                        .is_ok_and(|p| p.plan.edge_ids.get(i) == Some(id))
+                        && (prefix - length).abs() < 1e-6
+                    {
+                        prefix += edge_length;
+                    }
+                    length += edge_length;
+                }
+                if candidate.is_ok() {
+                    boundary = boundary.min(prefix);
+                }
+                let stop = (boundary - radius - 2.0).max(0.0);
+                self.status.stop_s = Some(stop);
+                let progress = self.active.plan.route.project(ego.pose.position).0;
+                // Do not redirect onto a branch already passed or an unreachable stopping point.
+                let reachable = stop - progress
+                    >= ego.speed.max(0.0).powi(2) / (1.6 * deceleration) + 1.0
+                    || (ego.speed.abs() <= 0.05 && progress <= stop + 0.5);
+                if let Ok(plan) = candidate
+                    && reachable
+                    && plan.plan.route.half_width > radius
+                    && plan.plan.route.points.len() <= 5000
+                    && plan.plan.route.length() <= 1500.0
+                {
+                    self.status.phase = NavigationPhase::Braking;
+                    self.status.pending_edges = plan.plan.edge_ids.clone();
+                    self.pending = Some(plan);
+                } else {
+                    self.status.phase = NavigationPhase::Blocked;
+                }
+            }
+        }
     }
     pub fn planning_route(&self) -> Option<Route> {
         if self.status.phase == NavigationPhase::Following {

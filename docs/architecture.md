@@ -129,7 +129,7 @@ observations and three consistent scan confirmations. A shared comparison
 budget and distinct-fit ambiguity check reject incomplete/ambiguous proposals.
 The confirming frame brakes, old GNSS/LiDAR acquisitions cannot renew freshness,
 and `localization_epoch` scopes new scene identities. This supports fixed routes
-and synchronous XY scans; navigation, lane changes, mapped traffic controls and
+and synchronous XY scans; lane changes, mapped traffic controls and
 XYZ/multi-height configurations are rejected before driving. New GNSS is
 required by default after reset. An explicit `map_only_grace_s` can qualify new
 synchronous accepted map corrections for at most five seconds from that measured
@@ -146,6 +146,14 @@ record held fixes; accepted clocks, posterior and history remain transactional.
 The `max_hold_s` budget starts at reset even without a GNSS delivery.
 `GnssHandoffExpired` brakes after that absolute deadline and stays latched through
 late fixes. [Configuration, comparisons and retained checker failures](confirmed-gnss-handoff.md).
+
+Explicit `preserve_navigation` additionally retains the live graph, original
+endpoint request, accepted closures/revision, actual active plan, switch count
+and its mapped speeds. The measured pose must fit the active route with body
+clearance and heading bounds; failed admission latches navigation braking.
+Pending/blocked routes are recomputed from the measured pose. Stop votes reset
+and three new healthy stopped acquisitions are needed to switch routes. Existing
+navigation faults persist. [Ownership, independent checks and outcomes](navigation-relocalization.md).
 
 Optional `initial_pose_covariance` supplies a finite, symmetric positive definite
 ENU x/y/yaw matrix (m², m·rad, rad²). It is external initialization calibration.

@@ -1,8 +1,22 @@
 # Path toward a broader Rust driving stack
 
-The current engineering estimate is **about 28%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
+The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest [confirmed GNSS handoff](confirmed-gnss-handoff.md) keeps this estimate
+The increment from about 28% reflects [live navigation preservation through
+measured relocalization](navigation-relocalization.md). Twenty missions recover
+and reach their original goals while retaining accepted closures, active routes,
+switch counts and mapped speed policies. Four recovered no-route controls remain
+stopped; four healthy and four disabled controls also meet their fixed outcomes.
+All 32 cases pass independent navigation/epoch/physical checks. The first
+20/32 classification and its 12 checker exceptions remain saved; the final
+checker reuses unchanged physical streams and preserves the original stop,
+speed, clearance and deadline gates. All 546 prior logs retain exact replay bytes,
+and 24 full-interval CLI accuracy failures remain scored. This extends bounded
+recovery into authored directed missions. Independent automotive sensing,
+measured uncertainty, real-time performance and vehicle operation remain open;
+the **30% waypoint remains unmet**.
+
+The preceding [confirmed GNSS handoff](confirmed-gnss-handoff.md) kept the estimate
 at **about 28%**. It arms transactional confirmation at a measured reset and
 expires the confirmation budget even before any GNSS arrives. Sixteen guarded/
 healthy cases reach their original goals after two withheld proposals; four
