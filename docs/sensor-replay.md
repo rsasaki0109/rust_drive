@@ -299,7 +299,7 @@ cargo run --release --locked --bin rustdriving -- replay \
   --log artifacts/demo/sensors.jsonl --output artifacts/replay
 ```
 
-Exit 0 means every tick matched and the count footer completed. Exit 2 means a mismatch, schema/input/clock error, empty/truncated log, extra data, or I/O failure. The reader limits each line to 8 MiB. It streams outputs and propagates flush errors. After the output-path checks below pass, a previous `replay.json` is removed before reading the log; a new success report is written only after verification completes. `outputs.jsonl` may contain a partial prefix after failure and must not be interpreted as a verified run.
+Exit 0 means every tick matched and the count footer completed. Exit 2 means a mismatch, schema/input/clock error, empty/truncated log, extra data, or I/O failure. The reader limits each line to 8 MiB. After the output-path checks below pass, the CLI invalidates both previous artifacts, including when the requested input is missing. It streams into an exclusively created `.replay-stage-*` directory and publishes `outputs.jsonl` only after the complete verification and file synchronization succeed. A failed verification leaves neither a final command prefix nor a success report. The lower-level `verify` API still streams to the caller's writer; callers own publication and rollback.
 
 Before replacing either replay artifact, the CLI rejects output destinations
 that already refer to the input log. A collision returns exit 2 and preserves
@@ -307,16 +307,37 @@ the input and existing replay artifacts. Canonical paths catch direct and
 symbolic-link aliases; on Unix, hard-link aliases are also rejected. A distinct
 input log in the same directory as the replay outputs remains supported.
 
-After these checks, the CLI unlinks existing artifact files and creates fresh
-files with exclusive creation. This replaces symbolic links (including dangling
-links) and hard links without writing to their targets. Links between the two
-artifact names cannot merge the command stream and success report. Directories
-at either artifact path cause an I/O error. The output directory and its ancestors
-must remain stable during replay; concurrent filesystem changes are not covered.
+After these checks, the CLI unlinks existing artifact files without writing
+through symbolic links (including dangling links) or hard links to their targets.
+It exclusively creates staging files, closes and synchronizes both complete
+files, then publishes them using same-filesystem hard links without replacing
+new destination entries. The complete command stream is linked first and
+`replay.json` last as the commit marker. If report publication fails, the CLI
+attempts to remove its newly published command stream and reports cleanup
+errors. Links between the two artifact names cannot merge the artifacts.
+Directories at either path cause an I/O error and their contents are preserved.
+
+Staging cleanup runs on ordinary success and failure. Process termination or
+a filesystem cleanup error can leave a hidden staging directory; later runs
+skip existing names rather than deleting unknown contents. This is not an
+atomic two-file transaction or a power-loss durability guarantee. Consumers
+must still require a complete success report, and the output directory and
+its ancestors must remain stable during replay. General concurrent filesystem
+mutation remains outside the contract. The filesystem must support hard links;
+unsupported publication operations return exit 2.
 
 ## Evidence and limits
 
 Unit/integration tests check actual recomputation, changed commands, empty/truncated/dropped tick streams, schema/version/truth-field rejection and failing output writers. CLI tests verify exit 2 and removal of a stale success report for corrupted and missing input. Reference and RNE-generated logs are verified end to end.
+
+The [publication regression evidence](../assets/replay-publication-results.json)
+retains a parent CLI reproduction that exposes a 26,920-byte unverified command
+prefix after a missing footer. New CLI regressions cover a final-tick mismatch,
+missing footer, malformed tail, data after the footer, missing input, protected
+artifact directories, and existing input/link safeguards. Filesystem collision
+controls check exclusive publication and rollback without overwriting newly
+occupied destination entries. Successful standard and previous-log bytes are
+compared against the retained parent results.
 
 Exact repeatability is tested on this Linux build/platform. The locally recorded RNE Rust 1.95.0 dynamic log also verified with the Rust 1.90.0 default CLI; general cross-platform/toolchain bitwise reproducibility is not established. Schema changes require a future migration/version decision.
 

@@ -1,0 +1,3044 @@
+{
+  "schema": "rustdriving-replay-publication-v1",
+  "date": "2026-10-19",
+  "baseline_commit": "88a8fb866b5d1f6c74148d344860e9da8ce7e84a",
+  "maturity": {
+    "estimate_percent": 23,
+    "previous_percent": 23,
+    "subjective": true,
+    "comparators": [
+      "Autoware",
+      "Apollo",
+      "openpilot"
+    ],
+    "scope": "Replay artifact reliability; no new operating domain or physical driving qualification."
+  },
+  "problem": "The parent CLI leaves an unverified command prefix at outputs.jsonl after late verification failure.",
+  "behavior": {
+    "full_verification_before_final_command_stream": true,
+    "success_report_published_last": true,
+    "old_results_invalidated_after_input_alias_checks": true,
+    "staging_exclusively_created": true,
+    "same_filesystem_exclusive_hard_link_publication": true,
+    "input_and_external_link_targets_protected": true,
+    "unit_collision_controls_cover_output_and_report_destinations": true,
+    "ordinary_failure_staging_cleanup": true,
+    "two_file_atomic_transaction_claim": false,
+    "power_loss_durability_claim": false
+  },
+  "parent_reproduction": {
+    "exit_code": 2,
+    "stderr": "rustdriving: missing log footer (empty or truncated log)\n",
+    "fixture_sha256": "90673a3222ec0ac1db61ee1cc0e6f7737a2d5b2dcd8bf270d25aa97e098d9bd2",
+    "current_parent_source_archive": "artifacts/initial-pose-covariance-v1/required-release/current-core/artifacts/check/mission/sensors.jsonl.gz",
+    "source_stored_sha256": "16a09996381a7f28f1db162c3ed83110bb38343c642bc83ba6f31cea991c0e64",
+    "outputs_present": true,
+    "output_bytes": 26920,
+    "verified_report_present": false
+  },
+  "local_validation": {
+    "platform": "Linux",
+    "architecture": "x86_64",
+    "required_command": "bash scripts/check.sh",
+    "required_check": {
+      "archive_errors": [],
+      "changed_baseline_outputs": 0,
+      "check_exit_code": 0,
+      "current_baseline_changes": [],
+      "live_and_backup_inodes_distinct": true,
+      "missing_outputs": [],
+      "passed_tests": 682,
+      "previous_245_outputs_restored_unchanged": true,
+      "python_auditor_tests": 43,
+      "source_closure_matches_expected": true,
+      "verified_replays": 49
+    },
+    "additional_cli_tests": 3,
+    "additional_publication_unit_tests": 1,
+    "targeted_rust_tests": 10,
+    "fault_and_streaming_probes": [
+      {
+        "name": "valid-parent-parity",
+        "passed": true,
+        "exit_code": 0,
+        "expected_sha256": {
+          "outputs.jsonl": "ad5be40c8359e6a07c386cb976574d6ec6624486c70b7957964bebe5f1f6d5c8",
+          "replay.json": "76cce444c5a716898c926dcf27825c0543734af0b798782b1b6b5b8d9f932485"
+        }
+      },
+      {
+        "name": "missing-footer",
+        "passed": true,
+        "exit_code": 2,
+        "stderr": "rustdriving: missing log footer (empty or truncated log)\n",
+        "final_command_stream_present": false,
+        "final_report_present": false
+      },
+      {
+        "name": "late-mismatch",
+        "passed": true,
+        "exit_code": 2,
+        "stderr": "rustdriving: replay mismatch at tick 2 (time 0.100)\n",
+        "final_command_stream_present": false,
+        "final_report_present": false
+      },
+      {
+        "name": "malformed-tail",
+        "passed": true,
+        "exit_code": 2,
+        "stderr": "rustdriving: line 5: expected value at line 1 column 1\n",
+        "final_command_stream_present": false,
+        "final_report_present": false
+      },
+      {
+        "name": "data-after-footer",
+        "passed": true,
+        "exit_code": 2,
+        "stderr": "rustdriving: data after log footer\n",
+        "final_command_stream_present": false,
+        "final_report_present": false
+      },
+      {
+        "name": "missing-input",
+        "passed": true,
+        "exit_code": 2,
+        "stderr": "rustdriving: No such file or directory (os error 2)\n",
+        "final_command_stream_present": false,
+        "final_report_present": false
+      },
+      {
+        "name": "actual-file-size-write-failure",
+        "passed": true,
+        "exit_code": 2,
+        "stderr": "rustdriving: File too large (os error 27)\n",
+        "limit_bytes": 4096
+      },
+      {
+        "name": "preexisting-stage-preserved",
+        "passed": true,
+        "exit_code": 0,
+        "preexisting_stages": 1
+      },
+      {
+        "name": "live-prefix-unpublished-until-footer",
+        "passed": true,
+        "exit_code": 0,
+        "observed_staging_stream_before_footer": true,
+        "final_files_absent_before_footer": true,
+        "stderr": ""
+      }
+    ],
+    "previous_recordings": {
+      "episodes": 190,
+      "ticks": 164186,
+      "all_parent_command_stream_and_report_bytes_identical": true,
+      "reference": 95,
+      "native": 95,
+      "episodes_detail": [
+        {
+          "plant": "reference",
+          "id": "viewed-same-edge-seed-1",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/viewed-same-edge-seed-1/run/sensors.jsonl.gz",
+          "input_sha256": "ec79fe9d467db46dde065924ec60adce7f21c909f51adde5244a0fbf804b9832",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 648,
+          "sha256": {
+            "replay/outputs.jsonl": "a5737428f07e4cf0c6dec50d58ef4c2f031c60feb3590c7f33c9625848ca0356",
+            "replay/replay.json": "96daa40ebe3be518e0d5ef409fbca84d33892a497aa82250a8abd40dbb105a99"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "viewed-same-edge-seed-7",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/viewed-same-edge-seed-7/run/sensors.jsonl.gz",
+          "input_sha256": "20219c65048880cabc5c074d2f35ef3c8fa950821c5beb2fe1170cf609b7152d",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 648,
+          "sha256": {
+            "replay/outputs.jsonl": "bee10598cbe28cf304bf7f1b0729fe8626c370e62ad7ceb6690a88deb62a11b2",
+            "replay/replay.json": "96daa40ebe3be518e0d5ef409fbca84d33892a497aa82250a8abd40dbb105a99"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "viewed-same-edge-seed-42",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/viewed-same-edge-seed-42/run/sensors.jsonl.gz",
+          "input_sha256": "7114895eb87a1aa55b6404912bc80f7bf0e45da0e9697e453f70172a23407994",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 649,
+          "sha256": {
+            "replay/outputs.jsonl": "a98723cf11923aaff56a854822a555b4d33677e624c574efd3478d08b54ac95a",
+            "replay/replay.json": "eb1a64ded9fa31b48c19756bd87cfe02a0c8d0c96eb3e7dc1c8e96f603cebd15"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "viewed-obstacle-seed-1",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/viewed-obstacle-seed-1/run/sensors.jsonl.gz",
+          "input_sha256": "2b705d2b771c3f4b0e510a0aa9da78ad9243f1957b0531ab991f2c21a0687934",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 652,
+          "sha256": {
+            "replay/outputs.jsonl": "52933bcb75c707cd008dc0b3848d8abe1ed3cefb3cd5317188c96c4d34c789ce",
+            "replay/replay.json": "9973be2fdc1d67b0364e95e412c47fc728a357846f6c12f89053386d1eee2b18"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "viewed-obstacle-seed-7",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/viewed-obstacle-seed-7/run/sensors.jsonl.gz",
+          "input_sha256": "a578dfabbefc5b30f482457f8c06015f15a1908c226cf57af9ac85f1076efd79",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 654,
+          "sha256": {
+            "replay/outputs.jsonl": "eddaf6a423c3952bf8236f54fff6c0095f3e08ba3f58ab44aa56907d4a42aa59",
+            "replay/replay.json": "2a9f0a2637f61bee3bc3b9626cb1418c31925decc14366cf927c76fccc90815a"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "viewed-obstacle-seed-42",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/viewed-obstacle-seed-42/run/sensors.jsonl.gz",
+          "input_sha256": "3b799630c5bef716203d0d20ed3835b7238cf20442ba51baf5495c6d534c45a0",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 652,
+          "sha256": {
+            "replay/outputs.jsonl": "838053270f2d356ae45331f6eefc6d5428a71d307850eacd163e2137206dcde1",
+            "replay/replay.json": "9973be2fdc1d67b0364e95e412c47fc728a357846f6c12f89053386d1eee2b18"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "viewed-clipped-seed-1",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/viewed-clipped-seed-1/run/sensors.jsonl.gz",
+          "input_sha256": "cfd6f3e7269d337de668cc81caa13295cd07fe320aa5ddf0b476a13e1e3e4715",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1064,
+          "sha256": {
+            "replay/outputs.jsonl": "23d2119ec15d5e63bf3ea8befb4e80debf9d633ec076159b982a5126cbe0915b",
+            "replay/replay.json": "2db56880340e2ecbf79080521da0989cc078ceecab55a1d3f0c260db23913a3d"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "viewed-clipped-seed-7",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/viewed-clipped-seed-7/run/sensors.jsonl.gz",
+          "input_sha256": "8e517fca6e512e2706e79332935e222b61bead8ad8e2e341b8ce3fdc7204ee50",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1063,
+          "sha256": {
+            "replay/outputs.jsonl": "a462d257411011041a10161ba6743a36ff2cd179fcf21d737f1dbc16cdd0cbda",
+            "replay/replay.json": "2282c38427950f6ffd55ced3956b5ca01008aac069f62e7038ebc556d204db78"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "viewed-clipped-seed-42",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/viewed-clipped-seed-42/run/sensors.jsonl.gz",
+          "input_sha256": "cadd13cb159f05e5f9acadb33351e1045bc73d4a51d5314f2875a77fc5db3ca8",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1067,
+          "sha256": {
+            "replay/outputs.jsonl": "bdf0a10c1f1be44c1d0dc056a568f533a9a1ded66e67a54f03f171c3114a5872",
+            "replay/replay.json": "ad3dc87da9ce860842b1dc72b5c68a6f7c385505427288b5ad2a4db2068c72ac"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "viewed-restricted-seed-1",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/viewed-restricted-seed-1/run/sensors.jsonl.gz",
+          "input_sha256": "7cf7d7ecc1802c73d6db5a7eb9969b2d45f01adc4bbce0581f83270125315e0e",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1747,
+          "sha256": {
+            "replay/outputs.jsonl": "a170837cbe04b7a9feadff49f89d6aaecd8a5719333c638ed166ce3b91ab3941",
+            "replay/replay.json": "48ce7a01f5497c46b07d9fd34b0fd8a126bef00577f5fc7b07f153da6675879c"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "viewed-restricted-seed-7",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/viewed-restricted-seed-7/run/sensors.jsonl.gz",
+          "input_sha256": "4a49d841f6f64c192572cc601e0aa636f474cd69e2e96c1f7569c8ef78b7ae57",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1746,
+          "sha256": {
+            "replay/outputs.jsonl": "6bc3ab61e4a7d37e8f1d48cad4fd2c48fd06e30577541f1187354eaf77b163c5",
+            "replay/replay.json": "d216c6dcf47ad7a412200c57a98afb2e41cd59e3935e9918f45783e0a8c3a1af"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "viewed-restricted-seed-42",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/viewed-restricted-seed-42/run/sensors.jsonl.gz",
+          "input_sha256": "1a35ae99b2b39a77f3d4fe414159d6e827f6652b111c69fe8c768317f7b7b21a",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1745,
+          "sha256": {
+            "replay/outputs.jsonl": "68f369027c6c34df6b988db8be99fec7d522bd8eeeda657052156bb6cc24870b",
+            "replay/replay.json": "014efc315bf273a8c69f17b070a9782b0412d1b5831e24cc2fed1e635d541de1"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "viewed-handover-seed-1",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/viewed-handover-seed-1/run/sensors.jsonl.gz",
+          "input_sha256": "8c954bfa22f580319b4605ffa8af1fac4c7c0c7d54aacff9a49d82c4fd67ea08",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1775,
+          "sha256": {
+            "replay/outputs.jsonl": "062a23b8ef0979bdcfb4100ef49e76afd62f19babb251a5a29925c630f9eace5",
+            "replay/replay.json": "3a2391eb77c8723dd71727fd5f560e064edecae4c87989a477529dc8b93fb504"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "viewed-handover-seed-7",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/viewed-handover-seed-7/run/sensors.jsonl.gz",
+          "input_sha256": "37cd8ff2902f515febb73d7f809555d90102c6d4974fe3c50930d10570fc1480",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1776,
+          "sha256": {
+            "replay/outputs.jsonl": "1d8846d9476a810d46e07ec6f08832d50cbcdbe3e3d99b4c2c24f3dfb39978bf",
+            "replay/replay.json": "69c0bf8b663c3d1bb576e2d5aaf87f9644c394e723d545a291631d34aa76351c"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "viewed-handover-seed-42",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/viewed-handover-seed-42/run/sensors.jsonl.gz",
+          "input_sha256": "15b7d84d959c2813374db922d7210759e8e5ecee9e24104ff16dc8545740d7eb",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1773,
+          "sha256": {
+            "replay/outputs.jsonl": "bd6918b3c77dc540e4fc6a1af1916ff094b333061d6021eba9cff722c0c9e861",
+            "replay/replay.json": "58568d103f80dfe318aa8491fd1db29974ea13bd1e5f76592622b3e124993c1b"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "viewed-reopen-seed-1",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/viewed-reopen-seed-1/run/sensors.jsonl.gz",
+          "input_sha256": "0978aa6b46c8a26df35b717314b052bc0144db9b296fb9880d3c2cac551eb16e",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1882,
+          "sha256": {
+            "replay/outputs.jsonl": "04b8454f72700c54d7a0c796cc06e95657f7a7e0e36dd348870d83b33ceeb55d",
+            "replay/replay.json": "d87507410f959bf73baf4ebeab47b7c7bbd6b378ff5152b9a9123296ed843257"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "viewed-reopen-seed-7",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/viewed-reopen-seed-7/run/sensors.jsonl.gz",
+          "input_sha256": "542010456e722ccca6ea0fcefb283fd9019d1bc724e1981ddf875b8313aa9c08",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1881,
+          "sha256": {
+            "replay/outputs.jsonl": "626da185e88d03c29def62a52d0117fd2612808012b1167170c14e3bc2ac8e0f",
+            "replay/replay.json": "319f6796a047b4d337797775f905ad23cb5bcd413e7eea065e18d5a364080f47"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "viewed-reopen-seed-42",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/viewed-reopen-seed-42/run/sensors.jsonl.gz",
+          "input_sha256": "099376ab3092bcc8e9545cafc59ee5c38d1afbbedc927fb554cc97cf8a16cd18",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1883,
+          "sha256": {
+            "replay/outputs.jsonl": "1f76895b74722816d41d7cbfa2120eebc5081563ec4a5a2a175a5b8bbe2fc49e",
+            "replay/replay.json": "b3fdaf7ff4c11e1565e001fec3ad190b9b3ac254da014334eb35ebea0e91729a"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "viewed-blocked-goal-seed-1",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/viewed-blocked-goal-seed-1/run/sensors.jsonl.gz",
+          "input_sha256": "fe96e6fc36fc834c905144df82badfd98f50c9451093d2410cd5049f334c5f6c",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1301,
+          "sha256": {
+            "replay/outputs.jsonl": "318a76b0ab437af61a62961e10702367aeb518790f4bd8aa1c20b43499492504",
+            "replay/replay.json": "5f3327074cceda59f4bf7ca720e6b7f757bb8d0e758f0a489617074e80c6f2b4"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "viewed-blocked-goal-seed-7",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/viewed-blocked-goal-seed-7/run/sensors.jsonl.gz",
+          "input_sha256": "ae0dc658fa9092b30fb42356a55f362aeb4efd5f36ce5b1882df936d0165f08c",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1301,
+          "sha256": {
+            "replay/outputs.jsonl": "68d006b3f01785a292a6a727b37274a60de89e02c86e21ff27acd9e2525bfe13",
+            "replay/replay.json": "5f3327074cceda59f4bf7ca720e6b7f757bb8d0e758f0a489617074e80c6f2b4"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "viewed-blocked-goal-seed-42",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/viewed-blocked-goal-seed-42/run/sensors.jsonl.gz",
+          "input_sha256": "46cbc70a40cfba0bbed447cd76402f53ff83b7817491f1b5e27ff955061bde89",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1301,
+          "sha256": {
+            "replay/outputs.jsonl": "92d29349d8a2f1ca0021fe2d93cf96b87cb848d707c2c89d8bd0c4dba088af72",
+            "replay/replay.json": "5f3327074cceda59f4bf7ca720e6b7f757bb8d0e758f0a489617074e80c6f2b4"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "viewed-osm-seed-1",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/viewed-osm-seed-1/run/sensors.jsonl.gz",
+          "input_sha256": "dc51ead441e4bf3597e06dcb2fb963740ffc50275616fddedabee566c837e78f",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1046,
+          "sha256": {
+            "replay/outputs.jsonl": "ffea216db3eeeabdaec5ce3693439b7f8c0fdbdab466ec1d544ca40ecf085f2b",
+            "replay/replay.json": "b2339b8a8a10d0d58a1b587c7e44a71ce4517f9a74e275f04c59e2f3333aea45"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "viewed-osm-seed-7",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/viewed-osm-seed-7/run/sensors.jsonl.gz",
+          "input_sha256": "e63870b60ec982adea32ca890c8fd3a8331f35718be30d0c71581bb5f05cd382",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1045,
+          "sha256": {
+            "replay/outputs.jsonl": "e3e13c732b6291c3393909568e1c912b5dccc2f7135dcf67f0635b15e6e4ed12",
+            "replay/replay.json": "8f4d596f5353420c522e92f86c52cb100a6c98792e5e9b01767e6606a29043cc"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "viewed-osm-seed-42",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/viewed-osm-seed-42/run/sensors.jsonl.gz",
+          "input_sha256": "84854c0e8df4dcfa7bf845cc497dbb31ae718f47e9bce713c87904830c5dd256",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1045,
+          "sha256": {
+            "replay/outputs.jsonl": "362d3fd635e6fddc46244590fe5b8f60540c9a5ca6e2f72e87285b8d4a45039a",
+            "replay/replay.json": "8f4d596f5353420c522e92f86c52cb100a6c98792e5e9b01767e6606a29043cc"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "offset-same-edge--1-seed-101",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/offset-same-edge--1-seed-101/run/sensors.jsonl.gz",
+          "input_sha256": "8767027548014ee9a5883da5361d3deb2a39750d89cf30b0ec7bc22e1b847efb",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 647,
+          "sha256": {
+            "replay/outputs.jsonl": "0ff3869f6af36e4db3b87c3aedde2d830a85ffc9d9b4b18c4c298ccefd58e913",
+            "replay/replay.json": "e9aa523146d905360adfa74177a366c5bda5141963ca5cfed63b0f3f0555a3aa"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "offset-same-edge--1-seed-202",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/offset-same-edge--1-seed-202/run/sensors.jsonl.gz",
+          "input_sha256": "2e2787b4dca6a67fe7bbdea40bf5abe46953d9e96a6f446e34830e190b73d400",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 648,
+          "sha256": {
+            "replay/outputs.jsonl": "670330e5cf08f648fd4885d366cd694d93645c166029810c0bb7c7ae80e96dc2",
+            "replay/replay.json": "96daa40ebe3be518e0d5ef409fbca84d33892a497aa82250a8abd40dbb105a99"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "offset-same-edge--1-seed-303",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/offset-same-edge--1-seed-303/run/sensors.jsonl.gz",
+          "input_sha256": "182d0412cf0d8e6ffe525e4ef69f8cf42e7c083bb7e9291e7690b1e65ee1ff9e",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 648,
+          "sha256": {
+            "replay/outputs.jsonl": "e2a5ec19aea0cf0e65f0602f6c356846bf22be513c8736d01b7f3add3d4051dd",
+            "replay/replay.json": "96daa40ebe3be518e0d5ef409fbca84d33892a497aa82250a8abd40dbb105a99"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "offset-same-edge-+1-seed-101",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/offset-same-edge-+1-seed-101/run/sensors.jsonl.gz",
+          "input_sha256": "792f4bc07894d531cae218dab34ffc570f5688d681ae4520c173dbfd72d108a0",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 647,
+          "sha256": {
+            "replay/outputs.jsonl": "dbd6cf6b21022c5bd6645969d623b22bf73b0822d09d0e3424726e21bb736026",
+            "replay/replay.json": "e9aa523146d905360adfa74177a366c5bda5141963ca5cfed63b0f3f0555a3aa"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "offset-same-edge-+1-seed-202",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/offset-same-edge-+1-seed-202/run/sensors.jsonl.gz",
+          "input_sha256": "75af69f7cf922fed275e5c48cb0ade55bc360e0ecba3a56587ce243c1be4cf62",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 648,
+          "sha256": {
+            "replay/outputs.jsonl": "87faa6c246ff6673f08ac5b899b6746c374e80f314a6e2aec50aa8f46100480f",
+            "replay/replay.json": "96daa40ebe3be518e0d5ef409fbca84d33892a497aa82250a8abd40dbb105a99"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "offset-same-edge-+1-seed-303",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/offset-same-edge-+1-seed-303/run/sensors.jsonl.gz",
+          "input_sha256": "8d0b49909eae26b5cd2da402c2aa7fafb434bda551530def5195f8f14eebcda1",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 647,
+          "sha256": {
+            "replay/outputs.jsonl": "5b8bb8b14341ef612a3f0a3bd1b0d9d233d7bbdf5a0a0bf0294643bf13fc14d0",
+            "replay/replay.json": "e9aa523146d905360adfa74177a366c5bda5141963ca5cfed63b0f3f0555a3aa"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "offset-obstacle--1-seed-101",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/offset-obstacle--1-seed-101/run/sensors.jsonl.gz",
+          "input_sha256": "b6e67a4c71709755ed5d91b39794ccc6e50908049086cd33c992f3bdafdafdf4",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 652,
+          "sha256": {
+            "replay/outputs.jsonl": "d4f306cde3dc3549ed6789e0c081362f92d0c84d7edccfc90cbea7d4c15410ec",
+            "replay/replay.json": "9973be2fdc1d67b0364e95e412c47fc728a357846f6c12f89053386d1eee2b18"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "offset-obstacle--1-seed-202",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/offset-obstacle--1-seed-202/run/sensors.jsonl.gz",
+          "input_sha256": "1506db6ee5fa0cf6fbc4c80e3e73c1d6aeb520d05e3657b1b37d8f16bbb1b141",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 654,
+          "sha256": {
+            "replay/outputs.jsonl": "aa6fa2e22340d8a3ecc5dce298a3b2fd0808b255e78a0b00f8b97012cb589626",
+            "replay/replay.json": "2a9f0a2637f61bee3bc3b9626cb1418c31925decc14366cf927c76fccc90815a"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "offset-obstacle--1-seed-303",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/offset-obstacle--1-seed-303/run/sensors.jsonl.gz",
+          "input_sha256": "63b328c4a1869c1c3310d553cf6c3fd7005ca73e9ad972139b5a1cf282c74a62",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 653,
+          "sha256": {
+            "replay/outputs.jsonl": "649b41bd2de11808ba3c7ace084f7a3370fd0c98010a2558eac1c9675a6c1d2c",
+            "replay/replay.json": "45c5b6237c2346926d25bebfb9492846de22d6d4237ae29c2b45d17ede0cf7ee"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "offset-obstacle-+1-seed-101",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/offset-obstacle-+1-seed-101/run/sensors.jsonl.gz",
+          "input_sha256": "0023a852e9ff0a8b4e5f3fd0183e00db90677a2b1b034ecc0562e80b57bb7710",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 653,
+          "sha256": {
+            "replay/outputs.jsonl": "3e5202bd6403afe89ae839d4b4993f8ba51312893c5f1cb8b21a8b74d7d08568",
+            "replay/replay.json": "45c5b6237c2346926d25bebfb9492846de22d6d4237ae29c2b45d17ede0cf7ee"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "offset-obstacle-+1-seed-202",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/offset-obstacle-+1-seed-202/run/sensors.jsonl.gz",
+          "input_sha256": "57ddb6a5d77fe8ef3108e1f7d2d5ed0c32026d6085a25e5881f94a5fdb5f51d6",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 654,
+          "sha256": {
+            "replay/outputs.jsonl": "25e23252535aa679ac23804cfa947af14701bffcaddb7884ad8326af3240db2e",
+            "replay/replay.json": "2a9f0a2637f61bee3bc3b9626cb1418c31925decc14366cf927c76fccc90815a"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "offset-obstacle-+1-seed-303",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/offset-obstacle-+1-seed-303/run/sensors.jsonl.gz",
+          "input_sha256": "2c1176a7318c102e94ecb6d4516fcef5d158aa76cdd37019e8272eae2ae27847",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 652,
+          "sha256": {
+            "replay/outputs.jsonl": "2446582248db33eb86349d37f154a19da7f2db5d6ff81fafdb2ad0681798f1e1",
+            "replay/replay.json": "9973be2fdc1d67b0364e95e412c47fc728a357846f6c12f89053386d1eee2b18"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "offset-osm--1-seed-101",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/offset-osm--1-seed-101/run/sensors.jsonl.gz",
+          "input_sha256": "7c050f44c3b16b969383bad6286eadd2a94259d0f03921524388b04f9e2806a5",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1045,
+          "sha256": {
+            "replay/outputs.jsonl": "2a66694d10305cff96351a3054c97e49bd4aaf2f9ad91accd26738d0386e17b9",
+            "replay/replay.json": "8f4d596f5353420c522e92f86c52cb100a6c98792e5e9b01767e6606a29043cc"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "offset-osm--1-seed-202",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/offset-osm--1-seed-202/run/sensors.jsonl.gz",
+          "input_sha256": "140cd860a8f8b4e9bb678145f9781ed7be2774e0869f4e7b5d8f4acd4edc317d",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1045,
+          "sha256": {
+            "replay/outputs.jsonl": "2f399f4b0cfa8556e5175f06819918d10bd43b7afaba2505ab54306ae4f427e4",
+            "replay/replay.json": "8f4d596f5353420c522e92f86c52cb100a6c98792e5e9b01767e6606a29043cc"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "offset-osm--1-seed-303",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/offset-osm--1-seed-303/run/sensors.jsonl.gz",
+          "input_sha256": "433f3b0778136c5899d3a3bf5cc93890eca11958c4e80bdb4eb0d7b99538fd14",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1047,
+          "sha256": {
+            "replay/outputs.jsonl": "1145e930429e6e5827c08a69e8799d0d02e49f437d94beaef87f3929c5142502",
+            "replay/replay.json": "c7b2df2b7a95df291b5c8b7a5ad9640086410e4094929edcb21194af56956ccf"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "offset-osm-+1-seed-101",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/offset-osm-+1-seed-101/run/sensors.jsonl.gz",
+          "input_sha256": "7b9a2d092d6bee4ef7d28bd2907dadc01c903148251ca286afc1b330f2ea23d8",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1047,
+          "sha256": {
+            "replay/outputs.jsonl": "33ade5ad26dae38d8377ddec587e5e423edde837829545107cd14931e97ae0f0",
+            "replay/replay.json": "c7b2df2b7a95df291b5c8b7a5ad9640086410e4094929edcb21194af56956ccf"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "offset-osm-+1-seed-202",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/offset-osm-+1-seed-202/run/sensors.jsonl.gz",
+          "input_sha256": "c43f07160d015b51a0f7cb5847135e06cab939f7d958f2ee3f98a2df06b67aeb",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1046,
+          "sha256": {
+            "replay/outputs.jsonl": "ff816f39781e9a40cd907cf4896ab8788080f53c50756b4478f1275f9bb92738",
+            "replay/replay.json": "b2339b8a8a10d0d58a1b587c7e44a71ce4517f9a74e275f04c59e2f3333aea45"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "offset-osm-+1-seed-303",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/offset-osm-+1-seed-303/run/sensors.jsonl.gz",
+          "input_sha256": "cc1ba80738c7cb085f6ed2037f5a3906f64356b4551b301584776866bac5785d",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1047,
+          "sha256": {
+            "replay/outputs.jsonl": "7d44f70751d26685554f5e11ac871da2bad32ae405fdd77090e64256b949b48f",
+            "replay/replay.json": "c7b2df2b7a95df291b5c8b7a5ad9640086410e4094929edcb21194af56956ccf"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "composed-gnss-curve-seed-1",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/composed-gnss-curve-seed-1/run/sensors.jsonl.gz",
+          "input_sha256": "ba6b0ffe12dc8313fefe19ae95a26a88d087dbcf1bf78cd4f787e33d75b50bc8",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 461,
+          "sha256": {
+            "replay/outputs.jsonl": "8ccfa102e3fcdd81cf8bdcb6806dac73bdd69ff940544fee9a9cb2ef5d1f42ae",
+            "replay/replay.json": "860e5078f119577a9d769bf9cfc0d6bc369a50c7f90d093a1f02273d2b906c46"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "composed-gnss-curve-seed-7",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/composed-gnss-curve-seed-7/run/sensors.jsonl.gz",
+          "input_sha256": "377e7d17473130941e514c801eccbf2cc5f4aabd6cd506551c8c9af71a4d86ab",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 463,
+          "sha256": {
+            "replay/outputs.jsonl": "73911fe2f4771c4a56b623730341faa629975e6fca2e99333c013445baf3c7c1",
+            "replay/replay.json": "8cafea62817c01ba13806d7a448479824a90e14138848f5db4aa31fd66f4bc45"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "composed-gnss-curve-seed-42",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/composed-gnss-curve-seed-42/run/sensors.jsonl.gz",
+          "input_sha256": "7efb6f9e4bb474ce849bb004b646f9d09b7a7b0a5e889a0e68267f8a0f976881",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 464,
+          "sha256": {
+            "replay/outputs.jsonl": "1c709137c4453419163a7bbe680ab82ced8e9ac8374534659478243d94d610fc",
+            "replay/replay.json": "9b389e0e86a547ab3a1586620dccc9a96e9485622e05f99001901103c3f8d1af"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "composed-map-gnss-early-seed-1",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/composed-map-gnss-early-seed-1/run/sensors.jsonl.gz",
+          "input_sha256": "40942422a1d13a5cafce556aa862947e1906c3433a0522e7785fe0cb377f1cf3",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 357,
+          "sha256": {
+            "replay/outputs.jsonl": "70bc67fcbd7c1df13d16166182411a44de4af380403443b3889feacaf9063634",
+            "replay/replay.json": "00db5d5ef29df1bd1ec79efb48d1a124afe84104a31241d4f07d0d5d29949bab"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "composed-map-gnss-early-seed-7",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/composed-map-gnss-early-seed-7/run/sensors.jsonl.gz",
+          "input_sha256": "3677b07eaf8bacd8f9f47af77a86c6b1b5b9034a80b1d1ec4d4092fb8acd646c",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 360,
+          "sha256": {
+            "replay/outputs.jsonl": "86aa6cf66f464b8b86fcbe350789d7b0b2cda7924234316246fd8b9276a2761b",
+            "replay/replay.json": "453e6633292c1c108318ae3704513c5a784a2b17cd78b0c36c32d1a0d7cd6e26"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "composed-map-gnss-early-seed-42",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/composed-map-gnss-early-seed-42/run/sensors.jsonl.gz",
+          "input_sha256": "3e89b514f785ceb16cd9bf3063c19cb991060ffd5369cb49dedcf6ff379dd0a4",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 359,
+          "sha256": {
+            "replay/outputs.jsonl": "d989cb273e109c41d399c5683b5214e9d0f08acf8c517e1e6961c5dd6b98833e",
+            "replay/replay.json": "7a5b6fb5582362118cb7cffc09a2be9c3c8566a366a83018a4b9efce46151e41"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "composed-map-gnss-late-seed-1",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/composed-map-gnss-late-seed-1/run/sensors.jsonl.gz",
+          "input_sha256": "e4bd78fb38f25689ffb1eb946578e41092894798eb094a51e23d189525cfb6d0",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 364,
+          "sha256": {
+            "replay/outputs.jsonl": "74c009b5cc0722d091aac2be1dfe7543516a8bd2cb71619b587943d046f9cdfd",
+            "replay/replay.json": "8595374ccb82b3b52c1353c5d6c84d3cdc074b5603235384b96617bd00add66c"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "composed-map-gnss-late-seed-7",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/composed-map-gnss-late-seed-7/run/sensors.jsonl.gz",
+          "input_sha256": "d10dd95dbf31563c765626a6745e666ae9a5ed7558549023c7b29c332d7cc866",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 363,
+          "sha256": {
+            "replay/outputs.jsonl": "27aa1112df528ad256466c9daff336301bfc36d11e9a8c4d5e8cefa848c7bc28",
+            "replay/replay.json": "84cba6aebdb4b11c02b92c0d24b11b899be28d95ee0422df9d85ecaf31d476b6"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "composed-map-gnss-late-seed-42",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/composed-map-gnss-late-seed-42/run/sensors.jsonl.gz",
+          "input_sha256": "b66cfebdd9e209c846575e3c5a084f2e9eae409c9355e9cb12ee58f08b3b7492",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 363,
+          "sha256": {
+            "replay/outputs.jsonl": "469155b56fd4acf028b47ac7796ab15032aca2ad78c2a27d3eff866219bdb64f",
+            "replay/replay.json": "84cba6aebdb4b11c02b92c0d24b11b899be28d95ee0422df9d85ecaf31d476b6"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "miscalibrated--1-seed-7",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/miscalibrated--1-seed-7/run/sensors.jsonl.gz",
+          "input_sha256": "e0ec3d84f7a547c0c8f1c7b7b629baaed9b04c6092cf1ad6ea2cd571e0d4fac1",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 649,
+          "sha256": {
+            "replay/outputs.jsonl": "958dcdb39e45aaa72574f811024d0e2772a99de63b2d049222caa05d39e3ca1d",
+            "replay/replay.json": "eb1a64ded9fa31b48c19756bd87cfe02a0c8d0c96eb3e7dc1c8e96f603cebd15"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "miscalibrated-+1-seed-7",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/miscalibrated-+1-seed-7/run/sensors.jsonl.gz",
+          "input_sha256": "970f45c0b214f94798dd4d46728eb1bd4533e62f7741a066a99c269f4bf4e8c0",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 650,
+          "sha256": {
+            "replay/outputs.jsonl": "104b3204cb168e17e2f463814fd2456bb6bdd27ec6a5d0e3b9b10c9c437478d1",
+            "replay/replay.json": "35ffc1067d13a5a43b1b28eedfd417f58e2e74794064ded7ae534ac5f24a3fce"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-offset-same-edge--1-seed-404",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-offset-same-edge--1-seed-404/run/sensors.jsonl.gz",
+          "input_sha256": "b466a884cbfbdb71d69455858a26012fabffc174868a772a6253aa1664cb5b8e",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 645,
+          "sha256": {
+            "replay/outputs.jsonl": "24fb254db56805710f070a42c1e9dfad430c6572f7b83649482b5989469b5fbf",
+            "replay/replay.json": "1bf12cf895a45f0cec61cc5857dc7f8bcb421afa6281a699f068d7ed0d1b06f6"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-offset-same-edge--1-seed-505",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-offset-same-edge--1-seed-505/run/sensors.jsonl.gz",
+          "input_sha256": "1ae157a92f0cfff12284c088549f6031acc285159a6495a5d6838de113b73e89",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 651,
+          "sha256": {
+            "replay/outputs.jsonl": "0173db508490cabe77fa89e56974278aa58a9865dda56a2addba2f8f8258c683",
+            "replay/replay.json": "b6132867ac59771daf69053b7744eed680897e6f076f5d0deab6213302937d26"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-offset-same-edge--1-seed-606",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-offset-same-edge--1-seed-606/run/sensors.jsonl.gz",
+          "input_sha256": "3b7b51367ff36a041ef68fff7eaf5ad441cdb69455c6aa184f3c57753e9f9260",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 647,
+          "sha256": {
+            "replay/outputs.jsonl": "7f31741f6763aa4572923ac758104ab6e131f87268ad68ac9c83fe36e013f4f4",
+            "replay/replay.json": "e9aa523146d905360adfa74177a366c5bda5141963ca5cfed63b0f3f0555a3aa"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-offset-same-edge-+1-seed-404",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-offset-same-edge-+1-seed-404/run/sensors.jsonl.gz",
+          "input_sha256": "40fc8d8528b7af133724fb85213b6b7159e3d56c88e1434d6916a4f1f4b7e6ec",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 646,
+          "sha256": {
+            "replay/outputs.jsonl": "1ffdfe3e472af186297deafd1fc2f47105b17be514bfaf402962989b47d89b9d",
+            "replay/replay.json": "81c996e3227fcc3c5c39253f7d9d067add10714e3f792fde8619274f553dc33c"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-offset-same-edge-+1-seed-505",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-offset-same-edge-+1-seed-505/run/sensors.jsonl.gz",
+          "input_sha256": "d75b7ed3333a910f4c420ccf659e8f8216cf2929df4208b4772f1063978db471",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 648,
+          "sha256": {
+            "replay/outputs.jsonl": "e601997e9471f7ae812ff78af427f4aefadee788d27b0d01bb6e5a601ae407f2",
+            "replay/replay.json": "96daa40ebe3be518e0d5ef409fbca84d33892a497aa82250a8abd40dbb105a99"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-offset-same-edge-+1-seed-606",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-offset-same-edge-+1-seed-606/run/sensors.jsonl.gz",
+          "input_sha256": "edd743132da418a9e90496d99459efbf862834b38695f06f3595901d26607fe5",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 648,
+          "sha256": {
+            "replay/outputs.jsonl": "32073bd46871d9a1aa5e669e835ef3aa9743d4b39b052662a8ce1cea2760b115",
+            "replay/replay.json": "96daa40ebe3be518e0d5ef409fbca84d33892a497aa82250a8abd40dbb105a99"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-offset-obstacle--1-seed-404",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-offset-obstacle--1-seed-404/run/sensors.jsonl.gz",
+          "input_sha256": "93ee7062274c137e1b7b9587402f0fc41d8354cc2958b1641d71788bee87fffb",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 654,
+          "sha256": {
+            "replay/outputs.jsonl": "e6524e565d0757e4bf41baceba7f06a4c36aec6385f0fc56044fc8a89574e7e4",
+            "replay/replay.json": "2a9f0a2637f61bee3bc3b9626cb1418c31925decc14366cf927c76fccc90815a"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-offset-obstacle--1-seed-505",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-offset-obstacle--1-seed-505/run/sensors.jsonl.gz",
+          "input_sha256": "393083e8b275795d42aa58b85092059257d5ba7524267916898b167bdf5fec8c",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 654,
+          "sha256": {
+            "replay/outputs.jsonl": "3d6cde9e9fad72c19970f8d17b6ecedf1bcbcffdd04ced8b54f68f3f382d4939",
+            "replay/replay.json": "2a9f0a2637f61bee3bc3b9626cb1418c31925decc14366cf927c76fccc90815a"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-offset-obstacle--1-seed-606",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-offset-obstacle--1-seed-606/run/sensors.jsonl.gz",
+          "input_sha256": "e198d99ba2f692f8983d28cb229dc6cdd528cd9b564d437eca86c3d81274d17a",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 653,
+          "sha256": {
+            "replay/outputs.jsonl": "69bec26f057c0fbfb1f2567782cc2e8d824f808e0cf97e8e2c1e86751de9668b",
+            "replay/replay.json": "45c5b6237c2346926d25bebfb9492846de22d6d4237ae29c2b45d17ede0cf7ee"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-offset-obstacle-+1-seed-404",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-offset-obstacle-+1-seed-404/run/sensors.jsonl.gz",
+          "input_sha256": "4673dea1f3dcd100c6e69b26e18927a838de977c376c95d4a9534e014c10d9ec",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 653,
+          "sha256": {
+            "replay/outputs.jsonl": "f3fd30b7b464c0cce5470d04eab0cb6b9d221b5e42859fdfda415bb907a06cc1",
+            "replay/replay.json": "45c5b6237c2346926d25bebfb9492846de22d6d4237ae29c2b45d17ede0cf7ee"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-offset-obstacle-+1-seed-505",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-offset-obstacle-+1-seed-505/run/sensors.jsonl.gz",
+          "input_sha256": "47b43cfe1a6239449ce97dbb34154848882b318f887d4f68590ecbd1de39ede1",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 653,
+          "sha256": {
+            "replay/outputs.jsonl": "aef1c1185ae8b113ccbed26605fb35c90389c0af1ad6aa27719b0772c466ad7a",
+            "replay/replay.json": "45c5b6237c2346926d25bebfb9492846de22d6d4237ae29c2b45d17ede0cf7ee"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-offset-obstacle-+1-seed-606",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-offset-obstacle-+1-seed-606/run/sensors.jsonl.gz",
+          "input_sha256": "6e11ecbb759db327df1263e8dd9faa8965e7e9ecb95550d14d011f4a4c38f911",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 654,
+          "sha256": {
+            "replay/outputs.jsonl": "e05d5788de56900745a1fb1648c9aec0959b22d0f06d356067aac8cadf96f9d0",
+            "replay/replay.json": "2a9f0a2637f61bee3bc3b9626cb1418c31925decc14366cf927c76fccc90815a"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-offset-osm--1-seed-404",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-offset-osm--1-seed-404/run/sensors.jsonl.gz",
+          "input_sha256": "dc1a1776f395d4ce66dbeaa331203dabc78756805d48d5c9f1d5fb0cbf9a46cb",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1044,
+          "sha256": {
+            "replay/outputs.jsonl": "9db51dc03d106fe41c1e4a8e0f336ee2336728be185dc67345125119baf8cc88",
+            "replay/replay.json": "aea89233bd36af5fc8525cf5cf86f959cded60917efa26294905259f13f96450"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-offset-osm--1-seed-505",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-offset-osm--1-seed-505/run/sensors.jsonl.gz",
+          "input_sha256": "51980406a5ed175ebb7ffc5e59b285e3a2bd14cf7823f8426d2f72d25adcf207",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1045,
+          "sha256": {
+            "replay/outputs.jsonl": "b4804d1173a5fadc95c81bb5ee07edb008d1ab62db1ec8902df3b0f6570371b0",
+            "replay/replay.json": "8f4d596f5353420c522e92f86c52cb100a6c98792e5e9b01767e6606a29043cc"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-offset-osm--1-seed-606",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-offset-osm--1-seed-606/run/sensors.jsonl.gz",
+          "input_sha256": "32b30698f654e1cdf66d8936e0daddd561a56055f6e1a97088b44331372c8cfc",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1047,
+          "sha256": {
+            "replay/outputs.jsonl": "48e6c92401725d7fd4caaf246e27f31f7df2c3fce004674256a6fd061dfe2731",
+            "replay/replay.json": "c7b2df2b7a95df291b5c8b7a5ad9640086410e4094929edcb21194af56956ccf"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-offset-osm-+1-seed-404",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-offset-osm-+1-seed-404/run/sensors.jsonl.gz",
+          "input_sha256": "d5a43364ad890b40c305315ff7efa5c6da6897738249eb4153d3916a5f28acc2",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1043,
+          "sha256": {
+            "replay/outputs.jsonl": "68ff33c7a4a97f807dcfb64fb8170eea1d7d132fee5a8ef17bdce7c040cf6475",
+            "replay/replay.json": "9af0273f3ec6f7e4516bdfc55694e67cdeab1d994b7524a72a37ac7b7f72e6bc"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-offset-osm-+1-seed-505",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-offset-osm-+1-seed-505/run/sensors.jsonl.gz",
+          "input_sha256": "5111df5d0b49f4b155e2a04ed2b7bfb7655d501d8c2d2bcbe462ba2b6c94797b",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1044,
+          "sha256": {
+            "replay/outputs.jsonl": "ca2b352a2b5ba4632fe3f9bab50979e4b3d4dab6b1fe6a33ef7c7192f0c3db52",
+            "replay/replay.json": "aea89233bd36af5fc8525cf5cf86f959cded60917efa26294905259f13f96450"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-offset-osm-+1-seed-606",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-offset-osm-+1-seed-606/run/sensors.jsonl.gz",
+          "input_sha256": "ca983021ffb1b68ec791c9676bbb1a5d4382246b467470ce0b2faea78005cca1",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1046,
+          "sha256": {
+            "replay/outputs.jsonl": "29327c306e9627d5155a2342471aea15b37edbe8500fcb1a84d9876f6d559917",
+            "replay/replay.json": "b2339b8a8a10d0d58a1b587c7e44a71ce4517f9a74e275f04c59e2f3333aea45"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-C-offset-same-edge--1-seed-707",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-C-offset-same-edge--1-seed-707/run/sensors.jsonl.gz",
+          "input_sha256": "b2bebc1b4b4d9cb2532c90e81063d539f89529c252c6d11acfd2fca4d37bf767",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 648,
+          "sha256": {
+            "replay/outputs.jsonl": "29fa1dd0d4953e48cd0d08456e7953ce88e54f4860a85f9ff6b36bc2f877e8be",
+            "replay/replay.json": "96daa40ebe3be518e0d5ef409fbca84d33892a497aa82250a8abd40dbb105a99"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-C-offset-same-edge--1-seed-808",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-C-offset-same-edge--1-seed-808/run/sensors.jsonl.gz",
+          "input_sha256": "8ec7a0f0c178264c81dd4f83b2526f3cb786c4f008195cae1581ebfdbb428bdd",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 650,
+          "sha256": {
+            "replay/outputs.jsonl": "6b31706d58d15c8e0af5c904d34ce508a7f0d0e6390d23a07a6d05c4d179b4c0",
+            "replay/replay.json": "35ffc1067d13a5a43b1b28eedfd417f58e2e74794064ded7ae534ac5f24a3fce"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-C-offset-same-edge--1-seed-909",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-C-offset-same-edge--1-seed-909/run/sensors.jsonl.gz",
+          "input_sha256": "ad2e8f4375c0d00c50e1fdaf78de36615c8573bcfe82725d10fce102fd00ccd3",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 648,
+          "sha256": {
+            "replay/outputs.jsonl": "f97f8d0c733aac90f541bee33cb48961e2794c1280e7f63f3ba8adfb72206bfa",
+            "replay/replay.json": "96daa40ebe3be518e0d5ef409fbca84d33892a497aa82250a8abd40dbb105a99"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-C-offset-same-edge-+1-seed-707",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-C-offset-same-edge-+1-seed-707/run/sensors.jsonl.gz",
+          "input_sha256": "3182d3d4d0b4e2146d296ecdfc2d3f66160e94b5953928cbb3d1f32e1b295990",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 648,
+          "sha256": {
+            "replay/outputs.jsonl": "5ca2bb66c485161189bd97497a4ef23a98eb064d673aae36c86c128648cb4075",
+            "replay/replay.json": "96daa40ebe3be518e0d5ef409fbca84d33892a497aa82250a8abd40dbb105a99"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-C-offset-same-edge-+1-seed-808",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-C-offset-same-edge-+1-seed-808/run/sensors.jsonl.gz",
+          "input_sha256": "0fd7b4bb20e80b82d1513e59bd0b060ba770aad1d02305a40755958cc96e115e",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 650,
+          "sha256": {
+            "replay/outputs.jsonl": "1d803dea630e08b9fcc25fbd98a56cc2688f1799a3e594aba80572065ec839d7",
+            "replay/replay.json": "35ffc1067d13a5a43b1b28eedfd417f58e2e74794064ded7ae534ac5f24a3fce"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-C-offset-same-edge-+1-seed-909",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-C-offset-same-edge-+1-seed-909/run/sensors.jsonl.gz",
+          "input_sha256": "101962ea051400aabeeff3ad8fcca40cbe57add80db113ebe5d812b553d4ff74",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 649,
+          "sha256": {
+            "replay/outputs.jsonl": "22ccc68e8b846b0dbffba7924ce0227cff5de4d19a5c69d2009fcd5e337cfbe3",
+            "replay/replay.json": "eb1a64ded9fa31b48c19756bd87cfe02a0c8d0c96eb3e7dc1c8e96f603cebd15"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-C-offset-obstacle--1-seed-707",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-C-offset-obstacle--1-seed-707/run/sensors.jsonl.gz",
+          "input_sha256": "8112a8184d548bf723b769c2f343dfa645442d8a00eea49bbe4712e21e39f4a8",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 652,
+          "sha256": {
+            "replay/outputs.jsonl": "01a1b49b82527f09d76b1bb6bd4d75b8d61a897f7984907004ba9905ec32078a",
+            "replay/replay.json": "9973be2fdc1d67b0364e95e412c47fc728a357846f6c12f89053386d1eee2b18"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-C-offset-obstacle--1-seed-808",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-C-offset-obstacle--1-seed-808/run/sensors.jsonl.gz",
+          "input_sha256": "0f394c15a159840603290858632bc95ebd186a429a8a1568f2aa11dece63ca9c",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 653,
+          "sha256": {
+            "replay/outputs.jsonl": "78c06d291c64fe3ebef3625e585c5e196c28f85dee38022241e453486a5f5000",
+            "replay/replay.json": "45c5b6237c2346926d25bebfb9492846de22d6d4237ae29c2b45d17ede0cf7ee"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-C-offset-obstacle--1-seed-909",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-C-offset-obstacle--1-seed-909/run/sensors.jsonl.gz",
+          "input_sha256": "353cdc43d621831a5514ec3ce6baaa3ea56e4779a40906a1619febaa45141890",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 655,
+          "sha256": {
+            "replay/outputs.jsonl": "487493f96299cecd6723cd3f988d0be5027d6bda835624dbd25bc9184cac0db8",
+            "replay/replay.json": "25d10e599141f07a171d887a05aad4078aaa57902e40ad136c17aea0dec25b5c"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-C-offset-obstacle-+1-seed-707",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-C-offset-obstacle-+1-seed-707/run/sensors.jsonl.gz",
+          "input_sha256": "c4a3a63e23160963ac908f6fd6e0fbee1562f29a83d4337cdc8696751b36d72c",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 653,
+          "sha256": {
+            "replay/outputs.jsonl": "fa7f62d1404bfcbd5c6b57c3038945a89e78556b3d61e27c68bce8469a091447",
+            "replay/replay.json": "45c5b6237c2346926d25bebfb9492846de22d6d4237ae29c2b45d17ede0cf7ee"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-C-offset-obstacle-+1-seed-808",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-C-offset-obstacle-+1-seed-808/run/sensors.jsonl.gz",
+          "input_sha256": "68e7a8e750e46e9446943071d7b42527d9abcfbfb7f8738da42951a28f1ea702",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 652,
+          "sha256": {
+            "replay/outputs.jsonl": "3682bfd17696f6964aec51e317c986d9f26c6cdbb6aecb60ab71202d0e9bfd0e",
+            "replay/replay.json": "9973be2fdc1d67b0364e95e412c47fc728a357846f6c12f89053386d1eee2b18"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-C-offset-obstacle-+1-seed-909",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-C-offset-obstacle-+1-seed-909/run/sensors.jsonl.gz",
+          "input_sha256": "d596ee26bc07fbdb3faa0adebeb474d4ec6d7868e601389733c26847c6bd3e4a",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 654,
+          "sha256": {
+            "replay/outputs.jsonl": "e7009fe9b90b8089ed85f166865cbfcbc574ffd45eab9d67670afc86921b2dc1",
+            "replay/replay.json": "2a9f0a2637f61bee3bc3b9626cb1418c31925decc14366cf927c76fccc90815a"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-C-offset-osm--1-seed-707",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-C-offset-osm--1-seed-707/run/sensors.jsonl.gz",
+          "input_sha256": "db9c21fb52e9d6d6e346769d48ae746ed226d851460e29d98cb7c004b80fcd63",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1044,
+          "sha256": {
+            "replay/outputs.jsonl": "5bfc40b11fd0d3b2e44f3c99ee05489c82bb829c902e02069488261d4d80e859",
+            "replay/replay.json": "aea89233bd36af5fc8525cf5cf86f959cded60917efa26294905259f13f96450"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-C-offset-osm--1-seed-808",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-C-offset-osm--1-seed-808/run/sensors.jsonl.gz",
+          "input_sha256": "1810f72749c778eab3a309e98dc42dfb24eb3f36ba35f6071b03c1070e8f2864",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1047,
+          "sha256": {
+            "replay/outputs.jsonl": "2e9ebb394d7f4c86db5cb1c5bc4babe39ded3be89ec0bd2b456114de4688a794",
+            "replay/replay.json": "c7b2df2b7a95df291b5c8b7a5ad9640086410e4094929edcb21194af56956ccf"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-C-offset-osm--1-seed-909",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-C-offset-osm--1-seed-909/run/sensors.jsonl.gz",
+          "input_sha256": "fb45cd199efe2f4804627c6cfbe85202bf5b2e1f1536598388296da5e68e1896",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1045,
+          "sha256": {
+            "replay/outputs.jsonl": "ce5775d1c8e6302835af38f4fdb726788bda9ccc3ffdb24db5f1a811f653a1ef",
+            "replay/replay.json": "8f4d596f5353420c522e92f86c52cb100a6c98792e5e9b01767e6606a29043cc"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-C-offset-osm-+1-seed-707",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-C-offset-osm-+1-seed-707/run/sensors.jsonl.gz",
+          "input_sha256": "f80981be65c6bc77da99e4f2cbb77c293ca413960d2ad2853b7428988fe53eed",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1044,
+          "sha256": {
+            "replay/outputs.jsonl": "664bd3755d5efad701b54c671281009db10cdbe413771694e9fe84b99ef7838a",
+            "replay/replay.json": "aea89233bd36af5fc8525cf5cf86f959cded60917efa26294905259f13f96450"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-C-offset-osm-+1-seed-808",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-C-offset-osm-+1-seed-808/run/sensors.jsonl.gz",
+          "input_sha256": "fbe7d6c8aa479117c3493980881d47eb68677288418173404cdda08e705db033",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1048,
+          "sha256": {
+            "replay/outputs.jsonl": "63df7a6f60cfd3ec3a7463672999fb82f0dbf3cfff7b0d476392f579d54476b9",
+            "replay/replay.json": "7731336d120e8923c545c99f85c189c47b7fb926b2c5af1884a16e322e488f88"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-C-offset-osm-+1-seed-909",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-C-offset-osm-+1-seed-909/run/sensors.jsonl.gz",
+          "input_sha256": "e078f558b553ad5d3ac41fd1f62d3a84cc743ec44dba8c218b611ce1890b5644",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1046,
+          "sha256": {
+            "replay/outputs.jsonl": "fd9bbd2806101c8150cfb728f888204cd19df696f4c8574c4383ad69495d78a6",
+            "replay/replay.json": "b2339b8a8a10d0d58a1b587c7e44a71ce4517f9a74e275f04c59e2f3333aea45"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-D-offset-same-edge--1-seed-1001",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-D-offset-same-edge--1-seed-1001/run/sensors.jsonl.gz",
+          "input_sha256": "ca58585ec26a5da5be5bc1dd8ccf4341fe6a9b47df188c946770589ea0581add",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 648,
+          "sha256": {
+            "replay/outputs.jsonl": "bde120ae081bc70a45dab5840f78f5b7067849561a6c5e60d9b6de4183c3360a",
+            "replay/replay.json": "96daa40ebe3be518e0d5ef409fbca84d33892a497aa82250a8abd40dbb105a99"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-D-offset-same-edge-+1-seed-1001",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-D-offset-same-edge-+1-seed-1001/run/sensors.jsonl.gz",
+          "input_sha256": "610852edcab72a9b8bdb98324d9d96d64416c9afcaab305f9909a3d04d45379f",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 646,
+          "sha256": {
+            "replay/outputs.jsonl": "5fd694b6b03ccadabb880c8b54a6b4a056da866af3f0852da9d84e661b8a5d76",
+            "replay/replay.json": "81c996e3227fcc3c5c39253f7d9d067add10714e3f792fde8619274f553dc33c"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-D-offset-obstacle--1-seed-1001",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-D-offset-obstacle--1-seed-1001/run/sensors.jsonl.gz",
+          "input_sha256": "8297848ec762f5c3dd355d77349cd55eb496c3eead1275b8158f64e9ebe726b7",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 657,
+          "sha256": {
+            "replay/outputs.jsonl": "cd1e180ea928d759ad0bdc6d1de6f19c6e35ee55a91c5fe06de065f7e2c69129",
+            "replay/replay.json": "0d3be021bfb2e4b101afca099477657450432650568d2f9d1e75999d86311fd0"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-D-offset-obstacle-+1-seed-1001",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-D-offset-obstacle-+1-seed-1001/run/sensors.jsonl.gz",
+          "input_sha256": "48fc971b2f61346c403991169208689ca6101235f6e08aa43d8317a1cd6b7aee",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 652,
+          "sha256": {
+            "replay/outputs.jsonl": "142b68b028ced3afcb68a0ea9630e9cd10ea5f749ebb68d25cd4159cef04f32d",
+            "replay/replay.json": "9973be2fdc1d67b0364e95e412c47fc728a357846f6c12f89053386d1eee2b18"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-D-offset-osm--1-seed-1001",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-D-offset-osm--1-seed-1001/run/sensors.jsonl.gz",
+          "input_sha256": "8a8020a1daf1fecc48aad6a34f775bfddc725aae89a7bae8b477fef9b39fd00b",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1045,
+          "sha256": {
+            "replay/outputs.jsonl": "1c63d7b43fdbe1f1556b295eec564f21e87b7c735ef734808db5fd9674089a57",
+            "replay/replay.json": "8f4d596f5353420c522e92f86c52cb100a6c98792e5e9b01767e6606a29043cc"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "reference",
+          "id": "confirm-D-offset-osm-+1-seed-1001",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/reference/confirm-D-offset-osm-+1-seed-1001/run/sensors.jsonl.gz",
+          "input_sha256": "6bb3551e5120ff6cb2f85e519c0a43b71847dcc189748717024fd083d3d8b51b",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1046,
+          "sha256": {
+            "replay/outputs.jsonl": "da16ce8b4b2ac4a070f0e2764d2a1166c44b9053a03099b2e9406a7a5923ef88",
+            "replay/replay.json": "b2339b8a8a10d0d58a1b587c7e44a71ce4517f9a74e275f04c59e2f3333aea45"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "viewed-same-edge-seed-1",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/viewed-same-edge-seed-1/run/sensors.jsonl.gz",
+          "input_sha256": "f1396ef44451cd247b80cf7b11834e14dd774fe9fa9c55c99968c7c62ba3bb4b",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 646,
+          "sha256": {
+            "replay/outputs.jsonl": "50a6f7d7323095857dd9a5671a07c7ce0d154f295c383078b41c9bec9548944a",
+            "replay/replay.json": "af13b943f27a2737e259f718afd92d183b7d2ba97c413de010ce7a2290ad7135"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "viewed-same-edge-seed-7",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/viewed-same-edge-seed-7/run/sensors.jsonl.gz",
+          "input_sha256": "de81665217d445de841ceb3a9b9bd99ceef43cc0225d1c2027c8a32dfe6acb6a",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 649,
+          "sha256": {
+            "replay/outputs.jsonl": "b0bc1be276835da736dbc1d8d98820733ba49024349b563606c1eadb7594042c",
+            "replay/replay.json": "5ea51775b4e9bd2e7b9c7f31c08a223dc19cb920c7264b65e7ba76906ca0e005"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "viewed-same-edge-seed-42",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/viewed-same-edge-seed-42/run/sensors.jsonl.gz",
+          "input_sha256": "54000eb6046b9d4638031193ccde65ba960626e7a8d8f343df7e9ad32f87dc5d",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 648,
+          "sha256": {
+            "replay/outputs.jsonl": "2b0f4d3fa95fa4b3d715f36a8c54b348d8c828a703890674370f0ce835f64c84",
+            "replay/replay.json": "038b244a1886002f2a815794ae1533bcb17da0c35c78bbcdce64b712764745cf"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "viewed-obstacle-seed-1",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/viewed-obstacle-seed-1/run/sensors.jsonl.gz",
+          "input_sha256": "ecbb2d2d88908b8032ba1739e789f895098c7428c083581a495fcdbbf622364a",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 652,
+          "sha256": {
+            "replay/outputs.jsonl": "104ea1de1bc2ec8b7037cbbb24d6a9cf05750f20dc9d81275e8dfa5ca57b701c",
+            "replay/replay.json": "b1fe296f45d887f726da7551358a9d6a5e17bbf5bcb1a2363ddc441380738844"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "viewed-obstacle-seed-7",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/viewed-obstacle-seed-7/run/sensors.jsonl.gz",
+          "input_sha256": "b5f3a9fc10b3f45509dce44acfd041b219e3f20f90a892f41da3a3b5fb94e031",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 651,
+          "sha256": {
+            "replay/outputs.jsonl": "92965a8aee846f78f8933e6274308567fcb68a65448ae3d7ce27faef0bd1f61e",
+            "replay/replay.json": "745eef9dc16ee6946b1f84ed7ad5f4d803988d2d33459476f710388a203d36f2"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "viewed-obstacle-seed-42",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/viewed-obstacle-seed-42/run/sensors.jsonl.gz",
+          "input_sha256": "d594cc6752538063f584ca5e7251547d2ddb8f780161000c189922116fe2fecd",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 652,
+          "sha256": {
+            "replay/outputs.jsonl": "dba542c0a7c05456a43ad7d2d902f1dd555d26471f67210850e50b20b10f29b1",
+            "replay/replay.json": "b1fe296f45d887f726da7551358a9d6a5e17bbf5bcb1a2363ddc441380738844"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "viewed-clipped-seed-1",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/viewed-clipped-seed-1/run/sensors.jsonl.gz",
+          "input_sha256": "cc352ec473ad6228a693ad3788e96285ad0ec5ca0c2209754090bded8c1212b1",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1066,
+          "sha256": {
+            "replay/outputs.jsonl": "978f7422e3dd98966da52ee467e9e78f4bcee4af149e7959dab8eec5737aff73",
+            "replay/replay.json": "39860817a5fcafb8dc01c15cbd8998db92b267f20a76602c8ae069cb3a9a5578"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "viewed-clipped-seed-7",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/viewed-clipped-seed-7/run/sensors.jsonl.gz",
+          "input_sha256": "281268b6926ce264083ce7541c49b27b32c5cd9dfc408f1350cc51313cfedacb",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1067,
+          "sha256": {
+            "replay/outputs.jsonl": "c1214f9011d53742ab005a437788deae389c04bee7aaca049a10db763195df48",
+            "replay/replay.json": "28f810d5f23b151013a5c69576ecb6956c826c2096592734cdfc9f5d32c74787"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "viewed-clipped-seed-42",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/viewed-clipped-seed-42/run/sensors.jsonl.gz",
+          "input_sha256": "b207ead35047bd91e3078961aab72d9f488331b759dcc25c088b8f670014128f",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1067,
+          "sha256": {
+            "replay/outputs.jsonl": "33e6f1689fc91ba0733ac93347c5a9ac95ccf75bdd16e11ceaf5cd31de5847d0",
+            "replay/replay.json": "28f810d5f23b151013a5c69576ecb6956c826c2096592734cdfc9f5d32c74787"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "viewed-restricted-seed-1",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/viewed-restricted-seed-1/run/sensors.jsonl.gz",
+          "input_sha256": "c20d4628fdbc1e330d33a882ff07b75a003c0e095ef6dcb3a095a46b2fcd6585",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1741,
+          "sha256": {
+            "replay/outputs.jsonl": "6ab278ac905b09a622e2b60ca0aaa30b8fb5c20ad2d60ed59d82946261168f26",
+            "replay/replay.json": "6fefcaa3dcbbbf292d75ee9bd113155da99c535f1b2fd0d50c272009fc70a3a9"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "viewed-restricted-seed-7",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/viewed-restricted-seed-7/run/sensors.jsonl.gz",
+          "input_sha256": "97e8a5a1ddca3b3431b6ee8756e47a5338a753d234e407b8a4529e69c57cd8cd",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1741,
+          "sha256": {
+            "replay/outputs.jsonl": "8fbd22a502693152e9b5b3b161da3b92dca8fb544fe80f9e23ff5201a5cbeb6e",
+            "replay/replay.json": "6fefcaa3dcbbbf292d75ee9bd113155da99c535f1b2fd0d50c272009fc70a3a9"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "viewed-restricted-seed-42",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/viewed-restricted-seed-42/run/sensors.jsonl.gz",
+          "input_sha256": "f61239bc4eacc2f53c2dfbf8f3b785d8a6aa71ca7205f7848f3f22a695660615",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1743,
+          "sha256": {
+            "replay/outputs.jsonl": "1cc32501ea42a0f8dc39e1ea8c5307513f7994d4dc750f784fb976b727326288",
+            "replay/replay.json": "d90d2ab1ea70bbd39c885a2663b9dff8b979116611866d86ccf9f247b8598817"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "viewed-handover-seed-1",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/viewed-handover-seed-1/run/sensors.jsonl.gz",
+          "input_sha256": "5501cb664dbdf9024472f139c4644505d52334ad44ede7eacc9359d623eb40e9",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1771,
+          "sha256": {
+            "replay/outputs.jsonl": "bf244df397731ad90be12c92c5581dc107026f94791ba26b073f3b724f9aab03",
+            "replay/replay.json": "a2b4c9b142828559aec080efcd0cdb02674181c8e8d1706c6dedce25ae0b8b91"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "viewed-handover-seed-7",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/viewed-handover-seed-7/run/sensors.jsonl.gz",
+          "input_sha256": "2473e965a1608557306a69937c4e826438b1ef0243dec7ef7a39260b900ccf30",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1773,
+          "sha256": {
+            "replay/outputs.jsonl": "783d5fa335f43e66a30dacf1610d4c7ee54a0ade81d9362d31e0ddbbc52fe8b5",
+            "replay/replay.json": "d1216329f57393be6ded71dc1cf76bc6da180e276ac12ecae673078ef3cc8b42"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "viewed-handover-seed-42",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/viewed-handover-seed-42/run/sensors.jsonl.gz",
+          "input_sha256": "2ce950e543dd911ef040d09d093981e4db63d9f028697eb39682e02fa4ad13fa",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1770,
+          "sha256": {
+            "replay/outputs.jsonl": "a2ed6d9c4c220b98c7c95eefaf0dcac969b1da1e983b83aacdea215bb15dac9a",
+            "replay/replay.json": "58b3c12fa7d2b7dee709ebcc93ece83600166c8b41e73caf7950b730ac3f0f84"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "viewed-reopen-seed-1",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/viewed-reopen-seed-1/run/sensors.jsonl.gz",
+          "input_sha256": "07395084e92fe8bf2fbe8962f9d0342e4df98f25bea5562169793db653025b80",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1879,
+          "sha256": {
+            "replay/outputs.jsonl": "d2b162b0ae85647ccebd08cae219dc7b9660038649d720904b9d7af469bc801c",
+            "replay/replay.json": "d44bb176de40973adfc86d1378a59369dc0b9b1a2e9a95468e67b0d6281fc27b"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "viewed-reopen-seed-7",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/viewed-reopen-seed-7/run/sensors.jsonl.gz",
+          "input_sha256": "dc526798c95c8a627498ec4be5382080179cc2b2fe51ddabcd60cef7e5ab8b05",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1880,
+          "sha256": {
+            "replay/outputs.jsonl": "17574357a306c54f3695e69a911add25c9dfdf2209eb1de98d4e91046dbf4841",
+            "replay/replay.json": "b7f0a0603dbe14bfe199387690e6a7344d00e83216a505117e0c23d229534233"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "viewed-reopen-seed-42",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/viewed-reopen-seed-42/run/sensors.jsonl.gz",
+          "input_sha256": "1f6b8a729ea47588152487a30a48a2f264aa83785023eca2c7c9f28b1ed42446",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1881,
+          "sha256": {
+            "replay/outputs.jsonl": "f8bd5a9fbcfe346713210bd714c954c5e79c917118152c7dcddbb610d39bab0f",
+            "replay/replay.json": "8d5bbcc22516891aa150c79e15274255e15ddeef85e78531b6a9fad16ccc9735"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "viewed-blocked-goal-seed-1",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/viewed-blocked-goal-seed-1/run/sensors.jsonl.gz",
+          "input_sha256": "bc458c9ff2f10c684bb5e2dfd41865a5da9b2a0e2faa99e3c66c8a8c47508ec7",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1301,
+          "sha256": {
+            "replay/outputs.jsonl": "2ed654c196f2a5551e9e66537406176699c1f5b907ead2b505cdac8a4a073c5a",
+            "replay/replay.json": "24136c8acf5b8cfdc01f5d45f8c1426b00e892b5de8b82a012ed5ad6ed357566"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "viewed-blocked-goal-seed-7",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/viewed-blocked-goal-seed-7/run/sensors.jsonl.gz",
+          "input_sha256": "ced3c4f5374c6b5538bac5dc261fde0309151e7b1d7ad37ce3366ca3adec1db5",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1301,
+          "sha256": {
+            "replay/outputs.jsonl": "b65ffc874a6364f3ece46fe875ebc9dfbd2de754722055405a78cae92ef760e1",
+            "replay/replay.json": "24136c8acf5b8cfdc01f5d45f8c1426b00e892b5de8b82a012ed5ad6ed357566"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "viewed-blocked-goal-seed-42",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/viewed-blocked-goal-seed-42/run/sensors.jsonl.gz",
+          "input_sha256": "e7bf2b52f541e7080722ac2374ddb5a8a103eededa55b727527e47f49832e390",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1301,
+          "sha256": {
+            "replay/outputs.jsonl": "0c6b5a4bac9b8dbb4c6c56ab44a05dcd2d9280ac6e20e60f7ae884373c11c1b0",
+            "replay/replay.json": "24136c8acf5b8cfdc01f5d45f8c1426b00e892b5de8b82a012ed5ad6ed357566"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "viewed-osm-seed-1",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/viewed-osm-seed-1/run/sensors.jsonl.gz",
+          "input_sha256": "2e9264a5bb1b5fbbc7e08f3a9804abb6b7e9c60b6d92782c3a888ccc2572b2b8",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1044,
+          "sha256": {
+            "replay/outputs.jsonl": "fa350b68106fa57bb2be3c5b3cca18f1f21c3c324e6432cd18cf28f82d45dde5",
+            "replay/replay.json": "f74f6daca2597bd325a0fb940a6947792f46da39aa89af299dfe29518633a4bd"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "viewed-osm-seed-7",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/viewed-osm-seed-7/run/sensors.jsonl.gz",
+          "input_sha256": "5fde42623415899defc04ce2b0056c0efce2dfe605291236ad8123a3a2c659e7",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1047,
+          "sha256": {
+            "replay/outputs.jsonl": "72a2a859a65dc4d4482b07a310a83a4ba64fb5c4c5da690fff32ec63568509f0",
+            "replay/replay.json": "a35f7353e4fb080391ff4830bc702de2b867b234459dd47c1cee8097904f104d"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "viewed-osm-seed-42",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/viewed-osm-seed-42/run/sensors.jsonl.gz",
+          "input_sha256": "c945e81e021fafbb110220be7623076237368af2c8e356699a5855b9dc076556",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1045,
+          "sha256": {
+            "replay/outputs.jsonl": "6758c7412fe8d8cd246fa4fca7b62cb53126b2d2ff1f51b6c0de2b2443b9c0e9",
+            "replay/replay.json": "5afd0d7b65526648666447bba08505604aaa8b22caf6c8e76e8289678534ef05"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "offset-same-edge--1-seed-101",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/offset-same-edge--1-seed-101/run/sensors.jsonl.gz",
+          "input_sha256": "5ae3dc9caf5f5cbf553d5a8413c162851b0c3f5904bf9b9dd649050b415ea584",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 647,
+          "sha256": {
+            "replay/outputs.jsonl": "c6573197edffded0ae51a402529793dfa3463ca2000ce293e5c8e5387cc17120",
+            "replay/replay.json": "376023f8a2ffdfd6775a44415f453d21459bb9c404e58698191358edda831da6"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "offset-same-edge--1-seed-202",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/offset-same-edge--1-seed-202/run/sensors.jsonl.gz",
+          "input_sha256": "d8431bf42b46e9c4774256d35e3578801e2c219f73b0d9d952a5cb6862407075",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 647,
+          "sha256": {
+            "replay/outputs.jsonl": "979a8a685b6d65f44bba62ebf4f61c812371f50e4c5a1e56d9bb337b29da7994",
+            "replay/replay.json": "376023f8a2ffdfd6775a44415f453d21459bb9c404e58698191358edda831da6"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "offset-same-edge--1-seed-303",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/offset-same-edge--1-seed-303/run/sensors.jsonl.gz",
+          "input_sha256": "dfa5a8c4a76802f35e317e605eb7aa5e2b571958b899f0b27215ebc869be9fd3",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 646,
+          "sha256": {
+            "replay/outputs.jsonl": "4656c109194a17039dcf84e7dcebf39555d93c46cb54897e754bc223c8a2c0fc",
+            "replay/replay.json": "af13b943f27a2737e259f718afd92d183b7d2ba97c413de010ce7a2290ad7135"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "offset-same-edge-+1-seed-101",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/offset-same-edge-+1-seed-101/run/sensors.jsonl.gz",
+          "input_sha256": "b1a30ab7886725e470c9735c9fae99979b2a6ca2f9a8339b65c6ec0ee88f78fa",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 647,
+          "sha256": {
+            "replay/outputs.jsonl": "61fd25943c9c5f56b269395b9bc6e0d5578b03ecdb13ccd90a1f165b004bce34",
+            "replay/replay.json": "376023f8a2ffdfd6775a44415f453d21459bb9c404e58698191358edda831da6"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "offset-same-edge-+1-seed-202",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/offset-same-edge-+1-seed-202/run/sensors.jsonl.gz",
+          "input_sha256": "badbf7450af217262893b5a76cb6f1f30f763ef5df5b1d19ace2ce4b1b24330b",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 649,
+          "sha256": {
+            "replay/outputs.jsonl": "a73874cd4d9909f2254ba631f9b7ade5b59d3b36ae265aacdfd9079f6265086a",
+            "replay/replay.json": "5ea51775b4e9bd2e7b9c7f31c08a223dc19cb920c7264b65e7ba76906ca0e005"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "offset-same-edge-+1-seed-303",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/offset-same-edge-+1-seed-303/run/sensors.jsonl.gz",
+          "input_sha256": "ea4bd6d25f2d9af281c14b816ba2ce0c4cb4408a29e7a77ae2862c027243243e",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 648,
+          "sha256": {
+            "replay/outputs.jsonl": "711c8f37fbe64eaf992aa6c8fcdfec85dab108ca2c05361b15619c7df642d22f",
+            "replay/replay.json": "038b244a1886002f2a815794ae1533bcb17da0c35c78bbcdce64b712764745cf"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "offset-obstacle--1-seed-101",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/offset-obstacle--1-seed-101/run/sensors.jsonl.gz",
+          "input_sha256": "a4b4306eea4a15f313fb6689266f264f7a90c956713bd3d665679d3c9915262a",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 650,
+          "sha256": {
+            "replay/outputs.jsonl": "9fe0d9fe9ded3fd886fe8b94fad2227e7a1e7dd46d88af510633df5590fd095f",
+            "replay/replay.json": "c2de5167efab9bdaee95a9f905610188a1018f433b0bc25305b32ba12fe7030a"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "offset-obstacle--1-seed-202",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/offset-obstacle--1-seed-202/run/sensors.jsonl.gz",
+          "input_sha256": "f0b6dc2172850b914e75b5733698b8ae8ead280bbf91082fc3a23e9488d26075",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 652,
+          "sha256": {
+            "replay/outputs.jsonl": "9a761bfcbd577ae27827a4e2983f67ae14efaa705020e9f1a68297e6b99ab94a",
+            "replay/replay.json": "b1fe296f45d887f726da7551358a9d6a5e17bbf5bcb1a2363ddc441380738844"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "offset-obstacle--1-seed-303",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/offset-obstacle--1-seed-303/run/sensors.jsonl.gz",
+          "input_sha256": "bc5aa4dc3509ea5aac1db40e7da99fcc92601b6ac61cf8fe962f3043490367a4",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 651,
+          "sha256": {
+            "replay/outputs.jsonl": "6c7c263e101b629257a30f6e564630a4b4f01e8e81335be88af00bf38d1ab9b3",
+            "replay/replay.json": "745eef9dc16ee6946b1f84ed7ad5f4d803988d2d33459476f710388a203d36f2"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "offset-obstacle-+1-seed-101",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/offset-obstacle-+1-seed-101/run/sensors.jsonl.gz",
+          "input_sha256": "2573938010deda9a0952670119b90c5ef45ee3c5e83dbb1fafdaf11157f1aa87",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 652,
+          "sha256": {
+            "replay/outputs.jsonl": "aa327f99588d9681c344238442296f588785e4a8b0509b7e58003dae9ae6055d",
+            "replay/replay.json": "b1fe296f45d887f726da7551358a9d6a5e17bbf5bcb1a2363ddc441380738844"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "offset-obstacle-+1-seed-202",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/offset-obstacle-+1-seed-202/run/sensors.jsonl.gz",
+          "input_sha256": "0955b0a191e49299bba256453e12278181a3f89ab94d15817d5acb7392108396",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 650,
+          "sha256": {
+            "replay/outputs.jsonl": "e0d9d23935db5ba5f7f1344a010aeae2ed926d63c7377d8d104845bcaafbb9a5",
+            "replay/replay.json": "c2de5167efab9bdaee95a9f905610188a1018f433b0bc25305b32ba12fe7030a"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "offset-obstacle-+1-seed-303",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/offset-obstacle-+1-seed-303/run/sensors.jsonl.gz",
+          "input_sha256": "2f10ed347158732ad1d358190107ecfaf621d72ead98b61cf057ff074a715a71",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 650,
+          "sha256": {
+            "replay/outputs.jsonl": "9c66f36cef1282f770642ddb64a4ef7a26ad4d85183f68cea68efa32af7d6659",
+            "replay/replay.json": "c2de5167efab9bdaee95a9f905610188a1018f433b0bc25305b32ba12fe7030a"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "offset-osm--1-seed-101",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/offset-osm--1-seed-101/run/sensors.jsonl.gz",
+          "input_sha256": "d1ba2b5bbc3e9bce954eb19b198bd5420d67e3071747da5dd2635cd8d20475b1",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1047,
+          "sha256": {
+            "replay/outputs.jsonl": "b252930cf03ed457ff3c4f7903b04cad66acb9007acd9ff2026a89f463f7f090",
+            "replay/replay.json": "a35f7353e4fb080391ff4830bc702de2b867b234459dd47c1cee8097904f104d"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "offset-osm--1-seed-202",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/offset-osm--1-seed-202/run/sensors.jsonl.gz",
+          "input_sha256": "b894cb0d298ebdb6b420757a7eb91249f78829bbd1b0129f9eab7e1d6e190184",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1046,
+          "sha256": {
+            "replay/outputs.jsonl": "11c221b1c50b90c1d2b9f1ffccc027dfa3ec12f55edbaf8ac37bcbe51a06a06b",
+            "replay/replay.json": "940b6f35cb3ada038c204b27718e30f1ba1291b9d559113bf9043bb26bf4da60"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "offset-osm--1-seed-303",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/offset-osm--1-seed-303/run/sensors.jsonl.gz",
+          "input_sha256": "51f8700239ca377d02d9e735ef9a7b1fcdc03078be14e2c20eb90c5551f6e92b",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1044,
+          "sha256": {
+            "replay/outputs.jsonl": "a1e22d9d08ce032c26596064e91a861fabc6c988d1704415871c87bc703f1a71",
+            "replay/replay.json": "f74f6daca2597bd325a0fb940a6947792f46da39aa89af299dfe29518633a4bd"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "offset-osm-+1-seed-101",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/offset-osm-+1-seed-101/run/sensors.jsonl.gz",
+          "input_sha256": "d4a5a41c2eaf89cbfdc1cb6ec039010566a52685fbe1fad6a09930c7f9c17afc",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1046,
+          "sha256": {
+            "replay/outputs.jsonl": "acb97a81caa282b72ab6f9fba449328078f8c756bdbf1b9efb6b06db34e9fd7c",
+            "replay/replay.json": "940b6f35cb3ada038c204b27718e30f1ba1291b9d559113bf9043bb26bf4da60"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "offset-osm-+1-seed-202",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/offset-osm-+1-seed-202/run/sensors.jsonl.gz",
+          "input_sha256": "8fa99e274761b919ea78874db439efb33330c437f2c534ba47d655532eafd9fd",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1044,
+          "sha256": {
+            "replay/outputs.jsonl": "c35b9ee7e027dcc552ad50dab5dea1afce752b91bf420835d72a0484e03ba04a",
+            "replay/replay.json": "f74f6daca2597bd325a0fb940a6947792f46da39aa89af299dfe29518633a4bd"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "offset-osm-+1-seed-303",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/offset-osm-+1-seed-303/run/sensors.jsonl.gz",
+          "input_sha256": "9d61b4af14337376b45fed2e4bf140df8985e03aedfc8997ede84e66ae7d4e36",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1045,
+          "sha256": {
+            "replay/outputs.jsonl": "06ef0c71bf0234049c88f238507b3ff09eae92ad5b6153625a32c9a6dee9221c",
+            "replay/replay.json": "5afd0d7b65526648666447bba08505604aaa8b22caf6c8e76e8289678534ef05"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "composed-gnss-curve-seed-1",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/composed-gnss-curve-seed-1/run/sensors.jsonl.gz",
+          "input_sha256": "a58ff89c83c402e53a9e59edb3a0abb139bc25bc6b826344fb7b01c718aec4e2",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 462,
+          "sha256": {
+            "replay/outputs.jsonl": "b6ed9276831168181577f63691b8ece333e8b9c6ff5e64593a0f073ec1cc7816",
+            "replay/replay.json": "256e867c383f1bf2d24809a21853b9829a5999fe43c962c87c31610163c061e3"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "composed-gnss-curve-seed-7",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/composed-gnss-curve-seed-7/run/sensors.jsonl.gz",
+          "input_sha256": "a3b7f9293864d1b368dd47e13eb52202f5710bec71fb04835d89ab9c58c8a3b5",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 463,
+          "sha256": {
+            "replay/outputs.jsonl": "24c11f78d804597361a89e412bd178a765ab053ddd333e5789cff6529a899142",
+            "replay/replay.json": "3b5a0a7a604406a54a9be2fcc9da0df8e68e18c58945f2c702ac2b8ba6577a4f"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "composed-gnss-curve-seed-42",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/composed-gnss-curve-seed-42/run/sensors.jsonl.gz",
+          "input_sha256": "9cc037ff32f4f31b7acefbc1e00f0b6bc0c43ec9851e0bbde4b9c707c9dae376",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 461,
+          "sha256": {
+            "replay/outputs.jsonl": "d57398f20a52f4a67c377be894aa21bfa288fcea5a8c8d2a61a9646d017e5807",
+            "replay/replay.json": "6bb55af8b7f9d41098c9e2d59e89456594a511c9c8feede657ad760ff5d1b3ae"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "composed-map-gnss-early-seed-1",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/composed-map-gnss-early-seed-1/run/sensors.jsonl.gz",
+          "input_sha256": "c1fb9cd2326f9b1f691d814ebaf889954d3d065c8f03899089d8ec1ce057592d",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 358,
+          "sha256": {
+            "replay/outputs.jsonl": "3f34bb552bef138f3b10360a3cd9d75b066624a9d20f477c5d5db0713c919c75",
+            "replay/replay.json": "c2925eef32db9d6d82e8d80b0e6bb3b5edcc3c9f18a432b7f9ebf41260864884"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "composed-map-gnss-early-seed-7",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/composed-map-gnss-early-seed-7/run/sensors.jsonl.gz",
+          "input_sha256": "e89ef3ade9c2eb6dee0122f041225cb923c56f98b6fc681db979889c8bec12e8",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 358,
+          "sha256": {
+            "replay/outputs.jsonl": "0e4870192d4d34743974b68edf87ad2f771f63619e85483e48fb38f94be40be9",
+            "replay/replay.json": "c2925eef32db9d6d82e8d80b0e6bb3b5edcc3c9f18a432b7f9ebf41260864884"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "composed-map-gnss-early-seed-42",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/composed-map-gnss-early-seed-42/run/sensors.jsonl.gz",
+          "input_sha256": "55727187c1413d93adcce21fc24224e73af59aeebbb9b2244838ea5f44180267",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 358,
+          "sha256": {
+            "replay/outputs.jsonl": "c954392118c10aa0927dc3b0909a42e48b9c4934cd932b02150eb934672d194b",
+            "replay/replay.json": "c2925eef32db9d6d82e8d80b0e6bb3b5edcc3c9f18a432b7f9ebf41260864884"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "composed-map-gnss-late-seed-1",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/composed-map-gnss-late-seed-1/run/sensors.jsonl.gz",
+          "input_sha256": "94fc78714bcc5b223147632efd7f208e252beadaa8ce2e2314b89125b20c1943",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 363,
+          "sha256": {
+            "replay/outputs.jsonl": "37d47e43ff013c9aafefdac2a89bcb104a87aee59a35d384b56ea7875210f714",
+            "replay/replay.json": "ad98122ef912e309dffaffb5bc0e1a07d8118bf9da009c6c802a0082cdffddea"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "composed-map-gnss-late-seed-7",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/composed-map-gnss-late-seed-7/run/sensors.jsonl.gz",
+          "input_sha256": "0a4e4d2bd765eaf4f1bab45f8073b7597761e804be6ce868aea750c32ec85641",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 365,
+          "sha256": {
+            "replay/outputs.jsonl": "3585c9e0de246edf959d47227ef7c383ddb07bddf9519f3aaa16499daf26bf27",
+            "replay/replay.json": "69cb8319caf162168097c47e278808adb44b1ce164416b9a77c21e9043b55310"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "composed-map-gnss-late-seed-42",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/composed-map-gnss-late-seed-42/run/sensors.jsonl.gz",
+          "input_sha256": "c5b944e2533c43be5a0a63308a9d675506869b833a9b61130e746ba1b0564709",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 363,
+          "sha256": {
+            "replay/outputs.jsonl": "01223dc9d0a94ef856fc6ad738f19863b2e30dee0c97581facf955ebc749c8a7",
+            "replay/replay.json": "ad98122ef912e309dffaffb5bc0e1a07d8118bf9da009c6c802a0082cdffddea"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "miscalibrated--1-seed-7",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/miscalibrated--1-seed-7/run/sensors.jsonl.gz",
+          "input_sha256": "063e1347259e82b90818cd9d4ee726727edf4df4aab8c9ca7fa8570b1a1767c3",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 647,
+          "sha256": {
+            "replay/outputs.jsonl": "6833ddc58c82be0723012cf5c36226f93e269fbbbd4256a995ba00b3348c6c43",
+            "replay/replay.json": "376023f8a2ffdfd6775a44415f453d21459bb9c404e58698191358edda831da6"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "miscalibrated-+1-seed-7",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/miscalibrated-+1-seed-7/run/sensors.jsonl.gz",
+          "input_sha256": "8a693401e30bf139aad676cbd91169f929cdce428d60bdfa6c8946bd57497ab0",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 648,
+          "sha256": {
+            "replay/outputs.jsonl": "e79ff44ec0c1f5a9db8542ea38f697743f2444cca90a58cc9a4d66ba9acf3c99",
+            "replay/replay.json": "038b244a1886002f2a815794ae1533bcb17da0c35c78bbcdce64b712764745cf"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-offset-same-edge--1-seed-404",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-offset-same-edge--1-seed-404/run/sensors.jsonl.gz",
+          "input_sha256": "daec6b929b9d1df11d5773a62daa46b3fd37287d2546a490ff23120372b6a30a",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 649,
+          "sha256": {
+            "replay/outputs.jsonl": "832c5a827227b6a29a36536c88cc3526354f4e1bc02cd85d44a15b1d154622b6",
+            "replay/replay.json": "5ea51775b4e9bd2e7b9c7f31c08a223dc19cb920c7264b65e7ba76906ca0e005"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-offset-same-edge--1-seed-505",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-offset-same-edge--1-seed-505/run/sensors.jsonl.gz",
+          "input_sha256": "0108d84dce148d2a12de275ea83ee822cf357668c5ddbd8c89c73845a4cd3e9b",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 648,
+          "sha256": {
+            "replay/outputs.jsonl": "1981622646be3210a2e2a2a6e24ea05765f8572c4889d7f04fb7919fb04d3f0a",
+            "replay/replay.json": "038b244a1886002f2a815794ae1533bcb17da0c35c78bbcdce64b712764745cf"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-offset-same-edge--1-seed-606",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-offset-same-edge--1-seed-606/run/sensors.jsonl.gz",
+          "input_sha256": "129a4c7f6c4b57a2a349cdf067fc82fab20bb1552d8b346751ebfd4516f81ab1",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 647,
+          "sha256": {
+            "replay/outputs.jsonl": "f379ba746ce966cc6a061be3e9850d78d07b95e3103b7c691f96697f7976bfab",
+            "replay/replay.json": "376023f8a2ffdfd6775a44415f453d21459bb9c404e58698191358edda831da6"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-offset-same-edge-+1-seed-404",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-offset-same-edge-+1-seed-404/run/sensors.jsonl.gz",
+          "input_sha256": "8dbd7a829df7f40c2704212f80cded83415de6f4e3f123e7b483921537b081ce",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 646,
+          "sha256": {
+            "replay/outputs.jsonl": "0f3c42e66913ad6ead64ac720fcc0da0213f4d668be4343e4b05d2502b39276a",
+            "replay/replay.json": "af13b943f27a2737e259f718afd92d183b7d2ba97c413de010ce7a2290ad7135"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-offset-same-edge-+1-seed-505",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-offset-same-edge-+1-seed-505/run/sensors.jsonl.gz",
+          "input_sha256": "6a5ce93fef18f5dfac0601fd917e3a4ebbcd5bacc3a16c92c759ef755d6f2052",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 648,
+          "sha256": {
+            "replay/outputs.jsonl": "cb444010fd05522d67df60ea148f41ee6ea27a875f87dd509c55459e5d6a1cc6",
+            "replay/replay.json": "038b244a1886002f2a815794ae1533bcb17da0c35c78bbcdce64b712764745cf"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-offset-same-edge-+1-seed-606",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-offset-same-edge-+1-seed-606/run/sensors.jsonl.gz",
+          "input_sha256": "0b3399711df9eb8b1f8887a8831ee47a5a2a3bcaccb0ed65067e3345a5fac30d",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 648,
+          "sha256": {
+            "replay/outputs.jsonl": "d626288e037260a14f8a761579277942a2e869bfa7b37c3ef898de8a83fe8c45",
+            "replay/replay.json": "038b244a1886002f2a815794ae1533bcb17da0c35c78bbcdce64b712764745cf"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-offset-obstacle--1-seed-404",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-offset-obstacle--1-seed-404/run/sensors.jsonl.gz",
+          "input_sha256": "ed15949c7bf7c8d588ba06787e0f6bd529eb49814a048fa9b1355f687a9977cb",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 651,
+          "sha256": {
+            "replay/outputs.jsonl": "8674514be135b2e13534788e56b328d57c3d28adc3c162692bee33f9ce1795d3",
+            "replay/replay.json": "745eef9dc16ee6946b1f84ed7ad5f4d803988d2d33459476f710388a203d36f2"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-offset-obstacle--1-seed-505",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-offset-obstacle--1-seed-505/run/sensors.jsonl.gz",
+          "input_sha256": "57e39ae9b401876fca1c45a7930809ce94d8ef461c2a47b1304deea314c27450",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 651,
+          "sha256": {
+            "replay/outputs.jsonl": "d545fc6c138ac5c70f27415e97cf05a8b719692fc6e6a73da140c05fd2664435",
+            "replay/replay.json": "745eef9dc16ee6946b1f84ed7ad5f4d803988d2d33459476f710388a203d36f2"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-offset-obstacle--1-seed-606",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-offset-obstacle--1-seed-606/run/sensors.jsonl.gz",
+          "input_sha256": "686a9385f3db6741738d0111b0557696b2bc9167fb1182b487763a6542815aae",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 652,
+          "sha256": {
+            "replay/outputs.jsonl": "34cc14f4a9397ab1412dce7943ed2a834c835c86fe81083f3e05acfa011b66bc",
+            "replay/replay.json": "b1fe296f45d887f726da7551358a9d6a5e17bbf5bcb1a2363ddc441380738844"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-offset-obstacle-+1-seed-404",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-offset-obstacle-+1-seed-404/run/sensors.jsonl.gz",
+          "input_sha256": "236343330a4d8ff09fbb2c52893fa53248d98e643d18fb5c300f3d88b7d11e8e",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 652,
+          "sha256": {
+            "replay/outputs.jsonl": "8f10a4d7f9c8785b03a1e3a5d1e184e553c1d2fb42b142786b9e52b7983a2b48",
+            "replay/replay.json": "b1fe296f45d887f726da7551358a9d6a5e17bbf5bcb1a2363ddc441380738844"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-offset-obstacle-+1-seed-505",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-offset-obstacle-+1-seed-505/run/sensors.jsonl.gz",
+          "input_sha256": "440005bd49ca6f10b89ac32e1aac5444913ecdedff7d180983cfdf20f447d412",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 653,
+          "sha256": {
+            "replay/outputs.jsonl": "43faa11c92bcf2586abf6e697675d1465c7d9776660ece24fd51ae3b858c5c08",
+            "replay/replay.json": "d7748255891d3e48c64dcab7cef0ab2a6663febe498eb8a9a931ce754532ba04"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-offset-obstacle-+1-seed-606",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-offset-obstacle-+1-seed-606/run/sensors.jsonl.gz",
+          "input_sha256": "9fc0081801626f5f9a06428287579e331325099d8c228e4f78a5cf9ce46c1d05",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 651,
+          "sha256": {
+            "replay/outputs.jsonl": "40a0d18511b268639e2f0e95505119343cfbd6359d946c047b796c10396a08ea",
+            "replay/replay.json": "745eef9dc16ee6946b1f84ed7ad5f4d803988d2d33459476f710388a203d36f2"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-offset-osm--1-seed-404",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-offset-osm--1-seed-404/run/sensors.jsonl.gz",
+          "input_sha256": "b166ced1fb2b980d4d8bd357ceb44b37dddff2b480f5b3fdcbb7c8511eeda87d",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1045,
+          "sha256": {
+            "replay/outputs.jsonl": "27aafcb74373c93076814376508eb9767cadeb2bd1d298dba06cea138bebdc9c",
+            "replay/replay.json": "5afd0d7b65526648666447bba08505604aaa8b22caf6c8e76e8289678534ef05"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-offset-osm--1-seed-505",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-offset-osm--1-seed-505/run/sensors.jsonl.gz",
+          "input_sha256": "90a9ad26bfc896ffc7dae9c4028289b17e2a50f62c7be25e178f8919fd632487",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1047,
+          "sha256": {
+            "replay/outputs.jsonl": "9186a7eaadb2431cd789710aa103fd8260a2ef095069b393143dbb90214d70c7",
+            "replay/replay.json": "a35f7353e4fb080391ff4830bc702de2b867b234459dd47c1cee8097904f104d"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-offset-osm--1-seed-606",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-offset-osm--1-seed-606/run/sensors.jsonl.gz",
+          "input_sha256": "18f21355533efe213513fff8fea7adf84caba8f17e2e490608268ca0275d93ae",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1045,
+          "sha256": {
+            "replay/outputs.jsonl": "a9c002a8bb6b2fb7a81e9bee4cc85ce30513ceb90ce6348eff19854e95fd622b",
+            "replay/replay.json": "5afd0d7b65526648666447bba08505604aaa8b22caf6c8e76e8289678534ef05"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-offset-osm-+1-seed-404",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-offset-osm-+1-seed-404/run/sensors.jsonl.gz",
+          "input_sha256": "46483edbe09fff681057b82e9c018e8799a95820567918c655f8d7538926fccd",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1045,
+          "sha256": {
+            "replay/outputs.jsonl": "ccc139cfec3aadf40164c9ad62cbd7cbfc3d952385479d494e980e9d66e90494",
+            "replay/replay.json": "5afd0d7b65526648666447bba08505604aaa8b22caf6c8e76e8289678534ef05"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-offset-osm-+1-seed-505",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-offset-osm-+1-seed-505/run/sensors.jsonl.gz",
+          "input_sha256": "3c00422830e323133118c3badbaff0fea4b4fe9446179d24538fbdabb049bfd6",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1046,
+          "sha256": {
+            "replay/outputs.jsonl": "3ade213ee45e3ff31843deafa26abcffb7047dc57f7154e4405981015a08f545",
+            "replay/replay.json": "940b6f35cb3ada038c204b27718e30f1ba1291b9d559113bf9043bb26bf4da60"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-offset-osm-+1-seed-606",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-offset-osm-+1-seed-606/run/sensors.jsonl.gz",
+          "input_sha256": "28b48056d42c67a66318403eb3d9b18f3fae8225e973e2caae552d13e1639793",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1044,
+          "sha256": {
+            "replay/outputs.jsonl": "710edf551b3d99741325f2e098192a4bb5709a9122521bc63227dcc3b26af214",
+            "replay/replay.json": "f74f6daca2597bd325a0fb940a6947792f46da39aa89af299dfe29518633a4bd"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-C-offset-same-edge--1-seed-707",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-C-offset-same-edge--1-seed-707/run/sensors.jsonl.gz",
+          "input_sha256": "7fd44a8cea5e10e62e32918f5154978a3b1db25051200cf184b092abdf45d5ca",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 648,
+          "sha256": {
+            "replay/outputs.jsonl": "1711d91d39239e2671bd456aa6c92b6097677721c40b5b8fec5a25aaab022206",
+            "replay/replay.json": "038b244a1886002f2a815794ae1533bcb17da0c35c78bbcdce64b712764745cf"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-C-offset-same-edge--1-seed-808",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-C-offset-same-edge--1-seed-808/run/sensors.jsonl.gz",
+          "input_sha256": "9663a540dc119628b8a4409cb29dce454ceb3553ccb462fe276916c07fb05b8c",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 647,
+          "sha256": {
+            "replay/outputs.jsonl": "b60dda5fac0315d3fb74a4e3c0fd40b6e3070af45ad583edb099fa526f8870c1",
+            "replay/replay.json": "376023f8a2ffdfd6775a44415f453d21459bb9c404e58698191358edda831da6"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-C-offset-same-edge--1-seed-909",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-C-offset-same-edge--1-seed-909/run/sensors.jsonl.gz",
+          "input_sha256": "b3e8edb9e0c8fef1c39eb77b3e6e6d01f1b6c5944b076dbeed9d4b404d614a5a",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 647,
+          "sha256": {
+            "replay/outputs.jsonl": "f1c78607c6e96120ab3202391eeee16cfd297354443f72bc34f5159d14203bd0",
+            "replay/replay.json": "376023f8a2ffdfd6775a44415f453d21459bb9c404e58698191358edda831da6"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-C-offset-same-edge-+1-seed-707",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-C-offset-same-edge-+1-seed-707/run/sensors.jsonl.gz",
+          "input_sha256": "1856e1950f55a1c9a4b7d453ff66a19f297eddd76cf2f787c097447fe1b9c48d",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 649,
+          "sha256": {
+            "replay/outputs.jsonl": "2bfa55720717881190ae74581315bc66145b9552c0e35f6931645cd84bcd979a",
+            "replay/replay.json": "5ea51775b4e9bd2e7b9c7f31c08a223dc19cb920c7264b65e7ba76906ca0e005"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-C-offset-same-edge-+1-seed-808",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-C-offset-same-edge-+1-seed-808/run/sensors.jsonl.gz",
+          "input_sha256": "a039372251aeaad557faef185298604f43942b9c785601c3e80fd8425c408c4d",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 647,
+          "sha256": {
+            "replay/outputs.jsonl": "0a9c36998225240ca47223251ab0f26f69ba06b2941dce04562bf3b78b9f70e6",
+            "replay/replay.json": "376023f8a2ffdfd6775a44415f453d21459bb9c404e58698191358edda831da6"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-C-offset-same-edge-+1-seed-909",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-C-offset-same-edge-+1-seed-909/run/sensors.jsonl.gz",
+          "input_sha256": "c87baa6b2a220cd240be3c09ce3727067ac18c6df1dc65f13ead7c16cf68b9f8",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 647,
+          "sha256": {
+            "replay/outputs.jsonl": "bf627cba7802dffb19002ed0b7375ae3008a63b60970bc75d31670a9c73e063d",
+            "replay/replay.json": "376023f8a2ffdfd6775a44415f453d21459bb9c404e58698191358edda831da6"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-C-offset-obstacle--1-seed-707",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-C-offset-obstacle--1-seed-707/run/sensors.jsonl.gz",
+          "input_sha256": "f8640acae3595a724b95a23fcc183526d5efc95f846a70ce5a2b15e71d6c6922",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 653,
+          "sha256": {
+            "replay/outputs.jsonl": "27127324b10f01f44a7bae01038daaa451d7ad27f2d7c43bd3d987e7edef8a0c",
+            "replay/replay.json": "d7748255891d3e48c64dcab7cef0ab2a6663febe498eb8a9a931ce754532ba04"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-C-offset-obstacle--1-seed-808",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-C-offset-obstacle--1-seed-808/run/sensors.jsonl.gz",
+          "input_sha256": "803d0320abf842ca46ad0576499242785dacd3e499b48c88878337e7af41ef0b",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 651,
+          "sha256": {
+            "replay/outputs.jsonl": "8790ef2e0e533ec4fb5ed1b4a1400ead0a2a0a3a2ce1eafa029765d61c46d094",
+            "replay/replay.json": "745eef9dc16ee6946b1f84ed7ad5f4d803988d2d33459476f710388a203d36f2"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-C-offset-obstacle--1-seed-909",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-C-offset-obstacle--1-seed-909/run/sensors.jsonl.gz",
+          "input_sha256": "3787a1661280dd8b971a18bf57a0a190b9da71187f20ef055ee1038f578cfdaa",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 652,
+          "sha256": {
+            "replay/outputs.jsonl": "19a559e14408a319e57f1f5bfd4afe4599bf008b7edfcf97b3491fcb82f85a88",
+            "replay/replay.json": "b1fe296f45d887f726da7551358a9d6a5e17bbf5bcb1a2363ddc441380738844"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-C-offset-obstacle-+1-seed-707",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-C-offset-obstacle-+1-seed-707/run/sensors.jsonl.gz",
+          "input_sha256": "17a62a2b1b4adb126dcd11b9acf5bcf8d6e4038987197403cd5dd52e6982ce82",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 651,
+          "sha256": {
+            "replay/outputs.jsonl": "004b639828c4516d19abf6ee3ea9b4e47b77ae59793c3d368a06962d5d142acb",
+            "replay/replay.json": "745eef9dc16ee6946b1f84ed7ad5f4d803988d2d33459476f710388a203d36f2"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-C-offset-obstacle-+1-seed-808",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-C-offset-obstacle-+1-seed-808/run/sensors.jsonl.gz",
+          "input_sha256": "474c10c048d0dccb0eb3a403a7b0f40a4e93aafa212c36aa26633e69994b8fcb",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 653,
+          "sha256": {
+            "replay/outputs.jsonl": "fa60075f96f13129ec4a32da2337817ff6cb4065a8044073ec5ab62ad9330bf3",
+            "replay/replay.json": "d7748255891d3e48c64dcab7cef0ab2a6663febe498eb8a9a931ce754532ba04"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-C-offset-obstacle-+1-seed-909",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-C-offset-obstacle-+1-seed-909/run/sensors.jsonl.gz",
+          "input_sha256": "18b64f25cca1ed5b5aec1d79f44b2ef10454c91788ef462793fe253585623549",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 653,
+          "sha256": {
+            "replay/outputs.jsonl": "8218d9fc2a67c06c6fff32914a159d34ec11f3b3f275a8f11508f18dbb981466",
+            "replay/replay.json": "d7748255891d3e48c64dcab7cef0ab2a6663febe498eb8a9a931ce754532ba04"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-C-offset-osm--1-seed-707",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-C-offset-osm--1-seed-707/run/sensors.jsonl.gz",
+          "input_sha256": "80d5c04c13227794f050df7a8d083271c8b49ca47fb21fb973fff36a5122b74a",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1045,
+          "sha256": {
+            "replay/outputs.jsonl": "36adcc1d64dbe08b3763a98b53ac8aa3fd1fab5a3824995d9cfba622ac21992b",
+            "replay/replay.json": "5afd0d7b65526648666447bba08505604aaa8b22caf6c8e76e8289678534ef05"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-C-offset-osm--1-seed-808",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-C-offset-osm--1-seed-808/run/sensors.jsonl.gz",
+          "input_sha256": "8eb070a4ea318dfc91ae8314c35c3ef8e6f993a4f36945b84dad152ffe8009ba",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1046,
+          "sha256": {
+            "replay/outputs.jsonl": "002c383884fbff1289120cf4c483e99a54d89912607ec908a5e422659e5ec0ad",
+            "replay/replay.json": "940b6f35cb3ada038c204b27718e30f1ba1291b9d559113bf9043bb26bf4da60"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-C-offset-osm--1-seed-909",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-C-offset-osm--1-seed-909/run/sensors.jsonl.gz",
+          "input_sha256": "40602dac61ab8a1257e70855a55eacc1e18adff07cfa1970e0a57ad4f45f2352",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1046,
+          "sha256": {
+            "replay/outputs.jsonl": "43f9170dbc877a69a5bbed17d2d4e533b14043e43e8568a2e9428f855af118b0",
+            "replay/replay.json": "940b6f35cb3ada038c204b27718e30f1ba1291b9d559113bf9043bb26bf4da60"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-C-offset-osm-+1-seed-707",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-C-offset-osm-+1-seed-707/run/sensors.jsonl.gz",
+          "input_sha256": "d0e1a327658a7c1deb5721874538caf632e6623c802c1fa2ceb702e195f1d35e",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1044,
+          "sha256": {
+            "replay/outputs.jsonl": "5dc8cc2aae199d91623a512ed17c9c3820cbfcdacaad28ebb5ab8bdf6cb6ec22",
+            "replay/replay.json": "f74f6daca2597bd325a0fb940a6947792f46da39aa89af299dfe29518633a4bd"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-C-offset-osm-+1-seed-808",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-C-offset-osm-+1-seed-808/run/sensors.jsonl.gz",
+          "input_sha256": "45f0a028fe0d4f5147ae62d3c8c8a30d6921ba0344eb6e854af9fb9069b76e98",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1046,
+          "sha256": {
+            "replay/outputs.jsonl": "744871d52c6c9dcedc8d8e1fcf75fefe7e00098640aae76e9a1b8d426b7dbef7",
+            "replay/replay.json": "940b6f35cb3ada038c204b27718e30f1ba1291b9d559113bf9043bb26bf4da60"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-C-offset-osm-+1-seed-909",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-C-offset-osm-+1-seed-909/run/sensors.jsonl.gz",
+          "input_sha256": "be5c3f932fd7c985a6a115248e4221a7d5c642b407c4d77d2301c68e4de369ca",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1046,
+          "sha256": {
+            "replay/outputs.jsonl": "7387f12271512328bf14effb9547418dafbaa9b122e7fd5207e83c04dfc96ba6",
+            "replay/replay.json": "940b6f35cb3ada038c204b27718e30f1ba1291b9d559113bf9043bb26bf4da60"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-D-offset-same-edge--1-seed-1001",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-D-offset-same-edge--1-seed-1001/run/sensors.jsonl.gz",
+          "input_sha256": "abdabbf5dac4ebc89a6abb52671756213b9f51466a471c0144be8d760f23a0aa",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 647,
+          "sha256": {
+            "replay/outputs.jsonl": "679a82d2d0634326438b89c690c86f69aee090053bc196f546d1a31677da8f0b",
+            "replay/replay.json": "376023f8a2ffdfd6775a44415f453d21459bb9c404e58698191358edda831da6"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-D-offset-same-edge-+1-seed-1001",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-D-offset-same-edge-+1-seed-1001/run/sensors.jsonl.gz",
+          "input_sha256": "9fedd01da9aa0ddc700b0fc074da5daa0e7d440bd2497261ba594303a9612a9d",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 648,
+          "sha256": {
+            "replay/outputs.jsonl": "40fa62154bcaf851ee3a65f62a22b9086c086af4158861bde892b2292da9af6c",
+            "replay/replay.json": "038b244a1886002f2a815794ae1533bcb17da0c35c78bbcdce64b712764745cf"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-D-offset-obstacle--1-seed-1001",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-D-offset-obstacle--1-seed-1001/run/sensors.jsonl.gz",
+          "input_sha256": "6c583d2cdc7d84a33fe53403ad88de16883d0e57790860a16045cb9a99b4aa27",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 652,
+          "sha256": {
+            "replay/outputs.jsonl": "dcc3555ed3958e013b155975d7b7ac28af7a070319179e323d7ed941a03c1a73",
+            "replay/replay.json": "b1fe296f45d887f726da7551358a9d6a5e17bbf5bcb1a2363ddc441380738844"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-D-offset-obstacle-+1-seed-1001",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-D-offset-obstacle-+1-seed-1001/run/sensors.jsonl.gz",
+          "input_sha256": "9841bbe5cfb55cdb09cdaed1feedaead9342d8427c118e5f7ba2c55a7858831c",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 652,
+          "sha256": {
+            "replay/outputs.jsonl": "f5bf9433b6432cc761e8028a9e71d7fa46537031d695f615ec9ed60d25a7722c",
+            "replay/replay.json": "b1fe296f45d887f726da7551358a9d6a5e17bbf5bcb1a2363ddc441380738844"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-D-offset-osm--1-seed-1001",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-D-offset-osm--1-seed-1001/run/sensors.jsonl.gz",
+          "input_sha256": "b83c314e176f87fbaf2e4cfa46811dbf0eddb0df9f222c251a20785a3c4ac631",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1046,
+          "sha256": {
+            "replay/outputs.jsonl": "670e114b244fe00e018b01df5071bd1f60add0388e976a9f7d7b48f69a169428",
+            "replay/replay.json": "940b6f35cb3ada038c204b27718e30f1ba1291b9d559113bf9043bb26bf4da60"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        },
+        {
+          "plant": "native",
+          "id": "confirm-D-offset-osm-+1-seed-1001",
+          "source": "artifacts/initial-pose-covariance-v1/verified-F/native/confirm-D-offset-osm-+1-seed-1001/run/sensors.jsonl.gz",
+          "input_sha256": "d61ba015340006ca139df23f3975e85ce7ad7687941068104f469f1dc7edb9aa",
+          "exit_code": 0,
+          "passed": true,
+          "ticks": 1047,
+          "sha256": {
+            "replay/outputs.jsonl": "edf9eef11f5b1e91728b2b635eb346246f7c5dd8da4b4002f46aceb6e28cbfef",
+            "replay/replay.json": "a35f7353e4fb080391ff4830bc702de2b867b234459dd47c1cee8097904f104d"
+          },
+          "identical_to_parent_outputs": true,
+          "no_staging_left": true
+        }
+      ]
+    },
+    "driving_algorithms_modified": false,
+    "lockfiles_and_toolchains_changed": false,
+    "native_adapter_tests_rerun": false
+  },
+  "provenance": {
+    "local_packet": "artifacts/replay-publication-v1",
+    "candidate": {
+      "sources": {
+        "crates/sim/src/replay_output.rs": "fdf6c851c0053e21aef0cf4b9c0d1b37d5a253b2781653235a26fbd7935642c8",
+        "crates/sim/src/main.rs": "8d8a89efcab9f56fe9c63a112134056a64ae076c5649fd85a7f8bebeeee4e131",
+        "crates/sim/tests/replay_input.rs": "3247f6fb405ee45d22379ca734c433306f765be9eea44df955c8daa72636775b",
+        "docs/capabilities.md": "dd364075f9b8472b70bf6d2628d421eb060ed6eb6eac387dc61edd7f47c7ebc3",
+        "docs/maturity.md": "41ddd2570a92867a971919df279c24cbf8e460b74fb79284bbd6282fcd839f13",
+        "docs/sensor-replay.md": "fe834b76003150cfbfe58a049baee8a86f810e70f6b0b6ac900d741bafeab256"
+      },
+      "binary_sha256": "01e525b825ab8d348410ed59294e09115b6dee9fce711aecd0c64040bf6a456d",
+      "baseline_commit": "88a8fb866b5d1f6c74148d344860e9da8ce7e84a",
+      "build": "cargo build --release --locked --bin rustdriving",
+      "root_toolchain": "1.90.0"
+    },
+    "parent_binary_sha256": "df21db0a3d2031daae579ba977e045bb9f741a32eab14379ecfe4d97393ba62f",
+    "retained_fixture_sha256": "90673a3222ec0ac1db61ee1cc0e6f7737a2d5b2dcd8bf270d25aa97e098d9bd2",
+    "required_check": {
+      "path": "artifacts/replay-publication-v1/required-check/check-summary.json",
+      "sha256": "e8d9d1ac597405fc865a74ca1b7d5cae8d87c2442af662bb3923c4e450a5d17b"
+    },
+    "compatibility": {
+      "path": "artifacts/replay-publication-v1/compatibility.json",
+      "sha256": "09b1646b1ca4f6b56f7f240b0c619e9d4e806dc4bfd7ce0dd18c05e9476aa929"
+    },
+    "fault_probes": {
+      "path": "artifacts/replay-publication-v1/probe-results.json",
+      "sha256": "97d9e4dbabfe67b3d5eb9c594b32531c3e00bab36bb518cdf800774f59c11d3b"
+    },
+    "probe_source": {
+      "path": "artifacts/replay-publication-v1/probe.py",
+      "sha256": "cb7bfbf36e84c322273bc671617ae1175935491475dd52b8f50cf98f570ef546"
+    },
+    "compatibility_source": {
+      "path": "artifacts/replay-publication-v1/compatibility.py",
+      "sha256": "6fad2994c8feddf6569498d273efff0d154b9e8b46126380444cbf72c861d941"
+    },
+    "frozen_design": {
+      "path": "artifacts/replay-publication-v1/design-freeze.json",
+      "sha256": "61eebd6e9fb08eecea949115f745611d0bde0d194f0171026bef7ff20e34571a"
+    }
+  },
+  "limitations": [
+    "CLI publication is narrower than the streaming verify API; API callers own their writer and rollback.",
+    "Input-alias rejection preserves prior artifacts; general concurrent filesystem mutation remains outside the contract.",
+    "Abrupt process termination or cleanup I/O errors can leave hidden staging files. Consumers still require a complete success report.",
+    "The filesystem must support hard links; no new cross-platform or crash durability qualification.",
+    "Existing 190 recordings are viewed compatibility inputs, including four previous physical-quality negative controls; these are not new physical trials."
+  ]
+}

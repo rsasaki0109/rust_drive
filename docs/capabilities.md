@@ -32,7 +32,7 @@
 | 3D visualization of recorded RNE driving | Implemented / tested | Blender Cycles CPU replay, pose/actor audit, original suburban assets, four display vehicle types, a verified three-actor queue and editable scene snapshots; planar physics, no sensor-camera feed |
 | Seeded repeatability and telemetry GIF | Implemented / tested | Same build/platform; Python optional |
 | Sensor-only shared pipeline | Implemented / tested | Configured route/spawn; no operational truth inputs |
-| Versioned sensor-log replay | Implemented / tested | Full recomputation; exact comparison on this build/platform; no physical acceptance inference |
+| Versioned sensor-log replay | Implemented / tested | Full recomputation; exact comparison on this build/platform; CLI publishes complete outputs only after full verification, with the report last; failure/alias/link regressions; no physical acceptance inference; [publication contract](sensor-replay.md) |
 | RNE kinematic/dynamic closed loop | Implemented / tested | CPU-only native plant, planar LiDAR in 3D query scene, friction/steering-lag dynamic model |
 | RNE raycast acquisition failure | Implemented / tested | Explicit error causes braking; healthy empty scan is distinct |
 | Opt-in native static 3D cuboids | Implemented / tested | Actual yaw-rotated Rapier query geometry; default 0.6 m operational scan, opt-in multi-height or inclined XYZ modes; no contact-response plant |

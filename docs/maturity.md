@@ -2,6 +2,12 @@
 
 The current engineering estimate is **about 23%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
+The [replay publication improvement](sensor-replay.md) prevents failed verification
+from exposing a partial command stream under the final output name. It retains
+exact successful bytes, input/link protection and explicit failure exit codes.
+This improves tool reliability within the existing scope; the comparative
+estimate stays **about 23%** and the 30% waypoint remains unmet.
+
 The increment from about 22% reflects a concrete startup and tracking improvement:
 [explicit initial pose covariance and complete posterior reconstruction](initial-pose-covariance.md)
 compose with delayed GNSS/map fusion, while physical heading perturbations expose

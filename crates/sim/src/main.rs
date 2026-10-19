@@ -1,6 +1,6 @@
 mod lane_route;
+mod replay_output;
 mod road_route;
-use rustdriving_pipeline::replay::verify;
 use rustdriving_routing::{
     RoadNetwork,
     osm::{self, ImportOptions, OverpassDocument},
@@ -10,54 +10,10 @@ use std::{
     env,
     error::Error,
     fs,
-    io::{BufReader, BufWriter, Write},
-    path::{Path, PathBuf},
+    io::{BufReader, BufWriter},
+    path::PathBuf,
     process,
 };
-
-fn validate_replay_destinations(log: &Path, destinations: &[&Path]) -> Result<(), Box<dyn Error>> {
-    let input = match fs::canonicalize(log) {
-        Ok(path) => path,
-        // Missing input still clears an unrelated previous success report below.
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(()),
-        Err(error) => return Err(error.into()),
-    };
-    #[cfg(unix)]
-    let input_metadata = fs::metadata(&input)?;
-    for destination in destinations {
-        let resolved = match fs::canonicalize(destination) {
-            Ok(path) => path,
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => continue,
-            Err(error) => return Err(error.into()),
-        };
-        let same = input == resolved;
-        #[cfg(unix)]
-        let same = {
-            use std::os::unix::fs::MetadataExt;
-            let metadata = fs::metadata(&resolved)?;
-            same || (input_metadata.dev() == metadata.dev()
-                && input_metadata.ino() == metadata.ino())
-        };
-        if same {
-            return Err(format!(
-                "replay output {} aliases input log {}",
-                destination.display(),
-                log.display()
-            )
-            .into());
-        }
-    }
-    Ok(())
-}
-
-fn remove_replay_artifact(path: &Path) -> std::io::Result<()> {
-    // Unlink the artifact itself, including dangling links, without touching its target.
-    match fs::remove_file(path) {
-        Ok(()) => Ok(()),
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
-        Err(error) => Err(error),
-    }
-}
 
 fn import_osm(args: &[String]) -> Result<bool, Box<dyn Error>> {
     let mut input = None;
@@ -207,19 +163,7 @@ fn run() -> Result<bool, Box<dyn Error>> {
             Ok(run.summary.passed)
         }
         "replay" => {
-            fs::create_dir_all(&output)?;
-            let summary = output.join("replay.json");
-            let outputs = output.join("outputs.jsonl");
-            if let Some(input) = log.as_deref() {
-                validate_replay_destinations(input, &[&summary, &outputs])?;
-            }
-            // Reports are written only on success; stale evidence cannot masquerade as this run.
-            remove_replay_artifact(&summary)?;
-            let reader = BufReader::new(fs::File::open(log.ok_or("--log is required")?)?);
-            remove_replay_artifact(&outputs)?;
-            let report = verify(reader, BufWriter::new(fs::File::create_new(outputs)?))?;
-            let json = serde_json::to_string_pretty(&report)?;
-            fs::File::create_new(summary)?.write_all(json.as_bytes())?;
+            let json = replay_output::run(log.as_deref(), &output)?;
             println!("{json}");
             Ok(true)
         }

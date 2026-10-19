@@ -78,6 +78,89 @@ fn assert_verified_outputs(result: Output, directory: &Path, expected: &[u8]) {
     for artifact in [&summary, &outputs] {
         assert!(fs::symlink_metadata(artifact).unwrap().is_file());
     }
+    assert_no_staging(directory);
+}
+
+fn assert_no_staging(directory: &Path) {
+    assert!(fs::read_dir(directory).unwrap().all(|entry| {
+        !entry
+            .unwrap()
+            .file_name()
+            .to_string_lossy()
+            .starts_with(".replay-stage-")
+    }));
+}
+
+#[test]
+fn late_verification_failures_publish_no_command_prefix_or_success_report() {
+    let valid = sensor_log();
+    let lines: Vec<_> = std::str::from_utf8(&valid).unwrap().lines().collect();
+    let tick_index = lines.len() - 2;
+    let mut changed: serde_json::Value = serde_json::from_str(lines[tick_index]).unwrap();
+    let steering = changed["tick"]["expected"]["command"]["steering"]
+        .as_f64()
+        .unwrap();
+    changed["tick"]["expected"]["command"]["steering"] = (steering + 0.125).into();
+    let mut mismatched = lines
+        .iter()
+        .map(|line| (*line).to_owned())
+        .collect::<Vec<_>>();
+    mismatched[tick_index] = serde_json::to_string(&changed).unwrap();
+    let truncated = lines[..lines.len() - 1].join("\n") + "\n";
+    for (label, bytes) in [
+        ("mismatched-last-tick", mismatched.join("\n") + "\n"),
+        ("missing-footer", truncated.clone()),
+        ("malformed-tail", truncated + "invalid JSON\n"),
+        (
+            "after-footer",
+            String::from_utf8(valid.clone()).unwrap() + "invalid JSON\n",
+        ),
+    ] {
+        let directory = TestDirectory::new(label);
+        let input = directory.0.join("sensors.jsonl");
+        fs::write(&input, bytes.as_bytes()).unwrap();
+        fs::write(directory.0.join("outputs.jsonl"), b"previous commands").unwrap();
+        fs::write(directory.0.join("replay.json"), br#"{"verified":true}"#).unwrap();
+        let result = replay(&input, &directory.0);
+        assert_eq!(result.status.code(), Some(2), "{label}");
+        assert_eq!(fs::read(&input).unwrap(), bytes.as_bytes());
+        assert!(!directory.0.join("outputs.jsonl").exists(), "{label}");
+        assert!(!directory.0.join("replay.json").exists(), "{label}");
+        assert_no_staging(&directory.0);
+    }
+}
+
+#[test]
+fn missing_input_invalidates_both_previous_replay_artifacts() {
+    let directory = TestDirectory::new("missing-input-old-stream");
+    fs::write(directory.0.join("outputs.jsonl"), b"previous commands").unwrap();
+    fs::write(directory.0.join("replay.json"), br#"{"verified":true}"#).unwrap();
+    let result = replay(&directory.0.join("missing.jsonl"), &directory.0);
+    assert_eq!(result.status.code(), Some(2));
+    assert!(!directory.0.join("outputs.jsonl").exists());
+    assert!(!directory.0.join("replay.json").exists());
+    assert_no_staging(&directory.0);
+}
+
+#[test]
+fn artifact_directories_and_their_contents_are_preserved_on_failure() {
+    let bytes = sensor_log();
+    for name in ["outputs.jsonl", "replay.json"] {
+        let directory = TestDirectory::new(&format!("directory-{name}"));
+        let input = directory.0.join("sensors.jsonl");
+        fs::write(&input, &bytes).unwrap();
+        let artifact = directory.0.join(name);
+        fs::create_dir(&artifact).unwrap();
+        fs::write(artifact.join("keep.txt"), b"unrelated contents").unwrap();
+        let result = replay(&input, &directory.0);
+        assert_eq!(result.status.code(), Some(2));
+        assert_eq!(fs::read(&input).unwrap(), bytes);
+        assert_eq!(
+            fs::read(artifact.join("keep.txt")).unwrap(),
+            b"unrelated contents"
+        );
+        assert_no_staging(&directory.0);
+    }
 }
 
 #[test]
