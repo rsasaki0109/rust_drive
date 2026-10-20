@@ -98,6 +98,38 @@ fn fitting_a_wide_road_preserves_every_original_trajectory_value() {
 }
 
 #[test]
+fn unshortened_width_candidates_preserve_the_chassis_course_join() {
+    let mut old = planner(None);
+    let mut fitted = planner(Some(0.35));
+    for p in [&mut old, &mut fitted] {
+        p.local_route_geometry = true;
+        p.point_reference_recovery = false;
+        p.max_lateral_acceleration_m_s2 = Some(2.5);
+    }
+    for (x, y) in [(0., 0.), (4., 0.6), (8., 2.5), (27., 3.5)] {
+        let measured = EgoState {
+            pose: Pose {
+                position: point(x, y, 0.),
+                yaw: 0.,
+            },
+            speed: 2.,
+        };
+        let objects = [object(25., 0., 0.)];
+        let a = old.plan(measured, &road(5.5, 0.), &objects);
+        let b = fitted.plan(measured, &road(5.5, 0.), &objects);
+        assert_ne!(a.mode, DrivingMode::Emergency);
+        assert_eq!(a.mode, b.mode);
+        assert_eq!(a.lateral_target, b.lateral_target);
+        assert_eq!(a.points.len(), b.points.len());
+        for (a, b) in a.points.iter().zip(&b.points) {
+            assert_eq!(a.position, b.position);
+            assert_eq!(a.time, b.time);
+            assert_eq!(a.speed, b.speed);
+        }
+    }
+}
+
+#[test]
 fn invalid_reserves_fail_closed_in_the_independent_planner() {
     for margin in [f64::NAN, f64::INFINITY, -0.1, 0., 0.09, 1.01] {
         let path = planner(Some(margin)).plan(ego(0.), &road(4.5, 0.), &[]);

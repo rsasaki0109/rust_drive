@@ -1095,6 +1095,9 @@ jobs:
       - name: Verify native yield entry ownership after measured recovery
         working-directory: rust_drive
         run: python3 scripts/check_yield_relocalization.py --plant rne-dynamic --smoke --output artifacts/yield-relocalization-native
+      - name: Verify all native road-width seeds and passing continuity
+        working-directory: rust_drive
+        run: python3 scripts/check_road_width.py --plant rne-dynamic --check-policy-regression --output artifacts/road-width-native
       - name: Verify legal turn routes in the native dynamic plant
         working-directory: rust_drive
         run: python3 scripts/check-turn-restrictions.py --backend native --seeds 7 --compact --output artifacts/turn-restrictions
@@ -1185,6 +1188,7 @@ jobs:
             rust_drive/artifacts/stop-relocalization-native/
             rust_drive/artifacts/signal-relocalization-native/
             rust_drive/artifacts/yield-relocalization-native/
+            rust_drive/artifacts/road-width-native/
             rust_drive/artifacts/japan-city-demo/
       - uses: actions/upload-artifact@v4
         with:

@@ -19,10 +19,12 @@ Existing forecast calibration, native heading and four mission failures remain
 recorded, and the new policy stays off by default.
 Optional [road-width side candidates](docs/road-width-planning.md) fit the
 existing lateral choices inside narrower supplied corridors while preserving
-the original collision and road checks. All 18 narrow-road cases reach their
-goals, but one native right pass misses the 1 m clearance floor: 31/32 policy
-pairs pass and complete qualification remains unmet. The option stays off by
-default. Scenario validation can now reject malformed inputs before driving.
+the original collision and road checks. Passing continuity now repairs the
+native right-pass clearance failure: 0.845780 → 1.250174 m. All 18 narrow-road
+cases meet the physical passing requirements and all 32 policy pairs pass.
+Strict qualification remains 23/32 due to heading and inherited mission failures;
+the option stays off by default. Scenario validation rejects malformed inputs
+before driving, and the native CI matrix includes the repaired seed.
 [Acquisition-time GNSS fusion](docs/gnss-latency.md) now reduces delayed-fix
 errors in both reference and native RNE driving, with bounded history,
 fault-stop recovery and independent covariance reconstruction.

@@ -2,7 +2,16 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest [road-width side candidates](road-width-planning.md) keep the estimate
+The latest [chassis passing continuity repair](road-width-planning.md#chassis-passing-continuity-follow-up)
+keeps the estimate at **about 29%**. The same 64 input bytes now pass all 32 policy
+comparisons and all 18 narrow physical passes; the remaining native clearance
+failure improves from 0.845780 to 1.250174 m. Strict qualification is 23/32,
+retaining five heading failures and four inherited incomplete missions. All 52
+unchanged physical cases retain all five output streams exactly. The failed
+first repair remains recorded, and the option remains off by default. This
+repairs a viewed simulation regression; the **30% waypoint remains unmet**.
+
+The preceding [road-width side candidates](road-width-planning.md) keep the estimate
 at **about 29%**. Three bounded candidates now fit narrower supplied corridors;
 all 18 authored narrow-road missions reach their goals versus zero for the
 fixed-offset partners. Seventeen meet the physical passing requirements, while

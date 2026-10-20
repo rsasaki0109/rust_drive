@@ -14,7 +14,8 @@ pub struct LatticePlanner {
     /// Opt-in locally bounded fillets for sparse imported road polylines.
     pub local_route_geometry: bool,
     /// Opt-in anchored recovery for a point/rear-axle pose reference. Chassis
-    /// course tracking retains the original joined prefix pending qualification.
+    /// course tracking retains the original join except for narrowed width-fitted
+    /// candidates, which also recover by their anchored completion arc.
     pub point_reference_recovery: bool,
     /// Finish a near-stationary goal within the terminal position tolerance.
     /// Disable for temporary regulatory or route-handover stopping prefixes.
@@ -176,6 +177,8 @@ impl Planner for LatticePlanner {
         let side = self.lateral_candidate_margin_m.map_or(3.5, |margin| {
             (route.half_width - self.vehicle.radius - margin).clamp(0.0, 3.5)
         });
+        let fitted_chassis_recovery =
+            self.local_route_geometry && !self.point_reference_recovery && side < 3.5;
         let targets = [0.0, side, -side];
         for (index, target) in targets.into_iter().enumerate() {
             // Avoid duplicate centerline paths when no useful side corridor fits.
@@ -221,7 +224,8 @@ impl Planner for LatticePlanner {
             // defer correction of the remaining tracking error. A wheelbase
             // floor leaves a finite recovery span after the anchor has passed.
             let correction_transition = if self.local_route_geometry
-                && self.point_reference_recovery
+                && (self.point_reference_recovery
+                    || (fitted_chassis_recovery && s >= start_s + transition))
                 && target.abs() > 0.1
             {
                 // Reuse the quintic's existing second-derivative bound for
@@ -236,9 +240,15 @@ impl Planner for LatticePlanner {
                                         .sqrt(),
                             )
                         });
-                (start_s + transition - s)
-                    .max(recovery_floor)
-                    .min(transition)
+                let recovery = (start_s + transition - s).max(recovery_floor);
+                if self.point_reference_recovery {
+                    recovery.min(transition)
+                } else {
+                    // A temporary center brake can increase the residual while
+                    // preserving the passing intent. Its recovery may need more
+                    // room than the original shift, under the same speed limits.
+                    recovery
+                }
             } else {
                 transition
             };
@@ -452,18 +462,28 @@ impl Planner for LatticePlanner {
                 // (including the complete hold sweep) always takes precedence.
                 self.terminal_side_reserved = true;
             }
-            if (trajectory.lateral_target - self.previous_lateral).abs() > 0.01 {
-                self.maneuver_start = Some((
-                    s,
-                    lateral,
-                    transition_distance(
-                        ego.speed,
-                        trajectory.lateral_target - lateral,
-                        self.max_lateral_acceleration_m_s2,
-                    ),
-                ));
+            // A retimed centerline stopping prefix is not a completed return.
+            // Keep the narrowed chassis pass's completion arc through it. Each
+            // subsequent candidate still joins the measured course and must
+            // independently pass containment, speed and complete hold sweeps.
+            let temporary_center_brake = fitted_chassis_recovery
+                && blocked
+                && trajectory.lateral_target.abs() < 0.01
+                && self.previous_lateral.abs() > 0.1;
+            if !temporary_center_brake {
+                if (trajectory.lateral_target - self.previous_lateral).abs() > 0.01 {
+                    self.maneuver_start = Some((
+                        s,
+                        lateral,
+                        transition_distance(
+                            ego.speed,
+                            trajectory.lateral_target - lateral,
+                            self.max_lateral_acceleration_m_s2,
+                        ),
+                    ));
+                }
+                self.previous_lateral = trajectory.lateral_target;
             }
-            self.previous_lateral = trajectory.lateral_target;
         }
         self.yield_stop_s = if trajectory.mode == DrivingMode::Yield {
             trajectory
@@ -540,6 +560,88 @@ mod tests {
                     }
                 }
             }
+        }
+    }
+    #[test]
+    fn narrowed_chassis_side_path_recovers_by_the_anchored_completion_arc() {
+        for direction in [-1., 1.] {
+            for s in [10., 12.] {
+                let mut planner = LatticePlanner {
+                    cruise_speed: 4.,
+                    local_route_geometry: true,
+                    point_reference_recovery: false,
+                    lateral_candidate_margin_m: Some(0.35),
+                    max_lateral_acceleration_m_s2: Some(2.5),
+                    previous_lateral: direction * 2.9,
+                    maneuver_start: Some((0., 0., 10.)),
+                    ..LatticePlanner::default()
+                };
+                let ego = EgoState {
+                    pose: rustdriving_core::Pose {
+                        position: Vec2::new(s, direction * 2.5),
+                        yaw: 0., // Measured course, as supplied by chassis mode.
+                    },
+                    speed: 2.,
+                };
+                let object = Prediction {
+                    positions: vec![Vec2::new(25., 0.); 41],
+                    radius: 0.5,
+                    ..obstacle()
+                };
+                let path = planner.plan(ego, &road(4.5), &[object]);
+                assert_ne!(path.mode, DrivingMode::Emergency);
+                assert_eq!(path.lateral_target, direction * 2.9);
+                assert_eq!(path.points[0].position, ego.pose.position);
+                // The original shift finishes at x=10. Its 0.4 m residual at
+                // 2 m/s admits recovery within four meters at the declared limit.
+                // A fresh ten-meter join at each tick hides that error again.
+                let recovered = path.points.iter().find(|p| p.position.x >= s + 4.).unwrap();
+                assert!((recovered.position.y - direction * 2.9).abs() < 1e-12);
+                assert!(path.points.iter().all(|p| p.position.y.abs() + 1.25 <= 4.5));
+            }
+        }
+    }
+    #[test]
+    fn a_temporary_center_brake_preserves_the_narrow_chassis_passing_anchor() {
+        for direction in [-1., 1.] {
+            let anchor = Some((0., 0., 10.));
+            let mut planner = LatticePlanner {
+                cruise_speed: 4.,
+                local_route_geometry: true,
+                lateral_candidate_margin_m: Some(0.35),
+                max_lateral_acceleration_m_s2: Some(2.5),
+                previous_lateral: direction * 2.9,
+                maneuver_start: anchor,
+                ..LatticePlanner::default()
+            };
+            let objects = [0., -direction * 2.9].map(|y| Prediction {
+                positions: vec![Vec2::new(25., y); 41],
+                radius: 0.5,
+                ..obstacle()
+            });
+            let mut ego = EgoState {
+                pose: rustdriving_core::Pose {
+                    position: Vec2::new(6., -direction * 1.1),
+                    yaw: 0.,
+                },
+                speed: 2.,
+            };
+            let braking = planner.plan(ego, &road(4.5), &objects);
+            assert_eq!(braking.mode, DrivingMode::Yield);
+            assert_eq!(braking.lateral_target, 0.);
+            assert_eq!(braking.points.last().unwrap().speed, 0.);
+            assert_eq!(planner.previous_lateral, direction * 2.9);
+            assert_eq!(planner.maneuver_start, anchor);
+            ego.pose.position = Vec2::new(8., -direction * 0.5);
+            let resumed = planner.plan(ego, &road(4.5), &objects);
+            assert_ne!(resumed.mode, DrivingMode::Emergency);
+            assert_eq!(resumed.lateral_target, direction * 2.9);
+            assert_eq!(planner.maneuver_start, anchor);
+            // A genuinely clear return withdraws the passing intent normally.
+            let returned = planner.plan(ego, &road(4.5), &[]);
+            assert_eq!(returned.lateral_target, 0.);
+            assert_eq!(planner.previous_lateral, 0.);
+            assert_ne!(planner.maneuver_start, anchor);
         }
     }
     #[test]

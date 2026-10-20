@@ -114,6 +114,11 @@ an extra target reserve. Wide roads retain ±3.5 m; small unusable side corridor
 retain only center. All geometry, motion, collision and containment checks stay
 mandatory. Omitted/null preserves the original candidate set. This is bounded
 constant-width fitting; continuous lateral optimization remains open.
+For narrowed local chassis/course candidates, a blocked center braking prefix
+retains the passing anchor. After its original completion arc, residual error
+recovers over the wheelbase / declared lateral-acceleration span, which may
+extend for a larger residual. Clear returns and side changes replace the intent;
+route resets clear it. All candidate feasibility checks remain mandatory.
 [Contract and fixed paired evaluation](road-width-planning.md).
 
 `DrivingPipeline::step(&SensorFrame)` owns EKF, perception/tracking, occupancy, predictor, planner and controller state. Input contains only a monotonic clock, optional timestamped odometry/GNSS/body-frame LiDAR, and explicit LiDAR acquisition failure. Output contains estimate, tracks, predictions, trajectory, command, health diagnostics and GNSS observed/accepted timestamp, decision, NIS and count diagnostics. It has no simulator object/pose inputs. Configuration supplies route, initial pose calibration, vehicle dimensions and optional calibrated forward/braking/lateral acceleration limits; this is a known-route demonstration.

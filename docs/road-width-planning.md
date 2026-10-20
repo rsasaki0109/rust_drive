@@ -30,7 +30,62 @@ The option is independent of `forecast_envelope` and
 constant-width circular road geometry and the existing tracking controller
 remain assumptions; lane topology and continuous offsets remain future work.
 
-## Frozen paired protocol
+## Chassis passing continuity follow-up
+
+A follow-up repairs the remaining calibrated native right-pass regression. A
+blocked centerline braking prefix previously replaced the side maneuver's
+original anchor. Combined with a fresh full-length chassis error join on each
+replan, this delayed the actual shift past the obstacle.
+
+For local chassis/course mode with fitted sides below 3.5 m, a temporary blocked
+center brake now retains the passing intent. After the original completion arc,
+the residual joins over the wheelbase / declared lateral-acceleration recovery
+span; an increased residual may extend that span. The initial shift keeps its
+original join. A clear return or side change replaces the intent; route reset
+clears it. Every candidate still passes the measured-course join, original road
+containment, reachable speeds and complete retimed collision/hold sweep.
+Point-reference recovery, unfitted/default modes and unshortened wide-road
+candidates retain their preceding arithmetic.
+
+The first attempted repair shortened joins during unfinished shifts too. It
+strengthened a transient early left choice and stopped at 29.219359 m without
+reaching the goal. That complete 45 s recording and exact replay remain failed.
+The final policy is evaluated with the **same 64 input bytes and unchanged
+numerical gates** as the original calibrated cohort; these are viewed authored
+regressions, not held-out automotive evidence.
+
+| Check | Follow-up result |
+|---|---|
+| Primary native right-pass seed 42 clearance | 0.845780 → **1.250174 m**, unchanged 1 m floor |
+| Primary minimum lateral distance across progress 33–37 m | 2.386459 → **2.989554 m**, unchanged 2.6 m floor |
+| Primary arrival / minimum actual road margin / max yaw error | 27.20 s / 0.245439 m / 0.092298 rad |
+| Policy comparison | **32/32 pairs**, previously 31/32 |
+| Narrow physical-pass requirements / goals | **18/18 / 18/18**, previously 17/18 / 18/18 |
+| Strict fitted qualification | **23/32**, previously 22/32 |
+| Blocked holds | 6/6, actual 0 m/s over 14–20 s |
+| Minimum swept clearance / actual circular road margin, all 64 | 1.068972 m / 0.159867 m; no contacts or road/rule violations |
+| Unchanged reference/default/wide/mission cases | 52/52, all five physical/replay streams byte-identical |
+
+Five native heading failures and four inherited incomplete missions still fail
+strict qualification, including the two original forecast-coverage failures.
+The option remains **off by default**. No collision margin, road, actor, speed,
+deadline, startup prior or acceptance threshold was changed.
+
+The [follow-up result asset](../assets/fitted-chassis-recovery-results.json)
+retains both focused attempts, the complete 64-case report, frozen inputs,
+source/binary fingerprints and lossless stream receipts. Its 66 recordings
+include two development repeats; qualification remains the 64-case matrix.
+All 330 streams have encoded and decoded SHA-256 verification. The 64-case matrix
+contains 45,474 ticks and 4,536 sampled planned-path certificates through
+342,298 interval bounds. The previous 52 compatible logs also replay with exact
+outputs. The required check passes 801 Rust tests, 112 Python tests and 49
+standard drive/replay pairs with all 245 output files byte-identical; the adapter
+passes 63 native tests, formatting, release build and strict Clippy locally.
+The native CI job now includes all three road-width seeds, including seed 42,
+and preserves the complete evidence on failure; remote success is unverified.
+Comparative engineering maturity remains **about 29%**.
+
+## Original frozen paired protocol
 
 Before the first new physical trial, the protocol freezes **64 episodes**:
 
@@ -108,7 +163,7 @@ The evaluator now validates its complete frozen cohort before starting any
 physical job. Unsafe independent swept-clearance results are recorded
 numerically and fail the same 1 m gate, without aborting before other metrics.
 
-## Recorded results and unmet adoption
+## Original recorded results and unmet adoption
 
 The [complete result asset](../assets/road-width-results.json) contains every
 frozen input, original classification, numerical reaudit, preflight rejection,
@@ -134,7 +189,8 @@ distance over the complete passing window falls to 2.386459 m against the
 2.6 m requirement. Heading stays within the 0.1 rad gate in this case. The
 ordinary predicted-path collision certificate does not establish the separate
 1 m physical clearance floor; controller feasibility and uncertainty remain
-necessary work. `--check-policy-regression` correctly exits 1.
+necessary work. At that revision, `--check-policy-regression` correctly exits 1.
+The continuity follow-up above repairs this one physical failure.
 
 Five fitted native launch-heading failures and all four inherited failed
 missions also remain scored. The policy stays off by default. These authored
