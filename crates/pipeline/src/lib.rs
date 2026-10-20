@@ -99,6 +99,9 @@ pub struct PipelineConfig {
     pub forecast_envelope: Option<ForecastEnvelopeConfig>,
     #[serde(default, skip_serializing_if = "is_false")]
     pub settle_obstruction_stops: bool,
+    /// Optional extra road-edge reserve for width-fitted lateral candidates.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub lateral_candidate_margin_m: Option<f64>,
     /// Opt-in bounded acquisition-time GNSS correction and odometry replay.
     #[serde(default, skip_serializing_if = "is_false")]
     pub gnss_latency_compensation: bool,
@@ -147,6 +150,7 @@ impl PipelineConfig {
             confirm_slow_motion: false,
             forecast_envelope: None,
             settle_obstruction_stops: false,
+            lateral_candidate_margin_m: None,
             gnss_latency_compensation: false,
             local_route_geometry: false,
             rear_axle_offset_m: None,
@@ -215,6 +219,12 @@ impl PipelineConfig {
             {
                 return Err("regional relocalization requires a surveyed map and ordinary XY LiDAR, explicit preservation for navigation or fixed-route controls, and no lane changes".into());
             }
+        }
+        if self
+            .lateral_candidate_margin_m
+            .is_some_and(|margin| !margin.is_finite() || !(0.1..=1.0).contains(&margin))
+        {
+            return Err("lateral candidate margin requires 0.1 to 1.0 meters".into());
         }
         if let Some(offset) = self.gnss_antenna_offset_m {
             rustdriving_localization::validate_gnss_antenna_offset(offset)?;
@@ -564,6 +574,7 @@ impl DrivingPipeline {
         planner.local_route_geometry = config.local_route_geometry;
         planner.point_reference_recovery = config.rear_axle_offset_m.is_none();
         planner.settle_obstruction_stops = config.settle_obstruction_stops;
+        planner.lateral_candidate_margin_m = config.lateral_candidate_margin_m;
         planner.vehicle = config.vehicle;
         if let Some(limits) = config.motion_limits {
             planner.max_acceleration_m_s2 = limits.max_acceleration_m_s2;

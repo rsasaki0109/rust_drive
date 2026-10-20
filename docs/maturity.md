@@ -2,7 +2,20 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest [obstruction stop settling](obstruction-stops.md) keeps the estimate
+The latest [road-width side candidates](road-width-planning.md) keep the estimate
+at **about 29%**. Three bounded candidates now fit narrower supplied corridors;
+all 18 authored narrow-road missions reach their goals versus zero for the
+fixed-offset partners. Seventeen meet the physical passing requirements, while
+one native right pass retains 0.845780 m clearance against the unchanged 1 m
+floor. The policy comparison passes 31/32 pairs and strict positive qualification
+is 22/32, retaining launch-heading errors and four inherited incomplete missions.
+Input validation now rejects malformed scenarios before driving. All 116 current
+physical recordings and 56 preceding recordings replay exactly, with every
+first failure and input rejection retained. This expands bounded simulation
+planning, without qualifying default adoption or automotive operation. The
+option remains off; the **30% waypoint remains unmet**.
+
+The preceding [obstruction stop settling](obstruction-stops.md) keeps the estimate
 at **about 29%**. All 48 enabled policy regressions pass in both plants, repairing
 the preceding blocked-road creep without changing forecasts or collision margins.
 Four permanent envelope-obstruction cases hold actual 0 m/s, and all eight

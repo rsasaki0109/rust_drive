@@ -17,6 +17,12 @@ only a complete clear candidate can release it. All 48 enabled policy regression
 pass in both plants; eight release/fault cases resume and reach their goals.
 Existing forecast calibration, native heading and four mission failures remain
 recorded, and the new policy stays off by default.
+Optional [road-width side candidates](docs/road-width-planning.md) fit the
+existing lateral choices inside narrower supplied corridors while preserving
+the original collision and road checks. All 18 narrow-road cases reach their
+goals, but one native right pass misses the 1 m clearance floor: 31/32 policy
+pairs pass and complete qualification remains unmet. The option stays off by
+default. Scenario validation can now reject malformed inputs before driving.
 [Acquisition-time GNSS fusion](docs/gnss-latency.md) now reduces delayed-fix
 errors in both reference and native RNE driving, with bounded history,
 fault-stop recovery and independent covariance reconstruction.

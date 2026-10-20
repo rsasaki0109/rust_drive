@@ -22,6 +22,9 @@ pub struct LatticePlanner {
     /// After collision-induced emergency braking, retain a feasible immediate
     /// stop until a complete unblocked candidate clears the ordinary sweep.
     pub settle_obstruction_stops: bool,
+    /// Optional additional road-edge reserve for width-fitted side candidates.
+    /// None preserves the original fixed +/-3.5 m offsets.
+    pub lateral_candidate_margin_m: Option<f64>,
     pub vehicle: VehicleConfig,
     /// Forward acceleration authority used for reachable speed profiles.
     pub max_acceleration_m_s2: f64,
@@ -45,6 +48,7 @@ impl Default for LatticePlanner {
             point_reference_recovery: false,
             terminal_settling: true,
             settle_obstruction_stops: false,
+            lateral_candidate_margin_m: None,
             vehicle: VehicleConfig::default(),
             max_acceleration_m_s2: 2.0,
             max_deceleration_m_s2: 2.5,
@@ -85,6 +89,9 @@ impl Planner for LatticePlanner {
             || self.max_deceleration_m_s2 <= 0.0
             || self.speed_zones.len() > 128
             || self.speed_zones.iter().any(|zone| !zone.valid())
+            || self
+                .lateral_candidate_margin_m
+                .is_some_and(|margin| !margin.is_finite() || !(0.1..=1.0).contains(&margin))
             || self
                 .max_lateral_acceleration_m_s2
                 .is_some_and(|a| !a.is_finite() || a <= 0.0)
@@ -166,7 +173,15 @@ impl Planner for LatticePlanner {
                 || (self.obstruction_stop_requested && ego.speed <= 0.2));
         let mut collision_seen = false;
         let mut best: Option<((bool, bool, f64), Trajectory, bool)> = None;
-        for target in [0.0_f64, 3.5, -3.5] {
+        let side = self.lateral_candidate_margin_m.map_or(3.5, |margin| {
+            (route.half_width - self.vehicle.radius - margin).clamp(0.0, 3.5)
+        });
+        let targets = [0.0, side, -side];
+        for (index, target) in targets.into_iter().enumerate() {
+            // Avoid duplicate centerline paths when no useful side corridor fits.
+            if index > 0 && side <= 0.1 {
+                continue;
+            }
             if target.abs() + self.vehicle.radius > route.half_width
                 || (target * lateral < 0.0 && lateral.abs() > 1.0)
             {

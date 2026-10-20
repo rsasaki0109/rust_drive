@@ -114,7 +114,7 @@ fn run() -> Result<bool, Box<dyn Error>> {
     let args: Vec<_> = env::args().skip(1).collect();
     if args.is_empty() || args[0] == "--help" || args[0] == "-h" {
         println!(
-            "RustDriving sensor-driven simulator\nUsage:\n  rustdriving run --scenario FILE [--seed N] [--output DIR]\n  rustdriving replay --log FILE [--output DIR]\n  rustdriving import-osm --input FILE --output MAP.json --origin-lat N --origin-lon E [--default-half-width METERS] [--scenario-output FILE --start osm-node-ID --goal osm-node-ID --closed-edge ID --cruise-speed MPS --duration SECONDS --local-route-geometry]\n  rustdriving road-route --map FILE (--start NODE | --start-edge EDGE --start-s METERS) (--goal NODE | --goal-edge EDGE --goal-s METERS) [--closed-edge ID] [--scenario-output FILE --cruise-speed MPS --duration SECONDS]\n  rustdriving lane-route --map FILE --start LANE --goal LANE [--closed-lane ID] [--local-speed-limits] [--change-side left|right --change-start METERS --change-length METERS --wait-for-gap --return-on-conflict --return-distance METERS --resume-after-return --resume-distance METERS] [--scenario-output FILE --cruise-speed MPS --duration SECONDS]\nExit 0: acceptance/replay/import/lane routing passed; 1: scenario acceptance failed; 2: invalid input, replay mismatch or I/O failure."
+            "RustDriving sensor-driven simulator\nUsage:\n  rustdriving run --scenario FILE [--seed N] [--output DIR]\n  rustdriving replay --log FILE [--output DIR]\n  rustdriving validate-scenario --scenario FILE\n  rustdriving import-osm --input FILE --output MAP.json --origin-lat N --origin-lon E [--default-half-width METERS] [--scenario-output FILE --start osm-node-ID --goal osm-node-ID --closed-edge ID --cruise-speed MPS --duration SECONDS --local-route-geometry]\n  rustdriving road-route --map FILE (--start NODE | --start-edge EDGE --start-s METERS) (--goal NODE | --goal-edge EDGE --goal-s METERS) [--closed-edge ID] [--scenario-output FILE --cruise-speed MPS --duration SECONDS]\n  rustdriving lane-route --map FILE --start LANE --goal LANE [--closed-lane ID] [--local-speed-limits] [--change-side left|right --change-start METERS --change-length METERS --wait-for-gap --return-on-conflict --return-distance METERS --resume-after-return --resume-distance METERS] [--scenario-output FILE --cruise-speed MPS --duration SECONDS]\nExit 0: acceptance/replay/validation/import/lane routing passed; 1: scenario acceptance failed; 2: invalid input, replay mismatch or I/O failure."
         );
         return Ok(true);
     }
@@ -126,6 +126,18 @@ fn run() -> Result<bool, Box<dyn Error>> {
     }
     if args[0] == "road-route" {
         return road_route::run(&args);
+    }
+    if args[0] == "validate-scenario" {
+        if args.len() != 3 || args[1] != "--scenario" {
+            return Err("validate-scenario requires exactly --scenario FILE".into());
+        }
+        let scenario: Scenario = serde_json::from_str(&fs::read_to_string(&args[2])?)?;
+        scenario.validate()?;
+        println!(
+            "{}",
+            serde_json::json!({"valid": true, "scenario": scenario.name})
+        );
+        return Ok(true);
     }
     let mut scenario = None;
     let mut log = None;
@@ -168,7 +180,7 @@ fn run() -> Result<bool, Box<dyn Error>> {
             Ok(true)
         }
         _ => Err(
-            "expected 'run', 'replay', 'import-osm', 'road-route' or 'lane-route' subcommand"
+            "expected 'run', 'replay', 'validate-scenario', 'import-osm', 'road-route' or 'lane-route' subcommand"
                 .into(),
         ),
     }

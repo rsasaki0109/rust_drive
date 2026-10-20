@@ -116,11 +116,19 @@ disabled comparisons expose repeated restarts. The preceding blocked-road creep
 is repaired, while four mission deadline failures, native launch-heading errors
 and uncalibrated forecast coverage remain scored. This does not complete M1.
 
+Optional [road-width side candidates](road-width-planning.md) now fit the existing
+three offsets within the supplied circular corridor and an explicit target
+reserve. All 18 narrow-road missions reach their goals, versus zero fixed-offset
+partners; one native right pass misses the unchanged 1 m clearance requirement.
+The comparison is 31/32 and strict positive qualification 22/32. Default adoption
+remains blocked. Scenario preflight now checks every input before driving and
+preserves numerical failure diagnostics and all earlier rejected inputs.
+
 Remaining:
 
 - Calibrated covariance/forecast uncertainty propagation, delayed odometry and general multi-sensor correction-event replay, per-point LiDAR deskew and trace migrations. Optional [declared motion error envelopes](forecast-envelope.md) propagate acquisition-origin error budgets and preserve a CV alternative, with physical coverage/liveness adoption gates still open. Bounded acquisition-time LiDAR reprojection and current-time motion extrapolation do not complete delayed-sensor fusion.
 - Continuous moving-route handover and automatic live-position map matching, general external map/lane import, variable-width/lane topology, general turn rules, live speed-limit remapping and A* for larger maps. Explicit directed interior-edge origin/destination routing, bounded OSM road-graph import and fixed-route speed intervals are implemented. [Partial-route evidence and retained heading failure](mid-edge-routing.md).
-- Continuous lateral offsets and controller-feasibility validation.
+- Continuous lateral offsets and controller-feasibility validation; the bounded three-candidate width fitting above does not complete either requirement.
 - Oriented-body planning, measured vehicle/actuator calibration, combined longitudinal/lateral friction feasibility and optimized speed profiles. An authored rectangular evaluation body and conservative planar envelope are implemented.
 - General goal-area stopping/escape, constrained destinations and blocked lateral refuges; the authored GNSS-burst traffic regression is repaired.
 - Reduce conservative terminal stop/hold behavior for a following vehicle in a narrow corridor; the authored 65-second deadline now passes, but repeated stops and short-range clearance failures remain.

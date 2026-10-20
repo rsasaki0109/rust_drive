@@ -108,6 +108,14 @@ Unsafe Rust is forbidden at workspace level. There is no global message bus, cus
 
 ## Shared application boundary
 
+Optional `lateral_candidate_margin_m` fits the three center/left/right planning
+choices to the supplied road half-width minus the circular vehicle radius and
+an extra target reserve. Wide roads retain ±3.5 m; small unusable side corridors
+retain only center. All geometry, motion, collision and containment checks stay
+mandatory. Omitted/null preserves the original candidate set. This is bounded
+constant-width fitting; continuous lateral optimization remains open.
+[Contract and fixed paired evaluation](road-width-planning.md).
+
 `DrivingPipeline::step(&SensorFrame)` owns EKF, perception/tracking, occupancy, predictor, planner and controller state. Input contains only a monotonic clock, optional timestamped odometry/GNSS/body-frame LiDAR, and explicit LiDAR acquisition failure. Output contains estimate, tracks, predictions, trajectory, command, health diagnostics and GNSS observed/accepted timestamp, decision, NIS and count diagnostics. It has no simulator object/pose inputs. Configuration supplies route, initial pose calibration, vehicle dimensions and optional calibrated forward/braking/lateral acceleration limits; this is a known-route demonstration.
 
 Missing/stale odometry, LiDAR or GNSS, invalid samples, excessive covariance and acquisition failure select finite emergency braking. Healthy empty LiDAR is accepted; a failed acquisition brakes immediately. An invalid clock returns `Err`; callers must stop rather than reuse a command. The reference and RNE backends implement observation/advance boundaries and share the same independent evaluator. Runtime truth stays inside sensor synthesis and evaluation/rendering.

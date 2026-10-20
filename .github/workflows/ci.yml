@@ -30,6 +30,8 @@ jobs:
         run: python scripts/test_forecast_envelope.py
       - name: Check obstruction-stop recovery and independent path certificates
         run: python scripts/test_obstruction_stops.py
+      - name: Check road-width candidates and independent circular road containment
+        run: python scripts/test_road_width.py
       - name: Check contained lane-conflict witnesses
         run: python scripts/test_lane_occupancy.py
       - name: Check swept physical speed intervals
