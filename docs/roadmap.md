@@ -107,6 +107,15 @@ All 32 current inputs pass in two plants; the first 24/32 reclassification and
 current recordings retain exact replay. This extends authored recovery without completing independent
 automotive sensing, measured uncertainty or the 30% waypoint.
 
+Optional [obstruction stop settling](obstruction-stops.md) now retains a completed
+collision stop instead of restarting on another partial blocked approach.
+A complete clear candidate releases it, while health faults retain braking.
+All 48 enabled policy regressions pass in both plants; eight moving-obstruction
+and GNSS-loss cases hold actual 0 m/s, resume and reach their goals. Eight
+disabled comparisons expose repeated restarts. The preceding blocked-road creep
+is repaired, while four mission deadline failures, native launch-heading errors
+and uncalibrated forecast coverage remain scored. This does not complete M1.
+
 Remaining:
 
 - Calibrated covariance/forecast uncertainty propagation, delayed odometry and general multi-sensor correction-event replay, per-point LiDAR deskew and trace migrations. Optional [declared motion error envelopes](forecast-envelope.md) propagate acquisition-origin error budgets and preserve a CV alternative, with physical coverage/liveness adoption gates still open. Bounded acquisition-time LiDAR reprojection and current-time motion extrapolation do not complete delayed-sensor fusion.

@@ -11,6 +11,12 @@ forecasts and constant-velocity continuation with acquisition-origin error growt
 Their declared budgets require calibration; the experimental policy is off by default.
 All forty paired recordings replay exactly; four experimental missions miss
 their original deadlines, so the new policy does not qualify default adoption.
+Optional [obstruction stop settling](docs/obstruction-stops.md) prevents a
+completed collision stop from restarting on another partial blocked approach;
+only a complete clear candidate can release it. All 48 enabled policy regressions
+pass in both plants; eight release/fault cases resume and reach their goals.
+Existing forecast calibration, native heading and four mission failures remain
+recorded, and the new policy stays off by default.
 [Acquisition-time GNSS fusion](docs/gnss-latency.md) now reduces delayed-fix
 errors in both reference and native RNE driving, with bounded history,
 fault-stop recovery and independent covariance reconstruction.

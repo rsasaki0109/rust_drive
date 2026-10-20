@@ -97,6 +97,8 @@ pub struct PipelineConfig {
     /// Optional declared motion-error budgets; does not estimate uncertainty.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub forecast_envelope: Option<ForecastEnvelopeConfig>,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub settle_obstruction_stops: bool,
     /// Opt-in bounded acquisition-time GNSS correction and odometry replay.
     #[serde(default, skip_serializing_if = "is_false")]
     pub gnss_latency_compensation: bool,
@@ -144,6 +146,7 @@ impl PipelineConfig {
             speed_zones: vec![],
             confirm_slow_motion: false,
             forecast_envelope: None,
+            settle_obstruction_stops: false,
             gnss_latency_compensation: false,
             local_route_geometry: false,
             rear_axle_offset_m: None,
@@ -560,6 +563,7 @@ impl DrivingPipeline {
         );
         planner.local_route_geometry = config.local_route_geometry;
         planner.point_reference_recovery = config.rear_axle_offset_m.is_none();
+        planner.settle_obstruction_stops = config.settle_obstruction_stops;
         planner.vehicle = config.vehicle;
         if let Some(limits) = config.motion_limits {
             planner.max_acceleration_m_s2 = limits.max_acceleration_m_s2;
@@ -1161,16 +1165,8 @@ impl DrivingPipeline {
             self.config.route = self.navigator.as_ref().unwrap().plan().route.clone();
             let speed_zones = self.navigator.as_ref().unwrap().speed_zones().to_vec();
             // Keep EKF, sensor ages, tracks and occupancy. Reset only route-dependent actuation state.
-            let mut planner = LatticePlanner::default();
-            planner.cruise_speed = self.planner.cruise_speed;
-            planner.local_route_geometry = self.planner.local_route_geometry;
-            planner.point_reference_recovery = self.planner.point_reference_recovery;
-            planner.vehicle = self.planner.vehicle;
-            planner.max_acceleration_m_s2 = self.planner.max_acceleration_m_s2;
-            planner.max_deceleration_m_s2 = self.planner.max_deceleration_m_s2;
-            planner.max_lateral_acceleration_m_s2 = self.planner.max_lateral_acceleration_m_s2;
-            planner.speed_zones = speed_zones;
-            self.planner = planner;
+            self.planner.reset_route_state();
+            self.planner.speed_zones = speed_zones;
             self.controller.reset_route_state();
         }
         // Another latched mapped-duty fault must also prevent semantic passage,
@@ -1262,16 +1258,8 @@ impl DrivingPipeline {
             if changed_route {
                 // Reset only route-dependent planning state. Preserve controller
                 // steering history so the normal steering-rate bound still applies.
-                let mut planner = LatticePlanner::default();
-                planner.cruise_speed = self.planner.cruise_speed;
-                planner.local_route_geometry = self.planner.local_route_geometry;
-                planner.point_reference_recovery = self.planner.point_reference_recovery;
-                planner.vehicle = self.planner.vehicle;
-                planner.max_acceleration_m_s2 = self.planner.max_acceleration_m_s2;
-                planner.max_deceleration_m_s2 = self.planner.max_deceleration_m_s2;
-                planner.max_lateral_acceleration_m_s2 = self.planner.max_lateral_acceleration_m_s2;
-                planner.speed_zones = change.alternate_speed_zones();
-                self.planner = planner;
+                self.planner.reset_route_state();
+                self.planner.speed_zones = change.alternate_speed_zones();
             }
         }
         let stop_route = self
@@ -1384,6 +1372,7 @@ impl DrivingPipeline {
                 .stop_signs
                 .as_ref()
                 .is_some_and(|s| s.holding_brake(&self.config.route, estimate))
+                || self.planner.holding_obstruction_stop()
                 || self
                     .intersections
                     .as_ref()

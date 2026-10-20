@@ -2,7 +2,18 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest [acquisition-origin motion error envelopes](forecast-envelope.md)
+The latest [obstruction stop settling](obstruction-stops.md) keeps the estimate
+at **about 29%**. All 48 enabled policy regressions pass in both plants, repairing
+the preceding blocked-road creep without changing forecasts or collision margins.
+Four permanent envelope-obstruction cases hold actual 0 m/s, and all eight
+enabled release/fault cases resume and reach their goals. Eight disabled
+comparisons retain their restart violations. All 56 current and 40 preceding
+recordings replay exactly; the complete required checks pass. Four preceding
+missions still miss their deadlines, native launch-heading failures remain, and
+the declared forecast budgets remain uncalibrated. This improves authored
+simulation stopping and recovery; the **30% waypoint remains unmet**.
+
+The preceding [acquisition-origin motion error envelopes](forecast-envelope.md)
 keep the estimate at **about 29%**. Nominal occupancy and a bounded-error
 constant-velocity alternative now reach the existing planning/yield/lane
 consumers. All forty fixed paired recordings pass exact replay and independent

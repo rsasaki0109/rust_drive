@@ -4,6 +4,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")/.."
 source scripts/env.sh
 python3 scripts/test_prediction_evidence.py
 python3 scripts/test_forecast_envelope.py
+python3 scripts/test_obstruction_stops.py
 python3 scripts/test_lane_occupancy.py
 python3 scripts/test_speed_zones.py
 python3 scripts/test_lane_speed_zones.py

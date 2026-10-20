@@ -131,6 +131,8 @@ pub struct Scenario {
     pub confirm_slow_motion: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub forecast_envelope: Option<rustdriving_core::ForecastEnvelopeConfig>,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub settle_obstruction_stops: bool,
     /// Evaluation recording only; omitted from the operational replay header.
     #[serde(default, skip_serializing_if = "is_false")]
     pub full_rate_recording: bool,
@@ -719,6 +721,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     config.relocalization = scenario.relocalization;
     config.confirm_slow_motion = scenario.confirm_slow_motion;
     config.forecast_envelope = scenario.forecast_envelope;
+    config.settle_obstruction_stops = scenario.settle_obstruction_stops;
     config.gnss_latency_compensation = scenario.gnss_latency_compensation;
     config.speed_zones = scenario.speed_zones.clone();
     if let Some(speed) = scenario.cruise_speed {
