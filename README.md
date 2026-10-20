@@ -4,6 +4,12 @@
 
 Current comparative engineering maturity is **about 29%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
+Optional [synchronous absolute heading](docs/absolute-heading.md) adds an acquired
+ENU body-heading input, full-covariance fusion and required-observation braking.
+Five viewed native heading failures pass with the additional declared sensor;
+four incomplete missions, a new forecast-coverage failure and biased-sensor
+controls remain recorded. The mode stays off by default; older no-heading
+recordings retain exact outputs.
 On straight routes, [yield duties can now survive a measured localization reset](docs/yield-relocalization.md),
 with retained entry ownership and new clear-scan confirmation before uncommitted entry.
 Optional [motion error envelopes](docs/forecast-envelope.md) preserve nominal

@@ -2,7 +2,18 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest [chassis passing continuity repair](road-width-planning.md#chassis-passing-continuity-follow-up)
+The latest [synchronous absolute-heading input](absolute-heading.md) keeps the
+estimate at **about 29%**. Explicit additional observations repair five viewed
+native heading failures; 12 offset-start goals, eight fault holds and four
+recovery goals pass. The final positive qualification is 52/56, retaining four
+incomplete missions. Full integration is 57/58 because reference mission seed 42
+adds a forecast-coverage failure. Both persistent biased-sensor controls remain
+failed, including native 0.609730 m clearance; covariance and hardware calibration
+remain assumptions. All 64 previous logs and four disabled native physical
+controls retain exact outputs. Original fixture/auditor failures remain recorded,
+and the mode stays off by default. The **30% waypoint remains unmet**.
+
+The preceding [chassis passing continuity repair](road-width-planning.md#chassis-passing-continuity-follow-up)
 keeps the estimate at **about 29%**. The same 64 input bytes now pass all 32 policy
 comparisons and all 18 narrow physical passes; the remaining native clearance
 failure improves from 0.845780 to 1.250174 m. Strict qualification is 23/32,

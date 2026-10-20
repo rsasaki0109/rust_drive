@@ -22,6 +22,7 @@ fn bounds() -> ForecastEnvelopeConfig {
 }
 fn frame(time: f64, stamp: f64) -> SensorFrame {
     SensorFrame {
+        absolute_heading: None,
         time,
         odometry: Some(Odometry {
             stamp: time,

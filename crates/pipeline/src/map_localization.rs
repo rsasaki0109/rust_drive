@@ -314,6 +314,7 @@ mod tests {
     }
     fn frame(time: f64, points: &[Vec2], initial_gnss: bool) -> SensorFrame {
         SensorFrame {
+            absolute_heading: None,
             time,
             odometry: Some(Odometry {
                 stamp: time,

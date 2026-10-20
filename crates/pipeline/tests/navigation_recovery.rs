@@ -31,6 +31,7 @@ fn update(stamp: f64, revision: u64, closed: &[&str]) -> NavigationUpdate {
 }
 fn frame(time: f64, navigation_update: Option<NavigationUpdate>) -> SensorFrame {
     SensorFrame {
+        absolute_heading: None,
         time,
         odometry: Some(Odometry {
             stamp: time,

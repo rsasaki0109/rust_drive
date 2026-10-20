@@ -23,6 +23,7 @@ fn raw_body_lidar_selects_a_fitted_pass_and_the_header_reproduces_it_exactly() {
     for i in 0..12 {
         let time = i as f64 * 0.05;
         let input = SensorFrame {
+            absolute_heading: None,
             time,
             odometry: Some(Odometry {
                 stamp: time,

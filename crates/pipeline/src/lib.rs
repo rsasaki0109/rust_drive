@@ -1,6 +1,7 @@
 //! Shared sensor-to-command stack. No simulator, truth objects or physical world types.
 mod gnss_recovery;
 mod ground;
+mod heading;
 use gnss_recovery::Recovery;
 pub use gnss_recovery::{GnssRecoveryConfig, GnssRecoveryDiagnostics, RecoveryPhase};
 pub mod lane_change;
@@ -85,6 +86,9 @@ pub struct PipelineConfig {
     /// Explicit bounded-proposal confirmation after an innovation brake hold.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub gnss_recovery: Option<GnssRecoveryConfig>,
+    /// Require synchronous externally measured ENU body heading.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub absolute_heading_fusion: bool,
     pub vehicle: VehicleConfig,
     pub nominal_dt: f64,
     pub cruise_speed: f64,
@@ -143,6 +147,7 @@ impl PipelineConfig {
             gnss_covariance_shape: None,
             gnss_antenna_offset_m: None,
             gnss_recovery: None,
+            absolute_heading_fusion: false,
             vehicle,
             nominal_dt: 0.05,
             cruise_speed: 8.0,
@@ -168,6 +173,11 @@ impl PipelineConfig {
         }
     }
     pub fn validate(&self) -> Result<(), String> {
+        if self.absolute_heading_fusion
+            && (self.gnss_latency_compensation || self.relocalization.is_some())
+        {
+            return Err("absolute heading currently requires synchronous localization without GNSS history or relocalization".into());
+        }
         if let Some(bounds) = self.forecast_envelope {
             bounds.validate()?;
         }
@@ -394,6 +404,8 @@ pub struct SensorFrame {
     pub time: f64,
     pub odometry: Option<Odometry>,
     pub gnss: Option<Gnss>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub absolute_heading: Option<AbsoluteHeading>,
     pub lidar: Option<LidarScan>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub multi_height_lidar: Option<MultiHeightLidarScan>,
@@ -410,6 +422,9 @@ pub struct SensorFrame {
 }
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum HealthIssue {
+    StaleAbsoluteHeading,
+    InvalidAbsoluteHeading,
+    HeadingInnovationHold,
     MissingOdometry,
     StaleOdometry,
     StaleLidar,
@@ -487,6 +502,8 @@ pub struct PipelineOutput {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub localization: Option<LocalizationDiagnostics>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub absolute_heading: Option<HeadingDiagnostics>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub gnss_latency: Option<GnssLatencyDiagnostics>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub gnss_recovery: Option<GnssRecoveryDiagnostics>,
@@ -540,6 +557,7 @@ pub struct DrivingPipeline {
     lidar_fault: Option<f64>,
     /// Latest malformed GNSS delivery epoch; only a fresh accepted fix clears it.
     gnss_fault: Option<f64>,
+    heading_monitor: heading::HeadingMonitor,
     /// Acquisition cutoff for the opt-in measured epoch, separate from faults.
     gnss_reset_cutoff: Option<f64>,
     rejected_gnss_streak: u8,
@@ -673,6 +691,7 @@ impl DrivingPipeline {
             last_lidar: None,
             lidar_fault: None,
             gnss_fault: None,
+            heading_monitor: heading::HeadingMonitor::default(),
             gnss_reset_cutoff: None,
             rejected_gnss_streak: 0,
             map_localization,
@@ -921,6 +940,13 @@ impl DrivingPipeline {
                 }
             }
         }
+        self.heading_monitor.observe(
+            &mut self.ekf,
+            input,
+            self.config.absolute_heading_fusion,
+            self.motion_discontinuity.is_none(),
+            &mut health,
+        );
         if uncovered_recovery_motion && let Some(recovery) = &mut self.gnss_recovery {
             recovery.expire();
         }
@@ -1441,10 +1467,15 @@ impl DrivingPipeline {
                 || self.config.gnss_covariance_shape.is_some()
                 || self.config.gnss_antenna_offset_m.is_some()
                 || self.config.gnss_recovery.is_some()
+                || self.config.absolute_heading_fusion
                 || self.config.relocalization.is_some())
             .then(|| self.ekf.pose_covariance()),
             ground,
             localization: Some(self.ekf.diagnostics()),
+            absolute_heading: self
+                .config
+                .absolute_heading_fusion
+                .then(|| self.ekf.heading_diagnostics()),
             gnss_recovery: self.gnss_recovery.as_ref().map(|r| r.diagnostics),
             motion_discontinuity: self.motion_discontinuity.clone(),
             localization_epoch: self.localization_epoch,
@@ -1589,6 +1620,7 @@ mod tests {
     }
     fn healthy(time: f64) -> SensorFrame {
         SensorFrame {
+            absolute_heading: None,
             time,
             odometry: Some(Odometry {
                 stamp: time,

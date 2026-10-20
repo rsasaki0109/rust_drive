@@ -37,6 +37,7 @@ fn run(intervening_empty_scans: bool) -> PipelineOutput {
                 })
             });
         let input = SensorFrame {
+            absolute_heading: None,
             time,
             odometry: Some(Odometry {
                 stamp: time,

@@ -6,6 +6,7 @@ python3 scripts/test_prediction_evidence.py
 python3 scripts/test_forecast_envelope.py
 python3 scripts/test_obstruction_stops.py
 python3 scripts/test_road_width.py
+python3 scripts/test_absolute_heading.py
 python3 scripts/test_lane_occupancy.py
 python3 scripts/test_speed_zones.py
 python3 scripts/test_lane_speed_zones.py

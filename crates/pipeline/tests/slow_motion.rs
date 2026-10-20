@@ -30,6 +30,7 @@ fn raw_delayed_slow_returns_predict_motion_using_original_acquisition_times() {
             }
         });
         let input = SensorFrame {
+            absolute_heading: None,
             time,
             odometry: Some(Odometry {
                 stamp: time,

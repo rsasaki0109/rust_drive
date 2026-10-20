@@ -15,7 +15,7 @@ the 200 ms budget and does not enter the driving dataflow.
 
 ```mermaid
 flowchart LR
-  W[Simulator world] --> S[Ray-cast LiDAR / noisy GNSS / wheel speed + gyro]
+  W[Simulator world] --> S[Ray-cast LiDAR / noisy GNSS / wheel speed + gyro / optional absolute heading]
   W --> AS[Simulator-only route proximity sensing]
   AS --> AC[Optional traffic following policy]
   AC --> W
@@ -52,7 +52,7 @@ flowchart LR
   A --> E
 ```
 
-Ground truth never flows into obstacle prediction or planning. The simulator initializes heading at a known spawn calibration, exposes the configured route, and synthesizes noisy measurements from the world. Separate evaluation observes truth to detect collisions, road violations, and localization error.
+Ground truth never flows into obstacle prediction or planning. The simulator initializes heading at a known spawn calibration, exposes the configured route, and synthesizes noisy measurements from the world. Optional absolute body-heading observations use a separately declared noisy sensor; its physical settings and fault schedule remain outside the driver. Separate evaluation observes truth to detect collisions, road violations, and localization error.
 
 The optional RNE `--scene` input installs upright yaw-rotated cuboids in native Rapier queries. By default, the existing 0.6 m horizontal LiDAR plane remains the sole operational scan. Two additional horizontal planes and 200 Hz native positions are recorded only in `scene.json`, outside the sensor-only replay contract. A post-run conservative vertical-capsule evaluator adds physical scene failures to acceptance; it cannot command the vehicle. An independent Python slab-ray and rectangle-edge oracle checks the evidence. Native ego motion remains planar, without contact forces or suspension. [Scene contract](native-scenes.md).
 
@@ -74,7 +74,7 @@ importer supports bounded motorcar node-via relations and rejects relevant
 unsupported semantics. Navigation and fixed-route mapped stop controls remain
 separate configurations. [Turn contract and evidence](turn-restrictions.md).
 
-Optional `local_route_geometry` uses bounded steering-radius corner fillets and a shorter pursuit preview for sparse external roads. Its internal planning arc differs from the original map arc; candidate containment and physical evaluation still use the supplied unchanged corridor. Impossible/overlapping fillets fail validation. Fixed signal/sign constraints truncate the original surveyed route before local fitting, preserving their endpoint; state admission and physical evaluation retain the original coordinates. Straight priority-zone routes also preserve their original surveyed arcs. Optional `rear_axle_offset_m` calibrates low-speed chassis odometry prediction and temporary planning/control course while retaining body yaw for sensors. The native dynamic local mode selects its declared rear-axle distance. Local side paths now use the existing standard road preview with wheelbase/lever-arm floors in both plants; local centerline turning retains the short preview. Point/rear-axle reference side paths also retain the original maneuver completion arc when reanchoring tracking error, with wheelbase and configured lateral-acceleration recovery bounds. Native chassis/course tracking retains its preceding joined prefix after rejected recovery probes. [Tracking failure and repair](initial-pose-covariance.md). [Reference contract and evidence](chassis-reference.md).
+Optional `local_route_geometry` uses bounded steering-radius corner fillets and a shorter pursuit preview for sparse external roads. Its internal planning arc differs from the original map arc; candidate containment and physical evaluation still use the supplied unchanged corridor. Impossible/overlapping fillets fail validation. Fixed signal/sign constraints truncate the original surveyed route before local fitting, preserving their endpoint; state admission and physical evaluation retain the original coordinates. Straight priority-zone routes also preserve their original surveyed arcs. Optional `rear_axle_offset_m` calibrates low-speed chassis odometry prediction and temporary planning/control course while retaining body yaw for sensors. The native dynamic local mode selects its declared rear-axle distance. Local side paths now use the existing standard road preview with wheelbase/lever-arm floors in both plants; local centerline turning retains the short preview. Point/rear-axle reference side paths also retain the original maneuver completion arc when reanchoring tracking error, with wheelbase and configured lateral-acceleration recovery bounds. Native chassis/course tracking retains its preceding joined prefix except for completed narrowed width-fitted side paths, whose passing intent and residual recovery are now preserved through temporary braking. [Tracking failure and repair](initial-pose-covariance.md). [Reference contract and evidence](chassis-reference.md).
 
 | Crate | Responsibility | Depends on |
 |---|---|---|
@@ -121,7 +121,15 @@ extend for a larger residual. Clear returns and side changes replace the intent;
 route resets clear it. All candidate feasibility checks remain mandatory.
 [Contract and fixed paired evaluation](road-width-planning.md).
 
-`DrivingPipeline::step(&SensorFrame)` owns EKF, perception/tracking, occupancy, predictor, planner and controller state. Input contains only a monotonic clock, optional timestamped odometry/GNSS/body-frame LiDAR, and explicit LiDAR acquisition failure. Output contains estimate, tracks, predictions, trajectory, command, health diagnostics and GNSS observed/accepted timestamp, decision, NIS and count diagnostics. It has no simulator object/pose inputs. Configuration supplies route, initial pose calibration, vehicle dimensions and optional calibrated forward/braking/lateral acceleration limits; this is a known-route demonstration.
+`DrivingPipeline::step(&SensorFrame)` owns EKF, perception/tracking, occupancy, predictor, planner and controller state. Input contains only a monotonic clock, optional timestamped odometry/GNSS/body-frame LiDAR/absolute ENU body heading, and explicit LiDAR acquisition failure. Output contains estimate, tracks, predictions, trajectory, command, health diagnostics and separate GNSS/heading observed/accepted timestamps, decisions, NIS and counts. It has no simulator object/pose inputs. Configuration supplies route, initial pose calibration, vehicle dimensions and optional calibrated forward/braking/lateral acceleration limits; this is a known-route demonstration.
+
+Optional `absolute_heading_fusion` requires current-acquisition body yaw and
+angular variance, with a wrapped one-dimensional NIS gate of 9 and full Joseph
+covariance correction. A required heading older than 0.35 s, invalid input or
+rejected innovation brakes; only a new accepted acquisition releases a fault.
+Heading never refreshes GNSS freshness or covers missing rigid motion. GNSS
+history compensation and measured relocalization are excluded until their
+histories retain heading events. [Contract and failed combinations](absolute-heading.md).
 
 Missing/stale odometry, LiDAR or GNSS, invalid samples, excessive covariance and acquisition failure select finite emergency braking. Healthy empty LiDAR is accepted; a failed acquisition brakes immediately. An invalid clock returns `Err`; callers must stop rather than reuse a command. The reference and RNE backends implement observation/advance boundaries and share the same independent evaluator. Runtime truth stays inside sensor synthesis and evaluation/rendering.
 

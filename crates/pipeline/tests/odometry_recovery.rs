@@ -22,6 +22,7 @@ fn config() -> PipelineConfig {
 }
 fn frame(time: f64, acquisition: Option<f64>) -> SensorFrame {
     SensorFrame {
+        absolute_heading: None,
         time,
         odometry: acquisition.map(|stamp| Odometry {
             stamp,

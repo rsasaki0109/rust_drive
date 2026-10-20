@@ -30,6 +30,7 @@ fn run(reversed: bool) -> PipelineOutput {
             _ => None,
         };
         let input = SensorFrame {
+            absolute_heading: None,
             time,
             odometry: Some(Odometry {
                 stamp: time,
@@ -106,6 +107,7 @@ fn crowded_measured_components_brake_without_partial_updates_and_recover_on_new_
     let mut initial_grid = None;
     for (time, stamp) in [(0., 0.), (0.1, 0.1), (0.15, 0.1), (0.2, 0.2)] {
         let input = SensorFrame {
+            absolute_heading: None,
             time,
             odometry: Some(Odometry {
                 stamp: time,

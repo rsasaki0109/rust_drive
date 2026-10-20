@@ -843,6 +843,12 @@ impl SimulationBackend for RneBackend {
             }
         }
         Ok(SensorFrame {
+            absolute_heading: self.scenario.heading_observation(
+                self.seed,
+                tick,
+                time,
+                self.state().pose.yaw,
+            ),
             navigation_update: None,
             traffic_signal: None,
             time,
@@ -1246,6 +1252,47 @@ mod tests {
         let rotation = Quat::from_rotation_y(std::f64::consts::FRAC_PI_2);
         assert!((yaw_rad(rotation) - std::f64::consts::FRAC_PI_2).abs() < 1e-10);
         assert!(from_rne(rotation * Vec3::X).y > 0.99);
+    }
+    #[test]
+    fn independent_absolute_heading_acquisition_replays_in_both_plants() {
+        let mut s = scenario("blocked");
+        s.duration = 1.;
+        s.full_rate_recording = true;
+        s.absolute_heading_fusion = true;
+        s.heading_sensor = Some(rustdriving_sim::heading::HeadingSensor {
+            period_ticks: 4,
+            variance_rad2: 1e-4,
+            dropout_windows: vec![],
+            bias_windows: vec![],
+        });
+        for r in [
+            rustdriving_sim::simulate(s.clone(), 7).unwrap(),
+            run(s.clone(), 7, Plant::Dynamic).unwrap(),
+        ] {
+            let log = r.sensor_log.as_ref().unwrap();
+            assert!(log.header.config.absolute_heading_fusion);
+            assert!(
+                serde_json::to_value(&log.header.config)
+                    .unwrap()
+                    .get("heading_sensor")
+                    .is_none()
+            );
+            assert_eq!(log.ticks.len(), r.frames.len());
+            for (i, (tick, frame)) in log.ticks.iter().zip(&r.frames).enumerate() {
+                let observed = tick.input.absolute_heading;
+                let expected = s.heading_observation(7, i, frame.time, frame.truth.pose.yaw);
+                assert_eq!(observed.map(|h| h.yaw_rad), expected.map(|h| h.yaw_rad));
+                assert!(tick.expected.absolute_heading.is_some());
+                assert!(tick.expected.pose_covariance.is_some());
+            }
+            let mut bytes = vec![];
+            log.write(&mut bytes).unwrap();
+            assert!(
+                rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), vec![])
+                    .unwrap()
+                    .verified
+            );
+        }
     }
     #[test]
     fn native_and_reference_use_identical_keyed_gnss_noise_without_truth_calibration() {

@@ -15,6 +15,7 @@ fn recorded_log() -> SensorLog {
     for i in 0..6 {
         let time = i as f64 * 0.05;
         let input = SensorFrame {
+            absolute_heading: None,
             time,
             odometry: Some(Odometry {
                 stamp: time,
@@ -312,6 +313,7 @@ fn navigation_log() -> SensorLog {
     for i in 0..8 {
         let time = i as f64 * 0.05;
         let mut input = SensorFrame {
+            absolute_heading: None,
             time,
             odometry: Some(Odometry {
                 stamp: time,

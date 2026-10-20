@@ -43,6 +43,7 @@ fn measured(column: usize, ring: usize, range: f64) -> Lidar3dReturn {
 }
 fn frame(time: f64) -> SensorFrame {
     SensorFrame {
+        absolute_heading: None,
         time,
         odometry: Some(Odometry {
             stamp: time,

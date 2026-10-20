@@ -121,6 +121,43 @@ pub struct Gnss {
     pub position: Vec2,
     pub variance: f64,
 }
+/// Acquired body heading in world ENU: radians counterclockwise from +x.
+/// The adapter must supply its mounting/north correction and angular variance.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct AbsoluteHeading {
+    pub stamp: f64,
+    pub yaw_rad: f64,
+    pub variance_rad2: f64,
+}
+impl AbsoluteHeading {
+    pub fn valid(self) -> bool {
+        self.stamp.is_finite()
+            && self.stamp >= 0.
+            && self.yaw_rad.is_finite()
+            && (-PI..=PI).contains(&self.yaw_rad)
+            && self.variance_rad2.is_finite()
+            && self.variance_rad2 > 0.
+            && self.variance_rad2 <= PI.powi(2)
+    }
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum HeadingDecision {
+    Accepted,
+    RejectedInnovation,
+    Invalid,
+    IgnoredTimestamp,
+}
+#[derive(Clone, Copy, Debug, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct HeadingDiagnostics {
+    pub last_observed_stamp: Option<f64>,
+    pub last_accepted_stamp: Option<f64>,
+    pub last_decision: Option<HeadingDecision>,
+    pub last_nis: Option<f64>,
+    pub accepted_samples: u64,
+    pub rejected_samples: u64,
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum GnssDecision {
     Accepted,

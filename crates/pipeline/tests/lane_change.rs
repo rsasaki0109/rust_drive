@@ -43,6 +43,7 @@ fn config() -> PipelineConfig {
 }
 fn frame(time: f64) -> SensorFrame {
     SensorFrame {
+        absolute_heading: None,
         time,
         odometry: Some(Odometry {
             stamp: time,

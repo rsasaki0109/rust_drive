@@ -15,6 +15,7 @@ fn input(i: usize) -> SensorFrame {
     let time = i as f64 * 0.05;
     let failed = (10..13).contains(&i);
     SensorFrame {
+        absolute_heading: None,
         time,
         odometry: Some(Odometry {
             stamp: time,

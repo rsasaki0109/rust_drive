@@ -1,6 +1,7 @@
 //! Three-state EKF: wheel speed / gyro prediction and scalar GNSS updates.
 mod gnss_antenna;
 mod gnss_shape;
+mod heading;
 pub mod keyframes3d;
 pub mod latency;
 pub use gnss_antenna::validate_gnss_antenna_offset;
@@ -26,6 +27,7 @@ pub struct Ekf {
     diagnostics: LocalizationDiagnostics,
     gnss_covariance_shape: Option<[[f64; 2]; 2]>,
     gnss_antenna_offset_m: Option<Vec2>,
+    heading_diagnostics: rustdriving_core::HeadingDiagnostics,
 }
 impl Ekf {
     /// Initial heading comes from the configured spawn calibration, not live simulator truth.
@@ -37,6 +39,7 @@ impl Ekf {
             diagnostics: LocalizationDiagnostics::default(),
             gnss_covariance_shape: None,
             gnss_antenna_offset_m: None,
+            heading_diagnostics: rustdriving_core::HeadingDiagnostics::default(),
         }
     }
     /// Initial x/y/yaw covariance in world ENU (m², m·rad, rad²).

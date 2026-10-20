@@ -195,6 +195,7 @@ mod tests {
     fn frame(tick: usize) -> SensorFrame {
         let stamp = tick as f64 * 0.05;
         SensorFrame {
+            absolute_heading: None,
             time: stamp,
             odometry: None,
             gnss: None,

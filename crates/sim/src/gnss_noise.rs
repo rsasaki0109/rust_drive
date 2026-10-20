@@ -2,7 +2,7 @@
 use crate::Scenario;
 use rustdriving_core::Vec2;
 
-fn uniform(seed: u64, tick: usize, channel: u64) -> f64 {
+pub(crate) fn uniform(seed: u64, tick: usize, channel: u64) -> f64 {
     // Counter-based SplitMix64 mixing: no shared mutable sensor RNG stream.
     let mut bits = seed
         .wrapping_add((tick as u64).wrapping_mul(0x9e3779b97f4a7c15))

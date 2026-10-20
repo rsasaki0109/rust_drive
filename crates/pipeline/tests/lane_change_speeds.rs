@@ -115,6 +115,7 @@ fn admission_prefix_and_release_replay_the_same_full_route_speed_policy() {
     for i in 0..=28 {
         let time = i as f64 * 0.05;
         let input = SensorFrame {
+            absolute_heading: None,
             time,
             odometry: Some(Odometry {
                 stamp: time,

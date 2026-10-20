@@ -9,6 +9,12 @@ passes all 32 viewed policy comparisons and all 18 physical passes. Five native
 heading failures and four inherited incomplete missions keep strict qualification
 at 23/32 and default adoption blocked; M1 remains in progress.
 
+Optional [synchronous absolute heading](absolute-heading.md) now adds a calibrated
+observation contract, full-covariance fusion and loss/rejection braking. The
+additional sensor repairs five viewed heading failures, while biased-heading
+controls and one new forecast-coverage regression remain failed. Measured sensor
+calibration and delayed/reset composition remain open; the mode stays off.
+
 ## M0 — Executable Rust baseline (implemented)
 
 - Cargo workspace with independent algorithm crates and no mandatory ROS.

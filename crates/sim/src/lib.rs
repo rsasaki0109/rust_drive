@@ -1,5 +1,6 @@
 //! Deterministic closed-loop simulator. Only sensor observations enter the stack.
 mod gnss_noise;
+pub mod heading;
 pub mod intersections;
 mod lane_change_surface;
 pub mod sensor_timing;
@@ -124,6 +125,11 @@ pub struct Scenario {
     /// External recovery policy calibration; distinct from simulated faults.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub gnss_recovery: Option<rustdriving_pipeline::GnssRecoveryConfig>,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub absolute_heading_fusion: bool,
+    /// Simulator-only acquisition/noise/fault settings; never a driver input.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub heading_sensor: Option<heading::HeadingSensor>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub relocalization: Option<rustdriving_pipeline::RelocalizationConfig>,
     /// Explicit experimental forecast policy, independent of actor identities.
@@ -248,6 +254,9 @@ impl Scenario {
         signals::validate(self)?;
         let c = pipeline_config(self);
         c.validate()?;
+        if let Some(sensor) = &self.heading_sensor {
+            sensor.validate(self.duration)?;
+        }
         if let Some(mount) = self.gnss_antenna_mount_m {
             let mut physical = c.clone();
             physical.gnss_antenna_offset_m = Some(mount);
@@ -694,6 +703,12 @@ impl SimulationBackend for ReferenceBackend {
                 None
             };
         Ok(SensorFrame {
+            absolute_heading: self.scenario.heading_observation(
+                self.seed,
+                tick,
+                time,
+                self.truth.pose.yaw,
+            ),
             time,
             odometry,
             gnss,
@@ -720,6 +735,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     config.gnss_covariance_shape = scenario.gnss_covariance_shape;
     config.gnss_antenna_offset_m = scenario.gnss_antenna_offset_m;
     config.gnss_recovery = scenario.gnss_recovery;
+    config.absolute_heading_fusion = scenario.absolute_heading_fusion;
     config.relocalization = scenario.relocalization;
     config.confirm_slow_motion = scenario.confirm_slow_motion;
     config.forecast_envelope = scenario.forecast_envelope;

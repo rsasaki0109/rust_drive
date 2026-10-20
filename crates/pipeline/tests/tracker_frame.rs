@@ -18,6 +18,7 @@ fn frame(time: f64, stamp: f64, biased: bool, moving: bool) -> SensorFrame {
         3. + if moving { 0.3 * stamp } else { 0. },
     );
     SensorFrame {
+        absolute_heading: None,
         time,
         odometry: Some(Odometry {
             stamp: time,
