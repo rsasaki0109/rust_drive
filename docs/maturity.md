@@ -2,7 +2,18 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest [yield entry ownership through measured reset](yield-relocalization.md)
+The latest [acquisition-origin motion error envelopes](forecast-envelope.md)
+keep the estimate at **about 29%**. Nominal occupancy and a bounded-error
+constant-velocity alternative now reach the existing planning/yield/lane
+consumers. All forty fixed paired recordings pass exact replay and independent
+forecast arithmetic. The illustrative budgets fail complete physical coverage
+and adoption: four experimental missions miss their unchanged deadline and one
+blocked-road outcome fails, while existing native launch-heading failures remain.
+The policy stays off by default. Conditional error propagation is implemented;
+calibrated automotive uncertainty, independent sensing and vehicle operation
+remain open. The **30% waypoint remains unmet**.
+
+The preceding [yield entry ownership through measured reset](yield-relocalization.md)
 keeps the estimate at **about 29%**. All 32 current authored inputs pass in both
 plants: twenty recovered goals, four healthy goals and eight negative holds.
 Owned entries remain owned beyond their line; uncommitted entries require new

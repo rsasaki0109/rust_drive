@@ -25,7 +25,8 @@
 | Unlabeled LiDAR and occlusion | Implemented / tested | 720 rays, 45 m range, circular targets and opt-in native cuboids |
 | Clustering / circle fitting / alpha-beta tracking | Implemented / tested | No semantic classes; nearest-neighbor association |
 | Acquisition-time LiDAR reprojection | Implemented / tested | At most 0.35 s / 64 EKF estimates; world detections and map rays use historical pose; LiDAR history excludes absolute-correction increments; separate optional GNSS fixed-lag fusion is available, with no delayed odometry or point deskew |
-| Current-time motion forecasts | Implemented / tested | Acquired tracks retain stamps; CV / observed braking advances to the control clock, consuming acquisition age from the one-second braking budget; unchanged low-speed deadband, no uncertainty growth or actor intent |
+| Current-time motion forecasts | Implemented / tested | Acquired tracks retain stamps; CV / observed braking advances to the control clock, consuming acquisition age from the one-second braking budget; default low-speed deadband retained, no actor intent |
+| Declared motion error envelopes | Implemented / opt-in; calibration and adoption incomplete | Acquisition-origin position/velocity/acceleration budgets, retained nominal occupancy and CV alternative; smallest enclosing discs feed existing planning/yield/lane consumers. No calibrated covariance or coverage beyond the eight-second horizon; [paired physical and coverage results](forecast-envelope.md) |
 | Simulator sensor timing / explicit transient failure | Implemented / tested | LiDAR thinning/queued failure recovery and independent immutable GNSS delivery delay; simulated time, no resource-latency benchmark |
 | Log-odds occupancy map | Implemented / tested | Exported diagnostic; not a planner input; no SLAM |
 | Static obstacle avoidance | Implemented / tested | Wide supplied road, three candidate offsets |

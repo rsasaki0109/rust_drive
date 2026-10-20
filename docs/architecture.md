@@ -243,6 +243,20 @@ discounts center motion. [Admission correction and limits](lane-occupancy-headwa
 is not a calibrated uncertainty bound. The default predictor retains its
 established deadband. [Method, comparison and limits](slow-occupancy.md).
 
+Optional `forecast_envelope` retains that nominal occupied disc and a
+constant-velocity alternative with extra radius `position_error_m + u *
+velocity_error_m_s + u² * acceleration_error_m_s2 / 2`, where `u` includes
+acquisition age and future time. Each knot uses the smallest enclosing disc of
+both alternatives; interpolation retains conditional coverage within the
+eight-second horizon. The operation precedes the current tracking-to-world
+transform and uses the existing additional-radius consumers. Caller-supplied
+budgets do not estimate covariance, association or ego-pose uncertainty. The
+existing endpoint hold does not extend the coverage claim beyond eight seconds.
+The policy is off by default pending physical coverage and liveness acceptance.
+An evaluation-only scenario flag, `full_rate_recording`, retains every 20 Hz
+physical frame without entering the driver header or changing sensor/command
+bytes. [Contract, paired comparison and limitations](forecast-envelope.md).
+
 **Planning.** The supplied polyline route is parameterized by arc length. Lateral targets are `0`, `+3.5`, and `−3.5` m, filtered by road width and the ego circular footprint. An anchored quintic shift preserves maneuver progress across replans; a fading position/tangent correction joins it from the current estimated position and heading when actual steering lags. The planner penalizes sign changes and avoids jumping to the opposite side once the vehicle is displaced. A small center-return penalty retains an unfinished lateral shift while an observed obstacle still spans the centerline ahead within the horizon. It expires when the anchored shift completes, or when the object is behind the circular footprints or clear of the centerline, and never bypasses candidate feasibility checks. [Policy and measured regression](avoidance-continuity.md). The planner interpolates supplied route knots with quintic Hermite centerline segments sharing position and first/second derivatives, and applies continuous normal offsets. The supplied polyline corridor remains unchanged; generated samples are checked against it. Each candidate starts with 81 geometric samples over up to 40 m. Circular collision envelopes are swept continuously along their connecting segments against linearly interpolated predictions, splitting at every intervening prediction knot. Prediction endpoints remain occupied after the forecast horizon. Malformed forecasts return an emergency trajectory.
 
 Each geometry receives an arc-length speed profile: local circumcircle curvature caps, backward propagation with 20% nominal braking headroom and unchanged hard braking authority, and forward calibrated-acceleration propagation from the measured speed. Cruise overspeed is recovered with bounded deceleration rather than an instantaneous clamp. Arrival times integrate constant acceleration with `dt = 2 * distance / (v0 + v1)`; there is no 3 m/s timing floor. Goal and obstruction stops end at zero speed and include an eight-second stationary hold. A blocked profile is shortened by the existing 4 m contact-distance buffer, retimed, and swept again. Unsafe retiming or an unreachable hard bound rejects that candidate; no remaining candidate produces an empty emergency trajectory. Once stopped at a blocked destination, the vehicle holds until a candidate clears. Goal stopping uses the actual candidate arc length to reach the generated terminal position, including lateral motion, rather than truncating it by route progress. The desired goal remains one meter before the endpoint; an estimate that passes it while moving gets a monotonic reachable stop within the remaining corridor, with the endpoint retained as a hard boundary.

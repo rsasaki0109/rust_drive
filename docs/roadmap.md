@@ -109,7 +109,7 @@ automotive sensing, measured uncertainty or the 30% waypoint.
 
 Remaining:
 
-- Covariance/forecast uncertainty propagation, delayed odometry and general multi-sensor correction-event replay, per-point LiDAR deskew and trace migrations. Bounded acquisition-time LiDAR reprojection and current-time motion extrapolation are narrower implemented steps, not complete delayed-sensor fusion.
+- Calibrated covariance/forecast uncertainty propagation, delayed odometry and general multi-sensor correction-event replay, per-point LiDAR deskew and trace migrations. Optional [declared motion error envelopes](forecast-envelope.md) propagate acquisition-origin error budgets and preserve a CV alternative, with physical coverage/liveness adoption gates still open. Bounded acquisition-time LiDAR reprojection and current-time motion extrapolation do not complete delayed-sensor fusion.
 - Continuous moving-route handover and automatic live-position map matching, general external map/lane import, variable-width/lane topology, general turn rules, live speed-limit remapping and A* for larger maps. Explicit directed interior-edge origin/destination routing, bounded OSM road-graph import and fixed-route speed intervals are implemented. [Partial-route evidence and retained heading failure](mid-edge-routing.md).
 - Continuous lateral offsets and controller-feasibility validation.
 - Oriented-body planning, measured vehicle/actuator calibration, combined longitudinal/lateral friction feasibility and optimized speed profiles. An authored rectangular evaluation body and conservative planar envelope are implemented.

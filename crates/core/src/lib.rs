@@ -157,6 +157,29 @@ pub struct Track {
     pub radius: f64,
     pub last_seen: f64,
 }
+/// Declared Euclidean error budgets for acquisition-origin motion forecasts.
+/// These are supplied assumptions, not estimated covariance or confidence levels.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct ForecastEnvelopeConfig {
+    pub position_error_m: f64,
+    pub velocity_error_m_s: f64,
+    pub acceleration_error_m_s2: f64,
+}
+impl ForecastEnvelopeConfig {
+    pub fn validate(&self) -> Result<(), String> {
+        if !self.position_error_m.is_finite()
+            || !(0.0..=20.0).contains(&self.position_error_m)
+            || !self.velocity_error_m_s.is_finite()
+            || !(0.0..=15.0).contains(&self.velocity_error_m_s)
+            || !self.acceleration_error_m_s2.is_finite()
+            || !(0.0..=6.0).contains(&self.acceleration_error_m_s2)
+        {
+            return Err("forecast envelope requires finite nonnegative position / velocity / acceleration error budgets bounded by 20 m / 15 m/s / 6 m/s²".into());
+        }
+        Ok(())
+    }
+}
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Prediction {

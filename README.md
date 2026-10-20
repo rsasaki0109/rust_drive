@@ -6,6 +6,11 @@ Current comparative engineering maturity is **about 29%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
 On straight routes, [yield duties can now survive a measured localization reset](docs/yield-relocalization.md),
 with retained entry ownership and new clear-scan confirmation before uncommitted entry.
+Optional [motion error envelopes](docs/forecast-envelope.md) preserve nominal
+forecasts and constant-velocity continuation with acquisition-origin error growth.
+Their declared budgets require calibration; the experimental policy is off by default.
+All forty paired recordings replay exactly; four experimental missions miss
+their original deadlines, so the new policy does not qualify default adoption.
 [Acquisition-time GNSS fusion](docs/gnss-latency.md) now reduces delayed-fix
 errors in both reference and native RNE driving, with bounded history,
 fault-stop recovery and independent covariance reconstruction.
@@ -741,7 +746,7 @@ cargo run --release --locked --bin rustdriving -- run \
 
 Known map conflict rectangles now constrain ego's fixed route when LiDAR-derived predictions enter the priority crossing. Fresh healthy sensing and a continuous clear interval release the constraint; predicted traffic may block entry even before it physically reaches the junction. The existing collision planner remains active after release. This is basic mapped yielding, with no arrival-order negotiation, traffic-light recognition or priority decisions by other actors. [Run, physical acceptance, GIF provenance and limitations](docs/intersections.md).
 
-Delayed body-frame LiDAR now uses its acquisition-time EKF pose for detections and occupancy rays. Bounded history accepts covered scans up to 0.35 s old; the yield permission age remains 0.15 s. Motion forecasts now separately propagate acquired tracks to the current control time; the one-second observed-braking interval remains anchored at acquisition. Full delayed-sensor fusion and uncertainty propagation remain unimplemented. [Timing configuration and replay](docs/sensor-replay.md#bounded-acquisition-time-lidar-reprojection).
+Delayed body-frame LiDAR now uses its acquisition-time EKF pose for detections and occupancy rays. Bounded history accepts covered scans up to 0.35 s old; the yield permission age remains 0.15 s. Motion forecasts now separately propagate acquired tracks to the current control time; the one-second observed-braking interval remains anchored at acquisition. Optional [declared motion error envelopes](docs/forecast-envelope.md) propagate acquisition-age position/velocity/acceleration budgets; calibrated uncertainty and full delayed-sensor fusion remain open. [Timing configuration and replay](docs/sensor-replay.md#bounded-acquisition-time-lidar-reprojection).
 
 ```sh
 cargo run --release --locked --bin rustdriving -- run \

@@ -129,6 +129,11 @@ pub struct Scenario {
     /// Explicit experimental forecast policy, independent of actor identities.
     #[serde(default, skip_serializing_if = "is_false")]
     pub confirm_slow_motion: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub forecast_envelope: Option<rustdriving_core::ForecastEnvelopeConfig>,
+    /// Evaluation recording only; omitted from the operational replay header.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub full_rate_recording: bool,
     #[serde(default, skip_serializing_if = "is_false")]
     pub gnss_latency_compensation: bool,
     #[serde(default, skip_serializing_if = "is_false")]
@@ -713,6 +718,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     config.gnss_recovery = scenario.gnss_recovery;
     config.relocalization = scenario.relocalization;
     config.confirm_slow_motion = scenario.confirm_slow_motion;
+    config.forecast_envelope = scenario.forecast_envelope;
     config.gnss_latency_compensation = scenario.gnss_latency_compensation;
     config.speed_zones = scenario.speed_zones.clone();
     if let Some(speed) = scenario.cruise_speed {
@@ -1048,7 +1054,8 @@ pub fn simulate_with_backend(
                 traffic_road_violations += 1;
             }
         }
-        if !scenario.speed_zones.is_empty()
+        if scenario.full_rate_recording
+            || !scenario.speed_zones.is_empty()
             || scenario.gnss_latency_compensation
             || scenario.sensor_timing.as_ref().is_some_and(|timing| {
                 timing.gnss_delay_ticks > 0

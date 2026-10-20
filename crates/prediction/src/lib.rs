@@ -1,6 +1,7 @@
 //! Motion forecasts from tracked observations; no simulator behavior or intentions.
+mod envelope;
 mod slow_motion;
-use rustdriving_core::{Prediction, Predictor, Track};
+use rustdriving_core::{ForecastEnvelopeConfig, Prediction, Predictor, Track};
 use std::collections::{BTreeMap, VecDeque};
 
 /// Optionally confirms slow motion and uses measured braking for at most one second.
@@ -10,6 +11,7 @@ pub struct ObservedBraking {
     baseline: ConstantVelocity,
     history: BTreeMap<u64, VecDeque<Track>>,
     confirm_slow_motion: bool,
+    envelope: Option<ForecastEnvelopeConfig>,
 }
 impl ObservedBraking {
     /// Experimental persistent low-speed motion. Default retains the established
@@ -19,6 +21,14 @@ impl ObservedBraking {
             confirm_slow_motion: true,
             ..Self::default()
         }
+    }
+    /// Retain nominal occupancy and a constant-velocity alternative with declared
+    /// acquisition-origin error growth. Coverage is conditional on these budgets
+    /// and ends at the last forecast knot; endpoint hold is unchanged.
+    pub fn with_envelope(mut self, config: ForecastEnvelopeConfig) -> Result<Self, String> {
+        config.validate()?;
+        self.envelope = Some(config);
+        Ok(self)
     }
     /// Produces samples starting at `time`, extrapolated from each observation's
     /// acquisition timestamp. The braking hypothesis also starts at acquisition;
@@ -188,6 +198,11 @@ impl ObservedBraking {
                     history.clear();
                     prediction.positions.clear();
                 }
+            }
+        }
+        if let Some(bounds) = self.envelope {
+            for (track, prediction) in tracks.iter().zip(&mut predictions) {
+                envelope::cover(bounds, track, time, prediction);
             }
         }
         predictions

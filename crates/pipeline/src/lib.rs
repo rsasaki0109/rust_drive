@@ -94,6 +94,9 @@ pub struct PipelineConfig {
     /// Experimental history-confirmed slow-object forecasts; default off.
     #[serde(default, skip_serializing_if = "is_false")]
     pub confirm_slow_motion: bool,
+    /// Optional declared motion-error budgets; does not estimate uncertainty.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub forecast_envelope: Option<ForecastEnvelopeConfig>,
     /// Opt-in bounded acquisition-time GNSS correction and odometry replay.
     #[serde(default, skip_serializing_if = "is_false")]
     pub gnss_latency_compensation: bool,
@@ -140,6 +143,7 @@ impl PipelineConfig {
             cruise_speed: 8.0,
             speed_zones: vec![],
             confirm_slow_motion: false,
+            forecast_envelope: None,
             gnss_latency_compensation: false,
             local_route_geometry: false,
             rear_axle_offset_m: None,
@@ -157,6 +161,9 @@ impl PipelineConfig {
         }
     }
     pub fn validate(&self) -> Result<(), String> {
+        if let Some(bounds) = self.forecast_envelope {
+            bounds.validate()?;
+        }
         if let Some(policy) = self.relocalization {
             policy.validate()?;
             if policy.preserve_navigation && self.navigation.is_none() {
@@ -616,6 +623,11 @@ impl DrivingPipeline {
             ObservedBraking::with_slow_motion()
         } else {
             ObservedBraking::default()
+        };
+        let predictor = if let Some(bounds) = config.forecast_envelope {
+            predictor.with_envelope(bounds)?
+        } else {
+            predictor
         };
         let tracking_frame = tracking_frame::TrackingFrame::new(config.initial_pose);
         let map_localization = config.localization_map.clone().map(MapLocalization::new);

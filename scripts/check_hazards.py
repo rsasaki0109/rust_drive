@@ -1123,9 +1123,14 @@ def check_motion_predictions(log):
     slow_forecasts = unconfirmed_slow_forecasts = uncertain_slow_forecasts = 0
     max_deceleration = max_epoch_age = 0.0
     intermediate_braking_vetoes = 0
+    enveloped_forecasts = 0
     with log.open() as stream:
         config = json.loads(next(stream))['header']['config']
         confirm_slow_motion = config.get('confirm_slow_motion', False)
+        envelope = config.get('forecast_envelope')
+        if envelope is not None:
+            from forecast_envelope import audit_envelope, validate
+            validate(envelope)
         for line in stream:
             record = json.loads(line)
             if record.get('kind') != 'tick':
@@ -1172,7 +1177,7 @@ def check_motion_predictions(log):
                 uncertain = confirm_slow_motion and not moving and speed >= .1
                 uncertain_slow_forecasts += int(uncertain)
                 expected_radii = [speed*(age+i*dt)/2 for i in range(41)] if uncertain else []
-                if len(radii) != len(expected_radii) or any(abs(a-b) > 1e-8 for a, b in zip(radii, expected_radii)):
+                if envelope is None and (len(radii) != len(expected_radii) or any(abs(a-b) > 1e-8 for a, b in zip(radii, expected_radii))):
                     raise ValueError('occupied radii do not cover the required stopping/continuation envelope')
                 slow_forecasts += int(slow)
                 unconfirmed_slow_forecasts += int(speed < .7 and not slow)
@@ -1225,12 +1230,15 @@ def check_motion_predictions(log):
                     return speed*q-.5*braking*q*q+max(0.0, speed-braking*q)*(elapsed-q)
                 expected = [(origin[0]+direction[0]*displacement(age+i*dt),
                              origin[1]+direction[1]*displacement(age+i*dt)) for i in range(41)]
-                if any(not all(math.isfinite(v) for v in p) or math.dist(p, e) > 1e-8
-                       for p, e in zip(positions, expected)):
+                if envelope is not None:
+                    audit_envelope(envelope, track, now, forecast, expected, expected_radii)
+                    enveloped_forecasts += 1
+                elif any(not all(math.isfinite(v) for v in p) or math.dist(p, e) > 1e-8
+                         for p, e in zip(positions, expected)):
                     raise ValueError('forecast differs from acquisition-anchored motion at the current epoch')
                 if braking is None:
                     continue
-                means = [math.dist(a, b)/dt for a, b in zip(positions, positions[1:])]
+                means = [math.dist(a, b)/dt for a, b in zip(expected, expected[1:])]
                 for a, b in zip(means, means[1:]):
                     deceleration = (a-b)/dt
                     if not -1e-8 <= deceleration <= 2.0+1e-8:
@@ -1246,7 +1254,8 @@ def check_motion_predictions(log):
             'intermediate_braking_vetoes': intermediate_braking_vetoes,
             'max_forecast_deceleration_m_s2': max_deceleration,
             'aged_forecasts': aged_forecasts, 'rebased_moving_forecasts': rebased_moving_forecasts,
-            'max_epoch_age_s': max_epoch_age, 'current_epoch_reconstruction_verified': True}
+            'max_epoch_age_s': max_epoch_age, 'current_epoch_reconstruction_verified': True,
+            **({'enveloped_forecasts': enveloped_forecasts} if envelope is not None else {})}
 
 
 def control_metrics(log):

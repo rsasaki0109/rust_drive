@@ -26,6 +26,8 @@ jobs:
           python-version: '3.12'
       - name: Check adversarial prediction evidence
         run: python scripts/test_prediction_evidence.py
+      - name: Check declared forecast envelope containment and failure scoring
+        run: python scripts/test_forecast_envelope.py
       - name: Check contained lane-conflict witnesses
         run: python scripts/test_lane_occupancy.py
       - name: Check swept physical speed intervals
