@@ -4,6 +4,11 @@
 
 Current comparative engineering maturity is **about 29%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
+Optional [earlier obstruction-stop search](docs/stop-search.md) now retains a
+checked stopping position across replans. All 40 fixed comparisons pass; eight
+mission conditions reduce emergency steps from 355 to 3 while retaining standstill.
+Overall qualification is 20/40: original goal, forecast-coverage and heading
+failures remain scored, and the option stays off by default.
 Optional [synchronous absolute heading](docs/absolute-heading.md) adds an acquired
 ENU body-heading input, full-covariance fusion and required-observation braking.
 Five viewed native heading failures pass with the additional declared sensor;

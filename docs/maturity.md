@@ -2,7 +2,19 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest [synchronous absolute-heading input](absolute-heading.md) keeps the
+The latest [earlier obstruction-stop search](stop-search.md) keeps the estimate
+at **about 29%**. All 40 fixed comparisons pass without new failed gates. Eight
+mission conditions reduce emergency steps from 355 to 3 (99.2%) and retain actual
+standstill without positive commands after 20 seconds. Original source acceptance
+is 32/40 and strict qualification is 20/40: eight configured mission runs still
+miss 65 seconds, 17 cases fail forecast coverage and three retain heading error.
+The first failed search and two premature-stop regressions remain recorded;
+the latter are repaired under the original progress requirement. All 134 previous
+logs and four disabled native physical controls retain exact outputs. This is a
+bounded planning improvement within authored simulation. Independent automotive
+uncertainty and mission availability remain open; the **30% waypoint is unmet**.
+
+The preceding [synchronous absolute-heading input](absolute-heading.md) keeps the
 estimate at **about 29%**. Explicit additional observations repair five viewed
 native heading failures; 12 offset-start goals, eight fault holds and four
 recovery goals pass. The final positive qualification is 52/56, retaining four

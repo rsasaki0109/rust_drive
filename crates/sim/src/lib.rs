@@ -139,6 +139,8 @@ pub struct Scenario {
     pub forecast_envelope: Option<rustdriving_core::ForecastEnvelopeConfig>,
     #[serde(default, skip_serializing_if = "is_false")]
     pub settle_obstruction_stops: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub search_obstruction_stops: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub lateral_candidate_margin_m: Option<f64>,
     /// Evaluation recording only; omitted from the operational replay header.
@@ -740,6 +742,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     config.confirm_slow_motion = scenario.confirm_slow_motion;
     config.forecast_envelope = scenario.forecast_envelope;
     config.settle_obstruction_stops = scenario.settle_obstruction_stops;
+    config.search_obstruction_stops = scenario.search_obstruction_stops;
     config.lateral_candidate_margin_m = scenario.lateral_candidate_margin_m;
     config.gnss_latency_compensation = scenario.gnss_latency_compensation;
     config.speed_zones = scenario.speed_zones.clone();

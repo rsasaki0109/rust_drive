@@ -32,6 +32,8 @@ jobs:
         run: python scripts/test_obstruction_stops.py
       - name: Check road-width candidates and independent circular road containment
         run: python scripts/test_road_width.py
+      - name: Check certified earlier stops and retained goal/coverage failures
+        run: python scripts/test_stop_search.py
       - name: Check absolute heading covariance and frozen acquisition protocol
         run: python scripts/test_absolute_heading.py
       - name: Check contained lane-conflict witnesses

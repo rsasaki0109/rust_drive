@@ -4,6 +4,7 @@ mod corners;
 mod geometry;
 mod speed;
 mod speed_zones;
+mod stopping;
 use rustdriving_core::{
     DrivingMode, EgoState, Planner, Prediction, Route, Trajectory, VehicleConfig,
 };
@@ -23,6 +24,9 @@ pub struct LatticePlanner {
     /// After collision-induced emergency braking, retain a feasible immediate
     /// stop until a complete unblocked candidate clears the ordinary sweep.
     pub settle_obstruction_stops: bool,
+    /// Search earlier reachable stops after the ordinary retimed stop fails its
+    /// complete collision sweep. Requires obstruction-stop retention.
+    pub search_obstruction_stops: bool,
     /// Optional additional road-edge reserve for width-fitted side candidates.
     /// None preserves the original fixed +/-3.5 m offsets.
     pub lateral_candidate_margin_m: Option<f64>,
@@ -39,6 +43,14 @@ pub struct LatticePlanner {
     terminal_side_reserved: bool,
     obstruction_stop_requested: bool,
     obstruction_stop_active: bool,
+    searched_stop_s: Option<f64>,
+}
+struct Selection {
+    cost: (bool, bool, f64),
+    trajectory: Trajectory,
+    blocked: bool,
+    searched: bool,
+    stop_s: Option<f64>,
 }
 impl Default for LatticePlanner {
     fn default() -> Self {
@@ -49,6 +61,7 @@ impl Default for LatticePlanner {
             point_reference_recovery: false,
             terminal_settling: true,
             settle_obstruction_stops: false,
+            search_obstruction_stops: false,
             lateral_candidate_margin_m: None,
             vehicle: VehicleConfig::default(),
             max_acceleration_m_s2: 2.0,
@@ -60,6 +73,7 @@ impl Default for LatticePlanner {
             terminal_side_reserved: false,
             obstruction_stop_requested: false,
             obstruction_stop_active: false,
+            searched_stop_s: None,
         }
     }
 }
@@ -71,10 +85,14 @@ impl LatticePlanner {
         self.maneuver_start = None;
         self.yield_stop_s = None;
         self.terminal_side_reserved = false;
+        self.searched_stop_s = None;
     }
 
     pub fn holding_obstruction_stop(&self) -> bool {
         self.settle_obstruction_stops && self.obstruction_stop_active
+    }
+    pub fn braking_obstruction_stop(&self) -> bool {
+        self.search_obstruction_stops && self.obstruction_stop_requested
     }
 }
 impl Planner for LatticePlanner {
@@ -84,6 +102,7 @@ impl Planner for LatticePlanner {
             || !ego.pose.yaw.is_finite()
             || !self.cruise_speed.is_finite()
             || self.cruise_speed <= 0.0
+            || (self.search_obstruction_stops && !self.settle_obstruction_stops)
             || !self.max_acceleration_m_s2.is_finite()
             || self.max_acceleration_m_s2 <= 0.0
             || !self.max_deceleration_m_s2.is_finite()
@@ -172,8 +191,11 @@ impl Planner for LatticePlanner {
         let hold_requested = self.settle_obstruction_stops
             && (self.obstruction_stop_active
                 || (self.obstruction_stop_requested && ego.speed <= 0.2));
+        // A searched alternative is a commitment to brake, including before
+        // reaching standstill. Ordinary blocked approaches retain their prior
+        // behavior until a search or collision emergency actually requests it.
         let mut collision_seen = false;
-        let mut best: Option<((bool, bool, f64), Trajectory, bool)> = None;
+        let mut best: Option<Selection> = None;
         let side = self.lateral_candidate_margin_m.map_or(3.5, |margin| {
             (route.half_width - self.vehicle.radius - margin).clamp(0.0, 3.5)
         });
@@ -329,9 +351,10 @@ impl Planner for LatticePlanner {
             };
             let first_contact = contact(&points);
             let blocked = first_contact.is_finite();
+            let mut searched = false;
             if blocked {
                 collision_seen = true;
-                let stop = if hold_requested {
+                let mut stop = if hold_requested {
                     let speed = ego.speed.max(0.0);
                     if speed == 0.0 {
                         0.0
@@ -347,25 +370,40 @@ impl Planner for LatticePlanner {
                 } else {
                     (speed::distance_at(&points, first_contact) - 4.0).max(0.0)
                 };
+                if self.braking_obstruction_stop() && !hold_requested {
+                    stop = self.searched_stop_s.map_or_else(
+                        || ego.speed.max(0.0).powi(2) / (2.0 * self.max_deceleration_m_s2),
+                        |anchor| {
+                            stop.min(stopping::distance_at_progress(
+                                &geometry,
+                                horizon,
+                                anchor - s,
+                            ))
+                        },
+                    );
+                }
                 let stopping_limits = speed::Limits {
                     cruise: if hold_requested {
                         0.0
+                    } else if self.braking_obstruction_stop() {
+                        candidate_limits.cruise.min(ego.speed.max(0.0))
                     } else {
                         candidate_limits.cruise
                     },
                     ..candidate_limits
                 };
-                let Some(stopped) =
-                    speed::profile(&geometry, ego.speed.max(0.0), &stopping_limits, Some(stop))
-                else {
+                let Some((stopped, used_search)) = stopping::profile(
+                    &geometry,
+                    ego.speed.max(0.0),
+                    &stopping_limits,
+                    stop,
+                    self.search_obstruction_stops && !hold_requested,
+                    |path| !contact(path).is_finite(),
+                ) else {
                     continue;
                 };
                 points = stopped;
-                // Slowing changes arrival times. Revalidate the complete braking path,
-                // including an eight-second stationary hold; reject unsafe retiming.
-                if contact(&points).is_finite() {
-                    continue;
-                }
+                searched = used_search && ego.speed > 0.2;
             }
             let permitted = points.iter().map(|p| p.speed).fold(0.0_f64, f64::max);
             let switching_penalty = if target * self.previous_lateral < 0.0 {
@@ -427,34 +465,66 @@ impl Planner for LatticePlanner {
                 mode,
                 lateral_target: target,
             };
+            let stop_s = (self.search_obstruction_stops && blocked).then(|| {
+                let distance = traj
+                    .points
+                    .windows(2)
+                    .map(|p| p[0].position.distance(p[1].position))
+                    .sum();
+                s + stopping::progress_at_distance(&geometry, horizon, distance)
+            });
             // Prefer an already settled stopping place when its complete hold
             // is feasible. Speed rewards must not restart a completed maneuver.
             // A genuinely unblocked route can release the stop, including a
             // safe lateral escape. A retimed approach to the same obstruction
             // cannot restart a completed emergency stop for a speed reward.
             let cost = (hold_requested && blocked, !settling_goal, score);
-            if best
-                .as_ref()
-                .is_none_or(|(previous, _, _)| cost < *previous)
-            {
-                best = Some((cost, traj, blocked));
+            if best.as_ref().is_none_or(|previous| cost < previous.cost) {
+                best = Some(Selection {
+                    cost,
+                    trajectory: traj,
+                    blocked,
+                    searched,
+                    stop_s,
+                });
             }
         }
-        let (blocked, trajectory) = best.map(|(_, t, blocked)| (blocked, t)).unwrap_or((
-            false,
-            Trajectory {
-                points: vec![],
-                mode: DrivingMode::Emergency,
-                lateral_target: 0.0,
-            },
-        ));
+        let (blocked, searched, stop_s, trajectory) = best
+            .map(|choice| {
+                (
+                    choice.blocked,
+                    choice.searched,
+                    choice.stop_s,
+                    choice.trajectory,
+                )
+            })
+            .unwrap_or((
+                false,
+                false,
+                None,
+                Trajectory {
+                    points: vec![],
+                    mode: DrivingMode::Emergency,
+                    lateral_target: 0.0,
+                },
+            ));
         self.obstruction_stop_requested = self.settle_obstruction_stops
             && if trajectory.mode == DrivingMode::Emergency {
                 self.obstruction_stop_requested || collision_seen
             } else {
-                self.obstruction_stop_requested && blocked
+                blocked && (searched || self.obstruction_stop_requested)
             };
         self.obstruction_stop_active = self.obstruction_stop_requested && hold_requested;
+        if self.search_obstruction_stops {
+            self.searched_stop_s = if !self.obstruction_stop_requested {
+                None
+            } else {
+                match (self.searched_stop_s, stop_s) {
+                    (Some(old), Some(new)) => Some(old.min(new)),
+                    (old, new) => old.or(new),
+                }
+            };
+        }
         if trajectory.mode != DrivingMode::Emergency {
             if terminal_traffic && trajectory.lateral_target.abs() > 0.1 {
                 // Keep the stopping-place preference through forecast jitter,
