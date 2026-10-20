@@ -7,8 +7,9 @@ The option defaults to false and requires `map_only_grace_s`, `gnss_recovery`
 and acquisition-time GNSS fusion. The existing synchronous body-XY, supplied
 map and synchronous-XY restrictions still apply. A separate
 [navigation-preservation option](navigation-relocalization.md) can retain the
-actual live mission through the measured reset. Fixed stop signs use the
-separate [stop-preservation option](stop-sign-relocalization.md).
+actual live mission through the measured reset. Fixed stop signs and traffic
+signals use the separate [stop-preservation](stop-sign-relocalization.md) and
+[signal-preservation](signal-relocalization.md) options.
 
 ```json
 {

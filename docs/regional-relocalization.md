@@ -7,8 +7,10 @@ maps with ordinary synchronous body-XY LiDAR. An explicit
 [navigation-preservation option](navigation-relocalization.md) can retain a live
 mission and recheck its active route. A separate explicit
 [fixed-stop preservation option](stop-sign-relocalization.md) retains served signs
-and restarts unfinished confirmation. Other navigation combinations, lane changes,
-signals/yielding intersections and XYZ/multi-height configurations are rejected
+and restarts unfinished confirmation. A separate
+[signal-preservation option](signal-relocalization.md) withdraws old permission
+and retains committed lines behind the measured front. Other navigation
+combinations, lane changes, yielding intersections and XYZ/multi-height configurations are rejected
 so a reset cannot silently discard ongoing mission/control state.
 
 ## Operational contract

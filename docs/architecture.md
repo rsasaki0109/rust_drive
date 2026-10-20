@@ -74,7 +74,7 @@ importer supports bounded motorcar node-via relations and rejects relevant
 unsupported semantics. Navigation and fixed-route mapped stop controls remain
 separate configurations. [Turn contract and evidence](turn-restrictions.md).
 
-Optional `local_route_geometry` uses bounded steering-radius corner fillets and a shorter pursuit preview for sparse external roads. Its internal planning arc differs from the original map arc; candidate containment and physical evaluation still use the supplied unchanged corridor. Impossible/overlapping fillets fail validation. Mapped signal, sign and priority-zone coordinates are currently excluded from this mode; their existing route-coordinate behavior remains separate. Optional `rear_axle_offset_m` calibrates low-speed chassis odometry prediction and temporary planning/control course while retaining body yaw for sensors. The native dynamic local mode selects its declared rear-axle distance. Local side paths now use the existing standard road preview with wheelbase/lever-arm floors in both plants; local centerline turning retains the short preview. Point/rear-axle reference side paths also retain the original maneuver completion arc when reanchoring tracking error, with wheelbase and configured lateral-acceleration recovery bounds. Native chassis/course tracking retains its preceding joined prefix after rejected recovery probes. [Tracking failure and repair](initial-pose-covariance.md). [Reference contract and evidence](chassis-reference.md).
+Optional `local_route_geometry` uses bounded steering-radius corner fillets and a shorter pursuit preview for sparse external roads. Its internal planning arc differs from the original map arc; candidate containment and physical evaluation still use the supplied unchanged corridor. Impossible/overlapping fillets fail validation. Fixed signal/sign constraints truncate the original surveyed route before local fitting, preserving their endpoint; state admission and physical evaluation retain the original coordinates. Priority-zone coordinates remain excluded from this mode. Optional `rear_axle_offset_m` calibrates low-speed chassis odometry prediction and temporary planning/control course while retaining body yaw for sensors. The native dynamic local mode selects its declared rear-axle distance. Local side paths now use the existing standard road preview with wheelbase/lever-arm floors in both plants; local centerline turning retains the short preview. Point/rear-axle reference side paths also retain the original maneuver completion arc when reanchoring tracking error, with wheelbase and configured lateral-acceleration recovery bounds. Native chassis/course tracking retains its preceding joined prefix after rejected recovery probes. [Tracking failure and repair](initial-pose-covariance.md). [Reference contract and evidence](chassis-reference.md).
 
 | Crate | Responsibility | Depends on |
 |---|---|---|
@@ -129,9 +129,9 @@ observations and three consistent scan confirmations. A shared comparison
 budget and distinct-fit ambiguity check reject incomplete/ambiguous proposals.
 The confirming frame brakes, old GNSS/LiDAR acquisitions cannot renew freshness,
 and `localization_epoch` scopes new scene identities. This supports fixed routes
-and synchronous XY scans; lane changes, signals/yielding controls and
-XYZ/multi-height configurations are rejected before driving. Live navigation and
-fixed stop signs need separate explicit preservation options below. New GNSS is
+and synchronous XY scans; lane changes, yielding controls and XYZ/multi-height
+configurations are rejected before driving. Live navigation, fixed stop signs and
+traffic signals need separate explicit preservation options below. New GNSS is
 required by default after reset. An explicit `map_only_grace_s` can qualify new
 synchronous accepted map corrections for at most five seconds from that measured
 reset. Their actual acquisition stamps reach health and final control freshness
@@ -171,8 +171,20 @@ stop is required. Corridor/heading admission or an unserved margin below 0.5 m
 latches `InvalidStopSignRecovery`; fresh GNSS cannot clear it. Fixed stops also
 support local route fitting: truncate in original surveyed arc coordinates
 before fitting, retain that endpoint, and evaluate stop geometry on the original
-route. Signals, yielding and live navigation with controls remain excluded.
+route. Signals need their separate preservation option; yielding and live
+navigation with controls remain excluded.
 [Ownership, physical evaluation and retained first failures](stop-sign-relocalization.md).
+
+Explicit `relocalization.preserve_traffic_signals` preserves committed lines
+behind the measured front and rearms those now ahead. Reset clears all accepted
+colors and their acquisition clock; only a complete snapshot strictly newer than
+the reset can establish fresh permission. Current green cannot prove past lawful
+passage. Invalid geometry or an unserved margin below 0.5 m latches
+`InvalidTrafficSignalRecovery`, retaining emergency braking through fresh
+green/GNSS. The independent 0.5-second signal age and malformed-snapshot fault
+remain active. Signal prefixes also retain original surveyed arcs through local
+route fitting and compose with explicitly preserved stop signs.
+[Contract, raw-input audits and physical results](signal-relocalization.md).
 
 Optional `initial_pose_covariance` supplies a finite, symmetric positive definite
 ENU x/y/yaw matrix (m², m·rad, rad²). It is external initialization calibration.

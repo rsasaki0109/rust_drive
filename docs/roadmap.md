@@ -90,6 +90,14 @@ original surveyed prefixes. All 32 follow-up cases pass; original coverage misse
 launch failures and invalid-epoch accuracy failures remain recorded. This extends
 fixed-rule simulation recovery and keeps the subjective estimate at about 29%.
 
+Optional [fresh signal permission after measured reset](signal-relocalization.md)
+now retains committed lines behind the measured front and withdraws all old
+permission. Remaining lines need a strictly newer complete acquisition; invalid
+admission stays braked through fresh green/GNSS. All 28 fixed straight/curved
+cases pass in both plants, including stop-sign compositions, permanent red and
+disabled controls. This extends fixed-rule recovery while retaining full-interval
+accuracy failures; subjective maturity stays about 29% and 30% remains unmet.
+
 Remaining:
 
 - Covariance/forecast uncertainty propagation, delayed odometry and general multi-sensor correction-event replay, per-point LiDAR deskew and trace migrations. Bounded acquisition-time LiDAR reprojection and current-time motion extrapolation are narrower implemented steps, not complete delayed-sensor fusion.

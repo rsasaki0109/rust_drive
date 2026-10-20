@@ -5,7 +5,7 @@ use rustdriving_pipeline::{
     SensorFrame,
     navigation::{NavigationConfig, NavigationPhase, NavigationUpdate},
     replay::{SensorLog, verify},
-    traffic_controls::StopLine,
+    traffic_controls::{SignalColor, SignalObservation, SignalState, StopLine},
 };
 use std::io::Cursor;
 
@@ -64,6 +64,182 @@ fn stop_recovery_config() -> PipelineConfig {
     }];
     c.relocalization.as_mut().unwrap().preserve_stop_signs = true;
     c
+}
+
+fn signal_recovery_config() -> PipelineConfig {
+    let mut c = config();
+    c.stop_lines = vec![StopLine {
+        id: "signal".into(),
+        route_s_m: 7.,
+    }];
+    c.relocalization.as_mut().unwrap().preserve_traffic_signals = true;
+    c
+}
+fn signal(stamp: f64, color: SignalColor) -> SignalObservation {
+    SignalObservation {
+        stamp,
+        states: vec![SignalState {
+            id: "signal".into(),
+            color,
+        }],
+    }
+}
+
+#[test]
+fn measured_signal_reset_discards_green_then_accepts_new_permission_and_replays() {
+    let c = signal_recovery_config();
+    let mut p = DrivingPipeline::new(c.clone()).unwrap();
+    let mut log = SensorLog::new("signal-preserving-relocalization", c);
+    let mut reset = None;
+    let mut new_green = false;
+    for i in (0..=70).filter(|i| !(1..8).contains(i)) {
+        let now = i as f64 * 0.05;
+        let mut input = frame(
+            now,
+            if i == 0 {
+                Pose::default()
+            } else {
+                measured_pose()
+            },
+        );
+        input.traffic_signal = Some(signal(if now < 2. { now } else { 2. }, SignalColor::Green));
+        // The reset occurs before 2 s. Its own green must be withdrawn; only
+        // a strictly later acquisition can establish fresh permission.
+        let out = p.step(&input).unwrap();
+        if out.localization_epoch == 1 {
+            let status = out.traffic_controls.as_ref().unwrap();
+            if reset.is_none() {
+                reset = Some(now);
+                assert!(status.localization_reset.as_ref().unwrap().admitted);
+                assert_eq!(status.last_accepted_stamp, None);
+                assert_eq!(status.signals[0].color, SignalColor::Unknown);
+                assert!(status.stop_s_m.is_some());
+                assert_eq!(out.command.acceleration, -6.);
+            } else if now <= 2. {
+                new_green = true;
+                assert_eq!(status.signals[0].color, SignalColor::Green);
+                assert!(status.stop_s_m.is_none());
+            } else if now > 2.5 + 1e-9 {
+                assert_eq!(status.signals[0].color, SignalColor::Unknown);
+                assert!(status.stop_s_m.is_some());
+            }
+        }
+        log.record(input, out);
+    }
+    assert!(reset.is_some() && new_green);
+    let mut bytes = vec![];
+    log.write(&mut bytes).unwrap();
+    assert!(
+        verify(Cursor::new(bytes), std::io::sink())
+            .unwrap()
+            .verified
+    );
+    log.ticks
+        .iter_mut()
+        .find(|t| t.expected.localization_epoch == 1)
+        .unwrap()
+        .expected
+        .traffic_controls
+        .as_mut()
+        .unwrap()
+        .localization_reset
+        .as_mut()
+        .unwrap()
+        .admitted = false;
+    let mut bytes = vec![];
+    log.write(&mut bytes).unwrap();
+    assert!(verify(Cursor::new(bytes), std::io::sink()).is_err());
+}
+
+#[test]
+fn unserved_signal_behind_measured_reset_stays_faulted_through_green_and_gnss() {
+    let mut c = signal_recovery_config();
+    c.initial_pose = measured_pose();
+    let mut p = DrivingPipeline::new(c).unwrap();
+    p.step(&frame(0., measured_pose())).unwrap();
+    let mut rejected = false;
+    for i in 8..=80 {
+        let now = i as f64 * 0.05;
+        let mut pose = measured_pose();
+        pose.position.x = 6.5;
+        let mut input = frame(now, pose);
+        input.traffic_signal = Some(signal(now, SignalColor::Green));
+        let out = p.step(&input).unwrap();
+        if out.localization_epoch == 1 {
+            rejected = true;
+            assert!(
+                out.health
+                    .contains(&HealthIssue::InvalidTrafficSignalRecovery)
+            );
+            assert_eq!(out.command.acceleration, -6.);
+            let status = out.traffic_controls.unwrap();
+            assert!(!status.localization_reset.unwrap().admitted);
+            assert!(!status.signals[0].passed);
+            assert!(status.stop_s_m.is_some());
+        }
+    }
+    assert!(rejected);
+}
+
+#[test]
+fn signal_recovery_is_explicit_and_composes_with_explicit_fixed_stops() {
+    let mut c = signal_recovery_config();
+    c.relocalization.as_mut().unwrap().preserve_traffic_signals = false;
+    assert!(
+        serde_json::to_value(&c).unwrap()["relocalization"]
+            .get("preserve_traffic_signals")
+            .is_none()
+    );
+    assert!(c.validate().is_err());
+    let mut c = config();
+    c.relocalization.as_mut().unwrap().preserve_traffic_signals = true;
+    assert!(c.validate().is_err());
+    let mut c = stop_recovery_config();
+    c.stop_lines = signal_recovery_config().stop_lines;
+    c.stop_lines[0].route_s_m = 30.;
+    // The map identifiers must remain distinct across independent rule types.
+    c.relocalization.as_mut().unwrap().preserve_traffic_signals = true;
+    assert!(c.validate().is_ok());
+    c.relocalization.as_mut().unwrap().preserve_stop_signs = false;
+    assert!(c.validate().is_err());
+}
+
+#[test]
+fn failed_stop_recovery_prevents_signal_commitment_even_with_fresh_moving_observations() {
+    let mut c = stop_recovery_config();
+    c.initial_pose = measured_pose();
+    c.stop_lines = vec![StopLine {
+        id: "signal".into(),
+        route_s_m: 12.,
+    }];
+    c.relocalization.as_mut().unwrap().preserve_traffic_signals = true;
+    let mut p = DrivingPipeline::new(c).unwrap();
+    p.step(&frame(0., measured_pose())).unwrap();
+    let mut crossed_measured_front = false;
+    for i in 8..=120 {
+        let now = i as f64 * 0.05;
+        let mut pose = measured_pose();
+        pose.position.x = 6.5;
+        let moving = now >= 2.05 - 1e-9;
+        if moving {
+            pose.position = pose
+                .position
+                .plus(Vec2::new(2. * (now - 2.), 0.).rotated(pose.yaw));
+        }
+        let mut input = frame(now, pose);
+        input.odometry.as_mut().unwrap().speed = if moving { 2. } else { 0. };
+        input.traffic_signal = Some(signal(now, SignalColor::Green));
+        let out = p.step(&input).unwrap();
+        if out.localization_epoch == 1 {
+            assert!(out.health.contains(&HealthIssue::InvalidStopSignRecovery));
+            assert_eq!(out.command.acceleration, -6.);
+            let controls = out.traffic_controls.as_ref().unwrap();
+            assert!(controls.localization_reset.as_ref().unwrap().admitted);
+            assert!(!controls.signals[0].passed);
+            crossed_measured_front |= out.estimate.pose.position.x + 1.25 >= 12.;
+        }
+    }
+    assert!(crossed_measured_front);
 }
 
 #[test]

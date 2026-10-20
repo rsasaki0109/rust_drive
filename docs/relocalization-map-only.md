@@ -5,7 +5,9 @@ localization epoch drive briefly before a new GNSS acquisition arrives. It
 accepts 0.5–5 seconds. Omitting it preserves the existing post-reset GNSS hold.
 This experimental policy supports supplied fixed routes, surveyed maps and
 ordinary synchronous body-XY LiDAR, under the existing
-[stopped regional recovery contract](regional-relocalization.md).
+[stopped regional recovery contract](regional-relocalization.md). Fixed traffic controls
+require separate [stop](stop-sign-relocalization.md) and
+[signal](signal-relocalization.md) preservation flags.
 
 ```json
 {

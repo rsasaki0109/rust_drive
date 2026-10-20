@@ -44,6 +44,17 @@ The nearest unpassed, nonpermissive line creates a temporary route prefix ending
 
 Configured stop lines are map information, not camera detections. Signal phases and feed dropout windows belong only to the simulator. The common loop synthesizes snapshots at 5 Hz for both ego plants and records all 20 Hz physical/control ticks. Optional fields preserve replay of preceding logs that do not configure traffic controls.
 
+## Measured localization recovery
+
+The explicit [signal-preservation option](signal-relocalization.md) now retains
+committed lines through a stopped measured reset, while withdrawing every old
+color and accepted clock. Pending lines need a complete acquisition strictly
+newer than the reset. Invalid route/missed-line admission retains emergency
+braking through fresh green/GNSS. Its separate 28-case qualification adds curved
+routes, native chassis/local geometry and mixed stop signs; all 646 preceding
+physical recordings retain exact replay bytes. The infrastructure feed remains
+synthetic and missing-motion accuracy failures remain recorded.
+
 ## Measured acceptance
 
 The six fixtures are `signal-red-green`, `signal-red-stop`, `signal-stale-stop`, `signal-stale-recovery`, `signal-two-stops` and `signal-approach-change`. Both plants pass all six across seeds 1, 7 and 42: **36 physical episodes with complete sensor-only replay**. Across the 36, the smallest margin from the circular physical front to a nonpermissive observed stop line is **1.926626 m**. Every tested stop maintains at least **2.65 s** of continuous close-line standstill against a fixed **2 s** gate; the independent physical-margin floor is **1 m**.

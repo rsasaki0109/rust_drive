@@ -28,6 +28,9 @@ pub struct RelocalizationConfig {
     /// Retain served fixed-route stops and restart unfinished stop confirmations.
     #[serde(skip_serializing_if = "is_false")]
     pub preserve_stop_signs: bool,
+    /// Preserve fixed-route signal duties, requiring new post-reset permission.
+    #[serde(skip_serializing_if = "is_false")]
+    pub preserve_traffic_signals: bool,
 }
 fn is_false(value: &bool) -> bool {
     !*value
@@ -45,6 +48,7 @@ impl Default for RelocalizationConfig {
             confirm_gnss_handoff: false,
             preserve_navigation: false,
             preserve_stop_signs: false,
+            preserve_traffic_signals: false,
         }
     }
 }

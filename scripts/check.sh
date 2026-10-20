@@ -19,6 +19,7 @@ python3 scripts/test_relocalization.py
 python3 scripts/test_navigation_relocalization.py
 python3 scripts/test_navigation_handover.py
 python3 scripts/test_stop_relocalization.py
+python3 scripts/test_signal_relocalization.py
 python3 scripts/test_gnss_map_history.py
 python3 scripts/test_delayed_map.py
 python3 scripts/test_mid_edge.py

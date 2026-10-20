@@ -2,7 +2,20 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest [fixed-stop preservation through measured reset](stop-sign-relocalization.md)
+The latest [fresh signal permission through measured reset](signal-relocalization.md)
+keeps the estimate at **about 29%**. All 28 fixed cases pass: sixteen recovered
+goals, four healthy goals, four permanent-red holds and four disabled-recovery
+holds. Committed lines behind the measured front remain served; remaining lines
+require newly acquired permission. Old/reset-time green cannot release a hold,
+and invalid admission keeps emergency braking through fresh green/GNSS. Three
+94-tick input fixtures independently verify those clock/fault boundaries.
+All 646 preceding physical logs retain exact output bytes; every missing-motion
+accuracy failure remains scored. This extends authored fixed-rule recovery into
+curved signal routes and stop-sign compositions. Independent automotive sensing,
+measured uncertainty and vehicle operation remain open; the **30% waypoint
+remains unmet**.
+
+The preceding [fixed-stop preservation through measured reset](stop-sign-relocalization.md)
 keeps the estimate at **about 29%**. All 32 follow-up cases pass: 24 recovered
 goals, four healthy goals and four disabled holds. New physical standstill
 checks independently verify every post-reset release. Unserved crossings or

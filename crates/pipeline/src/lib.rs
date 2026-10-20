@@ -167,6 +167,11 @@ impl PipelineConfig {
             if policy.preserve_stop_signs && self.stop_signs.is_empty() {
                 return Err("stop-preserving relocalization requires mapped stop signs".into());
             }
+            if policy.preserve_traffic_signals && self.stop_lines.is_empty() {
+                return Err(
+                    "signal-preserving relocalization requires mapped traffic signals".into(),
+                );
+            }
             if policy.confirm_gnss_handoff
                 && (policy.map_only_grace_s.is_none()
                     || self.gnss_recovery.is_none()
@@ -189,13 +194,13 @@ impl PipelineConfig {
                     .is_some_and(|map| map.min_pairs > 128)
                 || (self.navigation.is_some() && !policy.preserve_navigation)
                 || self.lane_change.is_some()
-                || !self.stop_lines.is_empty()
+                || (!self.stop_lines.is_empty() && !policy.preserve_traffic_signals)
                 || (!self.stop_signs.is_empty() && !policy.preserve_stop_signs)
                 || !self.yield_intersections.is_empty()
                 || self.lidar3d.is_some()
                 || self.multi_height_lidar.is_some()
             {
-                return Err("regional relocalization requires a surveyed map and ordinary XY LiDAR, explicit preservation for navigation or fixed-route stop signs, and no lane changes, signals or yielding intersections".into());
+                return Err("regional relocalization requires a surveyed map and ordinary XY LiDAR, explicit preservation for navigation or fixed-route controls, and no lane changes or yielding intersections".into());
             }
         }
         if let Some(offset) = self.gnss_antenna_offset_m {
@@ -307,11 +312,11 @@ impl PipelineConfig {
                 );
             }
             rustdriving_planning::validate_local_route_geometry(&self.route, self.vehicle)?;
-            // Fixed stop signs truncate the supplied route at the original
+            // Fixed stop signs and signals truncate the supplied route at the original
             // surveyed arc before planner-local fillets are fitted. The fit
             // preserves that endpoint, and stop admission still projects onto
-            // the original route. Signals and yielding remain unqualified.
-            if !self.stop_lines.is_empty() || !self.yield_intersections.is_empty() {
+            // the original route. Yielding remains unqualified.
+            if !self.yield_intersections.is_empty() {
                 return Err(
                     "local route geometry currently excludes mapped traffic-rule coordinates"
                         .into(),
@@ -402,6 +407,7 @@ pub enum HealthIssue {
     MotionDiscontinuity,
     InvalidNavigation,
     InvalidStopSignRecovery,
+    InvalidTrafficSignalRecovery,
     InvalidTrafficSignal,
 }
 
@@ -1156,16 +1162,26 @@ impl DrivingPipeline {
             self.planner = planner;
             self.controller.reset_route_state();
         }
+        // Another latched mapped-duty fault must also prevent semantic passage,
+        // even though its health issue is appended below before final actuation.
+        let controls_healthy = health.is_empty()
+            && self
+                .stop_signs
+                .as_ref()
+                .is_none_or(|stops| !stops.recovery_fault());
         if let Some(controls) = &mut self.traffic_controls {
             controls.step(
                 input.traffic_signal.as_ref(),
                 input.time,
                 self.config.route.project(estimate.pose.position).0,
                 self.config.vehicle.radius,
-                health.is_empty(),
+                controls_healthy,
             );
             if controls.status().fault {
                 health.push(HealthIssue::InvalidTrafficSignal);
+            }
+            if controls.recovery_fault() {
+                health.push(HealthIssue::InvalidTrafficSignalRecovery);
             }
         } else if unexpected_signal {
             health.push(HealthIssue::InvalidTrafficSignal);
@@ -1476,6 +1492,16 @@ impl DrivingPipeline {
             );
             fresh.stop_signs = Some(stops);
         }
+        if self.config.relocalization.unwrap().preserve_traffic_signals {
+            let mut controls = self.traffic_controls.take().unwrap();
+            controls.relocalize(
+                &fresh.config.route,
+                input.time,
+                fresh.ekf.state(),
+                fresh.config.vehicle.radius,
+            );
+            fresh.traffic_controls = Some(controls);
+        }
         if self.config.relocalization.unwrap().confirm_gnss_handoff {
             fresh
                 .gnss_recovery
@@ -1651,12 +1677,7 @@ mod tests {
             id: "signal".into(),
             route_s_m: 30.0,
         });
-        assert!(
-            config
-                .validate()
-                .unwrap_err()
-                .contains("excludes mapped traffic-rule")
-        );
+        assert!(config.validate().is_ok());
         config.stop_lines.clear();
         config.route = Route::new(
             vec![Vec2::default(), Vec2::new(3.0, 0.0), Vec2::new(3.0, 3.0)],
