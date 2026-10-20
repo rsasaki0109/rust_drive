@@ -98,6 +98,15 @@ cases pass in both plants, including stop-sign compositions, permanent red and
 disabled controls. This extends fixed-rule recovery while retaining full-interval
 accuracy failures; subjective maturity stays about 29% and 30% remains unmet.
 
+Fixed straight-route yield entries now have an explicit
+[measured-reset preservation mode](yield-relocalization.md). It retains owned
+entries beyond their line and restarts all uncommitted clear-scan confirmation;
+invalid measured admission remains braked and blocks other mapped duties.
+All 32 current inputs pass in two plants; the first 24/32 reclassification and
+12 failed original/follow-up layouts remain retained. All 674 preceding and 44
+current recordings retain exact replay. This extends authored recovery without completing independent
+automotive sensing, measured uncertainty or the 30% waypoint.
+
 Remaining:
 
 - Covariance/forecast uncertainty propagation, delayed odometry and general multi-sensor correction-event replay, per-point LiDAR deskew and trace migrations. Bounded acquisition-time LiDAR reprojection and current-time motion extrapolation are narrower implemented steps, not complete delayed-sensor fusion.

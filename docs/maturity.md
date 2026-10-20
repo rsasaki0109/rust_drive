@@ -2,7 +2,22 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest [fresh signal permission through measured reset](signal-relocalization.md)
+The latest [yield entry ownership through measured reset](yield-relocalization.md)
+keeps the estimate at **about 29%**. All 32 current authored inputs pass in both
+plants: twenty recovered goals, four healthy goals and eight negative holds.
+Owned entries remain owned beyond their line; uncommitted entries require new
+clear scans. Invalid admission stays braked and blocks other mapped duties.
+The first classification scores 20/32; a checker repair reuses unchanged
+physical bytes and scores 24/32. Eight original state-coverage/goal misses and
+four further blocked follow-ups remain retained. Current inputs reuse 24
+original and eight viewed follow-up recordings. All 674 preceding recordings
+retain exact output bytes and all 44 current recordings retain exact replay;
+28 global invalid-epoch accuracy failures remain scored.
+This extends fixed-rule simulation recovery. Independent automotive sensing,
+measured uncertainty and vehicle operation remain open; the **30% waypoint
+remains unmet**.
+
+The preceding [fresh signal permission through measured reset](signal-relocalization.md)
 keeps the estimate at **about 29%**. All 28 fixed cases pass: sixteen recovered
 goals, four healthy goals, four permanent-red holds and four disabled-recovery
 holds. Committed lines behind the measured front remain served; remaining lines

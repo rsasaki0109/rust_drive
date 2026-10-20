@@ -9,7 +9,7 @@
 }
 ```
 
-The supplied route, surveyed map and synchronous XY scans retain the existing [regional recovery](regional-relocalization.md) contract. The option defaults to false/omitted; without it, regional recovery still rejects mapped signals. Stop signs require their own explicit preservation flag. Live navigation with mapped controls, yielding intersections, lane changes, XYZ/multiheight recovery and global initialization remain outside this mode.
+The supplied route, surveyed map and synchronous XY scans retain the existing [regional recovery](regional-relocalization.md) contract. The option defaults to false/omitted; without it, regional recovery still rejects mapped signals. Stop signs require their own explicit preservation flag. Straight yield routes require [explicit yield preservation](yield-relocalization.md). Live navigation with mapped controls, lane changes, XYZ/multiheight recovery and global initialization remain outside this mode.
 
 ## Ownership and observation time
 
@@ -17,7 +17,7 @@ Admission uses the newly measured pose against the original route. Estimated spe
 
 A previously committed line behind the measured front retains its passage flag; its newly observed red cannot send the vehicle back. A previously committed line now ahead loses permission and must be considered again. Current green never supplies evidence of a past legal crossing. `traffic_controls.localization_reset` records the measured admission and retained/rearmed/too-close identities, and exact replay recomputes them.
 
-All signal permission is withdrawn at reset, including a valid green delivered in the confirming frame. Only a complete snapshot with an acquisition stamp strictly newer than the reset can establish new permission. The existing 0.5-second accepted-age bound still applies. Cached/reordered green cannot refresh the clock or replace newer red. Missing/expired observations become unknown; malformed snapshots retain their separate fault until later valid evidence. Base sensor/localization health still gates motion and passage commitment. An independent latched stop-duty admission failure also blocks signal passage commitment.
+All signal permission is withdrawn at reset, including a valid green delivered in the confirming frame. Only a complete snapshot with an acquisition stamp strictly newer than the reset can establish new permission. The existing 0.5-second accepted-age bound still applies. Cached/reordered green cannot refresh the clock or replace newer red. Missing/expired observations become unknown; malformed snapshots retain their separate fault until later valid evidence. Base sensor/localization health still gates motion and passage commitment. An independent latched stop-duty or yield-duty admission failure also blocks signal passage commitment.
 
 The nearest pending nonpermissive line constrains the original surveyed route before planner-local corner fitting, preserving its endpoint. This composes with the native dynamic plant's declared chassis calibration and with explicitly preserved fixed stop signs. Rotated right-angle controls check original stop coordinates before and after a corner with both rear-axle and chassis references. An unrepresentable temporary fitted prefix fails closed.
 

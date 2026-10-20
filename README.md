@@ -4,6 +4,8 @@
 
 Current comparative engineering maturity is **about 29%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
+On straight routes, [yield duties can now survive a measured localization reset](docs/yield-relocalization.md),
+with retained entry ownership and new clear-scan confirmation before uncommitted entry.
 [Acquisition-time GNSS fusion](docs/gnss-latency.md) now reduces delayed-fix
 errors in both reference and native RNE driving, with bounded history,
 fault-stop recovery and independent covariance reconstruction.
@@ -45,8 +47,8 @@ remain recorded. Recovery requires a supplied map, synchronous XY LiDAR, fresh
 stopped motion observations and, by default, a later fresh GNSS fix. An explicit
 [map-only grace window](docs/relocalization-map-only.md) can use new accepted map
 observations for at most five seconds from the reset, with separate actual GNSS
-clocks and an absolute stopping deadline. Recovery across yielding controls and global initialization remain open; fixed
-stop signs and signals require their separate explicit preservation options below.
+clocks and an absolute stopping deadline. Global initialization remains open; fixed stop signs, signals and
+[yield intersections](docs/yield-relocalization.md) require separate explicit preservation options.
 All 24 map-support cases pass the feature protocol in both plants: handoff cases
 travel 13.798–13.932 m before GNSS returns, matching defaults hold, and eight
 loss/expiry cases stop. Four paired goals finish 3.90–4.25 s earlier. Global

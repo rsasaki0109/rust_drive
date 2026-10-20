@@ -53,6 +53,7 @@ jobs:
           python scripts/test_motion_continuity.py
           python scripts/test_relocalization.py
           python scripts/test_signal_relocalization.py
+          python scripts/test_yield_relocalization.py
       - name: Check chronological GNSS and map reconstruction
         run: python scripts/test_gnss_map_history.py
       - name: Check asynchronous map and original GNSS evidence reconstruction
@@ -139,6 +140,9 @@ jobs:
       - name: Verify new signal permission after measured localization recovery
         shell: bash
         run: python scripts/check_signal_relocalization.py --plant reference-2d --smoke --output artifacts/signal-relocalization
+      - name: Verify yield entry ownership and fresh clear scans after measured recovery
+        shell: bash
+        run: python scripts/check_yield_relocalization.py --plant reference-2d --smoke --output artifacts/yield-relocalization
       - name: Verify delayed map acquisitions and transient fault recovery
         shell: bash
         run: python scripts/check_delayed_map.py --output artifacts/delayed-map --controls
@@ -217,6 +221,7 @@ jobs:
             artifacts/navigation-handover/
             artifacts/stop-relocalization/
             artifacts/signal-relocalization/
+            artifacts/yield-relocalization/
             artifacts/gnss-latency/
   image-tracking:
     runs-on: ubuntu-latest
@@ -1081,6 +1086,9 @@ jobs:
       - name: Verify native signal permission after measured localization recovery
         working-directory: rust_drive
         run: python3 scripts/check_signal_relocalization.py --plant rne-dynamic --smoke --output artifacts/signal-relocalization-native
+      - name: Verify native yield entry ownership after measured recovery
+        working-directory: rust_drive
+        run: python3 scripts/check_yield_relocalization.py --plant rne-dynamic --smoke --output artifacts/yield-relocalization-native
       - name: Verify legal turn routes in the native dynamic plant
         working-directory: rust_drive
         run: python3 scripts/check-turn-restrictions.py --backend native --seeds 7 --compact --output artifacts/turn-restrictions
@@ -1170,6 +1178,7 @@ jobs:
             rust_drive/artifacts/navigation-handover-native/
             rust_drive/artifacts/stop-relocalization-native/
             rust_drive/artifacts/signal-relocalization-native/
+            rust_drive/artifacts/yield-relocalization-native/
             rust_drive/artifacts/japan-city-demo/
       - uses: actions/upload-artifact@v4
         with:

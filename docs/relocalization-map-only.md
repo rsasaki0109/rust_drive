@@ -6,8 +6,8 @@ accepts 0.5–5 seconds. Omitting it preserves the existing post-reset GNSS hold
 This experimental policy supports supplied fixed routes, surveyed maps and
 ordinary synchronous body-XY LiDAR, under the existing
 [stopped regional recovery contract](regional-relocalization.md). Fixed traffic controls
-require separate [stop](stop-sign-relocalization.md) and
-[signal](signal-relocalization.md) preservation flags.
+require separate [stop](stop-sign-relocalization.md),
+[signal](signal-relocalization.md) and [yield](yield-relocalization.md) preservation flags.
 
 ```json
 {
@@ -20,8 +20,8 @@ require separate [stop](stop-sign-relocalization.md) and
 Place that policy beside the externally supplied `localization_map`. The
 simulator's dropout schedule is evaluation input and never enters the operational
 pipeline header. Delayed map scans are rejected when this option is enabled.
-Signals/yielding controls and XYZ/multi-height exclusions remain. Fixed stop
-signs need [explicit stop preservation](stop-sign-relocalization.md); live
+XYZ/multi-height recovery remains excluded. Fixed controls require the
+explicit preservation flags above; live
 navigation needs the [mission-preservation option](navigation-relocalization.md).
 
 ## Freshness and control

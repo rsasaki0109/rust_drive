@@ -31,6 +31,9 @@ pub struct RelocalizationConfig {
     /// Preserve fixed-route signal duties, requiring new post-reset permission.
     #[serde(skip_serializing_if = "is_false")]
     pub preserve_traffic_signals: bool,
+    /// Retain owned yield entries and restart uncommitted clear-scan confirmation.
+    #[serde(skip_serializing_if = "is_false")]
+    pub preserve_yield_intersections: bool,
 }
 fn is_false(value: &bool) -> bool {
     !*value
@@ -49,6 +52,7 @@ impl Default for RelocalizationConfig {
             preserve_navigation: false,
             preserve_stop_signs: false,
             preserve_traffic_signals: false,
+            preserve_yield_intersections: false,
         }
     }
 }

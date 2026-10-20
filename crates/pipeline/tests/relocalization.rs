@@ -3,6 +3,7 @@ use rustdriving_pipeline::{
     DrivingPipeline, GnssRecoveryConfig, HealthIssue, MapLocalizationConfig, MapOnlySupportStatus,
     PipelineConfig, PipelineOutput, RecoveryPhase, RelocalizationConfig, RelocalizationPhase,
     SensorFrame,
+    intersections::{ConflictBounds, IntersectionPhase, YieldIntersection},
     navigation::{NavigationConfig, NavigationPhase, NavigationUpdate},
     replay::{SensorLog, verify},
     traffic_controls::{SignalColor, SignalObservation, SignalState, StopLine},
@@ -83,6 +84,154 @@ fn signal(stamp: f64, color: SignalColor) -> SignalObservation {
             color,
         }],
     }
+}
+
+fn yield_recovery_config(line: f64) -> PipelineConfig {
+    let mut c = config();
+    c.yield_intersections = vec![YieldIntersection {
+        stop_line: StopLine {
+            id: "yield".into(),
+            route_s_m: line,
+        },
+        conflict_bounds: ConflictBounds {
+            min: Vec2::new(line + 7., -5.5),
+            max: Vec2::new(line + 13., 5.5),
+        },
+        exit_s_m: line + 13.,
+    }];
+    c.relocalization
+        .as_mut()
+        .unwrap()
+        .preserve_yield_intersections = true;
+    c
+}
+
+#[test]
+fn yield_recovery_is_explicit_and_accepts_straight_chassis_geometry_only() {
+    let mut c = yield_recovery_config(35.);
+    c.relocalization
+        .as_mut()
+        .unwrap()
+        .preserve_yield_intersections = false;
+    assert!(
+        serde_json::to_value(&c).unwrap()["relocalization"]
+            .get("preserve_yield_intersections")
+            .is_none()
+    );
+    assert!(c.validate().is_err());
+    c.relocalization
+        .as_mut()
+        .unwrap()
+        .preserve_yield_intersections = true;
+    c.local_route_geometry = true;
+    c.motion_limits = Some(rustdriving_pipeline::MotionLimits {
+        max_acceleration_m_s2: 2.,
+        max_deceleration_m_s2: 2.5,
+        max_lateral_acceleration_m_s2: 2.5,
+    });
+    c.rear_axle_offset_m = Some(1.35);
+    assert!(c.validate().is_ok());
+    c.route.points.insert(1, Vec2::new(50., 2.));
+    assert!(c.validate().is_err());
+    let mut c = config();
+    c.relocalization
+        .as_mut()
+        .unwrap()
+        .preserve_yield_intersections = true;
+    assert!(c.validate().is_err());
+}
+
+#[test]
+fn measured_yield_reset_requires_new_clear_acquisitions_and_replays() {
+    let c = yield_recovery_config(35.);
+    let mut p = DrivingPipeline::new(c.clone()).unwrap();
+    let mut log = SensorLog::new("yield-preserving-relocalization", c);
+    let mut reset = None;
+    let mut release = None;
+    for i in (0..=90).filter(|i| !(1..8).contains(i)) {
+        let now = i as f64 * 0.05;
+        let input = frame(
+            now,
+            if i == 0 {
+                Pose::default()
+            } else {
+                measured_pose()
+            },
+        );
+        let out = p.step(&input).unwrap();
+        if out.localization_epoch == 1 {
+            let status = out.intersections.as_ref().unwrap();
+            if reset.is_none() {
+                reset = Some(now);
+                assert!(status.localization_reset.as_ref().unwrap().admitted);
+                assert_eq!(status.zones[0].clear_since, None);
+                assert_eq!(status.zones[0].phase, IntersectionPhase::Waiting);
+            }
+            if status.zones[0].phase == IntersectionPhase::Proceeding && release.is_none() {
+                release = Some(now);
+                assert!(now - reset.unwrap() >= 1.05 - 1e-9);
+                assert!(status.zones[0].clear_since.unwrap() > reset.unwrap());
+            }
+        }
+        log.record(input, out);
+    }
+    assert!(release.is_some());
+    let mut bytes = vec![];
+    log.write(&mut bytes).unwrap();
+    assert!(verify(Cursor::new(&bytes), vec![]).unwrap().verified);
+    let mut altered = String::from_utf8(bytes).unwrap();
+    altered = altered.replacen(
+        "\"retained_committed_ids\":[]",
+        "\"retained_committed_ids\":[\"yield\"]",
+        1,
+    );
+    assert!(verify(Cursor::new(altered), vec![]).is_err());
+}
+
+#[test]
+fn failed_yield_reset_blocks_new_signal_passage_and_stop_dwell() {
+    let mut c = yield_recovery_config(7.);
+    c.initial_pose = measured_pose();
+    c.stop_lines = vec![StopLine {
+        id: "signal".into(),
+        route_s_m: 12.,
+    }];
+    c.stop_signs = vec![StopLine {
+        id: "stop".into(),
+        route_s_m: 10.,
+    }];
+    c.relocalization.as_mut().unwrap().preserve_stop_signs = true;
+    c.relocalization.as_mut().unwrap().preserve_traffic_signals = true;
+    let mut p = DrivingPipeline::new(c).unwrap();
+    p.step(&frame(0., measured_pose())).unwrap();
+    let mut crossed = false;
+    for i in 8..=140 {
+        let now = i as f64 * 0.05;
+        let mut pose = measured_pose();
+        pose.position.x = 6.5;
+        let moving = now >= 4.05 - 1e-9;
+        if moving {
+            pose.position = pose
+                .position
+                .plus(Vec2::new(2. * (now - 4.), 0.).rotated(pose.yaw));
+        }
+        let mut input = frame(now, pose);
+        input.odometry.as_mut().unwrap().speed = if moving { 2. } else { 0. };
+        input.traffic_signal = Some(signal(now, SignalColor::Green));
+        let out = p.step(&input).unwrap();
+        if out.localization_epoch == 1 {
+            assert!(
+                out.health
+                    .contains(&HealthIssue::InvalidIntersectionRecovery)
+            );
+            assert_eq!(out.command.acceleration, -6.);
+            assert!(!out.intersections.as_ref().unwrap().zones[0].committed);
+            assert!(!out.traffic_controls.as_ref().unwrap().signals[0].passed);
+            assert_eq!(out.stop_signs.as_ref().unwrap().stops[0].held_s, 0.);
+            crossed |= out.estimate.pose.position.x + 1.25 >= 12.;
+        }
+    }
+    assert!(crossed);
 }
 
 #[test]

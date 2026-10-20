@@ -9,7 +9,7 @@
 }
 ```
 
-Supply the fixed route and surveyed `localization_map` as usual. The existing regional search requires fresh stopped wheel/gyro samples and three consistent synchronous XY scan fits. Acquisition-time GNSS, bounded map-only support and confirmed GNSS handoff retain their existing independent policies. Signals require the separate [signal-preservation option](signal-relocalization.md). This does not enable live route changes with mapped controls, yielding intersections, lane changes or XYZ recovery.
+Supply the fixed route and surveyed `localization_map` as usual. The existing regional search requires fresh stopped wheel/gyro samples and three consistent synchronous XY scan fits. Acquisition-time GNSS, bounded map-only support and confirmed GNSS handoff retain their existing independent policies. Signals require the separate [signal-preservation option](signal-relocalization.md). Straight yield entries require [explicit yield preservation](yield-relocalization.md). This does not enable live route changes with mapped controls, lane changes or XYZ recovery.
 
 ## State and clock ownership
 
@@ -17,7 +17,7 @@ At the measured reset, stop admission uses the original route and vehicle radius
 
 `Released` or `Passed` stops behind the measured front retain their phase and completed dwell. Those now ahead are rearmed. All other holds and elapsed times are discarded, and the acquisition watermark advances to the reset. The confirming acquisition cannot count twice. New health, route alignment, fresh motion and continuous near-line standstill are required for the entire two seconds; cached samples and missing intervals cannot credit dwell. `stop_signs.localization_reset` records the measured geometry, admission and retained/rearmed/too-close IDs. Exact replay recomputes that evidence and braking.
 
-Fixed mapped stops also compose with planner-local route fitting. Stop constraints first truncate the original route at its surveyed arc; local fitting preserves that endpoint. Stop admission and physical crossing evaluation continue using the original route. This permits the native dynamic plant's existing delayed-GNSS chassis calibration without changing stop coordinates. Signals now use the same original-prefix contract in their separate [qualification](signal-relocalization.md); yielding remains excluded from local fitting. Rotated right-angle fixtures test stops before and after the corner with both chassis and rear-axle pose references; an unrepresentable temporary fitted prefix fails closed.
+Fixed mapped stops also compose with planner-local route fitting. Stop constraints first truncate the original route at its surveyed arc; local fitting preserves that endpoint. Stop admission and physical crossing evaluation continue using the original route. This permits the native dynamic plant's existing delayed-GNSS chassis calibration without changing stop coordinates. Signals now use the same original-prefix contract in their separate [qualification](signal-relocalization.md); straight yield routes now retain the same surveyed arc under [yield preservation](yield-relocalization.md). Rotated right-angle fixtures test stops before and after the corner with both chassis and rear-axle pose references; an unrepresentable temporary fitted prefix fails closed.
 
 ## Qualification
 

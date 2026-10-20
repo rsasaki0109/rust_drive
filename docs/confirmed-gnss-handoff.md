@@ -9,7 +9,8 @@ map and synchronous-XY restrictions still apply. A separate
 [navigation-preservation option](navigation-relocalization.md) can retain the
 actual live mission through the measured reset. Fixed stop signs and traffic
 signals use the separate [stop-preservation](stop-sign-relocalization.md) and
-[signal-preservation](signal-relocalization.md) options.
+[signal-preservation](signal-relocalization.md) options; straight fixed-route
+yield entries use [yield preservation](yield-relocalization.md).
 
 ```json
 {

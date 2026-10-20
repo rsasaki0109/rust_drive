@@ -41,7 +41,8 @@ An explicit [measured-reset preservation option](stop-sign-relocalization.md)
 retains served stops behind the measured front and requires a new full healthy
 stop for duties ahead. Invalid admission latches emergency braking. Fixed stops
 also compose with planner-local route fitting while retaining original surveyed
-arc coordinates; signals and yielding remain excluded from that fitting.
+arc coordinates. [Signals](signal-relocalization.md) and straight
+[yield routes](yield-relocalization.md) now retain the same original-coordinate contract.
 
 ## Independent physical acceptance
 

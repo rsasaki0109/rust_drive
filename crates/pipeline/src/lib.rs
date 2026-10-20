@@ -172,6 +172,9 @@ impl PipelineConfig {
                     "signal-preserving relocalization requires mapped traffic signals".into(),
                 );
             }
+            if policy.preserve_yield_intersections && self.yield_intersections.is_empty() {
+                return Err("yield-preserving relocalization requires mapped intersections".into());
+            }
             if policy.confirm_gnss_handoff
                 && (policy.map_only_grace_s.is_none()
                     || self.gnss_recovery.is_none()
@@ -196,11 +199,11 @@ impl PipelineConfig {
                 || self.lane_change.is_some()
                 || (!self.stop_lines.is_empty() && !policy.preserve_traffic_signals)
                 || (!self.stop_signs.is_empty() && !policy.preserve_stop_signs)
-                || !self.yield_intersections.is_empty()
+                || (!self.yield_intersections.is_empty() && !policy.preserve_yield_intersections)
                 || self.lidar3d.is_some()
                 || self.multi_height_lidar.is_some()
             {
-                return Err("regional relocalization requires a surveyed map and ordinary XY LiDAR, explicit preservation for navigation or fixed-route controls, and no lane changes or yielding intersections".into());
+                return Err("regional relocalization requires a surveyed map and ordinary XY LiDAR, explicit preservation for navigation or fixed-route controls, and no lane changes".into());
             }
         }
         if let Some(offset) = self.gnss_antenna_offset_m {
@@ -312,16 +315,11 @@ impl PipelineConfig {
                 );
             }
             rustdriving_planning::validate_local_route_geometry(&self.route, self.vehicle)?;
-            // Fixed stop signs and signals truncate the supplied route at the original
+            // Fixed controls truncate the supplied route at the original
             // surveyed arc before planner-local fillets are fitted. The fit
             // preserves that endpoint, and stop admission still projects onto
-            // the original route. Yielding remains unqualified.
-            if !self.yield_intersections.is_empty() {
-                return Err(
-                    "local route geometry currently excludes mapped traffic-rule coordinates"
-                        .into(),
-                );
-            }
+            // the original route. Yielding is restricted to a straight route
+            // by intersections::validate, so its original arc is unchanged.
         }
         let controls: Vec<_> = self
             .stop_lines
@@ -408,6 +406,7 @@ pub enum HealthIssue {
     InvalidNavigation,
     InvalidStopSignRecovery,
     InvalidTrafficSignalRecovery,
+    InvalidIntersectionRecovery,
     InvalidTrafficSignal,
 }
 
@@ -1168,7 +1167,11 @@ impl DrivingPipeline {
             && self
                 .stop_signs
                 .as_ref()
-                .is_none_or(|stops| !stops.recovery_fault());
+                .is_none_or(|stops| !stops.recovery_fault())
+            && self
+                .intersections
+                .as_ref()
+                .is_none_or(|zones| !zones.recovery_fault());
         if let Some(controls) = &mut self.traffic_controls {
             controls.step(
                 input.traffic_signal.as_ref(),
@@ -1196,7 +1199,11 @@ impl DrivingPipeline {
                 estimate,
                 self.config.vehicle.radius,
                 measured_motion,
-                health.is_empty(),
+                health.is_empty()
+                    && self
+                        .intersections
+                        .as_ref()
+                        .is_none_or(|zones| !zones.recovery_fault()),
             );
             if stops.recovery_fault() {
                 health.push(HealthIssue::InvalidStopSignRecovery);
@@ -1211,6 +1218,9 @@ impl DrivingPipeline {
                 self.last_lidar,
                 health.is_empty(),
             );
+            if zones.recovery_fault() {
+                health.push(HealthIssue::InvalidIntersectionRecovery);
+            }
         }
         if let Some(change) = &mut self.lane_change {
             change.step(
@@ -1501,6 +1511,16 @@ impl DrivingPipeline {
                 fresh.config.vehicle.radius,
             );
             fresh.traffic_controls = Some(controls);
+        }
+        if self
+            .config
+            .relocalization
+            .unwrap()
+            .preserve_yield_intersections
+        {
+            let mut zones = self.intersections.take().unwrap();
+            zones.relocalize(input.time, fresh.ekf.state(), fresh.config.vehicle.radius);
+            fresh.intersections = Some(zones);
         }
         if self.config.relocalization.unwrap().confirm_gnss_handoff {
             fresh
