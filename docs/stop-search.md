@@ -112,6 +112,29 @@ source reconstruction and binary provenance. The first complete required check's
 Rust 1.90 Clippy type-complexity failure remains recorded; a private named
 selection structure replaces the nested tuple.
 
+The public result file is now a small manifest with the unchanged comparison
+inputs. Its `full_evidence.parts` list contains ordered pieces of the complete
+original JSON packet, each at most 32,000 bytes. Concatenation reconstructs the
+original bytes exactly; the manifest records both per-piece and complete SHA-256
+digests. This packaging avoids oversized publication requests without removing
+any first failure, source reconstruction or raw-stream receipt. To restore it:
+
+```sh
+python3 - <<'PY'
+import hashlib, json
+from pathlib import Path
+assets = Path('assets')
+manifest = json.loads((assets/'stop-search-results.json').read_text())['full_evidence']
+pieces = [(assets/p['path']).read_bytes() for p in manifest['parts']]
+assert all(len(b) == p['bytes'] and hashlib.sha256(b).hexdigest() == p['sha256']
+           for b, p in zip(pieces, manifest['parts']))
+packet = b''.join(pieces)
+assert len(packet) == manifest['bytes']
+assert hashlib.sha256(packet).hexdigest() == manifest['sha256']
+Path('/tmp/stop-search-results-full.json').write_bytes(packet)
+PY
+```
+
 The final exact `bash scripts/check.sh` passes **826 Rust tests, 125 Python tests
 and 49 standard drive/replay pairs**, retaining all 245 preceding output files
 byte exactly. Native format, locked release build, **64 native tests** and strict
