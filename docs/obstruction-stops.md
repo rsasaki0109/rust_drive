@@ -1,5 +1,9 @@
 # Settling a collision stop without repeated restarts
 
+The later [earlier-stop search](stop-search.md) adds bounded alternatives and a
+retained stopping anchor before emergency braking, while preserving the original
+settling option and its evidence below.
+
 Optional `settle_obstruction_stops: true` keeps a completed obstruction stop
 until a complete nominal candidate clears the ordinary collision sweep. It is
 off by default, recorded in the sensor-only header, and independent of the

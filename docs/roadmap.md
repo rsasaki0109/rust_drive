@@ -4,7 +4,13 @@ RustDriving's long-term target is a practical independent autonomous driving OSS
 
 The near-term user goal is a **50% engineering maturity estimate**. [Capability waypoints and evidence requirements](maturity.md) define the development direction; the percentage is subjective and does not imply road safety or parity. The current estimate is about 29%; this remains a subjective simulation-prototype estimate. Bounded turn-rule routing and richer intersection recordings add reproducible behavior, while general driving, perception accuracy and planar/terrain limits remain.
 
-The latest [narrow-road chassis continuity repair](road-width-planning.md#chassis-passing-continuity-follow-up)
+The latest [earlier obstruction-stop search](stop-search.md) retains a checked
+route-progress stop instead of repeatedly advancing it. All 40 comparisons pass;
+eight mission conditions reduce emergency steps from 355 to 3. Stable stopping
+does not finish those missions or calibrate prediction errors: strict acceptance
+remains 20/40, the option stays off, and M1 remains in progress.
+
+The preceding [narrow-road chassis continuity repair](road-width-planning.md#chassis-passing-continuity-follow-up)
 passes all 32 viewed policy comparisons and all 18 physical passes. Five native
 heading failures and four inherited incomplete missions keep strict qualification
 at 23/32 and default adoption blocked; M1 remains in progress.

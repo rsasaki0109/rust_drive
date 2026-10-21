@@ -103,6 +103,9 @@ pub struct PipelineConfig {
     pub forecast_envelope: Option<ForecastEnvelopeConfig>,
     #[serde(default, skip_serializing_if = "is_false")]
     pub settle_obstruction_stops: bool,
+    /// Search earlier collision-safe stopping positions and retain their hold.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub search_obstruction_stops: bool,
     /// Optional extra road-edge reserve for width-fitted lateral candidates.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub lateral_candidate_margin_m: Option<f64>,
@@ -155,6 +158,7 @@ impl PipelineConfig {
             confirm_slow_motion: false,
             forecast_envelope: None,
             settle_obstruction_stops: false,
+            search_obstruction_stops: false,
             lateral_candidate_margin_m: None,
             gnss_latency_compensation: false,
             local_route_geometry: false,
@@ -173,6 +177,9 @@ impl PipelineConfig {
         }
     }
     pub fn validate(&self) -> Result<(), String> {
+        if self.search_obstruction_stops && !self.settle_obstruction_stops {
+            return Err("obstruction stop search requires obstruction stop retention".into());
+        }
         if self.absolute_heading_fusion
             && (self.gnss_latency_compensation || self.relocalization.is_some())
         {
@@ -592,6 +599,7 @@ impl DrivingPipeline {
         planner.local_route_geometry = config.local_route_geometry;
         planner.point_reference_recovery = config.rear_axle_offset_m.is_none();
         planner.settle_obstruction_stops = config.settle_obstruction_stops;
+        planner.search_obstruction_stops = config.search_obstruction_stops;
         planner.lateral_candidate_margin_m = config.lateral_candidate_margin_m;
         planner.vehicle = config.vehicle;
         if let Some(limits) = config.motion_limits {
@@ -1405,6 +1413,9 @@ impl DrivingPipeline {
         }
         let command = if health.is_empty() {
             let mut requested = self.controller.control(motion_estimate, &trajectory, dt);
+            if self.planner.braking_obstruction_stop() {
+                requested.acceleration = requested.acceleration.min(0.0);
+            }
             if self
                 .stop_signs
                 .as_ref()

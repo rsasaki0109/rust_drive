@@ -93,3 +93,22 @@ fn omitted_policy_preserves_the_legacy_header_and_rejects_a_nonboolean_value() {
     value["settle_obstruction_stops"] = serde_json::json!(1);
     assert!(serde_json::from_value::<PipelineConfig>(value).is_err());
 }
+
+#[test]
+fn stop_search_requires_retention_and_preserves_the_default_header() {
+    let mut c = config();
+    assert!(
+        serde_json::to_value(&c)
+            .unwrap()
+            .get("search_obstruction_stops")
+            .is_none()
+    );
+    c.search_obstruction_stops = true;
+    assert!(c.validate().is_err());
+    c.settle_obstruction_stops = true;
+    assert!(c.validate().is_ok());
+    let mut value = serde_json::to_value(c).unwrap();
+    assert_eq!(value["search_obstruction_stops"], true);
+    value["search_obstruction_stops"] = serde_json::json!(1);
+    assert!(serde_json::from_value::<PipelineConfig>(value).is_err());
+}
