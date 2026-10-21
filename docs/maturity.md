@@ -2,7 +2,17 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest [pose covariance forecast envelope](pose-forecast-envelope.md) keeps
+The latest experimental [cold motion occupancy](cold-motion-envelope.md) keeps
+the estimate at **about 29%**. A declared reachable set now covers unsupported
+initial velocity while retaining acquisition clocks and nominal centers. The
+same 48 inputs reduce forecast-coverage failures 8 → 1 and improve strict
+qualification 28 → 36/48, retaining 20 arrivals. A new long-horizon failure in an
+already incomplete native mission means regression and default adoption fail.
+Two attempted stop-retention integrations are excluded after further physical
+confirmation and goal regressions. Measured calibration and the eight original
+incomplete missions remain open; the **30% waypoint remains unmet**.
+
+The preceding [pose covariance forecast envelope](pose-forecast-envelope.md) keeps
 the estimate at **about 29%**. Current joint pose uncertainty now accounts for
 orientation errors magnified at distant world-coordinate tracks. All 48
 supported comparisons retain preceding gates, forecast-coverage failures fall

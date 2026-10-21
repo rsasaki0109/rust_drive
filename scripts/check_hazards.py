@@ -1128,6 +1128,10 @@ def check_motion_predictions(log):
         config = json.loads(next(stream))['header']['config']
         confirm_slow_motion = config.get('confirm_slow_motion', False)
         envelope = config.get('forecast_envelope')
+        cold_motion=None
+        if config.get('forecast_cold_max_speed_m_s') is not None:
+            from cold_motion_oracle import ColdMotionOracle
+            cold_motion=ColdMotionOracle(config)
         if envelope is not None:
             from forecast_envelope import audit_envelope, validate
             validate(envelope)
@@ -1138,6 +1142,7 @@ def check_motion_predictions(log):
             tick = record['tick']
             now = tick['input']['time']
             observations, predictions = continuous_observations(tick['expected'],config.get('forecast_pose_sigma'))
+            if cold_motion is not None:cold_motion.observe(tick,observations)
             tracks = {t['id']: t for t in observations}
             prediction_ids = [p['id'] for p in predictions]
             if sorted(prediction_ids) != sorted(tracks):
@@ -1231,7 +1236,8 @@ def check_motion_predictions(log):
                 expected = [(origin[0]+direction[0]*displacement(age+i*dt),
                              origin[1]+direction[1]*displacement(age+i*dt)) for i in range(41)]
                 if envelope is not None:
-                    audit_envelope(envelope, track, now, forecast, expected, expected_radii)
+                    floor=cold_motion.floor(track,forecast,now) if cold_motion is not None else None
+                    audit_envelope(envelope, track, now, forecast, expected, expected_radii,floor)
                     enveloped_forecasts += 1
                 elif any(not all(math.isfinite(v) for v in p) or math.dist(p, e) > 1e-8
                          for p, e in zip(positions, expected)):

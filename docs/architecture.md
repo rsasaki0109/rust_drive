@@ -379,6 +379,18 @@ An evaluation-only scenario flag, `full_rate_recording`, retains every 20 Hz
 physical frame without entering the driver header or changing sensor/command
 bytes. [Contract, paired comparison and limitations](forecast-envelope.md).
 
+Optional `forecast_cold_max_speed_m_s` requires motion bounds, recent acquired
+motion fitting and the forecast-consistency guard. Before velocity confirmation,
+each knot retains the complete declared maximum-speed disc from the last acquired
+track position, including its consumed age, without changing nominal centers.
+Three stable raw acquisitions spanning 0.2 s must agree with the current tracked
+velocity within its existing error budget before returning to established
+occupancy. Scan faults and acquisition gaps rearm the unknown-motion set. This step
+precedes continuous-frame guarding; observed detours cannot admit blocker evidence
+while any cold track remains unconfirmed. The speed prior is declared and
+uncalibrated, and the option stays off by default.
+[Acquisition ownership, geometry and fixed comparison](cold-motion-envelope.md).
+
 Optional `forecast_pose_sigma` requires declared motion bounds and absolute
 heading fusion. After world projection, each knot receives the major-axis bound
 of the current joint ENU pose covariance propagated through its position

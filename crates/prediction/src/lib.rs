@@ -1,5 +1,7 @@
 //! Motion forecasts from tracked observations; no simulator behavior or intentions.
+mod cold_motion;
 mod consistency;
+pub use cold_motion::ColdMotionEnvelope;
 mod envelope;
 mod pose_envelope;
 pub use consistency::{ForecastConsistencyAdmission, ForecastConsistencyGuard};

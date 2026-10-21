@@ -16,7 +16,7 @@ def error_at(bounds, elapsed):
             + elapsed**2*bounds['acceleration_error_m_s2']/2)
 
 
-def audit_envelope(bounds, track, now, forecast, nominal, nominal_extra):
+def audit_envelope(bounds, track, now, forecast, nominal, nominal_extra, radius_floor=None):
     """Check containment and the optimal enclosing radius, without constructing its center.
 
     The driver is free to choose a center only when both input discs fit inside
@@ -39,7 +39,7 @@ def audit_envelope(bounds, track, now, forecast, nominal, nominal_extra):
         radius = radii[i]
         minimum = max(previous, error, (math.dist(old, cv)+previous+error)/2)
         if (not all(math.isfinite(v) for v in [*center, radius]) or radius < 0
-                or abs(radius-minimum) > 1e-8
-                or math.dist(center, old)+previous > radius+1e-8
-                or math.dist(center, cv)+error > radius+1e-8):
+                or abs(radius-max(minimum,radius_floor[i] if radius_floor is not None else 0.)) > 1e-8
+                or math.dist(center, old)+previous > minimum+1e-8
+                or math.dist(center, cv)+error > minimum+1e-8):
             raise ValueError('motion envelope lost an alternative, reset its age or changed its error budget')

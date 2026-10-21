@@ -4,12 +4,20 @@
 
 Current comparative engineering maturity is **about 29%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
-Optional [pose covariance in forecasts](docs/pose-forecast-envelope.md) now covers
+Experimental [cold motion occupancy](docs/cold-motion-envelope.md) now retains a
+declared maximum-speed reachable set until raw acquired velocity is supported.
+Across the same 48 inputs, forecast-coverage failures fall 8 → 1 and strict
+qualification improves 28 → 36/48; goal arrivals stay 20. One previously passing
+long-horizon forecast gate now fails in an incomplete native mission, so
+regression and default adoption fail. The option stays off, and unsuccessful
+stop-retention integration trials are retained separately.
+The preceding optional [pose covariance in forecasts](docs/pose-forecast-envelope.md) covers
 the range-dependent world-position error from current localization uncertainty.
 All 48 supported comparisons retain preceding gates; forecast-coverage failures
 fall 21 → 8 and strict qualification improves 16 → 28/48. All 48 pass the 0.2 s
-coverage gate and goal arrivals stay 20. Cold moving-object forecasts and the
-eight original incomplete missions remain open; the option stays off by default.
+coverage gate and goal arrivals stay 20. At that stage, cold moving-object
+forecasts and the eight original incomplete missions remained open; the option
+stays off by default.
 Optional [observed obstruction detours](docs/observed-detours.md) now propose
 alternate graph routes from fresh acquired blocker evidence, then switch only
 after stopped confirmation. Eight new authored route pairs reach their goals

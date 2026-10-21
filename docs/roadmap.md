@@ -4,7 +4,16 @@ RustDriving's long-term target is a practical independent autonomous driving OSS
 
 The near-term user goal is a **50% engineering maturity estimate**. [Capability waypoints and evidence requirements](maturity.md) define the development direction; the percentage is subjective and does not imply road safety or parity. The current estimate is about 29%; this remains a subjective simulation-prototype estimate. Bounded turn-rule routing and richer intersection recordings add reproducible behavior, while general driving, perception accuracy and planar/terrain limits remain.
 
-The latest [pose covariance forecasts](pose-forecast-envelope.md) account for
+The latest experimental [cold motion occupancy](cold-motion-envelope.md) covers
+unsupported initial velocity with a declared maximum-speed set. Forecast failures
+fall 8 → 1 and strict qualification improves 28 → 36/48, retaining 20 arrivals.
+A new native long-horizon failure keeps regression and default adoption failed.
+Stop-retention integration trials add physical confirmation or goal regressions
+and are excluded. Resolve the post-confirmation velocity/approach interaction
+under the original gates, calibrate the prior and complete the eight original
+missions. M1 remains in progress at about 29%.
+
+The preceding [pose covariance forecasts](pose-forecast-envelope.md) account for
 current world-position uncertainty without changing nominal tracked motion or
 the continuous acquired-disc guard. All 48 supported comparisons retain prior
 gates; forecast-coverage failures fall 21 → 8 and strict qualification improves

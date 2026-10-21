@@ -73,6 +73,10 @@ def verify_policy(config,frozen,spec):
 
 def audit(run,config,ticks,spec,frozen):
     verify_policy(config,frozen,spec)
+    return audit_dynamics(run,config,ticks,spec,frozen)
+
+
+def audit_dynamics(run,config,ticks,spec,frozen):
     if spec['qualification_family']=='detours':result=audit_navigation(run,config,ticks,dict(spec,mode=baseline(spec)['mode']),frozen)
     else:
         result=audit_fixed(run,config,ticks,spec,frozen)

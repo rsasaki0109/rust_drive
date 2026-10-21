@@ -3,6 +3,8 @@ mod planning_diagnostics;
 pub use planning_diagnostics::*;
 mod forecast_consistency;
 pub use forecast_consistency::*;
+mod cold_motion;
+pub use cold_motion::*;
 mod planar_sweep;
 pub use planar_sweep::*;
 use serde::{Deserialize, Serialize};

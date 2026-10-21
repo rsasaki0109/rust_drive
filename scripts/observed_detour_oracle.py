@@ -42,6 +42,7 @@ class ObservedDetours:
     def witness(self,tick,active,phase,revision,stamp):
         out=tick['expected'];now=out['time'];update=tick['input'].get('navigation_update');d=self.previous
         if out['health'] or phase!='Following' or (update is not None and update['revision']>revision) or d is None:return None
+        if any(not t['confirmed'] for t in (out.get('cold_motion') or {}).get('tracks',[])):return None
         scene=d['scene_acquisition_s'];records=d['candidates']
         if scene is None or not math.isfinite(scene) or scene>stamp or now-scene>.15+1e-9 or not 1<=len(records)<=9:return None
         if any(r['disposition']=='CompletePath' or not r['nominal_forecast_conflict'] for r in records):return None
