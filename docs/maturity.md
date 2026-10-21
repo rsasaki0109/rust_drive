@@ -2,7 +2,16 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest [confirmed intermediate lateral paths](refined-lateral.md) keep the
+The latest [planning decision records](planning-diagnostics.md) keep the estimate
+at **about 29%**. All 44 capture comparisons preserve operational output bytes,
+physical frames and complete outcomes. The 32 discarded approach trials finish
+none of the original eight missions and some add forecast-coverage failures;
+those runtime changes are excluded. Records now expose the responsible nominal
+forecast conflicts and distinguish them from confirmation waits. This improves
+observability without a mission-completion or uncertainty-calibration repair.
+The **30% waypoint remains unmet**.
+
+The preceding [confirmed intermediate lateral paths](refined-lateral.md) keep the
 estimate at **about 29%**. Eight new authored corridor conditions meet their
 original physical-clearance and goal gates versus zero paired three-target
 controls. All 28 calibrated parent comparisons retain their gates, with strict

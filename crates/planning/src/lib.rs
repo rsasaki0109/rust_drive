@@ -1,12 +1,15 @@
 //! Receding-horizon lateral lattice with time-indexed collision envelopes.
 mod collision;
 mod corners;
+mod diagnostics;
 mod geometry;
 mod speed;
 mod speed_zones;
 mod stopping;
 use rustdriving_core::{
-    DrivingMode, EgoState, Planner, Prediction, Route, Trajectory, VehicleConfig,
+    CandidateDisposition, DrivingMode, EgoState, Planner, PlanningDiagnostics, PlanningFailure,
+    PlanningForecastConflict, Prediction, RefinementConfirmationDiagnostic, Route, Trajectory,
+    VehicleConfig,
 };
 /// Refined proposals retain at least one meter beyond acquired forecast discs.
 pub const REFINED_CANDIDATE_CLEARANCE_M: f64 = 1.0;
@@ -50,6 +53,8 @@ pub struct LatticePlanner {
     searched_stop_s: Option<f64>,
     refinement_stamp: Option<f64>,
     refinement_support: Option<RefinementSupport>,
+    diagnostics_enabled: bool,
+    diagnostics: Option<PlanningDiagnostics>,
 }
 struct RefinementSupport {
     target: f64,
@@ -58,6 +63,7 @@ struct RefinementSupport {
     count: u8,
 }
 struct Selection {
+    index: u8,
     cost: (bool, bool, bool, f64),
     trajectory: Trajectory,
     blocked: bool,
@@ -89,10 +95,22 @@ impl Default for LatticePlanner {
             searched_stop_s: None,
             refinement_stamp: None,
             refinement_support: None,
+            diagnostics_enabled: false,
+            diagnostics: None,
         }
     }
 }
 impl LatticePlanner {
+    /// Record bounded decision summaries without changing candidate selection.
+    pub fn set_diagnostics_enabled(&mut self, enabled: bool) {
+        self.diagnostics_enabled = enabled;
+        self.diagnostics = None;
+    }
+
+    pub fn diagnostics(&self) -> Option<&PlanningDiagnostics> {
+        self.diagnostics.as_ref()
+    }
+
     /// Clear route-dependent maneuver history without withdrawing an unfinished
     /// collision brake. The new route must still offer a completely clear path.
     pub fn reset_route_state(&mut self) {
@@ -103,6 +121,7 @@ impl LatticePlanner {
         self.searched_stop_s = None;
         self.refinement_stamp = None;
         self.refinement_support = None;
+        self.diagnostics = None;
     }
 
     /// Supply the last accepted scene acquisition, never the control clock.
@@ -154,6 +173,13 @@ impl LatticePlanner {
 }
 impl Planner for LatticePlanner {
     fn plan(&mut self, ego: EgoState, route: &Route, objects: &[Prediction]) -> Trajectory {
+        self.diagnostics = None;
+        let mut diagnostics = self.diagnostics_enabled.then(|| PlanningDiagnostics {
+            scene_acquisition_s: self.refinement_stamp,
+            obstruction_stop_requested: self.obstruction_stop_requested,
+            obstruction_stop_active: self.obstruction_stop_active,
+            ..PlanningDiagnostics::default()
+        });
         if !ego.speed.is_finite()
             || !ego.pose.position.finite()
             || !ego.pose.yaw.is_finite()
@@ -182,6 +208,10 @@ impl Planner for LatticePlanner {
                     || object.positions.iter().any(|position| !position.finite())
             })
         {
+            if let Some(record) = &mut diagnostics {
+                record.failure = Some(PlanningFailure::InvalidInput);
+            }
+            self.diagnostics = diagnostics;
             return Trajectory {
                 points: vec![],
                 mode: DrivingMode::Emergency,
@@ -197,6 +227,10 @@ impl Planner for LatticePlanner {
                     &local_route
                 }
                 Err(_) => {
+                    if let Some(record) = &mut diagnostics {
+                        record.failure = Some(PlanningFailure::InvalidLocalGeometry);
+                    }
+                    self.diagnostics = diagnostics;
                     return Trajectory {
                         points: vec![],
                         mode: DrivingMode::Emergency,
@@ -221,6 +255,11 @@ impl Planner for LatticePlanner {
             goal_distance
         };
         let horizon = 40.0_f64.min(goal_distance);
+        if let Some(record) = &mut diagnostics {
+            record.scene_acquisition_s = self.refinement_stamp;
+            record.route_progress_m = Some(supplied_route.project(ego.pose.position).0);
+            record.planning_span_m = Some(horizon);
+        }
         let limits = speed::Limits {
             zones: (!self.speed_zones.is_empty()).then_some((
                 supplied_route,
@@ -285,13 +324,18 @@ impl Planner for LatticePlanner {
                 continue;
             }
             let target = side * fraction;
+            let mut trace = diagnostics::CandidateTrace::new(diagnostics.as_mut(), index, target);
             // Avoid duplicate centerline paths when no useful side corridor fits.
             if index > 0 && target.abs() <= 0.1 {
+                trace.reject(CandidateDisposition::NoSideRoom);
                 continue;
             }
-            if target.abs() + self.vehicle.radius > route.half_width
-                || (target * lateral < 0.0 && lateral.abs() > 1.0)
-            {
+            if target.abs() + self.vehicle.radius > route.half_width {
+                trace.reject(CandidateDisposition::OutsideTargetCorridor);
+                continue;
+            }
+            if target * lateral < 0.0 && lateral.abs() > 1.0 {
+                trace.reject(CandidateDisposition::OppositeSideDuringPass);
                 continue;
             }
             let transition = transition_distance(
@@ -386,6 +430,7 @@ impl Planner for LatticePlanner {
                 geometry.push(position);
             }
             if !contained {
+                trace.reject(CandidateDisposition::GeometryOutsideCorridor);
                 continue;
             }
             // Route progress is not arc length when the candidate shifts laterally.
@@ -416,6 +461,7 @@ impl Planner for LatticePlanner {
             let Some(mut points) =
                 speed::profile(&geometry, ego.speed.max(0.0), &candidate_limits, goal_stop)
             else {
+                trace.reject(CandidateDisposition::UnreachableSpeedProfile);
                 continue;
             };
             let contact = |path: &[rustdriving_core::TrajectoryPoint]| {
@@ -445,12 +491,44 @@ impl Planner for LatticePlanner {
             };
             let first_contact = contact(&points);
             let blocked = first_contact.is_finite();
+            if trace.enabled() && blocked {
+                // Reuse the sweep solely for recording the responsible identity;
+                // these read-only calls cannot influence the selected profile.
+                let floor = if refined {
+                    REFINED_CANDIDATE_CLEARANCE_M
+                } else {
+                    0.0
+                };
+                let heading = rustdriving_core::Vec2::new(ego.pose.yaw.cos(), ego.pose.yaw.sin());
+                let conflict = objects
+                    .iter()
+                    .filter_map(|object| {
+                        collision::with_minimum_clearance(
+                            &points,
+                            object,
+                            self.vehicle.radius,
+                            heading,
+                            floor,
+                        )
+                        .map(|time| PlanningForecastConflict {
+                            prediction_id: object.id,
+                            relative_time_s: time,
+                            forecast_radius_m: object.radius_at(time),
+                            forecast_horizon_s: object.dt * (object.positions.len() - 1) as f64,
+                            minimum_clearance_floor_m: floor,
+                        })
+                    })
+                    .min_by(|a, b| a.relative_time_s.total_cmp(&b.relative_time_s));
+                trace.conflict(conflict);
+            }
             // Refinement offers a complete checked escape. Rejected added
             // proposals cannot replace or arm the established stopping duty.
             if refined && blocked {
+                trace.reject(CandidateDisposition::RefinementForecastConflict);
                 continue;
             }
             let mut searched = false;
+            let mut used_stop_search = false;
             if blocked {
                 collision_seen = true;
                 let mut stop = if hold_requested {
@@ -499,11 +577,14 @@ impl Planner for LatticePlanner {
                     self.search_obstruction_stops && !hold_requested,
                     |path| !contact(path).is_finite(),
                 ) else {
+                    trace.reject(CandidateDisposition::NoCheckedStop);
                     continue;
                 };
                 points = stopped;
+                used_stop_search = used_search;
                 searched = used_search && ego.speed > 0.2;
             }
+            trace.accept(&points, supplied_route, blocked, used_stop_search);
             let permitted = points.iter().map(|p| p.speed).fold(0.0_f64, f64::max);
             let switching_penalty = if target * self.previous_lateral < 0.0 {
                 30.0
@@ -593,6 +674,7 @@ impl Planner for LatticePlanner {
                 .is_none_or(|previous| cost < previous.cost)
             {
                 *selection = Some(Selection {
+                    index: index as u8,
                     cost,
                     trajectory: traj,
                     blocked,
@@ -609,6 +691,22 @@ impl Planner for LatticePlanner {
             }
         } else {
             self.refinement_support = None;
+        }
+        if let Some(record) = &mut diagnostics {
+            record.selected_candidate = best.as_ref().map(|choice| choice.index);
+            if best.is_none() {
+                record.failure = Some(PlanningFailure::NoSelectableCandidate);
+            }
+            record.refinement_confirmation =
+                self.refinement_support
+                    .as_ref()
+                    .map(|support| RefinementConfirmationDiagnostic {
+                        lateral_target_m: support.target,
+                        acquisition_count: support.count,
+                        first_acquisition_s: support.first,
+                        last_acquisition_s: support.last,
+                        confirmed: support.count >= 3 && support.last - support.first >= 0.2 - 1e-9,
+                    });
         }
         let (blocked, searched, stop_s, trajectory) = best
             .map(|choice| {
@@ -689,6 +787,11 @@ impl Planner for LatticePlanner {
         } else {
             None
         };
+        if let Some(record) = &mut diagnostics {
+            record.obstruction_stop_requested = self.obstruction_stop_requested;
+            record.obstruction_stop_active = self.obstruction_stop_active;
+        }
+        self.diagnostics = diagnostics;
         trajectory
     }
 }

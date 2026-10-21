@@ -44,6 +44,8 @@ jobs:
         run: python scripts/test_heading_latency.py
       - name: Check refined lateral admission and complete forecast clearance
         run: python scripts/test_refined_lateral.py
+      - name: Check planning decision provenance and output projection
+        run: python scripts/test_planning_diagnostics.py
       - name: Check contained lane-conflict witnesses
         run: python scripts/test_lane_occupancy.py
       - name: Check swept physical speed intervals
@@ -87,6 +89,10 @@ jobs:
       - name: Qualify bounded intermediate lateral paths with retained parent failures
         shell: bash
         run: python scripts/check_refined_lateral.py --plant reference-2d --output artifacts/refined-lateral
+      - name: Compare reference planning decision capture with unchanged physical frames
+        if: runner.os == 'Linux'
+        shell: bash
+        run: python scripts/check_planning_diagnostics.py --plant reference-2d --baseline-output artifacts/refined-lateral --output artifacts/planning-decisions
       - name: Verify acquired-heading history and unsupported-delay braking
         shell: bash
         run: |
@@ -1143,6 +1149,9 @@ jobs:
         working-directory: rust_drive
         shell: bash
         run: python3 scripts/check_refined_lateral.py --plant rne-dynamic --output artifacts/refined-lateral-native
+      - name: Compare native planning decision capture with unchanged physical frames
+        working-directory: rust_drive
+        run: python3 scripts/check_planning_diagnostics.py --plant rne-dynamic --baseline-output artifacts/refined-lateral-native --output artifacts/planning-decisions-native
       - name: Compare native confirmed track initialization with retained parent gates
         working-directory: rust_drive
         run: python3 scripts/check_track_initialization.py --plant rne-dynamic --output artifacts/confirmed-tracks-native
@@ -1247,6 +1256,7 @@ jobs:
             rust_drive/artifacts/heading-latency-native/
             rust_drive/artifacts/heading-latency-composition-native/
             rust_drive/artifacts/refined-lateral-native/
+            rust_drive/artifacts/planning-decisions-native/
             rust_drive/artifacts/japan-city-demo/
       - uses: actions/upload-artifact@v4
         with:

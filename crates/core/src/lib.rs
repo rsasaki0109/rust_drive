@@ -1,4 +1,6 @@
 //! Transport-independent contracts. SI units; world ENU, body x forward / y left.
+mod planning_diagnostics;
+pub use planning_diagnostics::*;
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 

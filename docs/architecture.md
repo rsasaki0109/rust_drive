@@ -108,6 +108,14 @@ Unsafe Rust is forbidden at workspace level. There is no global message bus, cus
 
 ## Shared application boundary
 
+Optional `record_planning_diagnostics` captures at most nine per-candidate
+decision summaries without entering selection or control. Records identify the
+first conservative nominal forecast conflict, accepted profile, chosen index,
+refinement acquisition support and obstruction-stop duties. Final pipeline
+faults/rules retain command ownership. Supplied-route progress and relative plan
+times remain explicit, including local-route/prefix distinctions. Default
+omission preserves prior output bytes. [Contract and retained experiments](planning-diagnostics.md).
+
 Optional `enclose_track_measurements` retains the minimum radius at the corrected
 track center enclosing both the normal smoothed disc and the newest measured
 disc. It changes measured extent without changing position/velocity correction

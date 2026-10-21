@@ -4,6 +4,12 @@
 
 Current comparative engineering maturity is **about 29%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
+Optional [planning decision records](docs/planning-diagnostics.md) now identify
+candidate rejection reasons, forecast conflicts, checked stops and acquisition
+confirmation. All 44 capture comparisons preserve every operational output byte
+and physical frame. Thirty-two discarded planning trials complete none of the
+eight original missions; those failures remain open and the trial changes are
+excluded from the delivered runtime.
 Optional [confirmed intermediate lateral paths](docs/refined-lateral.md) add six
 complete checked proposals inside the width-fitted sides. Eight authored
 corridor cases now meet the 1 m physical-clearance and goal gates; their paired

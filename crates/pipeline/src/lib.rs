@@ -121,6 +121,9 @@ pub struct PipelineConfig {
     /// Add six complete width-fitted intermediate paths with a one-meter reserve.
     #[serde(default, skip_serializing_if = "is_false")]
     pub refine_lateral_candidates: bool,
+    /// Include bounded planner decision summaries in sensor-only outputs.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub record_planning_diagnostics: bool,
     /// Opt-in bounded acquisition-time GNSS correction and odometry replay.
     #[serde(default, skip_serializing_if = "is_false")]
     pub gnss_latency_compensation: bool,
@@ -189,6 +192,7 @@ impl PipelineConfig {
             search_obstruction_stops: false,
             lateral_candidate_margin_m: None,
             refine_lateral_candidates: false,
+            record_planning_diagnostics: false,
             gnss_latency_compensation: false,
             local_route_geometry: false,
             rear_axle_offset_m: None,
@@ -579,6 +583,9 @@ pub struct PipelineOutput {
     pub intersections: Option<IntersectionStatus>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub lane_change: Option<LaneChangeStatus>,
+    /// Planner proposal only; final faults and mapped duties can override it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub planning_diagnostics: Option<rustdriving_core::PlanningDiagnostics>,
 }
 const MAX_ODOMETRY_AGE_S: f64 = 0.15;
 const MAX_GNSS_AGE_S: f64 = 0.75;
@@ -646,6 +653,7 @@ impl DrivingPipeline {
         planner.search_obstruction_stops = config.search_obstruction_stops;
         planner.lateral_candidate_margin_m = config.lateral_candidate_margin_m;
         planner.refine_lateral_candidates = config.refine_lateral_candidates;
+        planner.set_diagnostics_enabled(config.record_planning_diagnostics);
         planner.vehicle = config.vehicle;
         if let Some(limits) = config.motion_limits {
             planner.max_acceleration_m_s2 = limits.max_acceleration_m_s2;
@@ -1571,6 +1579,7 @@ impl DrivingPipeline {
             stop_signs: self.stop_signs.as_ref().map(StopSigns::status),
             intersections: self.intersections.as_ref().map(YieldIntersections::status),
             lane_change: self.lane_change.as_ref().map(LaneChangeGate::status),
+            planning_diagnostics: self.planner.diagnostics().cloned(),
         })
     }
     fn start_localization_epoch(
