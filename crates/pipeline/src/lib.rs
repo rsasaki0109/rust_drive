@@ -118,6 +118,9 @@ pub struct PipelineConfig {
     /// Optional extra road-edge reserve for width-fitted lateral candidates.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub lateral_candidate_margin_m: Option<f64>,
+    /// Add six complete width-fitted intermediate paths with a one-meter reserve.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub refine_lateral_candidates: bool,
     /// Opt-in bounded acquisition-time GNSS correction and odometry replay.
     #[serde(default, skip_serializing_if = "is_false")]
     pub gnss_latency_compensation: bool,
@@ -185,6 +188,7 @@ impl PipelineConfig {
             settle_obstruction_stops: false,
             search_obstruction_stops: false,
             lateral_candidate_margin_m: None,
+            refine_lateral_candidates: false,
             gnss_latency_compensation: false,
             local_route_geometry: false,
             rear_axle_offset_m: None,
@@ -202,6 +206,9 @@ impl PipelineConfig {
         }
     }
     pub fn validate(&self) -> Result<(), String> {
+        if self.refine_lateral_candidates && self.lateral_candidate_margin_m.is_none() {
+            return Err("intermediate lateral candidates require road-width fitting".into());
+        }
         if self.heading_latency_compensation
             && (!self.absolute_heading_fusion || !self.gnss_latency_compensation)
         {
@@ -638,6 +645,7 @@ impl DrivingPipeline {
         planner.settle_obstruction_stops = config.settle_obstruction_stops;
         planner.search_obstruction_stops = config.search_obstruction_stops;
         planner.lateral_candidate_margin_m = config.lateral_candidate_margin_m;
+        planner.refine_lateral_candidates = config.refine_lateral_candidates;
         planner.vehicle = config.vehicle;
         if let Some(limits) = config.motion_limits {
             planner.max_acceleration_m_s2 = limits.max_acceleration_m_s2;
@@ -1407,6 +1415,11 @@ impl DrivingPipeline {
         // Temporary stopping positions retain their exact approach profile;
         // terminal position tolerance applies only to the active destination.
         self.planner.terminal_settling = stop_route.is_none();
+        self.planner.observe_refinement_scene(if health.is_empty() {
+            self.last_lidar
+        } else {
+            None
+        });
         let mut trajectory = self.planner.plan(
             motion_estimate,
             stop_route.as_ref().unwrap_or(&self.config.route),

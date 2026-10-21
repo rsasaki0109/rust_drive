@@ -145,6 +145,16 @@ extend for a larger residual. Clear returns and side changes replace the intent;
 route resets clear it. All candidate feasibility checks remain mandatory.
 [Contract and fixed paired evaluation](road-width-planning.md).
 
+Optional `refine_lateral_candidates` requires that width calibration and adds
+`±0.875L, ±0.75L, ±0.5L` inside the fitted `±L`, for at most nine choices.
+Only complete clear additions can win; their forecast reserve is at least
+1 m and never replaces a larger existing motion reserve. Original stopping
+choices retain their policies. Added choices require three distinct healthy
+accepted scene acquisitions spanning 0.2 s; cached scans do not renew support,
+and faults or route resets clear it. Local chassis tracking preserves the
+intermediate passing anchor through temporary braking. This bounded lattice
+stays off by default. [Contract and retained failures](refined-lateral.md).
+
 `DrivingPipeline::step(&SensorFrame)` owns EKF, perception/tracking, occupancy, predictor, planner and controller state. Input contains only a monotonic clock, optional timestamped odometry/GNSS/body-frame LiDAR/absolute ENU body heading, and explicit LiDAR acquisition failure. Output contains estimate, tracks, predictions, trajectory, command, health diagnostics and separate GNSS/heading observed/accepted timestamps, decisions, NIS and counts. It has no simulator object/pose inputs. Configuration supplies route, initial pose calibration, vehicle dimensions and optional calibrated forward/braking/lateral acceleration limits; this is a known-route demonstration.
 
 Optional `absolute_heading_fusion` requires acquired body yaw and

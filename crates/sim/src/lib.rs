@@ -150,6 +150,8 @@ pub struct Scenario {
     pub search_obstruction_stops: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub lateral_candidate_margin_m: Option<f64>,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub refine_lateral_candidates: bool,
     /// Evaluation recording only; omitted from the operational replay header.
     #[serde(default, skip_serializing_if = "is_false")]
     pub full_rate_recording: bool,
@@ -754,6 +756,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     config.settle_obstruction_stops = scenario.settle_obstruction_stops;
     config.search_obstruction_stops = scenario.search_obstruction_stops;
     config.lateral_candidate_margin_m = scenario.lateral_candidate_margin_m;
+    config.refine_lateral_candidates = scenario.refine_lateral_candidates;
     config.gnss_latency_compensation = scenario.gnss_latency_compensation;
     config.speed_zones = scenario.speed_zones.clone();
     if let Some(speed) = scenario.cruise_speed {

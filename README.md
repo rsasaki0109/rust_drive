@@ -4,6 +4,12 @@
 
 Current comparative engineering maturity is **about 29%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
+Optional [confirmed intermediate lateral paths](docs/refined-lateral.md) add six
+complete checked proposals inside the width-fitted sides. Eight authored
+corridor cases now meet the 1 m physical-clearance and goal gates; their paired
+three-target controls all miss clearance. All 28 supported parent comparisons
+retain their gates. The original eight incomplete obstacle missions remain
+failed, and the option stays off by default.
 Optional [acquisition-time heading fusion](docs/heading-latency.md) now supports
 up to 200 ms of heading delivery delay through measured GNSS/map history.
 All 18 enabled simulation cases meet the fixed accuracy, clearance and goal

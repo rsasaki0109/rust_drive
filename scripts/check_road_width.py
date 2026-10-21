@@ -139,6 +139,11 @@ def verify_targets(config,ticks):
     margin=config.get('lateral_candidate_margin_m')
     side=3.5 if margin is None else max(0.,min(3.5,config['route']['half_width']-config['vehicle']['radius']-margin))
     valid=[0.,side,-side] if side>.1 else [0.]
+    refined=config.get('refine_lateral_candidates',False)
+    if type(refined) is not bool or (refined and margin is None):
+        raise ValueError('invalid intermediate-candidate policy')
+    if refined:
+        valid += [side*f for f in [.875,-.875,.75,-.75,.5,-.5] if abs(side*f)>.1]
     counts=0; locate=projector(config['route']['points'])
     for tick in ticks:
         out=tick['expected']; target=out['trajectory']['lateral_target']

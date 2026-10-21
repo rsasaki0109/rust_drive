@@ -42,6 +42,8 @@ jobs:
         run: python scripts/test_absolute_heading.py
       - name: Check acquired-heading chronology and retained fault clocks
         run: python scripts/test_heading_latency.py
+      - name: Check refined lateral admission and complete forecast clearance
+        run: python scripts/test_refined_lateral.py
       - name: Check contained lane-conflict witnesses
         run: python scripts/test_lane_occupancy.py
       - name: Check swept physical speed intervals
@@ -82,6 +84,9 @@ jobs:
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - run: cargo test --workspace --locked
       - run: cargo build --workspace --release --locked
+      - name: Qualify bounded intermediate lateral paths with retained parent failures
+        shell: bash
+        run: python scripts/check_refined_lateral.py --plant reference-2d --output artifacts/refined-lateral
       - name: Verify acquired-heading history and unsupported-delay braking
         shell: bash
         run: |
@@ -1129,10 +1134,15 @@ jobs:
         working-directory: rust_drive
         run: python3 scripts/check_heading_history.py --plant rne-dynamic --output artifacts/heading-history-native
       - name: Verify native acquisition-time heading with independent chronology
+        working-directory: rust_drive
         shell: bash
         run: |
           python3 scripts/check_heading_latency.py --plant rne-dynamic --output artifacts/heading-latency-native
           python3 scripts/check_heading_latency.py --plant rne-dynamic --replay-composition --output artifacts/heading-latency-composition-native
+      - name: Qualify native bounded intermediate lateral paths
+        working-directory: rust_drive
+        shell: bash
+        run: python3 scripts/check_refined_lateral.py --plant rne-dynamic --output artifacts/refined-lateral-native
       - name: Compare native confirmed track initialization with retained parent gates
         working-directory: rust_drive
         run: python3 scripts/check_track_initialization.py --plant rne-dynamic --output artifacts/confirmed-tracks-native
@@ -1236,6 +1246,7 @@ jobs:
             rust_drive/artifacts/absolute-heading-native/
             rust_drive/artifacts/heading-latency-native/
             rust_drive/artifacts/heading-latency-composition-native/
+            rust_drive/artifacts/refined-lateral-native/
             rust_drive/artifacts/japan-city-demo/
       - uses: actions/upload-artifact@v4
         with:

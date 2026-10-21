@@ -2,7 +2,16 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest [acquisition-time heading fusion](heading-latency.md) keeps the estimate
+The latest [confirmed intermediate lateral paths](refined-lateral.md) keep the
+estimate at **about 29%**. Eight new authored corridor conditions meet their
+original physical-clearance and goal gates versus zero paired three-target
+controls. All 28 calibrated parent comparisons retain their gates, with strict
+qualification at 20/28 and all eight original mission failures remaining.
+The feature requires fresh scene confirmation and stays off by default.
+This expands bounded planar planning; measured sensing, forecast calibration
+and the **30% waypoint remain unmet**.
+
+The preceding [acquisition-time heading fusion](heading-latency.md) keeps the estimate
 at **about 29%**. Measured history now supports up to 200 ms of heading delivery
 delay while retaining GNSS/map ordering, full covariance and fault ownership.
 All 18 enabled simulation conditions meet their fixed accuracy/physical/goal

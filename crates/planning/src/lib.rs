@@ -8,6 +8,8 @@ mod stopping;
 use rustdriving_core::{
     DrivingMode, EgoState, Planner, Prediction, Route, Trajectory, VehicleConfig,
 };
+/// Refined proposals retain at least one meter beyond acquired forecast discs.
+pub const REFINED_CANDIDATE_CLEARANCE_M: f64 = 1.0;
 pub struct LatticePlanner {
     /// Known fixed-route arc intervals; overlaps use the lowest cap.
     pub speed_zones: Vec<rustdriving_core::RouteSpeedZone>,
@@ -30,6 +32,8 @@ pub struct LatticePlanner {
     /// Optional additional road-edge reserve for width-fitted side candidates.
     /// None preserves the original fixed +/-3.5 m offsets.
     pub lateral_candidate_margin_m: Option<f64>,
+    /// Add bounded intermediate offsets inside the original width-fitted sides.
+    pub refine_lateral_candidates: bool,
     pub vehicle: VehicleConfig,
     /// Forward acceleration authority used for reachable speed profiles.
     pub max_acceleration_m_s2: f64,
@@ -44,9 +48,17 @@ pub struct LatticePlanner {
     obstruction_stop_requested: bool,
     obstruction_stop_active: bool,
     searched_stop_s: Option<f64>,
+    refinement_stamp: Option<f64>,
+    refinement_support: Option<RefinementSupport>,
+}
+struct RefinementSupport {
+    target: f64,
+    first: f64,
+    last: f64,
+    count: u8,
 }
 struct Selection {
-    cost: (bool, bool, f64),
+    cost: (bool, bool, bool, f64),
     trajectory: Trajectory,
     blocked: bool,
     searched: bool,
@@ -63,6 +75,7 @@ impl Default for LatticePlanner {
             settle_obstruction_stops: false,
             search_obstruction_stops: false,
             lateral_candidate_margin_m: None,
+            refine_lateral_candidates: false,
             vehicle: VehicleConfig::default(),
             max_acceleration_m_s2: 2.0,
             max_deceleration_m_s2: 2.5,
@@ -74,6 +87,8 @@ impl Default for LatticePlanner {
             obstruction_stop_requested: false,
             obstruction_stop_active: false,
             searched_stop_s: None,
+            refinement_stamp: None,
+            refinement_support: None,
         }
     }
 }
@@ -86,6 +101,48 @@ impl LatticePlanner {
         self.yield_stop_s = None;
         self.terminal_side_reserved = false;
         self.searched_stop_s = None;
+        self.refinement_stamp = None;
+        self.refinement_support = None;
+    }
+
+    /// Supply the last accepted scene acquisition, never the control clock.
+    /// Missing, invalid or regressing context removes only refinement support.
+    pub fn observe_refinement_scene(&mut self, stamp: Option<f64>) {
+        if stamp.is_none_or(|t| {
+            !t.is_finite() || t < 0. || self.refinement_stamp.is_some_and(|old| t < old)
+        }) {
+            self.refinement_stamp = None;
+            self.refinement_support = None;
+        } else {
+            self.refinement_stamp = stamp;
+        }
+    }
+
+    fn refinement_confirmed(&mut self, target: f64) -> bool {
+        let Some(stamp) = self.refinement_stamp else {
+            self.refinement_support = None;
+            return false;
+        };
+        let restart = self.refinement_support.as_ref().is_none_or(|s| {
+            (s.target - target).abs() > 0.01 || stamp - s.last > 0.35 + 1e-9 || stamp < s.last
+        });
+        if restart {
+            self.refinement_support = Some(RefinementSupport {
+                target,
+                first: stamp,
+                last: stamp,
+                count: 1,
+            });
+        }
+        let support = self
+            .refinement_support
+            .as_mut()
+            .expect("initialized refinement support");
+        if stamp > support.last {
+            support.count = support.count.saturating_add(1).min(3);
+            support.last = stamp;
+        }
+        support.count >= 3 && support.last - support.first >= 0.2 - 1e-9
     }
 
     pub fn holding_obstruction_stop(&self) -> bool {
@@ -103,6 +160,7 @@ impl Planner for LatticePlanner {
             || !self.cruise_speed.is_finite()
             || self.cruise_speed <= 0.0
             || (self.search_obstruction_stops && !self.settle_obstruction_stops)
+            || (self.refine_lateral_candidates && self.lateral_candidate_margin_m.is_none())
             || !self.max_acceleration_m_s2.is_finite()
             || self.max_acceleration_m_s2 <= 0.0
             || !self.max_deceleration_m_s2.is_finite()
@@ -196,15 +254,39 @@ impl Planner for LatticePlanner {
         // behavior until a search or collision emergency actually requests it.
         let mut collision_seen = false;
         let mut best: Option<Selection> = None;
+        let mut best_refined: Option<Selection> = None;
+        let mut legacy_needs_refinement = false;
         let side = self.lateral_candidate_margin_m.map_or(3.5, |margin| {
             (route.half_width - self.vehicle.radius - margin).clamp(0.0, 3.5)
         });
         let fitted_chassis_recovery =
             self.local_route_geometry && !self.point_reference_recovery && side < 3.5;
-        let targets = [0.0, side, -side];
-        for (index, target) in targets.into_iter().enumerate() {
+        for (index, fraction) in [0.0, 1.0, -1.0, 0.875, -0.875, 0.75, -0.75, 0.5, -0.5]
+            .into_iter()
+            .enumerate()
+        {
+            let refined = index >= 3;
+            if index == 3 && self.refine_lateral_candidates {
+                legacy_needs_refinement = best.as_ref().is_none_or(|choice| {
+                    choice.blocked
+                        || objects.iter().any(|object| {
+                            collision::with_minimum_clearance(
+                                &choice.trajectory.points,
+                                object,
+                                self.vehicle.radius,
+                                rustdriving_core::Vec2::new(ego.pose.yaw.cos(), ego.pose.yaw.sin()),
+                                REFINED_CANDIDATE_CLEARANCE_M,
+                            )
+                            .is_some()
+                        })
+                });
+            }
+            if refined && !self.refine_lateral_candidates {
+                continue;
+            }
+            let target = side * fraction;
             // Avoid duplicate centerline paths when no useful side corridor fits.
-            if index > 0 && side <= 0.1 {
+            if index > 0 && target.abs() <= 0.1 {
                 continue;
             }
             if target.abs() + self.vehicle.radius > route.half_width
@@ -247,7 +329,7 @@ impl Planner for LatticePlanner {
             // floor leaves a finite recovery span after the anchor has passed.
             let correction_transition = if self.local_route_geometry
                 && (self.point_reference_recovery
-                    || (fitted_chassis_recovery && s >= start_s + transition))
+                    || ((fitted_chassis_recovery || refined) && s >= start_s + transition))
                 && target.abs() > 0.1
             {
                 // Reuse the quintic's existing second-derivative bound for
@@ -340,17 +422,34 @@ impl Planner for LatticePlanner {
                 objects
                     .iter()
                     .filter_map(|object| {
-                        collision::first_contact_time(
-                            path,
-                            object,
-                            self.vehicle.radius,
-                            rustdriving_core::Vec2::new(ego.pose.yaw.cos(), ego.pose.yaw.sin()),
-                        )
+                        let heading =
+                            rustdriving_core::Vec2::new(ego.pose.yaw.cos(), ego.pose.yaw.sin());
+                        if refined {
+                            collision::with_minimum_clearance(
+                                path,
+                                object,
+                                self.vehicle.radius,
+                                heading,
+                                REFINED_CANDIDATE_CLEARANCE_M,
+                            )
+                        } else {
+                            collision::first_contact_time(
+                                path,
+                                object,
+                                self.vehicle.radius,
+                                heading,
+                            )
+                        }
                     })
                     .fold(f64::INFINITY, f64::min)
             };
             let first_contact = contact(&points);
             let blocked = first_contact.is_finite();
+            // Refinement offers a complete checked escape. Rejected added
+            // proposals cannot replace or arm the established stopping duty.
+            if refined && blocked {
+                continue;
+            }
             let mut searched = false;
             if blocked {
                 collision_seen = true;
@@ -478,9 +577,22 @@ impl Planner for LatticePlanner {
             // A genuinely unblocked route can release the stop, including a
             // safe lateral escape. A retimed approach to the same obstruction
             // cannot restart a completed emergency stop for a speed reward.
-            let cost = (hold_requested && blocked, !settling_goal, score);
-            if best.as_ref().is_none_or(|previous| cost < previous.cost) {
-                best = Some(Selection {
+            let cost = (
+                hold_requested && blocked,
+                !settling_goal,
+                !(refined && legacy_needs_refinement),
+                score,
+            );
+            let selection = if refined {
+                &mut best_refined
+            } else {
+                &mut best
+            };
+            if selection
+                .as_ref()
+                .is_none_or(|previous| cost < previous.cost)
+            {
+                *selection = Some(Selection {
                     cost,
                     trajectory: traj,
                     blocked,
@@ -488,6 +600,15 @@ impl Planner for LatticePlanner {
                     stop_s,
                 });
             }
+        }
+        if let Some(choice) = best_refined
+            .filter(|candidate| best.as_ref().is_none_or(|old| candidate.cost < old.cost))
+        {
+            if self.refinement_confirmed(choice.trajectory.lateral_target) {
+                best = Some(choice);
+            }
+        } else {
+            self.refinement_support = None;
         }
         let (blocked, searched, stop_s, trajectory) = best
             .map(|choice| {
@@ -536,7 +657,11 @@ impl Planner for LatticePlanner {
             // Keep the narrowed chassis pass's completion arc through it. Each
             // subsequent candidate still joins the measured course and must
             // independently pass containment, speed and complete hold sweeps.
-            let temporary_center_brake = fitted_chassis_recovery
+            let temporary_center_brake = (fitted_chassis_recovery
+                || (self.refine_lateral_candidates
+                    && self.local_route_geometry
+                    && !self.point_reference_recovery
+                    && self.previous_lateral.abs() < side - 0.01))
                 && blocked
                 && trajectory.lateral_target.abs() < 0.01
                 && self.previous_lateral.abs() > 0.1;

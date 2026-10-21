@@ -49,7 +49,7 @@ def materialize(spec):
 def freeze(output,specs):return freeze_inputs(output,specs,factory=materialize,gates=GATES)
 
 
-def certify_trajectory(output,vehicle_radius):
+def certify_trajectory(output,vehicle_radius,minimum_clearance_m=0.):
     """Certify the accelerated path with midpoint/Lipschitz lower bounds.
 
     Split at every forecast knot. On each resulting interval the object velocity
@@ -57,6 +57,8 @@ def certify_trajectory(output,vehicle_radius):
     its magnitude. Recursion rejects both a contact witness and unresolved bounds.
     This checks the acceleration integral directly, without Rust's chord reserve.
     """
+    if not math.isfinite(minimum_clearance_m) or minimum_clearance_m<0.:
+        raise ValueError('invalid minimum forecast clearance')
     points=output['trajectory']['points'];tested=0;minimum=math.inf
     if len(points)<2:raise ValueError('a path without a complete time interval cannot be certified')
     def xy(p):return (p['x'],p['y'])
@@ -81,6 +83,8 @@ def certify_trajectory(output,vehicle_radius):
                 def gap(t):
                     f=(t-index*dt)/dt if index!=nxt else 0.
                     center=tuple(positions[index][k]+(positions[nxt][k]-positions[index][k])*f for k in ['x','y'])
+                    if minimum_clearance_m>.3+.06*min(t,5.)+reserve:
+                        return math.dist(ego_at(t),center)-vehicle_radius-prediction_radius_at(obj,t)-minimum_clearance_m
                     return math.dist(ego_at(t),center)-vehicle_radius-prediction_radius_at(obj,t)-.3-.06*min(t,5.)-reserve
                 stack=[(lower,upper,0)]
                 while stack:

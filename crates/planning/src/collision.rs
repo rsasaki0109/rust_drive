@@ -11,6 +11,26 @@ pub(super) fn first_contact_time(
     vehicle_radius: f64,
     held_heading: Vec2,
 ) -> Option<f64> {
+    with_minimum_clearance(path, object, vehicle_radius, held_heading, 0.0)
+}
+
+#[derive(Clone, Copy)]
+struct Safety {
+    vehicle_radius: f64,
+    minimum_clearance: f64,
+}
+
+pub(super) fn with_minimum_clearance(
+    path: &[TrajectoryPoint],
+    object: &Prediction,
+    vehicle_radius: f64,
+    held_heading: Vec2,
+    minimum_clearance: f64,
+) -> Option<f64> {
+    let safety = Safety {
+        vehicle_radius,
+        minimum_clearance,
+    };
     let first = path.first()?;
     let initial_tangent = path
         .windows(2)
@@ -20,7 +40,11 @@ pub(super) fn first_contact_time(
     if first.position.distance(position_at(object, first.time))
         <= vehicle_radius
             + object.radius_at(first.time)
-            + margin(first.time, velocity_at(object, first.time), initial_tangent)
+            + minimum_clearance.max(margin(
+                first.time,
+                velocity_at(object, first.time),
+                initial_tangent,
+            ))
     {
         return Some(first.time);
     }
@@ -36,17 +60,14 @@ pub(super) fn first_contact_time(
                 break;
             }
             if end > start {
-                if let Some(time) =
-                    segment_contact(a, b, object, vehicle_radius, start, end, held_heading)
+                if let Some(time) = segment_contact(a, b, object, safety, start, end, held_heading)
                 {
                     return Some(time);
                 }
                 start = end;
             }
         }
-        if let Some(time) =
-            segment_contact(a, b, object, vehicle_radius, start, b.time, held_heading)
-        {
+        if let Some(time) = segment_contact(a, b, object, safety, start, b.time, held_heading) {
             return Some(time);
         }
     }
@@ -107,7 +128,7 @@ fn segment_contact(
     a: &TrajectoryPoint,
     b: &TrajectoryPoint,
     object: &Prediction,
-    vehicle_radius: f64,
+    safety: Safety,
     start: f64,
     end: f64,
     held_heading: Vec2,
@@ -134,9 +155,13 @@ fn segment_contact(
         relative_end,
         // Constant acceleration along a segment differs from its temporal chord
         // by at most |delta_v| * duration / 8. Inflate the circle by this bound.
-        vehicle_radius
+        safety.vehicle_radius
             + object.radius_at(start).max(object.radius_at(end))
-            + margin(end, velocity_at(object, 0.5 * start + 0.5 * end), tangent)
+            + safety.minimum_clearance.max(margin(
+                end,
+                velocity_at(object, 0.5 * start + 0.5 * end),
+                tangent,
+            ))
             + (b.speed - a.speed).abs() * (b.time - a.time) / 8.0,
     )
     .map(|fraction| start + (end - start) * fraction)
@@ -167,6 +192,63 @@ fn contact_fraction(start: Vec2, end: Vec2, radius: f64) -> Option<f64> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn an_explicit_floor_rejects_a_legacy_near_miss_and_keeps_larger_motion_reserves() {
+        let path = [
+            TrajectoryPoint {
+                position: Vec2::new(0., 0.),
+                speed: 5.,
+                time: 0.,
+            },
+            TrajectoryPoint {
+                position: Vec2::new(20., 0.),
+                speed: 5.,
+                time: 4.,
+            },
+        ];
+        let object = Prediction {
+            id: 1,
+            positions: vec![Vec2::new(10., 2.1); 41],
+            radius: 0.5,
+            additional_radius_m: vec![],
+            dt: 0.2,
+        };
+        assert!(first_contact_time(&path, &object, 1., Vec2::new(1., 0.)).is_none());
+        assert!(with_minimum_clearance(&path, &object, 1., Vec2::new(1., 0.), 1.).is_some());
+        let hold = [
+            TrajectoryPoint {
+                position: Vec2::default(),
+                speed: 0.,
+                time: 0.,
+            },
+            TrajectoryPoint {
+                position: Vec2::default(),
+                speed: 0.,
+                time: 8.,
+            },
+        ];
+        let crossing = Prediction {
+            positions: (0..=40)
+                .map(|i| Vec2::new(2.6, 4. - i as f64 * 0.2))
+                .collect(),
+            ..object
+        };
+        assert!(with_minimum_clearance(&hold, &crossing, 1., Vec2::new(1., 0.), 1.).is_some());
+    }
+
+    #[test]
+    fn the_clearance_floor_covers_an_interior_radius_peak_in_the_full_hold() {
+        let hold = path(Vec2::default(), Vec2::default(), [0., 8.]);
+        let object = Prediction {
+            id: 1,
+            positions: vec![Vec2::new(4., 0.); 3],
+            radius: 0.5,
+            additional_radius_m: vec![0., 2., 0.],
+            dt: 4.,
+        };
+        assert!(with_minimum_clearance(&hold, &object, 1., Vec2::new(1., 0.), 1.).is_some());
+    }
 
     fn path(start: Vec2, end: Vec2, times: [f64; 2]) -> [TrajectoryPoint; 2] {
         [
