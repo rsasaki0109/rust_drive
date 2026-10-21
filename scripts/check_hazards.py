@@ -1132,6 +1132,11 @@ def check_motion_predictions(log):
         if config.get('forecast_cold_max_speed_m_s') is not None:
             from cold_motion_oracle import ColdMotionOracle
             cold_motion=ColdMotionOracle(config)
+        velocity_hypotheses=None
+        if config.get('forecast_recent_velocity_hypotheses',False):
+            from velocity_hypotheses_oracle import VelocityHypothesesOracle
+            velocity_hypotheses=VelocityHypothesesOracle(config)
+            if cold_motion is None:raise ValueError('recent velocity lacks cold support')
         if envelope is not None:
             from forecast_envelope import audit_envelope, validate
             validate(envelope)
@@ -1143,6 +1148,7 @@ def check_motion_predictions(log):
             now = tick['input']['time']
             observations, predictions = continuous_observations(tick['expected'],config.get('forecast_pose_sigma'))
             if cold_motion is not None:cold_motion.observe(tick,observations)
+            if velocity_hypotheses is not None:velocity_hypotheses.observe(tick,observations,cold_motion)
             tracks = {t['id']: t for t in observations}
             prediction_ids = [p['id'] for p in predictions]
             if sorted(prediction_ids) != sorted(tracks):
@@ -1237,6 +1243,9 @@ def check_motion_predictions(log):
                              origin[1]+direction[1]*displacement(age+i*dt)) for i in range(41)]
                 if envelope is not None:
                     floor=cold_motion.floor(track,forecast,now) if cold_motion is not None else None
+                    if velocity_hypotheses is not None:
+                        alternatives=velocity_hypotheses.floor(track,forecast,now)
+                        if alternatives is not None:floor=alternatives if floor is None else [max(a,b) for a,b in zip(floor,alternatives)]
                     audit_envelope(envelope, track, now, forecast, expected, expected_radii,floor)
                     enveloped_forecasts += 1
                 elif any(not all(math.isfinite(v) for v in p) or math.dist(p, e) > 1e-8

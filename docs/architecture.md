@@ -391,6 +391,17 @@ while any cold track remains unconfirmed. The speed prior is declared and
 uncalibrated, and the option stays off by default.
 [Acquisition ownership, geometry and fixed comparison](cold-motion-envelope.md).
 
+Optional `forecast_recent_velocity_hypotheses` requires cold-motion support.
+After confirmation, fresh acquired track velocities enter a bounded 0.8 s /
+32-sample history per identity. Each is a point alternative extrapolated from
+the current acquired position; extra radii contain those point discs with the
+existing position allowance while retaining nominal centers and the original
+current-motion error envelope. Cached ticks cannot add samples or renew clocks;
+faults, support loss, gaps and expiry clear history. This expansion follows cold
+occupancy and precedes continuous guarding and world/pose projection. It uses
+no actor truth and does not calibrate velocity uncertainty. The option stays off.
+[Acquisition contract, geometry and unchanged-input qualification](recent-velocity-hypotheses.md).
+
 Optional `forecast_pose_sigma` requires declared motion bounds and absolute
 heading fusion. After world projection, each knot receives the major-axis bound
 of the current joint ENU pose covariance propagated through its position

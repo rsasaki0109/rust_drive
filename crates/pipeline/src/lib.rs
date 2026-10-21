@@ -50,6 +50,7 @@ use rustdriving_perception::{LidarClusters, Tracker};
 use rustdriving_planning::LatticePlanner;
 use rustdriving_prediction::{
     ColdMotionEnvelope, ForecastConsistencyAdmission, ForecastConsistencyGuard, ObservedBraking,
+    RecentVelocityHypotheses,
 };
 use serde::{Deserialize, Serialize};
 use stop_signs::{StopSignStatus, StopSigns};
@@ -125,6 +126,9 @@ pub struct PipelineConfig {
     pub forecast_pose_sigma: Option<f64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub forecast_cold_max_speed_m_s: Option<f64>,
+    /// Retain recent supported velocity point alternatives for at most 0.8 s.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub forecast_recent_velocity_hypotheses: bool,
     /// Brake after a prior forecast misses a newly acquired measured disc.
     #[serde(default, skip_serializing_if = "is_false")]
     pub forecast_consistency_guard: bool,
@@ -218,6 +222,7 @@ impl PipelineConfig {
             forecast_envelope: None,
             forecast_pose_sigma: None,
             forecast_cold_max_speed_m_s: None,
+            forecast_recent_velocity_hypotheses: false,
             forecast_consistency_guard: false,
             clear_sweep_recovery: None,
             settle_obstruction_stops: false,
@@ -243,6 +248,11 @@ impl PipelineConfig {
         }
     }
     pub fn validate(&self) -> Result<(), String> {
+        if self.forecast_recent_velocity_hypotheses && self.forecast_cold_max_speed_m_s.is_none() {
+            return Err(
+                "recent velocity hypotheses require cold-motion support and motion bounds".into(),
+            );
+        }
         if let Some(speed) = self.forecast_cold_max_speed_m_s
             && (!speed.is_finite()
                 || !(0.7..=15.).contains(&speed)
@@ -675,6 +685,8 @@ pub struct PipelineOutput {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub cold_motion: Option<ColdMotionDiagnostics>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub recent_velocity_hypotheses: Option<VelocityHypothesisDiagnostics>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub planning_progress: Option<PlanningProgress>,
     /// Planner proposal only; final faults and mapped duties can override it.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -694,6 +706,7 @@ pub struct DrivingPipeline {
     tracker: Tracker,
     predictor: ObservedBraking,
     cold_motion: Option<ColdMotionEnvelope>,
+    recent_velocity_hypotheses: Option<RecentVelocityHypotheses>,
     forecast_consistency: Option<ForecastConsistencyGuard>,
     planner: LatticePlanner,
     planning_progress: planning_progress::ProgressMonitor,
@@ -849,6 +862,10 @@ impl DrivingPipeline {
             .forecast_cold_max_speed_m_s
             .map(|speed| ColdMotionEnvelope::new(speed, config.forecast_envelope.unwrap()))
             .transpose()?;
+        let recent_velocity_hypotheses = config
+            .forecast_recent_velocity_hypotheses
+            .then(|| RecentVelocityHypotheses::new(config.forecast_envelope.unwrap()))
+            .transpose()?;
         Ok(Self {
             config,
             ekf,
@@ -859,6 +876,7 @@ impl DrivingPipeline {
             tracker,
             predictor,
             cold_motion,
+            recent_velocity_hypotheses,
             forecast_consistency,
             planner,
             planning_progress: planning_progress::ProgressMonitor::default(),
@@ -1402,6 +1420,36 @@ impl DrivingPipeline {
             .cold_motion
             .as_ref()
             .map(ColdMotionEnvelope::diagnostics);
+        if let Some(recent) = &mut self.recent_velocity_hypotheses {
+            let supported = cold_motion.as_ref().map_or_else(Vec::new, |s| {
+                s.tracks
+                    .iter()
+                    .filter(|t| t.confirmed)
+                    .map(|t| t.id)
+                    .collect()
+            });
+            if recent
+                .apply(
+                    &self.tracking_tracks,
+                    &supported,
+                    self.last_lidar,
+                    input.time,
+                    self.lidar_fault.is_some(),
+                    &mut continuous_predictions,
+                )
+                .is_err()
+            {
+                health.push(HealthIssue::InconsistentForecast);
+                for prediction in &mut continuous_predictions {
+                    prediction.positions.clear();
+                    prediction.additional_radius_m.clear();
+                }
+            }
+        }
+        let recent_velocity_hypotheses = self
+            .recent_velocity_hypotheses
+            .as_ref()
+            .map(RecentVelocityHypotheses::diagnostics);
         let clear_sweep = self
             .config
             .clear_sweep_recovery
@@ -1828,6 +1876,7 @@ impl DrivingPipeline {
                 .as_ref()
                 .map(|guard| guard.diagnostics().clone()),
             cold_motion,
+            recent_velocity_hypotheses,
             planning_progress,
             planning_diagnostics: self
                 .config

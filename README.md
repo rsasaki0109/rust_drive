@@ -4,12 +4,19 @@
 
 Current comparative engineering maturity is **about 29%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
-Experimental [cold motion occupancy](docs/cold-motion-envelope.md) now retains a
+Experimental [recent velocity point hypotheses](docs/recent-velocity-hypotheses.md)
+retain fresh supported velocities for 0.8 s in forecast occupancy. On the same
+48 inputs, the remaining forecast-coverage failure falls 1 → 0 with no new
+failed gates; goal arrivals stay 20 and strict qualification stays 36/48.
+All five scored forecast horizons cover every eligible sample. The original
+eight incomplete missions and measured uncertainty calibration remain open;
+the option stays off by default.
+The preceding experimental [cold motion occupancy](docs/cold-motion-envelope.md) retains a
 declared maximum-speed reachable set until raw acquired velocity is supported.
 Across the same 48 inputs, forecast-coverage failures fall 8 → 1 and strict
 qualification improves 28 → 36/48; goal arrivals stay 20. One previously passing
-long-horizon forecast gate now fails in an incomplete native mission, so
-regression and default adoption fail. The option stays off, and unsuccessful
+long-horizon forecast gate failed in an incomplete native mission, so that
+revision failed regression and default adoption. The option stays off, and unsuccessful
 stop-retention integration trials are retained separately.
 The preceding optional [pose covariance in forecasts](docs/pose-forecast-envelope.md) covers
 the range-dependent world-position error from current localization uncertainty.

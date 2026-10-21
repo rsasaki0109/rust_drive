@@ -2,7 +2,17 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest experimental [cold motion occupancy](cold-motion-envelope.md) keeps
+The latest experimental [recent velocity point hypotheses](recent-velocity-hypotheses.md)
+keep the estimate at **about 29%**. A bounded history of fresh supported velocity
+points repairs the remaining native forecast-coverage regression under the same
+48 inputs. All five scored horizons cover every eligible sample, with no new
+failed gates. Goal arrivals stay 20 and strict qualification stays 36/48;
+measured calibration and all eight original incomplete missions remain open.
+This is a viewed simulation repair, not broader driving availability or a
+calibrated confidence model. Default adoption remains withheld and the
+**30% waypoint remains unmet**.
+
+The preceding experimental [cold motion occupancy](cold-motion-envelope.md) keeps
 the estimate at **about 29%**. A declared reachable set now covers unsupported
 initial velocity while retaining acquisition clocks and nominal centers. The
 same 48 inputs reduce forecast-coverage failures 8 → 1 and improve strict

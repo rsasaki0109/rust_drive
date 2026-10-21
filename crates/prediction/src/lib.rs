@@ -2,6 +2,8 @@
 mod cold_motion;
 mod consistency;
 pub use cold_motion::ColdMotionEnvelope;
+mod velocity_hypotheses;
+pub use velocity_hypotheses::RecentVelocityHypotheses;
 mod envelope;
 mod pose_envelope;
 pub use consistency::{ForecastConsistencyAdmission, ForecastConsistencyGuard};

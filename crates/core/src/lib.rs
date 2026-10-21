@@ -5,6 +5,8 @@ mod forecast_consistency;
 pub use forecast_consistency::*;
 mod cold_motion;
 pub use cold_motion::*;
+mod velocity_hypotheses;
+pub use velocity_hypotheses::*;
 mod planar_sweep;
 pub use planar_sweep::*;
 use serde::{Deserialize, Serialize};
