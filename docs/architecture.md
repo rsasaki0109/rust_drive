@@ -108,6 +108,18 @@ Unsafe Rust is forbidden at workspace level. There is no global message bus, cus
 
 ## Shared application boundary
 
+Optional `forecast_consistency_guard` checks new measured proxy discs against
+bounded older predictions in continuous wheel/gyro coordinates. It requires
+declared error envelopes and acquired-disc preservation, and brakes through
+`InconsistentForecast` health when the measured boundary escapes. Recovery needs
+three fresh complete acquired checks spanning 0.2 s after the fault cutoff;
+cached scans and disappearing responsible identities cannot clear it. Missing
+motion invalidates the reference epoch. Upstream sensor/localization health
+governs admission; downstream navigation/rule faults retain their own braking.
+Diagnostics are omitted by default. All 32 supported physical conditions pass
+monitor/brake checks but retain failed availability/adoption qualification.
+[Contract, independent audit and complete failures](forecast-consistency.md).
+
 Optional `record_planning_diagnostics` captures at most nine per-candidate
 decision summaries without entering selection or control. Records identify the
 first conservative nominal forecast conflict, accepted profile, chosen index,

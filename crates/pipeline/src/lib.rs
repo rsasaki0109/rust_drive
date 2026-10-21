@@ -46,7 +46,7 @@ use rustdriving_localization::latency::{GnssHistory, HistoryError};
 use rustdriving_mapping::OccupancyGrid;
 use rustdriving_perception::{LidarClusters, Tracker};
 use rustdriving_planning::LatticePlanner;
-use rustdriving_prediction::ObservedBraking;
+use rustdriving_prediction::{ForecastConsistencyGuard, ObservedBraking};
 use serde::{Deserialize, Serialize};
 use stop_signs::{StopSignStatus, StopSigns};
 use traffic_controls::{
@@ -110,6 +110,9 @@ pub struct PipelineConfig {
     /// Optional declared motion-error budgets; does not estimate uncertainty.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub forecast_envelope: Option<ForecastEnvelopeConfig>,
+    /// Brake after a prior forecast misses a newly acquired measured disc.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub forecast_consistency_guard: bool,
     #[serde(default, skip_serializing_if = "is_false")]
     pub settle_obstruction_stops: bool,
     /// Search earlier collision-safe stopping positions and retain their hold.
@@ -188,6 +191,7 @@ impl PipelineConfig {
             confirm_track_initialization: false,
             enclose_track_measurements: false,
             forecast_envelope: None,
+            forecast_consistency_guard: false,
             settle_obstruction_stops: false,
             search_obstruction_stops: false,
             lateral_candidate_margin_m: None,
@@ -210,6 +214,14 @@ impl PipelineConfig {
         }
     }
     pub fn validate(&self) -> Result<(), String> {
+        if self.forecast_consistency_guard
+            && (self.forecast_envelope.is_none() || !self.enclose_track_measurements)
+        {
+            return Err(
+                "forecast consistency requires declared envelopes and acquired-disc preservation"
+                    .into(),
+            );
+        }
         if self.refine_lateral_candidates && self.lateral_candidate_margin_m.is_none() {
             return Err("intermediate lateral candidates require road-width fitting".into());
         }
@@ -491,6 +503,7 @@ pub enum HealthIssue {
     InvalidTrafficSignalRecovery,
     InvalidIntersectionRecovery,
     InvalidTrafficSignal,
+    InconsistentForecast,
 }
 
 /// The last valid motion epoch ended; only external pose reinitialization can
@@ -583,6 +596,8 @@ pub struct PipelineOutput {
     pub intersections: Option<IntersectionStatus>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub lane_change: Option<LaneChangeStatus>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub forecast_consistency: Option<ForecastConsistencyDiagnostics>,
     /// Planner proposal only; final faults and mapped duties can override it.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub planning_diagnostics: Option<rustdriving_core::PlanningDiagnostics>,
@@ -600,6 +615,7 @@ pub struct DrivingPipeline {
     perception: LidarClusters,
     tracker: Tracker,
     predictor: ObservedBraking,
+    forecast_consistency: Option<ForecastConsistencyGuard>,
     planner: LatticePlanner,
     controller: PurePursuit,
     grid: OccupancyGrid,
@@ -733,6 +749,9 @@ impl DrivingPipeline {
         let gnss_recovery = config.gnss_recovery.map(Recovery::new);
         let relocalizer = config.relocalization.map(Relocalizer::new);
         let tracker = config.new_tracker();
+        let forecast_consistency = config
+            .forecast_consistency_guard
+            .then(ForecastConsistencyGuard::default);
         Ok(Self {
             config,
             ekf,
@@ -742,6 +761,7 @@ impl DrivingPipeline {
             perception: LidarClusters,
             tracker,
             predictor,
+            forecast_consistency,
             planner,
             controller,
             grid,
@@ -885,6 +905,9 @@ impl DrivingPipeline {
             self.tracker = self.config.new_tracker();
             self.tracking_tracks.clear();
             self.tracks.clear();
+            if let Some(guard) = &mut self.forecast_consistency {
+                guard.invalidate_motion_epoch(input.time);
+            }
             self.predictor = if self.config.confirm_slow_motion {
                 ObservedBraking::with_slow_motion()
             } else {
@@ -1239,9 +1262,21 @@ impl DrivingPipeline {
             .cloned()
             .map(|track| tracking_frame::track_to_world(tracking_to_world, track))
             .collect();
-        let predictions: Vec<_> = self
-            .predictor
-            .predict(&self.tracking_tracks, input.time)
+        let continuous_predictions = self.predictor.predict(&self.tracking_tracks, input.time);
+        if let Some(guard) = &mut self.forecast_consistency {
+            guard.observe(
+                input.time,
+                self.last_lidar,
+                self.tracker.measurements(),
+                &self.tracking_tracks,
+                &continuous_predictions,
+                health.is_empty(),
+            );
+            if guard.blocking() {
+                health.push(HealthIssue::InconsistentForecast);
+            }
+        }
+        let predictions: Vec<_> = continuous_predictions
             .into_iter()
             .map(|prediction| tracking_frame::prediction_to_world(tracking_to_world, prediction))
             .collect();
@@ -1579,6 +1614,10 @@ impl DrivingPipeline {
             stop_signs: self.stop_signs.as_ref().map(StopSigns::status),
             intersections: self.intersections.as_ref().map(YieldIntersections::status),
             lane_change: self.lane_change.as_ref().map(LaneChangeGate::status),
+            forecast_consistency: self
+                .forecast_consistency
+                .as_ref()
+                .map(|guard| guard.diagnostics().clone()),
             planning_diagnostics: self.planner.diagnostics().cloned(),
         })
     }

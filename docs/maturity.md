@@ -2,7 +2,15 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest [planning decision records](planning-diagnostics.md) keep the estimate
+The latest [measured forecast braking](forecast-consistency.md) keeps the estimate
+at **about 29%**. All 32 supported conditions pass independently reconstructed
+monitor/brake checks, including 60 measured misses and 31 confirmed recoveries.
+Goal completion falls from 16 to 5 and 12 conditions gain strict failures; eleven
+end holding an identity that is no longer observed. Regression and adoption fail,
+so the option stays off. Safe absence handling, calibrated physical forecasts and
+the eight original incomplete missions remain open; the **30% waypoint is unmet**.
+
+The preceding [planning decision records](planning-diagnostics.md) keep the estimate
 at **about 29%**. All 44 capture comparisons preserve operational output bytes,
 physical frames and complete outcomes. The 32 discarded approach trials finish
 none of the original eight missions and some add forecast-coverage failures;

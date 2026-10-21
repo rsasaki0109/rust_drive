@@ -4,6 +4,11 @@
 
 Current comparative engineering maturity is **about 29%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
+Optional [measured forecast braking](docs/forecast-consistency.md) detects new
+acquired proxy discs outside earlier predictions and requires fresh measured
+confirmation before recovery. All 32 supported conditions pass the monitor/brake
+contract, but goal completion falls from 16 to 5 and 12 conditions gain strict
+failures. Regression/adoption fail; the option stays off by default.
 Optional [planning decision records](docs/planning-diagnostics.md) now identify
 candidate rejection reasons, forecast conflicts, checked stops and acquisition
 confirmation. All 44 capture comparisons preserve every operational output byte

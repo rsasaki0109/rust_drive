@@ -32,6 +32,8 @@ jobs:
         run: python scripts/test_track_initialization.py
       - name: Check measured geometry containment and minimum-radius witnesses
         run: python scripts/test_measurement_enclosure.py
+      - name: Check measured forecast containment, braking and recovery evidence
+        run: python scripts/test_forecast_consistency.py
       - name: Check obstruction-stop recovery and independent path certificates
         run: python scripts/test_obstruction_stops.py
       - name: Check road-width candidates and independent circular road containment
@@ -93,6 +95,9 @@ jobs:
         if: runner.os == 'Linux'
         shell: bash
         run: python scripts/check_planning_diagnostics.py --plant reference-2d --baseline-output artifacts/refined-lateral --output artifacts/planning-decisions
+      - name: Qualify reference forecast braking and retain all adoption failures
+        if: runner.os == 'Linux'
+        run: python scripts/check_forecast_consistency.py --plant reference-2d --check-contract --output artifacts/forecast-consistency
       - name: Verify acquired-heading history and unsupported-delay braking
         shell: bash
         run: |
@@ -1152,6 +1157,9 @@ jobs:
       - name: Compare native planning decision capture with unchanged physical frames
         working-directory: rust_drive
         run: python3 scripts/check_planning_diagnostics.py --plant rne-dynamic --baseline-output artifacts/refined-lateral-native --output artifacts/planning-decisions-native
+      - name: Qualify native forecast braking and retain all adoption failures
+        working-directory: rust_drive
+        run: python3 scripts/check_forecast_consistency.py --plant rne-dynamic --check-contract --output artifacts/forecast-consistency-native
       - name: Compare native confirmed track initialization with retained parent gates
         working-directory: rust_drive
         run: python3 scripts/check_track_initialization.py --plant rne-dynamic --output artifacts/confirmed-tracks-native
