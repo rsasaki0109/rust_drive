@@ -2,7 +2,15 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest experimental [recent velocity point hypotheses](recent-velocity-hypotheses.md)
+The latest experimental [checked approach replanning](checked-approaches.md)
+keeps the estimate at **about 29%**. Fresh supported acquisitions can confirm a
+new complete stopping approach after a retained stationary stop. This improves
+local progress in the viewed incomplete missions without completing their
+goals. All eight original incomplete missions and independent uncertainty
+calibration remain open. The option stays off and the **30% waypoint remains
+unmet**.
+
+The preceding experimental [recent velocity point hypotheses](recent-velocity-hypotheses.md)
 keep the estimate at **about 29%**. A bounded history of fresh supported velocity
 points repairs the remaining native forecast-coverage regression under the same
 48 inputs. All five scored horizons cover every eligible sample, with no new

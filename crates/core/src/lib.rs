@@ -5,6 +5,8 @@ mod forecast_consistency;
 pub use forecast_consistency::*;
 mod cold_motion;
 pub use cold_motion::*;
+mod checked_approach;
+pub use checked_approach::CheckedApproachDiagnostics;
 mod velocity_hypotheses;
 pub use velocity_hypotheses::*;
 mod planar_sweep;

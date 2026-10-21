@@ -140,6 +140,8 @@ pub struct PipelineConfig {
     /// Search earlier collision-safe stopping positions and retain their hold.
     #[serde(default, skip_serializing_if = "is_false")]
     pub search_obstruction_stops: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub replan_checked_approaches: bool,
     /// Optional extra road-edge reserve for width-fitted lateral candidates.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub lateral_candidate_margin_m: Option<f64>,
@@ -227,6 +229,7 @@ impl PipelineConfig {
             clear_sweep_recovery: None,
             settle_obstruction_stops: false,
             search_obstruction_stops: false,
+            replan_checked_approaches: false,
             lateral_candidate_margin_m: None,
             refine_lateral_candidates: false,
             record_planning_diagnostics: false,
@@ -248,6 +251,14 @@ impl PipelineConfig {
         }
     }
     pub fn validate(&self) -> Result<(), String> {
+        if self.replan_checked_approaches
+            && !(self.search_obstruction_stops
+                && self.settle_obstruction_stops
+                && self.lateral_candidate_margin_m.is_some()
+                && self.forecast_recent_velocity_hypotheses)
+        {
+            return Err("checked approaches require retained/search stops and supported velocity hypotheses".into());
+        }
         if self.forecast_recent_velocity_hypotheses && self.forecast_cold_max_speed_m_s.is_none() {
             return Err(
                 "recent velocity hypotheses require cold-motion support and motion bounds".into(),
@@ -687,6 +698,8 @@ pub struct PipelineOutput {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub recent_velocity_hypotheses: Option<VelocityHypothesisDiagnostics>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub checked_approach: Option<CheckedApproachDiagnostics>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub planning_progress: Option<PlanningProgress>,
     /// Planner proposal only; final faults and mapped duties can override it.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -760,6 +773,7 @@ impl DrivingPipeline {
         planner.point_reference_recovery = config.rear_axle_offset_m.is_none();
         planner.settle_obstruction_stops = config.settle_obstruction_stops;
         planner.search_obstruction_stops = config.search_obstruction_stops;
+        planner.replan_checked_approaches = config.replan_checked_approaches;
         planner.lateral_candidate_margin_m = config.lateral_candidate_margin_m;
         planner.refine_lateral_candidates = config.refine_lateral_candidates;
         planner.set_diagnostics_enabled(
@@ -1704,6 +1718,19 @@ impl DrivingPipeline {
         } else {
             None
         });
+        self.planner.observe_checked_approach_scene(
+            input.time,
+            if health.is_empty()
+                && stop_route.is_none()
+                && cold_motion
+                    .as_ref()
+                    .is_some_and(|s| s.tracks.iter().all(|t| t.confirmed))
+            {
+                self.last_lidar
+            } else {
+                None
+            },
+        );
         let mut trajectory = self.planner.plan(
             motion_estimate,
             stop_route.as_ref().unwrap_or(&self.config.route),
@@ -1877,6 +1904,10 @@ impl DrivingPipeline {
                 .map(|guard| guard.diagnostics().clone()),
             cold_motion,
             recent_velocity_hypotheses,
+            checked_approach: self
+                .config
+                .replan_checked_approaches
+                .then(|| self.planner.checked_approach_diagnostics().clone()),
             planning_progress,
             planning_diagnostics: self
                 .config

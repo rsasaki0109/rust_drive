@@ -84,7 +84,8 @@ def verify_policy(actual,config,frozen):
 def certificates(config,ticks):
     enabled=config.get('refine_lateral_candidates',False)
     checked=bounds=intermediate=refined_checked=0
-    side=min(3.5,max(0.,config['route']['half_width']-config['vehicle']['radius']-config['lateral_candidate_margin_m']))
+    cap=4. if config.get('replan_checked_approaches',False) else 3.5
+    side=min(cap,max(0.,config['route']['half_width']-config['vehicle']['radius']-config['lateral_candidate_margin_m']))
     locate=projector(config['route']['points'])
     for i,tick in enumerate(ticks):
         out=tick['expected'];target=out['trajectory']['lateral_target']

@@ -4,6 +4,12 @@
 
 Current comparative engineering maturity is **about 29%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
+Experimental [checked approach replanning](docs/checked-approaches.md) can replace
+a stationary retained obstruction stop after fresh acquired confirmation of a
+new complete stopping path. The original mission goal failures remain scored;
+all 48 comparisons retain prior gates and the four supported original missions
+advance from 18–20 m to 45–47 m without reaching their goals. Arrivals stay 20,
+strict qualification stays 36/48 and this option stays off by default.
 Experimental [recent velocity point hypotheses](docs/recent-velocity-hypotheses.md)
 retain fresh supported velocities for 0.8 s in forecast occupancy. On the same
 48 inputs, the remaining forecast-coverage failure falls 1 → 0 with no new

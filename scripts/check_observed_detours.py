@@ -20,7 +20,7 @@ from check_hazards import check_motion_predictions,check_speed_profiles
 from check_mid_edge import compare,reference
 from check_navigation_relocalization import verify_navigation
 from check_relocalization_map_only import freeze,run_case
-from check_road_width import projector,swept_clearance,validate_inputs
+from check_road_width import projector,swept_clearance,validate_inputs,verify_targets
 from forecast_consistency_oracle import reconstruct as forecast_guard
 from inspect_planning import audit as inspect_decisions
 from measurement_enclosure_oracle import reconstruct as enclosure
@@ -61,8 +61,11 @@ class Decisions:
         local=dict(record_planning_diagnostics=True,vehicle=self.config['vehicle'],
             route=dict(points=points,half_width=active['half_width']),
             lateral_candidate_margin_m=self.config.get('lateral_candidate_margin_m'),
+            replan_checked_approaches=self.config.get('replan_checked_approaches',False),
             refine_lateral_candidates=self.config.get('refine_lateral_candidates',False))
-        result=inspect_decisions(local,[tick]);self.counts.update(result['candidate_dispositions']);self.ticks+=1
+        result=inspect_decisions(local,[tick])
+        if local['replan_checked_approaches']:verify_targets(local,[tick])
+        self.counts.update(result['candidate_dispositions']);self.ticks+=1
 
 
 def route_physics(run,ticks,config,navigation,observed):

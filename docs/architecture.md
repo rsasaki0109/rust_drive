@@ -412,6 +412,17 @@ covariance can change a cached forecast's radius without renewing its track.
 Default behavior is unchanged and confidence calibration remains open.
 [Geometry, independent posterior reconstruction and fixed results](pose-forecast-envelope.md).
 
+Optional `replan_checked_approaches` requires retained/search stops, declared
+road reserve and supported recent-velocity occupancy. A stationary checked stop
+can propose a farther checked stopping path from an isolated planner copy.
+Three fresh acquisitions spanning 0.2 s must retain the same endpoint, side and
+blockers before adoption; faults, cached scenes and temporary mapped routes
+cannot authorize it. Every adopted path retains the complete braking and
+eight-second hold sweep. The mode uses up to 4 m of declared usable side width
+and preserves passing intent through temporary center braking. Default behavior
+is unchanged; original mission availability remains unresolved.
+[Ownership, confirmation and evaluation](checked-approaches.md).
+
 Optional `search_obstruction_stops` requires `settle_obstruction_stops`. After
 ordinary collision retiming fails, it checks at most 16 earlier reachable stops
 with the same collision sweep and eight-second stationary tail. A selected moving

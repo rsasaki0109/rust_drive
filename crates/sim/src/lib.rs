@@ -167,6 +167,8 @@ pub struct Scenario {
     pub settle_obstruction_stops: bool,
     #[serde(default, skip_serializing_if = "is_false")]
     pub search_obstruction_stops: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub replan_checked_approaches: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub lateral_candidate_margin_m: Option<f64>,
     #[serde(default, skip_serializing_if = "is_false")]
@@ -813,6 +815,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     config.clear_sweep_recovery = scenario.clear_sweep_recovery;
     config.settle_obstruction_stops = scenario.settle_obstruction_stops;
     config.search_obstruction_stops = scenario.search_obstruction_stops;
+    config.replan_checked_approaches = scenario.replan_checked_approaches;
     config.lateral_candidate_margin_m = scenario.lateral_candidate_margin_m;
     config.refine_lateral_candidates = scenario.refine_lateral_candidates;
     config.record_planning_diagnostics = scenario.record_planning_diagnostics;

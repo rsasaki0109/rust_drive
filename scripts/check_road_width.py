@@ -137,7 +137,8 @@ def swept_clearance(run):
 
 def verify_targets(config,ticks):
     margin=config.get('lateral_candidate_margin_m')
-    side=3.5 if margin is None else max(0.,min(3.5,config['route']['half_width']-config['vehicle']['radius']-margin))
+    cap=4. if config.get('replan_checked_approaches',False) else 3.5
+    side=3.5 if margin is None else max(0.,min(cap,config['route']['half_width']-config['vehicle']['radius']-margin))
     valid=[0.,side,-side] if side>.1 else [0.]
     refined=config.get('refine_lateral_candidates',False)
     if type(refined) is not bool or (refined and margin is None):

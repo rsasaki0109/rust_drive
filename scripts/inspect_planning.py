@@ -42,7 +42,8 @@ def audit(config,ticks):
         raise ValueError('independent inspection requires a fixed route without route-changing duties')
     locate=projector(config['route']['points'])
     side=config.get('lateral_candidate_margin_m')
-    side=3.5 if side is None else min(3.5,max(0.,config['route']['half_width']-config['vehicle']['radius']-side))
+    cap=4. if config.get('replan_checked_approaches',False) else 3.5
+    side=3.5 if side is None else min(cap,max(0.,config['route']['half_width']-config['vehicle']['radius']-side))
     fractions=[0.,1.,-1.,.875,-.875,.75,-.75,.5,-.5] if config.get('refine_lateral_candidates',False) else [0.,1.,-1.]
     statuses=Counter();selected=Counter();blockers=Counter();conflicts=0;guarded=0;maximum=0
     for tick in ticks:

@@ -1,4 +1,5 @@
 //! Receding-horizon lateral lattice with time-indexed collision envelopes.
+mod checked_approach;
 mod collision;
 mod corners;
 mod diagnostics;
@@ -13,6 +14,7 @@ use rustdriving_core::{
 };
 /// Refined proposals retain at least one meter beyond acquired forecast discs.
 pub const REFINED_CANDIDATE_CLEARANCE_M: f64 = 1.0;
+#[derive(Clone)]
 pub struct LatticePlanner {
     /// Known fixed-route arc intervals; overlaps use the lowest cap.
     pub speed_zones: Vec<rustdriving_core::RouteSpeedZone>,
@@ -32,6 +34,8 @@ pub struct LatticePlanner {
     /// Search earlier reachable stops after the ordinary retimed stop fails its
     /// complete collision sweep. Requires obstruction-stop retention.
     pub search_obstruction_stops: bool,
+    /// Confirm a newly checked stopping approach using fresh scene acquisitions.
+    pub replan_checked_approaches: bool,
     /// Optional additional road-edge reserve for width-fitted side candidates.
     /// None preserves the original fixed +/-3.5 m offsets.
     pub lateral_candidate_margin_m: Option<f64>,
@@ -55,7 +59,11 @@ pub struct LatticePlanner {
     refinement_support: Option<RefinementSupport>,
     diagnostics_enabled: bool,
     diagnostics: Option<PlanningDiagnostics>,
+    approach_clock: Option<(f64, Option<f64>)>,
+    approach_confirmation: checked_approach::Confirmation,
+    prefer_stop_progress: bool,
 }
+#[derive(Clone)]
 struct RefinementSupport {
     target: f64,
     first: f64,
@@ -64,7 +72,7 @@ struct RefinementSupport {
 }
 struct Selection {
     index: u8,
-    cost: (bool, bool, bool, f64),
+    cost: (bool, bool, bool, f64, f64),
     trajectory: Trajectory,
     blocked: bool,
     searched: bool,
@@ -80,6 +88,7 @@ impl Default for LatticePlanner {
             terminal_settling: true,
             settle_obstruction_stops: false,
             search_obstruction_stops: false,
+            replan_checked_approaches: false,
             lateral_candidate_margin_m: None,
             refine_lateral_candidates: false,
             vehicle: VehicleConfig::default(),
@@ -97,6 +106,9 @@ impl Default for LatticePlanner {
             refinement_support: None,
             diagnostics_enabled: false,
             diagnostics: None,
+            approach_clock: None,
+            approach_confirmation: checked_approach::Confirmation::default(),
+            prefer_stop_progress: false,
         }
     }
 }
@@ -111,6 +123,16 @@ impl LatticePlanner {
         self.diagnostics.as_ref()
     }
 
+    /// Supply current control time and a healthy, supported scene acquisition.
+    /// None consumes a fault watermark; a cached scene cannot authorize restart.
+    pub fn observe_checked_approach_scene(&mut self, now: f64, scene: Option<f64>) {
+        self.approach_clock = Some((now, scene));
+    }
+
+    pub fn checked_approach_diagnostics(&self) -> &rustdriving_core::CheckedApproachDiagnostics {
+        &self.approach_confirmation.diagnostics
+    }
+
     /// Clear route-dependent maneuver history without withdrawing an unfinished
     /// collision brake. The new route must still offer a completely clear path.
     pub fn reset_route_state(&mut self) {
@@ -122,6 +144,7 @@ impl LatticePlanner {
         self.refinement_stamp = None;
         self.refinement_support = None;
         self.diagnostics = None;
+        self.approach_confirmation.reset();
     }
 
     /// Supply the last accepted scene acquisition, never the control clock.
@@ -173,6 +196,81 @@ impl LatticePlanner {
 }
 impl Planner for LatticePlanner {
     fn plan(&mut self, ego: EgoState, route: &Route, objects: &[Prediction]) -> Trajectory {
+        if !self.replan_checked_approaches {
+            return self.plan_inner(ego, route, objects);
+        }
+        let capture = self.diagnostics_enabled;
+        self.diagnostics_enabled = true;
+        let mut result = self.plan_inner(ego, route, objects);
+        let stopped = ego.speed.abs() <= 0.2
+            && result.mode == DrivingMode::Yield
+            && result.points.len() >= 2
+            && result.points.iter().all(|p| {
+                (0.0..=0.2).contains(&p.speed) && p.position.distance(ego.pose.position) <= 0.2
+            });
+        let mut alternative = None;
+        let mut proposal = None;
+        if stopped {
+            let mut probe = self.clone();
+            probe.obstruction_stop_requested = false;
+            probe.obstruction_stop_active = false;
+            probe.searched_stop_s = None;
+            probe.yield_stop_s = None;
+            probe.prefer_stop_progress = true;
+            let path = probe.plan_inner(ego, route, objects);
+            if let Some(record) = probe.diagnostics.as_ref()
+                && let Some(chosen) = record
+                    .selected_candidate
+                    .and_then(|i| record.candidates.get(i as usize))
+                && chosen.disposition == CandidateDisposition::CheckedStop
+                && let Some(endpoint) = path.points.last()
+                && endpoint.speed == 0.
+                && path.points.len() >= 2
+                && endpoint.position == path.points[path.points.len() - 2].position
+                && endpoint.time - path.points[path.points.len() - 2].time >= 8. - 1e-9
+            {
+                let mut ids: Vec<_> = record
+                    .candidates
+                    .iter()
+                    .filter_map(|c| {
+                        c.nominal_forecast_conflict
+                            .as_ref()
+                            .map(|f| f.prediction_id)
+                    })
+                    .collect();
+                ids.sort_unstable();
+                ids.dedup();
+                proposal = Some(checked_approach::Proposal {
+                    endpoint: endpoint.position,
+                    end_progress: route.project(endpoint.position).0,
+                    target: path.lateral_target,
+                    ids,
+                });
+                probe.prefer_stop_progress = false;
+                alternative = Some((probe, path));
+            }
+        }
+        if self.approach_confirmation.observe(
+            self.approach_clock,
+            ego.pose.position,
+            route.project(ego.pose.position).0,
+            proposal,
+        ) {
+            let confirmation = self.approach_confirmation.clone();
+            let (probe, path) = alternative.expect("confirmed checked proposal");
+            *self = probe;
+            self.approach_confirmation = confirmation;
+            result = path;
+        }
+        self.diagnostics_enabled = capture;
+        if !capture {
+            self.diagnostics = None;
+        }
+        result
+    }
+}
+impl LatticePlanner {
+    fn plan_inner(&mut self, ego: EgoState, route: &Route, objects: &[Prediction]) -> Trajectory {
         self.diagnostics = None;
         let mut diagnostics = self.diagnostics_enabled.then(|| PlanningDiagnostics {
             scene_acquisition_s: self.refinement_stamp,
@@ -186,6 +284,10 @@ impl Planner for LatticePlanner {
             || !self.cruise_speed.is_finite()
             || self.cruise_speed <= 0.0
             || (self.search_obstruction_stops && !self.settle_obstruction_stops)
+            || (self.replan_checked_approaches
+                && !(self.search_obstruction_stops
+                    && self.settle_obstruction_stops
+                    && self.lateral_candidate_margin_m.is_some()))
             || (self.refine_lateral_candidates && self.lateral_candidate_margin_m.is_none())
             || !self.max_acceleration_m_s2.is_finite()
             || self.max_acceleration_m_s2 <= 0.0
@@ -296,7 +398,14 @@ impl Planner for LatticePlanner {
         let mut best_refined: Option<Selection> = None;
         let mut legacy_needs_refinement = false;
         let side = self.lateral_candidate_margin_m.map_or(3.5, |margin| {
-            (route.half_width - self.vehicle.radius - margin).clamp(0.0, 3.5)
+            (route.half_width - self.vehicle.radius - margin).clamp(
+                0.0,
+                if self.replan_checked_approaches {
+                    4.0
+                } else {
+                    3.5
+                },
+            )
         });
         let fitted_chassis_recovery =
             self.local_route_geometry && !self.point_reference_recovery && side < 3.5;
@@ -659,9 +768,16 @@ impl Planner for LatticePlanner {
             // safe lateral escape. A retimed approach to the same obstruction
             // cannot restart a completed emergency stop for a speed reward.
             let cost = (
-                hold_requested && blocked,
+                (hold_requested || self.prefer_stop_progress) && blocked,
                 !settling_goal,
                 !(refined && legacy_needs_refinement),
+                if self.prefer_stop_progress && blocked {
+                    -supplied_route
+                        .project(traj.points.last().expect("profile endpoint").position)
+                        .0
+                } else {
+                    0.
+                },
                 score,
             );
             let selection = if refined {
@@ -755,7 +871,8 @@ impl Planner for LatticePlanner {
             // Keep the narrowed chassis pass's completion arc through it. Each
             // subsequent candidate still joins the measured course and must
             // independently pass containment, speed and complete hold sweeps.
-            let temporary_center_brake = (fitted_chassis_recovery
+            let temporary_center_brake = (self.replan_checked_approaches
+                || fitted_chassis_recovery
                 || (self.refine_lateral_candidates
                     && self.local_route_geometry
                     && !self.point_reference_recovery
