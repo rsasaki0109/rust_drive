@@ -2,7 +2,17 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest [acquired progress status](planning-progress.md) keeps the estimate at
+The latest [observed obstruction detours](observed-detours.md) keep the estimate
+at **about 29%**. Fresh acquired blockers can propose bounded alternate graph
+routes with separately owned external closures and stopped handover. Eight new
+authored route conditions now reach their goals versus zero paired controls;
+twelve negative pairs preserve operational bytes and physical frames. All eight
+newly completed detours add forecast-coverage failures, so regression and default
+adoption fail. Strict qualification is 16/44, with twenty forecast failures and
+eight disabled-control goal failures retained. The eight original single-route
+missions remain unresolved; the **30% waypoint remains unmet**.
+
+The preceding [acquired progress status](planning-progress.md) keeps the estimate at
 **about 29%**. Applications can observe prolonged stationary forecast blocking
 with actual acquisition clocks and responsible prediction identities. This
 improves failure visibility without repairing the eight incomplete missions or

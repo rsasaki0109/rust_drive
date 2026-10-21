@@ -85,19 +85,20 @@ def projection(points,position):
     return best
 
 
-def verify_navigation(config,ticks,reset_stamp=None):
+def verify_navigation(config,ticks,reset_stamp=None,obstruction_observer=None,decision_auditor=None):
     nav=config['navigation'];radius=config['vehicle']['radius'];decel=(config.get('motion_limits') or {}).get('max_deceleration_m_s2',2.5)
     closed=list(nav.get('closed_edges',[]));active=reference(nav,closed);pending=None
     phase='Following';revision=switches=votes=0;stop=None;last_stamp=fault=watermark=wheel=None;blocked_hold=False
-    reset_evidence=None;events=[];reset_ownership=None;handover_hold=False;held_ticks=0
+    reset_evidence=None;events=[];reset_ownership=None;handover_hold=False;held_ticks=0;local_exclusions=[]
+    def effective_closed():return list(dict.fromkeys(closed+local_exclusions))
     def replan(ego):
         nonlocal phase,pending,stop
-        wanted=reference(nav,closed)
+        excluded=effective_closed();wanted=reference(nav,excluded)
         if wanted is not None and wanted['edge_ids']==active['edge_ids']:
             phase='Following';stop=None;return
         cursor=0.;boundary=active['length_m'];common=0.
         for i,span in enumerate(active['traversals']):
-            if span['edge'] in closed:boundary=min(boundary,cursor)
+            if span['edge'] in excluded:boundary=min(boundary,cursor)
             length=span['end_s_m']-span['start_s_m']
             if wanted is not None and wanted['edge_ids'][i:i+1]==[span['edge']] and abs(common-cursor)<1e-6:common+=length
             cursor+=length
@@ -109,6 +110,11 @@ def verify_navigation(config,ticks,reset_stamp=None):
         else:phase='Blocked'
     for tick in ticks:
         inp,out=tick['input'],tick['expected'];now=inp['time'];ego=out['estimate'];wheel=inp.get('odometry') or wheel
+        if obstruction_observer is not None:
+            wanted_exclusions=obstruction_observer.observe(tick,active,phase,revision,closed)
+            obstruction_observer.audit_status(out['navigation'].get('observed_obstructions'))
+            if wanted_exclusions!=local_exclusions:
+                local_exclusions=list(wanted_exclusions);replan(ego)
         if reset_stamp is not None and now==reset_stamp:
             distance,s,lateral,yaw=projection(active['points'],ego['pose']['position']);yaw_error=abs(angle(ego['pose']['yaw']-yaw))
             admitted=abs(ego['speed'])<=.05 and distance+radius+.2<active['half_width'] and yaw_error<.35
@@ -126,7 +132,11 @@ def verify_navigation(config,ticks,reset_stamp=None):
                 if not 0.<=now-update['stamp']<=1.+1e-9 or any(e not in {x['id'] for x in nav['network']['edges']} for e in update['closed_edges']):
                     phase='Fault';fault=now;pending=None;votes=0
                 elif fault is None or update['stamp']>fault:
-                    revision=update['revision'];closed=list(update['closed_edges']);last_stamp=update['stamp'];fault=None;votes=0;pending=None;replan(ego)
+                    revision=update['revision'];closed=list(update['closed_edges']);last_stamp=update['stamp'];fault=None;votes=0
+                    keep_pending=(obstruction_observer is not None and obstruction_observer.enabled and phase=='Braking'
+                        and pending is not None and (wanted:=reference(nav,effective_closed())) is not None
+                        and wanted['edge_ids']==pending['edge_ids'])
+                    if not keep_pending:pending=None;replan(ego)
             if phase=='Fault':votes=0;watermark=max(watermark,now)
             else:
                 if phase=='Following':blocked_hold=False;handover_hold=False
@@ -143,6 +153,7 @@ def verify_navigation(config,ticks,reset_stamp=None):
                             events.append(dict(stamp=now,active_edges=list(active['edge_ids']),revision=revision,after_reset=reset_stamp is not None and now>reset_stamp))
                 else:votes=0
         actual=out['navigation']
+        if decision_auditor is not None:decision_auditor(tick,active,stop,phase)
         if actual.get('handover_hold',False)!=handover_hold:raise ValueError('unproved handover brake hold')
         held_ticks+=int(handover_hold)
         expected=dict(revision=revision,phase=phase,active_edges=active['edge_ids'],pending_edges=[] if pending is None else pending['edge_ids'],closed_edges=closed,stop_s=stop,switches=switches)

@@ -2,6 +2,14 @@
 use rustdriving_core::{EgoState, Odometry, Route, wrap_angle};
 use rustdriving_routing::{RoadNetwork, RoadNetworkSpec, RouteEndpoint, RoutePlan, SpeedRoutePlan};
 use serde::{Deserialize, Serialize};
+mod observed;
+#[cfg(test)]
+mod observed_tests;
+pub(crate) use observed::ObservedObstructionInput;
+pub use observed::{
+    ObservedAvoidanceDecision, ObservedEdgeAvoidance, ObservedEdgeEvidence,
+    ObservedObstructionStatus,
+};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -14,6 +22,9 @@ pub struct NavigationConfig {
     /// Retain braking once a healthy stopped handover confirmation begins.
     #[serde(default, skip_serializing_if = "is_false")]
     pub hold_for_handover: bool,
+    /// Retain bounded mission-local edge preferences from acquired obstructions.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub avoid_observed_obstructions: bool,
 }
 
 fn is_false(value: &bool) -> bool {
@@ -746,8 +757,11 @@ pub struct NavigationStatus {
     pub localization_reset: Option<NavigationResetDiagnostics>,
     #[serde(default, skip_serializing_if = "is_false")]
     pub handover_hold: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub observed_obstructions: Option<ObservedObstructionStatus>,
 }
 
+#[derive(Clone)]
 pub(crate) struct Navigator {
     config: NavigationConfig,
     network: RoadNetwork,
@@ -761,6 +775,7 @@ pub(crate) struct Navigator {
     motion_watermark: Option<f64>,
     stopped_samples: usize,
     blocked_hold: bool,
+    observed: Option<observed::ObservedObstructions>,
 }
 impl Navigator {
     pub fn new(config: NavigationConfig) -> Result<Self, String> {
@@ -780,7 +795,11 @@ impl Navigator {
             switches: 0,
             localization_reset: None,
             handover_hold: false,
+            observed_obstructions: None,
         };
+        let observed = config
+            .avoid_observed_obstructions
+            .then(observed::ObservedObstructions::default);
         Ok(Self {
             config,
             network,
@@ -792,6 +811,7 @@ impl Navigator {
             motion_watermark: None,
             stopped_samples: 0,
             blocked_hold: false,
+            observed,
         })
     }
     pub fn plan(&self) -> &RoutePlan {
@@ -801,7 +821,101 @@ impl Navigator {
         &self.active.speed_zones
     }
     pub fn status(&self) -> NavigationStatus {
-        self.status.clone()
+        let mut status = self.status.clone();
+        status.observed_obstructions = self.observed.as_ref().map(|o| o.report.clone());
+        status
+    }
+    fn effective_closed_edges(&self) -> Vec<String> {
+        let mut closed = self.status.closed_edges.clone();
+        if let Some(observed) = &self.observed {
+            for record in &observed.report.retained_edges {
+                if !closed.contains(&record.evidence.edge) {
+                    closed.push(record.evidence.edge.clone());
+                }
+            }
+        }
+        closed
+    }
+    /// Propose a new route preference before the ordinary stopped handover step.
+    /// External revisions/closures remain separately owned and cannot be forged here.
+    pub fn observe_obstructions(&mut self, input: ObservedObstructionInput<'_>) {
+        let ObservedObstructionInput {
+            now,
+            acquisition,
+            healthy,
+            ego,
+            tracks,
+            decisions,
+            update,
+            vehicle_radius: radius,
+            deceleration,
+        } = input;
+        let Some(observer) = &mut self.observed else {
+            return;
+        };
+        let evidence = observer.observe(observed::Observation {
+            now,
+            acquisition,
+            healthy,
+            phase: self.status.phase,
+            newer_external_update: update.is_some_and(|u| u.revision > self.status.revision),
+            ego,
+            vehicle_radius: radius,
+            tracks,
+            decisions,
+            active: &self.active.plan,
+            network: &self.config.network,
+        });
+        let Some(evidence) = evidence else {
+            return;
+        };
+        if observer.report.retained_edges.len() >= observed::MAX_RETAINED_EDGES {
+            observer.decision(now, ObservedAvoidanceDecision::CapacityReached);
+            return;
+        }
+        // Preview transactionally. Rejected/late preferences leave the active
+        // plan, external knowledge, handover votes and stop ownership untouched.
+        let mut proposed = self.clone();
+        proposed
+            .observed
+            .as_mut()
+            .unwrap()
+            .report
+            .retained_edges
+            .push(ObservedEdgeAvoidance {
+                evidence,
+                requested_at_control_s: now,
+            });
+        let excluded = proposed.effective_closed_edges();
+        if proposed
+            .network
+            .shortest_route_between_with_speed_zones(
+                &proposed.config.start,
+                &proposed.config.goal,
+                &excluded,
+            )
+            .is_err()
+        {
+            self.observed
+                .as_mut()
+                .unwrap()
+                .decision(now, ObservedAvoidanceDecision::NoAlternative);
+            return;
+        }
+        proposed.replan(ego, radius, deceleration);
+        if proposed.status.phase != NavigationPhase::Braking || proposed.pending.is_none() {
+            self.observed
+                .as_mut()
+                .unwrap()
+                .decision(now, ObservedAvoidanceDecision::UnreachableDivergence);
+            return;
+        }
+        proposed
+            .observed
+            .as_mut()
+            .unwrap()
+            .decision(now, ObservedAvoidanceDecision::DetourRequested);
+        *self = proposed;
     }
     pub fn fault(&mut self, now: f64) {
         self.status.phase = NavigationPhase::Fault;
@@ -819,6 +933,9 @@ impl Navigator {
     /// Route admission is latched: an unrelated closure snapshot cannot repair
     /// a measured pose outside the active corridor.
     pub fn relocalize(&mut self, now: f64, ego: EgoState, radius: f64, deceleration: f64) {
+        if let Some(observer) = &mut self.observed {
+            observer.reset_probe(now);
+        }
         let route = &self.active.plan.route;
         let (progress, lateral) = route.project(ego.pose.position);
         let (center, heading) = route.sample(progress, 0.);
@@ -904,9 +1021,25 @@ impl Navigator {
                     self.last_stamp = Some(update.stamp);
                     self.fault_epoch = None;
                     self.stopped_samples = 0;
-                    self.pending = None;
-                    self.status.pending_edges.clear();
-                    self.replan(ego, radius, deceleration);
+                    // A newly reopened unrelated edge cannot withdraw an
+                    // already reachable observed detour while it is braking.
+                    // Still reset confirmation votes and recheck map topology.
+                    let keep_observed_pending = self.observed.is_some()
+                        && self.status.phase == NavigationPhase::Braking
+                        && self.pending.as_ref().is_some_and(|pending| {
+                            self.network
+                                .shortest_route_between_with_speed_zones(
+                                    &self.config.start,
+                                    &self.config.goal,
+                                    &self.effective_closed_edges(),
+                                )
+                                .is_ok_and(|plan| plan.plan.edge_ids == pending.plan.edge_ids)
+                        });
+                    if !keep_observed_pending {
+                        self.pending = None;
+                        self.status.pending_edges.clear();
+                        self.replan(ego, radius, deceleration);
+                    }
                 }
             }
         }
@@ -969,10 +1102,11 @@ impl Navigator {
         false
     }
     fn replan(&mut self, ego: EgoState, radius: f64, deceleration: f64) {
+        let closed = self.effective_closed_edges();
         match self.network.shortest_route_between_with_speed_zones(
             &self.config.start,
             &self.config.goal,
-            &self.status.closed_edges,
+            &closed,
         ) {
             Ok(plan) if plan.plan.edge_ids == self.active.plan.edge_ids => {
                 self.status.phase = NavigationPhase::Following;
@@ -983,7 +1117,7 @@ impl Navigator {
                 let mut length = 0.0;
                 let mut prefix = 0.0;
                 for (i, id) in self.active.plan.edge_ids.iter().enumerate() {
-                    if self.status.closed_edges.contains(id) {
+                    if closed.contains(id) {
                         boundary = boundary.min(length);
                     }
                     let edge = self

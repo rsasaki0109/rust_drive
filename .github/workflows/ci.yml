@@ -34,6 +34,8 @@ jobs:
         run: python scripts/test_recent_track_motion.py
       - name: Check acquired progress dwell, blockers and lossless projection
         run: python scripts/test_planning_progress.py
+      - name: Check observed obstruction ownership, chronology and refused proposals
+        run: python scripts/test_observed_detours.py
       - name: Check measured geometry containment and minimum-radius witnesses
         run: python scripts/test_measurement_enclosure.py
       - name: Check measured forecast containment, braking and recovery evidence
@@ -200,6 +202,9 @@ jobs:
       - name: Verify braked stopped-route confirmation
         shell: bash
         run: python scripts/check_navigation_handover.py --plant reference-2d --smoke --output artifacts/navigation-handover
+      - name: Verify observed detour contract and retain forecast regressions
+        shell: bash
+        run: python scripts/check_observed_detours.py --plant reference-2d --check-contract --output artifacts/observed-detours
       - name: Verify stop-sign obligations after measured localization recovery
         shell: bash
         run: python scripts/check_stop_relocalization.py --plant reference-2d --smoke --output artifacts/stop-relocalization
@@ -285,6 +290,7 @@ jobs:
             artifacts/gnss-handoff/
             artifacts/navigation-relocalization/
             artifacts/navigation-handover/
+            artifacts/observed-detours/
             artifacts/stop-relocalization/
             artifacts/signal-relocalization/
             artifacts/yield-relocalization/
@@ -1146,6 +1152,9 @@ jobs:
       - name: Verify native braked stopped-route confirmation
         working-directory: rust_drive
         run: python3 scripts/check_navigation_handover.py --plant rne-dynamic --smoke --output artifacts/navigation-handover-native
+      - name: Verify native observed detour contract and retain forecast regressions
+        working-directory: rust_drive
+        run: python3 scripts/check_observed_detours.py --plant rne-dynamic --check-contract --output artifacts/observed-detours-native
       - name: Verify native stop-sign obligations after measured localization recovery
         working-directory: rust_drive
         run: python3 scripts/check_stop_relocalization.py --plant rne-dynamic --smoke --output artifacts/stop-relocalization-native
@@ -1288,6 +1297,7 @@ jobs:
             rust_drive/artifacts/gnss-handoff-native/
             rust_drive/artifacts/navigation-relocalization-native/
             rust_drive/artifacts/navigation-handover-native/
+            rust_drive/artifacts/observed-detours-native/
             rust_drive/artifacts/stop-relocalization-native/
             rust_drive/artifacts/signal-relocalization-native/
             rust_drive/artifacts/yield-relocalization-native/

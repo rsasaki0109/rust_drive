@@ -4,6 +4,13 @@
 
 Current comparative engineering maturity is **about 29%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
+Optional [observed obstruction detours](docs/observed-detours.md) now propose
+alternate graph routes from fresh acquired blocker evidence, then switch only
+after stopped confirmation. Eight new authored route pairs reach their goals
+versus zero disabled controls. All twelve negative pairs preserve operational
+bytes and physical frames. However, those eight detours add forecast-coverage
+failures: regression/default adoption fail, strict qualification is 16/44 and
+the option stays off. The eight original single-route mission failures remain.
 Optional [acquired progress status](docs/planning-progress.md) reports prolonged
 stationary forecast blocking after fresh two-second evidence. Applications can
 observe why the current lattice keeps a checked stop; driving policy stays fixed.

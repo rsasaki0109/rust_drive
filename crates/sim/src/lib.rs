@@ -81,6 +81,8 @@ pub struct NavigationSpec {
     pub closed_edges: Vec<String>,
     #[serde(default, skip_serializing_if = "is_false")]
     pub hold_for_handover: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub avoid_observed_obstructions: bool,
 }
 /// Simulator-only GNSS position fault; never supplied as pipeline calibration.
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
@@ -827,6 +829,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     if !scenario.navigation_updates.is_empty()
         || scenario.navigation.as_ref().is_some_and(|nav| {
             nav.hold_for_handover
+                || nav.avoid_observed_obstructions
                 || matches!(nav.start, rustdriving_routing::RouteEndpoint::Edge(_))
                 || matches!(nav.goal, rustdriving_routing::RouteEndpoint::Edge(_))
                 || !nav.network.turn_restrictions.is_empty()
@@ -843,6 +846,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
             goal: nav.goal.clone(),
             closed_edges: nav.closed_edges.clone(),
             hold_for_handover: nav.hold_for_handover,
+            avoid_observed_obstructions: nav.avoid_observed_obstructions,
         });
     }
     config

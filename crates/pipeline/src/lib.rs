@@ -380,6 +380,11 @@ impl PipelineConfig {
         }
         let canonical = Route::new(self.route.points.clone(), self.route.half_width)?;
         if let Some(nav) = &self.navigation {
+            if nav.avoid_observed_obstructions
+                && (!nav.hold_for_handover || self.relocalization.is_some())
+            {
+                return Err("observed obstruction detours require braked handover and no regional relocalization".into());
+            }
             let plan = nav.initial_plan()?;
             if plan.route.points != self.route.points
                 || plan.route.half_width != self.route.half_width
@@ -718,7 +723,12 @@ impl DrivingPipeline {
         planner.lateral_candidate_margin_m = config.lateral_candidate_margin_m;
         planner.refine_lateral_candidates = config.refine_lateral_candidates;
         planner.set_diagnostics_enabled(
-            config.record_planning_diagnostics || config.monitor_planning_progress,
+            config.record_planning_diagnostics
+                || config.monitor_planning_progress
+                || config
+                    .navigation
+                    .as_ref()
+                    .is_some_and(|n| n.avoid_observed_obstructions),
         );
         planner.vehicle = config.vehicle;
         if let Some(limits) = config.motion_limits {
@@ -1375,6 +1385,17 @@ impl DrivingPipeline {
         let unexpected_signal = self.traffic_controls.is_none() && input.traffic_signal.is_some();
         let mut switched = false;
         if let Some(nav) = &mut self.navigator {
+            nav.observe_obstructions(navigation::ObservedObstructionInput {
+                now: input.time,
+                acquisition: self.last_lidar,
+                healthy: health.is_empty() && !unexpected_signal,
+                ego: estimate,
+                tracks: &self.tracks,
+                decisions: self.planner.diagnostics(),
+                update: input.navigation_update.as_ref(),
+                vehicle_radius: self.config.vehicle.radius,
+                deceleration: self.planner.max_deceleration_m_s2,
+            });
             switched = nav.step(
                 input.navigation_update.as_ref(),
                 input.time,

@@ -491,6 +491,15 @@ Evaluation adds circular sweeps and clearance floors for actor pairs involving a
 
 ## Map navigation
 
+Optional `navigation.avoid_observed_obstructions` converts fresh, stable acquired
+blocker evidence into at most eight mission-local advisory edge preferences.
+Every nominal lattice candidate must conflict with the same measured identity;
+three acquisitions, unique map association and a reachable stopped divergence
+are required. A transactional graph proposal then uses the existing braked
+three-observation handover. External closure revisions remain separately owned,
+and their updates cannot erase the local ledger. Default behavior is unchanged;
+regional reset composition is rejected. [Contract and paired evaluation](observed-detours.md).
+
 An endpoint can also be an explicit directed edge and an interior arc distance.
 The partial-route search retains the origin's arrival-edge context and checks
 the turn into a partial destination. Traversal intervals clip geometry, speed

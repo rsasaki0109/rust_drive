@@ -34,6 +34,7 @@ python3 scripts/test_motion_continuity.py
 python3 scripts/test_relocalization.py
 python3 scripts/test_navigation_relocalization.py
 python3 scripts/test_navigation_handover.py
+python3 scripts/test_observed_detours.py
 python3 scripts/test_stop_relocalization.py
 python3 scripts/test_signal_relocalization.py
 python3 scripts/test_yield_relocalization.py
