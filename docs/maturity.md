@@ -2,7 +2,13 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest [recent acquired motion fits](recent-track-motion.md) keep the estimate
+The latest [acquired progress status](planning-progress.md) keeps the estimate at
+**about 29%**. Applications can observe prolonged stationary forecast blocking
+with actual acquisition clocks and responsible prediction identities. This
+improves failure visibility without repairing the eight incomplete missions or
+the preceding forecast/accuracy failures. The **30% waypoint remains unmet**.
+
+The preceding [recent acquired motion fits](recent-track-motion.md) keep the estimate
 at **about 29%**. Observed moving/stopping tracks use a bounded stable-shape fit,
 with acquired support clocks and unchanged static filtering. All 32 final
 comparisons retain preceding gates; forecast misses fall 25 → 13 and velocity

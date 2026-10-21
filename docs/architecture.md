@@ -158,6 +158,15 @@ faults/rules retain command ownership. Supplied-route progress and relative plan
 times remain explicit, including local-route/prefix distinctions. Default
 omission preserves prior output bytes. [Contract and retained experiments](planning-diagnostics.md).
 
+Optional `monitor_planning_progress` consumes the same bounded decisions after
+the final command is known. It reports stationary forecast blocking only after
+two seconds of distinct fresh acquisitions, with stable pose/progress anchors
+and the same sorted first-conflict identities. Faults, mapped stops, goals,
+movement, acceleration or a complete candidate withdraw support; cached ticks
+cannot renew it. Route/epoch changes reset the observer. It never changes
+planning, control or stop ownership, and monitor-only mode omits candidate
+capture from output. [Contract and independent inspection](planning-progress.md).
+
 Optional `enclose_track_measurements` retains the minimum radius at the corrected
 track center enclosing both the normal smoothed disc and the newest measured
 disc. It changes measured extent without changing position/velocity correction

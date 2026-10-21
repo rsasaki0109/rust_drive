@@ -23,6 +23,8 @@ pub use perception_3d::{
     Perception3dDiagnostics, TerrainSupportDiagnostics,
 };
 pub mod navigation;
+mod planning_progress;
+pub use planning_progress::{PlanningProgress, PlanningProgressState};
 mod relocalization;
 pub mod replay;
 mod scan_pose;
@@ -138,6 +140,9 @@ pub struct PipelineConfig {
     /// Include bounded planner decision summaries in sensor-only outputs.
     #[serde(default, skip_serializing_if = "is_false")]
     pub record_planning_diagnostics: bool,
+    /// Observe sustained stationary forecast blocking without changing commands.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub monitor_planning_progress: bool,
     /// Opt-in bounded acquisition-time GNSS correction and odometry replay.
     #[serde(default, skip_serializing_if = "is_false")]
     pub gnss_latency_compensation: bool,
@@ -213,6 +218,7 @@ impl PipelineConfig {
             lateral_candidate_margin_m: None,
             refine_lateral_candidates: false,
             record_planning_diagnostics: false,
+            monitor_planning_progress: false,
             gnss_latency_compensation: false,
             local_route_geometry: false,
             rear_axle_offset_m: None,
@@ -637,6 +643,8 @@ pub struct PipelineOutput {
     pub lane_change: Option<LaneChangeStatus>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub forecast_consistency: Option<ForecastConsistencyDiagnostics>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub planning_progress: Option<PlanningProgress>,
     /// Planner proposal only; final faults and mapped duties can override it.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub planning_diagnostics: Option<rustdriving_core::PlanningDiagnostics>,
@@ -656,6 +664,7 @@ pub struct DrivingPipeline {
     predictor: ObservedBraking,
     forecast_consistency: Option<ForecastConsistencyGuard>,
     planner: LatticePlanner,
+    planning_progress: planning_progress::ProgressMonitor,
     controller: PurePursuit,
     grid: OccupancyGrid,
     previous_time: Option<f64>,
@@ -708,7 +717,9 @@ impl DrivingPipeline {
         planner.search_obstruction_stops = config.search_obstruction_stops;
         planner.lateral_candidate_margin_m = config.lateral_candidate_margin_m;
         planner.refine_lateral_candidates = config.refine_lateral_candidates;
-        planner.set_diagnostics_enabled(config.record_planning_diagnostics);
+        planner.set_diagnostics_enabled(
+            config.record_planning_diagnostics || config.monitor_planning_progress,
+        );
         planner.vehicle = config.vehicle;
         if let Some(limits) = config.motion_limits {
             planner.max_acceleration_m_s2 = limits.max_acceleration_m_s2;
@@ -808,6 +819,7 @@ impl DrivingPipeline {
             predictor,
             forecast_consistency,
             planner,
+            planning_progress: planning_progress::ProgressMonitor::default(),
             controller,
             grid,
             previous_time: None,
@@ -1383,6 +1395,7 @@ impl DrivingPipeline {
             let speed_zones = self.navigator.as_ref().unwrap().speed_zones().to_vec();
             // Keep EKF, sensor ages, tracks and occupancy. Reset only route-dependent actuation state.
             self.planner.reset_route_state();
+            self.planning_progress.reset();
             self.planner.speed_zones = speed_zones;
             self.controller.reset_route_state();
         }
@@ -1476,6 +1489,7 @@ impl DrivingPipeline {
                 // Reset only route-dependent planning state. Preserve controller
                 // steering history so the normal steering-rate bound still applies.
                 self.planner.reset_route_state();
+                self.planning_progress.reset();
                 self.planner.speed_zones = change.alternate_speed_zones();
             }
         }
@@ -1639,6 +1653,21 @@ impl DrivingPipeline {
             self.controller.reset_emergency_state();
             trajectory.mode = DrivingMode::Emergency;
         }
+        let planning_progress = self.config.monitor_planning_progress.then(|| {
+            self.planning_progress
+                .observe(planning_progress::Observation {
+                    now: input.time,
+                    acquisition: self.last_lidar,
+                    position: estimate.pose.position,
+                    speed: estimate.speed,
+                    route_remaining: self.config.route.length()
+                        - self.config.route.project(estimate.pose.position).0,
+                    healthy_unrestricted: health.is_empty() && !emergency && stop_route.is_none(),
+                    braking: command.acceleration <= 0.0,
+                    trajectory: &trajectory,
+                    decisions: self.planner.diagnostics(),
+                })
+        });
         self.previous_time = Some(input.time);
         Ok(PipelineOutput {
             time: input.time,
@@ -1698,7 +1727,12 @@ impl DrivingPipeline {
                 .forecast_consistency
                 .as_ref()
                 .map(|guard| guard.diagnostics().clone()),
-            planning_diagnostics: self.planner.diagnostics().cloned(),
+            planning_progress,
+            planning_diagnostics: self
+                .config
+                .record_planning_diagnostics
+                .then(|| self.planner.diagnostics().cloned())
+                .flatten(),
         })
     }
     fn start_localization_epoch(

@@ -32,6 +32,8 @@ jobs:
         run: python scripts/test_track_initialization.py
       - name: Check recent acquired-motion windows, corruption and frozen-policy ownership
         run: python scripts/test_recent_track_motion.py
+      - name: Check acquired progress dwell, blockers and lossless projection
+        run: python scripts/test_planning_progress.py
       - name: Check measured geometry containment and minimum-radius witnesses
         run: python scripts/test_measurement_enclosure.py
       - name: Check measured forecast containment, braking and recovery evidence
@@ -113,6 +115,9 @@ jobs:
       - name: Compare reference recent-motion fits with retained parent gates
         if: runner.os == 'Linux'
         run: python scripts/check_recent_track_motion.py --plant reference-2d --output artifacts/recent-track-motion
+      - name: Verify reference stationary progress status without changing driving
+        if: runner.os == 'Linux'
+        run: python scripts/check_planning_progress.py --plant reference-2d --baseline-output artifacts/recent-track-motion --output artifacts/planning-progress
       - name: Verify acquired-heading history and unsupported-delay braking
         shell: bash
         run: |
@@ -1184,6 +1189,9 @@ jobs:
       - name: Compare native recent-motion fits with retained parent gates
         working-directory: rust_drive
         run: python3 scripts/check_recent_track_motion.py --plant rne-dynamic --output artifacts/recent-track-motion-native
+      - name: Verify native stationary progress status without changing driving
+        working-directory: rust_drive
+        run: python3 scripts/check_planning_progress.py --plant rne-dynamic --baseline-output artifacts/recent-track-motion-native --output artifacts/planning-progress-native
       - name: Compare native confirmed track initialization with retained parent gates
         working-directory: rust_drive
         run: python3 scripts/check_track_initialization.py --plant rne-dynamic --output artifacts/confirmed-tracks-native

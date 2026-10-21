@@ -165,6 +165,8 @@ pub struct Scenario {
     pub refine_lateral_candidates: bool,
     #[serde(default, skip_serializing_if = "is_false")]
     pub record_planning_diagnostics: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub monitor_planning_progress: bool,
     /// Evaluation recording only; omitted from the operational replay header.
     #[serde(default, skip_serializing_if = "is_false")]
     pub full_rate_recording: bool,
@@ -803,6 +805,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     config.lateral_candidate_margin_m = scenario.lateral_candidate_margin_m;
     config.refine_lateral_candidates = scenario.refine_lateral_candidates;
     config.record_planning_diagnostics = scenario.record_planning_diagnostics;
+    config.monitor_planning_progress = scenario.monitor_planning_progress;
     config.gnss_latency_compensation = scenario.gnss_latency_compensation;
     config.speed_zones = scenario.speed_zones.clone();
     if let Some(speed) = scenario.cruise_speed {

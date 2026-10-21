@@ -15,6 +15,7 @@ python3 scripts/test_stop_search.py
 python3 scripts/test_road_width.py
 python3 scripts/test_refined_lateral.py
 python3 scripts/test_planning_diagnostics.py
+python3 scripts/test_planning_progress.py
 python3 scripts/test_absolute_heading.py
 python3 scripts/test_heading_history.py
 python3 scripts/test_heading_latency.py

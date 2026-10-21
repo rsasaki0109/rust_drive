@@ -4,6 +4,11 @@
 
 Current comparative engineering maturity is **about 29%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
+Optional [acquired progress status](docs/planning-progress.md) reports prolonged
+stationary forecast blocking after fresh two-second evidence. Applications can
+observe why the current lattice keeps a checked stop; driving policy stays fixed.
+All 32 comparisons preserve operational bytes, physical frames and prior scores;
+all eight incomplete original missions are detected and remain incomplete.
 Optional [recent acquired motion fits](docs/recent-track-motion.md) improve
 moving-object tracking while retaining ordinary static/slow filtering and a
 bounded stopping-support clock. All 32 final comparisons retain prior gates;
