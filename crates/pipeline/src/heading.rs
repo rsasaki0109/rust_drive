@@ -1,6 +1,6 @@
 use crate::{HealthIssue, SensorFrame};
 use rustdriving_core::HeadingDecision;
-use rustdriving_localization::Ekf;
+use rustdriving_localization::{Ekf, latency::GnssHistory};
 
 pub const MAX_ABSOLUTE_HEADING_AGE_S: f64 = 0.35;
 
@@ -12,6 +12,7 @@ impl HeadingMonitor {
     pub(super) fn observe(
         &mut self,
         ekf: &mut Ekf,
+        history: Option<&mut GnssHistory>,
         input: &SensorFrame,
         enabled: bool,
         motion_covered: bool,
@@ -36,7 +37,14 @@ impl HeadingMonitor {
                 if (input.time - sample.stamp).abs() > 1e-9 {
                     self.fault = Some((input.time, HealthIssue::InvalidAbsoluteHeading));
                 } else {
-                    match ekf.correct_heading(sample) {
+                    let decision = if let Some(history) = history {
+                        history
+                            .correct_heading(ekf, sample, input.time)
+                            .unwrap_or(HeadingDecision::Invalid)
+                    } else {
+                        ekf.correct_heading(sample)
+                    };
+                    match decision {
                         HeadingDecision::Accepted => {
                             if self.fault.as_ref().is_none_or(|(t, _)| sample.stamp > *t) {
                                 self.fault = None;

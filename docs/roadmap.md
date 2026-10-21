@@ -4,7 +4,13 @@ RustDriving's long-term target is a practical independent autonomous driving OSS
 
 The near-term user goal is a **50% engineering maturity estimate**. [Capability waypoints and evidence requirements](maturity.md) define the development direction; the percentage is subjective and does not imply road safety or parity. The current estimate is about 29%; this remains a subjective simulation-prototype estimate. Bounded turn-rule routing and richer intersection recordings add reproducible behavior, while general driving, perception accuracy and planar/terrain limits remain.
 
-The latest [earlier obstruction-stop search](stop-search.md) retains a checked
+The latest [heading-event history](heading-history.md) composes synchronous
+heading with delayed GNSS/map replay and preserves acquisition clocks and fault
+braking. Fourteen enabled simulation cases pass; eight pairs reduce RMSE by at
+least 92.8%. Delayed heading, reset composition and measured calibration remain
+open, so M1 remains in progress and maturity stays about 29%.
+
+The preceding [earlier obstruction-stop search](stop-search.md) retains a checked
 route-progress stop instead of repeatedly advancing it. All 40 comparisons pass;
 eight mission conditions reduce emergency steps from 355 to 3. Stable stopping
 does not finish those missions or calibrate prediction errors: strict acceptance
@@ -19,7 +25,7 @@ Optional [synchronous absolute heading](absolute-heading.md) now adds a calibrat
 observation contract, full-covariance fusion and loss/rejection braking. The
 additional sensor repairs five viewed heading failures, while biased-heading
 controls and one new forecast-coverage regression remain failed. Measured sensor
-calibration and delayed/reset composition remain open; the mode stays off.
+calibration, delayed-heading and reset composition remain open; the mode stays off.
 
 ## M0 — Executable Rust baseline (implemented)
 

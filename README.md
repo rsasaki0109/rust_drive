@@ -4,6 +4,11 @@
 
 Current comparative engineering maturity is **about 29%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
+Optional [heading-event history](docs/heading-history.md) now composes synchronous
+absolute heading with delayed GNSS and map correction replay. Fourteen enabled
+simulation cases pass; eight paired comparisons reduce position RMSE by at least
+92.8%, and six fault cases stop and recover. Delayed heading, relocalization,
+measured sensor calibration and prior failed qualifications remain open.
 Optional [earlier obstruction-stop search](docs/stop-search.md) now retains a
 checked stopping position across replans. All 40 fixed comparisons pass; eight
 mission conditions reduce emergency steps from 355 to 3 while retaining standstill.

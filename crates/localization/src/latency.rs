@@ -1,12 +1,13 @@
 //! Bounded acquisition-time GNSS correction with measured-motion replay.
 use crate::Ekf;
-use rustdriving_core::{Gnss, GnssDecision, Odometry, Pose};
+use rustdriving_core::{AbsoluteHeading, Gnss, GnssDecision, Odometry, Pose};
 use std::collections::VecDeque;
 
 pub const MAX_GNSS_DELAY_S: f64 = 0.5;
 pub const MAX_PREDICTIONS: usize = 64;
 pub const MAX_MAP_CORRECTIONS: usize = 64;
 pub const MAX_GNSS_CORRECTIONS: usize = 64;
+pub const MAX_HEADING_CORRECTIONS: usize = 64;
 pub const MAX_MAP_DELAY_S: f64 = 0.2;
 const EPS: f64 = 1e-9;
 mod asynchronous;
@@ -35,17 +36,34 @@ struct GnssCorrection {
 }
 
 #[derive(Clone)]
+struct HeadingCorrection {
+    before: Ekf,
+    sample: AbsoluteHeading,
+}
+
+#[derive(Clone)]
 enum Event {
     Prediction(Prediction),
     Map(MapCorrection),
     Gnss(GnssCorrection),
+    Heading(HeadingCorrection),
 }
 impl Event {
+    fn priority(&self) -> u8 {
+        match self {
+            Self::Prediction(_) => 0,
+            Self::Gnss(_) => 1,
+            Self::Heading(_) => 2,
+            Self::Map(_) => 3,
+        }
+    }
+
     fn start(&self) -> f64 {
         match self {
             Self::Prediction(p) => p.start,
             Self::Map(m) => m.stamp,
             Self::Gnss(g) => g.fix.stamp,
+            Self::Heading(h) => h.sample.stamp,
         }
     }
     fn end(&self) -> f64 {
@@ -53,6 +71,7 @@ impl Event {
             Self::Prediction(p) => p.end,
             Self::Map(m) => m.stamp,
             Self::Gnss(g) => g.fix.stamp,
+            Self::Heading(h) => h.sample.stamp,
         }
     }
     fn before(&self) -> &Ekf {
@@ -60,6 +79,7 @@ impl Event {
             Self::Prediction(p) => &p.before,
             Self::Map(m) => &m.before,
             Self::Gnss(g) => &g.before,
+            Self::Heading(h) => &h.before,
         }
     }
 }
@@ -72,18 +92,25 @@ pub enum HistoryError {
     MapCorrectionConflict,
     /// A new earlier map observation would invalidate an accepted GNSS fix.
     GnssCorrectionConflict,
+    /// Rewinding would invalidate a previously accepted heading observation.
+    HeadingCorrectionConflict,
 }
 
 /// No measurements or calibration enter from evaluation truth. Only this
 /// wrapper may correct the supplied EKF while its history is active. Synchronous
-/// map measurements must enter through `correct_map_pose`; other external
-/// corrections require `reset` and a new covered acquisition interval.
+/// map measurements must enter through `correct_map_pose`, and synchronous
+/// heading through `correct_heading` with retained corrections enabled. Other
+/// external corrections require `reset` and a new covered acquisition interval.
 #[derive(Clone, Default)]
 pub struct GnssHistory {
     events: VecDeque<Event>,
+    // A discarded correction may already be folded into the first snapshot.
+    // Earlier equal-time priorities can no longer be reconstructed from it.
+    coverage_floor: Option<(f64, u8)>,
     current_time: Option<f64>,
     replayed_map_corrections: u64,
     replayed_gnss_corrections: u64,
+    replayed_heading_corrections: u64,
     retain_gnss: bool,
 }
 
@@ -95,6 +122,12 @@ impl GnssHistory {
     /// Retain accepted GNSS events too, permitting later map observations to
     /// arrive before or after them. Default history keeps its original behavior.
     pub fn with_delayed_maps() -> Self {
+        Self::with_retained_corrections()
+    }
+
+    /// Retain admitted GNSS, heading and map events in acquisition order.
+    /// Synchronous heading can then survive an earlier GNSS/map insertion.
+    pub fn with_retained_corrections() -> Self {
         Self {
             retain_gnss: true,
             ..Self::default()
@@ -103,6 +136,7 @@ impl GnssHistory {
 
     pub fn reset(&mut self, now: f64) {
         self.events.clear();
+        self.coverage_floor = None;
         self.current_time = (now.is_finite() && now >= 0.).then_some(now);
     }
 
@@ -135,6 +169,17 @@ impl GnssHistory {
         self.replayed_gnss_corrections
     }
 
+    pub fn heading_corrections(&self) -> usize {
+        self.events
+            .iter()
+            .filter(|e| matches!(e, Event::Heading(_)))
+            .count()
+    }
+
+    pub fn replayed_heading_corrections(&self) -> u64 {
+        self.replayed_heading_corrections
+    }
+
     pub fn replayed_map_corrections(&self) -> u64 {
         self.replayed_map_corrections
     }
@@ -143,12 +188,15 @@ impl GnssHistory {
         while self.len() > MAX_PREDICTIONS
             || self.map_corrections() > MAX_MAP_CORRECTIONS
             || self.gnss_corrections() > MAX_GNSS_CORRECTIONS
+            || self.heading_corrections() > MAX_HEADING_CORRECTIONS
             || self
                 .events
                 .front()
                 .is_some_and(|e| e.end() < now - MAX_GNSS_DELAY_S - EPS)
         {
-            self.events.pop_front();
+            if let Some(event) = self.events.pop_front() {
+                self.coverage_floor = Some((event.end(), event.priority()));
+            }
         }
     }
 
@@ -343,7 +391,9 @@ impl GnssHistory {
                     }));
                     map_count += 1;
                 }
-                Event::Gnss(_) => return Err(HistoryError::InvalidClockOrMotion),
+                Event::Gnss(_) | Event::Heading(_) => {
+                    return Err(HistoryError::InvalidClockOrMotion);
+                }
             }
         }
         *filter = candidate;

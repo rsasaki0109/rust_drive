@@ -150,10 +150,10 @@ fn malformed_delayed_and_future_samples_cannot_change_the_accepted_clock() {
 }
 
 #[test]
-fn unsupported_history_and_unconfigured_measurements_fail_closed() {
+fn heading_history_is_supported_and_unconfigured_measurements_fail_closed() {
     let mut c = config();
     c.gnss_latency_compensation = true;
-    assert!(DrivingPipeline::new(c).is_err());
+    assert!(DrivingPipeline::new(c).is_ok());
     let mut c = config();
     c.absolute_heading_fusion = false;
     assert!(
@@ -212,4 +212,126 @@ fn sensor_only_replay_reconstructs_heading_and_rejects_changed_data_or_policy() 
         assert_ne!(changed, text);
         assert!(verify(std::io::Cursor::new(changed), vec![]).is_err());
     }
+}
+
+#[test]
+fn delayed_gnss_retains_heading_clocks_covariance_and_complete_sensor_replay() {
+    let mut c = config();
+    c.gnss_latency_compensation = true;
+    let mut driver = DrivingPipeline::new(c.clone()).unwrap();
+    let mut log = SensorLog::new("heading-gnss-history-fixture", c);
+    for i in 0usize..=24 {
+        let now = i as f64 * 0.05;
+        let mut input = frame(now, i.is_multiple_of(4).then(|| sample(now, 0.02)));
+        input.gnss = (i >= 3 && (i - 3).is_multiple_of(4)).then(|| Gnss {
+            stamp: (i - 3) as f64 * 0.05,
+            position: Vec2::default(),
+            variance: 0.02,
+        });
+        let out = driver.step(&input).unwrap();
+        let heading = out.absolute_heading.unwrap();
+        assert_eq!(heading.accepted_samples, (i / 4 + 1) as u64);
+        assert_eq!(heading.last_accepted_stamp, Some((i / 4 * 4) as f64 * 0.05));
+        assert!(out.pose_covariance.is_some());
+        if i >= 3 {
+            assert!(out.health.is_empty(), "{:?}", out.health);
+        }
+        if i == 24 {
+            assert!(out.gnss_latency.unwrap().replayed_heading_corrections > 0);
+            assert_eq!(out.localization.unwrap().accepted_fixes, 6);
+            assert_eq!(out.localization.unwrap().last_accepted_stamp, Some(1.));
+        }
+        log.record(input, out);
+    }
+    let mut bytes = vec![];
+    log.write(&mut bytes).unwrap();
+    assert!(
+        verify(std::io::Cursor::new(bytes.clone()), vec![])
+            .unwrap()
+            .verified
+    );
+    let original = String::from_utf8(bytes).unwrap();
+    let changed = original.replacen(
+        "\"gnss_latency_compensation\":true",
+        "\"gnss_latency_compensation\":false",
+        1,
+    );
+    assert_ne!(original, changed);
+    assert!(verify(std::io::Cursor::new(changed), vec![]).is_err());
+}
+
+#[test]
+fn gnss_rewinds_cannot_renew_a_lost_required_heading() {
+    let mut c = config();
+    c.gnss_latency_compensation = true;
+    let mut driver = DrivingPipeline::new(c).unwrap();
+    for i in 0usize..=12 {
+        let now = i as f64 * 0.05;
+        let mut input = frame(now, (i == 0).then(|| sample(0., 0.)));
+        input.gnss = (i >= 2 && i.is_multiple_of(4)).then(|| Gnss {
+            stamp: (i - 2) as f64 * 0.05,
+            position: Vec2::default(),
+            variance: 0.02,
+        });
+        let out = driver.step(&input).unwrap();
+        assert_eq!(out.absolute_heading.unwrap().accepted_samples, 1);
+        assert_eq!(out.absolute_heading.unwrap().last_accepted_stamp, Some(0.));
+        if i >= 8 {
+            assert!(out.health.contains(&HealthIssue::StaleAbsoluteHeading));
+            assert!(!out.health.contains(&HealthIssue::StaleGnss));
+            assert!(out.command.acceleration <= -5.99);
+        }
+    }
+}
+
+#[test]
+fn delayed_gnss_cannot_withdraw_a_heading_innovation_hold() {
+    let mut c = config();
+    c.gnss_latency_compensation = true;
+    let mut driver = DrivingPipeline::new(c).unwrap();
+    driver.step(&frame(0., Some(sample(0., 0.)))).unwrap();
+    let bad = driver.step(&frame(0.05, Some(sample(0.05, 0.8)))).unwrap();
+    assert!(bad.health.contains(&HealthIssue::HeadingInnovationHold));
+    let mut input = frame(0.1, Some(sample(0., 0.)));
+    input.gnss.as_mut().unwrap().stamp = 0.025;
+    let held = driver.step(&input).unwrap();
+    assert!(held.health.contains(&HealthIssue::HeadingInnovationHold));
+    assert_eq!(held.absolute_heading.unwrap().rejected_samples, 1);
+    assert_eq!(held.absolute_heading.unwrap().last_accepted_stamp, Some(0.));
+    assert!(held.command.acceleration <= -5.99);
+    let resumed = driver.step(&frame(0.15, Some(sample(0.15, 0.)))).unwrap();
+    assert!(resumed.health.is_empty());
+}
+
+#[test]
+fn conflicting_gnss_rewind_brakes_without_changing_observation_ownership() {
+    let mut c = config();
+    c.gnss_latency_compensation = true;
+    c.initial_pose_covariance = Some([[0.1, 0., 0.], [0., 0.1, 0.04], [0., 0.04, 0.03]]);
+    let mut driver = DrivingPipeline::new(c).unwrap();
+    let mut start = frame(0., None);
+    start.gnss = None;
+    driver.step(&start).unwrap();
+    let mut acquired = frame(0.05, Some(sample(0.05, 0.)));
+    acquired.gnss = None;
+    driver.step(&acquired).unwrap();
+    let mut input = frame(0.1, None);
+    input.gnss = Some(Gnss {
+        stamp: 0.,
+        position: Vec2::new(0., 1.2),
+        variance: 0.001,
+    });
+    let held = driver.step(&input).unwrap();
+    assert!(held.health.contains(&HealthIssue::InvalidGnss));
+    assert!(held.command.acceleration <= -5.99);
+    assert_eq!(held.gnss_latency.unwrap().history_conflict_fixes, 1);
+    assert_eq!(held.localization.unwrap().accepted_fixes, 0);
+    assert_eq!(held.localization.unwrap().last_observed_stamp, None);
+    assert_eq!(held.absolute_heading.unwrap().accepted_samples, 1);
+    assert_eq!(
+        held.absolute_heading.unwrap().last_accepted_stamp,
+        Some(0.05)
+    );
+    let recovered = driver.step(&frame(0.15, Some(sample(0.15, 0.)))).unwrap();
+    assert!(recovered.health.is_empty());
 }

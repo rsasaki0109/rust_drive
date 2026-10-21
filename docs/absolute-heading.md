@@ -12,9 +12,10 @@ headers and outputs. A supplied heading with fusion disabled brakes as an
 unconfigured input. With fusion enabled, every accepted observation must be
 synchronous with the current control time within 1e-9 s. Valid duplicate/older
 acquisitions do not refresh acceptance; a new delayed/future sample is invalid.
-GNSS history compensation and measured relocalization are rejected with this
-mode because their replay histories do not yet retain heading events. This
-increment does not support delayed heading fusion or a new localization epoch.
+The original increment rejected GNSS history compensation and measured
+relocalization. A subsequent [heading-event history](heading-history.md) now
+supports GNSS/map replay while retaining synchronous heading. Delayed heading
+fusion and a new measured-localization epoch remain unsupported.
 
 ## Fusion and failure handling
 

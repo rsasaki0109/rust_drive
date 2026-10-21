@@ -180,10 +180,8 @@ impl PipelineConfig {
         if self.search_obstruction_stops && !self.settle_obstruction_stops {
             return Err("obstruction stop search requires obstruction stop retention".into());
         }
-        if self.absolute_heading_fusion
-            && (self.gnss_latency_compensation || self.relocalization.is_some())
-        {
-            return Err("absolute heading currently requires synchronous localization without GNSS history or relocalization".into());
+        if self.absolute_heading_fusion && self.relocalization.is_some() {
+            return Err("absolute heading currently excludes relocalization".into());
         }
         if let Some(bounds) = self.forecast_envelope {
             bounds.validate()?;
@@ -480,6 +478,10 @@ pub struct GnssLatencyDiagnostics {
     pub history_gnss_corrections: u64,
     #[serde(default, skip_serializing_if = "is_zero")]
     pub replayed_gnss_corrections: u64,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub history_heading_corrections: u64,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub replayed_heading_corrections: u64,
 }
 fn is_zero(value: &u64) -> bool {
     *value == 0
@@ -650,12 +652,13 @@ impl DrivingPipeline {
             ekf = ekf.with_gnss_antenna_offset(offset)?;
         }
         let gnss_history = config.gnss_latency_compensation.then(|| {
-            if config
-                .localization_map
-                .as_ref()
-                .is_some_and(|map| map.allow_delayed_scans)
+            if config.absolute_heading_fusion
+                || config
+                    .localization_map
+                    .as_ref()
+                    .is_some_and(|map| map.allow_delayed_scans)
             {
-                GnssHistory::with_delayed_maps()
+                GnssHistory::with_retained_corrections()
             } else {
                 GnssHistory::default()
             }
@@ -886,7 +889,8 @@ impl DrivingPipeline {
                         Ok(decision) => decision,
                         Err(
                             HistoryError::MapCorrectionConflict
-                            | HistoryError::GnssCorrectionConflict,
+                            | HistoryError::GnssCorrectionConflict
+                            | HistoryError::HeadingCorrectionConflict,
                         ) => {
                             self.gnss_latency.history_conflict_fixes =
                                 self.gnss_latency.history_conflict_fixes.saturating_add(1);
@@ -950,6 +954,7 @@ impl DrivingPipeline {
         }
         self.heading_monitor.observe(
             &mut self.ekf,
+            self.gnss_history.as_mut(),
             input,
             self.config.absolute_heading_fusion,
             self.motion_discontinuity.is_none(),
@@ -1500,6 +1505,8 @@ impl DrivingPipeline {
                     replayed_map_corrections: history.replayed_map_corrections(),
                     history_gnss_corrections: history.gnss_corrections() as u64,
                     replayed_gnss_corrections: history.replayed_gnss_corrections(),
+                    history_heading_corrections: history.heading_corrections() as u64,
+                    replayed_heading_corrections: history.replayed_heading_corrections(),
                     ..self.gnss_latency
                 }),
             map_localization: self

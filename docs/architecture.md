@@ -127,9 +127,12 @@ Optional `absolute_heading_fusion` requires current-acquisition body yaw and
 angular variance, with a wrapped one-dimensional NIS gate of 9 and full Joseph
 covariance correction. A required heading older than 0.35 s, invalid input or
 rejected innovation brakes; only a new accepted acquisition releases a fault.
-Heading never refreshes GNSS freshness or covers missing rigid motion. GNSS
-history compensation and measured relocalization are excluded until their
-histories retain heading events. [Contract and failed combinations](absolute-heading.md).
+Heading never refreshes GNSS freshness or covers missing rigid motion.
+Combining it with GNSS history now retains admitted heading events, ordered
+after equal-time GNSS and before map observations. Rewinds preserve original
+diagnostic ownership and atomically refuse a conflicting accepted observation.
+Measured relocalization and delayed heading remain excluded.
+[Heading contract](absolute-heading.md); [history composition](heading-history.md).
 
 Missing/stale odometry, LiDAR or GNSS, invalid samples, excessive covariance and acquisition failure select finite emergency braking. Healthy empty LiDAR is accepted; a failed acquisition brakes immediately. An invalid clock returns `Err`; callers must stop rather than reuse a command. The reference and RNE backends implement observation/advance boundaries and share the same independent evaluator. Runtime truth stays inside sensor synthesis and evaluation/rendering.
 

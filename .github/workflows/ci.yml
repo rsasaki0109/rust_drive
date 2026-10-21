@@ -1105,6 +1105,9 @@ jobs:
       - name: Verify native absolute heading acquisition, faults and retained negatives
         working-directory: rust_drive
         run: python3 scripts/check_absolute_heading.py --plant rne-dynamic --check-integration-regression --output artifacts/absolute-heading-native
+      - name: Verify native heading with delayed GNSS and retained fault braking
+        working-directory: rust_drive
+        run: python3 scripts/check_heading_history.py --plant rne-dynamic --output artifacts/heading-history-native
       - name: Verify legal turn routes in the native dynamic plant
         working-directory: rust_drive
         run: python3 scripts/check-turn-restrictions.py --backend native --seeds 7 --compact --output artifacts/turn-restrictions

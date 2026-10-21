@@ -8,6 +8,7 @@ python3 scripts/test_obstruction_stops.py
 python3 scripts/test_stop_search.py
 python3 scripts/test_road_width.py
 python3 scripts/test_absolute_heading.py
+python3 scripts/test_heading_history.py
 python3 scripts/test_lane_occupancy.py
 python3 scripts/test_speed_zones.py
 python3 scripts/test_lane_speed_zones.py

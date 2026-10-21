@@ -2,7 +2,18 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest [earlier obstruction-stop search](stop-search.md) keeps the estimate
+The latest [heading-event history](heading-history.md) keeps the estimate at
+**about 29%**. Synchronous absolute heading now composes with bounded GNSS/map
+replay while preserving full covariance, observation ownership and fault braking.
+All 14 enabled physical cases pass, and eight fixed pairs reduce position RMSE
+by 92.8–97.3%. Six loss/jump cases stop and recover. The eight naive controls
+retain their failures; the first auditor's omitted-false-policy error and all
+raw recordings remain preserved. This expands a declared planar simulation
+composition without measured automotive uncertainty, delayed heading or reset
+support. The preceding stop-search strict qualification stays 20/40 and the
+**30% waypoint remains unmet**.
+
+The preceding [earlier obstruction-stop search](stop-search.md) keeps the estimate
 at **about 29%**. All 40 fixed comparisons pass without new failed gates. Eight
 mission conditions reduce emergency steps from 355 to 3 (99.2%) and retain actual
 standstill without positive commands after 20 seconds. Original source acceptance

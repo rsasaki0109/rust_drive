@@ -1,19 +1,13 @@
-//! Optional chronological replay of accepted GNSS and map measurements.
+//! Optional chronological replay of accepted GNSS, heading and map measurements.
 use super::*;
+use rustdriving_core::HeadingDecision;
 
 impl Event {
-    fn priority(&self) -> u8 {
-        match self {
-            Self::Prediction(_) => 0,
-            Self::Gnss(_) => 1,
-            Self::Map(_) => 2,
-        }
-    }
-
     fn set_before(&mut self, filter: &Ekf) {
         match self {
             Self::Prediction(p) => p.before = filter.clone(),
             Self::Gnss(g) => g.before = filter.clone(),
+            Self::Heading(h) => h.before = filter.clone(),
             Self::Map(m) => m.before = filter.clone(),
         }
     }
@@ -34,6 +28,12 @@ impl Event {
             Self::Map(m) => {
                 if !filter.correct_map_pose(m.pose, m.covariance) {
                     return Err(HistoryError::MapCorrectionConflict);
+                }
+            }
+            Self::Heading(h) => {
+                filter.heading_diagnostics = Default::default();
+                if filter.correct_heading(h.sample) != HeadingDecision::Accepted {
+                    return Err(HistoryError::HeadingCorrectionConflict);
                 }
             }
         }
@@ -65,8 +65,8 @@ impl GnssHistory {
         Ok(())
     }
 
-    /// Reconstruct the prior for an observation. GNSS precedes map at equal
-    /// acquisition time; neither sees corrections acquired in its future.
+    /// Reconstruct the prior for an observation. GNSS, heading, then map at equal
+    /// acquisition time; none sees corrections acquired in its future.
     fn prior_at(
         &self,
         filter: &Ekf,
@@ -75,6 +75,14 @@ impl GnssHistory {
         now: f64,
     ) -> Result<Ekf, HistoryError> {
         self.check_coverage(stamp, now)?;
+        if self
+            .coverage_floor
+            .is_some_and(|(time, discarded_priority)| {
+                (stamp - time).abs() <= EPS && priority <= discarded_priority
+            })
+        {
+            return Err(HistoryError::Unavailable);
+        }
         let mut prior = self
             .events
             .front()
@@ -106,7 +114,7 @@ impl GnssHistory {
         if !self.retain_gnss || now - stamp > MAX_MAP_DELAY_S + EPS {
             return Err(HistoryError::Unavailable);
         }
-        Ok(self.prior_at(filter, stamp, 2, now)?.state.pose)
+        Ok(self.prior_at(filter, stamp, 3, now)?.state.pose)
     }
 
     /// Insert one admitted measurement and rebuild the bounded interval. All
@@ -152,6 +160,7 @@ impl GnssHistory {
         });
         let mut maps = 0_u64;
         let mut fixes = 0_u64;
+        let mut headings = 0_u64;
         for event in &mut replayed {
             event.set_before(&candidate);
             event.apply(&mut candidate)?;
@@ -161,6 +170,7 @@ impl GnssHistory {
                 match event {
                     Event::Map(_) => maps += 1,
                     Event::Gnss(_) => fixes += 1,
+                    Event::Heading(_) => headings += 1,
                     Event::Prediction(_) => {}
                 }
             }
@@ -169,10 +179,13 @@ impl GnssHistory {
         // not another observation manufactured by a rewind.
         candidate.diagnostics = owned.diagnostics;
         candidate.last_gnss = owned.last_gnss;
+        candidate.heading_diagnostics = owned.heading_diagnostics;
         *filter = candidate;
         self.events = replayed;
         self.replayed_map_corrections = self.replayed_map_corrections.saturating_add(maps);
         self.replayed_gnss_corrections = self.replayed_gnss_corrections.saturating_add(fixes);
+        self.replayed_heading_corrections =
+            self.replayed_heading_corrections.saturating_add(headings);
         self.prune(now);
         Ok(())
     }
@@ -186,6 +199,7 @@ impl GnssHistory {
         let mut prior = self.prior_at(filter, fix.stamp, 1, now)?;
         prior.diagnostics = filter.diagnostics;
         prior.last_gnss = filter.last_gnss;
+        prior.heading_diagnostics = filter.heading_diagnostics;
         let decision = prior.correct(fix);
         if decision != GnssDecision::Accepted {
             filter.diagnostics = prior.diagnostics;
@@ -198,6 +212,52 @@ impl GnssHistory {
                 fix,
             }),
             &prior,
+            now,
+        )?;
+        Ok(decision)
+    }
+
+    /// Admit only a synchronous heading. Replays retain the original delivery
+    /// diagnostics and may neither revive rejected samples nor renew freshness.
+    pub fn correct_heading(
+        &mut self,
+        filter: &mut Ekf,
+        sample: AbsoluteHeading,
+        now: f64,
+    ) -> Result<HeadingDecision, HistoryError> {
+        if !self.retain_gnss {
+            return Err(HistoryError::Unavailable);
+        }
+        if !sample.valid() {
+            return Ok(HeadingDecision::Invalid);
+        }
+        self.check_coverage(now, now)?;
+        if filter
+            .heading_diagnostics
+            .last_observed_stamp
+            .is_some_and(|stamp| sample.stamp <= stamp)
+        {
+            return Ok(HeadingDecision::IgnoredTimestamp);
+        }
+        if (sample.stamp - now).abs() > EPS {
+            return Err(HistoryError::InvalidClockOrMotion);
+        }
+        let mut prior = self.prior_at(filter, now, 2, now)?;
+        prior.heading_diagnostics = filter.heading_diagnostics;
+        let decision = prior.correct_heading(sample);
+        if decision != HeadingDecision::Accepted {
+            filter.heading_diagnostics = prior.heading_diagnostics;
+            return Ok(decision);
+        }
+        let mut owned = filter.clone();
+        owned.heading_diagnostics = prior.heading_diagnostics;
+        self.insert(
+            filter,
+            Event::Heading(HeadingCorrection {
+                before: prior,
+                sample,
+            }),
+            &owned,
             now,
         )?;
         Ok(decision)
@@ -224,7 +284,7 @@ impl GnssHistory {
         {
             return Err(HistoryError::InvalidClockOrMotion);
         }
-        let mut prior = self.prior_at(filter, stamp, 2, now)?;
+        let mut prior = self.prior_at(filter, stamp, 3, now)?;
         if !prior.correct_map_pose(pose, covariance) {
             return Ok(false);
         }
