@@ -2,7 +2,18 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest [measured forecast braking](forecast-consistency.md) keeps the estimate
+The latest [complete-sweep recovery](clear-sweep-recovery.md) keeps the estimate
+at **about 29%**. Actual completed planar query outcomes supply a separate sensing
+basis for stopped confirmation after a responsible identity disappears. Missing
+or partial acquisition, any return, moving/cached/delayed sensing and independent
+faults retain their holds. This targets the preceding availability regression;
+all 32 enabled conditions restore goals from 5 to 16, with 11 acquired empty-sweep
+recoveries and no newly failed gates against the preceding guard. All 32 capture
+controls preserve operational bytes and physical frames. Calibrated physical
+forecasts and the eight original incomplete missions remain open; strict
+qualification stays 0/32 and the **30% waypoint remains unmet**.
+
+The preceding [measured forecast braking](forecast-consistency.md) keeps the estimate
 at **about 29%**. All 32 supported conditions pass independently reconstructed
 monitor/brake checks, including 60 measured misses and 31 confirmed recoveries.
 Goal completion falls from 16 to 5 and 12 conditions gain strict failures; eleven

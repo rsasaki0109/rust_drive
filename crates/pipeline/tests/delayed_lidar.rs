@@ -50,6 +50,7 @@ fn delayed_body_scan_keeps_a_stationary_world_track_while_ego_translates_and_tur
             }
             let acquired_yaw = acquisition_tick as f64 * 0.04;
             input.lidar = Some(LidarScan {
+                sweep: None,
                 stamp: acquisition_tick as f64 * 0.05,
                 points: (0..32)
                     .map(|j| {
@@ -95,6 +96,7 @@ fn a_scan_before_history_start_is_rejected_and_a_current_acquisition_recovers() 
         variance: 0.02,
     });
     input.lidar = Some(LidarScan {
+        sweep: None,
         stamp: 0.9,
         points: vec![],
     });
@@ -116,12 +118,14 @@ fn an_expired_new_scan_cannot_refresh_health_or_update_tracks() {
         let mut input = frame(i as f64 * 0.05);
         if i == 0 {
             input.lidar = Some(LidarScan {
+                sweep: None,
                 stamp: 0.0,
                 points: vec![],
             });
         }
         if i == 8 {
             input.lidar = Some(LidarScan {
+                sweep: None,
                 stamp: 0.01,
                 points: vec![],
             });

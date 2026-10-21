@@ -152,6 +152,7 @@ fn frame(t: f64, heading: Option<AbsoluteHeading>) -> SensorFrame {
             variance: 0.02,
         }),
         lidar: Some(LidarScan {
+            sweep: None,
             stamp: t,
             points: vec![],
         }),

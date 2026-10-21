@@ -59,6 +59,66 @@ struct EgoFilteredRaycaster<'a> {
     ego: Entity,
     precise_geometry: Option<&'a [capsule_refinement::PhysicalCapsule]>,
 }
+
+/// Records actual completed query outcomes before radiometry/noise can drop a
+/// return. A queried surface with no delivered point becomes Unavailable.
+struct SweepRaycaster<'a> {
+    inner: &'a dyn LidarRaycaster,
+    clear: std::cell::RefCell<Option<Vec<bool>>>,
+}
+impl LidarRaycaster for SweepRaycaster<'_> {
+    fn lidar_raycast(
+        &self,
+        world: PhysicsWorldId,
+        query: RaycastQuery,
+    ) -> Result<Vec<RaycastHit>, PhysicsError> {
+        let hits = self.inner.lidar_raycast(world, query)?;
+        if let Some(clear) = self.clear.borrow_mut().as_mut() {
+            clear.push(hits.is_empty());
+        }
+        Ok(hits)
+    }
+}
+impl SweepRaycaster<'_> {
+    fn evidence(
+        &self,
+        spec: &LidarSpec,
+        indices: &[u32],
+    ) -> Option<rustdriving_core::PlanarLidarSweep> {
+        use rustdriving_core::{PlanarLidarCalibration, PlanarLidarSweep, PlanarRayOutcome};
+        let acquired = self.clear.borrow();
+        let clear = acquired.as_ref()?;
+        let mut rays = vec![PlanarRayOutcome::Unavailable; spec.ray_count as usize];
+        if clear.len() == rays.len() {
+            for (i, &empty) in clear.iter().enumerate() {
+                if empty {
+                    rays[i] = PlanarRayOutcome::Clear;
+                }
+            }
+            for (point, &ray) in indices.iter().enumerate() {
+                if let Some(slot) = rays.get_mut(ray as usize) {
+                    if !clear[ray as usize] && *slot == PlanarRayOutcome::Unavailable {
+                        *slot = PlanarRayOutcome::Return(point);
+                    } else {
+                        *slot = PlanarRayOutcome::Unavailable;
+                    }
+                }
+            }
+        }
+        Some(PlanarLidarSweep {
+            calibration: PlanarLidarCalibration {
+                ray_count: spec.ray_count as usize,
+                first_angle_rad: -spec.min_angle_rad,
+                angular_step_rad: -(spec.max_angle_rad - spec.min_angle_rad)
+                    / f64::from(spec.ray_count - 1),
+                min_range_m: spec.min_range_m,
+                max_range_m: spec.max_range_m,
+                range_error_m: 0.05,
+            },
+            rays,
+        })
+    }
+}
 impl LidarRaycaster for EgoFilteredRaycaster<'_> {
     fn lidar_raycast(
         &self,
@@ -646,8 +706,18 @@ impl SimulationBackend for RneBackend {
             } else {
                 self.physics_world
             };
+            let sweep_raycaster = SweepRaycaster {
+                inner: &raycaster,
+                clear: std::cell::RefCell::new(
+                    (!self.multi_height
+                        && !self.lidar_3d
+                        && (self.scenario.record_planar_sweep
+                            || self.scenario.clear_sweep_recovery.is_some()))
+                    .then(|| Vec::with_capacity(720)),
+                ),
+            };
             match sample_lidar_checked(
-                &raycaster,
+                &sweep_raycaster,
                 world,
                 &mount,
                 &spec,
@@ -735,6 +805,7 @@ impl SimulationBackend for RneBackend {
                         }
                     } else if !self.lidar_3d {
                         lidar = Some(LidarScan {
+                            sweep: sweep_raycaster.evidence(&spec, &cloud.ray_indices),
                             stamp: time,
                             points: cloud
                                 .points_m
@@ -1244,6 +1315,96 @@ mod tests {
             .unwrap(),
         )
         .unwrap()
+    }
+
+    #[test]
+    fn actual_planar_ray_capture_preserves_native_points_and_all_control_outputs() {
+        let mut s = scenario("blocked");
+        s.duration = 1.;
+        s.full_rate_recording = true;
+        let original = run(s.clone(), 7, Plant::Dynamic).unwrap();
+        s.record_planar_sweep = true;
+        let captured = run(s, 7, Plant::Dynamic).unwrap();
+        assert_eq!(
+            serde_json::to_value(&original.frames).unwrap(),
+            serde_json::to_value(&captured.frames).unwrap()
+        );
+        assert_eq!(
+            serde_json::to_value(&original.summary).unwrap(),
+            serde_json::to_value(&captured.summary).unwrap()
+        );
+        for (old, new) in original
+            .sensor_log
+            .as_ref()
+            .unwrap()
+            .ticks
+            .iter()
+            .zip(&captured.sensor_log.as_ref().unwrap().ticks)
+        {
+            assert_eq!(
+                serde_json::to_value(&old.expected).unwrap(),
+                serde_json::to_value(&new.expected).unwrap()
+            );
+            if let Some(scan) = &new.input.lidar {
+                assert_eq!(old.input.lidar.as_ref().unwrap().points, scan.points);
+                let sweep = scan.sweep.as_ref().unwrap();
+                assert_eq!(sweep.rays.len(), 720);
+                assert!(sweep.calibration.angular_step_rad < 0.);
+                assert!(
+                    !sweep
+                        .rays
+                        .contains(&rustdriving_core::PlanarRayOutcome::Unavailable)
+                );
+            }
+        }
+        let mut bytes = vec![];
+        captured
+            .sensor_log
+            .as_ref()
+            .unwrap()
+            .write(&mut bytes)
+            .unwrap();
+        assert!(
+            rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), vec![])
+                .unwrap()
+                .verified
+        );
+    }
+
+    #[test]
+    fn native_completed_empty_queries_and_acquisition_errors_are_distinct() {
+        let mut s = scenario("blocked");
+        s.objects.clear();
+        s.duration = 1.;
+        s.full_rate_recording = true;
+        s.record_planar_sweep = true;
+        let empty = run(s.clone(), 7, Plant::Dynamic).unwrap();
+        for tick in &empty.sensor_log.as_ref().unwrap().ticks {
+            if let Some(scan) = &tick.input.lidar {
+                assert!(scan.points.is_empty());
+                assert!(
+                    scan.sweep
+                        .as_ref()
+                        .unwrap()
+                        .rays
+                        .iter()
+                        .all(|r| *r == rustdriving_core::PlanarRayOutcome::Clear)
+                );
+            }
+        }
+        let config = rustdriving_sim::pipeline_config(&s);
+        let mut backend = RneBackend::new(s.clone(), 7, Plant::Dynamic).unwrap();
+        backend.fail_lidar_from = Some(0.);
+        let failed =
+            simulate_with_backend(s, 7, backend, config, "rne-planar-query-error").unwrap();
+        let log = failed.sensor_log.as_ref().unwrap();
+        assert!(log.ticks.iter().any(|t| t.input.lidar_failed));
+        assert!(log.ticks.iter().all(|t| t.input.lidar.is_none()));
+        assert!(
+            log.ticks
+                .iter()
+                .all(|t| t.expected.command.acceleration <= -5.99)
+        );
     }
     #[test]
     fn frames_preserve_heading_and_body_left() {

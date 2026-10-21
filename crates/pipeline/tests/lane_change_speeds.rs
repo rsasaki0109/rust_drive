@@ -128,6 +128,7 @@ fn admission_prefix_and_release_replay_the_same_full_route_speed_policy() {
                 variance: 0.02,
             }),
             lidar: Some(LidarScan {
+                sweep: None,
                 stamp: time,
                 points: vec![],
             }),

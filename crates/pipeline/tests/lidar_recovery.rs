@@ -27,6 +27,7 @@ fn frame(time: f64, acquisition: Option<f64>) -> SensorFrame {
             variance: 0.02,
         }),
         lidar: acquisition.map(|stamp| LidarScan {
+            sweep: None,
             stamp,
             points: vec![],
         }),

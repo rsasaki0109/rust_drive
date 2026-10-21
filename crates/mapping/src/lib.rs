@@ -84,6 +84,7 @@ mod tests {
     fn marks_hit_and_clears_ray() {
         let mut g = OccupancyGrid::new(Vec2::new(-1.0, -1.0), 20, 10, 0.5);
         let scan = LidarScan {
+            sweep: None,
             stamp: 0.0,
             points: vec![Vec2::new(5.0, 0.0)],
         };

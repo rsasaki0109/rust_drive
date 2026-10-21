@@ -36,6 +36,7 @@ fn raw_body_lidar_selects_a_fitted_pass_and_the_header_reproduces_it_exactly() {
                 variance: 0.02,
             }),
             lidar: Some(LidarScan {
+                sweep: None,
                 stamp: time,
                 points: (0..32)
                     .map(|j| {

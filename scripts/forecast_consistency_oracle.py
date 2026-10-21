@@ -9,18 +9,21 @@ import collections
 import math
 
 from tracking_frame import continuous_observations
+from planar_sweep_oracle import acquired as acquired_sweep, blank_recovery
 
 DOWNSTREAM = {'InconsistentForecast', 'InvalidNavigation', 'InvalidStopSignRecovery',
               'InvalidTrafficSignalRecovery', 'InvalidIntersectionRecovery', 'InvalidTrafficSignal'}
 
 
-def blank():
-    return dict(state='Observing', fault=None, last_scan_acquisition_s=None,
+def blank(clear=False):
+    value = dict(state='Observing', fault=None, last_scan_acquisition_s=None,
                 evaluated_acquisition_s=None, evaluated_at_control_s=None,
                 fault_control_time_s=None, recovery_after_control_s=None,
                 checked_measurements=0, unmonitored_measurements=0, missed_measurements=0,
                 complete_scene_check=False, recovery_samples=0,
                 recovery_first_acquisition_s=None, held_identities=[], misses=[], retained_references=0)
+    if clear:value['clear_sweep']=blank_recovery()
+    return value
 
 
 def compare(actual, expected, path='forecast_consistency'):
@@ -87,10 +90,11 @@ def reconstruct(config, ticks):
             or config.get('enclose_track_measurements') is not True):raise ValueError('guard prerequisites missing')
     if config.get('multi_height_lidar') or config.get('lidar3d'):
         raise ValueError('this independent acquisition audit supports planar LiDAR recordings')
-    diagnostic = blank();history = {};held = set();accepted = None;last_vote = None;epoch = 0
+    policy=config.get('clear_sweep_recovery')
+    diagnostic = blank(policy is not None);history = {};held = set();accepted = None;last_vote = None;epoch = 0
     reset_required = False;previous = None;previous_blocked = False
     counters = collections.Counter();recoveries = [];first_miss = None;maximum_shortfall = 0.
-    first_hold = None
+    first_hold = None;clear_recoveries=[]
     for tick in ticks:
         inp, out = tick['input'], tick['expected'];now = inp['time']
         if not math.isfinite(now) or now < 0. or (previous is not None and now <= previous) or out['time'] != now:
@@ -98,11 +102,15 @@ def reconstruct(config, ticks):
         previous = now
         if out.get('localization_epoch', 0) != epoch:
             if out['localization_epoch'] != epoch+1:raise ValueError('localization epoch skipped')
-            epoch += 1;diagnostic = blank();history = {};held = set();accepted = last_vote = None
+            epoch += 1;diagnostic = blank(policy is not None);history = {};held = set();accepted = last_vote = None
             reset_required = previous_blocked = False;first_hold = None
         def reset_votes():
             nonlocal last_vote
             diagnostic['recovery_samples'] = 0;diagnostic['recovery_first_acquisition_s'] = None;last_vote = None
+            reset_clear()
+        def reset_clear():
+            if policy is not None:
+                diagnostic['clear_sweep'].update(confirmation_samples=0,first_acquisition_s=None,last_acquisition_s=None)
         if out.get('motion_discontinuity') and not reset_required:
             history = {};reset_required = True
             diagnostic.update(fault='MotionDiscontinuity', fault_control_time_s=now, recovery_after_control_s=now)
@@ -124,6 +132,14 @@ def reconstruct(config, ticks):
             raw = out.get('track_measurements')
             if not isinstance(raw, list):raise ValueError('raw measurement evidence missing')
             active, forecasts = validate_geometry(accepted, tracks, predictions, raw)
+            clear_proof=None
+            if policy is not None and scan is not None and scan['stamp']==accepted:
+                proof=acquired_sweep(scan,policy);motion=inp.get('odometry')
+                if (proof is not None and accepted==now and motion is not None
+                        and motion['stamp']==now and abs(motion['speed'])<=.2):
+                    if raw:raise ValueError('empty acquired rays contradict measured proxies')
+                    clear_proof=proof;diagnostic['clear_sweep']['last_evidence']=proof
+                    counters['clear_qualifying_acquisitions']+=1
             comparable = set();misses = []
             for measured in raw:
                 eligible = [r for r in history.get(measured['id'], [])
@@ -146,7 +162,25 @@ def reconstruct(config, ticks):
                 maximum_shortfall = max(maximum_shortfall, max(w['shortfall_m'] for w in misses))
                 if first_miss is None:first_miss = dict(control_time_s=now, **misses[0])
             elif diagnostic['fault']:
-                if complete and accepted > diagnostic['recovery_after_control_s']:
+                if (clear_proof is not None and diagnostic['fault']=='MeasuredMiss' and held
+                        and accepted>diagnostic['recovery_after_control_s']):
+                    diagnostic.update(recovery_samples=0,recovery_first_acquisition_s=None);last_vote=None
+                    clear=diagnostic['clear_sweep']
+                    if clear['last_acquisition_s'] is None or accepted-clear['last_acquisition_s']>.35+1e-9:
+                        reset_clear();clear['first_acquisition_s']=accepted
+                    clear['confirmation_samples']=min(3,clear['confirmation_samples']+1);clear['last_acquisition_s']=accepted
+                    if clear['confirmation_samples']>=3 and accepted-clear['first_acquisition_s']>=.2-1e-9:
+                        clear['release_count']+=1
+                        clear['last_release']=dict(identities=sorted(held),control_time_s=now,
+                            first_acquisition_s=clear['first_acquisition_s'],last_acquisition_s=accepted,
+                            acquisition_count=clear['confirmation_samples'])
+                        clear_recoveries.append(dict(clear['last_release']))
+                        recoveries.append(dict(hold_start_control_s=first_hold,release_control_s=now,
+                            first_acquisition_s=clear['first_acquisition_s'],last_acquisition_s=accepted,basis='CompleteEmptySweep'))
+                        diagnostic.update(fault=None,fault_control_time_s=None,recovery_after_control_s=None)
+                        held.clear();reset_votes()
+                elif complete and accepted > diagnostic['recovery_after_control_s']:
+                    reset_clear()
                     if last_vote is None or accepted-last_vote > .35+1e-9:
                         reset_votes();diagnostic['recovery_first_acquisition_s'] = accepted
                     diagnostic['recovery_samples'] = min(3, diagnostic['recovery_samples']+1);last_vote = accepted
@@ -161,7 +195,8 @@ def reconstruct(config, ticks):
                 history.setdefault(m['id'], collections.deque(maxlen=16)).append((now, accepted, forecasts[m['id']]))
         elif not reset_required:counters['cached_control_ticks'] += 1
         blocked = diagnostic['fault'] is not None
-        diagnostic['state'] = 'ResetRequired' if reset_required else ('Confirming' if diagnostic['recovery_samples'] else 'Holding') if blocked else 'Observing'
+        confirming=diagnostic['recovery_samples'] or (policy is not None and diagnostic['clear_sweep']['confirmation_samples'])
+        diagnostic['state'] = 'ResetRequired' if reset_required else ('Confirming' if confirming else 'Holding') if blocked else 'Observing'
         diagnostic['held_identities'] = sorted(held);diagnostic['retained_references'] = sum(map(len, history.values()))
         compare(out.get('forecast_consistency'), diagnostic)
         if ('InconsistentForecast' in out['health']) != blocked:raise ValueError('forecast hold health differs')
@@ -172,9 +207,11 @@ def reconstruct(config, ticks):
             counters['braking_control_ticks'] += 1
         else:first_hold = None
         previous_blocked = blocked;counters['verified_control_ticks'] += 1
-    return dict(passed=True, **{k: counters[k] for k in ['verified_control_ticks', 'acquisitions', 'checked_measurements',
+    result = dict(passed=True, **{k: counters[k] for k in ['verified_control_ticks', 'acquisitions', 'checked_measurements',
                 'unmonitored_measurements', 'missed_measurements', 'missed_acquisitions', 'cached_control_ticks',
                 'hold_entries', 'braking_control_ticks']}, recoveries=recoveries, first_miss=first_miss,
                 maximum_shortfall_m=maximum_shortfall, final_state=diagnostic['state'],
                 final_held_identities=diagnostic['held_identities'], sensor_only=True,
                 reference_horizons_respected=True, physical_uncertainty_calibrated=False)
+    if policy is not None:result.update(clear_sweep_recoveries=clear_recoveries,clear_qualifying_acquisitions=counters['clear_qualifying_acquisitions'])
+    return result

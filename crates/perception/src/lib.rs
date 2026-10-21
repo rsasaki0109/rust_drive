@@ -4,6 +4,7 @@ pub mod ground3d;
 pub mod image_features;
 mod initialization;
 pub mod objects3d;
+pub mod planar_sweep;
 pub mod terrain_adaptive;
 pub use ground3d::{GroundClassification, TerrainConfig, TerrainDiagnostics, classify_ground};
 pub use objects3d::{ObjectAabb, ObjectClassification, ObjectClusterConfig, cluster_objects};
@@ -324,6 +325,7 @@ mod tests {
     #[test]
     fn clusters_two_objects_without_labels() {
         let scan = LidarScan {
+            sweep: None,
             stamp: 0.0,
             points: vec![
                 Vec2::new(5.0, 0.0),
@@ -370,6 +372,7 @@ mod tests {
             LidarClusters
                 .detect(
                     &LidarScan {
+                        sweep: None,
                         stamp: 0.0,
                         points: vec![Vec2::new(f64::NAN, 0.0)]
                     },

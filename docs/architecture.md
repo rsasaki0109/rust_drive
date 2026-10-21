@@ -120,6 +120,17 @@ Diagnostics are omitted by default. All 32 supported physical conditions pass
 monitor/brake checks but retain failed availability/adoption qualification.
 [Contract, independent audit and complete failures](forecast-consistency.md).
 
+Optional `clear_sweep_recovery` supplies a separate acquired negative-sensing
+basis for a forecast-fault hold. `LidarScan.sweep` binds all commanded ray outcomes
+to original measured points; unavailable rays reject acquisition before map and
+tracker admission. Full empty rays with synchronous stopped measured motion must
+independently confirm three acquisitions spanning 0.2 s. Positive and negative
+support cannot mix. Calibrated angular/range resolution remains conditional on
+the declared planar circular-body model. Release records responsible identities
+without clearing tracks, planner duties or other faults. Native acquisition records
+actual query outcomes before return processing, with a distinct angular pattern.
+[Acquisition, clock and recovery contract](clear-sweep-recovery.md).
+
 Optional `record_planning_diagnostics` captures at most nine per-candidate
 decision summaries without entering selection or control. Records identify the
 first conservative nominal forecast conflict, accepted profile, chosen index,

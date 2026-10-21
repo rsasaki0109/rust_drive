@@ -200,6 +200,7 @@ mod tests {
             odometry: None,
             gnss: None,
             lidar: tick.is_multiple_of(2).then(|| LidarScan {
+                sweep: None,
                 stamp,
                 points: vec![Vec2::new(stamp, -1.0)],
             }),

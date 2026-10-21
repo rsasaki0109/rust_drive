@@ -22,6 +22,7 @@ fn run(intervening_empty_scans: bool) -> PipelineOutput {
         };
         let lidar = observation
             .map(|(stamp, x)| LidarScan {
+                sweep: None,
                 stamp,
                 points: (0..32)
                     .map(|j| {
@@ -32,6 +33,7 @@ fn run(intervening_empty_scans: bool) -> PipelineOutput {
             })
             .or_else(|| {
                 (intervening_empty_scans && matches!(i, 4 | 6 | 8 | 10)).then_some(LidarScan {
+                    sweep: None,
                     stamp: time,
                     points: vec![],
                 })

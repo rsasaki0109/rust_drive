@@ -1,7 +1,7 @@
 //! Motion forecasts from tracked observations; no simulator behavior or intentions.
 mod consistency;
 mod envelope;
-pub use consistency::ForecastConsistencyGuard;
+pub use consistency::{ForecastConsistencyAdmission, ForecastConsistencyGuard};
 mod slow_motion;
 use rustdriving_core::{ForecastEnvelopeConfig, Prediction, Predictor, Track};
 use std::collections::{BTreeMap, VecDeque};

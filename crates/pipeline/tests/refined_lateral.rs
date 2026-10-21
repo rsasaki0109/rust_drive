@@ -51,6 +51,7 @@ fn sensor_only_replay_binds_the_new_candidate_policy_and_required_fault_braking(
                 variance: 0.02,
             }),
             lidar: Some(LidarScan {
+                sweep: None,
                 stamp: t,
                 points: [(0., 0.5), (7.1, 1.5), (-7.1, 1.5)]
                     .into_iter()

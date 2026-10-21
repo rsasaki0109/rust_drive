@@ -38,6 +38,7 @@ fn mapped_speed_zones_are_recorded_and_recomputed_from_sensor_only_logs() {
                 variance: 0.02,
             }),
             lidar: Some(LidarScan {
+                sweep: None,
                 stamp: time,
                 points: vec![],
             }),

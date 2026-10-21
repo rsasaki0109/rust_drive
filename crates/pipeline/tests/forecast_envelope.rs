@@ -35,6 +35,7 @@ fn frame(time: f64, stamp: f64) -> SensorFrame {
             variance: 0.02,
         }),
         lidar: Some(LidarScan {
+            sweep: None,
             stamp,
             points: (0..32)
                 .map(|j| {

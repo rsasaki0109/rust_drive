@@ -32,6 +32,7 @@ fn frame(i: usize) -> SensorFrame {
             variance: 0.02,
         }),
         lidar: Some(LidarScan {
+            sweep: None,
             stamp: time,
             points: [(0., 0.5), (7.1, 1.5), (-7.1, 1.5)]
                 .into_iter()

@@ -146,6 +146,11 @@ pub struct Scenario {
     pub forecast_envelope: Option<rustdriving_core::ForecastEnvelopeConfig>,
     #[serde(default, skip_serializing_if = "is_false")]
     pub forecast_consistency_guard: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub clear_sweep_recovery: Option<rustdriving_core::ClearSweepRecoveryConfig>,
+    /// Preserve each completed ray outcome from the actual planar acquisition.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub record_planar_sweep: bool,
     #[serde(default, skip_serializing_if = "is_false")]
     pub settle_obstruction_stops: bool,
     #[serde(default, skip_serializing_if = "is_false")]
@@ -599,8 +604,15 @@ impl Rng {
     }
 }
 /// First-return planar ray/circle sensor; no object identifiers are emitted.
-fn lidar(ego: Pose, objects: &[WorldObject], stamp: f64, rng: &mut Rng) -> LidarScan {
+fn lidar(
+    ego: Pose,
+    objects: &[WorldObject],
+    stamp: f64,
+    rng: &mut Rng,
+    record_sweep: bool,
+) -> LidarScan {
     let mut points = Vec::new();
+    let mut rays = record_sweep.then(|| Vec::with_capacity(720));
     for i in 0..720 {
         let angle = -PI + 2.0 * PI * i as f64 / 720.0;
         let direction = Vec2::new(angle.cos(), angle.sin()).rotated(ego.yaw);
@@ -619,10 +631,29 @@ fn lidar(ego: Pose, objects: &[WorldObject], stamp: f64, rng: &mut Rng) -> Lidar
         }
         if closest < 45.0 {
             let range = closest + rng.noise(0.015);
+            if let Some(rays) = &mut rays {
+                rays.push(rustdriving_core::PlanarRayOutcome::Return(points.len()));
+            }
             points.push(Vec2::new(angle.cos() * range, angle.sin() * range));
+        } else if let Some(rays) = &mut rays {
+            rays.push(rustdriving_core::PlanarRayOutcome::Clear);
         }
     }
-    LidarScan { stamp, points }
+    LidarScan {
+        sweep: rays.map(|rays| rustdriving_core::PlanarLidarSweep {
+            calibration: rustdriving_core::PlanarLidarCalibration {
+                ray_count: 720,
+                first_angle_rad: -PI,
+                angular_step_rad: std::f64::consts::TAU / 720.,
+                min_range_m: 0.2,
+                max_range_m: 45.,
+                range_error_m: 0.05,
+            },
+            rays,
+        }),
+        stamp,
+        points,
+    }
 }
 /// Kinematic bicycle, semi-implicit integration; physical command limits enforced here too.
 fn step_vehicle(ego: &mut EgoState, command: ControlCommand, config: VehicleConfig, dt: f64) {
@@ -706,17 +737,19 @@ impl SimulationBackend for ReferenceBackend {
         } else {
             None
         };
-        let lidar =
-            if tick.is_multiple_of(2) && self.scenario.lidar_dropout.is_none_or(|t| time < t) {
-                Some(lidar(
-                    self.truth.pose,
-                    &self.objects(time),
-                    time,
-                    &mut self.rng,
-                ))
-            } else {
-                None
-            };
+        let lidar = if tick.is_multiple_of(2)
+            && self.scenario.lidar_dropout.is_none_or(|t| time < t)
+        {
+            Some(lidar(
+                self.truth.pose,
+                &self.objects(time),
+                time,
+                &mut self.rng,
+                self.scenario.record_planar_sweep || self.scenario.clear_sweep_recovery.is_some(),
+            ))
+        } else {
+            None
+        };
         Ok(SensorFrame {
             absolute_heading: self.scenario.heading_observation(
                 self.seed,
@@ -758,6 +791,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     config.enclose_track_measurements = scenario.enclose_track_measurements;
     config.forecast_envelope = scenario.forecast_envelope;
     config.forecast_consistency_guard = scenario.forecast_consistency_guard;
+    config.clear_sweep_recovery = scenario.clear_sweep_recovery;
     config.settle_obstruction_stops = scenario.settle_obstruction_stops;
     config.search_obstruction_stops = scenario.search_obstruction_stops;
     config.lateral_candidate_margin_m = scenario.lateral_candidate_margin_m;
@@ -862,6 +896,7 @@ pub fn simulate_with_backend(
     let mut pipeline = DrivingPipeline::new(config.clone())?;
     let mut sensor_log = SensorLog::new(source, config);
     let mut scan = LidarScan {
+        sweep: None,
         stamp: 0.0,
         points: vec![],
     };
@@ -1321,6 +1356,52 @@ pub fn simulate_with_backend(
 mod tests {
     use super::*;
     #[test]
+    fn reference_ray_capture_preserves_acquisition_noise_and_driving_bytes() {
+        for seed in [7, 42] {
+            let mut s: Scenario =
+                serde_json::from_str(include_str!("../../../scenarios/blocked.json")).unwrap();
+            s.duration = 1.;
+            s.full_rate_recording = true;
+            let old = simulate(s.clone(), seed).unwrap();
+            s.record_planar_sweep = true;
+            let captured = simulate(s, seed).unwrap();
+            assert_eq!(
+                serde_json::to_value(&old.frames).unwrap(),
+                serde_json::to_value(&captured.frames).unwrap()
+            );
+            for (a, b) in old
+                .sensor_log
+                .as_ref()
+                .unwrap()
+                .ticks
+                .iter()
+                .zip(&captured.sensor_log.as_ref().unwrap().ticks)
+            {
+                assert_eq!(
+                    serde_json::to_value(&a.expected).unwrap(),
+                    serde_json::to_value(&b.expected).unwrap()
+                );
+                if let Some(scan) = &b.input.lidar {
+                    assert_eq!(a.input.lidar.as_ref().unwrap().points, scan.points);
+                    assert!(scan.sweep.as_ref().unwrap().calibration.angular_step_rad > 0.);
+                    assert_eq!(scan.sweep.as_ref().unwrap().rays.len(), 720);
+                    assert!(
+                        !b.expected
+                            .health
+                            .contains(&rustdriving_pipeline::HealthIssue::InvalidLidar)
+                    );
+                }
+            }
+            let mut bytes = vec![];
+            captured.sensor_log.unwrap().write(&mut bytes).unwrap();
+            assert!(
+                rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), vec![])
+                    .unwrap()
+                    .verified
+            );
+        }
+    }
+    #[test]
     fn static_mission_records_an_explicit_handover_policy_for_replay() {
         let mut scenario: Scenario =
             serde_json::from_str(include_str!("../../../scenarios/route-direct.json")).unwrap();
@@ -1456,7 +1537,7 @@ mod tests {
                 radius: 1.0,
             },
         ];
-        let scan = lidar(Pose::default(), &objects, 0.0, &mut Rng::new(1));
+        let scan = lidar(Pose::default(), &objects, 0.0, &mut Rng::new(1), false);
         let center = scan.points.iter().find(|p| p.y.abs() < 1e-6).unwrap();
         assert!((center.x - 9.0).abs() < 0.02);
     }

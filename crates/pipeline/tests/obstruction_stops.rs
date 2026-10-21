@@ -28,6 +28,7 @@ fn input(i: usize) -> SensorFrame {
             variance: 0.02,
         }),
         lidar: (!failed).then(|| LidarScan {
+            sweep: None,
             stamp: time,
             points: if i >= 30 {
                 vec![]

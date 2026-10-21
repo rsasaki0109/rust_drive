@@ -54,4 +54,6 @@ pub struct ForecastConsistencyDiagnostics {
     pub held_identities: Vec<u64>,
     pub misses: Vec<ForecastConsistencyMiss>,
     pub retained_references: usize,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub clear_sweep: Option<crate::ClearSweepRecoveryDiagnostics>,
 }

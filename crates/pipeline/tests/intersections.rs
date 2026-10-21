@@ -41,6 +41,7 @@ fn frame(time: f64) -> SensorFrame {
             variance: 0.02,
         }),
         lidar: Some(LidarScan {
+            sweep: None,
             stamp: time,
             points: vec![],
         }),

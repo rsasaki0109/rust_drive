@@ -44,6 +44,7 @@ fn frame(time: f64, navigation_update: Option<NavigationUpdate>) -> SensorFrame 
             variance: 0.02,
         }),
         lidar: Some(LidarScan {
+            sweep: None,
             stamp: time,
             points: vec![],
         }),

@@ -43,6 +43,7 @@ fn run(reversed: bool) -> PipelineOutput {
                 variance: 0.02,
             }),
             lidar: points.map(|points| LidarScan {
+                sweep: None,
                 stamp: time,
                 points,
             }),
@@ -120,6 +121,7 @@ fn crowded_measured_components_brake_without_partial_updates_and_recover_on_new_
                 variance: 0.02,
             }),
             lidar: Some(LidarScan {
+                sweep: None,
                 stamp,
                 points: if time == 0.2 {
                     vec![]

@@ -84,6 +84,7 @@ impl MultiHeightLidarConfig {
             }
         }
         Ok(LidarScan {
+            sweep: None,
             stamp: scan.stamp,
             points,
         })

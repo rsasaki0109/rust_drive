@@ -4,7 +4,14 @@
 
 Current comparative engineering maturity is **about 29%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
-Optional [measured forecast braking](docs/forecast-consistency.md) detects new
+Optional [complete-sweep recovery](docs/clear-sweep-recovery.md) records actual
+planar beam outcomes and requires fresh complete empty sweeps with synchronous
+stopped motion before retiring a disappeared forecast-fault identity. Capture
+preserves all 32 preceding operational outputs and physical frames. The 32 enabled
+conditions restore goal completion from 5 to 16 and remove all 11 disappeared-ID
+holds without new failed gates against the preceding guard. Forecast coverage
+still fails and the eight original missions remain incomplete; default stays off.
+The preceding [measured forecast braking](docs/forecast-consistency.md) detects new
 acquired proxy discs outside earlier predictions and requires fresh measured
 confirmation before recovery. All 32 supported conditions pass the monitor/brake
 contract, but goal completion falls from 16 to 5 and 12 conditions gain strict

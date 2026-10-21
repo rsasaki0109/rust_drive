@@ -135,3 +135,9 @@ errors, calibrated future coverage, safe disappearance handling and useful missi
 completion remain open. This does not qualify road operation, real-time performance
 or general cross-platform behavior. Comparative maturity remains **about 29%**,
 with the 30% waypoint unmet.
+
+The subsequent [complete-sweep recovery](clear-sweep-recovery.md) adds explicit
+completed ray outcomes and stopped synchronous confirmation. Its 32 enabled
+conditions restore goal completion from 5 to 16 and remove all eleven final
+disappearance holds without new failed gates against this guard baseline. The
+original forecast and mission failures remain scored, and default adoption fails.

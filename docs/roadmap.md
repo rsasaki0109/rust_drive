@@ -4,7 +4,16 @@ RustDriving's long-term target is a practical independent autonomous driving OSS
 
 The near-term user goal is a **50% engineering maturity estimate**. [Capability waypoints and evidence requirements](maturity.md) define the development direction; the percentage is subjective and does not imply road safety or parity. The current estimate is about 29%; this remains a subjective simulation-prototype estimate. Bounded turn-rule routing and richer intersection recordings add reproducible behavior, while general driving, perception accuracy and planar/terrain limits remain.
 
-The latest [measured forecast braking](forecast-consistency.md) adds a bounded
+The latest [complete-sweep recovery](clear-sweep-recovery.md) adds actual acquired
+ray outcomes and stopped synchronous confirmation for disappearance-related
+forecast holds. This addresses monitor availability within the declared planar
+sensing model. Calibrated physical forecasting, broader sensing and the eight
+original incomplete missions remain open. All 32 enabled conditions restore goals
+5 → 16 and remove 11 disappearance holds; all 32 capture controls preserve prior
+bytes/frames. Forecast qualification and default adoption still fail. M1 remains
+in progress at about 29%.
+
+The preceding [measured forecast braking](forecast-consistency.md) adds a bounded
 runtime response to acquired proxies escaping older predictions. Monitor/brake
 checks pass all 32 supported conditions, but goals fall 16 → 5 and 12 conditions
 gain strict failures. Default adoption fails; safe disappearance handling and

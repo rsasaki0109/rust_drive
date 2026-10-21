@@ -46,7 +46,9 @@ use rustdriving_localization::latency::{GnssHistory, HistoryError};
 use rustdriving_mapping::OccupancyGrid;
 use rustdriving_perception::{LidarClusters, Tracker};
 use rustdriving_planning::LatticePlanner;
-use rustdriving_prediction::{ForecastConsistencyGuard, ObservedBraking};
+use rustdriving_prediction::{
+    ForecastConsistencyAdmission, ForecastConsistencyGuard, ObservedBraking,
+};
 use serde::{Deserialize, Serialize};
 use stop_signs::{StopSignStatus, StopSigns};
 use traffic_controls::{
@@ -113,6 +115,9 @@ pub struct PipelineConfig {
     /// Brake after a prior forecast misses a newly acquired measured disc.
     #[serde(default, skip_serializing_if = "is_false")]
     pub forecast_consistency_guard: bool,
+    /// Require completed empty rays and synchronous stopped motion for absence recovery.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub clear_sweep_recovery: Option<ClearSweepRecoveryConfig>,
     #[serde(default, skip_serializing_if = "is_false")]
     pub settle_obstruction_stops: bool,
     /// Search earlier collision-safe stopping positions and retain their hold.
@@ -192,6 +197,7 @@ impl PipelineConfig {
             enclose_track_measurements: false,
             forecast_envelope: None,
             forecast_consistency_guard: false,
+            clear_sweep_recovery: None,
             settle_obstruction_stops: false,
             search_obstruction_stops: false,
             lateral_candidate_margin_m: None,
@@ -214,6 +220,17 @@ impl PipelineConfig {
         }
     }
     pub fn validate(&self) -> Result<(), String> {
+        if let Some(policy) = &self.clear_sweep_recovery {
+            rustdriving_perception::planar_sweep::validate_recovery(policy)?;
+            if !self.forecast_consistency_guard
+                || self.multi_height_lidar.is_some()
+                || self.lidar3d.is_some()
+            {
+                return Err(
+                    "empty-sweep recovery requires the planar forecast consistency guard".into(),
+                );
+            }
+        }
         if self.forecast_consistency_guard
             && (self.forecast_envelope.is_none() || !self.enclose_track_measurements)
         {
@@ -749,9 +766,15 @@ impl DrivingPipeline {
         let gnss_recovery = config.gnss_recovery.map(Recovery::new);
         let relocalizer = config.relocalization.map(Relocalizer::new);
         let tracker = config.new_tracker();
-        let forecast_consistency = config
+        let mut forecast_consistency = config
             .forecast_consistency_guard
             .then(ForecastConsistencyGuard::default);
+        if config.clear_sweep_recovery.is_some() {
+            forecast_consistency
+                .as_mut()
+                .unwrap()
+                .enable_clear_sweep_recovery();
+        }
         Ok(Self {
             config,
             ekf,
@@ -1135,6 +1158,21 @@ impl DrivingPipeline {
                 }
             }
         };
+        // Ray outcomes are acquired sensing, including explicit unavailable rays.
+        // Validate before either map correction or tracker acceptance can use them.
+        let scan = scan.filter(|scan| {
+            let valid = if let Some(policy) = &self.config.clear_sweep_recovery {
+                rustdriving_perception::planar_sweep::certify_empty_sweep(scan, policy).is_ok()
+            } else {
+                scan.sweep.is_none()
+                    || rustdriving_perception::planar_sweep::validate_sweep(scan).is_ok()
+            };
+            if !valid {
+                health.push(HealthIssue::InvalidLidar);
+                self.lidar_fault = Some(input.time);
+            }
+            valid
+        });
         if let Some(map) = &mut self.map_localization {
             let eligible = self.motion_discontinuity.is_none()
                 && !input.lidar_failed
@@ -1263,14 +1301,31 @@ impl DrivingPipeline {
             .map(|track| tracking_frame::track_to_world(tracking_to_world, track))
             .collect();
         let continuous_predictions = self.predictor.predict(&self.tracking_tracks, input.time);
+        let clear_sweep = self
+            .config
+            .clear_sweep_recovery
+            .as_ref()
+            .and_then(|policy| {
+                let acquired = scan.filter(|scan| {
+                    scan.stamp == input.time && self.last_lidar == Some(scan.stamp)
+                })?;
+                self.last_odom
+                    .filter(|motion| motion.stamp == input.time && motion.speed.abs() <= 0.2)?;
+                rustdriving_perception::planar_sweep::certify_empty_sweep(acquired, policy)
+                    .ok()
+                    .flatten()
+            });
         if let Some(guard) = &mut self.forecast_consistency {
-            guard.observe(
+            guard.observe_with_clear_sweep(
                 input.time,
                 self.last_lidar,
                 self.tracker.measurements(),
                 &self.tracking_tracks,
                 &continuous_predictions,
-                health.is_empty(),
+                ForecastConsistencyAdmission {
+                    upstream_healthy: health.is_empty(),
+                    clear_sweep,
+                },
             );
             if guard.blocking() {
                 health.push(HealthIssue::InconsistentForecast);
@@ -1751,6 +1806,7 @@ mod tests {
                 variance: 0.02,
             }),
             lidar: Some(LidarScan {
+                sweep: None,
                 stamp: time,
                 points: vec![],
             }),

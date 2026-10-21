@@ -1,6 +1,7 @@
 //! Detect a forecast failing to enclose a later acquired proxy disc.
 //! This observes model consistency; it does not calibrate physical uncertainty.
 use rustdriving_core::{
+    ClearSweepEvidence, ClearSweepRecoveryDiagnostics, ClearSweepRelease,
     ForecastConsistencyDiagnostics, ForecastConsistencyFault as Fault, ForecastConsistencyMiss,
     ForecastConsistencyState as State, Prediction, Track, TrackMeasurement,
 };
@@ -16,6 +17,13 @@ struct Reference {
     prediction: Prediction,
 }
 
+/// The caller validates full acquired rays and synchronous stopped measured
+/// motion before supplying clear-sweep evidence. Other faults remain upstream.
+pub struct ForecastConsistencyAdmission {
+    pub upstream_healthy: bool,
+    pub clear_sweep: Option<ClearSweepEvidence>,
+}
+
 #[derive(Default)]
 pub struct ForecastConsistencyGuard {
     references: BTreeMap<u64, VecDeque<Reference>>,
@@ -27,6 +35,11 @@ pub struct ForecastConsistencyGuard {
 }
 
 impl ForecastConsistencyGuard {
+    pub fn enable_clear_sweep_recovery(&mut self) {
+        self.diagnostic
+            .clear_sweep
+            .get_or_insert_with(ClearSweepRecoveryDiagnostics::default);
+    }
     pub fn diagnostics(&self) -> &ForecastConsistencyDiagnostics {
         &self.diagnostic
     }
@@ -39,6 +52,23 @@ impl ForecastConsistencyGuard {
         self.diagnostic.recovery_samples = 0;
         self.diagnostic.recovery_first_acquisition_s = None;
         self.last_recovery_acquisition = None;
+        self.reset_clear_confirmation();
+    }
+
+    fn reset_clear_confirmation(&mut self) {
+        if let Some(clear) = &mut self.diagnostic.clear_sweep {
+            clear.confirmation_samples = 0;
+            clear.first_acquisition_s = None;
+            clear.last_acquisition_s = None;
+        }
+    }
+
+    fn release(&mut self) {
+        self.diagnostic.fault = None;
+        self.diagnostic.fault_control_time_s = None;
+        self.diagnostic.recovery_after_control_s = None;
+        self.held.clear();
+        self.reset_confirmation();
     }
 
     fn fault(&mut self, now: f64, cause: Fault, reset_required: bool) {
@@ -54,7 +84,13 @@ impl ForecastConsistencyGuard {
             State::ResetRequired
         } else if !self.blocking() {
             State::Observing
-        } else if self.diagnostic.recovery_samples > 0 {
+        } else if self.diagnostic.recovery_samples > 0
+            || self
+                .diagnostic
+                .clear_sweep
+                .as_ref()
+                .is_some_and(|c| c.confirmation_samples > 0)
+        {
             State::Confirming
         } else {
             State::Holding
@@ -85,6 +121,29 @@ impl ForecastConsistencyGuard {
         predictions: &[Prediction],
         healthy: bool,
     ) {
+        self.observe_with_clear_sweep(
+            now,
+            scan,
+            measurements,
+            tracks,
+            predictions,
+            ForecastConsistencyAdmission {
+                upstream_healthy: healthy,
+                clear_sweep: None,
+            },
+        );
+    }
+
+    pub fn observe_with_clear_sweep(
+        &mut self,
+        now: f64,
+        scan: Option<f64>,
+        measurements: &[TrackMeasurement],
+        tracks: &[Track],
+        predictions: &[Prediction],
+        admission: ForecastConsistencyAdmission,
+    ) {
+        let healthy = admission.upstream_healthy;
         if !now.is_finite() || now < 0. || self.previous_time.is_some_and(|last| now < last) {
             self.fault(self.previous_time.unwrap_or(0.), Fault::InvalidInput, true);
             self.refresh();
@@ -177,6 +236,34 @@ impl ForecastConsistencyGuard {
             self.refresh();
             return;
         }
+        let clear_evidence = admission
+            .clear_sweep
+            .filter(|_| self.diagnostic.clear_sweep.is_some());
+        if let Some(proof) = &clear_evidence {
+            if proof.acquisition_s != stamp
+                || stamp != now
+                || !measurements.is_empty()
+                || !(64..=4096).contains(&proof.ray_count)
+                || ![
+                    proof.checked_center_radius_m,
+                    proof.minimum_resolved_disc_radius_m,
+                    proof.maximum_angular_gap_rad,
+                    proof.maximum_transverse_gap_m,
+                ]
+                .iter()
+                .all(|v| v.is_finite())
+                || proof.checked_center_radius_m <= 0.
+                || proof.minimum_resolved_disc_radius_m <= 0.
+                || proof.maximum_angular_gap_rad <= 0.
+                || proof.maximum_transverse_gap_m < 0.
+                || proof.maximum_transverse_gap_m >= proof.minimum_resolved_disc_radius_m
+            {
+                self.fault(now, Fault::InvalidInput, false);
+                self.refresh();
+                return;
+            }
+            self.diagnostic.clear_sweep.as_mut().unwrap().last_evidence = Some(proof.clone());
+        }
         let mut checked = BTreeSet::new();
         let mut misses = Vec::new();
         for measured in measurements {
@@ -238,12 +325,55 @@ impl ForecastConsistencyGuard {
                 self.fault(now, Fault::Capacity, true);
             }
         } else if self.blocking() {
-            if self.diagnostic.complete_scene_check
+            if clear_evidence.is_some()
+                && self.diagnostic.fault == Some(Fault::MeasuredMiss)
+                && !self.held.is_empty()
                 && self
                     .diagnostic
                     .recovery_after_control_s
                     .is_some_and(|after| stamp > after)
             {
+                self.diagnostic.recovery_samples = 0;
+                self.diagnostic.recovery_first_acquisition_s = None;
+                self.last_recovery_acquisition = None;
+                if self
+                    .diagnostic
+                    .clear_sweep
+                    .as_ref()
+                    .unwrap()
+                    .last_acquisition_s
+                    .is_none_or(|last| stamp - last > 0.35 + 1e-9)
+                {
+                    self.reset_clear_confirmation();
+                    self.diagnostic
+                        .clear_sweep
+                        .as_mut()
+                        .unwrap()
+                        .first_acquisition_s = Some(stamp);
+                }
+                let clear = self.diagnostic.clear_sweep.as_mut().unwrap();
+                clear.confirmation_samples = clear.confirmation_samples.saturating_add(1).min(3);
+                clear.last_acquisition_s = Some(stamp);
+                if clear.confirmation_samples >= 3
+                    && stamp - clear.first_acquisition_s.unwrap() >= 0.2 - 1e-9
+                {
+                    clear.release_count = clear.release_count.saturating_add(1);
+                    clear.last_release = Some(ClearSweepRelease {
+                        identities: self.held.iter().copied().collect(),
+                        control_time_s: now,
+                        first_acquisition_s: clear.first_acquisition_s.unwrap(),
+                        last_acquisition_s: stamp,
+                        acquisition_count: clear.confirmation_samples,
+                    });
+                    self.release();
+                }
+            } else if self.diagnostic.complete_scene_check
+                && self
+                    .diagnostic
+                    .recovery_after_control_s
+                    .is_some_and(|after| stamp > after)
+            {
+                self.reset_clear_confirmation();
                 if self
                     .last_recovery_acquisition
                     .is_none_or(|last| stamp - last > 0.35 + 1e-9)
@@ -260,11 +390,7 @@ impl ForecastConsistencyGuard {
                         .recovery_first_acquisition_s
                         .is_some_and(|first| stamp - first >= 0.2 - 1e-9)
                 {
-                    self.diagnostic.fault = None;
-                    self.diagnostic.fault_control_time_s = None;
-                    self.diagnostic.recovery_after_control_s = None;
-                    self.held.clear();
-                    self.reset_confirmation();
+                    self.release();
                 }
             } else {
                 self.reset_confirmation();

@@ -352,6 +352,7 @@ pub(crate) fn process(
     diagnostics.confident = true;
     Ok(Perception3dAcquisition {
         scan: LidarScan {
+            sweep: None,
             stamp: scan.stamp,
             points: projected.into_iter().map(|(_, point)| point).collect(),
         },

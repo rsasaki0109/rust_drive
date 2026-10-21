@@ -3,6 +3,8 @@ mod planning_diagnostics;
 pub use planning_diagnostics::*;
 mod forecast_consistency;
 pub use forecast_consistency::*;
+mod planar_sweep;
+pub use planar_sweep::*;
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 
@@ -63,6 +65,8 @@ pub struct EgoState {
 pub struct LidarScan {
     pub stamp: f64,
     pub points: Vec<Vec2>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sweep: Option<PlanarLidarSweep>,
 }
 /// A horizontal measured plane. XY points are body forward/left; height is
 /// meters above the calibrated road datum, not an inferred object label.

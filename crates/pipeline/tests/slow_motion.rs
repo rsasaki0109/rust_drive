@@ -17,6 +17,7 @@ fn raw_delayed_slow_returns_predict_motion_using_original_acquisition_times() {
         let lidar = i.is_multiple_of(2).then(|| {
             let stamp = if i == 0 { 0. } else { time - 0.1 };
             LidarScan {
+                sweep: None,
                 stamp,
                 points: (0..32)
                     .map(|j| {
