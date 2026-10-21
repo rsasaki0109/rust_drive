@@ -135,6 +135,9 @@ pub struct Scenario {
     /// Explicit experimental forecast policy, independent of actor identities.
     #[serde(default, skip_serializing_if = "is_false")]
     pub confirm_slow_motion: bool,
+    /// Cold-track acquisition fit; independent of simulator object identities.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub confirm_track_initialization: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub forecast_envelope: Option<rustdriving_core::ForecastEnvelopeConfig>,
     #[serde(default, skip_serializing_if = "is_false")]
@@ -740,6 +743,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     config.absolute_heading_fusion = scenario.absolute_heading_fusion;
     config.relocalization = scenario.relocalization;
     config.confirm_slow_motion = scenario.confirm_slow_motion;
+    config.confirm_track_initialization = scenario.confirm_track_initialization;
     config.forecast_envelope = scenario.forecast_envelope;
     config.settle_obstruction_stops = scenario.settle_obstruction_stops;
     config.search_obstruction_stops = scenario.search_obstruction_stops;

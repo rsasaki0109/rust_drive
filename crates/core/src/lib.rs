@@ -185,6 +185,16 @@ pub struct Detection {
     pub center: Vec2,
     pub radius: f64,
 }
+/// Raw associated detection in the continuous wheel/gyro tracking frame.
+/// Cached outputs retain this acquisition stamp; it is not a new observation.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TrackMeasurement {
+    pub id: u64,
+    pub stamp: f64,
+    pub center: Vec2,
+    pub radius: f64,
+}
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Track {

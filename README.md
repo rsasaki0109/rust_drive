@@ -4,6 +4,11 @@
 
 Current comparative engineering maturity is **about 29%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
+Optional [confirmed initial track motion](docs/track-initialization.md) separates
+early shape refinement from velocity estimation. All 52 fixed comparisons retain
+their original gates; two forecast-coverage failures pass. Strict qualification
+remains 20/52, eight mission goals are still missed, and 15 horizon comparisons
+worsen. The option stays off by default.
 Optional [heading-event history](docs/heading-history.md) now composes synchronous
 absolute heading with delayed GNSS and map correction replay. Fourteen enabled
 simulation cases pass; eight paired comparisons reduce position RMSE by at least

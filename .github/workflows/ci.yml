@@ -28,6 +28,8 @@ jobs:
         run: python scripts/test_prediction_evidence.py
       - name: Check declared forecast envelope containment and failure scoring
         run: python scripts/test_forecast_envelope.py
+      - name: Check cold-track batch reconstruction and retained acquisitions
+        run: python scripts/test_track_initialization.py
       - name: Check obstruction-stop recovery and independent path certificates
         run: python scripts/test_obstruction_stops.py
       - name: Check road-width candidates and independent circular road containment
@@ -76,6 +78,9 @@ jobs:
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - run: cargo test --workspace --locked
       - run: cargo build --workspace --release --locked
+      - name: Compare confirmed track initialization with retained parent gates
+        shell: bash
+        run: python scripts/check_track_initialization.py --plant reference-2d --output artifacts/confirmed-tracks
       - name: Drive and independently score fixed-route speed intervals
         shell: bash
         run: python scripts/check_speed_zones.py --output artifacts/speed-zones
@@ -1108,6 +1113,9 @@ jobs:
       - name: Verify native heading with delayed GNSS and retained fault braking
         working-directory: rust_drive
         run: python3 scripts/check_heading_history.py --plant rne-dynamic --output artifacts/heading-history-native
+      - name: Compare native confirmed track initialization with retained parent gates
+        working-directory: rust_drive
+        run: python3 scripts/check_track_initialization.py --plant rne-dynamic --output artifacts/confirmed-tracks-native
       - name: Verify legal turn routes in the native dynamic plant
         working-directory: rust_drive
         run: python3 scripts/check-turn-restrictions.py --backend native --seeds 7 --compact --output artifacts/turn-restrictions

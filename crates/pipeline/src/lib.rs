@@ -98,6 +98,9 @@ pub struct PipelineConfig {
     /// Experimental history-confirmed slow-object forecasts; default off.
     #[serde(default, skip_serializing_if = "is_false")]
     pub confirm_slow_motion: bool,
+    /// Confirm cold-track motion from stable acquired detections; default off.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub confirm_track_initialization: bool,
     /// Optional declared motion-error budgets; does not estimate uncertainty.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub forecast_envelope: Option<ForecastEnvelopeConfig>,
@@ -142,6 +145,14 @@ pub struct PipelineConfig {
     pub lane_change: Option<LaneChangeConfig>,
 }
 impl PipelineConfig {
+    fn new_tracker(&self) -> Tracker {
+        if self.confirm_track_initialization {
+            Tracker::with_confirmed_initialization()
+        } else {
+            Tracker::default()
+        }
+    }
+
     pub fn new(route: Route, initial_pose: Pose, vehicle: VehicleConfig) -> Self {
         Self {
             route,
@@ -156,6 +167,7 @@ impl PipelineConfig {
             cruise_speed: 8.0,
             speed_zones: vec![],
             confirm_slow_motion: false,
+            confirm_track_initialization: false,
             forecast_envelope: None,
             settle_obstruction_stops: false,
             search_obstruction_stops: false,
@@ -496,6 +508,9 @@ pub struct PipelineOutput {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tracking_frame: Option<Pose>,
     pub tracks: Vec<Track>,
+    /// Last successfully acquired raw detections, in the continuous tracking frame.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub track_measurements: Option<Vec<TrackMeasurement>>,
     pub predictions: Vec<Prediction>,
     pub trajectory: Trajectory,
     pub command: ControlCommand,
@@ -681,6 +696,7 @@ impl DrivingPipeline {
             .map(|c| LaneChangeGate::new(c, config.vehicle, config.cruise_speed));
         let gnss_recovery = config.gnss_recovery.map(Recovery::new);
         let relocalizer = config.relocalization.map(Relocalizer::new);
+        let tracker = config.new_tracker();
         Ok(Self {
             config,
             ekf,
@@ -688,7 +704,7 @@ impl DrivingPipeline {
             gnss_latency: GnssLatencyDiagnostics::default(),
             gnss_recovery,
             perception: LidarClusters,
-            tracker: Tracker::default(),
+            tracker,
             predictor,
             planner,
             controller,
@@ -830,7 +846,7 @@ impl DrivingPipeline {
             // The missing rigid motion cannot be inferred from later scalar
             // readings. Discard scene history and never bridge this epoch.
             self.scan_poses = scan_pose::ScanPoseHistory::default();
-            self.tracker = Tracker::default();
+            self.tracker = self.config.new_tracker();
             self.tracking_tracks.clear();
             self.tracks.clear();
             self.predictor = if self.config.confirm_slow_motion {
@@ -1473,6 +1489,10 @@ impl DrivingPipeline {
             estimate,
             tracking_frame: Some(tracking_to_world),
             tracks: self.tracks.clone(),
+            track_measurements: self
+                .config
+                .confirm_track_initialization
+                .then(|| self.tracker.measurements().to_vec()),
             predictions,
             trajectory,
             command,

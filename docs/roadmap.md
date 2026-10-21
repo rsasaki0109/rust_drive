@@ -4,7 +4,13 @@ RustDriving's long-term target is a practical independent autonomous driving OSS
 
 The near-term user goal is a **50% engineering maturity estimate**. [Capability waypoints and evidence requirements](maturity.md) define the development direction; the percentage is subjective and does not imply road safety or parity. The current estimate is about 29%; this remains a subjective simulation-prototype estimate. Bounded turn-rule routing and richer intersection recordings add reproducible behavior, while general driving, perception accuracy and planar/terrain limits remain.
 
-The latest [heading-event history](heading-history.md) composes synchronous
+The latest [confirmed initial track motion](track-initialization.md) separates
+early shape changes from initial velocity estimation. All 52 fixed comparisons
+retain their gates; two coverage failures pass. Strict qualification remains
+20/52, including eight missed mission goals; short-horizon failures and measured
+uncertainty remain open. The option stays off and M1 remains in progress.
+
+The preceding [heading-event history](heading-history.md) composes synchronous
 heading with delayed GNSS/map replay and preserves acquisition clocks and fault
 braking. Fourteen enabled simulation cases pass; eight pairs reduce RMSE by at
 least 92.8%. Delayed heading, reset composition and measured calibration remain

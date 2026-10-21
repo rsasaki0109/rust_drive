@@ -108,6 +108,16 @@ Unsafe Rust is forbidden at workspace level. There is no global message bus, cus
 
 ## Shared application boundary
 
+Optional `confirm_track_initialization` holds cold-track velocity at zero until
+at least three stable-radius acquired detections span 0.2 seconds. A bounded
+centered least-squares fit uses every measurement in its at-most-0.6-second
+window, then hands current position/velocity to ordinary alpha-beta tracking.
+Rejected scans preserve fit state atomically; other tracks and cached scans
+cannot renew support. Enabled `track_measurements` retain raw associated centers
+in the continuous frame and their original acquisition stamps. These heuristic
+shape/fit thresholds do not calibrate uncertainty or establish that an
+unconfirmed object is stationary. [Contract and retained failures](track-initialization.md).
+
 Optional `lateral_candidate_margin_m` fits the three center/left/right planning
 choices to the supplied road half-width minus the circular vehicle radius and
 an extra target reserve. Wide roads retain ±3.5 m; small unusable side corridors

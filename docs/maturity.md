@@ -2,7 +2,15 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest [heading-event history](heading-history.md) keeps the estimate at
+The latest [confirmed initial track motion](track-initialization.md) keeps the
+estimate at **about 29%**. Stable acquired geometry now initializes velocity
+before ordinary alpha-beta updates. All 52 fixed comparisons retain their strict
+gates, and forecast-coverage failures fall from 29 to 27. Strict qualification
+stays 20/52; eight mission goals remain missed and 15 horizon comparisons worsen.
+The option stays off. Measured uncertainty, general sensing and the **30% waypoint
+remain unmet**.
+
+The preceding [heading-event history](heading-history.md) keeps the estimate at
 **about 29%**. Synchronous absolute heading now composes with bounded GNSS/map
 replay while preserving full covariance, observation ownership and fault braking.
 All 14 enabled physical cases pass, and eight fixed pairs reduce position RMSE

@@ -2,6 +2,7 @@
 mod association;
 pub mod ground3d;
 pub mod image_features;
+mod initialization;
 pub mod objects3d;
 pub mod terrain_adaptive;
 pub use ground3d::{GroundClassification, TerrainConfig, TerrainDiagnostics, classify_ground};
@@ -11,7 +12,8 @@ pub use terrain_adaptive::{
     classify_ground_adaptive,
 };
 
-use rustdriving_core::{Detection, LidarScan, Perception, Pose, Track, Vec2};
+use rustdriving_core::{Detection, LidarScan, Perception, Pose, Track, TrackMeasurement, Vec2};
+use std::collections::BTreeMap;
 #[derive(Default)]
 pub struct LidarClusters;
 impl Perception for LidarClusters {
@@ -120,11 +122,14 @@ fn fit_circle(points: &[Vec2]) -> Option<(Vec2, f64)> {
     }
     Some((center, radius + 0.12))
 }
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct Tracker {
     tracks: Vec<Track>,
     next_id: u64,
     accepted_scan_stamp: Option<f64>,
+    confirm_initialization: bool,
+    pending: BTreeMap<u64, initialization::Initialization>,
+    measurements: Vec<TrackMeasurement>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -156,6 +161,20 @@ impl std::fmt::Display for TrackerUpdateError {
 impl std::error::Error for TrackerUpdateError {}
 
 impl Tracker {
+    /// Opt-in cold-track velocity confirmation from stable acquired detections.
+    pub fn with_confirmed_initialization() -> Self {
+        Self {
+            confirm_initialization: true,
+            ..Self::default()
+        }
+    }
+
+    /// Raw detections from the last successful scan, in the continuous frame.
+    /// A successful empty scan clears these; rejected updates preserve them.
+    pub fn measurements(&self) -> &[TrackMeasurement] {
+        &self.measurements
+    }
+
     /// Updates from a successful scan. Rejected inputs return the unchanged
     /// tracks; use `try_update` to distinguish rejection from a successful scan.
     pub fn update(&mut self, detections: &[Detection], stamp: f64) -> Vec<Track> {
@@ -184,11 +203,8 @@ impl Tracker {
         {
             return Err(TrackerUpdateError::InvalidDetection { index });
         }
-        let mut next = Self {
-            tracks: self.tracks.clone(),
-            next_id: self.next_id,
-            accepted_scan_stamp: Some(stamp),
-        };
+        let mut next = self.clone();
+        next.accepted_scan_stamp = Some(stamp);
         next.apply(detections, stamp)?;
         let result = next.tracks.clone();
         *self = next;
@@ -197,19 +213,32 @@ impl Tracker {
 
     fn apply(&mut self, detections: &[Detection], stamp: f64) -> Result<(), TrackerUpdateError> {
         self.tracks.retain(|t| stamp - t.last_seen < 0.6);
+        self.pending
+            .retain(|id, _| self.tracks.iter().any(|t| t.id == *id));
+        self.measurements.clear();
         let matches = association::associate(&self.tracks, detections, stamp)?;
         for (d, matched) in detections.iter().zip(matches) {
+            let id;
             if let Some(i) = matched {
                 let track = &mut self.tracks[i];
+                id = track.id;
                 // The residual spans this track's missed observations, even
                 // when other objects were detected in intervening scans.
                 let elapsed = stamp - track.last_seen;
                 let predicted = track.position.plus(track.velocity.scaled(elapsed));
                 let residual = d.center.minus(predicted);
                 track.position = predicted.plus(residual.scaled(0.75));
-                track.velocity = track
-                    .velocity
-                    .plus(residual.scaled(0.12 / elapsed.clamp(0.01, 1.0)));
+                if let Some(pending) = self.pending.get_mut(&id) {
+                    if let Some((position, velocity)) = pending.observe(d, stamp) {
+                        track.position = position;
+                        track.velocity = velocity;
+                        self.pending.remove(&id);
+                    }
+                } else {
+                    track.velocity = track
+                        .velocity
+                        .plus(residual.scaled(0.12 / elapsed.clamp(0.01, 1.0)));
+                }
                 let speed = track.velocity.x.hypot(track.velocity.y);
                 if speed > 15.0 {
                     track.velocity = track.velocity.scaled(15.0 / speed);
@@ -221,12 +250,25 @@ impl Tracker {
                     .next_id
                     .checked_add(1)
                     .ok_or(TrackerUpdateError::IdentifierExhausted)?;
+                id = self.next_id;
+                if self.confirm_initialization {
+                    self.pending
+                        .insert(id, initialization::Initialization::new(d, stamp));
+                }
                 self.tracks.push(Track {
                     id: self.next_id,
                     position: d.center,
                     velocity: Vec2::default(),
                     radius: d.radius,
                     last_seen: stamp,
+                });
+            }
+            if self.confirm_initialization {
+                self.measurements.push(TrackMeasurement {
+                    id,
+                    stamp,
+                    center: d.center,
+                    radius: d.radius,
                 });
             }
         }
