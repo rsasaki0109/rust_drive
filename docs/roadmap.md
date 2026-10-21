@@ -4,7 +4,14 @@ RustDriving's long-term target is a practical independent autonomous driving OSS
 
 The near-term user goal is a **50% engineering maturity estimate**. [Capability waypoints and evidence requirements](maturity.md) define the development direction; the percentage is subjective and does not imply road safety or parity. The current estimate is about 29%; this remains a subjective simulation-prototype estimate. Bounded turn-rule routing and richer intersection recordings add reproducible behavior, while general driving, perception accuracy and planar/terrain limits remain.
 
-The latest [standalone enclosure qualification](standalone-enclosure.md) checks
+The latest [acquisition-time heading fusion](heading-latency.md) admits up to
+200 ms of acquired-heading delay through transactional measured GNSS/map history.
+All 18 enabled simulation cases pass, including six fault stop/recovery cases;
+ten disabled/unsupported controls retain their missed missions and stay stopped.
+Measured noise, clock calibration, reset composition and the preceding blocked
+missions remain open. M1 remains in progress and maturity stays about 29%.
+
+The preceding [standalone enclosure qualification](standalone-enclosure.md) checks
 measured geometry without initial-motion confirmation. All 52 comparisons
 retain their gates, and two coverage failures pass against matching original
 controls. Strict qualification stays 20/52; runtime bytes and defaults remain
@@ -25,7 +32,7 @@ uncertainty remain open. The option stays off and M1 remains in progress.
 The preceding [heading-event history](heading-history.md) composes synchronous
 heading with delayed GNSS/map replay and preserves acquisition clocks and fault
 braking. Fourteen enabled simulation cases pass; eight pairs reduce RMSE by at
-least 92.8%. Delayed heading, reset composition and measured calibration remain
+least 92.8%. Reset composition and measured calibration remain
 open, so M1 remains in progress and maturity stays about 29%.
 
 The preceding [earlier obstruction-stop search](stop-search.md) retains a checked
@@ -43,7 +50,8 @@ Optional [synchronous absolute heading](absolute-heading.md) now adds a calibrat
 observation contract, full-covariance fusion and loss/rejection braking. The
 additional sensor repairs five viewed heading failures, while biased-heading
 controls and one new forecast-coverage regression remain failed. Measured sensor
-calibration, delayed-heading and reset composition remain open; the mode stays off.
+calibration and reset composition remain open; delayed heading needs its separate
+bounded history option. Both modes stay off by default.
 
 ## M0 — Executable Rust baseline (implemented)
 

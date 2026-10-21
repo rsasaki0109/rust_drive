@@ -1262,6 +1262,7 @@ mod tests {
         s.heading_sensor = Some(rustdriving_sim::heading::HeadingSensor {
             period_ticks: 4,
             variance_rad2: 1e-4,
+            delay_ticks: 0,
             dropout_windows: vec![],
             bias_windows: vec![],
         });
@@ -1293,6 +1294,43 @@ mod tests {
                     .verified
             );
         }
+    }
+    #[test]
+    fn delayed_native_heading_preserves_earlier_physical_acquisitions_and_sensor_replay() {
+        let mut s = scenario("blocked");
+        s.duration = 1.;
+        s.full_rate_recording = true;
+        s.absolute_heading_fusion = true;
+        s.gnss_latency_compensation = true;
+        s.heading_latency_compensation = true;
+        s.heading_sensor = Some(rustdriving_sim::heading::HeadingSensor {
+            period_ticks: 4,
+            variance_rad2: 1e-4,
+            delay_ticks: 4,
+            dropout_windows: vec![],
+            bias_windows: vec![],
+        });
+        let result = run(s.clone(), 7, Plant::Dynamic).unwrap();
+        let log = result.sensor_log.as_ref().unwrap();
+        for (i, tick) in log.ticks.iter().enumerate() {
+            let expected = if i >= 4 {
+                let acquired = &result.frames[i - 4];
+                s.heading_observation(7, i - 4, acquired.time, acquired.truth.pose.yaw)
+            } else {
+                None
+            };
+            assert_eq!(
+                tick.input.absolute_heading.map(|h| (h.stamp, h.yaw_rad)),
+                expected.map(|h| (h.stamp, h.yaw_rad))
+            );
+        }
+        let mut bytes = vec![];
+        log.write(&mut bytes).unwrap();
+        assert!(
+            rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), vec![])
+                .unwrap()
+                .verified
+        );
     }
     #[test]
     fn native_and_reference_use_identical_keyed_gnss_noise_without_truth_calibration() {

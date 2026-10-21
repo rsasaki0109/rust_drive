@@ -9,6 +9,7 @@ pub const MAX_MAP_CORRECTIONS: usize = 64;
 pub const MAX_GNSS_CORRECTIONS: usize = 64;
 pub const MAX_HEADING_CORRECTIONS: usize = 64;
 pub const MAX_MAP_DELAY_S: f64 = 0.2;
+pub const MAX_HEADING_DELAY_S: f64 = 0.2;
 const EPS: f64 = 1e-9;
 mod asynchronous;
 
@@ -99,7 +100,7 @@ pub enum HistoryError {
 /// No measurements or calibration enter from evaluation truth. Only this
 /// wrapper may correct the supplied EKF while its history is active. Synchronous
 /// map measurements must enter through `correct_map_pose`, and synchronous
-/// heading through `correct_heading` with retained corrections enabled. Other
+/// heading through `correct_heading` or `correct_heading_at` with retained corrections enabled. Other
 /// external corrections require `reset` and a new covered acquisition interval.
 #[derive(Clone, Default)]
 pub struct GnssHistory {

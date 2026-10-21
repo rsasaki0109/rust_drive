@@ -127,6 +127,8 @@ pub struct Scenario {
     pub gnss_recovery: Option<rustdriving_pipeline::GnssRecoveryConfig>,
     #[serde(default, skip_serializing_if = "is_false")]
     pub absolute_heading_fusion: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub heading_latency_compensation: bool,
     /// Simulator-only acquisition/noise/fault settings; never a driver input.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub heading_sensor: Option<heading::HeadingSensor>,
@@ -743,6 +745,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     config.gnss_antenna_offset_m = scenario.gnss_antenna_offset_m;
     config.gnss_recovery = scenario.gnss_recovery;
     config.absolute_heading_fusion = scenario.absolute_heading_fusion;
+    config.heading_latency_compensation = scenario.heading_latency_compensation;
     config.relocalization = scenario.relocalization;
     config.confirm_slow_motion = scenario.confirm_slow_motion;
     config.confirm_track_initialization = scenario.confirm_track_initialization;
@@ -885,6 +888,7 @@ pub fn simulate_with_backend(
             .and_then(|config| config.speed_limit_m_s),
     );
     let mut sensor_delivery = SensorDelivery::default();
+    let mut heading_delivery = heading::HeadingDelivery::default();
     let mut evaluation_closures = scenario
         .navigation
         .as_ref()
@@ -942,6 +946,9 @@ pub fn simulate_with_backend(
             &objects,
         );
         let mut input = backend.observe(time, i)?;
+        if let Some(sensor) = &scenario.heading_sensor {
+            heading_delivery.apply(sensor.delay_ticks, i, &mut input.absolute_heading);
+        }
         if let Some(timing) = &scenario.sensor_timing {
             sensor_delivery.apply(timing, i, &mut input);
         }

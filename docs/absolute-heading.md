@@ -9,12 +9,14 @@ Angles must lie in [-π, π]; variance must be finite, positive and at most π²
 
 The mode is **off by default**. Missing fields remain absent in older JSON,
 headers and outputs. A supplied heading with fusion disabled brakes as an
-unconfigured input. With fusion enabled, every accepted observation must be
+unconfigured input. In the default synchronous policy, every accepted observation must be
 synchronous with the current control time within 1e-9 s. Valid duplicate/older
 acquisitions do not refresh acceptance; a new delayed/future sample is invalid.
 The original increment rejected GNSS history compensation and measured
 relocalization. A subsequent [heading-event history](heading-history.md) now
-supports GNSS/map replay while retaining synchronous heading. Delayed heading
+supports GNSS/map replay while retaining synchronous heading. A separate
+[acquisition-time heading policy](heading-latency.md) now admits up to 0.2 s
+delivery delay. In this original synchronous policy, delayed heading
 fusion and a new measured-localization epoch remain unsupported.
 
 ## Fusion and failure handling

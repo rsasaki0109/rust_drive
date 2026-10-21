@@ -6,6 +6,10 @@ replay. Both options remain off by default. The combination was previously
 rejected during configuration validation. The [fixed result packet](../assets/heading-history-results.json)
 records the simulation trials and first audit failures.
 
+The separate [delayed-heading option](heading-latency.md) now also admits heading
+delivery up to 0.2 s after acquisition. The original synchronous policy and
+fixed evaluation below retain their bounds and results.
+
 ## Observation and replay contract
 
 Heading remains acquired body yaw in world ENU, with mounting/north calibration

@@ -225,6 +225,28 @@ impl GnssHistory {
         sample: AbsoluteHeading,
         now: f64,
     ) -> Result<HeadingDecision, HistoryError> {
+        self.correct_heading_with_delay(filter, sample, now, 0.)
+    }
+
+    /// Fuse an acquired heading up to 0.2 s old at its original acquisition
+    /// pose, then replay admitted GNSS, heading and map events transactionally.
+    /// Delivery never changes the acquisition-owned freshness or sample counts.
+    pub fn correct_heading_at(
+        &mut self,
+        filter: &mut Ekf,
+        sample: AbsoluteHeading,
+        now: f64,
+    ) -> Result<HeadingDecision, HistoryError> {
+        self.correct_heading_with_delay(filter, sample, now, MAX_HEADING_DELAY_S)
+    }
+
+    fn correct_heading_with_delay(
+        &mut self,
+        filter: &mut Ekf,
+        sample: AbsoluteHeading,
+        now: f64,
+        maximum_delay: f64,
+    ) -> Result<HeadingDecision, HistoryError> {
         if !self.retain_gnss {
             return Err(HistoryError::Unavailable);
         }
@@ -239,10 +261,13 @@ impl GnssHistory {
         {
             return Ok(HeadingDecision::IgnoredTimestamp);
         }
-        if (sample.stamp - now).abs() > EPS {
+        if sample.stamp > now + EPS || (maximum_delay == 0. && now - sample.stamp > EPS) {
             return Err(HistoryError::InvalidClockOrMotion);
         }
-        let mut prior = self.prior_at(filter, now, 2, now)?;
+        if now - sample.stamp > maximum_delay + EPS {
+            return Err(HistoryError::Unavailable);
+        }
+        let mut prior = self.prior_at(filter, sample.stamp, 2, now)?;
         prior.heading_diagnostics = filter.heading_diagnostics;
         let decision = prior.correct_heading(sample);
         if decision != HeadingDecision::Accepted {

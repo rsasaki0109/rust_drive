@@ -1,4 +1,4 @@
-use crate::{HealthIssue, SensorFrame};
+use crate::{HealthIssue, PipelineConfig, SensorFrame};
 use rustdriving_core::HeadingDecision;
 use rustdriving_localization::{Ekf, latency::GnssHistory};
 
@@ -14,11 +14,11 @@ impl HeadingMonitor {
         ekf: &mut Ekf,
         history: Option<&mut GnssHistory>,
         input: &SensorFrame,
-        enabled: bool,
+        config: &PipelineConfig,
         motion_covered: bool,
         health: &mut Vec<HealthIssue>,
     ) {
-        if !enabled {
+        if !config.absolute_heading_fusion {
             if input.absolute_heading.is_some() {
                 health.push(HealthIssue::InvalidAbsoluteHeading);
             }
@@ -34,13 +34,17 @@ impl HeadingMonitor {
                 .last_observed_stamp
                 .is_none_or(|t| sample.stamp > t)
             {
-                if (input.time - sample.stamp).abs() > 1e-9 {
+                if !config.heading_latency_compensation && (input.time - sample.stamp).abs() > 1e-9
+                {
                     self.fault = Some((input.time, HealthIssue::InvalidAbsoluteHeading));
                 } else {
                     let decision = if let Some(history) = history {
-                        history
-                            .correct_heading(ekf, sample, input.time)
-                            .unwrap_or(HeadingDecision::Invalid)
+                        let result = if config.heading_latency_compensation {
+                            history.correct_heading_at(ekf, sample, input.time)
+                        } else {
+                            history.correct_heading(ekf, sample, input.time)
+                        };
+                        result.unwrap_or(HeadingDecision::Invalid)
                     } else {
                         ekf.correct_heading(sample)
                     };

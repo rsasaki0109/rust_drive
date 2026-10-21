@@ -12,6 +12,7 @@ fn sensor() -> HeadingSensor {
     HeadingSensor {
         period_ticks: 4,
         variance_rad2: 1e-4,
+        delay_ticks: 0,
         dropout_windows: vec![],
         bias_windows: vec![],
     }
@@ -79,6 +80,18 @@ fn declared_uniform_variance_and_half_open_fault_windows_match_acquisitions() {
 
 #[test]
 fn invalid_sensor_period_noise_and_fault_windows_are_rejected_before_driving() {
+    let mut delayed = scenario();
+    delayed.heading_sensor = Some(HeadingSensor {
+        delay_ticks: 21,
+        ..sensor()
+    });
+    assert!(delayed.validate().is_err());
+    assert!(
+        serde_json::to_value(sensor())
+            .unwrap()
+            .get("delay_ticks")
+            .is_none()
+    );
     for period in [0, 8] {
         let mut s = scenario();
         s.heading_sensor = Some(HeadingSensor {
@@ -115,4 +128,39 @@ fn invalid_sensor_period_noise_and_fault_windows_are_rejected_before_driving() {
         offset_rad: 4.,
     }];
     assert!(s.validate().is_err());
+}
+
+#[test]
+fn delayed_transport_uses_acquired_body_heading_and_keeps_schedule_out_of_runtime() {
+    let mut s = scenario();
+    s.duration = 1.;
+    s.full_rate_recording = true;
+    s.absolute_heading_fusion = true;
+    s.gnss_latency_compensation = true;
+    s.heading_latency_compensation = true;
+    s.heading_sensor = Some(HeadingSensor {
+        delay_ticks: 4,
+        ..sensor()
+    });
+    let run = rustdriving_sim::simulate(s.clone(), 7).unwrap();
+    let log = run.sensor_log.unwrap();
+    assert!(log.header.config.heading_latency_compensation);
+    assert!(
+        !serde_json::to_string(&log.header.config)
+            .unwrap()
+            .contains("delay_ticks")
+    );
+    for (i, tick) in log.ticks.iter().enumerate() {
+        if i >= 4 && (i - 4) % 4 == 0 {
+            let acquisition = &run.frames[i - 4];
+            let expected = s
+                .heading_observation(7, i - 4, acquisition.time, acquisition.truth.pose.yaw)
+                .unwrap();
+            let sample = tick.input.absolute_heading.unwrap();
+            assert_eq!(sample.stamp, expected.stamp);
+            assert_eq!(sample.yaw_rad, expected.yaw_rad);
+        } else {
+            assert!(tick.input.absolute_heading.is_none());
+        }
+    }
 }

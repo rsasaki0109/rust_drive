@@ -4,6 +4,12 @@
 
 Current comparative engineering maturity is **about 29%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
+Optional [acquisition-time heading fusion](docs/heading-latency.md) now supports
+up to 200 ms of heading delivery delay through measured GNSS/map history.
+All 18 enabled simulation cases meet the fixed accuracy, clearance and goal
+gates, including six sensor-fault stop/recovery cases. Ten disabled/unsupported
+controls remain stopped and retain their original mission failures. The option
+stays off; measured calibration and the preceding obstacle-mission failures remain open.
 Optional [acquired-disc preservation](docs/measurement-enclosure.md) prevents
 radius smoothing from losing newly measured geometry. All 52 fixed comparisons
 retain their original gates; measured-disc containment failures fall from
@@ -21,7 +27,7 @@ worsen. The option stays off by default.
 Optional [heading-event history](docs/heading-history.md) now composes synchronous
 absolute heading with delayed GNSS and map correction replay. Fourteen enabled
 simulation cases pass; eight paired comparisons reduce position RMSE by at least
-92.8%, and six fault cases stop and recover. Delayed heading, relocalization,
+92.8%, and six fault cases stop and recover. Longer delays, relocalization,
 measured sensor calibration and prior failed qualifications remain open.
 Optional [earlier obstruction-stop search](docs/stop-search.md) now retains a
 checked stopping position across replans. All 40 fixed comparisons pass; eight

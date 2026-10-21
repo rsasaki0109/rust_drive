@@ -354,3 +354,213 @@ fn invalid_or_unsynchronized_heading_cannot_change_state_and_history_stays_bound
         Err(HistoryError::Unavailable)
     );
 }
+
+#[test]
+fn delayed_heading_matches_full_chronology_across_gnss_map_order_and_fractional_motion() {
+    for gnss_delay in [0, 6] {
+        for heading_delay in [1, 4] {
+            for fractional in [false, true] {
+                for offset in [0., 1.3] {
+                    let mut filter = Ekf::new(Pose::default());
+                    let mut history = GnssHistory::with_retained_corrections();
+                    history.reset(0.);
+                    let (mut fixes, mut headings, mut maps) = (vec![], vec![], vec![]);
+                    for tick in 0..=20 {
+                        let now = tick as f64 * 0.05;
+                        if tick > 0 {
+                            history
+                                .predict(
+                                    &mut filter,
+                                    motion(now),
+                                    (tick - 1) as f64 * 0.05,
+                                    now,
+                                    offset,
+                                )
+                                .unwrap();
+                        }
+                        if tick >= gnss_delay && (tick - gnss_delay) % 4 == 0 {
+                            let sample = fix((tick - gnss_delay) as f64 * 0.05);
+                            assert_eq!(
+                                history.correct(&mut filter, sample, now),
+                                Ok(GnssDecision::Accepted)
+                            );
+                            fixes.push(sample);
+                        }
+                        if tick >= heading_delay && (tick - heading_delay) % 2 == 0 {
+                            let stamp = (tick - heading_delay) as f64 * 0.05
+                                + if fractional { 0.025 } else { 0. };
+                            let evidence = format!("{:?}", filter.diagnostics());
+                            assert_eq!(
+                                history.correct_heading_at(&mut filter, heading(stamp), now),
+                                Ok(HeadingDecision::Accepted)
+                            );
+                            assert_eq!(format!("{:?}", filter.diagnostics()), evidence);
+                            headings.push(heading(stamp));
+                        }
+                        if tick >= 2 && tick % 2 == 0 {
+                            let stamp = (tick - 2) as f64 * 0.05;
+                            assert_eq!(
+                                history.correct_map_pose_at(
+                                    &mut filter,
+                                    pose(stamp),
+                                    COVARIANCE,
+                                    stamp,
+                                    now
+                                ),
+                                Ok(true)
+                            );
+                            maps.push(stamp);
+                        }
+                        same(
+                            &filter,
+                            &chronological(&fixes, &headings, &maps, now, offset),
+                        );
+                        assert_eq!(
+                            filter.heading_diagnostics().accepted_samples,
+                            headings.len() as u64
+                        );
+                        assert_eq!(
+                            filter.heading_diagnostics().last_accepted_stamp,
+                            headings.last().map(|h| h.stamp)
+                        );
+                        assert!(history.len() <= 64);
+                        assert!(history.heading_corrections() <= MAX_HEADING_CORRECTIONS);
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn delayed_heading_conflicts_with_future_gnss_or_map_roll_back_the_entire_transaction() {
+    for map in [false, true] {
+        let prior = [[0.1, 0., 0.], [0., 0.055, 0.04], [0., 0.04, 0.03]];
+        let mut filter = Ekf::with_pose_covariance(Pose::default(), prior).unwrap();
+        let mut history = GnssHistory::with_retained_corrections();
+        history.reset(0.);
+        history
+            .predict(
+                &mut filter,
+                Odometry {
+                    stamp: 0.05,
+                    speed: 0.,
+                    yaw_rate: 0.,
+                },
+                0.,
+                0.05,
+                0.,
+            )
+            .unwrap();
+        if map {
+            assert_eq!(
+                history.correct_map_pose(&mut filter, Pose::default(), COVARIANCE, 0.05),
+                Ok(true)
+            );
+        } else {
+            assert_eq!(
+                history.correct(
+                    &mut filter,
+                    Gnss {
+                        stamp: 0.05,
+                        position: Vec2::default(),
+                        variance: 0.001
+                    },
+                    0.05
+                ),
+                Ok(GnssDecision::Accepted)
+            );
+        }
+        let before = filter.clone();
+        let counters = (
+            history.len(),
+            history.heading_corrections(),
+            history.replayed_gnss_corrections(),
+            history.replayed_map_corrections(),
+            history.replayed_heading_corrections(),
+        );
+        assert_eq!(
+            history.correct_heading_at(
+                &mut filter,
+                AbsoluteHeading {
+                    yaw_rad: 0.4,
+                    variance_rad2: 1e-4,
+                    ..heading(0.)
+                },
+                0.05
+            ),
+            Err(if map {
+                HistoryError::MapCorrectionConflict
+            } else {
+                HistoryError::GnssCorrectionConflict
+            })
+        );
+        same(&filter, &before);
+        assert_eq!(
+            format!("{:?}", filter.diagnostics()),
+            format!("{:?}", before.diagnostics())
+        );
+        assert_eq!(
+            format!("{:?}", filter.heading_diagnostics()),
+            format!("{:?}", before.heading_diagnostics())
+        );
+        assert_eq!(
+            counters,
+            (
+                history.len(),
+                history.heading_corrections(),
+                history.replayed_gnss_corrections(),
+                history.replayed_map_corrections(),
+                history.replayed_heading_corrections()
+            )
+        );
+        assert_eq!(
+            history.correct_heading_at(&mut filter, heading(0.), 0.05),
+            Ok(HeadingDecision::Accepted)
+        );
+    }
+}
+
+#[test]
+fn heading_delay_limit_future_input_and_uncovered_motion_preserve_live_state() {
+    let mut filter = Ekf::new(Pose::default());
+    let mut history = GnssHistory::with_retained_corrections();
+    history.reset(0.);
+    history
+        .predict(&mut filter, motion(0.2), 0., 0.2, 0.)
+        .unwrap();
+    for sample in [
+        heading(0.21),
+        AbsoluteHeading {
+            stamp: f64::NAN,
+            ..heading(0.)
+        },
+    ] {
+        let before = filter.clone();
+        assert_ne!(
+            history.correct_heading_at(&mut filter, sample, 0.2),
+            Ok(HeadingDecision::Accepted)
+        );
+        same(&filter, &before);
+        assert_eq!(history.heading_corrections(), 0);
+    }
+    assert_eq!(
+        history.correct_heading_at(&mut filter, heading(0.), 0.2),
+        Ok(HeadingDecision::Accepted)
+    );
+    history
+        .predict(&mut filter, motion(0.45), 0.2, 0.45, 0.)
+        .unwrap();
+    let before = filter.clone();
+    assert_eq!(
+        history.correct_heading_at(&mut filter, heading(0.249), 0.45),
+        Err(HistoryError::Unavailable)
+    );
+    same(&filter, &before);
+    history.reset(1.);
+    assert_eq!(
+        history.correct_heading_at(&mut filter, heading(0.9), 1.),
+        Err(HistoryError::Unavailable)
+    );
+    same(&filter, &before);
+}

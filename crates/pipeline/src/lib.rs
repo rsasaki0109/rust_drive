@@ -86,9 +86,12 @@ pub struct PipelineConfig {
     /// Explicit bounded-proposal confirmation after an innovation brake hold.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub gnss_recovery: Option<GnssRecoveryConfig>,
-    /// Require synchronous externally measured ENU body heading.
+    /// Require externally measured ENU body heading (synchronous by default).
     #[serde(default, skip_serializing_if = "is_false")]
     pub absolute_heading_fusion: bool,
+    /// Permit at most 0.2 s heading delivery delay with measured-motion history.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub heading_latency_compensation: bool,
     pub vehicle: VehicleConfig,
     pub nominal_dt: f64,
     pub cruise_speed: f64,
@@ -170,6 +173,7 @@ impl PipelineConfig {
             gnss_antenna_offset_m: None,
             gnss_recovery: None,
             absolute_heading_fusion: false,
+            heading_latency_compensation: false,
             vehicle,
             nominal_dt: 0.05,
             cruise_speed: 8.0,
@@ -198,6 +202,13 @@ impl PipelineConfig {
         }
     }
     pub fn validate(&self) -> Result<(), String> {
+        if self.heading_latency_compensation
+            && (!self.absolute_heading_fusion || !self.gnss_latency_compensation)
+        {
+            return Err(
+                "heading latency compensation requires heading fusion and GNSS history".into(),
+            );
+        }
         if self.search_obstruction_stops && !self.settle_obstruction_stops {
             return Err("obstruction stop search requires obstruction stop retention".into());
         }
@@ -981,7 +992,7 @@ impl DrivingPipeline {
             &mut self.ekf,
             self.gnss_history.as_mut(),
             input,
-            self.config.absolute_heading_fusion,
+            &self.config,
             self.motion_discontinuity.is_none(),
             &mut health,
         );

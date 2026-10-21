@@ -15,6 +15,121 @@ fn config() -> PipelineConfig {
     c.absolute_heading_fusion = true;
     c
 }
+
+fn delayed_config() -> PipelineConfig {
+    let mut c = config();
+    c.gnss_latency_compensation = true;
+    c.heading_latency_compensation = true;
+    c
+}
+
+#[test]
+fn delayed_heading_requires_explicit_sensor_and_measured_history_policies() {
+    for (heading, history) in [(false, false), (false, true), (true, false)] {
+        let mut c = delayed_config();
+        c.absolute_heading_fusion = heading;
+        c.gnss_latency_compensation = history;
+        assert!(DrivingPipeline::new(c).is_err());
+    }
+    assert!(
+        serde_json::to_value(config())
+            .unwrap()
+            .get("heading_latency_compensation")
+            .is_none()
+    );
+}
+
+#[test]
+fn delayed_heading_owns_acquisition_clocks_and_replays_without_policy_or_data_changes() {
+    let c = delayed_config();
+    let mut driver = DrivingPipeline::new(c.clone()).unwrap();
+    let mut log = SensorLog::new("delayed-heading", c);
+    for i in 0usize..=24 {
+        let now = i as f64 * 0.05;
+        let h = (i >= 4 && (i - 4).is_multiple_of(4)).then(|| sample((i - 4) as f64 * 0.05, 0.01));
+        let mut input = frame(now, h);
+        input.gnss = (i >= 1 && (i - 1).is_multiple_of(4)).then(|| Gnss {
+            stamp: (i - 1) as f64 * 0.05,
+            position: Vec2::default(),
+            variance: 0.02,
+        });
+        let out = driver.step(&input).unwrap();
+        let diagnostics = out.absolute_heading.unwrap();
+        assert_eq!(diagnostics.accepted_samples, (i / 4) as u64);
+        assert_eq!(
+            diagnostics.last_accepted_stamp,
+            (i >= 4).then(|| ((i / 4 - 1) * 4) as f64 * 0.05)
+        );
+        if i >= 4 {
+            assert!(out.health.is_empty(), "{:?}", out.health);
+        }
+        log.record(input, out);
+    }
+    let mut bytes = vec![];
+    log.write(&mut bytes).unwrap();
+    assert!(
+        verify(std::io::Cursor::new(bytes.clone()), vec![])
+            .unwrap()
+            .verified
+    );
+    let original = String::from_utf8(bytes).unwrap();
+    for changed in [
+        original.replacen(
+            "\"heading_latency_compensation\":true",
+            "\"heading_latency_compensation\":false",
+            1,
+        ),
+        original.replacen("\"yaw_rad\":0.01", "\"yaw_rad\":0.1", 1),
+    ] {
+        assert_ne!(changed, original);
+        assert!(verify(std::io::Cursor::new(changed), vec![]).is_err());
+    }
+}
+
+#[test]
+fn delayed_heading_cannot_clear_a_fault_with_a_pre_fault_acquisition_or_hide_staleness() {
+    let mut driver = DrivingPipeline::new(delayed_config()).unwrap();
+    driver.step(&frame(0., Some(sample(0., 0.)))).unwrap();
+    let bad = driver.step(&frame(0.05, Some(sample(0.025, 0.8)))).unwrap();
+    assert!(bad.health.contains(&HealthIssue::HeadingInnovationHold));
+    let old = driver.step(&frame(0.1, Some(sample(0.05, 0.)))).unwrap();
+    assert_eq!(
+        old.absolute_heading.unwrap().last_accepted_stamp,
+        Some(0.05)
+    );
+    assert!(old.health.contains(&HealthIssue::HeadingInnovationHold));
+    assert!(old.command.acceleration <= -5.99);
+    let fresh = driver.step(&frame(0.15, Some(sample(0.1, 0.)))).unwrap();
+    assert!(fresh.health.is_empty());
+    for i in 4..=10 {
+        let out = driver.step(&frame(i as f64 * 0.05, None)).unwrap();
+        if i == 10 {
+            assert!(out.health.contains(&HealthIssue::StaleAbsoluteHeading));
+            assert!(out.command.acceleration <= -5.99);
+            assert_eq!(out.absolute_heading.unwrap().last_accepted_stamp, Some(0.1));
+        }
+    }
+}
+
+#[test]
+fn unsupported_heading_delay_and_motion_loss_brake_without_accepting_the_sample() {
+    for gap in [false, true] {
+        let mut driver = DrivingPipeline::new(delayed_config()).unwrap();
+        driver.step(&frame(0., Some(sample(0., 0.)))).unwrap();
+        let mut input = frame(0.25, Some(sample(0.01, 0.)));
+        if gap {
+            input.odometry = None;
+        }
+        let out = driver.step(&input).unwrap();
+        assert!(out.command.acceleration <= -5.99);
+        assert_eq!(out.absolute_heading.unwrap().accepted_samples, 1);
+        assert!(out.health.contains(&if gap {
+            HealthIssue::MotionDiscontinuity
+        } else {
+            HealthIssue::InvalidAbsoluteHeading
+        }));
+    }
+}
 fn sample(t: f64, yaw: f64) -> AbsoluteHeading {
     AbsoluteHeading {
         stamp: t,

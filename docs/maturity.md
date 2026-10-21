@@ -2,7 +2,16 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest [standalone enclosure qualification](standalone-enclosure.md) keeps
+The latest [acquisition-time heading fusion](heading-latency.md) keeps the estimate
+at **about 29%**. Measured history now supports up to 200 ms of heading delivery
+delay while retaining GNSS/map ordering, full covariance and fault ownership.
+All 18 enabled simulation conditions meet their fixed accuracy/physical/goal
+gates; six sensor faults stop and recover. Ten negative controls stay stopped
+and retain their mission failures. This expands a bounded authored timing
+composition; measured sensor calibration, obstacle-mission completion and the
+**30% waypoint remain unmet**.
+
+The preceding [standalone enclosure qualification](standalone-enclosure.md) keeps
 the estimate at **about 29%**. All 52 unconfirmed comparisons retain their gates
 and all 17,056 acquired discs retain geometry. Two forecast-coverage failures
 pass against those matching controls; strict qualification stays 20/52, with

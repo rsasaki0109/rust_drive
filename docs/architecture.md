@@ -147,7 +147,7 @@ route resets clear it. All candidate feasibility checks remain mandatory.
 
 `DrivingPipeline::step(&SensorFrame)` owns EKF, perception/tracking, occupancy, predictor, planner and controller state. Input contains only a monotonic clock, optional timestamped odometry/GNSS/body-frame LiDAR/absolute ENU body heading, and explicit LiDAR acquisition failure. Output contains estimate, tracks, predictions, trajectory, command, health diagnostics and separate GNSS/heading observed/accepted timestamps, decisions, NIS and counts. It has no simulator object/pose inputs. Configuration supplies route, initial pose calibration, vehicle dimensions and optional calibrated forward/braking/lateral acceleration limits; this is a known-route demonstration.
 
-Optional `absolute_heading_fusion` requires current-acquisition body yaw and
+Optional `absolute_heading_fusion` requires acquired body yaw and
 angular variance, with a wrapped one-dimensional NIS gate of 9 and full Joseph
 covariance correction. A required heading older than 0.35 s, invalid input or
 rejected innovation brakes; only a new accepted acquisition releases a fault.
@@ -155,8 +155,13 @@ Heading never refreshes GNSS freshness or covers missing rigid motion.
 Combining it with GNSS history now retains admitted heading events, ordered
 after equal-time GNSS and before map observations. Rewinds preserve original
 diagnostic ownership and atomically refuse a conflicting accepted observation.
-Measured relocalization and delayed heading remain excluded.
+Heading is synchronous by default. Additional `heading_latency_compensation`
+requires GNSS history and permits at most 0.2 s of delivery delay. It conditions
+the acquired prior and atomically replays later admitted corrections, retaining
+the original acquisition clocks and fault latches. Missing rigid motion cannot
+be bridged. Measured relocalization remains excluded.
 [Heading contract](absolute-heading.md); [history composition](heading-history.md).
+[Delayed-heading contract and fixed qualification](heading-latency.md).
 
 Missing/stale odometry, LiDAR or GNSS, invalid samples, excessive covariance and acquisition failure select finite emergency braking. Healthy empty LiDAR is accepted; a failed acquisition brakes immediately. An invalid clock returns `Err`; callers must stop rather than reuse a command. The reference and RNE backends implement observation/advance boundaries and share the same independent evaluator. Runtime truth stays inside sensor synthesis and evaluation/rendering.
 
