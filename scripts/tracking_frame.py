@@ -6,7 +6,10 @@ coordinates. This only changes coordinates; it never renews observation times.
 import math
 
 
-def continuous_observations(output):
+def continuous_observations(output,pose_sigma=None):
+    if pose_sigma is not None:
+        from pose_forecast_oracle import nominal_output
+        output=nominal_output(output,pose_sigma)
     transform = output.get('tracking_frame')
     if transform is None:
         return output['tracks'], output['predictions']

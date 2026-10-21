@@ -2,7 +2,16 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest [observed obstruction detours](observed-detours.md) keep the estimate
+The latest [pose covariance forecast envelope](pose-forecast-envelope.md) keeps
+the estimate at **about 29%**. Current joint pose uncertainty now accounts for
+orientation errors magnified at distant world-coordinate tracks. All 48
+supported comparisons retain preceding gates, forecast-coverage failures fall
+21 → 8, and strict qualification improves 16 → 28/48. The eight new detours
+retain goal completion and now pass physical forecast coverage. Cold moving
+forecasts, measured confidence calibration and the eight original incomplete
+missions remain open. The **30% waypoint remains unmet**.
+
+The preceding [observed obstruction detours](observed-detours.md) keep the estimate
 at **about 29%**. Fresh acquired blockers can propose bounded alternate graph
 routes with separately owned external closures and stopped handover. Eight new
 authored route conditions now reach their goals versus zero paired controls;

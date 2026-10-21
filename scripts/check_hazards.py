@@ -1137,7 +1137,7 @@ def check_motion_predictions(log):
                 continue
             tick = record['tick']
             now = tick['input']['time']
-            observations, predictions = continuous_observations(tick['expected'])
+            observations, predictions = continuous_observations(tick['expected'],config.get('forecast_pose_sigma'))
             tracks = {t['id']: t for t in observations}
             prediction_ids = [p['id'] for p in predictions]
             if sorted(prediction_ids) != sorted(tracks):

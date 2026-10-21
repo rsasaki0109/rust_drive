@@ -1,5 +1,9 @@
 # Observed obstructions and stopped detours
 
+The subsequent [pose covariance forecast envelope](pose-forecast-envelope.md)
+repairs the eight new detours' physical forecast-coverage failures under the same
+worlds and gates. The original qualification below is retained unchanged.
+
 `navigation.avoid_observed_obstructions: true` lets a supplied road graph offer
 another route when acquired tracks persistently block every current nominal
 local candidate. It requires `navigation.hold_for_handover: true`. The option is

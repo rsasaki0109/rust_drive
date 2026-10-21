@@ -379,6 +379,16 @@ An evaluation-only scenario flag, `full_rate_recording`, retains every 20 Hz
 physical frame without entering the driver header or changing sensor/command
 bytes. [Contract, paired comparison and limitations](forecast-envelope.md).
 
+Optional `forecast_pose_sigma` requires declared motion bounds and absolute
+heading fusion. After world projection, each knot receives the major-axis bound
+of the current joint ENU pose covariance propagated through its position
+Jacobian, plus the exact rotation remainder. Nominal centers, acquired clocks
+and motion budgets stay intact. The continuous-frame forecast guard runs before
+this expansion; pose uncertainty cannot hide an acquired proxy mismatch. Current
+covariance can change a cached forecast's radius without renewing its track.
+Default behavior is unchanged and confidence calibration remains open.
+[Geometry, independent posterior reconstruction and fixed results](pose-forecast-envelope.md).
+
 Optional `search_obstruction_stops` requires `settle_obstruction_stops`. After
 ordinary collision retiming fails, it checks at most 16 earlier reachable stops
 with the same collision sweep and eight-second stationary tail. A selected moving

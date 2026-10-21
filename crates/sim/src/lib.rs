@@ -150,6 +150,8 @@ pub struct Scenario {
     pub enclose_track_measurements: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub forecast_envelope: Option<rustdriving_core::ForecastEnvelopeConfig>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub forecast_pose_sigma: Option<f64>,
     #[serde(default, skip_serializing_if = "is_false")]
     pub forecast_consistency_guard: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -798,6 +800,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     config.confirm_track_initialization = scenario.confirm_track_initialization;
     config.fit_recent_track_motion = scenario.fit_recent_track_motion;
     config.fit_sparse_circles = scenario.fit_sparse_circles;
+    config.forecast_pose_sigma = scenario.forecast_pose_sigma;
     config.enclose_track_measurements = scenario.enclose_track_measurements;
     config.forecast_envelope = scenario.forecast_envelope;
     config.forecast_consistency_guard = scenario.forecast_consistency_guard;

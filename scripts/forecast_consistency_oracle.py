@@ -128,7 +128,7 @@ def reconstruct(config, ticks):
             if new:diagnostic['last_scan_acquisition_s'] = accepted
         elif not reset_required and new:
             diagnostic['last_scan_acquisition_s'] = accepted
-            tracks, predictions = continuous_observations(out)
+            tracks, predictions = continuous_observations(out,config.get('forecast_pose_sigma'))
             raw = out.get('track_measurements')
             if not isinstance(raw, list):raise ValueError('raw measurement evidence missing')
             active, forecasts = validate_geometry(accepted, tracks, predictions, raw)

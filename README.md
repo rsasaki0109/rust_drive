@@ -4,6 +4,12 @@
 
 Current comparative engineering maturity is **about 29%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
+Optional [pose covariance in forecasts](docs/pose-forecast-envelope.md) now covers
+the range-dependent world-position error from current localization uncertainty.
+All 48 supported comparisons retain preceding gates; forecast-coverage failures
+fall 21 → 8 and strict qualification improves 16 → 28/48. All 48 pass the 0.2 s
+coverage gate and goal arrivals stay 20. Cold moving-object forecasts and the
+eight original incomplete missions remain open; the option stays off by default.
 Optional [observed obstruction detours](docs/observed-detours.md) now propose
 alternate graph routes from fresh acquired blocker evidence, then switch only
 after stopped confirmation. Eight new authored route pairs reach their goals

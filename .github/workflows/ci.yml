@@ -28,6 +28,8 @@ jobs:
         run: python scripts/test_prediction_evidence.py
       - name: Check declared forecast envelope containment and failure scoring
         run: python scripts/test_forecast_envelope.py
+      - name: Check pose covariance occupancy and corrupt padding rejection
+        run: python scripts/test_pose_forecasts.py
       - name: Check cold-track batch reconstruction and retained acquisitions
         run: python scripts/test_track_initialization.py
       - name: Check recent acquired-motion windows, corruption and frozen-policy ownership
@@ -205,6 +207,9 @@ jobs:
       - name: Verify observed detour contract and retain forecast regressions
         shell: bash
         run: python scripts/check_observed_detours.py --plant reference-2d --check-contract --output artifacts/observed-detours
+      - name: Qualify reference pose covariance forecasts against unchanged parent gates
+        shell: bash
+        run: python scripts/check_pose_forecasts.py --plant reference-2d --output artifacts/pose-forecasts
       - name: Verify stop-sign obligations after measured localization recovery
         shell: bash
         run: python scripts/check_stop_relocalization.py --plant reference-2d --smoke --output artifacts/stop-relocalization
@@ -291,6 +296,7 @@ jobs:
             artifacts/navigation-relocalization/
             artifacts/navigation-handover/
             artifacts/observed-detours/
+            artifacts/pose-forecasts/
             artifacts/stop-relocalization/
             artifacts/signal-relocalization/
             artifacts/yield-relocalization/
@@ -1155,6 +1161,9 @@ jobs:
       - name: Verify native observed detour contract and retain forecast regressions
         working-directory: rust_drive
         run: python3 scripts/check_observed_detours.py --plant rne-dynamic --check-contract --output artifacts/observed-detours-native
+      - name: Qualify native pose covariance forecasts against unchanged parent gates
+        working-directory: rust_drive
+        run: python3 scripts/check_pose_forecasts.py --plant rne-dynamic --output artifacts/pose-forecasts-native
       - name: Verify native stop-sign obligations after measured localization recovery
         working-directory: rust_drive
         run: python3 scripts/check_stop_relocalization.py --plant rne-dynamic --smoke --output artifacts/stop-relocalization-native
@@ -1298,6 +1307,7 @@ jobs:
             rust_drive/artifacts/navigation-relocalization-native/
             rust_drive/artifacts/navigation-handover-native/
             rust_drive/artifacts/observed-detours-native/
+            rust_drive/artifacts/pose-forecasts-native/
             rust_drive/artifacts/stop-relocalization-native/
             rust_drive/artifacts/signal-relocalization-native/
             rust_drive/artifacts/yield-relocalization-native/

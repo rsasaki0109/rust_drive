@@ -120,6 +120,9 @@ pub struct PipelineConfig {
     /// Optional declared motion-error budgets; does not estimate uncertainty.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub forecast_envelope: Option<ForecastEnvelopeConfig>,
+    /// Current ENU pose-ellipsoid multiplier for world forecast occupancy.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub forecast_pose_sigma: Option<f64>,
     /// Brake after a prior forecast misses a newly acquired measured disc.
     #[serde(default, skip_serializing_if = "is_false")]
     pub forecast_consistency_guard: bool,
@@ -211,6 +214,7 @@ impl PipelineConfig {
             fit_sparse_circles: false,
             enclose_track_measurements: false,
             forecast_envelope: None,
+            forecast_pose_sigma: None,
             forecast_consistency_guard: false,
             clear_sweep_recovery: None,
             settle_obstruction_stops: false,
@@ -236,6 +240,14 @@ impl PipelineConfig {
         }
     }
     pub fn validate(&self) -> Result<(), String> {
+        if let Some(sigma) = self.forecast_pose_sigma
+            && (!sigma.is_finite()
+                || !(1.0..=5.0).contains(&sigma)
+                || self.forecast_envelope.is_none()
+                || !self.absolute_heading_fusion)
+        {
+            return Err("pose forecast requires sigma between 1 and 5, a motion envelope and absolute heading fusion".into());
+        }
         if self.fit_recent_track_motion
             && (!self.enclose_track_measurements || self.confirm_track_initialization)
         {
@@ -1378,10 +1390,30 @@ impl DrivingPipeline {
                 health.push(HealthIssue::InconsistentForecast);
             }
         }
-        let predictions: Vec<_> = continuous_predictions
+        let mut predictions: Vec<_> = continuous_predictions
             .into_iter()
             .map(|prediction| tracking_frame::prediction_to_world(tracking_to_world, prediction))
             .collect();
+        if let Some(sigma) = self.config.forecast_pose_sigma {
+            let covariance = self.ekf.pose_covariance();
+            let mut failed = false;
+            for prediction in &mut predictions {
+                failed |= rustdriving_prediction::cover_pose_uncertainty(
+                    prediction,
+                    estimate.pose,
+                    covariance,
+                    sigma,
+                )
+                .is_err();
+            }
+            if failed {
+                health.push(HealthIssue::LocalizationUncertain);
+                for prediction in &mut predictions {
+                    prediction.positions.clear();
+                    prediction.additional_radius_m.clear();
+                }
+            }
+        }
         let unexpected_signal = self.traffic_controls.is_none() && input.traffic_signal.is_some();
         let mut switched = false;
         if let Some(nav) = &mut self.navigator {
@@ -1709,6 +1741,7 @@ impl DrivingPipeline {
                 || self.config.gnss_antenna_offset_m.is_some()
                 || self.config.gnss_recovery.is_some()
                 || self.config.absolute_heading_fusion
+                || self.config.forecast_pose_sigma.is_some()
                 || self.config.relocalization.is_some())
             .then(|| self.ekf.pose_covariance()),
             ground,
