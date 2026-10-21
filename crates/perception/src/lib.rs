@@ -128,6 +128,7 @@ pub struct Tracker {
     next_id: u64,
     accepted_scan_stamp: Option<f64>,
     confirm_initialization: bool,
+    enclose_measurements: bool,
     pending: BTreeMap<u64, initialization::Initialization>,
     measurements: Vec<TrackMeasurement>,
 }
@@ -167,6 +168,13 @@ impl Tracker {
             confirm_initialization: true,
             ..Self::default()
         }
+    }
+
+    /// Preserve the entire newest measured detection disc at the filtered center.
+    /// This is measured geometry, without a future-motion uncertainty claim.
+    pub fn with_measurement_enclosure(mut self) -> Self {
+        self.enclose_measurements = true;
+        self
     }
 
     /// Raw detections from the last successful scan, in the continuous frame.
@@ -244,6 +252,11 @@ impl Tracker {
                     track.velocity = track.velocity.scaled(15.0 / speed);
                 }
                 track.radius = 0.8 * track.radius + 0.2 * d.radius;
+                if self.enclose_measurements {
+                    track.radius = track
+                        .radius
+                        .max(track.position.distance(d.center) + d.radius);
+                }
                 track.last_seen = stamp;
             } else {
                 self.next_id = self
@@ -263,7 +276,7 @@ impl Tracker {
                     last_seen: stamp,
                 });
             }
-            if self.confirm_initialization {
+            if self.confirm_initialization || self.enclose_measurements {
                 self.measurements.push(TrackMeasurement {
                     id,
                     stamp,

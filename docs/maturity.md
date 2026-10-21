@@ -2,7 +2,15 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest [confirmed initial track motion](track-initialization.md) keeps the
+The latest [acquired-disc preservation](measurement-enclosure.md) keeps the
+estimate at **about 29%**. Track extents now enclose every newest measured disc
+at the corrected center; complete-disc failures fall from 11,067/17,049 to
+0/17,054 observations, with no new failed gates in all 52 comparisons. Strict
+qualification stays 20/52: 27 forecast failures and eight missed mission goals
+remain. This repairs measured geometry loss, without calibrating physical shape
+or forecast uncertainty. The option stays off; the **30% waypoint remains unmet**.
+
+The preceding [confirmed initial track motion](track-initialization.md) keeps the
 estimate at **about 29%**. Stable acquired geometry now initializes velocity
 before ordinary alpha-beta updates. All 52 fixed comparisons retain their strict
 gates, and forecast-coverage failures fall from 29 to 27. Strict qualification

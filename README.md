@@ -4,6 +4,11 @@
 
 Current comparative engineering maturity is **about 29%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
+Optional [acquired-disc preservation](docs/measurement-enclosure.md) prevents
+radius smoothing from losing newly measured geometry. All 52 fixed comparisons
+retain their original gates; measured-disc containment failures fall from
+11,067 to zero. Strict qualification remains 20/52, with original forecast and
+mission failures retained. The option stays off by default.
 Optional [confirmed initial track motion](docs/track-initialization.md) separates
 early shape refinement from velocity estimation. All 52 fixed comparisons retain
 their original gates; two forecast-coverage failures pass. Strict qualification

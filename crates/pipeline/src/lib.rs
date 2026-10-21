@@ -101,6 +101,9 @@ pub struct PipelineConfig {
     /// Confirm cold-track motion from stable acquired detections; default off.
     #[serde(default, skip_serializing_if = "is_false")]
     pub confirm_track_initialization: bool,
+    /// Preserve each newest measured disc at the corrected track center.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub enclose_track_measurements: bool,
     /// Optional declared motion-error budgets; does not estimate uncertainty.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub forecast_envelope: Option<ForecastEnvelopeConfig>,
@@ -146,10 +149,15 @@ pub struct PipelineConfig {
 }
 impl PipelineConfig {
     fn new_tracker(&self) -> Tracker {
-        if self.confirm_track_initialization {
+        let tracker = if self.confirm_track_initialization {
             Tracker::with_confirmed_initialization()
         } else {
             Tracker::default()
+        };
+        if self.enclose_track_measurements {
+            tracker.with_measurement_enclosure()
+        } else {
+            tracker
         }
     }
 
@@ -168,6 +176,7 @@ impl PipelineConfig {
             speed_zones: vec![],
             confirm_slow_motion: false,
             confirm_track_initialization: false,
+            enclose_track_measurements: false,
             forecast_envelope: None,
             settle_obstruction_stops: false,
             search_obstruction_stops: false,
@@ -1489,9 +1498,8 @@ impl DrivingPipeline {
             estimate,
             tracking_frame: Some(tracking_to_world),
             tracks: self.tracks.clone(),
-            track_measurements: self
-                .config
-                .confirm_track_initialization
+            track_measurements: (self.config.confirm_track_initialization
+                || self.config.enclose_track_measurements)
                 .then(|| self.tracker.measurements().to_vec()),
             predictions,
             trajectory,

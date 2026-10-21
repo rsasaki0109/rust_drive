@@ -1,4 +1,4 @@
-"""Batch-fit oracle for optional cold-track initialization.
+"""Batch-fit oracle for optional acquired-track initialization and enclosure.
 
 Uses complete raw associated measurements, not filtered positions or truth.
 Raw-sensor replay separately checks clustering and association. This oracle
@@ -34,7 +34,9 @@ def fitted(history):
 
 
 def reconstruct(config, ticks):
-    if config.get('confirm_track_initialization') is not True: raise ValueError('initialization policy missing')
+    confirm=config.get('confirm_track_initialization') is True
+    enclose=config.get('enclose_track_measurements') is True
+    if not confirm and not enclose: raise ValueError('tracked measurement policy missing')
     tracks = {}; pending = {}; cached = []; last_scan = None; next_id = 0
     epoch = 0; invalid_motion = False; confirmations = []; births = updates = coasts = 0
     maximum_position_error = maximum_velocity_error = 0.
@@ -69,7 +71,7 @@ def reconstruct(config, ticks):
                     if identity!=next_id+1: raise ValueError('identity allocation changed')
                     next_id=identity;births+=1
                     tracks[identity]=dict(position=center,velocity=(0.,0.),radius=radius,last_seen=stamp)
-                    pending[identity]=[copy.deepcopy(m)]
+                    if confirm: pending[identity]=[copy.deepcopy(m)]
                     continue
                 old=tracks[identity];dt=stamp-old['last_seen']
                 if not 0.<dt<.6: raise ValueError('invalid per-track interval')
@@ -93,7 +95,9 @@ def reconstruct(config, ticks):
                     velocity=tuple(v+.12*r/max(.01,min(dt,1.)) for v,r in zip(velocity,residual))
                     speed=math.hypot(*velocity)
                     if speed>15.: velocity=tuple(v*15./speed for v in velocity)
-                tracks[identity]=dict(position=position,velocity=velocity,radius=.8*old['radius']+.2*radius,last_seen=stamp)
+                smoothed=.8*old['radius']+.2*radius
+                extent=max(smoothed,math.dist(position,center)+radius) if enclose else smoothed
+                tracks[identity]=dict(position=position,velocity=velocity,radius=extent,last_seen=stamp)
                 updates+=1
             cached=copy.deepcopy(measurements)
         elif measurements!=cached: raise ValueError('cached raw acquisitions changed or renewed')

@@ -108,6 +108,15 @@ Unsafe Rust is forbidden at workspace level. There is no global message bus, cus
 
 ## Shared application boundary
 
+Optional `enclose_track_measurements` retains the minimum radius at the corrected
+track center enclosing both the normal smoothed disc and the newest measured
+disc. It changes measured extent without changing position/velocity correction
+or declared future-motion budgets. It can emit raw `track_measurements` without
+the initial-motion confirmation option. Missing/rejected scans cannot renew
+extent; rigid world reprojection preserves containment. This is measured proxy
+geometry, with physical shape and forecast accuracy still conditional on sensing
+and calibration. [Contract and complete comparison](measurement-enclosure.md).
+
 Optional `confirm_track_initialization` holds cold-track velocity at zero until
 at least three stable-radius acquired detections span 0.2 seconds. A bounded
 centered least-squares fit uses every measurement in its at-most-0.6-second
