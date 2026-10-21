@@ -141,6 +141,8 @@ pub struct Scenario {
     #[serde(default, skip_serializing_if = "is_false")]
     pub confirm_track_initialization: bool,
     #[serde(default, skip_serializing_if = "is_false")]
+    pub fit_recent_track_motion: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
     pub fit_sparse_circles: bool,
     #[serde(default, skip_serializing_if = "is_false")]
     pub enclose_track_measurements: bool,
@@ -790,6 +792,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     config.relocalization = scenario.relocalization;
     config.confirm_slow_motion = scenario.confirm_slow_motion;
     config.confirm_track_initialization = scenario.confirm_track_initialization;
+    config.fit_recent_track_motion = scenario.fit_recent_track_motion;
     config.fit_sparse_circles = scenario.fit_sparse_circles;
     config.enclose_track_measurements = scenario.enclose_track_measurements;
     config.forecast_envelope = scenario.forecast_envelope;

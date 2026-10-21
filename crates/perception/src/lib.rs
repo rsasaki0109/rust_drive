@@ -5,6 +5,7 @@ pub mod image_features;
 mod initialization;
 pub mod objects3d;
 pub mod planar_sweep;
+mod recent_motion;
 pub mod terrain_adaptive;
 pub use ground3d::{GroundClassification, TerrainConfig, TerrainDiagnostics, classify_ground};
 pub use objects3d::{ObjectAabb, ObjectClassification, ObjectClusterConfig, cluster_objects};
@@ -180,8 +181,10 @@ pub struct Tracker {
     next_id: u64,
     accepted_scan_stamp: Option<f64>,
     confirm_initialization: bool,
+    fit_recent_motion: bool,
     enclose_measurements: bool,
     pending: BTreeMap<u64, initialization::Initialization>,
+    recent: BTreeMap<u64, recent_motion::RecentMotion>,
     measurements: Vec<TrackMeasurement>,
 }
 
@@ -214,6 +217,15 @@ impl std::fmt::Display for TrackerUpdateError {
 impl std::error::Error for TrackerUpdateError {}
 
 impl Tracker {
+    /// Refit acquired moving-object position/velocity in a bounded stable-shape window.
+    /// Unsupported, static and unconfirmed slow motion retain alpha-beta updates.
+    pub fn with_recent_motion_fit() -> Self {
+        Self {
+            fit_recent_motion: true,
+            ..Self::default()
+        }
+    }
+
     /// Opt-in cold-track velocity confirmation from stable acquired detections.
     pub fn with_confirmed_initialization() -> Self {
         Self {
@@ -275,6 +287,8 @@ impl Tracker {
         self.tracks.retain(|t| stamp - t.last_seen < 0.6);
         self.pending
             .retain(|id, _| self.tracks.iter().any(|t| t.id == *id));
+        self.recent
+            .retain(|id, _| self.tracks.iter().any(|t| t.id == *id));
         self.measurements.clear();
         let matches = association::associate(&self.tracks, detections, stamp)?;
         for (d, matched) in detections.iter().zip(matches) {
@@ -299,6 +313,12 @@ impl Tracker {
                         .velocity
                         .plus(residual.scaled(0.12 / elapsed.clamp(0.01, 1.0)));
                 }
+                if let Some(recent) = self.recent.get_mut(&id)
+                    && let Some((position, velocity)) = recent.observe(d, stamp)
+                {
+                    track.position = position;
+                    track.velocity = velocity;
+                }
                 let speed = track.velocity.x.hypot(track.velocity.y);
                 if speed > 15.0 {
                     track.velocity = track.velocity.scaled(15.0 / speed);
@@ -320,6 +340,10 @@ impl Tracker {
                     self.pending
                         .insert(id, initialization::Initialization::new(d, stamp));
                 }
+                if self.fit_recent_motion {
+                    self.recent
+                        .insert(id, recent_motion::RecentMotion::new(d, stamp));
+                }
                 self.tracks.push(Track {
                     id: self.next_id,
                     position: d.center,
@@ -328,7 +352,7 @@ impl Tracker {
                     last_seen: stamp,
                 });
             }
-            if self.confirm_initialization || self.enclose_measurements {
+            if self.confirm_initialization || self.enclose_measurements || self.fit_recent_motion {
                 self.measurements.push(TrackMeasurement {
                     id,
                     stamp,

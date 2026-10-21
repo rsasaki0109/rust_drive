@@ -106,6 +106,9 @@ pub struct PipelineConfig {
     /// Confirm cold-track motion from stable acquired detections; default off.
     #[serde(default, skip_serializing_if = "is_false")]
     pub confirm_track_initialization: bool,
+    /// Refit current track motion from a bounded recent acquisition window.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub fit_recent_track_motion: bool,
     /// Experimental circular hypotheses from three/four planar returns.
     #[serde(default, skip_serializing_if = "is_false")]
     pub fit_sparse_circles: bool,
@@ -169,7 +172,9 @@ pub struct PipelineConfig {
 }
 impl PipelineConfig {
     fn new_tracker(&self) -> Tracker {
-        let tracker = if self.confirm_track_initialization {
+        let tracker = if self.fit_recent_track_motion {
+            Tracker::with_recent_motion_fit()
+        } else if self.confirm_track_initialization {
             Tracker::with_confirmed_initialization()
         } else {
             Tracker::default()
@@ -197,6 +202,7 @@ impl PipelineConfig {
             speed_zones: vec![],
             confirm_slow_motion: false,
             confirm_track_initialization: false,
+            fit_recent_track_motion: false,
             fit_sparse_circles: false,
             enclose_track_measurements: false,
             forecast_envelope: None,
@@ -224,6 +230,14 @@ impl PipelineConfig {
         }
     }
     pub fn validate(&self) -> Result<(), String> {
+        if self.fit_recent_track_motion
+            && (!self.enclose_track_measurements || self.confirm_track_initialization)
+        {
+            return Err(
+                "recent track motion requires measured-disc enclosure and ordinary initialization"
+                    .into(),
+            );
+        }
         if self.fit_sparse_circles && (self.multi_height_lidar.is_some() || self.lidar3d.is_some())
         {
             return Err("sparse circle fitting requires planar lidar".into());

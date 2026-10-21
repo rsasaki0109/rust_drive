@@ -30,6 +30,8 @@ jobs:
         run: python scripts/test_forecast_envelope.py
       - name: Check cold-track batch reconstruction and retained acquisitions
         run: python scripts/test_track_initialization.py
+      - name: Check recent acquired-motion windows, corruption and frozen-policy ownership
+        run: python scripts/test_recent_track_motion.py
       - name: Check measured geometry containment and minimum-radius witnesses
         run: python scripts/test_measurement_enclosure.py
       - name: Check measured forecast containment, braking and recovery evidence
@@ -108,6 +110,9 @@ jobs:
       - name: Compare reference sparse circle fits with unchanged physical gates
         if: runner.os == 'Linux'
         run: python scripts/check_sparse_circles.py --plant reference-2d --output artifacts/sparse-circles
+      - name: Compare reference recent-motion fits with retained parent gates
+        if: runner.os == 'Linux'
+        run: python scripts/check_recent_track_motion.py --plant reference-2d --output artifacts/recent-track-motion
       - name: Verify acquired-heading history and unsupported-delay braking
         shell: bash
         run: |
@@ -1176,6 +1181,9 @@ jobs:
       - name: Compare native sparse circle fits with unchanged physical gates
         working-directory: rust_drive
         run: python3 scripts/check_sparse_circles.py --plant rne-dynamic --output artifacts/sparse-circles-native
+      - name: Compare native recent-motion fits with retained parent gates
+        working-directory: rust_drive
+        run: python3 scripts/check_recent_track_motion.py --plant rne-dynamic --output artifacts/recent-track-motion-native
       - name: Compare native confirmed track initialization with retained parent gates
         working-directory: rust_drive
         run: python3 scripts/check_track_initialization.py --plant rne-dynamic --output artifacts/confirmed-tracks-native

@@ -108,6 +108,16 @@ Unsafe Rust is forbidden at workspace level. There is no global message bus, cus
 
 ## Shared application boundary
 
+Optional `fit_recent_track_motion` fits a bounded recent suffix of raw associated
+detections in continuous wheel/gyro coordinates. The fit needs actual temporal,
+shape and residual support plus the existing 0.7 m/s moving cutoff. Stopping
+support expires 0.6 s after the last moving acquisition; gaps over 0.35 s discard
+it. Unsupported/static updates retain ordinary alpha-beta correction. The policy
+requires acquired-disc enclosure and excludes separate cold-track confirmation.
+Dense batch reconstruction checks the fit and its acquisition clocks independently.
+Future motion and world-pose error remain uncalibrated.
+[Contract, first regression and final comparison](recent-track-motion.md).
+
 Optional `fit_sparse_circles` admits three/four-return circular hypotheses in the
 planar detector when original point spread, curvature, radius, residuals and
 near-surface geometry support the fit. It retains every cluster return and the

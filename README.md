@@ -4,6 +4,13 @@
 
 Current comparative engineering maturity is **about 29%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
+Optional [recent acquired motion fits](docs/recent-track-motion.md) improve
+moving-object tracking while retaining ordinary static/slow filtering and a
+bounded stopping-support clock. All 32 final comparisons retain prior gates;
+forecast misses fall 25 → 13 and finite-difference velocity errors above 0.3 m/s
+fall 545 → 99. Twelve static conditions preserve exact prior outputs/frames.
+The first ungated regression is retained; goals remain 16, strict qualification
+stays 0/32 and the option stays off.
 Optional [sparse circle fitting](docs/sparse-circle-fits.md) now fits supported
 three/four-return planar arcs before dense observations arrive. All 32 physical
 comparisons retain their preceding gates; acquired forecast misses fall 60 → 25

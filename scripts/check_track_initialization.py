@@ -37,7 +37,7 @@ def freeze(output,specs): return freeze_inputs(output,specs,factory=materialize,
 
 
 def verify_tracker_policies(config,frozen):
-    policies=['confirm_track_initialization','enclose_track_measurements']
+    policies=['confirm_track_initialization','enclose_track_measurements','fit_recent_track_motion']
     for key in policies:
         actual,declared=config.get(key,False),frozen.get(key,False)
         if type(actual) is not bool or type(declared) is not bool or actual!=declared:

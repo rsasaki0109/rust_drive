@@ -4,7 +4,15 @@ RustDriving's long-term target is a practical independent autonomous driving OSS
 
 The near-term user goal is a **50% engineering maturity estimate**. [Capability waypoints and evidence requirements](maturity.md) define the development direction; the percentage is subjective and does not imply road safety or parity. The current estimate is about 29%; this remains a subjective simulation-prototype estimate. Bounded turn-rule routing and richer intersection recordings add reproducible behavior, while general driving, perception accuracy and planar/terrain limits remain.
 
-The latest [sparse circle hypotheses](sparse-circle-fits.md) reduce the acquired
+The latest [recent acquired motion fits](recent-track-motion.md) reduce observed
+moving-object velocity lag while retaining static filtering and bounded stopped
+support. All 32 final comparisons retain preceding gates; forecast misses fall
+25 → 13 and physical finite-difference velocity errors above 0.3 m/s fall
+545 → 99. The first ungated regression remains recorded. Strict acceptance is
+0/32 with eight original incomplete missions and 26 forecast failures; M1 remains
+in progress and maturity stays about 29%.
+
+The preceding [sparse circle hypotheses](sparse-circle-fits.md) reduce the acquired
 surface-centroid transition before five-return fits become available. All 32
 physical comparisons retain preceding gates; forecast misses fall 60 → 25 and
 coverage failures 28 → 26. Seven fixed-sample physical-shape misses, five accuracy

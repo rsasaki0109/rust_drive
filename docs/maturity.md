@@ -2,7 +2,16 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest [sparse planar circle hypotheses](sparse-circle-fits.md) keep the
+The latest [recent acquired motion fits](recent-track-motion.md) keep the estimate
+at **about 29%**. Observed moving/stopping tracks use a bounded stable-shape fit,
+with acquired support clocks and unchanged static filtering. All 32 final
+comparisons retain preceding gates; forecast misses fall 25 → 13 and velocity
+errors above 0.3 m/s fall 545 → 99 under the physical finite-difference scorer.
+The first ungated forecast regression is retained. Strict qualification remains
+0/32 with eight original incomplete missions, five accuracy failures and 26
+forecast-coverage failures. The **30% waypoint remains unmet**.
+
+The preceding [sparse planar circle hypotheses](sparse-circle-fits.md) keep the
 estimate at **about 29%**. Supported three/four-return arcs reduce the transition
 from a surface proxy to a fitted center. All 32 physical comparisons retain
 preceding gates; acquired forecast misses fall 60 → 25 and coverage failures
