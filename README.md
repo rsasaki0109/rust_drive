@@ -4,6 +4,12 @@
 
 Current comparative engineering maturity is **about 29%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
+Optional [sparse circle fitting](docs/sparse-circle-fits.md) now fits supported
+three/four-return planar arcs before dense observations arrive. All 32 physical
+comparisons retain their preceding gates; acquired forecast misses fall 60 → 25
+and coverage failures 28 → 26. Goal arrivals remain 16 and strict qualification
+remains 0/32. Fixed original samples reduce mean sensor-local center error from
+0.617277 to 0.029549 m, retaining seven physical-shape misses. The option stays off.
 Optional [complete-sweep recovery](docs/clear-sweep-recovery.md) records actual
 planar beam outcomes and requires fresh complete empty sweeps with synchronous
 stopped motion before retiring a disappeared forecast-fault identity. Capture

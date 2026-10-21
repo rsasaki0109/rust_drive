@@ -108,6 +108,15 @@ Unsafe Rust is forbidden at workspace level. There is no global message bus, cus
 
 ## Shared application boundary
 
+Optional `fit_sparse_circles` admits three/four-return circular hypotheses in the
+planar detector when original point spread, curvature, radius, residuals and
+near-surface geometry support the fit. It retains every cluster return and the
+acquisition-time continuous-frame pose. Dense fits and rejected sparse proxies
+retain their preceding behavior; multi-height/3D configurations are excluded.
+The independent centered 2×2 oracle checks raw acquired geometry without actor
+truth. Shape padding remains heuristic, with physical coverage and default
+adoption unqualified. [Contract and retained failures](sparse-circle-fits.md).
+
 Optional `forecast_consistency_guard` checks new measured proxy discs against
 bounded older predictions in continuous wheel/gyro coordinates. It requires
 declared error envelopes and acquired-disc preservation, and brakes through

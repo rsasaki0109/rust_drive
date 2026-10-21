@@ -36,6 +36,8 @@ jobs:
         run: python scripts/test_forecast_consistency.py
       - name: Check complete planar ray evidence and stopped lost-identity recovery
         run: python scripts/test_clear_sweep.py
+      - name: Check sparse circle geometry and independent corrupted-measurement rejection
+        run: python scripts/test_sparse_circles.py
       - name: Check obstruction-stop recovery and independent path certificates
         run: python scripts/test_obstruction_stops.py
       - name: Check road-width candidates and independent circular road containment
@@ -103,6 +105,9 @@ jobs:
       - name: Compare reference ray capture and stopped empty-sweep recovery
         if: runner.os == 'Linux'
         run: python scripts/check_clear_sweep_recovery.py --plant reference-2d --baseline-output artifacts/forecast-consistency --output artifacts/clear-sweep-recovery
+      - name: Compare reference sparse circle fits with unchanged physical gates
+        if: runner.os == 'Linux'
+        run: python scripts/check_sparse_circles.py --plant reference-2d --output artifacts/sparse-circles
       - name: Verify acquired-heading history and unsupported-delay braking
         shell: bash
         run: |
@@ -1168,6 +1173,9 @@ jobs:
       - name: Compare native ray capture and stopped empty-sweep recovery
         working-directory: rust_drive
         run: python3 scripts/check_clear_sweep_recovery.py --plant rne-dynamic --baseline-output artifacts/forecast-consistency-native --output artifacts/clear-sweep-recovery-native
+      - name: Compare native sparse circle fits with unchanged physical gates
+        working-directory: rust_drive
+        run: python3 scripts/check_sparse_circles.py --plant rne-dynamic --output artifacts/sparse-circles-native
       - name: Compare native confirmed track initialization with retained parent gates
         working-directory: rust_drive
         run: python3 scripts/check_track_initialization.py --plant rne-dynamic --output artifacts/confirmed-tracks-native

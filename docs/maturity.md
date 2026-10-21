@@ -2,7 +2,17 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest [complete-sweep recovery](clear-sweep-recovery.md) keeps the estimate
+The latest [sparse planar circle hypotheses](sparse-circle-fits.md) keep the
+estimate at **about 29%**. Supported three/four-return arcs reduce the transition
+from a surface proxy to a fitted center. All 32 physical comparisons retain
+preceding gates; acquired forecast misses fall 60 → 25 and coverage failures
+28 → 26. On 156 unchanged original sparse clusters, mean sensor-local center error
+falls 0.617277 → 0.029549 m, while seven complete physical-disc misses remain.
+Strict qualification stays 0/32, with eight original incomplete missions and
+five accuracy failures. Shape confidence and forecasting remain uncalibrated;
+the **30% waypoint remains unmet**.
+
+The preceding [complete-sweep recovery](clear-sweep-recovery.md) keeps the estimate
 at **about 29%**. Actual completed planar query outcomes supply a separate sensing
 basis for stopped confirmation after a responsible identity disappears. Missing
 or partial acquisition, any return, moving/cached/delayed sensing and independent

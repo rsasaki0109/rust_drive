@@ -106,6 +106,9 @@ pub struct PipelineConfig {
     /// Confirm cold-track motion from stable acquired detections; default off.
     #[serde(default, skip_serializing_if = "is_false")]
     pub confirm_track_initialization: bool,
+    /// Experimental circular hypotheses from three/four planar returns.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub fit_sparse_circles: bool,
     /// Preserve each newest measured disc at the corrected track center.
     #[serde(default, skip_serializing_if = "is_false")]
     pub enclose_track_measurements: bool,
@@ -194,6 +197,7 @@ impl PipelineConfig {
             speed_zones: vec![],
             confirm_slow_motion: false,
             confirm_track_initialization: false,
+            fit_sparse_circles: false,
             enclose_track_measurements: false,
             forecast_envelope: None,
             forecast_consistency_guard: false,
@@ -220,6 +224,10 @@ impl PipelineConfig {
         }
     }
     pub fn validate(&self) -> Result<(), String> {
+        if self.fit_sparse_circles && (self.multi_height_lidar.is_some() || self.lidar3d.is_some())
+        {
+            return Err("sparse circle fitting requires planar lidar".into());
+        }
         if let Some(policy) = &self.clear_sweep_recovery {
             rustdriving_perception::planar_sweep::validate_recovery(policy)?;
             if !self.forecast_consistency_guard
@@ -1221,6 +1229,9 @@ impl DrivingPipeline {
                 if let Some(acquisition_pose) = self.scan_poses.at(scan.stamp, input.time) {
                     let detections = if let Some(acquisition) = &measured_acquisition {
                         acquisition.detections_at(acquisition_pose)
+                    } else if self.config.fit_sparse_circles {
+                        self.perception
+                            .detect_with_sparse_circles(scan, acquisition_pose)
                     } else {
                         self.perception.detect(scan, acquisition_pose)
                     };

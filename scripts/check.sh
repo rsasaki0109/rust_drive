@@ -8,6 +8,7 @@ python3 scripts/test_track_initialization.py
 python3 scripts/test_measurement_enclosure.py
 python3 scripts/test_forecast_consistency.py
 python3 scripts/test_clear_sweep.py
+python3 scripts/test_sparse_circles.py
 python3 scripts/test_obstruction_stops.py
 python3 scripts/test_stop_search.py
 python3 scripts/test_road_width.py
