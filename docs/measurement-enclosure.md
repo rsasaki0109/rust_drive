@@ -50,6 +50,11 @@ the new flag changes. Standalone use without initial-motion confirmation is
 covered by Rust and closed-form Python tests; this physical cohort combines
 both options.
 
+A separately frozen [standalone follow-up](standalone-enclosure.md) now also
+qualifies all 52 conditions with initial-motion confirmation disabled, using
+the original unconfirmed controls. Its 17,056 acquired discs all retain geometry;
+two coverage failures pass, while strict qualification remains 20/52.
+
 | Measurement | Parent | New policy |
 |---|---:|---:|
 | Conditions losing some newest measured disc | 52/52 | 0/52 |

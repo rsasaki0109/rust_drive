@@ -36,8 +36,17 @@ def materialize(spec):
 def freeze(output,specs): return freeze_inputs(output,specs,factory=materialize,gates=GATES)
 
 
+def verify_tracker_policies(config,frozen):
+    policies=['confirm_track_initialization','enclose_track_measurements']
+    for key in policies:
+        actual,declared=config.get(key,False),frozen.get(key,False)
+        if type(actual) is not bool or type(declared) is not bool or actual!=declared:
+            raise ValueError('declared tracker policy differs: '+key)
+    if not any(config.get(key,False) for key in policies):raise ValueError('tracked measurement policy missing')
+
+
 def audit(run,config,ticks,spec,frozen):
-    if config.get('confirm_track_initialization') is not True: raise ValueError('declared tracker policy lost')
+    verify_tracker_policies(config,frozen)
     result=(stop_audit if spec['cohort']=='stop-search' else forecast_audit)(run,config,ticks,spec,frozen)
     if not result.get('road_containment'):
         result['road_containment']=road_margin(run)

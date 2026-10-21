@@ -2,7 +2,15 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest [acquired-disc preservation](measurement-enclosure.md) keeps the
+The latest [standalone enclosure qualification](standalone-enclosure.md) keeps
+the estimate at **about 29%**. All 52 unconfirmed comparisons retain their gates
+and all 17,056 acquired discs retain geometry. Two forecast-coverage failures
+pass against those matching controls; strict qualification stays 20/52, with
+eight missed goals and 27 coverage failures. The preceding 52 combined-mode
+audits remain unchanged. This verifies an additional supported composition
+without changing runtime code or defaults. The **30% waypoint remains unmet**.
+
+The preceding [acquired-disc preservation](measurement-enclosure.md) keeps the
 estimate at **about 29%**. Track extents now enclose every newest measured disc
 at the corrected center; complete-disc failures fall from 11,067/17,049 to
 0/17,054 observations, with no new failed gates in all 52 comparisons. Strict

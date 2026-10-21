@@ -8,6 +8,7 @@ import unittest
 from check_measurement_enclosure import baseline,freeze,materialize,specifications
 from measurement_enclosure_oracle import certify,reconstruct
 from track_initialization_oracle import reconstruct as filter_oracle
+from check_track_initialization import verify_tracker_policies
 
 
 def fixture():
@@ -22,6 +23,42 @@ def fixture():
 
 
 class EnclosureTests(unittest.TestCase):
+    def test_standalone_matrix_keeps_every_original_world_without_initial_motion_confirmation(self):
+        specs=specifications(['reference-2d','rne-dynamic'],initialization='legacy')
+        self.assertEqual(len(specs),52)
+        for spec in specs:
+            baseline(spec)
+            _,value=materialize(spec)
+            self.assertNotIn('confirm_track_initialization',value)
+            self.assertTrue(value['enclose_track_measurements'])
+            result_row=dict(spec,initialization=dict(passed=True,confirmations=[]),initialization_mode='legacy')
+            self.assertEqual(materialize(result_row),materialize(spec))
+        with tempfile.TemporaryDirectory() as directory:
+            manifest=freeze(Path(directory),specs)
+            self.assertEqual(manifest['gates']['initialization'],'legacy')
+            with self.assertRaises(ValueError):freeze(Path(directory),specifications(['reference-2d','rne-dynamic']))
+
+    def test_standalone_coverage_baseline_cannot_hide_the_original_failed_forecast(self):
+        spec=specifications(['reference-2d'])[0]
+        self.assertNotIn('forecast_coverage',baseline(spec)['failed_gates'])
+        self.assertIn('forecast_coverage',baseline(dict(spec,initialization='legacy'))['failed_gates'])
+
+    def test_header_policy_loss_cannot_be_masked_by_another_enabled_tracker_feature(self):
+        verify_tracker_policies(dict(enclose_track_measurements=True),dict(enclose_track_measurements=True))
+        declared=dict(confirm_track_initialization=True,enclose_track_measurements=True)
+        verify_tracker_policies(declared,declared)
+        for config in [dict(enclose_track_measurements=True),dict(confirm_track_initialization=True),
+                       dict(confirm_track_initialization=1,enclose_track_measurements=True)]:
+            with self.subTest(config=config),self.assertRaises(ValueError):verify_tracker_policies(config,declared)
+        with self.assertRaises(ValueError):verify_tracker_policies({}, {})
+
+    def test_invalid_or_mixed_initialization_modes_are_rejected_before_freezing(self):
+        with self.assertRaises(ValueError):specifications(['reference-2d'],initialization='unrecognized')
+        spec=specifications(['reference-2d'])[0]
+        with self.assertRaises(ValueError):materialize(dict(spec,initialization='unrecognized'))
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaises(ValueError):freeze(Path(directory),[spec,dict(spec,initialization='legacy')])
+
     def test_closed_form_growing_disc_and_independent_filter_without_bootstrap(self):
         config,ticks=fixture();r=reconstruct(config,ticks)
         self.assertEqual((r['acquired_measurements'],r['associated_updates'],r['cached_tracks']),(2,1,1))

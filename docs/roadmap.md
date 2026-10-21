@@ -4,7 +4,13 @@ RustDriving's long-term target is a practical independent autonomous driving OSS
 
 The near-term user goal is a **50% engineering maturity estimate**. [Capability waypoints and evidence requirements](maturity.md) define the development direction; the percentage is subjective and does not imply road safety or parity. The current estimate is about 29%; this remains a subjective simulation-prototype estimate. Bounded turn-rule routing and richer intersection recordings add reproducible behavior, while general driving, perception accuracy and planar/terrain limits remain.
 
-The latest [acquired-disc preservation](measurement-enclosure.md) repairs shape
+The latest [standalone enclosure qualification](standalone-enclosure.md) checks
+measured geometry without initial-motion confirmation. All 52 comparisons
+retain their gates, and two coverage failures pass against matching original
+controls. Strict qualification stays 20/52; runtime bytes and defaults remain
+unchanged. M1 remains in progress.
+
+The preceding [acquired-disc preservation](measurement-enclosure.md) repairs shape
 loss in tracking: none of 17,054 acquired discs loses geometry at the corrected
 center. All 52 comparisons retain their gates, while strict qualification stays
 20/52 and forecast/mission failures remain. Measured calibration and general

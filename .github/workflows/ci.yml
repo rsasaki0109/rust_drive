@@ -86,6 +86,9 @@ jobs:
       - name: Verify complete newest-measurement preservation in reference driving
         shell: bash
         run: python scripts/check_measurement_enclosure.py --plant reference-2d --output artifacts/measured-enclosure
+      - name: Verify standalone measured enclosure on the declared curved-road control
+        shell: bash
+        run: python scripts/check_measurement_enclosure.py --plant reference-2d --initialization legacy --only-index 3 --output artifacts/standalone-enclosure
       - name: Drive and independently score fixed-route speed intervals
         shell: bash
         run: python scripts/check_speed_zones.py --output artifacts/speed-zones
@@ -1124,6 +1127,9 @@ jobs:
       - name: Verify complete newest-measurement preservation in native driving
         working-directory: rust_drive
         run: python3 scripts/check_measurement_enclosure.py --plant rne-dynamic --output artifacts/measured-enclosure-native
+      - name: Verify standalone native enclosure on the declared curved-road control
+        working-directory: rust_drive
+        run: python3 scripts/check_measurement_enclosure.py --plant rne-dynamic --initialization legacy --only-index 3 --output artifacts/standalone-enclosure-native
       - name: Verify legal turn routes in the native dynamic plant
         working-directory: rust_drive
         run: python3 scripts/check-turn-restrictions.py --backend native --seeds 7 --compact --output artifacts/turn-restrictions

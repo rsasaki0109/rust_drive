@@ -9,6 +9,10 @@ radius smoothing from losing newly measured geometry. All 52 fixed comparisons
 retain their original gates; measured-disc containment failures fall from
 11,067 to zero. Strict qualification remains 20/52, with original forecast and
 mission failures retained. The option stays off by default.
+The [standalone follow-up](docs/standalone-enclosure.md) verifies shape preservation
+without initial-motion confirmation: all 52 comparisons retain their gates and
+all 17,056 acquired discs retain geometry. Two coverage failures pass against
+the original unconfirmed controls; strict qualification stays 20/52.
 Optional [confirmed initial track motion](docs/track-initialization.md) separates
 early shape refinement from velocity estimation. All 52 fixed comparisons retain
 their original gates; two forecast-coverage failures pass. Strict qualification

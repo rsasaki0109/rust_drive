@@ -116,6 +116,11 @@ the initial-motion confirmation option. Missing/rejected scans cannot renew
 extent; rigid world reprojection preserves containment. This is measured proxy
 geometry, with physical shape and forecast accuracy still conditional on sensing
 and calibration. [Contract and complete comparison](measurement-enclosure.md).
+Both tracker policies are independently checked against the frozen sensor-only
+header. `--initialization legacy` qualifies enclosure without initial-motion
+confirmation using the original unconfirmed controls; the default checker mode
+retains confirmation. An enabled option cannot mask a missing required policy.
+[Standalone evaluation](standalone-enclosure.md).
 
 Optional `confirm_track_initialization` holds cold-track velocity at zero until
 at least three stable-radius acquired detections span 0.2 seconds. A bounded
