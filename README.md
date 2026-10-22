@@ -2,6 +2,8 @@
 
 ![Recorded native traffic with 24 vehicles, varied speeds and independent braking](assets/dense-traffic-demo.gif)
 
+[🎮 Play City Playground — 自分で運転・ドリフト・カーチェイス](https://rsasaki0109.github.io/rust_driving/)
+
 <table>
   <tr>
     <td width="33%"><img src="assets/rne-3d-demo.gif" width="260" alt="Recorded closure detour simulation"></td>
@@ -25,8 +27,8 @@
   </tr>
 </table>
 
-Autonomous driving research in Rust. Recorded simulations, including optional
-sensing modes.
+Autonomous driving research in Rust, with recorded simulations and an optional
+[manual-driving browser playground](docs/browser-playground.md).
 
 ## Quick start
 
