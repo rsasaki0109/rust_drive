@@ -113,12 +113,43 @@ physical results, display measurements and complete GIF capture.
 
 ## Reproduction
 
-Follow the [README commands](../README.md#reproduce-the-gif) to run the native
-46-second fixture, replay all 921 observations and render the complete episode.
+Run the native 46-second fixture, replay all 921 observations and render
+the complete episode with the commands below.
 The opening GIF uses seed 7, `urban-japan`, the street camera and 3× playback.
 The encoded GIF has 155 frames at 960×640, lasts 16.8 seconds including
-the final hold, and is 7,509,338 bytes. Run the independent physical matrix
-and display audit with:
+the final hold, and is 7,509,338 bytes.
+
+Python and Blender are optional visualization tools. Install Blender (4.3.2 verified locally; Cycles CPU requires no GPU), then run from the repository root:
+
+```sh
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install -r scripts/requirements-demo.txt
+bash scripts/setup-rne.sh
+source scripts/env.sh
+cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- \
+  --scenario scenarios/native-japan-city-demo.json --scene scenes/japan-city-construction.json \
+  --lidar-3d --ground-segmentation --vehicle-body --precise-capsule-rays \
+  --plant dynamic --seed 7 \
+  --output artifacts/japan-city-demo/seed-7
+cargo run --release --locked --bin rustdriving -- replay \
+  --log artifacts/japan-city-demo/seed-7/sensors.jsonl --output artifacts/japan-city-demo/seed-7/replay
+python3 scripts/render_demo_3d.py artifacts/japan-city-demo/seed-7/run.json \
+  --native-scene artifacts/japan-city-demo/seed-7/scene.json \
+  --output artifacts/japan-city-demo/demo.gif --samples 12 --threads 3 \
+  --environment urban-japan --camera street --dog-pairs 17=18 \
+  --actor-models 0=sedan 1=pedestrian 2=cyclist 3=van 4=pedestrian \
+    5=cyclist 6=pedestrian 7=sedan 8=hatchback 9=pickup 10=truck \
+    11=truck 12=cyclist 13=cyclist 14=elder 15=child \
+    16=parent_stroller 17=pedestrian 18=dog 19=sedan 20=hatchback \
+    21=worker 22=truck
+```
+
+Open `artifacts/japan-city-demo/demo.gif`. The renderer emits a PNG and [provenance JSON](../assets/japan-city-demo.json), auditing recorded body and actor poses, road/obstacle meshes and measured sensor consistency. The published GIF is 960 × 640 pixels. To refresh the README asset intentionally, use `--output assets/japan-city-demo.gif` in the render command. [Independent intersection and road-user checks](#reproduction); [ground-classification limits](ground-lidar.md); [editable models and older demo reproduction](3d-demo.md).
+
+GIF bytes may differ between Blender/Pillow/font versions; sensor replay is deterministic on the same binary/platform. The reference GIF remains reproducible with `bash scripts/demo.sh`.
+
+Run the independent physical matrix and display audit with:
 
 ```sh
 python3 scripts/check-japan-city-demo.py --compact --output artifacts/japan-city-demo

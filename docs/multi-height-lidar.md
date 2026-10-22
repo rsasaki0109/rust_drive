@@ -6,7 +6,7 @@ The implementation is **height-gated projection into a 2D obstacle pipeline**. I
 
 ## Run and replay
 
-Use the development branch and the existing [CPU-only RNE setup](../README.md#cpu-only-robot-native-engine-demo).
+Use the development branch and the existing [CPU-only RNE setup](../integrations/rne/README.md#reproduce).
 
 ```sh
 source scripts/env.sh
