@@ -107,6 +107,7 @@ jobs:
       - run: cargo fmt --all --check
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - run: cargo test --workspace --locked
+        shell: bash scripts/ci-report.sh {0}
       - run: cargo build --workspace --release --locked
       - name: Compare indexed clustering with the frozen detector and record timings
         shell: bash
@@ -736,6 +737,7 @@ jobs:
           python scripts/check-recorded-rgbd.py --report artifacts/rgbd/tight.json --manifest data/tum-fr1-xyz-tight/manifest.json --raw data/tum-fr1-xyz-tight/raw --freeze artifacts/rgbd/tight-freeze.json --output artifacts/rgbd/tight-oracle.json
           python -c 'import json; r=json.load(open("artifacts/rgbd/tight.json")); assert (r["summary"]["accepted"],r["summary"]["rejected"],r["summary"]["heldout_passed"]) == (7,4,5), "recorded temporal baseline changed; inspect every failure"'
       - name: Reproduce recorded-depth odometry and fixed-map failure evidence
+        shell: bash scripts/ci-report.sh {0}
         run: |
           python scripts/fetch-recorded-motion.py --dataset tum-fr1-xyz-motion
           python scripts/fetch-recorded-motion.py --dataset tum-fr1-xyz-motion-v2
@@ -842,6 +844,7 @@ jobs:
           PY
       - name: Audit guarded Resize lowering and every raw model output bit
         if: ${{ !cancelled() }}
+        shell: bash scripts/ci-report.sh {0}
         run: |
           python -m unittest discover -s integrations/onnx -p test_camera_operators.py -v
           python -B assets/camera-operators-v2/verify.py
@@ -867,6 +870,7 @@ jobs:
           PY
       - name: Verify lowered parallel execution with the unchanged measured clock
         if: ${{ !cancelled() }}
+        shell: bash scripts/ci-report.sh {0}
         run: |
           python integrations/onnx/camera_repeat_check.py controls --output artifacts/camera-operators-v2/parallel-controls
           python integrations/onnx/camera_repeat_check.py run --controls artifacts/camera-operators-v2/parallel-controls --output artifacts/camera-operators-v2/parallel-validation
