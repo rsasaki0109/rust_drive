@@ -1,6 +1,6 @@
 # Dense traffic demonstration
 
-The README opens with **24 reactive vehicles in three eight-vehicle queues**,
+This native demonstration shows **24 reactive vehicles in three eight-vehicle queues**,
 plus the blue ego vehicle. Each participant is simulated and recorded by the
 pinned native RNE backend. Hatchbacks, sedans and vans are original SI display
 meshes; the perspective camera fits every vehicle throughout the recording.
