@@ -6,6 +6,7 @@ import hashlib
 import json
 import math
 from pathlib import Path
+from statistics import mean
 
 from check_hazards import check_traffic
 
@@ -35,6 +36,37 @@ def swept_distance(a, b, c, d):
     dx, dy = c['x']-d['x']-x, c['y']-d['y']-y
     fraction = max(0., min(1., -(x*dx+y*dy)/(dx*dx+dy*dy))) if dx or dy else 0.
     return math.hypot(x+fraction*dx, y+fraction*dy)
+
+
+def motion_diversity(frames, specs, lanes):
+    """Measure physical motion, retaining each car's initial longitudinal offset.
+
+    Compare the same queue rank across lanes so a braking wave within three
+    otherwise identical queues cannot disguise synchronized lane motion.
+    Speeds come from position differences, independent of traffic telemetry.
+    """
+    speeds, displacements = [], []
+    for before, after in zip(frames, frames[1:]):
+        if not 5. <= after['time'] <= 20.:
+            continue
+        dt = after['time']-before['time']
+        require(dt > 0., 'nonpositive motion observation interval')
+        old = {a['id']: a['position']['x'] for a in before['objects']}
+        new = {a['id']: a['position']['x'] for a in after['objects']}
+        for row in zip(*lanes.values()):
+            velocity = [(new[i]-old[i])/dt for i in row]
+            travel = [new[i]-specs[i]['s'] for i in row]
+            require(all(math.isfinite(v) for v in velocity+travel), 'nonfinite motion diversity evidence')
+            speeds.append(max(velocity)-min(velocity))
+            displacements.append(max(travel)-min(travel))
+    require(bool(speeds), 'missing motion diversity observation window')
+    speed_spread, travel_spread = mean(speeds), mean(displacements)
+    require(speed_spread >= .3 and travel_spread >= 2.,
+            'traffic motion is synchronized across lanes despite initial offsets or reported speeds')
+    return dict(window_seconds=[5., 20.], matched_queue_ranks=8,
+                position_derived_mean_cross_lane_speed_range_m_s=speed_spread,
+                mean_cross_lane_travel_range_m=travel_spread,
+                required_speed_range_m_s=.3, required_travel_range_m=2.)
 
 
 def verify(run, replay):
@@ -110,6 +142,7 @@ def verify(run, replay):
     hold = frames[-1]['time']-start
     require(hold >= 5., 'all vehicles and ego must remain stopped together for five seconds')
     return dict(reactive_vehicles=24, queue_lanes=3, vehicles_per_lane=8,
+                motion_diversity=motion_diversity(frames, specs, lanes),
                 minimum_vehicle_travel_m=travel, complete_queue_hold_seconds=hold,
                 minimum_expanded_ego_clearance_with_reserve_m=minimum_ego,
                 minimum_actor_pair_clearance_with_reserve_m=minimum_pair,
@@ -164,6 +197,25 @@ def mutations(run, replay, log):
         rejected.append('rendered_command_differs_from_sensor_log')
     else:
         raise ValueError('a forged rendered command was accepted')
+    changed = copy.deepcopy(run)
+    specs = changed['scenario']['objects']
+    lanes = {lane: [i for i, spec in enumerate(specs) if spec.get('following') and spec['lateral'] == lane]
+             for lane in [-7., 0., 7.]}
+    for frame in changed['frames']:
+        objects = {a['id']: a for a in frame['objects']}
+        for row in zip(*lanes.values()):
+            reference = row[1]
+            travel = objects[reference]['position']['x']-specs[reference]['s']
+            for actor in row:
+                objects[actor]['position']['x'] = specs[actor]['s']+travel
+    try:
+        # Keep the original, varied telemetry and all initial offsets. The
+        # physical-position check must still reject copied lane trajectories.
+        motion_diversity(changed['frames'], specs, lanes)
+    except ValueError:
+        rejected.append('synchronized_motion_despite_varied_telemetry')
+    else:
+        raise ValueError('copied lane motion was accepted')
     return rejected
 
 
@@ -187,7 +239,7 @@ def main():
                               ['run.json', 'sensors.jsonl', 'summary.json', 'replay/replay.json']}))
         print(f"seed {run['summary']['seed']}: all 24 vehicles, {replay['ticks']} replay ticks, three queues and {len(rejected)} corruptions verified", flush=True)
     require(len({c['seed'] for c in cases}) == len(cases), 'duplicate seed evidence')
-    report = dict(schema_version=1, passed=True, scenario_sha256=digest(SCENARIO),
+    report = dict(schema_version=2, passed=True, scenario_sha256=digest(SCENARIO),
                   checker_sha256=digest(Path(__file__)), traffic_oracle_sha256=digest(ROOT / 'scripts/check_hazards.py'),
                   cases=cases, scope='Authored straight three-queue CPU simulation with physical circular proxies; no lane changes, arbitrary traffic negotiation, contact response or real-vehicle validation.')
     args.output.parent.mkdir(parents=True, exist_ok=True)
