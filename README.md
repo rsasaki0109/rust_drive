@@ -4,6 +4,11 @@
 
 Current comparative engineering maturity is **about 29%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
+The default [occupancy mapper now traverses crossed grid cells](docs/occupancy-rays.md)
+once per return and excludes the hit cell from free-space updates. Exact rational
+cell-intersection tests cover the preceding duplicate, skipped-cell and hit-cell
+biases. The map remains a diagnostic output; mission availability and measured
+probability calibration remain open.
 Planar [LiDAR clustering now uses a spatial index](docs/indexed-clustering.md)
 while preserving detection order and values. Local production release medians
 improve by 5.94× at 720 synthetic points and 45.68–53.40× at 8,192 points;

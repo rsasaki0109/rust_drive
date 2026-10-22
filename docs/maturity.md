@@ -2,6 +2,13 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
+The [occupancy ray traversal repair](occupancy-rays.md) keeps the estimate at
+**about 29%**. It removes duplicate free updates, skipped crossed cells and
+free-space subtraction at hit endpoints, with independent exact rational
+geometry checks. This repairs a default diagnostic component without qualifying
+probability calibration, mission completion or driving safety. The original
+eight incomplete missions remain open and the **30% waypoint is unmet**.
+
 The [indexed planar clustering](indexed-clustering.md) implementation keeps the
 estimate at **about 29%**. It preserves the old directed traversal and detection
 bits while reducing candidate work on larger clouds. Local release timings
