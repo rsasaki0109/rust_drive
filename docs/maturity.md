@@ -2,6 +2,14 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
+The [indexed planar clustering](indexed-clustering.md) implementation keeps the
+estimate at **about 29%**. It preserves the old directed traversal and detection
+bits while reducing candidate work on larger clouds. Local release timings
+improve for the larger synthetic workloads, with about 9% overhead in the
+64-point case. This improves an existing default component without demonstrating
+more driving availability, calibrated perception or real-time behavior. The
+original eight incomplete missions remain open and the **30% waypoint is unmet**.
+
 Experimental [later stopping-position search](later-stops.md) keeps the estimate
 at **about 29%**. It expands checked stopping proposals without changing motion
 budgets or withdrawing existing braking. Separate inspection verifies the

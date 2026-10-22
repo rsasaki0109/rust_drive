@@ -1,5 +1,6 @@
 //! Range-adaptive clustering and globally associated alpha-beta tracking.
 mod association;
+mod clustering;
 pub mod ground3d;
 pub mod image_features;
 mod initialization;
@@ -39,26 +40,8 @@ fn detect_clusters(scan: &LidarScan, pose: Pose, sparse_circles: bool) -> Vec<De
         .copied()
         .filter(|p| p.finite() && p.x.hypot(p.y) > 0.3)
         .collect();
-    let mut visited = vec![false; points.len()];
     let mut result = Vec::new();
-    for i in 0..points.len() {
-        if visited[i] {
-            continue;
-        }
-        visited[i] = true;
-        let mut queue = vec![i];
-        let mut cursor = 0;
-        while cursor < queue.len() {
-            let p = points[queue[cursor]];
-            cursor += 1;
-            let tolerance = (0.28 + p.x.hypot(p.y) * 0.015).min(0.85);
-            for j in 0..points.len() {
-                if !visited[j] && p.distance(points[j]) < tolerance {
-                    visited[j] = true;
-                    queue.push(j);
-                }
-            }
-        }
+    for queue in clustering::Components::new(&points) {
         if queue.len() < 3 {
             continue;
         }

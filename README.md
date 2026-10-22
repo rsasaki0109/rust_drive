@@ -4,6 +4,11 @@
 
 Current comparative engineering maturity is **about 29%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
+Planar [LiDAR clustering now uses a spatial index](docs/indexed-clustering.md)
+while preserving detection order and values. Local production release medians
+improve by 5.94× at 720 synthetic points and 45.68–53.40× at 8,192 points;
+the 64-point case is about 9% slower. These are detector timings, with mission
+completion and measured uncertainty calibration still open.
 Experimental [later stopping-position search](docs/later-stops.md) checks up to
 80 existing path endpoints beyond the original stopping heuristic, preserving
 active braking and acquired restart confirmation. Independent inspection checks

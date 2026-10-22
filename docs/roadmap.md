@@ -4,6 +4,13 @@ RustDriving's long-term target is a practical independent autonomous driving OSS
 
 The near-term user goal is a **50% engineering maturity estimate**. [Capability waypoints and evidence requirements](maturity.md) define the development direction; the percentage is subjective and does not imply road safety or parity. The current estimate is about 29%; this remains a subjective simulation-prototype estimate. Bounded turn-rule routing and richer intersection recordings add reproducible behavior, while general driving, perception accuracy and planar/terrain limits remain.
 
+The [planar clustering index](indexed-clustering.md) removes broad candidate
+scans while retaining the preceding detector's exact directed traversal and
+fitting order. This improves larger-cloud computation in the existing component;
+small-cloud overhead and extreme-coordinate fallback remain explicit. Calibrated
+perception and complete mission availability remain the next capability gates.
+M1 remains in progress at about 29%.
+
 Experimental [later stopping-position search](later-stops.md) enumerates existing
 path knots beyond the nominal contact heuristic while retaining active brake
 ownership. Unit cases demonstrate a farther reachable crossing approach, but

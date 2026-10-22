@@ -108,6 +108,11 @@ jobs:
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - run: cargo test --workspace --locked
       - run: cargo build --workspace --release --locked
+      - name: Compare indexed clustering with the frozen detector and record timings
+        shell: bash
+        run: |
+          cargo build --release --locked -p rustdriving-perception --example cluster_index
+          python scripts/check_cluster_index.py --output artifacts/cluster-index
       - name: Qualify bounded intermediate lateral paths with retained parent failures
         shell: bash
         run: python scripts/check_refined_lateral.py --plant reference-2d --output artifacts/refined-lateral
@@ -296,6 +301,7 @@ jobs:
             artifacts/local-corners/
             artifacts/turn-restrictions/
             artifacts/datasets/*.json
+            artifacts/cluster-index/
             artifacts/map-localization/
             artifacts/speed-zones/
             artifacts/lane-speed-zones/
