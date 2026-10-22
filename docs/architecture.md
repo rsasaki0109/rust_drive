@@ -66,6 +66,12 @@ With `--vehicle-body`, an authored rectangular research body adds actual force-f
 
 The optional OSM importer resolves bounded WGS84 coordinates to local ENU, retains shared junctions and directed way geometry, and emits the ordinary road graph. Imported road widths are explicit simulation calibration, not measured lane boundaries. Dataset attribution and ODbL terms are separate from the Rust implementation's license. [Import contract and provenance](osm-import.md).
 
+OSM exports are create-only. Existing entries and equal resolved destinations
+are rejected before any artifact is staged; complete map/scenario files are
+published before the report, with rollback on ordinary publication errors.
+This remains a CLI persistence concern outside driving and routing algorithms.
+[Export contract and limits](osm-export.md).
+
 Unconditional `no` and `only` junction rules now constrain directed transitions.
 Restricted search retains the incoming edge at each node, so a shorter forbidden
 arrival does not hide a longer legal arrival. Closures remain independent;

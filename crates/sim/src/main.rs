@@ -1,4 +1,5 @@
 mod lane_route;
+mod osm_output;
 mod replay_output;
 mod road_route;
 use rustdriving_routing::{
@@ -52,12 +53,6 @@ fn import_osm(args: &[String]) -> Result<bool, Box<dyn Error>> {
     let document: OverpassDocument =
         serde_json::from_reader(BufReader::new(fs::File::open(input)?))?;
     let output = output.ok_or("--output map filename is required")?;
-    if scenario_output
-        .as_ref()
-        .is_some_and(|path| path == &output || path == &output.with_extension("import.json"))
-    {
-        return Err("map, import report and scenario output paths must differ".into());
-    }
     let (network, report) = osm::import(
         document,
         ImportOptions {
@@ -87,20 +82,19 @@ fn import_osm(args: &[String]) -> Result<bool, Box<dyn Error>> {
         }
         None
     };
-    for path in [&output].into_iter().chain(scenario_output.iter()) {
-        if let Some(parent) = path.parent().filter(|p| !p.as_os_str().is_empty()) {
-            fs::create_dir_all(parent)?;
-        }
+    let report_json = serde_json::to_string_pretty(&report)?;
+    let report_path = output.with_extension("import.json");
+    let mut destinations = vec![output.as_path()];
+    destinations.extend(scenario_output.as_deref());
+    destinations.push(report_path.as_path());
+    let staged = osm_output::ImportOutput::new(&destinations)?;
+    staged.json(0, &network)?;
+    if let Some(scenario) = scenario {
+        staged.json(1, &scenario)?;
     }
-    fs::write(&output, serde_json::to_vec_pretty(&network)?)?;
-    fs::write(
-        output.with_extension("import.json"),
-        serde_json::to_vec_pretty(&report)?,
-    )?;
-    if let (Some(path), Some(scenario)) = (scenario_output, scenario) {
-        fs::write(path, serde_json::to_vec_pretty(&scenario)?)?;
-    }
-    println!("{}", serde_json::to_string_pretty(&report)?);
+    staged.json(destinations.len() - 1, &report)?;
+    staged.publish()?;
+    println!("{report_json}");
     Ok(true)
 }
 fn run() -> Result<bool, Box<dyn Error>> {

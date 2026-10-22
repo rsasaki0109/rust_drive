@@ -1,0 +1,257 @@
+{
+  "schema_version": 1,
+  "passed": true,
+  "scope": "Create-only publication for reference CLI OSM exports; no driving policy change.",
+  "parent": {
+    "commit": "fa1fc83aee28635033ffb191d4421ed337803442",
+    "packet_path": "assets/run-publication-results.json",
+    "packet_sha256": "b022935889bb90994978e4f534dbb9bfc339a7d3e29d5f23043b3a53ef51a7b2",
+    "executable_path": "artifacts/run-publication-v1/final-binaries/rustdriving",
+    "executable_sha256": "30e6fa18b7be973d9deae837da724792eb2f96f764eb3d56df7719f026349237"
+  },
+  "source_bindings": {
+    "crates/sim/src/main.rs": "f277d38dc46841e70da7560ec4c13411f88eba43a59c7e523ff002a6c510cbc6",
+    "crates/sim/src/osm_output.rs": "6173ef7e469db69aa943f5bf9d7d08e4e91379eaa763379be83f11d26a15907c",
+    "crates/sim/src/osm_output/tests.rs": "22d8b8b1b258974c7786eaff2fb0e415ee8cf0cbdbdc988cf7a608372ef72d6f",
+    "crates/sim/tests/osm_cli.rs": "94ec67e78c4273048adcfd5e8fb8408df1cb45de301b15ba163e6df1718cbb76"
+  },
+  "tested_source_inventory": {
+    "files": 1141,
+    "path": "artifacts/osm-export-v1/required-check/tested-sources.json",
+    "sha256": "bfd6978e983c7c6cb85934868326b016928a6285a9c0ffc3d1618f0bc0a136a8",
+    "bytes": 138651
+  },
+  "pins": {
+    "Cargo.toml": "2975b0cc0fbaed1397dc5d575fe95466d29ce773400eb1ce8f4fbec37bac0d65",
+    "Cargo.lock": "de8e6afb2c8f59be7f68f0ccf8604e4d43d9951d6902314f46f16b8121dbccf7",
+    "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed",
+    "integrations/rne/Cargo.lock": "c15e499bc74ddcf213bb0ac22cb22280c68d49ead2e203b8a7213e5a9f38f2ff",
+    "integrations/rne/rne-revision.txt": "18a0b41bc51d35a964f9dc922ee44cf1c485b34765c8ddfe82c93649c440404e"
+  },
+  "binary": {
+    "path": "artifacts/osm-export-v1/final-binaries/rustdriving",
+    "sha256": "f23ef590244887e14ffd35222586b4fc2c3914fa6a2651b23e6bc7016834970a",
+    "bytes": 5834720,
+    "rust_toolchain": "rustc 1.90.0 (1159e78c4 2025-09-14)"
+  },
+  "required_check": {
+    "command": "bash scripts/check.sh",
+    "exit_code": 0,
+    "rust_tests": 1042,
+    "python_tests": 295,
+    "standard_replays": 49,
+    "completed_standard_cases": 49,
+    "byte_identical_standard_streams": 245,
+    "errors": [],
+    "operational_sources_unchanged": true,
+    "baseline_archives_retained": true
+  },
+  "added_tests": {
+    "total": 12,
+    "publisher_fault_injection": 3,
+    "cli": 9
+  },
+  "repaired_failures": [
+    {
+      "case": "source-as-map",
+      "parent_exit_code": 0,
+      "parent_source_preserved": false,
+      "parent_all_entries_preserved": false,
+      "current_exit_code": 2,
+      "current_all_entries_preserved": true
+    },
+    {
+      "case": "source-as-report",
+      "parent_exit_code": 0,
+      "parent_source_preserved": false,
+      "parent_all_entries_preserved": false,
+      "current_exit_code": 2,
+      "current_all_entries_preserved": true
+    },
+    {
+      "case": "source-as-scenario",
+      "parent_exit_code": 0,
+      "parent_source_preserved": false,
+      "parent_all_entries_preserved": false,
+      "current_exit_code": 2,
+      "current_all_entries_preserved": true
+    },
+    {
+      "case": "scenario-parent-alias",
+      "parent_exit_code": 0,
+      "parent_source_preserved": true,
+      "parent_all_entries_preserved": false,
+      "current_exit_code": 2,
+      "current_all_entries_preserved": true
+    },
+    {
+      "case": "report-directory",
+      "parent_exit_code": 2,
+      "parent_source_preserved": true,
+      "parent_all_entries_preserved": false,
+      "current_exit_code": 2,
+      "current_all_entries_preserved": true
+    },
+    {
+      "case": "scenario-directory",
+      "parent_exit_code": 2,
+      "parent_source_preserved": true,
+      "parent_all_entries_preserved": false,
+      "current_exit_code": 2,
+      "current_all_entries_preserved": true
+    },
+    {
+      "case": "hardlink-report-source",
+      "parent_exit_code": 0,
+      "parent_source_preserved": false,
+      "parent_all_entries_preserved": false,
+      "current_exit_code": 2,
+      "current_all_entries_preserved": true
+    },
+    {
+      "case": "dangling-scenario",
+      "parent_exit_code": 0,
+      "parent_source_preserved": true,
+      "parent_all_entries_preserved": false,
+      "current_exit_code": 2,
+      "current_all_entries_preserved": true
+    },
+    {
+      "case": "occupied-report",
+      "parent_exit_code": 0,
+      "parent_source_preserved": true,
+      "parent_all_entries_preserved": false,
+      "current_exit_code": 2,
+      "current_all_entries_preserved": true
+    }
+  ],
+  "unchanged_valid_exports": [
+    {
+      "case": "fresh",
+      "exit_code": 0,
+      "output_sha256": {
+        "map.import.json": "60f68815860fb547f4dc6022332479f03a82f7293f17ceb7c147d4ee6128aee7",
+        "map.json": "9c38157f69af9072cd9d99046284ccbbb30dce3fbf987db0f12243139f634acf",
+        "scenario.json": "adfae37bffdb44dde79e87564a8402bd4e084d81c236880e05bc44c2c995cba7"
+      },
+      "stdout_sha256": "3ae50810c41c631b76f395a0f98a84ccdb3e158eed23ab7fcff09a966bc5822c",
+      "all_bytes_identical_to_parent": true
+    },
+    {
+      "case": "map-only",
+      "exit_code": 0,
+      "output_sha256": {
+        "map.import.json": "60f68815860fb547f4dc6022332479f03a82f7293f17ceb7c147d4ee6128aee7",
+        "map.json": "9c38157f69af9072cd9d99046284ccbbb30dce3fbf987db0f12243139f634acf"
+      },
+      "stdout_sha256": "3ae50810c41c631b76f395a0f98a84ccdb3e158eed23ab7fcff09a966bc5822c",
+      "all_bytes_identical_to_parent": true
+    },
+    {
+      "case": "valid-import-suffix",
+      "exit_code": 0,
+      "output_sha256": {
+        "map.import.import.json": "60f68815860fb547f4dc6022332479f03a82f7293f17ceb7c147d4ee6128aee7",
+        "map.import.json": "9c38157f69af9072cd9d99046284ccbbb30dce3fbf987db0f12243139f634acf",
+        "scenario.json": "adfae37bffdb44dde79e87564a8402bd4e084d81c236880e05bc44c2c995cba7"
+      },
+      "stdout_sha256": "3ae50810c41c631b76f395a0f98a84ccdb3e158eed23ab7fcff09a966bc5822c",
+      "all_bytes_identical_to_parent": true
+    }
+  ],
+  "compatibility": {
+    "standard_cases": 49,
+    "standard_artifacts": 245,
+    "unchanged": true,
+    "complete_artifact_bindings": {
+      "path": "artifacts/osm-export-v1/required-check/verified-standard-outputs.json",
+      "sha256": "5f7349637c642d98ddd3d8c12eeff48b33a24770da779d6ce837b5424fd74546",
+      "bytes": 106771
+    },
+    "imported_export_artifacts": 8,
+    "imported_stdout_streams": 3
+  },
+  "external_osm_reference_goal_and_full_sensor_replay": true,
+  "native": {
+    "implementation_unchanged": true,
+    "requalified": false,
+    "reason": "Only reference importer binary/tests changed; shared/native sources match parent inventory."
+  },
+  "evidence": {
+    "reproduce.py": {
+      "path": "artifacts/osm-export-v1/reproduce.py",
+      "sha256": "ddefc9d6362d7681f47a5afe3cd2d99cf4a7c73b33a4da25045e287d3689d489",
+      "bytes": 4616
+    },
+    "reproductions/parent.json": {
+      "path": "artifacts/osm-export-v1/reproductions/parent.json",
+      "sha256": "0487bd5e94ec6e1a3e75de7910d40ab6394d977d3773d99031a967276a1c9c93",
+      "bytes": 23427
+    },
+    "reproductions/current.json": {
+      "path": "artifacts/osm-export-v1/reproductions/current.json",
+      "sha256": "197077b3f6c398fb148dbdb9192440ca1106812d624b3a1b515ba293ea8ed46f",
+      "bytes": 21671
+    },
+    "required-check/run_check.py": {
+      "path": "artifacts/osm-export-v1/required-check/run_check.py",
+      "sha256": "191794ccdad1f762ca65c5811bd66e7b4460284045730a00af0cfdc575180fdf",
+      "bytes": 4594
+    },
+    "required-check/core.log": {
+      "path": "artifacts/osm-export-v1/required-check/core.log",
+      "sha256": "f801577e21b3cb95ae4a701ad269ac12a27c0e60f53836cffef55dc16c26a7d7",
+      "bytes": 149485
+    },
+    "required-check/summary.json": {
+      "path": "artifacts/osm-export-v1/required-check/summary.json",
+      "sha256": "98f8307f7bbbfee2ec65c4e73aae57afea5ff9622b268b9255df45e52cb0fefc",
+      "bytes": 301
+    },
+    "required-check/parent-standard-outputs.json": {
+      "path": "artifacts/osm-export-v1/required-check/parent-standard-outputs.json",
+      "sha256": "e6ec9503dab7f9efafe96acf6e2dc95b2caeffe6de1105134ab9f52e547be951",
+      "bytes": 120225
+    },
+    "required-check/verified-standard-outputs.json": {
+      "path": "artifacts/osm-export-v1/required-check/verified-standard-outputs.json",
+      "sha256": "5f7349637c642d98ddd3d8c12eeff48b33a24770da779d6ce837b5424fd74546",
+      "bytes": 106771
+    },
+    "required-check/tested-sources.json": {
+      "path": "artifacts/osm-export-v1/required-check/tested-sources.json",
+      "sha256": "bfd6978e983c7c6cb85934868326b016928a6285a9c0ffc3d1618f0bc0a136a8",
+      "bytes": 138651
+    },
+    "required-check/cache-cleanup.json": {
+      "path": "artifacts/osm-export-v1/required-check/cache-cleanup.json",
+      "sha256": "7d7fd1226fb311e28462fff1213310448ef8fdbb9c7494951c42ba13b6e74bfd",
+      "bytes": 192
+    },
+    "focused-tests.log": {
+      "path": "artifacts/osm-export-v1/focused-tests.log",
+      "sha256": "fcc0fbab2738bb990975b26397ddf8e69ae082f2cb4b36d41b801071d084069d",
+      "bytes": 2904
+    },
+    "build_packet.py": {
+      "path": "artifacts/osm-export-v1/build_packet.py",
+      "sha256": "40b63bd1d0e1388277004e3a7d4b6ea71e288db5b22105e50d233771685be7c6",
+      "bytes": 7322
+    }
+  },
+  "limits": [
+    "Local Linux filesystem only; no remote CI or cross-platform claim.",
+    "Existing destinations are deliberately rejected; repeated imports need fresh filenames or directory.",
+    "Stable destination parents/ancestors required; not concurrent multi-file atomicity or crash durability.",
+    "Same-filesystem hard-link support is required for each stage/destination pair.",
+    "Created empty parent directories may remain after error.",
+    "No new automotive data, uncertainty calibration, driving availability or original mission completion."
+  ],
+  "maturity": {
+    "subjective_comparative_percent": 29,
+    "changed": false,
+    "waypoint_30_met": false,
+    "original_incomplete_missions": 8
+  },
+  "delivery": "Local commit; no push or pull request requested for this change."
+}

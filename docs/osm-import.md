@@ -27,6 +27,12 @@ cargo run --release --locked --bin rustdriving -- replay \
 
 The importer writes a plain `RoadNetworkSpec` to `map.json`, counts/projection calibration to `map.import.json`, and optionally a runnable scenario with the existing `navigation` network/start/goal/closure fields. Graph node IDs are `osm-node-ID`; directed edges are `osm-way-ID-PART-forward` or `-reverse`. The scenario uses deterministic Dijkstra, calibrated initial pose/heading, noisy GNSS/odometry and synthetic LiDAR in the same operational pipeline as authored maps. OSM coordinates are supplied map geometry, not ground-truth localization observations.
 
+All export destinations must be absent. Existing files, directories and links
+are preserved and cause exit 2, including aliases of the input document.
+Use fresh filenames or a fresh output directory when repeating the example.
+Complete files are staged before publication; the import report is published
+last. [Failure handling, compatibility and verification](osm-export.md).
+
 `--closed-edge ID` may be repeated when generating a scenario. Unknown closures or an unreachable goal fail with exit 2 before generation. Start/goal must be graph nodes, including retained way endpoints or shared junctions; arbitrary mid-way spawning is absent. `--cruise-speed` defaults to 2 m/s and `--duration` to 180 s. Scenario generation validates the existing 20–1000 m route and calibration domain; importing a valid larger graph does not guarantee every route can become a simulation scenario.
 
 `--local-route-geometry` explicitly enables the optional corner-fitting planner mode when generating a scenario. It defaults to false and does not alter imported coordinates or the physical corridor. Its capability and measured turn regressions are separate from the default Goethestraße road reproduction above.

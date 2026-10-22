@@ -2,6 +2,12 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
+The [OSM export preservation repair](osm-export.md) keeps the estimate at
+**about 29%**. Create-only staged publication protects geographic inputs and
+prior exports, including aliases and ordinary late failures. This improves
+reproducibility without expanding driving availability or automotive accuracy.
+The original eight incomplete missions remain open; **30% remains unmet**.
+
 The [run artifact publication repair](run-publication.md) keeps the estimate at
 **about 29%**. Both CLIs protect scenario/scene inputs from output aliases and
 publish a complete result marker after their files. This improves reproducible
