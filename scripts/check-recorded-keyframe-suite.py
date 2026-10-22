@@ -5,6 +5,7 @@ Exit 0 verifies known outcomes and independent audits; it is not an accuracy
 pass. The original temporal trial remains failed and all later uses are viewed.
 """
 import argparse
+import difflib
 import hashlib
 import importlib.util
 import json
@@ -119,7 +120,12 @@ def main():
         original = {k: v for k, v in json.loads((baseline / 'results.json').read_text()).items()
                     if k not in ('freeze', 'freeze_sha256')}
         if without_timings(numerical) != without_timings(original):
-            raise ValueError(f'{name}: deterministic non-timing evidence changed')
+            difference = list(difflib.unified_diff(
+                json.dumps(without_timings(original), sort_keys=True, indent=2).splitlines(),
+                json.dumps(without_timings(numerical), sort_keys=True, indent=2).splitlines(),
+                fromfile='recorded', tofile='reproduced', n=2))
+            raise ValueError(f'{name}: deterministic non-timing evidence changed: '
+                             + '\n'.join(difference[:30]))
         proof = audit(report_path, manifest, manifest.parent / 'raw',
                       freeze_path, folder / 'audit.json')
         records.append(dict(case=name, dataset=dataset, summary=summary,
