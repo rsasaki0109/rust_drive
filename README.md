@@ -1,6 +1,6 @@
 # RustDriving
 
-![Recorded native simulation with 24 reactive traffic vehicles](assets/dense-traffic-demo.gif)
+![Recorded native traffic with 24 vehicles, varied speeds and independent braking](assets/dense-traffic-demo.gif)
 
 <table>
   <tr>

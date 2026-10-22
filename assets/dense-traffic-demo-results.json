@@ -1,50 +1,61 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "passed": true,
-  "scenario_sha256": "e9ef810070423bf82a310c8eb9748aebe5f83b81d8c7ff983c1c3c4e3266001b",
-  "checker_sha256": "99bc22bc41949b2c483cde9b9a5530c8b949f1a3105d68bc93cd5de8cfb29556",
+  "scenario_sha256": "e76895ed96f62f547b0240f18c7c3c88c79422915fe813d1ec05abaedbc92a5b",
+  "checker_sha256": "ecabbece79ed162ecdb55425b992071e25d438bfb4dc0c105abbf37b93d82caa",
   "traffic_oracle_sha256": "05dc8d26d8d5660dd3a328f158b6ff6cfcb8ef1162534a04d454ef1bf00a5f99",
   "cases": [
     {
       "seed": 7,
       "summary": {
-        "scenario": "Dense traffic: 24 reactive vehicles form three queues",
+        "scenario": "Dense traffic: 24 individual drivers approach three stopped queues",
         "seed": 7,
-        "simulated_seconds": 46.0,
-        "steps": 921,
+        "simulated_seconds": 40.0,
+        "steps": 801,
         "reached_goal": false,
         "collisions": 0,
         "road_violations": 0,
         "traffic_min_clearance": 1.4000000000000004,
-        "min_clearance": 5.633207442202743,
-        "localization_rmse": 0.066724404426815,
-        "localization_max_error": 0.2599973903592191,
+        "min_clearance": 4.293322577325845,
+        "localization_rmse": 0.0712234873344737,
+        "localization_max_error": 0.23386085925192007,
         "final_speed": 0.0,
-        "progress": 27.659216236969172,
-        "emergency_steps": 15,
+        "progress": 55.85216905907456,
+        "emergency_steps": 7,
         "avoidance_steps": 0,
-        "max_tracks": 6,
+        "max_tracks": 5,
         "passed": true,
         "failures": []
       },
       "replay": {
         "source": "rne-dynamic-rapier-lidar",
-        "ticks": 921,
+        "ticks": 801,
         "verified": true
       },
       "independent": {
         "reactive_vehicles": 24,
         "queue_lanes": 3,
         "vehicles_per_lane": 8,
-        "minimum_vehicle_travel_m": 21.267515638043086,
-        "complete_queue_hold_seconds": 18.049999999999997,
-        "minimum_expanded_ego_clearance_with_reserve_m": 3.7832074422027433,
+        "motion_diversity": {
+          "window_seconds": [
+            5.0,
+            20.0
+          ],
+          "matched_queue_ranks": 8,
+          "position_derived_mean_cross_lane_speed_range_m_s": 0.5845567325243172,
+          "mean_cross_lane_travel_range_m": 7.443455337290784,
+          "required_speed_range_m_s": 0.3,
+          "required_travel_range_m": 2.0
+        },
+        "minimum_vehicle_travel_m": 28.59622176450914,
+        "complete_queue_hold_seconds": 10.799999999999997,
+        "minimum_expanded_ego_clearance_with_reserve_m": 2.4433225773258447,
         "minimum_actor_pair_clearance_with_reserve_m": 1.2000000000000004,
         "ego_display_radius_m": 2.7,
         "ego_inter_sample_reserve_m": 0.4,
         "actor_inter_sample_reserve_m": 0.2,
         "sensor_trace_binding": {
-          "bound_ticks": 921,
+          "bound_ticks": 801,
           "fields": [
             "time",
             "estimate",
@@ -58,8 +69,8 @@
           "route_identical": true
         },
         "traffic_kinematics_and_proximity": {
-          "sensor_samples": 22080,
-          "max_measured_actor_acceleration_m_s2": 4.000000000000004,
+          "sensor_samples": 19200,
+          "max_measured_actor_acceleration_m_s2": 4.0000000000000036,
           "minimum_actor_pair_clearance_m": 1.4000000000000004,
           "actor_kinematics_verified": true,
           "sensor_reconstruction_verified": true,
@@ -76,55 +87,67 @@
         "conceal_physical_failure",
         "missing_final_stop",
         "nonfinite_actor",
-        "rendered_command_differs_from_sensor_log"
+        "rendered_command_differs_from_sensor_log",
+        "synchronized_motion_despite_varied_telemetry"
       ],
       "evidence_sha256": {
-        "run.json": "eb60811d34be5a54577a31f4d62838ffd66f39ab2d32825e83840d74ddd730d9",
-        "sensors.jsonl": "e812b45e7fe65cfbba3b5892127c2f72a29e0b45b3a3c6006a1476429fa8bd81",
-        "summary.json": "44170f90901784418df49f90a9619311fccc6b6fecb587000919d45c32a56be8",
-        "replay/replay.json": "357aa0770a03beaa2248e37ddc00231f8582bd47c7da11d9cfbe60f898e5e4d1"
+        "run.json": "9a40170daf0a95a54bf692306fdf34033efbf5665c913e5d3ed3079528fd3972",
+        "sensors.jsonl": "5590992b19aa1fa768e6ea87a2a832f2665b7194537b4a35e463717c9c77d76e",
+        "summary.json": "d1e79f103738d9224d255a810aa4932f7e2401f109e7ad603a93e301d0f623f8",
+        "replay/replay.json": "a8e98f9fa9e50645f69f32ee04b9d860f93ad5edb98e90eca0ebc2e0c4d69fda"
       }
     },
     {
       "seed": 1,
       "summary": {
-        "scenario": "Dense traffic: 24 reactive vehicles form three queues",
+        "scenario": "Dense traffic: 24 individual drivers approach three stopped queues",
         "seed": 1,
-        "simulated_seconds": 46.0,
-        "steps": 921,
+        "simulated_seconds": 40.0,
+        "steps": 801,
         "reached_goal": false,
         "collisions": 0,
         "road_violations": 0,
         "traffic_min_clearance": 1.4000000000000004,
-        "min_clearance": 6.047733180239866,
-        "localization_rmse": 0.056756346583340105,
-        "localization_max_error": 0.19106489466123164,
+        "min_clearance": 4.269134821573613,
+        "localization_rmse": 0.07435480265730494,
+        "localization_max_error": 0.2744172310081009,
         "final_speed": 0.0,
-        "progress": 27.015701646739213,
+        "progress": 55.960786689153224,
         "emergency_steps": 7,
         "avoidance_steps": 0,
-        "max_tracks": 6,
+        "max_tracks": 5,
         "passed": true,
         "failures": []
       },
       "replay": {
         "source": "rne-dynamic-rapier-lidar",
-        "ticks": 921,
+        "ticks": 801,
         "verified": true
       },
       "independent": {
         "reactive_vehicles": 24,
         "queue_lanes": 3,
         "vehicles_per_lane": 8,
-        "minimum_vehicle_travel_m": 21.267515638043086,
-        "complete_queue_hold_seconds": 8.299999999999997,
-        "minimum_expanded_ego_clearance_with_reserve_m": 4.197733180239865,
+        "motion_diversity": {
+          "window_seconds": [
+            5.0,
+            20.0
+          ],
+          "matched_queue_ranks": 8,
+          "position_derived_mean_cross_lane_speed_range_m_s": 0.5845567325243172,
+          "mean_cross_lane_travel_range_m": 7.443455337290784,
+          "required_speed_range_m_s": 0.3,
+          "required_travel_range_m": 2.0
+        },
+        "minimum_vehicle_travel_m": 28.59622176450914,
+        "complete_queue_hold_seconds": 10.799999999999997,
+        "minimum_expanded_ego_clearance_with_reserve_m": 2.419134821573613,
         "minimum_actor_pair_clearance_with_reserve_m": 1.2000000000000004,
         "ego_display_radius_m": 2.7,
         "ego_inter_sample_reserve_m": 0.4,
         "actor_inter_sample_reserve_m": 0.2,
         "sensor_trace_binding": {
-          "bound_ticks": 921,
+          "bound_ticks": 801,
           "fields": [
             "time",
             "estimate",
@@ -138,8 +161,8 @@
           "route_identical": true
         },
         "traffic_kinematics_and_proximity": {
-          "sensor_samples": 22080,
-          "max_measured_actor_acceleration_m_s2": 4.000000000000004,
+          "sensor_samples": 19200,
+          "max_measured_actor_acceleration_m_s2": 4.0000000000000036,
           "minimum_actor_pair_clearance_m": 1.4000000000000004,
           "actor_kinematics_verified": true,
           "sensor_reconstruction_verified": true,
@@ -156,55 +179,67 @@
         "conceal_physical_failure",
         "missing_final_stop",
         "nonfinite_actor",
-        "rendered_command_differs_from_sensor_log"
+        "rendered_command_differs_from_sensor_log",
+        "synchronized_motion_despite_varied_telemetry"
       ],
       "evidence_sha256": {
-        "run.json": "1b7023708eefd6cf2024b7c7023dec5abe4eefd07d6d1c1a756b90747e243feb",
-        "sensors.jsonl": "e20aa13f4049276650b41b9ccaafefba071d2aa245a77295f6627d3f8bfe971e",
-        "summary.json": "d234b93e1952641994d1f0c0a7176c979f66498b8770644bf14f591ac82a4fbc",
-        "replay/replay.json": "357aa0770a03beaa2248e37ddc00231f8582bd47c7da11d9cfbe60f898e5e4d1"
+        "run.json": "b20228ab42969e71b8483535319cd35591bc76ac11900272954c622ce72cf235",
+        "sensors.jsonl": "182211d72e3f91cf33168594e343c64325a7040f116d1f1da25d7e1701833b13",
+        "summary.json": "eb7c0e52b5bbf74571ff259b77b44c3d254031a0d6f52982b9b33949fa630233",
+        "replay/replay.json": "a8e98f9fa9e50645f69f32ee04b9d860f93ad5edb98e90eca0ebc2e0c4d69fda"
       }
     },
     {
       "seed": 42,
       "summary": {
-        "scenario": "Dense traffic: 24 reactive vehicles form three queues",
+        "scenario": "Dense traffic: 24 individual drivers approach three stopped queues",
         "seed": 42,
-        "simulated_seconds": 46.0,
-        "steps": 921,
+        "simulated_seconds": 40.0,
+        "steps": 801,
         "reached_goal": false,
         "collisions": 0,
         "road_violations": 0,
         "traffic_min_clearance": 1.4000000000000004,
-        "min_clearance": 5.906601741470182,
-        "localization_rmse": 0.05722782533285362,
-        "localization_max_error": 0.18108270149136926,
+        "min_clearance": 4.227760763332744,
+        "localization_rmse": 0.06367485326799882,
+        "localization_max_error": 0.17995810461775735,
         "final_speed": 0.0,
-        "progress": 26.98911924536207,
-        "emergency_steps": 15,
+        "progress": 55.77294866025793,
+        "emergency_steps": 12,
         "avoidance_steps": 0,
-        "max_tracks": 6,
+        "max_tracks": 5,
         "passed": true,
         "failures": []
       },
       "replay": {
         "source": "rne-dynamic-rapier-lidar",
-        "ticks": 921,
+        "ticks": 801,
         "verified": true
       },
       "independent": {
         "reactive_vehicles": 24,
         "queue_lanes": 3,
         "vehicles_per_lane": 8,
-        "minimum_vehicle_travel_m": 21.267515638043086,
-        "complete_queue_hold_seconds": 18.049999999999997,
-        "minimum_expanded_ego_clearance_with_reserve_m": 4.056601741470182,
+        "motion_diversity": {
+          "window_seconds": [
+            5.0,
+            20.0
+          ],
+          "matched_queue_ranks": 8,
+          "position_derived_mean_cross_lane_speed_range_m_s": 0.5845567325243172,
+          "mean_cross_lane_travel_range_m": 7.443455337290784,
+          "required_speed_range_m_s": 0.3,
+          "required_travel_range_m": 2.0
+        },
+        "minimum_vehicle_travel_m": 28.59622176450914,
+        "complete_queue_hold_seconds": 10.799999999999997,
+        "minimum_expanded_ego_clearance_with_reserve_m": 2.3777607633327436,
         "minimum_actor_pair_clearance_with_reserve_m": 1.2000000000000004,
         "ego_display_radius_m": 2.7,
         "ego_inter_sample_reserve_m": 0.4,
         "actor_inter_sample_reserve_m": 0.2,
         "sensor_trace_binding": {
-          "bound_ticks": 921,
+          "bound_ticks": 801,
           "fields": [
             "time",
             "estimate",
@@ -218,8 +253,8 @@
           "route_identical": true
         },
         "traffic_kinematics_and_proximity": {
-          "sensor_samples": 22080,
-          "max_measured_actor_acceleration_m_s2": 4.000000000000004,
+          "sensor_samples": 19200,
+          "max_measured_actor_acceleration_m_s2": 4.0000000000000036,
           "minimum_actor_pair_clearance_m": 1.4000000000000004,
           "actor_kinematics_verified": true,
           "sensor_reconstruction_verified": true,
@@ -236,13 +271,14 @@
         "conceal_physical_failure",
         "missing_final_stop",
         "nonfinite_actor",
-        "rendered_command_differs_from_sensor_log"
+        "rendered_command_differs_from_sensor_log",
+        "synchronized_motion_despite_varied_telemetry"
       ],
       "evidence_sha256": {
-        "run.json": "5ea31a23414d6f4cc2e1789bae808494214542551f60352b1f996e72522d3388",
-        "sensors.jsonl": "073a847a23b1b0e1ab45c2029546adbb3a89cde5fb2a0975b76463aded619fb4",
-        "summary.json": "7d3dc8cadddcab9c8426d4a66654e09f38704665e19544611ebf1454527b58a1",
-        "replay/replay.json": "357aa0770a03beaa2248e37ddc00231f8582bd47c7da11d9cfbe60f898e5e4d1"
+        "run.json": "ae31a114b165960384e47cce590ab1d5d11d15186d187bd2d483d63595a2ae76",
+        "sensors.jsonl": "241f7c7d5ae73fb89f970b41053d1e9cf99569dee67bacbf9d132094b15b68c4",
+        "summary.json": "0ff77674924c1c6bad5055177e1a252cbf1ad9c9f1bdbe6c3a8a9e07df9fbb30",
+        "replay/replay.json": "a8e98f9fa9e50645f69f32ee04b9d860f93ad5edb98e90eca0ebc2e0c4d69fda"
       }
     }
   ],
