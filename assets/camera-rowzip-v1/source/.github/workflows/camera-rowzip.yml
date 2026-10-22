@@ -1,0 +1,69 @@
+name: Camera runtime and slice traversal experiment
+on:
+  push:
+    paths:
+      - '.github/workflows/camera-rowzip.yml'
+      - 'integrations/onnx/**'
+      - 'integrations/camera-tracking/**'
+      - 'assets/camera-rowzip-v1/**'
+      - 'scripts/check-camera-rowzip-container.sh'
+      - 'rust-toolchain.toml'
+permissions:
+  contents: read
+env:
+  CARGO_INCREMENTAL: '0'
+jobs:
+  rowzip-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned tools and independent checker
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
+          python -m pip install -r scripts/requirements-visual.txt
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            integrations/onnx/target
+            integrations/camera-tracking/target
+          key: camera-rowzip-${{ runner.os }}-rust-1.90-${{ hashFiles('integrations/onnx/Cargo.lock', 'integrations/camera-tracking/Cargo.lock') }}
+      - name: Check finite-float arithmetic and frozen first observations
+        run: |
+          cargo fmt --manifest-path integrations/onnx/Cargo.toml -- --check
+          cargo clippy --release --locked --manifest-path integrations/onnx/Cargo.toml --all-targets -- -D warnings
+          cargo test --release --locked --manifest-path integrations/onnx/Cargo.toml --bin rustdriving-camera-rowzip
+          cargo build --release --locked --manifest-path integrations/onnx/Cargo.toml --bin rustdriving-camera-rowzip --bin rustdriving-camera-depthwise --bin rustdriving-camera-nano-repeat2x --bin rustdriving-camera-supervised --bin rustdriving-camera-nano
+          cargo build --release --locked --manifest-path integrations/camera-tracking/Cargo.toml
+          python -B assets/camera-rowzip-v1/verify.py
+          python -B -m unittest discover -s integrations/onnx -p test_camera_rowzip.py -v
+          sh -n scripts/check-camera-rowzip-container.sh
+      - name: Cache unchanged models, images and exact wheels
+        run: |
+          python integrations/onnx/fetch.py --output artifacts/camera-model
+          python integrations/onnx/fetch_s.py --output artifacts/camera-model-s
+          python scripts/fetch-visual-datasets.py tum-fr3-sitting-visual
+          python integrations/onnx/bdd_fetch.py --output artifacts/bdd-camera
+          python -m pip download --only-binary=:all: --no-deps -r scripts/requirements-visual.txt --dest artifacts/camera-rowzip-check/wheels
+          docker pull python@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e
+      - name: Reproduce original and candidate in offline Debian runtime
+        run: |
+          docker run --rm --network none --cpus 4 \
+            --mount "type=bind,src=$GITHUB_WORKSPACE,dst=$GITHUB_WORKSPACE,readonly" \
+            --mount "type=bind,src=$GITHUB_WORKSPACE/artifacts/camera-rowzip-check,dst=$GITHUB_WORKSPACE/artifacts/camera-rowzip-check" \
+            --workdir "$GITHUB_WORKSPACE" \
+            python@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e \
+            sh scripts/check-camera-rowzip-container.sh "$GITHUB_WORKSPACE/artifacts/camera-rowzip-check"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: camera-rowzip-runtime
+          path: |
+            artifacts/camera-rowzip-check/container-environment.json
+            artifacts/camera-rowzip-check/container-baseline/
+            artifacts/camera-rowzip-check/controls/
+            artifacts/camera-rowzip-check/validation/

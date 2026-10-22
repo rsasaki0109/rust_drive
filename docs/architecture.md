@@ -4,11 +4,18 @@
 
 RustDriving aims to become an independent Rust autonomous driving stack. Version 0.1 first establishes a small executable baseline: a vehicle follows a known curved route, avoids sensed objects, yields on a blocked narrow road, and brakes when required sensing becomes stale. The reference simulator is intentionally 2D, CPU-only, deterministic, and small enough to exercise in ordinary CI. These properties make a useful algorithm development harness; they do not establish physical or operational validity.
 
+The optional [camera graph optimization](camera-operators.md) replaces only
+two validated nearest/asymmetric/floor 2× Resize nodes with standard tract
+axis/broadcast/reshape operations. An independent original plan verifies every
+raw output bit; a distinct parallel producer uses the same measured-clock
+controller. This offline path improves local processing time but still misses
+the 200 ms budget and does not enter the driving dataflow.
+
 ## Current dataflow
 
 ```mermaid
 flowchart LR
-  W[Simulator world] --> S[Ray-cast LiDAR / noisy GNSS / wheel speed + gyro]
+  W[Simulator world] --> S[Ray-cast LiDAR / noisy GNSS / wheel speed + gyro / optional absolute heading]
   W --> AS[Simulator-only route proximity sensing]
   AS --> AC[Optional traffic following policy]
   AC --> W
@@ -19,18 +26,21 @@ flowchart LR
   S --> HP
   HP --> P
   HP --> M
-  L --> H[Bounded EKF acquisition-pose history]
+  L -->|Prediction increments only| H[Bounded continuous odometry history]
   H --> P
   P --> T[Alpha-beta tracking]
   T --> F[Observed braking / constant-velocity prediction]
   S --> M[Log-odds occupancy map]
-  H --> M
+  H --> X[Current continuous-to-world transform]
+  L --> X
+  X --> M
   O[Optional OSM data / bounded WGS84 to ENU import] --> N[Supplied road graph + destination + closure snapshots]
   N --> D[Dijkstra with incoming-edge state for restricted maps]
   D --> R[Resolved route]
   R --> A[Lateral lattice planning]
   L --> A
-  F --> A
+  F --> X
+  X --> A
   A --> C[Pure pursuit + acceleration feedforward / PI]
   S --> G[Freshness and numeric guard]
   L --> G
@@ -42,11 +52,11 @@ flowchart LR
   A --> E
 ```
 
-Ground truth never flows into obstacle prediction or planning. The simulator initializes heading at a known spawn calibration, exposes the configured route, and synthesizes noisy measurements from the world. Separate evaluation observes truth to detect collisions, road violations, and localization error.
+Ground truth never flows into obstacle prediction or planning. The simulator initializes heading at a known spawn calibration, exposes the configured route, and synthesizes noisy measurements from the world. Optional absolute body-heading observations use a separately declared noisy sensor; its physical settings and fault schedule remain outside the driver. Separate evaluation observes truth to detect collisions, road violations, and localization error.
 
 The optional RNE `--scene` input installs upright yaw-rotated cuboids in native Rapier queries. By default, the existing 0.6 m horizontal LiDAR plane remains the sole operational scan. Two additional horizontal planes and 200 Hz native positions are recorded only in `scene.json`, outside the sensor-only replay contract. A post-run conservative vertical-capsule evaluator adds physical scene failures to acceptance; it cannot command the vehicle. An independent Python slab-ray and rectangle-edge oracle checks the evidence. Native ego motion remains planar, without contact forces or suspension. [Scene contract](native-scenes.md).
 
-With the additional explicit `--multi-height` option, all three measured horizontal planes enter `SensorFrame.multi_height_lidar`; the ordinary scan is absent. The sensor-only header supplies bounded plane-height calibration and the vehicle's vertical collision interval. After validating the entire synchronized bundle, the pipeline selects relevant calibrated heights, removes duplicate XY cells and uses its acquisition-time EKF pose for the existing planar perception and mapping. Malformed or failed bundles latch braking until a strictly newer complete acquisition after the fault epoch. Delay, cadence and failure injection transport the entire bundle atomically. Scene labels and geometry remain outside the driver. This is sparse measured-height projection, without volumetric object reconstruction or coverage between planes. [Contract and limits](multi-height-lidar.md).
+With the additional explicit `--multi-height` option, all three measured horizontal planes enter `SensorFrame.multi_height_lidar`; the ordinary scan is absent. The sensor-only header supplies bounded plane-height calibration and the vehicle's vertical collision interval. After validating the entire synchronized bundle, the pipeline selects relevant calibrated heights, removes duplicate XY cells and uses continuous acquisition-time odometry poses plus the current world transform for planar perception and mapping. Malformed or failed bundles latch braking until a strictly newer complete acquisition after the fault epoch. Delay, cadence and failure injection transport the entire bundle atomically. Scene labels and geometry remain outside the driver. This is sparse measured-height projection, without volumetric object reconstruction or coverage between planes. [Contract and limits](multi-height-lidar.md).
 
 ## Crates and ownership
 
@@ -56,6 +66,15 @@ With `--vehicle-body`, an authored rectangular research body adds actual force-f
 
 The optional OSM importer resolves bounded WGS84 coordinates to local ENU, retains shared junctions and directed way geometry, and emits the ordinary road graph. Imported road widths are explicit simulation calibration, not measured lane boundaries. Dataset attribution and ODbL terms are separate from the Rust implementation's license. [Import contract and provenance](osm-import.md).
 
+OSM exports are create-only. Existing entries and equal resolved destinations
+are rejected before any artifact is staged; complete map/scenario files are
+published before the report, with rollback on ordinary publication errors.
+This remains a CLI persistence concern outside driving and routing algorithms.
+[Export contract and limits](osm-export.md).
+The importer also bounds actual reads to 16 MiB + 1 bytes before decoding and
+rejects repeated single-value options or unused scenario-only settings before
+opening input. [Input contract and verification](osm-input.md).
+
 Unconditional `no` and `only` junction rules now constrain directed transitions.
 Restricted search retains the incoming edge at each node, so a shorter forbidden
 arrival does not hide a longer legal arrival. Closures remain independent;
@@ -64,7 +83,7 @@ importer supports bounded motorcar node-via relations and rejects relevant
 unsupported semantics. Navigation and fixed-route mapped stop controls remain
 separate configurations. [Turn contract and evidence](turn-restrictions.md).
 
-Optional `local_route_geometry` uses bounded steering-radius corner fillets and a shorter pursuit preview for sparse external roads. Its internal planning arc differs from the original map arc; candidate containment and physical evaluation still use the supplied unchanged corridor. Impossible/overlapping fillets fail validation. Mapped signal, sign and priority-zone coordinates are currently excluded from this mode; their existing route-coordinate behavior remains separate. Optional `rear_axle_offset_m` calibrates low-speed chassis odometry prediction and temporary planning/control course while retaining body yaw for sensors. The native dynamic local mode selects its declared rear-axle distance; default/reference behavior is unchanged. [Reference contract and evidence](chassis-reference.md).
+Optional `local_route_geometry` uses bounded steering-radius corner fillets and a shorter pursuit preview for sparse external roads. Its internal planning arc differs from the original map arc; candidate containment and physical evaluation still use the supplied unchanged corridor. Impossible/overlapping fillets fail validation. Fixed signal/sign constraints truncate the original surveyed route before local fitting, preserving their endpoint; state admission and physical evaluation retain the original coordinates. Straight priority-zone routes also preserve their original surveyed arcs. Optional `rear_axle_offset_m` calibrates low-speed chassis odometry prediction and temporary planning/control course while retaining body yaw for sensors. The native dynamic local mode selects its declared rear-axle distance. Local side paths now use the existing standard road preview with wheelbase/lever-arm floors in both plants; local centerline turning retains the short preview. Point/rear-axle reference side paths also retain the original maneuver completion arc when reanchoring tracking error, with wheelbase and configured lateral-acceleration recovery bounds. Native chassis/course tracking retains its preceding joined prefix except for completed narrowed width-fitted side paths, whose passing intent and residual recovery are now preserved through temporary braking. [Tracking failure and repair](initial-pose-covariance.md). [Reference contract and evidence](chassis-reference.md).
 
 | Crate | Responsibility | Depends on |
 |---|---|---|
@@ -89,18 +108,236 @@ Unsafe Rust is forbidden at workspace level. There is no global message bus, cus
 
 - Length in meters, speed in m/s, acceleration in m/s², time in seconds, angles in radians.
 - World frame is planar ENU (`x` east, `y` north), right-handed yaw positive counterclockwise.
-- LiDAR points are body-frame (`x` forward, `y` left). Detections, tracks, route points, and trajectories are world-frame.
+- LiDAR points are body-frame (`x` forward, `y` left). Internal detection, tracking and motion-history coordinates use a continuous wheel/gyro frame, excluding absolute localization corrections. Published tracks/predictions, route points and trajectories use world coordinates; `tracking_frame` records the continuous-to-world transform. [Tracking frame contract](tracker-localization-frame.md).
 - Timestamps refer to one monotonically advancing simulation clock. Duplicate/out-of-order observations cannot refresh health. Clock regressions fail before mutation; clock gaps over 0.25 s brake. LiDAR detections and map rays use a bounded acquisition-time pose estimate, described below; general delayed-sensor fusion is absent.
 - Vehicle/control and EKF prediction: 20 Hz. Default LiDAR/perception/tracking/map: 10 Hz. GNSS: 5 Hz. Prediction and planning: 20 Hz. Simulator-only timing injection can thin delivered LiDAR observations and delay them without changing their acquisition stamps or body-frame points.
 - Lidar scan timestamps are checked independently of an empty scan: no returns are a valid observation, not a sensor failure.
 - `sensors.jsonl` has a separate version-1 sensor-only header/tick/count-footer contract, including calibrated route and expected outputs. Replay feeds observations to a fresh pipeline; expected outputs are comparison evidence only. [Contract and failure behavior](sensor-replay.md).
 - `run.json` has `schema_version = 1`, includes traceable inputs, output commands, estimates and evaluation truth, and is intended for developer inspection. It is not yet a stable external transport schema.
 
+Both application CLIs use the shared `RunOutput` publisher before loading run
+inputs. Existing scenario/scene aliases are rejected before invalidation; complete
+files are staged, synchronized and published with the summary last. Failed
+scenario acceptance retains full evidence. This persistence boundary remains
+outside sensor processing and driving policy. [Contract and limits](run-publication.md).
+
 ## Shared application boundary
 
-`DrivingPipeline::step(&SensorFrame)` owns EKF, perception/tracking, occupancy, predictor, planner and controller state. Input contains only a monotonic clock, optional timestamped odometry/GNSS/body-frame LiDAR, and explicit LiDAR acquisition failure. Output contains estimate, tracks, predictions, trajectory, command, health diagnostics and GNSS observed/accepted timestamp, decision, NIS and count diagnostics. It has no simulator object/pose inputs. Configuration supplies route, initial pose calibration, vehicle dimensions and optional calibrated forward/braking/lateral acceleration limits; this is a known-route demonstration.
+Optional `fit_recent_track_motion` fits a bounded recent suffix of raw associated
+detections in continuous wheel/gyro coordinates. The fit needs actual temporal,
+shape and residual support plus the existing 0.7 m/s moving cutoff. Stopping
+support expires 0.6 s after the last moving acquisition; gaps over 0.35 s discard
+it. Unsupported/static updates retain ordinary alpha-beta correction. The policy
+requires acquired-disc enclosure and excludes separate cold-track confirmation.
+Dense batch reconstruction checks the fit and its acquisition clocks independently.
+Future motion and world-pose error remain uncalibrated.
+[Contract, first regression and final comparison](recent-track-motion.md).
+
+Optional `fit_sparse_circles` admits three/four-return circular hypotheses in the
+planar detector when original point spread, curvature, radius, residuals and
+near-surface geometry support the fit. It retains every cluster return and the
+acquisition-time continuous-frame pose. Dense fits and rejected sparse proxies
+retain their preceding behavior; multi-height/3D configurations are excluded.
+The independent centered 2×2 oracle checks raw acquired geometry without actor
+truth. Shape padding remains heuristic, with physical coverage and default
+adoption unqualified. [Contract and retained failures](sparse-circle-fits.md).
+
+Optional `forecast_consistency_guard` checks new measured proxy discs against
+bounded older predictions in continuous wheel/gyro coordinates. It requires
+declared error envelopes and acquired-disc preservation, and brakes through
+`InconsistentForecast` health when the measured boundary escapes. Recovery needs
+three fresh complete acquired checks spanning 0.2 s after the fault cutoff;
+cached scans and disappearing responsible identities cannot clear it. Missing
+motion invalidates the reference epoch. Upstream sensor/localization health
+governs admission; downstream navigation/rule faults retain their own braking.
+Diagnostics are omitted by default. All 32 supported physical conditions pass
+monitor/brake checks but retain failed availability/adoption qualification.
+[Contract, independent audit and complete failures](forecast-consistency.md).
+
+Optional `clear_sweep_recovery` supplies a separate acquired negative-sensing
+basis for a forecast-fault hold. `LidarScan.sweep` binds all commanded ray outcomes
+to original measured points; unavailable rays reject acquisition before map and
+tracker admission. Full empty rays with synchronous stopped measured motion must
+independently confirm three acquisitions spanning 0.2 s. Positive and negative
+support cannot mix. Calibrated angular/range resolution remains conditional on
+the declared planar circular-body model. Release records responsible identities
+without clearing tracks, planner duties or other faults. Native acquisition records
+actual query outcomes before return processing, with a distinct angular pattern.
+[Acquisition, clock and recovery contract](clear-sweep-recovery.md).
+
+Optional `record_planning_diagnostics` captures at most nine per-candidate
+decision summaries without entering selection or control. Records identify the
+first conservative nominal forecast conflict, accepted profile, chosen index,
+refinement acquisition support and obstruction-stop duties. Final pipeline
+faults/rules retain command ownership. Supplied-route progress and relative plan
+times remain explicit, including local-route/prefix distinctions. Default
+omission preserves prior output bytes. [Contract and retained experiments](planning-diagnostics.md).
+
+Optional `monitor_planning_progress` consumes the same bounded decisions after
+the final command is known. It reports stationary forecast blocking only after
+two seconds of distinct fresh acquisitions, with stable pose/progress anchors
+and the same sorted first-conflict identities. Faults, mapped stops, goals,
+movement, acceleration or a complete candidate withdraw support; cached ticks
+cannot renew it. Route/epoch changes reset the observer. It never changes
+planning, control or stop ownership, and monitor-only mode omits candidate
+capture from output. [Contract and independent inspection](planning-progress.md).
+
+Optional `enclose_track_measurements` retains the minimum radius at the corrected
+track center enclosing both the normal smoothed disc and the newest measured
+disc. It changes measured extent without changing position/velocity correction
+or declared future-motion budgets. It can emit raw `track_measurements` without
+the initial-motion confirmation option. Missing/rejected scans cannot renew
+extent; rigid world reprojection preserves containment. This is measured proxy
+geometry, with physical shape and forecast accuracy still conditional on sensing
+and calibration. [Contract and complete comparison](measurement-enclosure.md).
+Both tracker policies are independently checked against the frozen sensor-only
+header. `--initialization legacy` qualifies enclosure without initial-motion
+confirmation using the original unconfirmed controls; the default checker mode
+retains confirmation. An enabled option cannot mask a missing required policy.
+[Standalone evaluation](standalone-enclosure.md).
+
+Optional `confirm_track_initialization` holds cold-track velocity at zero until
+at least three stable-radius acquired detections span 0.2 seconds. A bounded
+centered least-squares fit uses every measurement in its at-most-0.6-second
+window, then hands current position/velocity to ordinary alpha-beta tracking.
+Rejected scans preserve fit state atomically; other tracks and cached scans
+cannot renew support. Enabled `track_measurements` retain raw associated centers
+in the continuous frame and their original acquisition stamps. These heuristic
+shape/fit thresholds do not calibrate uncertainty or establish that an
+unconfirmed object is stationary. [Contract and retained failures](track-initialization.md).
+
+Optional `lateral_candidate_margin_m` fits the three center/left/right planning
+choices to the supplied road half-width minus the circular vehicle radius and
+an extra target reserve. Wide roads retain ±3.5 m; small unusable side corridors
+retain only center. All geometry, motion, collision and containment checks stay
+mandatory. Omitted/null preserves the original candidate set. This is bounded
+constant-width fitting; continuous lateral optimization remains open.
+For narrowed local chassis/course candidates, a blocked center braking prefix
+retains the passing anchor. After its original completion arc, residual error
+recovers over the wheelbase / declared lateral-acceleration span, which may
+extend for a larger residual. Clear returns and side changes replace the intent;
+route resets clear it. All candidate feasibility checks remain mandatory.
+[Contract and fixed paired evaluation](road-width-planning.md).
+
+Optional `refine_lateral_candidates` requires that width calibration and adds
+`±0.875L, ±0.75L, ±0.5L` inside the fitted `±L`, for at most nine choices.
+Only complete clear additions can win; their forecast reserve is at least
+1 m and never replaces a larger existing motion reserve. Original stopping
+choices retain their policies. Added choices require three distinct healthy
+accepted scene acquisitions spanning 0.2 s; cached scans do not renew support,
+and faults or route resets clear it. Local chassis tracking preserves the
+intermediate passing anchor through temporary braking. This bounded lattice
+stays off by default. [Contract and retained failures](refined-lateral.md).
+
+`DrivingPipeline::step(&SensorFrame)` owns EKF, perception/tracking, occupancy, predictor, planner and controller state. Input contains only a monotonic clock, optional timestamped odometry/GNSS/body-frame LiDAR/absolute ENU body heading, and explicit LiDAR acquisition failure. Output contains estimate, tracks, predictions, trajectory, command, health diagnostics and separate GNSS/heading observed/accepted timestamps, decisions, NIS and counts. It has no simulator object/pose inputs. Configuration supplies route, initial pose calibration, vehicle dimensions and optional calibrated forward/braking/lateral acceleration limits; this is a known-route demonstration.
+
+Optional `absolute_heading_fusion` requires acquired body yaw and
+angular variance, with a wrapped one-dimensional NIS gate of 9 and full Joseph
+covariance correction. A required heading older than 0.35 s, invalid input or
+rejected innovation brakes; only a new accepted acquisition releases a fault.
+Heading never refreshes GNSS freshness or covers missing rigid motion.
+Combining it with GNSS history now retains admitted heading events, ordered
+after equal-time GNSS and before map observations. Rewinds preserve original
+diagnostic ownership and atomically refuse a conflicting accepted observation.
+Heading is synchronous by default. Additional `heading_latency_compensation`
+requires GNSS history and permits at most 0.2 s of delivery delay. It conditions
+the acquired prior and atomically replays later admitted corrections, retaining
+the original acquisition clocks and fault latches. Missing rigid motion cannot
+be bridged. Measured relocalization remains excluded.
+[Heading contract](absolute-heading.md); [history composition](heading-history.md).
+[Delayed-heading contract and fixed qualification](heading-latency.md).
 
 Missing/stale odometry, LiDAR or GNSS, invalid samples, excessive covariance and acquisition failure select finite emergency braking. Healthy empty LiDAR is accepted; a failed acquisition brakes immediately. An invalid clock returns `Err`; callers must stop rather than reuse a command. The reference and RNE backends implement observation/advance boundaries and share the same independent evaluator. Runtime truth stays inside sensor synthesis and evaluation/rendering.
+
+An uncovered post-initial wheel/gyro interval additionally latches
+`MotionDiscontinuity`. It invalidates scene history and prohibits subsequent
+GNSS/LiDAR/map admission. Pose, speed, covariance and GNSS diagnostics retain
+their last covered values and cannot be treated as current estimates. Later
+healthy sensors cannot reconstruct the missing rigid motion or clear the stop;
+external pose calibration and a new pipeline instance are required. The existing
+0.15s accepted-motion cache grace and short malformed-input recovery remain
+while predictions cover every interval. Simulation-only motion delay/dropout
+transport preserves raw acquisition stamps/values and stays out of the header.
+[Epoch diagnostic, fixed stop protocol and limitations](motion-continuity.md).
+
+An explicit `relocalization` policy can construct that new instance from a
+bounded measured scan-to-map pose/covariance after fresh stopped wheel/gyro
+observations and three consistent scan confirmations. A shared comparison
+budget and distinct-fit ambiguity check reject incomplete/ambiguous proposals.
+The confirming frame brakes, old GNSS/LiDAR acquisitions cannot renew freshness,
+and `localization_epoch` scopes new scene identities. This supports fixed routes
+and synchronous XY scans; lane changes and XYZ/multi-height
+configurations are rejected before driving. Live navigation, fixed stop signs,
+traffic signals and straight yield entries need separate explicit preservation options below. New GNSS is
+required by default after reset. An explicit `map_only_grace_s` can qualify new
+synchronous accepted map corrections for at most five seconds from that measured
+reset. Their actual acquisition stamps reach health and final control freshness
+guards; GNSS clocks/counters remain separate. Scans cannot renew the deadline;
+motion/GNSS faults interrupt permission and expiry brakes until ordinary GNSS
+recovery. [Reset contract](regional-relocalization.md);
+[bounded support and failure evidence](relocalization-map-only.md).
+
+An additional `confirm_gnss_handoff` option arms the configured GNSS recovery
+policy at that measured reset. Full returning-fix proposals remain withheld
+until the configured fresh confirmations pass. Actual observation/NIS counters
+record held fixes; accepted clocks, posterior and history remain transactional.
+The `max_hold_s` budget starts at reset even without a GNSS delivery.
+`GnssHandoffExpired` brakes after that absolute deadline and stays latched through
+late fixes. [Configuration, comparisons and retained checker failures](confirmed-gnss-handoff.md).
+
+Explicit `preserve_navigation` additionally retains the live graph, original
+endpoint request, accepted closures/revision, actual active plan, switch count
+and its mapped speeds. The measured pose must fit the active route with body
+clearance and heading bounds; failed admission latches navigation braking.
+Pending/blocked routes are recomputed from the measured pose. Stop votes reset
+and three new healthy stopped acquisitions are needed to switch routes. Existing
+navigation faults persist. [Ownership, independent checks and outcomes](navigation-relocalization.md).
+
+Optional `navigation.hold_for_handover` latches brake retention at the first new
+healthy stopped handover vote. Interruptions clear votes while retaining the
+hold; a successful switch or accepted cancellation to the active route releases
+it. A measured localization reset discards the pose-dependent hold and votes.
+The existing final command path requests at most -0.5 m/s² while holding, with
+ordinary -6 m/s² health-fault braking. False/omitted keeps preceding behavior.
+[Contract and qualification](navigation-handover.md).
+
+Explicit `relocalization.preserve_stop_signs` retains served fixed-route stops
+behind the measured front, rearms served stops now ahead, and resets every
+unfinished dwell and its acquisition watermark. A new full healthy two-second
+stop is required. Corridor/heading admission or an unserved margin below 0.5 m
+latches `InvalidStopSignRecovery`; fresh GNSS cannot clear it. Fixed stops also
+support local route fitting: truncate in original surveyed arc coordinates
+before fitting, retain that endpoint, and evaluate stop geometry on the original
+route. Signals and straight yield entries need their separate preservation options; live
+navigation with controls remains excluded.
+[Ownership, physical evaluation and retained first failures](stop-sign-relocalization.md).
+
+Explicit `relocalization.preserve_traffic_signals` preserves committed lines
+behind the measured front and rearms those now ahead. Reset clears all accepted
+colors and their acquisition clock; only a complete snapshot strictly newer than
+the reset can establish fresh permission. Current green cannot prove past lawful
+passage. Invalid geometry or an unserved margin below 0.5 m latches
+`InvalidTrafficSignalRecovery`, retaining emergency braking through fresh
+green/GNSS. The independent 0.5-second signal age and malformed-snapshot fault
+remain active. Signal prefixes also retain original surveyed arcs through local
+route fitting and compose with explicitly preserved stop signs.
+[Contract, raw-input audits and physical results](signal-relocalization.md).
+
+Optional `initial_pose_covariance` supplies a finite, symmetric positive definite
+ENU x/y/yaw matrix (m², m·rad, rad²). It is external initialization calibration.
+When present, output records every full posterior and replay checks it; absent
+or null retains the original prior and serialization. Physical initial heading
+perturbations are simulation inputs and never enter operational configuration.
+[Validation, composition and research limits](initial-pose-covariance.md).
+
+Optional `gnss_antenna_offset_m` supplies the GNSS antenna displacement from
+that estimated body reference in forward/left meters. The EKF predicts the
+rotated antenna position and includes yaw sensitivity in the observation
+Jacobian and full covariance update. Acquisition-time GNSS/map history retains
+this calibration, and recovery bounds still apply to the complete current body
+pose. Simulation-only `gnss_antenna_mount_m` controls physical synthesis
+independently and stays outside the operational header.
+[Observation model, checks and limits](gnss-antenna.md).
 
 ## Algorithms
 
@@ -118,29 +355,203 @@ fits remain in their denominators; uncertainty allowances are provisional.
 
 **Localization.** State `(x, y, yaw)` and a full 3×3 covariance. Wheel speed and gyro propagate pose and the covariance Jacobian; GNSS position first passes a joint two-dimensional NIS gate using the full x/y innovation covariance and threshold 36, then receives independent scalar corrections with Joseph covariance updates. Invalid, duplicate/older or excessive innovations are rejected. Received but rejected fixes do not refresh accepted-GNSS health. Two consecutive strictly new fixes rejected by the innovation gate also activate `GnssInnovationHold` and braking, before the existing 0.75 s accepted-fix-age bound when applicable. A single outlier does not activate this additional hold. Only a newly accepted correction resets the private streak; missing, duplicate, old or invalid fixes neither add to it nor clear it. Good fixes can recover after a bounded outage without resetting estimator state. [GNSS baseline](gnss-robustness.md) and [current replay health contract](sensor-replay.md#gnss-acceptance-diagnostics). This conservative sustained-rejection policy is not a bias-estimating 3D inertial navigation filter or a general estimator-validity guarantee. Initial yaw is configured rather than estimated from GNSS at rest.
 
-**Perception.** A 720-ray first-return LiDAR has a 45 m range and ±0.015 m bounded range noise. Connected components use a range-adaptive point distance. Components smaller than three returns are discarded. At least five points allow an algebraic circle fit with residual and radius bounds; other clusters use an inflated surface envelope. Circular objects are the demonstrated shape class; semantic classification is absent. Nearest-neighbor alpha-beta tracking expires observations after 0.6 s, bounds inferred velocity, and updates on accepted scans, normally at 10 Hz. Association is greedy, not globally optimal, and clustering is quadratic in the number of hit points.
+**Perception.** A 720-ray first-return LiDAR has a 45 m range and ±0.015 m bounded range noise. Connected components use a range-adaptive point distance. Components smaller than three returns are discarded. At least five points allow an algebraic circle fit with residual and radius bounds; other clusters use an inflated surface envelope. Circular objects are the demonstrated shape class; semantic classification is absent. Alpha-beta tracking expires observations after 0.6 s, bounds inferred velocity, and updates on accepted scans, normally at 10 Hz. Within the strict 3 m distance gate, component-wise global association maximizes the number of matched existing tracks, then minimizes total predicted-to-measured distance. Deterministic tie ordering preserves established-track results under detection permutations. Association limits reject the complete scan and activate existing health braking. Planar clustering uses one-meter cells for larger clouds, removes discovered indices and restores original neighbor order before the unchanged directed distance test. Small clouds and extreme coordinate domains retain exhaustive traversal. [Index, equivalence and local timing evidence](indexed-clustering.md). This distance objective does not qualify physical object identity. [Assignment, independent oracle and limits](tracker-global-assignment.md).
 
-**Acquisition-time LiDAR transform.** The pipeline retains at most 64 timestamped EKF poses over a 0.35 s lookup window, keeping one predecessor for interpolation at the age boundary. History begins at the first pipeline step and records the pose after that step's prediction and GNSS correction. Exact acquisition timestamps use the stored pose directly; intermediate timestamps interpolate position and the shortest wrapped yaw arc between estimates no more than 0.25 s apart. The pipeline never extrapolates before history or across an uncovered clock gap. A new scan older than 0.35 s or without a covered pose is invalid and cannot update tracks, map rays or accepted-LiDAR age. Both world-frame detections and occupancy ray origins use this acquisition pose. Acquisition timestamps remain the tracker observation times.
+**Acquisition-time LiDAR transform.** The pipeline retains at most 64 continuous wheel/gyro poses over a 0.35 s lookup window, keeping one predecessor for interpolation at the age boundary. History begins at the first pipeline step and advances only by accepted EKF prediction increments. Exact acquisition timestamps use the stored pose directly; intermediate timestamps interpolate position and the shortest wrapped yaw arc between estimates no more than 0.25 s apart. The pipeline never extrapolates before history or across an uncovered clock gap. A new scan older than 0.35 s or without a covered pose is invalid and cannot update continuous-frame tracks, map rays or accepted-LiDAR age. Detection association and braking-history samples retain continuous coordinates. The current localized world transform projects published tracks, predictions and occupancy ray origins; velocity vectors rotate without acquiring pose-correction velocity. Acquisition timestamps remain the tracker observation times, including during cached world-coordinate reprojection.
 
-This corrects transforming delayed body-frame returns with the latest ego pose. It does not smooth past poses after later GNSS fixes, fuse delayed odometry/GNSS at their acquisition times, deskew individual rays or propagate pose covariance. Motion prediction separately advances acquired tracks to the current control time without changing their observation stamps. These bounded steps do not establish complete latency compensation or general delayed-scene safety. [Sensor contract and reproduction](sensor-replay.md).
+This avoids transforming delayed body-frame returns with the delivery-time body pose and avoids interpreting GNSS/map correction jumps as object motion. This LiDAR history does not correct odometry drift within its retained frame, rebuild historical occupancy cells, fuse delayed odometry, deskew individual rays or propagate pose covariance. Acquisition-time GNSS and synchronous map corrections are handled by the separate optional filter history below. Motion prediction separately advances acquired tracks to the current control time without changing their observation stamps. These bounded steps do not establish complete latency compensation or general delayed-scene safety. [Sensor contract and reproduction](sensor-replay.md); [tracking frame and evidence](tracker-localization-frame.md).
 
-**Mapping.** A 0.5 m world-aligned log-odds grid records ray free-space and hit endpoints. It exports occupied cells for debugging. No-return beams are not exported by the sensor and therefore do not clear the entire sensing horizon. Dynamic-object ghost cells and repeated discretized ray cells remain limitations. The grid does not supply the current planner's collision geometry and does not perform SLAM or route discovery.
+**Mapping.** A 0.5 m world-aligned log-odds grid records ray free-space and hit endpoints. Each measured return walks positive-length intersections with half-open cells once, excluding its hit cell from free updates. Clipping bounds work to grid dimensions; exact rational per-cell tests check duplicate, missed-cell and endpoint biases independently. [Update contract and limits](occupancy-rays.md). It exports occupied cells for debugging. No-return beams do not clear the entire sensing horizon. Dynamic-object ghost cells, historical localization corrections and probability calibration remain limitations. The grid does not supply the current planner's collision geometry and does not perform SLAM or route discovery.
 
 **Optional inclined XYZ acquisition.** The native `--lidar-3d` adapter uses RNE's existing 16-ring sensor with 720 azimuth columns and ±15° elevation. Each actual return enters `SensorFrame.lidar3d` as an ordinal and a point in body-forward/body-left/road-datum-up coordinates. Bounded `PipelineConfig.lidar3d` calibration defines the ring geometry, ranges, mount height and collision-height interval. Unique ordinals, finite points, measured range and beam direction are checked before height filtering; deterministic ordinal order keeps one point per 5 cm XY cell. The resulting planar cloud uses the ordinary acquisition-pose lookup, clustering, mapping, tracking and planning path. No cuboid dimensions or simulator truth enter that projection. Atomic delivery and the advanced-scan fault latch require a complete valid acquisition newer than the fault control time before recovery. Ordinary, horizontal multi-height and XYZ inputs are exclusive. The sensor assumes a flat road and yaw-only mount; acquisition is instantaneous. Authored scenes have no physical road/ground collider, and ground segmentation is absent: ground returns inside the height window would project as obstacles. Actual XYZ sensing does not establish volumetric objects, general vertical coverage, terrain driving or suspension/contact dynamics. [Contract and independent acceptance](lidar-3d.md).
 
-**Prediction.** Eight seconds of motion forecasting at 0.2 s spacing, starting at the current pipeline output time. Acquired tracks keep their original positions and stamps; forecasts evaluate observed motion at acquisition age plus each future offset. `ObservedBraking` keeps at most 0.8 s / 32 samples per present track. Three 0.2 s observation intervals must each show at least 0.3 m/s² deceleration with direction agreement at least 0.98. It uses half the weakest observed deceleration, capped at 2 m/s², for at most one second from acquisition; then it coasts at the reduced speed, without reversal. Elapsed acquisition age consumes the same braking budget, rather than restarting it each control tick. Insufficient evidence, a fresh non-decreasing speed sample, direction changes or observation age over 0.15 s select constant velocity advanced to the current clock. Duplicate timestamps do not extend evidence; absent tracks lose history. Invalid or future-stamped motion yields an empty forecast and downstream braking. This is a single measured-motion hypothesis, not an interaction model or guarantee of future braking. [Time-origin contract](sensor-replay.md#forecast-time-origin) and [braking baseline](observed-braking.md). Velocities below 0.7 m/s are treated as static to suppress tracking jitter. This heuristic can miss slowly moving objects. Planning adds an empirical circular-clearance margin of `0.30 + 0.06 * min(t, 5) + 0.40 * min(v_perp / 1 m/s, 1)` meters. Here `t` is future time from the current planning clock and `v_perp` is the absolute forecast velocity across the candidate segment direction. Static/parallel motion retains the previous reserve. Stationary segments use the estimated ego heading to distinguish crossing traffic from a parallel follower; an unavailable/zero heading falls back to total forecast speed conservatively. The initial point prefers the first nonzero candidate tangent, otherwise the supplied estimated heading. Motion is derived from forecast positions, without actor labels or truth. The same rule applies to normal, retimed-stop and stationary-hold sweeps. This is a tracking/control-error heuristic, not a calibrated probability, covariance or certified error bound; it is separate from the priority-zone rectangle inflation.
+**Prediction.** Eight seconds of motion forecasting at 0.2 s spacing, starting at the current pipeline output time. Acquired tracks keep their original positions and stamps; forecasts evaluate observed motion at acquisition age plus each future offset. `ObservedBraking` keeps at most 0.8 s / 32 samples per present track. Three 0.2 s observation intervals must each show at least 0.3 m/s² deceleration with direction agreement at least 0.98. It uses half the weakest observed deceleration, capped at 2 m/s², for at most one second from acquisition; then it coasts at the reduced speed, without reversal. Elapsed acquisition age consumes the same braking budget, rather than restarting it each control tick. Insufficient evidence, a fresh non-decreasing speed sample, direction changes or observation age over 0.15 s select constant velocity advanced to the current clock. Duplicate timestamps do not extend evidence; absent tracks lose history. Invalid or future-stamped motion yields an empty forecast and downstream braking. This is a single measured-motion hypothesis, not an interaction model or guarantee of future braking. [Time-origin contract](sensor-replay.md#forecast-time-origin) and [braking baseline](observed-braking.md). The default retains the 0.7 m/s static deadband. Experimental `confirm_slow_motion: true` requires four consistently directed position/velocity observations over approximately 0.6 s to confirm motion down to 0.1 m/s; unsupported tracks use the stopping/continuation occupancy envelope described below. Confirmed slow motion can retain the same sustained-braking hypothesis and its one-second acquisition-origin budget. Every intervening acquisition in the selected anchor window must also support the hypothesis: measured speed increases or inconsistent directions withdraw braking; stops, velocity-direction changes or contrary adjacent displacements withdraw slow-motion confirmation. The independent auditor reconstructs these complete windows. [Observation-window contract](prediction-observation-window.md). Default adoption remains withheld pending broader forecast qualification; terminal settling separately repairs the tested follower-deadline regressions. [Evidence requirements and limitations](slow-motion-prediction.md). Planning adds an empirical circular-clearance margin of `0.30 + 0.06 * min(t, 5) + max(0.40 * min(v_perp / 1 m/s, 1), 0.70 * q)` meters. Here `t` is future time from the current planning clock, `v_perp` is the absolute forecast velocity across the candidate segment direction, and `q = v_perp / |v|` for moving forecasts (zero for static forecasts). Static/parallel motion retains the previous reserve. Stationary segments use the estimated ego heading to distinguish crossing traffic from a parallel follower; an unavailable/zero heading falls back to total forecast speed conservatively. The initial point prefers the first nonzero candidate tangent, otherwise the supplied estimated heading. The directional reserve does not vanish for slow crossings and retains the previous transverse-speed envelope. Motion is derived from forecast positions, without actor labels or truth. The same rule applies to normal, retimed-stop and stationary-hold sweeps. This is a tracking/control-error heuristic, not a calibrated probability, covariance or certified error bound; it is separate from the priority-zone rectangle inflation.
+
+Experimental unconfirmed motion from 0.1 to less than 0.7 m/s uses a circular
+occupancy envelope covering both the acquired stopped position and continuation
+at the measured velocity. `Prediction.additional_radius_m` is optional in JSON:
+an empty sequence means zero, otherwise it has one nonnegative finite value per
+position, with linear interpolation and endpoint hold. Planning, priority-zone
+gates, lane-change entry and return/launch previews consume the occupied radius.
+Sweeps split at every forecast knot and use the maximum endpoint radius on each
+subinterval. Lane-change rear headway also includes positive occupied-radius
+growth in the forward approach-speed bound; shrinking uncertainty never
+discounts center motion. [Admission correction and limits](lane-occupancy-headway.md). This envelope adds no evidence of confirmed motion or braking and
+is not a calibrated uncertainty bound. The default predictor retains its
+established deadband. [Method, comparison and limits](slow-occupancy.md).
+
+Optional `forecast_envelope` retains that nominal occupied disc and a
+constant-velocity alternative with extra radius `position_error_m + u *
+velocity_error_m_s + u² * acceleration_error_m_s2 / 2`, where `u` includes
+acquisition age and future time. Each knot uses the smallest enclosing disc of
+both alternatives; interpolation retains conditional coverage within the
+eight-second horizon. The operation precedes the current tracking-to-world
+transform and uses the existing additional-radius consumers. Caller-supplied
+budgets do not estimate covariance, association or ego-pose uncertainty. The
+existing endpoint hold does not extend the coverage claim beyond eight seconds.
+The policy is off by default pending physical coverage and liveness acceptance.
+An evaluation-only scenario flag, `full_rate_recording`, retains every 20 Hz
+physical frame without entering the driver header or changing sensor/command
+bytes. [Contract, paired comparison and limitations](forecast-envelope.md).
+
+Optional `forecast_cold_max_speed_m_s` requires motion bounds, recent acquired
+motion fitting and the forecast-consistency guard. Before velocity confirmation,
+each knot retains the complete declared maximum-speed disc from the last acquired
+track position, including its consumed age, without changing nominal centers.
+Three stable raw acquisitions spanning 0.2 s must agree with the current tracked
+velocity within its existing error budget before returning to established
+occupancy. Scan faults and acquisition gaps rearm the unknown-motion set. This step
+precedes continuous-frame guarding; observed detours cannot admit blocker evidence
+while any cold track remains unconfirmed. The speed prior is declared and
+uncalibrated, and the option stays off by default.
+[Acquisition ownership, geometry and fixed comparison](cold-motion-envelope.md).
+
+Optional `forecast_recent_velocity_hypotheses` requires cold-motion support.
+After confirmation, fresh acquired track velocities enter a bounded 0.8 s /
+32-sample history per identity. Each is a point alternative extrapolated from
+the current acquired position; extra radii contain those point discs with the
+existing position allowance while retaining nominal centers and the original
+current-motion error envelope. Cached ticks cannot add samples or renew clocks;
+faults, support loss, gaps and expiry clear history. This expansion follows cold
+occupancy and precedes continuous guarding and world/pose projection. It uses
+no actor truth and does not calibrate velocity uncertainty. The option stays off.
+[Acquisition contract, geometry and unchanged-input qualification](recent-velocity-hypotheses.md).
+
+Optional `forecast_pose_sigma` requires declared motion bounds and absolute
+heading fusion. After world projection, each knot receives the major-axis bound
+of the current joint ENU pose covariance propagated through its position
+Jacobian, plus the exact rotation remainder. Nominal centers, acquired clocks
+and motion budgets stay intact. The continuous-frame forecast guard runs before
+this expansion; pose uncertainty cannot hide an acquired proxy mismatch. Current
+covariance can change a cached forecast's radius without renewing its track.
+Default behavior is unchanged and confidence calibration remains open.
+[Geometry, independent posterior reconstruction and fixed results](pose-forecast-envelope.md).
+
+Optional `replan_checked_approaches` requires retained/search stops, declared
+road reserve and supported recent-velocity occupancy. A stationary checked stop
+can propose a farther checked stopping path from an isolated planner copy.
+Three fresh acquisitions spanning 0.2 s must retain the same endpoint, side and
+blockers before adoption; faults, cached scenes and temporary mapped routes
+cannot authorize it. Every adopted path retains the complete braking and
+eight-second hold sweep. The mode uses up to 4 m of declared usable side width
+and preserves passing intent through temporary center braking. Default behavior
+is unchanged; original mission availability remains unresolved.
+[Ownership, confirmation and evaluation](checked-approaches.md).
+
+Optional `search_later_obstruction_stops` requires checked-approach replanning.
+Before the ordinary/earlier stopping fallback, it rebuilds and fully sweeps
+reachable stops at up to 80 existing geometry knots beyond the nominal contact
+heuristic, in descending arc length. The actual profile must reach its proposed
+endpoint. Existing braking, stationary holds and settled yield endpoints retain
+ownership; a later checked approach does not arm the earlier-search braking
+latch. Acquired confirmation still owns restart from a retained stop. Separate
+inspection checks all selected checked stops, including their kinematic
+integrals and complete stationary tails, without using actor truth.
+[Model, independent certificates and remaining mission limits](later-stops.md).
+
+Optional `search_obstruction_stops` requires `settle_obstruction_stops`. After
+ordinary collision retiming fails, it checks at most 16 earlier reachable stops
+with the same collision sweep and eight-second stationary tail. A selected moving
+search arms retention before emergency braking. The selected route-progress
+anchor can move earlier, and future blocked candidates cannot extend it. Actual
+candidate arc length is converted through the existing uniform progress samples;
+heading joins and lateral shifts do not substitute longitudinal distance for arc.
+Searched approaches cap profile speed at measured initial speed and the final
+guard prohibits positive acceleration. A complete clear nominal candidate can
+release the duty; route reset discards the old anchor coordinates while retaining
+brake intent. Invalid input cannot clear it. Sampling is finite and may miss a
+feasible stopping interval; error-budget calibration and mission completion remain
+unresolved. [Fixed comparisons and retained failures](stop-search.md).
 
 **Planning.** The supplied polyline route is parameterized by arc length. Lateral targets are `0`, `+3.5`, and `−3.5` m, filtered by road width and the ego circular footprint. An anchored quintic shift preserves maneuver progress across replans; a fading position/tangent correction joins it from the current estimated position and heading when actual steering lags. The planner penalizes sign changes and avoids jumping to the opposite side once the vehicle is displaced. A small center-return penalty retains an unfinished lateral shift while an observed obstacle still spans the centerline ahead within the horizon. It expires when the anchored shift completes, or when the object is behind the circular footprints or clear of the centerline, and never bypasses candidate feasibility checks. [Policy and measured regression](avoidance-continuity.md). The planner interpolates supplied route knots with quintic Hermite centerline segments sharing position and first/second derivatives, and applies continuous normal offsets. The supplied polyline corridor remains unchanged; generated samples are checked against it. Each candidate starts with 81 geometric samples over up to 40 m. Circular collision envelopes are swept continuously along their connecting segments against linearly interpolated predictions, splitting at every intervening prediction knot. Prediction endpoints remain occupied after the forecast horizon. Malformed forecasts return an emergency trajectory.
 
 Each geometry receives an arc-length speed profile: local circumcircle curvature caps, backward propagation with 20% nominal braking headroom and unchanged hard braking authority, and forward calibrated-acceleration propagation from the measured speed. Cruise overspeed is recovered with bounded deceleration rather than an instantaneous clamp. Arrival times integrate constant acceleration with `dt = 2 * distance / (v0 + v1)`; there is no 3 m/s timing floor. Goal and obstruction stops end at zero speed and include an eight-second stationary hold. A blocked profile is shortened by the existing 4 m contact-distance buffer, retimed, and swept again. Unsafe retiming or an unreachable hard bound rejects that candidate; no remaining candidate produces an empty emergency trajectory. Once stopped at a blocked destination, the vehicle holds until a candidate clears. Goal stopping uses the actual candidate arc length to reach the generated terminal position, including lateral motion, rather than truncating it by route progress. The desired goal remains one meter before the endpoint; an estimate that passes it while moving gets a monotonic reachable stop within the remaining corridor, with the endpoint retained as a hard boundary.
 
-Near the goal (within 41 m), a track moving forward along the route above the existing 0.7 m/s prediction deadband and spanning the centerline within 40 m behind the estimate activates a small center-target cost. If a feasible side is selected, the preference persists through missed tracks and forecast jitter, giving the vehicle room to finish the shift before stopping. It never overrides containment, calibrated speed feasibility or full collision/hold sweeps. This is a heuristic stopping-place preference for the authored corridor, not parking, semantic lane selection or interactive traffic prediction. [Methods, physical residence and limits](terminal-stopping.md).
+Near the goal (within 41 m), a track moving forward along the route above the existing 0.7 m/s terminal-preference threshold and spanning the centerline within 40 m behind the estimate activates a small center-target cost. If a feasible side is selected, the preference persists through missed tracks and forecast jitter, giving the vehicle room to finish the shift before stopping. It never overrides containment, calibrated speed feasibility or full collision/hold sweeps. This is a heuristic stopping-place preference for the authored corridor, not parking, semantic lane selection or interactive traffic prediction. [Methods, physical residence and limits](terminal-stopping.md).
+
+A candidate aligned within 0.1 rad and 0.2 m of its lateral target, within 0.5 m of the desired longitudinal goal and at no more than 0.2 m/s finishes braking with a zero cruise target. If its complete stop and eight-second hold are feasible, it precedes normal speed/candidate costs. This prevents position noise from restarting a completed stop. The pipeline disables this terminal tolerance for temporary regulatory, lane-change and route-handover stopping prefixes, preserving their approach profiles. A conflicting hold is rejected; other candidates remain available and an empty candidate set still commands emergency braking. No actor intent or physical acceptance state enters this decision. [Terminal settling and retained deadline regressions](terminal-settling.md).
 
 For accelerated segments, the circular sweep additionally covers the deviation from the temporal chord with a `|delta_speed| * segment_duration / 8` radius inflation. Calibrated low lateral authority lengthens proposed quintic shifts; the chosen length persists across replans and sampled speed/curvature bounds still decide feasibility. This is a three-offset, sampled-geometry baseline, not joint tire-force optimization or a controller tracking guarantee. [Current tracking methods and evidence](tracking.md); [previous speed planning](speed-planning.md) and [swept-check evidence](swept-planning.md).
+
+Optional `settle_obstruction_stops` remembers collision-induced emergency braking
+while approaches remain blocked. Once a valid estimate is at most 0.2 m/s, it
+retains a feasible immediate stop and the complete eight-second hold. Only a
+complete unblocked nominal path can release it; a safe lateral escape takes
+precedence over a blocked partial approach. Active holds retain at least
+-0.5 m/s² requested braking; health failures retain -6 m/s². Route-state resets
+preserve this intent, while new localization epochs initialize fresh state.
+Default behavior and forecast occupancy are unchanged.
+[Contract and independent path certificates](obstruction-stops.md).
 
 **Control.** Pure pursuit uses a shorter speed-dependent preview, an interpolated lookahead-circle intersection, bounded steering and a steering-rate limit. Emergency recovery starts from the emitted zero steering command, including commands substituted by pipeline health checks; longitudinal feedback resets as well. Longitudinal control uses the first segment's acceleration as feedforward plus bounded PI feedback on its initial speed; a stationary hold does not command forward acceleration. The pipeline health checks and control guard substitute a −6 m/s² command for non-finite output, missing/stale/invalid sensors, acquisition errors or excessive position variance. A planner emergency also brakes. The simulation adapters enforce actual authority; infeasible states can trigger repeated emergency fallback. This guards a simulation workflow; it is not a certified safety mechanism or redundant vehicle controller.
 
 **Simulation and evaluation.** A kinematic bicycle with bounded speed, acceleration and steering is integrated every 0.05 s. The ego and obstacles have circular collision footprints; relative swept segments test collision between integration endpoints. Current and terminal overlaps are also scored, and newly active actors receive endpoint checks. Each evaluated tick counts at most one collision; exact continuous activation-time checking remains absent. Road containment uses the ego center plus circular radius against route half-width. Tire friction and actuator lag are outside the reference model. The optional RNE dynamic plant adds a friction limit and steering lag; road elevation, suspension, rectangular collision evaluation, weather, camera imagery and general priority/traffic-law reasoning remain outside the demonstrated operating domain. See the [adapter boundaries](../integrations/rne/README.md). Optional `goal_hold_seconds` keeps the entire loop and independent physical evaluator running after first arrival; leaving the goal or exceeding its speed threshold resets residence. The final truth frame is retained at termination. The 16-second traffic regression observes the lead reaching the endpoint after ego stops. No throughput or real-time guarantee is claimed.
+
+## Acquisition-time GNSS correction
+
+Optional `gnss_latency_compensation` retains at most 0.5 seconds / 64 validated
+wheel/gyro prediction intervals. GNSS is gated and corrected at its original
+acquisition time, including fractional intervals, before motion and covariance
+are replayed to the current clock. Accepted timestamps/counts retain observation
+ownership; delivery cannot renew freshness. Uncovered history brakes and requires
+a post-fault acquisition. Zero-delay outputs retain existing arithmetic.
+Synchronous accepted map-pose/covariance events can also be retained (at most
+64) and replayed through their original EKF gates. A conflicting replay refuses
+the complete GNSS transaction and latches braking; accepted map clocks remain
+owned by their original scans. An additional explicit map option retains GNSS
+events too and admits scans up to 0.2 s old, reconstructing their acquisition
+priors and replaying corrections in either arrival order. Counts and last NIS
+retain original-delivery ownership. Delayed odometry and clock-offset estimation
+remain unsupported. [GNSS contract](gnss-latency.md), [synchronous map-event
+history](gnss-map-history.md) and [delayed map mode](delayed-map.md).
+
+Optional constant `gnss_covariance_shape` supplies a symmetric positive definite
+world ENU 2×2 matrix with trace two. Each raw fix retains its scalar mean
+horizontal variance; the effective measurement covariance is variance times
+that matrix. The shape survives history snapshots, and requesting it publishes
+the full posterior covariance. Simulator noise shape is separate and never
+inferred into operational calibration. The 32 ordinary/map cases pass, while
+all 16 calibrated persistent-bias cases fail their physical stop/accuracy gates.
+This is experimental covariance modeling, without qualified bias rejection or
+measured receiver calibration. [Contract and retained failures](gnss-covariance.md).
+
+A separate optional `gnss_recovery` policy guards release after two innovation
+rejections. It probes complete current-pose corrections, including delayed event
+replay, and commits only the last of several bounded, fresh confirmations. Held
+proposals restore the filter/history and preserve genuine accepted clocks;
+their NIS/observed clock is recorded as `RecoveryHeld`. Exceeding the configured
+hold budget or losing measured-motion coverage latches expiry until external
+pipeline reinitialization. All 64 positive reference/native episodes pass;
+four expiry controls remain stopped after healthy signals return. The original
+covariance-only failures above omit this policy. [Bounds and limits](gnss-recovery-guard.md).
+
+## Fixed-route speed intervals
+
+Optional surveyed `speed_zones` cap candidate segment endpoints over mapped
+arc-length intervals, expanded by the circular ego footprint. Overlapping
+limits use the minimum, including zones wholly between geometric samples.
+The existing reachable speed passes anticipate braking and restore cruise
+after release. The same configuration is recorded for sensor-only replay;
+manually supplied intervals remain incompatible with live navigation. Fixed
+whole-edge map limits now follow stopped closure-driven route handovers.
+[Mapped navigation speeds](navigation-speeds.md). An early
+return requires a separate surveyed cap over its complete
+alternate stopping route. A full-tick physical evaluator rejects excess over
+the fixed 0.15 m/s acceptance tolerance. [Contract, independent evaluation and
+remaining limits](route-speed-zones.md).
+
+The optional `lane-route --local-speed-limits` compiler derives these intervals
+from selected whole-lane boundaries and original map limits. It merges equal
+adjacent effective caps and preserves requested cruise. A fixed lane-change
+connector uses the minimum of source and target limits over its actual arc,
+including with observed-gap admission. An early return uses a separate
+surveyed cap over its complete new route. A bounded retry caps its new connector
+and rebases the unchanged original tail, retaining that policy during launch
+holds. Speed-value updates and an excessive interval budget are rejected.
+[Retry contract](lane-resume-speeds.md); [return contract](lane-return-speeds.md);
+[connector contract](lane-change-speeds.md). The option-free
+exporter keeps its mission-wide minimum. [Map-to-speed contract and independent
+reference reconstruction](lane-speed-zones.md).
 
 ## Simulator traffic boundary
 
@@ -149,6 +560,24 @@ For accelerated segments, the circular sweep additionally covers the deviation f
 Evaluation adds circular sweeps and clearance floors for actor pairs involving a reactive actor, plus reactive road/endpoint bounds. Reactive truth telemetry is retained at 20 Hz only in `run.json`; it never enters the sensor-log header or observations. [Implementation, stops/queues, independent checks and narrow-road deadline failures](reactive-traffic.md).
 
 ## Map navigation
+
+Optional `navigation.avoid_observed_obstructions` converts fresh, stable acquired
+blocker evidence into at most eight mission-local advisory edge preferences.
+Every nominal lattice candidate must conflict with the same measured identity;
+three acquisitions, unique map association and a reachable stopped divergence
+are required. A transactional graph proposal then uses the existing braked
+three-observation handover. External closure revisions remain separately owned,
+and their updates cannot erase the local ledger. Default behavior is unchanged;
+regional reset composition is rejected. [Contract and paired evaluation](observed-detours.md).
+
+An endpoint can also be an explicit directed edge and an interior arc distance.
+The partial-route search retains the origin's arrival-edge context and checks
+the turn into a partial destination. Traversal intervals clip geometry, speed
+caps and stopped-handover boundaries without changing the original map. Both
+plants log the original request for recomputation; node-only requests retain
+the preceding algorithm and serialization. Automatic live-position map matching
+and moving handover remain unimplemented. [Contract and retained qualification
+failure](mid-edge-routing.md).
 
 The independent routing crate resolves a directed map and known edge closures before departure. The simulator records selected node/edge IDs and supplies the route to the local pipeline; minimum edge width defines its conservative corridor. Search uses standard-library Dijkstra with deterministic equal-cost choices and rejects invalid or unreachable requests. Authored fork/merge and alternative-destination fixtures run in both plants. Resolved-route replay recomputes the local stack. Map-configured replay additionally recomputes Dijkstra and stopped handover from timestamped closure snapshots. The pipeline preserves estimation/tracking state and steering continuity while resetting route-dependent planner state and longitudinal feedback. [Live handover and retained failure](handover.md). [Map format, actual results and limitations](routing.md).
 
@@ -237,6 +666,19 @@ Known fixed-route stop lines add a measured-motion state machine beside signal c
 ## Mapped priority crossings
 
 `PipelineConfig.yield_intersections` supplies fixed-route stop lines, world-ENU conflict rectangles and an exit arc length. These known map entries contain no actor identities, motion schedules or future world occupancy. LiDAR-derived tracks and eight-second prediction sweeps determine whether priority traffic can enter a rectangle, conservatively expanded on each axis by the predicted radius plus 0.5 m. The behavior layer selects a temporary stopping prefix when blocked. It never reads simulator object poses or traffic schedules.
+
+Explicit `relocalization.preserve_yield_intersections` transfers entry ownership
+through a measured stopped epoch reset. An already committed entry beyond its
+line remains committed; its measured rear determines whether it is still inside
+or has passed the exit. Entries ahead are rearmed without old clear permission.
+All clear timers, counts and blocker diagnostics reset, and scan credit must be
+strictly newer than the reset. Invalid corridor/heading/stopped admission or an
+unowned front margin below 0.5 m latches `InvalidIntersectionRecovery`. This
+fault prevents new signal passage and stop dwell as well as yield permission,
+and keeps final emergency braking through fresh sensing. Straight routes retain
+their surveyed arcs with native chassis/local-route calibration; curved yield
+routes and live navigation with controls remain excluded.
+[Ownership, fixed physical protocol and limits](yield-relocalization.md).
 
 Release requires healthy sensing, accepted LiDAR no more than 0.15 s old, and at least one continuous second of clear observations with distinct acquisitions. Duplicate scans cannot build fresh-clear evidence. Low-speed braking retains the stopped position. Only a healthy aligned estimated permissive stop-line crossing with currently fresh sensing commits entry; the constraint ends after the estimated rear clears the mapped exit. The existing collision-aware lattice planner continues throughout. Signals and stop signs retain their independent constraints, including when combined with a yield entry.
 

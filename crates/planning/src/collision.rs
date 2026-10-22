@@ -11,6 +11,26 @@ pub(super) fn first_contact_time(
     vehicle_radius: f64,
     held_heading: Vec2,
 ) -> Option<f64> {
+    with_minimum_clearance(path, object, vehicle_radius, held_heading, 0.0)
+}
+
+#[derive(Clone, Copy)]
+struct Safety {
+    vehicle_radius: f64,
+    minimum_clearance: f64,
+}
+
+pub(super) fn with_minimum_clearance(
+    path: &[TrajectoryPoint],
+    object: &Prediction,
+    vehicle_radius: f64,
+    held_heading: Vec2,
+    minimum_clearance: f64,
+) -> Option<f64> {
+    let safety = Safety {
+        vehicle_radius,
+        minimum_clearance,
+    };
     let first = path.first()?;
     let initial_tangent = path
         .windows(2)
@@ -19,11 +39,12 @@ pub(super) fn first_contact_time(
         .unwrap_or(held_heading);
     if first.position.distance(position_at(object, first.time))
         <= vehicle_radius
-            + object.radius
-            + margin(
+            + object.radius_at(first.time)
+            + minimum_clearance.max(margin(
                 first.time,
-                transverse_speed(velocity_at(object, first.time), initial_tangent),
-            )
+                velocity_at(object, first.time),
+                initial_tangent,
+            ))
     {
         return Some(first.time);
     }
@@ -39,37 +60,45 @@ pub(super) fn first_contact_time(
                 break;
             }
             if end > start {
-                if let Some(time) =
-                    segment_contact(a, b, object, vehicle_radius, start, end, held_heading)
+                if let Some(time) = segment_contact(a, b, object, safety, start, end, held_heading)
                 {
                     return Some(time);
                 }
                 start = end;
             }
         }
-        if let Some(time) =
-            segment_contact(a, b, object, vehicle_radius, start, b.time, held_heading)
-        {
+        if let Some(time) = segment_contact(a, b, object, safety, start, b.time, held_heading) {
             return Some(time);
         }
     }
     None
 }
 
-fn margin(time: f64, transverse_speed: f64) -> f64 {
+fn margin(time: f64, velocity: Vec2, tangent: Vec2) -> f64 {
     // Moving across the candidate needs more empirical clearance than static or
     // parallel traffic. This reserve is not a certified prediction-error bound.
-    0.30 + 0.06 * time.min(5.0) + 0.40 * transverse_speed.min(1.0)
+    // The transverse reserve follows direction, rather than vanishing with a
+    // slow crossing's speed. Perpendicular motion retains 1 m at time zero.
+    let fraction = transverse_fraction(velocity, tangent);
+    let transverse_speed = velocity.x.hypot(velocity.y) * fraction;
+    let motion_reserve = (0.40 * transverse_speed.min(1.)).max(0.70 * fraction);
+    0.30 + 0.06 * time.min(5.0) + motion_reserve
 }
 
-fn transverse_speed(velocity: Vec2, tangent: Vec2) -> f64 {
+fn transverse_fraction(velocity: Vec2, tangent: Vec2) -> f64 {
+    let speed = velocity.x.hypot(velocity.y);
+    if speed == 0. {
+        return 0.;
+    }
     let length = tangent.x.hypot(tangent.y);
     if length > 1e-6 {
-        (velocity.x * (tangent.y / length) - velocity.y * (tangent.x / length)).abs()
+        ((velocity.x / speed) * (tangent.y / length) - (velocity.y / speed) * (tangent.x / length))
+            .abs()
+            .min(1.)
     } else {
         // A stationary hold has no segment heading. Reserve for any observed
         // motion rather than choosing an arbitrary world-frame axis.
-        velocity.x.hypot(velocity.y)
+        1.
     }
 }
 
@@ -99,7 +128,7 @@ fn segment_contact(
     a: &TrajectoryPoint,
     b: &TrajectoryPoint,
     object: &Prediction,
-    vehicle_radius: f64,
+    safety: Safety,
     start: f64,
     end: f64,
     held_heading: Vec2,
@@ -126,12 +155,13 @@ fn segment_contact(
         relative_end,
         // Constant acceleration along a segment differs from its temporal chord
         // by at most |delta_v| * duration / 8. Inflate the circle by this bound.
-        vehicle_radius
-            + object.radius
-            + margin(
+        safety.vehicle_radius
+            + object.radius_at(start).max(object.radius_at(end))
+            + safety.minimum_clearance.max(margin(
                 end,
-                transverse_speed(velocity_at(object, 0.5 * start + 0.5 * end), tangent),
-            )
+                velocity_at(object, 0.5 * start + 0.5 * end),
+                tangent,
+            ))
             + (b.speed - a.speed).abs() * (b.time - a.time) / 8.0,
     )
     .map(|fraction| start + (end - start) * fraction)
@@ -163,6 +193,63 @@ fn contact_fraction(start: Vec2, end: Vec2, radius: f64) -> Option<f64> {
 mod tests {
     use super::*;
 
+    #[test]
+    fn an_explicit_floor_rejects_a_legacy_near_miss_and_keeps_larger_motion_reserves() {
+        let path = [
+            TrajectoryPoint {
+                position: Vec2::new(0., 0.),
+                speed: 5.,
+                time: 0.,
+            },
+            TrajectoryPoint {
+                position: Vec2::new(20., 0.),
+                speed: 5.,
+                time: 4.,
+            },
+        ];
+        let object = Prediction {
+            id: 1,
+            positions: vec![Vec2::new(10., 2.1); 41],
+            radius: 0.5,
+            additional_radius_m: vec![],
+            dt: 0.2,
+        };
+        assert!(first_contact_time(&path, &object, 1., Vec2::new(1., 0.)).is_none());
+        assert!(with_minimum_clearance(&path, &object, 1., Vec2::new(1., 0.), 1.).is_some());
+        let hold = [
+            TrajectoryPoint {
+                position: Vec2::default(),
+                speed: 0.,
+                time: 0.,
+            },
+            TrajectoryPoint {
+                position: Vec2::default(),
+                speed: 0.,
+                time: 8.,
+            },
+        ];
+        let crossing = Prediction {
+            positions: (0..=40)
+                .map(|i| Vec2::new(2.6, 4. - i as f64 * 0.2))
+                .collect(),
+            ..object
+        };
+        assert!(with_minimum_clearance(&hold, &crossing, 1., Vec2::new(1., 0.), 1.).is_some());
+    }
+
+    #[test]
+    fn the_clearance_floor_covers_an_interior_radius_peak_in_the_full_hold() {
+        let hold = path(Vec2::default(), Vec2::default(), [0., 8.]);
+        let object = Prediction {
+            id: 1,
+            positions: vec![Vec2::new(4., 0.); 3],
+            radius: 0.5,
+            additional_radius_m: vec![0., 2., 0.],
+            dt: 4.,
+        };
+        assert!(with_minimum_clearance(&hold, &object, 1., Vec2::new(1., 0.), 1.).is_some());
+    }
+
     fn path(start: Vec2, end: Vec2, times: [f64; 2]) -> [TrajectoryPoint; 2] {
         [
             TrajectoryPoint {
@@ -176,6 +263,26 @@ mod tests {
                 time: times[1],
             },
         ]
+    }
+
+    #[test]
+    fn radius_growth_and_an_interior_peak_block_a_stationary_hold() {
+        let hold = path(Vec2::default(), Vec2::default(), [0., 8.]);
+        let mut object = Prediction {
+            id: 9,
+            positions: vec![Vec2::new(5., 0.); 3],
+            radius: 0.5,
+            additional_radius_m: vec![],
+            dt: 4.,
+        };
+        assert_eq!(
+            first_contact_time(&hold, &object, 1., Vec2::new(1., 0.)),
+            None
+        );
+        for envelope in [vec![0., 2., 4.], vec![0., 4., 0.]] {
+            object.additional_radius_m = envelope;
+            assert!(first_contact_time(&hold, &object, 1., Vec2::new(1., 0.)).is_some());
+        }
     }
 
     #[test]
@@ -206,15 +313,16 @@ mod tests {
     fn synchronized_crossing_detected_between_clear_endpoints() {
         let ego = path(Vec2::default(), Vec2::new(10.0, 0.0), [0.0, 1.0]);
         let object = Prediction {
+            additional_radius_m: vec![],
             id: 1,
             positions: vec![Vec2::new(5.0, 5.0), Vec2::new(5.0, -5.0)],
             radius: 0.5,
             dt: 1.0,
         };
-        assert!(ego[0].position.distance(object.positions[0]) > 1.76);
-        assert!(ego[1].position.distance(object.positions[1]) > 1.76);
+        assert!(ego[0].position.distance(object.positions[0]) > 2.06);
+        assert!(ego[1].position.distance(object.positions[1]) > 2.06);
         let time = first_contact_time(&ego, &object, 0.5, Vec2::default()).unwrap();
-        assert!((time - (0.5 - 1.76 / 200.0_f64.sqrt())).abs() < 1e-12);
+        assert!((time - (0.5 - 2.06 / 200.0_f64.sqrt())).abs() < 1e-12);
     }
 
     #[test]
@@ -229,6 +337,7 @@ mod tests {
                 [0.0, 1.0],
             );
             let parallel = Prediction {
+                additional_radius_m: vec![],
                 id: 1,
                 positions: vec![rotate(Vec2::new(0.0, 1.5)), rotate(Vec2::new(10.0, 1.5))],
                 radius: 0.5,
@@ -236,6 +345,7 @@ mod tests {
             };
             assert!(first_contact_time(&ego, &parallel, 0.5, Vec2::default()).is_none());
             let stationary = Prediction {
+                additional_radius_m: vec![],
                 id: 2,
                 positions: vec![rotate(Vec2::new(5.0, 1.5))],
                 radius: 0.5,
@@ -246,9 +356,59 @@ mod tests {
     }
 
     #[test]
+    fn slow_crossing_motion_retains_a_meter_of_directional_reserve() {
+        for angle in [0., 0.7, 2.4] {
+            let ego = path(Vec2::default(), Vec2::default(), [0., 1.]);
+            let heading = Vec2::new(1., 0.).rotated(angle);
+            for speed in [0.1, 0.2, 0.5, 2.5] {
+                let crossing = Prediction {
+                    additional_radius_m: vec![],
+                    id: 1,
+                    positions: vec![
+                        Vec2::new(1.8, 0.).rotated(angle),
+                        Vec2::new(1.8, speed).rotated(angle),
+                    ],
+                    radius: 0.5,
+                    dt: 1.,
+                };
+                // The physical gap is 0.8 m at time zero. Measured transverse
+                // motion needs the same geometric reserve at either speed.
+                assert_eq!(first_contact_time(&ego, &crossing, 0.5, heading), Some(0.));
+                let parallel = Prediction {
+                    positions: vec![
+                        Vec2::new(0., 1.8).rotated(angle),
+                        Vec2::new(speed, 1.8).rotated(angle),
+                    ],
+                    ..crossing
+                };
+                assert!(first_contact_time(&ego, &parallel, 0.5, heading).is_none());
+            }
+        }
+    }
+
+    #[test]
+    fn fast_almost_parallel_motion_keeps_the_previous_transverse_speed_reserve() {
+        let ego = path(Vec2::default(), Vec2::default(), [0., 1.]);
+        let object = Prediction {
+            additional_radius_m: vec![],
+            id: 1,
+            positions: vec![Vec2::new(1.48, 0.), Vec2::new(9.48, 0.5)],
+            radius: 0.5,
+            dt: 1.,
+        };
+        // The earlier 0.5 m reserve already rejects this 0.48 m initial gap.
+        // A small crossing angle cannot narrow that existing speed envelope.
+        assert_eq!(
+            first_contact_time(&ego, &object, 0.5, Vec2::new(1., 0.)),
+            Some(0.)
+        );
+    }
+
+    #[test]
     fn stationary_hold_reserves_for_motion_without_an_arbitrary_heading() {
         let ego = path(Vec2::default(), Vec2::default(), [0.0, 1.0]);
         let moving = Prediction {
+            additional_radius_m: vec![],
             id: 1,
             positions: vec![Vec2::new(1.5, 5.0), Vec2::new(1.5, -5.0)],
             radius: 0.5,
@@ -271,6 +431,7 @@ mod tests {
             let ego = path(Vec2::default(), Vec2::default(), [0.0, 1.0]);
             let heading = rotate(Vec2::new(1.0, 0.0));
             let parallel = Prediction {
+                additional_radius_m: vec![],
                 id: 1,
                 positions: vec![rotate(Vec2::new(-5.0, 1.5)), rotate(Vec2::new(5.0, 1.5))],
                 radius: 0.5,
@@ -290,6 +451,7 @@ mod tests {
     fn geometric_crossing_at_different_times_is_clear() {
         let ego = path(Vec2::default(), Vec2::new(10.0, 0.0), [0.0, 1.0]);
         let object = Prediction {
+            additional_radius_m: vec![],
             id: 1,
             positions: vec![Vec2::new(5.0, 5.0), Vec2::new(5.0, 0.0)],
             radius: 0.5,
@@ -302,6 +464,7 @@ mod tests {
     fn intermediate_prediction_turn_is_not_replaced_with_an_endpoint_chord() {
         let ego = path(Vec2::default(), Vec2::default(), [0.0, 1.0]);
         let object = Prediction {
+            additional_radius_m: vec![],
             id: 1,
             positions: vec![Vec2::new(-5.0, 2.0), Vec2::default(), Vec2::new(-5.0, 2.0)],
             radius: 0.5,
@@ -314,6 +477,7 @@ mod tests {
     fn terminal_prediction_and_single_point_obstacles_remain_occupied() {
         let ego = path(Vec2::default(), Vec2::new(10.0, 0.0), [2.0, 3.0]);
         let mut object = Prediction {
+            additional_radius_m: vec![],
             id: 1,
             positions: vec![Vec2::new(5.0, 5.0), Vec2::new(5.0, 0.0)],
             radius: 0.5,

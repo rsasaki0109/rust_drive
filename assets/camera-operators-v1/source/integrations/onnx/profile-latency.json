@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "algorithm": "yolox_s_measured_serial_replay_v1",
+  "scope": "Offline file replay with actual host monotonic processing time; no live camera or vehicle controls",
+  "policy": {"max_age_s": 0.2, "recovery_samples": 2},
+  "source_clock": "Original decimal strings retained; release offsets are correctly parsed source timestamp minus first timestamp; span <= 2 seconds",
+  "schedule": "Serial FIFO at original acquisition offsets, no warm-up; verify all images and load one model plan before starting measured schedule",
+  "admission": "Probe unchanged guard at actual processing start; skip already rejected images; submit full detections at actual completion; poll again after tracking to catch deadline crossings",
+  "measurement_boundary": "Queue age plus re-read/decode/analysis and sample guard update through the following monotonic checkpoint; excludes final poll execution and audit JSON serialization/publication",
+  "startup": "Manifest/preflight, model loading and total startup to schedule origin measured separately",
+  "budgets": {"events": 32, "sequence_bytes": 524288, "schedule_span_s": 2, "output_bytes": 4194304},
+  "gates": "Execution/verification success is separate from observed deadline success; retain failed timing results without tuning the prior 0.2-second policy"
+}

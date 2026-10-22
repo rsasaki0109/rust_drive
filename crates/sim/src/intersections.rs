@@ -277,6 +277,7 @@ mod tests {
             moving_from: 0.0,
             moving_until: None,
             following: None,
+            world_motion: None,
         }];
         let config = pipeline_config(&scenario);
         let backend = IgnoreControl(ReferenceBackend {
@@ -288,6 +289,7 @@ mod tests {
             },
             vehicle: config.vehicle,
             rng: crate::Rng::new(7),
+            seed: 7,
             command: ControlCommand::default(),
         });
         let run = simulate_with_backend(scenario, 7, backend, config, "negative-priority-backend")

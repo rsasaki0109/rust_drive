@@ -8,7 +8,7 @@ Driving remains planar. Ground fitting is not general terrain reconstruction, vo
 
 ## Run and replay
 
-Use the existing [CPU-only RNE setup](../README.md#cpu-only-robot-native-engine-demo), then run the authored physical-road obstacle fixture:
+Use the existing [CPU-only RNE setup](../integrations/rne/README.md#reproduce), then run the authored physical-road obstacle fixture:
 
 ```sh
 source scripts/env.sh

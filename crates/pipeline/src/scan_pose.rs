@@ -1,4 +1,5 @@
-//! Bounded acquisition-time transforms from estimator history, never world truth.
+//! Bounded acquisition-time poses in the continuous wheel/gyro frame.
+//! Absolute localization corrections are applied when publishing world values.
 use rustdriving_core::{Pose, wrap_angle};
 use std::collections::VecDeque;
 

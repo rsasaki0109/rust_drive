@@ -1,0 +1,31 @@
+Measured s-first
+Measured nano-first
+Measured nano-repeat
+Measured s-repeat
+Nano serial/parallel/original comparison tum-0
+Nano serial/parallel/original comparison tum-1
+Nano serial/parallel/original comparison tum-2
+Nano serial/parallel/original comparison tum-3
+Nano serial/parallel/original comparison tum-4
+Nano serial/parallel/original comparison tum-5
+Nano serial/parallel/original comparison tum-6
+Nano serial/parallel/original comparison tum-7
+Nano serial/parallel/original comparison 00a395fe-d60c0b47
+Nano serial/parallel/original comparison 026c7465-d54954fa
+Nano serial/parallel/original comparison 0798a3a8-c4501e0f
+Nano serial/parallel/original comparison 0a493f24-352f747e
+Nano serial/parallel/original comparison 17d21997-6f076249
+Nano serial/parallel/original comparison 4899be53-dcc6c017
+Nano serial/parallel/original comparison 4dab8d2a-be9667d4
+Nano serial/parallel/original comparison ab2360f2-7704a1bf
+Traceback (most recent call last):
+  File "/workspace/rust_drive/integrations/onnx/camera_nano_check.py", line 286, in <module>
+    run(args)
+  File "/workspace/rust_drive/integrations/onnx/camera_nano_check.py", line 242, in run
+    if label.startswith('nano'):check_image(actual, saved, current[name])
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/rust_drive/integrations/onnx/camera_nano_check.py", line 103, in check_image
+    require(report['result'] == serial['result'], 'exact current serial/parallel decisions')
+  File "/workspace/rust_drive/integrations/onnx/camera_parallel_check.py", line 31, in require
+    raise ValueError(message)
+ValueError: exact current serial/parallel decisions

@@ -1,0 +1,138 @@
+{
+  "changed_return_cap_replay_negative": {
+    "changed_to": 4.0,
+    "exit_code": 2,
+    "only_header_cap_changed_from": 2.0,
+    "passed": true,
+    "stderr": "rustdriving: replay mismatch at tick 400 (time 20.000)\n"
+  },
+  "changed_standard_outputs": 0,
+  "completed_returns": 12,
+  "created_at": "2026-10-19T00:12:51.583089+00:00",
+  "current_unique_acceptance_episodes": 73,
+  "existing_pins_and_fixtures_unchanged": 116,
+  "existing_short_range_follower_failures_preserved_not_rerun": 2,
+  "feature_branch": "feat/lane-return-speed-zones-20261019",
+  "fixed_clearance_floor_m": 1.0,
+  "fixed_final_lateral_tolerance_m": 0.25,
+  "fixed_speed_tolerance_m_s": 0.15,
+  "fixed_stop_hold_floor_s": 2.0,
+  "frozen_before_first_run": true,
+  "historical_245_live_outputs_restored_unchanged": true,
+  "initial_candidate_runtime_sources_and_worlds_unchanged_after_results": true,
+  "legacy_byte_identical_json_recordings": 42,
+  "legacy_byte_identical_process_streams": 36,
+  "legacy_current_episodes": 6,
+  "legacy_parent_episodes": 6,
+  "live_speed_map_remapping_supported": false,
+  "local_physical_frames": 25218,
+  "local_speed_current_episodes": 18,
+  "maximum_physical_speed_excess_m_s": 0.04479487484270761,
+  "minimum_final_standstill_s": 43.8,
+  "minimum_swept_clearance_m": 4.259252390939928,
+  "mission_retry_with_speed_limits_supported": false,
+  "native_RNE_or_real_vehicle_qualification": false,
+  "new_python_tests": 3,
+  "new_rust_tests": 2,
+  "parent_new_option_exit_code": 2,
+  "per_case": [
+    {
+      "case": "left",
+      "passed": true,
+      "return_started_s": [
+        20.0,
+        20.0,
+        20.0
+      ],
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "right",
+      "passed": true,
+      "return_started_s": [
+        20.0,
+        20.0,
+        20.0
+      ],
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "north",
+      "passed": true,
+      "return_started_s": [
+        20.0,
+        20.0,
+        20.0
+      ],
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "target-slow",
+      "passed": true,
+      "return_started_s": [
+        20.0,
+        20.0,
+        20.0
+      ],
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "source-blocked",
+      "passed": true,
+      "return_started_s": [
+        null,
+        null,
+        null
+      ],
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "late",
+      "passed": true,
+      "return_started_s": [
+        null,
+        null,
+        null
+      ],
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    }
+  ],
+  "python_auditor_tests": 19,
+  "qualification_scope": "six authored early-return/reference-bicycle worlds with synthetic sensor-only driving; constant mapped alternate stopping-route cap",
+  "qualified": true,
+  "release_binary_sha256": "c35425b022f7b0419f3f754ef377aaf0ece79664ff2e8e43b00c8c54374a5be1",
+  "remote_CI_claimed": false,
+  "required_check_command": "bash scripts/check.sh",
+  "required_check_exit_code": 0,
+  "required_return_rejections": 6,
+  "speed_violation_intervals": 0,
+  "standard_outputs_compared": 245,
+  "standard_reference_runs_and_exact_replays": 49,
+  "starting_commit": "81fc1038098ad34210714a5655b908e78f573849",
+  "subjective_oss_maturity_percent": 20,
+  "workspace_rust_tests": 618
+}

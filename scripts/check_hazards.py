@@ -7,8 +7,32 @@ import math
 from pathlib import Path
 import subprocess
 import sys
+from tracking_frame import continuous_observations
 
 ROOT = Path(__file__).resolve().parent.parent
+
+
+def prediction_radius_at(prediction, time):
+    """Independent radius interpolation; malformed occupancy blocks clearance."""
+    extra = prediction.get('additional_radius_m', [])
+    radius, dt = prediction['radius'], prediction['dt']
+    positions = prediction['positions']
+    if (not positions or not math.isfinite(time) or time < 0 or not math.isfinite(dt) or dt <= 0
+            or not math.isfinite(radius) or radius < 0
+            or (extra and len(extra) != len(positions))
+            or any(not math.isfinite(r) or r < 0 or not math.isfinite(radius+r) for r in extra)):
+        return math.inf
+    if not extra:
+        return radius
+    step = time/dt
+    if not math.isfinite(step):
+        return radius+extra[-1]
+    index = min(math.floor(step), len(extra)-1)
+    if index == len(extra)-1:
+        return radius+extra[-1]
+    fraction = step-index
+    return radius+(1-fraction)*extra[index]+fraction*extra[index+1]
+
 CASES = {
     'reference': ['occluded-crossing', 'cut-in', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue', 'traffic-follower-deadline', 'traffic-fleet-queue', 'signal-red-green', 'signal-red-stop', 'signal-stale-stop', 'signal-stale-recovery', 'signal-two-stops', 'signal-approach-change', 'stop-sign-single', 'stop-sign-two', 'stop-sign-signal', 'stop-sign-obstacle', 'stop-sign-gnss-recovery'],
     'rne-dynamic': ['occluded-crossing', 'cut-in', 'low-friction', 'low-friction-stop', 'multiple-blocked', 'opposing-crossings', 'route-direct', 'route-detour', 'route-south', 'route-handover', 'route-handover-fast', 'route-no-path', 'route-reopen', 'gnss-spike', 'gnss-burst', 'gnss-persistent-bias', 'gnss-burst-traffic', 'gnss-burst-traffic-hold', 'traffic-lead-stop', 'traffic-follower-brake', 'traffic-queue', 'traffic-follower-deadline', 'traffic-fleet-queue', 'signal-red-green', 'signal-red-stop', 'signal-stale-stop', 'signal-stale-recovery', 'signal-two-stops', 'signal-approach-change', 'stop-sign-single', 'stop-sign-two', 'stop-sign-signal', 'stop-sign-obstacle', 'stop-sign-gnss-recovery'],
@@ -268,6 +292,7 @@ def check_intersections(run, log):
     accepted_scans = 0
     fault_reset = False
     last_scan = None
+    clear_after = None
     minimum_margin = math.inf
     previous_status = {}
     approach_profiles = approach_points = approach_creep_ticks = waiting_prefix_profiles = 0
@@ -294,12 +319,15 @@ def check_intersections(run, log):
                         and len(scan['points']) <= 20_000
                         and all(all(math.isfinite(v) for v in xy(p)) and math.hypot(*xy(p)) <= 200
                                 for p in scan['points']))
+        scan_gap = new_scan and last_scan is not None and scan['stamp']-last_scan > .2+1e-9
         if new_scan:
             last_scan = scan['stamp']
             accepted_scans += 1
         pose = out['estimate']['pose']
         aligned = abs(math.remainder(pose['yaw'], 2*math.pi)) < .2 and abs(pose['position']['y'])+radius <= run['route']['half_width']
         healthy = not out['health'] and last_scan is not None and now-last_scan <= .15+1e-9 and aligned
+        if not healthy:
+            clear_after = now
         front = frame['truth']['pose']['position']['x']+radius
         estimated_front = out['estimate']['pose']['position']['x']+radius
         waiting_zones = [z for z, s in zip(zones, status['zones'])
@@ -363,11 +391,16 @@ def check_intersections(run, log):
                 dt = prediction['dt']
                 points = prediction['positions']
                 horizon = min(len(points)-1, math.floor((8.0+1e-9)/dt))
-                inflation = prediction['radius']+.5
-                conservative = {'min': {axis: bounds['min'][axis]-inflation for axis in ['x', 'y']},
-                                'max': {axis: bounds['max'][axis]+inflation for axis in ['x', 'y']}}
-                if any(segment_rectangle_distance_squared(a, b, conservative) <= 1e-12
-                       for a, b in zip(points[:horizon+1], points[1:horizon+1])):
+                def blocked(a, b, start, end):
+                    inflation = max(prediction_radius_at(prediction, start), prediction_radius_at(prediction, end))+.5
+                    if not math.isfinite(inflation):
+                        return True
+                    conservative = {'min': {axis: bounds['min'][axis]-inflation for axis in ['x', 'y']},
+                                    'max': {axis: bounds['max'][axis]+inflation for axis in ['x', 'y']}}
+                    return segment_rectangle_distance_squared(a, b, conservative) <= 1e-12
+                if (blocked(points[0], points[0], 0., 0.)
+                        or any(blocked(a, b, i*dt, (i+1)*dt)
+                               for i, (a, b) in enumerate(zip(points[:horizon+1], points[1:horizon+1])))):
                     blockers.append(prediction['id'])
             blockers.sort()
             if not state['committed']:
@@ -381,7 +414,12 @@ def check_intersections(run, log):
                     if state['clear_since'] is not None or state['phase'] != 'Waiting':
                         raise ValueError('fault/conflict did not revoke uncommitted yield permission')
                 else:
-                    if new_scan:
+                    # A delivered pre-recovery acquisition cannot credit clear
+                    # time, even after its arrival restores ordinary health.
+                    if new_scan and (clear_after is None or last_scan > clear_after):
+                        if scan_gap:
+                            clear_since[id] = None
+                            clear_scans[id].clear()
                         if clear_since[id] is None: clear_since[id] = last_scan
                         clear_scans[id].add(last_scan)
                     if state['clear_since'] != clear_since[id]:
@@ -1041,26 +1079,82 @@ def check_speed_profiles(log):
             'max_deceleration_m_s2': max_deceleration}
 
 
+def supported_slow_motion(samples, current):
+    """Check spaced displacement support and every intervening observation."""
+    speed = math.hypot(*xy(current['velocity']))
+    if not .1 <= speed < .7:
+        return False
+    direction = tuple(v/speed for v in xy(current['velocity']))
+    anchors = []
+    for age in [.6, .4, .2]:
+        wanted = current['last_seen']-age
+        candidates = [s for s in samples if abs(s['last_seen']-wanted) <= .025+1e-9]
+        if not candidates:
+            return False
+        anchors.append(min(candidates, key=lambda s: abs(s['last_seen']-wanted)))
+    anchors.append(current)
+    for old in anchors[:-1]:
+        old_speed = math.hypot(*xy(old['velocity']))
+        if old_speed < .1 or sum(v*d for v, d in zip(xy(old['velocity']), direction)) < .95*old_speed:
+            return False
+    for old, new in zip(anchors, anchors[1:]):
+        elapsed = new['last_seen']-old['last_seen']
+        delta = tuple(b-a for a, b in zip(xy(old['position']), xy(new['position'])))
+        forward = sum(v*d for v, d in zip(delta, direction))
+        if elapsed <= 0 or forward+1e-9 < .1*elapsed or forward+1e-9 < .9*math.hypot(*delta):
+            return False
+    recent = [s for s in samples if anchors[0]['last_seen'] <= s['last_seen'] < current['last_seen']]+[current]
+    for sample in recent:
+        measured_speed = math.hypot(*xy(sample['velocity']))
+        if measured_speed < .1 or sum(v*d for v, d in zip(xy(sample['velocity']), direction)) < .95*measured_speed:
+            return False
+    for old, new in zip(recent, recent[1:]):
+        delta = tuple(b-a for a, b in zip(xy(old['position']), xy(new['position'])))
+        if sum(v*d for v, d in zip(delta, direction))+1e-9 < .9*math.hypot(*delta):
+            return False
+    return True
+
+
 def check_motion_predictions(log):
     """Reconstruct current-epoch forecasts from timestamped measured tracks only."""
     history = {}
     forecasts = braking_forecasts = stale_fallbacks = reacceleration_fallbacks = 0
     aged_forecasts = rebased_moving_forecasts = 0
+    slow_forecasts = unconfirmed_slow_forecasts = uncertain_slow_forecasts = 0
     max_deceleration = max_epoch_age = 0.0
+    intermediate_braking_vetoes = 0
+    enveloped_forecasts = 0
     with log.open() as stream:
-        next(stream)
+        config = json.loads(next(stream))['header']['config']
+        confirm_slow_motion = config.get('confirm_slow_motion', False)
+        envelope = config.get('forecast_envelope')
+        cold_motion=None
+        if config.get('forecast_cold_max_speed_m_s') is not None:
+            from cold_motion_oracle import ColdMotionOracle
+            cold_motion=ColdMotionOracle(config)
+        velocity_hypotheses=None
+        if config.get('forecast_recent_velocity_hypotheses',False):
+            from velocity_hypotheses_oracle import VelocityHypothesesOracle
+            velocity_hypotheses=VelocityHypothesesOracle(config)
+            if cold_motion is None:raise ValueError('recent velocity lacks cold support')
+        if envelope is not None:
+            from forecast_envelope import audit_envelope, validate
+            validate(envelope)
         for line in stream:
             record = json.loads(line)
             if record.get('kind') != 'tick':
                 continue
             tick = record['tick']
             now = tick['input']['time']
-            tracks = {t['id']: t for t in tick['expected']['tracks']}
-            prediction_ids = [p['id'] for p in tick['expected']['predictions']]
+            observations, predictions = continuous_observations(tick['expected'],config.get('forecast_pose_sigma'))
+            if cold_motion is not None:cold_motion.observe(tick,observations)
+            if velocity_hypotheses is not None:velocity_hypotheses.observe(tick,observations,cold_motion)
+            tracks = {t['id']: t for t in observations}
+            prediction_ids = [p['id'] for p in predictions]
             if sorted(prediction_ids) != sorted(tracks):
                 raise ValueError('motion forecasts dropped, duplicated or invented a track identity')
             history = {id: samples for id, samples in history.items() if id in tracks}
-            for forecast in tick['expected']['predictions']:
+            for forecast in predictions:
                 track = tracks[forecast['id']]
                 samples = history.setdefault(track['id'], [])
                 if samples and track['last_seen'] < samples[-1]['last_seen']:
@@ -1071,6 +1165,12 @@ def check_motion_predictions(log):
                 speed = math.hypot(*xy(track['velocity']))
                 dt = forecast['dt']
                 positions = list(map(xy, forecast['positions']))
+                radii = forecast.get('additional_radius_m', [])
+                if (radii and len(radii) != len(positions)) or any(
+                        not math.isfinite(r) or r < 0 for r in radii):
+                    raise ValueError('malformed additional occupied radii')
+                if not math.isfinite(forecast['radius']) or abs(forecast['radius']-track['radius']) > 1e-10:
+                    raise ValueError('forecast changed the observed physical radius')
                 origin = xy(track['position'])
                 age = now-track['last_seen']
                 valid = (all(math.isfinite(v) for v in [now, age, speed, track['radius'], *origin])
@@ -1083,13 +1183,22 @@ def check_motion_predictions(log):
                     continue
                 if len(positions) != 41 or abs(dt-0.2) > 1e-9:
                     raise ValueError('forecast horizon or spacing changed')
+                slow = confirm_slow_motion and supported_slow_motion(samples, track)
+                moving = speed >= .7 or slow
+                uncertain = confirm_slow_motion and not moving and speed >= .1
+                uncertain_slow_forecasts += int(uncertain)
+                expected_radii = [speed*(age+i*dt)/2 for i in range(41)] if uncertain else []
+                if envelope is None and (len(radii) != len(expected_radii) or any(abs(a-b) > 1e-8 for a, b in zip(radii, expected_radii))):
+                    raise ValueError('occupied radii do not cover the required stopping/continuation envelope')
+                slow_forecasts += int(slow)
+                unconfirmed_slow_forecasts += int(speed < .7 and not slow)
                 aged_forecasts += int(age > 1e-9)
-                rebased_moving_forecasts += int(age > 1e-9 and speed >= .7)
+                rebased_moving_forecasts += int(age > 1e-9 and moving)
                 max_epoch_age = max(max_epoch_age, age)
                 stale = age > .15+1e-9
                 reaccelerating = len(samples) >= 2 and speed >= math.hypot(*xy(samples[-2]['velocity']))
                 braking = None
-                if not stale and not reaccelerating and speed >= .7 and len(samples) >= 2:
+                if not stale and not reaccelerating and moving and len(samples) >= 2:
                     direction = (track['velocity']['x']/speed, track['velocity']['y']/speed)
                     previous = track
                     supported = []
@@ -1107,13 +1216,22 @@ def check_motion_predictions(log):
                         supported.append(deceleration)
                         previous = old
                     if len(supported) == 3:
-                        braking = min(2.0, .5*min(supported))
+                        recent = [s for s in samples if previous['last_seen'] <= s['last_seen'] < track['last_seen']]+[track]
+                        speeds = [math.hypot(*xy(s['velocity'])) for s in recent]
+                        contrary = (any(b > a+1e-9 for a, b in zip(speeds, speeds[1:]))
+                                    or any(sum(v*d for v, d in zip(xy(s['velocity']), direction)) < .98*v
+                                           for s, v in zip(recent, speeds)))
+                        intermediate_braking_vetoes += int(contrary)
+                        if not contrary:
+                            braking = min(2.0, .5*min(supported))
                 stale_fallbacks += int(stale)
                 reacceleration_fallbacks += int(reaccelerating)
                 braking_forecasts += int(braking is not None)
-                direction = (track['velocity']['x']/speed, track['velocity']['y']/speed) if speed >= .7 else (0.0, 0.0)
+                direction = (track['velocity']['x']/speed, track['velocity']['y']/speed) if moving or uncertain else (0.0, 0.0)
                 def displacement(elapsed):
-                    if speed < .7:
+                    if uncertain:
+                        return speed*elapsed/2
+                    if not moving:
                         return 0.0
                     if braking is None:
                         return speed*elapsed
@@ -1123,12 +1241,19 @@ def check_motion_predictions(log):
                     return speed*q-.5*braking*q*q+max(0.0, speed-braking*q)*(elapsed-q)
                 expected = [(origin[0]+direction[0]*displacement(age+i*dt),
                              origin[1]+direction[1]*displacement(age+i*dt)) for i in range(41)]
-                if any(not all(math.isfinite(v) for v in p) or math.dist(p, e) > 1e-8
-                       for p, e in zip(positions, expected)):
+                if envelope is not None:
+                    floor=cold_motion.floor(track,forecast,now) if cold_motion is not None else None
+                    if velocity_hypotheses is not None:
+                        alternatives=velocity_hypotheses.floor(track,forecast,now)
+                        if alternatives is not None:floor=alternatives if floor is None else [max(a,b) for a,b in zip(floor,alternatives)]
+                    audit_envelope(envelope, track, now, forecast, expected, expected_radii,floor)
+                    enveloped_forecasts += 1
+                elif any(not all(math.isfinite(v) for v in p) or math.dist(p, e) > 1e-8
+                         for p, e in zip(positions, expected)):
                     raise ValueError('forecast differs from acquisition-anchored motion at the current epoch')
                 if braking is None:
                     continue
-                means = [math.dist(a, b)/dt for a, b in zip(positions, positions[1:])]
+                means = [math.dist(a, b)/dt for a, b in zip(expected, expected[1:])]
                 for a, b in zip(means, means[1:]):
                     deceleration = (a-b)/dt
                     if not -1e-8 <= deceleration <= 2.0+1e-8:
@@ -1138,10 +1263,14 @@ def check_motion_predictions(log):
                 if coast and max(coast)-min(coast) > 1e-8:
                     raise ValueError('braking assumption persisted beyond acquisition plus one second')
     return {'verified': True, 'forecasts': forecasts, 'braking_forecasts': braking_forecasts,
+            'confirmed_slow_forecasts': slow_forecasts, 'unconfirmed_slow_forecasts': unconfirmed_slow_forecasts,
+            'uncertain_slow_forecasts': uncertain_slow_forecasts,
             'stale_fallbacks': stale_fallbacks, 'reacceleration_fallbacks': reacceleration_fallbacks,
+            'intermediate_braking_vetoes': intermediate_braking_vetoes,
             'max_forecast_deceleration_m_s2': max_deceleration,
             'aged_forecasts': aged_forecasts, 'rebased_moving_forecasts': rebased_moving_forecasts,
-            'max_epoch_age_s': max_epoch_age, 'current_epoch_reconstruction_verified': True}
+            'max_epoch_age_s': max_epoch_age, 'current_epoch_reconstruction_verified': True,
+            **({'enveloped_forecasts': enveloped_forecasts} if envelope is not None else {})}
 
 
 def control_metrics(log):

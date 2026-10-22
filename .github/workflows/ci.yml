@@ -24,10 +24,245 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Check adversarial prediction evidence
+        run: python scripts/test_prediction_evidence.py
+      - name: Check declared forecast envelope containment and failure scoring
+        run: python scripts/test_forecast_envelope.py
+      - name: Check pose covariance occupancy and corrupt padding rejection
+        run: python scripts/test_pose_forecasts.py
+      - name: Check cold motion clocks, reachable occupancy and corrupt support rejection
+        run: python scripts/test_cold_motion.py
+      - name: Check recent velocity point geometry and acquisition ownership
+        run: python scripts/test_velocity_hypotheses.py
+      - name: Check acquired approach confirmation and complete stopping certificates
+        run: python scripts/test_checked_approaches.py
+      - name: Check later stop reachability and independent full path certificates
+        run: python scripts/test_later_stops.py
+      - name: Check cold-track batch reconstruction and retained acquisitions
+        run: python scripts/test_track_initialization.py
+      - name: Check recent acquired-motion windows, corruption and frozen-policy ownership
+        run: python scripts/test_recent_track_motion.py
+      - name: Check acquired progress dwell, blockers and lossless projection
+        run: python scripts/test_planning_progress.py
+      - name: Check observed obstruction ownership, chronology and refused proposals
+        run: python scripts/test_observed_detours.py
+      - name: Check measured geometry containment and minimum-radius witnesses
+        run: python scripts/test_measurement_enclosure.py
+      - name: Check measured forecast containment, braking and recovery evidence
+        run: python scripts/test_forecast_consistency.py
+      - name: Check complete planar ray evidence and stopped lost-identity recovery
+        run: python scripts/test_clear_sweep.py
+      - name: Check sparse circle geometry and independent corrupted-measurement rejection
+        run: python scripts/test_sparse_circles.py
+      - name: Check obstruction-stop recovery and independent path certificates
+        run: python scripts/test_obstruction_stops.py
+      - name: Check road-width candidates and independent circular road containment
+        run: python scripts/test_road_width.py
+      - name: Check certified earlier stops and retained goal/coverage failures
+        run: python scripts/test_stop_search.py
+      - name: Check absolute heading covariance and frozen acquisition protocol
+        run: python scripts/test_absolute_heading.py
+      - name: Check acquired-heading chronology and retained fault clocks
+        run: python scripts/test_heading_latency.py
+      - name: Check refined lateral admission and complete forecast clearance
+        run: python scripts/test_refined_lateral.py
+      - name: Check planning decision provenance and output projection
+        run: python scripts/test_planning_diagnostics.py
+      - name: Check observation control ownership and archive integrity
+        run: python scripts/test_comparison_control.py
+      - name: Check historical roundoff bounds and exact clocks and gates
+        run: python scripts/test_recorded_numeric.py
+      - name: Check reconstructed submap fingerprints and voxel integrity
+        run: python scripts/test_recorded_submap.py
+      - name: Check contained lane-conflict witnesses
+        run: python scripts/test_lane_occupancy.py
+      - name: Check swept physical speed intervals
+        run: python scripts/test_speed_zones.py
+      - name: Check original lane-map speed reconstruction
+        run: python scripts/test_lane_speed_zones.py
+      - name: Check independent connector arc-length speed mapping
+        run: python scripts/test_lane_change_speeds.py
+      - name: Check alternate return-policy speed scoring
+        run: python scripts/test_lane_return_speeds.py
+      - name: Check independent retry-route speed remapping
+        run: python scripts/test_lane_resume_speeds.py
+      - name: Check closure-aware mapped speed scoring
+        run: python scripts/test_navigation_speeds.py
+      - name: Check acquisition-time GNSS reconstruction
+        run: python scripts/test_gnss_latency.py
+      - name: Check correlated GNSS calibration oracle and frozen paired controls
+        run: python scripts/test_gnss_covariance.py
+      - name: Check deferred GNSS recovery proposals against independent closed forms
+        run: python scripts/test_gnss_recovery.py
+      - name: Check GNSS antenna geometry against closed-form posteriors
+        run: python scripts/test_gnss_antenna.py
+      - name: Check lost-motion admission and measured regional recovery
+        run: |
+          python scripts/test_motion_continuity.py
+          python scripts/test_relocalization.py
+          python scripts/test_signal_relocalization.py
+          python scripts/test_yield_relocalization.py
+      - name: Check chronological GNSS and map reconstruction
+        run: python scripts/test_gnss_map_history.py
+      - name: Check asynchronous map and original GNSS evidence reconstruction
+        run: python scripts/test_delayed_map.py
+      - name: Check independent partial-edge routing oracle
+        run: python scripts/test_mid_edge.py
+      - name: Check full initial-pose covariance conditioning and evidence
+        run: python scripts/test_initial_pose.py
       - run: cargo fmt --all --check
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - run: cargo test --workspace --locked
+        shell: bash scripts/ci-report.sh {0}
       - run: cargo build --workspace --release --locked
+      - name: Compare indexed clustering with the frozen detector and record timings
+        shell: bash
+        run: |
+          cargo build --release --locked -p rustdriving-perception --example cluster_index
+          python scripts/check_cluster_index.py --output artifacts/cluster-index
+      - name: Qualify bounded intermediate lateral paths with retained parent failures
+        shell: bash
+        run: python scripts/check_refined_lateral.py --plant reference-2d --output artifacts/refined-lateral
+      - name: Compare reference planning decision capture with unchanged physical frames
+        if: runner.os == 'Linux'
+        shell: bash
+        run: python scripts/check_planning_diagnostics.py --plant reference-2d --baseline-output artifacts/refined-lateral --output artifacts/planning-decisions
+      - name: Qualify reference forecast braking and retain all adoption failures
+        if: runner.os == 'Linux'
+        run: python scripts/check_forecast_consistency.py --plant reference-2d --check-contract --output artifacts/forecast-consistency
+      - name: Compare reference ray capture and stopped empty-sweep recovery
+        if: runner.os == 'Linux'
+        run: python scripts/check_clear_sweep_recovery.py --plant reference-2d --baseline-output artifacts/forecast-consistency --output artifacts/clear-sweep-recovery
+      - name: Compare reference sparse circle fits with unchanged physical gates
+        if: runner.os == 'Linux'
+        run: python scripts/check_sparse_circles.py --plant reference-2d --output artifacts/sparse-circles
+      - name: Compare reference recent-motion fits with retained parent gates
+        if: runner.os == 'Linux'
+        run: python scripts/check_recent_track_motion.py --plant reference-2d --output artifacts/recent-track-motion
+      - name: Verify reference stationary progress status without changing driving
+        if: runner.os == 'Linux'
+        run: python scripts/check_planning_progress.py --plant reference-2d --baseline-output artifacts/recent-track-motion --output artifacts/planning-progress
+      - name: Verify acquired-heading history and unsupported-delay braking
+        shell: bash
+        run: |
+          python scripts/check_heading_latency.py --plant reference-2d --output artifacts/heading-latency
+          python scripts/check_heading_latency.py --plant reference-2d --replay-composition --output artifacts/heading-latency-composition
+      - name: Compare confirmed track initialization with retained parent gates
+        shell: bash
+        run: python scripts/check_track_initialization.py --plant reference-2d --output artifacts/confirmed-tracks
+      - name: Verify complete newest-measurement preservation in reference driving
+        shell: bash
+        run: python scripts/check_measurement_enclosure.py --plant reference-2d --output artifacts/measured-enclosure
+      - name: Verify standalone measured enclosure on the declared curved-road control
+        shell: bash
+        run: python scripts/check_measurement_enclosure.py --plant reference-2d --initialization legacy --only-index 3 --output artifacts/standalone-enclosure
+      - name: Drive and independently score fixed-route speed intervals
+        shell: bash
+        run: python scripts/check_speed_zones.py --output artifacts/speed-zones
+      - name: Compile lane-map speeds and independently score reference driving
+        shell: bash
+        run: python scripts/check_lane_speed_zones.py --output artifacts/lane-speed-zones
+      - name: Drive fixed lane changes with mapped speeds and observed-gap admission
+        shell: bash
+        run: python scripts/check_lane_change_speeds.py --output artifacts/lane-change-speeds
+      - name: Drive early returns with map-derived alternate speed caps
+        shell: bash
+        run: python scripts/check_lane_return_speeds.py --output artifacts/lane-return-speeds
+      - name: Drive mission retries with mapped connector and tail speeds
+        shell: bash
+        run: python scripts/check_lane_resume_speeds.py --output artifacts/lane-resume-speeds
+      - name: Drive stopped route handovers with original road speed limits
+        shell: bash
+        run: python scripts/check_navigation_speeds.py --output artifacts/navigation-speeds
+      - name: Verify delayed GNSS fusion and fault recovery from original observations
+        shell: bash
+        run: python scripts/check_gnss_latency.py --output artifacts/gnss-latency
+      - name: Verify correlated GNSS and retain known narrow-axis bias failures
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, subprocess
+          result = subprocess.run(['python', 'scripts/check_gnss_covariance.py', '--plant', 'reference-2d', '--seeds', '7', '--output', 'artifacts/gnss-covariance'])
+          report = json.load(open('artifacts/gnss-covariance/report.json'))
+          assert result.returncode == 1 and report['complete'] and not report['passed']
+          rows = report['episodes']
+          assert len(rows) == 8
+          assert all('audit_error' not in r and r['oracle']['passed'] and r['noise_samples_verified'] > 0 and r['replay_exit_code'] == 0 and r['replay']['verified'] for r in rows)
+          for row in rows:
+              assert row['summary']['reached_goal'] and not row['summary']['collisions'] and not row['summary']['road_violations']
+              if row['calibrated']:
+                  assert set(row['failed_gates']) == ({'source_acceptance', 'localization_accuracy', 'fault_stop_recovery'} if row['world'].endswith('bias') else set())
+              else:
+                  assert set(row['failed_gates']) <= {'source_acceptance'}
+          PY
+      - name: Verify combined delayed GNSS and map localization
+        shell: bash
+        run: python scripts/check_gnss_map_history.py --output artifacts/gnss-map-history
+      - name: Verify bounded GNSS recovery and preserve no-guard and expiry controls
+        shell: bash
+        run: python scripts/check_gnss_recovery.py --plant reference-2d --smoke --output artifacts/gnss-recovery
+      - name: Verify calibrated GNSS antenna mounts with delayed GNSS and maps
+        shell: bash
+        run: python scripts/check_gnss_antenna.py --plant reference-2d --smoke --output artifacts/gnss-antenna
+      - name: Verify stopped motion discontinuities and healthy scene continuity
+        shell: bash
+        run: python scripts/check_motion_continuity.py --plant reference-2d --smoke --output artifacts/motion-continuity
+      - name: Verify measured regional map recovery and rejected resets
+        shell: bash
+        run: |
+          python -m pip install -r scripts/requirements-relocalization.txt
+          python scripts/check_relocalization.py --plant reference-2d --smoke --output artifacts/regional-relocalization
+      - name: Verify bounded map-only driving after a measured reset
+        shell: bash
+        run: python scripts/check_relocalization_map_only.py --plant reference-2d --smoke --output artifacts/relocalization-map-only
+      - name: Verify measured-reset GNSS confirmations and expired handoffs
+        shell: bash
+        run: python scripts/check_gnss_handoff.py --plant reference-2d --smoke --output artifacts/gnss-handoff
+      - name: Verify navigation missions through measured localization resets
+        shell: bash
+        run: python scripts/check_navigation_relocalization.py --plant reference-2d --smoke --output artifacts/navigation-relocalization
+      - name: Verify braked stopped-route confirmation
+        shell: bash
+        run: python scripts/check_navigation_handover.py --plant reference-2d --smoke --output artifacts/navigation-handover
+      - name: Verify observed detour contract and retain forecast regressions
+        shell: bash
+        run: python scripts/check_observed_detours.py --plant reference-2d --check-contract --output artifacts/observed-detours
+      - name: Qualify reference pose covariance forecasts against unchanged parent gates
+        shell: bash
+        run: python scripts/check_pose_forecasts.py --plant reference-2d --output artifacts/pose-forecasts
+      - name: Verify reference cold motion contract and retain physical regressions
+        shell: bash
+        run: python scripts/check_cold_motion.py --plant reference-2d --check-contract --output artifacts/cold-motion
+      - name: Qualify reference recent velocity alternatives against unchanged gates
+        shell: bash
+        run: python scripts/check_velocity_hypotheses.py --plant reference-2d --output artifacts/recent-velocity-hypotheses
+      - name: Qualify reference checked approaches against unchanged gates
+        shell: bash
+        run: python scripts/check_checked_approaches.py --plant reference-2d --output artifacts/checked-approaches
+      - name: Qualify reference later stopping search against unchanged gates
+        shell: bash
+        run: python scripts/check_later_stops.py --plant reference-2d --output artifacts/later-stops
+      - name: Verify stop-sign obligations after measured localization recovery
+        shell: bash
+        run: python scripts/check_stop_relocalization.py --plant reference-2d --smoke --output artifacts/stop-relocalization
+      - name: Verify new signal permission after measured localization recovery
+        shell: bash
+        run: python scripts/check_signal_relocalization.py --plant reference-2d --smoke --output artifacts/signal-relocalization
+      - name: Verify yield entry ownership and fresh clear scans after measured recovery
+        shell: bash
+        run: python scripts/check_yield_relocalization.py --plant reference-2d --smoke --output artifacts/yield-relocalization
+      - name: Verify delayed map acquisitions and transient fault recovery
+        shell: bash
+        run: python scripts/check_delayed_map.py --output artifacts/delayed-map --controls
+      - name: Exhaustively verify directed interior route requests and every closure subset
+        shell: bash
+        run: python scripts/check_mid_edge.py --routing-corpus-only --output artifacts/mid-edge-corpus
+      - name: Drive and replay partial origins, destinations and closure handovers
+        shell: bash
+        run: python scripts/check_mid_edge.py --output artifacts/mid-edge
+      - name: Drive explicit pose calibration and retain mismatched-calibration controls
+        shell: bash
+        run: python scripts/check_initial_pose.py --smoke --output artifacts/initial-pose
       - name: Evaluate pinned measured clouds and independently reconstruct scores
         shell: bash
         run: |
@@ -73,7 +308,36 @@ jobs:
             artifacts/local-corners/
             artifacts/turn-restrictions/
             artifacts/datasets/*.json
+            artifacts/cluster-index/
             artifacts/map-localization/
+            artifacts/speed-zones/
+            artifacts/lane-speed-zones/
+            artifacts/lane-change-speeds/
+            artifacts/lane-return-speeds/
+            artifacts/lane-resume-speeds/
+            artifacts/navigation-speeds/
+            artifacts/mid-edge/
+            artifacts/mid-edge-corpus/
+            artifacts/initial-pose/
+            artifacts/gnss-covariance/
+            artifacts/gnss-recovery/
+            artifacts/gnss-antenna/
+            artifacts/motion-continuity/
+            artifacts/regional-relocalization/
+            artifacts/relocalization-map-only/
+            artifacts/gnss-handoff/
+            artifacts/navigation-relocalization/
+            artifacts/navigation-handover/
+            artifacts/observed-detours/
+            artifacts/pose-forecasts/
+            artifacts/cold-motion/
+            artifacts/recent-velocity-hypotheses/
+            artifacts/checked-approaches/
+            artifacts/later-stops/
+            artifacts/stop-relocalization/
+            artifacts/signal-relocalization/
+            artifacts/yield-relocalization/
+            artifacts/gnss-latency/
   image-tracking:
     runs-on: ubuntu-latest
     steps:
@@ -334,6 +598,9 @@ jobs:
           path: artifacts/opencv-reference/**/*.json
   research-cpu:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash ${{ github.workspace }}/scripts/ci-report.sh {0}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -341,6 +608,57 @@ jobs:
           python-version: '3.12'
       - name: Install pinned Rust
         run: rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
+      - name: Validate additional measured-data acquisition
+        run: |
+          python scripts/test-fetch-additional-datasets.py
+          python scripts/fetch-additional-datasets.py
+      - name: Check recorded natural-motion registration and retained failures
+        run: |
+          python -m pip install -r scripts/requirements-demo.txt
+          cargo fmt --manifest-path integrations/rgbd/Cargo.toml --check
+          cargo clippy --release --manifest-path integrations/rgbd/Cargo.toml --all-targets --locked -- -D warnings
+          RUSTDRIVING_INDEPENDENT_SYNTHETIC_OUTPUT="$GITHUB_WORKSPACE/artifacts/recorded-independent/rust-fixture" cargo test --release --manifest-path integrations/rgbd/Cargo.toml --locked
+          cargo build --release --manifest-path integrations/rgbd/Cargo.toml --locked
+          python scripts/check-recorded-rgbd.py --report integrations/rgbd/baselines/tum-first-v1.json --cargo-lock integrations/rgbd/baselines/Cargo-v1.lock --manifest integrations/rgbd/baselines/manifest-v1.json --raw data/tum-fr1-xyz/raw --evaluator-source integrations/rgbd/baselines/evaluator-v1.rs --matcher-source integrations/rgbd/baselines/matcher-v1.rs --freeze integrations/rgbd/baselines/tum-first-v1.freeze.json --output artifacts/rgbd/original-oracle.json
+          python scripts/check-recorded-rgbd.py --report integrations/rgbd/baselines/tum-fast-v1.json --cargo-lock integrations/rgbd/baselines/Cargo-v1.lock --manifest integrations/rgbd/baselines/manifest-fast-v1.json --raw data/tum-fr1-xyz-fast/raw --evaluator-source integrations/rgbd/baselines/evaluator-v2.rs --matcher-source integrations/rgbd/baselines/matcher-v1.rs --freeze integrations/rgbd/baselines/freeze-fast-v1.json --output artifacts/rgbd/fast-failure-oracle.json
+          mkdir -p artifacts/rgbd
+          integrations/rgbd/target/release/rustdriving-rgbd-evaluate --manifest data/tum-fr1-xyz-tight/manifest.json --prepare-freeze artifacts/rgbd/tight-freeze.json
+          python -c 'import subprocess; result=subprocess.run(["integrations/rgbd/target/release/rustdriving-rgbd-evaluate", "--manifest", "data/tum-fr1-xyz-tight/manifest.json", "--raw", "data/tum-fr1-xyz-tight/raw", "--freeze", "artifacts/rgbd/tight-freeze.json", "--output", "artifacts/rgbd/tight.json"]); assert result.returncode == 1, "expected partial benchmark acceptance (exit 1), not invalid input (exit 2)"'
+          python scripts/check-recorded-rgbd.py --report artifacts/rgbd/tight.json --manifest data/tum-fr1-xyz-tight/manifest.json --raw data/tum-fr1-xyz-tight/raw --freeze artifacts/rgbd/tight-freeze.json --output artifacts/rgbd/tight-oracle.json
+          python -c 'import json; r=json.load(open("artifacts/rgbd/tight.json")); assert (r["summary"]["accepted"],r["summary"]["rejected"],r["summary"]["heldout_passed"]) == (7,4,5), "recorded temporal baseline changed; inspect every failure"'
+      - name: Prepare historical shared libraries for frozen RGB-D reproductions
+        run: |
+          git fetch --no-tags --depth=1 origin a2776053d88bcdcae4e39134c73d95412ff49125
+          python scripts/test-rgbd-regression-staging.py
+          python scripts/prepare-rgbd-regression.py --output "$RUNNER_TEMP/rustdriving-rgbd-regression"
+          cargo build --release --locked --manifest-path "$RUNNER_TEMP/rustdriving-rgbd-regression/integrations/rgbd/Cargo.toml"
+          cp "$RUNNER_TEMP/rustdriving-rgbd-regression/regression-sources.json" artifacts/rgbd/historical-shared-libraries.json
+      - name: Reproduce recorded-depth odometry and fixed-map failure evidence
+        working-directory: ${{ runner.temp }}/rustdriving-rgbd-regression
+        shell: bash scripts/ci-report.sh {0}
+        run: |
+          python scripts/fetch-recorded-motion.py --dataset tum-fr1-xyz-motion
+          python scripts/fetch-recorded-motion.py --dataset tum-fr1-xyz-motion-v2
+          python scripts/check-recorded-motion-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-evaluate --output artifacts/recorded-motion
+      - name: Reproduce measured keyframes, expiry and retained temporal failure
+        working-directory: ${{ runner.temp }}/rustdriving-rgbd-regression
+        run: |
+          python scripts/fetch-keyframe-dataset.py
+          python scripts/check-recorded-keyframe-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-evaluate --output artifacts/recorded-keyframes
+      - name: Reproduce measured submap fusion and retained desk and office failures
+        working-directory: ${{ runner.temp }}/rustdriving-rgbd-regression
+        run: |
+          python scripts/fetch-submap-datasets.py tum-fr1-desk-submaps
+          python scripts/fetch-submap-datasets.py tum-fr3-office-submaps
+          python scripts/check-recorded-submap-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-evaluate --output artifacts/recorded-submaps
+      - name: Reproduce measured RGB-D visual motion and explicit repeated-image rejections
+        working-directory: ${{ runner.temp }}/rustdriving-rgbd-regression
+        run: |
+          python -m pip install -r scripts/requirements-visual.txt
+          python scripts/fetch-visual-datasets.py tum-fr1-desk-visual
+          python scripts/fetch-visual-datasets.py tum-fr3-office-visual
+          python scripts/fetch-visual-datasets.py tum-fr3-sitting-visual
+          python scripts/check-recorded-visual-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-evaluate --output artifacts/recorded-visual
       - name: Verify optional Rust CPU image detector
         run: |
           cargo fmt --manifest-path integrations/onnx/Cargo.toml --check
@@ -450,10 +768,6 @@ jobs:
           controls = json.loads(Path("artifacts/camera-analysis-v1/controls/summary.json").read_text())
           assert controls["destination_staging_name_collision_passed"] is True
           PY
-      - name: Validate additional measured-data acquisition
-        run: |
-          python scripts/test-fetch-additional-datasets.py
-          python scripts/fetch-additional-datasets.py
       - name: Check adaptive terrain scores and prior-heldout rename regression
         run: |
           python scripts/fetch-datasets.py --dataset isprs-terrain
@@ -464,41 +778,6 @@ jobs:
           done
           target/release/rustdriving-dataset-eval adaptive-ground --dataset pdal-autzen --split fresh_heldout --freeze assets/adaptive-ground-renamed-freeze.json --output artifacts/adaptive/fresh.json
           python scripts/check-adaptive-ground.py --report artifacts/adaptive/fresh.json --freeze assets/adaptive-ground-renamed-freeze.json --output artifacts/adaptive/fresh-oracle.json
-      - name: Check recorded natural-motion registration and retained failures
-        run: |
-          python -m pip install -r scripts/requirements-demo.txt
-          cargo fmt --manifest-path integrations/rgbd/Cargo.toml --check
-          cargo clippy --release --manifest-path integrations/rgbd/Cargo.toml --all-targets --locked -- -D warnings
-          RUSTDRIVING_INDEPENDENT_SYNTHETIC_OUTPUT="$GITHUB_WORKSPACE/artifacts/recorded-independent/rust-fixture" cargo test --release --manifest-path integrations/rgbd/Cargo.toml --locked
-          cargo build --release --manifest-path integrations/rgbd/Cargo.toml --locked
-          python scripts/check-recorded-rgbd.py --report integrations/rgbd/baselines/tum-first-v1.json --cargo-lock integrations/rgbd/baselines/Cargo-v1.lock --manifest integrations/rgbd/baselines/manifest-v1.json --raw data/tum-fr1-xyz/raw --evaluator-source integrations/rgbd/baselines/evaluator-v1.rs --matcher-source integrations/rgbd/baselines/matcher-v1.rs --freeze integrations/rgbd/baselines/tum-first-v1.freeze.json --output artifacts/rgbd/original-oracle.json
-          python scripts/check-recorded-rgbd.py --report integrations/rgbd/baselines/tum-fast-v1.json --cargo-lock integrations/rgbd/baselines/Cargo-v1.lock --manifest integrations/rgbd/baselines/manifest-fast-v1.json --raw data/tum-fr1-xyz-fast/raw --evaluator-source integrations/rgbd/baselines/evaluator-v2.rs --matcher-source integrations/rgbd/baselines/matcher-v1.rs --freeze integrations/rgbd/baselines/freeze-fast-v1.json --output artifacts/rgbd/fast-failure-oracle.json
-          mkdir -p artifacts/rgbd
-          integrations/rgbd/target/release/rustdriving-rgbd-evaluate --manifest data/tum-fr1-xyz-tight/manifest.json --prepare-freeze artifacts/rgbd/tight-freeze.json
-          python -c 'import subprocess; result=subprocess.run(["integrations/rgbd/target/release/rustdriving-rgbd-evaluate", "--manifest", "data/tum-fr1-xyz-tight/manifest.json", "--raw", "data/tum-fr1-xyz-tight/raw", "--freeze", "artifacts/rgbd/tight-freeze.json", "--output", "artifacts/rgbd/tight.json"]); assert result.returncode == 1, "expected partial benchmark acceptance (exit 1), not invalid input (exit 2)"'
-          python scripts/check-recorded-rgbd.py --report artifacts/rgbd/tight.json --manifest data/tum-fr1-xyz-tight/manifest.json --raw data/tum-fr1-xyz-tight/raw --freeze artifacts/rgbd/tight-freeze.json --output artifacts/rgbd/tight-oracle.json
-          python -c 'import json; r=json.load(open("artifacts/rgbd/tight.json")); assert (r["summary"]["accepted"],r["summary"]["rejected"],r["summary"]["heldout_passed"]) == (7,4,5), "recorded temporal baseline changed; inspect every failure"'
-      - name: Reproduce recorded-depth odometry and fixed-map failure evidence
-        run: |
-          python scripts/fetch-recorded-motion.py --dataset tum-fr1-xyz-motion
-          python scripts/fetch-recorded-motion.py --dataset tum-fr1-xyz-motion-v2
-          python scripts/check-recorded-motion-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-evaluate --output artifacts/recorded-motion
-      - name: Reproduce measured keyframes, expiry and retained temporal failure
-        run: |
-          python scripts/fetch-keyframe-dataset.py
-          python scripts/check-recorded-keyframe-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-evaluate --output artifacts/recorded-keyframes
-      - name: Reproduce measured submap fusion and retained desk and office failures
-        run: |
-          python scripts/fetch-submap-datasets.py tum-fr1-desk-submaps
-          python scripts/fetch-submap-datasets.py tum-fr3-office-submaps
-          python scripts/check-recorded-submap-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-evaluate --output artifacts/recorded-submaps
-      - name: Reproduce measured RGB-D visual motion and explicit repeated-image rejections
-        run: |
-          python -m pip install -r scripts/requirements-visual.txt
-          python scripts/fetch-visual-datasets.py tum-fr1-desk-visual
-          python scripts/fetch-visual-datasets.py tum-fr3-office-visual
-          python scripts/fetch-visual-datasets.py tum-fr3-sitting-visual
-          python scripts/check-recorded-visual-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-evaluate --output artifacts/recorded-visual
       - name: Verify recorded-image detection and tracking with one CPU model plan
         run: |
           cargo build --release --locked --manifest-path integrations/camera-tracking/Cargo.toml
@@ -583,37 +862,93 @@ jobs:
           assert proof["timing_speedup_required_for_execution_success"] is False
           assert proof["inherited_quality_gates_pass"] is False
           PY
+      - name: Audit guarded Resize lowering and every raw model output bit
+        if: ${{ !cancelled() }}
+        shell: bash scripts/ci-report.sh {0}
+        run: |
+          python -m unittest discover -s integrations/onnx -p test_camera_operators.py -v
+          python -B scripts/check-frozen-camera-operators.py
+          mkdir -p artifacts/camera-operators-v2
+          cp assets/camera-cpu-v1/LICENSE-TUM-data.txt artifacts/camera-operators-v2/LICENSE-TUM-data.txt
+          cp assets/camera-cpu-v1/LICENSE-BDD-data.txt artifacts/camera-operators-v2/LICENSE-BDD-data.txt
+          python integrations/onnx/camera_operator_check.py controls --output artifacts/camera-operators-v2/controls
+          python integrations/onnx/camera_operator_check.py run --controls artifacts/camera-operators-v2/controls --output artifacts/camera-operators-v2/validation
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          proof = json.loads(Path("artifacts/camera-operators-v2/validation/summary.json").read_text())
+          assert proof["pass_checks"] is True
+          assert proof["original_images"] == 16 and proof["repeats_per_image"] == 2
+          assert proof["full_raw_tensor_bitwise_parity"] is True
+          assert proof["original_per_view_and_final_detections_identical"] is True
+          assert proof["current_host_reference_exact"] is True
+          assert proof["paired_order_alternated"] is True
+          assert proof["validation_actual_model_forwards"] == 264
+          assert proof["hardware_speedup_required_for_success"] is False
+          assert proof["deadline_measurement"] is False
+          assert proof["inherited_quality_gates_pass"] is False
+          PY
+      - name: Verify lowered parallel execution with the unchanged measured clock
+        if: ${{ !cancelled() }}
+        shell: bash scripts/ci-report.sh {0}
+        run: |
+          python integrations/onnx/camera_repeat_check.py controls --output artifacts/camera-operators-v2/parallel-controls
+          python integrations/onnx/camera_repeat_check.py run --controls artifacts/camera-operators-v2/parallel-controls --output artifacts/camera-operators-v2/parallel-validation
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          proof = json.loads(Path("artifacts/camera-operators-v2/parallel-validation/summary.json").read_text())
+          assert proof["pass_checks"] is True
+          assert proof["original_images"] == 16 and proof["repeats_per_image"] == 2
+          assert proof["complete_original_measurement_and_result_parity"] is True
+          assert proof["actual_measured_parallel_replay"] is True
+          assert proof["current_host_reference_exact"] is True
+          assert proof["current_reference_model_forwards"] == 64
+          assert proof["total_actual_model_forwards"] == 208
+          assert proof["age_limit_s"] == .2
+          assert proof["hardware_speedup_required_for_success"] is False
+          assert proof["inherited_quality_gates_pass"] is False
+          PY
       - name: Reproduce viewed pixel-refined RGB-D motion and independent reprojection checks
+        working-directory: ${{ runner.temp }}/rustdriving-rgbd-regression
         run: |
           python scripts/fetch-reprojection-dataset.py tum-fr2-desk-reprojection
           python scripts/check-recorded-reprojection-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-evaluate --output artifacts/recorded-reprojection
       - name: Qualify metadata before images and reproduce the frozen room trial
+        working-directory: ${{ runner.temp }}/rustdriving-rgbd-regression
         run: |
           python scripts/test-qualify-rgbd-metadata.py
           python scripts/fetch-qualified-dataset.py tum-fr1-room-qualified
           python scripts/check-recorded-qualified-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-qualified --output artifacts/recorded-qualified
       - name: Reproduce continuous room motion with a partly viewed prefix
+        working-directory: ${{ runner.temp }}/rustdriving-rgbd-regression
         run: |
           python scripts/test-qualify-rgbd-temporal.py
           python scripts/fetch-temporal-dataset.py tum-fr1-room-temporal
           python scripts/check-recorded-temporal-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-temporal --output artifacts/recorded-temporal
       - name: Reproduce viewed depth-supported matching and preserve its physical outcome
+        working-directory: ${{ runner.temp }}/rustdriving-rgbd-regression
         run: python scripts/check-recorded-supported-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-supported --output artifacts/recorded-supported
       - name: Exercise bounded patch tracking and retain synthetic ambiguity failures
+        working-directory: ${{ runner.temp }}/rustdriving-rgbd-regression
         run: |
           rustc --edition 2024 -O scripts/exercise-pyramidal-tracking.rs -o artifacts/exercise-pyramidal-tracking
           artifacts/exercise-pyramidal-tracking > artifacts/pyramidal-tracking-synthetic-exercises.json
       - name: Reproduce viewed pyramidal image tracking with all179 outcomes retained
+        working-directory: ${{ runner.temp }}/rustdriving-rgbd-regression
         run: python scripts/check-recorded-tracked-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-tracked --output artifacts/recorded-tracked
       - name: Validate bounded official-archive acquisition and independent recording controls
+        working-directory: ${{ runner.temp }}/rustdriving-rgbd-regression
         run: |
           python scripts/test-independent-dataset.py
           python scripts/check-recorded-independent.py --self-test --synthetic-packet artifacts/recorded-independent/rust-fixture/fixture.json --output artifacts/recorded-independent/self-test.json
       - name: Reproduce the viewed official desk2 failure and corrected independent audit
+        working-directory: ${{ runner.temp }}/rustdriving-rgbd-regression
         run: |
           python scripts/fetch-independent-dataset.py tum-fr1-desk2-independent --archive "$RUNNER_TEMP/rustdriving-desk2-source.tgz" --preregistration assets/recorded-independent/desk2-v1/design.json --acquisition-log artifacts/recorded-independent/official-acquisition.json
           python scripts/check-recorded-independent-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-independent --archive "$RUNNER_TEMP/rustdriving-desk2-source.tgz" --manifest data/tum-fr1-desk2-independent/manifest.json --raw data/tum-fr1-desk2-independent/raw --output artifacts/recorded-independent/viewed-regression
       - name: Audit bounded multiscale features on analytic controls and both viewed recordings
+        working-directory: ${{ runner.temp }}/rustdriving-rgbd-regression
         env:
           OPENBLAS_NUM_THREADS: '1'
         run: |
@@ -637,6 +972,7 @@ jobs:
               }, "viewed pair result changed; retain and inspect every failure"
           PY
       - name: Audit continuous multiscale state controls and reproduce viewed motion failures
+        working-directory: ${{ runner.temp }}/rustdriving-rgbd-regression
         env:
           OPENBLAS_NUM_THREADS: '1'
         run: |
@@ -646,6 +982,7 @@ jobs:
           python scripts/check-multiscale-temporal-suite.py --self-test --output artifacts/multiscale-temporal/suite-controls
           python scripts/check-multiscale-temporal-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-multiscale-temporal --output artifacts/multiscale-temporal/viewed-regression
       - name: Audit registered-grid camera controls and reproduce viewed motion failures
+        working-directory: ${{ runner.temp }}/rustdriving-rgbd-regression
         env:
           OPENBLAS_NUM_THREADS: '1'
         run: |
@@ -655,6 +992,7 @@ jobs:
           python scripts/check-registered-grid-temporal-suite.py --self-test --output artifacts/registered-grid-temporal/suite-controls
           python scripts/check-registered-grid-temporal-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-registered-grid-temporal --output artifacts/registered-grid-temporal/viewed-regression
       - name: Reproduce authored KITTI-format projection and input-contract controls
+        working-directory: ${{ runner.temp }}/rustdriving-rgbd-regression
         env:
           OPENBLAS_NUM_THREADS: '1'
         run: |
@@ -744,6 +1082,7 @@ jobs:
             artifacts/camera-cpu-v1/build/build.log
             artifacts/camera-cpu-v1/controls/
             artifacts/camera-cpu-v1/verification/
+            artifacts/camera-operators-v2/
             artifacts/adaptive/
             artifacts/rgbd/
             artifacts/recorded-motion/
@@ -838,15 +1177,149 @@ jobs:
       - name: Verify native GNSS-denied driving, expiry and sensor-loss controls
         working-directory: rust_drive
         run: python3 scripts/check-map-localization.py --backend rne-dynamic --output artifacts/map-localization
+      - name: Verify native correlated GNSS and retain known narrow-axis bias failures
+        working-directory: rust_drive
+        run: |
+          python3 - <<'PY'
+          import json, subprocess
+          result = subprocess.run(['python3', 'scripts/check_gnss_covariance.py', '--plant', 'rne-dynamic', '--seeds', '7', '--output', 'artifacts/gnss-covariance-native'])
+          report = json.load(open('artifacts/gnss-covariance-native/report.json'))
+          assert result.returncode == 1 and report['complete'] and not report['passed']
+          rows = report['episodes']
+          assert len(rows) == 8
+          assert all('audit_error' not in r and r['oracle']['passed'] and r['noise_samples_verified'] > 0 and r['replay_exit_code'] == 0 and r['replay']['verified'] for r in rows)
+          for row in rows:
+              assert row['summary']['reached_goal'] and not row['summary']['collisions'] and not row['summary']['road_violations']
+              if row['calibrated']:
+                  assert set(row['failed_gates']) == ({'source_acceptance', 'localization_accuracy', 'fault_stop_recovery'} if row['world'].endswith('bias') else set())
+              else:
+                  assert set(row['failed_gates']) <= {'source_acceptance'}
+          PY
       - name: Independently verify experimental XYZ terrain and measured actor AABBs
         working-directory: rust_drive
         run: python3 scripts/check-terrain-objects.py --compact --output artifacts/terrain-objects
+      - name: Verify native bounded GNSS recovery with map, no-guard and expiry controls
+        working-directory: rust_drive
+        run: python3 scripts/check_gnss_recovery.py --plant rne-dynamic --smoke --output artifacts/gnss-recovery-native
+      - name: Verify native calibrated GNSS antenna mounts and preserve controls
+        working-directory: rust_drive
+        run: python3 scripts/check_gnss_antenna.py --plant rne-dynamic --smoke --output artifacts/gnss-antenna-native
+      - name: Verify native physical stops after motion continuity loss
+        working-directory: rust_drive
+        run: python3 scripts/check_motion_continuity.py --plant rne-dynamic --smoke --output artifacts/motion-continuity-native
+      - name: Verify native measured recovery and conservative regional rejection
+        working-directory: rust_drive
+        run: |
+          python3 -m pip install -r scripts/requirements-relocalization.txt
+          python3 scripts/check_relocalization.py --plant rne-dynamic --smoke --output artifacts/regional-relocalization-native
+      - name: Verify native map-only driving, GNSS handoff and bounded stops
+        working-directory: rust_drive
+        run: python3 scripts/check_relocalization_map_only.py --plant rne-dynamic --smoke --output artifacts/relocalization-map-only-native
+      - name: Verify native measured-reset GNSS confirmations and expiry
+        working-directory: rust_drive
+        run: python3 scripts/check_gnss_handoff.py --plant rne-dynamic --smoke --output artifacts/gnss-handoff-native
+      - name: Verify native navigation missions through measured localization resets
+        working-directory: rust_drive
+        run: python3 scripts/check_navigation_relocalization.py --plant rne-dynamic --smoke --output artifacts/navigation-relocalization-native
+      - name: Verify native braked stopped-route confirmation
+        working-directory: rust_drive
+        run: python3 scripts/check_navigation_handover.py --plant rne-dynamic --smoke --output artifacts/navigation-handover-native
+      - name: Verify native observed detour contract and retain forecast regressions
+        working-directory: rust_drive
+        run: python3 scripts/check_observed_detours.py --plant rne-dynamic --check-contract --output artifacts/observed-detours-native
+      - name: Qualify native pose covariance forecasts against unchanged parent gates
+        working-directory: rust_drive
+        run: python3 scripts/check_pose_forecasts.py --plant rne-dynamic --output artifacts/pose-forecasts-native
+      - name: Verify native cold motion contract and retain physical regressions
+        working-directory: rust_drive
+        run: python3 scripts/check_cold_motion.py --plant rne-dynamic --check-contract --output artifacts/cold-motion-native
+      - name: Qualify native recent velocity alternatives against unchanged gates
+        working-directory: rust_drive
+        run: python3 scripts/check_velocity_hypotheses.py --plant rne-dynamic --output artifacts/recent-velocity-hypotheses-native
+      - name: Qualify native checked approaches against unchanged gates
+        working-directory: rust_drive
+        run: python3 scripts/check_checked_approaches.py --plant rne-dynamic --output artifacts/checked-approaches-native
+      - name: Qualify native later stopping search against unchanged gates
+        working-directory: rust_drive
+        run: python3 scripts/check_later_stops.py --plant rne-dynamic --output artifacts/later-stops-native
+      - name: Verify native stop-sign obligations after measured localization recovery
+        working-directory: rust_drive
+        run: python3 scripts/check_stop_relocalization.py --plant rne-dynamic --smoke --output artifacts/stop-relocalization-native
+      - name: Verify native signal permission after measured localization recovery
+        working-directory: rust_drive
+        run: python3 scripts/check_signal_relocalization.py --plant rne-dynamic --smoke --output artifacts/signal-relocalization-native
+      - name: Verify native yield entry ownership after measured recovery
+        working-directory: rust_drive
+        run: python3 scripts/check_yield_relocalization.py --plant rne-dynamic --smoke --output artifacts/yield-relocalization-native
+      - name: Verify all native road-width seeds and passing continuity
+        working-directory: rust_drive
+        run: python3 scripts/check_road_width.py --plant rne-dynamic --check-policy-regression --output artifacts/road-width-native
+      - name: Verify native absolute heading acquisition, faults and retained negatives
+        working-directory: rust_drive
+        run: python3 scripts/check_absolute_heading.py --plant rne-dynamic --check-integration-regression --output artifacts/absolute-heading-native
+      - name: Verify native heading with delayed GNSS and retained fault braking
+        working-directory: rust_drive
+        run: python3 scripts/check_heading_history.py --plant rne-dynamic --output artifacts/heading-history-native
+      - name: Verify native acquisition-time heading with independent chronology
+        working-directory: rust_drive
+        shell: bash
+        run: |
+          python3 scripts/check_heading_latency.py --plant rne-dynamic --output artifacts/heading-latency-native
+          python3 scripts/check_heading_latency.py --plant rne-dynamic --replay-composition --output artifacts/heading-latency-composition-native
+      - name: Qualify native bounded intermediate lateral paths
+        working-directory: rust_drive
+        shell: bash
+        run: python3 scripts/check_refined_lateral.py --plant rne-dynamic --output artifacts/refined-lateral-native
+      - name: Compare native planning decision capture with unchanged physical frames
+        working-directory: rust_drive
+        run: python3 scripts/check_planning_diagnostics.py --plant rne-dynamic --baseline-output artifacts/refined-lateral-native --output artifacts/planning-decisions-native
+      - name: Qualify native forecast braking and retain all adoption failures
+        working-directory: rust_drive
+        run: python3 scripts/check_forecast_consistency.py --plant rne-dynamic --check-contract --output artifacts/forecast-consistency-native
+      - name: Compare native ray capture and stopped empty-sweep recovery
+        working-directory: rust_drive
+        run: python3 scripts/check_clear_sweep_recovery.py --plant rne-dynamic --baseline-output artifacts/forecast-consistency-native --output artifacts/clear-sweep-recovery-native
+      - name: Compare native sparse circle fits with unchanged physical gates
+        working-directory: rust_drive
+        run: python3 scripts/check_sparse_circles.py --plant rne-dynamic --output artifacts/sparse-circles-native
+      - name: Compare native recent-motion fits with retained parent gates
+        working-directory: rust_drive
+        run: python3 scripts/check_recent_track_motion.py --plant rne-dynamic --output artifacts/recent-track-motion-native
+      - name: Verify native stationary progress status without changing driving
+        working-directory: rust_drive
+        run: python3 scripts/check_planning_progress.py --plant rne-dynamic --baseline-output artifacts/recent-track-motion-native --output artifacts/planning-progress-native
+      - name: Compare native confirmed track initialization with retained parent gates
+        working-directory: rust_drive
+        run: python3 scripts/check_track_initialization.py --plant rne-dynamic --output artifacts/confirmed-tracks-native
+      - name: Verify complete newest-measurement preservation in native driving
+        working-directory: rust_drive
+        run: python3 scripts/check_measurement_enclosure.py --plant rne-dynamic --output artifacts/measured-enclosure-native
+      - name: Verify standalone native enclosure on the declared curved-road control
+        working-directory: rust_drive
+        run: python3 scripts/check_measurement_enclosure.py --plant rne-dynamic --initialization legacy --only-index 3 --output artifacts/standalone-enclosure-native
       - name: Verify legal turn routes in the native dynamic plant
         working-directory: rust_drive
         run: python3 scripts/check-turn-restrictions.py --backend native --seeds 7 --compact --output artifacts/turn-restrictions
+      - name: Verify partial routes and retain the native startup-heading quality failure
+        working-directory: rust_drive
+        run: |
+          python3 - <<'PY'
+          import json, subprocess
+          result = subprocess.run(["python3", "scripts/check_mid_edge.py", "--plant", "rne-dynamic", "--output", "artifacts/mid-edge-native"])
+          assert result.returncode == 1, "expected retained heading-quality failure, not input/audit failure"
+          report = json.load(open("artifacts/mid-edge-native/report.json"))
+          rows = report["episodes"]
+          assert len(rows) == 8
+          assert {r["case"] for r in rows if not r["passed"]} == {"same-edge", "obstacle", "clipped", "restricted", "handover", "reopen", "blocked-goal"}
+          assert all(r["run_exit_code"] == r["replay_exit_code"] == 0 and r["routing_and_physical_contract_passed"] and r["replay"]["verified"] for r in rows)
+          assert all(r["failed_gates"] == ([] if r["case"] == "osm" else ["maximum_yaw_error_rad"]) for r in rows)
+          PY
       - name: Independently verify recorded pedestrian and cyclist motion
         working-directory: rust_drive
         run: python3 scripts/check-vru-demo.py --compact --output artifacts/vru-demo --report artifacts/vru-demo/report.json
+      - name: Verify explicit native pose priors and physical spawn perturbations
+        working-directory: rust_drive
+        run: python3 scripts/check_initial_pose.py --smoke --plant rne-dynamic --output artifacts/initial-pose-native
       - name: Independently verify urban left-side traffic, signals and recorded dog walking
         working-directory: rust_drive
         run: python3 scripts/check-city-demo.py --compact --output artifacts/city-demo --report artifacts/city-demo/report.json
@@ -900,6 +1373,32 @@ jobs:
             rust_drive/artifacts/vru-demo/
             rust_drive/artifacts/city-demo/
             rust_drive/artifacts/turn-restrictions/
+            rust_drive/artifacts/mid-edge-native/
+            rust_drive/artifacts/initial-pose-native/
+            rust_drive/artifacts/gnss-covariance-native/
+            rust_drive/artifacts/gnss-recovery-native/
+            rust_drive/artifacts/gnss-antenna-native/
+            rust_drive/artifacts/motion-continuity-native/
+            rust_drive/artifacts/regional-relocalization-native/
+            rust_drive/artifacts/relocalization-map-only-native/
+            rust_drive/artifacts/gnss-handoff-native/
+            rust_drive/artifacts/navigation-relocalization-native/
+            rust_drive/artifacts/navigation-handover-native/
+            rust_drive/artifacts/observed-detours-native/
+            rust_drive/artifacts/pose-forecasts-native/
+            rust_drive/artifacts/cold-motion-native/
+            rust_drive/artifacts/recent-velocity-hypotheses-native/
+            rust_drive/artifacts/checked-approaches-native/
+            rust_drive/artifacts/later-stops-native/
+            rust_drive/artifacts/stop-relocalization-native/
+            rust_drive/artifacts/signal-relocalization-native/
+            rust_drive/artifacts/yield-relocalization-native/
+            rust_drive/artifacts/road-width-native/
+            rust_drive/artifacts/absolute-heading-native/
+            rust_drive/artifacts/heading-latency-native/
+            rust_drive/artifacts/heading-latency-composition-native/
+            rust_drive/artifacts/refined-lateral-native/
+            rust_drive/artifacts/planning-decisions-native/
             rust_drive/artifacts/japan-city-demo/
       - uses: actions/upload-artifact@v4
         with:

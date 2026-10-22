@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "algorithm": "yolox_nano_repeat2x_parallel_image_analysis_v1",
+  "model": "Original unchanged 3659407-byte YOLOX Nano, c789161ed43c8269fcd4e67c67eeeb4e80c622da2eb296a20bc6007bd18a0b7d",
+  "lowering": "Only Resize_201 [1,128,13,13] and Resize_226 [1,64,26,26], with explicit asymmetric/floor/nearest and exact [1,1,2,2] scales. Standard axis insertion, MultiBroadcastTo and reshape; absent/empty ROI only.",
+  "numerics": "Original 416x416 Triangle/raw-BGR, 3549x85 output, original decoder, 0.3 score and 0.45 NMS. Complete current ordinary-output bits checked separately.",
+  "execution": "One lowered tract plan and original four scoped view workers. Complete immutable source receipt is cached once, including its initialization in model-load/startup time.",
+  "timing": "Original FIFO controller or explicitly selected latest-ready controller, both with unchanged acquisition times, 0.2 second age bound and two-sample recovery. Superseded images count unavailable.",
+  "control_permission": false,
+  "new_holdout": false,
+  "driving_integration": false
+}

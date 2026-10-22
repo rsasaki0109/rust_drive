@@ -1,4 +1,5 @@
 # Preserve the exact upstream/converted OSM bytes checked by the source oracle.
+scripts/ci-report.sh text eol=lf
 maps/osm/german-road-extract.osm -text
 maps/osm/german-road-extract.json -text
 # Frozen evaluation hashes must survive Windows checkout newline conversion.
@@ -23,6 +24,7 @@ integrations/rgbd/baselines/visual-sitting-first-v1/** linguist-generated=true
 crates/perception/src/image_features.rs text eol=lf
 crates/localization/src/visual_odometry3d.rs text eol=lf
 crates/perception/src/lib.rs text eol=lf
+crates/perception/tests/fixtures/legacy_cluster_detector.rs text eol=lf
 crates/localization/src/lib.rs text eol=lf
 crates/core/src/lib.rs text eol=lf
 Cargo.lock text eol=lf
@@ -45,6 +47,12 @@ scripts/qualify-rgbd-temporal.py text eol=lf
 scripts/test-qualify-rgbd-temporal.py text eol=lf
 scripts/plot-temporal-motion.py text eol=lf
 assets/temporal*.svg text eol=lf
+# Preserve the frozen first optimization packet and keep generated evidence compact in review.
+assets/camera-operators-v1/** -text linguist-generated=true
+assets/camera-operators-v1/README.md linguist-generated=false
+assets/camera-operators-v1/verify.py linguist-generated=false
+assets/camera-operators-v1/LICENSE-BDD-data.txt whitespace=-blank-at-eol
+assets/camera-operators-v1/checks/*tests.log whitespace=-blank-at-eof
 assets/recorded-supported/** text eol=lf linguist-generated=true
 assets/supported*.json text eol=lf
 integrations/rgbd/baselines/supported-room-v1/** linguist-generated=true

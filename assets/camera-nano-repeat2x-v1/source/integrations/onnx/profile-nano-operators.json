@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "algorithm": "yolox_nano_cpu_operator_profile_v1",
+  "model": "Original pinned 3659407-byte YOLOX Nano, c789161ed43c8269fcd4e67c67eeeb4e80c622da2eb296a20bc6007bd18a0b7d",
+  "execution": "Reuse the original independently checked operator observer with Nano's unchanged 416x416 preprocessing and decoder. No graph rewrite or model tuning.",
+  "comparison": "Every one of 301665 f32 output values per view must have exactly the same bits as an ordinary forward. Alternate observed/reference order when reproducing.",
+  "timing": "Serial operator attribution is diagnostic. It is not a camera deadline or continuous availability measurement.",
+  "control_permission": false,
+  "new_holdout": false,
+  "driving_integration": false
+}

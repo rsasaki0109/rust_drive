@@ -1,0 +1,143 @@
+{
+  "source_sha256": {
+    "integrations/onnx/Cargo.lock": "aa6f1b198ff4ad901f9547ef852dc0113b5c36624d43030a863af32b12f07a0c",
+    "integrations/onnx/Cargo.toml": "7459dc7d7fc0128214275703d48a4170d449edd559dc0cadab689f887d635c8d",
+    "integrations/onnx/fetch_s.py": "bbb3aa5a020e0bdf6054fc1fe1c58ccd64132547a68ab44e28a89d556a35f1ae",
+    "integrations/onnx/profile-analysis.json": "351bbba474b3f8efe42b2024024a4ca51d771d39098876e0d996d6cbcbc2fc2f",
+    "integrations/onnx/profile-s.json": "b6ea56bd4b6271dc4d54b379b101db7425f61adfcd184211932fd2de6160f573",
+    "integrations/onnx/profile-tiles-s.json": "005d8d0b0c06529886be51eee6e8f0de70068aa90e31865c1ef17ad5b3022a9f",
+    "integrations/onnx/profile-vehicle-consistency.json": "02d317d9b342e6385f7c73dada1c5a99a4b1f6dccb4284e2866d6688cecc3b67",
+    "integrations/onnx/profile-vehicle-context.json": "a9fd3fa5f18ba8f6ceb39c39cebed45d920f84a6de72f7ea1bf9b2b376bfdce8",
+    "integrations/onnx/profile-vehicle-vote.json": "2f13591deea2731b5736876d3e6612d92b45f6eba462e90df836e5ff15165e9d",
+    "integrations/onnx/src/bin/rustdriving-camera-analyze.rs": "4afa641ba4349033cd6700a718886f7c633b87ffb9dfeac48ee04b7280f9a42b",
+    "integrations/onnx/src/bin/rustdriving-camera-detect-s.rs": "6d1c965968e4d7d735922b4369e6076bf9801aed081dd7e6693702b513d46138",
+    "integrations/onnx/src/bin/rustdriving-camera-detect-tiled-s.rs": "bbd41c052c5b3dcd497cc9fd23d29b338b5f95046d7c36cefb6333f937899e39",
+    "integrations/onnx/src/bin/rustdriving-camera-detect-vehicle-context.rs": "e5a5f75f7caa73a3fb44a599bcfd50c002f335b0cf815f04636441c72d34a297",
+    "integrations/onnx/src/bin/rustdriving-camera-detect-vehicle-vote.rs": "bbe06b8a90b15b07d58afa50e4d22b9c239d4ef6f7610f7541a63ce0fc2d38f0",
+    "integrations/onnx/src/bin/rustdriving-camera-reconcile.rs": "337b561f1d5d4f62c98812c6fbdf038286e4b2e59fe32360010faca8fb5513f3",
+    "integrations/onnx/src/camera_analysis.rs": "4a4ae3e56662d712fec882d040ccacc6e91b919f0f0b132b69fe4c6a3c409534",
+    "integrations/onnx/src/lib.rs": "b379dfba4c45b535f61284ea9fc7748f6317038976b5fb61221f6a8561ad4bbc",
+    "integrations/onnx/src/yolox_s.rs": "cd23f879d840627b23aa954530e9e39ca5c5cc05cb2e927453c74178fd8142f0",
+    "integrations/onnx/src/yolox_tiles.rs": "0babb6b0c669c5fdbde867b9e9cdebf2ec50843bb121cf4ce3b097f084d5de28",
+    "integrations/onnx/src/yolox_vehicle_consistency.rs": "dd160d33a6a87f7b70c39630ef2b1cba039eeade61496f5551f70b866972681f",
+    "integrations/onnx/src/yolox_vehicle_context.rs": "96edb357fc8a69e9fd3f8e5ea1fb37e5fb986904ab5d663c50e9fa5b764358c5",
+    "integrations/onnx/src/yolox_vehicle_vote.rs": "34831fb00dc15d46d5a7facc0742baa30c0e8fb804b8ce8707958baf513c8a4c",
+    "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed",
+    "integrations/onnx/src/camera_profile.rs": "c93cd129288f29a6fc92c9117f5070d65006de37cc7db481f162a8f9ab6072e3",
+    "integrations/onnx/src/camera_repeat2.rs": "0d8c2c7a3a71d2286d2c3badefc3c66bf01e1aeaed52b6fd60419b8a4b26d9af",
+    "integrations/onnx/src/bin/rustdriving-camera-profile.rs": "47a810374e15cc5b56a2a77d6e00f4e3ff13956b322b810e8376af9d604bae0c",
+    "integrations/onnx/profile-operators.json": "c7553b2ce9ed2819cce54e73921c13fa2a25fa6a20c7e4e34457e851221e3058",
+    "integrations/onnx/camera_operator_check.py": "39a48c017f328963469f7ae92c35777c1ca3783c58a52377935d19fbbc90bde3",
+    "integrations/onnx/camera_parallel_check.py": "ce3e0c50c6c2d11f952bb0e21186c3756ee232653275c80f77238071112f8574",
+    "integrations/onnx/camera_latency_check.py": "317011d9c10a6aaa4a01ce94685a97d42d2dc43f5488e512a77838ec1de2a556"
+  },
+  "executable_sha256": "4a4a3dec91a3017777f4c298c697aed29038f8f8e1e7ddcbcfd96ae27089a169",
+  "model_sha256": "c5c2d13e59ae883e6af3b45daea64af4833a4951c92d116ec270d9ddbe998063",
+  "image_selection": [
+    {
+      "name": "tum-0",
+      "data": "TUM",
+      "image_sha256": "d0ac25cf1cadb0bb2194e85d899366e90fd7ffa97b8a6f9cb9ccebc01c69f65a",
+      "reference_report_sha256": "3c7240ef6237a4ba1087a42917dfa2bca6ce4de6039e745a721175f9ca4f89af"
+    },
+    {
+      "name": "tum-1",
+      "data": "TUM",
+      "image_sha256": "13455dc28cb3f796f4da0758ee522db6868f2a0b129ddf8e5a502ed5ed2f9f7d",
+      "reference_report_sha256": "cb7a37c3f623113f676e767e3c069da60b98b3ebb97d6a69e10b2cb0dd31e11e"
+    },
+    {
+      "name": "tum-2",
+      "data": "TUM",
+      "image_sha256": "db3ce4e52df01b4ba5e8bfcd55059105ca541a543f44a44d22a1f42ccef6bc50",
+      "reference_report_sha256": "06504106d33a36602dc30aaf25d4e201f9fb3f5c69ef53518540cb96008d9e9b"
+    },
+    {
+      "name": "tum-3",
+      "data": "TUM",
+      "image_sha256": "115cea1df25e2402545c48a6e86db8aee679b90254ecccc46ee80fbf9f3620dd",
+      "reference_report_sha256": "b2aa9c2d4224a35c1e6b91ecfff03fc992dde97f0b328035c43a05a595e79fe1"
+    },
+    {
+      "name": "tum-4",
+      "data": "TUM",
+      "image_sha256": "e7f268fda337e3859db47b4ce222ed3eb928dc5bbf9c644d17246d2c52a0ebde",
+      "reference_report_sha256": "0bf4ed45fd00f208d91ba2b065f922c6f90057fd5cd5c942d014f1f9372728c0"
+    },
+    {
+      "name": "tum-5",
+      "data": "TUM",
+      "image_sha256": "bd13de9c67a356989e85ac9e7dc409789a85a8769515d10687615fc482aa4bab",
+      "reference_report_sha256": "0275b6dd9030be3b6f8911fc39523d1871e8660c67b6e74732e13c8295252b6b"
+    },
+    {
+      "name": "tum-6",
+      "data": "TUM",
+      "image_sha256": "f6afcb881471a0d2d81ef0d598007cb39dfe243ab998ffbeb9ae126dbb1d9737",
+      "reference_report_sha256": "1383abb996cb369a9094875c6262af47c7299cd678d9cf90386f9f592377ec11"
+    },
+    {
+      "name": "tum-7",
+      "data": "TUM",
+      "image_sha256": "898edc65fc5be0949695b58aaaf355b092a04fbf651f99959d58a7780cf5ff70",
+      "reference_report_sha256": "7c1af86cd7d77a81a16038478e1d9c6c12217013e4821562b313dc1f948a746b"
+    },
+    {
+      "name": "00a395fe-d60c0b47",
+      "data": "BDD",
+      "image_sha256": "e9d4fb9d625a6a23164dc2fe9cc62edfefe4686c8d9c34b18be6212c51d99f29",
+      "reference_report_sha256": "59992e96eeb4f8fdf49dae25522c32502a3929857840397d36728307c3311732"
+    },
+    {
+      "name": "026c7465-d54954fa",
+      "data": "BDD",
+      "image_sha256": "f0edf2284f6cb5dfc92823457c7587ee2db3e630906850a0c6ebc49e66ba77f2",
+      "reference_report_sha256": "ad72ddf04701a1c3931b4e203874815e5da5b45a1486c7a68db8420376cd1c8b"
+    },
+    {
+      "name": "0798a3a8-c4501e0f",
+      "data": "BDD",
+      "image_sha256": "df0ddad5b34b5defc639ae7768005f1c66e11b440727939b64840cf54552974c",
+      "reference_report_sha256": "67aee04fbafe5dbbb52d63c38775b06e81e2d79a243ca85eaa0325813e653c95"
+    },
+    {
+      "name": "0a493f24-352f747e",
+      "data": "BDD",
+      "image_sha256": "7eff37746d7ca8977dc9e86b420e5e82e3d1b27a410e743943c72cabaf6146ba",
+      "reference_report_sha256": "3c95a0c288b50b5866aa777d43ececcc155d5a5311088e79a76e9cb22da1c2d3"
+    },
+    {
+      "name": "17d21997-6f076249",
+      "data": "BDD",
+      "image_sha256": "1d034e796bd99e1b830fdcdeb815e30147fb673fdf1a06ef60bf674c2faf9a57",
+      "reference_report_sha256": "64553c5613ce579ec8512b35ec6ed5dacce0bdd79b5685bd36142888e5d3ae56"
+    },
+    {
+      "name": "4899be53-dcc6c017",
+      "data": "BDD",
+      "image_sha256": "233b961cb481a642454f5d5be84831ac233ab5dcb55371967b9648cdc918b2a8",
+      "reference_report_sha256": "d6be8f0b16a43821c368144e2cab376422a744b74643090541f44b88cd9b366a"
+    },
+    {
+      "name": "4dab8d2a-be9667d4",
+      "data": "BDD",
+      "image_sha256": "415b7158822a15a697a44ef598adbee58616698477fc52ae46c4aa1b5224f68d",
+      "reference_report_sha256": "693b816bb60c6f95ce87f42c5fc48b5fa64a7bc6eb182344835588f9ff0093fc"
+    },
+    {
+      "name": "ab2360f2-7704a1bf",
+      "data": "BDD",
+      "image_sha256": "f868a5ff6079620f400b79ab00df2d63e6e075bf1d4ab82e04cc97e0f6ff16c1",
+      "reference_report_sha256": "fb1c93b828af14b7b1b8b3f65f8e35c6edd8d7c53db67f01935bbe5dc45ed40c"
+    }
+  ],
+  "baseline_profile": "TUM image0 once using current unmodified-plan mode; one profiled and one ordinary forward per view",
+  "order": [
+    "optimized_profile_then_original_reference",
+    "original_reference_then_optimized_profile"
+  ],
+  "viewed_development_data": true,
+  "independent_fresh_holdout": false,
+  "deadline_measurement": false,
+  "new_accuracy_improvement_claimed": false
+}

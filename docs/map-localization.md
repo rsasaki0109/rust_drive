@@ -8,6 +8,19 @@ Accepted matches pass a joint EKF XY/body-yaw innovation gate and Joseph covaria
 
 A match cannot invent an accepted GNSS timestamp. Only after an actual initial GNSS fix, a fresh accepted synchronous map scan may bridge GNSS age over 0.75 s for a configured maximum of **10 seconds since that actual fix**. Map freshness expires after 0.2 s. Rejected, malformed, repeated, delayed or future scans cannot extend the bridge; prolonged outage and LiDAR failure brake. Existing GNSS innovation holds, odometry freshness, covariance limits and numeric guards still apply. Fresh healthy GNSS can continue operation when a configured map match is rejected.
 
+The map can now be combined with optional acquisition-time GNSS fusion.
+Accepted synchronous pose/covariance measurements enter bounded history and
+are gated again during replay without refreshing map acquisition clocks.
+A conflicting replay refuses the whole GNSS transaction and brakes.
+[Combined event contract and independent qualification](gnss-map-history.md).
+
+Explicit `allow_delayed_scans: true` additionally admits scans up to 0.2 s old
+when GNSS event history is enabled. Registration uses the acquisition prior,
+then the accepted map correction and subsequent GNSS/map updates are replayed
+atomically. Original map acquisition age, genuine GNSS timestamps and fault
+epochs remain unchanged. The default retains synchronous matching.
+[Delayed-map contract, physical recovery and independent numerical audit](delayed-map.md).
+
 ```sh
 source scripts/env.sh
 cargo build --workspace --release --locked

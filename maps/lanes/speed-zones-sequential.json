@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "lanes": [
+    {
+      "id": "lane-0",
+      "centerline": [
+        {
+          "x": 0.0,
+          "y": 0.0
+        },
+        {
+          "x": 25.0,
+          "y": 0.0
+        }
+      ],
+      "width_m": 4.2,
+      "speed_limit_m_s": 6.0,
+      "successors": [
+        "lane-1"
+      ]
+    },
+    {
+      "id": "lane-1",
+      "centerline": [
+        {
+          "x": 25.0,
+          "y": 0.0
+        },
+        {
+          "x": 45.0,
+          "y": 0.0
+        }
+      ],
+      "width_m": 4.2,
+      "speed_limit_m_s": 3.0,
+      "successors": [
+        "lane-2"
+      ]
+    },
+    {
+      "id": "lane-2",
+      "centerline": [
+        {
+          "x": 45.0,
+          "y": 0.0
+        },
+        {
+          "x": 65.0,
+          "y": 0.0
+        }
+      ],
+      "width_m": 4.2,
+      "speed_limit_m_s": 6.0,
+      "successors": [
+        "lane-3"
+      ]
+    },
+    {
+      "id": "lane-3",
+      "centerline": [
+        {
+          "x": 65.0,
+          "y": 0.0
+        },
+        {
+          "x": 85.0,
+          "y": 0.0
+        }
+      ],
+      "width_m": 4.2,
+      "speed_limit_m_s": 1.5,
+      "successors": [
+        "lane-4"
+      ]
+    },
+    {
+      "id": "lane-4",
+      "centerline": [
+        {
+          "x": 85.0,
+          "y": 0.0
+        },
+        {
+          "x": 120.0,
+          "y": 0.0
+        }
+      ],
+      "width_m": 4.2,
+      "speed_limit_m_s": 6.0,
+      "successors": []
+    }
+  ]
+}

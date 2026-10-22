@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/workspace/rust_drive/integrations/onnx/camera_operator_check.py", line 213, in <module>
+    run(args)
+  File "/workspace/rust_drive/integrations/onnx/camera_operator_check.py", line 146, in run
+    audit(baseline,first_saved,pins,False,False)
+  File "/workspace/rust_drive/integrations/onnx/camera_operator_check.py", line 88, in audit
+    require(view['detections']==original['prediction']['detections'],'every decoded class/box/confidence/order unchanged')
+  File "/workspace/rust_drive/integrations/onnx/camera_parallel_check.py", line 31, in require
+    raise ValueError(message)
+ValueError: every decoded class/box/confidence/order unchanged

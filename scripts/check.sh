@@ -2,6 +2,55 @@
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 source scripts/env.sh
+python3 scripts/test-rgbd-regression-staging.py
+python3 scripts/test_comparison_control.py
+python3 scripts/test_recorded_numeric.py
+python3 scripts/test_recorded_submap.py
+python3 scripts/test_prediction_evidence.py
+python3 scripts/test_forecast_envelope.py
+python3 scripts/test_pose_forecasts.py
+python3 scripts/test_cold_motion.py
+python3 scripts/test_velocity_hypotheses.py
+python3 scripts/test_checked_approaches.py
+python3 scripts/test_later_stops.py
+python3 scripts/test_track_initialization.py
+python3 scripts/test_recent_track_motion.py
+python3 scripts/test_measurement_enclosure.py
+python3 scripts/test_forecast_consistency.py
+python3 scripts/test_clear_sweep.py
+python3 scripts/test_sparse_circles.py
+python3 scripts/test_obstruction_stops.py
+python3 scripts/test_stop_search.py
+python3 scripts/test_road_width.py
+python3 scripts/test_refined_lateral.py
+python3 scripts/test_planning_diagnostics.py
+python3 scripts/test_planning_progress.py
+python3 scripts/test_absolute_heading.py
+python3 scripts/test_heading_history.py
+python3 scripts/test_heading_latency.py
+python3 scripts/test_lane_occupancy.py
+python3 scripts/test_speed_zones.py
+python3 scripts/test_lane_speed_zones.py
+python3 scripts/test_lane_change_speeds.py
+python3 scripts/test_lane_return_speeds.py
+python3 scripts/test_lane_resume_speeds.py
+python3 scripts/test_navigation_speeds.py
+python3 scripts/test_gnss_latency.py
+python3 scripts/test_gnss_covariance.py
+python3 scripts/test_gnss_recovery.py
+python3 scripts/test_gnss_antenna.py
+python3 scripts/test_motion_continuity.py
+python3 scripts/test_relocalization.py
+python3 scripts/test_navigation_relocalization.py
+python3 scripts/test_navigation_handover.py
+python3 scripts/test_observed_detours.py
+python3 scripts/test_stop_relocalization.py
+python3 scripts/test_signal_relocalization.py
+python3 scripts/test_yield_relocalization.py
+python3 scripts/test_gnss_map_history.py
+python3 scripts/test_delayed_map.py
+python3 scripts/test_mid_edge.py
+python3 scripts/test_initial_pose.py
 cargo fmt --all --check
 cargo clippy --workspace --all-targets --locked -- -D warnings
 cargo test --workspace --locked

@@ -43,6 +43,7 @@ fn measured(column: usize, ring: usize, range: f64) -> Lidar3dReturn {
 }
 fn frame(time: f64) -> SensorFrame {
     SensorFrame {
+        absolute_heading: None,
         time,
         odometry: Some(Odometry {
             stamp: time,
@@ -198,6 +199,7 @@ fn mixed_input_modes_and_conflicting_calibration_are_rejected() {
         match variant {
             0 => {
                 input.lidar = Some(LidarScan {
+                    sweep: None,
                     stamp: 0.0,
                     points: vec![],
                 })
@@ -385,6 +387,7 @@ fn optional_3d_fields_are_absent_in_previous_frame_and_header_modes() {
     let mut input = frame(0.0);
     input.lidar3d = None;
     input.lidar = Some(LidarScan {
+        sweep: None,
         stamp: 0.0,
         points: vec![],
     });

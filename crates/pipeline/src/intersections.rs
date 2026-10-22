@@ -8,6 +8,7 @@ pub const FORECAST_HORIZON_S: f64 = 8.0;
 pub const FORECAST_MARGIN_M: f64 = 0.5;
 pub const CLEAR_CONFIRM_S: f64 = 1.0;
 pub const MAX_SCAN_AGE_S: f64 = 0.15;
+pub const MAX_CLEAR_SCAN_GAP_S: f64 = 0.2;
 pub const APPROACH_RESERVE_M: f64 = 2.0;
 pub const APPROACH_REACTION_S: f64 = 0.25;
 pub const APPROACH_CREEP_M_S: f64 = 0.5;
@@ -123,19 +124,34 @@ pub struct ControlledIntersection {
 pub struct IntersectionStatus {
     pub zones: Vec<ControlledIntersection>,
     pub stop_s_m: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub localization_reset: Option<IntersectionResetDiagnostics>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct IntersectionResetDiagnostics {
+    pub stamp: f64,
+    pub progress_s_m: f64,
+    pub distance_to_route_m: f64,
+    pub yaw_error_rad: f64,
+    pub admitted: bool,
+    pub retained_committed_ids: Vec<String>,
+    pub retained_passed_ids: Vec<String>,
+    pub rearmed_ids: Vec<String>,
+    pub unserved_too_close_ids: Vec<String>,
 }
 
 fn forecast_blocks(bounds: &ConflictBounds, prediction: &Prediction) -> bool {
     if !prediction.dt.is_finite()
         || prediction.dt <= 0.0
-        || !prediction.radius.is_finite()
-        || prediction.radius < 0.0
+        || !prediction.valid_radii()
         || prediction.positions.is_empty()
         || prediction.positions.iter().any(|p| !p.finite())
     {
         return true;
     }
-    let inflation = prediction.radius + FORECAST_MARGIN_M;
+    let inflation = prediction.radius_at(0.0) + FORECAST_MARGIN_M;
     if bounds.intersects_segment(prediction.positions[0], prediction.positions[0], inflation) {
         return true;
     }
@@ -146,6 +162,10 @@ fn forecast_blocks(bounds: &ConflictBounds, prediction: &Prediction) -> bool {
         }
         let fraction = ((FORECAST_HORIZON_S - start) / prediction.dt).min(1.0);
         let end = points[0].plus(points[1].minus(points[0]).scaled(fraction));
+        let inflation = prediction
+            .radius_at(start)
+            .max(prediction.radius_at(start + fraction * prediction.dt))
+            + FORECAST_MARGIN_M;
         if bounds.intersects_segment(points[0], end, inflation) {
             return true;
         }
@@ -158,6 +178,8 @@ pub(crate) struct YieldIntersections {
     route: Route,
     clear_samples: Vec<usize>,
     last_scan: Option<f64>,
+    /// Latest control time without usable clear evidence; recovery needs a later acquisition.
+    clear_after: Option<f64>,
     status: IntersectionStatus,
 }
 impl YieldIntersections {
@@ -166,6 +188,7 @@ impl YieldIntersections {
             route,
             clear_samples: vec![0; zones.len()],
             last_scan: None,
+            clear_after: None,
             status: IntersectionStatus {
                 zones: zones
                     .iter()
@@ -178,9 +201,68 @@ impl YieldIntersections {
                     })
                     .collect(),
                 stop_s_m: None,
+                localization_reset: None,
             },
             zones,
         }
+    }
+    /// A new measured pose cannot mint an entry permission. An already owned
+    /// entry remains owned beyond its line; all entries ahead need new scans.
+    pub fn relocalize(&mut self, now: f64, ego: EgoState, radius: f64) {
+        let (progress, _) = self.route.project(ego.pose.position);
+        let (center, heading) = self.route.sample(progress, 0.0);
+        let distance = center.distance(ego.pose.position);
+        let yaw_error = wrap_angle(ego.pose.yaw - heading).abs();
+        let mut reset = IntersectionResetDiagnostics {
+            stamp: now,
+            progress_s_m: progress,
+            distance_to_route_m: distance,
+            yaw_error_rad: yaw_error,
+            admitted: ego.speed.abs() <= 0.05
+                && distance + radius + 0.2 < self.route.half_width
+                && yaw_error < 0.2,
+            retained_committed_ids: vec![],
+            retained_passed_ids: vec![],
+            rearmed_ids: vec![],
+            unserved_too_close_ids: vec![],
+        };
+        self.last_scan = Some(self.last_scan.map_or(now, |s| s.max(now)));
+        self.clear_after = Some(self.clear_after.map_or(now, |s| s.max(now)));
+        self.clear_samples.fill(0);
+        self.status.stop_s_m = None;
+        for (zone, state) in self.zones.iter().zip(&mut self.status.zones) {
+            state.blocking_tracks.clear();
+            state.clear_since = None;
+            let margin = zone.stop_line.route_s_m - progress - radius;
+            if state.committed && margin <= 0.0 {
+                if progress - radius >= zone.exit_s_m {
+                    state.phase = IntersectionPhase::Passed;
+                    reset.retained_passed_ids.push(state.id.clone());
+                } else {
+                    state.phase = IntersectionPhase::Proceeding;
+                    reset.retained_committed_ids.push(state.id.clone());
+                }
+                continue;
+            }
+            if state.committed || state.phase == IntersectionPhase::Proceeding {
+                reset.rearmed_ids.push(state.id.clone());
+            }
+            state.phase = IntersectionPhase::Waiting;
+            state.committed = false;
+            if margin < 0.5 {
+                reset.admitted = false;
+                reset.unserved_too_close_ids.push(state.id.clone());
+            }
+            let end = zone.stop_line.route_s_m - radius - 1.0;
+            self.status.stop_s_m = Some(self.status.stop_s_m.map_or(end, |s| s.min(end)));
+        }
+        self.status.localization_reset = Some(reset);
+    }
+    pub fn recovery_fault(&self) -> bool {
+        self.status
+            .localization_reset
+            .as_ref()
+            .is_some_and(|r| !r.admitted)
     }
     pub fn step(
         &mut self,
@@ -191,6 +273,7 @@ impl YieldIntersections {
         scan_stamp: Option<f64>,
         healthy: bool,
     ) {
+        let healthy = healthy && !self.recovery_fault();
         let route = &self.route;
         let (progress, lateral) = route.project(ego.pose.position);
         let aligned = wrap_angle(ego.pose.yaw - route.sample(progress, 0.0).1).abs() < 0.2
@@ -199,8 +282,16 @@ impl YieldIntersections {
             && aligned
             && scan_stamp.is_some_and(|s| now - s <= MAX_SCAN_AGE_S + 1e-9 && s <= now);
         let new_scan = scan_stamp.is_some_and(|s| self.last_scan.is_none_or(|old| s > old));
+        let scan_gap = new_scan
+            && self
+                .last_scan
+                .zip(scan_stamp)
+                .is_some_and(|(old, stamp)| stamp - old > MAX_CLEAR_SCAN_GAP_S + 1e-9);
         if new_scan {
             self.last_scan = scan_stamp;
+        }
+        if !fresh {
+            self.clear_after = Some(now);
         }
         self.status.stop_s_m = None;
         for ((zone, state), samples) in self
@@ -222,7 +313,16 @@ impl YieldIntersections {
                     state.phase = IntersectionPhase::Waiting;
                     state.clear_since = None;
                     *samples = 0;
-                } else if new_scan {
+                } else if new_scan
+                    && self
+                        .clear_after
+                        .is_none_or(|after| scan_stamp.unwrap() > after)
+                {
+                    if scan_gap {
+                        state.phase = IntersectionPhase::Waiting;
+                        state.clear_since = None;
+                        *samples = 0;
+                    }
                     let stamp = scan_stamp.unwrap();
                     let start = *state.clear_since.get_or_insert(stamp);
                     *samples += 1;
@@ -309,10 +409,127 @@ mod tests {
             speed: 0.0,
         }
     }
+    fn clear(y: &mut YieldIntersections, from: f64, front: f64) {
+        for i in 0..=20 {
+            let t = from + i as f64 * 0.05;
+            y.step(t, ego(front), 1.25, &[], Some(t), true);
+        }
+    }
+    #[test]
+    fn measured_reset_withdraws_uncommitted_permission_and_requires_new_clear_scans() {
+        let mut y = YieldIntersections::new(vec![zone()], route());
+        clear(&mut y, 0.0, 33.0);
+        assert_eq!(y.status().zones[0].phase, IntersectionPhase::Proceeding);
+        y.relocalize(5.0, ego(33.0), 1.25);
+        let reset = y.status().localization_reset.unwrap();
+        assert!(reset.admitted);
+        assert_eq!(reset.rearmed_ids, ["junction"]);
+        for i in 0..=3 {
+            y.step(5.0 + i as f64 * 0.05, ego(33.0), 1.25, &[], Some(5.0), true);
+            assert_eq!(y.status().zones[0].phase, IntersectionPhase::Waiting);
+            assert_eq!(y.status().zones[0].clear_since, None);
+        }
+        clear(&mut y, 5.2, 33.0);
+        assert_eq!(y.status().zones[0].phase, IntersectionPhase::Proceeding);
+        assert_eq!(y.status().zones[0].clear_since, Some(5.2));
+    }
+    #[test]
+    fn measured_owned_entry_is_retained_inside_and_beyond_the_zone() {
+        let mut y = YieldIntersections::new(vec![zone()], route());
+        clear(&mut y, 0.0, 33.0);
+        y.step(1.05, ego(36.0), 1.25, &[], Some(1.05), true);
+        assert!(y.status().zones[0].committed);
+        y.relocalize(5.0, ego(45.0), 1.25);
+        assert_eq!(
+            y.status()
+                .localization_reset
+                .unwrap()
+                .retained_committed_ids,
+            ["junction"]
+        );
+        assert_eq!(y.status().zones[0].phase, IntersectionPhase::Proceeding);
+        y.step(5.05, ego(52.0), 1.25, &[], Some(5.05), false);
+        assert_eq!(y.status().zones[0].phase, IntersectionPhase::Proceeding);
+        y.step(5.1, ego(52.0), 1.25, &[], Some(5.1), true);
+        assert_eq!(y.status().zones[0].phase, IntersectionPhase::Passed);
+        y.relocalize(6.0, ego(52.0), 1.25);
+        assert_eq!(
+            y.status().localization_reset.unwrap().retained_passed_ids,
+            ["junction"]
+        );
+    }
+    #[test]
+    fn an_owned_entry_moved_before_its_line_is_rearmed_without_old_permission() {
+        let mut y = YieldIntersections::new(vec![zone()], route());
+        clear(&mut y, 0.0, 33.0);
+        y.step(1.05, ego(36.0), 1.25, &[], Some(1.05), true);
+        y.relocalize(5.0, ego(33.0), 1.25);
+        assert!(!y.status().zones[0].committed);
+        assert_eq!(y.status().zones[0].phase, IntersectionPhase::Waiting);
+        assert_eq!(
+            y.status().localization_reset.unwrap().rearmed_ids,
+            ["junction"]
+        );
+        clear(&mut y, 5.05, 33.0);
+        assert_eq!(y.status().zones[0].phase, IntersectionPhase::Proceeding);
+    }
+    #[test]
+    fn an_unowned_entry_cannot_be_pardoned_by_measured_progress_or_clear_traffic() {
+        for front in [34.6, 36.0, 52.0] {
+            let mut y = YieldIntersections::new(vec![zone()], route());
+            y.relocalize(5.0, ego(front), 1.25);
+            assert!(y.recovery_fault());
+            assert_eq!(
+                y.status()
+                    .localization_reset
+                    .unwrap()
+                    .unserved_too_close_ids,
+                ["junction"]
+            );
+            clear(&mut y, 5.05, front);
+            assert!(y.recovery_fault());
+            assert!(!y.status().zones[0].committed);
+            assert_eq!(y.status().zones[0].phase, IntersectionPhase::Waiting);
+        }
+    }
+    #[test]
+    fn measured_reset_checks_route_distance_heading_and_actual_standstill() {
+        for case in 0..4 {
+            let mut state = ego(33.0);
+            match case {
+                0 => state.speed = 0.051,
+                1 => state.pose.position.y = 0.66,
+                2 => state.pose.yaw = 0.201,
+                _ => state.pose.position.x = -3.0,
+            }
+            let mut y = YieldIntersections::new(vec![zone()], route());
+            y.relocalize(5.0, state, 1.25);
+            assert!(y.recovery_fault());
+            clear(&mut y, 5.05, 33.0);
+            assert_eq!(y.status().zones[0].phase, IntersectionPhase::Waiting);
+        }
+    }
+    #[test]
+    fn expanding_occupancy_blocks_even_when_the_center_stays_outside() {
+        let mut p = Prediction {
+            id: 8,
+            positions: vec![Vec2::new(45., 6.); 3],
+            radius: 0.7,
+            dt: 4.,
+            additional_radius_m: vec![],
+        };
+        assert!(!forecast_blocks(&zone().conflict_bounds, &p));
+        p.additional_radius_m = vec![0., 3., 0.];
+        assert!(forecast_blocks(&zone().conflict_bounds, &p));
+        p.additional_radius_m = vec![0.];
+        assert!(forecast_blocks(&zone().conflict_bounds, &p));
+    }
+
     #[test]
     fn fast_crossing_segments_block_even_when_no_prediction_sample_is_inside() {
         let b = zone().conflict_bounds;
         let p = Prediction {
+            additional_radius_m: vec![],
             id: 1,
             positions: vec![Vec2::new(45.0, 10.0), Vec2::new(45.0, -10.0)],
             radius: 1.0,
@@ -349,6 +566,7 @@ mod tests {
             y.step(t, ego(33.0), 1.25, &[], Some(t), true);
         }
         let p = Prediction {
+            additional_radius_m: vec![],
             id: 7,
             positions: vec![Vec2::new(45.0, 0.0)],
             radius: 1.0,
@@ -369,12 +587,19 @@ mod tests {
         }
         y.step(2.15, ego(36.0), 1.25, &[], Some(2.15), true);
         assert!(y.status().zones[0].committed);
+        y.step(2.2, ego(36.0), 1.25, &[], Some(2.2), false);
+        assert!(y.status().zones[0].committed);
+        assert_eq!(y.status().zones[0].phase, IntersectionPhase::Proceeding);
+        assert!(y.endpoint().is_none());
+        y.step(2.45, ego(36.0), 1.25, &[], Some(2.45), true);
+        assert!(y.status().zones[0].committed);
+        assert_eq!(y.status().zones[0].phase, IntersectionPhase::Proceeding);
         y.step(
-            2.2,
+            2.5,
             ego(51.0),
             1.25,
             std::slice::from_ref(&p),
-            Some(2.2),
+            Some(2.5),
             true,
         );
         assert_eq!(y.status().zones[0].phase, IntersectionPhase::Passed);

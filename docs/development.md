@@ -91,3 +91,40 @@ Optional `objects[].following` selects the shared reactive route actor. `speed` 
 ## 3D visualization
 
 Install Blender and activate the Pillow virtual environment, then run `bash scripts/rne-3d-demo.sh`. This executes the native dynamic RNE scenario, verifies full sensor replay, renders recorded scene states through Blender Cycles on CPU and packages a 3D GIF. Rendering remains optional and adds no Rust dependency. [Options, verification and limits](3d-demo.md).
+
+## Historical research reproductions in CI
+
+CI tests the active shared crates and RGB-D workspace before reproducing frozen
+RGB-D trials in a temporary source tree. `scripts/prepare-rgbd-regression.py`
+restores the trials' shared libraries from the pinned `a277605` revision and
+requires all six active 3D kernels and the shared `Vec3` definition to match.
+The source receipt is retained as `artifacts/rgbd/historical-shared-libraries.json`.
+This tree is used only for historical offline reproduction; the original
+accuracy gates, failed outcomes and archived source hashes remain fixed.
+
+`scripts/check-frozen-camera-operators.py` similarly runs the immutable camera
+optimization packet with its recorded source snapshot. The following CI steps
+execute and check the active camera code against an independent current-host
+reference. Failed commands also publish their log tail as check annotations.
+
+Observation-only comparisons use fresh controls from the same executable and
+the original frozen scenario inputs. Control manifests, binary hashes, replay
+status, and compressed/decoded archive hashes are checked before comparing
+operational bytes, physical frames, complete outcomes and measured inputs.
+The diagnostic, progress and ray-capture reports retain historical output
+hashes separately; later driver fixes do not become observation regressions.
+
+Historical RGB-D report comparisons allow finite geometry roundoff bounded by
+`8 * f64::EPSILON * max(1, |recorded|, |reproduced|)`. Reports distinguish exact
+matches from reproduced results and record the number and maximum difference
+of rounded values. Clocks, configuration, source identities, frame counts and
+acceptance decisions remain exact; frozen inputs and physical gates are unchanged.
+Submap fingerprints are recomputed exactly from both reports' measured clouds
+and serialized poses. Historical comparison checks every voxel key, count and
+coordinate; differing computed hashes are retained with the bounded geometry
+differences. The existing independent source, map and physical scoring auditor
+still runs unchanged and rejects invented fingerprints.
+Submap search-work counters can vary when rounded distances change spatial-tree
+pruning. Both counters must stay within the identical frozen work budget;
+differences are recorded explicitly. Observation, acceptance and voxel counts
+remain exact.

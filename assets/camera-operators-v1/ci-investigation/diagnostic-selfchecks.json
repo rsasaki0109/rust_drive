@@ -1,0 +1,29 @@
+{
+  "exact_equality_preserved": true,
+  "rejected_corruptions": [
+    {
+      "case": "numeric",
+      "error": "test; first difference $.results[0].tracks[0].bbox[2]: expected=3.0, actual=3.0000000000000004"
+    },
+    {
+      "case": "decision",
+      "error": "test; first difference $.results[0].ready: expected=False, actual=True"
+    },
+    {
+      "case": "missing-key",
+      "error": "test; first difference $.results[0]: expected={'ready': False, 'tracks': [{'bbox': [1.0, 2.0, 3.0, 4.0]}]}, actual={'ready': False}"
+    },
+    {
+      "case": "extra-key",
+      "error": "test; first difference $: expected={'results': [{'ready': False, 'tracks': [{'bbox': [1.0, 2.0, 3.0, 4.0]}]}]}, actual={'results': [{'ready': False, 'tracks': [{'bbox': [1.0, 2.0, 3.0, 4.0]}]}], 'extra': True}"
+    },
+    {
+      "case": "length",
+      "error": "test; first difference $.results: expected=[{'ready': False, 'tracks': [{'bbox': [1.0, 2.0, 3.0, 4.0]}]}], actual=[{'ready': False, 'tracks': [{'bbox': [1.0, 2.0, 3.0, 4.0]}]}, {}]"
+    },
+    {
+      "case": "type",
+      "error": "test; first difference $.results: expected=[{'ready': False, 'tracks': [{'bbox': [1.0, 2.0, 3.0, 4.0]}]}], actual=None"
+    }
+  ]
+}

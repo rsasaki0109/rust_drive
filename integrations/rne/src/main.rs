@@ -3,8 +3,8 @@ use rustdriving_rne::{
     run_with_scene_ground_body, run_with_scene_ground_body_precise, run_with_scene_lidar_3d,
     run_with_scene_multi_height, run_with_scene_terrain_objects, scene::Scene,
 };
-use rustdriving_sim::Scenario;
-use std::{env, error::Error, fs, io::BufWriter, path::PathBuf, process};
+use rustdriving_sim::{Scenario, run_output::RunOutput};
+use std::{env, error::Error, fs, path::PathBuf, process};
 fn main() {
     if let Err(e) = execute() {
         eprintln!("rustdriving-rne: {e}");
@@ -119,6 +119,12 @@ fn execute() -> Result<(), Box<dyn Error>> {
     if terrain_objects && vehicle_body {
         return Err("--terrain-objects and --vehicle-body are not supported together".into());
     }
+    let inputs: Vec<_> = input
+        .as_deref()
+        .into_iter()
+        .chain(scene_input.as_deref())
+        .collect();
+    let publication = RunOutput::native(&output, &inputs)?;
     let scenario: Scenario =
         serde_json::from_str(&fs::read_to_string(input.ok_or("--scenario required")?)?)?;
     let (result, scene_evidence) = if let Some(path) = scene_input {
@@ -146,24 +152,7 @@ fn execute() -> Result<(), Box<dyn Error>> {
     } else {
         (run(scenario, seed, plant)?, None)
     };
-    fs::create_dir_all(&output)?;
-    let scene_output = output.join("scene.json");
-    if let Some(evidence) = scene_evidence {
-        fs::write(&scene_output, serde_json::to_vec(&evidence)?)?;
-    } else if scene_output.exists() {
-        // Reusing an output directory must not leave stale scene acceptance.
-        fs::remove_file(scene_output)?;
-    }
-    fs::write(output.join("run.json"), serde_json::to_vec(&result)?)?;
-    result
-        .sensor_log
-        .as_ref()
-        .unwrap()
-        .write(BufWriter::new(fs::File::create(
-            output.join("sensors.jsonl"),
-        )?))?;
-    let summary = serde_json::to_string_pretty(&result.summary)?;
-    fs::write(output.join("summary.json"), &summary)?;
+    let summary = publication.finish(&result, scene_evidence.as_ref())?;
     println!("{summary}");
     if !result.summary.passed {
         process::exit(1);

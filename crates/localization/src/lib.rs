@@ -1,5 +1,13 @@
 //! Three-state EKF: wheel speed / gyro prediction and scalar GNSS updates.
+mod gnss_antenna;
+mod gnss_shape;
+mod heading;
 pub mod keyframes3d;
+pub mod latency;
+pub use gnss_antenna::validate_gnss_antenna_offset;
+pub use gnss_shape::validate_gnss_covariance_shape;
+#[cfg(test)]
+mod pose_prior_tests;
 pub mod registration;
 pub mod registration3d;
 pub mod reprojection3d;
@@ -11,11 +19,15 @@ use rustdriving_core::{
 /// Conservative observation floors for an externally registered fixed-map pose.
 pub const MAP_POSITION_VARIANCE_FLOOR_M2: f64 = 0.01;
 pub const MAP_YAW_VARIANCE_FLOOR_RAD2: f64 = 1e-4;
+#[derive(Clone)]
 pub struct Ekf {
     state: EgoState,
     covariance: [[f64; 3]; 3],
     pub last_gnss: f64,
     diagnostics: LocalizationDiagnostics,
+    gnss_covariance_shape: Option<[[f64; 2]; 2]>,
+    gnss_antenna_offset_m: Option<Vec2>,
+    heading_diagnostics: rustdriving_core::HeadingDiagnostics,
 }
 impl Ekf {
     /// Initial heading comes from the configured spawn calibration, not live simulator truth.
@@ -25,21 +37,72 @@ impl Ekf {
             covariance: [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 0.03]],
             last_gnss: f64::NEG_INFINITY,
             diagnostics: LocalizationDiagnostics::default(),
+            gnss_covariance_shape: None,
+            gnss_antenna_offset_m: None,
+            heading_diagnostics: rustdriving_core::HeadingDiagnostics::default(),
         }
     }
+    /// Initial x/y/yaw covariance in world ENU (m², m·rad, rad²).
+    /// This is externally supplied calibration, not a runtime truth estimate.
+    /// Reject malformed matrices rather than silently replacing a caller's prior.
+    pub fn with_pose_covariance(pose: Pose, covariance: [[f64; 3]; 3]) -> Result<Self, String> {
+        if !pose.position.finite()
+            || !pose.yaw.is_finite()
+            || !(covariance[0][0] + covariance[1][1]).is_finite()
+            || covariance[2][2] > std::f64::consts::PI.powi(2)
+            || (0..3).any(|i| (0..i).any(|j| covariance[i][j] != covariance[j][i]))
+            || cholesky3(covariance).is_none()
+        {
+            return Err(
+                "initial pose covariance requires finite trace, symmetry, positive definiteness and yaw variance <= pi squared"
+                    .into(),
+            );
+        }
+        Ok(Self {
+            covariance,
+            ..Self::new(pose)
+        })
+    }
+    /// Posterior x/y/yaw covariance in the same world frame and units as the prior.
+    pub fn pose_covariance(&self) -> [[f64; 3]; 3] {
+        self.covariance
+    }
+    /// Fixed external ENU calibration: per-fix R is variance times the optional
+    /// dimensionless shape. Both calibrations survive history snapshot clones.
+    pub fn with_calibration(
+        pose: Pose,
+        prior: Option<[[f64; 3]; 3]>,
+        gnss_shape: Option<[[f64; 2]; 2]>,
+    ) -> Result<Self, String> {
+        if let Some(shape) = gnss_shape {
+            validate_gnss_covariance_shape(shape)?;
+        }
+        let mut filter = match prior {
+            Some(covariance) => Self::with_pose_covariance(pose, covariance)?,
+            None => Self::new(pose),
+        };
+        if !pose.position.finite() || !pose.yaw.is_finite() {
+            return Err("nonfinite initial pose calibration".into());
+        }
+        filter.gnss_covariance_shape = gnss_shape;
+        Ok(filter)
+    }
+    /// Invalid inputs or nonfinite computed pose/covariance leave the filter unchanged.
     pub fn predict(&mut self, odom: Odometry, dt: f64) {
         if !dt.is_finite() || dt <= 0.0 || !odom.speed.is_finite() || !odom.yaw_rate.is_finite() {
             return;
         }
         let yaw = self.state.pose.yaw;
         let v = odom.speed.max(0.0);
-        self.state.pose.position = self
+        let position = self
             .state
             .pose
             .position
             .plus(Vec2::new(yaw.cos(), yaw.sin()).scaled(v * dt));
-        self.state.pose.yaw = wrap_angle(yaw + odom.yaw_rate * dt);
-        self.state.speed = v;
+        let next_yaw = wrap_angle(yaw + odom.yaw_rate * dt);
+        if !position.finite() || !next_yaw.is_finite() {
+            return;
+        }
         let f = [
             [1.0, 0.0, -v * dt * yaw.sin()],
             [0.0, 1.0, v * dt * yaw.cos()],
@@ -58,6 +121,16 @@ impl Ekf {
         for (i, row) in next.iter_mut().enumerate() {
             row[i] += [0.015, 0.015, 0.0005][i] * dt;
         }
+        if next.iter().flatten().any(|value| !value.is_finite()) {
+            return;
+        }
+        self.state = EgoState {
+            pose: Pose {
+                position,
+                yaw: next_yaw,
+            },
+            speed: v,
+        };
         self.covariance = next;
     }
     /// Low-speed no-slip chassis prediction. Wheel speed is body longitudinal
@@ -234,6 +307,14 @@ impl Ekf {
         {
             return GnssDecision::IgnoredTimestamp;
         }
+        if let Some(offset) = self.gnss_antenna_offset_m
+            && (offset.x != 0. || offset.y != 0.)
+        {
+            return self.correct_antenna(fix, offset);
+        }
+        if let Some(shape) = self.gnss_covariance_shape {
+            return self.correct_shaped(fix, shape);
+        }
         let residual = fix.position.minus(self.state.pose.position);
         // LDL^T whitening of S = H P H^T + R, including x/y correlation.
         // Avoid an explicit determinant/inverse, which can overflow for large R.
@@ -302,6 +383,33 @@ impl Ekf {
         self.diagnostics.accepted_fixes = self.diagnostics.accepted_fixes.saturating_add(1);
         GnssDecision::Accepted
     }
+    /// Record an otherwise accepted proposal withheld by an external recovery
+    /// policy. Pose, covariance, accepted count and accepted clock stay intact.
+    /// `nis` must come from the original acquisition-time correction proposal.
+    pub fn hold_recovery_fix(&mut self, fix: Gnss, nis: f64) -> GnssDecision {
+        if !fix.stamp.is_finite()
+            || fix.stamp < 0.
+            || !fix.position.finite()
+            || !fix.variance.is_finite()
+            || fix.variance <= 0.
+            || !nis.is_finite()
+            || !(0. ..=36.).contains(&nis)
+        {
+            return GnssDecision::Invalid;
+        }
+        if self
+            .diagnostics
+            .last_observed_stamp
+            .is_some_and(|stamp| fix.stamp <= stamp)
+        {
+            return GnssDecision::IgnoredTimestamp;
+        }
+        self.diagnostics.last_observed_stamp = Some(fix.stamp);
+        self.diagnostics.last_nis = Some(nis);
+        self.diagnostics.last_decision = Some(GnssDecision::RecoveryHeld);
+        self.diagnostics.rejected_fixes = self.diagnostics.rejected_fixes.saturating_add(1);
+        GnssDecision::RecoveryHeld
+    }
     pub fn diagnostics(&self) -> LocalizationDiagnostics {
         self.diagnostics
     }
@@ -351,6 +459,106 @@ fn solve_cholesky3(lower: [[f64; 3]; 3], rhs: [f64; 3]) -> [f64; 3] {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn rejected_prediction_preserves_state_and_recovers(
+        odom: Odometry,
+        dt: f64,
+        zero_offset: bool,
+    ) {
+        let mut e = Ekf::new(Pose::default());
+        assert!(e.update(Gnss {
+            stamp: 0.0,
+            position: Vec2::default(),
+            variance: 0.02,
+        }));
+        let before = e.state();
+        let covariance = e.covariance;
+        if zero_offset {
+            e.predict_chassis(odom, dt, 0.0);
+        } else {
+            e.predict(odom, dt);
+        }
+        assert_eq!(e.state().pose.position, before.pose.position);
+        assert_eq!(e.state().pose.yaw.to_bits(), before.pose.yaw.to_bits());
+        assert_eq!(e.state().speed.to_bits(), before.speed.to_bits());
+        assert_eq!(e.covariance, covariance);
+        assert_eq!(e.last_gnss, 0.0);
+        assert_eq!(e.diagnostics().accepted_fixes, 1);
+        assert_eq!(e.diagnostics().rejected_fixes, 0);
+
+        e.predict(
+            Odometry {
+                stamp: 0.2,
+                speed: 2.0,
+                yaw_rate: 0.0,
+            },
+            0.05,
+        );
+        assert_eq!(e.state().pose.position, Vec2::new(0.1, 0.0));
+        assert_eq!(e.state().speed, 2.0);
+        assert!(e.update(Gnss {
+            stamp: 0.2,
+            position: Vec2::new(0.1, 0.0),
+            variance: 0.02,
+        }));
+        assert!(e.position_variance().is_finite());
+        assert_eq!(e.last_gnss, 0.2);
+    }
+
+    #[test]
+    fn prediction_state_overflow_cannot_poison_position_or_yaw() {
+        for (speed, yaw_rate) in [(f64::MAX, 0.0), (0.0, f64::MAX)] {
+            for zero_offset in [false, true] {
+                rejected_prediction_preserves_state_and_recovers(
+                    Odometry {
+                        stamp: 0.1,
+                        speed,
+                        yaw_rate,
+                    },
+                    2.0,
+                    zero_offset,
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn prediction_covariance_overflow_cannot_commit_a_finite_pose() {
+        for zero_offset in [false, true] {
+            rejected_prediction_preserves_state_and_recovers(
+                Odometry {
+                    stamp: 0.1,
+                    speed: 1e200,
+                    yaw_rate: 0.0,
+                },
+                0.05,
+                zero_offset,
+            );
+        }
+    }
+
+    #[test]
+    fn prediction_accepts_large_finite_results_without_arbitrary_motion_bounds() {
+        let mut e = Ekf::new(Pose::default());
+        let speed = 1e100;
+        let dt = 0.05;
+        e.predict(
+            Odometry {
+                stamp: 0.0,
+                speed,
+                yaw_rate: 0.0,
+            },
+            dt,
+        );
+        let distance = speed * dt;
+        assert_eq!(e.state().pose.position, Vec2::new(distance, 0.0));
+        assert_eq!(e.state().pose.yaw, 0.0);
+        assert_eq!(e.state().speed, speed);
+        assert!(e.covariance.iter().flatten().all(|v| v.is_finite()));
+        let expected_variance = 2.0 + 0.03 * distance * distance + 0.03 * dt;
+        assert!((e.position_variance() / expected_variance - 1.0).abs() < 1e-12);
+    }
+
     #[test]
     fn map_pose_diagonal_joint_correction_matches_analytic_posterior() {
         let mut e = Ekf::new(Pose::default());

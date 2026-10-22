@@ -27,7 +27,18 @@ cargo run --release --locked --bin rustdriving -- replay \
 
 The importer writes a plain `RoadNetworkSpec` to `map.json`, counts/projection calibration to `map.import.json`, and optionally a runnable scenario with the existing `navigation` network/start/goal/closure fields. Graph node IDs are `osm-node-ID`; directed edges are `osm-way-ID-PART-forward` or `-reverse`. The scenario uses deterministic Dijkstra, calibrated initial pose/heading, noisy GNSS/odometry and synthetic LiDAR in the same operational pipeline as authored maps. OSM coordinates are supplied map geometry, not ground-truth localization observations.
 
+All export destinations must be absent. Existing files, directories and links
+are preserved and cause exit 2, including aliases of the input document.
+Use fresh filenames or a fresh output directory when repeating the example.
+Complete files are staged before publication; the import report is published
+last. [Failure handling, compatibility and verification](osm-export.md).
+
 `--closed-edge ID` may be repeated when generating a scenario. Unknown closures or an unreachable goal fail with exit 2 before generation. Start/goal must be graph nodes, including retained way endpoints or shared junctions; arbitrary mid-way spawning is absent. `--cruise-speed` defaults to 2 m/s and `--duration` to 180 s. Scenario generation validates the existing 20–1000 m route and calibration domain; importing a valid larger graph does not guarantee every route can become a simulation scenario.
+
+Other options may occur once, including `--local-route-geometry`. Explicit
+`--cruise-speed` and `--duration` require `--scenario-output`; map-only requests
+cannot silently ignore them. Repeated single-value options fail with exit 2.
+[Input bounds, option validation and executable evidence](osm-input.md).
 
 `--local-route-geometry` explicitly enables the optional corner-fitting planner mode when generating a scenario. It defaults to false and does not alter imported coordinates or the physical corridor. Its capability and measured turn regressions are separate from the default Goethestraße road reproduction above.
 
@@ -42,6 +53,11 @@ Supported motor-road classes include residential, service, living street, unclas
 Metric scalar `width` tags supply half the tagged total width. Otherwise **`--default-half-width` is explicit simulation corridor calibration**, not a measured or inferred OSM lane width. It defaults to 3 m and must be 1.2–12 m; scenario generation retains its narrower existing geometry limits. No lane counts, vehicle clearance or legal speed are inferred. OSM `maxspeed` tags, lane boundaries, signals/signs and access schedules are not operationally imported. Unconditional motorcar node-via `no_*` and `only_*` turn restrictions are now resolved into directed edge transitions; relevant unsupported restrictions fail explicitly. [Contract and executable evidence](turn-restrictions.md).
 
 The JSON CLI accepts at most 16 MiB; the typed importer permits at most 50,000 elements, 4,096 references per retained way, 200,000 retained references and 10,000 directed edges. Missing nodes, duplicate/zero IDs, invalid coordinates, repeated interior nodes, coincident consecutive positions, unsupported widths and malformed direction values fail explicitly. Cropped single-node road ways are filtered and counted separately; empty ways are errors. Unsupported relation/element counts and filtered/default-width counts are visible in the import report. Non-restriction relations remain counted; supported turn-restriction relations are validated and resolved into driving rules.
+
+The CLI bounds the bytes actually read, including whitespace, rather than
+trusting the input's reported file length. It consumes at most 16 MiB + 1 bytes;
+oversized inputs and read errors produce no export. Exact-size file and Linux
+stdin-pipe inputs are covered by boundary tests.
 
 The two pinned extract files retain their exact bytes through `.gitattributes`, including Windows checkouts with `core.autocrlf=true`. Their source checksums remain strict; the checker does not normalize line endings before hashing. `python scripts/test-checker-portability.py` exercises a real CRLF-converting Git checkout, verifies the original geographic source and rejects both converted line endings and appended-byte tampering.
 

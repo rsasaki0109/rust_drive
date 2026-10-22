@@ -2,6 +2,7 @@
 use rustdriving_core::{LidarScan, Pose, Vec2};
 use rustdriving_localization::{
     Ekf,
+    latency::GnssHistory,
     registration::{RegistrationConfig, match_scan},
 };
 use serde::{Deserialize, Serialize};
@@ -10,6 +11,8 @@ use serde::{Deserialize, Serialize};
 #[serde(default, deny_unknown_fields)]
 pub struct MapLocalizationConfig {
     pub points: Vec<Vec2>,
+    #[serde(skip_serializing_if = "is_false")]
+    pub allow_delayed_scans: bool,
     pub max_gnss_outage_s: f64,
     pub max_correspondence_m: f64,
     pub max_rms_m: f64,
@@ -18,11 +21,15 @@ pub struct MapLocalizationConfig {
     pub max_translation_jump_m: f64,
     pub max_yaw_jump_rad: f64,
 }
+fn is_false(value: &bool) -> bool {
+    !*value
+}
 impl Default for MapLocalizationConfig {
     fn default() -> Self {
         let registration = RegistrationConfig::default();
         Self {
             points: vec![],
+            allow_delayed_scans: false,
             max_gnss_outage_s: 10.0,
             max_correspondence_m: registration.max_correspondence_m,
             max_rms_m: registration.max_rms_m,
@@ -34,7 +41,7 @@ impl Default for MapLocalizationConfig {
     }
 }
 impl MapLocalizationConfig {
-    fn registration(&self) -> RegistrationConfig {
+    pub(crate) fn registration(&self) -> RegistrationConfig {
         RegistrationConfig {
             max_correspondence_m: self.max_correspondence_m,
             max_rms_m: self.max_rms_m,
@@ -90,6 +97,10 @@ pub struct MapLocalizationDiagnostics {
     /// Actual EKF measurement covariance, after conservative floor scaling.
     pub covariance: Option<[[f64; 3]; 3]>,
     pub gnss_outage_covered: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub acquisition_prior: Option<Pose>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub acquisition_delay_s: Option<f64>,
 }
 impl Default for MapLocalizationDiagnostics {
     fn default() -> Self {
@@ -109,6 +120,8 @@ impl Default for MapLocalizationDiagnostics {
             registration_covariance: None,
             covariance: None,
             gnss_outage_covered: false,
+            acquisition_prior: None,
+            acquisition_delay_s: None,
         }
     }
 }
@@ -130,26 +143,48 @@ impl MapLocalization {
         now: f64,
         eligible: bool,
         ekf: &mut Ekf,
+        history: Option<&mut GnssHistory>,
     ) {
         if let Some(scan) = scan {
-            if scan.stamp != now {
+            let prior = if self.config.allow_delayed_scans {
+                history
+                    .as_ref()
+                    .ok_or("delayed map correction history is disabled".to_string())
+                    .and_then(|h| {
+                        h.map_prior_pose(ekf, scan.stamp, now).map_err(|e| {
+                            format!("map acquisition lacks covered correction history: {e:?}")
+                        })
+                    })
+            } else {
+                Ok(ekf.state().pose)
+            };
+            if scan.stamp != now && !self.config.allow_delayed_scans {
                 self.diagnostic.decision = MapLocalizationDecision::UnsupportedTiming;
                 self.diagnostic.rejection =
                     Some("map matching requires synchronous acquisition".into());
             } else if !eligible {
                 self.diagnostic.decision = MapLocalizationDecision::Rejected;
                 self.diagnostic.rejection = Some("invalid or repeated map observation".into());
+            } else if let Err(reason) = &prior {
+                self.diagnostic.decision = MapLocalizationDecision::UnsupportedTiming;
+                self.diagnostic.rejection = Some(reason.clone());
             } else {
+                let prior = prior.unwrap();
                 let previous_accepted = self.diagnostic.last_accepted_stamp;
                 self.diagnostic = MapLocalizationDiagnostics {
                     last_observed_stamp: Some(scan.stamp),
                     last_accepted_stamp: previous_accepted,
+                    acquisition_prior: self.config.allow_delayed_scans.then_some(prior),
+                    acquisition_delay_s: self
+                        .config
+                        .allow_delayed_scans
+                        .then_some(now - scan.stamp),
                     ..MapLocalizationDiagnostics::default()
                 };
                 match match_scan(
                     &scan.points,
                     &self.config.points,
-                    ekf.state().pose,
+                    prior,
                     &self.config.registration(),
                 ) {
                     Ok(result) => {
@@ -180,7 +215,26 @@ impl MapLocalization {
                             Some(result.conditioning.ambiguity_probes);
                         self.diagnostic.registration_covariance = Some(result.covariance);
                         self.diagnostic.covariance = Some(covariance);
-                        if ekf.correct_map_pose(result.pose, covariance) {
+                        let accepted = if let Some(history) = history {
+                            if self.config.allow_delayed_scans {
+                                history
+                                    .correct_map_pose_at(
+                                        ekf,
+                                        result.pose,
+                                        covariance,
+                                        scan.stamp,
+                                        now,
+                                    )
+                                    .unwrap_or(false)
+                            } else {
+                                history
+                                    .correct_map_pose(ekf, result.pose, covariance, now)
+                                    .unwrap_or(false)
+                            }
+                        } else {
+                            ekf.correct_map_pose(result.pose, covariance)
+                        };
+                        if accepted {
                             self.diagnostic.last_accepted_stamp = Some(scan.stamp);
                             self.diagnostic.decision = MapLocalizationDecision::Accepted;
                         } else {
@@ -260,6 +314,7 @@ mod tests {
     }
     fn frame(time: f64, points: &[Vec2], initial_gnss: bool) -> SensorFrame {
         SensorFrame {
+            absolute_heading: None,
             time,
             odometry: Some(Odometry {
                 stamp: time,
@@ -272,6 +327,7 @@ mod tests {
                 variance: 0.02,
             }),
             lidar: Some(LidarScan {
+                sweep: None,
                 stamp: time,
                 points: points.to_vec(),
             }),

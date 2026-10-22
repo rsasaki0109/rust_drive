@@ -631,6 +631,7 @@ pub fn import(
                     to: format!("osm-node-{}", if reverse { from } else { to }),
                     points,
                     half_width,
+                    speed_limit_m_s: None,
                 });
                 if edges.len() > 10_000 {
                     return Err("OSM import exceeds 10000 directed edges".into());

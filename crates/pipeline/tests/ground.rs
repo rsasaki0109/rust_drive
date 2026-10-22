@@ -94,6 +94,7 @@ fn cloud(time: f64, a: f64, b: f64, c: f64, curb: bool) -> Lidar3dScan {
 }
 fn frame(time: f64, scan: Lidar3dScan) -> SensorFrame {
     SensorFrame {
+        absolute_heading: None,
         time,
         odometry: Some(Odometry {
             stamp: time,

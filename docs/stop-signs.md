@@ -37,6 +37,13 @@ States are `Approaching`, `Holding`, `Released`, `Passed`. The timer runs only w
 
 The nearest remaining sign and nonpermissive signal choose the shortest temporary route prefix; the existing collision-aware reachable-profile planner still runs. Map, estimator and tracks remain intact. While an unreleased sign is near and estimated speed is at most 0.2 m/s, requested acceleration is capped at −0.5 m/s² to retain brake pressure and prevent noisy feedback from repeatedly creeping during the hold. This is a simulation control policy, not a measured actuator-pressure interface or optimized comfort controller. A released sign cannot override a red signal or obstacle constraint.
 
+An explicit [measured-reset preservation option](stop-sign-relocalization.md)
+retains served stops behind the measured front and requires a new full healthy
+stop for duties ahead. Invalid admission latches emergency braking. Fixed stops
+also compose with planner-local route fitting while retaining original surveyed
+arc coordinates. [Signals](signal-relocalization.md) and straight
+[yield routes](yield-relocalization.md) now retain the same original-coordinate contract.
+
 ## Independent physical acceptance
 
 The simulator rule evaluator reads actual circular-front progress and actual speed, never driver stop status. Before crossing each line it requires two continuous seconds within 0–3.5 m at speed magnitude at most 0.1 m/s. A rolling, distant or interrupted stop fails; a backend that ignores all commands and accelerates through the sign is rejected by the full simulation. These physical thresholds are independent of the stricter observed-speed policy above.

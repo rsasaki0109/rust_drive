@@ -59,6 +59,66 @@ struct EgoFilteredRaycaster<'a> {
     ego: Entity,
     precise_geometry: Option<&'a [capsule_refinement::PhysicalCapsule]>,
 }
+
+/// Records actual completed query outcomes before radiometry/noise can drop a
+/// return. A queried surface with no delivered point becomes Unavailable.
+struct SweepRaycaster<'a> {
+    inner: &'a dyn LidarRaycaster,
+    clear: std::cell::RefCell<Option<Vec<bool>>>,
+}
+impl LidarRaycaster for SweepRaycaster<'_> {
+    fn lidar_raycast(
+        &self,
+        world: PhysicsWorldId,
+        query: RaycastQuery,
+    ) -> Result<Vec<RaycastHit>, PhysicsError> {
+        let hits = self.inner.lidar_raycast(world, query)?;
+        if let Some(clear) = self.clear.borrow_mut().as_mut() {
+            clear.push(hits.is_empty());
+        }
+        Ok(hits)
+    }
+}
+impl SweepRaycaster<'_> {
+    fn evidence(
+        &self,
+        spec: &LidarSpec,
+        indices: &[u32],
+    ) -> Option<rustdriving_core::PlanarLidarSweep> {
+        use rustdriving_core::{PlanarLidarCalibration, PlanarLidarSweep, PlanarRayOutcome};
+        let acquired = self.clear.borrow();
+        let clear = acquired.as_ref()?;
+        let mut rays = vec![PlanarRayOutcome::Unavailable; spec.ray_count as usize];
+        if clear.len() == rays.len() {
+            for (i, &empty) in clear.iter().enumerate() {
+                if empty {
+                    rays[i] = PlanarRayOutcome::Clear;
+                }
+            }
+            for (point, &ray) in indices.iter().enumerate() {
+                if let Some(slot) = rays.get_mut(ray as usize) {
+                    if !clear[ray as usize] && *slot == PlanarRayOutcome::Unavailable {
+                        *slot = PlanarRayOutcome::Return(point);
+                    } else {
+                        *slot = PlanarRayOutcome::Unavailable;
+                    }
+                }
+            }
+        }
+        Some(PlanarLidarSweep {
+            calibration: PlanarLidarCalibration {
+                ray_count: spec.ray_count as usize,
+                first_angle_rad: -spec.min_angle_rad,
+                angular_step_rad: -(spec.max_angle_rad - spec.min_angle_rad)
+                    / f64::from(spec.ray_count - 1),
+                min_range_m: spec.min_range_m,
+                max_range_m: spec.max_range_m,
+                range_error_m: 0.05,
+            },
+            rays,
+        })
+    }
+}
 impl LidarRaycaster for EgoFilteredRaycaster<'_> {
     fn lidar_raycast(
         &self,
@@ -268,8 +328,16 @@ impl RneBackend {
         let mut config = pipeline_config(&scenario);
         // Dynamic RNE reports a chassis/COM pose, not a rear-axle pose. This
         // opt-in low-speed model uses declared plant geometry and noisy odometry.
-        if scenario.local_route_geometry && plant == Plant::Dynamic {
+        if (scenario.local_route_geometry || scenario.gnss_latency_compensation)
+            && plant == Plant::Dynamic
+        {
+            config.local_route_geometry = true;
             config.rear_axle_offset_m = Some(VehicleDynamics::default().rear_axle_m);
+            config.motion_limits.get_or_insert(MotionLimits {
+                max_acceleration_m_s2: 2.0,
+                max_deceleration_m_s2: 2.5,
+                max_lateral_acceleration_m_s2: 2.5,
+            });
         }
         let ground_segmentation = ground_mode != GroundMode::Disabled;
         let vehicle_body = ground_mode == GroundMode::VehicleBody;
@@ -369,7 +437,7 @@ impl RneBackend {
         }
         let mut world = World::new();
         let ego = spawn_named(&mut world, "rustdriving_ego");
-        let pose = config.initial_pose;
+        let pose = scenario.spawn_pose(config.initial_pose);
         let ego_collider = if vehicle_body {
             let mut collider = body_calibration.collider();
             collider.sensor = true;
@@ -593,10 +661,13 @@ impl SimulationBackend for RneBackend {
         let gnss = if tick.is_multiple_of(4) && self.scenario.gnss_available(time) {
             Some(Gnss {
                 stamp: time,
-                position: truth.pose.position.plus(Vec2::new(
-                    self.noisy(tick, 2, 0.14),
-                    self.noisy(tick, 3, 0.14),
-                )),
+                position: self.scenario.gnss_antenna_position(truth.pose).plus(
+                    self.scenario
+                        .gnss_noise(self.seed, tick)
+                        .unwrap_or_else(|| {
+                            Vec2::new(self.noisy(tick, 2, 0.14), self.noisy(tick, 3, 0.14))
+                        }),
+                ),
                 variance: 0.02,
             })
         } else {
@@ -635,8 +706,18 @@ impl SimulationBackend for RneBackend {
             } else {
                 self.physics_world
             };
+            let sweep_raycaster = SweepRaycaster {
+                inner: &raycaster,
+                clear: std::cell::RefCell::new(
+                    (!self.multi_height
+                        && !self.lidar_3d
+                        && (self.scenario.record_planar_sweep
+                            || self.scenario.clear_sweep_recovery.is_some()))
+                    .then(|| Vec::with_capacity(720)),
+                ),
+            };
             match sample_lidar_checked(
-                &raycaster,
+                &sweep_raycaster,
                 world,
                 &mount,
                 &spec,
@@ -724,6 +805,7 @@ impl SimulationBackend for RneBackend {
                         }
                     } else if !self.lidar_3d {
                         lidar = Some(LidarScan {
+                            sweep: sweep_raycaster.evidence(&spec, &cloud.ray_indices),
                             stamp: time,
                             points: cloud
                                 .points_m
@@ -832,6 +914,12 @@ impl SimulationBackend for RneBackend {
             }
         }
         Ok(SensorFrame {
+            absolute_heading: self.scenario.heading_observation(
+                self.seed,
+                tick,
+                time,
+                self.state().pose.yaw,
+            ),
             navigation_update: None,
             traffic_signal: None,
             time,
@@ -1228,6 +1316,96 @@ mod tests {
         )
         .unwrap()
     }
+
+    #[test]
+    fn actual_planar_ray_capture_preserves_native_points_and_all_control_outputs() {
+        let mut s = scenario("blocked");
+        s.duration = 1.;
+        s.full_rate_recording = true;
+        let original = run(s.clone(), 7, Plant::Dynamic).unwrap();
+        s.record_planar_sweep = true;
+        let captured = run(s, 7, Plant::Dynamic).unwrap();
+        assert_eq!(
+            serde_json::to_value(&original.frames).unwrap(),
+            serde_json::to_value(&captured.frames).unwrap()
+        );
+        assert_eq!(
+            serde_json::to_value(&original.summary).unwrap(),
+            serde_json::to_value(&captured.summary).unwrap()
+        );
+        for (old, new) in original
+            .sensor_log
+            .as_ref()
+            .unwrap()
+            .ticks
+            .iter()
+            .zip(&captured.sensor_log.as_ref().unwrap().ticks)
+        {
+            assert_eq!(
+                serde_json::to_value(&old.expected).unwrap(),
+                serde_json::to_value(&new.expected).unwrap()
+            );
+            if let Some(scan) = &new.input.lidar {
+                assert_eq!(old.input.lidar.as_ref().unwrap().points, scan.points);
+                let sweep = scan.sweep.as_ref().unwrap();
+                assert_eq!(sweep.rays.len(), 720);
+                assert!(sweep.calibration.angular_step_rad < 0.);
+                assert!(
+                    !sweep
+                        .rays
+                        .contains(&rustdriving_core::PlanarRayOutcome::Unavailable)
+                );
+            }
+        }
+        let mut bytes = vec![];
+        captured
+            .sensor_log
+            .as_ref()
+            .unwrap()
+            .write(&mut bytes)
+            .unwrap();
+        assert!(
+            rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), vec![])
+                .unwrap()
+                .verified
+        );
+    }
+
+    #[test]
+    fn native_completed_empty_queries_and_acquisition_errors_are_distinct() {
+        let mut s = scenario("blocked");
+        s.objects.clear();
+        s.duration = 1.;
+        s.full_rate_recording = true;
+        s.record_planar_sweep = true;
+        let empty = run(s.clone(), 7, Plant::Dynamic).unwrap();
+        for tick in &empty.sensor_log.as_ref().unwrap().ticks {
+            if let Some(scan) = &tick.input.lidar {
+                assert!(scan.points.is_empty());
+                assert!(
+                    scan.sweep
+                        .as_ref()
+                        .unwrap()
+                        .rays
+                        .iter()
+                        .all(|r| *r == rustdriving_core::PlanarRayOutcome::Clear)
+                );
+            }
+        }
+        let config = rustdriving_sim::pipeline_config(&s);
+        let mut backend = RneBackend::new(s.clone(), 7, Plant::Dynamic).unwrap();
+        backend.fail_lidar_from = Some(0.);
+        let failed =
+            simulate_with_backend(s, 7, backend, config, "rne-planar-query-error").unwrap();
+        let log = failed.sensor_log.as_ref().unwrap();
+        assert!(log.ticks.iter().any(|t| t.input.lidar_failed));
+        assert!(log.ticks.iter().all(|t| t.input.lidar.is_none()));
+        assert!(
+            log.ticks
+                .iter()
+                .all(|t| t.expected.command.acceleration <= -5.99)
+        );
+    }
     #[test]
     fn frames_preserve_heading_and_body_left() {
         let p = Vec2::new(3.0, 7.0);
@@ -1235,6 +1413,166 @@ mod tests {
         let rotation = Quat::from_rotation_y(std::f64::consts::FRAC_PI_2);
         assert!((yaw_rad(rotation) - std::f64::consts::FRAC_PI_2).abs() < 1e-10);
         assert!(from_rne(rotation * Vec3::X).y > 0.99);
+    }
+    #[test]
+    fn independent_absolute_heading_acquisition_replays_in_both_plants() {
+        let mut s = scenario("blocked");
+        s.duration = 1.;
+        s.full_rate_recording = true;
+        s.absolute_heading_fusion = true;
+        s.heading_sensor = Some(rustdriving_sim::heading::HeadingSensor {
+            period_ticks: 4,
+            variance_rad2: 1e-4,
+            delay_ticks: 0,
+            dropout_windows: vec![],
+            bias_windows: vec![],
+        });
+        for r in [
+            rustdriving_sim::simulate(s.clone(), 7).unwrap(),
+            run(s.clone(), 7, Plant::Dynamic).unwrap(),
+        ] {
+            let log = r.sensor_log.as_ref().unwrap();
+            assert!(log.header.config.absolute_heading_fusion);
+            assert!(
+                serde_json::to_value(&log.header.config)
+                    .unwrap()
+                    .get("heading_sensor")
+                    .is_none()
+            );
+            assert_eq!(log.ticks.len(), r.frames.len());
+            for (i, (tick, frame)) in log.ticks.iter().zip(&r.frames).enumerate() {
+                let observed = tick.input.absolute_heading;
+                let expected = s.heading_observation(7, i, frame.time, frame.truth.pose.yaw);
+                assert_eq!(observed.map(|h| h.yaw_rad), expected.map(|h| h.yaw_rad));
+                assert!(tick.expected.absolute_heading.is_some());
+                assert!(tick.expected.pose_covariance.is_some());
+            }
+            let mut bytes = vec![];
+            log.write(&mut bytes).unwrap();
+            assert!(
+                rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), vec![])
+                    .unwrap()
+                    .verified
+            );
+        }
+    }
+    #[test]
+    fn delayed_native_heading_preserves_earlier_physical_acquisitions_and_sensor_replay() {
+        let mut s = scenario("blocked");
+        s.duration = 1.;
+        s.full_rate_recording = true;
+        s.absolute_heading_fusion = true;
+        s.gnss_latency_compensation = true;
+        s.heading_latency_compensation = true;
+        s.heading_sensor = Some(rustdriving_sim::heading::HeadingSensor {
+            period_ticks: 4,
+            variance_rad2: 1e-4,
+            delay_ticks: 4,
+            dropout_windows: vec![],
+            bias_windows: vec![],
+        });
+        let result = run(s.clone(), 7, Plant::Dynamic).unwrap();
+        let log = result.sensor_log.as_ref().unwrap();
+        for (i, tick) in log.ticks.iter().enumerate() {
+            let expected = if i >= 4 {
+                let acquired = &result.frames[i - 4];
+                s.heading_observation(7, i - 4, acquired.time, acquired.truth.pose.yaw)
+            } else {
+                None
+            };
+            assert_eq!(
+                tick.input.absolute_heading.map(|h| (h.stamp, h.yaw_rad)),
+                expected.map(|h| (h.stamp, h.yaw_rad))
+            );
+        }
+        let mut bytes = vec![];
+        log.write(&mut bytes).unwrap();
+        assert!(
+            rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), vec![])
+                .unwrap()
+                .verified
+        );
+    }
+    #[test]
+    fn native_and_reference_use_identical_keyed_gnss_noise_without_truth_calibration() {
+        let mut s = scenario("gnss-delay-straight");
+        s.duration = 1.;
+        s.sensor_timing = None;
+        s.gnss_noise_shape = Some([[1., 0.9], [0.9, 1.]]);
+        s.gnss_covariance_shape = Some([[1., 0.9], [0.9, 1.]]);
+        for r in [
+            rustdriving_sim::simulate(s.clone(), 7).unwrap(),
+            run(s.clone(), 7, Plant::Dynamic).unwrap(),
+        ] {
+            let log = r.sensor_log.as_ref().unwrap();
+            assert_eq!(
+                log.header.config.gnss_covariance_shape,
+                s.gnss_covariance_shape
+            );
+            assert!(
+                serde_json::to_value(&log.header.config)
+                    .unwrap()
+                    .get("gnss_noise_shape")
+                    .is_none()
+            );
+            for (i, (tick, frame)) in log.ticks.iter().zip(&r.frames).enumerate() {
+                if let Some(g) = tick.input.gnss {
+                    let expected = s.gnss_noise(7, i).unwrap();
+                    let noise = g.position.minus(frame.truth.pose.position);
+                    assert!(noise.distance(expected) < 1e-12);
+                }
+                assert!(tick.expected.pose_covariance.is_some());
+            }
+            let mut bytes = vec![];
+            log.write(&mut bytes).unwrap();
+            assert!(
+                rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), vec![])
+                    .unwrap()
+                    .verified
+            );
+        }
+    }
+    #[test]
+    fn antenna_mount_synthesis_and_operational_offset_remain_independent_in_both_plants() {
+        let mut s = scenario("gnss-delay-curve");
+        s.duration = 1.;
+        s.sensor_timing = None;
+        s.initial_heading_offset_rad = Some(0.05);
+        s.gnss_noise_shape = Some([[1., 0.9], [0.9, 1.]]);
+        s.gnss_covariance_shape = s.gnss_noise_shape;
+        s.gnss_antenna_mount_m = Some(Vec2::new(1.2, 0.35));
+        s.gnss_antenna_offset_m = Some(Vec2::new(-0.4, 0.2));
+        for r in [
+            rustdriving_sim::simulate(s.clone(), 31313).unwrap(),
+            run(s.clone(), 31313, Plant::Dynamic).unwrap(),
+        ] {
+            let log = r.sensor_log.as_ref().unwrap();
+            assert_eq!(
+                log.header.config.gnss_antenna_offset_m,
+                s.gnss_antenna_offset_m
+            );
+            assert!(
+                serde_json::to_value(&log.header.config)
+                    .unwrap()
+                    .get("gnss_antenna_mount_m")
+                    .is_none()
+            );
+            for (i, (tick, frame)) in log.ticks.iter().zip(&r.frames).enumerate() {
+                if let Some(g) = tick.input.gnss {
+                    let antenna = frame.truth.pose.to_world(Vec2::new(1.2, 0.35));
+                    let noise = g.position.minus(antenna);
+                    assert!(noise.distance(s.gnss_noise(31313, i).unwrap()) < 1e-12);
+                }
+                assert!(tick.expected.pose_covariance.is_some());
+            }
+            let mut bytes = vec![];
+            log.write(&mut bytes).unwrap();
+            assert!(
+                rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), vec![])
+                    .unwrap()
+                    .verified
+            );
+        }
     }
     #[test]
     fn overhead_scene_preserves_operational_trace_and_default_pipeline_header() {
@@ -1982,6 +2320,201 @@ mod tests {
             for frame in r.frames.iter().filter(|f| f.time >= end - 8.0 - 1e-9) {
                 assert!(frame.truth.speed < 0.2);
                 assert!(frame.truth.pose.position.x >= 158.0);
+            }
+        }
+    }
+    #[test]
+    fn delayed_gnss_keeps_native_chassis_accuracy_during_obstacle_passing() {
+        for seed in [1, 7, 42] {
+            let r = run(scenario("gnss-delay-obstacle"), seed, Plant::Dynamic).unwrap();
+            assert!(r.summary.passed, "{:?}", r.summary);
+            assert!(r.summary.localization_rmse <= 0.2);
+            assert!(r.summary.localization_max_error <= 0.4);
+            assert!(r.summary.min_clearance >= 1.0);
+            let mut bytes = vec![];
+            r.sensor_log.as_ref().unwrap().write(&mut bytes).unwrap();
+            assert!(
+                rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), vec![])
+                    .unwrap()
+                    .verified
+            );
+        }
+    }
+    #[test]
+    fn delayed_gnss_and_map_updates_bridge_outage_then_stop_when_map_is_lost() {
+        for name in ["gnss-map-recovery", "gnss-map-lidar-loss"] {
+            let r = run(scenario(name), 7, Plant::Dynamic).unwrap();
+            assert!(r.summary.passed, "{:?}", r.summary);
+            assert!(r.summary.min_clearance >= 1.0);
+            let log = r.sensor_log.as_ref().unwrap();
+            assert!(log.ticks.iter().any(|t| {
+                t.expected.gnss_latency.unwrap().replayed_map_corrections > 0
+                    && t.expected
+                        .map_localization
+                        .as_ref()
+                        .unwrap()
+                        .gnss_outage_covered
+            }));
+            if name == "gnss-map-recovery" {
+                assert!(r.summary.reached_goal);
+                assert!(r.summary.localization_rmse <= 0.2);
+                assert!(r.summary.localization_max_error <= 0.4);
+                assert!(
+                    r.frames
+                        .iter()
+                        .filter(|f| (3.0..8.0).contains(&f.time))
+                        .all(|f| f.truth.speed >= 2.0)
+                );
+            } else {
+                assert!(!r.summary.reached_goal);
+                assert!(r.summary.final_speed <= 0.2);
+                assert!(
+                    log.ticks
+                        .iter()
+                        .any(|t| t.input.time > 6.25 && t.expected.emergency)
+                );
+            }
+            let mut bytes = vec![];
+            log.write(&mut bytes).unwrap();
+            assert!(
+                rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), vec![])
+                    .unwrap()
+                    .verified
+            );
+        }
+    }
+    #[test]
+    fn asynchronous_map_updates_replay_gnss_and_recover_from_lidar_failure() {
+        for name in ["delayed-map-gnss-early", "delayed-map-recovery"] {
+            let r = run(scenario(name), 7, Plant::Dynamic).unwrap();
+            assert!(r.summary.passed, "{:?}", r.summary);
+            assert!(r.summary.reached_goal);
+            assert!(r.summary.localization_rmse <= 0.2);
+            assert!(r.summary.localization_max_error <= 0.4);
+            assert!(r.summary.min_clearance >= 1.0);
+            let log = r.sensor_log.as_ref().unwrap();
+            assert!(log.ticks.iter().any(|t| {
+                t.expected
+                    .map_localization
+                    .as_ref()
+                    .unwrap()
+                    .last_accepted_stamp
+                    .is_some_and(|stamp| t.input.time - stamp > 0.05)
+            }));
+            if name == "delayed-map-gnss-early" {
+                assert!(
+                    log.ticks
+                        .last()
+                        .unwrap()
+                        .expected
+                        .gnss_latency
+                        .unwrap()
+                        .replayed_gnss_corrections
+                        > 0
+                );
+            } else {
+                assert!(
+                    r.frames
+                        .iter()
+                        .any(|f| (4.8..5.5).contains(&f.time) && f.truth.speed <= 0.05)
+                );
+                assert!(log.ticks.iter().any(|t| {
+                    (6.0..8.0).contains(&t.input.time)
+                        && t.expected.health.is_empty()
+                        && t.expected
+                            .map_localization
+                            .as_ref()
+                            .unwrap()
+                            .gnss_outage_covered
+                }));
+            }
+            let mut bytes = vec![];
+            log.write(&mut bytes).unwrap();
+            assert!(
+                rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), vec![])
+                    .unwrap()
+                    .verified
+            );
+        }
+    }
+    #[test]
+    fn directed_partial_routes_drive_avoid_and_replan_with_native_dynamics() {
+        for name in [
+            "same-edge",
+            "obstacle",
+            "restricted",
+            "handover",
+            "reopen",
+            "blocked-goal",
+            "osm",
+        ] {
+            let r = run(scenario(&format!("mid-edge-{name}")), 7, Plant::Dynamic).unwrap();
+            assert!(r.summary.passed, "{name}: {:?}", r.summary);
+            assert_eq!(r.summary.reached_goal, name != "blocked-goal");
+            assert_eq!(r.frames.len(), r.summary.steps);
+            assert!(r.summary.min_clearance >= 1.);
+            let mut bytes = vec![];
+            r.sensor_log.as_ref().unwrap().write(&mut bytes).unwrap();
+            assert!(
+                rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), vec![])
+                    .unwrap()
+                    .verified
+            );
+        }
+    }
+    #[test]
+    fn explicit_prior_and_physical_heading_offset_are_separate() {
+        let mut s = scenario("mid-edge-same-edge");
+        s.initial_pose_covariance = Some([
+            [1., 0., 0.],
+            [0., 1., 0.],
+            [0., 0., (3_f64.to_radians()).powi(2) / 3.],
+        ]);
+        s.initial_heading_offset_rad = Some(-2_f64.to_radians());
+        let r = run(s, 7, Plant::Dynamic).unwrap();
+        assert!(r.summary.passed, "{:?}", r.summary);
+        assert!((r.frames[0].truth.pose.yaw + 2_f64.to_radians()).abs() < 1e-14);
+        let log = r.sensor_log.as_ref().unwrap();
+        assert_eq!(log.header.config.initial_pose.yaw, 0.);
+        assert!(
+            serde_json::to_value(&log.header.config)
+                .unwrap()
+                .get("initial_heading_offset_rad")
+                .is_none()
+        );
+        assert!(r.frames.iter().all(|f| {
+            rustdriving_core::wrap_angle(f.truth.pose.yaw - f.estimate.pose.yaw).abs() <= 0.1
+        }));
+        let mut bytes = vec![];
+        log.write(&mut bytes).unwrap();
+        assert!(
+            rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), vec![])
+                .unwrap()
+                .verified
+        );
+    }
+    #[test]
+    fn chassis_lateral_tracking_recovers_both_viewed_offset_obstacles() {
+        for offset in [-2_f64.to_radians(), 2_f64.to_radians()] {
+            for explicit_prior in [false, true] {
+                let mut s = scenario("mid-edge-obstacle");
+                s.initial_heading_offset_rad = Some(offset);
+                if explicit_prior {
+                    s.initial_pose_covariance = Some([
+                        [1., 0., 0.],
+                        [0., 1., 0.],
+                        [0., 0., (3_f64.to_radians()).powi(2) / 3.],
+                    ]);
+                }
+                let r = run(s, 303, Plant::Dynamic).unwrap();
+                assert!(
+                    r.summary.passed,
+                    "offset {offset}, explicit prior {explicit_prior}: {:?}",
+                    r.summary
+                );
+                assert!(r.summary.reached_goal);
+                assert!(r.summary.min_clearance >= 1.);
+                assert!(r.summary.simulated_seconds <= 65.);
             }
         }
     }

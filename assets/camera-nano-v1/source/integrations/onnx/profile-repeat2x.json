@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "algorithm": "yolox_s_repeat2x_parallel_image_analysis_v1",
+  "model": "Original pinned YOLOX-S artifact, f32 input640, score0.3 and NMS0.45",
+  "lowering": "Only validated Resize_165 and Resize_187 asymmetric/floor/nearest [1,1,2,2] operations become standard AxisOp/MultiBroadcastTo/Reshape",
+  "execution": "One lowered plan shared by at most four scoped view workers; unchanged ordered merge and vehicle consistency",
+  "timing": "Exact existing measured replay, original acquisition schedule, 0.2s age limit and two-sample recovery",
+  "provenance": "Distinct detector/base/image producer algorithms and complete compiled-source receipts; legacy serial JSON admission is unchanged",
+  "bounds": {"view_workers":4,"model_forwards_per_image":4,"output_bytes":4194304},
+  "control_permission": false
+}

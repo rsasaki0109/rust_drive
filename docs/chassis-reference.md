@@ -22,7 +22,7 @@ Three edited logs change the chassis distance, remove it, or alter a measured tu
 
 ## Limits and reproduction
 
-The established domain is these 2 m/s clear-road fixtures and a low-speed no-slip model. This does not estimate tire slip, support GNSS-denied motion, establish high-speed course accuracy, remove discrete perception blind zones or guarantee arbitrary bends. Mapped signals/signs/priority arc lengths remain excluded from local-route geometry. Vehicle dimensions, source road coordinates, widths, cruise settings, deadlines and existing acceptance floors are unchanged.
+The established domain is these 2 m/s clear-road fixtures and a low-speed no-slip model. This does not estimate tire slip, support GNSS-denied motion, establish high-speed course accuracy, remove discrete perception blind zones or guarantee arbitrary bends. Fixed signal/sign prefixes now retain their original surveyed arc under [signal preservation](signal-relocalization.md); straight priority-zone routes use the same original-coordinate contract under [yield preservation](yield-relocalization.md). Vehicle dimensions, source road coordinates, widths, cruise settings, deadlines and existing acceptance floors are unchanged.
 
 ```sh
 bash scripts/setup-rne.sh

@@ -1,5 +1,5 @@
 //! Restricted map search must participate in driving and sensor-only replay.
-use rustdriving_pipeline::replay::verify;
+use rustdriving_pipeline::replay::{LogRecord, verify};
 use rustdriving_sim::{Scenario, pipeline_config, simulate};
 use std::io::Cursor;
 
@@ -43,6 +43,8 @@ fn prohibited_and_only_turns_select_and_drive_the_legal_detour() {
 fn replay_rejects_removed_turn_rule_instead_of_trusting_resolved_geometry() {
     let run = simulate(scenario("turn-no-main"), 7).unwrap();
     let mut log = run.sensor_log.unwrap();
+    let mut original = Vec::new();
+    log.write(&mut original).unwrap();
     log.header
         .config
         .navigation
@@ -51,8 +53,17 @@ fn replay_rejects_removed_turn_rule_instead_of_trusting_resolved_geometry() {
         .network
         .turn_restrictions
         .clear();
-    let mut bytes = Vec::new();
-    log.write(&mut bytes).unwrap();
+    let error = log.write(std::io::sink()).unwrap_err();
+    assert!(error.contains("initial route"), "{error}");
+
+    // Inject corruption after recording to exercise the reader independently.
+    let first_tick = original.iter().position(|&b| b == b'\n').unwrap() + 1;
+    let mut bytes = serde_json::to_vec(&LogRecord::Header {
+        header: Box::new(log.header),
+    })
+    .unwrap();
+    bytes.push(b'\n');
+    bytes.extend_from_slice(&original[first_tick..]);
     let error = verify(Cursor::new(bytes), std::io::sink()).unwrap_err();
     assert!(error.contains("initial route"), "{error}");
 }

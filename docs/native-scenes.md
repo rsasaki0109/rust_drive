@@ -8,7 +8,7 @@ That is the default single-height mode. The additional explicit [`--multi-height
 
 ## Run, replay and check
 
-Use the development branch, activate the local tools and fetch the pinned engine as described in the [README](../README.md#cpu-only-robot-native-engine-demo). No new Rust dependencies or engine revision are required.
+Use the development branch, activate the local tools and fetch the pinned engine as described in the [README](../integrations/rne/README.md#reproduce). No new Rust dependencies or engine revision are required.
 
 ```sh
 source scripts/env.sh

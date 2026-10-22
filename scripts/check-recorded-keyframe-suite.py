@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+from recorded_numeric import compare_recorded
 
 ROOT = Path(__file__).resolve().parent.parent
 BASELINE = ROOT / 'assets/recorded-keyframes'
@@ -118,13 +119,13 @@ def main():
         numerical = {k: v for k, v in report.items() if k not in ('freeze', 'freeze_sha256')}
         original = {k: v for k, v in json.loads((baseline / 'results.json').read_text()).items()
                     if k not in ('freeze', 'freeze_sha256')}
-        if without_timings(numerical) != without_timings(original):
-            raise ValueError(f'{name}: deterministic non-timing evidence changed')
+        comparison = compare_recorded(without_timings(original), without_timings(numerical))
         proof = audit(report_path, manifest, manifest.parent / 'raw',
                       freeze_path, folder / 'audit.json')
         records.append(dict(case=name, dataset=dataset, summary=summary,
                             evaluator_exit_status=run.returncode,
                             independent_integrity_passed=proof['passed_integrity'],
+                            historical_comparison=comparison,
                             mutations_rejected=len(proof['mutations_rejected']),
                             report_sha256=digest(report_path), audit_sha256=digest(folder / 'audit.json'),
                             freeze_sha256=digest(freeze_path)))

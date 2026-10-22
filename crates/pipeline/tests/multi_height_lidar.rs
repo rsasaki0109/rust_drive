@@ -19,6 +19,7 @@ fn config() -> PipelineConfig {
 }
 fn frame(time: f64) -> SensorFrame {
     SensorFrame {
+        absolute_heading: None,
         time,
         odometry: Some(Odometry {
             stamp: time,
@@ -145,6 +146,7 @@ fn acquisition_failure_and_ambiguous_or_out_of_mode_inputs_brake() {
             0 => input.lidar_failed = true,
             1 => {
                 input.lidar = Some(LidarScan {
+                    sweep: None,
                     stamp: 0.0,
                     points: vec![],
                 })
@@ -152,6 +154,7 @@ fn acquisition_failure_and_ambiguous_or_out_of_mode_inputs_brake() {
             2 => {
                 input.multi_height_lidar = None;
                 input.lidar = Some(LidarScan {
+                    sweep: None,
                     stamp: 0.0,
                     points: vec![],
                 });
@@ -321,6 +324,7 @@ fn optional_contract_does_not_change_ordinary_serialized_frames_or_configs() {
     let mut input = frame(0.0);
     input.multi_height_lidar = None;
     input.lidar = Some(LidarScan {
+        sweep: None,
         stamp: 0.0,
         points: vec![],
     });

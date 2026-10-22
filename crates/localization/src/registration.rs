@@ -3,6 +3,7 @@
 //! labels or true poses are accepted. This is local ICP, not global localization.
 use rustdriving_core::{Pose, Vec2, wrap_angle};
 use std::collections::BTreeMap;
+pub mod regional;
 
 #[derive(Clone, Debug)]
 pub struct RegistrationConfig {
@@ -126,6 +127,7 @@ struct Grid<'a> {
     map: &'a [Vec2],
     cells: BTreeMap<(i64, i64), Vec<usize>>,
     cell_size: f64,
+    regional_tree: Option<regional::KdTree>,
 }
 impl<'a> Grid<'a> {
     fn new(map: &'a [Vec2], cell_size: f64) -> Result<Self, String> {
@@ -133,6 +135,7 @@ impl<'a> Grid<'a> {
             map,
             cells: BTreeMap::new(),
             cell_size,
+            regional_tree: None,
         };
         for (index, &point) in map.iter().enumerate() {
             grid.cells.entry(grid.key(point)?).or_default().push(index);
@@ -157,6 +160,9 @@ impl<'a> Grid<'a> {
     }
     fn nearest(&self, point: Vec2, budget: &mut Budget) -> Result<Option<(usize, f64)>, String> {
         let (x, y) = self.key(point)?;
+        if let Some(tree) = &self.regional_tree {
+            return tree.nearest(self.map, point, self.cell_size, budget);
+        }
         let mut best: Option<(usize, f64)> = None;
         for dx in -1..=1 {
             for dy in -1..=1 {

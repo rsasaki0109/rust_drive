@@ -1,0 +1,59 @@
+name: Bounded small-object camera grid
+on:
+  push:
+    paths:
+      - '.github/workflows/camera-grid.yml'
+      - 'integrations/onnx/**'
+      - 'assets/camera-grid-v1/**'
+      - 'rust-toolchain.toml'
+permissions:
+  contents: read
+env:
+  CARGO_INCREMENTAL: '0'
+jobs:
+  complete-grid:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned tools
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
+          python -m pip install -r scripts/requirements-visual.txt
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            integrations/onnx/target
+          key: camera-grid-${{ runner.os }}-rust-1.90-${{ hashFiles('integrations/onnx/Cargo.lock') }}
+      - name: Check bounded geometry, joined waves and frozen evidence
+        run: |
+          cargo fmt --manifest-path integrations/onnx/Cargo.toml -- --check
+          cargo clippy --release --locked --manifest-path integrations/onnx/Cargo.toml --all-targets -- -D warnings
+          cargo test --release --locked --manifest-path integrations/onnx/Cargo.toml --bin rustdriving-camera-grid
+          cargo build --release --locked --manifest-path integrations/onnx/Cargo.toml --bin rustdriving-camera-grid --bin rustdriving-camera-depthwise --bin rustdriving-camera-linear
+          python -B -m unittest discover -s integrations/onnx -p test_camera_grid.py -v
+          python -B assets/camera-grid-v1/verify.py
+      - name: Acquire the unchanged model and exactly selected images
+        run: |
+          python -B integrations/onnx/fetch.py --output artifacts/camera-model
+          python -B integrations/onnx/bdd_fetch.py --output artifacts/bdd-camera
+          python -B integrations/onnx/camera_linear_fetch.py --output artifacts/camera-linear-v1/data
+          python -B integrations/onnx/camera_grid_fetch.py --output artifacts/camera-grid-check/data
+      - name: Independently check complete inventory before fixed comparison
+        run: |
+          python -B integrations/onnx/camera_grid_check.py controls --data artifacts/camera-grid-check/data --output artifacts/camera-grid-check/controls
+          python -B integrations/onnx/camera_grid_check.py run --data artifacts/camera-grid-check/data --controls artifacts/camera-grid-check/controls --output artifacts/camera-grid-check/validation
+          python -B integrations/onnx/camera_grid_check.py audit --data artifacts/camera-grid-check/data --controls artifacts/camera-grid-check/controls --output artifacts/camera-grid-check/validation
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: camera-grid-diagnostics
+          path: |
+            artifacts/camera-grid-check/data/inputs.json
+            artifacts/camera-grid-check/controls/summary.json
+            artifacts/camera-grid-check/controls/*-inventory.json
+            artifacts/camera-grid-check/validation/

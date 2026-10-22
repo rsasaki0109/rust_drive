@@ -139,10 +139,13 @@ protocol runs twice, with one model plan per run and **216 actual model forwards
 in total. Two excluded image deliveries per four cases skip inference. The
 deadline example finishes held with only one post-deadline acquisition.
 
-Every admitted detector report matches its saved real-inference report after
-excluding only measured inference/load durations. Every freshness result
-matches its previous saved result exactly. Exported actual analysis reports
-reproduce the standalone guard and tracker exactly. Independent admission,
+Historical detector/freshness comparisons allow the existing absolute f32
+confidence bound of 1e-5 only for `confidence` and `last_observed_confidence`.
+Coordinates, clocks, identities, decisions, policy, order and all other fields
+remain exact, and crossing the original score threshold is rejected. Every
+accepted confidence difference is recorded. Current-host repeated executions
+remain exact after excluding only inference/load durations. Exported actual
+analysis reports reproduce the standalone guard and tracker exactly. Independent admission,
 motion/lifecycle and min-cost-flow checks verify all backend updates; the flow
 solver agrees with exhaustive enumeration on 96 small graphs.
 
@@ -153,8 +156,10 @@ Twenty-eight fatal-input controls pass (27 before model loading and one bad
 model-size case), alongside existing-output protection, repeated model-free
 all-rejected execution and dry reused-image/out-of-order checks. The checker
 uses only Python's standard library and existing synthetic PNG fixtures.
-The CPU research CI job is configured to rerun these checks; no remote run has
-been observed for this change.
+The independent `Camera pipeline contract` workflow reruns these checks without
+waiting for unrelated research evaluations. It also tests a recorded AVX2/FMA
+confidence-drift fixture and exact replay in the original native guard.
+[CPU portability repair, evidence and CI status](camera-ci.md).
 
 The [evidence packet](../assets/camera-pipeline-v1/files.json) retains full
 analysis/state outputs, original clock metadata, replays, rejected controls,

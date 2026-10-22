@@ -1,8 +1,21 @@
 //! Transport-independent contracts. SI units; world ENU, body x forward / y left.
+mod planning_diagnostics;
+pub use planning_diagnostics::*;
+mod forecast_consistency;
+pub use forecast_consistency::*;
+mod cold_motion;
+pub use cold_motion::*;
+mod checked_approach;
+pub use checked_approach::CheckedApproachDiagnostics;
+mod velocity_hypotheses;
+pub use velocity_hypotheses::*;
+mod planar_sweep;
+pub use planar_sweep::*;
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 
 #[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct Vec2 {
     pub x: f64,
     pub y: f64,
@@ -37,6 +50,7 @@ pub fn wrap_angle(a: f64) -> f64 {
     (a + PI).rem_euclid(2.0 * PI) - PI
 }
 #[derive(Clone, Copy, Debug, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Pose {
     pub position: Vec2,
     pub yaw: f64,
@@ -47,14 +61,18 @@ impl Pose {
     }
 }
 #[derive(Clone, Copy, Debug, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EgoState {
     pub pose: Pose,
     pub speed: f64,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct LidarScan {
     pub stamp: f64,
     pub points: Vec<Vec2>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sweep: Option<PlanarLidarSweep>,
 }
 /// A horizontal measured plane. XY points are body forward/left; height is
 /// meters above the calibrated road datum, not an inferred object label.
@@ -104,26 +122,68 @@ pub struct Lidar3dScan {
     pub returns: Vec<Lidar3dReturn>,
 }
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Odometry {
     pub stamp: f64,
     pub speed: f64,
     pub yaw_rate: f64,
 }
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Gnss {
     pub stamp: f64,
     pub position: Vec2,
     pub variance: f64,
 }
+/// Acquired body heading in world ENU: radians counterclockwise from +x.
+/// The adapter must supply its mounting/north correction and angular variance.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct AbsoluteHeading {
+    pub stamp: f64,
+    pub yaw_rad: f64,
+    pub variance_rad2: f64,
+}
+impl AbsoluteHeading {
+    pub fn valid(self) -> bool {
+        self.stamp.is_finite()
+            && self.stamp >= 0.
+            && self.yaw_rad.is_finite()
+            && (-PI..=PI).contains(&self.yaw_rad)
+            && self.variance_rad2.is_finite()
+            && self.variance_rad2 > 0.
+            && self.variance_rad2 <= PI.powi(2)
+    }
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum GnssDecision {
+pub enum HeadingDecision {
     Accepted,
     RejectedInnovation,
     Invalid,
     IgnoredTimestamp,
 }
+#[derive(Clone, Copy, Debug, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct HeadingDiagnostics {
+    pub last_observed_stamp: Option<f64>,
+    pub last_accepted_stamp: Option<f64>,
+    pub last_decision: Option<HeadingDecision>,
+    pub last_nis: Option<f64>,
+    pub accepted_samples: u64,
+    pub rejected_samples: u64,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum GnssDecision {
+    Accepted,
+    RejectedInnovation,
+    /// A valid proposal is deferred by the explicitly configured recovery policy.
+    RecoveryHeld,
+    Invalid,
+    IgnoredTimestamp,
+}
 /// GNSS correction diagnostics. Observation receipt is distinct from acceptance.
 #[derive(Clone, Copy, Debug, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct LocalizationDiagnostics {
     pub last_observed_stamp: Option<f64>,
     pub last_accepted_stamp: Option<f64>,
@@ -134,11 +194,23 @@ pub struct LocalizationDiagnostics {
     pub rejected_fixes: u64,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Detection {
     pub center: Vec2,
     pub radius: f64,
 }
+/// Raw associated detection in the continuous wheel/gyro tracking frame.
+/// Cached outputs retain this acquisition stamp; it is not a new observation.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TrackMeasurement {
+    pub id: u64,
+    pub stamp: f64,
+    pub center: Vec2,
+    pub radius: f64,
+}
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Track {
     pub id: u64,
     pub position: Vec2,
@@ -146,14 +218,107 @@ pub struct Track {
     pub radius: f64,
     pub last_seen: f64,
 }
+/// Declared Euclidean error budgets for acquisition-origin motion forecasts.
+/// These are supplied assumptions, not estimated covariance or confidence levels.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct ForecastEnvelopeConfig {
+    pub position_error_m: f64,
+    pub velocity_error_m_s: f64,
+    pub acceleration_error_m_s2: f64,
+}
+impl ForecastEnvelopeConfig {
+    pub fn validate(&self) -> Result<(), String> {
+        if !self.position_error_m.is_finite()
+            || !(0.0..=20.0).contains(&self.position_error_m)
+            || !self.velocity_error_m_s.is_finite()
+            || !(0.0..=15.0).contains(&self.velocity_error_m_s)
+            || !self.acceleration_error_m_s2.is_finite()
+            || !(0.0..=6.0).contains(&self.acceleration_error_m_s2)
+        {
+            return Err("forecast envelope requires finite nonnegative position / velocity / acceleration error budgets bounded by 20 m / 15 m/s / 6 m/s²".into());
+        }
+        Ok(())
+    }
+}
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Prediction {
     pub id: u64,
     pub positions: Vec<Vec2>,
     pub radius: f64,
     pub dt: f64,
+    /// Additional occupied radius in meters at each position knot. Empty means
+    /// zero. Interpolate linearly and hold the last value after the horizon.
+    /// This geometric envelope is not a calibrated probability or covariance.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub additional_radius_m: Vec<f64>,
+}
+
+/// Surveyed speed interval on a fixed route, in arc-length meters and m/s.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RouteSpeedZone {
+    pub start_s_m: f64,
+    pub end_s_m: f64,
+    pub speed_m_s: f64,
+}
+impl RouteSpeedZone {
+    pub fn valid(&self) -> bool {
+        self.start_s_m.is_finite()
+            && self.end_s_m.is_finite()
+            && self.speed_m_s.is_finite()
+            && self.start_s_m >= 0.0
+            && self.end_s_m > self.start_s_m
+            && self.end_s_m <= 1500.0
+            && (0.1..=8.0).contains(&self.speed_m_s)
+    }
+}
+impl Prediction {
+    /// Validate the whole radius sequence before consuming any forecast knot.
+    pub fn valid_radii(&self) -> bool {
+        self.radius.is_finite()
+            && self.radius >= 0.0
+            && (self.additional_radius_m.is_empty()
+                || (self.additional_radius_m.len() == self.positions.len()
+                    && self.additional_radius_m.iter().all(|extra| {
+                        extra.is_finite() && *extra >= 0.0 && (self.radius + extra).is_finite()
+                    })))
+    }
+
+    /// Occupied radius at seconds from forecast origin. Malformed arguments or
+    /// sampled radii return infinity so geometric consumers fail closed.
+    /// Consumers must also call `valid_radii` to validate unsampled knots.
+    pub fn radius_at(&self, time: f64) -> f64 {
+        if !time.is_finite()
+            || time < 0.0
+            || !self.dt.is_finite()
+            || self.dt <= 0.0
+            || self.positions.is_empty()
+            || !self.radius.is_finite()
+            || self.radius < 0.0
+        {
+            return f64::INFINITY;
+        }
+        if self.additional_radius_m.is_empty() {
+            return self.radius;
+        }
+        if self.additional_radius_m.len() != self.positions.len() {
+            return f64::INFINITY;
+        }
+        let step = time / self.dt;
+        let index = (step.floor() as usize).min(self.positions.len() - 1);
+        let next = (index + 1).min(self.positions.len() - 1);
+        let a = self.additional_radius_m[index];
+        let b = self.additional_radius_m[next];
+        if !a.is_finite() || a < 0.0 || !b.is_finite() || b < 0.0 {
+            return f64::INFINITY;
+        }
+        self.radius + a + (b - a) * (step - index as f64).clamp(0.0, 1.0)
+    }
 }
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct TrajectoryPoint {
     pub position: Vec2,
     /// Planned speed in m/s at this position and relative time.
@@ -162,6 +327,7 @@ pub struct TrajectoryPoint {
     pub time: f64,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Trajectory {
     pub points: Vec<TrajectoryPoint>,
     pub mode: DrivingMode,
@@ -176,6 +342,7 @@ pub enum DrivingMode {
     Emergency,
 }
 #[derive(Clone, Copy, Debug, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ControlCommand {
     pub acceleration: f64,
     pub steering: f64,
@@ -192,6 +359,7 @@ impl ControlCommand {
     }
 }
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct VehicleConfig {
     pub wheelbase: f64,
     pub radius: f64,
@@ -208,6 +376,7 @@ impl Default for VehicleConfig {
 }
 /// Arc-length parameterized polyline, supplied by a map adapter rather than perception.
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Route {
     pub points: Vec<Vec2>,
     pub lengths: Vec<f64>,

@@ -2,7 +2,25 @@
 
 This standalone Cargo workspace embeds [RobotNativeEngine](https://github.com/rsasaki0109/RobotNativeEngine) native vehicle systems and Rapier LiDAR queries into the **same RustDriving pipeline** used by the reference simulator and replay. It is executable code with integration tests, not a mock or renderer-driven vehicle animation.
 
+[Explicit directed mid-edge routes](../../docs/mid-edge-routing.md) also use this
+native plant. All 24 frozen native episodes pass routing/physical/replay checks;
+only 17 pass complete quality acceptance, with seven seed-7 launch-heading
+failures retained. The same failures reproduce in equivalent-node parent replay.
+
 ## Reproduce
+
+The optional `initial_pose_covariance` supplies an external ENU x/y/yaw
+calibration prior to the shared EKF and records its complete posterior.
+Simulator-only `initial_heading_offset_rad` perturbs the physical spawn while
+the operational initial pose retains its supplied calibration. This separates
+initialization research from an assumption of perfect physical heading;
+measured real-vehicle calibration remains unverified.
+[Prior contract, rejected tracking variants and complete results](../../docs/initial-pose-covariance.md).
+
+Local side-path tracking uses the existing standard road preview in both plants,
+with wheelbase/lever-arm floors, while centerline corner tracking retains the
+short local preview. The earlier short preview could leave lateral avoidance
+unfinished and cause insufficient passing clearance or a prolonged stop.
 
 From the RustDriving checkout, with Git, Rust, a C linker and network access:
 
@@ -60,6 +78,22 @@ Eight adapter tests cover frame conversion, kinematic mission/blocked road, dyna
 This is a planar known-route research integration. It does not establish realistic tire calibration, road elevation/suspension/contact response, camera perception, traffic reasoning, full 3D autonomous driving, hardware throughput or road safety. CARLA remains unimplemented; its standard rendered/camera workflow normally requires a suitable GPU, while no-rendering changes available sensors and does not by itself prove CPU-only support.
 
 RNE is dual MIT/Apache-2.0. Optional locked dependency licenses are inventoried in [THIRD_PARTY.md](THIRD_PARTY.md).
+
+Optional `gnss_latency_compensation` uses acquisition-time GNSS correction and bounded wheel/gyro replay. Dynamic mode also records the declared chassis/rear-axle reference, existing local route/course steering model and explicit motion calibration; caller limits are retained, with research defaults 2.0/2.5/2.5 m/s² and the existing friction clamp. Seven authored worlds pass frozen accuracy/physical gates across three seeds, including a repaired 0.69 m obstacle-passing localization failure. The new native regression joins 55 preceding integration tests. [Contract, rejected trials and results](../../docs/gnss-latency.md).
+
+The same mode can now retain accepted synchronous map pose/covariance events.
+Native moving-outage recovery and map-loss braking are exercised without
+changing engine or plant calibration; the complete native library suite now
+had 57 passing tests at the synchronous stage. Conflicting event replay refuses the GNSS transaction and
+brakes. [Combined event contract and qualification](../../docs/gnss-map-history.md).
+
+Explicit `localization_map.allow_delayed_scans` also retains GNSS corrections,
+seeds registration at acquisition time and inserts map updates before or after
+already delivered GNSS. It preserves the 0.2 s map age limit and the native
+plant calibration. Native tests exercise both arrival orders and a physical
+stop/map-only recovery after transient LiDAR failure.
+The complete native library suite passes all 58 tests.
+[Asynchronous map contract and results](../../docs/delayed-map.md).
 
 ## Occlusion, crossing and low-friction regressions
 

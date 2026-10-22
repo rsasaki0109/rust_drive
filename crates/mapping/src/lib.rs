@@ -1,4 +1,5 @@
 //! Local log-odds occupancy map, independent of the supplied navigation route.
+mod ray;
 use rustdriving_core::{LidarScan, Pose, Vec2};
 pub struct OccupancyGrid {
     pub origin: Vec2,
@@ -33,24 +34,42 @@ impl OccupancyGrid {
             None
         }
     }
+    /// Each return clears each crossed cell once, excluding its hit cell.
+    /// Cells are half-open; a corner touch alone supplies no free evidence.
+    /// Empty scans do not clear space. Invalid poses/returns are ignored.
     pub fn update(&mut self, scan: &LidarScan, pose: Pose) {
+        if !pose.position.finite() || !pose.yaw.is_finite() {
+            return;
+        }
+        let start = Vec2::new(
+            (pose.position.x - self.origin.x) / self.resolution,
+            (pose.position.y - self.origin.y) / self.resolution,
+        );
+        if !start.finite() {
+            return;
+        }
         for &point in &scan.points {
             if !point.finite() {
                 continue;
             }
             let end = pose.to_world(point);
-            let distance = pose.position.distance(end);
-            let steps = (distance / self.resolution).ceil() as usize;
-            for i in 0..steps {
-                let p = pose.position.plus(
-                    end.minus(pose.position)
-                        .scaled(i as f64 / steps.max(1) as f64),
-                );
-                if let Some(j) = self.index(p) {
-                    self.log_odds[j] = (self.log_odds[j] - 0.15).max(-4.0);
+            let normalized_end = Vec2::new(
+                (end.x - self.origin.x) / self.resolution,
+                (end.y - self.origin.y) / self.resolution,
+            );
+            if !normalized_end.finite() {
+                continue;
+            }
+            let hit = self.index(end);
+            if let Some(cells) = ray::Cells::new(start, normalized_end, self.width, self.height) {
+                for (x, y) in cells {
+                    let j = y * self.width + x;
+                    if Some(j) != hit {
+                        self.log_odds[j] = (self.log_odds[j] - 0.15).max(-4.0);
+                    }
                 }
             }
-            if let Some(j) = self.index(end) {
+            if let Some(j) = hit {
                 self.log_odds[j] = (self.log_odds[j] + 0.85).min(4.0);
             }
         }
@@ -78,20 +97,4 @@ impl OccupancyGrid {
     }
 }
 #[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn marks_hit_and_clears_ray() {
-        let mut g = OccupancyGrid::new(Vec2::new(-1.0, -1.0), 20, 10, 0.5);
-        let scan = LidarScan {
-            stamp: 0.0,
-            points: vec![Vec2::new(5.0, 0.0)],
-        };
-        for _ in 0..4 {
-            g.update(&scan, Pose::default());
-        }
-        assert!(g.probability(Vec2::new(5.0, 0.0)).unwrap() > 0.9);
-        assert!(g.probability(Vec2::new(2.0, 0.0)).unwrap() < 0.5);
-        assert!(g.probability(Vec2::new(100.0, 0.0)).is_none());
-    }
-}
+mod tests;

@@ -2,6 +2,8 @@
 use rustdriving_core::{
     ControlCommand, Controller, DrivingMode, EgoState, Trajectory, VehicleConfig, wrap_angle,
 };
+/// Uses a time-zero sample for the current target speed and the first segment
+/// for acceleration feedforward. A future-only trajectory is rejected.
 #[derive(Default)]
 pub struct PurePursuit {
     pub vehicle: VehicleConfig,
@@ -30,40 +32,62 @@ impl PurePursuit {
         self.integral = 0.0;
         self.steering = 0.0;
     }
+    fn emergency_command(&mut self) -> ControlCommand {
+        self.reset_emergency_state();
+        ControlCommand::emergency()
+    }
 }
 impl Controller for PurePursuit {
     fn control(&mut self, ego: EgoState, path: &Trajectory, dt: f64) -> ControlCommand {
         if path.mode == DrivingMode::Emergency
             || path.points.is_empty()
+            || path.points[0].time != 0.0
             || !ego.pose.position.finite()
             || !ego.pose.yaw.is_finite()
             || !ego.speed.is_finite()
+            || !path.lateral_target.is_finite()
             || !dt.is_finite()
             || dt <= 0.0
+            || !self.vehicle.wheelbase.is_finite()
+            || self.vehicle.wheelbase <= 0.0
+            || !self.vehicle.max_steer.is_finite()
+            || self.vehicle.max_steer <= 0.0
+            || self.vehicle.max_steer >= std::f64::consts::FRAC_PI_2
+            || self.steering.abs() > self.vehicle.max_steer
             || !self.rear_axle_offset_m.is_finite()
             || self.rear_axle_offset_m < 0.0
-            || path
-                .points
-                .iter()
-                .any(|p| !p.position.finite() || !p.speed.is_finite() || !p.time.is_finite())
+            || path.points.iter().any(|p| {
+                !p.position.finite() || !p.speed.is_finite() || !p.time.is_finite() || p.time < 0.0
+            })
+            || path.points.windows(2).any(|p| p[1].time <= p[0].time)
         {
-            self.reset_emergency_state();
-            return ControlCommand::emergency();
+            return self.emergency_command();
         }
         // Shorter preview follows the smooth lateral maneuver more closely.
         // Interpolate its circle intersection to avoid sample-index steering jumps.
-        let lookahead = if self.local_route_geometry {
+        let mut lookahead = if self.local_route_geometry {
             (0.8 + ego.speed * 0.15).clamp(0.8, 1.5)
         } else {
             (3.0 + ego.speed * 0.45).clamp(3.0, 8.0)
         };
-        let target = pursuit_target(path, ego.pose.position, lookahead);
-        if !target.finite() {
-            self.reset_emergency_state();
-            return ControlCommand::emergency();
+        if self.local_route_geometry && path.lateral_target.abs() > 0.1 {
+            // A rebuilt heading-joined prefix can hide lateral error from the
+            // short corner preview. Side paths use the existing road preview;
+            // centerline turning retains its short local preview. With a full
+            // preview, twice the lever arm bounds the chassis conversion below.
+            lookahead = (3.0 + ego.speed * 0.45)
+                .clamp(3.0, 8.0)
+                .max(self.vehicle.wheelbase)
+                .max(2.0 * self.rear_axle_offset_m);
         }
+        let Some(target) = pursuit_target(path, ego.pose.position, lookahead) else {
+            return self.emergency_command();
+        };
         let delta = target.minus(ego.pose.position);
         let distance = delta.x.hypot(delta.y).max(0.1);
+        if !delta.finite() || !distance.is_finite() {
+            return self.emergency_command();
+        }
         let alpha = wrap_angle(delta.y.atan2(delta.x) - ego.pose.yaw);
         let desired = if self.rear_axle_offset_m == 0.0 {
             // Retain the original arithmetic, including rounding, by default.
@@ -81,7 +105,13 @@ impl Controller for PurePursuit {
                     .clamp(-self.vehicle.max_steer, self.vehicle.max_steer)
             }
         };
+        if !desired.is_finite() {
+            return self.emergency_command();
+        }
         self.steering += (desired - self.steering).clamp(-0.7 * dt, 0.7 * dt);
+        self.steering = self
+            .steering
+            .clamp(-self.vehicle.max_steer, self.vehicle.max_steer);
         let initial = &path.points[0];
         let acceleration = if let Some(next) = path.points.get(1) {
             let duration = next.time - initial.time;
@@ -90,17 +120,31 @@ impl Controller for PurePursuit {
                 || !next.speed.is_finite()
                 || !initial.speed.is_finite()
             {
-                return ControlCommand::emergency();
+                return self.emergency_command();
             }
             let feedforward = (next.speed - initial.speed) / duration;
             let error = initial.speed - ego.speed;
-            self.integral = (self.integral + error * dt).clamp(-2.0, 2.0);
-            (feedforward + 1.5 * error + 0.15 * self.integral).clamp(-4.0, 2.0)
+            let integral = self.integral + error * dt;
+            let proportional = 1.5 * error;
+            if !feedforward.is_finite()
+                || !error.is_finite()
+                || !integral.is_finite()
+                || !proportional.is_finite()
+            {
+                return self.emergency_command();
+            }
+            let integral = integral.clamp(-2.0, 2.0);
+            let requested = feedforward + proportional + 0.15 * integral;
+            if !requested.is_finite() {
+                return self.emergency_command();
+            }
+            self.integral = integral;
+            requested.clamp(-4.0, 2.0)
         } else if initial.speed < 0.1 {
             self.integral = 0.0;
             -3.5
         } else {
-            return ControlCommand::emergency();
+            return self.emergency_command();
         };
         ControlCommand {
             acceleration,
@@ -112,44 +156,68 @@ fn pursuit_target(
     path: &Trajectory,
     origin: rustdriving_core::Vec2,
     lookahead: f64,
-) -> rustdriving_core::Vec2 {
+) -> Option<rustdriving_core::Vec2> {
     let mut previous = path.points[0].position;
-    if previous.distance(origin) >= lookahead {
-        return previous;
+    let distance = previous.distance(origin);
+    if !distance.is_finite() {
+        return None;
+    }
+    if distance >= lookahead {
+        return Some(previous);
     }
     for point in path.points.iter().skip(1) {
         let next = point.position;
-        if next.distance(origin) >= lookahead {
+        let distance = next.distance(origin);
+        if !distance.is_finite() {
+            return None;
+        }
+        if distance >= lookahead {
             let relative = previous.minus(origin);
             let delta = next.minus(previous);
             let a = delta.x * delta.x + delta.y * delta.y;
             let b = relative.x * delta.x + relative.y * delta.y;
             let c = relative.x * relative.x + relative.y * relative.y - lookahead * lookahead;
-            let u = ((-b + (b * b - a * c).max(0.0).sqrt()) / a).clamp(0.0, 1.0);
-            return previous.plus(delta.scaled(u));
+            let discriminant = b * b - a * c;
+            if a <= 0.0
+                || [a, b, c, discriminant]
+                    .iter()
+                    .any(|value| !value.is_finite())
+            {
+                return None;
+            }
+            let fraction = (-b + discriminant.max(0.0).sqrt()) / a;
+            if !fraction.is_finite() {
+                return None;
+            }
+            let target = previous.plus(delta.scaled(fraction.clamp(0.0, 1.0)));
+            return target.finite().then_some(target);
         }
         previous = next;
     }
-    previous
+    Some(previous)
 }
 /// Independent freshness / numeric guard; a simulation gate, not a certified safety system.
+/// Timestamps are seconds on one clock. Position variance is the sum of x/y
+/// variances in m² and must be finite and within the inclusive range 0..=4.
+/// Localization freshness may come from GNSS or an explicitly qualified map
+/// observation; selecting that basis must not change actual GNSS diagnostics.
 pub fn guard(
     command: ControlCommand,
     now: f64,
     last_lidar: f64,
-    last_gnss: f64,
+    last_localization: f64,
     position_variance: f64,
 ) -> ControlCommand {
     if !command.finite()
         || !now.is_finite()
         || !last_lidar.is_finite()
-        || !last_gnss.is_finite()
+        || !last_localization.is_finite()
         || !position_variance.is_finite()
         || now - last_lidar > 0.35
-        || now - last_gnss > 0.75
+        || now - last_localization > 0.75
         || last_lidar > now + 0.01
-        || last_gnss > now + 0.01
-        || position_variance > 4.0
+        || last_localization > now + 0.01
+        || !(0.0..=4.0).contains(&position_variance)
     {
         ControlCommand::emergency()
     } else {
@@ -162,6 +230,80 @@ pub fn guard(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn local_side_path_preview_spans_both_vehicle_reference_geometries() {
+        for (direction, rear) in [(-1., 0.), (1., 0.), (-1., 1.2), (1., 1.2)] {
+            let path = Trajectory {
+                points: [
+                    (0., 0.),
+                    (1., 0.002),
+                    (2., 0.05),
+                    (3., 0.2),
+                    (4., 0.5),
+                    (6., 1.5),
+                    (8., 2.8),
+                    (10., 3.5),
+                ]
+                .into_iter()
+                .map(|(x, y)| rustdriving_core::TrajectoryPoint {
+                    position: rustdriving_core::Vec2::new(x, y * direction),
+                    speed: 2.,
+                    time: x / 2.,
+                })
+                .collect(),
+                mode: DrivingMode::Avoid,
+                lateral_target: 3.5 * direction,
+            };
+            let mut controller = PurePursuit {
+                local_route_geometry: true,
+                rear_axle_offset_m: rear,
+                ..PurePursuit::default()
+            };
+            let preview: f64 = 3.9; // Existing road preview at 2 m/s.
+            // Independent circle/segment intersection on (3,.2) -> (4,.5).
+            let a: f64 = 1. + 0.3 * 0.3;
+            let b: f64 = 6. + 2. * 0.2 * 0.3;
+            let c = 9. + 0.2 * 0.2 - preview * preview;
+            let fraction = (-b + (b * b - 4. * a * c).sqrt()) / (2. * a);
+            assert!((0.0..=1.0).contains(&fraction));
+            let curvature = 2. * (0.2 + 0.3 * fraction) * direction / (preview * preview);
+            let expected = (controller.vehicle.wheelbase * curvature
+                / (1. - (rear * curvature).powi(2)).sqrt())
+            .atan();
+            let ego = EgoState {
+                speed: 2.,
+                ..EgoState::default()
+            };
+            let command = controller.control(ego, &path, 1.);
+            assert!((command.steering - expected).abs() < 1e-12);
+            let mut center = path;
+            center.lateral_target = 0.;
+            let short = PurePursuit {
+                local_route_geometry: true,
+                rear_axle_offset_m: rear,
+                ..PurePursuit::default()
+            }
+            .control(ego, &center, 1.);
+            assert!(short.steering.abs() < command.steering.abs() / 2.);
+        }
+    }
+    #[test]
+    fn nonfinite_lateral_policy_is_rejected_before_preview_selection() {
+        for target in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            let mut path = profile(2., 2., 1.);
+            path.lateral_target = target;
+            let command = PurePursuit::default().control(
+                EgoState {
+                    speed: 2.,
+                    ..EgoState::default()
+                },
+                &path,
+                0.05,
+            );
+            assert_eq!(command.acceleration, -6.);
+            assert_eq!(command.steering, 0.);
+        }
+    }
     #[test]
     fn chassis_course_circle_inverts_no_slip_rear_axle_steering_left_and_right() {
         let radius = 6.0_f64;
@@ -346,7 +488,7 @@ mod tests {
                 }
             })
             .collect();
-        let target = pursuit_target(&path, rustdriving_core::Vec2::default(), 4.8);
+        let target = pursuit_target(&path, rustdriving_core::Vec2::default(), 4.8).unwrap();
         assert!((target.x.hypot(target.y) - 4.8).abs() < 1e-10);
         let mut controller = PurePursuit::default();
         let ego = EgoState {

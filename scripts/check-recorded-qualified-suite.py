@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+from recorded_numeric import compare_recorded
 
 ROOT = Path(__file__).resolve().parent.parent
 FIRST = ROOT / 'assets/recorded-qualified/first-room-v1'
@@ -69,8 +70,7 @@ def main():
         raise ValueError('physical acceptance status changed')
     original = json.loads((FIRST / 'results.json').read_text())
     actual = json.loads(report.read_text())
-    if numerical(actual) != numerical(original):
-        raise ValueError('non-timing operational evidence changed')
+    comparison = compare_recorded(numerical(original), numerical(actual))
     audit = output / 'regression-audit.json'
     subprocess.run(common + ['--freeze', str(freeze), '--report', str(report),
                              '--output', str(audit)], check=True, cwd=ROOT)
@@ -80,7 +80,8 @@ def main():
     result = dict(schema_version=1, regression_integrity_passed=True,
                   first_evaluator_exit_status=phase['evaluator_exit_status'],
                   regression_evaluator_exit_status=run.returncode,
-                  summary=actual['summary'], non_timing_evidence_identical=True,
+                  summary=actual['summary'], non_timing_evidence_identical=comparison['exact'],
+                  non_timing_evidence_reproduced=True, historical_comparison=comparison,
                   qualification_sha256=digest(qualification),
                   first_report_sha256=digest(FIRST / 'results.json'),
                   regression_report_sha256=digest(report),

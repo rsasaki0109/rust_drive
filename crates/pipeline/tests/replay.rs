@@ -1,10 +1,10 @@
 use rustdriving_core::{Gnss, LidarScan, Odometry, Pose, Route, Vec2, VehicleConfig};
 use rustdriving_pipeline::{
-    DrivingPipeline, PipelineConfig, SensorFrame,
-    replay::{SensorLog, verify},
+    DrivingPipeline, HealthIssue, PipelineConfig, SensorFrame,
+    replay::{LogRecord, SensorLog, verify},
 };
 use std::io::Cursor;
-fn log() -> Vec<u8> {
+fn recorded_log() -> SensorLog {
     let config = PipelineConfig::new(
         Route::new(vec![Vec2::default(), Vec2::new(100.0, 0.0)], 5.5).unwrap(),
         Pose::default(),
@@ -15,6 +15,7 @@ fn log() -> Vec<u8> {
     for i in 0..6 {
         let time = i as f64 * 0.05;
         let input = SensorFrame {
+            absolute_heading: None,
             time,
             odometry: Some(Odometry {
                 stamp: time,
@@ -27,6 +28,7 @@ fn log() -> Vec<u8> {
                 variance: 0.02,
             }),
             lidar: Some(LidarScan {
+                sweep: None,
                 stamp: time,
                 points: vec![],
             }),
@@ -39,10 +41,206 @@ fn log() -> Vec<u8> {
         let output = pipeline.step(&input).unwrap();
         log.record(input, output);
     }
+    log
+}
+fn log() -> Vec<u8> {
     let mut bytes = vec![];
-    log.write(&mut bytes).unwrap();
+    recorded_log().write(&mut bytes).unwrap();
     bytes
 }
+fn recompute(log: &mut SensorLog) {
+    let mut pipeline = DrivingPipeline::new(log.header.config.clone()).unwrap();
+    for tick in &mut log.ticks {
+        tick.expected = pipeline.step(&tick.input).unwrap();
+    }
+}
+
+fn measured_log() -> Vec<u8> {
+    let mut log = recorded_log();
+    for tick in &mut log.ticks {
+        tick.input.lidar.as_mut().unwrap().points = (0..24)
+            .map(|i| {
+                let angle = i as f64 * std::f64::consts::TAU / 24.0;
+                Vec2::new(8.0 + 0.6 * angle.cos(), 0.6 * angle.sin())
+            })
+            .collect();
+    }
+    recompute(&mut log);
+    assert!(!log.ticks[0].expected.tracks.is_empty());
+    assert!(!log.ticks[0].expected.predictions[0].positions.is_empty());
+    let mut bytes = Vec::new();
+    log.write(&mut bytes).unwrap();
+    verify(Cursor::new(&bytes), std::io::sink()).unwrap();
+    bytes
+}
+
+fn records(bytes: &[u8]) -> Vec<serde_json::Value> {
+    std::str::from_utf8(bytes)
+        .unwrap()
+        .lines()
+        .map(|line| serde_json::from_str(line).unwrap())
+        .collect()
+}
+
+fn encode_records(records: &[serde_json::Value]) -> String {
+    records
+        .iter()
+        .map(|record| serde_json::to_string(record).unwrap() + "\n")
+        .collect()
+}
+
+fn assert_unknown_fields_rejected(bytes: &[u8], record_index: usize, paths: &[&str]) {
+    let original = records(bytes);
+    let mut accepted = Vec::new();
+    for (index, path) in paths.iter().enumerate() {
+        let mut edited = original.clone();
+        edited[record_index]
+            .pointer_mut(path)
+            .unwrap()
+            .as_object_mut()
+            .unwrap()
+            .insert(
+                "unexpected".into(),
+                if index % 2 == 0 {
+                    serde_json::json!({"truth": {"x": 1234.0, "y": 5678.0}})
+                } else {
+                    serde_json::Value::Null
+                },
+            );
+        let mut outputs = Vec::new();
+        match verify(Cursor::new(encode_records(&edited)), &mut outputs) {
+            Ok(_) => accepted.push(*path),
+            Err(error) => {
+                assert!(
+                    error.contains("unknown field `unexpected`"),
+                    "{path}: {error}"
+                );
+                assert!(
+                    error.starts_with(&format!("line {}:", record_index + 1)),
+                    "{path}: {error}"
+                );
+                assert!(outputs.is_empty(), "invalid first record emitted outputs");
+            }
+        }
+    }
+    assert!(
+        accepted.is_empty(),
+        "accepted unknown fields at {accepted:?}"
+    );
+}
+
+#[test]
+fn unknown_header_fields_cannot_hide_inside_configuration() {
+    assert_unknown_fields_rejected(
+        &log(),
+        0,
+        &[
+            "/header/config/route",
+            "/header/config/route/points/0",
+            "/header/config/initial_pose",
+            "/header/config/initial_pose/position",
+            "/header/config/vehicle",
+        ],
+    );
+}
+
+#[test]
+fn unknown_fields_in_nested_measurements_are_rejected() {
+    assert_unknown_fields_rejected(
+        &measured_log(),
+        1,
+        &[
+            "/tick/input/odometry",
+            "/tick/input/gnss",
+            "/tick/input/gnss/position",
+            "/tick/input/lidar",
+            "/tick/input/lidar/points/0",
+        ],
+    );
+}
+
+#[test]
+fn unknown_fields_in_expected_outputs_are_rejected() {
+    assert_unknown_fields_rejected(
+        &measured_log(),
+        1,
+        &[
+            "/tick/expected/estimate",
+            "/tick/expected/estimate/pose",
+            "/tick/expected/estimate/pose/position",
+            "/tick/expected/tracks/0",
+            "/tick/expected/tracks/0/position",
+            "/tick/expected/tracks/0/velocity",
+            "/tick/expected/predictions/0",
+            "/tick/expected/predictions/0/positions/0",
+            "/tick/expected/trajectory",
+            "/tick/expected/trajectory/points/0",
+            "/tick/expected/trajectory/points/0/position",
+            "/tick/expected/command",
+            "/tick/expected/localization",
+        ],
+    );
+}
+
+#[test]
+fn explicit_nulls_and_omitted_defaults_keep_schema_one_compatible() {
+    let bytes = log();
+    let mut original_outputs = Vec::new();
+    verify(Cursor::new(&bytes), &mut original_outputs).unwrap();
+    let mut edited = records(&bytes);
+    let config = edited[0]["header"]["config"].as_object_mut().unwrap();
+    for name in [
+        "rear_axle_offset_m",
+        "motion_limits",
+        "multi_height_lidar",
+        "lidar3d",
+        "localization_map",
+        "perception3d",
+        "navigation",
+    ] {
+        config.insert(name.into(), serde_json::Value::Null);
+    }
+    config.insert("local_route_geometry".into(), serde_json::json!(false));
+    for name in ["stop_lines", "stop_signs", "yield_intersections"] {
+        config.insert(name.into(), serde_json::json!([]));
+    }
+    for record in &mut edited[1..] {
+        if record["kind"] != "tick" {
+            continue;
+        }
+        let input = record["tick"]["input"].as_object_mut().unwrap();
+        input.remove("lidar_failed");
+        for name in [
+            "multi_height_lidar",
+            "lidar3d",
+            "navigation_update",
+            "traffic_signal",
+        ] {
+            input.insert(name.into(), serde_json::Value::Null);
+        }
+        let expected = record["tick"]["expected"].as_object_mut().unwrap();
+        for name in [
+            "ground",
+            "map_localization",
+            "perception3d",
+            "navigation",
+            "traffic_controls",
+            "stop_signs",
+            "intersections",
+        ] {
+            expected.insert(name.into(), serde_json::Value::Null);
+        }
+    }
+    let mut outputs = Vec::new();
+    assert_eq!(
+        verify(Cursor::new(encode_records(&edited)), &mut outputs)
+            .unwrap()
+            .ticks,
+        6
+    );
+    assert!(outputs == original_outputs);
+}
+
 #[test]
 fn replay_recomputes_outputs_from_sensor_only_log() {
     let mut outputs = vec![];
@@ -100,8 +298,7 @@ fn gnss_input_and_correction_diagnostics_are_both_recomputed() {
     }
 }
 
-#[test]
-fn changing_a_map_snapshot_is_detected_by_full_recomputation() {
+fn navigation_log() -> SensorLog {
     let scenario: serde_json::Value =
         serde_json::from_str(include_str!("../../../scenarios/route-handover.json")).unwrap();
     let nav: rustdriving_pipeline::navigation::NavigationConfig =
@@ -117,6 +314,7 @@ fn changing_a_map_snapshot_is_detected_by_full_recomputation() {
     for i in 0..8 {
         let time = i as f64 * 0.05;
         let mut input = SensorFrame {
+            absolute_heading: None,
             time,
             odometry: Some(Odometry {
                 stamp: time,
@@ -129,6 +327,7 @@ fn changing_a_map_snapshot_is_detected_by_full_recomputation() {
                 variance: 0.02,
             }),
             lidar: Some(LidarScan {
+                sweep: None,
                 stamp: time,
                 points: vec![],
             }),
@@ -148,6 +347,20 @@ fn changing_a_map_snapshot_is_detected_by_full_recomputation() {
         let output = pipeline.step(&input).unwrap();
         log.record(input, output);
     }
+    log
+}
+
+#[test]
+fn unknown_fields_in_navigation_diagnostics_are_rejected() {
+    let mut bytes = Vec::new();
+    navigation_log().write(&mut bytes).unwrap();
+    verify(Cursor::new(&bytes), std::io::sink()).unwrap();
+    assert_unknown_fields_rejected(&bytes, 1, &["/tick/expected/navigation"]);
+}
+
+#[test]
+fn changing_a_map_snapshot_is_detected_by_full_recomputation() {
+    let mut log = navigation_log();
     let mut bytes = Vec::new();
     log.write(&mut bytes).unwrap();
     assert_eq!(
@@ -223,4 +436,336 @@ fn writer_failures_are_reported() {
             .unwrap_err()
             .contains("disk unavailable")
     );
+}
+
+#[test]
+fn oversized_header_is_rejected_without_partial_output() {
+    let mut log = recorded_log();
+    log.header.source = "x".repeat(8 * 1024 * 1024);
+    let mut written = Vec::new();
+    assert!(log.write(&mut written).unwrap_err().contains("size limit"));
+    assert!(written.is_empty());
+}
+
+#[test]
+fn oversized_tick_retains_only_preceding_complete_records() {
+    let mut log = recorded_log();
+    let point = log.ticks[0].expected.trajectory.points[0];
+    log.ticks[0]
+        .expected
+        .trajectory
+        .points
+        .resize(200_000, point);
+    let mut written = Vec::new();
+    assert!(log.write(&mut written).unwrap_err().contains("size limit"));
+    assert_eq!(written.iter().filter(|&&b| b == b'\n').count(), 1);
+    assert!(matches!(
+        serde_json::from_slice::<LogRecord>(&written).unwrap(),
+        LogRecord::Header { .. }
+    ));
+    assert!(verify(Cursor::new(written), std::io::sink()).is_err());
+}
+
+#[test]
+fn encoded_line_limit_includes_newline_and_json_escaping() {
+    const LIMIT: usize = 8 * 1024 * 1024;
+    let mut log = recorded_log();
+    log.header.source.clear();
+    let fixed_bytes = serde_json::to_vec(&LogRecord::Header {
+        header: Box::new(log.header.clone()),
+    })
+    .unwrap()
+    .len()
+        + 1; // Count the final newline, as the reader does.
+    log.header.source = "x".repeat(LIMIT - fixed_bytes);
+    let mut written = Vec::new();
+    log.write(&mut written).unwrap();
+    assert_eq!(written.iter().position(|&b| b == b'\n').unwrap() + 1, LIMIT);
+    let report = verify(Cursor::new(written), std::io::sink()).unwrap();
+    assert_eq!(report.source.len(), LIMIT - fixed_bytes);
+    assert_eq!(report.ticks, 6);
+
+    log.header.source.push('x');
+    let mut written = Vec::new();
+    assert!(log.write(&mut written).is_err());
+    assert!(written.is_empty());
+
+    // This short source expands to more than 8 MiB of JSON escape sequences.
+    log.header.source = "\0".repeat(LIMIT / 6 + 1);
+    assert!(log.header.source.len() < LIMIT);
+    assert!(log.write(&mut written).is_err());
+    assert!(written.is_empty());
+}
+
+#[test]
+fn recording_propagates_write_and_flush_failures() {
+    struct Broken {
+        fail_write: bool,
+    }
+    impl std::io::Write for Broken {
+        fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
+            if self.fail_write {
+                Err(std::io::Error::other("record write unavailable"))
+            } else {
+                Ok(bytes.len())
+            }
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Err(std::io::Error::other("record flush unavailable"))
+        }
+    }
+    let log = recorded_log();
+    for fail_write in [false, true] {
+        let error = log.write(Broken { fail_write }).unwrap_err();
+        assert!(error.contains(if fail_write {
+            "record write unavailable"
+        } else {
+            "record flush unavailable"
+        }));
+    }
+}
+
+#[test]
+fn nonfinite_header_numbers_cannot_become_null_or_disappear() {
+    for optional in [true, false] {
+        for bad in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            let mut log = recorded_log();
+            if optional {
+                log.header.config.rear_axle_offset_m = Some(bad);
+            } else {
+                log.header.config.vehicle.wheelbase = bad;
+            }
+            let mut written = Vec::new();
+            let result = log.write(&mut written);
+            assert!(
+                result.is_err(),
+                "nonfinite header was saved; replay result: {:?}",
+                verify(Cursor::new(&written), std::io::sink())
+            );
+            assert!(result.unwrap_err().contains("non-finite"));
+            assert!(written.is_empty());
+        }
+    }
+}
+
+#[test]
+fn nonfinite_sensor_sample_is_rejected_even_when_the_driver_brakes_correctly() {
+    for bad in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+        let mut log = recorded_log();
+        log.ticks[2].input.odometry.as_mut().unwrap().speed = bad;
+        recompute(&mut log);
+        assert!(log.ticks[2].expected.emergency);
+        assert!(log.ticks[2].expected.command.finite());
+        let mut written = Vec::new();
+        let error = log.write(&mut written).unwrap_err();
+        assert!(error.starts_with("tick 2:"));
+        assert!(error.contains("non-finite"));
+        assert_eq!(written.iter().filter(|&&b| b == b'\n').count(), 3);
+        assert!(verify(Cursor::new(written), std::io::sink()).is_err());
+    }
+}
+
+#[test]
+fn nonfinite_expected_numbers_in_sequences_and_optional_fields_are_rejected() {
+    for field in 0..3 {
+        for bad in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            let mut log = recorded_log();
+            let expected = &mut log.ticks[0].expected;
+            match field {
+                0 => expected.command.acceleration = bad,
+                1 => expected.trajectory.points[0].position.y = bad,
+                _ => expected.localization.as_mut().unwrap().last_nis = Some(bad),
+            }
+            let mut written = Vec::new();
+            let error = log.write(&mut written).unwrap_err();
+            assert!(error.starts_with("tick 0:"));
+            assert!(error.contains("non-finite"));
+            assert_eq!(written.iter().filter(|&&b| b == b'\n').count(), 1);
+        }
+    }
+}
+
+#[test]
+fn nulls_strings_and_finite_extremes_keep_their_recorded_meaning() {
+    let mut log = recorded_log();
+    log.header.source = "NaN Infinity -Infinity null".into();
+    log.ticks[1].input.odometry.as_mut().unwrap().yaw_rate = -0.0;
+    log.ticks[2].input.odometry.as_mut().unwrap().yaw_rate = f64::from_bits(1);
+    log.ticks[3].input.gnss.as_mut().unwrap().variance = f64::MAX;
+    log.ticks[4].input.gnss = None;
+    recompute(&mut log);
+    let mut written = Vec::new();
+    log.write(&mut written).unwrap();
+    let lines: Vec<_> = written.split(|&b| b == b'\n').collect();
+    for index in 1..=3 {
+        let LogRecord::Tick { tick } = serde_json::from_slice(lines[index + 1]).unwrap() else {
+            panic!("expected tick");
+        };
+        if index == 3 {
+            assert_eq!(
+                tick.input.gnss.unwrap().variance.to_bits(),
+                f64::MAX.to_bits()
+            );
+        } else {
+            assert_eq!(
+                tick.input.odometry.unwrap().yaw_rate.to_bits(),
+                log.ticks[index].input.odometry.unwrap().yaw_rate.to_bits()
+            );
+        }
+    }
+    let LogRecord::Tick { tick } = serde_json::from_slice(lines[5]).unwrap() else {
+        panic!("expected tick");
+    };
+    assert!(tick.input.gnss.is_none());
+    let report = verify(Cursor::new(written), std::io::sink()).unwrap();
+    assert_eq!(report.source, log.header.source);
+    assert_eq!(report.ticks, 6);
+}
+
+#[test]
+fn invalid_header_metadata_and_configuration_cannot_be_saved() {
+    for case in 0..5 {
+        let mut log = recorded_log();
+        match case {
+            0 => log.header.source.clear(),
+            1 => log.header.schema_version += 1,
+            2 => log.header.config.vehicle.wheelbase = 0.0,
+            3 => log.header.config.nominal_dt = 0.0,
+            _ => log.header.config.route.lengths[1] += 1.0,
+        }
+        let mut written = Vec::new();
+        let result = log.write(&mut written);
+        assert!(
+            result.is_err(),
+            "invalid header was saved; replay result: {:?}",
+            verify(Cursor::new(&written), std::io::sink())
+        );
+        assert!(result.unwrap_err().starts_with("log header:"));
+        assert!(written.is_empty());
+    }
+}
+
+#[test]
+fn invalid_frame_clock_is_rejected_before_any_record_is_written() {
+    for case in 0..6 {
+        let mut log = recorded_log();
+        let index = if case == 0 { 0 } else { 4 };
+        let time = match case {
+            0 => -0.1,
+            1 => log.ticks[3].input.time,
+            2 => log.ticks[3].input.time - 0.01,
+            3 => f64::NAN,
+            4 => f64::INFINITY,
+            _ => f64::NEG_INFINITY,
+        };
+        log.ticks[index].input.time = time;
+        log.ticks[index].expected.time = time;
+        let mut written = Vec::new();
+        let error = log.write(&mut written).unwrap_err();
+        assert!(error.starts_with(&format!("tick {index}:")));
+        assert!(written.is_empty());
+    }
+}
+
+#[test]
+fn output_clock_must_match_input_including_the_sign_of_zero() {
+    for case in 0..4 {
+        let mut log = recorded_log();
+        let index = if case == 1 { 0 } else { 2 };
+        log.ticks[index].expected.time = match case {
+            0 => log.ticks[index].input.time + 0.01,
+            1 => -0.0,
+            2 => f64::NAN,
+            _ => f64::INFINITY,
+        };
+        let mut written = Vec::new();
+        let error = log.write(&mut written).unwrap_err();
+        assert!(error.starts_with(&format!("tick {index}:")));
+        assert!(error.contains("output time"));
+        assert!(written.is_empty());
+    }
+}
+
+#[test]
+fn nonuniform_clocks_gaps_and_invalid_sensor_stamps_remain_recordable() {
+    for start in [-0.0, 5.0] {
+        let mut log = recorded_log();
+        for (index, offset) in [0.0, 1e-8, 0.05, 0.31, 0.4, 0.5].into_iter().enumerate() {
+            let time = if index == 0 { start } else { start + offset };
+            let input = &mut log.ticks[index].input;
+            input.time = time;
+            input.odometry.as_mut().unwrap().stamp = time;
+            input.gnss.as_mut().unwrap().stamp = time;
+            input.lidar.as_mut().unwrap().stamp = time;
+        }
+        log.ticks[4].input.gnss.as_mut().unwrap().stamp = -1.0;
+        recompute(&mut log);
+        assert!(
+            log.ticks[3]
+                .expected
+                .health
+                .contains(&HealthIssue::ClockGap)
+        );
+        assert!(
+            log.ticks[4]
+                .expected
+                .health
+                .contains(&HealthIssue::MotionDiscontinuity)
+        );
+        assert_eq!(
+            log.ticks[4].expected.localization.unwrap().accepted_fixes,
+            log.ticks[2].expected.localization.unwrap().accepted_fixes
+        );
+        let mut written = Vec::new();
+        log.write(&mut written).unwrap();
+        let first = written.split(|&b| b == b'\n').nth(1).unwrap();
+        let LogRecord::Tick { tick } = serde_json::from_slice(first).unwrap() else {
+            panic!("expected tick");
+        };
+        assert_eq!(tick.input.time.to_bits(), start.to_bits());
+        assert_eq!(tick.expected.time.to_bits(), start.to_bits());
+        assert_eq!(
+            verify(Cursor::new(written), std::io::sink()).unwrap().ticks,
+            6
+        );
+    }
+}
+
+#[test]
+fn uncertain_occupancy_replays_and_a_shrunken_envelope_is_rejected() {
+    let mut log = recorded_log();
+    log.header.config.confirm_slow_motion = true;
+    for tick in &mut log.ticks {
+        let time = tick.input.time;
+        tick.input.lidar.as_mut().unwrap().points = (0..24)
+            .map(|i| {
+                let angle = i as f64 * std::f64::consts::TAU / 24.;
+                Vec2::new(8. + 0.5 * time + 0.6 * angle.cos(), 0.6 * angle.sin())
+            })
+            .collect();
+    }
+    recompute(&mut log);
+    let changed_tick = log
+        .ticks
+        .iter()
+        .position(|tick| {
+            tick.expected
+                .predictions
+                .iter()
+                .any(|p| !p.additional_radius_m.is_empty())
+        })
+        .expect("measured slow motion needs uncertain occupancy");
+    let mut bytes = vec![];
+    log.write(&mut bytes).unwrap();
+    verify(Cursor::new(&bytes), std::io::sink()).unwrap();
+    let mut rows = records(&bytes);
+    let predictions = rows[changed_tick + 1]["tick"]["expected"]["predictions"]
+        .as_array_mut()
+        .unwrap();
+    let p = predictions
+        .iter_mut()
+        .find(|p| p.get("additional_radius_m").is_some())
+        .unwrap();
+    p["additional_radius_m"][40] = serde_json::json!(0.);
+    assert!(verify(Cursor::new(encode_records(&rows)), std::io::sink()).is_err());
 }

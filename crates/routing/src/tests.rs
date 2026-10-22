@@ -27,6 +27,7 @@ fn map() -> RoadNetworkSpec {
         to: nodes[b].id.clone(),
         points: vec![nodes[a].position, nodes[b].position],
         half_width: if id == "ag" { 2. } else { 4. },
+        speed_limit_m_s: None,
     })
     .collect();
     RoadNetworkSpec {
@@ -134,6 +135,7 @@ fn search_matches_exhaustive_simple_paths_on_a_cyclic_graph() {
             to: spec.nodes[b].id.clone(),
             points: vec![spec.nodes[a].position, spec.nodes[b].position],
             half_width: 3.,
+            speed_limit_m_s: None,
         });
     }
     fn enumerate(
@@ -224,6 +226,7 @@ fn add_edge(spec: &mut RoadNetworkSpec, id: &str, from: &str, to: &str) {
         to: to.into(),
         points: vec![position(from), position(to)],
         half_width: 3.,
+        speed_limit_m_s: None,
     });
 }
 

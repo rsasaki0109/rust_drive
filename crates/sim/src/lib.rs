@@ -1,12 +1,18 @@
 //! Deterministic closed-loop simulator. Only sensor observations enter the stack.
+mod gnss_noise;
+pub mod heading;
 pub mod intersections;
+mod lane_change_surface;
+pub mod run_output;
 pub mod sensor_timing;
 pub mod signals;
+pub mod speed_zones;
 pub mod stop_signs;
 pub mod traffic;
 use intersections::IntersectionRuleEvaluator;
 use rustdriving_core::*;
 use rustdriving_pipeline::intersections::{IntersectionStatus, YieldIntersection};
+use rustdriving_pipeline::lane_change::{LaneChangeConfig, LaneChangeStatus};
 use rustdriving_pipeline::navigation::{NavigationConfig, NavigationStatus, NavigationUpdate};
 use rustdriving_pipeline::replay::SensorLog;
 use rustdriving_pipeline::stop_signs::StopSignStatus;
@@ -21,6 +27,12 @@ use std::f64::consts::PI;
 use stop_signs::StopRuleEvaluator;
 use traffic::{FollowingSpec, TrafficTelemetry, TrafficWorld};
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct WorldMotion {
+    pub position: Vec2,
+    pub velocity: Vec2,
+}
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct ObjectSpec {
@@ -41,6 +53,9 @@ pub struct ObjectSpec {
     pub moving_until: Option<f64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub following: Option<FollowingSpec>,
+    /// Prescribed world ENU motion, independent of the ego route; simulator-only.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub world_motion: Option<WorldMotion>,
 }
 /// Plant calibration, supported only by the native dynamic RNE adapter.
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
@@ -61,10 +76,14 @@ pub enum Expected {
 #[serde(deny_unknown_fields)]
 pub struct NavigationSpec {
     pub network: RoadNetworkSpec,
-    pub start: String,
-    pub goal: String,
+    pub start: rustdriving_routing::RouteEndpoint,
+    pub goal: rustdriving_routing::RouteEndpoint,
     #[serde(default)]
     pub closed_edges: Vec<String>,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub hold_for_handover: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub avoid_observed_obstructions: bool,
 }
 /// Simulator-only GNSS position fault; never supplied as pipeline calibration.
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
@@ -88,6 +107,84 @@ fn is_false(value: &bool) -> bool {
 #[serde(deny_unknown_fields)]
 pub struct Scenario {
     pub name: String,
+    /// Explicit externally supplied initial pose calibration, copied into the pipeline.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub initial_pose_covariance: Option<[[f64; 3]; 3]>,
+    /// Simulator-only physical spawn misalignment; never an estimator input.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub initial_heading_offset_rad: Option<f64>,
+    /// Externally supplied constant world ENU covariance shape, copied to the pipeline.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gnss_covariance_shape: Option<[[f64; 2]; 2]>,
+    /// Simulator-only noise shape; never inferred as operational calibration.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gnss_noise_shape: Option<[[f64; 2]; 2]>,
+    /// External GNSS antenna calibration, copied independently of physical mounting.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gnss_antenna_offset_m: Option<Vec2>,
+    /// Simulator-only physical antenna location in body forward/left meters.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gnss_antenna_mount_m: Option<Vec2>,
+    /// External recovery policy calibration; distinct from simulated faults.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gnss_recovery: Option<rustdriving_pipeline::GnssRecoveryConfig>,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub absolute_heading_fusion: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub heading_latency_compensation: bool,
+    /// Simulator-only acquisition/noise/fault settings; never a driver input.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub heading_sensor: Option<heading::HeadingSensor>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub relocalization: Option<rustdriving_pipeline::RelocalizationConfig>,
+    /// Explicit experimental forecast policy, independent of actor identities.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub confirm_slow_motion: bool,
+    /// Cold-track acquisition fit; independent of simulator object identities.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub confirm_track_initialization: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub fit_recent_track_motion: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub fit_sparse_circles: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub enclose_track_measurements: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub forecast_envelope: Option<rustdriving_core::ForecastEnvelopeConfig>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub forecast_pose_sigma: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub forecast_cold_max_speed_m_s: Option<f64>,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub forecast_recent_velocity_hypotheses: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub forecast_consistency_guard: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub clear_sweep_recovery: Option<rustdriving_core::ClearSweepRecoveryConfig>,
+    /// Preserve each completed ray outcome from the actual planar acquisition.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub record_planar_sweep: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub settle_obstruction_stops: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub search_obstruction_stops: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub replan_checked_approaches: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub search_later_obstruction_stops: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub lateral_candidate_margin_m: Option<f64>,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub refine_lateral_candidates: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub record_planning_diagnostics: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub monitor_planning_progress: bool,
+    /// Evaluation recording only; omitted from the operational replay header.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub full_rate_recording: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub gnss_latency_compensation: bool,
     #[serde(default, skip_serializing_if = "is_false")]
     pub local_route_geometry: bool,
     pub duration: f64,
@@ -118,6 +215,8 @@ pub struct Scenario {
     pub navigation_updates: Vec<NavigationUpdate>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub cruise_speed: Option<f64>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub speed_zones: Vec<rustdriving_core::RouteSpeedZone>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub motion_limits: Option<rustdriving_pipeline::MotionLimits>,
     /// Independent swept-circle acceptance floor in meters; never a planner input.
@@ -136,9 +235,19 @@ pub struct Scenario {
     pub stop_signs: Vec<StopLine>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub yield_intersections: Vec<YieldIntersection>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub lane_change: Option<LaneChangeConfig>,
 }
 impl Scenario {
     pub fn validate(&self) -> Result<(), String> {
+        if self
+            .initial_heading_offset_rad
+            .is_some_and(|offset| !offset.is_finite() || offset.abs() > 0.2)
+        {
+            return Err(
+                "simulated initial heading offset must be finite and within +/- 0.2 rad".into(),
+            );
+        }
         if self.name.is_empty()
             || !self.duration.is_finite()
             || !(1.0..=300.0).contains(&self.duration)
@@ -184,6 +293,19 @@ impl Scenario {
         signals::validate(self)?;
         let c = pipeline_config(self);
         c.validate()?;
+        if let Some(sensor) = &self.heading_sensor {
+            sensor.validate(self.duration)?;
+        }
+        if let Some(mount) = self.gnss_antenna_mount_m {
+            let mut physical = c.clone();
+            physical.gnss_antenna_offset_m = Some(mount);
+            physical.validate()?;
+        }
+        if let Some(shape) = self.gnss_noise_shape {
+            let mut noise_config = c;
+            noise_config.gnss_covariance_shape = Some(shape);
+            noise_config.validate()?;
+        }
         let mut previous_end = 0.0;
         for window in &self.gnss_bias_windows {
             if !window.from.is_finite()
@@ -257,6 +379,20 @@ impl Scenario {
             }
         }
         for o in &self.objects {
+            if let Some(motion) = &o.world_motion
+                && (!motion.position.finite()
+                    || motion.position.x.abs() > 1e6
+                    || motion.position.y.abs() > 1e6
+                    || !motion.velocity.finite()
+                    || motion.velocity.x.hypot(motion.velocity.y) > 15.0
+                    || o.s != 0.0
+                    || o.lateral != 0.0
+                    || o.speed != 0.0
+                    || o.lateral_speed != 0.0
+                    || o.following.is_some())
+            {
+                return Err("world-motion actors require bounded ENU position/velocity, zero route motion and no following policy".into());
+            }
             if let Some(following) = &o.following {
                 following.validate(o)?;
             }
@@ -311,6 +447,20 @@ impl Scenario {
         )
         .unwrap()
     }
+    /// Physics initialization only. The operational pose retains its supplied
+    /// calibration; this perturbation is not exposed through PipelineConfig.
+    pub fn spawn_pose(&self, mut calibrated: Pose) -> Pose {
+        if let Some(offset) = self.initial_heading_offset_rad {
+            calibrated.yaw = wrap_angle(calibrated.yaw + offset);
+        }
+        calibrated
+    }
+    /// Simulation-only antenna position at acquisition, shared by both plants.
+    /// Operational calibration is deliberately independent of physical mounting.
+    pub fn gnss_antenna_position(&self, pose: Pose) -> Vec2 {
+        self.gnss_antenna_mount_m
+            .map_or(pose.position, |mount| pose.to_world(mount))
+    }
     /// Acquisition-time availability shared by the reference and native plants.
     pub fn gnss_available(&self, time: f64) -> bool {
         self.gnss_dropout.is_none_or(|from| time < from)
@@ -323,7 +473,7 @@ impl Scenario {
         self.navigation
             .as_ref()
             .map(|nav| {
-                RoadNetwork::new(nav.network.clone())?.shortest_route(
+                RoadNetwork::new(nav.network.clone())?.shortest_route_between(
                     &nav.start,
                     &nav.goal,
                     &nav.closed_edges,
@@ -387,6 +537,8 @@ pub struct Frame {
     pub stop_signs: Option<StopSignStatus>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub intersections: Option<IntersectionStatus>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub lane_change: Option<LaneChangeStatus>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Summary {
@@ -471,8 +623,15 @@ impl Rng {
     }
 }
 /// First-return planar ray/circle sensor; no object identifiers are emitted.
-fn lidar(ego: Pose, objects: &[WorldObject], stamp: f64, rng: &mut Rng) -> LidarScan {
+fn lidar(
+    ego: Pose,
+    objects: &[WorldObject],
+    stamp: f64,
+    rng: &mut Rng,
+    record_sweep: bool,
+) -> LidarScan {
     let mut points = Vec::new();
+    let mut rays = record_sweep.then(|| Vec::with_capacity(720));
     for i in 0..720 {
         let angle = -PI + 2.0 * PI * i as f64 / 720.0;
         let direction = Vec2::new(angle.cos(), angle.sin()).rotated(ego.yaw);
@@ -491,10 +650,29 @@ fn lidar(ego: Pose, objects: &[WorldObject], stamp: f64, rng: &mut Rng) -> Lidar
         }
         if closest < 45.0 {
             let range = closest + rng.noise(0.015);
+            if let Some(rays) = &mut rays {
+                rays.push(rustdriving_core::PlanarRayOutcome::Return(points.len()));
+            }
             points.push(Vec2::new(angle.cos() * range, angle.sin() * range));
+        } else if let Some(rays) = &mut rays {
+            rays.push(rustdriving_core::PlanarRayOutcome::Clear);
         }
     }
-    LidarScan { stamp, points }
+    LidarScan {
+        sweep: rays.map(|rays| rustdriving_core::PlanarLidarSweep {
+            calibration: rustdriving_core::PlanarLidarCalibration {
+                ray_count: 720,
+                first_angle_rad: -PI,
+                angular_step_rad: std::f64::consts::TAU / 720.,
+                min_range_m: 0.2,
+                max_range_m: 45.,
+                range_error_m: 0.05,
+            },
+            rays,
+        }),
+        stamp,
+        points,
+    }
 }
 /// Kinematic bicycle, semi-implicit integration; physical command limits enforced here too.
 fn step_vehicle(ego: &mut EgoState, command: ControlCommand, config: VehicleConfig, dt: f64) {
@@ -537,6 +715,7 @@ struct ReferenceBackend {
     truth: EgoState,
     vehicle: VehicleConfig,
     rng: Rng,
+    seed: u64,
     command: ControlCommand,
 }
 impl SimulationBackend for ReferenceBackend {
@@ -567,28 +746,36 @@ impl SimulationBackend for ReferenceBackend {
         let gnss = if tick.is_multiple_of(4) && self.scenario.gnss_available(time) {
             Some(Gnss {
                 stamp: time,
-                position: self
-                    .truth
-                    .pose
-                    .position
-                    .plus(Vec2::new(self.rng.noise(0.14), self.rng.noise(0.14))),
+                position: self.scenario.gnss_antenna_position(self.truth.pose).plus(
+                    self.scenario
+                        .gnss_noise(self.seed, tick)
+                        .unwrap_or_else(|| Vec2::new(self.rng.noise(0.14), self.rng.noise(0.14))),
+                ),
                 variance: 0.02,
             })
         } else {
             None
         };
-        let lidar =
-            if tick.is_multiple_of(2) && self.scenario.lidar_dropout.is_none_or(|t| time < t) {
-                Some(lidar(
-                    self.truth.pose,
-                    &self.objects(time),
-                    time,
-                    &mut self.rng,
-                ))
-            } else {
-                None
-            };
+        let lidar = if tick.is_multiple_of(2)
+            && self.scenario.lidar_dropout.is_none_or(|t| time < t)
+        {
+            Some(lidar(
+                self.truth.pose,
+                &self.objects(time),
+                time,
+                &mut self.rng,
+                self.scenario.record_planar_sweep || self.scenario.clear_sweep_recovery.is_some(),
+            ))
+        } else {
+            None
+        };
         Ok(SensorFrame {
+            absolute_heading: self.scenario.heading_observation(
+                self.seed,
+                tick,
+                time,
+                self.truth.pose.yaw,
+            ),
             time,
             odometry,
             gnss,
@@ -611,6 +798,34 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     let route = scenario.route();
     let (position, yaw) = route.sample(0.0, 0.0);
     let mut config = PipelineConfig::new(route, Pose { position, yaw }, VehicleConfig::default());
+    config.initial_pose_covariance = scenario.initial_pose_covariance;
+    config.gnss_covariance_shape = scenario.gnss_covariance_shape;
+    config.gnss_antenna_offset_m = scenario.gnss_antenna_offset_m;
+    config.gnss_recovery = scenario.gnss_recovery;
+    config.absolute_heading_fusion = scenario.absolute_heading_fusion;
+    config.heading_latency_compensation = scenario.heading_latency_compensation;
+    config.relocalization = scenario.relocalization;
+    config.confirm_slow_motion = scenario.confirm_slow_motion;
+    config.confirm_track_initialization = scenario.confirm_track_initialization;
+    config.fit_recent_track_motion = scenario.fit_recent_track_motion;
+    config.fit_sparse_circles = scenario.fit_sparse_circles;
+    config.forecast_pose_sigma = scenario.forecast_pose_sigma;
+    config.forecast_cold_max_speed_m_s = scenario.forecast_cold_max_speed_m_s;
+    config.forecast_recent_velocity_hypotheses = scenario.forecast_recent_velocity_hypotheses;
+    config.enclose_track_measurements = scenario.enclose_track_measurements;
+    config.forecast_envelope = scenario.forecast_envelope;
+    config.forecast_consistency_guard = scenario.forecast_consistency_guard;
+    config.clear_sweep_recovery = scenario.clear_sweep_recovery;
+    config.settle_obstruction_stops = scenario.settle_obstruction_stops;
+    config.search_obstruction_stops = scenario.search_obstruction_stops;
+    config.replan_checked_approaches = scenario.replan_checked_approaches;
+    config.search_later_obstruction_stops = scenario.search_later_obstruction_stops;
+    config.lateral_candidate_margin_m = scenario.lateral_candidate_margin_m;
+    config.refine_lateral_candidates = scenario.refine_lateral_candidates;
+    config.record_planning_diagnostics = scenario.record_planning_diagnostics;
+    config.monitor_planning_progress = scenario.monitor_planning_progress;
+    config.gnss_latency_compensation = scenario.gnss_latency_compensation;
+    config.speed_zones = scenario.speed_zones.clone();
     if let Some(speed) = scenario.cruise_speed {
         config.cruise_speed = speed;
     }
@@ -619,6 +834,7 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     config.localization_map = scenario.localization_map.clone();
     config.stop_signs = scenario.stop_signs.clone();
     config.yield_intersections = scenario.yield_intersections.clone();
+    config.lane_change = scenario.lane_change.clone();
     config.stop_lines = scenario
         .traffic_signals
         .iter()
@@ -627,16 +843,26 @@ pub fn pipeline_config(scenario: &Scenario) -> PipelineConfig {
     // Keep legacy static logs unchanged. Restricted maps also record navigation
     // so replay recomputes the legal route instead of trusting resolved geometry.
     if !scenario.navigation_updates.is_empty()
-        || scenario
-            .navigation
-            .as_ref()
-            .is_some_and(|nav| !nav.network.turn_restrictions.is_empty())
+        || scenario.navigation.as_ref().is_some_and(|nav| {
+            nav.hold_for_handover
+                || nav.avoid_observed_obstructions
+                || matches!(nav.start, rustdriving_routing::RouteEndpoint::Edge(_))
+                || matches!(nav.goal, rustdriving_routing::RouteEndpoint::Edge(_))
+                || !nav.network.turn_restrictions.is_empty()
+                || nav
+                    .network
+                    .edges
+                    .iter()
+                    .any(|edge| edge.speed_limit_m_s.is_some())
+        })
     {
         config.navigation = scenario.navigation.as_ref().map(|nav| NavigationConfig {
             network: nav.network.clone(),
             start: nav.start.clone(),
             goal: nav.goal.clone(),
             closed_edges: nav.closed_edges.clone(),
+            hold_for_handover: nav.hold_for_handover,
+            avoid_observed_obstructions: nav.avoid_observed_obstructions,
         });
     }
     config
@@ -651,11 +877,12 @@ pub fn simulate(scenario: Scenario, seed: u64) -> Result<Run, String> {
         scenario: scenario.clone(),
         traffic: TrafficWorld::new(scenario.clone(), config.route.clone()),
         truth: EgoState {
-            pose: config.initial_pose,
+            pose: scenario.spawn_pose(config.initial_pose),
             speed: 0.0,
         },
         vehicle: config.vehicle,
         rng: Rng::new(seed),
+        seed,
         command: ControlCommand::default(),
     };
     simulate_with_backend(scenario, seed, backend, config, "reference-2d")
@@ -675,6 +902,20 @@ pub fn simulate_with_backend(
     }
     let mut route = config.route.clone();
     let mut navigation = scenario.navigation_plan()?;
+    let mapped_speed_limits = scenario.navigation.as_ref().is_some_and(|nav| {
+        nav.network
+            .edges
+            .iter()
+            .any(|edge| edge.speed_limit_m_s.is_some())
+    });
+    let mut route_speed_zones = if mapped_speed_limits {
+        speed_zones::road_zones(
+            &scenario.navigation.as_ref().unwrap().network,
+            navigation.as_ref().unwrap(),
+        )
+    } else {
+        scenario.speed_zones.clone()
+    };
     if let Some(plan) = &navigation
         && (plan.route.points != route.points || plan.route.half_width != route.half_width)
     {
@@ -684,6 +925,7 @@ pub fn simulate_with_backend(
     let mut pipeline = DrivingPipeline::new(config.clone())?;
     let mut sensor_log = SensorLog::new(source, config);
     let mut scan = LidarScan {
+        sweep: None,
         stamp: 0.0,
         points: vec![],
     };
@@ -710,7 +952,16 @@ pub fn simulate_with_backend(
     let mut signal_rules = RuleEvaluator::default();
     let mut stop_rules = StopRuleEvaluator::new(scenario.stop_signs.len());
     let mut intersection_rules = IntersectionRuleEvaluator::new(scenario.yield_intersections.len());
+    let mut speed_rules = speed_zones::SpeedZoneEvaluator::default();
+    let mut speed_policy = speed_zones::AlternateSpeedPolicy::new(
+        scenario
+            .lane_change
+            .as_ref()
+            .and_then(|gate| gate.return_on_conflict.as_ref())
+            .and_then(|config| config.speed_limit_m_s),
+    );
     let mut sensor_delivery = SensorDelivery::default();
+    let mut heading_delivery = heading::HeadingDelivery::default();
     let mut evaluation_closures = scenario
         .navigation
         .as_ref()
@@ -740,6 +991,13 @@ pub fn simulate_with_backend(
                 traffic_collided |= separation < 0.0;
             }
         }
+        speed_policy.observe(
+            &mut speed_rules,
+            &route,
+            truth,
+            vehicle.radius,
+            &route_speed_zones,
+        );
         // Evaluate true physical crossings against the external phase schedule.
         // Neither this evaluator nor its phase schedule enters the driver.
         signal_rules.observe(
@@ -761,6 +1019,9 @@ pub fn simulate_with_backend(
             &objects,
         );
         let mut input = backend.observe(time, i)?;
+        if let Some(sensor) = &scenario.heading_sensor {
+            heading_delivery.apply(sensor.delay_ticks, i, &mut input.absolute_heading);
+        }
         if let Some(timing) = &scenario.sensor_timing {
             sensor_delivery.apply(timing, i, &mut input);
         }
@@ -796,6 +1057,15 @@ pub fn simulate_with_backend(
         let traffic_control_status = result.traffic_controls.clone();
         let stop_sign_status = result.stop_signs.clone();
         let intersection_status = result.intersections.clone();
+        let lane_change_status = result.lane_change.clone();
+        speed_policy.update(
+            &mut speed_rules,
+            &route,
+            truth,
+            vehicle,
+            &scenario.speed_zones,
+            lane_change_status.as_ref(),
+        )?;
         if let Some(status) = &navigation_status
             && status.switches > navigation_switches
         {
@@ -808,6 +1078,13 @@ pub fn simulate_with_backend(
                 true_speed: truth.speed,
             });
             navigation_switches = status.switches;
+            if mapped_speed_limits {
+                route_speed_zones = speed_zones::road_zones(
+                    &scenario.navigation.as_ref().unwrap().network,
+                    navigation.as_ref().unwrap(),
+                );
+                speed_rules.switch_route(&route, truth, vehicle.radius, &route_speed_zones);
+            }
         }
         // Score external closures independently of the navigator's reported closure state.
         if !scenario.navigation_updates.is_empty()
@@ -815,17 +1092,21 @@ pub fn simulate_with_backend(
         {
             let progress = route.project(truth.pose.position).0;
             let mut start_s = 0.0;
-            for id in &plan.edge_ids {
+            for (edge_index, id) in plan.edge_ids.iter().enumerate() {
                 let edge = nav.network.edges.iter().find(|e| &e.id == id).unwrap();
                 if evaluation_closures.contains(id) && progress + vehicle.radius >= start_s {
                     closure_violations += 1;
                     break;
                 }
-                start_s += edge
-                    .points
-                    .windows(2)
-                    .map(|p| p[0].distance(p[1]))
-                    .sum::<f64>();
+                start_s += plan.traversals.get(edge_index).map_or_else(
+                    || {
+                        edge.points
+                            .windows(2)
+                            .map(|p| p[0].distance(p[1]))
+                            .sum::<f64>()
+                    },
+                    |span| span.end_s_m - span.start_s_m,
+                );
             }
         }
         sensor_log.record(input, result);
@@ -837,7 +1118,17 @@ pub fn simulate_with_backend(
         }
         max_tracks = max_tracks.max(tracks.len());
         let (progress, lateral) = route.project(truth.pose.position);
-        if lateral.abs() + vehicle.radius > route.half_width {
+        let off_road = if let Some(gate) = scenario
+            .lane_change
+            .as_ref()
+            .filter(|c| c.return_on_conflict.is_some())
+        {
+            lane_change_surface::circle_margin(&route, gate, truth.pose.position, vehicle.radius)
+                < 0.0
+        } else {
+            lateral.abs() + vehicle.radius > route.half_width
+        };
+        if off_road {
             road_violations += 1;
         }
         let error = truth.pose.position.distance(estimate.pose.position);
@@ -875,7 +1166,21 @@ pub fn simulate_with_backend(
                 traffic_road_violations += 1;
             }
         }
-        if !traffic.is_empty()
+        if scenario.full_rate_recording
+            || !scenario.speed_zones.is_empty()
+            || scenario.gnss_latency_compensation
+            || scenario.sensor_timing.as_ref().is_some_and(|timing| {
+                timing.gnss_delay_ticks > 0
+                    || timing.odometry_delay_ticks > 0
+                    || !timing.odometry_dropout_windows.is_empty()
+            })
+            || mapped_speed_limits
+            || scenario.navigation.as_ref().is_some_and(|nav| {
+                matches!(nav.start, rustdriving_routing::RouteEndpoint::Edge(_))
+                    || matches!(nav.goal, rustdriving_routing::RouteEndpoint::Edge(_))
+            })
+            || scenario.lane_change.is_some()
+            || !traffic.is_empty()
             || !scenario.traffic_signals.is_empty()
             || !scenario.stop_signs.is_empty()
             || !scenario.yield_intersections.is_empty()
@@ -904,6 +1209,7 @@ pub fn simulate_with_backend(
                 traffic_controls: traffic_control_status,
                 stop_signs: stop_sign_status,
                 intersections: intersection_status,
+                lane_change: lane_change_status,
             });
         }
         if finished {
@@ -958,6 +1264,12 @@ pub fn simulate_with_backend(
     let truth = backend.state();
     let progress = route.project(truth.pose.position).0;
     let mut failures = Vec::new();
+    if speed_rules.violations != 0 {
+        failures.push(format!(
+            "{} physical speed-zone violation intervals (maximum excess {:.6} m/s, tolerance {:.3} m/s)",
+            speed_rules.violations, speed_rules.maximum_excess_m_s, speed_zones::SPEED_TOLERANCE_M_S,
+        ));
+    }
     if collisions > 0 {
         failures.push(format!("{collisions} colliding integration steps"));
     }
@@ -1073,6 +1385,66 @@ pub fn simulate_with_backend(
 mod tests {
     use super::*;
     #[test]
+    fn reference_ray_capture_preserves_acquisition_noise_and_driving_bytes() {
+        for seed in [7, 42] {
+            let mut s: Scenario =
+                serde_json::from_str(include_str!("../../../scenarios/blocked.json")).unwrap();
+            s.duration = 1.;
+            s.full_rate_recording = true;
+            let old = simulate(s.clone(), seed).unwrap();
+            s.record_planar_sweep = true;
+            let captured = simulate(s, seed).unwrap();
+            assert_eq!(
+                serde_json::to_value(&old.frames).unwrap(),
+                serde_json::to_value(&captured.frames).unwrap()
+            );
+            for (a, b) in old
+                .sensor_log
+                .as_ref()
+                .unwrap()
+                .ticks
+                .iter()
+                .zip(&captured.sensor_log.as_ref().unwrap().ticks)
+            {
+                assert_eq!(
+                    serde_json::to_value(&a.expected).unwrap(),
+                    serde_json::to_value(&b.expected).unwrap()
+                );
+                if let Some(scan) = &b.input.lidar {
+                    assert_eq!(a.input.lidar.as_ref().unwrap().points, scan.points);
+                    assert!(scan.sweep.as_ref().unwrap().calibration.angular_step_rad > 0.);
+                    assert_eq!(scan.sweep.as_ref().unwrap().rays.len(), 720);
+                    assert!(
+                        !b.expected
+                            .health
+                            .contains(&rustdriving_pipeline::HealthIssue::InvalidLidar)
+                    );
+                }
+            }
+            let mut bytes = vec![];
+            captured.sensor_log.unwrap().write(&mut bytes).unwrap();
+            assert!(
+                rustdriving_pipeline::replay::verify(std::io::Cursor::new(bytes), vec![])
+                    .unwrap()
+                    .verified
+            );
+        }
+    }
+    #[test]
+    fn static_mission_records_an_explicit_handover_policy_for_replay() {
+        let mut scenario: Scenario =
+            serde_json::from_str(include_str!("../../../scenarios/route-direct.json")).unwrap();
+        assert!(scenario.navigation_updates.is_empty());
+        assert!(pipeline_config(&scenario).navigation.is_none());
+        scenario.navigation.as_mut().unwrap().hold_for_handover = true;
+        let config = pipeline_config(&scenario);
+        assert!(config.navigation.as_ref().unwrap().hold_for_handover);
+        assert!(config.validate().is_ok());
+        let encoded = serde_json::to_value(config).unwrap();
+        assert_eq!(encoded["navigation"]["hold_for_handover"], true);
+        assert!(encoded.get("navigation_updates").is_none());
+    }
+    #[test]
     fn gnss_acquisition_windows_are_bounded_and_recover_at_the_end_boundary() {
         let mut s: Scenario =
             serde_json::from_str(include_str!("../../../scenarios/mission.json")).unwrap();
@@ -1168,6 +1540,7 @@ mod tests {
             },
             vehicle: config.vehicle,
             rng: Rng::new(7),
+            seed: 7,
             command: ControlCommand::default(),
         };
         let renamed =
@@ -1193,7 +1566,7 @@ mod tests {
                 radius: 1.0,
             },
         ];
-        let scan = lidar(Pose::default(), &objects, 0.0, &mut Rng::new(1));
+        let scan = lidar(Pose::default(), &objects, 0.0, &mut Rng::new(1), false);
         let center = scan.points.iter().find(|p| p.y.abs() < 1e-6).unwrap();
         assert!((center.x - 9.0).abs() < 0.02);
     }

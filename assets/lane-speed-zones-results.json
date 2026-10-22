@@ -1,0 +1,101 @@
+{
+  "additional_ci_command_reproduction_episodes": 6,
+  "changed_standard_output_files": 0,
+  "ci_recordings_identical_to_frozen_seed_7": 36,
+  "created_at": "2026-10-18T22:45:35.386947+00:00",
+  "current_unique_acceptance_episodes": 73,
+  "existing_short_range_follower_failures_preserved_not_rerun": 2,
+  "feature_branch": "feat/lane-speed-zones-20261018",
+  "fixed_physical_speed_tolerance_m_s": 0.15,
+  "frozen_before_physical_results": true,
+  "full_source_and_recording_hashes_verified": true,
+  "historical_245_live_outputs_restored_unchanged": true,
+  "legacy_byte_identical_cli_reports": 6,
+  "legacy_byte_identical_json_recordings": 36,
+  "legacy_current_episodes": 6,
+  "legacy_parent_episodes": 6,
+  "live_or_lane_change_speed_remapping_supported": false,
+  "local_physical_frames": 13168,
+  "local_physical_speed_violation_intervals": 0,
+  "local_speed_current_episodes": 18,
+  "lockfile_toolchain_and_existing_explicit_speed_fixtures_unchanged": true,
+  "maximum_physical_speed_excess_m_s": 0.08761739523840473,
+  "minimum_post_zone_observed_max_speed_m_s": 6.022063960424934,
+  "native_RNE_or_real_vehicle_qualification": false,
+  "new_python_tests": 3,
+  "new_rust_tests": 7,
+  "parent_new_option_rejection_preserved": {
+    "exit_code": 2,
+    "local_speed_limits_supported": false,
+    "output_created": false
+  },
+  "physical_production_sources_match_final": true,
+  "post_zone_minimum_required_max_speed_m_s": 4.0,
+  "python_auditor_tests": 13,
+  "qualification_scope": "six authored empty lane maps, reference bicycle, synthetic sensors; one shallow curved closure detour",
+  "release_binary_sha256": "8c2eb8539f2fd28de8c63f6aeea7b63ae7f8a465430a182e3dd39f008e0ccb3f",
+  "remote_CI_claimed": false,
+  "required_check_command": "bash scripts/check.sh",
+  "required_check_exit_code": 0,
+  "seed_7_arrival_comparisons": [
+    {
+      "case": "single",
+      "legacy_seconds": 61.050000000000004,
+      "local_maximum_speed_excess_m_s": 0.058032589525619294,
+      "local_seconds": 37.300000000000004,
+      "opt_in_policy_and_exported_scenario_intentionally_differ": true,
+      "same_original_map_and_requested_cruise": true,
+      "seed": 7
+    },
+    {
+      "case": "sequential",
+      "legacy_seconds": 80.30000000000001,
+      "local_maximum_speed_excess_m_s": 0.08761739523840473,
+      "local_seconds": 43.150000000000006,
+      "opt_in_policy_and_exported_scenario_intentionally_differ": true,
+      "same_original_map_and_requested_cruise": true,
+      "seed": 7
+    },
+    {
+      "case": "thin",
+      "legacy_seconds": 61.050000000000004,
+      "local_maximum_speed_excess_m_s": 0.05434947281466318,
+      "local_seconds": 27.200000000000003,
+      "opt_in_policy_and_exported_scenario_intentionally_differ": true,
+      "same_original_map_and_requested_cruise": true,
+      "seed": 7
+    },
+    {
+      "case": "north",
+      "legacy_seconds": 61.0,
+      "local_maximum_speed_excess_m_s": 0.061025666405975176,
+      "local_seconds": 37.2,
+      "opt_in_policy_and_exported_scenario_intentionally_differ": true,
+      "same_original_map_and_requested_cruise": true,
+      "seed": 7
+    },
+    {
+      "case": "ceiling",
+      "legacy_seconds": 61.050000000000004,
+      "local_maximum_speed_excess_m_s": 0.058032589525619294,
+      "local_seconds": 37.300000000000004,
+      "opt_in_policy_and_exported_scenario_intentionally_differ": true,
+      "same_original_map_and_requested_cruise": true,
+      "seed": 7
+    },
+    {
+      "case": "closed",
+      "legacy_seconds": 61.050000000000004,
+      "local_maximum_speed_excess_m_s": 0.05803253075095771,
+      "local_seconds": 37.25,
+      "opt_in_policy_and_exported_scenario_intentionally_differ": true,
+      "same_original_map_and_requested_cruise": true,
+      "seed": 7
+    }
+  ],
+  "standard_output_files_compared": 245,
+  "standard_reference_runs_and_exact_replays": 49,
+  "starting_commit": "dc1d09d29b0001af71afa0ebae10e0e8d39f3b61",
+  "subjective_oss_maturity_percent": 20,
+  "workspace_rust_tests": 609
+}

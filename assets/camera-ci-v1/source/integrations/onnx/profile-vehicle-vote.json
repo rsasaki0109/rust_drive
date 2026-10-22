@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "profile": "yolox-vehicle-vote-v1",
+  "base_profile": "profile-tiles-s.json",
+  "classes": [2, 5, 7],
+  "conflict_iou_strictly_above": 0.45,
+  "components": "complete pairwise conflicts, distinct classes and views; keep non-cliques",
+  "votes": "highest-confidence eligible proposal per original view",
+  "ties": "full-image vote, then largest vote confidence, then lower class index",
+  "representative": "existing highest-ranked global output of selected class, unchanged",
+  "comparison_work_limit": 1200000,
+  "scope": "offline classification reconciliation; no calibrated probabilities or driving integration"
+}

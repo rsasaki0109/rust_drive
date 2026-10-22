@@ -1,0 +1,250 @@
+{
+  "altered_original_map_speed_replay_negative": {
+    "changed_limit_m_s": 4.0,
+    "exit_code": 2,
+    "mismatch_time_s": 11.4,
+    "old_limit_m_s": 2.0,
+    "only_changed_original_map_edge": "detour",
+    "original_handover_time_s": 11.4,
+    "passed": true,
+    "remaining_sensor_lines_byte_identical": true,
+    "stderr": "rustdriving: replay mismatch at tick 228 (time 11.400)\n"
+  },
+  "changed_standard_outputs": 58,
+  "changed_standard_scenarios": [
+    "gnss-burst",
+    "gnss-burst-traffic",
+    "gnss-burst-traffic-hold",
+    "gnss-spike",
+    "mission",
+    "route-detour",
+    "route-direct",
+    "route-handover",
+    "route-handover-fast",
+    "route-no-path",
+    "route-reopen",
+    "route-south"
+  ],
+  "created_at": "2026-10-19T01:32:30.363523+00:00",
+  "current_unique_acceptance_episodes": 83,
+  "existing_pins_and_fixtures_unchanged": 128,
+  "existing_short_range_follower_failures_preserved_not_rerun": 2,
+  "feature_branch": "feat/navigation-speed-zones-20261019",
+  "first_frozen_trial_rejected_audits": [
+    {
+      "case": "reopen",
+      "error": "ValueError('no-route wait lacked two seconds of physical standstill')",
+      "seed": 1
+    },
+    {
+      "case": "reopen",
+      "error": "ValueError('no-route wait lacked two seconds of physical standstill')",
+      "seed": 7
+    }
+  ],
+  "fixed_clearance_floor_m": 1.0,
+  "fixed_map_speeds_during_stopped_closure_handover_supported": true,
+  "fixed_maximum_true_and_estimated_handover_speed_m_s": 0.05,
+  "fixed_post_limit_required_max_speed_m_s": 3.5,
+  "fixed_pre_reopening_standstill_floor_s": 2.0,
+  "fixed_speed_tolerance_m_s": 0.15,
+  "frozen_before_physical_results": true,
+  "frozen_cases": [
+    {
+      "case": "handover",
+      "expected_switches": 1,
+      "goal": true,
+      "scenario": "scenarios/navigation-speed-handover.json",
+      "sha256": "72be4757c4b117215b415c3323ea65cd55eef0ea67c298f691b776f84371d195"
+    },
+    {
+      "case": "reopen",
+      "expected_switches": 1,
+      "goal": true,
+      "scenario": "scenarios/navigation-speed-reopen.json",
+      "sha256": "f2679b025cef221b1578c110adb324f692648fda72c7fbff4207db4a68f14b05"
+    },
+    {
+      "case": "north",
+      "expected_switches": 1,
+      "goal": true,
+      "scenario": "scenarios/navigation-speed-north.json",
+      "sha256": "a9361007568c1d047034cd379c1259936975792bbdce60c632ab45a9a6e87c3d"
+    },
+    {
+      "case": "thin",
+      "expected_switches": 1,
+      "goal": true,
+      "scenario": "scenarios/navigation-speed-thin.json",
+      "sha256": "698b0cd80b91d8dc1a8847472c3a92af9d70a4376f723211051a5bca9425fd7e"
+    },
+    {
+      "case": "blocked",
+      "expected_switches": 0,
+      "goal": false,
+      "scenario": "scenarios/navigation-speed-blocked.json",
+      "sha256": "641d0cbfb0c3bc5cfb2cced6a61860919fd83931a82403091cf30f8ad2ca0021"
+    },
+    {
+      "case": "uncapped",
+      "expected_switches": 1,
+      "goal": true,
+      "scenario": "scenarios/navigation-speed-uncapped.json",
+      "sha256": "70226223ea472ee596f5d27847d4605e01818b0b0c06066cb46d3a7c3495fd46"
+    },
+    {
+      "case": "static",
+      "expected_switches": 0,
+      "goal": true,
+      "scenario": "scenarios/navigation-speed-static.json",
+      "sha256": "a63f15f14e07a21f1977b90b14e2de1475eeed92645937d96f813d691615a639"
+    }
+  ],
+  "historical_245_live_outputs_restored_unchanged": true,
+  "intermediate_broad_hold_regression": "original detour obstacle clearance fell below the existing >1 m regression gate; retained as failed, repaired with measured hold and pass completion policy",
+  "intermediate_broad_hold_regression_check_exit_code": 101,
+  "legacy_byte_identical_cases": [
+    "handover",
+    "north",
+    "static",
+    "thin",
+    "uncapped"
+  ],
+  "legacy_control_scope": "same seven speed worlds without optional edge limits, seed 7; original no-route creep retained in parent records",
+  "legacy_current_episodes": 7,
+  "legacy_intentional_wait_hold_changes": [
+    "blocked",
+    "reopen"
+  ],
+  "legacy_parent_episodes_reused": 7,
+  "live_speed_value_updates_supported": false,
+  "local_goals_completed": 24,
+  "local_physical_frames": 41767,
+  "local_speed_current_episodes": 21,
+  "local_speed_violation_intervals": 0,
+  "maximum_physical_speed_excess_m_s": 0.08915227605534448,
+  "minimum_composition_swept_clearance_m": 1.162447491282112,
+  "minimum_post_limit_maximum_speed_m_s": 4.010386941962265,
+  "minimum_pre_reopening_standstill_s": 3.6500000000000004,
+  "native_RNE_or_real_vehicle_qualification": false,
+  "new_python_tests": 3,
+  "new_rust_tests": 6,
+  "parent_new_option_exit_code": 2,
+  "per_case": [
+    {
+      "case": "blocked",
+      "composition": false,
+      "passed": true,
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "handover",
+      "composition": false,
+      "passed": true,
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "north",
+      "composition": false,
+      "passed": true,
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "reopen",
+      "composition": false,
+      "passed": true,
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "static",
+      "composition": false,
+      "passed": true,
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "thin",
+      "composition": false,
+      "passed": true,
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "uncapped",
+      "composition": false,
+      "passed": true,
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "handover",
+      "composition": true,
+      "passed": true,
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    },
+    {
+      "case": "reopen",
+      "composition": true,
+      "passed": true,
+      "seeds": [
+        1,
+        7,
+        42
+      ]
+    }
+  ],
+  "permanent_blockage_stops": 3,
+  "python_auditor_tests": 25,
+  "qualification_scope": "seven authored fixed-speed road maps and two compositions with the original static detour obstacle, reference bicycle and synthetic sensor-only driving",
+  "qualified": true,
+  "release_binary_identical_to_physical_candidate": true,
+  "release_binary_sha256": "d86073a004fca7f9c3872dbb3682b60519e37fdec69b2d3108404d8502a500bf",
+  "remote_CI_claimed": false,
+  "required_check_command": "bash scripts/check.sh",
+  "required_check_exit_code": 0,
+  "speed_and_obstacle_composition_episodes": 6,
+  "standard_output_changes_reason": "measured no-route brake holding and passing-side preference until slower centerline obstacles are passed; unchanged gates and all old and new recordings retained",
+  "standard_outputs_compared": 245,
+  "standard_reference_runs_and_exact_replays": 49,
+  "starting_commit": "b6ffe80f15c968c3df32a214f73acc04d46eeb02",
+  "subjective_oss_maturity_percent": 20,
+  "test_only_style_change_after_physical_snapshot": {
+    "change": "three cloned single-item test slices replaced with std::slice::from_ref after Clippy failure",
+    "new_sha256": "54dfc4b25780f06d8cd9a5210433edc61705567238e8d0de1a299e336efa10d0",
+    "old_sha256": "8de1101e4134756d738a0cb47f8f382849ff711eca7960a46577049dc0e1bab1",
+    "path": "crates/planning/src/lib.rs",
+    "runtime_implementation_unchanged": true,
+    "within_cfg_test_only": true
+  },
+  "traffic_input_derivation": "replace only objects in navigation-speed-handover/reopen with the original route-handover/reopen objects, and append \" with the preceding fixed obstacle\" to the name; same map, closures, deadline and 1 m floor",
+  "workspace_rust_tests": 629
+}

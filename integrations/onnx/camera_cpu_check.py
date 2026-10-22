@@ -13,7 +13,7 @@ import statistics
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
-SUPPORT_SHA = 'ce3e0c50c6c2d11f952bb0e21186c3756ee232653275c80f77238071112f8574'
+SUPPORT_SHA = 'f9d4e081b4989f3ffe3bd40f7f030f817797188161370b636276c127ac90d109'
 ORDER = ['baseline-first', 'native-first', 'native-repeat', 'baseline-repeat']
 
 
@@ -27,7 +27,7 @@ def module(name, path):
 build = module('native_cpu_build', HERE / 'build_cpu.py')
 require, digest = build.require, build.digest
 require(digest(HERE / 'camera_parallel_check.py') == SUPPORT_SHA,
-        'unchanged parallel numerical and timing auditor required')
+        'pinned parallel numerical and timing auditor required')
 previous = module('native_cpu_parallel_support', HERE / 'camera_parallel_check.py')
 load, write, fresh = previous.load, previous.write, previous.fresh
 
@@ -97,7 +97,7 @@ def run(args):
     for _, image, saved, _ in selection:
         require(digest(image) == load(saved)['source_image_sha256'], 'original image bytes')
     pins = dict(receipt['compiled_sources'])
-    for path in (Path(__file__), HERE / 'build_cpu.py', HERE / 'camera_parallel_check.py',
+    for path in (Path(__file__), HERE / 'camera_history.py', HERE / 'build_cpu.py', HERE / 'camera_parallel_check.py',
                  HERE / 'camera_latency_check.py', ROOT / 'integrations/camera-tracking/freshness_check.py',
                  ROOT / 'integrations/camera-tracking/check.py'):
         pins[str(path.relative_to(ROOT))] = digest(path)
@@ -107,11 +107,12 @@ def run(args):
         source_sha256=pins, image_selection=[dict(name=name, data=data, image_sha256=digest(image),
         reference_report_sha256=digest(saved)) for name, image, saved, data in selection],
         viewed_development_data=True, independent_fresh_holdout=False,
-        repeated_image_runs=2, hardware_speedup_not_a_correctness_gate=True))
+        repeated_image_runs=2,planned_same_host_reference_forwards=64, hardware_speedup_not_a_correctness_gate=True))
     inspections = {}
     for name, binary in binaries.items():
         inspections[name], _ = latency.native(binary, ['--inspect-sequence', source_path], out / (name + '-inspection.json'))
     trials = []
+    historical = latency.camera_history.Comparison()
     forwards = 0
     for label in ORDER:
         name = label.split('-')[0]
@@ -127,7 +128,7 @@ def run(args):
             analysis = event['measured']['analysis']
             if analysis is not None:
                 saved = ROOT / f"assets/camera-sequence-v1/recorded/exports/first-{event['source']['event_index']}.json"
-                previous.parallel_analysis(analysis, load(saved))
+                previous.parallel_analysis(analysis, load(saved), historical)
                 require(analysis['compiled_sources'] == load(ROOT / 'assets/camera-parallel-v1/verification/parity/tum-0-first.json')['compiled_sources'],
                         'complete unchanged 26-source analyzer receipt')
                 durations.append(event['measured']['timing']['read_analysis_and_probe_wall_s'])
@@ -143,13 +144,18 @@ def run(args):
     parity = fresh(out / 'parity')
     expected_analyzer_sources = load(ROOT / 'assets/camera-parallel-v1/verification/parity/tum-0-first.json')['compiled_sources']
     parity_forwards = 0
+    reference_forwards = 0
+    references = fresh(out / 'current-baseline')
     for name, image, saved, data in selection:
         print('Exact comparison ' + data + ' ' + name, flush=True)
+        current, _ = latency.native(args.baseline, ['--model', args.model, '--image', image], references / (name + '.json'))
+        reference_forwards += current['execution']['model_forwards']
         results = []
         for repeat in ('first', 'repeat'):
             actual, _ = latency.native(args.binary, ['--model', args.model, '--image', image], parity / (name + '-' + repeat + '.json'))
             require(actual['compiled_sources'] == expected_analyzer_sources, 'complete analyzer source receipt')
-            previous.parallel_analysis(actual, load(saved))
+            previous.parallel_analysis(actual, load(saved), historical)
+            require(previous.stripped(actual) == previous.stripped(current), 'exact current-host native/baseline output')
             results.append(previous.stripped(actual))
             parity_forwards += actual['execution']['model_forwards']
         require(results[0] == results[1], 'exact repeated numerical output')
@@ -167,9 +173,11 @@ def run(args):
         observed_deadline_gates={row['label']: row['summary']['deadline_gate_pass'] for row in trials},
         original_image_count=16, repeats_per_image=2, complete_numerical_parity=True,
         benchmark_actual_model_forwards=forwards, parity_actual_model_forwards=parity_forwards,
-        total_actual_model_forwards=forwards + parity_forwards,
+        same_host_reference_forwards=reference_forwards,same_host_native_baseline_exact=True,
+        total_actual_model_forwards=forwards + parity_forwards + reference_forwards,
         inherited_bdd_quality=quality['overall'], inherited_quality_gates_pass=quality['quality_gates']['pass'],
-        quality_metrics_inherited_from_exact_parity=True, new_accuracy_improvement_measured=False,
+        historical_comparison=historical.report(),quality_metrics_inherited_from_same_boxes_classes_and_order=True,
+        new_accuracy_improvement_measured=False,
         source_sha256=pins, executable_receipts=receipts, native_build_receipt_sha256=digest(args.build / 'build.json')))
     print(json.dumps(dict(pass_checks=True, mean_speedup=statistics.mean(baseline) / statistics.mean(native),
                           original_image_count=16, complete_numerical_parity=True)), flush=True)

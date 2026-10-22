@@ -1,0 +1,3806 @@
+{
+  "schema_version": 1,
+  "protocol": "mid-edge-routing-v1",
+  "comparison_maturity_percent": 22,
+  "maturity_is_subjective": true,
+  "parent_commit": "522f9bbb198f9898933bf716fc975b104b83f43a",
+  "complete_qualification_passed": false,
+  "complete_qualified_episodes": 41,
+  "episodes_total": 48,
+  "routing_and_physical_contract_passed_episodes": 48,
+  "first_frozen_producer_inputs_and_gates_preserved": true,
+  "fixed_inputs": {
+    "protocol": "mid-edge-routing-v1",
+    "status": "fixed before first physical trial",
+    "parent": "522f9bbb198f9898933bf716fc975b104b83f43a",
+    "scenarios": {
+      "scenarios/mid-edge-clipped.json": "b6dfe76e18ee6231f1cab2333657ad4094e63473da61b00150b8c776d87462e3",
+      "scenarios/mid-edge-restricted.json": "ad6853ff8eca1e4308710013062646367eed491393a528225433a28b7bca0e5c",
+      "scenarios/mid-edge-handover.json": "a7bfa98feb7079980269ce791eaf0293542feab52282d7718d98eadf3335e765",
+      "scenarios/mid-edge-reopen.json": "f401164a5c41bb668650c62935ecaf64acdd3feb0f192af1c9f17d535258bd86",
+      "scenarios/mid-edge-blocked-goal.json": "6eb08d946821f5fe010d681ddc49335fc61bf19db0fdbdadd02cec29413db5e2",
+      "scenarios/mid-edge-same-edge.json": "bec5a4798455768d0319c10572204d4677245fbeff77a90d95520201b3484893",
+      "scenarios/mid-edge-obstacle.json": "b3c74c7f2e56b1331cf33299ef083ed7eaa8dc5070b3c7dd08383e89488f7878",
+      "scenarios/mid-edge-osm.json": "93a34c74ffc955e3f180b4c4cceefd099db9f8de2a71c84d0811c86c7c7bbc01"
+    },
+    "seeds": [
+      1,
+      7,
+      42
+    ],
+    "plants": [
+      "reference-2d",
+      "rne-dynamic"
+    ],
+    "gates": {
+      "all_original_acceptance": true,
+      "min_clearance_m": 1.0,
+      "max_speed_excess_m_s": 0.15,
+      "max_switch_speed_m_s": 0.05,
+      "minimum_reopen_standstill_s": 2.0,
+      "max_localization_rmse_m": 0.3,
+      "max_localization_error_m": 0.6,
+      "max_yaw_error_rad": 0.1,
+      "exact_replay": true,
+      "unchanged_deadlines": {
+        "scenarios/mid-edge-clipped.json": 140.0,
+        "scenarios/mid-edge-restricted.json": 140.0,
+        "scenarios/mid-edge-handover.json": 140.0,
+        "scenarios/mid-edge-reopen.json": 140.0,
+        "scenarios/mid-edge-blocked-goal.json": 65.0,
+        "scenarios/mid-edge-same-edge.json": 65.0,
+        "scenarios/mid-edge-obstacle.json": 65.0,
+        "scenarios/mid-edge-osm.json": 180.0
+      },
+      "forbidden_edges_or_untraversed_endpoint_nodes": 0
+    }
+  },
+  "metrics": {
+    "physical_ticks": 60674,
+    "goals": 42,
+    "closed_destination_stops": 6,
+    "minimum_clearance_m": 1.1534886877009027,
+    "maximum_speed_excess_m_s": 0.08641157592341608,
+    "maximum_localization_rmse_m": 0.0666369790766421,
+    "maximum_position_error_m": 0.18582776646829277,
+    "maximum_yaw_error_rad": 0.10934257287283433,
+    "minimum_reopening_standstill_s": 5.300000000000001,
+    "latest_goal_s": 94.10000000000001
+  },
+  "sources_sha256": {
+    ".github/workflows/ci.yml": "78d288eec9f98932cda57508faf4f5dc394c8d72956e3e8c9e53da3f1d958512",
+    "Cargo.lock": "de8e6afb2c8f59be7f68f0ccf8604e4d43d9951d6902314f46f16b8121dbccf7",
+    "Cargo.toml": "2975b0cc0fbaed1397dc5d575fe95466d29ce773400eb1ce8f4fbec37bac0d65",
+    "crates/pipeline/src/navigation.rs": "25afeff733beed1afa799068615168bfc294da07a0f4c7fec224c4470bc1d0a2",
+    "crates/routing/src/lib.rs": "98bb9327ee007fc737451314af080133bdd45723514dcf29986ba909dd0bc2a8",
+    "crates/routing/src/positions.rs": "7be6bf659e0c8c63c758fd12e7c784db3011065df88d1e7221b31207993ab184",
+    "crates/routing/src/positions/tests.rs": "fe77539119623764ac3be1acaff6f6e03c2fe3027e3c706da819020e16e2cc79",
+    "crates/sim/src/lib.rs": "c0fa599a98f5f2c4ffe710871248418ec5edeafd34f34ac19f3bb59893cc964e",
+    "crates/sim/src/main.rs": "d3804df1ce6c7e03032d31f81cc6d62c6d9e269ce2c9a06da85c49f0eb2d7400",
+    "crates/sim/src/road_route.rs": "14be10e114b6613374a1e11f0bfd240cc43151d149116ce3a390f3fc53f94fb7",
+    "crates/sim/src/speed_zones.rs": "f580dc807b27739e93949206cb4bbb8bb672525e69ceb82fb392605897624854",
+    "crates/sim/tests/mid_edge.rs": "8185960c477f7f218b4a0e7fb38eaf094090dadaaeb35848a510c7bb9edb1569",
+    "crates/sim/tests/road_route_cli.rs": "1f1fbeea5588e20afaf9b87f72d2e919e17dd3fba44bff63e9a9f89d11f0a661",
+    "integrations/rne/Cargo.lock": "c15e499bc74ddcf213bb0ac22cb22280c68d49ead2e203b8a7213e5a9f38f2ff",
+    "integrations/rne/rne-revision.txt": "18a0b41bc51d35a964f9dc922ee44cf1c485b34765c8ddfe82c93649c440404e",
+    "integrations/rne/rust-toolchain.toml": "7d21c66a15f41bad66b82ed06a289f5dc8a6e3751951d2696bbf20ce296f2b0f",
+    "integrations/rne/src/lib.rs": "8c192df050f75bcfb92752e5e3cc6d53217c980a433d1335ac1f3c219572dd45",
+    "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed",
+    "scenarios/mid-edge-blocked-goal.json": "6eb08d946821f5fe010d681ddc49335fc61bf19db0fdbdadd02cec29413db5e2",
+    "scenarios/mid-edge-clipped.json": "b6dfe76e18ee6231f1cab2333657ad4094e63473da61b00150b8c776d87462e3",
+    "scenarios/mid-edge-handover.json": "a7bfa98feb7079980269ce791eaf0293542feab52282d7718d98eadf3335e765",
+    "scenarios/mid-edge-obstacle.json": "b3c74c7f2e56b1331cf33299ef083ed7eaa8dc5070b3c7dd08383e89488f7878",
+    "scenarios/mid-edge-osm.json": "93a34c74ffc955e3f180b4c4cceefd099db9f8de2a71c84d0811c86c7c7bbc01",
+    "scenarios/mid-edge-reopen.json": "f401164a5c41bb668650c62935ecaf64acdd3feb0f192af1c9f17d535258bd86",
+    "scenarios/mid-edge-restricted.json": "ad6853ff8eca1e4308710013062646367eed491393a528225433a28b7bca0e5c",
+    "scenarios/mid-edge-same-edge.json": "bec5a4798455768d0319c10572204d4677245fbeff77a90d95520201b3484893",
+    "scripts/check.sh": "2d3cacb982c8934f7b17ca80a3cbe5d64b1cf31d7035543dea0d70002df86724",
+    "scripts/check_mid_edge.py": "2677bd38a1882a153b370921f4ebc10b62dc77d775c7dfac33deeb591456c0d0",
+    "scripts/test_mid_edge.py": "0ef3d749de726f334038ac506c34af27f737054589b0dd5ec20a1b8cc14460df",
+    "target/release/rustdriving": "d9f088d12a23ab76253a80eb394fc4fd429a31bef3de286db1acc32c672daa7d",
+    "integrations/rne/target/release/rustdriving-rne": "644815bf225d3ca6ce52e110b6dbd53f807c723ef76b77ebba5e042c90248ab0"
+  },
+  "runtime_source_closure": {
+    "file_count": 639,
+    "sha256": "4f304d8bd269bef4eb801ddd3d4125dac6d02d6a482c41c23af8336c2ada8bb9",
+    "local_path": "artifacts/mid-edge-routing-v1/final-runtime-source-closure.json"
+  },
+  "rne_engine_commit": "df6007aa40315e81d12ae00fc1f60369e393a178",
+  "report_enrichment": {
+    "unchanged_producer_and_binaries": true,
+    "changed_frozen_sources": [
+      ".github/workflows/ci.yml",
+      "scripts/check_mid_edge.py"
+    ],
+    "unchanged_ast_functions": {
+      "reference": "unchanged AST",
+      "compare": "unchanged AST",
+      "closures": "unchanged AST",
+      "run_case": "unchanged AST",
+      "routing_corpus": "unchanged AST",
+      "corpus_map": "unchanged AST",
+      "main": "unchanged AST"
+    },
+    "original_numerical_gates_retained": true,
+    "all_original_48_pass_fail_outcomes_reproduced": true,
+    "original_auditor_retained": "candidate/scripts/check_mid_edge.py",
+    "original_reports": [
+      "reference/report.json",
+      "native/report.json"
+    ],
+    "complete_reporting": "final-results.json"
+  },
+  "validation": {
+    "required_command": "bash scripts/check.sh",
+    "check_summary": {
+      "archive_errors": [],
+      "changed_baseline_outputs": 0,
+      "check_exit_code": 0,
+      "current_baseline_changes": [],
+      "live_and_backup_inodes_distinct": true,
+      "missing_outputs": [],
+      "passed_tests": 665,
+      "previous_245_outputs_restored_unchanged": true,
+      "python_auditor_tests": 39,
+      "source_closure_matches_expected": true,
+      "verified_replays": 49
+    },
+    "native_rust_tests": 59,
+    "native_clippy_passed": true,
+    "native_format_passed": true,
+    "prior_feature_exact_replays": 102,
+    "corpus": {
+      "queries": 768,
+      "reachable": 178,
+      "unreachable": 590,
+      "all_passed": true,
+      "full_report_sha256": "e23f7b20f1f88f691a785e69716235ca6e0466dfb6bbc83a398c81d3333d695d"
+    },
+    "parent_controls": {
+      "new_endpoint_input_rejections": 8,
+      "equivalent_node_exact_native_replays": 8,
+      "sensor_inputs_and_expected_outputs_unchanged": true,
+      "only_navigation_header_manually_cut": true,
+      "full_report_sha256": "472c59bb4094c20e174fae112d88ce7b6e19c07bbefcf9a797491760a49dbefb"
+    },
+    "documentation_changed_after_final_check": [
+      "docs/mid-edge-routing.md"
+    ]
+  },
+  "limitations": [
+    "Seven native seed-7 episodes retain a failed 0.1 rad whole-episode yaw gate; no failed episode is counted as fully qualified.",
+    "Parent equivalent-node replay reproduces the same pipeline outputs and launch-heading errors. This feature adds the endpoint contract rather than improving that estimator behavior.",
+    "Explicit original-request ENU edge/arc endpoints, known maps and stopped handover only; no nearest-road map matching or moving rerouting.",
+    "Planar circular sensing/planning evaluation; no calibrated heading uncertainty, automotive localization or field-performance claim.",
+    "Raw lossless archives and detailed controls are retained locally under the ignored evidence packet; they are not Git-tracked."
+  ],
+  "osm_source": "maps/osm/SOURCE.md",
+  "episodes": [
+    {
+      "case": "same-edge",
+      "seed": 1,
+      "plant": "reference-2d",
+      "passed": true,
+      "scenario_sha256": "bec5a4798455768d0319c10572204d4677245fbeff77a90d95520201b3484893",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 649,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.05271479488350117,
+      "localization_rmse_m": 0.06069519001796293,
+      "maximum_position_error_m": 0.18237925206265732,
+      "maximum_yaw_error_rad": 0.04919636246245718,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge same-edge",
+        "seed": 1,
+        "simulated_seconds": 32.4,
+        "steps": 649,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.06069519001796293,
+        "localization_max_error": 0.18237925206265732,
+        "final_speed": 0.10532709230252513,
+        "progress": 121.75707515439346,
+        "emergency_steps": 3,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 649,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "reference/same-edge/seed-1",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "2fb91d5713fb365b2f70c34e90889f8b528d9639fa43cf39bbe6066578271e79",
+          "stored_sha256": "981b7322cf682bd32dc0d4dc0337ab0ff4e7382679226a894570908d0cfec917"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "eb1a64ded9fa31b48c19756bd87cfe02a0c8d0c96eb3e7dc1c8e96f603cebd15",
+          "stored_sha256": "808c7de5f63e71a27b7b60699212310d1f24d29248ec343ecc32d1404c2d95b5"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "2d59f3d756b1b3fce47e05c66434e558790d982f81e4645c2af127249504437b",
+          "stored_sha256": "d9ee2f5eb74586cf4f58f9a9830e48f7d6f88da6dca0a65e79313900a1d44505"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "41d107f963647118be653b279ddca9cd0398c7a5681f47599fa32e85693121c5",
+          "stored_sha256": "c161d80f095ba682610d727058c11139949844f5745a1888d0465dfbbd80f618"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "736b6621c53d4b7fb0c1380400a8fb7f2c6007257e3a9fa8f3b000b37f1644e8",
+          "stored_sha256": "39b8ad38712ff9fa227c192162abac978310427c2e338ebae62dcbe2f8a954d8"
+        }
+      }
+    },
+    {
+      "case": "same-edge",
+      "seed": 7,
+      "plant": "reference-2d",
+      "passed": true,
+      "scenario_sha256": "bec5a4798455768d0319c10572204d4677245fbeff77a90d95520201b3484893",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 650,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.06677161154589495,
+      "localization_rmse_m": 0.055016155293010696,
+      "maximum_position_error_m": 0.13832415798921724,
+      "maximum_yaw_error_rad": 0.04849871704171571,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge same-edge",
+        "seed": 7,
+        "simulated_seconds": 32.45,
+        "steps": 650,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.055016155293010696,
+        "localization_max_error": 0.13832415798921724,
+        "final_speed": 0.11008507780953036,
+        "progress": 121.78389343471962,
+        "emergency_steps": 2,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 650,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "reference/same-edge/seed-7",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "ad85ccdd920915eb371912f667b0b361affe79aed2df976fbe530ccc0e4a5fe9",
+          "stored_sha256": "44a06e48693c6a71359f1d639c2b0e7264d887fd8e935fdb56061643034566c7"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "35ffc1067d13a5a43b1b28eedfd417f58e2e74794064ded7ae534ac5f24a3fce",
+          "stored_sha256": "7c54aeec8e51a4cfc0c516575e1da8e28c66f09babc1508ba67bc85c03ed6aec"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "9759db9396cca32795368c89d86339e67ec5411c0415a5e023ddefb0fea53275",
+          "stored_sha256": "1ec1b194d91ef9a03469caacf1c24457d7788b8a72f89945c2e4785cfc556fe9"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "ea43d57dac5c745b68999ddde3ac32c27766fa6846b918e4c06b1eba4ae943b7",
+          "stored_sha256": "bbc495c4ce5414bfa12f7c35e72554f72091660fffbda5e8e327cad9ca4f4350"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "40821a7b1d5b77ec5021606d0a714e0837bef9f35fef0c3ce1bf1d2498c676f1",
+          "stored_sha256": "cfc57541c2dbb0fd0cb2c5c78dff2ac4815669e7c4bc0450319f500f11d19779"
+        }
+      }
+    },
+    {
+      "case": "same-edge",
+      "seed": 42,
+      "plant": "reference-2d",
+      "passed": true,
+      "scenario_sha256": "bec5a4798455768d0319c10572204d4677245fbeff77a90d95520201b3484893",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 649,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.06714681555873003,
+      "localization_rmse_m": 0.055696318077098066,
+      "maximum_position_error_m": 0.14170791838092378,
+      "maximum_yaw_error_rad": 0.05109406182228682,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge same-edge",
+        "seed": 42,
+        "simulated_seconds": 32.4,
+        "steps": 649,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05569631807709808,
+        "localization_max_error": 0.14170791838092378,
+        "final_speed": 0.14377469206229537,
+        "progress": 121.76001581693349,
+        "emergency_steps": 3,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 649,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "reference/same-edge/seed-42",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "003a45e53f953c98b4e494c097e0ee1f259e16a0f3d6e759fb6bd13cc88fed8a",
+          "stored_sha256": "b7d830f41385cb7acb3965d36c682ef4fff2c057abf870ae97396285a5bef39d"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "eb1a64ded9fa31b48c19756bd87cfe02a0c8d0c96eb3e7dc1c8e96f603cebd15",
+          "stored_sha256": "808c7de5f63e71a27b7b60699212310d1f24d29248ec343ecc32d1404c2d95b5"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "80618e00781d56bebe0aa5c53bcb7bd2c99a608180b7d5d5f466441108751b60",
+          "stored_sha256": "65127d627a4443a8952c7bda7cf7ed702061b60831c2119394c9527bac0b3773"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "9e04b5b0cd054a900c6d9f43cc1b800a5cfc6e06432bc8abf845dd1941f2b593",
+          "stored_sha256": "398df3d5c159ac2bdc4a45307e920c5914b8490ce7db84dd7f9c453cc97b0eed"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "fac9c9a3cc97397f6a339ffb9e3fb0748fc7de25e03e6043890081449ca435a3",
+          "stored_sha256": "c65549d2fa4625b4def8b2d6dbdf3cd84bb7bbabf074ef8199a5e5f8d43c4951"
+        }
+      }
+    },
+    {
+      "case": "obstacle",
+      "seed": 1,
+      "plant": "reference-2d",
+      "passed": true,
+      "scenario_sha256": "b3c74c7f2e56b1331cf33299ef083ed7eaa8dc5070b3c7dd08383e89488f7878",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 650,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.06007027626321726,
+      "localization_rmse_m": 0.0666369790766421,
+      "maximum_position_error_m": 0.18237925206265732,
+      "maximum_yaw_error_rad": 0.04919636246245718,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1.1534886877009027,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge obstacle",
+        "seed": 1,
+        "simulated_seconds": 32.45,
+        "steps": 650,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.1534886877009027,
+        "localization_rmse": 0.06663697907664208,
+        "localization_max_error": 0.18237925206265732,
+        "final_speed": 0.12930196016436288,
+        "progress": 121.69117892685006,
+        "emergency_steps": 5,
+        "avoidance_steps": 225,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 650,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "reference/obstacle/seed-1",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "5ca0d2e6d69d4759f10b1081f4729cf95bbebe4563530a3ad733362bca51046d",
+          "stored_sha256": "3f57a67d449653f55e7903aa98999e2c288bec56d4ca7d2059bc549ff8092052"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "35ffc1067d13a5a43b1b28eedfd417f58e2e74794064ded7ae534ac5f24a3fce",
+          "stored_sha256": "7c54aeec8e51a4cfc0c516575e1da8e28c66f09babc1508ba67bc85c03ed6aec"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "faf561f82cc5277734a4ca20bc2d65d96541ec1054aa2c1e59b2b33261039d04",
+          "stored_sha256": "7b8252a5d921e7d9db88f53105191858e06cac70fd1b9db6cb7f6e459f46626b"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "25911217081738486781491c137ff7aee0adf07df3f09b4dfa8154bcae8fb294",
+          "stored_sha256": "28b664cc153da6839376650da92ed6ab3c833b2cbfe92b088b9d4f5fac799751"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "00f97e81adf50a04c5b3117166053f5ae12cf028c62fe2ebe8296379ac76ee0b",
+          "stored_sha256": "269f275a8afb260493d54dd1dc1756ac941181883a048a6ad691925daedb1aa2"
+        }
+      }
+    },
+    {
+      "case": "obstacle",
+      "seed": 7,
+      "plant": "reference-2d",
+      "passed": true,
+      "scenario_sha256": "b3c74c7f2e56b1331cf33299ef083ed7eaa8dc5070b3c7dd08383e89488f7878",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 653,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.06893280790259038,
+      "localization_rmse_m": 0.055034663752215905,
+      "maximum_position_error_m": 0.13832415798921724,
+      "maximum_yaw_error_rad": 0.04849871704171571,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1.1939123335752155,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge obstacle",
+        "seed": 7,
+        "simulated_seconds": 32.6,
+        "steps": 653,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.1939123335752155,
+        "localization_rmse": 0.05503466375221593,
+        "localization_max_error": 0.13832415798921724,
+        "final_speed": 0.12245076168159603,
+        "progress": 121.78583475367131,
+        "emergency_steps": 3,
+        "avoidance_steps": 229,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 653,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "reference/obstacle/seed-7",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "5e23a382926c307971a48a56f5448c27ee9feb3344fb91c146380cb37cc7613f",
+          "stored_sha256": "39d800d00e60cc323ae4a372839e0b717ddc24db88a561a74078f4017a5b380c"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "45c5b6237c2346926d25bebfb9492846de22d6d4237ae29c2b45d17ede0cf7ee",
+          "stored_sha256": "92ac389b6b7ce4e8a33acec0286ce3e23e1f778c59c091db21a2f59cfaf37cc3"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "8d83867b79e96eff772e8f7a3764af55a8a8f331d8a7b8104d4780a10a99b710",
+          "stored_sha256": "db2e4a1bca11a26ec6122f518d5a2247be348b87622220aea09884d8807e7676"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "926c9ed2ab61d6c68a221669bc5a9c0df7da98aa07db348eb86e331918d9ab5d",
+          "stored_sha256": "154021dde0242372f0d47ef1dd2ef56cb36b6c3a9667aa9833920d9dce1bd2e4"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "c82470ee89a0a945f3fa7d8199ed1c5aa7c0e4768814816d3aee38f3091f186b",
+          "stored_sha256": "a472680db23c9220243344ada99bb6088b4d26136e75fb54f0fb5d4c0eb1bee2"
+        }
+      }
+    },
+    {
+      "case": "obstacle",
+      "seed": 42,
+      "plant": "reference-2d",
+      "passed": true,
+      "scenario_sha256": "b3c74c7f2e56b1331cf33299ef083ed7eaa8dc5070b3c7dd08383e89488f7878",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 652,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.05929867697588875,
+      "localization_rmse_m": 0.0595186778866568,
+      "maximum_position_error_m": 0.14170791838092378,
+      "maximum_yaw_error_rad": 0.05109406182228682,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1.183245584076818,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge obstacle",
+        "seed": 42,
+        "simulated_seconds": 32.550000000000004,
+        "steps": 652,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.183245584076818,
+        "localization_rmse": 0.0595186778866568,
+        "localization_max_error": 0.14170791838092378,
+        "final_speed": 0.1437784171746194,
+        "progress": 121.670462861046,
+        "emergency_steps": 3,
+        "avoidance_steps": 229,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 652,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "reference/obstacle/seed-42",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "bcb7d9e79e1cb157d1e5b24b05945dc2cbf1b8d86d1cdb10c87bb6262c540cbc",
+          "stored_sha256": "b64e7e9c50e61de30f3f51f1cb8086f9962fba629e33d67cc6049f9ac771650a"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "9973be2fdc1d67b0364e95e412c47fc728a357846f6c12f89053386d1eee2b18",
+          "stored_sha256": "75027ccbbba14e34d69e4a45af460bcf410af60b37e72ccf8227a9a3c859d6c2"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "940fa963e3889516978d4436c8101785379d967f4c48ff7924f9e7214f48d9a6",
+          "stored_sha256": "bda6802f1916a028271386fa4f1f8d6faaa699af34bbccbb86757a23bd57e2d8"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "b70ffec67c3f1531e7c394a7bac43efc83b7bc1de447e41d0b81e96732dfdded",
+          "stored_sha256": "83793543938547b002ddd39031e540ed36022f60ece00b8f8f07617008c09e31"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "9002077121e1cd9e066367a5cac09a1e8a9610911994b963c938a10b732a8a2d",
+          "stored_sha256": "da443e4f8e711be7d6f2438cb88d472b6f196573e326cd79f784787fee92cc88"
+        }
+      }
+    },
+    {
+      "case": "clipped",
+      "seed": 1,
+      "plant": "reference-2d",
+      "passed": true,
+      "scenario_sha256": "b6dfe76e18ee6231f1cab2333657ad4094e63473da61b00150b8c776d87462e3",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1065,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.05870412166845673,
+      "localization_rmse_m": 0.05848271992081692,
+      "maximum_position_error_m": 0.1823792520626577,
+      "maximum_yaw_error_rad": 0.04919636246245629,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge clipped",
+        "seed": 1,
+        "simulated_seconds": 53.2,
+        "steps": 1065,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05848271992081693,
+        "localization_max_error": 0.1823792520626577,
+        "final_speed": 0.10577477187345648,
+        "progress": 171.67330546947943,
+        "emergency_steps": 5,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1065,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "reference/clipped/seed-1",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "381a8a01f3e64f7178e45bbbc0dca2f7343c0f7dd89c6624d963ceb80b508bf6",
+          "stored_sha256": "c672077a3b6a7bce23f29c30605a8806ae32ed5fdb38df671ff1de37f33edf07"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "2589a5ae45bb325a17be2099e9de28dc551c02796ae4bc99666827b9248629b1",
+          "stored_sha256": "5adc8dcb16ad6b75d365472de884c137f59c98523269f18d63e73023838ac538"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "3a3b6dd87a5834e307633019752d3cb24050fea1e723606357b2f6c28e526e7d",
+          "stored_sha256": "a85f57b4337589d9142437ab1d1ebb5ac8c6ae55b5bdc9535ee98cfad56a5634"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "802f31ba5334a534a673c1d6dad23bd0230c5260549e7ea5975eb6fbbf12f863",
+          "stored_sha256": "7ceee4e5f00d94661994b86b9077a9275e387b7386dfa7545d713e0fcba0c678"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "e90d3e60bffa8b094a6dac6bade0bf2a751301ae74d3fb1b2d7e66bac4458f8f",
+          "stored_sha256": "fa75024b1ad90a82bc1bc3456c578128f77107796aca5914e16c18a8b93682c3"
+        }
+      }
+    },
+    {
+      "case": "clipped",
+      "seed": 7,
+      "plant": "reference-2d",
+      "passed": true,
+      "scenario_sha256": "b6dfe76e18ee6231f1cab2333657ad4094e63473da61b00150b8c776d87462e3",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1063,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.05856399742729268,
+      "localization_rmse_m": 0.05508364456566953,
+      "maximum_position_error_m": 0.13832415798921652,
+      "maximum_yaw_error_rad": 0.04848535199859905,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge clipped",
+        "seed": 7,
+        "simulated_seconds": 53.1,
+        "steps": 1063,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.055083644565669554,
+        "localization_max_error": 0.13832415798921652,
+        "final_speed": 0.13824561953140785,
+        "progress": 171.6396463339057,
+        "emergency_steps": 2,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1063,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "reference/clipped/seed-7",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "87e3ee54da6ca21e03778b2587b56e0144ac4e20ed47fb9009c6473e8eb8ed1a",
+          "stored_sha256": "a97b3c363cfe60c162add1cb3055f0b05766804a79c8f9e4053b6ced5f1c94c5"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "2282c38427950f6ffd55ced3956b5ca01008aac069f62e7038ebc556d204db78",
+          "stored_sha256": "518e80a4d15593a3ec8c9c246b058eb8624dcd190f48c49b058fa6acd05b9e2c"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "50c759d524cbae5ebea6e8b59a30086bb5d0cbe35ac4e69cfdc5981638f76f5a",
+          "stored_sha256": "e638f772c417d6358d5dd8d010ce1073077eae13559a493dd79aedb6eacda558"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "7c2767a02ef21c9ba11774c8f10cfe52791a792ce7112925b92ea87f5ae32e23",
+          "stored_sha256": "e3fd63ca2200fb8947a76f1ce9cf0bb10d84e6029a91c2b5acc626aca432da39"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "ce03923495d9fa8d9ec758e523aa9b5d00a72d3bb3873ed36fde93d57dfa35a6",
+          "stored_sha256": "bc6cc122c460c67004f5ca3e6c04f136e8ffdb566d9d30a312e60284b61dad0b"
+        }
+      }
+    },
+    {
+      "case": "clipped",
+      "seed": 42,
+      "plant": "reference-2d",
+      "passed": true,
+      "scenario_sha256": "b6dfe76e18ee6231f1cab2333657ad4094e63473da61b00150b8c776d87462e3",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1067,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.06721001239553726,
+      "localization_rmse_m": 0.052744372893253295,
+      "maximum_position_error_m": 0.1417079183809202,
+      "maximum_yaw_error_rad": 0.05131473085944682,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge clipped",
+        "seed": 42,
+        "simulated_seconds": 53.300000000000004,
+        "steps": 1067,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.052744372893253295,
+        "localization_max_error": 0.1417079183809202,
+        "final_speed": 0.12018337098303632,
+        "progress": 171.77379978785925,
+        "emergency_steps": 3,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1067,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "reference/clipped/seed-42",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "964140f00a95a98e332f47407c53e879ac08957bb08ee52d5490ff6a24ccdacc",
+          "stored_sha256": "a015d8931745170538a8219c522c136c45ccf6741f4c479f76d58b42308e8cbe"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "ad3dc87da9ce860842b1dc72b5c68a6f7c385505427288b5ad2a4db2068c72ac",
+          "stored_sha256": "c19fd6adad51bbbbcd0534a45bd23b8ae9a2e5a576968a05de47563e4d8cc628"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "f8e4745d10ea45ac29792187c15be14fdc368d0d245cc02c57ec886e9b124bf1",
+          "stored_sha256": "a8e2c7838e1770165cb138115f06ea1543ba7516f86421846c9c1eda7ecd60ef"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "33be25c3ccfd3ec997152f81adf84c08c450117f3b73db6192907e71f27981bc",
+          "stored_sha256": "35d004ee5de95b0e256bb13fa0acefa80befe97377456f593d4bcfd1340f02ac"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "7ee104b120e38ced9de71a997cfb3455f93ed47667764b0d0c9152f48f4a75ca",
+          "stored_sha256": "8956aee4447dc1316bb875787753c8e44d0f2f27ce8f4c7c4a3f44694b94ee9e"
+        }
+      }
+    },
+    {
+      "case": "restricted",
+      "seed": 1,
+      "plant": "reference-2d",
+      "passed": true,
+      "scenario_sha256": "ad6853ff8eca1e4308710013062646367eed491393a528225433a28b7bca0e5c",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1747,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.055414054145839664,
+      "localization_rmse_m": 0.05496551337993962,
+      "maximum_position_error_m": 0.1823792520626577,
+      "maximum_yaw_error_rad": 0.04919636246245629,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge restricted",
+        "seed": 1,
+        "simulated_seconds": 87.30000000000001,
+        "steps": 1747,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05496551337993969,
+        "localization_max_error": 0.1823792520626577,
+        "final_speed": 0.08991968123028071,
+        "progress": 181.33822570315354,
+        "emergency_steps": 4,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1747,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "reference/restricted/seed-1",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "a4b304909bb4fd4355c9d3cf62b082c0f788d12746a656a63992ab2ab6e23790",
+          "stored_sha256": "8c0ebed44e1d09cd0cc82ca1273870f1993f27355bd62c79fb876a5e3a2683af"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "48ce7a01f5497c46b07d9fd34b0fd8a126bef00577f5fc7b07f153da6675879c",
+          "stored_sha256": "05b60880a06ff39ccb9ed34cb8fa7470b5c2191d3dfebddc6e6808c8ad17857c"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "22ae3461a9f768e825c74d0b12b4b1d5d205492406a5196071542126e3eaedfc",
+          "stored_sha256": "c8e620bb0844a35837d0bb29a36a3d6049132fca8f29c5dfe60604cc7e657f6e"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "9f5025363d21efb0438a14e1cec28058c9d52a6377c445d44ab71dad9bebe0f2",
+          "stored_sha256": "30477b2fff5060f0bb19691d8dad3cc32b80e1200a916d1ff3996ff807a70509"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "7d56efc316b568956733afc8d09ff3269405116bac0e5df7786ec5e0eb9ff1cb",
+          "stored_sha256": "aab40d3e79fbbee506420f7fa57fcb730c6a83bcd90055d0e65c4751e140d873"
+        }
+      }
+    },
+    {
+      "case": "restricted",
+      "seed": 7,
+      "plant": "reference-2d",
+      "passed": true,
+      "scenario_sha256": "ad6853ff8eca1e4308710013062646367eed491393a528225433a28b7bca0e5c",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1747,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.06970091149207702,
+      "localization_rmse_m": 0.05524668730104002,
+      "maximum_position_error_m": 0.13832415798921652,
+      "maximum_yaw_error_rad": 0.04848535199859905,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge restricted",
+        "seed": 7,
+        "simulated_seconds": 87.30000000000001,
+        "steps": 1747,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.055246687301040036,
+        "localization_max_error": 0.13832415798921652,
+        "final_speed": 0.13005687157704873,
+        "progress": 181.31881344596462,
+        "emergency_steps": 3,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1747,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "reference/restricted/seed-7",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "57aaa84f8d6641ac41cf59a6a0830756b040bb075d0036309227e03362db4f50",
+          "stored_sha256": "7d25c00b2f1618bbe1fa366e3a42af5c27cca17434cefbda2cf78ca9ab91d0c8"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "48ce7a01f5497c46b07d9fd34b0fd8a126bef00577f5fc7b07f153da6675879c",
+          "stored_sha256": "05b60880a06ff39ccb9ed34cb8fa7470b5c2191d3dfebddc6e6808c8ad17857c"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "54c64d458ec7f3d359589bc64a2f62316af8199dc8bc3edcb6315a35fcd943cf",
+          "stored_sha256": "b2bbde058c318a00a96f41397853e053f8fa7e68bb7a55c12115a13f3bac180e"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "b09ec137a8ae5efc6fd244a94da242c6ae95b526ec8be9ac219f0acd5070cac7",
+          "stored_sha256": "aac960c45d31fcde66faa18050314a925b6ef0f002642a421277d392824ae922"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "dfad8248ea06475c9317962a2c6340dbabff8023b00dd8335c955a7fba5e199a",
+          "stored_sha256": "15f3b410774da34ab9429231348719f4bc08478f7f06963fe432c6af79186a48"
+        }
+      }
+    },
+    {
+      "case": "restricted",
+      "seed": 42,
+      "plant": "reference-2d",
+      "passed": true,
+      "scenario_sha256": "ad6853ff8eca1e4308710013062646367eed491393a528225433a28b7bca0e5c",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1745,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.07021846452728608,
+      "localization_rmse_m": 0.05179853151596942,
+      "maximum_position_error_m": 0.1417079183809202,
+      "maximum_yaw_error_rad": 0.05131473085944682,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge restricted",
+        "seed": 42,
+        "simulated_seconds": 87.2,
+        "steps": 1745,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.051798531515969415,
+        "localization_max_error": 0.1417079183809202,
+        "final_speed": 0.1061571632934967,
+        "progress": 181.30460209144033,
+        "emergency_steps": 5,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1745,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "reference/restricted/seed-42",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "43f5f50d1d9f38e7621fa53db32a42e028bb7c6a9210f5a04796683142b6d40f",
+          "stored_sha256": "0a7e87d6b3f4b05f1f9c233599620ba7e77a8ec22337a92dc19571cd7cbfa6cc"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "014efc315bf273a8c69f17b070a9782b0412d1b5831e24cc2fed1e635d541de1",
+          "stored_sha256": "a9a60654c43f7391a3a922ff61633a21156e12a356ead8e940c2067341d8a57d"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "f1fbd8ce02faf03b819807241bece2418c67dc3ecb8c0c7ebcac100173898623",
+          "stored_sha256": "76fda62e288e9e195d1c4b0a7610a95de315cf82913a2ae0e4253fbc2a79020e"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "1ac90ed18e74522bbf56dbda5879ddcee036a4660760d34efe586178e279ed31",
+          "stored_sha256": "243fc0000e0e74c907a9c378fa2f8ce09c504addbbfa3cb00ea772d0cb44d751"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "9a238e9276c5b9aefc3f7728fad5ae59e6e94cc122b9ac0785c13c692a60e139",
+          "stored_sha256": "d516bb45ba7548ead6cd13ea4bfdcd7c071eda2373c75ad1f405fcb418172031"
+        }
+      }
+    },
+    {
+      "case": "handover",
+      "seed": 1,
+      "plant": "reference-2d",
+      "passed": true,
+      "scenario_sha256": "a7bfa98feb7079980269ce791eaf0293542feab52282d7718d98eadf3335e765",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1789,
+      "route_switches": 1,
+      "maximum_speed_excess_m_s": 0.06701619931388292,
+      "localization_rmse_m": 0.054740582885425715,
+      "maximum_position_error_m": 0.1823792520626577,
+      "maximum_yaw_error_rad": 0.04919636246245629,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge handover",
+        "seed": 1,
+        "simulated_seconds": 89.4,
+        "steps": 1789,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.054740582885425666,
+        "localization_max_error": 0.1823792520626577,
+        "final_speed": 0.1358221439878628,
+        "progress": 181.314392154459,
+        "emergency_steps": 9,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1789,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "reference/handover/seed-1",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "4fcffe82072797c44927ff9f2341ab4785ec12bb5619dd663b65426709d53f4e",
+          "stored_sha256": "d456f2064956dd2c238b00dd8e64fdce26cb21fa45ed1df18a58ab76369b5da6"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "52867c0fa6547182436f03f275de2e0856c49f5eb7444c67ed31521822f8a24a",
+          "stored_sha256": "e1e64e135ea038b678a0698948b113bc791d2674684d780966da0daf6fef253b"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "96cf51c7e8dbae4c75dfb1cf20b370abb33d2a197fcf7f175f60a50751d041d3",
+          "stored_sha256": "b9127e09031236f378e947d5fa8d73ffb37da034699ebfa5953da2c8545fdf17"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "9e9f7237e67511f9b7d85c6f126b9b11fdd1a8c9ebba4ac7f1e5326652711ea5",
+          "stored_sha256": "c9a3eaea7089c6389c8adca815402b93ca53a3c9aa061cb82ca24d01ef974bd6"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "a0af0b19a95bd14b449c42e61ce225752beb21a5c34c6e9986c75930d784744a",
+          "stored_sha256": "6a144d77a231e84473e35cc9feb17a2a8afa6c785a2170ada5c76499312506e4"
+        }
+      }
+    },
+    {
+      "case": "handover",
+      "seed": 7,
+      "plant": "reference-2d",
+      "passed": true,
+      "scenario_sha256": "a7bfa98feb7079980269ce791eaf0293542feab52282d7718d98eadf3335e765",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1773,
+      "route_switches": 1,
+      "maximum_speed_excess_m_s": 0.07696100908249859,
+      "localization_rmse_m": 0.05499468880833254,
+      "maximum_position_error_m": 0.13832415798921652,
+      "maximum_yaw_error_rad": 0.04848535199859905,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge handover",
+        "seed": 7,
+        "simulated_seconds": 88.60000000000001,
+        "steps": 1773,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.054994688808332554,
+        "localization_max_error": 0.13832415798921652,
+        "final_speed": 0.1739879300285062,
+        "progress": 181.2557216428896,
+        "emergency_steps": 7,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1773,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "reference/handover/seed-7",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "0e761ca7cd6442c059b430f3cdd2d748796ad0da6ee5737535d13120ff4d8fce",
+          "stored_sha256": "6493e16e94bd1af196c02008c29cae7c5560fba4934ffae1cfc89580d26460cb"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "58568d103f80dfe318aa8491fd1db29974ea13bd1e5f76592622b3e124993c1b",
+          "stored_sha256": "ddc9b1e5f31575e104a105773012e4d5189edd83f23b03ffecc4c9fdae08b2f9"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "72e4ae450ca2ab322598fc0fbf8c6e41611481e6ef9d5e8a2a290347c0a9096b",
+          "stored_sha256": "fbb14b8eab83c8b03525d40ab83b280698927a0d9839b962c520a37bf3506864"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "944c8aefb245f9c065bc97b2704db3f07ec65b40fbd4c57fed48c384db50d9df",
+          "stored_sha256": "9028de6bb465108394f924b8ba7120fe70e0b11a656a777424333edf9da46f44"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "498d9e28ff3ae5d15afcacd60da36c8ff23cd3096f49993969449a48100439ae",
+          "stored_sha256": "26533da3aafce82f6162fb71237a1ce14358e9a3348a229602f4266b56e31fad"
+        }
+      }
+    },
+    {
+      "case": "handover",
+      "seed": 42,
+      "plant": "reference-2d",
+      "passed": true,
+      "scenario_sha256": "a7bfa98feb7079980269ce791eaf0293542feab52282d7718d98eadf3335e765",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1774,
+      "route_switches": 1,
+      "maximum_speed_excess_m_s": 0.07869685193058551,
+      "localization_rmse_m": 0.05148266700406844,
+      "maximum_position_error_m": 0.1417079183809202,
+      "maximum_yaw_error_rad": 0.05131473085944682,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge handover",
+        "seed": 42,
+        "simulated_seconds": 88.65,
+        "steps": 1774,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05148266700406846,
+        "localization_max_error": 0.1417079183809202,
+        "final_speed": 0.17990269983668777,
+        "progress": 181.25764429485338,
+        "emergency_steps": 6,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1774,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "reference/handover/seed-42",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "91607b3a68f3175591f2a35413db1efdda5b3136876f8a1b2e432981af578b5e",
+          "stored_sha256": "79379bf695416659b63799d670872288b6056f1f77e0f7a5f8c3b50bb5ef4541"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "3a9b4b03179933bf1fa0965ad81c6e2fbec7c0df4b079dcc3ac92823921be840",
+          "stored_sha256": "b5c77483b3f85309d1580423fa8fc389350fd4071620f8bc9e8e1d6f1d5bc39c"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "133fd9b846753b277867db1e3a8030c90be3f5e4abe61c1fc108793a5234e332",
+          "stored_sha256": "98d5ad8031bd3c9b87dab1448a744aa9aa6598cc5b00b00157aa87fc21d537cb"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "0c1508b2e298e9c8308538275f5da723db039d848983acce845766999d5143a5",
+          "stored_sha256": "09afb01ce1b3bf9d8891b22cf7342c8c88ce4d170c4efae46fb12c5cbc79c8a7"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "6469789be93b38f48d01dfba438c07d3bae3186f9fd893f16254dd715c3b5c6c",
+          "stored_sha256": "9d4b246cb11f7bcd3ea541eb1abe620040241d22f882f659039ea95f994eb694"
+        }
+      }
+    },
+    {
+      "case": "reopen",
+      "seed": 1,
+      "plant": "reference-2d",
+      "passed": true,
+      "scenario_sha256": "f401164a5c41bb668650c62935ecaf64acdd3feb0f192af1c9f17d535258bd86",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1883,
+      "route_switches": 1,
+      "maximum_speed_excess_m_s": 0.08641157592341608,
+      "localization_rmse_m": 0.05517788234924418,
+      "maximum_position_error_m": 0.1823792520626577,
+      "maximum_yaw_error_rad": 0.04919636246245629,
+      "reopening_standstill_s": 5.450000000000001,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge reopen",
+        "seed": 1,
+        "simulated_seconds": 94.10000000000001,
+        "steps": 1883,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05517788234924417,
+        "localization_max_error": 0.1823792520626577,
+        "final_speed": 0.16248984742705236,
+        "progress": 181.29769134106627,
+        "emergency_steps": 10,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1883,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "reference/reopen/seed-1",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "69d181ec5f6881c7ffd54a3c6dfd08268efa364cbfc66ec7430fac11e3e4d076",
+          "stored_sha256": "c00a0599c3c4a232da878993707fa83b0cfe476943680a1a03118b965d0a2a61"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "b3fdaf7ff4c11e1565e001fec3ad190b9b3ac254da014334eb35ebea0e91729a",
+          "stored_sha256": "58c675f8774896cb1631d6ed25ab24729d331f0d0537594c172ce47bca6763b6"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "14754b3150e7cad53167fd40caf5b2bad488e061223bebc3a12820e98e37f98f",
+          "stored_sha256": "c8357414192958fd791413d30f99daa5ded5b8f3ced12195f07678107cde7b95"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "fa58bb94c8ff853a52f7ebc39dadc9102e3e3f8e63b866f795a135db299474b3",
+          "stored_sha256": "aaa022ddc9576024dbe67c4928a2cddf87fa9e74cb25e0e531273b320ef64764"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "8785766bca33bb8b1304de0670ff872a56e3b8fcdaca86e8ffaf6f82c9ff29ed",
+          "stored_sha256": "573a3b06218cf0630d889c4e0b9c91e20a9ce02c0708ec74ad4baa3e4f40cf31"
+        }
+      }
+    },
+    {
+      "case": "reopen",
+      "seed": 7,
+      "plant": "reference-2d",
+      "passed": true,
+      "scenario_sha256": "f401164a5c41bb668650c62935ecaf64acdd3feb0f192af1c9f17d535258bd86",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1881,
+      "route_switches": 1,
+      "maximum_speed_excess_m_s": 0.07696100908249859,
+      "localization_rmse_m": 0.054916805302097645,
+      "maximum_position_error_m": 0.13832415798921652,
+      "maximum_yaw_error_rad": 0.04848535199859905,
+      "reopening_standstill_s": 5.35,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge reopen",
+        "seed": 7,
+        "simulated_seconds": 94.0,
+        "steps": 1881,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05491680530209762,
+        "localization_max_error": 0.13832415798921652,
+        "final_speed": 0.108514142259195,
+        "progress": 181.2033719983734,
+        "emergency_steps": 6,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1881,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "reference/reopen/seed-7",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "1108550fd4bf9564bc274d02ef5e79cfe76fa557d9f8b42973a0e06c06a7e8ca",
+          "stored_sha256": "a662b3d106f024bd8930814548dd04a3911458e91ea0963cd742d2de08e9bd0d"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "319f6796a047b4d337797775f905ad23cb5bcd413e7eea065e18d5a364080f47",
+          "stored_sha256": "015737cf9e52edbdd1371c6d122d5aa958a5b2bd45a674881cf7eaccea0163ed"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "309226353b30e105d4f51454d7d8bd0bdc4e0cbaeac5df3e9cb62c3f8dbfad6d",
+          "stored_sha256": "42805139a294ff1be2f84bcb64d3819c8dc6cbd9d1745b8b16a303aeb42311b0"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "4475337d7c5ddd47bf4e76e44cd1122589424e36d06e755b4c6038c1c259facb",
+          "stored_sha256": "46963f4c84f09b831e28b2e5b942852ca1f0e0d4400e203eede6c09ac30b288d"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "79567fd8e66af3b8163a58fae6dd6e85f3c196960a15ec379c75ced96fb2a3f7",
+          "stored_sha256": "fe946af6c2a1ea783c3321e79114879a694562bc16d440a53e1eba76a2d0e716"
+        }
+      }
+    },
+    {
+      "case": "reopen",
+      "seed": 42,
+      "plant": "reference-2d",
+      "passed": true,
+      "scenario_sha256": "f401164a5c41bb668650c62935ecaf64acdd3feb0f192af1c9f17d535258bd86",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1881,
+      "route_switches": 1,
+      "maximum_speed_excess_m_s": 0.07548499318233848,
+      "localization_rmse_m": 0.05102460902836376,
+      "maximum_position_error_m": 0.1417079183809202,
+      "maximum_yaw_error_rad": 0.05131473085944682,
+      "reopening_standstill_s": 5.300000000000001,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge reopen",
+        "seed": 42,
+        "simulated_seconds": 94.0,
+        "steps": 1881,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.051024609028363734,
+        "localization_max_error": 0.1417079183809202,
+        "final_speed": 0.18132016154186242,
+        "progress": 181.24184950738893,
+        "emergency_steps": 5,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1881,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "reference/reopen/seed-42",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "ac6ab91716b620f91923b98ee707223d11a99d6b7a80891e57093368253a91de",
+          "stored_sha256": "bea29eee89c5d71b59cdd0b54daf55021406516989b4f9a1661c75af02ae37dd"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "319f6796a047b4d337797775f905ad23cb5bcd413e7eea065e18d5a364080f47",
+          "stored_sha256": "015737cf9e52edbdd1371c6d122d5aa958a5b2bd45a674881cf7eaccea0163ed"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "f177c95a66a8195e6072183d6a74836767749d3169bb8c98a40b67a4178c2222",
+          "stored_sha256": "80a291670ca57696cf2ef458d9d15708d3c026da439abbd854f7aa0b58d917cf"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "28449449540de7513954974ea7de1b9e2d3e4a48eb1ff65593d7d7d8a3cd067c",
+          "stored_sha256": "d377f6bd2f3f3c2a042b6d4cfddfbc17a867401b4eb14544975a191fc4bd5d11"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "6b3e6c52147cef92169e2db8155e135b58575500108d4a8a0c1264991174256c",
+          "stored_sha256": "a1824a7ec18d48848bc100a4390cd27edd3500ac7184a5f689ff543ed56c85aa"
+        }
+      }
+    },
+    {
+      "case": "blocked-goal",
+      "seed": 1,
+      "plant": "reference-2d",
+      "passed": true,
+      "scenario_sha256": "6eb08d946821f5fe010d681ddc49335fc61bf19db0fdbdadd02cec29413db5e2",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1301,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.059616356841600826,
+      "localization_rmse_m": 0.05721680694127918,
+      "maximum_position_error_m": 0.1823792520626577,
+      "maximum_yaw_error_rad": 0.04919636246245629,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge blocked-goal",
+        "seed": 1,
+        "simulated_seconds": 65.0,
+        "steps": 1301,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.057216806941279195,
+        "localization_max_error": 0.1823792520626577,
+        "final_speed": 0.0,
+        "progress": 144.22550648795195,
+        "emergency_steps": 3,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1301,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "reference/blocked-goal/seed-1",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "8aed6170c7ed4cb61ecb925a07ddf9b7cdf8d0af6376db5c1905727972a0cec3",
+          "stored_sha256": "000c4a40eea2e6f7c7b73a4bbd9b4d7e40329ba3f2861a975b0c159127f8cb0f"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "5f3327074cceda59f4bf7ca720e6b7f757bb8d0e758f0a489617074e80c6f2b4",
+          "stored_sha256": "ef7f5f30e9344535137fa7454db206c2e664109e821f8205437bf8a7cbbf723f"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "4da8f9d9c853e1e7c96e54119d479779e07d054bda6b8aaf3d14bd66385ad8ff",
+          "stored_sha256": "009b2924197637238da9cad3a1ef9d12a75004f698f65e680a342706eb258d78"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "45e7989d937723beca15e99f3b32b422f3da8ffdcb7342d8fbd8c62c13375c2a",
+          "stored_sha256": "d1cf780e5a3fb609e5386781568b1e00e3c382568336786b00c9b0bf819bb10d"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "7e56741d8aa1ffd741d6540a48959804881eeb4e9c118d377e123562fc95e904",
+          "stored_sha256": "3194cfb3ce5b189140907eb0b67192659e9c6b44fba0360c92790ffed715ce4b"
+        }
+      }
+    },
+    {
+      "case": "blocked-goal",
+      "seed": 7,
+      "plant": "reference-2d",
+      "passed": true,
+      "scenario_sha256": "6eb08d946821f5fe010d681ddc49335fc61bf19db0fdbdadd02cec29413db5e2",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1301,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.049628695453112215,
+      "localization_rmse_m": 0.05388718648028888,
+      "maximum_position_error_m": 0.13832415798921652,
+      "maximum_yaw_error_rad": 0.04848535199859905,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge blocked-goal",
+        "seed": 7,
+        "simulated_seconds": 65.0,
+        "steps": 1301,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05388718648028889,
+        "localization_max_error": 0.13832415798921652,
+        "final_speed": 0.0,
+        "progress": 144.2336740873833,
+        "emergency_steps": 3,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1301,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "reference/blocked-goal/seed-7",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "f9635bbfc603e6248dfa61ba0e85e3c189360508f91a2fcc52905fcc7feac5b7",
+          "stored_sha256": "5293a88f57ebac7edb1307f0026dad583f641f6348cbc52ae8483900980bd9d4"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "5f3327074cceda59f4bf7ca720e6b7f757bb8d0e758f0a489617074e80c6f2b4",
+          "stored_sha256": "ef7f5f30e9344535137fa7454db206c2e664109e821f8205437bf8a7cbbf723f"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "2546c56b3dfa286284dc232ec47788763033a4b77a21478660534f9278892364",
+          "stored_sha256": "2a3ca77a45c362456403f754d8281eb6bc43d49bda6f7b65505b8ec3cff15651"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "ada5a6da71b4415eaad0eec25b86815e43a349b683e8af11619edc62d5d9a5b7",
+          "stored_sha256": "43fee459f7a65d2160bde979aa17b80662fb76afe241b108015f73cb3f67f151"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "26df6dba0ce4eac0c2ed4253c27a250810915a1a7eeee9d87f23e7a7430ed400",
+          "stored_sha256": "929279d34314d4cfe9399770faea801a4db7355c0865580cc2d7fa34915bdf68"
+        }
+      }
+    },
+    {
+      "case": "blocked-goal",
+      "seed": 42,
+      "plant": "reference-2d",
+      "passed": true,
+      "scenario_sha256": "6eb08d946821f5fe010d681ddc49335fc61bf19db0fdbdadd02cec29413db5e2",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1301,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.055343442682260324,
+      "localization_rmse_m": 0.05094389395592265,
+      "maximum_position_error_m": 0.1417079183809202,
+      "maximum_yaw_error_rad": 0.05131473085944682,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge blocked-goal",
+        "seed": 42,
+        "simulated_seconds": 65.0,
+        "steps": 1301,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.050943893955922616,
+        "localization_max_error": 0.1417079183809202,
+        "final_speed": 0.0,
+        "progress": 144.24507552942126,
+        "emergency_steps": 3,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1301,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "reference/blocked-goal/seed-42",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "e9d618555ab87240658f7680ca9aacb2f63e2690fb64e26caf297e5bac5492b7",
+          "stored_sha256": "f2cd87cfe427fdb1046064de6dd217872a992b006956b30ebd55d78e019a2e80"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "5f3327074cceda59f4bf7ca720e6b7f757bb8d0e758f0a489617074e80c6f2b4",
+          "stored_sha256": "ef7f5f30e9344535137fa7454db206c2e664109e821f8205437bf8a7cbbf723f"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "8829e853d396b698955c6121e75ccac1d54cc2966564bbc916f72946caf0e95a",
+          "stored_sha256": "b2d351a5862b0f235ad783e41f6e385e0aec014e2bbc0631d95590588d87c6c2"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "d1ec77082ca4374b39f8eef280cab883bce9170c8d4db3d5380a5bda83f586c6",
+          "stored_sha256": "73e3756137b3a6082355b5e1ecaeb62ccfb6efbf78288065a7b65b1e93c26db5"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "1d959b5ececdeec49136aecf176b0d9c1444a3b4d587311e0a88f95071b1b7a1",
+          "stored_sha256": "99645397dbcb530c6c3645ec0cdcff3584639046638bf6a6a0a673315ee67fff"
+        }
+      }
+    },
+    {
+      "case": "osm",
+      "seed": 1,
+      "plant": "reference-2d",
+      "passed": true,
+      "scenario_sha256": "93a34c74ffc955e3f180b4c4cceefd099db9f8de2a71c84d0811c86c7c7bbc01",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1044,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.0,
+      "localization_rmse_m": 0.05735339267172505,
+      "maximum_position_error_m": 0.18237925206265782,
+      "maximum_yaw_error_rad": 0.04865645465861679,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Original OSM geometry with directed mid-edge endpoints",
+        "seed": 1,
+        "simulated_seconds": 52.150000000000006,
+        "steps": 1044,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05735339267172504,
+        "localization_max_error": 0.18237925206265782,
+        "final_speed": 0.09955244455798365,
+        "progress": 101.51374386346892,
+        "emergency_steps": 3,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1044,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "reference/osm/seed-1",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "452d751c6b895a0759f404f13d8608ee5f03cdc0ad26d4b8b8c94144d36fdfe2",
+          "stored_sha256": "a751cca3299b057bfede019ac25481bf43750ce83f895b85187e993c2e771277"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "aea89233bd36af5fc8525cf5cf86f959cded60917efa26294905259f13f96450",
+          "stored_sha256": "4bdc65bb23ff1e3cfc49398cc9d88caae8b5bda6bb58304e54ecd494c64a3c3c"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "4ca123b4e644e429948326e8e2c3bdb0b528adc152c1336e434591775e86cafe",
+          "stored_sha256": "6083f3391bae4a82719ec4de545be06042b6de02bbbb8bad8651fc541e8aeb92"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "f7ecd3c3f8d079e70644560423f970c9733945d47df08dfa7188be079b228ace",
+          "stored_sha256": "f36ae1e2f1b81b4773d0acde959e045e4e4d916701335f4bce743614eca965db"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "410686c6de88542b52ff310c44db1966fc367af568cc1b2bbbca457cd719f414",
+          "stored_sha256": "1df4b4cb759ba422c4ab00413336180b6e72d0b723ee013bab1ba34d0fa52460"
+        }
+      }
+    },
+    {
+      "case": "osm",
+      "seed": 7,
+      "plant": "reference-2d",
+      "passed": true,
+      "scenario_sha256": "93a34c74ffc955e3f180b4c4cceefd099db9f8de2a71c84d0811c86c7c7bbc01",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1045,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.0,
+      "localization_rmse_m": 0.05338384246723591,
+      "maximum_position_error_m": 0.13832245860477987,
+      "maximum_yaw_error_rad": 0.05472747384976273,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Original OSM geometry with directed mid-edge endpoints",
+        "seed": 7,
+        "simulated_seconds": 52.2,
+        "steps": 1045,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05338384246723592,
+        "localization_max_error": 0.13832245860477987,
+        "final_speed": 0.10068208276795845,
+        "progress": 101.57753186634402,
+        "emergency_steps": 1,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1045,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "reference/osm/seed-7",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "f051192267766f202ee7c71f773efd545afee7733f8ab9572ade0a6e569d52a8",
+          "stored_sha256": "82a826b66e09cd89baf1d843cb448700ddd07502035318de89a0392bcc4ba2c7"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "8f4d596f5353420c522e92f86c52cb100a6c98792e5e9b01767e6606a29043cc",
+          "stored_sha256": "d0f4e9c9211e633579b258d51f9819f8be27dbdbcd2524497ddfbccbd5e6ec42"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "abeaa60984068b9954ef3b8fc31d9d4a1b13823fc4c0c3e7a169380ef36f948e",
+          "stored_sha256": "4f70b2a7242ffab01ff9d6999c82b964ac440b4618d0483cb0a1e8c5f5021f5d"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "099e92753459d836c7425828112791c05050efc023863765dae1cf274b5696a0",
+          "stored_sha256": "ee638d6a68f1c3e57fc74c293199d742477b61eb993401f14558b19b0aff2d35"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "5e235ce2b2a9665f587428840d696e2b043974898cd8d6b39200c9c5dbbe81b7",
+          "stored_sha256": "ec7a54eb9cc391b31ae2327ac692d1f4196d97c219112492b6a0fcb9786af997"
+        }
+      }
+    },
+    {
+      "case": "osm",
+      "seed": 42,
+      "plant": "reference-2d",
+      "passed": true,
+      "scenario_sha256": "93a34c74ffc955e3f180b4c4cceefd099db9f8de2a71c84d0811c86c7c7bbc01",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1044,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.0,
+      "localization_rmse_m": 0.05283743197605293,
+      "maximum_position_error_m": 0.1415103816703791,
+      "maximum_yaw_error_rad": 0.06939622927986289,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Original OSM geometry with directed mid-edge endpoints",
+        "seed": 42,
+        "simulated_seconds": 52.150000000000006,
+        "steps": 1044,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05283743197605298,
+        "localization_max_error": 0.1415103816703791,
+        "final_speed": 0.19263955407787636,
+        "progress": 101.53421372617268,
+        "emergency_steps": 1,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "reference-2d",
+        "ticks": 1044,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "reference/osm/seed-42",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "52517a27658448cdc20f9c2eb21da2567d63641260d596950720a25c7a08d47f",
+          "stored_sha256": "bc9e6ed8b77b58273b993e03a9c8fd962f1ad9cbac2093dcd8a07e788bd52bdc"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "aea89233bd36af5fc8525cf5cf86f959cded60917efa26294905259f13f96450",
+          "stored_sha256": "4bdc65bb23ff1e3cfc49398cc9d88caae8b5bda6bb58304e54ecd494c64a3c3c"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "b50d5f6f6a935ed59775c89914605b2d72f3c86e18023b08fca3848781886745",
+          "stored_sha256": "abc0fd69bba9932b980924143dca565ade265d29a9bcb5c62fce2f5d7d01ed9e"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "2043df196fa75bf2887b1fb64368597c4acc9afc953da14af8aec2e1870b3a88",
+          "stored_sha256": "bd1e8207007fb28f42cd5d12435c0d8c01db4c1a4b8795b49569d400be49b43c"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "9e9f53cd8cddb90eec3106f6b8d836da14f86887a0795e4eb0652a3fb6bab041",
+          "stored_sha256": "449458c2dfd43fc7abc51baedc6b5e5860c043d27b8910721ccde9e05281b391"
+        }
+      }
+    },
+    {
+      "case": "same-edge",
+      "seed": 1,
+      "plant": "rne-dynamic",
+      "passed": true,
+      "scenario_sha256": "bec5a4798455768d0319c10572204d4677245fbeff77a90d95520201b3484893",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 646,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.048791368575294314,
+      "localization_rmse_m": 0.06133482080446908,
+      "maximum_position_error_m": 0.15166122295172776,
+      "maximum_yaw_error_rad": 0.053994325135405585,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge same-edge",
+        "seed": 1,
+        "simulated_seconds": 32.25,
+        "steps": 646,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.06133482080446908,
+        "localization_max_error": 0.15166122295172776,
+        "final_speed": 0.1754494025178311,
+        "progress": 121.69879344040714,
+        "emergency_steps": 2,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 646,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "native/same-edge/seed-1",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "9c7995aa8de61f2285ff55e2354adcad3fa41625710553a793706c4dd6f0c2a5",
+          "stored_sha256": "c931290ae55b16e9cff6a0fac0b2feffa3d277b1b242e32c91afa27d44ebbe52"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "af13b943f27a2737e259f718afd92d183b7d2ba97c413de010ce7a2290ad7135",
+          "stored_sha256": "41158fb188f51bbf18271df2509e91793f605fe988ee3b0ccee11b3bcd7ce97f"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "5f579db1ea1526e130be5c7237a2c73c9494f4f698031333818fe6357b846b71",
+          "stored_sha256": "dff6434a6ed0ac479620111589f7cf89652b2d611d3c4731e5b3d1137434efb4"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "eb5ffaa72a8be9a7c8e3b954a8d6de97808f648fafc4f9c6a96a278916a2193f",
+          "stored_sha256": "b82900a3fe0123db468efeff7c19cb5e351f0b4daf028783a6321e0b4163ec7b"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "b03ca9cb33291f068976c3633c572f7deb0cfb32fea6342aaa06fa06e2ee2984",
+          "stored_sha256": "5135f2ec297066745b1bc9bf2b652079fc66b009a65fab635cda42c66bff9455"
+        }
+      }
+    },
+    {
+      "case": "same-edge",
+      "seed": 7,
+      "plant": "rne-dynamic",
+      "passed": false,
+      "scenario_sha256": "bec5a4798455768d0319c10572204d4677245fbeff77a90d95520201b3484893",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [
+        "maximum_yaw_error_rad"
+      ],
+      "physical_ticks": 648,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.06531855092286687,
+      "localization_rmse_m": 0.06451946443389381,
+      "maximum_position_error_m": 0.18582776646829277,
+      "maximum_yaw_error_rad": 0.1093417870330704,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge same-edge",
+        "seed": 7,
+        "simulated_seconds": 32.35,
+        "steps": 648,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.0645194644338938,
+        "localization_max_error": 0.18582776646829277,
+        "final_speed": 0.08316753630804571,
+        "progress": 121.74376283402586,
+        "emergency_steps": 2,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 648,
+        "verified": true
+      },
+      "recordings": "native/same-edge/seed-7",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "262d33c038a7ddb42c81d8e111c4d9ddde9f88a31f873489404d0c3b6238a664",
+          "stored_sha256": "6e9d680a5c705ffcaf7db33e6b911e436b45ed459883850cbd79843e12e40eea"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "038b244a1886002f2a815794ae1533bcb17da0c35c78bbcdce64b712764745cf",
+          "stored_sha256": "cf2d595687991782ae551e81a4547377ffbf9dc48b194e395ea0c34207fec6cc"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "d685a18dce5ce53a2402b6afe317a2e4ffa8395529846b7c08c296745ee545af",
+          "stored_sha256": "547ab7379fc417a7503b5f977f956ce3aaa5a7107575239386d34484b8909c24"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "f75217741b7d683309e4ce89f441518926a99018edeaab2bbeb646abfd37ee90",
+          "stored_sha256": "5ffb591f77c2f0689dce94f73b8459563b65cb36564407b898eba8515531f49f"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "5ce43bb8e248434fbc44ea8f6531e326130b509680faf3a99487d699e9f11bbe",
+          "stored_sha256": "7d111e0f651ea4ae8e6270aa49b7174ba4b6a27bda634838245dd9e74703fe65"
+        }
+      }
+    },
+    {
+      "case": "same-edge",
+      "seed": 42,
+      "plant": "rne-dynamic",
+      "passed": true,
+      "scenario_sha256": "bec5a4798455768d0319c10572204d4677245fbeff77a90d95520201b3484893",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 648,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.0629036960124294,
+      "localization_rmse_m": 0.06087354351111879,
+      "maximum_position_error_m": 0.17151372257311515,
+      "maximum_yaw_error_rad": 0.08854240137699243,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge same-edge",
+        "seed": 42,
+        "simulated_seconds": 32.35,
+        "steps": 648,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.060873543511118795,
+        "localization_max_error": 0.17151372257311515,
+        "final_speed": 0.17017560063679943,
+        "progress": 121.75920678207223,
+        "emergency_steps": 1,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 648,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "native/same-edge/seed-42",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "4cdb5f0b924e92880bc32585e0f8a7a08b90ffaf630fdebdf7a0f5f11dbc8608",
+          "stored_sha256": "c2c0b1f4bfceaafbc9691a620a4ca86a579dbb1c93e2cbf281cbcc7d8d7cb0d6"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "038b244a1886002f2a815794ae1533bcb17da0c35c78bbcdce64b712764745cf",
+          "stored_sha256": "cf2d595687991782ae551e81a4547377ffbf9dc48b194e395ea0c34207fec6cc"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "ce9c0cb0656d4c23febf3fec40d556a1a204d30cdb28cfbf51a5701ad152743c",
+          "stored_sha256": "1c26740df07b9e59e200b8d41cea37fa42f023cc7e908c8444917099ec8bf595"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "f6564865e3258f4516eab015dc95b0716b683ab04b81e59e1abbb77e6781e5f4",
+          "stored_sha256": "8ab720549faac1a71fdbbab37da5a0bb349312d8694f122c2943a23e819dd17f"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "ce765e818917f4f6c36dc45a7a9bc0217dd79e065704d69c2e7d062b6c0fdee1",
+          "stored_sha256": "3154ee8543610b65db11fbe1e747c0f5bb584fc4dd65914bec788f17fea57401"
+        }
+      }
+    },
+    {
+      "case": "obstacle",
+      "seed": 1,
+      "plant": "rne-dynamic",
+      "passed": true,
+      "scenario_sha256": "b3c74c7f2e56b1331cf33299ef083ed7eaa8dc5070b3c7dd08383e89488f7878",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 651,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.04684606208120101,
+      "localization_rmse_m": 0.062150002058441435,
+      "maximum_position_error_m": 0.15166122295172776,
+      "maximum_yaw_error_rad": 0.053994325135405585,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1.2054965525635013,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge obstacle",
+        "seed": 1,
+        "simulated_seconds": 32.5,
+        "steps": 651,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.2054965525635013,
+        "localization_rmse": 0.06215000205844142,
+        "localization_max_error": 0.15166122295172776,
+        "final_speed": 0.09555126380277501,
+        "progress": 121.71280613479303,
+        "emergency_steps": 1,
+        "avoidance_steps": 228,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 651,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "native/obstacle/seed-1",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "95d66b49b88d8b45a6678bbac1fc098e736bd5201cc1f6ae74441d14e9155f7c",
+          "stored_sha256": "7f8dcaaec9ae9548ceae3f4676cf64973eed50737864df81abb5532c338c9eb4"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "745eef9dc16ee6946b1f84ed7ad5f4d803988d2d33459476f710388a203d36f2",
+          "stored_sha256": "8907db7ce04aa51bd5b797c2fdac1fd98ad1817f75b3bf51bae9aa2f5df49d86"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "67c5502a146162679c40caedc928e19570210dbf8887a7770f6a6ad5cb1b0875",
+          "stored_sha256": "4b9cd5ada0952460ced9520c9a42d32d04de4631265fac950577c51e02b78baa"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "a129291196949f87d1b234a6d39b50c3e4fefa36c45acf4d9c38da80b3888934",
+          "stored_sha256": "b7355ecfc74ed34c55ed9941f4420c159c8a3a7038ba4e859bd235fcd3388048"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "a6d3c3037d62baa75c102c2308212f859653b383556375b8768649e510f4a6d0",
+          "stored_sha256": "2fae6967adc6a5fc1e6dca05993b9293ae402777e79f736c02f72aabb0c01ef8"
+        }
+      }
+    },
+    {
+      "case": "obstacle",
+      "seed": 7,
+      "plant": "rne-dynamic",
+      "passed": false,
+      "scenario_sha256": "b3c74c7f2e56b1331cf33299ef083ed7eaa8dc5070b3c7dd08383e89488f7878",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [
+        "maximum_yaw_error_rad"
+      ],
+      "physical_ticks": 652,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.07378382147569962,
+      "localization_rmse_m": 0.0652584862172233,
+      "maximum_position_error_m": 0.18582776646829277,
+      "maximum_yaw_error_rad": 0.1093417870330704,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1.2367804461386251,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge obstacle",
+        "seed": 7,
+        "simulated_seconds": 32.550000000000004,
+        "steps": 652,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.2367804461386251,
+        "localization_rmse": 0.06525848621722331,
+        "localization_max_error": 0.18582776646829277,
+        "final_speed": 0.1367114820106125,
+        "progress": 121.75696675025645,
+        "emergency_steps": 4,
+        "avoidance_steps": 228,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 652,
+        "verified": true
+      },
+      "recordings": "native/obstacle/seed-7",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "de71288d36596cb2dcfd9c6d49e5b75a932b875cc4a98ed6c86543509eca6d35",
+          "stored_sha256": "64593dc85282e240d6ef4e6eceac35dac448ff2532d908198c505c32d6a1419c"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "b1fe296f45d887f726da7551358a9d6a5e17bbf5bcb1a2363ddc441380738844",
+          "stored_sha256": "059f1acb240419bffb1418ed9375c3c924c97f9244936b163efa6ee61899be19"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "d814d781f25c77818734823fd8b941ebdee6c956847befa8d0e2da19059fdf18",
+          "stored_sha256": "9064d1710918a14df9ef6a8167cd7a5efb973e62e416b0e808e2723c9c9e468b"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "41332310718a21bcd1a3516b9aaffcc5280dcafc3164a965c6bc769e2a2f2261",
+          "stored_sha256": "8619850e8b2841551f8a254bf4f6bdc6e204e080b74d4e05a4ff7b2177f19b78"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "5ed1ffdbcf23e2fe41ee07db2b9cbd4bb9838b52c5991caecd7d2175a0cb0a1d",
+          "stored_sha256": "8dc960610716f44a89cdec9f459e632ac5371e49736c8e5548c523ce09112db6"
+        }
+      }
+    },
+    {
+      "case": "obstacle",
+      "seed": 42,
+      "plant": "rne-dynamic",
+      "passed": true,
+      "scenario_sha256": "b3c74c7f2e56b1331cf33299ef083ed7eaa8dc5070b3c7dd08383e89488f7878",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 652,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.06134575669796494,
+      "localization_rmse_m": 0.06062318715393153,
+      "maximum_position_error_m": 0.17151372257311515,
+      "maximum_yaw_error_rad": 0.08854240137699243,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1.1735394381670932,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge obstacle",
+        "seed": 42,
+        "simulated_seconds": 32.550000000000004,
+        "steps": 652,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1.1735394381670932,
+        "localization_rmse": 0.06062318715393155,
+        "localization_max_error": 0.17151372257311515,
+        "final_speed": 0.07799907329648867,
+        "progress": 121.7634974124009,
+        "emergency_steps": 0,
+        "avoidance_steps": 228,
+        "max_tracks": 1,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 652,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "native/obstacle/seed-42",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "7f36e7e2a24b1a739e777f1c5fae948c51ceb0559c7da1800ff7efafd7a2aa6e",
+          "stored_sha256": "e0ecf5d605f565075e7335219439ee5152c3dcb3ef4aba27f705332fd64347fc"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "b1fe296f45d887f726da7551358a9d6a5e17bbf5bcb1a2363ddc441380738844",
+          "stored_sha256": "059f1acb240419bffb1418ed9375c3c924c97f9244936b163efa6ee61899be19"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "2226cea6f7d1369c46369bfca2640a83a9b1dc7115a364ff2c0071cfd725e25f",
+          "stored_sha256": "9552c6bbda7f78d6aa1f01dd724337c9b12cc30b44ee21bf0ffd50734b9d639a"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "c4cf39786aa9af1c8c754759af54f9b140be4e035aa3d968f363bd815fd53d97",
+          "stored_sha256": "de7e3239ce7c3676c9ade66d0c43f895100e2b6ec936f92004a22abbd73a188f"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "0eebbfc8e755bfb6dc7da9d14661eb8b5e1ead5c4be76e3e9259cf2e8c4c0547",
+          "stored_sha256": "abcbd8992b61389c8881a9a13e37d4d669ba18bc0a50ea42e6ae20835773a56c"
+        }
+      }
+    },
+    {
+      "case": "clipped",
+      "seed": 1,
+      "plant": "rne-dynamic",
+      "passed": true,
+      "scenario_sha256": "b6dfe76e18ee6231f1cab2333657ad4094e63473da61b00150b8c776d87462e3",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1064,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.06690457090156343,
+      "localization_rmse_m": 0.057832577876649964,
+      "maximum_position_error_m": 0.151661222951724,
+      "maximum_yaw_error_rad": 0.05399432513540514,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge clipped",
+        "seed": 1,
+        "simulated_seconds": 53.150000000000006,
+        "steps": 1064,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05783257787664997,
+        "localization_max_error": 0.151661222951724,
+        "final_speed": 0.14030842627563783,
+        "progress": 171.74522034388704,
+        "emergency_steps": 4,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1064,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "native/clipped/seed-1",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "6131b8c65d5801f84edce87d4ba7886aff0efa6ea1b46a21bb1a8c4c1b8c0fa2",
+          "stored_sha256": "593451ebaeaea165e715facef9ea46b218a0cef7b047824ad7351668dfb83c71"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "463f777d6e10c3bf9c2b534269f0544d79e03943c77594e5aec8f91eddc40866",
+          "stored_sha256": "0fb4bda4994c9025057944a0548f54cc34fb3859b8cf04e9a89fab85f48025dc"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "b2900e054188c847d33ae75a678fe3090b8b1dd3e412d7ddb2daa0b0d5594db6",
+          "stored_sha256": "4812022db71bb4ab0e9136297de44adaf557de596387d2a9618f1378e863bd2f"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "5dd8de1d7734ddf1104bb3c11deaf78316d4f84daae3fd5e94786eb3cca673aa",
+          "stored_sha256": "a6b5cde8c11730a508e938d35b3d5cd469462b73035e4403153b757e89249a2d"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "7e7046386122c9e530bad9d51b0a1abf5874080da5a1aa0c95862324221b3e2b",
+          "stored_sha256": "8d3c8d5bbeae3432f2c3a4b2cd6b5e0456baeef8df2c190459bb09bf677b6414"
+        }
+      }
+    },
+    {
+      "case": "clipped",
+      "seed": 7,
+      "plant": "rne-dynamic",
+      "passed": false,
+      "scenario_sha256": "b6dfe76e18ee6231f1cab2333657ad4094e63473da61b00150b8c776d87462e3",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [
+        "maximum_yaw_error_rad"
+      ],
+      "physical_ticks": 1067,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.061104060503579305,
+      "localization_rmse_m": 0.06109013057707434,
+      "maximum_position_error_m": 0.18364093909072987,
+      "maximum_yaw_error_rad": 0.10934257287283433,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge clipped",
+        "seed": 7,
+        "simulated_seconds": 53.300000000000004,
+        "steps": 1067,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.061090130577074346,
+        "localization_max_error": 0.18364093909072987,
+        "final_speed": 0.08425847445176046,
+        "progress": 171.79023053725064,
+        "emergency_steps": 5,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1067,
+        "verified": true
+      },
+      "recordings": "native/clipped/seed-7",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "9dbfe0a38b91b7539a55207b94cb25e6d974a848c754e838ca909ca83704f111",
+          "stored_sha256": "2b341d2761643bdf4ab7a51e6710de64f496dfb0ae7e5a1a9cc591959f734020"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "28f810d5f23b151013a5c69576ecb6956c826c2096592734cdfc9f5d32c74787",
+          "stored_sha256": "bce95a26b86b55f829c12be153b781c2e2fbd412056cae35b172983586c00b11"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "0aa1759cb3a001d9058ed12baa4d81b502489ec9b8333bc4bca0f30b40bc16a5",
+          "stored_sha256": "af3592e16d3b94e536a695594c023ed6c464f7fa2afb9943d9165cb75d5b1644"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "c376ff1943f3cc18e3f9771d50d0032bfc88bcf979a9dd83dbe48f6035fd7421",
+          "stored_sha256": "7ea136ea050983339e6aa2b57d56c2f5deee158e59933daa85995cb5ee54f3d0"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "c1f88c59f02c26ecc19ea570fa692e16d25b7b342070c35ff9412640191d6569",
+          "stored_sha256": "e668d6608853a5318655f00764e9fb58b196909d77c8d5759eacb4a93bead8a1"
+        }
+      }
+    },
+    {
+      "case": "clipped",
+      "seed": 42,
+      "plant": "rne-dynamic",
+      "passed": true,
+      "scenario_sha256": "b6dfe76e18ee6231f1cab2333657ad4094e63473da61b00150b8c776d87462e3",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1067,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.06898022760227063,
+      "localization_rmse_m": 0.05675053305401177,
+      "maximum_position_error_m": 0.17151372257311695,
+      "maximum_yaw_error_rad": 0.08854378307714361,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge clipped",
+        "seed": 42,
+        "simulated_seconds": 53.300000000000004,
+        "steps": 1067,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.056750533054011766,
+        "localization_max_error": 0.17151372257311695,
+        "final_speed": 0.10106855867733336,
+        "progress": 171.77655472739346,
+        "emergency_steps": 3,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1067,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "native/clipped/seed-42",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "4930ff0c477a91cfffad9c1dc2659a6b7112f9eedc108e10166f6fd96e6e4f60",
+          "stored_sha256": "1ac1b31ca84467a766406276ee51a82e66dc043764311a46d55d0959d6be6284"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "28f810d5f23b151013a5c69576ecb6956c826c2096592734cdfc9f5d32c74787",
+          "stored_sha256": "bce95a26b86b55f829c12be153b781c2e2fbd412056cae35b172983586c00b11"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "bb39b84bb6fa98abff36912d112d2f127217315960a37a62b34d66c2bdbf6d23",
+          "stored_sha256": "f78c1b3130a47a2785bc83c02df6fe134ac2514921aae7d9fede80ea3658f522"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "99a678d254736c687e75866c87694ce532ecdeb0e5e915faf8035d68b19ffbfe",
+          "stored_sha256": "bebf34ff330b43f406ef26dec37609ec8b9dd675dba15d0036954d3f85f1563f"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "5eb2f20c8e6b23c9bb5e3513e7ac5fefbfe13c8a5939c4e67f8f8494e0a9fde5",
+          "stored_sha256": "92c6d23b57f22355b42c49a293d97e0e4862d049349829174c31224d8eb635e1"
+        }
+      }
+    },
+    {
+      "case": "restricted",
+      "seed": 1,
+      "plant": "rne-dynamic",
+      "passed": true,
+      "scenario_sha256": "ad6853ff8eca1e4308710013062646367eed491393a528225433a28b7bca0e5c",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1742,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.05777105861550513,
+      "localization_rmse_m": 0.053427128321264505,
+      "maximum_position_error_m": 0.151661222951724,
+      "maximum_yaw_error_rad": 0.05399432513540514,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge restricted",
+        "seed": 1,
+        "simulated_seconds": 87.05000000000001,
+        "steps": 1742,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.0534271283212645,
+        "localization_max_error": 0.151661222951724,
+        "final_speed": 0.09296585271649785,
+        "progress": 181.27917069328436,
+        "emergency_steps": 4,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1742,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "native/restricted/seed-1",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "4606dbd02577e5017d4206dc96755130cd0afad77fe1368d4301df2ff98a8bf5",
+          "stored_sha256": "26867a84b511086c8bb733df97df4907c2939a5f9a148cbc1596292b10e54401"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "692a0bf5f00b7e4683d22838b47148a8c56282043f1f7fd077456f995797cf5a",
+          "stored_sha256": "db4d6990f95cd6a9e31080f731ecc2dbaf579b46c001ebfdc0d0904f4ec5ac9f"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "b375c0b6dc69c94411f57ddecf89077824280e31a4cb3cc9123d93eb238cb353",
+          "stored_sha256": "3a78805a99bd15b847dd2bc691daa23c5a0edcf6f49d9f41e74016893ef0f4ea"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "b7cc4a1f86e28d65c6c624134bac05b7f5bb1d24492d95fd63d5c83e8ebe352c",
+          "stored_sha256": "4c87edd88a98f63789f15c63540985ee04207399c11a741e4e50dbd21493d7d7"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "1dee8dde9cc1820adeffda64cfbc80e022667e07d27faaf2292d887aa7d7c3a4",
+          "stored_sha256": "d068504d30febb38443c2c90d5e578ba9a168b0ce23885d9708551fd34fd8331"
+        }
+      }
+    },
+    {
+      "case": "restricted",
+      "seed": 7,
+      "plant": "rne-dynamic",
+      "passed": false,
+      "scenario_sha256": "ad6853ff8eca1e4308710013062646367eed491393a528225433a28b7bca0e5c",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [
+        "maximum_yaw_error_rad"
+      ],
+      "physical_ticks": 1743,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.056744685528644645,
+      "localization_rmse_m": 0.05711308655329762,
+      "maximum_position_error_m": 0.18364093909072987,
+      "maximum_yaw_error_rad": 0.10934257287283433,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge restricted",
+        "seed": 7,
+        "simulated_seconds": 87.10000000000001,
+        "steps": 1743,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.057113086553297596,
+        "localization_max_error": 0.18364093909072987,
+        "final_speed": 0.1623821260526747,
+        "progress": 181.26479590503592,
+        "emergency_steps": 1,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1743,
+        "verified": true
+      },
+      "recordings": "native/restricted/seed-7",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "6578c554306b3fc0f53178be7fc2f48719936f925cdca5995e16925a869bec0e",
+          "stored_sha256": "fdc517a28e8108feeecaf45da20689c7e5b6759405f8f9dfd71d3341f263a32f"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "d90d2ab1ea70bbd39c885a2663b9dff8b979116611866d86ccf9f247b8598817",
+          "stored_sha256": "eb24ed679e8b902fa05b9f79d36bbe016eed07b085985dfa9061e40ac1aec1c1"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "84ed36de15902f56c17de7d1928cecbaa3c0e0c8c9b296a967dc54b10f9a5471",
+          "stored_sha256": "9e3ac81b67cb55f53591c297e89519f8ffae32db2c5d647263dd746ff7011eae"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "e9d2ed49292cdc74e67945a9baabaed189c1c31c446c8ed4a35ac895c2ab3fbf",
+          "stored_sha256": "eed116ff74dfcd31f4b9ea30f6acb7b3fc7b03317d2718a4e2174bd4a668af67"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "88d8f75eb74e901875ee77ebb469d058fe1a9735483bf5ccc81e05b7ad19e267",
+          "stored_sha256": "718806b50a9222074be27f016aee089dd14c706b368e9fcc173d605acfaae36f"
+        }
+      }
+    },
+    {
+      "case": "restricted",
+      "seed": 42,
+      "plant": "rne-dynamic",
+      "passed": true,
+      "scenario_sha256": "ad6853ff8eca1e4308710013062646367eed491393a528225433a28b7bca0e5c",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1742,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.05851757451487449,
+      "localization_rmse_m": 0.054816417604140355,
+      "maximum_position_error_m": 0.17151372257311695,
+      "maximum_yaw_error_rad": 0.08854378307714361,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge restricted",
+        "seed": 42,
+        "simulated_seconds": 87.05000000000001,
+        "steps": 1742,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.054816417604140404,
+        "localization_max_error": 0.17151372257311695,
+        "final_speed": 0.14409253595158156,
+        "progress": 181.33948195919797,
+        "emergency_steps": 4,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1742,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "native/restricted/seed-42",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "e7176804c83f6ae815f00aa73a6c393807373dbc1a5afad5f35c8259d66ca38e",
+          "stored_sha256": "206007e7a331aa7b3be91880fe5f9994f516d20ef5ba519f61044621c023da3b"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "692a0bf5f00b7e4683d22838b47148a8c56282043f1f7fd077456f995797cf5a",
+          "stored_sha256": "db4d6990f95cd6a9e31080f731ecc2dbaf579b46c001ebfdc0d0904f4ec5ac9f"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "4e1d9f005b84903aa08eb5a5f609e42356b11153e4bfe3f2bd5895e6514d45f6",
+          "stored_sha256": "662cdceaf903425c0973b9376ec5ee9d3142555a522b705d6667aad8ea63e1e4"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "dcc8a671a2eea177b780e4dce0ec3b6335ded260c088d79b3d5d9c3fb5b39038",
+          "stored_sha256": "4db297559a1a00ddd7280a3bb2ffb9a6d5af499474a2685d359425d02c6acae7"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "2a092fd7fbda771cf155834309b306ac05399709323f6fd95807369e1b59ccb2",
+          "stored_sha256": "da78f449b697e540ad0eaba9b2038f7c2f0624f9f5c68af14821a6e565caded7"
+        }
+      }
+    },
+    {
+      "case": "handover",
+      "seed": 1,
+      "plant": "rne-dynamic",
+      "passed": true,
+      "scenario_sha256": "a7bfa98feb7079980269ce791eaf0293542feab52282d7718d98eadf3335e765",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1771,
+      "route_switches": 1,
+      "maximum_speed_excess_m_s": 0.06303806078694185,
+      "localization_rmse_m": 0.0536627056545208,
+      "maximum_position_error_m": 0.151661222951724,
+      "maximum_yaw_error_rad": 0.05399432513540514,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge handover",
+        "seed": 1,
+        "simulated_seconds": 88.5,
+        "steps": 1771,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05366270565452077,
+        "localization_max_error": 0.151661222951724,
+        "final_speed": 0.18920172706701005,
+        "progress": 181.30944088507533,
+        "emergency_steps": 0,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1771,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "native/handover/seed-1",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "93b41a84bbf0e2b6f817d97e54501cca12cd4497852f0b8d2ab6dba25b1489d3",
+          "stored_sha256": "54c9ff2d8448ac3e66af95867ccd627433e300aea32bdc544069ba1533fc3c08"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "a2b4c9b142828559aec080efcd0cdb02674181c8e8d1706c6dedce25ae0b8b91",
+          "stored_sha256": "6ebba6efc3742d24755b21c3a0fa92ee0603e2d17c7501a627ebf34ccaaeafd1"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "04e6fc992aec229f5660eec9d1ac70c2223dbcbbdb34eac342fd72df4718044a",
+          "stored_sha256": "7b7675254988210925ecf2d84445909293f52a6c842185aae9e76e9a01e58362"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "77877332ab0b120b1de394aa8d1c456bb9054600e55c48ab3df8a2194fe2391f",
+          "stored_sha256": "61b81ef827ee17642c51bc0d1655c0b8a6d80df249ad6b4abb6d945deebc72ee"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "6a074b9e36f8ea09586aaa1e2861c9260cedddd8183b3ec70d67ac8fba448de1",
+          "stored_sha256": "1027f59786c69b6629d802d815488a9d741dc210aea664cf3c13edc302d52625"
+        }
+      }
+    },
+    {
+      "case": "handover",
+      "seed": 7,
+      "plant": "rne-dynamic",
+      "passed": false,
+      "scenario_sha256": "a7bfa98feb7079980269ce791eaf0293542feab52282d7718d98eadf3335e765",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [
+        "maximum_yaw_error_rad"
+      ],
+      "physical_ticks": 1771,
+      "route_switches": 1,
+      "maximum_speed_excess_m_s": 0.0684794525912622,
+      "localization_rmse_m": 0.05682235326659802,
+      "maximum_position_error_m": 0.18364093909072987,
+      "maximum_yaw_error_rad": 0.10934257287283433,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge handover",
+        "seed": 7,
+        "simulated_seconds": 88.5,
+        "steps": 1771,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05682235326659803,
+        "localization_max_error": 0.18364093909072987,
+        "final_speed": 0.16138769416053467,
+        "progress": 181.29676321372918,
+        "emergency_steps": 3,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1771,
+        "verified": true
+      },
+      "recordings": "native/handover/seed-7",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "322062a07a41bd02a161a2bf0c540b394f273cb9101bd1099ce140fb1875b2c5",
+          "stored_sha256": "9899b7eaebf0ab0cc5b890454664cc70b60e57702a61a107a055e0251622d4cd"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "a2b4c9b142828559aec080efcd0cdb02674181c8e8d1706c6dedce25ae0b8b91",
+          "stored_sha256": "6ebba6efc3742d24755b21c3a0fa92ee0603e2d17c7501a627ebf34ccaaeafd1"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "8e40444e1574522a4aa0b6cd8760f49c99901f71883314f9d2c1c8e52ec25e41",
+          "stored_sha256": "cf43c43b1cb53b3d1b7ae8f2a7675e268aef4d2360ef64c3046324298a774bb5"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "63753b0260f9f632620e25196e47406032130c634a11fe1f5b21e3e3c021b269",
+          "stored_sha256": "c733843a2d9d1099124248c29e3fb245a1025849f1b1cb8f5afd236090da1031"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "8f0d0983ed159e15fe7da372a8aa71f1cb40f1afb74da1261af8229acd924348",
+          "stored_sha256": "db6b29c31284c92f87f04480e7b461e7ac8936baad7ed4252b8ba6e9b331f5c3"
+        }
+      }
+    },
+    {
+      "case": "handover",
+      "seed": 42,
+      "plant": "rne-dynamic",
+      "passed": true,
+      "scenario_sha256": "a7bfa98feb7079980269ce791eaf0293542feab52282d7718d98eadf3335e765",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1772,
+      "route_switches": 1,
+      "maximum_speed_excess_m_s": 0.05668529587325821,
+      "localization_rmse_m": 0.05483313022660718,
+      "maximum_position_error_m": 0.17151372257311695,
+      "maximum_yaw_error_rad": 0.08854378307714361,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge handover",
+        "seed": 42,
+        "simulated_seconds": 88.55000000000001,
+        "steps": 1772,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05483313022660717,
+        "localization_max_error": 0.17151372257311695,
+        "final_speed": 0.18462785573680174,
+        "progress": 181.30502399987958,
+        "emergency_steps": 4,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1772,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "native/handover/seed-42",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "d8de4ee938d54ec5deecc7f143a717b065c03bbc8cb0df95ea1114aae984f3b9",
+          "stored_sha256": "adb46c8771b543af35523bcd7675fd56af522d4048f61f15bf36041f58567dcf"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "20354fbd487e0c94929c64c268ce4cab6e006719b9d98e2c88c36d5125df64e7",
+          "stored_sha256": "53aaeed02f9f88095ac0cfed4d7270af423a102d6b3fe6ee26111ad23ca13a84"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "8d714a537cc9b250b0237830038d2ceb01ac0a983a08485ab19eeb71615000bf",
+          "stored_sha256": "280eab126602680d389439699f140505423cb624e27e8967372ae6f1ec47854f"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "37e7c73d56529f7e1be48ada676dce5087d251e41252663566065bcc3e75078c",
+          "stored_sha256": "32cf6c41702ab32d46d8f331b64b65e555be6a2c954d1a77fbb7ac0309be71cb"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "f957ba01e932da49a7354b5bf43b3ab4cd5aea58ac2ad96d38cbf70aeff9f104",
+          "stored_sha256": "44ef6cfa314f64e52499fbc482f97cf1d2bdba912e0c08f9a41ca5a283586721"
+        }
+      }
+    },
+    {
+      "case": "reopen",
+      "seed": 1,
+      "plant": "rne-dynamic",
+      "passed": true,
+      "scenario_sha256": "f401164a5c41bb668650c62935ecaf64acdd3feb0f192af1c9f17d535258bd86",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1881,
+      "route_switches": 1,
+      "maximum_speed_excess_m_s": 0.06303806078694185,
+      "localization_rmse_m": 0.053459829896753595,
+      "maximum_position_error_m": 0.151661222951724,
+      "maximum_yaw_error_rad": 0.05399432513540514,
+      "reopening_standstill_s": 5.4,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge reopen",
+        "seed": 1,
+        "simulated_seconds": 94.0,
+        "steps": 1881,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05345982989675365,
+        "localization_max_error": 0.151661222951724,
+        "final_speed": 0.18698333252895866,
+        "progress": 181.2819781040806,
+        "emergency_steps": 3,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1881,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "native/reopen/seed-1",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "65d27969084131dc09ce029f9f3743cc304bdc7a6b3af0a08c1cf58125b7594f",
+          "stored_sha256": "bc1ce75edd520053cacdd05ed67c1cbe12ccdc7645c5720479b15749d8011976"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "8d5bbcc22516891aa150c79e15274255e15ddeef85e78531b6a9fad16ccc9735",
+          "stored_sha256": "03254b28038b1e5f0dc14b87c42b8049f3455ded7a34946b741b8fa0c099e1b0"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "ebc53170f05429c7b75a742d5a69d3cba0085749018ac83174fed0236a39a40d",
+          "stored_sha256": "0af5d311d55f9d2b01fdf428dfbe099410ca79a3902e90cb1d81de82059b848a"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "08d8aa4ddace08e1a2f03ad63e3dd164253dbad4e6122bf9dcf0d2349f15ec8f",
+          "stored_sha256": "dfceb6f4dc2618519ccfe7baa1efdbc095f5f6e1eadd9a55bb154373c50cb4ff"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "99dd23ef28accdc192aa242e0bf2fdee649be47a25e44f349811961e4ac5e4e9",
+          "stored_sha256": "69c84046442de4e888478654613391699db7d86bb2850474c7d9913653be381c"
+        }
+      }
+    },
+    {
+      "case": "reopen",
+      "seed": 7,
+      "plant": "rne-dynamic",
+      "passed": false,
+      "scenario_sha256": "f401164a5c41bb668650c62935ecaf64acdd3feb0f192af1c9f17d535258bd86",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [
+        "maximum_yaw_error_rad"
+      ],
+      "physical_ticks": 1881,
+      "route_switches": 1,
+      "maximum_speed_excess_m_s": 0.07468146918870788,
+      "localization_rmse_m": 0.05544045884699331,
+      "maximum_position_error_m": 0.18364093909072987,
+      "maximum_yaw_error_rad": 0.10934257287283433,
+      "reopening_standstill_s": 5.450000000000001,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge reopen",
+        "seed": 7,
+        "simulated_seconds": 94.0,
+        "steps": 1881,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05544045884699329,
+        "localization_max_error": 0.18364093909072987,
+        "final_speed": 0.12643193652302168,
+        "progress": 181.31649307417032,
+        "emergency_steps": 5,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1881,
+        "verified": true
+      },
+      "recordings": "native/reopen/seed-7",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "16461dd80ba67126b3fc7b984e2b3f57aecb993a7a6ce3ad2641804d10a5a101",
+          "stored_sha256": "f183f6657ae54148b4dadd1bb606c74fd7986675ffc57f942fc82873252b22fd"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "8d5bbcc22516891aa150c79e15274255e15ddeef85e78531b6a9fad16ccc9735",
+          "stored_sha256": "03254b28038b1e5f0dc14b87c42b8049f3455ded7a34946b741b8fa0c099e1b0"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "6a046523a0a9e142aa792e17ea8d7600a36dab35a44dda3910c0225b928cac84",
+          "stored_sha256": "4e1f4b216980731675fabee9259709d48ad8b2f898b15cf751f12efc9b1befc9"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "058bb09fa65574ff5ecc7149b50ad106f74340fc4bd147788d109eb8e324deea",
+          "stored_sha256": "63d5b253a120e209e8f5fec767618480d298796e7e86eef5675334a879863292"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "024d703888c0c5a50f3a32591f03074c69582c2ad737ac61338e29bc3e79f0a0",
+          "stored_sha256": "a5313aeceb991932c34ad2731e99c754e170604ac95c8d045607571227cdd162"
+        }
+      }
+    },
+    {
+      "case": "reopen",
+      "seed": 42,
+      "plant": "rne-dynamic",
+      "passed": true,
+      "scenario_sha256": "f401164a5c41bb668650c62935ecaf64acdd3feb0f192af1c9f17d535258bd86",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1880,
+      "route_switches": 1,
+      "maximum_speed_excess_m_s": 0.06309234628174565,
+      "localization_rmse_m": 0.05479511998168686,
+      "maximum_position_error_m": 0.17151372257311695,
+      "maximum_yaw_error_rad": 0.08854378307714361,
+      "reopening_standstill_s": 5.4,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge reopen",
+        "seed": 42,
+        "simulated_seconds": 93.95,
+        "steps": 1880,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05479511998168681,
+        "localization_max_error": 0.17151372257311695,
+        "final_speed": 0.12328289394409762,
+        "progress": 181.24483072309056,
+        "emergency_steps": 2,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": [],
+        "navigation_switches": 1
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1880,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "native/reopen/seed-42",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "16ecd028369d74b7c6549d47dca3dbcf5cb0a69c5db0c90435a89278b783ff6a",
+          "stored_sha256": "dc8b8bcafbd5982823107a83f2f0dc074448942f136e439758ba2d6f82807e1b"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "b7f0a0603dbe14bfe199387690e6a7344d00e83216a505117e0c23d229534233",
+          "stored_sha256": "0c4f5e1345fe5b4242ad45d4b938a52f5a9dadbecfe15d597b4d22edcdeaa84b"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "6a1d07b17fd9cbfb463160a3999724febd3e5e861f2b570db5eb2dda1bda8ee5",
+          "stored_sha256": "d7e316a7d72a025e6b3336fb4288e3a18e814e4f6194efb58290e976535c5896"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "a8eccf8b00e59e276afed2f87a077b272841833a4e2f0193aa4ceb776c28e51a",
+          "stored_sha256": "ea93253d9b09163ee246e37bb1b7446d07a1eedbbe8ea41fefb9da58e1e8c507"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "2f68b14e0c200eda707f4c5d4405ac665e14e8f4406105caa20ebeb3773daab7",
+          "stored_sha256": "953fc309d3f26a2e199254475bdd4afb0984d16c446d1c6264f5f09731526118"
+        }
+      }
+    },
+    {
+      "case": "blocked-goal",
+      "seed": 1,
+      "plant": "rne-dynamic",
+      "passed": true,
+      "scenario_sha256": "6eb08d946821f5fe010d681ddc49335fc61bf19db0fdbdadd02cec29413db5e2",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1301,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.06531126922545916,
+      "localization_rmse_m": 0.05592390471757372,
+      "maximum_position_error_m": 0.151661222951724,
+      "maximum_yaw_error_rad": 0.05399432513540514,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge blocked-goal",
+        "seed": 1,
+        "simulated_seconds": 65.0,
+        "steps": 1301,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05592390471757373,
+        "localization_max_error": 0.151661222951724,
+        "final_speed": 0.0,
+        "progress": 144.34524591786902,
+        "emergency_steps": 1,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1301,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "native/blocked-goal/seed-1",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "d84548b396b403e7a8e8f250e3dea424840c3743260ce9343dc6092795263865",
+          "stored_sha256": "82a62e6ff74df9aa39dbed52f442cff1d90bff33a78554db2ad7c91af47190ee"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "24136c8acf5b8cfdc01f5d45f8c1426b00e892b5de8b82a012ed5ad6ed357566",
+          "stored_sha256": "a6f592a2bb37f57d26a7deaa19ac429f53393f02eca2b157440d6f1660983350"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "83f86e00afad6f095350c9f9b6543293c05a9583edaceea9f800853be6a90a09",
+          "stored_sha256": "43f9612fe5cbe8e79ec0d3ef31e25901f5ecb5995d4ba0e728fc7b007c172df4"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "438054fab67b660ff41d5bc8483fc2bbe8b6ac30e23cf562bcd9be0b123cfa2a",
+          "stored_sha256": "1f315b20abd57fadf6796c76e897d44d0f25327c2d6902da0b234e5e4550005a"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "245daea5c8429ef5fafce496253c00811f1d9a187fe5c1766037d167f892055d",
+          "stored_sha256": "bad33e30d76cb6a174491a8a9c053e0cb24c29e249e2f99a73c451f60981f6bd"
+        }
+      }
+    },
+    {
+      "case": "blocked-goal",
+      "seed": 7,
+      "plant": "rne-dynamic",
+      "passed": false,
+      "scenario_sha256": "6eb08d946821f5fe010d681ddc49335fc61bf19db0fdbdadd02cec29413db5e2",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [
+        "maximum_yaw_error_rad"
+      ],
+      "physical_ticks": 1301,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.07168615444421622,
+      "localization_rmse_m": 0.05735590741868879,
+      "maximum_position_error_m": 0.18364093909072987,
+      "maximum_yaw_error_rad": 0.10934257287283433,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge blocked-goal",
+        "seed": 7,
+        "simulated_seconds": 65.0,
+        "steps": 1301,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05735590741868881,
+        "localization_max_error": 0.18364093909072987,
+        "final_speed": 0.0,
+        "progress": 144.26004945385642,
+        "emergency_steps": 3,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1301,
+        "verified": true
+      },
+      "recordings": "native/blocked-goal/seed-7",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "144df042191eae2942ea65661fee52ee9953974f11b7289a84c616d160a21ba3",
+          "stored_sha256": "5ba3b2e3cade565ba15ac2f777402a5e2690b4fbce0a63e89b6b025fb7e4d1ea"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "24136c8acf5b8cfdc01f5d45f8c1426b00e892b5de8b82a012ed5ad6ed357566",
+          "stored_sha256": "a6f592a2bb37f57d26a7deaa19ac429f53393f02eca2b157440d6f1660983350"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "599abb4baf0ac017e49c57b5af64afcc65d0fb35e9087de6629bc9550159c8e8",
+          "stored_sha256": "b079ca8db9a2feaf2ab17acdcb8d5ff7854cf7043f00594f13aacf6d4567c8dd"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "1aca8ee534e2585232b6a791affbc0962925df44f58b4c36227931c547b2126d",
+          "stored_sha256": "9965c6e2223aff41baa2cf22afba2a2b52a0c2d2aa94b34f8ea77e3aec82a933"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "5c89f98a7eea74f3a20ddf64b4b4b7162c0d5536d00029a47e3eb5d7167bcbbb",
+          "stored_sha256": "e26221256f451cc49b2b50787a574117c70c970b356f12180244248240ff62e0"
+        }
+      }
+    },
+    {
+      "case": "blocked-goal",
+      "seed": 42,
+      "plant": "rne-dynamic",
+      "passed": true,
+      "scenario_sha256": "6eb08d946821f5fe010d681ddc49335fc61bf19db0fdbdadd02cec29413db5e2",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1301,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.06359370812925036,
+      "localization_rmse_m": 0.05440152605362885,
+      "maximum_position_error_m": 0.17151372257311695,
+      "maximum_yaw_error_rad": 0.08854378307714361,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Directed mid-edge blocked-goal",
+        "seed": 42,
+        "simulated_seconds": 65.0,
+        "steps": 1301,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05440152605362887,
+        "localization_max_error": 0.17151372257311695,
+        "final_speed": 0.0,
+        "progress": 144.28527690742519,
+        "emergency_steps": 4,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1301,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "native/blocked-goal/seed-42",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "2cce3cc167034247da6eee9f0da2b09f8e137753d19e8b048be1632bd9ff68af",
+          "stored_sha256": "6a6d7a73b1d86e41ea0d3bda9b0a262bf6548f7f5af099591585ab1da8e52618"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "24136c8acf5b8cfdc01f5d45f8c1426b00e892b5de8b82a012ed5ad6ed357566",
+          "stored_sha256": "a6f592a2bb37f57d26a7deaa19ac429f53393f02eca2b157440d6f1660983350"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "8333ca35fbf99bb6922a0fbbb4ee85e0e98ee09991695872763cb839010da716",
+          "stored_sha256": "38e6624be873cdfa4e92cdb96b170b8422932be1435b8e3d7f5063138e7975f6"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "638ee7601cf5fb695da5b37a8cebfb3e6f6bba904914c11a0217eb99c447dcf4",
+          "stored_sha256": "3e276e7004f32091a537c832599725e10fd7e940394016152d8c8c4424ff3647"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "7359c951c7c6d28a45f7b2bb1e60717049978af9a26ef6a96ee6afd6b24164df",
+          "stored_sha256": "d9037ada9f91ad9f49e744b770576d01cd64344c411990659b3509fa94028c4c"
+        }
+      }
+    },
+    {
+      "case": "osm",
+      "seed": 1,
+      "plant": "rne-dynamic",
+      "passed": true,
+      "scenario_sha256": "93a34c74ffc955e3f180b4c4cceefd099db9f8de2a71c84d0811c86c7c7bbc01",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1046,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.0,
+      "localization_rmse_m": 0.05516000225662633,
+      "maximum_position_error_m": 0.11987537195587607,
+      "maximum_yaw_error_rad": 0.04367161310416723,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Original OSM geometry with directed mid-edge endpoints",
+        "seed": 1,
+        "simulated_seconds": 52.25,
+        "steps": 1046,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.055160002256626324,
+        "localization_max_error": 0.11987537195587607,
+        "final_speed": 0.07865321169051123,
+        "progress": 101.56645054506507,
+        "emergency_steps": 0,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1046,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "native/osm/seed-1",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "7114430c588f5db7d963b3ad194d2f7fe24bf38e7027e3bf7b6fcda32f4c01de",
+          "stored_sha256": "3a1feec70cbb7f8f9cd0d5b932b28c5f6ece8bbed5746e58d09cf1dd8d2416b2"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "940b6f35cb3ada038c204b27718e30f1ba1291b9d559113bf9043bb26bf4da60",
+          "stored_sha256": "05e665c2cc7bb85fc95037333af7d26f33d0d126baf3738efbaae4d09df4e0ca"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "ec708b91efa64c1304b4381049f9ecd760e4ed5845a9dd649a30bf1233191ba5",
+          "stored_sha256": "8dc57d4599dd0e25313ab908680d13f5cebcb1be994c2d1bbcabf1363b4f6beb"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "f0070c74bdb83bbaa2d81878011451e7b65f67096b38fa11039b6bc73f84624a",
+          "stored_sha256": "44b1eca588de9b21d0326dfe8edb08cb2e60e82d49e4aa6a89a13bcf775f0c84"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "6f2f0b4e03c664dbaa3c86fd22c4185d78e69acde9fffaca7fe167b689f54b30",
+          "stored_sha256": "f638f7016b922d4ffdcc530903a45c669ba9564e7fa5f33ca7bd15e34ecfff7e"
+        }
+      }
+    },
+    {
+      "case": "osm",
+      "seed": 7,
+      "plant": "rne-dynamic",
+      "passed": true,
+      "scenario_sha256": "93a34c74ffc955e3f180b4c4cceefd099db9f8de2a71c84d0811c86c7c7bbc01",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1047,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.0,
+      "localization_rmse_m": 0.05765362695249448,
+      "maximum_position_error_m": 0.1491968145948857,
+      "maximum_yaw_error_rad": 0.046089572046452254,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Original OSM geometry with directed mid-edge endpoints",
+        "seed": 7,
+        "simulated_seconds": 52.300000000000004,
+        "steps": 1047,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.05765362695249451,
+        "localization_max_error": 0.1491968145948857,
+        "final_speed": 0.0807066249635019,
+        "progress": 101.63617226704905,
+        "emergency_steps": 1,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1047,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "native/osm/seed-7",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "5a55a6b67cca46e05e1e0d2037890f50ffb7835cca8933251372096a7cf2f2bc",
+          "stored_sha256": "17f3cb6ff17b6b9615cd8cb8c93ec8d1e7aa81ce363f1f0c21b35547a0d02db7"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "a35f7353e4fb080391ff4830bc702de2b867b234459dd47c1cee8097904f104d",
+          "stored_sha256": "af4d97bcccac5abb7b7ba94a37195c2b8a141a1b4d7b7c2dd717499bd72e6c1b"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "b64c460999d01fa9d2b3015f186818901a4ce5eef2a54f9db1125ec55c89cc3a",
+          "stored_sha256": "6285820458861db524699efb5b4873fb75568eb7f66fcfc3cf91ceb3f958f1b4"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "8efb627a975b134d511e0c8ef339e144f1e4017817255ddd5acb67d2621b9991",
+          "stored_sha256": "9c0b053425e32bdcfbc7e29a5427246d64b6bf343b77c81122f1b01ece8168d5"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "115ff3df6047764a7efcd644142706455fedf2d7a8208eb07451e22a529154e9",
+          "stored_sha256": "dedeba0f6a3840cf6c1b3e6ad2fc446d4f6d1bc85b7c9effe5034e996ee4e547"
+        }
+      }
+    },
+    {
+      "case": "osm",
+      "seed": 42,
+      "plant": "rne-dynamic",
+      "passed": true,
+      "scenario_sha256": "93a34c74ffc955e3f180b4c4cceefd099db9f8de2a71c84d0811c86c7c7bbc01",
+      "run_exit_code": 0,
+      "replay_exit_code": 0,
+      "physical_ticks": 1046,
+      "route_switches": 0,
+      "maximum_speed_excess_m_s": 0.0,
+      "localization_rmse_m": 0.0527023709296652,
+      "maximum_position_error_m": 0.1739239699823999,
+      "maximum_yaw_error_rad": 0.02989727692906463,
+      "reopening_standstill_s": 0.0,
+      "independent_clearance": {
+        "full_tick_coverage": true,
+        "minimum_swept_clearance_m": 1000.0,
+        "contact_intervals": 0
+      },
+      "summary": {
+        "scenario": "Original OSM geometry with directed mid-edge endpoints",
+        "seed": 42,
+        "simulated_seconds": 52.25,
+        "steps": 1046,
+        "reached_goal": true,
+        "collisions": 0,
+        "road_violations": 0,
+        "min_clearance": 1000.0,
+        "localization_rmse": 0.0527023709296652,
+        "localization_max_error": 0.1739239699823999,
+        "final_speed": 0.107201700354765,
+        "progress": 101.5499626406523,
+        "emergency_steps": 2,
+        "avoidance_steps": 0,
+        "max_tracks": 0,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 1046,
+        "verified": true
+      },
+      "routing_and_physical_contract_passed": true,
+      "failed_gates": [],
+      "recordings": "native/osm/seed-42",
+      "storage": {
+        "replay/outputs.jsonl": {
+          "path": "replay/outputs.jsonl.gz",
+          "sha256": "c548e96ed3ce4bf7e5de05ea158079f3bc351136d57ea6dff212a99f03b45c7f",
+          "stored_sha256": "7c15e2254849f9a3d964454f92207f9d3cc085aa038dc014bb50b8136d90d27c"
+        },
+        "replay/replay.json": {
+          "path": "replay/replay.json.gz",
+          "sha256": "940b6f35cb3ada038c204b27718e30f1ba1291b9d559113bf9043bb26bf4da60",
+          "stored_sha256": "05e665c2cc7bb85fc95037333af7d26f33d0d126baf3738efbaae4d09df4e0ca"
+        },
+        "run/run.json": {
+          "path": "run/run.json.gz",
+          "sha256": "b4166e122e84eeaad1a24d9e90258a074c46bf4a223774735410d4d54ee40050",
+          "stored_sha256": "1a5308a2e5a412b7759582a336014267c91ab3cd1eaa394a52af738365c1fbd2"
+        },
+        "run/sensors.jsonl": {
+          "path": "run/sensors.jsonl.gz",
+          "sha256": "8bc5c22a15369bde43c0e6902848c6bee60f29883a15e5ddc20961f937c3eab2",
+          "stored_sha256": "4ed148526181804323174e574c0164abc0886124aa0ef27da8d4d7103e519165"
+        },
+        "run/summary.json": {
+          "path": "run/summary.json.gz",
+          "sha256": "d554505356f1bfc8908a39ac79968087d68955b3cf4a5ce0780fdcb372b6421c",
+          "stored_sha256": "abd8e4c8842c8f50d877e3d11eb46f8a881a98bd201652cba6232d1b7899967c"
+        }
+      }
+    }
+  ]
+}

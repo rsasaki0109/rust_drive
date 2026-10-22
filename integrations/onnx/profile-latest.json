@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "algorithm": "yolox_nano_latest_ready_replay_v1",
+  "model": "Unchanged original Nano detector, fixed four views and postprocessing from the Nano candidate",
+  "selection": "At an observed host checkpoint, select the latest released image, stopping at the first released missing/failed event. A due non-image event takes priority over its preceding queued images. Never cross a non-image event or select a future acquisition.",
+  "discarded_images": "Record every superseded source and its original acquisition and hash; perform no inference, guard delivery or recovery update for it.",
+  "timing": "Original acquisition timestamps and two-second schedule bound. Preserve the exact original per-frame measured controller, 0.2 second age bound, two-sample recovery and fault epochs.",
+  "denominators": "Keep all original source images in coverage counts; count dispatch deadlines separately. A superseded source is neither inferred nor an available result.",
+  "fault_latency": "This synchronous offline replay cannot preempt active inference. Missing/failed events are delivered when the single consumer next dispatches; this is not live fault supervision.",
+  "control_permission": false,
+  "new_holdout": false,
+  "driving_integration": false
+}

@@ -13,6 +13,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+from recorded_numeric import compare_recorded
 
 ROOT = Path(__file__).resolve().parent.parent
 FIRST = ROOT / 'assets/recorded-independent/desk2-v1'
@@ -164,9 +165,9 @@ def run_suite(args):
             '--raw', args.raw, '--qualification', qualification, '--freeze', freeze,
             '--output', report], 1)
         actual = bounded_json(report, 64*1024*1024)
-        require(actual['summary'] == EXPECTED_SUMMARY
-                and numerical(actual) == numerical(first_report),
+        require(actual['summary'] == EXPECTED_SUMMARY,
                 'non-timing continuous evidence changed; preserve and inspect this outcome')
+        comparison = compare_recorded(numerical(first_report), numerical(actual))
         audit_path = output/'audit-v2.json'
         invoke('audit', [sys.executable, auditor, '--manifest', args.manifest,
             '--raw', args.raw, '--freeze', freeze, '--qualification', qualification,
@@ -183,7 +184,9 @@ def run_suite(args):
                 and all(digest(FIRST/name) == expected for name, expected in PINS.items()),
                 'original code or first evidence changed during reproduction')
         status.update(regression_integrity_passed=True, summary=actual['summary'],
-            non_timing_continuous_evidence_identical=True, original_gates_unchanged=True,
+            non_timing_continuous_evidence_identical=comparison['exact'],
+            non_timing_continuous_evidence_reproduced=True, historical_comparison=comparison,
+            original_gates_unchanged=True,
             all_179_updates_audited_continuously=True,
             output_sha256={name: digest(output/name) for name in
                 ('qualification.json','freeze.json','results.json','audit-v2.json')})

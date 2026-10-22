@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "lanes": [
+    {
+      "id": "approach",
+      "centerline": [
+        {
+          "x": 0.0,
+          "y": 0.0
+        },
+        {
+          "x": 37.11,
+          "y": 0.0
+        }
+      ],
+      "width_m": 4.2,
+      "speed_limit_m_s": 6.0,
+      "successors": [
+        "school"
+      ]
+    },
+    {
+      "id": "school",
+      "centerline": [
+        {
+          "x": 37.11,
+          "y": 0.0
+        },
+        {
+          "x": 37.12,
+          "y": 0.0
+        }
+      ],
+      "width_m": 4.2,
+      "speed_limit_m_s": 2.0,
+      "successors": [
+        "exit"
+      ]
+    },
+    {
+      "id": "exit",
+      "centerline": [
+        {
+          "x": 37.12,
+          "y": 0.0
+        },
+        {
+          "x": 120.0,
+          "y": 0.0
+        }
+      ],
+      "width_m": 4.2,
+      "speed_limit_m_s": 6.0,
+      "successors": []
+    }
+  ]
+}

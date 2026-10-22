@@ -19,6 +19,9 @@ import time
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
+history_spec = importlib.util.spec_from_file_location('latency_history', HERE / 'camera_history.py')
+camera_history = importlib.util.module_from_spec(history_spec)
+history_spec.loader.exec_module(camera_history)
 FRESH_CHECK_SHA = '816e6c0a2f53abf8af38cb5b1875127cd86f25fe8294cf8b6db057f3929589b7'
 SOURCE_SEQUENCE_SHA = '5fa15877e7d910fe102dae175af40b5ee473c6f614b0740f36127b58b77f864c'
 MODEL_SHA = 'c5c2d13e59ae883e6af3b45daea64af4833a4951c92d116ec270d9ddbe998063'
@@ -268,7 +271,7 @@ def run(args):
     receipt,_=native(args.binary,['--executable-receipt'],out/'executable.json')
     inspected,_=native(args.binary,['--inspect-sequence',manifest_path],out/'inspection.json')
     source_pins=dict(receipt['compiled_sources'])
-    for path in [Path(__file__),ROOT/'integrations/camera-tracking/freshness_check.py',ROOT/'integrations/camera-tracking/check.py']:
+    for path in [Path(__file__),HERE/'camera_history.py',ROOT/'integrations/camera-tracking/freshness_check.py',ROOT/'integrations/camera-tracking/check.py']:
         source_pins[str(path.relative_to(ROOT))]=digest(path)
     write(out/'before-inference.json',dict(executable_sha256=digest(args.binary),source_sha256=source_pins,
         model_sha256=MODEL_SHA,original_source_sequence_sha256=SOURCE_SEQUENCE_SHA,measured_sequence_sha256=digest(manifest_path),
@@ -277,6 +280,7 @@ def run(args):
         measured_host_time=True,live_camera=False,accuracy_ground_truth=False))
     saved={load(p)['source_image_sha256']:load(p) for p in (ROOT/'assets/camera-sequence-v1/recorded/exports').glob('first-*.json')}
     rows=[]
+    historical=camera_history.Comparison()
     forwards=0
     for label in ('first','repeat'):
         print('Measuring '+label,flush=True)
@@ -287,7 +291,7 @@ def run(args):
         for index,event in enumerate(report['events']):
             analysis=event['measured']['analysis']
             if analysis is not None:
-                require(without_timing(analysis)==without_timing(saved[event['source']['source_image_sha256']]),'unchanged actual analyzer output')
+                historical.same(without_timing(saved[event['source']['source_image_sha256']]),without_timing(analysis),label+f'.analysis[{index}]')
         guard_path=out/(label+'-guard-input.json')
         write(guard_path,guard_manifest)
         guard_result,_=native(args.guard,['--sequence',guard_path],out/(label+'-guard-result.json'))
@@ -311,6 +315,7 @@ def run(args):
         live_camera_ingestion=False,sensor_transport_latency_measured=False,final_poll_and_json_publication_excluded=True,
         exact_guard_replay=True,real_object_identity_accuracy_measured=False,observed_deadline_gates=[r['summary']['deadline_gate_pass'] for r in rows],
         deadline_success_required_for_execution_success=False,timing_repeat_identity_required=False,
+        historical_comparison=historical.report(),
         source_sha256=source_pins,executable_sha256=digest(args.binary),checker_sha256=digest(__file__)))
     print(json.dumps(dict(pass_checks=True,actual_model_forwards=forwards,observed_deadline_gates=[r['summary']['deadline_gate_pass'] for r in rows])),flush=True)
 

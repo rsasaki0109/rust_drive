@@ -232,6 +232,13 @@ impl TrafficWorld {
                     ),
                     |actor| (actor.s, o.lateral),
                 );
+                if let Some(motion) = &o.world_motion {
+                    return WorldObject {
+                        id: id as u64,
+                        position: motion.position.plus(motion.velocity.scaled(elapsed)),
+                        radius: o.radius,
+                    };
+                }
                 let (position, yaw) = self.route.sample(s, lateral);
                 let position = if self.actors[id].is_some() && s > self.route.length() {
                     position.plus(Vec2::new(yaw.cos(), yaw.sin()).scaled(s - self.route.length()))

@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "algorithm": "image_tracking_freshness_v1",
+  "scope": "Offline camera-result admission with separate acquisition and delivery clocks; no control permission",
+  "defaults": {"max_age_s": 0.2, "recovery_samples": 2},
+  "clock": "Both clocks use seconds in the same externally supplied time domain; finite [0,1e12]; delivery and accepted acquisition advance at least 1e-6 s",
+  "expiry": "Inclusive age deadline; on expiry drain tracks once at last accepted acquisition + max_age_s; later ticks do not move this barrier",
+  "recovery": "Required consecutive accepted samples acquired strictly after the latched fault; any rejected sample during hold resets the count",
+  "projection": "Confirmed/coasting hypotheses only; CV from last observed box and acquisition time to now; per-object age <= min(max_age_s,coast_seconds); confidence unchanged",
+  "provenance": "SHA-256-pinned image-analysis reports from producer-sources.json or explicitly synthetic inline detections",
+  "budgets": {"events": 128, "sequence_bytes": 8388608, "analysis_bytes": 4194304, "output_bytes": 16777216},
+  "errors": "Invalid delivery clock, schema, provenance or files abort without output; semantic sample rejection is reported without refreshing acquisition"
+}

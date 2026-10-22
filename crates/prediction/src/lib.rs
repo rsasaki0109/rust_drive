@@ -1,15 +1,43 @@
 //! Motion forecasts from tracked observations; no simulator behavior or intentions.
-use rustdriving_core::{Prediction, Predictor, Track};
+mod cold_motion;
+mod consistency;
+pub use cold_motion::ColdMotionEnvelope;
+mod velocity_hypotheses;
+pub use velocity_hypotheses::RecentVelocityHypotheses;
+mod envelope;
+mod pose_envelope;
+pub use consistency::{ForecastConsistencyAdmission, ForecastConsistencyGuard};
+pub use pose_envelope::cover_pose_uncertainty;
+mod slow_motion;
+use rustdriving_core::{ForecastEnvelopeConfig, Prediction, Predictor, Track};
 use std::collections::{BTreeMap, VecDeque};
 
-/// Uses sustained measured braking for at most one second, then coasts.
+/// Optionally confirms slow motion and uses measured braking for at most one second.
 /// This is a motion hypothesis, not a guarantee that another driver will brake.
 #[derive(Default)]
 pub struct ObservedBraking {
     baseline: ConstantVelocity,
     history: BTreeMap<u64, VecDeque<Track>>,
+    confirm_slow_motion: bool,
+    envelope: Option<ForecastEnvelopeConfig>,
 }
 impl ObservedBraking {
+    /// Experimental persistent low-speed motion. Default retains the established
+    /// deadband pending broader forecast and adoption qualification.
+    pub fn with_slow_motion() -> Self {
+        Self {
+            confirm_slow_motion: true,
+            ..Self::default()
+        }
+    }
+    /// Retain nominal occupancy and a constant-velocity alternative with declared
+    /// acquisition-origin error growth. Coverage is conditional on these budgets
+    /// and ends at the last forecast knot; endpoint hold is unchanged.
+    pub fn with_envelope(mut self, config: ForecastEnvelopeConfig) -> Result<Self, String> {
+        config.validate()?;
+        self.envelope = Some(config);
+        Ok(self)
+    }
     /// Produces samples starting at `time`, extrapolated from each observation's
     /// acquisition timestamp. The braking hypothesis also starts at acquisition;
     /// repeated calls do not renew its one-second braking interval.
@@ -37,23 +65,6 @@ impl ObservedBraking {
                 prediction.positions.clear();
                 continue;
             }
-            for (i, position) in prediction.positions.iter_mut().enumerate() {
-                let elapsed = if speed < 0.7 {
-                    0.0
-                } else {
-                    age + i as f64 * prediction.dt
-                };
-                *position = track.position.plus(track.velocity.scaled(elapsed));
-            }
-            if prediction
-                .positions
-                .iter()
-                .any(|position| !position.finite())
-            {
-                history.clear();
-                prediction.positions.clear();
-                continue;
-            }
             if history
                 .back()
                 .is_some_and(|old| track.last_seen < old.last_seen)
@@ -73,10 +84,47 @@ impl ObservedBraking {
             {
                 history.pop_front();
             }
+            let moving = speed >= 0.7
+                || (self.confirm_slow_motion && slow_motion::supported(track, history));
+            if self.confirm_slow_motion && !moving && speed >= 0.1 {
+                // Until motion is confirmed, cover both stopping at acquisition
+                // and continuing at observed velocity, and every point between.
+                // The acquisition age consumes the same envelope budget.
+                for (i, position) in prediction.positions.iter_mut().enumerate() {
+                    let half_elapsed = (age + i as f64 * prediction.dt) * 0.5;
+                    *position = track.position.plus(track.velocity.scaled(half_elapsed));
+                    prediction.additional_radius_m.push(speed * half_elapsed);
+                }
+                if prediction.positions.iter().any(|point| !point.finite())
+                    || !prediction.valid_radii()
+                {
+                    history.clear();
+                    prediction.positions.clear();
+                    prediction.additional_radius_m.clear();
+                }
+                continue;
+            }
+            for (i, position) in prediction.positions.iter_mut().enumerate() {
+                let elapsed = if moving {
+                    age + i as f64 * prediction.dt
+                } else {
+                    0.
+                };
+                *position = track.position.plus(track.velocity.scaled(elapsed));
+            }
+            if prediction
+                .positions
+                .iter()
+                .any(|position| !position.finite())
+            {
+                history.clear();
+                prediction.positions.clear();
+                continue;
+            }
             if age > 0.15 + 1e-9 {
                 continue;
             }
-            if speed < 0.7 {
+            if !moving {
                 continue;
             }
             // Withdraw braking on the first fresh non-decreasing speed sample.
@@ -123,6 +171,26 @@ impl ObservedBraking {
                 previous = old;
             }
             if supported {
+                // Net braking between 0.2 s anchors is insufficient if an
+                // intervening acquisition observed acceleration or a turn.
+                let earliest = previous.last_seen;
+                let mut newer_speed = speed;
+                for old in history
+                    .iter()
+                    .rev()
+                    .filter(|old| old.last_seen >= earliest && old.last_seen < track.last_seen)
+                {
+                    let old_speed = old.velocity.x.hypot(old.velocity.y);
+                    let alignment = (old.velocity.x * direction.x + old.velocity.y * direction.y)
+                        / old_speed.max(1e-9);
+                    if old_speed + 1e-9 < newer_speed || alignment < 0.98 {
+                        supported = false;
+                        break;
+                    }
+                    newer_speed = old_speed;
+                }
+            }
+            if supported {
                 for (i, position) in prediction.positions.iter_mut().enumerate() {
                     let t = age + i as f64 * prediction.dt;
                     let braking_time = t.min(1.0).min(speed / braking);
@@ -138,6 +206,11 @@ impl ObservedBraking {
                     history.clear();
                     prediction.positions.clear();
                 }
+            }
+        }
+        if let Some(bounds) = self.envelope {
+            for (track, prediction) in tracks.iter().zip(&mut predictions) {
+                envelope::cover(bounds, track, time, prediction);
             }
         }
         predictions
@@ -163,6 +236,7 @@ impl Predictor for ConstantVelocity {
         tracks
             .iter()
             .map(|track| Prediction {
+                additional_radius_m: vec![],
                 id: track.id,
                 positions: (0..=(self.horizon / self.dt).ceil() as usize)
                     .map(|i| {

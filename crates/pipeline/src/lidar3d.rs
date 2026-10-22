@@ -142,6 +142,7 @@ impl Lidar3dConfig {
         }
         Ok((
             LidarScan {
+                sweep: None,
                 stamp: scan.stamp,
                 points,
             },

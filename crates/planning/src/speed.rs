@@ -1,7 +1,8 @@
 //! Arc-length speed envelopes with constant-acceleration arrival times.
-use rustdriving_core::{TrajectoryPoint, Vec2};
+use rustdriving_core::{Route, RouteSpeedZone, TrajectoryPoint, Vec2};
 
-pub(super) struct Limits {
+pub(super) struct Limits<'a> {
+    pub zones: Option<(&'a Route, &'a [RouteSpeedZone], f64)>,
     pub acceleration: f64,
     pub deceleration: f64,
     pub lateral: Option<f64>,
@@ -13,7 +14,7 @@ pub(super) struct Limits {
 pub(super) fn profile(
     geometry: &[Vec2],
     initial_speed: f64,
-    limits: &Limits,
+    limits: &Limits<'_>,
     stop_distance: Option<f64>,
 ) -> Option<Vec<TrajectoryPoint>> {
     let mut positions = vec![*geometry.first()?];
@@ -53,6 +54,15 @@ pub(super) fn profile(
                 }
             }
         }
+    }
+    if limits.zones.is_some() {
+        super::speed_zones::apply_caps(
+            &positions,
+            &distances,
+            limits,
+            initial_speed,
+            &mut hard_caps,
+        );
     }
     if stop_distance.is_some() {
         *hard_caps.last_mut()? = 0.0;
@@ -134,8 +144,9 @@ mod tests {
     fn line() -> Vec<Vec2> {
         (0..=80).map(|i| Vec2::new(i as f64 * 0.5, 0.0)).collect()
     }
-    fn limits() -> Limits {
+    fn limits() -> Limits<'static> {
         Limits {
+            zones: None,
             acceleration: 2.0,
             deceleration: 2.5,
             lateral: None,

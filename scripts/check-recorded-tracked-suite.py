@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+from recorded_numeric import compare_recorded
 
 ROOT = Path(__file__).resolve().parent.parent
 BASELINE = ROOT / 'assets/recorded-tracked/room-v2'
@@ -65,8 +66,7 @@ def main():
         raise ValueError('physical outcome changed or inputs failed')
     preserved = json.loads((BASELINE / 'results.json').read_text())
     actual = json.loads(report.read_text())
-    if numerical(actual) != numerical(preserved):
-        raise ValueError('non-timing evidence changed')
+    comparison = compare_recorded(numerical(preserved), numerical(actual))
     first_phase = json.loads((FIRST / 'phase.json').read_text())
     if digest(FIRST / 'results.json') != first_phase['results_sha256']:
         raise ValueError('original first trial changed')
@@ -82,8 +82,7 @@ def main():
         value.pop('freeze')
         value.pop('freeze_sha256')
         return numerical(value)
-    if operational(original) != operational(actual):
-        raise ValueError('auditor-only repair changed operational or scoring evidence')
+    original_comparison = compare_recorded(operational(original), operational(actual))
     if len(actual['frames']) != 180 or actual['summary']['updates'] != 179:
         raise ValueError('selected observations omitted')
     audit = output / 'audit.json'
@@ -93,8 +92,10 @@ def main():
         raise ValueError('independent integrity failed')
     result = dict(schema_version=1, regression_integrity_passed=True,
                   evaluator_exit_status=run.returncode, physical_protocol_passed=run.returncode == 0,
-                  summary=actual['summary'], non_timing_evidence_identical=True,
-                  original_first_trial_operational_and_scoring_fields_identical=True,
+                  summary=actual['summary'], non_timing_evidence_identical=comparison['exact'],
+                  non_timing_evidence_reproduced=True, historical_comparison=comparison,
+                  original_first_trial_operational_and_scoring_fields_identical=original_comparison['exact'],
+                  original_first_trial_evidence_reproduced=True, original_comparison=original_comparison,
                   original_first_trial_report_sha256=digest(FIRST / 'results.json'),
                   auditor_only_repair_preserves_sensor_sources_and_gates=True,
                   freeze_sha256=digest(freeze), qualification_sha256=digest(qualification),

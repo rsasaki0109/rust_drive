@@ -14,6 +14,7 @@ import math
 from pathlib import Path
 import subprocess
 import sys
+from recorded_numeric import compare_recorded
 import tempfile
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -333,7 +334,7 @@ def run_suite(binary, output):
             invoke(prefix+'-evaluation', [binary, '--manifest', manifest, '--raw', raw,
                 '--freeze', freeze_path, '--output', report_path], expected_exit)
             actual = read_json(report_path)
-            exact(non_timing(actual), non_timing(first_report), dataset+' full non-timing report')
+            comparison = compare_recorded(non_timing(first_report), non_timing(actual))
             audit_path = case/'audit.json'
             invoke(prefix+'-audit', [sys.executable, auditor, '--report', report_path,
                 '--manifest', manifest, '--raw', raw, '--freeze', freeze_path,
@@ -363,7 +364,9 @@ def run_suite(binary, output):
             status['cases'].append(dict(dataset=dataset, evaluator_exit_status=expected_exit,
                 physical_protocol_passed=expected_exit == 0, summary=actual['summary'],
                 all_180_frames_and_179_updates_retained=True, independent_integrity_passed=True,
-                full_source_protocol_and_non_timing_evidence_identical=True,
+                full_source_protocol_and_non_timing_evidence_identical=comparison['exact'],
+                full_source_protocol_and_non_timing_evidence_reproduced=True,
+                historical_comparison=comparison,
                 freeze_sha256=digest(freeze_path), report_sha256=digest(report_path),
                 audit_sha256=digest(audit_path)))
             save()

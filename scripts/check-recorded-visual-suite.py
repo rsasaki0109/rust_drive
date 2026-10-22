@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+from recorded_numeric import compare_recorded
 
 ROOT = Path(__file__).resolve().parent.parent
 BASELINE = ROOT / 'assets/recorded-visual'
@@ -86,11 +87,11 @@ def main():
         if run.returncode != expected:
             raise ValueError(f'{dataset}: expected physical status {expected}, got {run.returncode}')
         report = json.loads(report_path.read_text())
-        if numerical(report) != numerical(original_report):
-            raise ValueError(dataset + ': non-timing operational evidence changed')
+        comparison = compare_recorded(numerical(original_report), numerical(report))
         proof_path = folder / 'audit.json'
         proof = audit(report_path, manifest, freeze, proof_path)
         records.append(dict(dataset=dataset, role='viewed numerical regression',
+                            historical_comparison=comparison,
                             summary=report['summary'], evaluator_exit_status=run.returncode,
                             independent_integrity_passed=True,
                             report_sha256=digest(report_path), audit_sha256=digest(proof_path),

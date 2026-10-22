@@ -2,7 +2,179 @@
 
 RustDriving's long-term target is a practical independent autonomous driving OSS. Milestones are capability gates, not release dates or claims of parity with Autoware, Apollo or openpilot.
 
-The near-term user goal is a **50% engineering maturity estimate**. [Capability waypoints and evidence requirements](maturity.md) define the development direction; the percentage is subjective and does not imply road safety or parity. The current estimate is about 20%; this remains a subjective simulation-prototype estimate. Bounded turn-rule routing and richer intersection recordings add reproducible behavior, while general driving, perception accuracy and planar/terrain limits remain.
+The near-term user goal is a **50% engineering maturity estimate**. [Capability waypoints and evidence requirements](maturity.md) define the development direction; the percentage is subjective and does not imply road safety or parity. The current estimate is about 29%; this remains a subjective simulation-prototype estimate. Bounded turn-rule routing and richer intersection recordings add reproducible behavior, while general driving, perception accuracy and planar/terrain limits remain.
+
+[OSM export preservation](osm-export.md) prevents geographic input loss and
+partial successful-looking map exports. Fresh destinations and complete staged
+files now precede report publication. [Actual byte bounds and explicit options](osm-input.md)
+also reject oversized streams and ambiguous requests. These close reproducibility defects;
+original mission availability and independent automotive calibration remain
+capability gates. M1 remains in progress at about 29%.
+
+The shared [run artifact publisher](run-publication.md) protects inputs and
+separates complete outcome publication from partial writes in both CLIs.
+Fault injection and real subprocess checks retain failed-mission evidence;
+mission availability and automotive uncertainty remain open. M1 remains in
+progress at about 29%.
+
+The default [occupancy ray traversal](occupancy-rays.md) repairs duplicate free
+updates, missed cells and endpoint evidence loss. Exact rational rectangle
+intersections verify the bounded grid walk independently. The map remains a
+diagnostic output; calibrated sensing, dynamic mapping and complete mission
+availability remain open. M1 remains in progress at about 29%.
+
+The [planar clustering index](indexed-clustering.md) removes broad candidate
+scans while retaining the preceding detector's exact directed traversal and
+fitting order. This improves larger-cloud computation in the existing component;
+small-cloud overhead and extreme-coordinate fallback remain explicit. Calibrated
+perception and complete mission availability remain the next capability gates.
+M1 remains in progress at about 29%.
+
+Experimental [later stopping-position search](later-stops.md) enumerates existing
+path knots beyond the nominal contact heuristic while retaining active brake
+ownership. Unit cases demonstrate a farther reachable crossing approach, but
+the original mission goals remain open. Address complete passing feasibility
+under the original uncertainty budgets and deadlines before broader adoption;
+the 48-condition result retains 20 arrivals and 36 strict passes, with about
+1.73 m less progress in one native mission. Finite enumeration is not a
+real-time guarantee. M1 remains in progress at
+about 29%.
+
+The preceding experimental [checked approach replanning](checked-approaches.md)
+adds fresh acquisition confirmation before replacing a stationary retained stop
+with a farther fully checked stopping path. Viewed original missions gain local
+progress but still fail their goals. Preserve their deadlines and uncertainty
+budgets while addressing complete passing feasibility and measured calibration;
+do not count approach progress as mission availability. M1 remains in progress
+at about 29%, with all eight original incomplete missions open.
+
+The preceding experimental [recent velocity point hypotheses](recent-velocity-hypotheses.md)
+retain supported acquired velocity points for 0.8 s. On the unchanged 48 inputs,
+forecast-coverage failures fall 1 → 0 without new failed gates, while arrivals
+stay 20 and strict qualification stays 36/48. This closes the viewed
+post-confirmation forecast regression, not original mission availability.
+Calibrate uncertainty against independent measured motion and complete the
+eight original missions before broader adoption. M1 remains in progress at
+about 29%; the option stays off by default.
+
+The preceding experimental [cold motion occupancy](cold-motion-envelope.md) covers
+unsupported initial velocity with a declared maximum-speed set. Forecast failures
+fall 8 → 1 and strict qualification improves 28 → 36/48, retaining 20 arrivals.
+A new native long-horizon failure keeps regression and default adoption failed.
+Stop-retention integration trials add physical confirmation or goal regressions
+and are excluded. Resolve the post-confirmation velocity/approach interaction
+under the original gates, calibrate the prior and complete the eight original
+missions. M1 remains in progress at about 29%.
+
+The preceding [pose covariance forecasts](pose-forecast-envelope.md) account for
+current world-position uncertainty without changing nominal tracked motion or
+the continuous acquired-disc guard. All 48 supported comparisons retain prior
+gates; forecast-coverage failures fall 21 → 8 and strict qualification improves
+16 → 28/48. All eight new observed detours now meet forecast coverage while
+retaining their goals. Calibrate pose confidence and address cold moving-object
+velocity next. Original mission availability remains unresolved; M1 stays in
+progress at about 29%.
+
+The preceding [observed obstruction detours](observed-detours.md) add acquired
+blocker proposals to supplied road graphs, with separate closure ownership and
+stopped switching. Eight new authored route pairs complete versus zero disabled
+controls, while twelve negative pairs retain exact operational outputs and
+physical frames. Those eight detours add forecast-coverage failures; regression
+and default adoption fail and the option stays off. Qualify forecasts along the
+alternate route before expanding this policy. The original eight single-route
+missions remain incomplete; M1 stays in progress at about 29%.
+
+The preceding [recent acquired motion fits](recent-track-motion.md) reduce observed
+moving-object velocity lag while retaining static filtering and bounded stopped
+support. All 32 final comparisons retain preceding gates; forecast misses fall
+25 → 13 and physical finite-difference velocity errors above 0.3 m/s fall
+545 → 99. The first ungated regression remains recorded. Strict acceptance is
+0/32 with eight original incomplete missions and 26 forecast failures; M1 remains
+in progress and maturity stays about 29%.
+
+The preceding [sparse circle hypotheses](sparse-circle-fits.md) reduce the acquired
+surface-centroid transition before five-return fits become available. All 32
+physical comparisons retain preceding gates; forecast misses fall 60 → 25 and
+coverage failures 28 → 26. Seven fixed-sample physical-shape misses, five accuracy
+failures and all eight original incomplete missions remain. Strict acceptance
+is 0/32, M1 remains in progress and maturity stays about 29%.
+
+The preceding [complete-sweep recovery](clear-sweep-recovery.md) adds actual acquired
+ray outcomes and stopped synchronous confirmation for disappearance-related
+forecast holds. This addresses monitor availability within the declared planar
+sensing model. Calibrated physical forecasting, broader sensing and the eight
+original incomplete missions remain open. All 32 enabled conditions restore goals
+5 → 16 and remove 11 disappearance holds; all 32 capture controls preserve prior
+bytes/frames. Forecast qualification and default adoption still fail. M1 remains
+in progress at about 29%.
+
+The preceding [measured forecast braking](forecast-consistency.md) adds a bounded
+runtime response to acquired proxies escaping older predictions. Monitor/brake
+checks pass all 32 supported conditions, but goals fall 16 → 5 and 12 conditions
+gain strict failures. Default adoption fails; safe disappearance handling and
+calibrated forecasting remain open. M1 stays in progress and maturity stays 29%.
+
+The preceding [planning decision records](planning-diagnostics.md) expose why each
+enumerated candidate is rejected, checked or selected. All 44 comparisons retain
+operational bytes and physical frames; 32 discarded approach trials still miss
+the eight original mission goals. Forecast calibration and useful complete
+mission planning remain open. M1 remains in progress and maturity stays about 29%.
+
+The preceding [confirmed intermediate lateral paths](refined-lateral.md) add six
+complete checked proposals within calibrated road sides. All eight new corridor
+conditions pass fixed physical/goal gates; all 28 supported parent comparisons
+retain their gates. The eight original incomplete missions remain failed, so
+general negotiation and forecast calibration remain open. The option stays off,
+M1 remains in progress and maturity stays about 29%.
+
+The preceding [acquisition-time heading fusion](heading-latency.md) admits up to
+200 ms of acquired-heading delay through transactional measured GNSS/map history.
+All 18 enabled simulation cases pass, including six fault stop/recovery cases;
+ten disabled/unsupported controls retain their missed missions and stay stopped.
+Measured noise, clock calibration, reset composition and the preceding blocked
+missions remain open. M1 remains in progress and maturity stays about 29%.
+
+The preceding [standalone enclosure qualification](standalone-enclosure.md) checks
+measured geometry without initial-motion confirmation. All 52 comparisons
+retain their gates, and two coverage failures pass against matching original
+controls. Strict qualification stays 20/52; runtime bytes and defaults remain
+unchanged. M1 remains in progress.
+
+The preceding [acquired-disc preservation](measurement-enclosure.md) repairs shape
+loss in tracking: none of 17,054 acquired discs loses geometry at the corrected
+center. All 52 comparisons retain their gates, while strict qualification stays
+20/52 and forecast/mission failures remain. Measured calibration and general
+perception remain open; M1 remains in progress.
+
+The preceding [confirmed initial track motion](track-initialization.md) separates
+early shape changes from initial velocity estimation. All 52 fixed comparisons
+retain their gates; two coverage failures pass. Strict qualification remains
+20/52, including eight missed mission goals; short-horizon failures and measured
+uncertainty remain open. The option stays off and M1 remains in progress.
+
+The preceding [heading-event history](heading-history.md) composes synchronous
+heading with delayed GNSS/map replay and preserves acquisition clocks and fault
+braking. Fourteen enabled simulation cases pass; eight pairs reduce RMSE by at
+least 92.8%. Reset composition and measured calibration remain
+open, so M1 remains in progress and maturity stays about 29%.
+
+The preceding [earlier obstruction-stop search](stop-search.md) retains a checked
+route-progress stop instead of repeatedly advancing it. All 40 comparisons pass;
+eight mission conditions reduce emergency steps from 355 to 3. Stable stopping
+does not finish those missions or calibrate prediction errors: strict acceptance
+remains 20/40, the option stays off, and M1 remains in progress.
+
+The preceding [narrow-road chassis continuity repair](road-width-planning.md#chassis-passing-continuity-follow-up)
+passes all 32 viewed policy comparisons and all 18 physical passes. Five native
+heading failures and four inherited incomplete missions keep strict qualification
+at 23/32 and default adoption blocked; M1 remains in progress.
+
+Optional [synchronous absolute heading](absolute-heading.md) now adds a calibrated
+observation contract, full-covariance fusion and loss/rejection braking. The
+additional sensor repairs five viewed heading failures, while biased-heading
+controls and one new forecast-coverage regression remain failed. Measured sensor
+calibration and reset composition remain open; delayed heading needs its separate
+bounded history option. Both modes stay off by default.
 
 ## M0 — Executable Rust baseline (implemented)
 
@@ -22,11 +194,113 @@ The same verified revision adds earlier braking after sustained GNSS innovation 
 
 Physical road query surfaces and optional measured local ground removal now extend native XYZ sensing. An explicit research body adds swept upright-box clearance and force-free native overlap witnesses. A bounded importer converts a pinned genuine OpenStreetMap extract into the ordinary ENU road graph, preserving source attribution and explicit simulation width calibration. These steps still retain planar driving and perception after projection. [Ground/body boundaries](ground-lidar.md); [map import and actual route limitations](osm-import.md). The tested native sharp branch now completes with explicit chassis-reference odometry and course-based steering, while retaining original widths/deadlines and default output bytes. [Repair and scope](chassis-reference.md).
 
+Surveyed fixed-route speed intervals now anticipate lower limits and restore
+cruise after passing them. Independent full-tick physical scoring and exact
+sensor replay cover short, overlapping, stop-sign and rotated-route cases.
+An opt-in lane-route exporter now compiles the selected lanes' original speed
+limits into these intervals, retaining requested cruise outside lower limits.
+A fixed lane-change connector now maps source, shared connector and target/tail
+limits in actual arc length, including observed-gap admission. An early return
+now carries an explicit lower-lane cap onto its alternate stopping route.
+A bounded retry then preserves the connector cap and rebases the unchanged
+original target tail, including short intervals and launch stopping prefixes.
+[Retry contract](lane-resume-speeds.md).
+Optional whole-edge road speed limits now survive stopped closure-driven route
+handover, with physical scoring of each active policy and original-map replay.
+This keeps map speed values fixed; updating them during driving remains future
+work. [Navigation speed contract](navigation-speeds.md).
+[Return contract](lane-return-speeds.md); [fixed-change trial and preserved audit error](lane-change-speeds.md).
+This does not supply sign detection, live speed-map remapping or general road
+rule understanding. [Contract and evidence](route-speed-zones.md).
+
+Acquisition-time GNSS fusion now corrects up to 0.5 s of delayed fixes using bounded wheel/gyro history in the shared pipeline. Reference and native RNE accuracy and fault-recovery trials pass independent chronological reconstruction, with all preceding default outputs retained. Synchronous accepted map-pose/covariance events can be replayed atomically; an explicit option also retains GNSS events and admits map scans up to 0.2 s old in either arrival order. Delayed odometry, clock-offset estimation and broader external correction types remain unsupported. [GNSS improvement](gnss-latency.md), [combined synchronous map history](gnss-map-history.md), [delayed-map mode](delayed-map.md).
+
+Optional [initial pose covariance](initial-pose-covariance.md) now records complete
+posterior matrices and composes with temporal fusion. Physical heading offsets
+also expose and repair incomplete side-path tracking in both plants. The supplied
+±3-degree prior remains authored calibration; measured initialization uncertainty
+and automatic sensor-only initialization remain open.
+
+After measured stopped regional recovery, an opt-in
+[bounded map-only window](relocalization-map-only.md) can support a new epoch
+before fresh GNSS arrives. Fresh synchronous accepted maps must continue;
+neither scans nor missing fixes can extend the five-second maximum. Absolute
+expiry, interrupted motion and sensor failures retain braking. This improves
+authored fixed-route recovery availability; it does not establish automotive
+uncertainty or general GNSS-denied driving.
+
+Optional [confirmed GNSS handoff](confirmed-gnss-handoff.md) now starts the
+existing recovery policy at the measured reset. Returning proposals remain
+withheld until the configured new-fix count; a reset-anchored deadline expires
+without a delivery and stays latched through late healthy GNSS. Twenty guarded,
+healthy and expiry cases pass, while four paired controls retain premature
+acceptance failures. This adds failure handling within the same simulation scope.
+
+Explicit [navigation preservation during measured recovery](navigation-relocalization.md)
+now keeps original endpoints, accepted closure revisions, an already switched
+active detour and its speed policy. Route admission and fresh stopped handover
+confirmations are checked again. Twenty recovered missions reach their goals;
+four recovered no-route controls stop, and four healthy/four disabled controls
+pass. This extends recovery to authored directed live missions. Mapped traffic
+controls, moving handover and global initialization remain open.
+
+An explicit [braked handover confirmation](navigation-handover.md) now keeps a
+healthy stopped vehicle braked while three new observations confirm a pending
+route. Interruptions discard votes without authorizing acceleration; accepted
+cancellation and confirmed switching release the hold. This also applies after
+measured recovery and preserves the previous default mission behavior.
+All 32 individual cases pass, with 0.20 s recovery handovers at standstill.
+All twelve arrivals improve 1.90–2.85 s; five meet the frozen 2 s requirement,
+so that comparison remains unmet. A separate viewed navigation-fault regression
+now retains the hold through a valid still-blocked recovery snapshot.
+
+Optional [fixed-stop preservation during measured recovery](stop-sign-relocalization.md)
+now retains served stops, rearms duties ahead and requires a new full healthy
+two-second standstill. Invalid admission keeps emergency braking through fresh
+GNSS. Fixed stops also support native chassis/local-route calibration using the
+original surveyed prefixes. All 32 follow-up cases pass; original coverage misses,
+launch failures and invalid-epoch accuracy failures remain recorded. This extends
+fixed-rule simulation recovery and keeps the subjective estimate at about 29%.
+
+Optional [fresh signal permission after measured reset](signal-relocalization.md)
+now retains committed lines behind the measured front and withdraws all old
+permission. Remaining lines need a strictly newer complete acquisition; invalid
+admission stays braked through fresh green/GNSS. All 28 fixed straight/curved
+cases pass in both plants, including stop-sign compositions, permanent red and
+disabled controls. This extends fixed-rule recovery while retaining full-interval
+accuracy failures; subjective maturity stays about 29% and 30% remains unmet.
+
+Fixed straight-route yield entries now have an explicit
+[measured-reset preservation mode](yield-relocalization.md). It retains owned
+entries beyond their line and restarts all uncommitted clear-scan confirmation;
+invalid measured admission remains braked and blocks other mapped duties.
+All 32 current inputs pass in two plants; the first 24/32 reclassification and
+12 failed original/follow-up layouts remain retained. All 674 preceding and 44
+current recordings retain exact replay. This extends authored recovery without completing independent
+automotive sensing, measured uncertainty or the 30% waypoint.
+
+Optional [obstruction stop settling](obstruction-stops.md) now retains a completed
+collision stop instead of restarting on another partial blocked approach.
+A complete clear candidate releases it, while health faults retain braking.
+All 48 enabled policy regressions pass in both plants; eight moving-obstruction
+and GNSS-loss cases hold actual 0 m/s, resume and reach their goals. Eight
+disabled comparisons expose repeated restarts. The preceding blocked-road creep
+is repaired, while four mission deadline failures, native launch-heading errors
+and uncalibrated forecast coverage remain scored. This does not complete M1.
+
+Optional [road-width side candidates](road-width-planning.md) now fit the existing
+three offsets within the supplied circular corridor and an explicit target
+reserve. All 18 narrow-road missions reach their goals, versus zero fixed-offset
+partners; one native right pass misses the unchanged 1 m clearance requirement.
+The comparison is 31/32 and strict positive qualification 22/32. Default adoption
+remains blocked. Scenario preflight now checks every input before driving and
+preserves numerical failure diagnostics and all earlier rejected inputs.
+
 Remaining:
 
-- Covariance/forecast uncertainty propagation, delayed odometry/GNSS fusion, per-point LiDAR deskew and trace migrations. Bounded acquisition-time LiDAR reprojection and current-time motion extrapolation are narrower implemented steps, not complete delayed-sensor fusion.
-- Continuous moving-route handover, routing from arbitrary mid-edge positions, general external map/lane import, variable-width/lane topology, turn/speed restrictions and A* for larger maps. Bounded OSM road-graph import is implemented.
-- Continuous lateral offsets and controller-feasibility validation.
+- Calibrated covariance/forecast uncertainty propagation, delayed odometry and general multi-sensor correction-event replay, per-point LiDAR deskew and trace migrations. Optional [declared motion error envelopes](forecast-envelope.md) propagate acquisition-origin error budgets and preserve a CV alternative, with physical coverage/liveness adoption gates still open. Bounded acquisition-time LiDAR reprojection and current-time motion extrapolation do not complete delayed-sensor fusion.
+- Continuous moving-route handover and automatic live-position map matching, general external map/lane import, variable-width/lane topology, general turn rules, live speed-limit remapping and A* for larger maps. Explicit directed interior-edge origin/destination routing, bounded OSM road-graph import and fixed-route speed intervals are implemented. [Partial-route evidence and retained heading failure](mid-edge-routing.md).
+- Continuous lateral offsets and controller-feasibility validation; the bounded three-candidate width fitting above does not complete either requirement.
 - Oriented-body planning, measured vehicle/actuator calibration, combined longitudinal/lateral friction feasibility and optimized speed profiles. An authored rectangular evaluation body and conservative planar envelope are implemented.
 - General goal-area stopping/escape, constrained destinations and blocked lateral refuges; the authored GNSS-burst traffic regression is repaired.
 - Reduce conservative terminal stop/hold behavior for a following vehicle in a narrow corridor; the authored 65-second deadline now passes, but repeated stops and short-range clearance failures remain.

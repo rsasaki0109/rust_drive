@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "profile": "yolox-s-tiles-v1",
+  "model_sha256": "c5c2d13e59ae883e6af3b45daea64af4833a4951c92d116ec270d9ddbe998063",
+  "base_profile": "profile-s.json",
+  "views": "full image plus unique square crops at long-axis offsets0,half-gap,gap",
+  "max_views": 4,
+  "score_threshold": 0.3,
+  "local_nms_iou": 0.45,
+  "global_nms_iou": 0.45,
+  "interior_edge_margin_source_pixels": 1,
+  "max_detections_per_view": 300,
+  "max_global_detections": 300,
+  "scope": "bounded offline image detection; original S and nano unchanged"
+}

@@ -231,3 +231,13 @@ binary/source hashes and CPU flags, with complete numerical comparison on
 consistent speedup is unproven and the 200 ms gates still fail. Use
 `python3 integrations/onnx/build_cpu.py build --output NEW` from the repository
 root after normal dependencies have been cached; this recipe is Linux x86-64 only.
+
+The optional [guarded Resize lowering](../../docs/camera-operators.md) provides
+`rustdriving-camera-profile` for operator clocks and full raw-tensor bit
+comparison, and `rustdriving-camera-repeat2x` for actual parallel image/sequence
+execution. Only the pinned model's two nearest/asymmetric/floor 2× expansions
+are lowered, using standard tract operators. Sixteen images twice preserve all
+output bits; the latest two measured parallel pairs average 7.14% less processing time.
+All original 200 ms and accuracy gates still fail. Build these binaries
+explicitly and follow the linked controls/reproduction instructions; no model
+weights or detections are changed.

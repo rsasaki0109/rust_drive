@@ -1,7 +1,14 @@
 //! Directed map routing in world ENU meters, independent of sensing and simulation.
+pub mod lane_resume;
+pub mod lane_return;
+pub mod lanes;
 pub mod osm;
+mod positions;
+mod speeds;
+pub use positions::{EdgePosition, EdgeTraversal, RouteEndpoint};
 use rustdriving_core::{Route, Vec2};
 use serde::{Deserialize, Serialize};
+pub use speeds::SpeedRoutePlan;
 use std::{
     cmp::Ordering,
     collections::{BTreeMap, BTreeSet, BinaryHeap},
@@ -23,6 +30,9 @@ pub struct RoadEdge {
     pub to: String,
     pub points: Vec<Vec2>,
     pub half_width: f64,
+    /// Optional surveyed whole-edge limit in SI units; absent means no map cap.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub speed_limit_m_s: Option<f64>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -34,8 +44,8 @@ pub struct RoadNetworkSpec {
     pub turn_restrictions: Vec<TurnRestriction>,
 }
 
-/// A directed transition constraint at a junction. No restriction applies to a
-/// route's first edge, because the request has no specified arrival edge.
+/// A directed transition constraint at a junction. Node origins have no arrival
+/// edge; an origin inside an edge preserves that incoming edge at its first turn.
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct TurnRestriction {
@@ -60,6 +70,10 @@ pub struct RoutePlan {
     pub edge_ids: Vec<String>,
     pub distance_m: f64,
     pub route: Route,
+    /// Present for requests with an edge position, in traversal order. Repeated
+    /// edge IDs are possible when a directed cycle reaches a goal behind origin.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub traversals: Vec<EdgeTraversal>,
 }
 
 /// Validated immutable map. No simulator state or obstacle labels enter routing.
@@ -157,6 +171,9 @@ impl RoadNetwork {
                 || geometry.points[0].distance(*from) > 1e-6
                 || geometry.points.last().unwrap().distance(*to) > 1e-6
                 || !geometry.length().is_finite()
+                || edge
+                    .speed_limit_m_s
+                    .is_some_and(|speed| !speed.is_finite() || !(0.1..=20.0).contains(&speed))
             {
                 return Err("invalid edge ID, endpoints or length".into());
             }
@@ -310,6 +327,7 @@ impl RoadNetwork {
             edge_ids,
             distance_m,
             route,
+            traversals: vec![],
         })
     }
 
@@ -393,6 +411,7 @@ impl RoadNetwork {
             edge_ids,
             distance_m,
             route: Route::new(points, half_width)?,
+            traversals: vec![],
         })
     }
 }

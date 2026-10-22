@@ -1,0 +1,71 @@
+{
+  "different_fields": 47,
+  "first_differences": [
+    {
+      "path": "$.events[0].analysis.base_prediction.detections[0].confidence",
+      "expected": 0.9397782683372498,
+      "actual": 0.9397783279418945
+    },
+    {
+      "path": "$.events[0].analysis.base_prediction.views[0].prediction.detections[0].confidence",
+      "expected": 0.9397782683372498,
+      "actual": 0.9397783279418945
+    },
+    {
+      "path": "$.events[0].analysis.base_prediction.views[1].prediction.detections[4].confidence",
+      "expected": 0.7794751524925232,
+      "actual": 0.7794750928878784
+    },
+    {
+      "path": "$.events[0].analysis.result.context_result.voting_result.base_merged.detections[0].confidence",
+      "expected": 0.93977827,
+      "actual": 0.9397783
+    },
+    {
+      "path": "$.events[0].analysis.result.context_result.voting_result.detections[0].confidence",
+      "expected": 0.93977827,
+      "actual": 0.9397783
+    },
+    {
+      "path": "$.events[0].analysis.result.context_result.detections[0].confidence",
+      "expected": 0.93977827,
+      "actual": 0.9397783
+    },
+    {
+      "path": "$.events[0].analysis.result.detections[0].confidence",
+      "expected": 0.93977827,
+      "actual": 0.9397783
+    },
+    {
+      "path": "$.events[0].freshness.backend_updates[0].frame.acquisition.detections[0].confidence",
+      "expected": 0.9397782683372498,
+      "actual": 0.9397783279418945
+    },
+    {
+      "path": "$.events[0].freshness.backend_updates[0].snapshot.tracks[0].last_observed_confidence",
+      "expected": 0.9397782683372498,
+      "actual": 0.9397783279418945
+    },
+    {
+      "path": "$.events[1].analysis.base_prediction.views[1].prediction.detections[5].confidence",
+      "expected": 0.7060344219207764,
+      "actual": 0.7060344815254211
+    },
+    {
+      "path": "$.events[1].analysis.base_prediction.views[2].prediction.detections[4].confidence",
+      "expected": 0.8321315050125122,
+      "actual": 0.8321314454078674
+    },
+    {
+      "path": "$.events[2].analysis.base_prediction.views[1].prediction.detections[2].confidence",
+      "expected": 0.8736037611961365,
+      "actual": 0.8736037015914917
+    }
+  ],
+  "same_freshness": false,
+  "ignored_probe_metadata": [
+    "compiled_sources"
+  ],
+  "actual_model_forwards": 32,
+  "remote_cause_confirmed": false
+}
