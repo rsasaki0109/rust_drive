@@ -79,3 +79,36 @@ The `Browser playground` GitHub Actions workflow repeats these checks, retains
 browser screenshots, and deploys `web/dist` from `main`. Repository Settings →
 Pages → Source must be **GitHub Actions**. The workflow derives the base path
 from the repository name, so it follows repository renames.
+
+## Hero recording
+
+The README hero records the actual browser playground: two pursuing police
+cars, signalized intersections, handbrake slides, smoke and skid marks. It uses
+keyboard events and the existing chase/camera buttons. A filming fixture reads
+the diagnostic snapshot to choose repeatable inputs; it never writes poses or
+NPC state. This is arcade gameplay, separate from autonomous-driving validation.
+The [native dense-traffic recording](dense-traffic-demo.md) remains available.
+
+After building and starting the production preview above, install Playwright,
+Pillow and FFmpeg, then intentionally refresh the hero with:
+
+```sh
+python scripts/capture-city-chase.py \
+  --url http://127.0.0.1:4173/rust_driving/ \
+  --evidence artifacts/city-chase-capture
+```
+
+Use `PAGES_BASE=/rust_driving/` for that build and preview. The capture advances
+the browser clock in 40 ms steps and renders the unchanged game at 25 Hz; its
+120 Hz physics accumulator still performs the motion integration. Screenshots
+sample every other rendered frame, giving a 960 × 540, 12.5 fps GIF at normal
+playback speed. The first six seconds let the police approach before recording.
+The camera changes from chase to city view and back during the clip.
+
+[Provenance](../assets/city-chase-demo.json) records source/WASM/output hashes,
+frame timing and observed movement/slip. The full input and snapshot timeline
+is retained in the ignored evidence directory; browser or renderer versions
+may change pixels. The recorder checks moving pursuit, measured rear slip,
+smoke, frame count, playback duration and uncaught browser errors before
+publishing the asset. The [poster](../assets/city-chase-demo.png) is a captured
+frame, with no added vehicles or effects.

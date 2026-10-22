@@ -1,6 +1,6 @@
 # RustDriving
 
-![Recorded native traffic with 24 vehicles, varied speeds and independent braking](assets/dense-traffic-demo.gif)
+![Recorded city driving with police pursuit, intersection drifts and tire smoke](assets/city-chase-demo.gif)
 
 [🎮 Play City Playground — 自分で運転・ドリフト・カーチェイス](https://rsasaki0109.github.io/rust_driving/)
 
@@ -45,7 +45,7 @@ cargo run --release --locked --bin rustdriving -- replay \
 ## Docs
 
 - [Architecture](docs/architecture.md) · [Capabilities](docs/capabilities.md)
-- [Native RNE](integrations/rne/README.md) · [Demo reproduction](docs/dense-traffic-demo.md#reproduction)
+- [Native RNE](integrations/rne/README.md) · [Hero reproduction](docs/browser-playground.md#hero-recording)
 - [Development](docs/development.md) · [Validation](docs/validation.md) · [Contributing](CONTRIBUTING.md)
 - [Maturity and roadmap](docs/maturity.md)
 
