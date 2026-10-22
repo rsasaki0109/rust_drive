@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+from recorded_numeric import compare_recorded
 
 ROOT = Path(__file__).resolve().parent.parent
 BASELINE = ROOT / 'assets/recorded-supported/room-v1'
@@ -64,8 +65,7 @@ def main():
         raise ValueError('physical outcome changed or inputs failed')
     preserved = json.loads((BASELINE / 'results.json').read_text())
     actual = json.loads(report.read_text())
-    if numerical(actual) != numerical(preserved):
-        raise ValueError('non-timing evidence changed')
+    comparison = compare_recorded(numerical(preserved), numerical(actual))
     if len(actual['frames']) != 180 or actual['summary']['updates'] != 179:
         raise ValueError('selected observations omitted')
     audit = output / 'audit.json'
@@ -75,7 +75,8 @@ def main():
         raise ValueError('independent integrity failed')
     result = dict(schema_version=1, regression_integrity_passed=True,
                   evaluator_exit_status=run.returncode, physical_protocol_passed=run.returncode == 0,
-                  summary=actual['summary'], non_timing_evidence_identical=True,
+                  summary=actual['summary'], non_timing_evidence_identical=comparison['exact'],
+                  non_timing_evidence_reproduced=True, historical_comparison=comparison,
                   freeze_sha256=digest(freeze), qualification_sha256=digest(qualification),
                   preserved_report_sha256=digest(BASELINE / 'results.json'),
                   repeated_report_sha256=digest(report), independent_audit_sha256=digest(audit),

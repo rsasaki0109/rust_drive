@@ -113,3 +113,9 @@ status, and compressed/decoded archive hashes are checked before comparing
 operational bytes, physical frames, complete outcomes and measured inputs.
 The diagnostic, progress and ray-capture reports retain historical output
 hashes separately; later driver fixes do not become observation regressions.
+
+Historical RGB-D report comparisons allow finite geometry roundoff bounded by
+`8 * f64::EPSILON * max(1, |recorded|, |reproduced|)`. Reports distinguish exact
+matches from reproduced results and record the number and maximum difference
+of rounded values. Clocks, configuration, source identities, frame counts and
+acceptance decisions remain exact; frozen inputs and physical gates are unchanged.

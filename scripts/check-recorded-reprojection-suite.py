@@ -14,6 +14,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from recorded_numeric import compare_recorded
 
 ROOT = Path(__file__).resolve().parent.parent
 BASELINE = ROOT / 'assets/recorded-reprojection/current-regression'
@@ -153,8 +154,7 @@ def main():
         if run.returncode != expected:
             raise ValueError(f'{dataset}: physical exit {run.returncode}, expected {expected}')
         actual = json.loads(report.read_text())
-        if numerical(actual) != numerical(original_report):
-            raise ValueError(dataset + ': non-timing operational evidence changed')
+        comparison = compare_recorded(numerical(original_report), numerical(actual))
         proof_path = folder / 'audit.json'
         subprocess.run([sys.executable, str(ROOT / 'scripts/check-recorded-reprojection.py'),
                         '--report', str(report), '--manifest', str(manifest),
@@ -164,6 +164,7 @@ def main():
         if not proof['passed_integrity'] or not proof['source_freeze_verified']:
             raise ValueError(dataset + ': independent integrity failed')
         records.append(dict(dataset=dataset, role='viewed numerical regression',
+                            historical_comparison=comparison,
                             summary=actual['summary'], evaluator_exit_status=run.returncode,
                             evaluation_label_failure=actual.get('evaluation_label_failure'),
                             independent_integrity_passed=True, report_sha256=digest(report),

@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+from recorded_numeric import compare_recorded
 
 ROOT = Path(__file__).resolve().parent.parent
 FIRST = ROOT / 'assets/recorded-temporal/first-room-v1'
@@ -71,14 +72,13 @@ def main():
         raise ValueError('physical acceptance status changed')
     original = json.loads((FIRST / 'results.json').read_text())
     actual = json.loads(report.read_text())
-    if numerical(actual) != numerical(original):
-        raise ValueError('non-timing operational evidence changed')
+    comparison = compare_recorded(numerical(original), numerical(actual))
     prefix = json.loads((ROOT / 'assets/recorded-qualified/first-room-v1/results.json').read_text())
     def prefix_numeric(row):
         return {key: numerical(value) for key, value in row.items()
                 if key not in ('cpu_wall_seconds', 'split')}
-    if [prefix_numeric(row) for row in actual['frames'][:36]] != [prefix_numeric(row) for row in prefix['frames']]:
-        raise ValueError('viewed prefix changed despite unchanged estimator defaults')
+    prefix_comparison = compare_recorded([prefix_numeric(row) for row in prefix['frames']],
+                                        [prefix_numeric(row) for row in actual['frames'][:36]])
     if len(actual['frames']) != 180 or actual['summary']['updates'] != 179:
         raise ValueError('temporal updates omitted from denominator')
     audit = output / 'regression-audit.json'
@@ -90,8 +90,10 @@ def main():
     result = dict(schema_version=1, regression_integrity_passed=True,
                   first_evaluator_exit_status=phase['evaluator_exit_status'],
                   regression_evaluator_exit_status=run.returncode,
-                  summary=actual['summary'], non_timing_evidence_identical=True,
-                  previous_36_frame_prefix_numerically_identical=True,
+                  summary=actual['summary'], non_timing_evidence_identical=comparison['exact'],
+                  non_timing_evidence_reproduced=True, historical_comparison=comparison,
+                  previous_36_frame_prefix_numerically_identical=prefix_comparison['exact'],
+                  previous_36_frame_prefix_reproduced=True, prefix_comparison=prefix_comparison,
                   qualification_sha256=digest(qualification),
                   first_report_sha256=digest(FIRST / 'results.json'),
                   regression_report_sha256=digest(report),

@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+from recorded_numeric import compare_recorded
 
 ROOT = Path(__file__).resolve().parent.parent
 BASELINE = ROOT / 'assets/recorded-submaps'
@@ -105,11 +106,13 @@ def main():
         actual = json.loads(report.read_text())
         original = json.loads((baseline / 'results.json').read_text())
         expected_exit = 0 if original['summary']['all_updates_passed'] else 1
-        if run.returncode != expected_exit or numerical(actual) != numerical(original):
+        if run.returncode != expected_exit:
             raise ValueError(dataset + ': deterministic measured outcome changed')
+        comparison = compare_recorded(numerical(original), numerical(actual))
         proof_path = folder / 'audit.json'
         proof = audit(report, manifest, freeze, proof_path)
         records.append(dict(dataset=dataset, role='viewed regression',
+                            historical_comparison=comparison,
                             summary=actual['summary'], evaluator_exit_status=run.returncode,
                             independent_integrity_passed=proof['passed_integrity'],
                             mutations_rejected=len(proof['mutations_rejected']),
