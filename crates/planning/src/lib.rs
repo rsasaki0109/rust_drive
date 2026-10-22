@@ -36,6 +36,8 @@ pub struct LatticePlanner {
     pub search_obstruction_stops: bool,
     /// Confirm a newly checked stopping approach using fresh scene acquisitions.
     pub replan_checked_approaches: bool,
+    /// Search up to eighty existing farther geometry knots, retaining stop commitments.
+    pub search_later_obstruction_stops: bool,
     /// Optional additional road-edge reserve for width-fitted side candidates.
     /// None preserves the original fixed +/-3.5 m offsets.
     pub lateral_candidate_margin_m: Option<f64>,
@@ -89,6 +91,7 @@ impl Default for LatticePlanner {
             settle_obstruction_stops: false,
             search_obstruction_stops: false,
             replan_checked_approaches: false,
+            search_later_obstruction_stops: false,
             lateral_candidate_margin_m: None,
             refine_lateral_candidates: false,
             vehicle: VehicleConfig::default(),
@@ -284,6 +287,7 @@ impl LatticePlanner {
             || !self.cruise_speed.is_finite()
             || self.cruise_speed <= 0.0
             || (self.search_obstruction_stops && !self.settle_obstruction_stops)
+            || (self.search_later_obstruction_stops && !self.replan_checked_approaches)
             || (self.replan_checked_approaches
                 && !(self.search_obstruction_stops
                     && self.settle_obstruction_stops
@@ -640,6 +644,8 @@ impl LatticePlanner {
             let mut used_stop_search = false;
             if blocked {
                 collision_seen = true;
+                let settled_yield =
+                    ego.speed < 0.15 && self.yield_stop_s.is_some_and(|stop_s| s >= stop_s - 0.2);
                 let mut stop = if hold_requested {
                     let speed = ego.speed.max(0.0);
                     if speed == 0.0 {
@@ -649,9 +655,7 @@ impl LatticePlanner {
                         // speeds, followed by the complete stationary hold.
                         (speed.powi(2) / (2.0 * self.max_deceleration_m_s2)).max(1e-7)
                     }
-                } else if ego.speed < 0.15
-                    && self.yield_stop_s.is_some_and(|stop_s| s >= stop_s - 0.2)
-                {
+                } else if settled_yield {
                     ego.speed.max(0.0).powi(2) / (2.0 * self.max_deceleration_m_s2)
                 } else {
                     (speed::distance_at(&points, first_contact) - 4.0).max(0.0)
@@ -678,20 +682,40 @@ impl LatticePlanner {
                     },
                     ..candidate_limits
                 };
-                let Some((stopped, used_search)) = stopping::profile(
-                    &geometry,
-                    ego.speed.max(0.0),
-                    &stopping_limits,
-                    stop,
-                    self.search_obstruction_stops && !hold_requested,
-                    |path| !contact(path).is_finite(),
-                ) else {
+                let later = if self.search_later_obstruction_stops
+                    && !hold_requested
+                    && !self.braking_obstruction_stop()
+                    && !settled_yield
+                {
+                    stopping::later_profile(
+                        &geometry,
+                        ego.speed.max(0.),
+                        &stopping_limits,
+                        stop,
+                        |path| !contact(path).is_finite(),
+                    )
+                } else {
+                    None
+                };
+                let Some((stopped, used_search, earlier_brake)) =
+                    later.map(|path| (path, true, false)).or_else(|| {
+                        stopping::profile(
+                            &geometry,
+                            ego.speed.max(0.0),
+                            &stopping_limits,
+                            stop,
+                            self.search_obstruction_stops && !hold_requested,
+                            |path| !contact(path).is_finite(),
+                        )
+                        .map(|(path, used)| (path, used, used && ego.speed > 0.2))
+                    })
+                else {
                     trace.reject(CandidateDisposition::NoCheckedStop);
                     continue;
                 };
                 points = stopped;
                 used_stop_search = used_search;
-                searched = used_search && ego.speed > 0.2;
+                searched = earlier_brake;
             }
             trace.accept(&points, supplied_route, blocked, used_stop_search);
             let permitted = points.iter().map(|p| p.speed).fold(0.0_f64, f64::max);

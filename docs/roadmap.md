@@ -4,7 +4,17 @@ RustDriving's long-term target is a practical independent autonomous driving OSS
 
 The near-term user goal is a **50% engineering maturity estimate**. [Capability waypoints and evidence requirements](maturity.md) define the development direction; the percentage is subjective and does not imply road safety or parity. The current estimate is about 29%; this remains a subjective simulation-prototype estimate. Bounded turn-rule routing and richer intersection recordings add reproducible behavior, while general driving, perception accuracy and planar/terrain limits remain.
 
-The latest experimental [checked approach replanning](checked-approaches.md)
+Experimental [later stopping-position search](later-stops.md) enumerates existing
+path knots beyond the nominal contact heuristic while retaining active brake
+ownership. Unit cases demonstrate a farther reachable crossing approach, but
+the original mission goals remain open. Address complete passing feasibility
+under the original uncertainty budgets and deadlines before broader adoption;
+the 48-condition result retains 20 arrivals and 36 strict passes, with about
+1.73 m less progress in one native mission. Finite enumeration is not a
+real-time guarantee. M1 remains in progress at
+about 29%.
+
+The preceding experimental [checked approach replanning](checked-approaches.md)
 adds fresh acquisition confirmation before replacing a stationary retained stop
 with a farther fully checked stopping path. Viewed original missions gain local
 progress but still fail their goals. Preserve their deadlines and uncertainty

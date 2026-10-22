@@ -36,6 +36,8 @@ jobs:
         run: python scripts/test_velocity_hypotheses.py
       - name: Check acquired approach confirmation and complete stopping certificates
         run: python scripts/test_checked_approaches.py
+      - name: Check later stop reachability and independent full path certificates
+        run: python scripts/test_later_stops.py
       - name: Check cold-track batch reconstruction and retained acquisitions
         run: python scripts/test_track_initialization.py
       - name: Check recent acquired-motion windows, corruption and frozen-policy ownership
@@ -225,6 +227,9 @@ jobs:
       - name: Qualify reference checked approaches against unchanged gates
         shell: bash
         run: python scripts/check_checked_approaches.py --plant reference-2d --output artifacts/checked-approaches
+      - name: Qualify reference later stopping search against unchanged gates
+        shell: bash
+        run: python scripts/check_later_stops.py --plant reference-2d --output artifacts/later-stops
       - name: Verify stop-sign obligations after measured localization recovery
         shell: bash
         run: python scripts/check_stop_relocalization.py --plant reference-2d --smoke --output artifacts/stop-relocalization
@@ -315,6 +320,7 @@ jobs:
             artifacts/cold-motion/
             artifacts/recent-velocity-hypotheses/
             artifacts/checked-approaches/
+            artifacts/later-stops/
             artifacts/stop-relocalization/
             artifacts/signal-relocalization/
             artifacts/yield-relocalization/
@@ -1191,6 +1197,9 @@ jobs:
       - name: Qualify native checked approaches against unchanged gates
         working-directory: rust_drive
         run: python3 scripts/check_checked_approaches.py --plant rne-dynamic --output artifacts/checked-approaches-native
+      - name: Qualify native later stopping search against unchanged gates
+        working-directory: rust_drive
+        run: python3 scripts/check_later_stops.py --plant rne-dynamic --output artifacts/later-stops-native
       - name: Verify native stop-sign obligations after measured localization recovery
         working-directory: rust_drive
         run: python3 scripts/check_stop_relocalization.py --plant rne-dynamic --smoke --output artifacts/stop-relocalization-native
@@ -1338,6 +1347,7 @@ jobs:
             rust_drive/artifacts/cold-motion-native/
             rust_drive/artifacts/recent-velocity-hypotheses-native/
             rust_drive/artifacts/checked-approaches-native/
+            rust_drive/artifacts/later-stops-native/
             rust_drive/artifacts/stop-relocalization-native/
             rust_drive/artifacts/signal-relocalization-native/
             rust_drive/artifacts/yield-relocalization-native/

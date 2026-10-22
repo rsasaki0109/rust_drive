@@ -2,7 +2,16 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
-The latest experimental [checked approach replanning](checked-approaches.md)
+Experimental [later stopping-position search](later-stops.md) keeps the estimate
+at **about 29%**. It expands checked stopping proposals without changing motion
+budgets or withdrawing existing braking. Separate inspection verifies the
+reachable motion and full stationary tails of every selected checked stop.
+All 48 comparisons retain gates, but arrivals stay 20 and strict qualification
+stays 36/48; one native mission loses about 1.73 m of progress.
+The original mission goals and measured uncertainty calibration remain open;
+the option stays off and the **30% waypoint remains unmet**.
+
+The preceding experimental [checked approach replanning](checked-approaches.md)
 keeps the estimate at **about 29%**. Fresh supported acquisitions can confirm a
 new complete stopping approach after a retained stationary stop. This improves
 local progress in the viewed incomplete missions without completing their

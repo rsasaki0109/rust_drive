@@ -142,6 +142,9 @@ pub struct PipelineConfig {
     pub search_obstruction_stops: bool,
     #[serde(default, skip_serializing_if = "is_false")]
     pub replan_checked_approaches: bool,
+    /// Check farther existing stopping endpoints without withdrawing a retained stop.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub search_later_obstruction_stops: bool,
     /// Optional extra road-edge reserve for width-fitted lateral candidates.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub lateral_candidate_margin_m: Option<f64>,
@@ -230,6 +233,7 @@ impl PipelineConfig {
             settle_obstruction_stops: false,
             search_obstruction_stops: false,
             replan_checked_approaches: false,
+            search_later_obstruction_stops: false,
             lateral_candidate_margin_m: None,
             refine_lateral_candidates: false,
             record_planning_diagnostics: false,
@@ -251,6 +255,9 @@ impl PipelineConfig {
         }
     }
     pub fn validate(&self) -> Result<(), String> {
+        if self.search_later_obstruction_stops && !self.replan_checked_approaches {
+            return Err("later stop search requires acquired checked approach replanning".into());
+        }
         if self.replan_checked_approaches
             && !(self.search_obstruction_stops
                 && self.settle_obstruction_stops
@@ -774,6 +781,7 @@ impl DrivingPipeline {
         planner.settle_obstruction_stops = config.settle_obstruction_stops;
         planner.search_obstruction_stops = config.search_obstruction_stops;
         planner.replan_checked_approaches = config.replan_checked_approaches;
+        planner.search_later_obstruction_stops = config.search_later_obstruction_stops;
         planner.lateral_candidate_margin_m = config.lateral_candidate_margin_m;
         planner.refine_lateral_candidates = config.refine_lateral_candidates;
         planner.set_diagnostics_enabled(

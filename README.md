@@ -4,6 +4,13 @@
 
 Current comparative engineering maturity is **about 29%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
+Experimental [later stopping-position search](docs/later-stops.md) checks up to
+80 existing path endpoints beyond the original stopping heuristic, preserving
+active braking and acquired restart confirmation. Independent inspection checks
+every emitted checked stop, its acceleration limits and full stationary tail.
+All 48 comparisons retain gates over 60,831 ticks; arrivals remain 20 and strict
+qualification stays 36/48. One native mission loses about 1.73 m of progress.
+The original mission goal failures remain open; the option stays off by default.
 Experimental [checked approach replanning](docs/checked-approaches.md) can replace
 a stationary retained obstruction stop after fresh acquired confirmation of a
 new complete stopping path. The original mission goal failures remain scored;

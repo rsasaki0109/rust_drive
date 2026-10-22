@@ -423,6 +423,17 @@ and preserves passing intent through temporary center braking. Default behavior
 is unchanged; original mission availability remains unresolved.
 [Ownership, confirmation and evaluation](checked-approaches.md).
 
+Optional `search_later_obstruction_stops` requires checked-approach replanning.
+Before the ordinary/earlier stopping fallback, it rebuilds and fully sweeps
+reachable stops at up to 80 existing geometry knots beyond the nominal contact
+heuristic, in descending arc length. The actual profile must reach its proposed
+endpoint. Existing braking, stationary holds and settled yield endpoints retain
+ownership; a later checked approach does not arm the earlier-search braking
+latch. Acquired confirmation still owns restart from a retained stop. Separate
+inspection checks all selected checked stops, including their kinematic
+integrals and complete stationary tails, without using actor truth.
+[Model, independent certificates and remaining mission limits](later-stops.md).
+
 Optional `search_obstruction_stops` requires `settle_obstruction_stops`. After
 ordinary collision retiming fails, it checks at most 16 earlier reachable stops
 with the same collision sweep and eight-second stationary tail. A selected moving

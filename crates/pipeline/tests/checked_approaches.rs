@@ -53,6 +53,24 @@ fn the_policy_requires_retained_search_stops_declared_width_and_supported_veloci
 }
 
 #[test]
+fn later_stop_search_requires_checked_approaches_and_retains_legacy_header_defaults() {
+    let mut c = config();
+    assert!(
+        serde_json::to_value(&c)
+            .unwrap()
+            .get("search_later_obstruction_stops")
+            .is_none()
+    );
+    c.search_later_obstruction_stops = true;
+    assert!(DrivingPipeline::new(c.clone()).is_ok());
+    c.replan_checked_approaches = false;
+    assert!(DrivingPipeline::new(c.clone()).is_err());
+    let mut encoded = serde_json::to_value(c).unwrap();
+    encoded["search_later_obstruction_stops"] = serde_json::json!(1);
+    assert!(serde_json::from_value::<PipelineConfig>(encoded).is_err());
+}
+
+#[test]
 fn sensor_replay_binds_the_new_confirmation_record_and_its_header_policy() {
     let c = config();
     let mut driver = DrivingPipeline::new(c.clone()).unwrap();
