@@ -119,6 +119,7 @@ def main():
     urban = request.get('environment') == 'urban'
     urban_japan = request.get('environment') == 'urban-japan'
     city_style = urban or urban_japan
+    traffic_lanes = request.get('traffic_lanes')
     junction_layout = ((15., 3.4, False), (36., 1.35, True)) if urban_japan else ()
     junction_centers = tuple(center for center, width, one_way in junction_layout)
     junction_gaps = tuple((center-width-.4, center+width+.4)
@@ -199,7 +200,7 @@ def main():
             half_width = (bounds['max']['x']-bounds['min']['x'])/2
             edges.append({'points':[{'x':center_x,'y':center_y+i*2} for i in range(-18,19)],
                           'half_width':half_width})
-    if city_style:
+    if city_style and not traffic_lanes:
         edges = [dict(edge, half_width=1.8) for edge in edges]
     closures = {}
     roads = []
@@ -214,7 +215,7 @@ def main():
             points = [{'x': first['x']-20*dx/length, 'y': first['y']-20*dy/length}]+points+[
                 {'x': last['x']+20*ex/extent, 'y': last['y']+20*ey/extent}]
         surface = road(points, edge['half_width'], asphalt, marking,
-                       center_marking=not opposing_display_lanes,
+                       center_marking=not opposing_display_lanes and not traffic_lanes,
                        marking_gaps=junction_gaps)
         bpy.context.view_layer.objects.active = surface
         solid = surface.modifiers.new('Road thickness', 'SOLIDIFY')
@@ -225,6 +226,13 @@ def main():
         if 'id' in edge:
             closures[edge['id']] = line('Map closure', [(p['x'], p['y'], .09) for p in edge['points']], red, .16)
             closures[edge['id']].hide_render = True
+    if traffic_lanes:
+        points = run['route']['points']
+        for offset in traffic_lanes['divider_offsets_m']:
+            for index in range(0, len(points)-1, 3):
+                a, b = points[index:index+2]
+                line('Recorded queue lane divider', [(a['x'], a['y']+offset, .065),
+                     (b['x'], b['y']+offset, .065)], marking, .045)
     # Overlapping authored corridors become one surface, avoiding coplanar
     # flicker at the fork and merge. This changes only decorative geometry.
     for surface in roads[1:]:
@@ -264,7 +272,7 @@ def main():
             if obj.get('scenery_kind') != 'building':
                 continue
             lateral = (-(obj.location.x-a['x'])*dy+(obj.location.y-a['y'])*dx)/length
-            if lateral > center:
+            if (lateral < center if traffic_lanes else lateral > center):
                 obj.hide_render = True
                 for scenery_part in obj.children_recursive:
                     scenery_part.hide_render = True
@@ -272,7 +280,7 @@ def main():
         scenery['foreground_buildings_hidden_for_camera'] = hidden
         pavement = material('Urban public plaza paving', (.26, .30, .32))
         cycling = material('Urban cycle path', (.18, .25, .27))
-        if urban:
+        if urban and not traffic_lanes:
             for low, high in [(-24, -12), (19, 25)]:
                 cube('Display pedestrian plaza', (40, (low+high)/2, .025), (120, high-low, .05), pavement)
             for low, high in [(-6.15, -1.85), (1.85, 6.2)]:
@@ -281,13 +289,13 @@ def main():
                 cube('Display recorded bicycle path', (40, lateral, .025), (120, 2.2, .05), cycling)
         # Original zebra paint at actual recorded crossing positions; signal
         # timing and actor yielding are checked separately in the driving log.
-        for identifier in ([1, 4, 6] if urban else []):
+        for identifier in ([1, 4, 6] if urban and not traffic_lanes else []):
             first = next((a for frame in run['frames'] for a in frame['objects'] if a['id'] == identifier), None)
             if first:
                 for offset in [-1.2, -.6, 0, .6, 1.2]:
                     cube('Display crossing stripe '+str(identifier), (first['position']['x']+offset, 0, .067), (.3, 3.5, .014), marking)
-        for lane in [0]+[spec['offset_m'] for spec in opposing_display_lanes+service_display_lanes]:
-            direction = -1 if lane < 0 else 1
+        for lane in (traffic_lanes['centers_m'] if traffic_lanes else [0]+[spec['offset_m'] for spec in opposing_display_lanes+service_display_lanes]):
+            direction = 1 if traffic_lanes else -1 if lane < 0 else 1
             for distance in range(5, 81, 18):
                 if urban_japan and any(low-1 <= distance <= high+1 for low, high in junction_gaps):
                     continue
@@ -436,6 +444,13 @@ def main():
             else:
                 actors[actor['id']] = barrel(actor['radius'], orange, marking)
     planned = line('Actual planned trajectory', [], teal, .075)
+    if traffic_lanes:
+        if ego['display_radius_m'] > 2.7:
+            raise ValueError('Ego display exceeds the independently checked dense-traffic envelope')
+        for identifier in dynamic_ids:
+            physical = run['scenario']['objects'][identifier]['radius']
+            if actors[identifier]['display_radius_m'] > physical:
+                raise ValueError('Traffic display exceeds its independently checked physical proxy')
     predictions = line('Actual track forecasts', [], purple, .04)
     leash_material = material('Dog leash', (.055, .065, .085))
     dog_pairs = {int(key): value for key, value in request.get('dog_pairs', {}).items()}
@@ -597,6 +612,8 @@ def main():
     if scene_info['left_traffic_display']:
         scene_info['main_street_center_offset_m'] = max(lane['offset_m'] for lane in opposing_display_lanes)/2
     scene_info['environment'] = request.get('environment', 'suburban')
+    if traffic_lanes:
+        scene_info['traffic_lanes'] = traffic_lanes
     if city_style:
         scene_info['painted_lane_half_width_m'] = 1.8
         scene_info['crossing_stripe_actor_ids'] = [1, 4, 6] if urban else []

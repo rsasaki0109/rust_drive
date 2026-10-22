@@ -15,6 +15,21 @@ ROOT = Path(__file__).resolve().parent.parent
 GROUND_MODES = ('lidar3d_ground', 'lidar3d_ground_body')
 
 
+def traffic_lane_layout(run):
+    """Display the declared straight parallel queues without changing sensing."""
+    if run['scenario'].get('navigation') or any(abs(p['y']) > 1e-8 for p in run['route']['points']):
+        raise ValueError('Traffic lane display requires a straight non-navigating X route')
+    actors = [spec for spec in run['scenario']['objects'] if spec.get('following')]
+    centers = sorted({spec['lateral'] for spec in actors})
+    half_width = run['route']['half_width']
+    if (not 2 <= len(centers) <= 8 or any(not math.isfinite(v) for v in centers) or
+            any(abs(spec['lateral']) + spec['radius'] > half_width for spec in actors) or
+            any(b-a < 3. for a, b in zip(centers, centers[1:]))):
+        raise ValueError('Traffic lane display requires bounded separated recorded lanes')
+    return dict(centers_m=centers, divider_offsets_m=[(a+b)/2 for a, b in zip(centers, centers[1:])],
+                road_half_width_m=half_width, reactive_vehicles=len(actors), display_only=True)
+
+
 def verify_recorded_lidar3d(evidence, calibration):
     """Audit recorded XYZ/ordinal consistency; physical ray acceptance is separate."""
     acquisitions = evidence.get('acquisitions')
@@ -329,6 +344,7 @@ def main():
     parser.add_argument('--environment', choices=['suburban', 'urban', 'urban-japan'], default='suburban', help='Original display scenery; does not add operational map or sensor geometry')
     parser.add_argument('--dog-pairs', nargs='+', default=[], help='Recorded pedestrian ID=dog ID companions; display a leash between their actual positions')
     parser.add_argument('--camera', choices=['ego','traffic','street'], default='ego', help='Follow ego, fit traffic in perspective, or use a fixed-scale orthographic local street view')
+    parser.add_argument('--traffic-lanes', action='store_true', help='Draw display-only dividers between recorded straight reactive traffic lanes')
     parser.add_argument('--preview-time', type=float, help='Render one PNG instead of the complete GIF')
     parser.add_argument('--samples', type=int, default=16)
     parser.add_argument('--threads', type=int, default=4)
@@ -345,6 +361,9 @@ def main():
     if run.get('schema_version') != 1 or not run.get('backend', '').startswith('rne-') or not run['summary']['passed']:
         raise SystemExit('A successful schema-1 actual RNE recording is required')
     frames = run['frames']
+    lane_layout = traffic_lane_layout(run) if args.traffic_lanes else None
+    if lane_layout and (args.environment == 'urban-japan' or args.camera != 'traffic'):
+        parser.error('traffic lane display uses the traffic camera and suburban or urban scenery')
     actor_models = {}
     known_ids = {actor['id'] for frame in frames for actor in frame['objects']}
     for assignment in args.actor_models:
@@ -404,6 +423,8 @@ def main():
                    'scene_output': str(args.scene_output.resolve()) if args.scene_output else None,
                    'traffic_models': args.traffic_models, 'actor_models': actor_models, 'camera': args.camera,
                    'environment': args.environment, 'dog_pairs': dog_pairs}
+        if lane_layout:
+            request['traffic_lanes'] = lane_layout
         if native_evidence:
             request['native_scene'] = native_evidence['scene']
             if native_evidence.get('operating_mode') in GROUND_MODES:
@@ -454,6 +475,8 @@ def main():
             draw = ImageDraw.Draw(image)
             draw.text((22, 10), 'RustDriving', font=font(28, True), fill='#edf4ff')
             draw.text((236, 20), 'RNE NATIVE DYNAMICS  /  BLENDER 3D REPLAY', font=font(12, True), fill='#46e3c2')
+            if lane_layout:
+                draw.text((770, 20), f"{lane_layout['reactive_vehicles']} TRAFFIC VEHICLES", font=font(12, True), fill='#edf4ff')
             if native_evidence:
                 label = {'multi_height_lidar': 'MULTI-HEIGHT / PLANAR EGO',
                          'lidar3d': 'INCLINED LIDAR / PLANAR EGO',
@@ -505,7 +528,8 @@ def main():
                                                      '--samples',str(args.samples),'--threads',str(args.threads),'--camera',args.camera,
                                                      '--traffic-models',*args.traffic_models,'--environment',args.environment]+(['--scene-output',str(args.scene_output)] if args.scene_output else [])+
                                                     (['--native-scene',str(args.native_scene)] if args.native_scene else [])+(['--actor-models',*args.actor_models] if args.actor_models else [])+
-                                                    (['--dog-pairs',*args.dog_pairs] if args.dog_pairs else []))}
+                                                    (['--dog-pairs',*args.dog_pairs] if args.dog_pairs else [])+
+                                                    (['--traffic-lanes'] if args.traffic_lanes else []))}
         if args.environment == 'urban-japan':
             provenance['renderer_sources'] = {name: hashlib.sha256((ROOT/'scripts'/name).read_bytes()).hexdigest()
                                               for name in renderer_sources}
