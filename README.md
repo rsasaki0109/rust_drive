@@ -2,29 +2,28 @@
 
 ![Recorded Japanese urban driving simulation](assets/japan-city-demo.gif)
 
-![Recorded closure detour simulation](assets/rne-3d-demo.gif)
-
-![Recorded traffic queue simulation](assets/traffic-fleet-demo.gif)
-
-![Recorded braking and recovery simulation](assets/prediction-3d-demo.gif)
-
-![Recorded stop sign simulation](assets/stop-sign-demo.gif)
-
-![Recorded priority crossing simulation](assets/intersection-demo.gif)
-
-![Recorded late cross traffic simulation](assets/late-crossing-demo.gif)
-
-![Recorded physical cuboid stop simulation](assets/native-scene-demo.gif)
-
-![Recorded optional multi-height LiDAR simulation](assets/multi-height-demo.gif)
-
-![Recorded optional inclined 3D LiDAR simulation](assets/lidar-3d-demo.gif)
-
-![Recorded optional measured-ground filtering simulation](assets/ground-demo.gif)
-
-![Recorded pedestrian and cyclist simulation](assets/vru-demo.gif)
-
-![Recorded occluded crossing simulation](assets/hazard-demo.gif)
+<table>
+  <tr>
+    <td width="33%"><img src="assets/rne-3d-demo.gif" width="260" alt="Recorded closure detour simulation"></td>
+    <td width="33%"><img src="assets/traffic-fleet-demo.gif" width="260" alt="Recorded traffic queue simulation"></td>
+    <td width="33%"><img src="assets/prediction-3d-demo.gif" width="260" alt="Recorded braking and recovery simulation"></td>
+  </tr>
+  <tr>
+    <td width="33%"><img src="assets/stop-sign-demo.gif" width="260" alt="Recorded stop sign simulation"></td>
+    <td width="33%"><img src="assets/intersection-demo.gif" width="260" alt="Recorded priority crossing simulation"></td>
+    <td width="33%"><img src="assets/late-crossing-demo.gif" width="260" alt="Recorded late cross traffic simulation"></td>
+  </tr>
+  <tr>
+    <td width="33%"><img src="assets/native-scene-demo.gif" width="260" alt="Recorded physical cuboid stop simulation"></td>
+    <td width="33%"><img src="assets/multi-height-demo.gif" width="260" alt="Recorded optional multi-height LiDAR simulation"></td>
+    <td width="33%"><img src="assets/lidar-3d-demo.gif" width="260" alt="Recorded optional inclined 3D LiDAR simulation"></td>
+  </tr>
+  <tr>
+    <td width="33%"><img src="assets/ground-demo.gif" width="260" alt="Recorded optional measured-ground filtering simulation"></td>
+    <td width="33%"><img src="assets/vru-demo.gif" width="260" alt="Recorded pedestrian and cyclist simulation"></td>
+    <td width="33%"><img src="assets/hazard-demo.gif" width="260" alt="Recorded occluded crossing simulation"></td>
+  </tr>
+</table>
 
 Autonomous driving research in Rust. Recorded simulations, including optional
 sensing modes.
