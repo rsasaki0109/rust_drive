@@ -6,7 +6,6 @@ import copy
 from functools import lru_cache
 import hashlib
 import json
-import lzma
 import os
 from pathlib import Path
 
@@ -15,6 +14,7 @@ from check_recent_track_motion import audit as parent_audit
 from check_relocalization_map_only import freeze, run_case
 from check_road_width import validate_inputs
 from inspect_planning_progress import audit as inspect, project_output
+from comparison_control import Control
 
 REPO=Path(__file__).resolve().parents[1]
 PARENT=REPO/'assets/recent-track-motion-results.json'
@@ -64,33 +64,26 @@ def verify_policy(config,frozen,spec):
         raise ValueError('preceding world, deadline or budget changed')
 
 
-def archive(base,old,name):
-    key=lambda r:tuple(r[k] for k in ['plant','world','mode','seed'])
-    row=next(r for r in json.loads((base/'report.json').read_text())['episodes'] if key(r)==key(old))
-    record=row['storage'][name]
-    if record['sha256']!=old['storage'][name]['sha256']:raise ValueError('preceding decoded archive receipt changed')
-    path=base/row['recordings']/record['path']
-    if sha(path)!=record['stored_sha256']:raise ValueError('preceding compressed evidence changed')
-    with lzma.open(path,'rb') as stream:raw=stream.read()
-    if hashlib.sha256(raw).hexdigest()!=record['sha256']:raise ValueError('preceding decoded evidence changed')
-    return raw
+def archive(control,old,name):
+    row=control.episode(old,parent()['frozen_inputs'][old['scenario']]['input'])
+    return control.archive(row,name)[0]
 
 
 def audit(run,config,ticks,spec,frozen):
     verify_policy(config,frozen,spec)
     result=parent_audit(run,config,ticks,spec,original_input(frozen))
     result['planning_progress']=inspect(config,ticks)
-    old=baseline(spec);folder=Path(spec['_folder']);base=Path(spec['_baseline'])
+    old=baseline(spec);folder=Path(spec['_folder']);control=spec['_control']
+    preceding=json.loads(archive(control,old,'run/run.json'))
     digest=hashlib.sha256();count=0
     with (folder/'replay/outputs.jsonl').open('rb') as stream:
         for line in stream:digest.update(project_output(line));count+=1
-    expected=old['storage']['replay/outputs.jsonl']['sha256']
-    if digest.hexdigest()!=expected or count!=old['summary']['steps']:
+    expected=hashlib.sha256(archive(control,old,'replay/outputs.jsonl')).hexdigest()
+    if digest.hexdigest()!=expected or count!=preceding['summary']['steps']:
         raise ValueError('progress observer changed operational output bytes')
-    preceding=json.loads(archive(base,old,'run/run.json'))
     if preceding['frames']!=run['frames'] or preceding['summary']!=run['summary']:
         raise ValueError('progress observer changed physical frames or complete outcomes')
-    original=[json.loads(line)['tick']['input'] for line in archive(base,old,'run/sensors.jsonl').splitlines() if 'tick' in json.loads(line)]
+    original=[json.loads(line)['tick']['input'] for line in archive(control,old,'run/sensors.jsonl').splitlines() if 'tick' in json.loads(line)]
     if original!=[t['input'] for t in ticks]:raise ValueError('progress observer changed acquired input values or clocks')
     blocked=[f for f,t in zip(run['frames'],ticks) if t['expected']['planning_progress']['state']=='StationaryForecastBlocked']
     maximum=max((abs(f['truth']['speed']) for f in blocked),default=0.)
@@ -98,7 +91,9 @@ def audit(run,config,ticks,spec,frozen):
     result['progress_physics']=dict(passed=True,blocked_samples=len(blocked),maximum_actual_speed_m_s=maximum,evaluation_only=True)
     result['capture_compatibility']=dict(passed=True,operational_output_sha256=expected,
         projected_output_sha256=digest.hexdigest(),verified_output_ticks=count,
-        identical_physical_frames=True,identical_summary=True,identical_sensor_inputs=True)
+        identical_physical_frames=True,identical_summary=True,identical_sensor_inputs=True,
+        control_binary_sha256=control.binaries[spec['plant']],
+        historical_output_sha256=old['storage']['replay/outputs.jsonl']['sha256'])
     return result
 
 
@@ -113,14 +108,13 @@ def main():
     args=parser.parse_args();output=args.output.resolve();plants=['reference-2d','rne-dynamic'] if args.plant=='all' else [args.plant]
     manifest=freeze(output,specifications(plants),factory=materialize,gates=GATES)
     if args.freeze_only:return
-    base=args.baseline_output.resolve()
-    if not json.loads((base/'report.json').read_text())['complete']:raise ValueError('preceding cohort is incomplete')
     binaries={'reference-2d':args.binary.resolve(),'rne-dynamic':args.native_binary.resolve()}
+    control=Control(args.baseline_output,{p:binaries[p] for p in plants})
     fingerprints={p:sha(binaries[p]) for p in plants};validate_inputs(output,manifest,args.binary.resolve())
     def one(spec):
         folder=output/'episodes'/spec['plant']/f"{spec['world']}-{spec['mode']}-seed-{spec['seed']}"
         return run_case(output,spec,binaries[spec['plant']],args.binary.resolve(),
-            auditor=lambda r,c,t,s,f:audit(r,c,t,dict(s,_folder=str(folder),_baseline=str(base)),f))
+            auditor=lambda r,c,t,s,f:audit(r,c,t,dict(s,_folder=str(folder),_control=control),f))
     report=dict(complete=False,passed=False,gates=GATES,binaries=fingerprints,
         manifest_sha256=sha(output/'frozen-manifest.json'),episodes=[])
     with ThreadPoolExecutor(max_workers=2) as pool:

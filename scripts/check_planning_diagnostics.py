@@ -5,7 +5,6 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 import hashlib
 import json
-import lzma
 import os
 from pathlib import Path
 
@@ -14,6 +13,7 @@ from check_refined_lateral import audit as parent_audit
 from check_relocalization_map_only import freeze,run_case
 from check_road_width import validate_inputs
 from inspect_planning import audit as audit_decisions,project_output
+from comparison_control import Control
 
 REPO=Path(__file__).resolve().parents[1]
 PARENT=REPO/'assets/refined-lateral-results.json'
@@ -41,18 +41,9 @@ def materialize(spec):
 
 
 def baseline_archive(spec,name):
-    old=baseline(spec);base=Path(spec['_baseline'])
-    provided=next(r for r in baseline_report(str(base))['episodes'] if key(r)==key(spec))
-    record=provided['storage'][name]
-    if record['sha256']!=old['storage'][name]['sha256']:
-        raise ValueError('baseline differs from the frozen preceding output')
-    path=base/provided['recordings']/record['path']
-    if sha(path)!=record['stored_sha256']:raise ValueError('preceding physical archive changed')
-    return path,record
-
-
-@lru_cache(maxsize=2)
-def baseline_report(folder):return json.loads((Path(folder)/'report.json').read_text())
+    old=baseline(spec);control=spec['_control']
+    provided=control.episode(old,parent()['frozen_inputs'][old['scenario']]['input'])
+    return control.archive(provided,name)
 
 
 def audit(run,config,ticks,spec,frozen):
@@ -61,20 +52,21 @@ def audit(run,config,ticks,spec,frozen):
     result=parent_audit(run,config,ticks,spec,frozen)
     result['planning_decisions']=audit_decisions(config,ticks)
     old=baseline(spec);folder=Path(spec['_folder'])
+    encoded,record=baseline_archive(spec,'run/run.json')
+    previous=json.loads(encoded)
     digest=hashlib.sha256();count=0
     with (folder/'replay/outputs.jsonl').open('rb') as stream:
         for line in stream:digest.update(project_output(line));count+=1
-    expected=old['storage']['replay/outputs.jsonl']['sha256']
-    if digest.hexdigest()!=expected or count!=old['summary']['steps']:
+    _,reference=baseline_archive(spec,'replay/outputs.jsonl')
+    expected=reference['sha256']
+    if digest.hexdigest()!=expected or count!=previous['summary']['steps']:
         raise ValueError('capturing decisions changed operational output bytes')
-    archive,record=baseline_archive(spec,'run/run.json')
-    with lzma.open(archive,'rb') as stream:encoded=stream.read()
-    if hashlib.sha256(encoded).hexdigest()!=record['sha256']:raise ValueError('preceding decoded physical evidence changed')
-    previous=json.loads(encoded)
     if run['frames']!=previous['frames'] or run['summary']!=previous['summary']:
         raise ValueError('capturing decisions changed physical frames or complete outcomes')
     result['compatibility']=dict(operational_output_sha256=expected,projected_output_sha256=digest.hexdigest(),
-                                 verified_output_ticks=count,physical_frames_identical=True,summary_identical=True)
+                                 verified_output_ticks=count,physical_frames_identical=True,summary_identical=True,
+                                 control_binary_sha256=spec['_control'].binaries[spec['plant']],
+                                 historical_output_sha256=old['storage']['replay/outputs.jsonl']['sha256'])
     return result
 
 
@@ -95,19 +87,18 @@ def main():
                require_identical_physical_frames=True,default_enabled=False)
     manifest=freeze(output,specifications(plants),factory=materialize,gates=gates)
     if args.freeze_only:return
-    control=baseline_report(str(args.baseline_output.resolve()))
-    if not control['complete']:raise ValueError('baseline physical qualification is incomplete')
-    for spec in manifest['episodes']:
-        baseline_archive(dict(spec,_baseline=str(args.baseline_output.resolve())),'run/run.json')
-    validate_inputs(output,manifest,args.binary.resolve())
     binaries={'reference-2d':args.binary.resolve(),'rne-dynamic':args.native_binary.resolve()}
+    control=Control(args.baseline_output,{p:binaries[p] for p in plants})
+    for spec in manifest['episodes']:
+        baseline_archive(dict(spec,_control=control),'run/run.json')
+    validate_inputs(output,manifest,args.binary.resolve())
     fingerprints={p:sha(binaries[p]) for p in plants}
     report=dict(complete=False,passed=False,gates=gates,manifest_sha256=sha(output/'frozen-manifest.json'),
                 binaries=fingerprints,episodes=[])
     def one(spec):
         folder=output/'episodes'/spec['plant']/f"{spec['world']}-{spec['mode']}-seed-{spec['seed']}"
         return run_case(output,spec,binaries[spec['plant']],binaries['reference-2d'],
-                        auditor=lambda r,c,t,s,f:audit(r,c,t,dict(s,_folder=str(folder),_baseline=str(args.baseline_output.resolve())),f))
+                        auditor=lambda r,c,t,s,f:audit(r,c,t,dict(s,_folder=str(folder),_control=control),f))
     with ThreadPoolExecutor(max_workers=2) as pool:
         for row in pool.map(one,manifest['episodes']):
             report['episodes'].append(row);report['complete']=len(report['episodes'])==len(manifest['episodes'])

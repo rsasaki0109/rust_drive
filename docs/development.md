@@ -106,3 +106,10 @@ accuracy gates, failed outcomes and archived source hashes remain fixed.
 optimization packet with its recorded source snapshot. The following CI steps
 execute and check the active camera code against an independent current-host
 reference. Failed commands also publish their log tail as check annotations.
+
+Observation-only comparisons use fresh controls from the same executable and
+the original frozen scenario inputs. Control manifests, binary hashes, replay
+status, and compressed/decoded archive hashes are checked before comparing
+operational bytes, physical frames, complete outcomes and measured inputs.
+The diagnostic, progress and ray-capture reports retain historical output
+hashes separately; later driver fixes do not become observation regressions.

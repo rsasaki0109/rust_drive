@@ -4,7 +4,7 @@ import argparse
 from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 import json
-import lzma
+import hashlib
 import math
 import os
 from pathlib import Path
@@ -15,6 +15,7 @@ from check_relocalization_map_only import freeze, run_case
 from check_road_width import validate_inputs
 from check_track_initialization import compare
 from planar_sweep_oracle import audit_stream
+from comparison_control import Control
 
 REPO=Path(__file__).resolve().parents[1]
 PARENT=REPO/'assets/forecast-consistency-results.json'
@@ -59,16 +60,9 @@ def materialize(spec):
 
 
 def archive(spec,name):
-    base=Path(spec['_baseline']);old=baseline(spec)
-    row=next(r for r in packet(str(base/'report.json'))['episodes'] if key(r)==key(spec))
-    record=row['storage'][name]
-    if record['sha256']!=old['storage'][name]['sha256']:raise ValueError('preceding archived output changed')
-    path=base/row['recordings']/record['path']
-    if sha(path)!=record['stored_sha256']:raise ValueError('preceding compressed evidence changed')
-    with lzma.open(path,'rb') as stream:raw=stream.read()
-    import hashlib
-    if hashlib.sha256(raw).hexdigest()!=record['sha256']:raise ValueError('preceding decoded evidence changed')
-    return raw
+    old=baseline(spec);control=spec['_control']
+    row=control.episode(old,packet(str(PARENT))['frozen_inputs'][old['scenario']]['input'])
+    return control.archive(row,name)[0]
 
 
 def audit(run,config,ticks,spec,frozen):
@@ -79,7 +73,8 @@ def audit(run,config,ticks,spec,frozen):
     result['planar_sweeps']=audit_stream(config,ticks)
     if spec['sweep_mode']=='capture':
         old=baseline(spec);folder=Path(spec['_folder'])
-        if sha(folder/'replay/outputs.jsonl')!=old['storage']['replay/outputs.jsonl']['sha256']:
+        expected_output=hashlib.sha256(archive(spec,'replay/outputs.jsonl')).hexdigest()
+        if sha(folder/'replay/outputs.jsonl')!=expected_output:
             raise ValueError('capturing acquired rays changed operational output bytes')
         preceding=json.loads(archive(spec,'run/run.json'))
         if preceding['frames']!=run['frames'] or preceding['summary']!=run['summary']:
@@ -92,7 +87,9 @@ def audit(run,config,ticks,spec,frozen):
             if current!=previous:raise ValueError('ray capture changed original sensor values or clocks')
         if len(original)!=len(ticks):raise ValueError('capture lost original sensor ticks')
         result['capture_compatibility']=dict(passed=True,identical_physical_frames=True,identical_summary=True,
-            identical_original_sensor_values=True,operational_output_sha256=old['storage']['replay/outputs.jsonl']['sha256'])
+            identical_original_sensor_values=True,operational_output_sha256=expected_output,
+            control_binary_sha256=spec['_control'].binaries[spec['plant']],
+            historical_output_sha256=old['storage']['replay/outputs.jsonl']['sha256'])
     return result
 
 
@@ -107,15 +104,15 @@ def main():
     args=parser.parse_args();output=args.output.resolve();plants=['reference-2d','rne-dynamic'] if args.plant=='all' else [args.plant]
     manifest=freeze(output,specifications(plants),factory=materialize,gates=GATES)
     if args.freeze_only:return
-    if not packet(str(args.baseline_output.resolve()/'report.json'))['complete']:raise ValueError('preceding physical qualification incomplete')
     binaries={'reference-2d':args.binary.resolve(),'rne-dynamic':args.native_binary.resolve()};fingerprints={p:sha(binaries[p]) for p in plants}
+    control=Control(args.baseline_output,{p:binaries[p] for p in plants})
     validate_inputs(output,manifest,args.binary.resolve())
     report=dict(complete=False,passed=False,gates=GATES,binaries=fingerprints,
         manifest_sha256=sha(output/'frozen-manifest.json'),episodes=[])
     def one(spec):
         folder=output/'episodes'/spec['plant']/f"{spec['world']}-{spec['mode']}-seed-{spec['seed']}"
         row=run_case(output,spec,binaries[spec['plant']],args.binary.resolve(),
-            auditor=lambda r,c,t,s,f:audit(r,c,t,dict(s,_folder=str(folder),_baseline=str(args.baseline_output.resolve())),f))
+            auditor=lambda r,c,t,s,f:audit(r,c,t,dict(s,_folder=str(folder),_control=control),f))
         row['comparison']=compare(row,baseline(spec));row['original_comparison']=compare(row,baseline(spec,original=True))
         return row
     with ThreadPoolExecutor(max_workers=2) as pool:

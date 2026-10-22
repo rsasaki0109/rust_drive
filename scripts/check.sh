@@ -3,6 +3,7 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 source scripts/env.sh
 python3 scripts/test-rgbd-regression-staging.py
+python3 scripts/test_comparison_control.py
 python3 scripts/test_prediction_evidence.py
 python3 scripts/test_forecast_envelope.py
 python3 scripts/test_pose_forecasts.py
