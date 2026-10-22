@@ -71,6 +71,9 @@ are rejected before any artifact is staged; complete map/scenario files are
 published before the report, with rollback on ordinary publication errors.
 This remains a CLI persistence concern outside driving and routing algorithms.
 [Export contract and limits](osm-export.md).
+The importer also bounds actual reads to 16 MiB + 1 bytes before decoding and
+rejects repeated single-value options or unused scenario-only settings before
+opening input. [Input contract and verification](osm-input.md).
 
 Unconditional `no` and `only` junction rules now constrain directed transitions.
 Restricted search retains the incoming edge at each node, so a shorter forbidden

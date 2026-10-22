@@ -7,6 +7,8 @@ the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
 The [OSM importer preserves existing files](docs/osm-export.md), rejects input/
 destination aliases and publishes its report after complete map/scenario files.
 Repeating an import requires fresh export filenames or a fresh directory.
+It [bounds actual input bytes and rejects ambiguous options](docs/osm-input.md),
+including oversized pipes and scenario-only settings without scenario output.
 Both run CLIs now [protect their inputs and publish complete result files](docs/run-publication.md).
 Scenario/scene aliases are rejected before old results are invalidated, and
 the complete summary is published last. Completed failed missions retain their

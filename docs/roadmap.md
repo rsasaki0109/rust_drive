@@ -6,7 +6,8 @@ The near-term user goal is a **50% engineering maturity estimate**. [Capability 
 
 [OSM export preservation](osm-export.md) prevents geographic input loss and
 partial successful-looking map exports. Fresh destinations and complete staged
-files now precede report publication. This closes a reproducibility defect;
+files now precede report publication. [Actual byte bounds and explicit options](osm-input.md)
+also reject oversized streams and ambiguous requests. These close reproducibility defects;
 original mission availability and independent automotive calibration remain
 capability gates. M1 remains in progress at about 29%.
 

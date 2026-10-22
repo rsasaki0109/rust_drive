@@ -1,0 +1,330 @@
+{
+  "schema_version": 1,
+  "passed": true,
+  "scope": "Actual OSM input byte bounds and explicit CLI option validation; no routing or driving algorithm change.",
+  "parent": {
+    "commit": "4be107ad0838dd2c2e02ab02ddf7cc8b082b740a",
+    "packet_path": "assets/osm-export-results.json",
+    "packet_sha256": "6537f33f766720717fc00808d6baee6e3ffec9544e61af35a4465d1acba42c74",
+    "executable_path": "artifacts/osm-export-v1/final-binaries/rustdriving",
+    "executable_sha256": "f23ef590244887e14ffd35222586b4fc2c3914fa6a2651b23e6bc7016834970a"
+  },
+  "source_bindings": {
+    "crates/sim/src/main.rs": "0d27e49eb93befa2a837270a3c9caefab458a98d2d522cbc1a6f364ea5b48a77",
+    "crates/sim/src/osm_input.rs": "d53da59072f0f16fd960aa6c87295b2678bbb5574d16ceb37ae48233a741c71d",
+    "crates/sim/tests/osm_cli.rs": "87a1c7905bbc17fca72e8e036a3c2e40951153c5ef84409c517c8abedd0e7a12"
+  },
+  "tested_source_inventory": {
+    "files": 1142,
+    "path": "artifacts/osm-input-v1/required-check/tested-sources.json",
+    "sha256": "2c5768ec7e776aa427b7a51737729e5ed0a5f95c1481d05ed7d6082a49d3df58",
+    "bytes": 138752
+  },
+  "pins": {
+    "Cargo.toml": "2975b0cc0fbaed1397dc5d575fe95466d29ce773400eb1ce8f4fbec37bac0d65",
+    "Cargo.lock": "de8e6afb2c8f59be7f68f0ccf8604e4d43d9951d6902314f46f16b8121dbccf7",
+    "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed",
+    "integrations/rne/Cargo.lock": "c15e499bc74ddcf213bb0ac22cb22280c68d49ead2e203b8a7213e5a9f38f2ff",
+    "integrations/rne/rne-revision.txt": "18a0b41bc51d35a964f9dc922ee44cf1c485b34765c8ddfe82c93649c440404e"
+  },
+  "binary": {
+    "path": "artifacts/osm-input-v1/final-binaries/rustdriving",
+    "sha256": "b4f252eb614dacd24930c60173b7de46f5c9095fcc0fa8d1103773446b17ccd5",
+    "bytes": 5828832,
+    "rust_toolchain": "rustc 1.90.0 (1159e78c4 2025-09-14)"
+  },
+  "required_check": {
+    "command": "bash scripts/check.sh",
+    "exit_code": 0,
+    "rust_tests": 1049,
+    "python_tests": 295,
+    "standard_replays": 49,
+    "completed_standard_cases": 49,
+    "byte_identical_standard_streams": 245,
+    "errors": [],
+    "operational_sources_unchanged": true,
+    "baseline_archives_retained": true
+  },
+  "added_tests": {
+    "total": 7,
+    "bounded_reader": 2,
+    "cli": 5,
+    "linux_pipe_test": 1
+  },
+  "input_limit": {
+    "accepted_bytes": 16777216,
+    "maximum_read_bytes": 16777217,
+    "includes_whitespace": true,
+    "depends_on_metadata": false
+  },
+  "options": {
+    "non_repeatable_options_and_flags_tested": 11,
+    "closed_edge_repeatable": true,
+    "explicit_cruise_and_duration_require_scenario": true,
+    "default_cruise_m_s": 2,
+    "default_duration_s": 180
+  },
+  "repaired_failures": [
+    {
+      "case": "stdin-over",
+      "parent_exit_code": 0,
+      "current_exit_code": 2,
+      "input_bytes": 16777217,
+      "input_sha256": "907a69813212611d67d49870b1bfb0a06920ecac38377967a5e9f5a059d01f4b",
+      "pipe_metadata": {
+        "reported_bytes": 0,
+        "is_fifo": true
+      },
+      "no_exports": true,
+      "diagnostics": "rustdriving: OSM input exceeds 16 MiB\n"
+    },
+    {
+      "case": "repeated-input",
+      "parent_exit_code": 0,
+      "current_exit_code": 2,
+      "input_bytes": 53687,
+      "input_sha256": "77189ddb7f66915817d11b83765851709b409713487e5d2b9d8f357f665680c6",
+      "pipe_metadata": null,
+      "no_exports": true,
+      "diagnostics": "rustdriving: repeated import-osm option --input\n"
+    },
+    {
+      "case": "unused-cruise",
+      "parent_exit_code": 0,
+      "current_exit_code": 2,
+      "input_bytes": 53687,
+      "input_sha256": "77189ddb7f66915817d11b83765851709b409713487e5d2b9d8f357f665680c6",
+      "pipe_metadata": null,
+      "no_exports": true,
+      "diagnostics": "rustdriving: routing options require --scenario-output\n"
+    },
+    {
+      "case": "unused-duration",
+      "parent_exit_code": 0,
+      "current_exit_code": 2,
+      "input_bytes": 53687,
+      "input_sha256": "77189ddb7f66915817d11b83765851709b409713487e5d2b9d8f357f665680c6",
+      "pipe_metadata": null,
+      "no_exports": true,
+      "diagnostics": "rustdriving: routing options require --scenario-output\n"
+    }
+  ],
+  "unchanged_cases": [
+    {
+      "case": "ordinary",
+      "exit_code": 0,
+      "output_sha256": {
+        "map.json": "9c38157f69af9072cd9d99046284ccbbb30dce3fbf987db0f12243139f634acf",
+        "map.import.json": "60f68815860fb547f4dc6022332479f03a82f7293f17ceb7c147d4ee6128aee7"
+      },
+      "stdout_sha256": "3ae50810c41c631b76f395a0f98a84ccdb3e158eed23ab7fcff09a966bc5822c",
+      "all_bytes_identical_to_parent": true
+    },
+    {
+      "case": "scenario-defaults",
+      "exit_code": 0,
+      "output_sha256": {
+        "map.json": "9c38157f69af9072cd9d99046284ccbbb30dce3fbf987db0f12243139f634acf",
+        "map.import.json": "60f68815860fb547f4dc6022332479f03a82f7293f17ceb7c147d4ee6128aee7",
+        "scenario.json": "adfae37bffdb44dde79e87564a8402bd4e084d81c236880e05bc44c2c995cba7"
+      },
+      "stdout_sha256": "3ae50810c41c631b76f395a0f98a84ccdb3e158eed23ab7fcff09a966bc5822c",
+      "all_bytes_identical_to_parent": true
+    },
+    {
+      "case": "scenario-explicit",
+      "exit_code": 0,
+      "output_sha256": {
+        "map.json": "9c38157f69af9072cd9d99046284ccbbb30dce3fbf987db0f12243139f634acf",
+        "map.import.json": "60f68815860fb547f4dc6022332479f03a82f7293f17ceb7c147d4ee6128aee7",
+        "scenario.json": "adfae37bffdb44dde79e87564a8402bd4e084d81c236880e05bc44c2c995cba7"
+      },
+      "stdout_sha256": "3ae50810c41c631b76f395a0f98a84ccdb3e158eed23ab7fcff09a966bc5822c",
+      "all_bytes_identical_to_parent": true
+    },
+    {
+      "case": "multiple-closures",
+      "exit_code": 0,
+      "output_sha256": {
+        "map.json": "9c38157f69af9072cd9d99046284ccbbb30dce3fbf987db0f12243139f634acf",
+        "map.import.json": "60f68815860fb547f4dc6022332479f03a82f7293f17ceb7c147d4ee6128aee7",
+        "scenario.json": "a60810320c0405c206e8a5fcc30af80b7c8fdfe9bed6bbe0c183c2c18f2409ec"
+      },
+      "stdout_sha256": "3ae50810c41c631b76f395a0f98a84ccdb3e158eed23ab7fcff09a966bc5822c",
+      "all_bytes_identical_to_parent": true
+    },
+    {
+      "case": "file-below",
+      "exit_code": 0,
+      "output_sha256": {
+        "map.json": "9c38157f69af9072cd9d99046284ccbbb30dce3fbf987db0f12243139f634acf",
+        "map.import.json": "60f68815860fb547f4dc6022332479f03a82f7293f17ceb7c147d4ee6128aee7"
+      },
+      "stdout_sha256": "3ae50810c41c631b76f395a0f98a84ccdb3e158eed23ab7fcff09a966bc5822c",
+      "all_bytes_identical_to_parent": true
+    },
+    {
+      "case": "file-limit",
+      "exit_code": 0,
+      "output_sha256": {
+        "map.json": "9c38157f69af9072cd9d99046284ccbbb30dce3fbf987db0f12243139f634acf",
+        "map.import.json": "60f68815860fb547f4dc6022332479f03a82f7293f17ceb7c147d4ee6128aee7"
+      },
+      "stdout_sha256": "3ae50810c41c631b76f395a0f98a84ccdb3e158eed23ab7fcff09a966bc5822c",
+      "all_bytes_identical_to_parent": true
+    },
+    {
+      "case": "file-over",
+      "exit_code": 2,
+      "output_sha256": {},
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "all_bytes_identical_to_parent": true
+    },
+    {
+      "case": "stdin-below",
+      "exit_code": 0,
+      "output_sha256": {
+        "map.json": "9c38157f69af9072cd9d99046284ccbbb30dce3fbf987db0f12243139f634acf",
+        "map.import.json": "60f68815860fb547f4dc6022332479f03a82f7293f17ceb7c147d4ee6128aee7"
+      },
+      "stdout_sha256": "3ae50810c41c631b76f395a0f98a84ccdb3e158eed23ab7fcff09a966bc5822c",
+      "all_bytes_identical_to_parent": true
+    },
+    {
+      "case": "stdin-limit",
+      "exit_code": 0,
+      "output_sha256": {
+        "map.json": "9c38157f69af9072cd9d99046284ccbbb30dce3fbf987db0f12243139f634acf",
+        "map.import.json": "60f68815860fb547f4dc6022332479f03a82f7293f17ceb7c147d4ee6128aee7"
+      },
+      "stdout_sha256": "3ae50810c41c631b76f395a0f98a84ccdb3e158eed23ab7fcff09a966bc5822c",
+      "all_bytes_identical_to_parent": true
+    }
+  ],
+  "input_archives": {
+    "16777215": {
+      "path": "artifacts/osm-input-v1/frozen/input-16777215.json.xz",
+      "encoding": "xz",
+      "sha256": "c2e45c0a4725ab18e4d232fb167266734d86988b33b73b69279dd335ae1ffbae",
+      "stored_sha256": "f28df656b3310698593240c65a3bd3eee131dd26c853132a322ce6041321fe53",
+      "decoded_bytes": 16777215,
+      "stored_bytes": 7296
+    },
+    "16777216": {
+      "path": "artifacts/osm-input-v1/frozen/input-16777216.json.xz",
+      "encoding": "xz",
+      "sha256": "c7b99aaff0278551bcee6817843d7c3da002378c57ae845b1a8e321ad83e2301",
+      "stored_sha256": "7729158e204f0fff98e5db7bb3fd10142c91472084ad8c077f2e4a0e228e0d12",
+      "decoded_bytes": 16777216,
+      "stored_bytes": 7296
+    },
+    "16777217": {
+      "path": "artifacts/osm-input-v1/frozen/input-16777217.json.xz",
+      "encoding": "xz",
+      "sha256": "907a69813212611d67d49870b1bfb0a06920ecac38377967a5e9f5a059d01f4b",
+      "stored_sha256": "eb1da525efe95677c6ce955190f80668d21a790f49ba226097ec52a05092be87",
+      "decoded_bytes": 16777217,
+      "stored_bytes": 7296
+    }
+  },
+  "compatibility": {
+    "standard_cases": 49,
+    "standard_artifacts": 245,
+    "unchanged": true,
+    "complete_artifact_bindings": {
+      "path": "artifacts/osm-input-v1/required-check/verified-standard-outputs.json",
+      "sha256": "5f7349637c642d98ddd3d8c12eeff48b33a24770da779d6ce837b5424fd74546",
+      "bytes": 106771
+    },
+    "positive_import_cases": 8,
+    "imported_export_artifacts": 19,
+    "imported_stdout_streams": 8,
+    "unchanged_invalid_cases": 1
+  },
+  "external_osm_reference_goal_and_full_sensor_replay": true,
+  "native": {
+    "implementation_unchanged": true,
+    "requalified": false,
+    "reason": "Only reference importer binary/tests changed; all preceding shared/native sources retain hashes."
+  },
+  "evidence": {
+    "initial.json": {
+      "path": "artifacts/osm-input-v1/initial.json",
+      "sha256": "9a858f0fbc41ff3d411ccaf86d7705a7628d4b1ffde29ceb2e101bd8b58af762",
+      "bytes": 4286
+    },
+    "reproduce.py": {
+      "path": "artifacts/osm-input-v1/reproduce.py",
+      "sha256": "12b7106596b2bab0d51f25bb219cd7711ad900e07a9c2a6f280d7f5d6a9024b6",
+      "bytes": 6205
+    },
+    "reproductions/parent.json": {
+      "path": "artifacts/osm-input-v1/reproductions/parent.json",
+      "sha256": "5bbdb6b54f56f049739f92e5a38c54471a3db2dc706cce95e6d254884ea105f0",
+      "bytes": 18770
+    },
+    "reproductions/current.json": {
+      "path": "artifacts/osm-input-v1/reproductions/current.json",
+      "sha256": "71b4ee9242523ceee3da05a4536a45402c4ef99d3853259223f948a410b5f4a8",
+      "bytes": 18550
+    },
+    "required-check/run_check.py": {
+      "path": "artifacts/osm-input-v1/required-check/run_check.py",
+      "sha256": "cf09d6fa607243a730797fd7817e82a4391e4a248da0f8891fe4feb28169c54f",
+      "bytes": 4593
+    },
+    "required-check/core.log": {
+      "path": "artifacts/osm-input-v1/required-check/core.log",
+      "sha256": "33aee50a3c602691d172eea4aa8cc24c9fbaac5e801cc4e55cd02880979f22d9",
+      "bytes": 150096
+    },
+    "required-check/summary.json": {
+      "path": "artifacts/osm-input-v1/required-check/summary.json",
+      "sha256": "a194ac54231d14f7bb46492e96888da4a0931cef721130bf76099c86a28a0f24",
+      "bytes": 301
+    },
+    "required-check/parent-standard-outputs.json": {
+      "path": "artifacts/osm-input-v1/required-check/parent-standard-outputs.json",
+      "sha256": "e6ec9503dab7f9efafe96acf6e2dc95b2caeffe6de1105134ab9f52e547be951",
+      "bytes": 120225
+    },
+    "required-check/verified-standard-outputs.json": {
+      "path": "artifacts/osm-input-v1/required-check/verified-standard-outputs.json",
+      "sha256": "5f7349637c642d98ddd3d8c12eeff48b33a24770da779d6ce837b5424fd74546",
+      "bytes": 106771
+    },
+    "required-check/tested-sources.json": {
+      "path": "artifacts/osm-input-v1/required-check/tested-sources.json",
+      "sha256": "2c5768ec7e776aa427b7a51737729e5ed0a5f95c1481d05ed7d6082a49d3df58",
+      "bytes": 138752
+    },
+    "required-check/cache-cleanup.json": {
+      "path": "artifacts/osm-input-v1/required-check/cache-cleanup.json",
+      "sha256": "eb9c0c2ca48deee9535792bb7d26536fb68ae07413675678ef92590ad7fa86f6",
+      "bytes": 192
+    },
+    "focused-final-tests.log": {
+      "path": "artifacts/osm-input-v1/focused-final-tests.log",
+      "sha256": "6cf5b8324c7de26fa7b12f2a61591dd56c22f6ac25c7a2740d4360e0fa3059f5",
+      "bytes": 2455
+    },
+    "build_packet.py": {
+      "path": "artifacts/osm-input-v1/build_packet.py",
+      "sha256": "6fadd80c0de9c08619f97fad6f4e642199a04b9bb67bb173bfdd1882d59ad5cb",
+      "bytes": 8086
+    }
+  },
+  "limits": [
+    "Local Linux checks; no remote CI, cross-platform or hard-real-time claim.",
+    "Byte bounds do not bound waiting on a stalled input producer.",
+    "Repeated scalar/geometry options and unused scenario-only options are deliberately rejected.",
+    "No new automotive data, uncertainty calibration, driving availability or original mission completion."
+  ],
+  "maturity": {
+    "subjective_comparative_percent": 29,
+    "changed": false,
+    "waypoint_30_met": false,
+    "original_incomplete_missions": 8
+  },
+  "delivery": "Local commit; no push or pull request requested for this change."
+}

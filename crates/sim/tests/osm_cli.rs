@@ -313,6 +313,178 @@ fn repeating_a_successful_import_preserves_all_previous_exports() {
     assert_eq!(result.status.code(), Some(2));
     assert_eq!(snapshot(&dir.0), before);
 }
+
+fn padded_source(bytes: usize) -> Vec<u8> {
+    let mut source = include_bytes!("../../../maps/osm/german-road-extract.json").to_vec();
+    source.resize(bytes, b' ');
+    source
+}
+
+#[test]
+fn regular_input_byte_limit_is_inclusive_and_rejects_one_extra_byte_without_exports() {
+    for length in [16 * 1024 * 1024 - 1, 16 * 1024 * 1024, 16 * 1024 * 1024 + 1] {
+        let dir = Workspace::new();
+        let input = dir.0.join("source.json");
+        let bytes = padded_source(length);
+        fs::write(&input, &bytes).unwrap();
+        let map = dir.0.join("map.json");
+        let result = import_command(&input, &map, None).output().unwrap();
+        if length <= 16 * 1024 * 1024 {
+            assert!(
+                result.status.success(),
+                "{}",
+                String::from_utf8_lossy(&result.stderr)
+            );
+            let network: serde_json::Value =
+                serde_json::from_slice(&fs::read(&map).unwrap()).unwrap();
+            assert_eq!(network["nodes"].as_array().unwrap().len(), 6);
+            assert_eq!(network["edges"].as_array().unwrap().len(), 10);
+            assert!(map.with_extension("import.json").is_file());
+            assert_eq!(fs::read_dir(&dir.0).unwrap().count(), 3);
+        } else {
+            assert_eq!(result.status.code(), Some(2));
+            assert!(String::from_utf8_lossy(&result.stderr).contains("exceeds 16 MiB"));
+            assert_eq!(fs::read_dir(&dir.0).unwrap().count(), 1);
+        }
+        assert_eq!(fs::read(&input).unwrap(), bytes);
+    }
+}
+
+#[cfg(target_os = "linux")]
+#[test]
+fn stdin_pipe_enforces_actual_byte_limit_despite_zero_reported_length() {
+    use std::os::unix::fs::FileTypeExt;
+    use std::{io::Write, process::Stdio};
+    for length in [16 * 1024 * 1024, 16 * 1024 * 1024 + 1] {
+        let dir = Workspace::new();
+        let map = dir.0.join("map.json");
+        let mut child = import_command(Path::new("/dev/stdin"), &map, None)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .unwrap();
+        let mut producer = child.stdin.take().unwrap();
+        let metadata = fs::metadata(format!("/proc/{}/fd/0", child.id())).unwrap();
+        assert!(metadata.file_type().is_fifo());
+        assert_eq!(metadata.len(), 0);
+        if let Err(error) = producer.write_all(&padded_source(length)) {
+            assert!(length > 16 * 1024 * 1024);
+            assert_eq!(error.kind(), std::io::ErrorKind::BrokenPipe);
+        }
+        drop(producer);
+        let result = child.wait_with_output().unwrap();
+        if length <= 16 * 1024 * 1024 {
+            assert!(
+                result.status.success(),
+                "{}",
+                String::from_utf8_lossy(&result.stderr)
+            );
+            assert!(map.is_file());
+            assert!(map.with_extension("import.json").is_file());
+            assert_eq!(fs::read_dir(&dir.0).unwrap().count(), 2);
+        } else {
+            assert_eq!(result.status.code(), Some(2));
+            assert!(String::from_utf8_lossy(&result.stderr).contains("exceeds 16 MiB"));
+            assert_eq!(fs::read_dir(&dir.0).unwrap().count(), 0);
+        }
+    }
+}
+
+#[test]
+fn every_single_value_option_and_geometry_flag_rejects_repetition_without_exports() {
+    let dir = Workspace::new();
+    let input = dir.0.join("source.json");
+    source(&input);
+    let map = dir.0.join("map.json");
+    let scenario = dir.0.join("scenario.json");
+    let before = snapshot(&dir.0);
+    let options = [
+        ("--input", Some(input.to_str().unwrap()), true),
+        ("--output", Some(map.to_str().unwrap()), true),
+        ("--origin-lat", Some("48.136"), true),
+        ("--origin-lon", Some("10.0695"), true),
+        ("--scenario-output", Some(scenario.to_str().unwrap()), true),
+        ("--start", Some("osm-node-7119017425"), true),
+        ("--goal", Some("osm-node-274969423"), true),
+        ("--default-half-width", Some("3"), false),
+        ("--cruise-speed", Some("2"), false),
+        ("--duration", Some("180"), false),
+        ("--local-route-geometry", None, false),
+    ];
+    for (option, value, already_present) in options {
+        let mut command = import_command(&input, &map, Some(&scenario));
+        for _ in 0..if already_present { 1 } else { 2 } {
+            command.arg(option);
+            command.args(value);
+        }
+        let result = command.output().unwrap();
+        assert_eq!(result.status.code(), Some(2), "{option}");
+        assert!(
+            String::from_utf8_lossy(&result.stderr).contains("repeated import-osm option"),
+            "{option}"
+        );
+        assert_eq!(snapshot(&dir.0), before, "{option}");
+    }
+}
+
+#[test]
+fn explicit_speed_and_duration_require_a_scenario_instead_of_being_ignored() {
+    let dir = Workspace::new();
+    let input = dir.0.join("source.json");
+    source(&input);
+    let map = dir.0.join("map.json");
+    let before = snapshot(&dir.0);
+    for (option, values) in [
+        ("--cruise-speed", ["2", "NaN"]),
+        ("--duration", ["180", "0"]),
+    ] {
+        for value in values {
+            let result = import_command(&input, &map, None)
+                .args([option, value])
+                .output()
+                .unwrap();
+            assert_eq!(result.status.code(), Some(2));
+            assert!(String::from_utf8_lossy(&result.stderr).contains("require --scenario-output"));
+            assert_eq!(snapshot(&dir.0), before);
+        }
+    }
+}
+
+#[test]
+fn repeated_closed_edge_options_keep_both_closures_and_generate_a_valid_scenario() {
+    let dir = Workspace::new();
+    let input = dir.0.join("source.json");
+    source(&input);
+    let map = dir.0.join("map.json");
+    let scenario = dir.0.join("scenario.json");
+    let closures = ["osm-way-25216931-0-reverse", "osm-way-25216931-1-reverse"];
+    let result = import_command(&input, &map, Some(&scenario))
+        .args(["--closed-edge", closures[0], "--closed-edge", closures[1]])
+        .output()
+        .unwrap();
+    assert!(
+        result.status.success(),
+        "{}",
+        String::from_utf8_lossy(&result.stderr)
+    );
+    let generated: serde_json::Value =
+        serde_json::from_slice(&fs::read(&scenario).unwrap()).unwrap();
+    assert_eq!(
+        generated["navigation"]["closed_edges"],
+        serde_json::json!(closures)
+    );
+    assert!(
+        cli()
+            .arg("validate-scenario")
+            .arg("--scenario")
+            .arg(&scenario)
+            .output()
+            .unwrap()
+            .status
+            .success()
+    );
+}
 #[test]
 fn external_map_import_route_physical_goal_and_complete_sensor_replay() {
     let dir = Workspace::new();

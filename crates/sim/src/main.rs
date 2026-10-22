@@ -1,13 +1,14 @@
 mod lane_route;
+mod osm_input;
 mod osm_output;
 mod replay_output;
 mod road_route;
 use rustdriving_routing::{
     RoadNetwork,
-    osm::{self, ImportOptions, OverpassDocument},
+    osm::{self, ImportOptions},
 };
 use rustdriving_sim::{Scenario, run_output::RunOutput, simulate};
-use std::{env, error::Error, fs, io::BufReader, path::PathBuf, process};
+use std::{env, error::Error, fs, path::PathBuf, process};
 
 fn import_osm(args: &[String]) -> Result<bool, Box<dyn Error>> {
     let mut input = None;
@@ -19,18 +20,23 @@ fn import_osm(args: &[String]) -> Result<bool, Box<dyn Error>> {
     let mut start = None;
     let mut goal = None;
     let mut closed = Vec::new();
-    let mut cruise = 2.0;
-    let mut duration = 180.0;
+    let mut cruise = None;
+    let mut duration = None;
     let mut local_route_geometry = false;
+    let mut seen = std::collections::BTreeSet::new();
     let mut i = 1;
     while i < args.len() {
-        if args[i] == "--local-route-geometry" {
+        let option = args[i].as_str();
+        if option != "--closed-edge" && !seen.insert(option) {
+            return Err(format!("repeated import-osm option {option}").into());
+        }
+        if option == "--local-route-geometry" {
             local_route_geometry = true;
             i += 1;
             continue;
         }
         let value = args.get(i + 1).ok_or("option requires a value")?;
-        match args[i].as_str() {
+        match option {
             "--input" => input = Some(PathBuf::from(value)),
             "--output" => output = Some(PathBuf::from(value)),
             "--origin-lat" => origin_lat = Some(value.parse::<f64>()?),
@@ -40,18 +46,23 @@ fn import_osm(args: &[String]) -> Result<bool, Box<dyn Error>> {
             "--start" => start = Some(value.clone()),
             "--goal" => goal = Some(value.clone()),
             "--closed-edge" => closed.push(value.clone()),
-            "--cruise-speed" => cruise = value.parse::<f64>()?,
-            "--duration" => duration = value.parse::<f64>()?,
+            "--cruise-speed" => cruise = Some(value.parse::<f64>()?),
+            "--duration" => duration = Some(value.parse::<f64>()?),
             _ => return Err(format!("invalid import-osm option {}", args[i]).into()),
         }
         i += 2;
     }
-    let input = input.ok_or("--input is required")?;
-    if fs::metadata(&input)?.len() > 16 * 1024 * 1024 {
-        return Err("OSM input exceeds 16 MiB".into());
+    if scenario_output.is_none()
+        && (start.is_some()
+            || goal.is_some()
+            || !closed.is_empty()
+            || local_route_geometry
+            || cruise.is_some()
+            || duration.is_some())
+    {
+        return Err("routing options require --scenario-output".into());
     }
-    let document: OverpassDocument =
-        serde_json::from_reader(BufReader::new(fs::File::open(input)?))?;
+    let document = osm_input::read_document(fs::File::open(input.ok_or("--input is required")?)?)?;
     let output = output.ok_or("--output map filename is required")?;
     let (network, report) = osm::import(
         document,
@@ -66,9 +77,9 @@ fn import_osm(args: &[String]) -> Result<bool, Box<dyn Error>> {
         let goal = goal.ok_or("--goal is required with --scenario-output")?;
         let plan = RoadNetwork::new(network.clone())?.shortest_route(&start, &goal, &closed)?;
         let mut scenario: Scenario = serde_json::from_value(serde_json::json!({
-            "name":"OSM imported road route", "duration":duration,
+            "name":"OSM imported road route", "duration":duration.unwrap_or(180.0),
             "road_length":plan.distance_m, "half_width":plan.route.half_width,
-            "expected":"goal", "cruise_speed":cruise,
+            "expected":"goal", "cruise_speed":cruise.unwrap_or(2.0),
             "motion_limits":{"max_acceleration_m_s2":1.0,"max_deceleration_m_s2":2.5,"max_lateral_acceleration_m_s2":1.0},
             "navigation":{"network":network,"start":start,"goal":goal,"closed_edges":closed},
             "objects":[]
@@ -77,9 +88,6 @@ fn import_osm(args: &[String]) -> Result<bool, Box<dyn Error>> {
         scenario.validate()?;
         Some(scenario)
     } else {
-        if start.is_some() || goal.is_some() || !closed.is_empty() || local_route_geometry {
-            return Err("routing options require --scenario-output".into());
-        }
         None
     };
     let report_json = serde_json::to_string_pretty(&report)?;
