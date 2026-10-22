@@ -1,0 +1,250 @@
+{
+  "schema_version": 1,
+  "passed": true,
+  "scenario_sha256": "e9ef810070423bf82a310c8eb9748aebe5f83b81d8c7ff983c1c3c4e3266001b",
+  "checker_sha256": "99bc22bc41949b2c483cde9b9a5530c8b949f1a3105d68bc93cd5de8cfb29556",
+  "traffic_oracle_sha256": "05dc8d26d8d5660dd3a328f158b6ff6cfcb8ef1162534a04d454ef1bf00a5f99",
+  "cases": [
+    {
+      "seed": 7,
+      "summary": {
+        "scenario": "Dense traffic: 24 reactive vehicles form three queues",
+        "seed": 7,
+        "simulated_seconds": 46.0,
+        "steps": 921,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "traffic_min_clearance": 1.4000000000000004,
+        "min_clearance": 5.633207442202743,
+        "localization_rmse": 0.066724404426815,
+        "localization_max_error": 0.2599973903592191,
+        "final_speed": 0.0,
+        "progress": 27.659216236969172,
+        "emergency_steps": 15,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 921,
+        "verified": true
+      },
+      "independent": {
+        "reactive_vehicles": 24,
+        "queue_lanes": 3,
+        "vehicles_per_lane": 8,
+        "minimum_vehicle_travel_m": 21.267515638043086,
+        "complete_queue_hold_seconds": 18.049999999999997,
+        "minimum_expanded_ego_clearance_with_reserve_m": 3.7832074422027433,
+        "minimum_actor_pair_clearance_with_reserve_m": 1.2000000000000004,
+        "ego_display_radius_m": 2.7,
+        "ego_inter_sample_reserve_m": 0.4,
+        "actor_inter_sample_reserve_m": 0.2,
+        "sensor_trace_binding": {
+          "bound_ticks": 921,
+          "fields": [
+            "time",
+            "estimate",
+            "tracks",
+            "predictions",
+            "trajectory",
+            "command",
+            "emergency",
+            "localization"
+          ],
+          "route_identical": true
+        },
+        "traffic_kinematics_and_proximity": {
+          "sensor_samples": 22080,
+          "max_measured_actor_acceleration_m_s2": 4.000000000000004,
+          "minimum_actor_pair_clearance_m": 1.4000000000000004,
+          "actor_kinematics_verified": true,
+          "sensor_reconstruction_verified": true,
+          "traffic_labels_absent_from_pipeline": true,
+          "passed": true
+        }
+      },
+      "corruptions_rejected": [
+        "omit_vehicle",
+        "duplicate_physical_actor",
+        "change_lane",
+        "omit_tick",
+        "move_proxy",
+        "conceal_physical_failure",
+        "missing_final_stop",
+        "nonfinite_actor",
+        "rendered_command_differs_from_sensor_log"
+      ],
+      "evidence_sha256": {
+        "run.json": "eb60811d34be5a54577a31f4d62838ffd66f39ab2d32825e83840d74ddd730d9",
+        "sensors.jsonl": "e812b45e7fe65cfbba3b5892127c2f72a29e0b45b3a3c6006a1476429fa8bd81",
+        "summary.json": "44170f90901784418df49f90a9619311fccc6b6fecb587000919d45c32a56be8",
+        "replay/replay.json": "357aa0770a03beaa2248e37ddc00231f8582bd47c7da11d9cfbe60f898e5e4d1"
+      }
+    },
+    {
+      "seed": 1,
+      "summary": {
+        "scenario": "Dense traffic: 24 reactive vehicles form three queues",
+        "seed": 1,
+        "simulated_seconds": 46.0,
+        "steps": 921,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "traffic_min_clearance": 1.4000000000000004,
+        "min_clearance": 6.047733180239866,
+        "localization_rmse": 0.056756346583340105,
+        "localization_max_error": 0.19106489466123164,
+        "final_speed": 0.0,
+        "progress": 27.015701646739213,
+        "emergency_steps": 7,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 921,
+        "verified": true
+      },
+      "independent": {
+        "reactive_vehicles": 24,
+        "queue_lanes": 3,
+        "vehicles_per_lane": 8,
+        "minimum_vehicle_travel_m": 21.267515638043086,
+        "complete_queue_hold_seconds": 8.299999999999997,
+        "minimum_expanded_ego_clearance_with_reserve_m": 4.197733180239865,
+        "minimum_actor_pair_clearance_with_reserve_m": 1.2000000000000004,
+        "ego_display_radius_m": 2.7,
+        "ego_inter_sample_reserve_m": 0.4,
+        "actor_inter_sample_reserve_m": 0.2,
+        "sensor_trace_binding": {
+          "bound_ticks": 921,
+          "fields": [
+            "time",
+            "estimate",
+            "tracks",
+            "predictions",
+            "trajectory",
+            "command",
+            "emergency",
+            "localization"
+          ],
+          "route_identical": true
+        },
+        "traffic_kinematics_and_proximity": {
+          "sensor_samples": 22080,
+          "max_measured_actor_acceleration_m_s2": 4.000000000000004,
+          "minimum_actor_pair_clearance_m": 1.4000000000000004,
+          "actor_kinematics_verified": true,
+          "sensor_reconstruction_verified": true,
+          "traffic_labels_absent_from_pipeline": true,
+          "passed": true
+        }
+      },
+      "corruptions_rejected": [
+        "omit_vehicle",
+        "duplicate_physical_actor",
+        "change_lane",
+        "omit_tick",
+        "move_proxy",
+        "conceal_physical_failure",
+        "missing_final_stop",
+        "nonfinite_actor",
+        "rendered_command_differs_from_sensor_log"
+      ],
+      "evidence_sha256": {
+        "run.json": "1b7023708eefd6cf2024b7c7023dec5abe4eefd07d6d1c1a756b90747e243feb",
+        "sensors.jsonl": "e20aa13f4049276650b41b9ccaafefba071d2aa245a77295f6627d3f8bfe971e",
+        "summary.json": "d234b93e1952641994d1f0c0a7176c979f66498b8770644bf14f591ac82a4fbc",
+        "replay/replay.json": "357aa0770a03beaa2248e37ddc00231f8582bd47c7da11d9cfbe60f898e5e4d1"
+      }
+    },
+    {
+      "seed": 42,
+      "summary": {
+        "scenario": "Dense traffic: 24 reactive vehicles form three queues",
+        "seed": 42,
+        "simulated_seconds": 46.0,
+        "steps": 921,
+        "reached_goal": false,
+        "collisions": 0,
+        "road_violations": 0,
+        "traffic_min_clearance": 1.4000000000000004,
+        "min_clearance": 5.906601741470182,
+        "localization_rmse": 0.05722782533285362,
+        "localization_max_error": 0.18108270149136926,
+        "final_speed": 0.0,
+        "progress": 26.98911924536207,
+        "emergency_steps": 15,
+        "avoidance_steps": 0,
+        "max_tracks": 6,
+        "passed": true,
+        "failures": []
+      },
+      "replay": {
+        "source": "rne-dynamic-rapier-lidar",
+        "ticks": 921,
+        "verified": true
+      },
+      "independent": {
+        "reactive_vehicles": 24,
+        "queue_lanes": 3,
+        "vehicles_per_lane": 8,
+        "minimum_vehicle_travel_m": 21.267515638043086,
+        "complete_queue_hold_seconds": 18.049999999999997,
+        "minimum_expanded_ego_clearance_with_reserve_m": 4.056601741470182,
+        "minimum_actor_pair_clearance_with_reserve_m": 1.2000000000000004,
+        "ego_display_radius_m": 2.7,
+        "ego_inter_sample_reserve_m": 0.4,
+        "actor_inter_sample_reserve_m": 0.2,
+        "sensor_trace_binding": {
+          "bound_ticks": 921,
+          "fields": [
+            "time",
+            "estimate",
+            "tracks",
+            "predictions",
+            "trajectory",
+            "command",
+            "emergency",
+            "localization"
+          ],
+          "route_identical": true
+        },
+        "traffic_kinematics_and_proximity": {
+          "sensor_samples": 22080,
+          "max_measured_actor_acceleration_m_s2": 4.000000000000004,
+          "minimum_actor_pair_clearance_m": 1.4000000000000004,
+          "actor_kinematics_verified": true,
+          "sensor_reconstruction_verified": true,
+          "traffic_labels_absent_from_pipeline": true,
+          "passed": true
+        }
+      },
+      "corruptions_rejected": [
+        "omit_vehicle",
+        "duplicate_physical_actor",
+        "change_lane",
+        "omit_tick",
+        "move_proxy",
+        "conceal_physical_failure",
+        "missing_final_stop",
+        "nonfinite_actor",
+        "rendered_command_differs_from_sensor_log"
+      ],
+      "evidence_sha256": {
+        "run.json": "5ea31a23414d6f4cc2e1789bae808494214542551f60352b1f996e72522d3388",
+        "sensors.jsonl": "073a847a23b1b0e1ab45c2029546adbb3a89cde5fb2a0975b76463aded619fb4",
+        "summary.json": "7d3dc8cadddcab9c8426d4a66654e09f38704665e19544611ebf1454527b58a1",
+        "replay/replay.json": "357aa0770a03beaa2248e37ddc00231f8582bd47c7da11d9cfbe60f898e5e4d1"
+      }
+    }
+  ],
+  "scope": "Authored straight three-queue CPU simulation with physical circular proxies; no lane changes, arbitrary traffic negotiation, contact response or real-vehicle validation."
+}

@@ -1159,6 +1159,14 @@ jobs:
       - name: Run multi-seed hazard acceptance and full replay
         working-directory: rust_drive
         run: python3 scripts/check_hazards.py
+      - name: Verify 24 reactive vehicles in three recorded queues
+        working-directory: rust_drive
+        run: |
+          for seed in 7 1 42; do
+            cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- --scenario scenarios/traffic-dense-queue.json --plant dynamic --seed "$seed" --output "artifacts/dense-traffic-demo/seed-$seed"
+            cargo run --release --locked --bin rustdriving -- replay --log "artifacts/dense-traffic-demo/seed-$seed/sensors.jsonl" --output "artifacts/dense-traffic-demo/seed-$seed/replay"
+          done
+          python3 scripts/check-dense-traffic.py --input artifacts/dense-traffic-demo/seed-7 artifacts/dense-traffic-demo/seed-1 artifacts/dense-traffic-demo/seed-42 --output artifacts/dense-traffic-demo/acceptance.json
       - name: Independently check native scenes, multi-height sensing and remaining blind slabs
         working-directory: rust_drive
         run: python3 scripts/check-native-scenes.py --output artifacts/native-scenes
@@ -1340,6 +1348,7 @@ jobs:
           python -m pip install -r scripts/requirements-demo.txt
           python scripts/render_demo_3d.py artifacts/rne-dynamic/run.json --preview-time 7.5 --output artifacts/rne-dynamic/preview-3d.gif --samples 4 --threads 2 --scene-output artifacts/rne-dynamic/scene-3d.blend
           python scripts/render_demo_3d.py artifacts/hazards/rne-dynamic/traffic-fleet-queue/seed-7/run.json --preview-time 30 --traffic-models sedan van pickup --camera traffic --output artifacts/rne-fleet/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-fleet/scene.blend
+          python scripts/render_demo_3d.py artifacts/dense-traffic-demo/seed-7/run.json --preview-time 12 --traffic-models hatchback sedan van --camera traffic --traffic-lanes --environment urban --output artifacts/dense-traffic-demo/preview.gif --samples 4 --threads 2
           python scripts/render_demo_3d.py artifacts/hazards/rne-dynamic/signal-red-green/seed-7/run.json --preview-time 15 --output artifacts/rne-signals/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-signals/scene.blend
           python scripts/render_demo_3d.py artifacts/hazards/rne-dynamic/stop-sign-single/seed-7/run.json --preview-time 10.5 --output artifacts/rne-stop-signs/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-stop-signs/scene.blend
           python scripts/render_demo_3d.py artifacts/hazards/rne-dynamic/intersection-crossing/seed-7/run.json --preview-time 11 --output artifacts/rne-intersection/preview.gif --samples 4 --threads 2 --scene-output artifacts/rne-intersection/scene.blend
@@ -1362,6 +1371,7 @@ jobs:
           name: rne-hazard-evidence
           path: |
             rust_drive/artifacts/hazards/
+            rust_drive/artifacts/dense-traffic-demo/
             rust_drive/artifacts/native-scenes/
             rust_drive/artifacts/lidar-3d/
             rust_drive/artifacts/ground-scenes/

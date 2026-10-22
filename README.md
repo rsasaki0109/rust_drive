@@ -1,11 +1,11 @@
 # RustDriving
 
-![Recorded Japanese urban driving simulation](assets/japan-city-demo.gif)
+![Recorded native simulation with 24 reactive traffic vehicles](assets/dense-traffic-demo.gif)
 
 <table>
   <tr>
     <td width="33%"><img src="assets/rne-3d-demo.gif" width="260" alt="Recorded closure detour simulation"></td>
-    <td width="33%"><img src="assets/traffic-fleet-demo.gif" width="260" alt="Recorded traffic queue simulation"></td>
+    <td width="33%"><img src="assets/japan-city-demo.gif" width="260" alt="Recorded Japanese urban driving simulation"></td>
     <td width="33%"><img src="assets/prediction-3d-demo.gif" width="260" alt="Recorded braking and recovery simulation"></td>
   </tr>
   <tr>
@@ -43,7 +43,7 @@ cargo run --release --locked --bin rustdriving -- replay \
 ## Docs
 
 - [Architecture](docs/architecture.md) · [Capabilities](docs/capabilities.md)
-- [Native RNE](integrations/rne/README.md) · [Demo reproduction](docs/japanese-city-demo.md#reproduction)
+- [Native RNE](integrations/rne/README.md) · [Demo reproduction](docs/dense-traffic-demo.md#reproduction)
 - [Development](docs/development.md) · [Validation](docs/validation.md) · [Contributing](CONTRIBUTING.md)
 - [Maturity and roadmap](docs/maturity.md)
 

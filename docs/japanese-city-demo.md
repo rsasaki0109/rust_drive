@@ -1,6 +1,6 @@
 # Japanese urban intersection and construction replay
 
-The README Hero is an authored CPU RNE simulation styled as a Japanese urban
+The Japanese-city gallery demo is an authored CPU RNE simulation styled as a Japanese urban
 street. Original storefronts, balconies, air conditioners, horizontal signals,
 left-side road markings and a guarded work zone dress the recorded drive. It
 is not a surveyed Japanese city or a claim of complete Japanese traffic-law
@@ -115,7 +115,7 @@ physical results, display measurements and complete GIF capture.
 
 Run the native 46-second fixture, replay all 921 observations and render
 the complete episode with the commands below.
-The opening GIF uses seed 7, `urban-japan`, the street camera and 3× playback.
+The Japanese-city GIF uses seed 7, `urban-japan`, the street camera and 3× playback.
 The encoded GIF has 155 frames at 960×640, lasts 16.8 seconds including
 the final hold, and is 7,509,338 bytes.
 
