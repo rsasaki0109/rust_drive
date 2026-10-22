@@ -1,5 +1,12 @@
 # Third-party licensing
 
+The optional browser playground bundles Three.js 0.180.0 under MIT. Its notice
+is included in [web/public/three-license.txt](web/public/three-license.txt) and
+the published static game. Vite 7.1.12 (MIT) is a build tool; its runtime is not
+included in the game. The standalone Rust WebAssembly physics has no third-party
+crate dependencies. City geometry, vehicle meshes, textures and synthesized audio
+are original. System fonts are used without redistributing font files.
+
 The optional packaged OpenStreetMap extract and derived ENU road database are © OpenStreetMap contributors, under ODbL 1.0, separately from RustDriving's Apache-2.0 code. [Pinned source, attribution, conversion and redistribution terms](maps/osm/SOURCE.md). No OSMnx implementation is copied or required at runtime. The extract is historical and cropped; its presence does not establish current physical map accuracy.
 
 RustDriving code is original Apache-2.0. No Autoware, Apollo or openpilot implementation is vendored. This is the dependency inventory for the committed Cargo.lock, recorded on 2026-10-08 from Cargo metadata.

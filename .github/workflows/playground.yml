@@ -1,0 +1,89 @@
+name: Browser playground
+
+on:
+  push:
+    branches: [main, develop]
+    paths: ['web/**', 'integrations/playground/**', 'scripts/build-playground.sh', '.github/workflows/playground.yml', 'rust-toolchain.toml']
+  pull_request:
+    paths: ['web/**', 'integrations/playground/**', 'scripts/build-playground.sh', '.github/workflows/playground.yml', 'rust-toolchain.toml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: playground-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      PAGES_BASE: /${{ github.event.repository.name }}/
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.90.0
+          targets: wasm32-unknown-unknown
+          components: rustfmt, clippy
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Check standalone Rust driving physics
+        run: |
+          cargo fmt --manifest-path integrations/playground/Cargo.toml --check
+          cargo clippy --locked --manifest-path integrations/playground/Cargo.toml --all-targets -- -D warnings
+          cargo test --locked --manifest-path integrations/playground/Cargo.toml
+      - name: Build the self-contained static game
+        run: |
+          npm ci --prefix web --ignore-scripts
+          bash scripts/build-playground.sh
+          npm --prefix web test
+      - name: Install browser test tools
+        run: |
+          python -m pip install playwright==1.56.0
+          python -m playwright install --with-deps chromium
+      - name: Exercise the production game with keyboard and pointer inputs
+        run: |
+          npm --prefix web run preview -- --host 127.0.0.1 --port 4173 > /tmp/playground-preview.log 2>&1 &
+          rustdriving_preview_pid=$!
+          trap 'kill "$rustdriving_preview_pid" || true' EXIT
+          python - <<'PY'
+          import os,time,urllib.request
+          url='http://127.0.0.1:4173'+os.environ['PAGES_BASE']
+          for attempt in range(60):
+              try:
+                  with urllib.request.urlopen(url,timeout=1) as response:
+                      if response.status==200: break
+              except OSError: pass
+              time.sleep(.25)
+          else: raise SystemExit('Production preview did not start')
+          PY
+          python web/tests/browser_smoke.py --url "http://127.0.0.1:4173${PAGES_BASE}" --output web/test-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playground-browser-evidence
+          path: web/test-results
+      - uses: actions/upload-pages-artifact@v3
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        with:
+          path: web/dist
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - name: Publish GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
