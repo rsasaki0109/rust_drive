@@ -2,6 +2,94 @@
 
 **A Rust-native autonomous driving stack.**
 
+[![Recorded left-hand RNE driving through Japanese urban intersections with signals, roadworks and diverse road users](assets/japan-city-demo.gif)](docs/japanese-city-demo.md)
+
+Recorded simulation demos, rendered from telemetry. Click a demo for its checks
+and reproduction steps. The gallery includes optional sensing modes.
+
+<table>
+  <tr>
+    <td width="33%" align="center">
+      <a href="docs/3d-demo.md">
+        <img src="assets/rne-3d-demo.gif" width="280" alt="Recorded RNE map-closure detour with planned trajectories">
+        <br><strong>Closure detour</strong>
+      </a>
+    </td>
+    <td width="33%" align="center">
+      <a href="docs/vehicle-fleet.md">
+        <img src="assets/traffic-fleet-demo.gif" width="280" alt="Three reactive traffic vehicles form a queue ahead of ego">
+        <br><strong>Traffic queue</strong>
+      </a>
+    </td>
+    <td width="33%" align="center">
+      <a href="docs/3d-demo.md#reproduce-the-follower-gif">
+        <img src="assets/prediction-3d-demo.gif" width="280" alt="Recorded GNSS-fault stop, follower braking and recovery">
+        <br><strong>Braking and recovery</strong>
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%" align="center">
+      <a href="docs/stop-signs.md">
+        <img src="assets/stop-sign-demo.gif" width="280" alt="Ego holds at a mapped stop sign before restarting">
+        <br><strong>Stop signs</strong>
+      </a>
+    </td>
+    <td width="33%" align="center">
+      <a href="docs/intersections.md">
+        <img src="assets/intersection-demo.gif" width="280" alt="Recorded RNE ego yields to priority cross traffic">
+        <br><strong>Priority crossings</strong>
+      </a>
+    </td>
+    <td width="33%" align="center">
+      <a href="docs/intersections.md#repaired-late-conflict">
+        <img src="assets/late-crossing-demo.gif" width="280" alt="Recorded native episode with late cross traffic at two junctions">
+        <br><strong>Late cross traffic</strong>
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%" align="center">
+      <a href="docs/native-scenes.md">
+        <img src="assets/native-scene-demo.gif" width="280" alt="Native LiDAR sensing stops ego before a physical cuboid">
+        <br><strong>Physical cuboid stop</strong>
+      </a>
+    </td>
+    <td width="33%" align="center">
+      <a href="docs/multi-height-lidar.md">
+        <img src="assets/multi-height-demo.gif" width="280" alt="Optional multi-height LiDAR detects a low physical slab">
+        <br><strong>Multi-height LiDAR</strong>
+      </a>
+    </td>
+    <td width="33%" align="center">
+      <a href="docs/lidar-3d.md">
+        <img src="assets/lidar-3d-demo.gif" width="280" alt="Inclined native XYZ LiDAR detects an elevated beam">
+        <br><strong>Inclined 3D LiDAR</strong>
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%" align="center">
+      <a href="docs/ground-lidar.md">
+        <img src="assets/ground-demo.gif" width="280" alt="Measured-ground processing follows a moving lead into a stop">
+        <br><strong>Measured-ground filtering</strong>
+      </a>
+    </td>
+    <td width="33%" align="center">
+      <a href="docs/road-users.md">
+        <img src="assets/vru-demo.gif" width="280" alt="Recorded native road users include pedestrians and a cyclist">
+        <br><strong>Road users</strong>
+      </a>
+    </td>
+    <td width="33%" align="center">
+      <a href="docs/hazard-validation.md">
+        <img src="assets/hazard-demo.gif" width="280" alt="Sensor and planning diagnostics during an occluded crossing">
+        <br><strong>Occluded crossing</strong>
+      </a>
+    </td>
+  </tr>
+</table>
+
 Current comparative engineering maturity is **about 29%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
 The [OSM importer preserves existing files](docs/osm-export.md), rejects input/
@@ -253,8 +341,6 @@ admission keeps braking through fresh green and GNSS. All 28 fixed cases pass in
 both plants, including curved routes and mixed stop signs; 646 preceding logs retain
 exact replay bytes. Missing-motion accuracy failures remain scored. Maturity stays
 about 29%; independent automotive sensing and uncertainty remain open.
-
-![Recorded left-hand RNE driving through Japanese urban intersections with signals, roadworks and diverse road users](assets/japan-city-demo.gif)
 
 An original, modular driving stack with a working, deterministic closed-loop simulation. The vehicle processes synthetic LiDAR, fuses noisy GNSS and odometry, tracks and predicts obstacles, and plans steering and braking. The opening GIF records CPU-only Robot Native Engine (RNE) driving on the left side of an authored Japanese urban street: two intersections, horizontal signals, storefronts and a guarded construction site. Twenty-three recorded road users include seven passenger vehicles, three trucks, eight pedestrians, four bicycles and a leashed dog, with a child, parent pushing a stroller, elder with a cane and construction worker. Ego waits at red, resumes on green and completely exits both intersections. Vehicles use fixed SI display dimensions and a fixed-scale camera. Original meshes visualize recorded positions; their articulated animation is cosmetic, while physical actors use capsule/circle proxies. Blender Cycles renders the 46-second episode at 3× playback. The work-zone cuboid is physical, but is occluded by traffic in this recording; construction recognition and negotiation are unimplemented. [Checks, meshes and limitations](docs/japanese-city-demo.md); [reproduce the GIF](#reproduce-the-gif).
 
