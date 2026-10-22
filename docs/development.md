@@ -119,3 +119,8 @@ Historical RGB-D report comparisons allow finite geometry roundoff bounded by
 matches from reproduced results and record the number and maximum difference
 of rounded values. Clocks, configuration, source identities, frame counts and
 acceptance decisions remain exact; frozen inputs and physical gates are unchanged.
+Submap fingerprints are recomputed exactly from both reports' measured clouds
+and serialized poses. Historical comparison checks every voxel key, count and
+coordinate; differing computed hashes are retained with the bounded geometry
+differences. The existing independent source, map and physical scoring auditor
+still runs unchanged and rejects invented fingerprints.

@@ -11,7 +11,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
-from recorded_numeric import compare_recorded
+from recorded_submap import compare_submap_reports, measured_clouds
 
 ROOT = Path(__file__).resolve().parent.parent
 BASELINE = ROOT / 'assets/recorded-submaps'
@@ -22,15 +22,6 @@ DATASETS = ('tum-fr1-xyz', 'tum-fr1-xyz-fast', 'tum-fr1-xyz-tight',
 
 def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
-def numerical(value):
-    if isinstance(value, dict):
-        return {key: numerical(item) for key, item in value.items()
-                if key not in ('freeze', 'freeze_sha256', 'cpu_wall_seconds')}
-    if isinstance(value, list):
-        return [numerical(item) for item in value]
-    return value
 
 
 def audit(report, manifest, freeze, output, snapshot=None):
@@ -56,6 +47,9 @@ def main():
     extension = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(extension)
     extension.verify_extension()
+    spec = importlib.util.spec_from_file_location('submap_oracle', ROOT / 'scripts/check-recorded-submaps.py')
+    oracle = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(oracle)
     binary, output = args.binary.resolve(), args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
     historical = []
@@ -108,9 +102,11 @@ def main():
         expected_exit = 0 if original['summary']['all_updates_passed'] else 1
         if run.returncode != expected_exit:
             raise ValueError(dataset + ': deterministic measured outcome changed')
-        comparison = compare_recorded(numerical(original), numerical(actual))
         proof_path = folder / 'audit.json'
         proof = audit(report, manifest, freeze, proof_path)
+        clouds = measured_clouds(json.loads(manifest.read_text()), manifest.parent / 'raw',
+                                 current['preprocessing'], oracle)
+        comparison = compare_submap_reports(original, actual, clouds, oracle)
         records.append(dict(dataset=dataset, role='viewed regression',
                             historical_comparison=comparison,
                             summary=actual['summary'], evaluator_exit_status=run.returncode,
