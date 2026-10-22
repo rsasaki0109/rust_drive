@@ -15,7 +15,7 @@ spec.loader.exec_module(oracle)
 
 def example(translation=0., point=.1):
     policy = dict(voxel_m=.06, max_points_per_voxel=1000)
-    cfg = dict(max_map_points=5000, min_pairs=1)
+    cfg = dict(max_map_points=5000, min_pairs=1, max_neighbor_checks=20_000_000)
     pose = dict(translation_m=[translation, 0., 0.], quaternion_wxyz=[1., 0., 0., 0.])
     scan = [[point, 0., 1.]]
     voxels, rejection = oracle.fusion({}, scan, oracle.exact_pose(pose), policy, cfg)
@@ -77,6 +77,20 @@ class HistoricalSubmapTests(unittest.TestCase):
         self.assertTrue(compare_submap_reports(before, before, clouds, oracle)['exact'])
         with self.assertRaises(ValueError):
             compare_submap_reports(before, before, [], oracle)
+
+    def test_search_work_is_recorded_and_budget_remains_exact(self):
+        before, clouds = example()
+        before['frames'][0]['registration'] = dict(neighbor_checks=20)
+        after = copy.deepcopy(before)
+        after['frames'][0]['registration']['neighbor_checks'] = 21
+        proof = compare_submap_reports(before, after, clouds, oracle)
+        self.assertFalse(proof['exact'])
+        self.assertEqual(proof['search_work']['differing_counts'],
+                         [dict(frame=0, recorded=20, reproduced=21)])
+        for count in [0, -1, 20_000_001, 1.5, True]:
+            after['frames'][0]['registration']['neighbor_checks'] = count
+            with self.subTest(count=count), self.assertRaises(ValueError):
+                compare_submap_reports(before, after, clouds, oracle)
 
 
 if __name__ == '__main__':

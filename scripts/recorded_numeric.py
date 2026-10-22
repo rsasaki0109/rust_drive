@@ -50,7 +50,7 @@ def compare_recorded(recorded, reproduced):
             proof['rounded_values'] += 1
             proof['maximum_absolute_difference'] = max(proof['maximum_absolute_difference'], delta)
         elif left != right:
-            raise ValueError('historical discrete result changed: ' + label)
+            raise ValueError(f'historical discrete result changed: {label}: {left!r} -> {right!r}')
 
     visit(recorded, reproduced, [])
     return proof

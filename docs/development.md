@@ -124,3 +124,7 @@ and serialized poses. Historical comparison checks every voxel key, count and
 coordinate; differing computed hashes are retained with the bounded geometry
 differences. The existing independent source, map and physical scoring auditor
 still runs unchanged and rejects invented fingerprints.
+Submap search-work counters can vary when rounded distances change spatial-tree
+pruning. Both counters must stay within the identical frozen work budget;
+differences are recorded explicitly. Observation, acceptance and voxel counts
+remain exact.

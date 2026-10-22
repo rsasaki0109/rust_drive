@@ -38,13 +38,26 @@ def compare_submap_reports(recorded, reproduced, clouds, oracle):
             return [operational(item) for item in value]
         return value
 
+    search_work = []
+
     def without_computed_hashes(report):
         value = operational(report)
+        work = []
         for row in value['frames']:
+            registration = row.get('registration')
+            if registration is not None:
+                checks = registration.pop('neighbor_checks')
+                maximum = report['freeze']['registration_config']['max_neighbor_checks']
+                if type(checks) is not int or not 0 < checks <= maximum:
+                    raise ValueError('historical submap search exceeded its frozen budget')
+                work.append(checks)
+            else:
+                work.append(None)
             for when in ('before', 'after'):
                 for field in ('map_sha256', 'map_statistics_sha256'):
                     row.pop(field + '_' + when)
                     row['state_' + when].pop(field)
+        search_work.append(work)
         return value
 
     comparison = compare_recorded(without_computed_hashes(recorded),
@@ -96,4 +109,10 @@ def compare_submap_reports(recorded, reproduced, clouds, oracle):
         differing_fingerprints=differing_hashes,
         reconstruction_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         geometry_auditor_sha256=hashlib.sha256(Path(oracle.__file__).read_bytes()).hexdigest())
+    work_differences = [dict(frame=i, recorded=a, reproduced=b)
+                        for i, (a, b) in enumerate(zip(*search_work)) if a != b]
+    comparison['exact'] = comparison['exact'] and not work_differences
+    comparison['search_work'] = dict(
+        frozen_budget=recorded['freeze']['registration_config']['max_neighbor_checks'],
+        both_runs_within_frozen_budget=True, differing_counts=work_differences)
     return comparison
