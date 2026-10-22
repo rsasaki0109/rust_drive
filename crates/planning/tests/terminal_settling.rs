@@ -63,7 +63,11 @@ fn settling_a_slow_vehicle_preserves_reachable_monotonic_braking() {
             assert!(last.position.distance(state.pose.position) < 0.02);
             let stop = &path.points[path.points.len() - 2];
             assert_eq!(stop.position, last.position);
-            assert_eq!(last.time - stop.time, 8.0);
+            let hold_duration = last.time - stop.time;
+            assert!(
+                (hold_duration - 8.0).abs() < 1e-12,
+                "hold duration: {hold_duration}"
+            );
             for pair in path.points.windows(2) {
                 let duration = pair[1].time - pair[0].time;
                 let acceleration = (pair[1].speed - pair[0].speed) / duration;
