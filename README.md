@@ -4,6 +4,10 @@
 
 Current comparative engineering maturity is **about 29%** (subjective), with
 the 30% waypoint still open. [Assessment and remaining gates](docs/maturity.md).
+Both run CLIs now [protect their inputs and publish complete result files](docs/run-publication.md).
+Scenario/scene aliases are rejected before old results are invalidated, and
+the complete summary is published last. Completed failed missions retain their
+recordings; ordinary input/write failures do not publish new completed results.
 The default [occupancy mapper now traverses crossed grid cells](docs/occupancy-rays.md)
 once per return and excludes the hit cell from free-space updates. Exact rational
 cell-intersection tests cover the preceding duplicate, skipped-cell and hit-cell

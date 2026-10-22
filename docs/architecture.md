@@ -106,6 +106,12 @@ Unsafe Rust is forbidden at workspace level. There is no global message bus, cus
 - `sensors.jsonl` has a separate version-1 sensor-only header/tick/count-footer contract, including calibrated route and expected outputs. Replay feeds observations to a fresh pipeline; expected outputs are comparison evidence only. [Contract and failure behavior](sensor-replay.md).
 - `run.json` has `schema_version = 1`, includes traceable inputs, output commands, estimates and evaluation truth, and is intended for developer inspection. It is not yet a stable external transport schema.
 
+Both application CLIs use the shared `RunOutput` publisher before loading run
+inputs. Existing scenario/scene aliases are rejected before invalidation; complete
+files are staged, synchronized and published with the summary last. Failed
+scenario acceptance retains full evidence. This persistence boundary remains
+outside sensor processing and driving policy. [Contract and limits](run-publication.md).
+
 ## Shared application boundary
 
 Optional `fit_recent_track_motion` fits a bounded recent suffix of raw associated

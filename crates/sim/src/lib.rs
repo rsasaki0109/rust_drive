@@ -3,6 +3,7 @@ mod gnss_noise;
 pub mod heading;
 pub mod intersections;
 mod lane_change_surface;
+pub mod run_output;
 pub mod sensor_timing;
 pub mod signals;
 pub mod speed_zones;

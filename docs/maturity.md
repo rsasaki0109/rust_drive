@@ -2,6 +2,13 @@
 
 The current engineering estimate is **about 29%**, compared with the scope, independent validation and operating experience of Autoware, Apollo and openpilot. Their operating domains differ. This is a subjective planning estimate, not a benchmark, safety score, percentage of source code or demonstrated parity.
 
+The [run artifact publication repair](run-publication.md) keeps the estimate at
+**about 29%**. Both CLIs protect scenario/scene inputs from output aliases and
+publish a complete result marker after their files. This improves reproducible
+evaluation and input preservation, including completed failed missions, without
+establishing new driving availability or calibrated sensing. The original eight
+incomplete missions remain open and the **30% waypoint is unmet**.
+
 The [occupancy ray traversal repair](occupancy-rays.md) keeps the estimate at
 **about 29%**. It removes duplicate free updates, skipped crossed cells and
 free-space subtraction at hit endpoints, with independent exact rational

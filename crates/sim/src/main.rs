@@ -5,15 +5,8 @@ use rustdriving_routing::{
     RoadNetwork,
     osm::{self, ImportOptions, OverpassDocument},
 };
-use rustdriving_sim::{Scenario, simulate};
-use std::{
-    env,
-    error::Error,
-    fs,
-    io::{BufReader, BufWriter},
-    path::PathBuf,
-    process,
-};
+use rustdriving_sim::{Scenario, run_output::RunOutput, simulate};
+use std::{env, error::Error, fs, io::BufReader, path::PathBuf, process};
 
 fn import_osm(args: &[String]) -> Result<bool, Box<dyn Error>> {
     let mut input = None;
@@ -157,20 +150,15 @@ fn run() -> Result<bool, Box<dyn Error>> {
     }
     match args[0].as_str() {
         "run" => {
+            let publication = RunOutput::reference(
+                &output,
+                &scenario.as_deref().into_iter().collect::<Vec<_>>(),
+            )?;
             let scenario: Scenario = serde_json::from_str(&fs::read_to_string(
                 scenario.ok_or("--scenario is required")?,
             )?)?;
             let run = simulate(scenario, seed)?;
-            fs::create_dir_all(&output)?;
-            fs::write(output.join("run.json"), serde_json::to_vec(&run)?)?;
-            run.sensor_log
-                .as_ref()
-                .ok_or("missing sensor log")?
-                .write(BufWriter::new(fs::File::create(
-                    output.join("sensors.jsonl"),
-                )?))?;
-            let summary = serde_json::to_string_pretty(&run.summary)?;
-            fs::write(output.join("summary.json"), &summary)?;
+            let summary = publication.finish(&run, None::<&()>)?;
             println!("{summary}");
             Ok(run.summary.passed)
         }
