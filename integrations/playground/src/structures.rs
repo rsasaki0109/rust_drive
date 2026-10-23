@@ -36,12 +36,19 @@ pub(crate) fn upper(x: f64, y: f64) -> Option<Surface> {
     // Pedestrian bridge over the hillside avenue; cars remain on the road below.
     if (353.5..=356.5).contains(&x) && (137.0..=163.0).contains(&y) {
         let floor = crate::elevation::surface(x, y);
-        return Some(Surface { height: floor.height + 5.8, ..floor });
+        return Some(Surface {
+            height: floor.height + 5.8,
+            ..floor
+        });
     }
     // Urban railway and the wider station platform have a physical underside.
     if ((170.0..=540.0).contains(&x) && (100.0..=108.0).contains(&y))
-        || ((460.0..=505.0).contains(&x) && (98.0..=112.0).contains(&y)) {
-        return Some(Surface { height: 10.0, ..Surface::default() });
+        || ((460.0..=505.0).contains(&x) && (98.0..=112.0).contains(&y))
+    {
+        return Some(Surface {
+            height: 10.0,
+            ..Surface::default()
+        });
     }
 
     if (260.0..=430.0).contains(&x) && (-115.0..=-95.0).contains(&y) {
@@ -122,5 +129,4 @@ mod tests {
         assert!(!blocks_body(355.0, 150.0, 48.0));
         assert!((upper(482.0, 111.0).unwrap().height - 10.0).abs() < 1e-10);
     }
-
 }

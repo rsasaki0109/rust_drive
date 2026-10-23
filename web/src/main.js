@@ -19,7 +19,7 @@ let cameraYaw = Math.PI / 2;
 function notice(message) { $('notice').textContent = message; $('notice').classList.add('show'); clearTimeout(noticeTimer); noticeTimer = setTimeout(() => $('notice').classList.remove('show'), 2800); }
 function readCar() {
   [player.x, player.y, player.yaw, player.speed, player.lateral] = [0, 1, 2, 3, 4].map(i => drive.drive_read(i));
-  player.yawRate = drive.drive_read(5); player.steering = drive.drive_read(6); player.rearSlip = drive.drive_read(7); player.distance = drive.drive_read(9);
+  player.yawRate = drive.drive_read(5); player.steering = drive.drive_read(6); player.rearSlip = drive.drive_read(7); player.distance = drive.drive_read(9); player.contacts = drive.drive_read(10);
   [player.height, player.verticalSpeed, player.grounded, player.pitch, player.roll, player.airTime, player.landings, player.landingSpeed, player.bestAirTime] = [11, 12, 13, 14, 15, 16, 17, 18, 19].map(i => drive.drive_read(i));
   player.grounded = Boolean(player.grounded); player.ceiling = drive.drive_read(21);
 }
@@ -278,7 +278,7 @@ async function boot() {
     cameraPosition.set(player.x - 14, 12, -player.y + 17); cameraTarget.set(player.x + 2, 1, -player.y - 3);
     state.ready = true; $('district-start').disabled = false; $('start').disabled = false; $('start').innerHTML = '街へ出る <span>↗</span>';
     // Small read-only diagnostic snapshot for smoke tests; controls stay on UI events.
-    window.rustDriving = { snapshot: () => ({ ...player, ...state, physics: 'rust-wasm', carHeight: car.position.y, cameraHeight: camera.position.y, cameraX: camera.position.x, cameraY: -camera.position.z, district: districtAt(player.x, player.y).id, districtCount: DISTRICTS.length, trafficCars: traffic.cars.length, buildings: city.buildingCount, intersections: city.signals, smokeParticles: smoke.filter(p => p.life > 0).length, skidSegments: markCount, cameraMode: state.camera, chase: traffic.active, keysHeld: keys.size + touch.size, brokenGuardrails: urban.barriers.count(), trainX: urban.trainX(), urbanBuildings: urban.buildingCount, elevatedTraffic: traffic.cars.filter(c => c.height > 2).length }) };
+    window.rustDriving = { snapshot: () => ({ ...player, ...state, physics: 'rust-wasm', carHeight: car.position.y, cameraHeight: camera.position.y, cameraX: camera.position.x, cameraY: -camera.position.z, district: districtAt(player.x, player.y).id, districtCount: DISTRICTS.length, trafficCars: traffic.cars.length, buildings: city.buildingCount, intersections: city.signals, smokeParticles: smoke.filter(p => p.life > 0).length, skidSegments: markCount, cameraMode: state.camera, chase: traffic.active, keysHeld: keys.size + touch.size, brokenGuardrails: urban.barriers.count(), trainX: urban.trainX(), urbanBuildings: urban.buildingCount, elevatedTraffic: traffic.cars.filter(c => c.height > 2).length, nearbyTraffic: traffic.cars.filter(c => Math.hypot(c.x - player.x, c.y - player.y) < 45).map(c => ({ x: c.x, y: c.y, height: c.height, yaw: c.yaw, speed: c.speed, police: c.police })) }) };
     addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
     $('world').addEventListener('webglcontextlost', event => { event.preventDefault(); pause(true); $('error').hidden = false; $('error').textContent = '描画の接続が切れました。ページを再読み込みしてください。'; $('start').disabled = true; });
     let previous = performance.now();

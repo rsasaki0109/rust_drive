@@ -102,6 +102,10 @@ def main():
                 advance(page, STEP_MS)
                 state = snap()
                 capture('hillside-city', step, state)
+                if step % 100 == 0:
+                    print(json.dumps({'urban_step': step, 'state': {
+                        k: state[k] for k in ['x', 'y', 'height', 'speed', 'yaw', 'contacts', 'brokenGuardrails', 'landings', 'grounded', 'nearbyTraffic']
+                    }}), flush=True)
                 if state['x'] > 280 and state['cameraMode'] == 1 and not city_shot:
                     page.screenshot(path=str(args.output / 'urban-climb.png'))
                     city_shot = True
@@ -119,6 +123,8 @@ def main():
                 if landed_at is not None and step - landed_at >= 40 and step % 2:
                     break
             else:
+                (args.output / 'trace.json').write_text(json.dumps(trace, indent=2) + '\n')
+                page.screenshot(path=str(args.output / 'urban-end.png'))
                 raise AssertionError('The actual urban drive never broke the rail and landed')
             keys(set())
             hill = [e['state'] for e in trace]
@@ -153,7 +159,11 @@ def main():
                 state = snap()
                 station.append(state)
                 capture('station-loop', step, state)
-                assert abs(math.hypot((state['x'] - 490) / 55, (state['y'] - 150) / 65) - 1) < .18
+                if step % 100 == 0:
+                    print(json.dumps({'station_step': step, 'state': {
+                        k: state[k] for k in ['x', 'y', 'height', 'speed', 'yaw', 'contacts', 'ceiling']
+                    }}), flush=True)
+                assert abs(math.hypot((state['x'] - 490) / 55, (state['y'] - 150) / 65) - 1) < .18, json.dumps({'station_step': step, 'state': state})
                 if step == 100:
                     page.screenshot(path=str(args.output / 'station-loop.png'))
             keys(set())

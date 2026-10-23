@@ -258,12 +258,16 @@ impl DrivingVehicle {
             return false;
         }
         let length = nx.hypot(ny);
-        if length < 0.000_001 { return false; }
+        if length < 0.000_001 {
+            return false;
+        }
         let (nx, ny) = (nx / length, ny / length);
         let (vx, vy) = self.velocity();
         let incoming = -(vx * nx + vy * ny);
         let remaining = incoming * incoming - 2.0 * energy / 1_250.0;
-        if incoming <= 0.0 || remaining <= 0.0 { return false; }
+        if incoming <= 0.0 || remaining <= 0.0 {
+            return false;
+        }
         let lost = incoming - remaining.sqrt();
         let (vx, vy) = (vx + nx * lost, vy + ny * lost);
         let (s, c) = self.car.yaw.sin_cos();
@@ -535,7 +539,10 @@ mod tests {
         assert!(car.break_barrier(-2.0, 0.0, 90_000.0));
         assert!((0.5 * 1_250.0 * (900.0 - car.car.forward.powi(2)) - 90_000.0).abs() < 1e-8);
         assert_eq!(car.car.lateral, 4.0);
-        assert_eq!((car.car.x, car.car.y, car.elevation.height), (before.car.x, before.car.y, 48.0));
+        assert_eq!(
+            (car.car.x, car.car.y, car.elevation.height),
+            (before.car.x, before.car.y, 48.0)
+        );
         assert!(car.elevation.grounded && car.car.contacts == 1);
     }
 
@@ -563,7 +570,8 @@ mod tests {
         let x = car.car.x;
         car.step(0.0, 0.0, 0.0, 0.005);
         assert!((car.car.x - x - vx * 0.005).abs() < 1e-10);
-        assert!((car.elevation.height - z - vz * 0.005 + 0.5 * 9.81 * 0.005_f64.powi(2)).abs() < 1e-10);
+        assert!(
+            (car.elevation.height - z - vz * 0.005 + 0.5 * 9.81 * 0.005_f64.powi(2)).abs() < 1e-10
+        );
     }
-
 }

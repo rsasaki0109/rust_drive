@@ -169,21 +169,32 @@ python web/tests/structures_smoke.py --url http://127.0.0.1:4173/rust_driving/ \
   --output web/test-results/structures --record assets/stacked-roads-demo.gif
 ```
 
-The README hero records the actual urban pursuit, hillside climb, guardrail fracture, landing and station curve. Its
-[provenance](../assets/urban-hills-chase-demo.json) binds source/WASM/output hashes,
-normal-speed frame timing and observed height, airtime and landing impact.
-The **Ridge course evidence** workflow formats the standalone physics in its
-isolated checkout, runs all required core and game checks, verifies the browser,
-then publishes the formatting and three named media files to the unchanged
-feature branch. Its guard prevents overwriting a moved branch; it excludes
-`main` and `develop` as publication targets.
+The README hero records the actual urban pursuit, hillside climb, guardrail fracture,
+landing and station curve. Its [provenance](../assets/urban-hills-chase-demo.json)
+binds source, WASM, trace and output hashes with normal-speed timing and observed
+impact, flight and landing. The **Urban city evidence** workflow runs the required
+core suite, native/WASM tests and all production browser checks first. It
+publishes formatting and the six named urban media files only if every check
+passes and the feature branch has not moved. It excludes `main` and `develop`
+as publication targets.
 
-To reproduce the ridge check after building/starting the preview:
+After building and starting the preview, install Playwright, Pillow and FFmpeg
+and intentionally refresh the urban hero with:
 
 ```sh
-python web/tests/ridge_smoke.py --url http://127.0.0.1:4173/rust_driving/ \
-  --output web/test-results/ridge
-# Intentionally record the hero as well (requires Pillow and FFmpeg):
+python web/tests/urban_smoke.py --url http://127.0.0.1:4173/rust_driving/ \
+  --output web/test-results/urban --record assets/urban-hills-chase-demo.gif
+```
+
+The clip has one visible cut between two public area selections. Both segments
+use real keyboard input and the production game; the recorder never writes
+vehicle poses or NPC state.
+
+The older [ridge recording](../assets/ridge-dive-demo.gif) and its
+[provenance](../assets/ridge-dive-demo.json) remain available. **Ridge course
+evidence** refreshes those three ridge assets after core and game checks:
+
+```sh
 python web/tests/ridge_smoke.py --url http://127.0.0.1:4173/rust_driving/ \
   --output web/test-results/ridge --record assets/ridge-dive-demo.gif
 ```
@@ -195,14 +206,14 @@ the diagnostic snapshot to choose repeatable inputs; it never writes poses or
 NPC state. This is arcade gameplay, separate from autonomous-driving validation.
 The [native dense-traffic recording](dense-traffic-demo.md) remains available.
 
-The **Record playground evidence** workflow can refresh the hero and area
+The **Record playground evidence** workflow can refresh the older city chase and area
 overview on a feature branch. It runs the core checks, geometry checks and real
 browser controls first, retains the evidence, and commits only the media paths.
 It refuses to publish if the branch moved while it ran. It never writes to
 `main` or `develop`; merge the resulting media through the usual PR.
 
 After building and starting the production preview above, install Playwright,
-Pillow and FFmpeg, then intentionally refresh the hero with:
+Pillow and FFmpeg, then intentionally refresh the city chase with:
 
 ```sh
 python scripts/capture-city-chase.py \
@@ -225,4 +236,3 @@ smoke, frame count, playback duration and uncaught browser errors before
 publishing the asset. The [poster](../assets/city-chase-demo.png) is a captured
 frame, with no added vehicles or effects.
 
-The **Urban city evidence** workflow runs the core suite, native/WASM tests and all production browser checks before recording the hero. Its two segments use actual public area controls and keyboard steering, with one visible cut between starts. The GIF runs at normal speed. Source, WASM, trace, GIF and screenshot hashes are recorded alongside it.

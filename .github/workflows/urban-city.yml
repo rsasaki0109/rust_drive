@@ -73,6 +73,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ffmpeg
       - name: Start the production preview
+        id: preview
         run: |
           npm --prefix web run preview -- --host 127.0.0.1 --port 4173 > /tmp/rustdriving-urban-preview.log 2>&1 &
           echo "$!" > /tmp/rustdriving-urban-preview.pid
@@ -93,10 +94,13 @@ jobs:
       - name: Verify city keyboard and mobile controls
         run: python web/tests/browser_smoke.py --url "http://127.0.0.1:4173${PAGES_BASE}" --output web/test-results
       - name: Verify ridge climb, guardrail impact, flight and landing
+        if: ${{ !cancelled() && steps.preview.outcome == 'success' }}
         run: python web/tests/ridge_smoke.py --url "http://127.0.0.1:4173${PAGES_BASE}" --output web/test-results/ridge
       - name: Verify upper road, lower crossing and tunnel
+        if: ${{ !cancelled() && steps.preview.outcome == 'success' }}
         run: python web/tests/structures_smoke.py --url "http://127.0.0.1:4173${PAGES_BASE}" --output web/test-results/structures
       - name: Record the actual urban pursuit, impact and station curve
+        if: ${{ !cancelled() && steps.preview.outcome == 'success' }}
         run: python web/tests/urban_smoke.py --url "http://127.0.0.1:4173${PAGES_BASE}" --output web/test-results/urban --record assets/urban-hills-chase-demo.gif
       - uses: actions/upload-artifact@v4
         if: always()

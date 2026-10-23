@@ -81,17 +81,21 @@ def main():
             page.locator('#world').focus()
             for _ in range(25):
                 tick()
-            held, switched, overhead, peak_frame, frame_count = None, False, True, None, 0
+            held, switched, overhead, peak_frame, frame_count = set(), False, True, None, 0
             landed_at = None
             for step in range(1000):
                 state = snap()
-                wanted = 'KeyW' if not state['landings'] else 'KeyS' if state['speed'] > 1 else None
-                if wanted != held:
-                    if held:
-                        page.keyboard.up(held)
-                    if wanted:
-                        page.keyboard.down(wanted)
-                    held = wanted
+                # Moving traffic can deflect the player; use actual A/D events to keep the avenue.
+                desired_yaw = max(-.18, min(.18, (150 - state['y']) * .06))
+                error = math.atan2(math.sin(desired_yaw - state['yaw']), math.cos(desired_yaw - state['yaw']))
+                command = error - .2 * state['yawRate'] - .08 * math.atan2(state['lateral'], max(1, abs(state['speed'])))
+                wanted = {'KeyA'} if command > .03 else {'KeyD'} if command < -.03 else set()
+                wanted |= {'KeyW'} if not state['landings'] else {'KeyS'} if state['speed'] > 1 else set()
+                for key in sorted(held - wanted):
+                    page.keyboard.up(key)
+                for key in sorted(wanted - held):
+                    page.keyboard.down(key)
+                held = wanted
                 if state['x'] > 320 and not switched:
                     while snap()['cameraMode'] != 0:
                         page.locator('#camera').click(force=True)
@@ -99,7 +103,7 @@ def main():
                     switched = True
                 tick()
                 state = snap()
-                trace.append({'step': step, 'key': held, 'state': state})
+                trace.append({'step': step, 'held': sorted(held), 'state': state})
                 assert abs(state['carHeight'] - state['height'] - .02) < 1e-6
                 assert state['x'] <= 560.01
                 assert all(math.isfinite(state[key]) for key in ['x', 'y', 'height', 'verticalSpeed', 'pitch', 'speed'])
@@ -119,9 +123,16 @@ def main():
                         print(f'Recorded {frame_count} ridge frames', flush=True)
                 if landed_at is not None and step - landed_at >= 50 and step % 2:
                     break
-            if held:
-                page.keyboard.up(held)
+            for key in sorted(held):
+                page.keyboard.up(key)
             states = [entry['state'] for entry in trace]
+            (args.output / 'trace.json').write_text(json.dumps(trace, indent=2) + '\n')
+            page.screenshot(path=str(args.output / 'ridge-end.png'))
+            diagnostic_keys = ['x', 'y', 'height', 'speed', 'yaw', 'contacts', 'brokenGuardrails', 'landings', 'grounded']
+            print(json.dumps({'ridge_drive': [
+                dict({key: entry['state'][key] for key in diagnostic_keys}, nearbyTraffic=entry['state']['nearbyTraffic'])
+                for entry in trace[::100] + trace[-1:]
+            ]}), flush=True)
             assert peak_frame is not None and landed_at is not None, 'The UI run must climb, fly and land'
             assert max(s['height'] for s in states) > 48.5
             assert max(s['airTime'] for s in states) > 3
@@ -148,7 +159,7 @@ def main():
             'schema_version': 1, 'passed': True, 'backend': 'rust-wasm-ridge-flight',
             'source_commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
             'browser_version': version, 'renderer': 'Three.js / Chromium WebGL 2 / SwiftShader',
-            'input': 'Keyboard W/S and public start-area/camera/pause/recover controls; read-only diagnostic snapshots. No pose writes.',
+            'input': 'Keyboard W/A/S/D and public start-area/camera/pause/recover controls; read-only diagnostic snapshots. No pose writes.',
             'source_sha256': {name: sha(ROOT / name) for name in SOURCES},
             'wasm_sha256': sha(ROOT / 'web/dist/drive.wasm'),
             'observed': {
