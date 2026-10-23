@@ -30,7 +30,8 @@ function instances(parent, geometry, material, rows) {
 
 export function createCity(scene) {
   const colliders = [], windows = [], bodies = [], roofs = [], curbs = [], paint = [], lamps = [];
-  mesh(scene, box, matte(0x53635b), 0, -.42, 0, 700, .5, 700).receiveShadow = true;
+  // Eastern terrain is cut around the excavated tunnel by createRidge.
+  mesh(scene, box, matte(0x53635b), 0, -.42, 0, 380, .5, 380).receiveShadow = true;
   const districts = createDistrictScenery(scene); colliders.push(...districts.colliders);
   const asphalt = matte(0x333e47);
   for (const street of STREETS) {

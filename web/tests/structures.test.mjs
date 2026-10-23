@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import * as THREE from 'three';
 import { createStructures, ROAD_STARTS } from '../src/structures.js';
 import { createRidge } from '../src/ridge.js';
+import { createCity } from '../src/city.js';
 
 async function physics() {
   return (await WebAssembly.instantiate(await readFile(new URL('../public/drive.wasm', import.meta.url)), {})).instance.exports;
@@ -82,7 +83,7 @@ async function geometry() {
   const p = await physics(), scene = new THREE.Scene(), saved = globalThis.document;
   globalThis.document = { createElement: () => ({ getContext: () => ({ fillRect() {}, fillText() {} }) }) };
   let result;
-  try { createRidge(scene, p); result = createStructures(scene, p); }
+  try { createCity(scene); createRidge(scene, p); result = createStructures(scene, p); }
   finally { if (saved === undefined) delete globalThis.document; else globalThis.document = saved; }
   scene.updateMatrixWorld(true);
   return { p, scene, result };
