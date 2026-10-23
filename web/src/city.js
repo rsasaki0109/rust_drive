@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { Junctions } from './junctions.js';
 import { applyVehiclePose } from './vehicle-pose.js';
 import { districtAt } from './regions.js';
 import { createDistrictScenery } from './scenery.js';
@@ -241,6 +242,7 @@ export class Traffic {
     this.scene = scene; this.cars = []; this.active = false; this.nextId = 0;
     this.drive = options.drive; this.urban = Boolean(options.urban);
     this.graph = roadGraph(STREETS, this.urban);
+    this.junctions = new Junctions(this.graph, { phase, lane: car => this.lane(car), drive: this.drive });
     const colors = [0xdf815b, 0xb0c8be, 0x6b9fbd, 0xd4bd72, 0x6c787b, 0xb3a6b9];
     for (let i = 0; i < (options.cityCars ?? 20); i++) this.spawn(false, colors[i % colors.length]);
     if (this.urban) {
@@ -303,6 +305,7 @@ export class Traffic {
     }
   }
   update(dt, time, player) {
+    this.junctions.update(dt, time, this.cars, player);
     for (const c of this.cars) {
       const heading = Math.atan2(c.next.y - c.node.y, c.next.x - c.node.x);
       const lane = this.lane(c), tx = c.next.x + Math.sin(heading) * lane, ty = c.next.y - Math.cos(heading) * lane;
@@ -310,7 +313,7 @@ export class Traffic {
       let desired = c.police ? 17 + Math.min(5, Math.hypot(c.x - player.x, c.y - player.y) * .04) : c.desired;
       // Brake for the actual bend instead of carrying cruise speed through tight alleys.
       desired = Math.min(desired, Math.max(5, (c.police ? 24 : 15) - 12 * Math.abs(wrap(toward-c.yaw))));
-      if (!c.police && c.next.signal && distance < 23 && distance > 9 && phase(Math.abs(Math.cos(heading)) > .5 ? 'x' : 'y', c.next.x, c.next.y, time) !== 'green') desired = Math.min(desired, Math.sqrt(Math.max(0, 7 * (distance - 11))));
+      desired = Math.min(desired, this.junctions.limit(c));
       for (const other of [...this.cars, player]) {
         if (other === c) continue;
         const dx = other.x - c.x, dy = other.y - c.y, front = dx * Math.cos(c.yaw) + dy * Math.sin(c.yaw), lateral = -dx * Math.sin(c.yaw) + dy * Math.cos(c.yaw);

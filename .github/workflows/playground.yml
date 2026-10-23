@@ -20,6 +20,7 @@ jobs:
   build:
     # Match the supported image used by the successful recording checks.
     runs-on: ubuntu-22.04
+    timeout-minutes: 60
     env:
       PAGES_BASE: /${{ github.event.repository.name }}/
     steps:
@@ -47,6 +48,8 @@ jobs:
           npm ci --prefix web --ignore-scripts
           bash scripts/build-playground.sh
           npm --prefix web test
+      - name: Run the required core regression suite
+        run: bash scripts/check.sh
       - name: Install browser test tools
         run: |
           python -m pip install playwright==1.56.0

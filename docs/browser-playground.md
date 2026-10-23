@@ -289,3 +289,13 @@ fixture uses ordinary throttle/brake events around 16 m/s during the climb and
 requires ten consecutive frames containing two ordinary cars and a pursuer.
 It identifies the final cliff landing at city grade, separately from any brief
 crest touchdown, and retains its trace before checking framing.
+
+
+Traffic coordinates entry at signals and street merges. One NPC owns the
+junction until it has cleared the crossing; waiting vehicles brake before the
+entry line and resume in arrival order, with pursuit priority when the junction
+is free. An admitted car clears the junction after a light change. A removed
+pursuer releases its reservation. Short curved waypoint segments retain braking
+distance to the next signal, and upper-road players do not block ground traffic.
+This is a conservative arcade traffic policy: it serializes junction entry
+rather than scheduling simultaneous non-conflicting turns.
