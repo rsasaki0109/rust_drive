@@ -2,15 +2,17 @@
   "schema_version": 1,
   "backend": "rust-wasm-city-playground",
   "renderer": "Three.js / Chromium WebGL 2 / SwiftShader",
-  "browser_version": "151.0.7922.173",
+  "browser_version": "155.0.8059.0",
   "encoder": "FFmpeg global 128-color palette, no dithering",
-  "source_commit": "bca4886f866659fddffab28d36af47da98f41a86",
-  "capture_url": "http://127.0.0.1:4174/rust_driving/",
+  "source_commit": "b30ee5c5bb59819b51bae38bc9c69bfffbb1aae4",
+  "capture_url": "http://127.0.0.1:4173/rust_driving/",
   "source_sha256": {
-    "web/index.html": "1507a2817ba33dc9a9edbc81f8c8f5a7399359779e895935a322328995431603",
-    "web/src/main.js": "0ea684ac9c6756e33f5db39fe59ef8cfde0ba83a802e6eed62396200575800ac",
-    "web/src/city.js": "60c6a1f66755e50717841130e26ff7052862c6a8f781e1788ad1459d2bd39ab8",
-    "web/src/style.css": "cf2c51a43e0cb320fba5aba49b3c56ae537a5cf5b4a2bfeb1ac4810901557b64",
+    "web/index.html": "d6b134999e8a7ecaf5d3316558812cf5eeb294c840c27b157a40ddfac54abcdb",
+    "web/src/main.js": "5d641d321e59b9e9a309ca2497cbb49c4f2f0102fb69471ea5cc769b24111e9c",
+    "web/src/city.js": "e3f73069e554b0939dacbcd85653c13f7c44b2ec1d6b3a1f70065a576d48d448",
+    "web/src/style.css": "d35021e9d799382b9f637c864908264bcf0db173bb7f8e45e27550a2a6dba1ba",
+    "web/src/regions.js": "1a64df43eb5e39b3cf3db78fee8d3962ba60120eda9f655effabec4b70b2dc6e",
+    "web/src/scenery.js": "63d82522a377df763d664b643a863a133733cbd252c528484160bf84e4837704",
     "web/package-lock.json": "f0191e9598e42d8dc3f8ff7895fbc14b14305a4d4064bd78eacd2a364d1d2073",
     "web/vite.config.js": "b246ac77d718e95e06c9cd5ea97bb563069dd8a95e7a3bc7cf8c58ee83a71181",
     "scripts/build-playground.sh": "a8d0851eeb6876f1e77f70d07e1b1443674c6b4e904bc51f95dacd64230d0e8b",
@@ -18,7 +20,7 @@
     "integrations/playground/Cargo.toml": "e1f0c36dc2b9f2de7ce90e04c3cb1d7eeaae0e8b32747709901698daaa7c7ec0",
     "integrations/playground/Cargo.lock": "b9ab8c27b377f2173e4bc7871ac223ddbf01e7f8026fbb115635d9ca6b5772dc",
     "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed",
-    "scripts/capture-city-chase.py": "e6c9b67b14869d1f80ca851b981d52986a1260f3d6c78e49206f885e9dc125b2"
+    "scripts/capture-city-chase.py": "8fb59c03b4faa800ff274f7023bf695c47923a7ba12ed334f336cdedcb95ab67"
   },
   "wasm_sha256": "9f7d6f128b638c6cea7e34241dab0559ac5e2f47a8e7a9c67c368e3eec6faa10",
   "capture": {
@@ -65,19 +67,19 @@
   ],
   "scope": "Planar arcade gameplay recording; not autonomous-driving acceptance evidence.",
   "observed": {
-    "buildings": 102,
+    "buildings": 64,
     "intersections": 49,
     "ordinary_traffic_cars": 20,
     "police_cars": 2,
-    "distance_m": 148.87623317485367,
+    "distance_m": 155.3934951654626,
     "moving_fraction": 0.975,
-    "rear_slip_peak_degrees": 70.4152243981131,
+    "rear_slip_peak_degrees": 38.574220877973154,
     "smoke_particles_peak": 40,
-    "skid_segments": 734,
+    "skid_segments": 696,
     "uncaught_errors": []
   },
-  "trace": "artifacts/browser-playground-20261023/city-chase-hero-final/trace.json",
-  "trace_sha256": "f04855166559d5c8e7c5432fd2413fbb24fe0ba8c5b102313dca2dcaa5090ea0",
-  "gif_sha256": "98223d027e517c45bcd37d86cf66910dd943870e0322f5cb700da119364825b3",
-  "poster_sha256": "814c54b7bf7f4b5b716634d562f3b62a71b5acf70d7f93c6a997427920990877"
+  "trace": "artifacts/mixed-districts-capture/trace.json",
+  "trace_sha256": "786895fb2e0d8c993e5f6536093425276c14fe060a51a49f10ea132223410df3",
+  "gif_sha256": "8777007357bb51fe0ef5afd7ec2143ccd47a46792659d1d46568f63592cce933",
+  "poster_sha256": "e643608d09bc579eb96cebfc5890341d2edb68418a2f3a58b0040e80b925ff55"
 }

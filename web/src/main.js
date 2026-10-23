@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import './style.css';
+import { DISTRICTS, BLOCKS, districtAt, forestTrail } from './regions.js';
 import { createCity, makeCar, Traffic, STREETS, LIMIT, nearestStreet, wrap } from './city.js';
 
 const $ = id => document.getElementById(id);
@@ -15,8 +16,8 @@ function readCar() {
   [player.x, player.y, player.yaw, player.speed, player.lateral] = [0, 1, 2, 3, 4].map(i => drive.drive_read(i));
   player.steering = drive.drive_read(6); player.rearSlip = drive.drive_read(7); player.distance = drive.drive_read(9);
 }
-function recover(initial = false) {
-  let x = initial ? 0 : player.x, y = initial ? -22 : player.y, yaw = initial ? Math.PI / 2 : player.yaw;
+function recover(initial = false, spawn = DISTRICTS[0].spawn) {
+  let x = initial ? spawn.x : player.x, y = initial ? spawn.y : player.y, yaw = initial ? spawn.yaw : player.yaw;
   if (!initial) {
     const roadX = nearestStreet(x), roadY = nearestStreet(y);
     if (Math.abs(x - roadX) < Math.abs(y - roadY)) { x = roadX + 3.8; y = Math.max(-145, Math.min(145, y)); yaw = Math.PI / 2; }
@@ -43,6 +44,15 @@ function setChase() {
 }
 function cycleCamera() { state.camera = (state.camera + 1) % 3; notice(['CHASE CAMERA', 'CITY VIEW', 'HOOD CAMERA'][state.camera]); }
 
+$('district-start').addEventListener('change', event => {
+  if (!state.ready || !state.paused) return;
+  const district = DISTRICTS.find(d => d.id === event.target.value);
+  if (!district) return;
+  if (traffic.active) setChase();
+  recover(true, district.spawn); keys.clear(); touch.clear(); accumulator = 0; state.escaped = 0;
+  cameraPosition.set(player.x - 14, 12, -player.y + 17); cameraTarget.set(player.x + 2, 1, -player.y - 3);
+  notice(district.name + 'からスタート');
+});
 $('start').addEventListener('click', () => pause(false));
 $('pause').addEventListener('click', () => pause(!state.paused));
 $('camera').addEventListener('click', () => { if (state.ready) cycleCamera(); });
@@ -59,7 +69,7 @@ $('sound').addEventListener('click', () => {
 
 const driveKeys = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'];
 addEventListener('keydown', event => {
-  if (driveKeys.includes(event.code)) event.preventDefault();
+  if (!state.paused && driveKeys.includes(event.code)) event.preventDefault();
   if (event.code === 'Escape' && !event.repeat) pause(!state.paused);
   if (event.code === 'Enter' && state.paused && state.ready && event.target === document.body) pause(false);
   if (!state.paused && !event.repeat) { if (event.code === 'KeyC') cycleCamera(); if (event.code === 'KeyR') recover(); }
@@ -153,13 +163,26 @@ function updateCamera(dt) {
 
 const mapContext = $('map').getContext('2d');
 function drawMap() {
-  const ctx = mapContext, center = 90, scale = .48; ctx.clearRect(0, 0, 180, 180); ctx.fillStyle = '#12212b'; ctx.fillRect(0, 0, 180, 180); ctx.strokeStyle = '#6a7a8266'; ctx.lineWidth = 7;
+  const ctx = mapContext, center = 90, scale = .48; ctx.clearRect(0, 0, 180, 180); ctx.fillStyle = '#12212b'; ctx.fillRect(0, 0, 180, 180);
+  for (const block of BLOCKS) {
+    ctx.fillStyle = block.district.color + '55'; ctx.fillRect(center + (block.x - 16) * scale, center - (block.y + 16) * scale, 32 * scale, 32 * scale);
+    if (block.district.id === 'forest') {
+      ctx.strokeStyle = '#c5bc92'; ctx.lineWidth = 2; ctx.beginPath();
+      forestTrail(block.x, block.y).forEach((p, i) => ctx[i ? 'lineTo' : 'moveTo'](center + p.x * scale, center - p.y * scale)); ctx.stroke();
+    }
+  }
+  ctx.strokeStyle = '#6a7a8266'; ctx.lineWidth = 7;
   for (const street of STREETS) { ctx.beginPath(); ctx.moveTo(center + street * scale, 0); ctx.lineTo(center + street * scale, 180); ctx.moveTo(0, center - street * scale); ctx.lineTo(180, center - street * scale); ctx.stroke(); }
   for (const c of traffic.cars) { ctx.fillStyle = c.police ? '#ff7e6a' : '#a3b3b7'; ctx.fillRect(center + c.x * scale - 1, center - c.y * scale - 1, c.police ? 4 : 2, c.police ? 4 : 2); }
   ctx.save(); ctx.translate(center + player.x * scale, center - player.y * scale); ctx.rotate(-player.yaw); ctx.fillStyle = '#ffbd73'; ctx.beginPath(); ctx.moveTo(6, 0); ctx.lineTo(-4, -3.5); ctx.lineTo(-2, 0); ctx.lineTo(-4, 3.5); ctx.closePath(); ctx.fill(); ctx.restore();
 }
 
 function telemetry() {
+  const district = districtAt(player.x, player.y);
+  $('district-name').textContent = district.label;
+  $('district-index').textContent = String(DISTRICTS.indexOf(district) + 1).padStart(2, '0');
+  $('district-current').textContent = district.name; $('district-current').style.color = district.color;
+  $('district-dot').style.backgroundColor = district.color;
   const speed = Math.hypot(player.speed, player.lateral) * 3.6;
   $('speed').textContent = Math.round(speed); $('gear').textContent = player.speed < -.5 ? 'R' : speed < 1 ? 'N' : String(Math.min(5, Math.floor(speed / 27) + 1)); $('rev').style.width = `${Math.min(100, speed % 27 / 27 * 75 + (speed > 1 ? 20 : 0))}%`; $('score').textContent = String(state.score).padStart(5, '0');
   $('impact').style.opacity = String(Math.min(1, state.impact * 1.7));
@@ -179,9 +202,9 @@ async function boot() {
     const sun = new THREE.DirectionalLight(0xffc18a, 2.5); sun.position.set(-45, 75, 25); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024); sun.shadow.camera.left = sun.shadow.camera.bottom = -25; sun.shadow.camera.right = sun.shadow.camera.top = 25; sun.shadow.camera.near = 1; sun.shadow.camera.far = 160; sun.shadow.bias = -.001; scene.add(sun, sun.target);
     city = createCity(scene); traffic = new Traffic(scene); car = makeCar(0xf2ede2, false, true); scene.add(car); prepareEffects(); recover(true);
     cameraPosition.set(player.x - 14, 12, -player.y + 17); cameraTarget.set(player.x + 2, 1, -player.y - 3);
-    state.ready = true; $('start').disabled = false; $('start').innerHTML = '街へ出る <span>↗</span>';
+    state.ready = true; $('district-start').disabled = false; $('start').disabled = false; $('start').innerHTML = '街へ出る <span>↗</span>';
     // Small read-only diagnostic snapshot for smoke tests; controls stay on UI events.
-    window.rustDriving = { snapshot: () => ({ ...player, ...state, physics: 'rust-wasm', trafficCars: traffic.cars.length, buildings: city.buildingCount, intersections: city.signals, smokeParticles: smoke.filter(p => p.life > 0).length, skidSegments: markCount, cameraMode: state.camera, chase: traffic.active, keysHeld: keys.size + touch.size }) };
+    window.rustDriving = { snapshot: () => ({ ...player, ...state, physics: 'rust-wasm', district: districtAt(player.x, player.y).id, districtCount: DISTRICTS.length, trafficCars: traffic.cars.length, buildings: city.buildingCount, intersections: city.signals, smokeParticles: smoke.filter(p => p.life > 0).length, skidSegments: markCount, cameraMode: state.camera, chase: traffic.active, keysHeld: keys.size + touch.size }) };
     addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
     $('world').addEventListener('webglcontextlost', event => { event.preventDefault(); pause(true); $('error').hidden = false; $('error').textContent = '描画の接続が切れました。ページを再読み込みしてください。'; $('start').disabled = true; });
     let previous = performance.now();

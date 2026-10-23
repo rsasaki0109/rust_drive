@@ -9,3 +9,10 @@
 .quick{position:absolute;bottom:24px;width:32px;height:32px;border-radius:4px;font-size:14px;transform:translateX(-50%)}.quick.camera{left:calc(50% - 42px)}.quick.recover{left:calc(50% + 42px)}
 @media(max-width:850px){.quick{bottom:88px}.quick.camera{left:72px}.quick.recover{left:114px}}
 .topbar{z-index:2}
+
+.district b{font:inherit}.district-current{padding:0 10px 10px;font-size:10px;color:var(--orange)}
+.district-picker{display:flex;flex-direction:column;gap:7px;margin:0 0 18px;max-width:300px;font:9px ui-monospace,monospace;letter-spacing:1.4px;color:#c7d2d0}
+.district-picker select{width:100%;padding:11px 12px;color:#f2f3ed;background:#16262e;border:1px solid #ffffff45;border-radius:4px;font:12px system-ui,sans-serif;cursor:pointer;letter-spacing:0}
+.district-picker select:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+@media(max-width:850px){.district-picker{max-width:250px;margin-bottom:14px}.district-current{font-size:9px}.lead{max-width:260px;margin:20px 0}.intro{padding-top:82px;padding-bottom:75px}.eyebrow{margin-bottom:16px}}
+@media(max-height:640px) and (max-width:850px){.intro{padding-top:65px;padding-bottom:15px}h1{font-size:36px}.eyebrow,.intro-controls,.fine{display:none}.lead{font-size:11px;line-height:1.6;margin:12px 0}.district-picker{gap:3px;margin-bottom:10px}#start{padding:10px 16px}}

@@ -5,10 +5,20 @@ WebGL 2 / WebAssembly browser, or use the on-screen pointer controls on a phone.
 There is no login, backend or save requirement. The static build bundles its
 renderer and physics; it makes no runtime CDN or map-service requests.
 
-The authored city has 102 buildings, 49 intersections, changing signals, parks,
-shop signs and 20 independently moving traffic cars. Chase mode adds two police
-cars; leave them more than 80 m behind for 12 seconds to escape. Drift chains
-add score after the slide ends. All artwork is original procedural geometry.
+Five connected districts share one freely drivable map: **Neon City**, **Harbor
+Bay**, **Canopy Park**, **Ironworks** and **Drift Square**. The port has container
+yards and cranes, the forest has six curved shortcuts, the factory has tanks and
+chimneys, and the central squares leave open circles for drifting. Roads connect
+every area without loading screens. Choose a starting area on the opening/pause
+screen; changing it ends any active pursuit and returns the car to rest.
+
+[Area overview](../assets/mixed-districts-preview.png) shows captured frames from
+the five starting areas, after driving with keyboard input.
+
+The map has 64 buildings, 49 signalized intersections and 20 independently moving
+traffic cars. Chase mode adds two police cars; leave them more than 80 m behind
+for 12 seconds to escape. Drift chains add score after the slide ends. All
+artwork is original procedural geometry.
 
 | Control | Action |
 |---|---|
@@ -65,7 +75,9 @@ cargo test --locked --manifest-path integrations/playground/Cargo.toml
 The Rust and built-WASM checks exercise acceleration, braking, reversing, real
 rear slip, invalid inputs and contact recovery. The browser test drives the
 actual production UI with keyboard and pointer events, checks smoke/skid marks,
-three cameras, pursuit, pause/focus handling, recovery and mobile controls:
+all five starting areas, three cameras, pursuit, pause/focus handling, recovery
+and mobile controls. Geometry checks independently sweep the street lanes,
+forest corridors and plaza drift circles against the actual scene colliders:
 
 ```sh
 python -m pip install playwright==1.56.0
@@ -88,6 +100,12 @@ keyboard events and the existing chase/camera buttons. A filming fixture reads
 the diagnostic snapshot to choose repeatable inputs; it never writes poses or
 NPC state. This is arcade gameplay, separate from autonomous-driving validation.
 The [native dense-traffic recording](dense-traffic-demo.md) remains available.
+
+The **Record playground evidence** workflow can refresh the hero and area
+overview on a feature branch. It runs the core checks, geometry checks and real
+browser controls first, retains the evidence, and commits only the media paths.
+It refuses to publish if the branch moved while it ran. It never writes to
+`main` or `develop`; merge the resulting media through the usual PR.
 
 After building and starting the production preview above, install Playwright,
 Pillow and FFmpeg, then intentionally refresh the hero with:
