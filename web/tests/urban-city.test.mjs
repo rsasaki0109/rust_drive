@@ -25,6 +25,8 @@ test('directed backstreets and station loop remain reachable from the city grid'
   const graph = roadGraph(STREETS, true), seen = new Set(), stack = [graph.get('0:0')];
   while (stack.length) { const p = stack.pop(), key = nodeKey(p); if (seen.has(key)) continue; seen.add(key); stack.push(...p.links); }
   assert.equal(seen.size, graph.size);
+  for(const a of graph.values())for(const b of a.links)
+    assert.ok(b.links.some(q=>nodeKey(q)!==nodeKey(a)), 'a traffic approach must have a forward exit: '+nodeKey(a)+' -> '+nodeKey(b));
   assert.ok(graph.size > 95);
   for (const key of ['370:150', '334:181.5', '240:118.5', '545:150', '435:150']) assert.ok(seen.has(key), key);
   assert.equal([...graph.values()].filter(n => n.signal).length, 54);
@@ -59,7 +61,7 @@ test('full-scene body-width sweeps keep every new traffic edge clear', async () 
   }
 });
 test('urban traffic uses real sloped surfaces and independent moving vehicles', async () => {
-  const {p,scene,colliders}=await world(),traffic=new Traffic(scene,{drive:p,urban:true,cityCars:24});
+  const {p,scene,colliders}=await world(),traffic=new Traffic(scene,{drive:p,urban:true,cityCars:20});
   assert.equal(traffic.cars.length,40);
   const start=traffic.cars.map(c=>({x:c.x,y:c.y})),player={x:-160,y:-160,yaw:0,height:0};
   let elevated=false;

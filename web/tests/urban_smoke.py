@@ -34,9 +34,10 @@ def main():
             control_clock(page)
             page.goto(args.url, wait_until='networkidle')
             advance(page, STEP_MS)
-            snap = lambda: page.evaluate('window.rustDriving.snapshot()')
+            snap = lambda: page.evaluate('window.rustDriving.snapshot({traffic: true})')
             assert snap()['ready'] and snap()['buildings'] == 107 and snap()['intersections'] == 54
             assert snap()['trafficCars'] == 40 and snap()['urbanBuildings'] >= 40
+            assert set(snap()['trafficTypes']) == {'sedan', 'compact', 'taxi', 'van'}
             held = set()
 
             def keys(wanted):
@@ -88,12 +89,13 @@ def main():
             start('urban')
             page.screenshot(path=str(args.output / 'urban-start.png'))
             broke_at, landed_at, impact_before, impact_after = None, None, None, None
-            city_shot = impact_shot = False
+            city_shot = impact_shot = traffic_shot = False
+            shared_traffic_frames = 0
             for step in range(1200):
                 before = snap()
-                if 255 < before['x'] < 320:
+                if 255 < before['x'] < 345:
                     camera(1)
-                elif before['x'] >= 320:
+                elif before['x'] >= 345:
                     camera(0)
                 desired_yaw = max(-.18, min(.18, (150 - before['y']) * .06))
                 wanted = steer(desired_yaw, before)
@@ -106,6 +108,13 @@ def main():
                     print(json.dumps({'urban_step': step, 'state': {
                         k: state[k] for k in ['x', 'y', 'height', 'speed', 'yaw', 'contacts', 'brokenGuardrails', 'landings', 'grounded', 'nearbyTraffic']
                     }}), flush=True)
+                ordinary_in_view = sum(not c['police'] for c in state['trafficInView'])
+                police_in_view = sum(c['police'] for c in state['trafficInView'])
+                if state['cameraMode'] == 1 and ordinary_in_view >= 2 and police_in_view >= 1:
+                    shared_traffic_frames += 1
+                    if not traffic_shot:
+                        page.screenshot(path=str(args.output / 'urban-traffic.png'))
+                        traffic_shot = True
                 if state['x'] > 280 and state['cameraMode'] == 1 and not city_shot:
                     page.screenshot(path=str(args.output / 'urban-climb.png'))
                     city_shot = True
@@ -129,6 +138,16 @@ def main():
             keys(set())
             hill = [e['state'] for e in trace]
             assert city_shot and impact_shot and broke_at is not None and landed_at is not None
+            assert traffic_shot and shared_traffic_frames >= 10, 'The city view must frame ordinary traffic and a real pursuing police car'
+            visible_tracks = {}
+            for state in hill:
+                for vehicle in state['trafficInView']:
+                    visible_tracks.setdefault((vehicle['id'], vehicle['police']), []).append((vehicle['x'], vehicle['y']))
+            moving_in_view = {False: 0, True: 0}
+            for (_, police), positions in visible_tracks.items():
+                if max(math.hypot(x - positions[0][0], y - positions[0][1]) for x, y in positions) > 4:
+                    moving_in_view[police] += 1
+            assert moving_in_view[False] >= 2 and moving_in_view[True] >= 1, 'The framed vehicles must actually move'
             assert max(s['height'] for s in hill) > 48.5 and max(s['airTime'] for s in hill) > 3
             assert hill[-1]['landings'] == 1 and hill[-1]['grounded'] and hill[-1]['height'] == 0
             assert max(s['trainX'] for s in hill) - min(s['trainX'] for s in hill) > 30
@@ -183,7 +202,9 @@ def main():
             'wasm_sha256': sha(ROOT / 'web/dist/drive.wasm'),
             'browser_version': version, 'renderer': 'Three.js / Chromium WebGL 2 / SwiftShader',
             'input': 'Public area/day/chase/camera controls and actual W/A/S/D keyboard events. Read-only snapshots; no pose writes.',
-            'city': {'buildings': 107, 'intersections': 54, 'ordinary_traffic': 40, 'police': 2},
+            'city': {'buildings': 107, 'intersections': 54, 'ordinary_traffic': 40, 'police': 2,
+                     'vehicle_types': ['sedan', 'compact', 'taxi', 'van'],
+                     'ordinary_distribution': {'city': 20, 'hillside': 12, 'station': 8}},
             'observed': {
                 'peak_height_m': max(s['height'] for s in hill),
                 'uphill_pitch_degrees': max(s['pitch'] for s in hill if s['grounded']) * 180 / math.pi,
@@ -195,6 +216,10 @@ def main():
                 'recovery_restores_guardrails': True, 'elevated_traffic_moves': True,
                 'station_curve_distance_m': station[-1]['distance'] - station_start['distance'],
                 'station_drives_under_railway': True, 'uncaught_errors': errors,
+                'shared_traffic_frame_count': shared_traffic_frames,
+                'moving_ordinary_vehicles_in_view': moving_in_view[False],
+                'moving_police_in_view': moving_in_view[True],
+                'framing_diagnostic': 'Projected body centres within 90 m, with building-AABB and sampled terrain occlusion rejection; inspect captured PNGs separately.',
             },
             'trace_sha256': sha(trace_path),
             'scope': 'Authored Tokyo-inspired arcade city, not a geographic Tokyo reconstruction or autonomous-driving evidence.',
@@ -216,7 +241,8 @@ def main():
                     duration += gif.info['duration']
                 assert duration == frames_written * FRAME_MS
             outputs = {'poster': ('urban-climb.png', '.png'), 'start': ('urban-start.png', '.start.png'),
-                       'impact': ('guardrail-impact.png', '.impact.png'), 'station': ('station-loop.png', '.station.png')}
+                       'impact': ('guardrail-impact.png', '.impact.png'), 'station': ('station-loop.png', '.station.png'),
+                       'traffic': ('urban-traffic.png', '.traffic.png')}
             report['output_sha256'] = {}
             for key, (name, suffix) in outputs.items():
                 destination = args.record.with_suffix(suffix)

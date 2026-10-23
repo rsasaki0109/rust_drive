@@ -14,6 +14,11 @@ export const LOWER_RING = Object.freeze(Array.from({ length: 65 }, (_, i) => {
 export const HILL_TRAFFIC = Object.freeze([
   { x: 190, y: 150 }, { x: 240, y: 150 }, { x: 334, y: 150 }, { x: 370, y: 150 },
   { x: 370, y: 181.5 }, { x: 334, y: 181.5 }, { x: 240, y: 181.5 }, { x: 190, y: 181.5 },
+  // Both directions of the avenue carry ordinary traffic as well as the alleys.
+  { x: 240, y: 150, to: { x: 334, y: 150 }, advance: 18 },
+  { x: 240, y: 150, to: { x: 334, y: 150 }, advance: 63 },
+  { x: 334, y: 150, to: { x: 240, y: 150 }, advance: 17 },
+  { x: 334, y: 150, to: { x: 240, y: 150 }, advance: 62 },
 ]);
 export const nodeKey = p => p.x + ':' + p.y;
 
@@ -43,6 +48,9 @@ export function roadGraph(streets, urban = false) {
       if (p.y === 181.5) p.links = p.links.filter(q => q.y !== p.y || q.x < p.x);
       if (p.y === 118.5) p.links = p.links.filter(q => q.y !== p.y || q.x > p.x);
     }
+    // End approaches join the one-way perimeter; avoid mandatory U-turns into shops.
+    for (const [from, to] of [['190:150','190:181.5'], ['370:150','370:118.5']])
+      nodes.get(from).links = nodes.get(from).links.filter(q => nodeKey(q) !== to);
     for (const [x, y] of [[240, 150], [334, 150], [370, 150], [435, 150], [545, 150]]) nodes.get(x + ':' + y).signal = true;
   }
   return nodes;

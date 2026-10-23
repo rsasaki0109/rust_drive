@@ -174,7 +174,7 @@ landing and station curve. Its [provenance](../assets/urban-hills-chase-demo.jso
 binds source, WASM, trace and output hashes with normal-speed timing and observed
 impact, flight and landing. The **Urban city evidence** workflow runs the required
 core suite, native/WASM tests and all production browser checks first. It
-publishes formatting and the six named urban media files only if every check
+publishes formatting and the seven named urban media files only if every check
 passes and the feature branch has not moved. It excludes `main` and `develop`
 as publication targets.
 
@@ -236,3 +236,5 @@ smoke, frame count, playback duration and uncaught browser errors before
 publishing the asset. The [poster](../assets/city-chase-demo.png) is a captured
 frame, with no added vehicles or effects.
 
+
+The 40 ordinary vehicles include sedans, compacts, taxis and delivery vans: 20 in the original city, 12 on hillside streets and eight around the station. They choose independent routes, wait for signals, steer their front wheels and brighten brake lights when slowing. Police prefer distinct road nodes behind the player, with a reachable-road fallback at map boundaries. The urban recorder requires at least two moving ordinary vehicles and a moving pursuer in view, retains a separate traffic PNG, and reports its framing diagnostic alongside the GIF. Body-centre projection and geometric occlusion checks support this diagnostic; captured images still require visual review.

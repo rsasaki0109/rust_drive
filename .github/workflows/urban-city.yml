@@ -117,7 +117,7 @@ jobs:
             echo "The feature branch moved; retain the evidence without overwriting newer work."
             exit 1
           fi
-          git add assets/urban-hills-chase-demo.gif assets/urban-hills-chase-demo.png assets/urban-hills-chase-demo.json assets/urban-hills-chase-demo.start.png assets/urban-hills-chase-demo.impact.png assets/urban-hills-chase-demo.station.png
+          git add assets/urban-hills-chase-demo.gif assets/urban-hills-chase-demo.png assets/urban-hills-chase-demo.json assets/urban-hills-chase-demo.start.png assets/urban-hills-chase-demo.impact.png assets/urban-hills-chase-demo.station.png assets/urban-hills-chase-demo.traffic.png
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           if ! git diff --cached --quiet; then

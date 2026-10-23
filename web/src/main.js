@@ -6,7 +6,7 @@ import { createStructures, ROAD_STARTS, STACKED_ROUTES } from './structures.js';
 import { createUrbanDistrict } from './urban-city.js';
 import { URBAN_START, STATION_START, HILL_STREETS, LOWER_RING } from './urban-roads.js';
 import { fractureContact } from './guardrails.js';
-import { createCity, makeCar, Traffic, STREETS, nearestStreet, wrap, phase } from './city.js';
+import { createCity, makeCar, Traffic, STREETS, nearestStreet, wrap, phase, trafficInView } from './city.js';
 
 const $ = id => document.getElementById(id);
 const state = { ready: false, started: false, paused: true, camera: 0, day: false, sound: false, time: 0, score: 0, combo: 0, lastDrift: 0, impact: 0, escaped: 0 };
@@ -194,7 +194,7 @@ function updateCamera(dt) {
     // Stay above the avenue: a side view can put tall shops between the camera and car.
     const urbanView = eastern && player.x < 380 && player.y > 110 && player.y < 190;
     destination = urbanView ? new THREE.Vector3(player.x - 45, height + 45, -player.y + 4) : eastern ? new THREE.Vector3(player.x - 55, height + 55, -player.y + 75) : new THREE.Vector3(player.x + 3, height + 57, -player.y + 15);
-    target = new THREE.Vector3(player.x + (eastern ? 20 : 0), height + (urbanView ? 3 : eastern ? 5 : 0), -player.y);
+    target = new THREE.Vector3(player.x + (urbanView ? 0 : eastern ? 20 : 0), height + (urbanView ? 1 : eastern ? 5 : 0), -player.y);
   } else { const street = eastern && player.y > 110 && player.y < 190 && player.grounded; const reach = (street ? 13 : eastern ? 22 : 10) + Math.min(eastern ? 9 : 5, Math.abs(player.speed) * .12); destination = new THREE.Vector3(player.x - c * reach + s * 1.8, height + (street ? 6 : eastern ? 12 : 5.1) + Math.min(2, Math.abs(player.speed) * .06), -player.y + s * reach + c * 1.8); target = new THREE.Vector3(player.x + c * 3, height + 1.0, -player.y - s * 3); }
   if (belowGrade) destination.z = Math.max(96.4, Math.min(113.6, destination.z));
   destination.y = Math.max(destination.y, drive.drive_support(destination.x, -destination.z, height) + .7);
@@ -274,11 +274,11 @@ async function boot() {
     urban = createUrbanDistrict(scene, drive, phase);
     city.colliders.push(...structures.colliders, ...urban.colliders);
     city.buildingCount += urban.buildingCount; city.signals += urban.signals;
-    traffic = new Traffic(scene, { drive, urban: true, cityCars: 24 }); car = makeCar(0xf2ede2, false, true); scene.add(car); prepareEffects(); recover(true);
+    traffic = new Traffic(scene, { drive, urban: true, cityCars: 20 }); car = makeCar(0xf2ede2, false, true); scene.add(car); prepareEffects(); recover(true);
     cameraPosition.set(player.x - 14, 12, -player.y + 17); cameraTarget.set(player.x + 2, 1, -player.y - 3);
     state.ready = true; $('district-start').disabled = false; $('start').disabled = false; $('start').innerHTML = '街へ出る <span>↗</span>';
     // Small read-only diagnostic snapshot for smoke tests; controls stay on UI events.
-    window.rustDriving = { snapshot: () => ({ ...player, ...state, physics: 'rust-wasm', carHeight: car.position.y, cameraHeight: camera.position.y, cameraX: camera.position.x, cameraY: -camera.position.z, district: districtAt(player.x, player.y).id, districtCount: DISTRICTS.length, trafficCars: traffic.cars.length, buildings: city.buildingCount, intersections: city.signals, smokeParticles: smoke.filter(p => p.life > 0).length, skidSegments: markCount, cameraMode: state.camera, chase: traffic.active, keysHeld: keys.size + touch.size, brokenGuardrails: urban.barriers.count(), trainX: urban.trainX(), urbanBuildings: urban.buildingCount, elevatedTraffic: traffic.cars.filter(c => c.height > 2).length, nearbyTraffic: traffic.cars.filter(c => Math.hypot(c.x - player.x, c.y - player.y) < 45).map(c => ({ x: c.x, y: c.y, height: c.height, yaw: c.yaw, speed: c.speed, police: c.police })) }) };
+    window.rustDriving = { snapshot: (options = {}) => ({ ...player, ...state, physics: 'rust-wasm', carHeight: car.position.y, cameraHeight: camera.position.y, cameraX: camera.position.x, cameraY: -camera.position.z, district: districtAt(player.x, player.y).id, districtCount: DISTRICTS.length, trafficCars: traffic.cars.length, trafficTypes: [...new Set(traffic.cars.filter(c => !c.police).map(c => c.variant))], buildings: city.buildingCount, intersections: city.signals, smokeParticles: smoke.filter(p => p.life > 0).length, skidSegments: markCount, cameraMode: state.camera, chase: traffic.active, keysHeld: keys.size + touch.size, brokenGuardrails: urban.barriers.count(), trainX: urban.trainX(), urbanBuildings: urban.buildingCount, elevatedTraffic: traffic.cars.filter(c => c.height > 2).length, nearbyTraffic: traffic.cars.filter(c => Math.hypot(c.x - player.x, c.y - player.y) < 45).map(c => ({ id: c.id, x: c.x, y: c.y, height: c.height, yaw: c.yaw, speed: c.speed, police: c.police, variant: c.variant })), ...(options.traffic ? { trafficInView: trafficInView(traffic.cars, camera, city.colliders, drive) } : {}) }) };
     addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
     $('world').addEventListener('webglcontextlost', event => { event.preventDefault(); pause(true); $('error').hidden = false; $('error').textContent = '描画の接続が切れました。ページを再読み込みしてください。'; $('start').disabled = true; });
     let previous = performance.now();
