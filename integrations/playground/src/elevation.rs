@@ -23,9 +23,16 @@ pub(crate) fn surface(x: f64, y: f64) -> Surface {
             gy: 0.0,
         }
     } else if (340.0..372.0).contains(&x) {
-        Surface { height: 48.0, ..Surface::default() }
+        Surface {
+            height: 48.0,
+            ..Surface::default()
+        }
     } else if (372.0..380.0).contains(&x) {
-        Surface { height: 48.0 + (x - 372.0) * 0.125, gx: 0.125, gy: 0.0 }
+        Surface {
+            height: 48.0 + (x - 372.0) * 0.125,
+            gx: 0.125,
+            gy: 0.0,
+        }
     } else {
         Surface::default()
     }
@@ -49,9 +56,17 @@ struct Elevation {
 impl Default for Elevation {
     fn default() -> Self {
         Self {
-            height: 0.0, vertical: 0.0, grounded: true, pitch: 0.0, roll: 0.0,
-            air_time: 0.0, max_air_time: 0.0, landings: 0, landing_speed: 0.0,
-            vx: 0.0, vy: 0.0,
+            height: 0.0,
+            vertical: 0.0,
+            grounded: true,
+            pitch: 0.0,
+            roll: 0.0,
+            air_time: 0.0,
+            max_air_time: 0.0,
+            landings: 0,
+            landing_speed: 0.0,
+            vx: 0.0,
+            vy: 0.0,
         }
     }
 }
@@ -67,15 +82,20 @@ impl DrivingVehicle {
         if !self.car.reset(x, y, yaw) {
             return false;
         }
-        self.elevation = Elevation { height: surface(x, y).height, ..Elevation::default() };
+        self.elevation = Elevation {
+            height: surface(x, y).height,
+            ..Elevation::default()
+        };
         self.attitude(surface(x, y));
         true
     }
 
     fn velocity(&self) -> (f64, f64) {
         let (s, c) = self.car.yaw.sin_cos();
-        (c * self.car.forward - s * self.car.lateral,
-         s * self.car.forward + c * self.car.lateral)
+        (
+            c * self.car.forward - s * self.car.lateral,
+            s * self.car.forward + c * self.car.lateral,
+        )
     }
 
     fn attitude(&mut self, ground: Surface) {
@@ -85,7 +105,9 @@ impl DrivingVehicle {
     }
 
     pub fn step(&mut self, throttle: f64, steering: f64, hand: f64, dt: f64) -> bool {
-        if ![throttle, steering, hand, dt].into_iter().all(f64::is_finite)
+        if ![throttle, steering, hand, dt]
+            .into_iter()
+            .all(f64::is_finite)
             || !(0.000_1..=0.05).contains(&dt)
         {
             return false;
@@ -127,8 +149,8 @@ impl DrivingVehicle {
         }
         let (vx, vy) = self.velocity();
         let vz = ground.gx * vx + ground.gy * vy;
-        let free_height = self.elevation.height + ground.gx * dx + ground.gy * dy
-            - 0.5 * GRAVITY * dt * dt;
+        let free_height =
+            self.elevation.height + ground.gx * dx + ground.gy * dy - 0.5 * GRAVITY * dt * dt;
         if free_height > next.height + 0.000_001 {
             self.elevation.grounded = false;
             self.elevation.height = free_height;
@@ -176,13 +198,19 @@ impl DrivingVehicle {
         self.elevation.roll *= (-2.0 * dt).exp();
         if self.elevation.height <= next.height {
             self.elevation.landing_speed = (next.gx * self.elevation.vx
-                + next.gy * self.elevation.vy - self.elevation.vertical).max(0.0);
+                + next.gy * self.elevation.vy
+                - self.elevation.vertical)
+                .max(0.0);
             self.elevation.height = next.height;
             self.elevation.vertical = next.gx * self.elevation.vx + next.gy * self.elevation.vy;
             self.elevation.grounded = true;
             self.elevation.landings = self.elevation.landings.saturating_add(1);
             self.elevation.air_time = 0.0;
-            let retention = if self.elevation.landing_speed > 12.0 { 0.65 } else { 0.96 };
+            let retention = if self.elevation.landing_speed > 12.0 {
+                0.65
+            } else {
+                0.96
+            };
             self.elevation.vx *= retention;
             self.elevation.vy *= retention;
             self.car.yaw_rate *= 0.5;
@@ -221,7 +249,13 @@ impl DrivingVehicle {
         match index {
             11 => e.height,
             12 => e.vertical,
-            13 => if e.grounded { 1.0 } else { 0.0 },
+            13 => {
+                if e.grounded {
+                    1.0
+                } else {
+                    0.0
+                }
+            }
             14 => e.pitch,
             15 => e.roll,
             16 => e.air_time,
@@ -281,8 +315,13 @@ mod tests {
             controls.step(1.0, -1.0, 1.0, 0.005);
         }
         assert!(!coast.elevation.grounded);
-        assert!((coast.elevation.height
-            - (initial.height + initial.vertical * duration - 0.5 * 9.81 * duration * duration)).abs() < 1e-9);
+        assert!(
+            (coast.elevation.height
+                - (initial.height + initial.vertical * duration
+                    - 0.5 * 9.81 * duration * duration))
+                .abs()
+                < 1e-9
+        );
         assert!((coast.car.x - x - initial.vx * duration).abs() < 1e-9);
         assert_eq!(coast, controls);
     }
