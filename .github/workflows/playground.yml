@@ -64,6 +64,7 @@ jobs:
           else: raise SystemExit('Production preview did not start')
           PY
           python web/tests/browser_smoke.py --url "http://127.0.0.1:4173${PAGES_BASE}" --output web/test-results
+          python web/tests/ridge_smoke.py --url "http://127.0.0.1:4173${PAGES_BASE}" --output web/test-results/ridge
       - uses: actions/upload-artifact@v4
         if: always()
         with:

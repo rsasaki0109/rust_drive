@@ -9,7 +9,7 @@ with sync_playwright() as p:
  page=browser.new_page(viewport={'width':1440,'height':900},device_scale_factor=1);errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
  page.goto(args.url,wait_until='networkidle');page.wait_for_function('window.rustDriving?.snapshot().ready',timeout=40000)
  snap=lambda:page.evaluate('window.rustDriving.snapshot()')
- before=snap();assert before['physics']=='rust-wasm' and before['buildings']==64 and before['districtCount']==5 and before['intersections']==49 and before['trafficCars']==20
+ before=snap();assert before['physics']=='rust-wasm' and before['buildings']==64 and before['districtCount']==6 and before['intersections']==49 and before['trafficCars']==20
  page.screenshot(path=str(args.output/'intro.png'))
  district_evidence=[]
  for district in ['downtown','harbor','forest','factory','plaza']:
