@@ -168,6 +168,8 @@ After building and starting the production preview, reproduce the five district
 clips with:
 
 ```sh
+python -m pip install playwright==1.56.0 pillow==12.0.0
+python -m playwright install chromium
 python web/tests/gallery_smoke.py --url http://127.0.0.1:4173/rust_driving/ \
   --output web/test-results/gallery
 ```
@@ -181,6 +183,11 @@ retained. The forest check requires alternating turns and bounded path error;
 the drift check requires measured rear slip, smoke and skid marks; city and harbor
 checks require visible moving traffic or a pursuing police car. A trajectory
 projection supports the filming checks; inspect the captured PNGs separately.
+
+The gallery and stacked-road clips use Pillow with one shared 128-colour palette
+per clip and no dithering. A four-frame moving-block check verifies frame order,
+cleared motion and normal-speed GIF timing before the browser runs. Python and
+Chromium installation are separate steps with three- and five-minute limits.
 
 The **Scenario gallery evidence** workflow runs core/game/browser checks and all
 five captures, then also refreshes the stacked-road clip. It publishes only the

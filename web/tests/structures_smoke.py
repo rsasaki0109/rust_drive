@@ -19,8 +19,6 @@ def main():
     parser.add_argument('--record', type=Path)
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
-    if args.record and not shutil.which('ffmpeg'):
-        parser.error('Recording requires FFmpeg')
     errors, trace, scenes = [], [], {}
     frame_count = 0
     with tempfile.TemporaryDirectory(prefix='rustdriving-stacked-') as temp:
@@ -153,28 +151,17 @@ def main():
             'source_commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
             'browser_version': version, 'renderer': 'Three.js / Chromium WebGL 2 / SwiftShader',
             'input': 'Keyboard W and public start-area/camera/pause/recover controls; read-only snapshots, no pose writes.',
-            'source_sha256': {name: sha(ROOT / name) for name in SOURCES + ['web/tests/structures_smoke.py']},
+            'source_sha256': {name: sha(ROOT / name) for name in SOURCES + ['web/tests/structures_smoke.py', 'web/tests/gif_capture.py']},
             'wasm_sha256': sha(ROOT / 'web/dist/drive.wasm'), 'scenes': scenes,
             'recover_from_underground_clears_controls_and_camera': True,
             'trace_sha256': sha(trace_path),
             'scope': 'Authored arcade layered roads; not autonomous-driving or real-vehicle evidence.',
         }
         if args.record:
-            from PIL import Image
-            args.record.parent.mkdir(parents=True, exist_ok=True)
-            subprocess.run([
-                'ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', '-framerate', str(1000 / FRAME_MS),
-                '-i', str(frames / 'frame-%04d.png'), '-filter_complex',
-                '[0:v]split[a][b];[a]palettegen=max_colors=128:stats_mode=full[p];[b][p]paletteuse=dither=none:diff_mode=rectangle',
-                '-loop', '0', str(args.record),
-            ], check=True)
-            with Image.open(args.record) as gif:
-                assert gif.size == (WIDTH, HEIGHT) and gif.n_frames == frame_count and gif.info.get('loop') == 0
-                duration = 0
-                for i in range(gif.n_frames):
-                    gif.seek(i)
-                    duration += gif.info['duration']
-                assert duration == frame_count * FRAME_MS
+            from gif_capture import ENCODER, encode_gif
+            assert len(list(frames.glob('frame-*.png'))) == frame_count
+            duration = encode_gif(frames, args.record, WIDTH, HEIGHT, FRAME_MS) * 1000
+            report['encoder'] = ENCODER
             shutil.copyfile(args.output / 'skyway.png', args.record.with_suffix('.png'))
             report['capture'] = {'width': WIDTH, 'height': HEIGHT, 'frames': frame_count,
                                  'frame_duration_ms': FRAME_MS, 'render_step_ms': STEP_MS,

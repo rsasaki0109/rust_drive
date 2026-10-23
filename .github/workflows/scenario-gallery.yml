@@ -44,6 +44,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install the Python recording packages
+        timeout-minutes: 3
+        run: python -m pip install --timeout 30 --retries 2 playwright==1.56.0 pillow==12.0.0
+      - name: Install Chromium and its system dependencies
+        timeout-minutes: 5
+        run: python -m playwright install --with-deps chromium
+      - name: Check GIF encoding and normal-speed playback
+        run: python web/tests/gif_capture.py --check
       - name: Check driving physics and built WebAssembly
         run: |
           cargo fmt --manifest-path integrations/playground/Cargo.toml --check
@@ -53,15 +61,9 @@ jobs:
           bash scripts/build-playground.sh
           npm --prefix web test
       - name: Check Python test syntax
-        run: python -m py_compile web/tests/browser_clock.py web/tests/browser_smoke.py web/tests/ridge_smoke.py web/tests/structures_smoke.py web/tests/urban_smoke.py web/tests/gallery_smoke.py
+        run: python -m py_compile web/tests/browser_clock.py web/tests/browser_smoke.py web/tests/ridge_smoke.py web/tests/structures_smoke.py web/tests/urban_smoke.py web/tests/gallery_smoke.py web/tests/gif_capture.py
       - name: Run the required core regression suite
         run: bash scripts/check.sh
-      - name: Install browser and recording tools
-        run: |
-          python -m pip install playwright==1.56.0 pillow==12.0.0
-          python -m playwright install --with-deps chromium
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg
       - name: Start the production preview
         id: preview
         run: |

@@ -10,6 +10,7 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright
 from browser_clock import advance, control_clock, wait_state
 from ridge_smoke import ROOT, SOURCES, STEP_MS, FRAME_MS, WIDTH, HEIGHT, sha
+from gif_capture import ENCODER
 
 
 def wrap(angle):
@@ -170,21 +171,9 @@ def validate(config, states, errors):
 
 
 def encode(frames, output, expected_frames):
-    from PIL import Image
-    subprocess.run([
-        'ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', '-framerate', str(1000 / FRAME_MS),
-        '-i', str(frames / 'frame-%04d.png'), '-filter_complex',
-        '[0:v]split[a][b];[a]palettegen=max_colors=128:stats_mode=full[p];[b][p]paletteuse=dither=none:diff_mode=rectangle',
-        '-loop', '0', str(output),
-    ], check=True)
-    with Image.open(output) as gif:
-        assert gif.size == (WIDTH, HEIGHT) and gif.n_frames == expected_frames and gif.info.get('loop') == 0
-        duration = 0
-        for index in range(gif.n_frames):
-            gif.seek(index)
-            duration += gif.info['duration']
-        assert duration == expected_frames * FRAME_MS
-    return duration / 1000
+    from gif_capture import encode_gif
+    assert len(list(frames.glob('frame-*.png'))) == expected_frames
+    return encode_gif(frames, output, WIDTH, HEIGHT, FRAME_MS)
 
 
 def record(browser, config, args):
@@ -276,9 +265,10 @@ def record(browser, config, args):
                 schema_version=1, passed=True, scenario=config, backend='rust-wasm-city-playground',
                 source_commit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
                 source_sha256={name: sha(ROOT / name) for name in dict.fromkeys(SOURCES + [
-                    'web/tests/browser_clock.py', 'web/tests/gallery_smoke.py'])},
+                    'web/tests/browser_clock.py', 'web/tests/gallery_smoke.py', 'web/tests/gif_capture.py'])},
                 wasm_sha256=sha(ROOT / 'web/dist/drive.wasm'),
                 browser_version=browser.version, renderer='Three.js / Chromium WebGL 2 / SwiftShader',
+                encoder=ENCODER,
                 input='Public area/day/chase/camera controls and real W/A/S/D/Space keyboard events; read-only snapshots. No pose or NPC writes.',
                 capture=dict(width=WIDTH, height=HEIGHT, frames=frame_count, frame_duration_ms=FRAME_MS,
                              render_step_ms=STEP_MS, physics_hz=120, duration_seconds=duration,
@@ -309,8 +299,6 @@ def main():
     parser.add_argument('--assets', type=Path, default=ROOT / 'assets')
     parser.add_argument('--scenario', action='append', choices=[s['id'] for s in SCENARIOS])
     args = parser.parse_args()
-    if not shutil.which('ffmpeg'):
-        parser.error('Recording requires FFmpeg')
     args.output.mkdir(parents=True, exist_ok=True)
     args.assets.mkdir(parents=True, exist_ok=True)
     reports, failed = [], []
