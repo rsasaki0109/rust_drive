@@ -4,6 +4,7 @@
 //! A handbrake reduces rear grip. Contact uses an explicit arcade impulse.
 use std::cell::RefCell;
 mod elevation;
+mod structures;
 use elevation::{DrivingVehicle, surface};
 
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
@@ -195,6 +196,35 @@ pub extern "C" fn drive_surface(x: f64, y: f64, index: u32) -> f64 {
         2 => ground.gy,
         _ => 0.0,
     }
+}
+
+/// Height of an authored upper deck, or a finite sentinel outside its footprint.
+#[unsafe(no_mangle)]
+pub extern "C" fn drive_deck(x: f64, y: f64, index: u32) -> f64 {
+    structures::upper(x, y).map_or(-1_000_000.0, |s| match index {
+        0 => s.height,
+        1 => s.gx,
+        2 => s.gy,
+        _ => 0.0,
+    })
+}
+
+/// Nearest overhead slab from this height; OPEN_SKY means no cover.
+#[unsafe(no_mangle)]
+pub extern "C" fn drive_ceiling(x: f64, y: f64, base_height: f64) -> f64 {
+    if ![x, y, base_height].into_iter().all(f64::is_finite) {
+        return structures::OPEN_SKY;
+    }
+    structures::ceiling(x, y, base_height)
+}
+
+/// Reachable road height for ground-attached effects and camera clearance.
+#[unsafe(no_mangle)]
+pub extern "C" fn drive_support(x: f64, y: f64, base_height: f64) -> f64 {
+    let floor = surface(x, y).height;
+    structures::upper(x, y)
+        .filter(|s| s.height <= base_height + 0.05 && s.height >= floor)
+        .map_or(floor, |s| s.height)
 }
 
 #[cfg(test)]

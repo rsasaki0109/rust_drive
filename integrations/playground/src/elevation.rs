@@ -1,6 +1,7 @@
 //! Arcade terrain contact and ballistic flight, isolated from the research stack.
 //! Ground coordinates are east/north metres; height is metres above city grade.
 use super::{Vehicle, wrap};
+use crate::structures::{BODY_HEIGHT, blocks_body, ceiling, excavation, upper};
 
 const GRAVITY: f64 = 9.81;
 
@@ -12,6 +13,7 @@ pub(crate) struct Surface {
 }
 
 pub(crate) fn surface(x: f64, y: f64) -> Surface {
+    if let Some(floor) = excavation(x, y) { return floor; }
     if !x.is_finite() || !y.is_finite() || !(110.0..=190.0).contains(&y) {
         return Surface::default();
     }
@@ -36,6 +38,13 @@ pub(crate) fn surface(x: f64, y: f64) -> Surface {
     } else {
         Surface::default()
     }
+}
+
+// Pick only a layer reachable from this height. Lower roads survive at the same XY.
+fn support(x: f64, y: f64, reachable_height: f64) -> Surface {
+    let floor = surface(x, y);
+    upper(x, y).filter(|s| s.height <= reachable_height + 0.000_001 && s.height >= floor.height)
+        .unwrap_or(floor)
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -126,18 +135,19 @@ impl DrivingVehicle {
 
     fn on_ground(&mut self, throttle: f64, steering: f64, hand: f64, dt: f64) {
         let old = self.car;
-        let ground = surface(old.x, old.y);
+        let ground = support(old.x, old.y, self.elevation.height);
         let (s, c) = old.yaw.sin_cos();
         let gravity_scale = -GRAVITY / (1.0 + ground.gx * ground.gx + ground.gy * ground.gy);
         self.car.forward += gravity_scale * (ground.gx * c + ground.gy * s) * dt;
         self.car.lateral += gravity_scale * (-ground.gx * s + ground.gy * c) * dt;
         self.car.step(throttle, steering, hand, dt);
-        let next = surface(self.car.x, self.car.y);
         let dx = self.car.x - old.x;
         let dy = self.car.y - old.y;
+        let next = support(self.car.x, self.car.y, self.elevation.height + 0.8 * dx.hypot(dy) + 0.001);
         // A vertical face cannot be climbed by entering its height-field cell.
-        if next.height > self.elevation.height + 0.01
-            && next.height - ground.height > 0.8 * dx.hypot(dy) + 0.001
+        if blocks_body(self.car.x, self.car.y, self.elevation.height.max(next.height))
+            || (next.height > self.elevation.height + 0.01
+                && next.height - ground.height > 0.8 * dx.hypot(dy) + 0.001)
         {
             self.car.x = old.x;
             self.car.y = old.y;
@@ -170,13 +180,14 @@ impl DrivingVehicle {
 
     fn in_air(&mut self, dt: f64) {
         let previous = self.car;
-        let ground = surface(previous.x, previous.y);
+        let ground = support(previous.x, previous.y, self.elevation.height);
         self.car.x += self.elevation.vx * dt;
         self.car.y += self.elevation.vy * dt;
-        let mut next = surface(self.car.x, self.car.y);
+        let mut next = support(self.car.x, self.car.y, self.elevation.height);
         let distance = (self.car.x - previous.x).hypot(self.car.y - previous.y);
-        if self.elevation.height < next.height
-            && next.height - ground.height > 0.8 * distance + 0.001
+        if blocks_body(self.car.x, self.car.y, self.elevation.height.max(next.height))
+            || (self.elevation.height < next.height
+                && next.height - ground.height > 0.8 * distance + 0.001)
         {
             self.car.x = previous.x;
             self.car.y = previous.y;
@@ -185,7 +196,13 @@ impl DrivingVehicle {
             self.car.contacts = self.car.contacts.saturating_add(1);
             next = ground;
         }
+        let roof = ceiling(self.car.x, self.car.y, self.elevation.height);
         self.elevation.height += self.elevation.vertical * dt - 0.5 * GRAVITY * dt * dt;
+        if self.elevation.height + BODY_HEIGHT > roof {
+            self.elevation.height = roof - BODY_HEIGHT;
+            self.elevation.vertical = self.elevation.vertical.min(0.0);
+            self.car.contacts = self.car.contacts.saturating_add(1);
+        }
         self.elevation.vertical -= GRAVITY * dt;
         self.elevation.air_time += dt;
         self.elevation.max_air_time = self.elevation.max_air_time.max(self.elevation.air_time);
@@ -227,8 +244,9 @@ impl DrivingVehicle {
             return false;
         }
         if self.elevation.grounded {
-            let next = surface(self.car.x, self.car.y);
-            if next.height > self.elevation.height + 1.0 {
+            let next = support(self.car.x, self.car.y, self.elevation.height + 0.01);
+            if next.height > self.elevation.height + 1.0
+                || blocks_body(self.car.x, self.car.y, self.elevation.height) {
                 self.car.x = old.x;
                 self.car.y = old.y;
             } else if next.height < self.elevation.height - 1.0 {
@@ -262,7 +280,8 @@ impl DrivingVehicle {
             17 => f64::from(e.landings),
             18 => e.landing_speed,
             19 => e.max_air_time,
-            20 => surface(self.car.x, self.car.y).height,
+            20 => support(self.car.x, self.car.y, e.height).height,
+            21 => ceiling(self.car.x, self.car.y, e.height),
             _ => self.car.read(index),
         }
     }
@@ -361,4 +380,103 @@ mod tests {
         assert_eq!(car.elevation.landings, 0);
         assert_eq!(car.elevation.max_air_time, 0.0);
     }
+    #[test]
+    fn bridge_and_lower_road_keep_distinct_heights_at_the_same_crossing() {
+        let mut above = DrivingVehicle::default();
+        above.reset(190.0, 20.0, 0.0);
+        for _ in 0..6000 {
+            above.step(1.0, 0.0, 0.0, 1.0 / 120.0);
+            if above.car.x >= 350.0 { break; }
+        }
+        assert!(above.car.x >= 350.0, "The bridge climb was blocked");
+        assert!((above.elevation.height - 12.0).abs() < 0.1);
+        let mut below = DrivingVehicle::default();
+        below.reset(350.0, -55.0, std::f64::consts::FRAC_PI_2);
+        for _ in 0..3000 {
+            below.step(1.0, 0.0, 0.0, 1.0 / 120.0);
+            assert!(below.elevation.height.abs() < 1e-10);
+            if below.car.y > 35.0 { return; }
+        }
+        panic!("The lower road did not cross underneath the bridge");
+    }
+
+    #[test]
+    fn the_excavated_road_goes_below_grade_and_exits_through_the_far_ramp() {
+        let mut car = DrivingVehicle::default();
+        car.reset(190.0, -105.0, 0.0);
+        let mut underground = false;
+        for _ in 0..6000 {
+            car.step(1.0, 0.0, 0.0, 1.0 / 120.0);
+            if (300.0..400.0).contains(&car.car.x) {
+                assert!((car.elevation.height + 8.0).abs() < 1e-7);
+                assert_eq!(car.read(21), -1.2);
+                underground = true;
+            }
+            if car.car.x > 505.0 && car.elevation.grounded {
+                assert!(underground && car.elevation.height == 0.0);
+                return;
+            }
+        }
+        panic!("The tunnel run never returned to city grade");
+    }
+
+    #[test]
+    fn the_tunnel_roof_can_be_crossed_above_without_falling_to_the_lower_road() {
+        let mut car = DrivingVehicle::default();
+        car.reset(350.0, -145.0, std::f64::consts::FRAC_PI_2);
+        let mut crossed = false;
+        for _ in 0..2400 {
+            car.step(1.0, 0.0, 0.0, 1.0 / 120.0);
+            assert!(car.elevation.height.abs() < 1e-10);
+            crossed |= (-114.0..-96.0).contains(&car.car.y);
+            if car.car.y > -80.0 {
+                assert!(crossed);
+                return;
+            }
+        }
+        panic!("The upper road did not cross the tunnel roof");
+    }
+
+    #[test]
+    fn rising_into_a_bridge_hits_its_underside_without_teleporting_onto_it() {
+        let mut car = DrivingVehicle::default();
+        car.reset(350.0, 20.0, 0.0);
+        car.elevation.height = 8.5;
+        car.elevation.vertical = 12.0;
+        car.elevation.grounded = false;
+        for _ in 0..100 {
+            car.step(1.0, 1.0, 1.0, 0.005);
+            assert!(car.elevation.height + BODY_HEIGHT <= 10.9 + 1e-10);
+        }
+        assert!(car.car.contacts > 0 && car.elevation.vertical < 0.0);
+    }
+
+    #[test]
+    fn a_falling_car_lands_on_the_bridge_upper_layer() {
+        let mut car = DrivingVehicle::default();
+        car.reset(350.0, 20.0, 0.0);
+        car.elevation.height = 18.0;
+        car.elevation.grounded = false;
+        for _ in 0..600 {
+            car.step(0.0, 0.0, 0.0, 0.005);
+            if car.elevation.grounded {
+                assert!((car.elevation.height - 12.0).abs() < 1e-10);
+                assert_eq!(car.elevation.landings, 1);
+                return;
+            }
+        }
+        panic!("The car fell through the bridge");
+    }
+
+    #[test]
+    fn tunnel_side_walls_do_not_snap_the_lower_car_up_to_grade() {
+        let mut car = DrivingVehicle::default();
+        car.reset(350.0, -105.0, std::f64::consts::FRAC_PI_2);
+        for _ in 0..600 {
+            car.step(1.0, 0.0, 0.0, 1.0 / 120.0);
+        }
+        assert!(car.car.y <= -95.0 && car.elevation.height == -8.0);
+        assert!(car.car.contacts > 0);
+    }
+
 }

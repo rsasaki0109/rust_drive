@@ -2,13 +2,14 @@ import * as THREE from 'three';
 import './style.css';
 import { createRidge, WORLD_BOUNDS, RIDGE_ROUTE } from './ridge.js';
 import { DISTRICTS, BLOCKS, districtAt, forestTrail } from './regions.js';
+import { createStructures, ROAD_STARTS, STACKED_ROUTES } from './structures.js';
 import { createCity, makeCar, Traffic, STREETS, nearestStreet, wrap } from './city.js';
 
 const $ = id => document.getElementById(id);
 const state = { ready: false, started: false, paused: true, camera: 0, day: false, sound: false, time: 0, score: 0, combo: 0, lastDrift: 0, impact: 0, escaped: 0 };
 const keys = new Set(), touch = new Set();
 const player = { x: 0, y: -22, yaw: Math.PI / 2, speed: 0, lateral: 0, steering: 0, rearSlip: 0, distance: 0 };
-let drive, renderer, city, traffic, scene, camera, car, audio, noticeTimer, smokeIndex = 0, markIndex = 0, markCount = 0, previousRear = null, spawnClock = 0, accumulator = 0;
+let drive, renderer, city, structures, traffic, scene, camera, car, audio, noticeTimer, smokeIndex = 0, markIndex = 0, markCount = 0, previousRear = null, spawnClock = 0, accumulator = 0;
 const cameraPosition = new THREE.Vector3(), cameraTarget = new THREE.Vector3();
 let cameraYaw = Math.PI / 2;
 
@@ -17,11 +18,11 @@ function readCar() {
   [player.x, player.y, player.yaw, player.speed, player.lateral] = [0, 1, 2, 3, 4].map(i => drive.drive_read(i));
   player.steering = drive.drive_read(6); player.rearSlip = drive.drive_read(7); player.distance = drive.drive_read(9);
   [player.height, player.verticalSpeed, player.grounded, player.pitch, player.roll, player.airTime, player.landings, player.landingSpeed, player.bestAirTime] = [11, 12, 13, 14, 15, 16, 17, 18, 19].map(i => drive.drive_read(i));
-  player.grounded = Boolean(player.grounded);
+  player.grounded = Boolean(player.grounded); player.ceiling = drive.drive_read(21);
 }
 function recover(initial = false, spawn = DISTRICTS[0].spawn) {
   let x = initial ? spawn.x : player.x, y = initial ? spawn.y : player.y, yaw = initial ? spawn.yaw : player.yaw;
-  if (!initial && player.x > 180) { x = 190; y = 150; yaw = 0; }
+  if (!initial && player.x > 180) { const start = districtAt(player.x, player.y).spawn; x = start.x; y = start.y; yaw = start.yaw; }
   else if (!initial) {
     const roadX = nearestStreet(x), roadY = nearestStreet(y);
     if (Math.abs(x - roadX) < Math.abs(y - roadY)) { x = roadX + 3.8; y = Math.max(-145, Math.min(145, y)); yaw = Math.PI / 2; }
@@ -50,10 +51,10 @@ function cycleCamera() { state.camera = (state.camera + 1) % 3; notice(['CHASE C
 
 $('district-start').addEventListener('change', event => {
   if (!state.ready || !state.paused) return;
-  const district = DISTRICTS.find(d => d.id === event.target.value);
+  const district = event.target.value === 'underpass' ? { id: 'underpass', name: '高架の下', spawn: ROAD_STARTS.underpass } : DISTRICTS.find(d => d.id === event.target.value);
   if (!district) return;
   if (traffic.active) setChase();
-  recover(true, district.spawn); if (district.id === 'ridge') state.camera = 0; keys.clear(); touch.clear(); accumulator = 0; state.escaped = 0;
+  recover(true, district.spawn); if (district.spawn.x > 180) state.camera = 0; keys.clear(); touch.clear(); accumulator = 0; state.escaped = 0;
   cameraPosition.set(player.x - 14, 12, -player.y + 17); cameraTarget.set(player.x + 2, 1, -player.y - 3);
   notice(district.name + 'からスタート');
 });
@@ -105,7 +106,7 @@ function contact(nx, ny, penetration) {
 function collisions() {
   const radius = 1.8;
   for (const b of city.colliders) {
-    if (player.height > (b.top ?? 32) + .5) continue;
+    if (player.height >= (b.top ?? 32) - .01 || player.height + 1.55 <= (b.bottom ?? -1000)) continue;
     const qx = Math.max(b.x - b.w, Math.min(b.x + b.w, player.x)), qy = Math.max(b.y - b.h, Math.min(b.y + b.h, player.y));
     const dx = player.x - qx, dy = player.y - qy, d = Math.hypot(dx, dy);
     if (d > .0001 && d < radius) contact(dx / d, dy / d, radius - d);
@@ -129,7 +130,7 @@ function prepareEffects() {
 }
 function rearPosition(side) {
   const x = player.x - Math.cos(player.yaw) * 1.28 - Math.sin(player.yaw) * side * .9, y = player.y - Math.sin(player.yaw) * 1.28 + Math.cos(player.yaw) * side * .9;
-  return { x, y, height: drive.drive_surface(x, y, 0) };
+  return { x, y, height: drive.drive_support(x, y, player.height) };
 }
 function effects(dt, drifting) {
   for (const particle of smoke) if (particle.life > 0) { particle.life -= dt; particle.sprite.visible = particle.life > 0; particle.sprite.position.y += dt * .7; particle.sprite.position.x += dt * .2; particle.sprite.material.opacity = Math.max(0, particle.life * .5); const size = 1.2 + (1.25 - particle.life) * 2.2; particle.sprite.scale.set(size, size, 1); }
@@ -165,21 +166,33 @@ function simulate(dt) {
 
 function updateCamera(dt) {
   cameraYaw += wrap(player.yaw - cameraYaw) * (1 - Math.exp(-dt * 4));
-  const c = Math.cos(cameraYaw), s = Math.sin(cameraYaw), height = player.height || 0, ridge = player.x > 180;
+  const c = Math.cos(cameraYaw), s = Math.sin(cameraYaw), height = player.height || 0, eastern = player.x > 180;
+  const roof = player.ceiling, enclosed = roof < 1000, belowGrade = height < -.5;
   let target, destination;
   if (!state.started) { destination = new THREE.Vector3(player.x - 14, height + 12, -player.y + 17); target = new THREE.Vector3(player.x + 2, height + 1, -player.y - 3); }
-  else if (state.camera === 1) { destination = new THREE.Vector3(player.x + 3, height + (ridge ? 75 : 57), -player.y + 15); target = new THREE.Vector3(player.x, height, -player.y); }
   else if (state.camera === 2) { destination = new THREE.Vector3(player.x + Math.cos(player.yaw) * .8, height + 1.45, -player.y - Math.sin(player.yaw) * .8); target = new THREE.Vector3(player.x + Math.cos(player.yaw) * 15, height + 1.35 + Math.sin(player.pitch) * 15, -player.y - Math.sin(player.yaw) * 15); }
-  else { const reach = (ridge ? 22 : 10) + Math.min(ridge ? 9 : 5, Math.abs(player.speed) * .12); destination = new THREE.Vector3(player.x - c * reach + s * 1.8, height + (ridge ? 12 : 5.1) + Math.min(2, Math.abs(player.speed) * .06), -player.y + s * reach + c * 1.8); target = new THREE.Vector3(player.x + c * 3, height + 1.0, -player.y - s * 3); }
-  destination.y = Math.max(destination.y, drive.drive_surface(destination.x, -destination.z, 0) + 1.8);
+  else if (enclosed || belowGrade) {
+    destination = new THREE.Vector3(player.x - c * 10 + s * 1.2, height + 3.3, -player.y + s * 10 + c * 1.2);
+    target = new THREE.Vector3(player.x + c * 5, height + 1.1, -player.y - s * 5);
+  } else if (state.camera === 1) {
+    // An oblique panorama reveals the hill/deck profile instead of flattening it.
+    destination = eastern ? new THREE.Vector3(player.x - 55, height + 55, -player.y + 75) : new THREE.Vector3(player.x + 3, height + 57, -player.y + 15);
+    target = new THREE.Vector3(player.x + (eastern ? 20 : 0), height + (eastern ? 5 : 0), -player.y);
+  } else { const reach = (eastern ? 22 : 10) + Math.min(eastern ? 9 : 5, Math.abs(player.speed) * .12); destination = new THREE.Vector3(player.x - c * reach + s * 1.8, height + (eastern ? 12 : 5.1) + Math.min(2, Math.abs(player.speed) * .06), -player.y + s * reach + c * 1.8); target = new THREE.Vector3(player.x + c * 3, height + 1.0, -player.y - s * 3); }
+  if (belowGrade) destination.z = Math.max(96.4, Math.min(113.6, destination.z));
+  destination.y = Math.max(destination.y, drive.drive_support(destination.x, -destination.z, height) + .7);
+  const cameraRoof = drive.drive_ceiling(destination.x, -destination.z, height);
+  destination.y = Math.min(destination.y, cameraRoof - .5, roof - .5);
   const blend = state.camera === 2 ? 1 : 1 - Math.exp(-dt * 7);
-  cameraPosition.lerp(destination, blend); cameraTarget.lerp(target, blend); camera.position.copy(cameraPosition); camera.lookAt(cameraTarget);
+  cameraPosition.lerp(destination, blend); cameraTarget.lerp(target, blend);
+  cameraPosition.y = Math.min(cameraPosition.y, roof - .5, drive.drive_ceiling(cameraPosition.x, -cameraPosition.z, height) - .5);
+  camera.position.copy(cameraPosition); camera.lookAt(cameraTarget);
 }
 
 const mapContext = $('map').getContext('2d');
 function drawMap() {
   const ctx = mapContext, ridge = player.x > 180, scale = ridge ? .36 : .48;
-  const ox = ridge ? -52 : 90, oy = ridge ? 125 : 90;
+  const ox = ridge ? -52 : 90, oy = 90;
   ctx.clearRect(0, 0, 180, 180); ctx.fillStyle = '#12212b'; ctx.fillRect(0, 0, 180, 180);
   for (const block of BLOCKS) {
     ctx.fillStyle = block.district.color + '55'; ctx.fillRect(ox + (block.x - 16) * scale, oy - (block.y + 16) * scale, 32 * scale, 32 * scale);
@@ -198,7 +211,12 @@ function drawMap() {
     ctx.strokeStyle = '#ffbf78'; ctx.lineWidth = 5; ctx.beginPath();
     RIDGE_ROUTE.forEach((p, i) => ctx[i ? 'lineTo' : 'moveTo'](ox + p.x * scale, oy - p.y * scale)); ctx.stroke();
     ctx.setLineDash([2, 3]); ctx.strokeStyle = '#fff1c9'; ctx.beginPath(); ctx.moveTo(ox + 380 * scale, oy - 110 * scale); ctx.lineTo(ox + 380 * scale, oy - 190 * scale); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle = '#ffbf78'; ctx.font = '9px monospace'; ctx.fillText('RIDGE / CLIFF', 10, 18);
+    for (const route of STACKED_ROUTES) {
+      ctx.strokeStyle = route.color; ctx.lineWidth = route.kind === 'skyway' ? 4 : 2;
+      ctx.setLineDash(route.kind === 'tunnel' ? [3, 3] : []); ctx.beginPath();
+      route.points.forEach(([x, y], i) => ctx[i ? 'lineTo' : 'moveTo'](ox + x * scale, oy - y * scale)); ctx.stroke();
+    }
+    ctx.setLineDash([]); ctx.fillStyle = '#ffbf78'; ctx.font = '9px monospace'; ctx.fillText('RIDGE / SKYWAY / TUNNEL', 8, 16);
   } else { ctx.fillStyle = '#ffbf78'; ctx.font = '8px monospace'; ctx.fillText('RIDGE →', 133, 12); }
   for (const c of traffic.cars) { ctx.fillStyle = c.police ? '#ff7e6a' : '#a3b3b7'; ctx.fillRect(ox + c.x * scale - 1, oy - c.y * scale - 1, c.police ? 4 : 2, c.police ? 4 : 2); }
   ctx.save(); ctx.translate(ox + player.x * scale, oy - player.y * scale); ctx.rotate(-player.yaw); ctx.fillStyle = player.grounded ? '#ffbd73' : '#fff1c9';
@@ -213,7 +231,7 @@ function telemetry() {
   $('district-dot').style.backgroundColor = district.color;
   const speed = Math.hypot(player.speed, player.lateral) * 3.6;
   $('speed').textContent = Math.round(speed); $('gear').textContent = player.speed < -.5 ? 'R' : speed < 1 ? 'N' : String(Math.min(5, Math.floor(speed / 27) + 1)); $('rev').style.width = `${Math.min(100, speed % 27 / 27 * 75 + (speed > 1 ? 20 : 0))}%`; $('score').textContent = String(state.score).padStart(5, '0');
-  $('elevation').textContent = 'ALT ' + Math.round(player.height) + ' m · ' + (player.grounded ? 'GROUND' : 'AIR ' + player.airTime.toFixed(1) + ' s');
+  $('elevation').textContent = 'ALT ' + Math.round(player.height) + ' m · ' + (player.grounded ? (player.height < -1 ? 'UNDERGROUND' : player.height > 8 && player.y < 40 ? 'UPPER ROAD' : 'GROUND') : 'AIR ' + player.airTime.toFixed(1) + ' s');
   $('elevation').classList.toggle('airborne', !player.grounded);
   $('impact').style.opacity = String(Math.min(1, state.impact * 1.7));
   $('status').textContent = traffic.active ? '追跡中。距離をとって振り切ろう。' : '自由に走ろう。Spaceでドリフト。';
@@ -230,11 +248,11 @@ async function boot() {
     renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     const ambient = new THREE.HemisphereLight(0xd6d9ed, 0x435345, 2.0); scene.add(ambient);
     const sun = new THREE.DirectionalLight(0xffc18a, 2.5); sun.position.set(-45, 75, 25); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024); sun.shadow.camera.left = sun.shadow.camera.bottom = -25; sun.shadow.camera.right = sun.shadow.camera.top = 25; sun.shadow.camera.near = 1; sun.shadow.camera.far = 160; sun.shadow.bias = -.001; scene.add(sun, sun.target);
-    city = createCity(scene); createRidge(scene, drive); traffic = new Traffic(scene); car = makeCar(0xf2ede2, false, true); scene.add(car); prepareEffects(); recover(true);
+    city = createCity(scene); createRidge(scene, drive); structures = createStructures(scene, drive); city.colliders.push(...structures.colliders); traffic = new Traffic(scene); car = makeCar(0xf2ede2, false, true); scene.add(car); prepareEffects(); recover(true);
     cameraPosition.set(player.x - 14, 12, -player.y + 17); cameraTarget.set(player.x + 2, 1, -player.y - 3);
     state.ready = true; $('district-start').disabled = false; $('start').disabled = false; $('start').innerHTML = '街へ出る <span>↗</span>';
     // Small read-only diagnostic snapshot for smoke tests; controls stay on UI events.
-    window.rustDriving = { snapshot: () => ({ ...player, ...state, physics: 'rust-wasm', carHeight: car.position.y, cameraHeight: camera.position.y, district: districtAt(player.x, player.y).id, districtCount: DISTRICTS.length, trafficCars: traffic.cars.length, buildings: city.buildingCount, intersections: city.signals, smokeParticles: smoke.filter(p => p.life > 0).length, skidSegments: markCount, cameraMode: state.camera, chase: traffic.active, keysHeld: keys.size + touch.size }) };
+    window.rustDriving = { snapshot: () => ({ ...player, ...state, physics: 'rust-wasm', carHeight: car.position.y, cameraHeight: camera.position.y, cameraX: camera.position.x, cameraY: -camera.position.z, district: districtAt(player.x, player.y).id, districtCount: DISTRICTS.length, trafficCars: traffic.cars.length, buildings: city.buildingCount, intersections: city.signals, smokeParticles: smoke.filter(p => p.life > 0).length, skidSegments: markCount, cameraMode: state.camera, chase: traffic.active, keysHeld: keys.size + touch.size }) };
     addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
     $('world').addEventListener('webglcontextlost', event => { event.preventDefault(); pause(true); $('error').hidden = false; $('error').textContent = '描画の接続が切れました。ページを再読み込みしてください。'; $('start').disabled = true; });
     let previous = performance.now();
@@ -244,7 +262,7 @@ async function boot() {
       else { accumulator = 0; if (!state.started) { state.time += dt; traffic.update(dt, state.time, player); } effects(dt, false); }
       car.position.set(player.x, player.height + .02, -player.y); car.rotation.set(player.roll, -player.yaw, player.pitch, 'YXZ'); car.visible = state.camera !== 2 || !state.started;
       for (const wheel of car.userData.wheels) { wheel.root.rotation.y = wheel.front ? -player.steering : 0; wheel.wheel.rotation.z = -player.distance / .32; }
-      city.update(state.time); updateCamera(dt); drawMap(); telemetry();
+      city.update(state.time); structures.update(player); updateCamera(dt); drawMap(); telemetry();
       const sky = state.day ? 0xb9d1dd : 0x968d91; scene.background.setHex(sky); scene.fog.color.setHex(sky); ambient.intensity = state.day ? 2.5 : 1.7; sun.intensity = state.day ? 3.1 : 2.3; sun.color.setHex(state.day ? 0xfff1d2 : 0xffbb80); sun.position.set(player.x - 45, player.height + 75, -player.y + 25); sun.target.position.set(player.x, player.height, -player.y);
       renderer.render(scene, camera); requestAnimationFrame(frame);
     }

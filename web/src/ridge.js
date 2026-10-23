@@ -24,7 +24,11 @@ export function createRidge(scene, drive) {
     g.setIndex(indices); g.computeVertexNormals();
     const m = new THREE.Mesh(g, material); m.receiveShadow = true; scene.add(m);
   }
-  cuboid(380, -.33, 100, 1600, .3, 1200, 0x53635b);
+  // Leave the excavated tunnel/ramps open instead of covering them with a plane.
+  for (const [left, right, bottom, top] of [
+    [-420, 190, -500, 700], [500, 1180, -500, 700],
+    [190, 500, -500, -115], [190, 500, -95, 700],
+  ]) cuboid((left + right) / 2, -.33, (bottom + top) / 2, right - left, .3, top - bottom, 0x53635b);
   cuboid(370, -.08, 135, 390, .16, 200, 0x857d64);
   const xs = Array.from({ length: 91 }, (_, i) => 200 + i * 2);
   const height = x => surface(Math.min(x, 379.999999), 150);
@@ -56,9 +60,9 @@ export function createRidge(scene, drive) {
   strip([{ x: 400, y: 150 }, { x: 530, y: 150 }, { x: 530, y: 70 }, { x: 150, y: 70 }], 18, road);
   // Broad, clear basin under the flight path; the return road stays at city grade.
   cuboid(475, 0, 150, 150, .05, 115, 0xa59c7d);
+  const paint = new THREE.MeshStandardMaterial({ color: 0xe5d0a0, side: THREE.DoubleSide });
   for (let x = 180; x <= 372; x += 8) {
-    const h = x >= 200 ? height(x) : 0;
-    cuboid(x, h + .055, 150, 3.8, .04, .16, 0xe5d0a0);
+    strip([-1.9, 0, 1.9].map(dx => ({ x: x + dx, y: 150, h: x + dx >= 200 ? height(x + dx) : 0 })), .16, paint, .055);
   }
   for (const x of [220, 260, 300, 340, 376]) for (const side of [-1, 1]) {
     const h = height(x);

@@ -1,0 +1,115 @@
+name: Stacked road evidence
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: stacked-road-evidence-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+jobs:
+  verify-and-record:
+    if: >-
+      (github.event_name == 'pull_request' && github.actor != 'github-actions[bot]' &&
+       github.event.pull_request.head.repo.full_name == github.repository &&
+       github.event.pull_request.head.ref == 'codex/stacked-roads') ||
+      (github.event_name == 'workflow_dispatch' &&
+       startsWith(github.ref, 'refs/heads/') &&
+       github.ref_name != 'main' && github.ref_name != 'develop')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    env:
+      RUSTDRIVING_ORIGINAL_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      RUSTDRIVING_SOURCE_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
+      PAGES_BASE: /${{ github.event.repository.name }}/
+      CARGO_INCREMENTAL: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RUSTDRIVING_ORIGINAL_SHA }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.90.0
+          targets: wasm32-unknown-unknown
+          components: rustfmt, clippy
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Canonical Rust formatting in the isolated recording checkout
+        run: |
+          cargo fmt --manifest-path integrations/playground/Cargo.toml
+          git add integrations/playground/src/lib.rs integrations/playground/src/elevation.rs integrations/playground/src/structures.rs
+          if ! git diff --cached --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'Format stacked road physics with Rust 1.90'
+            git show --format= -- integrations/playground/src/lib.rs integrations/playground/src/elevation.rs integrations/playground/src/structures.rs
+          fi
+      - name: Check driving physics and built WebAssembly
+        run: |
+          cargo fmt --manifest-path integrations/playground/Cargo.toml --check
+          cargo clippy --locked --manifest-path integrations/playground/Cargo.toml --all-targets -- -D warnings
+          cargo test --locked --manifest-path integrations/playground/Cargo.toml
+          npm ci --prefix web --ignore-scripts
+          bash scripts/build-playground.sh
+          npm --prefix web test
+      - name: Run the required core regression suite
+        run: bash scripts/check.sh
+      - name: Install browser and recording tools
+        run: |
+          python -m pip install playwright==1.56.0 pillow==12.0.0
+          python -m playwright install --with-deps chromium
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+      - name: Verify actual climb, upper/lower crossing and underground driving
+        run: |
+          npm --prefix web run preview -- --host 127.0.0.1 --port 4173 > /tmp/rustdriving-ridge-preview.log 2>&1 &
+          rustdriving_preview_pid=$!
+          trap 'kill "$rustdriving_preview_pid" || true' EXIT
+          python - <<'PY'
+          import os, time, urllib.request
+          url = 'http://127.0.0.1:4173' + os.environ['PAGES_BASE']
+          for attempt in range(60):
+              try:
+                  with urllib.request.urlopen(url, timeout=1) as response:
+                      if response.status == 200:
+                          break
+              except OSError:
+                  pass
+              time.sleep(.25)
+          else:
+              raise SystemExit('Production preview did not start')
+          PY
+          python web/tests/ridge_smoke.py --url "http://127.0.0.1:4173${PAGES_BASE}" --output web/test-results/ridge --record assets/ridge-dive-demo.gif
+          python web/tests/structures_smoke.py --url "http://127.0.0.1:4173${PAGES_BASE}" --output web/test-results/structures --record assets/stacked-roads-demo.gif
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stacked-road-evidence
+          path: |
+            web/test-results
+            assets/ridge-dive-demo.*
+            assets/stacked-roads-demo.*
+      - name: Publish formatting and verified media to the unchanged feature branch
+        run: |
+          git fetch origin "refs/heads/${RUSTDRIVING_SOURCE_BRANCH}"
+          rustdriving_current_head=$(git rev-parse FETCH_HEAD)
+          if [ "$rustdriving_current_head" != "$RUSTDRIVING_ORIGINAL_SHA" ]; then
+            echo "The feature branch moved; retain the evidence without overwriting newer work."
+            exit 1
+          fi
+          git add assets/ridge-dive-demo.gif assets/ridge-dive-demo.png assets/ridge-dive-demo.json assets/stacked-roads-demo.gif assets/stacked-roads-demo.png assets/stacked-roads-demo.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if ! git diff --cached --quiet; then
+            git commit -m 'Record the ridge, bridge and underground passages'
+          fi
+          git push origin "HEAD:refs/heads/${RUSTDRIVING_SOURCE_BRANCH}"

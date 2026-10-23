@@ -16,6 +16,7 @@ STEP_MS, FRAME_MS = 40, 80
 WIDTH, HEIGHT = 960, 540
 SOURCES = [
     'integrations/playground/src/lib.rs', 'integrations/playground/src/elevation.rs',
+    'integrations/playground/src/structures.rs', 'web/src/structures.js',
     'integrations/playground/Cargo.toml', 'integrations/playground/Cargo.lock',
     'web/src/main.js', 'web/src/ridge.js', 'web/src/city.js', 'web/src/scenery.js',
     'web/src/regions.js', 'web/src/style.css', 'web/index.html',
