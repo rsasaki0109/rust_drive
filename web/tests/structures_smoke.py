@@ -124,6 +124,25 @@ def main():
                 for _ in range(5):
                     tick()
                 assert snap()['paused'] and snap()['x'] == paused['x'] and snap()['height'] == paused['height']
+            # Recover while the actual car/camera are below grade with W still held.
+            page.locator('#district-start').select_option('tunnel', force=True)
+            tick()
+            page.locator('#start').click(force=True)
+            page.locator('#world').focus()
+            page.keyboard.down('KeyW')
+            for _ in range(650):
+                tick()
+                if snap()['x'] > 300:
+                    break
+            else:
+                raise AssertionError('The underground recovery approach did not reach cover')
+            assert snap()['height'] < -7.9
+            page.keyboard.press('KeyR')
+            tick()
+            reset = snap()
+            assert reset['x'] == 190 and reset['y'] == -105 and reset['height'] == 0
+            assert reset['grounded'] and reset['keysHeld'] == 0 and reset['cameraHeight'] >= .7
+            page.keyboard.up('KeyW')
             version = browser.version
             assert not errors, errors
             browser.close()
@@ -136,6 +155,7 @@ def main():
             'input': 'Keyboard W and public start-area/camera/pause/recover controls; read-only snapshots, no pose writes.',
             'source_sha256': {name: sha(ROOT / name) for name in SOURCES + ['web/tests/structures_smoke.py']},
             'wasm_sha256': sha(ROOT / 'web/dist/drive.wasm'), 'scenes': scenes,
+            'recover_from_underground_clears_controls_and_camera': True,
             'trace_sha256': sha(trace_path),
             'scope': 'Authored arcade layered roads; not autonomous-driving or real-vehicle evidence.',
         }

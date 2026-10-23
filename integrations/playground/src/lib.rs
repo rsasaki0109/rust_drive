@@ -223,7 +223,7 @@ pub extern "C" fn drive_ceiling(x: f64, y: f64, base_height: f64) -> f64 {
 pub extern "C" fn drive_support(x: f64, y: f64, base_height: f64) -> f64 {
     let floor = surface(x, y).height;
     structures::upper(x, y)
-        .filter(|s| s.height <= base_height + 0.05 && s.height >= floor)
+        .filter(|s| s.height <= base_height + 0.75 && s.height >= floor)
         .map_or(floor, |s| s.height)
 }
 

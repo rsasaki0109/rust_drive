@@ -29,7 +29,12 @@ function recover(initial = false, spawn = DISTRICTS[0].spawn) {
     else { y = roadY - 3.8; x = Math.max(-145, Math.min(145, x)); yaw = 0; }
   }
   drive.drive_reset(x, y, yaw); readCar(); previousRear = null; state.combo = 0; cameraYaw = yaw;
-  if (!initial) notice('道路へ復帰しました');
+  if (!initial) {
+    keys.clear(); touch.clear();
+    cameraPosition.set(player.x - 14, player.height + 12, -player.y + 17);
+    cameraTarget.set(player.x + 2, player.height + 1, -player.y - 3);
+    notice('道路へ復帰しました');
+  }
 }
 function pause(paused) {
   if (!state.ready) return;
