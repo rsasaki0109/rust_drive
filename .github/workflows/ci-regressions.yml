@@ -47,6 +47,33 @@ jobs:
           python scripts/test_gnss_antenna.py
           python scripts/test_observed_detours.py
           python scripts/test_recorded_numeric.py
+      - name: Confirm the queue regression fails on the original planner
+        if: matrix.os == 'ubuntu-24.04'
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
+          git fetch --no-tags --depth=1 origin 9dab991a82ec7113970e393af0a91913c9570eca
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+          path = Path('crates/planning/src/lib.rs')
+          current = path.read_bytes()
+          original = subprocess.check_output([
+              'git', 'show', '9dab991a82ec7113970e393af0a91913c9570eca:crates/planning/src/lib.rs'])
+          try:
+              path.write_bytes(original)
+              result = subprocess.run([
+                  'cargo', '+1.90.0', 'test', '--locked', '-p', 'rustdriving-planning',
+                  '--test', 'yield_recovery',
+                  'a_temporary_infeasible_hold_does_not_restart_the_same_blocked_queue',
+                  '--', '--exact'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+              print(result.stdout)
+              assert result.returncode == 101, 'original source did not reproduce the failed test'
+              assert 'blocked queue restarted after a temporary emergency' in result.stdout, \
+                  'original source failed for an unrelated reason'
+          finally:
+              path.write_bytes(current)
+          assert path.read_bytes() == current
+          PY
       - name: Check the pinned workspace and scenario replays
         if: matrix.os == 'ubuntu-24.04'
         run: |

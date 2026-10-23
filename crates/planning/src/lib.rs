@@ -919,15 +919,18 @@ impl LatticePlanner {
                 self.previous_lateral = trajectory.lateral_target;
             }
         }
-        self.yield_stop_s = if trajectory.mode == DrivingMode::Yield {
-            trajectory
+        if trajectory.mode == DrivingMode::Yield {
+            self.yield_stop_s = trajectory
                 .points
                 .last()
                 .filter(|p| p.speed < 1e-8)
-                .map(|p| route.project(p.position).0)
-        } else {
-            None
-        };
+                .map(|p| route.project(p.position).0);
+        } else if trajectory.mode != DrivingMode::Emergency {
+            self.yield_stop_s = None;
+        }
+        // An infeasible replan still requests emergency braking. Retain the
+        // previous yield endpoint so a recovered but still blocked proposal
+        // cannot restart a settled stop. Every new hold is swept as usual.
         if let Some(record) = &mut diagnostics {
             record.obstruction_stop_requested = self.obstruction_stop_requested;
             record.obstruction_stop_active = self.obstruction_stop_active;
