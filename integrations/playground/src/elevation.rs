@@ -251,6 +251,35 @@ impl DrivingVehicle {
         self.car.lateral = -s * self.elevation.vx + c * self.elevation.vy;
     }
 
+    /// Fracture a breakaway barrier by spending normal kinetic energy (joules).
+    /// The authored arcade vehicle mass is 1,250 kg. No position/height impulse.
+    pub fn break_barrier(&mut self, nx: f64, ny: f64, energy: f64) -> bool {
+        if ![nx, ny, energy].into_iter().all(f64::is_finite) || energy <= 0.0 {
+            return false;
+        }
+        let length = nx.hypot(ny);
+        if length < 0.000_001 { return false; }
+        let (nx, ny) = (nx / length, ny / length);
+        let (vx, vy) = self.velocity();
+        let incoming = -(vx * nx + vy * ny);
+        let remaining = incoming * incoming - 2.0 * energy / 1_250.0;
+        if incoming <= 0.0 || remaining <= 0.0 { return false; }
+        let lost = incoming - remaining.sqrt();
+        let (vx, vy) = (vx + nx * lost, vy + ny * lost);
+        let (s, c) = self.car.yaw.sin_cos();
+        self.car.forward = c * vx + s * vy;
+        self.car.lateral = -s * vx + c * vy;
+        self.car.contacts = self.car.contacts.saturating_add(1);
+        if self.elevation.grounded {
+            let ground = support(self.car.x, self.car.y, self.elevation.height);
+            self.elevation.vertical = ground.gx * vx + ground.gy * vy;
+        } else {
+            self.elevation.vx = vx;
+            self.elevation.vy = vy;
+        }
+        true
+    }
+
     pub fn contact(&mut self, nx: f64, ny: f64, penetration: f64) -> bool {
         let old = self.car;
         if !self.car.contact(nx, ny, penetration) {
@@ -496,4 +525,45 @@ mod tests {
         assert!(car.car.y <= -95.0 && car.elevation.height == -8.0);
         assert!(car.car.contacts > 0);
     }
+    #[test]
+    fn barrier_fracture_spends_normal_energy_and_preserves_pose_and_tangent() {
+        let mut car = DrivingVehicle::default();
+        car.reset(360.0, 150.0, 0.0);
+        car.car.forward = 30.0;
+        car.car.lateral = 4.0;
+        let before = car;
+        assert!(car.break_barrier(-2.0, 0.0, 90_000.0));
+        assert!((0.5 * 1_250.0 * (900.0 - car.car.forward.powi(2)) - 90_000.0).abs() < 1e-8);
+        assert_eq!(car.car.lateral, 4.0);
+        assert_eq!((car.car.x, car.car.y, car.elevation.height), (before.car.x, before.car.y, 48.0));
+        assert!(car.elevation.grounded && car.car.contacts == 1);
+    }
+
+    #[test]
+    fn a_slow_or_outgoing_car_cannot_fracture_the_guardrail() {
+        let mut car = DrivingVehicle::default();
+        car.car.forward = 10.0;
+        let before = car;
+        assert!(!car.break_barrier(-1.0, 0.0, 90_000.0));
+        assert!(!car.break_barrier(1.0, 0.0, 1_000.0));
+        for bad in [f64::NAN, f64::INFINITY, -1.0, 0.0] {
+            assert!(!car.break_barrier(-1.0, 0.0, bad));
+        }
+        assert!(!car.break_barrier(0.0, 0.0, 1_000.0));
+        assert_eq!(car, before);
+    }
+
+    #[test]
+    fn an_airborne_barrier_impact_keeps_ballistic_velocity_consistent() {
+        let mut car = launch();
+        let z = car.elevation.height;
+        let vz = car.elevation.vertical;
+        assert!(car.break_barrier(-1.0, 0.0, 90_000.0));
+        let vx = car.elevation.vx;
+        let x = car.car.x;
+        car.step(0.0, 0.0, 0.0, 0.005);
+        assert!((car.car.x - x - vx * 0.005).abs() < 1e-10);
+        assert!((car.elevation.height - z - vz * 0.005 + 0.5 * 9.81 * 0.005_f64.powi(2)).abs() < 1e-10);
+    }
+
 }

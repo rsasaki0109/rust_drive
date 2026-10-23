@@ -11,7 +11,7 @@ with sync_playwright() as p:
  control_clock(page)
  page.goto(args.url,wait_until='networkidle');wait_state(page,'window.rustDriving?.snapshot().ready',timeout=40000);advance(page,40)
  snap=lambda:page.evaluate('window.rustDriving.snapshot()')
- before=snap();assert before['physics']=='rust-wasm' and before['buildings']==64 and before['districtCount']==8 and before['intersections']==49 and before['trafficCars']==20
+ before=snap();assert before['physics']=='rust-wasm' and before['buildings']==107 and before['districtCount']==8 and before['intersections']==54 and before['trafficCars']==40
  page.screenshot(path=str(args.output/'intro.png'))
  district_evidence=[]
  for district in ['downtown','harbor','forest','factory','plaza']:
@@ -42,7 +42,7 @@ with sync_playwright() as p:
  page.screenshot(path=str(args.output/'drifting.png'))
  page.keyboard.press('KeyC');assert snap()['cameraMode']==1
  page.locator('#recover').click(force=True);assert abs(snap()['speed'])<.1
- page.locator('#chase').click(force=True);assert snap()['chase'] and snap()['trafficCars']==22
+ page.locator('#chase').click(force=True);assert snap()['chase'] and snap()['trafficCars']==42
  page.locator('#day').click(force=True);assert snap()['day']
  page.locator('#sound').click(force=True);assert snap()['sound'];page.locator('#sound').click(force=True);assert not snap()['sound']
  page.keyboard.press('Escape');paused=snap();assert paused['paused'] and paused['keysHeld']==0
@@ -51,7 +51,7 @@ with sync_playwright() as p:
  page.keyboard.press('KeyC');assert snap()['cameraMode']==0
  page.screenshot(path=str(args.output/'city-chase.png'))
  page.keyboard.down('KeyW');page.evaluate("window.dispatchEvent(new Event('blur'))");assert snap()['paused'] and snap()['keysHeld']==0;page.keyboard.up('KeyW')
- page.locator('#district-start').select_option('harbor',force=True);assert not snap()['chase'] and snap()['trafficCars']==20 and snap()['speed']==0
+ page.locator('#district-start').select_option('harbor',force=True);assert not snap()['chase'] and snap()['trafficCars']==40 and snap()['speed']==0
  mobile=browser.new_page(viewport={'width':390,'height':844},device_scale_factor=1,is_mobile=True,has_touch=True);mobile.on('pageerror',lambda e:errors.append(str(e)))
  control_clock(mobile)
  mobile.goto(args.url,wait_until='networkidle');wait_state(mobile,'window.rustDriving?.snapshot().ready',timeout=40000);advance(mobile,40);mobile.locator('#start').click(force=True)

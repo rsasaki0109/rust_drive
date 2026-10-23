@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[2]
 STEP_MS, FRAME_MS = 40, 80
 WIDTH, HEIGHT = 960, 540
 SOURCES = [
+    'web/src/urban-city.js', 'web/src/urban-roads.js', 'web/src/guardrails.js',
     'integrations/playground/src/lib.rs', 'integrations/playground/src/elevation.rs',
     'integrations/playground/src/structures.rs', 'web/src/structures.js',
     'integrations/playground/Cargo.toml', 'integrations/playground/Cargo.lock',

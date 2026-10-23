@@ -186,6 +186,12 @@ pub extern "C" fn drive_read(index: u32) -> f64 {
     CAR.with(|car| car.borrow().read(index))
 }
 
+/// Returns 1 only when normal impact energy breaks the authored barrier.
+#[unsafe(no_mangle)]
+pub extern "C" fn drive_break_barrier(nx: f64, ny: f64, fracture_energy_j: f64) -> u32 {
+    CAR.with(|car| u32::from(car.borrow_mut().break_barrier(nx, ny, fracture_energy_j)))
+}
+
 /// Authored arcade terrain, shared by physics and the renderer; not operational sensing.
 #[unsafe(no_mangle)]
 pub extern "C" fn drive_surface(x: f64, y: f64, index: u32) -> f64 {

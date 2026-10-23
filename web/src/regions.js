@@ -5,7 +5,7 @@ export const DISTRICTS = Object.freeze([
   { id: 'harbor', label: 'HARBOR BAY', name: '港湾エリア', color: '#79bbc6', spawn: { x: 100, y: -120, yaw: Math.PI / 2 } },
   { id: 'forest', label: 'CANOPY PARK', name: '森の抜け道', color: '#86b987', spawn: { x: -100, y: 70, yaw: Math.PI / 2 } },
   { id: 'factory', label: 'IRONWORKS', name: '工場エリア', color: '#ca9473', spawn: { x: 100, y: 80, yaw: Math.PI / 2 } },
-  { id: 'ridge', label: 'SKYLINE RIDGE', name: '高台・崖ダイブ', color: '#d5aa77', spawn: { x: 190, y: 150, yaw: 0 } },
+  { id: 'ridge', label: 'HILLSIDE CITY', name: '坂のある街・崖ダイブ', color: '#d5aa77', spawn: { x: 190, y: 150, yaw: 0 } },
   { id: 'skyway', label: 'SKYWAY', name: '高架道路', color: '#91d4e0', spawn: { x: 190, y: 20, yaw: 0 } },
   { id: 'tunnel', label: 'UNDERGROUND', name: '地下トンネル', color: '#c4b2ed', spawn: { x: 190, y: -105, yaw: 0 } },
 ].map(d => Object.freeze({ ...d, spawn: Object.freeze(d.spawn) })));

@@ -3,20 +3,23 @@ import './style.css';
 import { createRidge, WORLD_BOUNDS, RIDGE_ROUTE } from './ridge.js';
 import { DISTRICTS, BLOCKS, districtAt, forestTrail } from './regions.js';
 import { createStructures, ROAD_STARTS, STACKED_ROUTES } from './structures.js';
-import { createCity, makeCar, Traffic, STREETS, nearestStreet, wrap } from './city.js';
+import { createUrbanDistrict } from './urban-city.js';
+import { URBAN_START, STATION_START, HILL_STREETS, LOWER_RING } from './urban-roads.js';
+import { fractureContact } from './guardrails.js';
+import { createCity, makeCar, Traffic, STREETS, nearestStreet, wrap, phase } from './city.js';
 
 const $ = id => document.getElementById(id);
 const state = { ready: false, started: false, paused: true, camera: 0, day: false, sound: false, time: 0, score: 0, combo: 0, lastDrift: 0, impact: 0, escaped: 0 };
 const keys = new Set(), touch = new Set();
 const player = { x: 0, y: -22, yaw: Math.PI / 2, speed: 0, lateral: 0, steering: 0, rearSlip: 0, distance: 0 };
-let drive, renderer, city, structures, traffic, scene, camera, car, audio, noticeTimer, smokeIndex = 0, markIndex = 0, markCount = 0, previousRear = null, spawnClock = 0, accumulator = 0;
+let drive, renderer, city, structures, urban, traffic, scene, camera, car, audio, noticeTimer, smokeIndex = 0, markIndex = 0, markCount = 0, previousRear = null, spawnClock = 0, accumulator = 0;
 const cameraPosition = new THREE.Vector3(), cameraTarget = new THREE.Vector3();
 let cameraYaw = Math.PI / 2;
 
 function notice(message) { $('notice').textContent = message; $('notice').classList.add('show'); clearTimeout(noticeTimer); noticeTimer = setTimeout(() => $('notice').classList.remove('show'), 2800); }
 function readCar() {
   [player.x, player.y, player.yaw, player.speed, player.lateral] = [0, 1, 2, 3, 4].map(i => drive.drive_read(i));
-  player.steering = drive.drive_read(6); player.rearSlip = drive.drive_read(7); player.distance = drive.drive_read(9);
+  player.yawRate = drive.drive_read(5); player.steering = drive.drive_read(6); player.rearSlip = drive.drive_read(7); player.distance = drive.drive_read(9);
   [player.height, player.verticalSpeed, player.grounded, player.pitch, player.roll, player.airTime, player.landings, player.landingSpeed, player.bestAirTime] = [11, 12, 13, 14, 15, 16, 17, 18, 19].map(i => drive.drive_read(i));
   player.grounded = Boolean(player.grounded); player.ceiling = drive.drive_read(21);
 }
@@ -28,6 +31,7 @@ function recover(initial = false, spawn = DISTRICTS[0].spawn) {
     if (Math.abs(x - roadX) < Math.abs(y - roadY)) { x = roadX + 3.8; y = Math.max(-145, Math.min(145, y)); yaw = Math.PI / 2; }
     else { y = roadY - 3.8; x = Math.max(-145, Math.min(145, x)); yaw = 0; }
   }
+  urban?.barriers.reset();
   drive.drive_reset(x, y, yaw); readCar(); previousRear = null; state.combo = 0; cameraYaw = yaw;
   if (!initial) {
     keys.clear(); touch.clear();
@@ -56,11 +60,11 @@ function cycleCamera() { state.camera = (state.camera + 1) % 3; notice(['CHASE C
 
 $('district-start').addEventListener('change', event => {
   if (!state.ready || !state.paused) return;
-  const district = event.target.value === 'underpass' ? { id: 'underpass', name: '高架の下', spawn: ROAD_STARTS.underpass } : DISTRICTS.find(d => d.id === event.target.value);
+  const district = event.target.value === 'station' ? { id: 'station', name: '中央駅前の周回道路', spawn: STATION_START } : event.target.value === 'urban' ? { id: 'urban', name: '坂のある市街地', spawn: URBAN_START } : event.target.value === 'underpass' ? { id: 'underpass', name: '高架の下', spawn: ROAD_STARTS.underpass } : DISTRICTS.find(d => d.id === event.target.value);
   if (!district) return;
   if (traffic.active) setChase();
   recover(true, district.spawn); if (district.spawn.x > 180) state.camera = 0; keys.clear(); touch.clear(); accumulator = 0; state.escaped = 0;
-  cameraPosition.set(player.x - 14, 12, -player.y + 17); cameraTarget.set(player.x + 2, 1, -player.y - 3);
+  cameraPosition.set(player.x - 14, player.height + 12, -player.y + 17); cameraTarget.set(player.x + 2, player.height + 1, -player.y - 3);
   notice(district.name + 'からスタート');
 });
 $('start').addEventListener('click', () => pause(false));
@@ -108,20 +112,26 @@ function contact(nx, ny, penetration) {
     readCar();
   }
 }
+function hitObstacle(b, nx, ny, penetration) {
+  if (b.breakaway && fractureContact(drive, b, nx, ny)) {
+    readCar(); state.impact = .38; notice('ガードレール突破！');
+  } else contact(nx, ny, penetration);
+}
 function collisions() {
   const radius = 1.8;
   for (const b of city.colliders) {
+    if (b.broken) continue;
     if (player.height >= (b.top ?? 32) - .01 || player.height + 1.55 <= (b.bottom ?? -1000)) continue;
     const qx = Math.max(b.x - b.w, Math.min(b.x + b.w, player.x)), qy = Math.max(b.y - b.h, Math.min(b.y + b.h, player.y));
     const dx = player.x - qx, dy = player.y - qy, d = Math.hypot(dx, dy);
-    if (d > .0001 && d < radius) contact(dx / d, dy / d, radius - d);
-    else if (d <= .0001) { const sides = [[-1, 0, player.x - (b.x - b.w)], [1, 0, b.x + b.w - player.x], [0, -1, player.y - (b.y - b.h)], [0, 1, b.y + b.h - player.y]].sort((a, b) => a[2] - b[2]); contact(sides[0][0], sides[0][1], radius + sides[0][2]); }
+    if (d > .0001 && d < radius) hitObstacle(b, dx / d, dy / d, radius - d);
+    else if (d <= .0001) { const sides = [[-1, 0, player.x - (b.x - b.w)], [1, 0, b.x + b.w - player.x], [0, -1, player.y - (b.y - b.h)], [0, 1, b.y + b.h - player.y]].sort((a, b) => a[2] - b[2]); hitObstacle(b, sides[0][0], sides[0][1], radius + sides[0][2]); }
   }
   if (player.x < WORLD_BOUNDS.minX) contact(1, 0, WORLD_BOUNDS.minX - player.x);
   if (player.x > WORLD_BOUNDS.maxX) contact(-1, 0, player.x - WORLD_BOUNDS.maxX);
   if (player.y < WORLD_BOUNDS.minY) contact(0, 1, WORLD_BOUNDS.minY - player.y);
   if (player.y > WORLD_BOUNDS.maxY) contact(0, -1, player.y - WORLD_BOUNDS.maxY);
-  if (player.height < 1.9) for (const c of traffic.cars) { const dx = player.x - c.x, dy = player.y - c.y, d = Math.hypot(dx, dy); if (d > .01 && d < 3.3) { contact(dx / d, dy / d, 3.3 - d); c.speed *= .7; } }
+  for (const c of traffic.cars) { if (Math.abs(player.height - (c.height ?? 0)) >= 1.9) continue; const dx = player.x - c.x, dy = player.y - c.y, d = Math.hypot(dx, dy); if (d > .01 && d < 3.3) { contact(dx / d, dy / d, 3.3 - d); c.speed *= .7; } }
 }
 
 const marks = new Float32Array(3600 * 6), smoke = [];
@@ -183,7 +193,7 @@ function updateCamera(dt) {
     // An oblique panorama reveals the hill/deck profile instead of flattening it.
     destination = eastern ? new THREE.Vector3(player.x - 55, height + 55, -player.y + 75) : new THREE.Vector3(player.x + 3, height + 57, -player.y + 15);
     target = new THREE.Vector3(player.x + (eastern ? 20 : 0), height + (eastern ? 5 : 0), -player.y);
-  } else { const reach = (eastern ? 22 : 10) + Math.min(eastern ? 9 : 5, Math.abs(player.speed) * .12); destination = new THREE.Vector3(player.x - c * reach + s * 1.8, height + (eastern ? 12 : 5.1) + Math.min(2, Math.abs(player.speed) * .06), -player.y + s * reach + c * 1.8); target = new THREE.Vector3(player.x + c * 3, height + 1.0, -player.y - s * 3); }
+  } else { const street = eastern && player.y > 110 && player.y < 190 && player.grounded; const reach = (street ? 13 : eastern ? 22 : 10) + Math.min(eastern ? 9 : 5, Math.abs(player.speed) * .12); destination = new THREE.Vector3(player.x - c * reach + s * 1.8, height + (street ? 6 : eastern ? 12 : 5.1) + Math.min(2, Math.abs(player.speed) * .06), -player.y + s * reach + c * 1.8); target = new THREE.Vector3(player.x + c * 3, height + 1.0, -player.y - s * 3); }
   if (belowGrade) destination.z = Math.max(96.4, Math.min(113.6, destination.z));
   destination.y = Math.max(destination.y, drive.drive_support(destination.x, -destination.z, height) + .7);
   const cameraRoof = drive.drive_ceiling(destination.x, -destination.z, height);
@@ -221,7 +231,12 @@ function drawMap() {
       ctx.setLineDash(route.kind === 'tunnel' ? [3, 3] : []); ctx.beginPath();
       route.points.forEach(([x, y], i) => ctx[i ? 'lineTo' : 'moveTo'](ox + x * scale, oy - y * scale)); ctx.stroke();
     }
-    ctx.setLineDash([]); ctx.fillStyle = '#ffbf78'; ctx.font = '9px monospace'; ctx.fillText('RIDGE / SKYWAY / TUNNEL', 8, 16);
+    ctx.setLineDash([]); ctx.strokeStyle = '#a8d9ce'; ctx.lineWidth = 2;
+    for (const road of [...HILL_STREETS, LOWER_RING]) {
+      ctx.beginPath(); road.forEach((p, i) => ctx[i ? 'lineTo' : 'moveTo'](ox + p.x * scale, oy - p.y * scale)); ctx.stroke();
+    }
+    ctx.strokeStyle = '#e6b173'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(ox + 170 * scale, oy - 104 * scale); ctx.lineTo(ox + 540 * scale, oy - 104 * scale); ctx.stroke();
+    ctx.fillStyle = '#ffbf78'; ctx.font = '9px monospace'; ctx.fillText('CITY / METRO / SKYWAY', 8, 16);
   } else { ctx.fillStyle = '#ffbf78'; ctx.font = '8px monospace'; ctx.fillText('RIDGE →', 133, 12); }
   for (const c of traffic.cars) { ctx.fillStyle = c.police ? '#ff7e6a' : '#a3b3b7'; ctx.fillRect(ox + c.x * scale - 1, oy - c.y * scale - 1, c.police ? 4 : 2, c.police ? 4 : 2); }
   ctx.save(); ctx.translate(ox + player.x * scale, oy - player.y * scale); ctx.rotate(-player.yaw); ctx.fillStyle = player.grounded ? '#ffbd73' : '#fff1c9';
@@ -253,11 +268,15 @@ async function boot() {
     renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     const ambient = new THREE.HemisphereLight(0xd6d9ed, 0x435345, 2.0); scene.add(ambient);
     const sun = new THREE.DirectionalLight(0xffc18a, 2.5); sun.position.set(-45, 75, 25); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024); sun.shadow.camera.left = sun.shadow.camera.bottom = -25; sun.shadow.camera.right = sun.shadow.camera.top = 25; sun.shadow.camera.near = 1; sun.shadow.camera.far = 160; sun.shadow.bias = -.001; scene.add(sun, sun.target);
-    city = createCity(scene); createRidge(scene, drive); structures = createStructures(scene, drive); city.colliders.push(...structures.colliders); traffic = new Traffic(scene); car = makeCar(0xf2ede2, false, true); scene.add(car); prepareEffects(); recover(true);
+    city = createCity(scene); createRidge(scene, drive); structures = createStructures(scene, drive);
+    urban = createUrbanDistrict(scene, drive, phase);
+    city.colliders.push(...structures.colliders, ...urban.colliders);
+    city.buildingCount += urban.buildingCount; city.signals += urban.signals;
+    traffic = new Traffic(scene, { drive, urban: true, cityCars: 24 }); car = makeCar(0xf2ede2, false, true); scene.add(car); prepareEffects(); recover(true);
     cameraPosition.set(player.x - 14, 12, -player.y + 17); cameraTarget.set(player.x + 2, 1, -player.y - 3);
     state.ready = true; $('district-start').disabled = false; $('start').disabled = false; $('start').innerHTML = '街へ出る <span>↗</span>';
     // Small read-only diagnostic snapshot for smoke tests; controls stay on UI events.
-    window.rustDriving = { snapshot: () => ({ ...player, ...state, physics: 'rust-wasm', carHeight: car.position.y, cameraHeight: camera.position.y, cameraX: camera.position.x, cameraY: -camera.position.z, district: districtAt(player.x, player.y).id, districtCount: DISTRICTS.length, trafficCars: traffic.cars.length, buildings: city.buildingCount, intersections: city.signals, smokeParticles: smoke.filter(p => p.life > 0).length, skidSegments: markCount, cameraMode: state.camera, chase: traffic.active, keysHeld: keys.size + touch.size }) };
+    window.rustDriving = { snapshot: () => ({ ...player, ...state, physics: 'rust-wasm', carHeight: car.position.y, cameraHeight: camera.position.y, cameraX: camera.position.x, cameraY: -camera.position.z, district: districtAt(player.x, player.y).id, districtCount: DISTRICTS.length, trafficCars: traffic.cars.length, buildings: city.buildingCount, intersections: city.signals, smokeParticles: smoke.filter(p => p.life > 0).length, skidSegments: markCount, cameraMode: state.camera, chase: traffic.active, keysHeld: keys.size + touch.size, brokenGuardrails: urban.barriers.count(), trainX: urban.trainX(), urbanBuildings: urban.buildingCount, elevatedTraffic: traffic.cars.filter(c => c.height > 2).length }) };
     addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
     $('world').addEventListener('webglcontextlost', event => { event.preventDefault(); pause(true); $('error').hidden = false; $('error').textContent = '描画の接続が切れました。ページを再読み込みしてください。'; $('start').disabled = true; });
     let previous = performance.now();
@@ -267,7 +286,7 @@ async function boot() {
       else { accumulator = 0; if (!state.started) { state.time += dt; traffic.update(dt, state.time, player); } effects(dt, false); }
       car.position.set(player.x, player.height + .02, -player.y); car.rotation.set(player.roll, -player.yaw, player.pitch, 'YXZ'); car.visible = state.camera !== 2 || !state.started;
       for (const wheel of car.userData.wheels) { wheel.root.rotation.y = wheel.front ? -player.steering : 0; wheel.wheel.rotation.z = -player.distance / .32; }
-      city.update(state.time); structures.update(player); updateCamera(dt); drawMap(); telemetry();
+      city.update(state.time); structures.update(player); urban.update(state.time, state.paused ? 0 : dt); updateCamera(dt); drawMap(); telemetry();
       const sky = state.day ? 0xb9d1dd : 0x968d91; scene.background.setHex(sky); scene.fog.color.setHex(sky); ambient.intensity = state.day ? 2.5 : 1.7; sun.intensity = state.day ? 3.1 : 2.3; sun.color.setHex(state.day ? 0xfff1d2 : 0xffbb80); sun.position.set(player.x - 45, player.height + 75, -player.y + 25); sun.target.position.set(player.x, player.height, -player.y);
       renderer.render(scene, camera); requestAnimationFrame(frame);
     }

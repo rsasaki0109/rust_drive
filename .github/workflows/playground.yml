@@ -18,8 +18,8 @@ concurrency:
 
 jobs:
   build:
-    # Playwright 1.56 supports Ubuntu 24.04; ubuntu-latest can move ahead of it.
-    runs-on: ubuntu-24.04
+    # Match the supported image used by the successful recording checks.
+    runs-on: ubuntu-22.04
     env:
       PAGES_BASE: /${{ github.event.repository.name }}/
     steps:
@@ -34,6 +34,9 @@ jobs:
           node-version: 24
           cache: npm
           cache-dependency-path: web/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - name: Check standalone Rust driving physics
         run: |
           cargo fmt --manifest-path integrations/playground/Cargo.toml --check
@@ -67,6 +70,7 @@ jobs:
           python web/tests/browser_smoke.py --url "http://127.0.0.1:4173${PAGES_BASE}" --output web/test-results
           python web/tests/ridge_smoke.py --url "http://127.0.0.1:4173${PAGES_BASE}" --output web/test-results/ridge
           python web/tests/structures_smoke.py --url "http://127.0.0.1:4173${PAGES_BASE}" --output web/test-results/structures
+          python web/tests/urban_smoke.py --url "http://127.0.0.1:4173${PAGES_BASE}" --output web/test-results/urban
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -79,7 +83,7 @@ jobs:
   deploy:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: build
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     permissions:
       pages: write
       id-token: write

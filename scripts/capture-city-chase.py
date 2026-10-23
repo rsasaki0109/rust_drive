@@ -21,6 +21,7 @@ FRAME_MS = 80
 WIDTH, HEIGHT = 960, 540
 ROUTE = [(0, -22), (0, 0), (50, 0), (50, -50), (0, -50), (0, 0)]
 SOURCE_FILES = [
+    'web/src/urban-city.js', 'web/src/urban-roads.js', 'web/src/guardrails.js',
     'web/index.html', 'web/src/main.js', 'web/src/city.js', 'web/src/style.css',
     'web/src/regions.js', 'web/src/scenery.js', 'web/src/ridge.js',
     'integrations/playground/src/elevation.rs', 'integrations/playground/src/structures.rs', 'web/src/structures.js',
@@ -184,7 +185,7 @@ def main():
         if args.keep_frames is not None:
             shutil.copytree(frames, args.keep_frames)
         states = [entry['state'] for entry in trace]
-        assert all(state['chase'] and state['trafficCars'] == 22 for state in states)
+        assert all(state['chase'] and state['trafficCars'] == 42 for state in states)
         assert all(not state['paused'] for state in states)
         assert max(abs(state['rearSlip']) for state in states) > math.radians(15)
         assert max(state['smokeParticles'] for state in states) > 0
@@ -233,7 +234,7 @@ def main():
         'route_fixture_m': ROUTE,
         'scope': 'Planar arcade gameplay recording; not autonomous-driving acceptance evidence.',
         'observed': {'buildings': states[0]['buildings'], 'intersections': states[0]['intersections'],
-                     'ordinary_traffic_cars': 20, 'police_cars': 2,
+                     'ordinary_traffic_cars': 40, 'police_cars': 2,
                      'distance_m': states[-1]['distance'] - states[0]['distance'],
                      'moving_fraction': moving_fraction,
                      'rear_slip_peak_degrees': max(abs(state['rearSlip']) for state in states) * 180 / math.pi,
