@@ -101,7 +101,7 @@ test('actual mesh raycasts find two road levels and an open excavated entrance',
   const tunnel = heights(350, -105);
   assert.ok(tunnel.some(h => Math.abs(h - .045) < .001));
   assert.ok(tunnel.some(h => Math.abs(h + 7.965) < .001));
-  for (const x of [212, 232, 252, 448, 468, 488]) {
+  for (const x of [212, 232, 252, 258.5, 431.5, 448, 468, 488]) {
     const top = Math.max(...heights(x, -105));
     assert.ok(top < -.5 && Math.abs(top - p.drive_surface(x, -105, 0) - .035) < .06);
   }

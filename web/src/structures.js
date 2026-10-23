@@ -6,9 +6,9 @@ export const ROAD_STARTS = Object.freeze({
   tunnel: Object.freeze({ x: 190, y: -105, yaw: 0 }),
 });
 export const STACKED_ROUTES = Object.freeze([
-  { kind: 'skyway', color: '#91d4e0', points: [[160, 20], [530, 20]] },
+  { kind: 'skyway', color: '#91d4e0', points: [[150, 20], [530, 20]] },
   { kind: 'lower', color: '#b9c5bf', points: [[350, -150], [350, 70]] },
-  { kind: 'tunnel', color: '#c4b2ed', points: [[160, -105], [530, -105]] },
+  { kind: 'tunnel', color: '#c4b2ed', points: [[150, -105], [530, -105]] },
   { kind: 'link', color: '#909e97', points: [[150, -150], [530, -150], [530, 150]] },
 ]);
 
@@ -88,7 +88,7 @@ export function createStructures(scene, drive) {
   block(345, -.6, -105, 170, 1.2, 20, 0x667c7d);
   for (const x of [260, 430]) {
     for (const y of [-116, -94]) block(x, -4, y, 2.2, 8, 2.2, 0x6f8285);
-    block(x, -.6, -105, 2.4, 1.2, 24, 0x899b98);
+    block(x === 260 ? 261.2 : 428.8, -.6, -105, 2.4, 1.2, 24, 0x899b98);
   }
   for (let x = 270; x <= 420; x += 15) {
     for (const y of [-112, -98]) block(x, -1.3, y, 3.2, .12, .35, 0xa4e6e4, true);
@@ -97,7 +97,7 @@ export function createStructures(scene, drive) {
     ribbon(route.points.map(([x, y]) => ({ x, y, h: .045 })), 18, asphalt);
   }
   for (const y of [20, -105]) {
-    ribbon([{ x: 160, y, h: .035 }, { x: 190, y, h: .035 }], 18, asphalt);
+    ribbon([{ x: 150, y, h: .035 }, { x: 190, y, h: .035 }], 18, asphalt);
     ribbon([{ x: 500, y, h: .035 }, { x: 530, y, h: .035 }], 18, asphalt);
   }
   const paint = [], paintIndices = [];
