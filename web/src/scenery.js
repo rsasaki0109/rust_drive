@@ -107,7 +107,7 @@ export function createDistrictScenery(scene) {
     }
   }
   // Water, ships and distant hills are scenery outside the bounded driving map.
-  shape(scene, box, new THREE.MeshStandardMaterial({ color: 0x396d80, metalness: .35, roughness: .24 }), 85, -.48, -255, 530, .25, 130);
+  shape(scene, box, new THREE.MeshStandardMaterial({ color: 0x396d80, metalness: .35, roughness: .24 }), 85, -.13, -255, 530, .12, 130);
   shape(scene, box, material(0x879598), 85, -.22, -188, 370, .4, 7);
   for (const x of [40, 135]) {
     shape(scene, box, material(0x354b57), x, 1.4, -221, 38, 4, 12);
