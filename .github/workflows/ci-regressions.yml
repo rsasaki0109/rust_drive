@@ -10,6 +10,11 @@ on:
       - 'scripts/recorded_numeric.py'
       - 'scripts/test_recorded_numeric.py'
       - '.github/workflows/ci-regressions.yml'
+      - '.github/workflows/ci.yml'
+      - 'scripts/check-japan-city-demo.py'
+      - 'integrations/rgbd/**'
+      - 'integrations/rne/**'
+      - 'crates/**'
   workflow_dispatch:
 
 permissions:
@@ -42,8 +47,14 @@ jobs:
           python scripts/test_gnss_antenna.py
           python scripts/test_observed_detours.py
           python scripts/test_recorded_numeric.py
+      - name: Check the pinned workspace and scenario replays
+        if: matrix.os == 'ubuntu-24.04'
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
+          bash scripts/check.sh
 
   historical-visual:
+    if: github.event_name != 'push'
     name: Frozen RGB-D reproduction (Ubuntu 24.04)
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -101,8 +112,8 @@ jobs:
               current, original = json.loads(report.read_text()), json.loads(baseline.read_text())
               print(report.parent.name, 'summaries', original['summary'], current['summary'])
               for index, (left, right) in enumerate(zip(original['frames'], current['frames'])):
-                  lq = left.get('root_accuracy', {}).get('estimate', {}).get('quaternion_wxyz')
-                  rq = right.get('root_accuracy', {}).get('estimate', {}).get('quaternion_wxyz')
+                  lq = ((left.get('root_accuracy') or {}).get('estimate') or {}).get('quaternion_wxyz')
+                  rq = ((right.get('root_accuracy') or {}).get('estimate') or {}).get('quaternion_wxyz')
                   if lq is not None and lq != rq:
                       print('frame', index, 'baseline quaternion', lq, 'current quaternion', rq,
                             'delta', [b-a for a, b in zip(lq, rq)])
@@ -168,9 +179,42 @@ jobs:
             rust_drive/target
             rust_drive/integrations/rne/target
           key: ${{ steps.native-cache.outputs.cache-primary-key }}
-      - name: Verify frozen city seed 1 with the unchanged eight-second queue gate
+      - name: Capture the unchanged city with the active pipeline
         run: |
-          python scripts/check-japan-city-demo.py --seeds 1 --compact --output artifacts/ci-regressions/japan --report artifacts/ci-regressions/japan/report.json
+          integrations/rne/target/release/rustdriving-rne --plant dynamic --scenario scenarios/native-japan-city-demo.json --scene scenes/japan-city-construction.json --lidar-3d --ground-segmentation --vehicle-body --precise-capsule-rays --seed 1 --output artifacts/ci-regressions/japan/seed-1
+          target/release/rustdriving replay --log artifacts/ci-regressions/japan/seed-1/sensors.jsonl --output artifacts/ci-regressions/japan/seed-1/replay
+      - name: Inspect sensor-only decisions around the interrupted stop
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          raw = Path('artifacts/ci-regressions/japan/seed-1')
+          run = json.loads((raw/'run.json').read_text())
+          with (raw/'sensors.jsonl').open() as source:
+              records = [json.loads(line) for line in source]
+          header = records[0]['header']
+          print('operational configuration', json.dumps(header['config']))
+          ticks = [record['tick'] for record in records if 'tick' in record]
+          print('frame keys', sorted(run['frames'][0]), 'output keys', sorted(ticks[0]['expected']))
+          for index, (frame, tick) in enumerate(zip(run['frames'], ticks)):
+              now = frame['time']
+              if not (12 <= now <= 17 and index % 2 == 0):
+                  continue
+              out, sample = tick['expected'], tick['input']
+              trajectory = out['trajectory']
+              points = trajectory['points']
+              print(json.dumps(dict(time_s=now, truth=frame['truth'],
+                    estimate=out['estimate'], command=out['command'],
+                    health=out['health'], mode=trajectory['mode'],
+                    lateral=trajectory['lateral_target'],
+                    first=points[:1], last=points[-1:],
+                    max_planned_speed=max((p['speed'] for p in points), default=None),
+                    lidar_acquired=sample.get('lidar3d') is not None,
+                    gnss=sample.get('gnss'),
+                    forecasts=[p for p in out['predictions']
+                               if p['positions'] and abs(p['positions'][0]['y']) < 4
+                               and 0 < p['positions'][0]['x']-out['estimate']['pose']['position']['x'] < 18])))
+          PY
       - name: Preserve posthoc queue predicate diagnostics
         if: ${{ !cancelled() }}
         run: |
@@ -222,6 +266,21 @@ jobs:
           output = path.parent.parent / 'queue-diagnostics.json'
           output.write_text(json.dumps(result, indent=2)+'\n')
           print(json.dumps(result, indent=2))
+          PY
+      - name: Verify original signal gate independently
+        run: |
+          python - <<'PY'
+          import importlib.util
+          import json
+          from pathlib import Path
+          import sys
+          sys.path.insert(0, 'scripts')
+          spec = importlib.util.spec_from_file_location('city', 'scripts/check-japan-city-demo.py')
+          city = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(city)
+          raw = Path('artifacts/ci-regressions/japan/seed-1')
+          print(city.verify_signals(json.loads((raw/'run.json').read_text()),
+                                    json.loads((raw/'scene.json').read_text()), raw/'sensors.jsonl'))
           PY
       - uses: actions/upload-artifact@v4
         if: always()
