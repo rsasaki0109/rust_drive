@@ -63,3 +63,38 @@ test('traffic framing excludes cars behind the camera, too far away, or hidden b
     drive_surface:(x)=>x>10&&x<20?8:0,
   }).length,0);
 });
+
+test('following traffic brakes on a slope while ignoring a car on an upper layer', () => {
+  const drive = { drive_surface: (x, _y, index) => index === 0 ? x * .5 : index === 1 ? .5 : 0 };
+  function follow(extraHeight) {
+    const traffic = new Traffic(new THREE.Scene(), { cityCars: 0, drive });
+    const follower = traffic.spawn(false, 0xabcdef, { x: 100, y: 0, to: { x: 150, y: 0 }, advance: 10 });
+    follower.speed = follower.desired = 8;
+    const stopped = { x: 125, y: -3.8, height: 62.5 + extraHeight };
+    assert.ok(stopped.height - follower.height > 7);
+    for (let i = 0; i < 600; i++) traffic.update(1 / 120, i / 120, stopped);
+    return follower;
+  }
+  const sameRoad = follow(0);
+  assert.ok(sameRoad.x < 120.8, 'stop with clearance before the ground-level car');
+  assert.ok(sameRoad.speed < .5, 'settle behind the stopped car');
+  assert.ok(follow(12).x > 130, 'an upper-layer car must not block this road');
+});
+
+test('pursuit follows a long avenue toward an edge target rather than a nearer alley endpoint', () => {
+  const traffic = new Traffic(new THREE.Scene(), { cityCars: 0, urban: true });
+  const player = { x: 270, y: 150, yaw: 0, height: 0 };
+  traffic.setChase(true, player);
+  const police = traffic.cars.find(car => car.police);
+  police.node = traffic.graph.get('240:150');
+  police.previous = traffic.graph.get('190:150');
+  traffic.choose(police, player);
+  assert.deepEqual([police.next.x, police.next.y], [334, 150]);
+  // The north backstreet is one way west; chasing a car east of it needs the
+  // forward connector, not an illegal eastbound edge.
+  police.node = traffic.graph.get('240:181.5');
+  police.previous = traffic.graph.get('334:181.5');
+  traffic.choose(police, { x: 320, y: 181.5 });
+  assert.ok(police.node.links.includes(police.next));
+  assert.ok(police.next.x <= police.node.x || police.next.y !== police.node.y);
+});

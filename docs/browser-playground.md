@@ -238,3 +238,12 @@ frame, with no added vehicles or effects.
 
 
 The 40 ordinary vehicles include sedans, compacts, taxis and delivery vans: 20 in the original city, 12 on hillside streets and eight around the station. They choose independent routes, wait for signals, steer their front wheels and brighten brake lights when slowing. Police prefer distinct road nodes behind the player, with a reachable-road fallback at map boundaries. The urban recorder requires at least two moving ordinary vehicles and a moving pursuer in view, retains a separate traffic PNG, and reports its framing diagnostic alongside the GIF. Body-centre projection and geometric occlusion checks support this diagnostic; captured images still require visual review.
+
+Pursuers route toward the closest point on a directed street edge, so a player
+partway along a long avenue is followed along that avenue. Ground traffic compares
+its height relative to the local road when following other vehicles on hills;
+a car on an upper deck still belongs to a separate level. The urban filming
+fixture uses ordinary throttle/brake events around 16 m/s during the climb and
+requires ten consecutive frames containing two ordinary cars and a pursuer.
+It identifies the final cliff landing at city grade, separately from any brief
+crest touchdown, and retains its trace before checking framing.

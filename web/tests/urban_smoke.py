@@ -90,7 +90,7 @@ def main():
             page.screenshot(path=str(args.output / 'urban-start.png'))
             broke_at, landed_at, impact_before, impact_after = None, None, None, None
             city_shot = impact_shot = traffic_shot = False
-            shared_traffic_frames = 0
+            shared_traffic_frames = consecutive_traffic_frames = longest_traffic_run = 0
             for step in range(1200):
                 before = snap()
                 if 255 < before['x'] < 345:
@@ -99,22 +99,33 @@ def main():
                     camera(0)
                 desired_yaw = max(-.18, min(.18, (150 - before['y']) * .06))
                 wanted = steer(desired_yaw, before)
-                wanted |= {'KeyW'} if not before['landings'] else {'KeyS'} if before['speed'] > 1 else set()
+                # Keep a real pursuit in frame using brake/throttle events.
+                if landed_at is None:
+                    if before['speed'] < 16:
+                        wanted.add('KeyW')
+                    elif before['speed'] > 16.8:
+                        wanted.add('KeyS')
+                elif before['speed'] > 1:
+                    wanted.add('KeyS')
                 keys(wanted)
                 advance(page, STEP_MS)
                 state = snap()
                 capture('hillside-city', step, state)
                 if step % 100 == 0:
                     print(json.dumps({'urban_step': step, 'state': {
-                        k: state[k] for k in ['x', 'y', 'height', 'speed', 'yaw', 'contacts', 'brokenGuardrails', 'landings', 'grounded', 'nearbyTraffic']
+                        k: state[k] for k in ['x', 'y', 'height', 'speed', 'yaw', 'contacts', 'brokenGuardrails', 'landings', 'grounded', 'cameraMode', 'nearbyTraffic', 'trafficInView']
                     }}), flush=True)
                 ordinary_in_view = sum(not c['police'] for c in state['trafficInView'])
                 police_in_view = sum(c['police'] for c in state['trafficInView'])
                 if state['cameraMode'] == 1 and ordinary_in_view >= 2 and police_in_view >= 1:
                     shared_traffic_frames += 1
+                    consecutive_traffic_frames += 1
+                    longest_traffic_run = max(longest_traffic_run, consecutive_traffic_frames)
                     if not traffic_shot:
                         page.screenshot(path=str(args.output / 'urban-traffic.png'))
                         traffic_shot = True
+                else:
+                    consecutive_traffic_frames = 0
                 if state['x'] > 280 and state['cameraMode'] == 1 and not city_shot:
                     page.screenshot(path=str(args.output / 'urban-climb.png'))
                     city_shot = True
@@ -126,7 +137,8 @@ def main():
                 if broke_at is not None and state['time'] - broke_at > .25 and not impact_shot:
                     page.screenshot(path=str(args.output / 'guardrail-impact.png'))
                     impact_shot = True
-                if state['landings'] and landed_at is None:
+                if (broke_at is not None and state['grounded'] and state['height'] == 0
+                        and state['x'] > 400 and state['bestAirTime'] > 3 and landed_at is None):
                     landed_at = step
                     page.screenshot(path=str(args.output / 'urban-landing.png'))
                 if landed_at is not None and step - landed_at >= 40 and step % 2:
@@ -137,8 +149,15 @@ def main():
                 raise AssertionError('The actual urban drive never broke the rail and landed')
             keys(set())
             hill = [e['state'] for e in trace]
+            # Retain the full trace even if a framing/flight assertion fails.
+            (args.output / 'trace.json').write_text(json.dumps(trace, indent=2) + '\n')
+            cliff_landings = sum(not a['grounded'] and b['grounded'] and b['height'] == 0 and b['x'] > 400
+                                 for a, b in zip(hill, hill[1:]))
+            print(json.dumps({'urban_framing': {'shared_frames': shared_traffic_frames,
+                  'longest_consecutive_run': longest_traffic_run, 'cliff_landings': cliff_landings,
+                  'final_state': hill[-1]}}), flush=True)
             assert city_shot and impact_shot and broke_at is not None and landed_at is not None
-            assert traffic_shot and shared_traffic_frames >= 10, 'The city view must frame ordinary traffic and a real pursuing police car'
+            assert traffic_shot and longest_traffic_run >= 10, 'The city view must frame ordinary traffic and a real pursuing police car'
             visible_tracks = {}
             for state in hill:
                 for vehicle in state['trafficInView']:
@@ -149,7 +168,7 @@ def main():
                     moving_in_view[police] += 1
             assert moving_in_view[False] >= 2 and moving_in_view[True] >= 1, 'The framed vehicles must actually move'
             assert max(s['height'] for s in hill) > 48.5 and max(s['airTime'] for s in hill) > 3
-            assert hill[-1]['landings'] == 1 and hill[-1]['grounded'] and hill[-1]['height'] == 0
+            assert cliff_landings == 1 and hill[-1]['grounded'] and hill[-1]['height'] == 0
             assert max(s['trainX'] for s in hill) - min(s['trainX'] for s in hill) > 30
             assert max(s['elevatedTraffic'] for s in hill) > 0
             page.keyboard.press('Escape')
@@ -212,11 +231,13 @@ def main():
                 'guardrail_fractures': max(s['brokenGuardrails'] for s in hill),
                 'guardrail_fractures_before_flight': True,
                 'impact_speed_before_mps': impact_before, 'impact_speed_after_mps': impact_after,
-                'landing_x_m': hill[landed_at]['x'], 'pause_freezes_motion': True,
+                'landing_x_m': hill[landed_at]['x'], 'cliff_landings': cliff_landings,
+                'native_touchdowns': hill[-1]['landings'], 'target_climb_speed_mps': 16, 'pause_freezes_motion': True,
                 'recovery_restores_guardrails': True, 'elevated_traffic_moves': True,
                 'station_curve_distance_m': station[-1]['distance'] - station_start['distance'],
                 'station_drives_under_railway': True, 'uncaught_errors': errors,
                 'shared_traffic_frame_count': shared_traffic_frames,
+                'longest_shared_traffic_run_frames': longest_traffic_run,
                 'moving_ordinary_vehicles_in_view': moving_in_view[False],
                 'moving_police_in_view': moving_in_view[True],
                 'framing_diagnostic': 'Projected body centres within 90 m, with building-AABB and sampled terrain occlusion rejection; inspect captured PNGs separately.',

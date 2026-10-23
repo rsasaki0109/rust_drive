@@ -200,6 +200,41 @@ export function trafficInView(cars, camera, colliders = [], drive = null) {
   return result;
 }
 
+
+// Route to the closest point on a directed road edge. Comparing only endpoint
+// distances sends pursuers down a short side street beside a long avenue.
+function pursuitCosts(graph, from, player) {
+  const distances = new Map(), direct = new Map(), incoming = new Map([...graph.keys()].map(key => [key, []]));
+  let nearest = Infinity;
+  for (const a of graph.values()) for (const b of a.links) {
+    incoming.get(nodeKey(b)).push(a);
+    const dx = b.x - a.x, dy = b.y - a.y, length = Math.hypot(dx, dy);
+    const t = Math.max(0, Math.min(1, ((player.x - a.x) * dx + (player.y - a.y) * dy) / (length * length)));
+    const away = Math.hypot(player.x - a.x - t * dx, player.y - a.y - t * dy);
+    if (away < nearest - 1e-6) { nearest = away; distances.clear(); direct.clear(); }
+    if (Math.abs(away - nearest) < 1e-6) {
+      distances.set(nodeKey(a), Math.min(distances.get(nodeKey(a)) ?? Infinity, t * length));
+      direct.set(nodeKey(a) + '>' + nodeKey(b), t * length);
+    }
+  }
+  const pending = new Set(graph.keys());
+  while (pending.size) {
+    let key, best = Infinity;
+    for (const candidate of pending) if ((distances.get(candidate) ?? Infinity) < best) { key = candidate; best = distances.get(candidate); }
+    if (key === undefined) break;
+    pending.delete(key);
+    const destination = graph.get(key);
+    for (const previous of incoming.get(key)) {
+      const previousKey = nodeKey(previous), cost = best + Math.hypot(previous.x - destination.x, previous.y - destination.y);
+      if (pending.has(previousKey) && cost < (distances.get(previousKey) ?? Infinity)) distances.set(previousKey, cost);
+    }
+  }
+  return new Map(from.links.map(next => [nodeKey(next), Math.min(
+    direct.get(nodeKey(from) + '>' + nodeKey(next)) ?? Infinity,
+    Math.hypot(from.x - next.x, from.y - next.y) + (distances.get(nodeKey(next)) ?? Infinity)
+  )]));
+}
+
 export class Traffic {
   constructor(scene, options = {}) {
     this.scene = scene; this.cars = []; this.active = false; this.nextId = 0;
@@ -240,7 +275,11 @@ export class Traffic {
     const n = c.node;
     let choices = (this.graph.get(nodeKey(n))?.links ?? []).filter(p => !c.previous || nodeKey(p) !== nodeKey(c.previous));
     if (!choices.length) choices = [c.previous || { x: 0, y: 0 }];
-    if (c.police && player) choices.sort((a, b) => Math.hypot(a.x - player.x, a.y - player.y) - Math.hypot(b.x - player.x, b.y - player.y));
+    if (c.police && player) {
+      const costs = pursuitCosts(this.graph, n, player);
+      choices.sort((a, b) => (costs.get(nodeKey(a)) ?? Infinity) - (costs.get(nodeKey(b)) ?? Infinity)
+        || Math.hypot(a.x - player.x, a.y - player.y) - Math.hypot(b.x - player.x, b.y - player.y));
+    }
     c.next = choices[Math.floor(random() * (c.police && player ? 1 : choices.length))];
   }
   lane(c) {
@@ -272,9 +311,16 @@ export class Traffic {
       desired = Math.min(desired, Math.max(5, (c.police ? 24 : 15) - 12 * Math.abs(wrap(toward-c.yaw))));
       if (!c.police && c.next.signal && distance < 23 && distance > 9 && phase(Math.abs(Math.cos(heading)) > .5 ? 'x' : 'y', c.next.x, c.next.y, time) !== 'green') desired = Math.min(desired, Math.sqrt(Math.max(0, 7 * (distance - 11))));
       for (const other of [...this.cars, player]) {
-        if (other === c || Math.abs((other.height ?? 0) - (c.height ?? 0)) > 2.5) continue;
+        if (other === c) continue;
         const dx = other.x - c.x, dy = other.y - c.y, front = dx * Math.cos(c.yaw) + dy * Math.sin(c.yaw), lateral = -dx * Math.sin(c.yaw) + dy * Math.cos(c.yaw);
-        if (front > 0 && front < 15 && Math.abs(lateral) < 2.4) desired = Math.min(desired, Math.max(0, (front - 5) * 1.1));
+        if (front <= 0 || front >= 15 || Math.abs(lateral) >= 2.4) continue;
+        // Ground traffic can differ in height on a slope while sharing one road.
+        // A car on an upper deck or in flight remains a separate layer.
+        if (Math.abs((other.height ?? 0) - (c.height ?? 0)) > 2.5) {
+          const otherRoad = this.drive?.drive_surface(other.x, other.y, 0) ?? 0, ownRoad = this.drive?.drive_surface(c.x, c.y, 0) ?? 0;
+          if (Math.abs((other.height ?? 0) - otherRoad) > 2.5 || Math.abs((c.height ?? 0) - ownRoad) > 2.5) continue;
+        }
+        desired = Math.min(desired, Math.max(0, (front - 5) * 1.1));
       }
       c.mesh.userData.tailMaterial?.color.setHex(desired < c.speed - .35 ? 0xff3f35 : 0x963d39);
       c.speed += Math.max(-5 * dt, Math.min((c.police ? 3.2 : 2.3) * dt, desired - c.speed));
