@@ -27,10 +27,8 @@ fn lead(x: f64, yaw: f64) -> Prediction {
 }
 
 fn settled(yaw: f64) -> (LatticePlanner, EgoState) {
-    let mut planner = LatticePlanner {
-        cruise_speed: 4.,
-        ..LatticePlanner::default()
-    };
+    let mut planner = LatticePlanner::default();
+    planner.cruise_speed = 4.;
     let approach = EgoState {
         pose: Pose {
             position: world(Vec2::default(), yaw),

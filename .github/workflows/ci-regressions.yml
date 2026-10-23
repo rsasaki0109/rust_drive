@@ -294,6 +294,77 @@ jobs:
           output.write_text(json.dumps(result, indent=2)+'\n')
           print(json.dumps(result, indent=2))
           PY
+      - name: Compare existing measured-motion and checked-stop policies without changing the frozen world
+        run: |
+          python - <<'PY'
+          import importlib.util
+          import json
+          import math
+          from pathlib import Path
+          import subprocess
+          import sys
+          sys.path.insert(0, 'scripts')
+          spec = importlib.util.spec_from_file_location('city', 'scripts/check-japan-city-demo.py')
+          city = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(city)
+          frozen = json.loads(city.SCENARIO.read_text())
+          policies = {
+              'slow-confirmation': dict(confirm_slow_motion=True),
+              'cold-initialization': dict(confirm_track_initialization=True),
+              'recent-measurements': dict(fit_recent_track_motion=True, enclose_track_measurements=True),
+              'checked-stops': dict(settle_obstruction_stops=True, search_obstruction_stops=True),
+              'recent-checked-stops': dict(fit_recent_track_motion=True, enclose_track_measurements=True,
+                                         settle_obstruction_stops=True, search_obstruction_stops=True),
+          }
+          results = []
+          for name, policy in policies.items():
+              folder = Path('artifacts/ci-regressions/policies') / name
+              folder.mkdir(parents=True)
+              scenario = dict(frozen, **policy)
+              assert all(scenario[k] == v for k, v in frozen.items())
+              source = folder/'scenario.json'
+              source.write_text(json.dumps(scenario, indent=2)+'\n')
+              raw = folder/'capture'
+              command = ['integrations/rne/target/release/rustdriving-rne',
+                         '--plant', 'dynamic', '--scenario', str(source), '--scene', str(city.SCENE),
+                         '--lidar-3d', '--ground-segmentation', '--vehicle-body',
+                         '--precise-capsule-rays', '--seed', '1', '--output', str(raw)]
+              process = subprocess.run(command)
+              row = dict(name=name, operational_policy=policy, native_exit_code=process.returncode,
+                         frozen_world_fields_unchanged=True, positive_full_acceptance_claimed=False)
+              if (raw/'run.json').exists() and (raw/'scene.json').exists():
+                  run = json.loads((raw/'run.json').read_text())
+                  evidence = json.loads((raw/'scene.json').read_text())
+                  row['summary'] = run['summary']
+                  try:
+                      row['signals'] = city.verify_signals(run, evidence, raw/'sensors.jsonl')
+                  except (ValueError, KeyError) as error:
+                      row['signal_failure'] = str(error)
+                  poses = evidence['body_guard']['motion_samples']
+                  stopped_inside = []
+                  for before, sample in zip(poses, poses[1:]):
+                      pose, previous = sample['pose'], before['pose']
+                      x, yaw = pose['position']['x'], pose['yaw']
+                      extent = max(run['vehicle']['radius'], 2.14*abs(math.cos(yaw))+1.1*abs(math.sin(yaw)))
+                      speed = math.hypot(x-previous['position']['x'],
+                                         pose['position']['y']-previous['position']['y']) / (sample['time']-before['time'])
+                      if speed <= .1 and any(x+extent >= center-half and x-extent <= center+half
+                                             for _, _, center, half in city.JUNCTIONS):
+                          stopped_inside.append(sample['time'])
+                  row['stationary_body_samples_inside_junctions'] = len(stopped_inside)
+                  row['stationary_body_inside_interval_s'] = [min(stopped_inside), max(stopped_inside)] if stopped_inside else None
+                  if 'signals' in row:
+                      start, end = row['signals']['ego_stopped_behind_red_queue_interval_s']
+                      held = [s['pose'] for s in poses if start <= s['time'] <= end]
+                      row['queue_rear_bound_m'] = min(p['position']['x']-max(
+                          run['vehicle']['radius'], 2.14*abs(math.cos(p['yaw']))+1.1*abs(math.sin(p['yaw'])))
+                          for p in held)-12*.005/2
+                  del evidence
+              (folder/'diagnostic.json').write_text(json.dumps(row, indent=2)+'\n')
+              results.append(row)
+              print('POLICY_DIAGNOSTIC', json.dumps(row))
+          Path('artifacts/ci-regressions/policies/results.json').write_text(json.dumps(results, indent=2)+'\n')
+          PY
       - name: Verify original signal gate independently
         run: |
           python - <<'PY'
@@ -313,5 +384,6 @@ jobs:
         if: always()
         with:
           name: native-city-ubuntu24
-          path: rust_drive/artifacts/ci-regressions/japan
+          path: rust_drive/artifacts/ci-regressions
+          compression-level: 1
           if-no-files-found: warn
