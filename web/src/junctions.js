@@ -102,7 +102,8 @@ export class Junctions {
       const eligible = requests.filter(r => r.green && !requests.some(other =>
         other.incoming === r.incoming && other.distance < r.distance - .1));
       // Transfer an unused reservation to a front-line pursuer; never interrupt clearance.
-      if (owner && !owner.entered && !car.police && eligible.some(r => r.car.police)) owner = null;
+      const canYield = request && request.distance > STOP_LINE + car.speed ** 2 / 10 + .3;
+      if (owner && !owner.entered && !car.police && canYield && eligible.some(r => r.car.police)) owner = null;
       const blockedByPlayer = playerOnRoad && this.radius(player, id) < ENTERED;
       const inside = state.inside.sort((a, b) => a.id - b.id);
       if (!owner?.entered && inside.length) owner = { id: inside[0].id, entered: true };

@@ -294,7 +294,8 @@ crest touchdown, and retains its trace before checking framing.
 Traffic coordinates entry at signals and street merges. One NPC owns a
 junction group until it has cleared the crossing; waiting vehicles brake before
 entry and resume in arrival order. An unused reservation can transfer to a
-front-line pursuer; committed vehicles always finish clearing first.
+front-line pursuer if its holder can still stop before entry; committed vehicles
+always finish clearing first.
 Nearby controlled points share a group so vehicles cannot hold mutually blocking
 reservations between them. Long graph edges also stop before the first occupied
 point they pass. An admitted car clears after a light change, and removing a

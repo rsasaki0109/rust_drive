@@ -180,14 +180,14 @@ test('a long graph edge stops before the first occupied junction in a group', ()
 });
 
 test('pursuers take unused reservations without interrupting committed crossings', () => {
-  for (const ax of [-30, -8]) {
+  for (const [ax, yields] of [[-30, true], [-13, false], [-8, false]]) {
     const { traffic, cars: [east, north] } = crossing({ ax, by: -35 });
     traffic.cars = [east];
     traffic.update(DT, 0, FAR_PLAYER);
     assert.equal(traffic.junctions.owners.get('0:0').id, east.id);
     traffic.cars.push(north);
     traffic.update(DT, DT, FAR_PLAYER);
-    assert.equal(traffic.junctions.owners.get('0:0').id, ax < -11.3 ? north.id : east.id);
+    assert.equal(traffic.junctions.owners.get('0:0').id, yields ? north.id : east.id);
     const result = drive(traffic, [east, north], 10, 2 * DT);
     assert.ok(result.minimum_separation_m > 3.3, JSON.stringify(result));
     assert.ok(result.distances_m.every(d => d > 40));
