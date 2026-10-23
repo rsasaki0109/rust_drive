@@ -99,13 +99,15 @@ export class Junctions {
           Boolean(request && request.distance <= STOP_LINE + .3);
         if (owner.entered ? radius > CLEARED : !request || !request.green) owner = null;
       } else owner = null;
+      const eligible = requests.filter(r => r.green && !requests.some(other =>
+        other.incoming === r.incoming && other.distance < r.distance - .1));
+      // Transfer an unused reservation to a front-line pursuer; never interrupt clearance.
+      if (owner && !owner.entered && !car.police && eligible.some(r => r.car.police)) owner = null;
       const blockedByPlayer = playerOnRoad && this.radius(player, id) < ENTERED;
       const inside = state.inside.sort((a, b) => a.id - b.id);
       if (!owner?.entered && inside.length) owner = { id: inside[0].id, entered: true };
       if (!owner && !blockedByPlayer) {
         // A follower cannot reserve the junction over the car in front of it.
-        const eligible = requests.filter(r => r.green && !requests.some(other =>
-          other.incoming === r.incoming && other.distance < r.distance - .1));
         eligible.sort((a, b) => Number(b.car.police) - Number(a.car.police) ||
           a.since - b.since || a.car.id - b.car.id);
         if (eligible.length) {

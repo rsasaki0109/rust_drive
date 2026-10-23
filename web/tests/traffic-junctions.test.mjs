@@ -178,3 +178,39 @@ test('a long graph edge stops before the first occupied junction in a group', ()
   drive(traffic, [south], 5, 0, { x: 150, y: 70, height: 0 });
   assert.ok(south.y > 80 && south.speed < .5, JSON.stringify({ y: south.y, speed: south.speed }));
 });
+
+test('pursuers take unused reservations without interrupting committed crossings', () => {
+  for (const ax of [-30, -8]) {
+    const { traffic, cars: [east, north] } = crossing({ ax, by: -35 });
+    traffic.cars = [east];
+    traffic.update(DT, 0, FAR_PLAYER);
+    assert.equal(traffic.junctions.owners.get('0:0').id, east.id);
+    traffic.cars.push(north);
+    traffic.update(DT, DT, FAR_PLAYER);
+    assert.equal(traffic.junctions.owners.get('0:0').id, ax < -11.3 ? north.id : east.id);
+    const result = drive(traffic, [east, north], 10, 2 * DT);
+    assert.ok(result.minimum_separation_m > 3.3, JSON.stringify(result));
+    assert.ok(result.distances_m.every(d => d > 40));
+  }
+});
+
+test('pursuers refresh a moving target before following a stale side-street turn', () => {
+  const traffic = new Traffic(new THREE.Scene(), { cityCars: 0 });
+  const target = { x: 80, y: 150, height: 0 };
+  const car = traffic.spawn(true, 0xffffff, { x: 50, y: 150 }, target);
+  traffic.update(DT, 0, target);
+  drive(traffic, [car], 8, DT, { x: 140, y: 150, height: 0 });
+  assert.ok(car.x > 120 && Math.abs(car.y - 146.2) < 1,
+    'the pursuit must stay on the avenue after the target advances: ' + JSON.stringify({ x: car.x, y: car.y }));
+});
+
+test('a late pursuit target change cannot demand a turn beyond its braking distance', () => {
+  const traffic = new Traffic(new THREE.Scene(), { cityCars: 0 });
+  const target = { x: 140, y: 150, height: 0 };
+  const car = traffic.spawn(true, 0xffffff, { x: 50, y: 150 }, target);
+  car.speed = 20;
+  drive(traffic, [car], 1, 0, target);
+  drive(traffic, [car], 1, 1, { x: 100, y: 100, height: 0 });
+  assert.ok(car.x > 100 && Math.abs(car.y - 146.2) < 1,
+    'finish the safe approach before rerouting at the next junction');
+});

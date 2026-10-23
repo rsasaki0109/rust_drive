@@ -306,12 +306,21 @@ export class Traffic {
     }
   }
   update(dt, time, player) {
-    for (const c of this.cars) if (c.plannedAt !== c.next) {
+    for (const c of this.cars) {
+      const fresh = c.plannedAt !== c.next;
+      const moved = Math.hypot(player.x - (c.plannedTarget?.x ?? Infinity),
+                               player.y - (c.plannedTarget?.y ?? Infinity));
+      if (!fresh && (!c.police || c.arc || moved < 8)) continue;
       const turn = { id: c.id, node: c.next, previous: c.node, police: c.police };
       this.choose(turn, player);
-      c.plannedAt = c.next; c.plannedNext = turn.next;
-      c.plannedArc = turnArc(c.node, c.next, turn.next, this.lane(c),
+      const arc = turnArc(c.node, c.next, turn.next, this.lane(c),
         this.lane({ node: c.next, next: turn.next }));
+      // Refresh a moving pursuit target, retaining a bend when it is too late to brake.
+      const distance = Math.hypot(c.next.x - c.x, c.next.y - c.y);
+      if (fresh || !arc || distance >= 7 + Math.max(0, c.speed ** 2 - arc.speed ** 2) / 7) {
+        c.plannedAt = c.next; c.plannedNext = turn.next; c.plannedArc = arc;
+      }
+      if (c.police) c.plannedTarget = { x: player.x, y: player.y };
     }
     this.junctions.update(dt, time, this.cars, player);
     for (const c of this.cars) {

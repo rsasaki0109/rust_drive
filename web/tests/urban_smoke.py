@@ -99,11 +99,12 @@ def main():
                     camera(0)
                 desired_yaw = max(-.18, min(.18, (150 - before['y']) * .06))
                 wanted = steer(desired_yaw, before)
-                # Keep a real pursuit in frame using brake/throttle events.
+                # Pace the approach so pursuers can clear the live junction queues.
+                target_speed = 6 if before['x'] < 255 else 16
                 if landed_at is None:
-                    if before['speed'] < 16:
+                    if before['speed'] < target_speed:
                         wanted.add('KeyW')
-                    elif before['speed'] > 16.8:
+                    elif before['speed'] > target_speed + .8:
                         wanted.add('KeyS')
                 elif before['speed'] > 1:
                     wanted.add('KeyS')
@@ -232,7 +233,8 @@ def main():
                 'guardrail_fractures_before_flight': True,
                 'impact_speed_before_mps': impact_before, 'impact_speed_after_mps': impact_after,
                 'landing_x_m': hill[landed_at]['x'], 'cliff_landings': cliff_landings,
-                'native_touchdowns': hill[-1]['landings'], 'target_climb_speed_mps': 16, 'pause_freezes_motion': True,
+                'native_touchdowns': hill[-1]['landings'], 'target_approach_speed_mps': 6,
+                'approach_until_x_m': 255, 'target_climb_speed_mps': 16, 'pause_freezes_motion': True,
                 'recovery_restores_guardrails': True, 'elevated_traffic_moves': True,
                 'station_curve_distance_m': station[-1]['distance'] - station_start['distance'],
                 'station_drives_under_railway': True, 'uncaught_errors': errors,
