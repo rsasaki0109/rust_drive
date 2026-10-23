@@ -1,0 +1,44 @@
+name: CI regression checks
+
+on:
+  push:
+    branches: ['codex/ci-*']
+  pull_request:
+    paths:
+      - 'scripts/check_gnss_antenna.py'
+      - 'scripts/test_recording_archive.py'
+      - 'scripts/recorded_numeric.py'
+      - 'scripts/test_recorded_numeric.py'
+      - '.github/workflows/ci-regressions.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-regressions-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  portable-recordings:
+    name: Portable recordings (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-latest]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify portable receipts, retained bytes and tamper rejection
+        run: |
+          python scripts/test_recording_archive.py
+          python scripts/test_gnss_antenna.py
+          python scripts/test_observed_detours.py
+          python scripts/test_recorded_numeric.py

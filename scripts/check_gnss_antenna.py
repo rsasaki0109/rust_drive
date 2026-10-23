@@ -84,7 +84,7 @@ def archive(folder):
         with lzma.open(target, 'rb') as stream:
             if hashlib.file_digest(stream, 'sha256').hexdigest() != digest:
                 raise ValueError('lossless antenna archive verification failed')
-        storage[str(path.relative_to(folder))] = dict(path=str(target.relative_to(folder)), sha256=digest,
+        storage[path.relative_to(folder).as_posix()] = dict(path=target.relative_to(folder).as_posix(), sha256=digest,
                                                      stored_sha256=sha(target), encoding='xz')
         path.unlink()
     return storage
