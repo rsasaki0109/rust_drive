@@ -1,0 +1,128 @@
+name: Scenario gallery evidence
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: scenario-gallery-evidence-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+jobs:
+  verify-and-record:
+    if: >-
+      (github.event_name == 'pull_request' && github.actor != 'github-actions[bot]' &&
+       github.event.pull_request.head.repo.full_name == github.repository &&
+       github.event.pull_request.head.ref == 'codex/scenario-gallery') ||
+      (github.event_name == 'workflow_dispatch' &&
+       startsWith(github.ref, 'refs/heads/') &&
+       github.ref_name != 'main' && github.ref_name != 'develop')
+    # Playwright 1.56 supports this pinned image as well as the Pages build image.
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    env:
+      RUSTDRIVING_ORIGINAL_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      RUSTDRIVING_SOURCE_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
+      PAGES_BASE: /${{ github.event.repository.name }}/
+      CARGO_INCREMENTAL: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RUSTDRIVING_ORIGINAL_SHA }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.90.0
+          targets: wasm32-unknown-unknown
+          components: rustfmt, clippy
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check driving physics and built WebAssembly
+        run: |
+          cargo fmt --manifest-path integrations/playground/Cargo.toml --check
+          cargo clippy --locked --manifest-path integrations/playground/Cargo.toml --all-targets -- -D warnings
+          cargo test --locked --manifest-path integrations/playground/Cargo.toml
+          npm ci --prefix web --ignore-scripts
+          bash scripts/build-playground.sh
+          npm --prefix web test
+      - name: Check Python test syntax
+        run: python -m py_compile web/tests/browser_clock.py web/tests/browser_smoke.py web/tests/ridge_smoke.py web/tests/structures_smoke.py web/tests/urban_smoke.py web/tests/gallery_smoke.py
+      - name: Run the required core regression suite
+        run: bash scripts/check.sh
+      - name: Install browser and recording tools
+        run: |
+          python -m pip install playwright==1.56.0 pillow==12.0.0
+          python -m playwright install --with-deps chromium
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+      - name: Start the production preview
+        id: preview
+        run: |
+          npm --prefix web run preview -- --host 127.0.0.1 --port 4173 > /tmp/rustdriving-gallery-preview.log 2>&1 &
+          echo "$!" > /tmp/rustdriving-gallery-preview.pid
+          python - <<'PY'
+          import os, time, urllib.request
+          url = 'http://127.0.0.1:4173' + os.environ['PAGES_BASE']
+          for attempt in range(60):
+              try:
+                  with urllib.request.urlopen(url, timeout=1) as response:
+                      if response.status == 200:
+                          break
+              except OSError:
+                  pass
+              time.sleep(.25)
+          else:
+              raise SystemExit('Production preview did not start')
+          PY
+      - name: Verify city keyboard and mobile controls
+        run: python web/tests/browser_smoke.py --url "http://127.0.0.1:4173${PAGES_BASE}" --output web/test-results
+      - name: Verify ridge climb, guardrail impact, flight and landing
+        if: ${{ !cancelled() && steps.preview.outcome == 'success' }}
+        run: python web/tests/ridge_smoke.py --url "http://127.0.0.1:4173${PAGES_BASE}" --output web/test-results/ridge
+      - name: Record the upper road, lower crossing and underground tunnel
+        if: ${{ !cancelled() && steps.preview.outcome == 'success' }}
+        run: python web/tests/structures_smoke.py --url "http://127.0.0.1:4173${PAGES_BASE}" --output web/test-results/structures --record assets/stacked-roads-demo.gif
+      - name: Record five distinct district scenarios
+        if: ${{ !cancelled() && steps.preview.outcome == 'success' }}
+        run: python web/tests/gallery_smoke.py --url "http://127.0.0.1:4173${PAGES_BASE}" --output web/test-results/gallery
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: scenario-gallery-evidence
+          path: |
+            web/test-results
+            assets/city-crossing-demo.*
+            assets/harbor-pursuit-demo.*
+            assets/forest-trail-demo.*
+            assets/plaza-drift-demo.*
+            assets/station-loop-demo.*
+            assets/stacked-roads-demo.*
+      - name: Publish the verified gallery to the unchanged feature branch
+        run: |
+          git fetch origin "refs/heads/${RUSTDRIVING_SOURCE_BRANCH}"
+          rustdriving_current_head=$(git rev-parse FETCH_HEAD)
+          if [ "$rustdriving_current_head" != "$RUSTDRIVING_ORIGINAL_SHA" ]; then
+            echo "The feature branch moved; retain the evidence without overwriting newer work."
+            exit 1
+          fi
+          git add assets/city-crossing-demo.gif assets/city-crossing-demo.png assets/city-crossing-demo.json assets/harbor-pursuit-demo.gif assets/harbor-pursuit-demo.png assets/harbor-pursuit-demo.json assets/forest-trail-demo.gif assets/forest-trail-demo.png assets/forest-trail-demo.json assets/plaza-drift-demo.gif assets/plaza-drift-demo.png assets/plaza-drift-demo.json assets/station-loop-demo.gif assets/station-loop-demo.png assets/station-loop-demo.json assets/stacked-roads-demo.gif assets/stacked-roads-demo.png assets/stacked-roads-demo.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if ! git diff --cached --quiet; then
+            git commit -m 'Record five district scenarios and the stacked roads'
+          fi
+          git push origin "HEAD:refs/heads/${RUSTDRIVING_SOURCE_BRANCH}"
+      - name: Stop the production preview
+        if: always()
+        run: |
+          if [ -f /tmp/rustdriving-gallery-preview.pid ]; then
+            read -r rustdriving_preview_pid < /tmp/rustdriving-gallery-preview.pid
+            kill "$rustdriving_preview_pid" || true
+          fi

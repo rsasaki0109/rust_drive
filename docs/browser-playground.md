@@ -11,6 +11,7 @@ yards and cranes, the forest has six curved shortcuts, the factory has tanks and
 chimneys, and the central squares leave open circles for drifting. Roads connect
 every area without loading screens. Choose a starting area on the opening/pause
 screen; changing it ends any active pursuit and returns the car to rest.
+The forest start now faces the first winding shortcut at its western entrance.
 
 [Area overview](../assets/mixed-districts-preview.png) shows captured frames from
 the five starting areas, after driving with keyboard input.
@@ -158,7 +159,35 @@ from the repository name, so it follows repository renames.
 
 ## Hero recording
 
-The first gallery cell records the actual upper road, lower crossing and underground
+The six-cell gameplay gallery separates daytime intersections, a dusk harbor
+pursuit, two winding forest trails, a handbrake/countersteer drift, the station
+boulevard and the three road levels. Each has its own driving sequence and normal-speed recording. The research simulations are folded below
+the gameplay gallery in the README.
+
+After building and starting the production preview, reproduce the five district
+clips with:
+
+```sh
+python web/tests/gallery_smoke.py --url http://127.0.0.1:4173/rust_driving/ \
+  --output web/test-results/gallery
+```
+
+Use `--scenario forest-trail` (or another listed scenario ID) to refresh one clip.
+Every clip has a PNG poster and JSON provenance next to its GIF. The recorder
+uses public area/day/chase/camera controls and keyboard events, with read-only
+snapshots. Each scene starts in a fresh browser page; routes, inputs, traffic
+movement, source/WASM hashes, normal playback duration and output hashes are
+retained. The forest check requires alternating turns and bounded path error;
+the drift check requires measured rear slip, smoke and skid marks; city and harbor
+checks require visible moving traffic or a pursuing police car. A trajectory
+projection supports the filming checks; inspect the captured PNGs separately.
+
+The **Scenario gallery evidence** workflow runs core/game/browser checks and all
+five captures, then also refreshes the stacked-road clip. It publishes only the
+18 named GIF/PNG/JSON assets when every check succeeds and the feature branch
+has not moved. No recordings are committed directly to `main` or `develop`.
+
+The road-level gallery cell records the actual upper road, lower crossing and underground
 passage ([provenance](../assets/stacked-roads-demo.json)). The **Stacked road evidence**
 workflow runs the required core/game checks and deterministic browser drives,
 then intentionally refreshes both the ridge and stacked-road recordings. It
