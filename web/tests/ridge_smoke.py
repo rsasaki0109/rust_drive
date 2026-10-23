@@ -90,7 +90,14 @@ def main():
                 error = math.atan2(math.sin(desired_yaw - state['yaw']), math.cos(desired_yaw - state['yaw']))
                 command = error - .2 * state['yawRate'] - .08 * math.atan2(state['lateral'], max(1, abs(state['speed'])))
                 wanted = {'KeyA'} if command > .03 else {'KeyD'} if command < -.03 else set()
-                wanted |= {'KeyW'} if not state['landings'] else {'KeyS'} if state['speed'] > 1 else set()
+                # Hold a controlled approach speed through the live city traffic.
+                if state['landings']:
+                    if state['speed'] > 1:
+                        wanted.add('KeyS')
+                elif state['speed'] < 20:
+                    wanted.add('KeyW')
+                elif state['speed'] > 20.8:
+                    wanted.add('KeyS')
                 for key in sorted(held - wanted):
                     page.keyboard.up(key)
                 for key in sorted(wanted - held):
