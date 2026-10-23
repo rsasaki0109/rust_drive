@@ -17,7 +17,7 @@ jobs:
     # Automatic recording is an explicit opt-in for this same-repository feature.
     # After merge, maintainers can run it manually on a feature branch.
     if: >-
-      (github.event_name == 'pull_request' &&
+      (github.event_name == 'pull_request' && github.actor != 'github-actions[bot]' &&
        github.event.pull_request.head.repo.full_name == github.repository &&
        github.event.pull_request.head.ref == 'codex/mixed-districts') ||
       (github.event_name == 'workflow_dispatch' &&
