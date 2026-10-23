@@ -15,7 +15,7 @@ export const STACKED_ROUTES = Object.freeze([
 // All road heights/clearance come from Rust. XY does not identify a road layer.
 export function createStructures(scene, drive) {
   const colliders = [], batches = new Map();
-  const asphalt = new THREE.MeshStandardMaterial({ color: 0x38454b, roughness: .96, side: THREE.DoubleSide });
+  const asphalt = new THREE.MeshStandardMaterial({ color: 0x38454b, roughness: .96, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 });
   const concrete = new THREE.MeshStandardMaterial({ color: 0x73858a, roughness: .9, side: THREE.DoubleSide });
   const excavation = new THREE.MeshStandardMaterial({ color: 0x655d58, roughness: 1, side: THREE.DoubleSide });
   const box = new THREE.BoxGeometry(1, 1, 1);
@@ -107,7 +107,7 @@ export function createStructures(scene, drive) {
     for (let i = 1; i < 3; i++) { const n = start + i * 2; paintIndices.push(n - 2, n - 1, n, n - 1, n + 1, n); }
   }
   for (let x = 195; x < 498; x += 9) { dash(x, 20, deck); dash(x, -105, xx => floor(xx, -105)); }
-  mesh(paint, paintIndices, new THREE.MeshStandardMaterial({ color: 0xe5cf9f, side: THREE.DoubleSide }));
+  mesh(paint, paintIndices, new THREE.MeshStandardMaterial({ color: 0xe5cf9f, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -4 }));
   function sign(text, x, y, h, color) {
     const canvas = document.createElement('canvas'); canvas.width = 768; canvas.height = 192;
     const c = canvas.getContext('2d'); c.fillStyle = '#142a31'; c.fillRect(0, 0, 768, 192);

@@ -12,7 +12,7 @@ export function createRidge(scene, drive) {
   const surface = (x, y) => drive.drive_surface(x, y, 0);
   const rock = new THREE.MeshStandardMaterial({ color: 0x97755a, roughness: 1, side: THREE.DoubleSide });
   const top = new THREE.MeshStandardMaterial({ color: 0x8b9170, roughness: 1, side: THREE.DoubleSide });
-  const road = new THREE.MeshStandardMaterial({ color: 0x434b51, roughness: .95, side: THREE.DoubleSide });
+  const road = new THREE.MeshStandardMaterial({ color: 0x434b51, roughness: .95, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 });
   const box = new THREE.BoxGeometry(1, 1, 1);
   function cuboid(x, height, y, w, h, d, color) {
     const m = new THREE.Mesh(box, new THREE.MeshStandardMaterial({ color, roughness: .85 }));
@@ -60,7 +60,7 @@ export function createRidge(scene, drive) {
   strip([{ x: 400, y: 150 }, { x: 530, y: 150 }, { x: 530, y: 70 }, { x: 150, y: 70 }], 18, road);
   // Broad, clear basin under the flight path; the return road stays at city grade.
   cuboid(475, 0, 150, 150, .05, 115, 0xa59c7d);
-  const paint = new THREE.MeshStandardMaterial({ color: 0xe5d0a0, side: THREE.DoubleSide });
+  const paint = new THREE.MeshStandardMaterial({ color: 0xe5d0a0, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -4 });
   for (let x = 180; x <= 372; x += 8) {
     strip([-1.9, 0, 1.9].map(dx => ({ x: x + dx, y: 150, h: x + dx >= 200 ? height(x + dx) : 0 })), .16, paint, .055);
   }
