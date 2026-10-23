@@ -59,15 +59,20 @@ test('full-scene body-width sweeps keep every new traffic edge clear', async () 
   }
 });
 test('urban traffic uses real sloped surfaces and independent moving vehicles', async () => {
-  const p=await physics(),scene=new THREE.Scene(),traffic=new Traffic(scene,{drive:p,urban:true,cityCars:24});
+  const {p,scene,colliders}=await world(),traffic=new Traffic(scene,{drive:p,urban:true,cityCars:24});
   assert.equal(traffic.cars.length,40);
   const start=traffic.cars.map(c=>({x:c.x,y:c.y})),player={x:-160,y:-160,yaw:0,height:0};
   let elevated=false;
-  for(let i=0;i<500;i++){traffic.update(1/30,i/30,player);for(const c of traffic.cars){
+  for(let i=0;i<1800;i++){traffic.update(1/30,i/30,player);for(const c of traffic.cars){
     assert.ok(Number.isFinite(c.x+c.y+c.height+c.speed));
     assert.ok(Math.abs(c.mesh.position.y-c.height-.02)<1e-8);
     assert.ok(Math.abs(c.height-p.drive_surface(c.x,c.y,0))<1e-8);
     elevated ||= c.height>10;
+    if(c.x>180)for(const b of colliders){
+      if(b.breakaway||c.height>=(b.top??32)-.01||c.height+1.55<=(b.bottom??-1000))continue;
+      const clearance=Math.hypot(Math.max(Math.abs(c.x-b.x)-b.w,0),Math.max(Math.abs(c.y-b.y)-b.h,0));
+      assert.ok(clearance>=1.8,'moving traffic clips a solid at '+[i/30,c.x,c.y,b.x,b.y,clearance]);
+    }
   }}
   assert.ok(elevated);
   assert.ok(traffic.cars.filter((c,i)=>Math.hypot(c.x-start[i].x,c.y-start[i].y)>8).length>25);

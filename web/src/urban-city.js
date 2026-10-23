@@ -68,8 +68,8 @@ export function createUrbanDistrict(scene, drive, phase) {
   for (const y of [139, 161]) ribbon(line({ x: 193, y }, { x: 377, y }), 4, 'pavement');
   const plots = [204, 220, 260, 278, 298, 316, 352];
   for (const [i, x] of plots.entries()) for (const side of [-1, 1]) {
-    building(x, 150 + side * 20, 12 + i % 2, 14, 12 + (i * 7 + (side + 1) * 3) % 31, i + (side > 0 ? 2 : 0), true);
-    building(x, 150 + side * 37.5, 12, 4, 5.5 + i % 4 * 2, i + 3);
+    building(x, 150 + side * 20, 12 + i % 2, 11, 12 + (i * 7 + (side + 1) * 3) % 31, i + (side > 0 ? 2 : 0), true);
+    building(x, 150 + side * 37.5, 12, 3.5, 5.5 + i % 4 * 2, i + 3);
   }
   for (const x of [240, 334, 370]) {
     for (const side of [-1, 1]) for (let k = -6; k <= 6; k += 2) {
