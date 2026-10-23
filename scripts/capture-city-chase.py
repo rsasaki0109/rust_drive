@@ -22,7 +22,8 @@ WIDTH, HEIGHT = 960, 540
 ROUTE = [(0, -22), (0, 0), (50, 0), (50, -50), (0, -50), (0, 0)]
 SOURCE_FILES = [
     'web/index.html', 'web/src/main.js', 'web/src/city.js', 'web/src/style.css',
-    'web/src/regions.js', 'web/src/scenery.js',
+    'web/src/regions.js', 'web/src/scenery.js', 'web/src/ridge.js',
+    'integrations/playground/src/elevation.rs',
     'web/package-lock.json', 'web/vite.config.js', 'scripts/build-playground.sh',
     'integrations/playground/src/lib.rs', 'integrations/playground/Cargo.toml',
     'integrations/playground/Cargo.lock', 'rust-toolchain.toml',

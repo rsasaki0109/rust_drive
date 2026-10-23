@@ -21,21 +21,22 @@
         <button id="sound" aria-pressed="false" aria-label="エンジン音をオン">♫ <span>SOUND OFF</span></button>
       </nav>
     </header>
-    <aside class="map-panel"><div class="map-label">DISTRICT MAP <span id="heat">FREE DRIVE</span></div><canvas id="map" width="180" height="180" aria-label="5つのエリアと森の抜け道のミニマップ"></canvas><div id="district-current" class="district-current">中央広場</div></aside>
+    <aside class="map-panel"><div class="map-label">DISTRICT MAP <span id="heat">FREE DRIVE</span></div><canvas id="map" width="180" height="180" aria-label="6つのエリアと崖コースのミニマップ"></canvas><div id="district-current" class="district-current">中央広場</div></aside>
     <div id="drift" class="drift"><span>DRIFT CHAIN</span><strong id="combo">0</strong><small id="angle">COUNTERSTEER TO HOLD IT</small></div>
-    <section class="telemetry" aria-label="速度とスコア"><div class="score"><span>DRIFT SCORE</span><strong id="score">00000</strong></div><div class="speed"><span id="gear">N</span><strong id="speed">0</strong><small>KM/H</small></div><div class="rev"><i id="rev"></i></div><p id="status">自由に走ろう。Spaceでドリフト。</p></section>
-    <aside class="controls"><div><kbd>W A S D</kbd><span>DRIVE</span><kbd>SPACE</kbd><span>HANDBRAKE</span></div><div><kbd>C</kbd><span>CAMERA</span><kbd>R</kbd><span>RECOVER</span><kbd>ESC</kbd><span>PAUSE</span></div><p>港、森、工場、広場、ネオン街。抜け道を見つけよう。</p></aside>
+    <section class="telemetry" aria-label="速度とスコア"><div class="score"><span>DRIFT SCORE</span><strong id="score">00000</strong></div><div class="speed"><span id="gear">N</span><strong id="speed">0</strong><small>KM/H</small></div><div class="rev"><i id="rev"></i></div><p id="elevation" class="elevation">ALT 0 m · GROUND</p><p id="status">自由に走ろう。Spaceでドリフト。</p></section>
+    <aside class="controls"><div><kbd>W A S D</kbd><span>DRIVE</span><kbd>SPACE</kbd><span>HANDBRAKE</span></div><div><kbd>C</kbd><span>CAMERA</span><kbd>R</kbd><span>RECOVER</span><kbd>ESC</kbd><span>PAUSE</span></div><p>街の東へ。急坂を登り、崖からダイブ。</p></aside>
     <div id="notice" role="status"></div>
     <div id="impact" aria-hidden="true"></div>
     <section id="intro" class="intro" aria-labelledby="intro-title">
-      <div class="intro-copy"><p class="eyebrow">AN OPEN-STREET DRIVING PLAYGROUND</p><h1 id="intro-title">OWN THE<br>NEXT <em>CORNER.</em></h1><p class="lead">ネオン街から港へ。森を抜けて、工場へ。<br>5つの景色がつながる街を、自由に走ろう。</p><label class="district-picker" for="district-start">START AREA<select id="district-start" disabled>
+      <div class="intro-copy"><p class="eyebrow">AN OPEN-STREET DRIVING PLAYGROUND</p><h1 id="intro-title">OWN THE<br>NEXT <em>CORNER.</em></h1><p class="lead">ネオン街から港へ。森を抜けて、工場へ。<br>49mの高台へ登って、崖からダイブ。</p><label class="district-picker" for="district-start">START AREA<select id="district-start" disabled>
           <option value="plaza">中央広場 · DRIFT SQUARE</option>
+          <option value="ridge">高台・崖ダイブ · SKYLINE RIDGE</option>
           <option value="downtown">ネオン街 · NEON CITY</option>
           <option value="harbor">港湾 · HARBOR BAY</option>
           <option value="forest">森 · CANOPY PARK</option>
           <option value="factory">工場 · IRONWORKS</option>
         </select></label><button id="start" disabled>準備中… <span>↗</span></button><div class="intro-controls"><span><b>WASD / ↑↓←→</b> 運転</span><span><b>SPACE</b> ドリフト</span><span><b>C</b> カメラ</span></div><p class="fine">オリジナルの街を走るアーケード試作。セーブ不要、ログイン不要。</p><p id="error" role="alert" hidden></p></div>
-      <div class="intro-caption"><span>05 AREAS / ONE WORLD</span><i></i> FREE ROAM · TRAFFIC · PURSUIT</div>
+      <div class="intro-caption"><span>06 AREAS / ONE WORLD</span><i></i> FREE ROAM · TRAFFIC · PURSUIT</div>
     </section>
     <div class="touch" aria-label="タッチ操作"><div><button data-control="left" aria-label="左にハンドル">◀</button><button data-control="right" aria-label="右にハンドル">▶</button></div><div><button data-control="brake" aria-label="ブレーキ・後退">S</button><button data-control="hand" aria-label="サイドブレーキ">DRIFT</button><button data-control="gas" aria-label="アクセル">W</button></div></div>
     <button id="camera" class="quick camera" aria-label="カメラ切替" title="カメラ切替 (C)">◈</button>

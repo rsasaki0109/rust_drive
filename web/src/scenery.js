@@ -49,12 +49,12 @@ export function createDistrictScenery(scene) {
   const trail = new THREE.MeshStandardMaterial({ color: 0xbba67a, roughness: 1, side: THREE.DoubleSide });
   function solid(x, y, w, h, height, color) {
     crates.push({ x, y, elevation: height / 2, w, h: height, d: h, color });
-    colliders.push({ x, y, w: w / 2, h: h / 2 });
+    colliders.push({ x, y, w: w / 2, h: h / 2, top: height });
   }
   function tree(x, y, height, color = 0x6c986c) {
     trunks.push({ x, y, elevation: height / 2, w: .65, h: height, d: .65, color: 0x77604b });
     crowns.push({ x, y, elevation: height - .5, w: 3.1, h: 4.0, d: 3.1, color });
-    colliders.push({ x, y, w: .325, h: .325 });
+    colliders.push({ x, y, w: .325, h: .325, top: height });
   }
   for (const block of BLOCKS) {
     const { x: cx, y: cy, district } = block;
@@ -74,7 +74,7 @@ export function createDistrictScenery(scene) {
       const fx = cx + Math.sign(cx) * 12, fy = cy + Math.sign(cy) * 12;
       shape(scene, cylinder, material(0xd0c6ae), fx, .35, fy, 2.2, .7, 2.2);
       shape(scene, cylinder, new THREE.MeshStandardMaterial({ color: 0x79b9c4, metalness: .35, roughness: .15 }), fx, .73, fy, 1.9, .06, 1.9);
-      colliders.push({ x: fx, y: fy, w: 2.2, h: 2.2 });
+      colliders.push({ x: fx, y: fy, w: 2.2, h: 2.2, top: .8 });
       tree(cx - Math.sign(cx) * 12.5, cy + Math.sign(cy) * 12.5, 5.5, 0x8aa578);
       if (cx === 25 && cy === -25) sign(scene, 'DRIFT SQUARE', district.color, cx, cy - 14, 3.5, 13);
     } else if (district.id === 'harbor') {
@@ -97,7 +97,7 @@ export function createDistrictScenery(scene) {
       for (const side of [-1, 1]) {
         const x = cx + side * 8;
         shape(scene, cylinder, material(0xb4bfbb), x, 4.5, cy + 8, 3.5, 9, 3.5);
-        colliders.push({ x, y: cy + 8, w: 3.5, h: 3.5 });
+        colliders.push({ x, y: cy + 8, w: 3.5, h: 3.5, top: 9.4 });
         shape(scene, cylinder, material(0x6c7f7e), x, 9.1, cy + 8, 3.6, .3, 3.6);
       }
       solid(cx + 12, cy - 10, 2.3, 2.3, 23, 0xb99e88);

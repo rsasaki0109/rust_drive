@@ -1,6 +1,6 @@
 # RustDriving
 
-![Recorded city driving with police pursuit, intersection drifts and tire smoke](assets/city-chase-demo.gif)
+![Recorded steep climb, 49 m cliff dive and physical landing](assets/ridge-dive-demo.gif)
 
 [🎮 Play City Playground — 自分で運転・ドリフト・カーチェイス](https://rsasaki0109.github.io/rust_driving/)
 

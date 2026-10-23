@@ -1,11 +1,11 @@
-# City Playground
+# City Playground and Skyline Ridge
 
 [Play RustDriving](https://rsasaki0109.github.io/rust_driving/) in a desktop
 WebGL 2 / WebAssembly browser, or use the on-screen pointer controls on a phone.
 There is no login, backend or save requirement. The static build bundles its
 renderer and physics; it makes no runtime CDN or map-service requests.
 
-Five connected districts share one freely drivable map: **Neon City**, **Harbor
+The city has five connected districts on one freely drivable map: **Neon City**, **Harbor
 Bay**, **Canopy Park**, **Ironworks** and **Drift Square**. The port has container
 yards and cranes, the forest has six curved shortcuts, the factory has tanks and
 chimneys, and the central squares leave open circles for drifting. Roads connect
@@ -14,6 +14,25 @@ screen; changing it ends any active pursuit and returns the car to rest.
 
 [Area overview](../assets/mixed-districts-preview.png) shows captured frames from
 the five starting areas, after driving with keyboard input.
+
+## Skyline Ridge: climb, dive and return
+
+Choose **高台・崖ダイブ / SKYLINE RIDGE** on the opening/pause screen, or
+drive east along the city's northernmost road. A 140 m ascent rises to a 48 m
+plateau, followed by a short launch lip at 49 m. The unsupported edge drops into
+a broad, clear landing basin. The lower return road loops west to the city.
+Keep W/Up pressed to climb and launch; R returns to the foot of the climb.
+
+Rust integrates downhill gravity on the slope and world-space ballistic motion
+after support is lost. Airborne throttle, steering and handbrake add no tire
+forces. Landing absorbs vertical motion and reduces horizontal speed according
+to impact speed. The car mesh, camera, altitude/airtime HUD and grounded tire
+effects follow the integrated height and slope. The renderer samples Rust's
+authored height function directly. The minimap zooms to the ridge route.
+
+This is an arcade height-field/contact model with a planar two-axle tire model
+on the ground, not a six-degree-of-freedom rigid body or suspension model.
+Roofs are not drivable surfaces. City traffic/police remain on their street grid.
 
 The map has 64 buildings, 49 signalized intersections and 20 independently moving
 traffic cars. Chase mode adds two police cars; leave them more than 80 m behind
@@ -43,8 +62,8 @@ rear tire force capacity. The rendered car uses that integrated position and
 body yaw; smoke and skid marks require measured rear slip and lateral motion.
 Steering the display mesh sideways is not used to manufacture a drift.
 
-This is a flat, planar arcade playground with bounded speeds and approximate
-contact impulses. Traffic follows independent waypoint/signal rules; police
+The original city ground is flat; the optional ridge adds height, slope gravity
+and ballistic flight. Speeds and approximate arcade contact impulses are bounded. Traffic follows independent waypoint/signal rules; police
 use the street grid to approach the player. It is separate from the sensor-driven
 autonomous research pipeline and the pinned native RNE adapter. Browser scores
 and pursuit behavior do not establish autonomous-driving capability.
@@ -73,7 +92,9 @@ cargo test --locked --manifest-path integrations/playground/Cargo.toml
 ```
 
 The Rust and built-WASM checks exercise acceleration, braking, reversing, real
-rear slip, invalid inputs and contact recovery. The browser test drives the
+rear slip, invalid inputs and contact recovery, plus slope rollback, cliff
+entry from below, independent free-fall equations, absence of air tire forces,
+landing and vertical-state reset. The browser test drives the
 actual production UI with keyboard and pointer events, checks smoke/skid marks,
 all five starting areas, three cameras, pursuit, pause/focus handling, recovery
 and mobile controls. Geometry checks independently sweep the street lanes,
@@ -94,7 +115,26 @@ from the repository name, so it follows repository renames.
 
 ## Hero recording
 
-The README hero records the actual browser playground: two pursuing police
+The README hero records the actual ridge climb, flight and landing. Its
+[provenance](../assets/ridge-dive-demo.json) binds source/WASM/output hashes,
+normal-speed frame timing and observed height, airtime and landing impact.
+The **Ridge course evidence** workflow formats the standalone physics in its
+isolated checkout, runs all required core and game checks, verifies the browser,
+then publishes the formatting and three named media files to the unchanged
+feature branch. Its guard prevents overwriting a moved branch; it excludes
+`main` and `develop` as publication targets.
+
+To reproduce the ridge check after building/starting the preview:
+
+```sh
+python web/tests/ridge_smoke.py --url http://127.0.0.1:4173/rust_driving/ \\
+  --output web/test-results/ridge
+# Intentionally record the hero as well (requires Pillow and FFmpeg):
+python web/tests/ridge_smoke.py --url http://127.0.0.1:4173/rust_driving/ \\
+  --output web/test-results/ridge --record assets/ridge-dive-demo.gif
+```
+
+The [city chase recording](../assets/city-chase-demo.gif) shows two pursuing police
 cars, signalized intersections, handbrake slides, smoke and skid marks. It uses
 keyboard events and the existing chase/camera buttons. A filming fixture reads
 the diagnostic snapshot to choose repeatable inputs; it never writes poses or

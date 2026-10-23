@@ -20,9 +20,9 @@ function clear(x, y, reason) {
   assert.ok(clearance(x, y) >= 1.8, reason + ': blocked at ' + x + ', ' + y);
 }
 
-test('five districts have distinct scenery and safe, correctly labelled spawns', () => {
-  assert.equal(DISTRICTS.length, 5);
-  assert.equal(new Set(DISTRICTS.map(d => d.color)).size, 5);
+test('six districts have distinct scenery and safe, correctly labelled spawns', () => {
+  assert.equal(DISTRICTS.length, 6);
+  assert.equal(new Set(DISTRICTS.map(d => d.color)).size, 6);
   assert.equal(new Set(BLOCKS.map(b => b.district.id)).size, 5);
   assert.equal(city.buildingCount, 64);
   assert.equal(city.signals, 49);

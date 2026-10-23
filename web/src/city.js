@@ -58,7 +58,7 @@ export function createCity(scene) {
       bodies.push({ x, y: height / 2 + .2, z: -y, w: width, h: height, d: depth, color: palette[(ix + iy + building) % palette.length] });
       roofs.push({ x, y: height + .38, z: -y, w: width + .4, h: .35, d: depth + .4 });
       roofs.push({ x: x + 1, y: height + 1, z: -y, w: 2.7, h: 1, d: 2.1 });
-      colliders.push({ x, y, w: width / 2, h: depth / 2 });
+      colliders.push({ x, y, w: width / 2, h: depth / 2, top: height });
       for (let z = 2; z < height - .8; z += 3.2) for (let k = -width / 2 + 1.4; k < width / 2 - .5; k += 2.5) {
         for (const side of [-1, 1]) windows.push({ x: x + k, y: z, z: -y + side * (depth / 2 + .025), w: 1.4, h: 1.7, d: .04, color: random() < .27 ? 0xe7bb7e : 0x608693 });
       }

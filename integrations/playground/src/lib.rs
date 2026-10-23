@@ -3,6 +3,8 @@
 //! The two-axle tire model integrates lateral speed and yaw independently.
 //! A handbrake reduces rear grip. Contact uses an explicit arcade impulse.
 use std::cell::RefCell;
+mod elevation;
+use elevation::{DrivingVehicle, surface};
 
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct Vehicle {
@@ -163,7 +165,7 @@ fn wrap(yaw: f64) -> f64 {
     (yaw + std::f64::consts::PI).rem_euclid(std::f64::consts::TAU) - std::f64::consts::PI
 }
 
-thread_local! { static CAR: RefCell<Vehicle> = RefCell::new(Vehicle::default()); }
+thread_local! { static CAR: RefCell<DrivingVehicle> = RefCell::new(DrivingVehicle::default()); }
 
 // Numeric-only WebAssembly ABI; no raw pointers or shared mutable globals.
 #[unsafe(no_mangle)]
@@ -181,6 +183,18 @@ pub extern "C" fn drive_contact(nx: f64, ny: f64, penetration: f64) -> bool {
 #[unsafe(no_mangle)]
 pub extern "C" fn drive_read(index: u32) -> f64 {
     CAR.with(|car| car.borrow().read(index))
+}
+
+/// Authored arcade terrain, shared by physics and the renderer; not operational sensing.
+#[unsafe(no_mangle)]
+pub extern "C" fn drive_surface(x: f64, y: f64, index: u32) -> f64 {
+    let ground = surface(x, y);
+    match index {
+        0 => ground.height,
+        1 => ground.gx,
+        2 => ground.gy,
+        _ => 0.0,
+    }
 }
 
 #[cfg(test)]

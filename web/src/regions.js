@@ -5,10 +5,12 @@ export const DISTRICTS = Object.freeze([
   { id: 'harbor', label: 'HARBOR BAY', name: '港湾エリア', color: '#79bbc6', spawn: { x: 100, y: -120, yaw: Math.PI / 2 } },
   { id: 'forest', label: 'CANOPY PARK', name: '森の抜け道', color: '#86b987', spawn: { x: -100, y: 70, yaw: Math.PI / 2 } },
   { id: 'factory', label: 'IRONWORKS', name: '工場エリア', color: '#ca9473', spawn: { x: 100, y: 80, yaw: Math.PI / 2 } },
+  { id: 'ridge', label: 'SKYLINE RIDGE', name: '高台・崖ダイブ', color: '#d5aa77', spawn: { x: 190, y: 150, yaw: 0 } },
 ].map(d => Object.freeze({ ...d, spawn: Object.freeze(d.spawn) })));
 const byId = new Map(DISTRICTS.map(d => [d.id, d]));
 
 export function districtAt(x, y) {
+  if (x > 180) return byId.get('ridge');
   if (x < -50 && y > 0) return byId.get('forest');
   if (x > 0 && y < -100) return byId.get('harbor');
   if (x > 50 && y > 50) return byId.get('factory');
