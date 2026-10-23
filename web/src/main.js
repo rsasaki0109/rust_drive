@@ -191,8 +191,10 @@ function updateCamera(dt) {
     target = new THREE.Vector3(player.x + c * 5, height + 1.1, -player.y - s * 5);
   } else if (state.camera === 1) {
     // An oblique panorama reveals the hill/deck profile instead of flattening it.
-    destination = eastern ? new THREE.Vector3(player.x - 55, height + 55, -player.y + 75) : new THREE.Vector3(player.x + 3, height + 57, -player.y + 15);
-    target = new THREE.Vector3(player.x + (eastern ? 20 : 0), height + (eastern ? 5 : 0), -player.y);
+    // Stay above the avenue: a side view can put tall shops between the camera and car.
+    const urbanView = eastern && player.x < 380 && player.y > 110 && player.y < 190;
+    destination = urbanView ? new THREE.Vector3(player.x - 45, height + 45, -player.y + 4) : eastern ? new THREE.Vector3(player.x - 55, height + 55, -player.y + 75) : new THREE.Vector3(player.x + 3, height + 57, -player.y + 15);
+    target = new THREE.Vector3(player.x + (eastern ? 20 : 0), height + (urbanView ? 3 : eastern ? 5 : 0), -player.y);
   } else { const street = eastern && player.y > 110 && player.y < 190 && player.grounded; const reach = (street ? 13 : eastern ? 22 : 10) + Math.min(eastern ? 9 : 5, Math.abs(player.speed) * .12); destination = new THREE.Vector3(player.x - c * reach + s * 1.8, height + (street ? 6 : eastern ? 12 : 5.1) + Math.min(2, Math.abs(player.speed) * .06), -player.y + s * reach + c * 1.8); target = new THREE.Vector3(player.x + c * 3, height + 1.0, -player.y - s * 3); }
   if (belowGrade) destination.z = Math.max(96.4, Math.min(113.6, destination.z));
   destination.y = Math.max(destination.y, drive.drive_support(destination.x, -destination.z, height) + .7);
