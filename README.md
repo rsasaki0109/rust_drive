@@ -6,26 +6,34 @@
 
 <table>
   <tr>
-    <td width="33%"><img src="assets/stacked-roads-demo.gif" width="260" alt="Recorded elevated road, lower crossing and underground tunnel"></td>
-    <td width="33%"><img src="assets/japan-city-demo.gif" width="260" alt="Recorded Japanese urban driving simulation"></td>
-    <td width="33%"><img src="assets/prediction-3d-demo.gif" width="260" alt="Recorded braking and recovery simulation"></td>
+    <td width="33%"><img src="assets/city-crossing-demo.gif" width="260" alt="Recorded daytime intersections"><br>Daytime intersections</td>
+    <td width="33%"><img src="assets/harbor-pursuit-demo.gif" width="260" alt="Recorded harbor pursuit"><br>Harbor pursuit</td>
+    <td width="33%"><img src="assets/forest-trail-demo.gif" width="260" alt="Recorded forest shortcuts"><br>Forest shortcuts</td>
   </tr>
   <tr>
-    <td width="33%"><img src="assets/stop-sign-demo.gif" width="260" alt="Recorded stop sign simulation"></td>
-    <td width="33%"><img src="assets/intersection-demo.gif" width="260" alt="Recorded priority crossing simulation"></td>
-    <td width="33%"><img src="assets/late-crossing-demo.gif" width="260" alt="Recorded late cross traffic simulation"></td>
-  </tr>
-  <tr>
-    <td width="33%"><img src="assets/native-scene-demo.gif" width="260" alt="Recorded physical cuboid stop simulation"></td>
-    <td width="33%"><img src="assets/multi-height-demo.gif" width="260" alt="Recorded optional multi-height LiDAR simulation"></td>
-    <td width="33%"><img src="assets/lidar-3d-demo.gif" width="260" alt="Recorded optional inclined 3D LiDAR simulation"></td>
-  </tr>
-  <tr>
-    <td width="33%"><img src="assets/ground-demo.gif" width="260" alt="Recorded optional measured-ground filtering simulation"></td>
-    <td width="33%"><img src="assets/vru-demo.gif" width="260" alt="Recorded pedestrian and cyclist simulation"></td>
-    <td width="33%"><img src="assets/hazard-demo.gif" width="260" alt="Recorded occluded crossing simulation"></td>
+    <td width="33%"><img src="assets/plaza-drift-demo.gif" width="260" alt="Recorded dusk drift"><br>Dusk drift</td>
+    <td width="33%"><img src="assets/station-loop-demo.gif" width="260" alt="Recorded station curves"><br>Station curves</td>
+    <td width="33%"><img src="assets/stacked-roads-demo.gif" width="260" alt="Recorded elevated / underground"><br>Elevated / underground</td>
   </tr>
 </table>
+
+<details>
+<summary>Autonomous-driving simulations</summary>
+
+<table>
+  <tr>
+    <td width="33%"><img src="assets/japan-city-demo.gif" width="260" alt="Recorded japanese city"><br>Japanese city</td>
+    <td width="33%"><img src="assets/prediction-3d-demo.gif" width="260" alt="Recorded braking and recovery"><br>Braking and recovery</td>
+    <td width="33%"><img src="assets/stop-sign-demo.gif" width="260" alt="Recorded stop sign"><br>Stop sign</td>
+  </tr>
+  <tr>
+    <td width="33%"><img src="assets/intersection-demo.gif" width="260" alt="Recorded priority crossing"><br>Priority crossing</td>
+    <td width="33%"><img src="assets/vru-demo.gif" width="260" alt="Recorded pedestrians and cyclists"><br>Pedestrians and cyclists</td>
+    <td width="33%"><img src="assets/lidar-3d-demo.gif" width="260" alt="Recorded inclined 3d lidar"><br>Inclined 3D LiDAR</td>
+  </tr>
+</table>
+
+</details>
 
 Autonomous driving research in Rust, with recorded simulations and an optional
 [manual-driving browser playground](docs/browser-playground.md).

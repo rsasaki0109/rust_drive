@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { applyVehiclePose } from './vehicle-pose.js';
 import { districtAt } from './regions.js';
 import { createDistrictScenery } from './scenery.js';
 import { roadGraph, nodeKey, HILL_TRAFFIC, LOWER_RING } from './urban-roads.js';
@@ -329,9 +330,11 @@ export class Traffic {
       if (distance < 7) { c.previous = c.node; c.node = c.next; this.choose(c, player); }
       c.height = this.drive?.drive_surface(c.x, c.y, 0) ?? 0;
       const gx = this.drive?.drive_surface(c.x, c.y, 1) ?? 0, gy = this.drive?.drive_surface(c.x, c.y, 2) ?? 0;
-      c.mesh.position.set(c.x, c.height + .02, -c.y);
-      c.mesh.rotation.set(Math.atan(gy * Math.cos(c.yaw) - gx * Math.sin(c.yaw)), -c.yaw, Math.atan(gx * Math.cos(c.yaw) + gy * Math.sin(c.yaw)), 'YXZ');
-      c.mesh.userData.wheels.forEach(({ root, wheel, front }) => { if (front) root.rotation.y = -Math.max(-.45, Math.min(.45, wrap(toward-c.yaw))); wheel.rotation.z = -c.distance / .32; });
+      applyVehiclePose(c.mesh, {
+        ...c, roll: Math.atan(gy * Math.cos(c.yaw) - gx * Math.sin(c.yaw)),
+        pitch: Math.atan(gx * Math.cos(c.yaw) + gy * Math.sin(c.yaw)),
+        steering: Math.max(-.45, Math.min(.45, wrap(toward-c.yaw))),
+      });
       c.mesh.userData.beacons.forEach((b, i) => { b.visible = Math.floor(time * 8) % 2 === i; });
     }
   }

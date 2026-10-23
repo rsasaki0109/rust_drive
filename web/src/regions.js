@@ -3,7 +3,7 @@ export const DISTRICTS = Object.freeze([
   { id: 'plaza', label: 'DRIFT SQUARE', name: '中央広場', color: '#d8b57c', spawn: { x: 0, y: -22, yaw: Math.PI / 2 } },
   { id: 'downtown', label: 'NEON CITY', name: 'ネオン街', color: '#a5a4ce', spawn: { x: 0, y: 90, yaw: Math.PI / 2 } },
   { id: 'harbor', label: 'HARBOR BAY', name: '港湾エリア', color: '#79bbc6', spawn: { x: 100, y: -120, yaw: Math.PI / 2 } },
-  { id: 'forest', label: 'CANOPY PARK', name: '森の抜け道', color: '#86b987', spawn: { x: -100, y: 70, yaw: Math.PI / 2 } },
+  { id: 'forest', label: 'CANOPY PARK', name: '森の抜け道', color: '#86b987', spawn: { x: -146, y: 75, yaw: 0 } },
   { id: 'factory', label: 'IRONWORKS', name: '工場エリア', color: '#ca9473', spawn: { x: 100, y: 80, yaw: Math.PI / 2 } },
   { id: 'ridge', label: 'HILLSIDE CITY', name: '坂のある街・崖ダイブ', color: '#d5aa77', spawn: { x: 190, y: 150, yaw: 0 } },
   { id: 'skyway', label: 'SKYWAY', name: '高架道路', color: '#91d4e0', spawn: { x: 190, y: 20, yaw: 0 } },
