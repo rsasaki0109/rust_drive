@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { applyVehiclePose } from './vehicle-pose.js';
 import './style.css';
 import { createRidge, WORLD_BOUNDS, RIDGE_ROUTE } from './ridge.js';
 import { DISTRICTS, BLOCKS, districtAt, forestTrail } from './regions.js';
@@ -286,8 +287,7 @@ async function boot() {
       const dt = Math.min(.05, Math.max(0, (now - previous) / 1000)); previous = now;
       if (!state.paused) { accumulator += dt; while (accumulator >= 1 / 120) { simulate(1 / 120); accumulator -= 1 / 120; } }
       else { accumulator = 0; if (!state.started) { state.time += dt; traffic.update(dt, state.time, player); } effects(dt, false); }
-      car.position.set(player.x, player.height + .02, -player.y); car.rotation.set(player.roll, -player.yaw, player.pitch, 'YXZ'); car.visible = state.camera !== 2 || !state.started;
-      for (const wheel of car.userData.wheels) { wheel.root.rotation.y = wheel.front ? -player.steering : 0; wheel.wheel.rotation.z = -player.distance / .32; }
+      applyVehiclePose(car, player); car.visible = state.camera !== 2 || !state.started;
       city.update(state.time); structures.update(player); urban.update(state.time, state.paused ? 0 : dt); updateCamera(dt); drawMap(); telemetry();
       const sky = state.day ? 0xb9d1dd : 0x968d91; scene.background.setHex(sky); scene.fog.color.setHex(sky); ambient.intensity = state.day ? 2.5 : 1.7; sun.intensity = state.day ? 3.1 : 2.3; sun.color.setHex(state.day ? 0xfff1d2 : 0xffbb80); sun.position.set(player.x - 45, player.height + 75, -player.y + 25); sun.target.position.set(player.x, player.height, -player.y);
       renderer.render(scene, camera); requestAnimationFrame(frame);

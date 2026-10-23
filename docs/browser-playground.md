@@ -157,6 +157,12 @@ browser screenshots, and deploys `web/dist` from `main`. Repository Settings →
 Pages → Source must be **GitHub Actions**. The workflow derives the base path
 from the repository name, so it follows repository renames.
 
+Vehicle meshes use the same left-positive yaw and steering as the Rust physics,
+mapped into Three.js with north along negative Z. Wheels roll about their
+cylinder axles; the player and traffic share the same pose conversion. Regression
+checks compare rendered headings against actual WASM displacement and verify
+that wheel rotation preserves axle direction.
+
 ## Hero recording
 
 The six-cell gameplay gallery separates daytime intersections, a dusk harbor

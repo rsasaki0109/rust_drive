@@ -19,7 +19,7 @@ SOURCES = [
     'integrations/playground/src/lib.rs', 'integrations/playground/src/elevation.rs',
     'integrations/playground/src/structures.rs', 'web/src/structures.js',
     'integrations/playground/Cargo.toml', 'integrations/playground/Cargo.lock',
-    'web/src/main.js', 'web/src/ridge.js', 'web/src/city.js', 'web/src/scenery.js',
+    'web/src/vehicle-pose.js', 'web/src/main.js', 'web/src/ridge.js', 'web/src/city.js', 'web/src/scenery.js',
     'web/src/regions.js', 'web/src/style.css', 'web/index.html',
     'web/package-lock.json', 'web/vite.config.js', 'scripts/build-playground.sh',
     'rust-toolchain.toml', 'web/tests/ridge_smoke.py',
