@@ -126,7 +126,7 @@ export function createUrbanDistrict(scene, drive, phase) {
   cuboid(482.5, 15.1, 105, 47, .4, 14, 0x3c6569);
   for (const x of [462, 502]) for (const y of [99, 111]) cuboid(x, 12.5, y, .25, 5, .25, 0xc7d0c2);
   panel('中央駅  CHUO STATION', '#90e6cc', 482.5, 97.8, 12.3, 22, 2.2);
-  building(482, 91, 16, 8, 5, 4, false);
+  building(458, 132, 16, 8, 5, 4, false);
   function train(y, color) {
     const group = new THREE.Group(); scene.add(group);
     for (const x of [-13, 0, 13]) {
