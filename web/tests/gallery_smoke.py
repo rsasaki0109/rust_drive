@@ -31,7 +31,7 @@ SCENARIOS = [
          route=[(0, 90), (0, 150), (-50, 150), (-50, 100)]),
     dict(id='harbor-pursuit', area='harbor', day=False, chase=True, camera=0,
          seconds=16, speed=10, lookahead=9,
-         route=[(100, -120), (100, -100), (50, -100), (50, -150), (100, -150)]),
+         route=[(100, -120), (100, -100), (150, -100), (150, -150), (100, -150), (50, -150)]),
     dict(id='forest-trail', area='forest', day=True, chase=False, camera=1,
          seconds=14.4, speed=6.5, lookahead=3.5, route=forest_route()),
     dict(id='plaza-drift', area='plaza', day=False, chase=False, camera=1,
