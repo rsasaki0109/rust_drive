@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "passed": true,
+  "backend": "rust-wasm-urban-city",
+  "source_commit": "d977e37405ec6408170016e3336f4cd4e87c3e4b",
+  "source_sha256": {
+    "web/src/urban-city.js": "f5bb7a8cfb99630eb18046e1a88fec36f50c8ab588bb312c7670514cb2b07ab4",
+    "web/src/urban-roads.js": "deae0354eec75c83ea5dfaa2dbe2cc5a1a7b8788c002d68f67dec6e7daec1d26",
+    "web/src/guardrails.js": "fde92f2c2bbbdd84a14af09d4d13ae8dd20fd5c1101e38b88be0211d128f19b0",
+    "integrations/playground/src/lib.rs": "7f2ace9c4d8d4c6266f27506f6e2ef6753b13c44036c09de778dccbab48cda57",
+    "integrations/playground/src/elevation.rs": "c76512940473d692dc6d736c7fbb0f8d53b458a18b777f9c01dd9e4450549f27",
+    "integrations/playground/src/structures.rs": "54a5d168755c5d50293cd1d27c3f1d11ccc80a6e5b4b2d40824fe6d1eed96094",
+    "web/src/structures.js": "6b984295150e316613d0fae473da78ec1d886a28534b64451e0af389d0c14fb7",
+    "integrations/playground/Cargo.toml": "e1f0c36dc2b9f2de7ce90e04c3cb1d7eeaae0e8b32747709901698daaa7c7ec0",
+    "integrations/playground/Cargo.lock": "b9ab8c27b377f2173e4bc7871ac223ddbf01e7f8026fbb115635d9ca6b5772dc",
+    "web/src/main.js": "d132bf2e7dcc78d64156ca1d5c302925f99c166dd19532cd2228b2439c24aa18",
+    "web/src/ridge.js": "8ac77824313151c534bf5a5ac4a869bc90db65492207265383d5f6ddc1499881",
+    "web/src/city.js": "77ed628dccdfefe6b29ec7d159c21394ae09507816972b5166d0b3fa257482a4",
+    "web/src/scenery.js": "e8e74d474f6f650b497920a15891dd44040d6578c0cc6fd68bdecd9554746ee1",
+    "web/src/regions.js": "10ba490cc3b97d20d669a3162d4d774d03c5329a8a6c0c45fb131d6ed59f75eb",
+    "web/src/style.css": "a118bc3ba96b8bcda54ee76d769f9b8dc95796a505a33cea04e6db8e7b071737",
+    "web/index.html": "f4f0185bf380bf13d8eda9aded402400e8418bc8f6066d5884ad8cac180131b8",
+    "web/package-lock.json": "f0191e9598e42d8dc3f8ff7895fbc14b14305a4d4064bd78eacd2a364d1d2073",
+    "web/vite.config.js": "b246ac77d718e95e06c9cd5ea97bb563069dd8a95e7a3bc7cf8c58ee83a71181",
+    "scripts/build-playground.sh": "a8d0851eeb6876f1e77f70d07e1b1443674c6b4e904bc51f95dacd64230d0e8b",
+    "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed",
+    "web/tests/ridge_smoke.py": "9472947fc30b18b68d08a7f3ec7e29fda117f82b36e47336f7a6b40b8013121d",
+    "web/tests/browser_clock.py": "0011f610e48bf80ea3a91e8a062b4684837a292187a6786e9cf2cd6fcd2c622b",
+    "web/tests/urban_smoke.py": "2ae929d89892e254935c1e7891d0d5f8272774dcba80a7cbf1b3a45cf87352ac"
+  },
+  "wasm_sha256": "41b3fa6ae68a2966f24bf3709f499323ddb1042649798e4ebf93d6131b135375",
+  "browser_version": "155.0.8059.0",
+  "renderer": "Three.js / Chromium WebGL 2 / SwiftShader",
+  "input": "Public area/day/chase/camera controls and actual W/A/S/D keyboard events. Read-only snapshots; no pose writes.",
+  "city": {
+    "buildings": 107,
+    "intersections": 54,
+    "ordinary_traffic": 40,
+    "police": 2,
+    "vehicle_types": [
+      "sedan",
+      "compact",
+      "taxi",
+      "van"
+    ],
+    "ordinary_distribution": {
+      "city": 20,
+      "hillside": 12,
+      "station": 8
+    }
+  },
+  "observed": {
+    "peak_height_m": 49.09864877853153,
+    "uphill_pitch_degrees": 27.2160651968664,
+    "flight_seconds": 3.291666666666725,
+    "guardrail_fractures": 1,
+    "guardrail_fractures_before_flight": true,
+    "impact_speed_before_mps": 15.94767244804204,
+    "impact_speed_after_mps": 10.700500278111035,
+    "landing_x_m": 418.20763638422966,
+    "cliff_landings": 1,
+    "native_touchdowns": 1,
+    "target_climb_speed_mps": 16,
+    "pause_freezes_motion": true,
+    "recovery_restores_guardrails": true,
+    "elevated_traffic_moves": true,
+    "station_curve_distance_m": 113.55248931016308,
+    "station_drives_under_railway": true,
+    "uncaught_errors": [],
+    "shared_traffic_frame_count": 47,
+    "longest_shared_traffic_run_frames": 47,
+    "moving_ordinary_vehicles_in_view": 7,
+    "moving_police_in_view": 1,
+    "framing_diagnostic": "Projected body centres within 90 m, with building-AABB and sampled terrain occlusion rejection; inspect captured PNGs separately."
+  },
+  "trace_sha256": "3462209b1c2c3aab195afcf78cd6a820fc151a33fe09c65bb7d247a3cc4e1d88",
+  "scope": "Authored Tokyo-inspired arcade city, not a geographic Tokyo reconstruction or autonomous-driving evidence.",
+  "output_sha256": {
+    "poster": "c2ba36385af32c3839daff08cdc79d74eb0d48c190990e59047ae4fd228f42e2",
+    "start": "1f14d3248934b8d097a16a065131ecbeef5dc08859b34d2220de05b80101fc95",
+    "impact": "468291cf5c8cb9ee0e7c1976425d22c4b8705713e5856187004dee5345b9ba63",
+    "station": "c8bf5f929ec28d86b7145d266ce070ec33fd3f1b433cd9f6391d693e257cc340",
+    "traffic": "1a995c14ec1c02720a48ed71d0e1d2225218f89d893ea97a9688bee9a8049c64"
+  },
+  "gif_sha256": "91faa591dced29d75662d9e54023a8f3410cfffbb61f48163f86418e2984338f",
+  "capture": {
+    "width": 960,
+    "height": 540,
+    "frames": 396,
+    "duration_seconds": 31.68,
+    "frame_duration_ms": 80,
+    "render_step_ms": 40,
+    "physics_hz": 120,
+    "playback_speed": 1,
+    "segments": [
+      "city climb/pursuit/guardrail fracture/landing",
+      "station curve beneath railway"
+    ],
+    "cuts": "One cut between actual UI-selected starts; driving and camera controls run in the production game."
+  }
+}
