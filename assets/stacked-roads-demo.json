@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "passed": true,
+  "backend": "rust-wasm-stacked-roads",
+  "source_commit": "dbb4c8439a2f2b5ec84d5c1c656f813a87be5b90",
+  "browser_version": "155.0.8059.0",
+  "renderer": "Three.js / Chromium WebGL 2 / SwiftShader",
+  "input": "Keyboard W and public start-area/camera/pause/recover controls; read-only snapshots, no pose writes.",
+  "source_sha256": {
+    "integrations/playground/src/lib.rs": "5af59c0df9abd75b4abb7eb88470014f56305dceb7224dc142a570bce55a6b74",
+    "integrations/playground/src/elevation.rs": "25d391538cd13c83e00f49bb51f1b231307b47587acc746128e5004cced01f06",
+    "integrations/playground/src/structures.rs": "04265f42049c9722a985d8b3d90303acc40d7d3f13da018a178bd56cfa9d90ea",
+    "web/src/structures.js": "6b984295150e316613d0fae473da78ec1d886a28534b64451e0af389d0c14fb7",
+    "integrations/playground/Cargo.toml": "e1f0c36dc2b9f2de7ce90e04c3cb1d7eeaae0e8b32747709901698daaa7c7ec0",
+    "integrations/playground/Cargo.lock": "b9ab8c27b377f2173e4bc7871ac223ddbf01e7f8026fbb115635d9ca6b5772dc",
+    "web/src/main.js": "4531e4216a607cdf0e6823b6e1e2fc5eff893ca01bd36deec899a8c1309d2653",
+    "web/src/ridge.js": "8d06f6aada5fa2c8370c9e0878dc36adab3f477e802a1cd91a4184756726ff73",
+    "web/src/city.js": "c8dc306e9322c3f77db0c5c208aae02001d89cdb89293ef7a27a517cfe3a2d18",
+    "web/src/scenery.js": "e8e74d474f6f650b497920a15891dd44040d6578c0cc6fd68bdecd9554746ee1",
+    "web/src/regions.js": "9c9ee3aad20fe1f7a5e8a22bf1be8030aef07d0923dedea4a8ff111b96770dd3",
+    "web/src/style.css": "a118bc3ba96b8bcda54ee76d769f9b8dc95796a505a33cea04e6db8e7b071737",
+    "web/index.html": "61737c82592d3a7b2c25052bb6af44f3a67426beb0cd9ce6911b40db25a4ec08",
+    "web/package-lock.json": "f0191e9598e42d8dc3f8ff7895fbc14b14305a4d4064bd78eacd2a364d1d2073",
+    "web/vite.config.js": "b246ac77d718e95e06c9cd5ea97bb563069dd8a95e7a3bc7cf8c58ee83a71181",
+    "scripts/build-playground.sh": "a8d0851eeb6876f1e77f70d07e1b1443674c6b4e904bc51f95dacd64230d0e8b",
+    "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed",
+    "web/tests/ridge_smoke.py": "ed1212e93939d545aab312ddd8b0f8a8ed19f6f2eb5f782f90a50cb11465fc2d",
+    "web/tests/structures_smoke.py": "a09d06f8c63565144882cce96f086e1682b37fcf1a5f5cafb13ed111dbd294e7"
+  },
+  "wasm_sha256": "8478d7aa6ad333f815ebddb840154a7d34927573c6916abdfe293bf9c4849c77",
+  "scenes": {
+    "skyway": {
+      "steps": 340,
+      "minimum_height_m": 0,
+      "maximum_height_m": 12,
+      "minimum_ceiling_m": 1000000,
+      "exit_height_m": 0,
+      "exit_x_m": 511.30198007013996,
+      "exit_y_m": 20,
+      "uncaught_errors": []
+    },
+    "underpass": {
+      "steps": 161,
+      "minimum_height_m": 0,
+      "maximum_height_m": 0,
+      "minimum_ceiling_m": 10.9,
+      "exit_height_m": 0,
+      "exit_x_m": 350,
+      "exit_y_m": 42.58194990886883,
+      "uncaught_errors": []
+    },
+    "tunnel": {
+      "steps": 297,
+      "minimum_height_m": -8,
+      "maximum_height_m": 0.1512158876406411,
+      "minimum_ceiling_m": -1.2,
+      "exit_height_m": 0,
+      "exit_x_m": 512.1481128930169,
+      "exit_y_m": -105,
+      "uncaught_errors": []
+    }
+  },
+  "recover_from_underground_clears_controls_and_camera": true,
+  "trace_sha256": "41c50501d2362e2c34340512fddac32868433ef818daf09d1e9aba4e17a50a9a",
+  "scope": "Authored arcade layered roads; not autonomous-driving or real-vehicle evidence.",
+  "capture": {
+    "width": 960,
+    "height": 540,
+    "frames": 223,
+    "frame_duration_ms": 80,
+    "render_step_ms": 40,
+    "physics_hz": 120,
+    "duration_seconds": 17.84,
+    "playback_speed": 1,
+    "segments": [
+      "skyway climb/crossing",
+      "lower road",
+      "underground passage"
+    ]
+  },
+  "gif_sha256": "13458713e25b42e532ed029138e1bfaea036d68941aeacc77aa59a85339d7451",
+  "poster_sha256": "c61fca5ee86b1e61d0256493031e118b2266a16e3fcd0b3b43e98d5701937827"
+}
