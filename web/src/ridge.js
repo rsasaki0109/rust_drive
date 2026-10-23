@@ -24,6 +24,7 @@ export function createRidge(scene, drive) {
     g.setIndex(indices); g.computeVertexNormals();
     const m = new THREE.Mesh(g, material); m.receiveShadow = true; scene.add(m);
   }
+  cuboid(380, -.33, 100, 1600, .3, 1200, 0x53635b);
   cuboid(370, -.08, 135, 390, .16, 200, 0x857d64);
   const xs = Array.from({ length: 91 }, (_, i) => 200 + i * 2);
   const height = x => surface(Math.min(x, 379.999999), 150);
@@ -54,7 +55,7 @@ export function createRidge(scene, drive) {
   strip(Array.from({ length: 116 }, (_, i) => { const x = 150 + i * 2; return { x, y: 150, h: x >= 200 ? height(x) : 0 }; }), 16, road);
   strip([{ x: 400, y: 150 }, { x: 530, y: 150 }, { x: 530, y: 70 }, { x: 150, y: 70 }], 18, road);
   // Broad, clear basin under the flight path; the return road stays at city grade.
-  cuboid(475, -.025, 150, 150, .05, 115, 0xa59c7d);
+  cuboid(475, 0, 150, 150, .05, 115, 0xa59c7d);
   for (let x = 180; x <= 372; x += 8) {
     const h = x >= 200 ? height(x) : 0;
     cuboid(x, h + .055, 150, 3.8, .04, .16, 0xe5d0a0);
