@@ -1,12 +1,12 @@
 # RustDriving
 
-![Recorded steep climb, 49 m cliff dive and physical landing](assets/ridge-dive-demo.gif)
+![Recorded steep climb, 49 m cliff dive and physical landing](assets/ridge-dive-demo.gif?v=skyway-tunnel)
 
 [🎮 Play City Playground — 自分で運転・ドリフト・カーチェイス](https://rsasaki0109.github.io/rust_driving/)
 
 <table>
   <tr>
-    <td width="33%"><img src="assets/rne-3d-demo.gif" width="260" alt="Recorded closure detour simulation"></td>
+    <td width="33%"><img src="assets/stacked-roads-demo.gif" width="260" alt="Recorded elevated road, lower crossing and underground tunnel"></td>
     <td width="33%"><img src="assets/japan-city-demo.gif" width="260" alt="Recorded Japanese urban driving simulation"></td>
     <td width="33%"><img src="assets/prediction-3d-demo.gif" width="260" alt="Recorded braking and recovery simulation"></td>
   </tr>

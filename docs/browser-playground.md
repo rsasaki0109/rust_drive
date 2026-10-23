@@ -1,4 +1,4 @@
-# City Playground and Skyline Ridge
+# City Playground, Skyline Ridge and stacked roads
 
 [Play RustDriving](https://rsasaki0109.github.io/rust_driving/) in a desktop
 WebGL 2 / WebAssembly browser, or use the on-screen pointer controls on a phone.
@@ -14,6 +14,26 @@ screen; changing it ends any active pursuit and returns the car to rest.
 
 [Area overview](../assets/mixed-districts-preview.png) shows captured frames from
 the five starting areas, after driving with keyboard input.
+
+## Elevated road and underground passage
+
+Choose **高架道路 / SKYWAY +12 m** to climb the two 70 m ramps onto a 12 m
+viaduct. **高架の下 / LOWER ROAD** starts on the perpendicular road passing
+under its beams. That lower road also crosses the tunnel roof at city grade.
+
+Choose **地下トンネル / UNDERGROUND -8 m** to descend an open cutting, drive
+through the covered -8 m passage and climb the eastern exit ramp. Its roof
+underside is at -1.2 m. The excavation has side walls, lit portals and ceiling
+lights. The outer eastern road connects these routes to the ridge return and city.
+
+Rust selects a reachable support layer using the preceding physical height.
+Driving below a deck keeps the car on the lower road; landing from above can
+reach the upper deck. Slab sides and undersides block the body. The renderer
+samples the same floor/deck functions, and tire effects use the current layer.
+The camera stays below overhead slabs and inside the tunnel; the eastern
+panorama shows the incline from an oblique angle. R returns to the current
+area's approach. These are authored arcade surfaces, not a volumetric rigid-body
+or suspension simulation.
 
 ## Skyline Ridge: climb, dive and return
 
@@ -32,7 +52,7 @@ authored height function directly. The minimap zooms to the ridge route.
 
 This is an arcade height-field/contact model with a planar two-axle tire model
 on the ground, not a six-degree-of-freedom rigid body or suspension model.
-Roofs are not drivable surfaces. City traffic/police remain on their street grid.
+Only authored road decks and the tunnel roof are drivable upper surfaces; city building roofs are not. City traffic/police remain on their street grid.
 
 The map has 64 buildings, 49 signalized intersections and 20 independently moving
 traffic cars. Chase mode adds two police cars; leave them more than 80 m behind
@@ -62,8 +82,8 @@ rear tire force capacity. The rendered car uses that integrated position and
 body yaw; smoke and skid marks require measured rear slip and lateral motion.
 Steering the display mesh sideways is not used to manufacture a drift.
 
-The original city ground is flat; the optional ridge adds height, slope gravity
-and ballistic flight. Speeds and approximate arcade contact impulses are bounded. Traffic follows independent waypoint/signal rules; police
+The original city ground is flat; the eastern courses add slope gravity,
+ballistic flight, independently reachable upper decks and an excavated tunnel. Speeds and approximate arcade contact impulses are bounded. Traffic follows independent waypoint/signal rules; police
 use the street grid to approach the player. It is separate from the sensor-driven
 autonomous research pipeline and the pinned native RNE adapter. Browser scores
 and pursuit behavior do not establish autonomous-driving capability.
@@ -94,10 +114,14 @@ cargo test --locked --manifest-path integrations/playground/Cargo.toml
 The Rust and built-WASM checks exercise acceleration, braking, reversing, real
 rear slip, invalid inputs and contact recovery, plus slope rollback, cliff
 entry from below, independent free-fall equations, absence of air tire forces,
-landing and vertical-state reset. The browser test drives the
+landing and vertical-state reset. Layer tests also drive the bridge and the road
+underneath it, enter and exit the tunnel, cross its roof, hit an underside and
+land on an upper deck. Actual mesh raycasts check the two levels and open ramp
+excavations; body-width sweeps check the structural colliders. The browser test drives the
 actual production UI with keyboard and pointer events, checks smoke/skid marks,
-all five starting areas, three cameras, pursuit, pause/focus handling, recovery
-and mobile controls. Geometry checks independently sweep the street lanes,
+all five city starting areas, three cameras, pursuit, pause/focus handling, recovery
+and mobile controls. Its fixed browser clock advances actual rendered frames;
+acceleration checks use simulation time rather than depending on CI GPU speed. Geometry checks independently sweep the street lanes,
 forest corridors and plaza drift circles against the actual scene colliders:
 
 ```sh
@@ -115,6 +139,17 @@ from the repository name, so it follows repository renames.
 
 ## Hero recording
 
+The first gallery cell records the actual upper road, lower crossing and underground
+passage ([provenance](../assets/stacked-roads-demo.json)). The **Stacked road evidence**
+workflow runs the required core/game checks and deterministic browser drives,
+then intentionally refreshes both the ridge and stacked-road recordings. It
+publishes only verified formatting and named media to the unchanged feature branch.
+
+```sh
+python web/tests/structures_smoke.py --url http://127.0.0.1:4173/rust_driving/ \
+  --output web/test-results/structures --record assets/stacked-roads-demo.gif
+```
+
 The README hero records the actual ridge climb, flight and landing. Its
 [provenance](../assets/ridge-dive-demo.json) binds source/WASM/output hashes,
 normal-speed frame timing and observed height, airtime and landing impact.
@@ -127,10 +162,10 @@ feature branch. Its guard prevents overwriting a moved branch; it excludes
 To reproduce the ridge check after building/starting the preview:
 
 ```sh
-python web/tests/ridge_smoke.py --url http://127.0.0.1:4173/rust_driving/ \\
+python web/tests/ridge_smoke.py --url http://127.0.0.1:4173/rust_driving/ \
   --output web/test-results/ridge
 # Intentionally record the hero as well (requires Pillow and FFmpeg):
-python web/tests/ridge_smoke.py --url http://127.0.0.1:4173/rust_driving/ \\
+python web/tests/ridge_smoke.py --url http://127.0.0.1:4173/rust_driving/ \
   --output web/test-results/ridge --record assets/ridge-dive-demo.gif
 ```
 

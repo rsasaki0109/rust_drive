@@ -16,6 +16,7 @@ STEP_MS, FRAME_MS = 40, 80
 WIDTH, HEIGHT = 960, 540
 SOURCES = [
     'integrations/playground/src/lib.rs', 'integrations/playground/src/elevation.rs',
+    'integrations/playground/src/structures.rs', 'web/src/structures.js',
     'integrations/playground/Cargo.toml', 'integrations/playground/Cargo.lock',
     'web/src/main.js', 'web/src/ridge.js', 'web/src/city.js', 'web/src/scenery.js',
     'web/src/regions.js', 'web/src/style.css', 'web/index.html',
@@ -75,7 +76,11 @@ def main():
             page.screenshot(path=str(args.output / 'ridge-start.png'))
             page.locator('#start').click(force=True)
             page.locator('#world').focus()
-            held, switched, overhead, peak_frame, frame_count = None, False, False, None, 0
+            page.locator('#camera').click(force=True)
+            page.locator('#world').focus()
+            for _ in range(25):
+                tick()
+            held, switched, overhead, peak_frame, frame_count = None, False, True, None, 0
             landed_at = None
             for step in range(1000):
                 state = snap()
@@ -86,10 +91,6 @@ def main():
                     if wanted:
                         page.keyboard.down(wanted)
                     held = wanted
-                if step == 100:
-                    page.locator('#camera').click(force=True)
-                    page.locator('#world').focus()
-                    overhead = True
                 if state['x'] > 320 and not switched:
                     while snap()['cameraMode'] != 0:
                         page.locator('#camera').click(force=True)
@@ -176,10 +177,11 @@ def main():
                     gif.seek(i)
                     duration += gif.info['duration']
                 assert duration == frame_count * FRAME_MS
-            shutil.copyfile(args.output / 'ridge-flight.png', args.record.with_suffix('.png'))
+            shutil.copyfile(args.output / 'ridge-climb.png', args.record.with_suffix('.png'))
             report['capture'] = {'width': WIDTH, 'height': HEIGHT, 'frames': frame_count,
                                  'frame_duration_ms': FRAME_MS, 'render_step_ms': STEP_MS,
-                                 'physics_hz': 120, 'duration_seconds': duration / 1000, 'playback_speed': 1}
+                                 'physics_hz': 120, 'duration_seconds': duration / 1000, 'playback_speed': 1,
+                                 'opening_view': 'Oblique panorama of the actual climb'}
             report['gif_sha256'] = sha(args.record)
             report['poster_sha256'] = sha(args.record.with_suffix('.png'))
             args.record.with_suffix('.json').write_text(json.dumps(report, indent=2) + '\n')
