@@ -291,11 +291,17 @@ It identifies the final cliff landing at city grade, separately from any brief
 crest touchdown, and retains its trace before checking framing.
 
 
-Traffic coordinates entry at signals and street merges. One NPC owns the
-junction until it has cleared the crossing; waiting vehicles brake before the
-entry line and resume in arrival order, with pursuit priority when the junction
-is free. An admitted car clears the junction after a light change. A removed
-pursuer releases its reservation. Short curved waypoint segments retain braking
-distance to the next signal, and upper-road players do not block ground traffic.
-This is a conservative arcade traffic policy: it serializes junction entry
-rather than scheduling simultaneous non-conflicting turns.
+Traffic coordinates entry at signals and street merges. One NPC owns a
+junction group until it has cleared the crossing; waiting vehicles brake before
+entry and resume in arrival order, with pursuit priority when the group is free.
+Nearby controlled points share a group so vehicles cannot hold mutually blocking
+reservations between them. Long graph edges also stop before the first occupied
+point they pass. An admitted car clears after a light change, and removing a
+pursuer releases its ownership.
+
+Traffic plans its next exit before reaching the junction, brakes for the bend
+and follows a lane-centred turn arc. This keeps right/left turns out of the
+opposing approach and avoids permanent face-to-face following stops. Short
+curve waypoints retain braking distance to the next signal; upper-road players
+do not block ground traffic. This conservative arcade policy serializes group
+entry rather than scheduling simultaneous non-conflicting turns.

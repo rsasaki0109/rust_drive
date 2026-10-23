@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Junctions } from './junctions.js';
+import { turnArc, arcTarget } from './traffic-turns.js';
 import { applyVehiclePose } from './vehicle-pose.js';
 import { districtAt } from './regions.js';
 import { createDistrictScenery } from './scenery.js';
@@ -305,14 +306,27 @@ export class Traffic {
     }
   }
   update(dt, time, player) {
+    for (const c of this.cars) if (c.plannedAt !== c.next) {
+      const turn = { id: c.id, node: c.next, previous: c.node, police: c.police };
+      this.choose(turn, player);
+      c.plannedAt = c.next; c.plannedNext = turn.next;
+      c.plannedArc = turnArc(c.node, c.next, turn.next, this.lane(c),
+        this.lane({ node: c.next, next: turn.next }));
+    }
     this.junctions.update(dt, time, this.cars, player);
     for (const c of this.cars) {
       const heading = Math.atan2(c.next.y - c.node.y, c.next.x - c.node.x);
       const lane = this.lane(c), tx = c.next.x + Math.sin(heading) * lane, ty = c.next.y - Math.cos(heading) * lane;
-      const distance = Math.hypot(tx - c.x, ty - c.y), toward = Math.atan2(ty - c.y, tx - c.x);
+      const distance = Math.hypot(tx - c.x, ty - c.y);
+      const arcAim = c.arc && arcTarget(c.arc, c);
+      if (c.arc && !arcAim) c.arc = null;
+      const toward = Math.atan2((arcAim?.y ?? ty) - c.y, (arcAim?.x ?? tx) - c.x);
       let desired = c.police ? 17 + Math.min(5, Math.hypot(c.x - player.x, c.y - player.y) * .04) : c.desired;
       // Brake for the actual bend instead of carrying cruise speed through tight alleys.
       desired = Math.min(desired, Math.max(5, (c.police ? 24 : 15) - 12 * Math.abs(wrap(toward-c.yaw))));
+      if (c.plannedArc) desired = Math.min(desired,
+        Math.sqrt(c.plannedArc.speed ** 2 + 7 * Math.max(0, distance - 7)));
+      if (c.arc) desired = Math.min(desired, c.arc.speed);
       desired = Math.min(desired, this.junctions.limit(c));
       for (const other of [...this.cars, player]) {
         if (other === c) continue;
@@ -330,7 +344,9 @@ export class Traffic {
       c.speed += Math.max(-5 * dt, Math.min((c.police ? 3.2 : 2.3) * dt, desired - c.speed));
       c.yaw += Math.max(-1.7 * dt, Math.min(1.7 * dt, wrap(toward - c.yaw)));
       c.x += Math.cos(c.yaw) * c.speed * dt; c.y += Math.sin(c.yaw) * c.speed * dt; c.distance += c.speed * dt;
-      if (distance < 7) { c.previous = c.node; c.node = c.next; this.choose(c, player); }
+      if (distance < 7 && !c.arc) {
+        c.previous = c.node; c.node = c.next; c.next = c.plannedNext; c.arc = c.plannedArc;
+      }
       c.height = this.drive?.drive_surface(c.x, c.y, 0) ?? 0;
       const gx = this.drive?.drive_surface(c.x, c.y, 1) ?? 0, gy = this.drive?.drive_surface(c.x, c.y, 2) ?? 0;
       applyVehiclePose(c.mesh, {

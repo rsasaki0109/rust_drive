@@ -113,3 +113,24 @@ test('commuter trains advance on the raised track and freeze when simulation tim
   urban.update(8,.04);assert.ok(Math.abs(urban.trainX()-first)>100);
   const x=urban.trainX();urban.update(8,0);assert.equal(urban.trainX(),x);
 });
+
+
+test('all forty traffic cars keep progressing over three minutes of signal cycles', async t => {
+  const { p, scene } = await world(), traffic = new Traffic(scene, { drive: p, urban: true, cityCars: 20 });
+  const marks = traffic.cars.map(() => ({ distance: 0, time: 0 }));
+  let longestWait = 0;
+  for (let i = 0; i < 5400; i++) {
+    const time = i / 30;
+    traffic.update(1 / 30, time, { x: -160, y: -160, yaw: 0, height: 0 });
+    traffic.cars.forEach((c, j) => {
+      assert.ok([c.x, c.y, c.height, c.speed].every(Number.isFinite));
+      if (c.distance - marks[j].distance > .5) marks[j] = { distance: c.distance, time };
+      longestWait = Math.max(longestWait, time - marks[j].time);
+    });
+  }
+  const minimumTravel = Math.min(...traffic.cars.map(c => c.distance));
+  assert.ok(minimumTravel > 150, 'each vehicle must advance through repeated junctions: ' + minimumTravel);
+  assert.ok(longestWait < 45, 'no vehicle may remain held over multiple signal cycles: ' + longestWait);
+  t.diagnostic(JSON.stringify({ vehicles: 40, simulated_seconds: 180,
+    minimum_travel_m: minimumTravel, longest_stationary_seconds: longestWait }));
+});

@@ -120,3 +120,61 @@ test('short curve waypoints preserve braking distance to the next red signal', (
   drive(traffic, [car], 4);
   assert.ok(car.y < -10 && car.speed < .5, JSON.stringify({ y: car.y, speed: car.speed }));
 });
+
+test('right and left turns join their outgoing lane without trapping opposing traffic', () => {
+  for (const exit of [-50, 50]) {
+    const traffic = new Traffic(new THREE.Scene(), { cityCars: 0 });
+    traffic.graph.get('0:0').signal = false;
+    const turning = traffic.spawn(false, 0xffffff, { x: 0, y: -50, to: { x: 0, y: 0 }, advance: 20 });
+    const crossing = traffic.spawn(false, 0xffffff, { x: -50, y: 0, to: { x: 0, y: 0 }, advance: 15 });
+    for (const c of [turning, crossing]) c.speed = c.desired = 8;
+    straightRoutes(traffic);
+    const straight = traffic.choose;
+    traffic.choose = c => {
+      if (c.id === turning.id && c.node.x === 0 && c.node.y === 0 && c.previous.y === -50)
+        c.next = traffic.graph.get(exit + ':0');
+      else straight(c);
+    };
+    let joined = false, minimum = Infinity;
+    for (let i = 0; i < 1440; i++) {
+      traffic.update(DT, i * DT, FAR_PLAYER);
+      minimum = Math.min(minimum, Math.hypot(turning.x - crossing.x, turning.y - crossing.y));
+      if (Math.sign(turning.x) === Math.sign(exit) && Math.abs(turning.x) > 10) {
+        joined = true;
+        assert.ok(Math.abs(turning.y - (exit < 0 ? 3.8 : -3.8)) < 1,
+          JSON.stringify({ exit, x: turning.x, y: turning.y }));
+      }
+    }
+    assert.ok(joined && turning.distance > 40 && crossing.distance > 40);
+    assert.ok(minimum > 3.3, 'turns must clear vehicles waiting on the opposing lane');
+  }
+});
+
+test('closely spaced junctions cannot hold mutually blocking reservations', () => {
+  const traffic = new Traffic(new THREE.Scene(), { cityCars: 0, urban: true });
+  // Keep the authored graph, but isolate this pair from randomly spawned traffic.
+  for (const c of traffic.cars) traffic.scene.remove(c.mesh);
+  traffic.cars = [];
+  const south = traffic.spawn(false, 0xffffff, { x: 150, y: 100, to: { x: 150, y: 70 }, advance: 22 });
+  const north = traffic.spawn(false, 0xffffff, { x: 150, y: 0, to: { x: 150, y: 50 }, advance: 30 });
+  for (const c of [south, north]) { c.speed = c.desired = 8; c.police = true; }
+  traffic.choose = c => {
+    const dx = c.node.x - c.previous.x, dy = c.node.y - c.previous.y;
+    c.next = c.node.links.filter(p => (p.x - c.node.x) * dx + (p.y - c.node.y) * dy > 0)
+      .sort((a, b) => Math.hypot(a.x - c.node.x, a.y - c.node.y) - Math.hypot(b.x - c.node.x, b.y - c.node.y))[0]
+      ?? c.previous;
+  };
+  const result = drive(traffic, [south, north], 12);
+  assert.ok(result.minimum_separation_m > 3.3, JSON.stringify(result));
+  assert.ok(result.distances_m.every(d => d > 60), 'both cars must clear both junctions');
+});
+
+test('a long graph edge stops before the first occupied junction in a group', () => {
+  const traffic = new Traffic(new THREE.Scene(), { cityCars: 0, urban: true });
+  for (const c of traffic.cars) traffic.scene.remove(c.mesh);
+  traffic.cars = [];
+  const south = traffic.spawn(false, 0xffffff, { x: 150, y: 100, to: { x: 150, y: 50 }, advance: 8 });
+  south.speed = south.desired = 10; south.police = true; straightRoutes(traffic);
+  drive(traffic, [south], 5, 0, { x: 150, y: 70, height: 0 });
+  assert.ok(south.y > 80 && south.speed < .5, JSON.stringify({ y: south.y, speed: south.speed }));
+});
