@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { districtAt } from './regions.js';
 import { createDistrictScenery } from './scenery.js';
+import { roadGraph, nodeKey, HILL_TRAFFIC, LOWER_RING } from './urban-roads.js';
 
 export const STREETS = [-150, -100, -50, 0, 50, 100, 150];
 export const LIMIT = 184;
@@ -117,83 +118,220 @@ export function createCity(scene) {
 
 const tireMat = matte(0x10171a), trim = matte(0x17242c), glass = new THREE.MeshStandardMaterial({ color: 0x486675, metalness: .5, roughness: .18 });
 const wheelGeo = new THREE.CylinderGeometry(.32, .32, .22, 10);
-export function makeCar(color = 0xf0eee3, police = false, detailed = false) {
+export function makeCar(color = 0xf0eee3, police = false, detailed = false, variant = 'sedan') {
+  variant = police ? 'police' : ['sedan', 'compact', 'taxi', 'van'].includes(variant) ? variant : 'sedan';
+  const compact = variant === 'compact', van = variant === 'van', taxi = variant === 'taxi';
+  const length = compact ? 3.60 : 4.15, width = compact ? 1.70 : 1.78, axles = compact ? [-1.04, 1.04] : [-1.28, 1.25];
   const car = new THREE.Group(), paint = new THREE.MeshStandardMaterial({ color, metalness: .25, roughness: .3 });
-  const body = mesh(car, box, paint, 0, .65, 0, 4.15, .65, 1.78); body.castShadow = true;
-  mesh(car, box, glass, -.22, 1.17, 0, 1.95, .60, 1.56);
-  mesh(car, box, paint, -.26, 1.49, 0, 1.7, .10, 1.58);
-  mesh(car, box, trim, .86, 1.0, 0, 1.6, .07, 1.74);
-  mesh(car, box, trim, 0, .43, 0, 4.3, .16, 1.84);
+  mesh(car, box, paint, 0, .65, 0, length, .65, width).castShadow = true;
+  if (van) {
+    mesh(car, box, paint, -.47, 1.34, 0, 2.95, 1.10, 1.75).castShadow = true;
+    mesh(car, box, paint, -.47, 1.94, 0, 2.98, .10, 1.78);
+    mesh(car, box, glass, 1.13, 1.28, 0, .72, .69, 1.63);
+    mesh(car, box, paint, 1.09, 1.69, 0, .95, .12, 1.70);
+    for (const side of [-1, 1]) mesh(car, box, trim, -.45, 1.12, side * .89, 2.65, .08, .025);
+    mesh(car, box, trim, -2.09, 1.38, 0, .025, 1.0, .04);
+  } else {
+    mesh(car, box, glass, compact ? -.10 : -.22, compact ? 1.22 : 1.17, 0, compact ? 2.13 : 1.95, compact ? .70 : .60, width - .22);
+    mesh(car, box, paint, compact ? -.12 : -.26, compact ? 1.61 : 1.49, 0, compact ? 1.92 : 1.70, .10, width - .20);
+    mesh(car, box, trim, compact ? .90 : .86, 1.0, 0, compact ? 1.0 : 1.6, .07, width - .04);
+  }
+  mesh(car, box, trim, 0, .43, 0, length + .15, .16, width + .06);
   if (detailed) {
     for (const side of [-1, 1]) { mesh(car, box, trim, 0, .72, side * .90, 2.6, .20, .035); mesh(car, box, trim, .12, 1.18, side * .79, .10, .63, .04); }
     mesh(car, box, trim, -1.75, 1.1, 0, .25, .12, 1.9);
   }
+  if (taxi) {
+    const sign = new THREE.MeshBasicMaterial({ color: 0xffe5a0 });
+    mesh(car, box, trim, -.25, 1.60, 0, .65, .10, .67);
+    mesh(car, box, sign, -.25, 1.78, 0, .60, .26, .60);
+    for (const side of [-1, 1]) mesh(car, box, trim, 0, .72, side * .90, 3.35, .13, .035);
+  }
+  if (police) for (const side of [-1, 1]) mesh(car, box, trim, 0, .71, side * .90, 3.55, .26, .035);
   const wheels = [];
-  for (const x of [-1.28, 1.25]) for (const side of [-1, 1]) {
-    const root = new THREE.Group(); root.position.set(x, .35, side * .91); car.add(root);
+  for (const x of axles) for (const side of [-1, 1]) {
+    const root = new THREE.Group(); root.position.set(x, .35, side * (width / 2 + .02)); car.add(root);
     const wheel = new THREE.Mesh(wheelGeo, tireMat); wheel.rotation.x = Math.PI / 2; root.add(wheel);
     wheels.push({ root, wheel, front: x > 0 });
   }
   const head = new THREE.MeshBasicMaterial({ color: 0xffe6b2 }), tail = new THREE.MeshBasicMaterial({ color: 0xff544b });
-  for (const side of [-1, 1]) { mesh(car, box, head, 2.09, .73, side * .58, .035, .20, .43); mesh(car, box, tail, -2.09, .74, side * .59, .035, .18, .42); }
+  for (const side of [-1, 1]) { mesh(car, box, head, length / 2 + .015, .73, side * .58, .035, .20, .43); mesh(car, box, tail, -length / 2 - .015, .74, side * .59, .035, .18, .42); }
   let beacons = [];
   if (police) {
     mesh(car, box, trim, -.25, 1.61, 0, .35, .12, 1.35);
     beacons = [-1, 1].map(side => mesh(car, box, new THREE.MeshBasicMaterial({ color: side < 0 ? 0x329bff : 0xff5046 }), -.25, 1.75, side * .43, .34, .18, .55));
   }
-  car.userData = { wheels, beacons };
+  car.userData = { wheels, beacons, variant, tailMaterial: tail };
   return car;
 }
 
-export class Traffic {
-  constructor(scene) {
-    this.scene = scene; this.cars = []; this.active = false;
-    const colors = [0xdf815b, 0xb0c8be, 0x6b9fbd, 0xd4bd72, 0x6c787b, 0xb3a6b9];
-    for (let i = 0; i < 20; i++) this.spawn(false, colors[i % colors.length]);
+// A framing diagnostic, not operational sensing: project body centres and reject
+// terrain/building occlusion. The recorded PNGs remain the final visual check.
+export function trafficInView(cars, camera, colliders = [], drive = null) {
+  camera.updateMatrixWorld();
+  const origin = { x: camera.position.x, y: -camera.position.z, z: camera.position.y };
+  function intersects(a, b, box) {
+    let enter = 0, leave = 1;
+    for (const [key, low, high] of [
+      ['x', box.x - box.w, box.x + box.w], ['y', box.y - box.h, box.y + box.h],
+      ['z', box.bottom ?? -1000, box.top ?? 32],
+    ]) {
+      const delta = b[key] - a[key];
+      if (Math.abs(delta) < 1e-8) { if (a[key] < low || a[key] > high) return false; }
+      else { const t1 = (low - a[key]) / delta, t2 = (high - a[key]) / delta; enter = Math.max(enter, Math.min(t1,t2)); leave = Math.min(leave, Math.max(t1,t2)); if (enter > leave) return false; }
+    }
+    return enter < .995 && leave > .001;
   }
-  spawn(police, color = 0xd9e3e4, near = null) {
-    const gx = near ? nearestStreet(near.x) : STREETS[Math.floor(random() * STREETS.length)];
-    const gy = near ? nearestStreet(near.y) : STREETS[Math.floor(random() * STREETS.length)];
-    const node = { x: gx, y: gy };
-    const c = { mesh: makeCar(color, police), x: gx, y: gy, yaw: random() * Math.PI * 2, speed: 0, desired: 7 + random() * 7, police, node, previous: null, next: null, distance: 0 };
-    this.choose(c, near);
+  const result = [];
+  for (const c of cars) {
+    const target = { x: c.x, y: c.y, z: (c.height ?? 0) + .9 };
+    const distance = Math.hypot(target.x-origin.x, target.y-origin.y, target.z-origin.z);
+    if (distance > 90) continue;
+    const screen = new THREE.Vector3(target.x, target.z, -target.y).project(camera);
+    if (screen.z < -1 || screen.z > 1 || Math.abs(screen.x) > .92 || Math.abs(screen.y) > .86) continue;
+    if (colliders.some(b => !b.broken && intersects(origin,target,b))) continue;
+    let covered = false;
+    if (drive) for(let i=1;i<16;i++) {
+      const t=i/16,x=origin.x+(target.x-origin.x)*t,y=origin.y+(target.y-origin.y)*t,z=origin.z+(target.z-origin.z)*t;
+      if(drive.drive_surface(x,y,0)>z-.12){covered=true;break;}
+    }
+    if (!covered) result.push({ id: c.id, x: c.x, y: c.y, speed: c.speed, police: c.police, variant: c.variant ?? c.mesh.userData.variant, distance, screenX: screen.x, screenY: screen.y });
+  }
+  return result;
+}
+
+
+// Route to the closest point on a directed road edge. Comparing only endpoint
+// distances sends pursuers down a short side street beside a long avenue.
+function pursuitCosts(graph, from, player) {
+  const distances = new Map(), direct = new Map(), incoming = new Map([...graph.keys()].map(key => [key, []]));
+  let nearest = Infinity;
+  for (const a of graph.values()) for (const b of a.links) {
+    incoming.get(nodeKey(b)).push(a);
+    const dx = b.x - a.x, dy = b.y - a.y, length = Math.hypot(dx, dy);
+    const t = Math.max(0, Math.min(1, ((player.x - a.x) * dx + (player.y - a.y) * dy) / (length * length)));
+    const away = Math.hypot(player.x - a.x - t * dx, player.y - a.y - t * dy);
+    if (away < nearest - 1e-6) { nearest = away; distances.clear(); direct.clear(); }
+    if (Math.abs(away - nearest) < 1e-6) {
+      distances.set(nodeKey(a), Math.min(distances.get(nodeKey(a)) ?? Infinity, t * length));
+      direct.set(nodeKey(a) + '>' + nodeKey(b), t * length);
+    }
+  }
+  const pending = new Set(graph.keys());
+  while (pending.size) {
+    let key, best = Infinity;
+    for (const candidate of pending) if ((distances.get(candidate) ?? Infinity) < best) { key = candidate; best = distances.get(candidate); }
+    if (key === undefined) break;
+    pending.delete(key);
+    const destination = graph.get(key);
+    for (const previous of incoming.get(key)) {
+      const previousKey = nodeKey(previous), cost = best + Math.hypot(previous.x - destination.x, previous.y - destination.y);
+      if (pending.has(previousKey) && cost < (distances.get(previousKey) ?? Infinity)) distances.set(previousKey, cost);
+    }
+  }
+  return new Map(from.links.map(next => [nodeKey(next), Math.min(
+    direct.get(nodeKey(from) + '>' + nodeKey(next)) ?? Infinity,
+    Math.hypot(from.x - next.x, from.y - next.y) + (distances.get(nodeKey(next)) ?? Infinity)
+  )]));
+}
+
+export class Traffic {
+  constructor(scene, options = {}) {
+    this.scene = scene; this.cars = []; this.active = false; this.nextId = 0;
+    this.drive = options.drive; this.urban = Boolean(options.urban);
+    this.graph = roadGraph(STREETS, this.urban);
+    const colors = [0xdf815b, 0xb0c8be, 0x6b9fbd, 0xd4bd72, 0x6c787b, 0xb3a6b9];
+    for (let i = 0; i < (options.cityCars ?? 20); i++) this.spawn(false, colors[i % colors.length]);
+    if (this.urban) {
+      for (let i = 0; i < HILL_TRAFFIC.length; i++) this.spawn(false, colors[i % colors.length], HILL_TRAFFIC[i]);
+      for (let i = 0; i < 8; i++) this.spawn(false, colors[(i + 2) % colors.length], LOWER_RING[i * 8]);
+    }
+  }
+  spawn(police, color = 0xd9e3e4, near = null, pursuitTarget = near) {
+    const node = near
+      ? [...this.graph.values()].reduce((a, b) => Math.hypot(a.x - near.x, a.y - near.y) < Math.hypot(b.x - near.x, b.y - near.y) ? a : b)
+      : this.graph.get(nodeKey({ x: STREETS[Math.floor(random() * STREETS.length)], y: STREETS[Math.floor(random() * STREETS.length)] }));
+    const gx = node.x, gy = node.y;
+    const variant = police ? 'police' : ['sedan', 'compact', 'taxi', 'van'][this.cars.filter(c => !c.police).length % 4];
+    const c = { id: this.nextId++, variant, mesh: makeCar(variant === 'taxi' ? 0xe2bd58 : color, police, false, variant), x: gx, y: gy, yaw: random() * Math.PI * 2, speed: 0, desired: 7 + random() * 7, police, node, previous: null, next: null, distance: 0 };
+    const planned = near?.to && this.graph.get(nodeKey(near.to));
+    if (!police && planned && node.links.includes(planned)) c.next = planned;
+    else this.choose(c, police ? pursuitTarget : null);
     const direction = Math.atan2(c.next.y - gy, c.next.x - gx);
-    c.x += Math.cos(direction) * (police ? 13 : 10 + random() * 25) + Math.sin(direction) * 3.8;
-    c.y += Math.sin(direction) * (police ? 13 : 10 + random() * 25) - Math.cos(direction) * 3.8;
+    const initial = Number.isFinite(near?.advance) ? near.advance : police ? 13 : 10 + random() * 25;
+    const limit = Math.max(2, Math.hypot(c.next.x - gx, c.next.y - gy) - 3), lane = this.lane(c);
+    const positions = [0, 8, -8, 16, -16].map(offset => {
+      const advance = Math.max(2, Math.min(initial + offset, limit));
+      const x = gx + Math.cos(direction) * advance + Math.sin(direction) * lane;
+      const y = gy + Math.sin(direction) * advance - Math.cos(direction) * lane;
+      return { x, y, gap: Math.min(Infinity, ...this.cars.map(other=>Math.hypot(other.x-x,other.y-y))) };
+    });
+    const position = positions.find(p=>p.gap>=5.5) ?? positions.sort((a,b)=>b.gap-a.gap)[0];
+    c.x = position.x; c.y = position.y;
+    c.height = this.drive?.drive_surface(c.x, c.y, 0) ?? 0;
     c.yaw = direction; this.scene.add(c.mesh); this.cars.push(c); return c;
   }
   choose(c, player) {
     const n = c.node;
-    let choices = [[50, 0], [-50, 0], [0, 50], [0, -50]].map(([x, y]) => ({ x: n.x + x, y: n.y + y })).filter(p => Math.abs(p.x) <= 150 && Math.abs(p.y) <= 150 && (!c.previous || p.x !== c.previous.x || p.y !== c.previous.y));
+    let choices = (this.graph.get(nodeKey(n))?.links ?? []).filter(p => !c.previous || nodeKey(p) !== nodeKey(c.previous));
     if (!choices.length) choices = [c.previous || { x: 0, y: 0 }];
-    if (c.police && player) choices.sort((a, b) => Math.hypot(a.x - player.x, a.y - player.y) - Math.hypot(b.x - player.x, b.y - player.y));
+    if (c.police && player) {
+      const costs = pursuitCosts(this.graph, n, player);
+      choices.sort((a, b) => (costs.get(nodeKey(a)) ?? Infinity) - (costs.get(nodeKey(b)) ?? Infinity)
+        || Math.hypot(a.x - player.x, a.y - player.y) - Math.hypot(b.x - player.x, b.y - player.y));
+    }
     c.next = choices[Math.floor(random() * (c.police && player ? 1 : choices.length))];
+  }
+  lane(c) {
+    return this.urban && c.node.y === c.next.y && [118.5, 181.5].includes(c.node.y) ? 0 : 3.8;
   }
   setChase(enabled, player) {
     this.active = enabled;
     for (const c of this.cars.filter(c => c.police)) this.scene.remove(c.mesh);
     this.cars = this.cars.filter(c => !c.police);
-    if (enabled) for (const side of [-1, 1]) this.spawn(true, 0xe2e5df, { x: player.x + 50 * side, y: player.y + 50 });
+    if (enabled) {
+      const yaw = Number.isFinite(player.yaw) ? player.yaw : 0, c = Math.cos(yaw), s = Math.sin(yaw), used = new Set();
+      // Distinct road nodes behind the player produce a real following pursuit.
+      for (const gap of [32, 55]) {
+        let nodes = [...this.graph.values()].filter(n => (n.x-player.x)*c+(n.y-player.y)*s < -12 && !used.has(nodeKey(n)));
+        if (!nodes.length) nodes = [...this.graph.values()].filter(n => !used.has(nodeKey(n)));
+        const target = { x: player.x-c*gap, y: player.y-s*gap };
+        nodes.sort((a,b)=>Math.hypot(a.x-target.x,a.y-target.y)-Math.hypot(b.x-target.x,b.y-target.y));
+        const node = nodes[0]; used.add(nodeKey(node)); this.spawn(true, 0xe2e5df, node, player);
+      }
+    }
   }
   update(dt, time, player) {
     for (const c of this.cars) {
       const heading = Math.atan2(c.next.y - c.node.y, c.next.x - c.node.x);
-      const tx = c.next.x + Math.sin(heading) * 3.8, ty = c.next.y - Math.cos(heading) * 3.8;
-      const distance = Math.hypot(tx - c.x, ty - c.y);
+      const lane = this.lane(c), tx = c.next.x + Math.sin(heading) * lane, ty = c.next.y - Math.cos(heading) * lane;
+      const distance = Math.hypot(tx - c.x, ty - c.y), toward = Math.atan2(ty - c.y, tx - c.x);
       let desired = c.police ? 17 + Math.min(5, Math.hypot(c.x - player.x, c.y - player.y) * .04) : c.desired;
-      if (!c.police && distance < 23 && distance > 9 && phase(Math.abs(Math.cos(heading)) > .5 ? 'x' : 'y', c.next.x, c.next.y, time) !== 'green') desired = Math.min(desired, Math.sqrt(Math.max(0, 7 * (distance - 11))));
+      // Brake for the actual bend instead of carrying cruise speed through tight alleys.
+      desired = Math.min(desired, Math.max(5, (c.police ? 24 : 15) - 12 * Math.abs(wrap(toward-c.yaw))));
+      if (!c.police && c.next.signal && distance < 23 && distance > 9 && phase(Math.abs(Math.cos(heading)) > .5 ? 'x' : 'y', c.next.x, c.next.y, time) !== 'green') desired = Math.min(desired, Math.sqrt(Math.max(0, 7 * (distance - 11))));
       for (const other of [...this.cars, player]) {
         if (other === c) continue;
         const dx = other.x - c.x, dy = other.y - c.y, front = dx * Math.cos(c.yaw) + dy * Math.sin(c.yaw), lateral = -dx * Math.sin(c.yaw) + dy * Math.cos(c.yaw);
-        if (front > 0 && front < 15 && Math.abs(lateral) < 2.4) desired = Math.min(desired, Math.max(0, (front - 5) * 1.1));
+        if (front <= 0 || front >= 15 || Math.abs(lateral) >= 2.4) continue;
+        // Ground traffic can differ in height on a slope while sharing one road.
+        // A car on an upper deck or in flight remains a separate layer.
+        if (Math.abs((other.height ?? 0) - (c.height ?? 0)) > 2.5) {
+          const otherRoad = this.drive?.drive_surface(other.x, other.y, 0) ?? 0, ownRoad = this.drive?.drive_surface(c.x, c.y, 0) ?? 0;
+          if (Math.abs((other.height ?? 0) - otherRoad) > 2.5 || Math.abs((c.height ?? 0) - ownRoad) > 2.5) continue;
+        }
+        desired = Math.min(desired, Math.max(0, (front - 5) * 1.1));
       }
-      c.speed += Math.max(-5 * dt, Math.min(2.3 * dt, desired - c.speed));
-      const toward = Math.atan2(ty - c.y, tx - c.x);
+      c.mesh.userData.tailMaterial?.color.setHex(desired < c.speed - .35 ? 0xff3f35 : 0x963d39);
+      c.speed += Math.max(-5 * dt, Math.min((c.police ? 3.2 : 2.3) * dt, desired - c.speed));
       c.yaw += Math.max(-1.7 * dt, Math.min(1.7 * dt, wrap(toward - c.yaw)));
       c.x += Math.cos(c.yaw) * c.speed * dt; c.y += Math.sin(c.yaw) * c.speed * dt; c.distance += c.speed * dt;
       if (distance < 7) { c.previous = c.node; c.node = c.next; this.choose(c, player); }
-      c.mesh.position.set(c.x, .02, -c.y); c.mesh.rotation.y = -c.yaw;
-      c.mesh.userData.wheels.forEach(({ wheel }) => { wheel.rotation.z = -c.distance / .32; });
+      c.height = this.drive?.drive_surface(c.x, c.y, 0) ?? 0;
+      const gx = this.drive?.drive_surface(c.x, c.y, 1) ?? 0, gy = this.drive?.drive_surface(c.x, c.y, 2) ?? 0;
+      c.mesh.position.set(c.x, c.height + .02, -c.y);
+      c.mesh.rotation.set(Math.atan(gy * Math.cos(c.yaw) - gx * Math.sin(c.yaw)), -c.yaw, Math.atan(gx * Math.cos(c.yaw) + gy * Math.sin(c.yaw)), 'YXZ');
+      c.mesh.userData.wheels.forEach(({ root, wheel, front }) => { if (front) root.rotation.y = -Math.max(-.45, Math.min(.45, wrap(toward-c.yaw))); wheel.rotation.z = -c.distance / .32; });
       c.mesh.userData.beacons.forEach((b, i) => { b.visible = Math.floor(time * 8) % 2 === i; });
     }
   }

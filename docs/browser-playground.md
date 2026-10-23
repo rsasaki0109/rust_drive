@@ -1,4 +1,4 @@
-# City Playground, Skyline Ridge and stacked roads
+# City Playground, urban hills and stacked roads
 
 [Play RustDriving](https://rsasaki0109.github.io/rust_driving/) in a desktop
 WebGL 2 / WebAssembly browser, or use the on-screen pointer controls on a phone.
@@ -14,6 +14,25 @@ screen; changing it ends any active pursuit and returns the car to rest.
 
 [Area overview](../assets/mixed-districts-preview.png) shows captured frames from
 the five starting areas, after driving with keyboard input.
+
+## Hillside city, backstreets and station loop
+
+Choose **坂のある市街地 / HILLSIDE CITY** for the street leading into the
+urban hill, or **駅前の周回道路 / CHUO STATION LOOP** for the curved boulevard.
+Mixed-height buildings, shopfronts and vertical signs line the incline.
+Two narrow one-way backstreets connect the hill junctions; the lower boulevard
+joins the original city by its outer return road. Traffic and police share
+that connected waypoint graph and follow the Rust road height.
+
+Commuter trains run on a 10 m viaduct above the boulevard. The station platform
+and a pedestrian bridge have physical upper decks and underside clearance.
+The uphill avenue continues beneath the pedestrian bridge to a guarded dead end.
+A normal component above 12 m/s can fracture a guardrail section: Rust spends
+90 kJ of normal kinetic energy for the authored 1,250 kg car, reducing speed.
+Slower impacts use the solid collider. Broken steel sections leave visible debris;
+R restores the rail along with the car.
+
+This is an original Tokyo-inspired arcade layout, rather than a geographic model.
 
 ## Elevated road and underground passage
 
@@ -35,13 +54,13 @@ panorama shows the incline from an oblique angle. R returns to the current
 area's approach. These are authored arcade surfaces, not a volumetric rigid-body
 or suspension simulation.
 
-## Skyline Ridge: climb, dive and return
+## City hill: climb, guardrail impact and landing
 
-Choose **高台・崖ダイブ / SKYLINE RIDGE** on the opening/pause screen, or
+Choose **市街地の坂・崖ダイブ / URBAN RIDGE** on the opening/pause screen, or
 drive east along the city's northernmost road. A 140 m ascent rises to a 48 m
 plateau, followed by a short launch lip at 49 m. The unsupported edge drops into
-a broad, clear landing basin. The lower return road loops west to the city.
-Keep W/Up pressed to climb and launch; R returns to the foot of the climb.
+a lower city district with a curved station boulevard. The lower return road loops west to the city.
+Keep W/Up pressed to climb, break through the guardrail and launch; R returns to the foot of the climb and restores the rail.
 
 Rust integrates downhill gravity on the slope and world-space ballistic motion
 after support is lost. Airborne throttle, steering and handbrake add no tire
@@ -52,9 +71,9 @@ authored height function directly. The minimap zooms to the ridge route.
 
 This is an arcade height-field/contact model with a planar two-axle tire model
 on the ground, not a six-degree-of-freedom rigid body or suspension model.
-Only authored road decks and the tunnel roof are drivable upper surfaces; city building roofs are not. City traffic/police remain on their street grid.
+Authored road, pedestrian and railway decks and the tunnel roof provide upper surfaces. Traffic and police use the connected city/hillside/station street graph.
 
-The map has 64 buildings, 49 signalized intersections and 20 independently moving
+The map has 107 buildings, 54 signalized intersections and 40 independently moving
 traffic cars. Chase mode adds two police cars; leave them more than 80 m behind
 for 12 seconds to escape. Drift chains add score after the slide ends. All
 artwork is original procedural geometry.
@@ -84,7 +103,7 @@ Steering the display mesh sideways is not used to manufacture a drift.
 
 The original city ground is flat; the eastern courses add slope gravity,
 ballistic flight, independently reachable upper decks and an excavated tunnel. Speeds and approximate arcade contact impulses are bounded. Traffic follows independent waypoint/signal rules; police
-use the street grid to approach the player. It is separate from the sensor-driven
+use the connected street graph to approach the player. It is separate from the sensor-driven
 autonomous research pipeline and the pinned native RNE adapter. Browser scores
 and pursuit behavior do not establish autonomous-driving capability.
 
@@ -150,21 +169,32 @@ python web/tests/structures_smoke.py --url http://127.0.0.1:4173/rust_driving/ \
   --output web/test-results/structures --record assets/stacked-roads-demo.gif
 ```
 
-The README hero records the actual ridge climb, flight and landing. Its
-[provenance](../assets/ridge-dive-demo.json) binds source/WASM/output hashes,
-normal-speed frame timing and observed height, airtime and landing impact.
-The **Ridge course evidence** workflow formats the standalone physics in its
-isolated checkout, runs all required core and game checks, verifies the browser,
-then publishes the formatting and three named media files to the unchanged
-feature branch. Its guard prevents overwriting a moved branch; it excludes
-`main` and `develop` as publication targets.
+The README hero records the actual urban pursuit, hillside climb, guardrail fracture,
+landing and station curve. Its [provenance](../assets/urban-hills-chase-demo.json)
+binds source, WASM, trace and output hashes with normal-speed timing and observed
+impact, flight and landing. The **Urban city evidence** workflow runs the required
+core suite, native/WASM tests and all production browser checks first. It
+publishes formatting and the seven named urban media files only if every check
+passes and the feature branch has not moved. It excludes `main` and `develop`
+as publication targets.
 
-To reproduce the ridge check after building/starting the preview:
+After building and starting the preview, install Playwright, Pillow and FFmpeg
+and intentionally refresh the urban hero with:
 
 ```sh
-python web/tests/ridge_smoke.py --url http://127.0.0.1:4173/rust_driving/ \
-  --output web/test-results/ridge
-# Intentionally record the hero as well (requires Pillow and FFmpeg):
+python web/tests/urban_smoke.py --url http://127.0.0.1:4173/rust_driving/ \
+  --output web/test-results/urban --record assets/urban-hills-chase-demo.gif
+```
+
+The clip has one visible cut between two public area selections. Both segments
+use real keyboard input and the production game; the recorder never writes
+vehicle poses or NPC state.
+
+The older [ridge recording](../assets/ridge-dive-demo.gif) and its
+[provenance](../assets/ridge-dive-demo.json) remain available. **Ridge course
+evidence** refreshes those three ridge assets after core and game checks:
+
+```sh
 python web/tests/ridge_smoke.py --url http://127.0.0.1:4173/rust_driving/ \
   --output web/test-results/ridge --record assets/ridge-dive-demo.gif
 ```
@@ -176,14 +206,14 @@ the diagnostic snapshot to choose repeatable inputs; it never writes poses or
 NPC state. This is arcade gameplay, separate from autonomous-driving validation.
 The [native dense-traffic recording](dense-traffic-demo.md) remains available.
 
-The **Record playground evidence** workflow can refresh the hero and area
+The **Record playground evidence** workflow can refresh the older city chase and area
 overview on a feature branch. It runs the core checks, geometry checks and real
 browser controls first, retains the evidence, and commits only the media paths.
 It refuses to publish if the branch moved while it ran. It never writes to
 `main` or `develop`; merge the resulting media through the usual PR.
 
 After building and starting the production preview above, install Playwright,
-Pillow and FFmpeg, then intentionally refresh the hero with:
+Pillow and FFmpeg, then intentionally refresh the city chase with:
 
 ```sh
 python scripts/capture-city-chase.py \
@@ -205,3 +235,15 @@ may change pixels. The recorder checks moving pursuit, measured rear slip,
 smoke, frame count, playback duration and uncaught browser errors before
 publishing the asset. The [poster](../assets/city-chase-demo.png) is a captured
 frame, with no added vehicles or effects.
+
+
+The 40 ordinary vehicles include sedans, compacts, taxis and delivery vans: 20 in the original city, 12 on hillside streets and eight around the station. They choose independent routes, wait for signals, steer their front wheels and brighten brake lights when slowing. Police prefer distinct road nodes behind the player, with a reachable-road fallback at map boundaries. The urban recorder requires at least two moving ordinary vehicles and a moving pursuer in view, retains a separate traffic PNG, and reports its framing diagnostic alongside the GIF. Body-centre projection and geometric occlusion checks support this diagnostic; captured images still require visual review.
+
+Pursuers route toward the closest point on a directed street edge, so a player
+partway along a long avenue is followed along that avenue. Ground traffic compares
+its height relative to the local road when following other vehicles on hills;
+a car on an upper deck still belongs to a separate level. The urban filming
+fixture uses ordinary throttle/brake events around 16 m/s during the climb and
+requires ten consecutive frames containing two ordinary cars and a pursuer.
+It identifies the final cliff landing at city grade, separately from any brief
+crest touchdown, and retains its trace before checking framing.

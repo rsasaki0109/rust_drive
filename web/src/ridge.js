@@ -10,8 +10,8 @@ export const WORLD_BOUNDS = Object.freeze({ minX: -184, maxX: 560, minY: -184, m
 // Geometry samples the same Rust height function used for tyre support/flight.
 export function createRidge(scene, drive) {
   const surface = (x, y) => drive.drive_surface(x, y, 0);
-  const rock = new THREE.MeshStandardMaterial({ color: 0x97755a, roughness: 1, side: THREE.DoubleSide });
-  const top = new THREE.MeshStandardMaterial({ color: 0x8b9170, roughness: 1, side: THREE.DoubleSide });
+  const rock = new THREE.MeshStandardMaterial({ color: 0x697476, roughness: 1, side: THREE.DoubleSide });
+  const top = new THREE.MeshStandardMaterial({ color: 0x7b817a, roughness: 1, side: THREE.DoubleSide });
   const road = new THREE.MeshStandardMaterial({ color: 0x434b51, roughness: .95, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 });
   const box = new THREE.BoxGeometry(1, 1, 1);
   function cuboid(x, height, y, w, h, d, color) {
@@ -29,7 +29,7 @@ export function createRidge(scene, drive) {
     [-420, 190, -500, 700], [500, 1180, -500, 700],
     [190, 500, -500, -115], [190, 500, -95, 700],
   ]) cuboid((left + right) / 2, -.33, (bottom + top) / 2, right - left, .3, top - bottom, 0x53635b);
-  cuboid(370, -.08, 135, 390, .16, 200, 0x857d64);
+  cuboid(370, -.08, 135, 390, .16, 200, 0x737c72);
   const xs = Array.from({ length: 91 }, (_, i) => 200 + i * 2);
   const height = x => surface(Math.min(x, 379.999999), 150);
   const vertices = [], indices = [], walls = [], wallIndices = [];
@@ -59,7 +59,7 @@ export function createRidge(scene, drive) {
   strip(Array.from({ length: 116 }, (_, i) => { const x = 150 + i * 2; return { x, y: 150, h: x >= 200 ? height(x) : 0 }; }), 16, road);
   strip([{ x: 400, y: 150 }, { x: 530, y: 150 }, { x: 530, y: 70 }, { x: 150, y: 70 }], 18, road);
   // Broad, clear basin under the flight path; the return road stays at city grade.
-  cuboid(475, 0, 150, 150, .05, 115, 0xa59c7d);
+  cuboid(475, 0, 150, 150, .05, 115, 0x858c80);
   const paint = new THREE.MeshStandardMaterial({ color: 0xe5d0a0, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -4 });
   for (let x = 180; x <= 372; x += 8) {
     strip([-1.9, 0, 1.9].map(dx => ({ x: x + dx, y: 150, h: x + dx >= 200 ? height(x + dx) : 0 })), .16, paint, .055);
@@ -80,8 +80,8 @@ export function createRidge(scene, drive) {
     const m = new THREE.Mesh(new THREE.PlaneGeometry(20, 5), new THREE.MeshStandardMaterial({ map, emissiveMap: map, emissive: 0xffffff, emissiveIntensity: .45, side: THREE.DoubleSide }));
     m.rotation.y = -Math.PI / 2; m.position.set(x, elevation + 6, -y); scene.add(m);
   }
-  sign('SKYLINE RIDGE', 197, 165, 0);
-  sign('CLIFF DIVE / 49 m', 368, 165, 48);
-  sign('LANDING ZONE', 472, 192, 0);
+  sign('HILLSIDE CITY', 197, 165, 0);
+  sign('GUARDRAIL / DEAD END', 368, 165, 48);
+  sign('CHUO STATION LOOP', 472, 192, 0);
   return { climbHeight: 49 };
 }

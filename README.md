@@ -1,6 +1,6 @@
 # RustDriving
 
-![Recorded steep climb, 49 m cliff dive and physical landing](assets/ridge-dive-demo.gif?v=skyway-tunnel)
+![Recorded city pursuit among ordinary traffic, hillside streets, a breakaway guardrail and the station loop](assets/urban-hills-chase-demo.gif)
 
 [🎮 Play City Playground — 自分で運転・ドリフト・カーチェイス](https://rsasaki0109.github.io/rust_driving/)
 
