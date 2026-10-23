@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "passed": true,
+  "backend": "rust-wasm-ridge-flight",
+  "source_commit": "010c60704f600ea0018866b4caa68996f482bc82",
+  "browser_version": "155.0.8059.0",
+  "renderer": "Three.js / Chromium WebGL 2 / SwiftShader",
+  "input": "Keyboard W/S and public start-area/camera/pause/recover controls; read-only diagnostic snapshots. No pose writes.",
+  "source_sha256": {
+    "integrations/playground/src/lib.rs": "379e009187bcd0172dbbf005c275e95cbc21fb1bd41adbbcc6fa73ff2b14c09e",
+    "integrations/playground/src/elevation.rs": "4a73523e21a6c08a11b74ea8847b67a194ecad4499d79250fe2396589007abcf",
+    "integrations/playground/Cargo.toml": "e1f0c36dc2b9f2de7ce90e04c3cb1d7eeaae0e8b32747709901698daaa7c7ec0",
+    "integrations/playground/Cargo.lock": "b9ab8c27b377f2173e4bc7871ac223ddbf01e7f8026fbb115635d9ca6b5772dc",
+    "web/src/main.js": "5a45043021fb67989e9f3896e4e6d230f3e2c642faf880bba26255660eaaf26c",
+    "web/src/ridge.js": "dd3660e14af38d2670fa63bdafdf4fdda0e98f43856b58171b805040a98bd140",
+    "web/src/city.js": "371a26a02d441ff4853b48f151044fa2c65aa98af40ca5b346659c2258ba3972",
+    "web/src/scenery.js": "e8e74d474f6f650b497920a15891dd44040d6578c0cc6fd68bdecd9554746ee1",
+    "web/src/regions.js": "9e1c02ffb42e69383982d59bc5882d62801671eb48403c2495419235ef1f55f0",
+    "web/src/style.css": "a118bc3ba96b8bcda54ee76d769f9b8dc95796a505a33cea04e6db8e7b071737",
+    "web/index.html": "cde8d011107fe45dc3e9e1b95d3add0cb593b0340b20aa1078becf9d08c18b82",
+    "web/package-lock.json": "f0191e9598e42d8dc3f8ff7895fbc14b14305a4d4064bd78eacd2a364d1d2073",
+    "web/vite.config.js": "b246ac77d718e95e06c9cd5ea97bb563069dd8a95e7a3bc7cf8c58ee83a71181",
+    "scripts/build-playground.sh": "a8d0851eeb6876f1e77f70d07e1b1443674c6b4e904bc51f95dacd64230d0e8b",
+    "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed",
+    "web/tests/ridge_smoke.py": "01261eca09782ac2ac67ac406b9de62e56c5707ffde2f1120ed9ffcf23e2e63f"
+  },
+  "wasm_sha256": "52ef1621fdc2eba6961674be87854fd88a93a6b91c6579b3fe72aebdfac720a7",
+  "observed": {
+    "peak_height_m": 49.678205244250236,
+    "peak_uphill_pitch_degrees": 27.215935978628302,
+    "flight_seconds": 3.5375000000000707,
+    "landing_speed_mps": 31.2516147911464,
+    "landing_x_m": 484.4392404306633,
+    "landings": 1,
+    "pause_freezes_height": true,
+    "recover_clears_flight": true,
+    "uncaught_errors": []
+  },
+  "trace_sha256": "ee98f79a19734141c0df96eeba6479a78a9e4d715b9889eabb7b06e319038452",
+  "scope": "Authored arcade terrain and ballistic flight; not autonomous-driving or real-vehicle evidence.",
+  "capture": {
+    "width": 960,
+    "height": 540,
+    "frames": 214,
+    "frame_duration_ms": 80,
+    "render_step_ms": 40,
+    "physics_hz": 120,
+    "duration_seconds": 17.12,
+    "playback_speed": 1
+  },
+  "gif_sha256": "3415c6b4bd9a03d25e7921ccdccd7c2195ff1c73e6879c03e900e4f2ce06fb48",
+  "poster_sha256": "43ae1e47b8d56855b028a6e9a816dae81fb2bb7f355a6ae8e5ea2e72a77f5cfe"
+}
