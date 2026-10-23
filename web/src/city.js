@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { districtAt } from './regions.js';
+import { createDistrictScenery } from './scenery.js';
 
 export const STREETS = [-150, -100, -50, 0, 50, 100, 150];
 export const LIMIT = 184;
@@ -27,8 +29,9 @@ function instances(parent, geometry, material, rows) {
 }
 
 export function createCity(scene) {
-  const colliders = [], windows = [], bodies = [], roofs = [], curbs = [], paint = [], lamps = [], trunks = [], crowns = [];
+  const colliders = [], windows = [], bodies = [], roofs = [], curbs = [], paint = [], lamps = [];
   mesh(scene, box, matte(0x53635b), 0, -.42, 0, 700, .5, 700).receiveShadow = true;
+  const districts = createDistrictScenery(scene); colliders.push(...districts.colliders);
   const asphalt = matte(0x333e47);
   for (const street of STREETS) {
     mesh(scene, box, asphalt, street, -.11, 0, 18, .2, 380).receiveShadow = true;
@@ -45,18 +48,8 @@ export function createCity(scene) {
   }
   for (let ix = 0; ix < 6; ix++) for (let iy = 0; iy < 6; iy++) {
     const cx = -125 + 50 * ix, cy = -125 + 50 * iy;
-    curbs.push({ x: cx, y: .12, z: -cy, w: 31.8, h: .24, d: 31.8 });
-    if (ix === 3 && iy === 3 || ix === 1 && iy === 4) {
-      mesh(scene, box, matte(0x547c61), cx, .25, -cy, 27, .1, 27);
-      for (let j = 0; j < 7; j++) {
-        const a = j * Math.PI * 2 / 7;
-        trunks.push({ x: cx + Math.cos(a) * 10, y: 1.5, z: -cy + Math.sin(a) * 10, w: .35, h: 3, d: .35 });
-        crowns.push({ x: cx + Math.cos(a) * 10, y: 4.4, z: -cy + Math.sin(a) * 10, w: 2.8, h: 3.5, d: 2.8, color: j % 2 ? 0x568764 : 0x769b74 });
-      }
-      mesh(scene, new THREE.CylinderGeometry(4, 4.4, .6, 24), matte(0xa2b5b6), cx, .55, -cy);
-      mesh(scene, new THREE.CylinderGeometry(3.6, 3.6, .1, 24), new THREE.MeshStandardMaterial({ color: 0x659da7, metalness: .45, roughness: .12 }), cx, .9, -cy);
-      continue;
-    }
+    if (districtAt(cx, cy).id !== 'downtown') continue;
+    curbs.push({ x: cx, y: .04, z: -cy, w: 31.8, h: .08, d: 31.8 });
     for (let building = 0; building < 3; building++) {
       const width = building === 2 ? 23 : 10.5, depth = building === 2 ? 11 : 12;
       const x = cx + (building === 0 ? -6.5 : building === 1 ? 6.5 : 0);
@@ -91,8 +84,6 @@ export function createCity(scene) {
   instances(scene, box, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: .3, metalness: .2, emissive: 0x201e19, emissiveIntensity: .2 }), windows);
   instances(scene, box, matte(0xd0c9ae), paint);
   instances(scene, box, matte(0x47535c), lamps);
-  instances(scene, box, matte(0x7b6856), trunks);
-  instances(scene, new THREE.IcosahedronGeometry(1, 1), matte(0xffffff), crowns);
   // Paired signal heads at each intersection, driven by the same phase as traffic.
   const signals = [], poles = [], heads = [], lenses = [], crosswalks = [];
   for (const x of STREETS) for (const y of STREETS) {
@@ -116,7 +107,7 @@ export function createCity(scene) {
   const signalMesh = instances(scene, new THREE.SphereGeometry(1, 7, 5), new THREE.MeshBasicMaterial({ color: 0xffffff }), lenses);
   let oldSecond = -1;
   const colors = { red: new THREE.Color(0xff5c48), yellow: new THREE.Color(0xffc66d), green: new THREE.Color(0x74efbf), off: new THREE.Color(0x152425) };
-  return { colliders, buildingCount: bodies.length, signals: signals.length / 2, update(time) {
+  return { colliders, buildingCount: bodies.length + districts.buildingCount, signals: signals.length / 2, update(time) {
     const second = Math.floor(time * 2); if (second === oldSecond) return; oldSecond = second;
     for (const s of signals) { const color = phase(s.axis, s.x, s.y, time); s.indices.forEach((i, j) => signalMesh.setColorAt(i, color === ['red', 'yellow', 'green'][j] ? colors[color] : colors.off)); }
     signalMesh.instanceColor.needsUpdate = true;

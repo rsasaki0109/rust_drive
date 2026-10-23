@@ -1,0 +1,150 @@
+name: Record playground evidence
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: playground-recording-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  record:
+    # Automatic recording is an explicit opt-in for this same-repository feature.
+    # After merge, maintainers can run it manually on a feature branch.
+    if: >-
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository &&
+       github.event.pull_request.head.ref == 'codex/mixed-districts') ||
+      (github.event_name == 'workflow_dispatch' &&
+       startsWith(github.ref, 'refs/heads/') &&
+       github.ref_name != 'main' && github.ref_name != 'develop')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    env:
+      RUSTDRIVING_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      RUSTDRIVING_SOURCE_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
+      RUSTDRIVING_REPO_NAME: ${{ github.event.repository.name }}
+      PAGES_BASE: /${{ github.event.repository.name }}/
+      CARGO_INCREMENTAL: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RUSTDRIVING_SOURCE_SHA }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.90.0
+          targets: wasm32-unknown-unknown
+          components: rustfmt, clippy
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run the required core regression suite
+        run: bash scripts/check.sh
+      - name: Check physics and build the game
+        run: |
+          cargo fmt --manifest-path integrations/playground/Cargo.toml --check
+          cargo clippy --locked --manifest-path integrations/playground/Cargo.toml --all-targets -- -D warnings
+          cargo test --locked --manifest-path integrations/playground/Cargo.toml
+          npm ci --prefix web --ignore-scripts
+          bash scripts/build-playground.sh
+          npm --prefix web test
+      - name: Install recording tools
+        run: |
+          python -m pip install playwright==1.56.0 pillow==12.0.0
+          python -m playwright install --with-deps chromium
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+      - name: Drive all districts and record the city pursuit
+        run: |
+          npm --prefix web run preview -- --host 127.0.0.1 --port 4173 > /tmp/playground-recording-preview.log 2>&1 &
+          rustdriving_preview_pid=$!
+          trap 'kill "$rustdriving_preview_pid" || true' EXIT
+          python - <<'PY'
+          import os, time, urllib.request
+          url = 'http://127.0.0.1:4173' + os.environ['PAGES_BASE']
+          for attempt in range(60):
+              try:
+                  with urllib.request.urlopen(url, timeout=1) as response:
+                      if response.status == 200:
+                          break
+              except OSError:
+                  pass
+              time.sleep(.25)
+          else:
+              raise SystemExit('Production preview did not start')
+          PY
+          python web/tests/browser_smoke.py --url "http://127.0.0.1:4173${PAGES_BASE}" --output web/test-results
+          python scripts/capture-city-chase.py --url "http://127.0.0.1:4173${PAGES_BASE}" --evidence artifacts/mixed-districts-capture
+      - name: Compose an overview from the five captured game frames
+        run: |
+          python - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          from PIL import Image, ImageDraw, ImageFont
+          districts = [
+              ('downtown', 'NEON CITY'), ('harbor', 'HARBOR BAY'),
+              ('forest', 'CANOPY PARK'), ('factory', 'IRONWORKS'),
+              ('plaza', 'DRIFT SQUARE'),
+          ]
+          image = Image.new('RGB', (1440, 680), '#12212b')
+          draw = ImageDraw.Draw(image)
+          font = ImageFont.load_default(size=22)
+          inputs = {}
+          for index, (district, label) in enumerate(districts):
+              path = Path('web/test-results') / ('district-' + district + '.png')
+              inputs[str(path)] = hashlib.sha256(path.read_bytes()).hexdigest()
+              x, y = (index % 3) * 480, (index // 3) * 340
+              with Image.open(path) as frame:
+                  image.paste(frame.convert('RGB').resize((480, 300), Image.Resampling.LANCZOS), (x, y))
+              draw.text((x + 14, y + 308), label, fill='#ffb465', font=font)
+          draw.text((990, 475), '5 AREAS', fill='#ffb465', font=font)
+          draw.text((990, 510), 'ONE CONNECTED WORLD', fill='#f2f3ed', font=font)
+          output = Path('assets/mixed-districts-preview.png')
+          image.save(output)
+          report = {
+              'schema_version': 1,
+              'source_commit': os.environ['RUSTDRIVING_SOURCE_SHA'],
+              'input_sha256': inputs,
+              'output_sha256': hashlib.sha256(output.read_bytes()).hexdigest(),
+              'scope': 'Five production game screenshots, resized and labelled. UI-selected spawns; keyboard-driven movement. No pose writes.',
+          }
+          output.with_suffix('.json').write_text(json.dumps(report, indent=2) + '\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playground-recording-evidence
+          path: |
+            web/test-results
+            artifacts/mixed-districts-capture
+            assets/mixed-districts-preview.*
+            assets/city-chase-demo.*
+      - name: Commit only the reviewed media paths to the source feature branch
+        run: |
+          git fetch origin "refs/heads/${RUSTDRIVING_SOURCE_BRANCH}"
+          rustdriving_current_head=$(git rev-parse FETCH_HEAD)
+          if [ "$rustdriving_current_head" != "$RUSTDRIVING_SOURCE_SHA" ]; then
+            echo "The feature branch moved; keep the artifact without overwriting newer work."
+            exit 1
+          fi
+          git add assets/city-chase-demo.gif assets/city-chase-demo.png assets/city-chase-demo.json assets/mixed-districts-preview.png assets/mixed-districts-preview.json
+          if git diff --cached --quiet; then
+            echo "The recording already matches."
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Record the mixed-district playground and city pursuit'
+          git push origin "HEAD:refs/heads/${RUSTDRIVING_SOURCE_BRANCH}"
