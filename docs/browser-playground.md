@@ -285,7 +285,27 @@ Pursuers route toward the closest point on a directed street edge, so a player
 partway along a long avenue is followed along that avenue. Ground traffic compares
 its height relative to the local road when following other vehicles on hills;
 a car on an upper deck still belongs to a separate level. The urban filming
-fixture uses ordinary throttle/brake events around 16 m/s during the climb and
-requires ten consecutive frames containing two ordinary cars and a pursuer.
+fixture approaches at 6 m/s, then uses ordinary throttle/brake events around
+16 m/s after east coordinate 255 m. It requires ten consecutive frames containing two ordinary cars and a pursuer.
 It identifies the final cliff landing at city grade, separately from any brief
 crest touchdown, and retains its trace before checking framing.
+
+
+Traffic coordinates entry at signals and street merges. One NPC owns a
+junction group until it has cleared the crossing; waiting vehicles brake before
+entry and resume in arrival order. An unused reservation can transfer to a
+front-line pursuer if its holder can still stop before entry; committed vehicles
+always finish clearing first.
+Nearby controlled points share a group so vehicles cannot hold mutually blocking
+reservations between them. Long graph edges also stop before the first occupied
+point they pass. An admitted car clears after a light change, and removing a
+pursuer releases its ownership.
+
+Traffic plans its next exit before reaching the junction, brakes for the bend
+and follows a lane-centred turn arc. Pursuers refresh their exit as the target
+moves, deferring a newly requested bend if braking distance is insufficient.
+This keeps right/left turns out of the
+opposing approach and avoids permanent face-to-face following stops. Short
+curve waypoints retain braking distance to the next signal; upper-road players
+do not block ground traffic. This conservative arcade policy serializes group
+entry rather than scheduling simultaneous non-conflicting turns.

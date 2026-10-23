@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { Junctions } from './junctions.js';
+import { turnArc, arcTarget } from './traffic-turns.js';
 import { applyVehiclePose } from './vehicle-pose.js';
 import { districtAt } from './regions.js';
 import { createDistrictScenery } from './scenery.js';
@@ -241,6 +243,7 @@ export class Traffic {
     this.scene = scene; this.cars = []; this.active = false; this.nextId = 0;
     this.drive = options.drive; this.urban = Boolean(options.urban);
     this.graph = roadGraph(STREETS, this.urban);
+    this.junctions = new Junctions(this.graph, { phase, lane: car => this.lane(car), drive: this.drive });
     const colors = [0xdf815b, 0xb0c8be, 0x6b9fbd, 0xd4bd72, 0x6c787b, 0xb3a6b9];
     for (let i = 0; i < (options.cityCars ?? 20); i++) this.spawn(false, colors[i % colors.length]);
     if (this.urban) {
@@ -304,13 +307,36 @@ export class Traffic {
   }
   update(dt, time, player) {
     for (const c of this.cars) {
+      const fresh = c.plannedAt !== c.next;
+      const moved = Math.hypot(player.x - (c.plannedTarget?.x ?? Infinity),
+                               player.y - (c.plannedTarget?.y ?? Infinity));
+      if (!fresh && (!c.police || c.arc || moved < 8)) continue;
+      const turn = { id: c.id, node: c.next, previous: c.node, police: c.police };
+      this.choose(turn, player);
+      const arc = turnArc(c.node, c.next, turn.next, this.lane(c),
+        this.lane({ node: c.next, next: turn.next }));
+      // Refresh a moving pursuit target, retaining a bend when it is too late to brake.
+      const distance = Math.hypot(c.next.x - c.x, c.next.y - c.y);
+      if (fresh || !arc || distance >= 7 + Math.max(0, c.speed ** 2 - arc.speed ** 2) / 7) {
+        c.plannedAt = c.next; c.plannedNext = turn.next; c.plannedArc = arc;
+      }
+      if (c.police) c.plannedTarget = { x: player.x, y: player.y };
+    }
+    this.junctions.update(dt, time, this.cars, player);
+    for (const c of this.cars) {
       const heading = Math.atan2(c.next.y - c.node.y, c.next.x - c.node.x);
       const lane = this.lane(c), tx = c.next.x + Math.sin(heading) * lane, ty = c.next.y - Math.cos(heading) * lane;
-      const distance = Math.hypot(tx - c.x, ty - c.y), toward = Math.atan2(ty - c.y, tx - c.x);
+      const distance = Math.hypot(tx - c.x, ty - c.y);
+      const arcAim = c.arc && arcTarget(c.arc, c);
+      if (c.arc && !arcAim) c.arc = null;
+      const toward = Math.atan2((arcAim?.y ?? ty) - c.y, (arcAim?.x ?? tx) - c.x);
       let desired = c.police ? 17 + Math.min(5, Math.hypot(c.x - player.x, c.y - player.y) * .04) : c.desired;
       // Brake for the actual bend instead of carrying cruise speed through tight alleys.
       desired = Math.min(desired, Math.max(5, (c.police ? 24 : 15) - 12 * Math.abs(wrap(toward-c.yaw))));
-      if (!c.police && c.next.signal && distance < 23 && distance > 9 && phase(Math.abs(Math.cos(heading)) > .5 ? 'x' : 'y', c.next.x, c.next.y, time) !== 'green') desired = Math.min(desired, Math.sqrt(Math.max(0, 7 * (distance - 11))));
+      if (c.plannedArc) desired = Math.min(desired,
+        Math.sqrt(c.plannedArc.speed ** 2 + 7 * Math.max(0, distance - 7)));
+      if (c.arc) desired = Math.min(desired, c.arc.speed);
+      desired = Math.min(desired, this.junctions.limit(c));
       for (const other of [...this.cars, player]) {
         if (other === c) continue;
         const dx = other.x - c.x, dy = other.y - c.y, front = dx * Math.cos(c.yaw) + dy * Math.sin(c.yaw), lateral = -dx * Math.sin(c.yaw) + dy * Math.cos(c.yaw);
@@ -327,7 +353,9 @@ export class Traffic {
       c.speed += Math.max(-5 * dt, Math.min((c.police ? 3.2 : 2.3) * dt, desired - c.speed));
       c.yaw += Math.max(-1.7 * dt, Math.min(1.7 * dt, wrap(toward - c.yaw)));
       c.x += Math.cos(c.yaw) * c.speed * dt; c.y += Math.sin(c.yaw) * c.speed * dt; c.distance += c.speed * dt;
-      if (distance < 7) { c.previous = c.node; c.node = c.next; this.choose(c, player); }
+      if (distance < 7 && !c.arc) {
+        c.previous = c.node; c.node = c.next; c.next = c.plannedNext; c.arc = c.plannedArc;
+      }
       c.height = this.drive?.drive_surface(c.x, c.y, 0) ?? 0;
       const gx = this.drive?.drive_surface(c.x, c.y, 1) ?? 0, gy = this.drive?.drive_surface(c.x, c.y, 2) ?? 0;
       applyVehiclePose(c.mesh, {

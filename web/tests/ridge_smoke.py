@@ -19,7 +19,7 @@ SOURCES = [
     'integrations/playground/src/lib.rs', 'integrations/playground/src/elevation.rs',
     'integrations/playground/src/structures.rs', 'web/src/structures.js',
     'integrations/playground/Cargo.toml', 'integrations/playground/Cargo.lock',
-    'web/src/vehicle-pose.js', 'web/src/main.js', 'web/src/ridge.js', 'web/src/city.js', 'web/src/scenery.js',
+    'web/src/traffic-turns.js', 'web/src/junctions.js', 'web/src/vehicle-pose.js', 'web/src/main.js', 'web/src/ridge.js', 'web/src/city.js', 'web/src/scenery.js',
     'web/src/regions.js', 'web/src/style.css', 'web/index.html',
     'web/package-lock.json', 'web/vite.config.js', 'scripts/build-playground.sh',
     'rust-toolchain.toml', 'web/tests/ridge_smoke.py',
@@ -90,7 +90,14 @@ def main():
                 error = math.atan2(math.sin(desired_yaw - state['yaw']), math.cos(desired_yaw - state['yaw']))
                 command = error - .2 * state['yawRate'] - .08 * math.atan2(state['lateral'], max(1, abs(state['speed'])))
                 wanted = {'KeyA'} if command > .03 else {'KeyD'} if command < -.03 else set()
-                wanted |= {'KeyW'} if not state['landings'] else {'KeyS'} if state['speed'] > 1 else set()
+                # Hold a controlled approach speed through the live city traffic.
+                if state['landings']:
+                    if state['speed'] > 1:
+                        wanted.add('KeyS')
+                elif state['speed'] < 20:
+                    wanted.add('KeyW')
+                elif state['speed'] > 20.8:
+                    wanted.add('KeyS')
                 for key in sorted(held - wanted):
                     page.keyboard.up(key)
                 for key in sorted(wanted - held):
