@@ -119,8 +119,9 @@ underneath it, enter and exit the tunnel, cross its roof, hit an underside and
 land on an upper deck. Actual mesh raycasts check the two levels and open ramp
 excavations; body-width sweeps check the structural colliders. The browser test drives the
 actual production UI with keyboard and pointer events, checks smoke/skid marks,
-all five starting areas, three cameras, pursuit, pause/focus handling, recovery
-and mobile controls. Geometry checks independently sweep the street lanes,
+all five city starting areas, three cameras, pursuit, pause/focus handling, recovery
+and mobile controls. Its fixed browser clock advances actual rendered frames;
+acceleration checks use simulation time rather than depending on CI GPU speed. Geometry checks independently sweep the street lanes,
 forest corridors and plaza drift circles against the actual scene colliders:
 
 ```sh

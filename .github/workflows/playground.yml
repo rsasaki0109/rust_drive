@@ -5,6 +5,7 @@ on:
     branches: [main, develop]
     paths: ['web/**', 'integrations/playground/**', 'scripts/build-playground.sh', '.github/workflows/playground.yml', 'rust-toolchain.toml']
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     paths: ['web/**', 'integrations/playground/**', 'scripts/build-playground.sh', '.github/workflows/playground.yml', 'rust-toolchain.toml']
   workflow_dispatch:
 
