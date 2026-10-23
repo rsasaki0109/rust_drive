@@ -13,7 +13,9 @@ pub(crate) struct Surface {
 }
 
 pub(crate) fn surface(x: f64, y: f64) -> Surface {
-    if let Some(floor) = excavation(x, y) { return floor; }
+    if let Some(floor) = excavation(x, y) {
+        return floor;
+    }
     if !x.is_finite() || !y.is_finite() || !(110.0..=190.0).contains(&y) {
         return Surface::default();
     }
@@ -43,7 +45,8 @@ pub(crate) fn surface(x: f64, y: f64) -> Surface {
 // Pick only a layer reachable from this height. Lower roads survive at the same XY.
 fn support(x: f64, y: f64, reachable_height: f64) -> Surface {
     let floor = surface(x, y);
-    upper(x, y).filter(|s| s.height <= reachable_height + 0.000_001 && s.height >= floor.height)
+    upper(x, y)
+        .filter(|s| s.height <= reachable_height + 0.000_001 && s.height >= floor.height)
         .unwrap_or(floor)
 }
 
@@ -143,11 +146,18 @@ impl DrivingVehicle {
         self.car.step(throttle, steering, hand, dt);
         let dx = self.car.x - old.x;
         let dy = self.car.y - old.y;
-        let next = support(self.car.x, self.car.y, self.elevation.height + 0.8 * dx.hypot(dy) + 0.001);
+        let next = support(
+            self.car.x,
+            self.car.y,
+            self.elevation.height + 0.8 * dx.hypot(dy) + 0.001,
+        );
         // A vertical face cannot be climbed by entering its height-field cell.
-        if blocks_body(self.car.x, self.car.y, self.elevation.height.max(next.height))
-            || (next.height > self.elevation.height + 0.01
-                && next.height - ground.height > 0.8 * dx.hypot(dy) + 0.001)
+        if blocks_body(
+            self.car.x,
+            self.car.y,
+            self.elevation.height.max(next.height),
+        ) || (next.height > self.elevation.height + 0.01
+            && next.height - ground.height > 0.8 * dx.hypot(dy) + 0.001)
         {
             self.car.x = old.x;
             self.car.y = old.y;
@@ -185,9 +195,12 @@ impl DrivingVehicle {
         self.car.y += self.elevation.vy * dt;
         let mut next = support(self.car.x, self.car.y, self.elevation.height);
         let distance = (self.car.x - previous.x).hypot(self.car.y - previous.y);
-        if blocks_body(self.car.x, self.car.y, self.elevation.height.max(next.height))
-            || (self.elevation.height < next.height
-                && next.height - ground.height > 0.8 * distance + 0.001)
+        if blocks_body(
+            self.car.x,
+            self.car.y,
+            self.elevation.height.max(next.height),
+        ) || (self.elevation.height < next.height
+            && next.height - ground.height > 0.8 * distance + 0.001)
         {
             self.car.x = previous.x;
             self.car.y = previous.y;
@@ -246,7 +259,8 @@ impl DrivingVehicle {
         if self.elevation.grounded {
             let next = support(self.car.x, self.car.y, self.elevation.height + 0.01);
             if next.height > self.elevation.height + 1.0
-                || blocks_body(self.car.x, self.car.y, self.elevation.height) {
+                || blocks_body(self.car.x, self.car.y, self.elevation.height)
+            {
                 self.car.x = old.x;
                 self.car.y = old.y;
             } else if next.height < self.elevation.height - 1.0 {
@@ -386,7 +400,9 @@ mod tests {
         above.reset(190.0, 20.0, 0.0);
         for _ in 0..6000 {
             above.step(1.0, 0.0, 0.0, 1.0 / 120.0);
-            if above.car.x >= 350.0 { break; }
+            if above.car.x >= 350.0 {
+                break;
+            }
         }
         assert!(above.car.x >= 350.0, "The bridge climb was blocked");
         assert!((above.elevation.height - 12.0).abs() < 0.1);
@@ -395,7 +411,9 @@ mod tests {
         for _ in 0..3000 {
             below.step(1.0, 0.0, 0.0, 1.0 / 120.0);
             assert!(below.elevation.height.abs() < 1e-10);
-            if below.car.y > 35.0 { return; }
+            if below.car.y > 35.0 {
+                return;
+            }
         }
         panic!("The lower road did not cross underneath the bridge");
     }
@@ -478,5 +496,4 @@ mod tests {
         assert!(car.car.y <= -95.0 && car.elevation.height == -8.0);
         assert!(car.car.contacts > 0);
     }
-
 }

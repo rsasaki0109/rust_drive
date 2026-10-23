@@ -146,7 +146,7 @@ then intentionally refreshes both the ridge and stacked-road recordings. It
 publishes only verified formatting and named media to the unchanged feature branch.
 
 ```sh
-python web/tests/structures_smoke.py --url http://127.0.0.1:4173/rust_driving/ \\
+python web/tests/structures_smoke.py --url http://127.0.0.1:4173/rust_driving/ \
   --output web/test-results/structures --record assets/stacked-roads-demo.gif
 ```
 
@@ -162,10 +162,10 @@ feature branch. Its guard prevents overwriting a moved branch; it excludes
 To reproduce the ridge check after building/starting the preview:
 
 ```sh
-python web/tests/ridge_smoke.py --url http://127.0.0.1:4173/rust_driving/ \\
+python web/tests/ridge_smoke.py --url http://127.0.0.1:4173/rust_driving/ \
   --output web/test-results/ridge
 # Intentionally record the hero as well (requires Pillow and FFmpeg):
-python web/tests/ridge_smoke.py --url http://127.0.0.1:4173/rust_driving/ \\
+python web/tests/ridge_smoke.py --url http://127.0.0.1:4173/rust_driving/ \
   --output web/test-results/ridge --record assets/ridge-dive-demo.gif
 ```
 

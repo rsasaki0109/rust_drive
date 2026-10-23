@@ -34,7 +34,8 @@ with sync_playwright() as p:
  page.locator('#start').click(force=True);assert snap()['started'] and not snap()['paused']
  page.keyboard.down('KeyW');wait_state(page,'window.rustDriving.snapshot().speed>10',timeout=25000)
  page.keyboard.down('KeyA');page.keyboard.down('Space')
- wait_state(page,'Math.abs(window.rustDriving.snapshot().rearSlip)>Math.PI/12 && window.rustDriving.snapshot().smokeParticles>0',timeout=45000)
+ # Tire marks need consecutive sliding physics steps; keep holding the actual inputs.
+ wait_state(page,'Math.abs(window.rustDriving.snapshot().rearSlip)>Math.PI/12 && window.rustDriving.snapshot().smokeParticles>0 && window.rustDriving.snapshot().skidSegments>0',timeout=45000)
  sliding=snap();maximum_slip=abs(sliding['rearSlip']);maximum_smoke=sliding['smokeParticles']
  for key in ['KeyA','Space','KeyW']:page.keyboard.up(key)
  drift=snap();assert maximum_slip>math.radians(15),maximum_slip;assert maximum_smoke>0 and drift['skidSegments']>0,(maximum_smoke,drift)

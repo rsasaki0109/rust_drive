@@ -20,7 +20,10 @@ pub(crate) fn excavation(x: f64, y: f64) -> Option<Surface> {
     Some(if x < 260.0 {
         ramp((x - 190.0) / 70.0, -8.0, 70.0)
     } else if x <= 430.0 {
-        Surface { height: -8.0, ..Surface::default() }
+        Surface {
+            height: -8.0,
+            ..Surface::default()
+        }
     } else {
         let mut s = ramp((500.0 - x) / 70.0, -8.0, 70.0);
         s.gx = -s.gx;
@@ -39,7 +42,10 @@ pub(crate) fn upper(x: f64, y: f64) -> Option<Surface> {
     Some(if x < 260.0 {
         ramp((x - 190.0) / 70.0, 12.0, 70.0)
     } else if x <= 430.0 {
-        Surface { height: 12.0, ..Surface::default() }
+        Surface {
+            height: 12.0,
+            ..Surface::default()
+        }
     } else {
         let mut s = ramp((500.0 - x) / 70.0, 12.0, 70.0);
         s.gx = -s.gx;
@@ -52,7 +58,8 @@ fn thickness(y: f64) -> f64 {
 }
 
 pub(crate) fn ceiling(x: f64, y: f64, base_height: f64) -> f64 {
-    upper(x, y).filter(|s| base_height < s.height - 0.01)
+    upper(x, y)
+        .filter(|s| base_height < s.height - 0.01)
         .map_or(OPEN_SKY, |s| s.height - thickness(y))
 }
 
@@ -78,7 +85,8 @@ mod tests {
             assert!((bridge.height - 12.0 * (3.0 * t * t - 2.0 * t * t * t)).abs() < 1e-10);
             assert!((tunnel.height + 8.0 * (3.0 * t * t - 2.0 * t * t * t)).abs() < 1e-10);
             let derivative = (upper(x + 0.001, 20.0).unwrap().height
-                - upper(x - 0.001, 20.0).unwrap().height) / 0.002;
+                - upper(x - 0.001, 20.0).unwrap().height)
+                / 0.002;
             assert!((bridge.gx - derivative).abs() < 1e-7);
         }
         assert!(upper(f64::NAN, 20.0).is_none());
