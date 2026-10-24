@@ -52,14 +52,14 @@ export async function bootFleet() {
   document.getElementById('game').hidden = true;
   document.body.insertAdjacentHTML('beforeend', '<main id="fleet-app">' +
     '<header class="fleet-header"><a class="fleet-brand" href="./">R<span>∕</span></a><div><p>RUSTDRIVING / CITY LAB</p><h1>People, trains &amp; taxis<span>02</span></h1></div>' +
-    '<div class="fleet-clock"><i></i><b id="fleet-clock">08:00:00</b><small>CITY CLOCK · 15×</small></div><label class="fleet-period-label"><span>TIME OF DAY</span><select id="fleet-period" aria-label="City time of day">' + Object.entries(PERIODS).map(([key, value]) => '<option value="' + key + '"' + (key === period ? ' selected' : '') + '>' + value.label + '</option>').join('') + '</select></label><a class="fleet-drive" href="./">DRIVE ↗</a><button id="fleet-play" disabled>LOADING…</button></header>' +
+    '<div class="fleet-clock"><i></i><b id="fleet-clock">08:00:00</b><small>CITY CLOCK · 15×</small></div><label class="fleet-period-label"><span>SCENARIO / START TIME</span><select id="fleet-period" aria-label="City time of day">' + Object.entries(PERIODS).map(([key, value]) => '<option value="' + key + '"' + (key === period ? ' selected' : '') + '>' + value.label + '</option>').join('') + '</select></label><a class="fleet-drive" href="./">DRIVE ↗</a><button id="fleet-play" disabled>LOADING…</button></header>' +
     '<div class="fleet-layout"><aside class="fleet-sidebar"><p class="fleet-eyebrow">EVERY TRIP STARTS WITH SOMEONE</p><h2>A city that<br>keeps moving.</h2><p class="fleet-description">People leave buildings, catch trains<br>and call for a ride home.</p>' +
     '<div class="fleet-metrics" aria-label="Live trip metrics"><div><b id="fleet-waiting">0</b><span>WAITING</span></div><div><b id="fleet-riding">0</b><span>RIDING</span></div><div><b id="fleet-served">0</b><span>DELIVERED</span></div><div><b id="fleet-cancelled">0</b><span>GAVE UP</span></div></div>' +
     '<p class="fleet-rail-status" id="fleet-rail">NORTH LINE / INBOUND</p><div class="fleet-section-title">PEOPLE, NOT JUST REQUESTS <span id="fleet-demand">0 TRIPS</span></div><div id="fleet-people" aria-label="Individual travel requests"></div>' +
     '<div class="fleet-purpose-key">' + PURPOSES.map(p => '<span><i style="background:' + p.color + '"></i>' + p.label + '</span>').join('') + '</div><p class="fleet-scope"><b id="fleet-supply">8 CABS ON DUTY</b> · 1 RIDER PER TAXI<br>Fictional city · local simulation<br>No accounts · no saved progress.</p></aside>' +
     '<section id="fleet-stage" aria-label="Live taxi and pedestrian city simulation"><canvas id="fleet-world" aria-label="People walking to taxis on a city street network"></canvas>' +
     '<div class="fleet-scene-heading"><span id="fleet-view-label">LIVE CITY / DISPATCH</span><b id="fleet-view-title">From the office to the curb.</b></div>' +
-    '<div class="fleet-start-hint" id="fleet-hint">Press START to watch people make their way.</div>' +
+    '<button class="fleet-rate" id="fleet-rate" aria-pressed="false">1× SPEED</button><div class="fleet-start-hint" id="fleet-hint">Press START to watch people make their way.</div>' +
     '<div class="fleet-event" id="fleet-event" role="status"></div><div class="fleet-bottom"><span><i style="background:#ffca62"></i>PICKUP</span><span><i style="background:#63decb"></i>OCCUPIED</span><span><i style="background:#c4f19a"></i>DROPOFF</span><span><i style="background:#aab9c4"></i>AVAILABLE</span></div>' +
     '<div class="fleet-camera"><button id="fleet-overview" aria-pressed="false">CITY</button><button id="fleet-office" aria-pressed="true">OFFICE</button><button id="fleet-nightlife" aria-pressed="false">NIGHTLIFE</button><button id="fleet-station" aria-pressed="false">STATION</button><button id="fleet-follow" aria-pressed="false">FOLLOW</button></div></section></div></main>');
   const $ = id => document.getElementById(id), stage = $('fleet-stage');
@@ -96,20 +96,22 @@ export async function bootFleet() {
     const fleet = new TaxiFleet(traffic.graph, cars, { period }), places = createFleetPlaces(scene);
     const people = new Map(), cabVisuals = new Map();
     const makeCabVisual = t => {
-      const ring = new THREE.Mesh(new THREE.RingGeometry(2.15, 2.6, 24), new THREE.MeshBasicMaterial({ color: COLORS.idle, side: THREE.DoubleSide }));
+      const ring = new THREE.Mesh(new THREE.RingGeometry(2.10, 2.23, 24), new THREE.MeshBasicMaterial({ color: COLORS.idle, side: THREE.DoubleSide }));
       ring.rotation.x = -Math.PI / 2; scene.add(ring);
       const tag = label(t.id, '#ffdb89', 96); tag.scale.set(3.8, 2.5, 1); scene.add(tag); return { ring, tag };
     };
-    const stopMaterial = new THREE.MeshStandardMaterial({ color: 0xffca62 });
+    const stopMaterial = new THREE.MeshStandardMaterial({ color: 0xffca62 }), stopLabels = [];
     for (const stop of FLEET_STOPS) {
       const level = drive.drive_surface(stop.curb.x, stop.curb.y, 0), group = new THREE.Group();
-      group.position.set(stop.curb.x + stop.normal.x * .7, level, -stop.curb.y - stop.normal.y * .7);
+      group.position.set(stop.curb.x + stop.dx * 13 + stop.normal.x * 1.35, level, -stop.curb.y - stop.dy * 13 - stop.normal.y * 1.35);
       block(group, stopMaterial, 0, 1.3, 0, .10, 2.6, .10);
-      const sign = label(stop.label, '#ffdc88'); sign.position.y = 4.4; group.add(sign); scene.add(group);
-      const bay = new THREE.Mesh(new THREE.RingGeometry(2.9, 3.05, 32), new THREE.MeshBasicMaterial({ color: 0xb09d61, side: THREE.DoubleSide }));
-      bay.rotation.x = -Math.PI / 2; bay.position.set(stop.x, level + .025, -stop.y); scene.add(bay);
+      const sign = label(stop.label, '#ffdc88'); sign.position.y = 4.0; group.add(sign); stopLabels.push(sign); scene.add(group);
+      const points = [[-4, -1.2], [4, -1.2], [4, 1.2], [-4, 1.2]].map(([along, across]) =>
+        new THREE.Vector3(stop.x + stop.dx * along + stop.normal.x * across, level + .04, -stop.y - stop.dy * along - stop.normal.y * across));
+      const geometry = new THREE.BufferGeometry().setFromPoints(points);
+      scene.add(new THREE.LineLoop(geometry, new THREE.LineBasicMaterial({ color: 0xb6a578 })));
     }
-    let paused = true, view = period === 'night' ? 'nightlife' : 'office', selected = fleet.taxis[0].id, previous = performance.now(), accumulator = 0, hudAt = -1;
+    let paused = true, playbackRate = 1, view = period === 'night' ? 'nightlife' : 'office', selected = fleet.taxis[0].id, previous = performance.now(), accumulator = 0, hudAt = -1;
     const resize = () => { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); };
     resize(); addEventListener('resize', resize);
     const setPaused = value => {
@@ -119,12 +121,13 @@ export async function bootFleet() {
     };
     $('fleet-play').disabled = false; setPaused(true);
     $('fleet-play').addEventListener('click', () => setPaused(!paused));
+    $('fleet-rate').addEventListener('click', () => { playbackRate = playbackRate === 1 ? 4 : 1; $('fleet-rate').textContent = playbackRate + '× SPEED'; $('fleet-rate').setAttribute('aria-pressed', String(playbackRate === 4)); });
     const selectView = id => {
       view = id;
       for (const [mode, button] of Object.entries({ city: 'overview', office: 'office', nightlife: 'nightlife', station: 'station', follow: 'follow' }))
         $('fleet-' + button).setAttribute('aria-pressed', String(mode === id));
       const titles = { city: ['LIVE CITY / DISPATCH', 'Different places. Different journeys.'],
-        office: ['OFFICE / DOOR TO CURB', 'The workday starts with a journey.'],
+        office: ['OFFICE / DOOR TO CURB', 'From the lobby to the pickup.'],
         nightlife: ['NIGHTLIFE / AFTER HOURS', 'When the trains stop, the taxis keep going.'],
         station: ['NORTH LINE / PLATFORM 1', 'From the platform to the pickup.'],
         follow: ['LIVE TAXI / ON THE ROAD', 'One ride through a moving city.'] };
@@ -138,7 +141,7 @@ export async function bootFleet() {
     addEventListener('keydown', event => { if (event.code === 'Escape') setPaused(!paused); });
     const project = mesh => { const p = mesh.position.clone().project(camera); return mesh.visible && p.z > -1 && p.z < 1 && Math.abs(p.x) < .96 && Math.abs(p.y) < .96; };
     window.rustDrivingFleet = Object.freeze({ snapshot: () => ({
-      ...fleet.snapshot(), ready: true, paused, cameraMode: view, selectedTaxi: selected,
+      ...fleet.snapshot(), ready: true, paused, playbackRate, cameraMode: view, selectedTaxi: selected,
       lighting: { sky: scene.background.getHex(), ambient: ambient.intensity, sunlight: sun.intensity },
       physics: 'rust-wasm terrain + arcade traffic', ambientCars: traffic.cars.length - cars.length,
       visiblePeople: [...people.values()].filter(project).length, visibleTaxis: fleet.taxis.filter(t => t.onDuty && project(t.car.mesh)).length,
@@ -173,7 +176,7 @@ export async function bootFleet() {
     function frame(now) {
       const dt = Math.min(.05, Math.max(0, (now - previous) / 1000)); previous = now;
       if (!paused) {
-        accumulator += dt;
+        accumulator += dt * playbackRate;
         while (accumulator >= 1 / 60) {
           fleet.update(1 / 60);
           while (fleet.taxis.length < cityConditions(period, fleet.time).taxiSupply) fleet.addTaxi(spawnCab(fleet.taxis.length, true));
@@ -196,7 +199,7 @@ export async function bootFleet() {
       fleet.taxis.forEach(t => {
         if (!cabVisuals.has(t.id)) cabVisuals.set(t.id, makeCabVisual(t));
         const visual = cabVisuals.get(t.id), level = t.car.height ?? 0;
-        visual.ring.visible = visual.tag.visible = t.onDuty;
+        visual.ring.visible = t.onDuty; visual.tag.visible = t.onDuty && (view === 'city' || view === 'follow');
         visual.ring.position.set(t.car.x, level + .10, -t.car.y); visual.ring.material.color.set(COLORS[t.state]);
         visual.tag.position.set(t.car.x, level + 4, -t.car.y);
       });
@@ -205,11 +208,17 @@ export async function bootFleet() {
         city: [new THREE.Vector3(16, 153, 105), new THREE.Vector3(0, 0, -48)],
         office: [new THREE.Vector3(-11, 9, -2), new THREE.Vector3(-25, 1.3, 13)],
         nightlife: [new THREE.Vector3(-9, 11, -48), new THREE.Vector3(-29, 2, -64)],
-        station: [new THREE.Vector3(64, 26, -155), new THREE.Vector3(25, 1.5, -182)],
+        station: [new THREE.Vector3(25, 18, -155), new THREE.Vector3(25, 1.5, -185)],
         follow: [new THREE.Vector3(taxi.car.x - 22, level + 39, -taxi.car.y + 32), new THREE.Vector3(taxi.car.x, level, -taxi.car.y)],
       };
       const [destination, target] = views[view];
       camera.position.lerp(destination, 1 - Math.exp(-dt * 3)); camera.lookAt(target);
+      const pixelScale = sprite => {
+        const world = sprite.getWorldPosition(new THREE.Vector3());
+        return 2 * world.distanceTo(camera.position) * Math.tan(camera.fov * Math.PI / 360) / stage.clientHeight;
+      };
+      for (const sign of stopLabels) { const scale = pixelScale(sign); sign.scale.set(96 * scale, 22 * scale, 1); sign.visible = view === 'city' || view === 'follow'; }
+      for (const { tag } of cabVisuals.values()) { const scale = pixelScale(tag); tag.scale.set(38 * scale, 22 * scale, 1); }
       const clock = cityConditions(period, fleet.time), day = clock.daylight;
       const sky = new THREE.Color(0x122336).lerp(new THREE.Color(0xcbd9dd), day);
       scene.background.copy(sky); scene.fog.color.copy(sky); ambient.intensity = .82 + day * 1.68;

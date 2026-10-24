@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Junctions } from './junctions.js';
-import { routeToStop, onStopEdge, stopAhead, stopSpeedLimit } from './fleet-routing.js';
+import { routeToStop, stopAhead, stopSpeedLimit } from './fleet-routing.js';
 import { turnArc, arcTarget } from './traffic-turns.js';
 import { applyVehiclePose } from './vehicle-pose.js';
 import { districtAt } from './regions.js';

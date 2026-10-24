@@ -23,6 +23,7 @@ jobs:
     timeout-minutes: 60
     env:
       PAGES_BASE: /${{ github.event.repository.name }}/
+      RUSTDRIVING_SOURCE_SHA: ${{ github.sha }}
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -90,6 +91,7 @@ jobs:
     timeout-minutes: 45
     env:
       PAGES_BASE: /${{ github.event.repository.name }}/
+      RUSTDRIVING_SOURCE_SHA: ${{ github.sha }}
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable

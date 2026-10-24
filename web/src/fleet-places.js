@@ -80,8 +80,13 @@ export function createFleetPlaces(scene) {
   for (let x = -255; x <= 255; x += 3) cube(scene, sleeper, x, .17, -RAIL_Y, .35, .15, 2.5);
   cube(scene, pavement, 25, .48, -181, 39, .96, 4.8);
   cube(scene, material(0xd6c789), 25, 1.005, -183.1, 39, .03, .22);
-  cube(scene, frame, 25, 4.0, -179.2, 42, .2, 5.2);
-  for (const x of [7, 43]) cube(scene, frame, x, 2.5, -178, .18, 3, .18);
+  cube(scene, frame, 8, 4.0, -179.2, 11, .2, 4.2);
+  for (const x of [4, 12]) cube(scene, frame, x, 2.5, -178, .18, 3, .18);
+  for (const x of [12, 38]) {
+    const light = new THREE.PointLight(0xffe5bb, 40, 23, 2); light.position.set(x, 4.5, -180); scene.add(light); lights.push(light);
+    cube(scene, frame, x, 2.7, -178, .12, 5.4, .12);
+    cube(scene, new THREE.MeshBasicMaterial({ color: 0xffeac3 }), x, 5.2, -179.3, 2.0, .10, .35);
+  }
   sign(scene, 'NORTH STATION / PLATFORM 1', '#9fe7e8', 25, 3.1, -176.5, 22, 1.1);
   for (let i = 1; i < STATION_PATH.length; i++) {
     const a = STATION_PATH[i - 1], b = STATION_PATH[i], dx = b.x - a.x, dy = b.y - a.y, length = Math.hypot(dx, dy);

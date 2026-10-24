@@ -101,7 +101,12 @@ test('a taxi passenger can walk onto the platform and board a stopped train', ()
   f.line = new NorthLine('morning');
   run(f, 10); assert.equal(f.people[0].state, 'riding');
   Object.assign(c, carAt('station'));
-  run(f, 145);
+  let rideDistance = 0;
+  run(f, 145, world => { if (world.people[0].state === 'riding-train') {
+    assert.ok(Math.abs(world.people[0].x - world.line.train.x - world.people[0].trainOffset) < .001);
+    rideDistance = Math.max(rideDistance, world.people[0].x - 25);
+  } });
+  assert.ok(rideDistance > 100, 'the passenger must travel with the actual departing train');
   const boarded = f.events.find(e => e.type === 'train-board' && e.person === 'O1');
   assert.ok(boarded && boarded.speed < .15);
   assert.ok(f.events.find(e => e.type === 'rail-platform' && e.person === 'O1').time < boarded.time);
@@ -119,11 +124,23 @@ test('missing the last train produces a second taxi leg after walking back to th
   assert.equal(request.source, 'missed-train');
 });
 
-test('shift changes do not abandon an occupied taxi', () => {
-  const cars = Array.from({ length: 12 }, () => carAt('office'));
+test('shift changes finish an occupied trip before returning the taxi to its depot', () => {
+  const cars = Array.from({ length: 12 }, () => carAt('homes'));
   const f = new TaxiFleet(graph, cars, { period: 'night', plans: [] });
   f.update(.05); assert.equal(f.snapshot().metrics.onDuty, 12);
+  const busy = f.addPerson(plan({ id: 'busy', origin: 'homes', destination: 'office' }));
+  busy.state = 'riding'; busy.taxi = f.taxis[11].id;
+  f.taxis[11].person = busy; f.taxis[11].state = 'occupied';
   f.period = 'morning'; f.update(.05);
+  assert.equal(f.snapshot().metrics.onDuty, 9, 'the busy retiring driver remains on duty');
+  assert.equal(f.taxis[11].person, busy);
+  assert.equal(f.taxis[11].state, 'occupied');
+  assert.ok(f.taxis.slice(8, 11).every(t => t.state === 'off-duty' && t.car.serviceStop.id.startsWith('depot-')));
+  Object.assign(cars[11], carAt('office'));
+  run(f, 8);
   assert.equal(f.snapshot().metrics.onDuty, 8);
-  assert.ok(f.taxis.slice(8).every(t => t.state === 'off-duty'));
+  assert.equal(f.taxis[11].person, null);
+  assert.equal(f.taxis[11].state, 'off-duty');
+  assert.ok(f.taxis[11].car.serviceStop.id.startsWith('depot-'));
+  assert.equal(f.snapshot().metrics.served, 1);
 });

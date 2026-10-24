@@ -25,8 +25,8 @@ SOURCES = [
     'web/tests/browser_clock.py', 'web/tests/gif_capture.py', 'integrations/playground/src/lib.rs',
 ]
 SEGMENTS = {
-    'morning': [(1, 14, 'office'), (64, 18, 'city')],
-    'night': [(1, 12, 'nightlife'), (96, 20, 'station')],
+    'morning': [(0, 14, 'office'), (64, 18, 'city')],
+    'night': [(0, 12, 'nightlife'), (96, 20, 'station')],
 }
 
 
@@ -57,7 +57,7 @@ def run_case(browser, args, period):
         state = snapshot()
         assert not errors, errors
         assert not state['paused'], 'rendering/visibility unexpectedly paused the city'
-        assert abs((state['time'] - before['time']) - milliseconds / 1000) < .055, {
+        assert abs((state['time'] - before['time']) - milliseconds / 1000 * before['playbackRate']) < .055, {
             'failure': 'stalled or skipped simulation frames', 'before': before['time'], 'after': state['time']}
         return state
 
@@ -67,7 +67,7 @@ def run_case(browser, args, period):
             remaining = target - snapshot()['time']
             if remaining < .02:
                 return
-            tick(min(1000, max(40, round(remaining * 1000))))
+            tick(min(1000, max(5, round(remaining * 1000 / snapshot()['playbackRate']))))
         raise AssertionError('Did not reach bounded pre-roll target: ' + str(target))
 
     try:
@@ -80,12 +80,6 @@ def run_case(browser, args, period):
         assert len(first['taxis']) == (12 if period == 'night' else 8)
         assert len(first['purposeColors']) == 5
         page.locator('#fleet-play').click()
-        tick(1000)
-        page.locator('#fleet-play').click()
-        stopped = snapshot()
-        advance(page, 400)
-        assert snapshot()['time'] == stopped['time']
-        page.locator('#fleet-play').click()
 
         if args.proof_only:
             until(4)
@@ -96,6 +90,8 @@ def run_case(browser, args, period):
             assert any(e['type'] == 'building-exit' and e.get('building') == facility for e in state['events'])
             if period == 'night':
                 page.locator('#fleet-station').click()
+                page.locator('#fleet-rate').click()
+                assert snapshot()['playbackRate'] == 4
                 until(35)
                 state = snapshot()
                 assert any(e['type'] == 'train-arrive' for e in state['railEvents'])
@@ -109,7 +105,11 @@ def run_case(browser, args, period):
             frames = Path(temp)
             max_people, max_taxis = 0, 0
             for target, seconds, camera in SEGMENTS[period]:
+                if target > snapshot()['time'] + 1:
+                    if snapshot()['playbackRate'] != 4: page.locator('#fleet-rate').click()
                 until(target)
+                if snapshot()['playbackRate'] != 1: page.locator('#fleet-rate').click()
+                assert snapshot()['playbackRate'] == 1
                 page.locator('#fleet-' + ('overview' if camera == 'city' else camera)).click()
                 start = snapshot()['time']
                 first_frame = captured
@@ -133,7 +133,9 @@ def run_case(browser, args, period):
                 cuts.append({'firstFrame': first_frame, 'frames': captured - first_frame,
                              'camera': camera, 'simulationStart': start, 'simulationEnd': end})
                 print('CITY SEGMENT', period, camera, start, end, snapshot()['metrics'], flush=True)
+            if snapshot()['playbackRate'] != 4: page.locator('#fleet-rate').click()
             until(120)
+            if snapshot()['playbackRate'] != 1: page.locator('#fleet-rate').click()
             final = snapshot()
             assert final['metrics']['served'] >= 3, final['metrics']
             assert final['metrics']['cancelled'] >= 1, final['metrics']
@@ -165,6 +167,11 @@ def run_case(browser, args, period):
                 assert max_taxis >= 6
             assert max_people >= 3
 
+            page.locator('#fleet-play').click()
+            stopped = snapshot()
+            advance(page, 400)
+            assert snapshot()['time'] == stopped['time']
+            page.locator('#fleet-play').click()
             page.locator('#fleet-follow').click()
             tick(200)
             assert snapshot()['cameraMode'] == 'follow'
@@ -177,6 +184,16 @@ def run_case(browser, args, period):
             assert page.locator('#fleet-play').is_visible() and page.locator('#fleet-period').is_visible()
             page.screenshot(path=str(output / 'mobile.png'))
             assert not errors, errors
+            if period == 'morning':
+                with page.expect_navigation(wait_until='networkidle'):
+                    page.locator('#fleet-period').select_option('dusk')
+                wait_state(page, "window.rustDrivingFleet?.snapshot().period === 'dusk'", 10000)
+                advance(page, 200)
+                dusk = snapshot()
+                assert dusk['paused'] and dusk['time'] == 0
+                assert len(dusk['taxis']) == 10
+                assert .82 < dusk['lighting']['ambient'] < first['lighting']['ambient']
+                page.screenshot(path=str(output / 'dusk.png'))
 
             trace_path = output / 'trace.json'
             trace_path.write_text(json.dumps({'cuts': cuts, 'samples': samples, 'acceptance': final}, separators=(',', ':')) + '\n')
@@ -185,7 +202,7 @@ def run_case(browser, args, period):
                 'sourceCommit': os.environ.get('RUSTDRIVING_SOURCE_SHA', 'uncommitted'),
                 'period': period, 'seed': first['seed'], 'width': WIDTH, 'height': HEIGHT,
                 'cityClockRate': 15, 'physicalMovementPlaybackRate': 1,
-                'editing': 'Two normal-speed recorded intervals separated by an unrecorded simulation pre-roll; no agent poses or counters are written by the recorder.',
+                'editing': 'Two normal-speed recorded intervals separated by an unrecorded simulation pre-roll (UI 4x speed); recordings use UI 1x. No agent poses or counters are written by the recorder.',
                 'segments': cuts, 'recordedSimulationSeconds': sum(c['simulationEnd'] - c['simulationStart'] for c in cuts),
                 'frameMilliseconds': FRAME_MS, 'frames': captured, 'encoder': ENCODER,
                 'sourceSha256': {path: sha(ROOT / path) for path in SOURCES}, 'traceSha256': sha(trace_path),

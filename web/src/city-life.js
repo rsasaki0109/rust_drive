@@ -54,7 +54,7 @@ export class NorthLine {
         this.events.push({ type: 'train-arrive', time: this.time, train: t.id, x: t.x, speed: t.speed, lastService: t.lastService });
       }
       if (t.phase === 'depart' && t.x > 265) {
-        this.events.push({ type: 'train-exit', time: this.time, train: t.id }); this.train = null;
+        this.events.push({ type: 'train-exit', time: this.time, train: t.id, x: t.x, speed: t.speed }); this.train = null;
       }
     } else {
       const readyToClose = this.time - t.arrivedAt > 9 && !holdDoors;

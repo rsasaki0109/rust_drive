@@ -177,6 +177,7 @@ export class TaxiFleet {
         const event = this.line.events[this.railCursor++];
         if (event.type === 'train-unload') this.unloadTrain(event);
         if (event.type === 'train-exit') for (const p of this.people.filter(p => p.state === 'riding-train' && p.trainId === event.train)) {
+          p.x = event.x + (p.trainOffset ?? 0); p.y = RAIL_Y - .8; p.height = 1;
           p.state = 'arrived'; p.finishedAt = this.time; this.event('rail-trip-complete', p);
         }
       }
@@ -189,7 +190,7 @@ export class TaxiFleet {
       const f = FACILITIES[id], wanted = this.people.some(p =>
         ['exiting', 'entering', 'returning'].includes(p.state) && p.facility === f &&
         Math.hypot(p.x - f.door.x, p.y - f.door.y) < 4.5);
-      door.open = Math.max(0, Math.min(1, door.open + (wanted ? 2.5 : -1.5) * dt));
+      door.open = Math.max(0, Math.min(1, door.open + (wanted ? 1.25 : -.9) * dt));
     }
     const train = this.line?.train;
     for (const p of this.people) {
@@ -221,8 +222,9 @@ export class TaxiFleet {
         }
       } else if (p.state === 'boarding-train' && train?.id === p.trainId &&
                  train.phase === 'dwell' && train.doorOpen >= .98 && this.travel(p, dt)) {
-        train.reserved--; train.occupied++; p.state = 'riding-train'; this.event('train-board', p, null, { train: train.id, speed: train.speed });
+        train.reserved--; train.occupied++; p.trainOffset = p.x - train.x; p.state = 'riding-train'; this.event('train-board', p, null, { train: train.id, speed: train.speed });
       }
+      if (p.state === 'riding-train' && train?.id === p.trainId) { p.x = train.x + p.trainOffset; p.y = RAIL_Y - .8; p.height = 1; }
       if (['walking', 'waiting'].includes(p.state) && this.time - p.requestAt > p.patience) {
         const taxi = this.taxis.find(t => t.id === p.taxi);
         if (taxi) { taxi.state = 'idle'; taxi.person = null; }
