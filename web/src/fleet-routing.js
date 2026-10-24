@@ -44,9 +44,13 @@ export function pickupDistance(graph, car, stop) {
   return route ? Math.hypot(car.next.x - car.x, car.next.y - car.y) + route.distance : Infinity;
 }
 
+export function stopAhead(car, stop = car.serviceStop) {
+  return onStopEdge(car, stop) && (stop.x - car.x) * stop.dx + (stop.y - car.y) * stop.dy >= -.5;
+}
+
 export function stopSpeedLimit(car) {
   const stop = car.serviceStop;
-  if (!onStopEdge(car, stop) || car.arc) return Infinity;
+  if (!stopAhead(car, stop) || car.arc) return Infinity;
   const along = (stop.x - car.x) * stop.dx + (stop.y - car.y) * stop.dy;
   // Approach continuously and remain stopped until the fleet releases the stop.
   // No position writes: the normal traffic steering/integrator does the driving.

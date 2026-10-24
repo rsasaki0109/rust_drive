@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { Traffic, STREETS } from '../src/city.js';
 import { roadGraph, nodeKey } from '../src/urban-roads.js';
-import { makeStop, routeToStop, pickupDistance } from '../src/fleet-routing.js';
+import { makeStop, routeToStop, pickupDistance, stopSpeedLimit } from '../src/fleet-routing.js';
 import { TaxiFleet, createDemand, FLEET_STOPS, PURPOSES } from '../src/fleet.js';
 
 const graph = roadGraph(STREETS, true);
@@ -42,6 +42,15 @@ test('routing reaches the correct directed curb without an illegal U-turn', () =
   const sameEdge = fixtureCar(stop); sameEdge.x -= 8;
   assert.ok(Math.abs(pickupDistance(graph, sameEdge, stop) - 8) < .001);
   assert.equal(routeToStop(graph, current, previous, makeStop('bad', 'UNCONNECTED', { x: 999, y: 0 }, { x: 1000, y: 0 })), null);
+});
+
+test('a pickup behind a taxi requires another legal approach instead of freezing or reversing', () => {
+  const stop = FLEET_STOPS[0], car = fixtureCar(stop);
+  car.x += 8;
+  assert.equal(stopSpeedLimit(car), Infinity);
+  assert.ok(pickupDistance(graph, car, stop) > 100, 'must finish the current edge and drive around');
+  car.x = stop.x - 8;
+  assert.ok(stopSpeedLimit(car) > 0 && stopSpeedLimit(car) < 8);
 });
 
 test('boarding and dropoff require actual stopped arrival and walking/dwell time', () => {

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Junctions } from './junctions.js';
-import { routeToStop, onStopEdge, stopSpeedLimit } from './fleet-routing.js';
+import { routeToStop, onStopEdge, stopAhead, stopSpeedLimit } from './fleet-routing.js';
 import { turnArc, arcTarget } from './traffic-turns.js';
 import { applyVehiclePose } from './vehicle-pose.js';
 import { districtAt } from './regions.js';
@@ -335,7 +335,7 @@ export class Traffic {
       const distance = Math.hypot(tx - c.x, ty - c.y);
       const arcAim = c.arc && arcTarget(c.arc, c);
       if (c.arc && !arcAim) c.arc = null;
-      const serviceAim = onStopEdge(c, c.serviceStop) ? c.serviceStop : null;
+      const serviceAim = stopAhead(c) ? c.serviceStop : null;
       const toward = Math.atan2((arcAim?.y ?? serviceAim?.y ?? ty) - c.y, (arcAim?.x ?? serviceAim?.x ?? tx) - c.x);
       let desired = c.police ? 17 + Math.min(5, Math.hypot(c.x - player.x, c.y - player.y) * .04) : c.desired;
       // Brake for the actual bend instead of carrying cruise speed through tight alleys.
