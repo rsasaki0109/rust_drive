@@ -120,3 +120,8 @@ describes controlled rain/fog observations, but no files were requested or
 evaluated here. The [synthetic study](lidar-weather.md) remains uncalibrated.
 This diagnostic establishes neither real-weather robustness nor driving,
 localization, real-time or safety performance.
+
+The [XYZ comparison](cadc-volume-comparison.md) adds a dense XY control and
+XYZ components, repeating this frozen baseline and evaluating additional
+metadata-selected sequences separately. It does not change this study's
+published inputs, detector or results.
