@@ -769,3 +769,26 @@ fn uncertain_occupancy_replays_and_a_shrunken_envelope_is_rejected() {
     p["additional_radius_m"][40] = serde_json::json!(0.);
     assert!(verify(Cursor::new(encode_records(&rows)), std::io::sink()).is_err());
 }
+
+#[test]
+fn yield_stop_retention_is_recorded_and_legacy_headers_keep_original_behavior() {
+    let mut legacy = records(&log());
+    let modern = &legacy[0]["header"]["config"];
+    assert_eq!(modern["retain_yield_stop_on_emergency"], true);
+    let config: PipelineConfig = serde_json::from_value(modern.clone()).unwrap();
+    assert!(config.retain_yield_stop_on_emergency);
+    legacy[0]["header"]["config"]
+        .as_object_mut()
+        .unwrap()
+        .remove("retain_yield_stop_on_emergency");
+    let config: PipelineConfig =
+        serde_json::from_value(legacy[0]["header"]["config"].clone()).unwrap();
+    assert!(!config.retain_yield_stop_on_emergency);
+    assert!(
+        serde_json::to_value(config)
+            .unwrap()
+            .get("retain_yield_stop_on_emergency")
+            .is_none()
+    );
+    verify(Cursor::new(encode_records(&legacy)), std::io::sink()).unwrap();
+}

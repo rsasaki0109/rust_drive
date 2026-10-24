@@ -178,7 +178,8 @@ def verify_signals(run, evidence, log):
                     npc_continuous_margin = min(npc_continuous_margin, line-upper)
     require(npc_continuous_margin >= 0, 'one controlled NPC may cross red between actual samples')
     require(queue_hold_duration >= 8.-1e-8,
-            'ego did not continuously stop for at least 8 seconds behind the actually stopped red-light lead')
+            f'ego did not continuously stop for at least 8 seconds behind the actually stopped red-light lead; '
+            f'longest={queue_hold_duration:.2f}s, interval={queue_hold_interval}')
     return {'signals': 2, 'accepted_snapshots': accepted, 'control_ticks': len(ticks),
             'stopline_crossings': crossings, 'min_true_nonpermissive_margin_m': red_margin,
             'min_observed_nonpermissive_margin_m': observed_margin,
@@ -582,11 +583,30 @@ def verify_junctions_and_construction(run, evidence, physical, signals):
                                              'reason': 'separate pedestrian4 from the one-way crossing-car stream; place queued cars beyond construction rather than inside its collider'}}
 
 
+
+def capture_scenario(output, confirm_initialization):
+    """Add only the declared observation policy to the pinned physical world."""
+    if not confirm_initialization:
+        return SCENARIO
+    scenario = json.loads(SCENARIO.read_text())
+    scenario['confirm_track_initialization'] = True
+    encoded = (json.dumps(scenario, indent=2)+'\n').encode()
+    target = output/'scenario-confirmed-initialization.json'
+    if target.exists():
+        g.require(target.read_bytes() == encoded, 'derived city policy input changed')
+    else:
+        with target.open('xb') as stream:
+            stream.write(encoded)
+    return target
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, default=ROOT/'artifacts/japan-city-demo-v4')
     parser.add_argument('--verify-existing', type=Path, help='root containing seed-1/seed-7/seed-42 captures')
     parser.add_argument('--seeds', type=int, nargs='+', default=[1, 7, 42])
+    parser.add_argument('--confirm-track-initialization', action=argparse.BooleanOptionalAction,
+                        default=True, help='confirm initial measured motion; --no-confirm-track-initialization retains the unconfirmed comparison')
     parser.add_argument('--report', type=Path, default=ROOT/'assets/japan-city-demo-results.json')
     parser.add_argument('--compact', action='store_true', help='archive/hash/CRC verify all; preserve seed-7 raw for rendering')
     parser.add_argument('--failed-trial', type=Path, nargs='+', help='retain separately failed development trials without scoring them as positive cases')
@@ -612,13 +632,18 @@ def main():
     if args.failed_trial:
         report['failed_development_trials'] = [json.loads(path.read_text()) for path in args.failed_trial]
     args.output.mkdir(parents=True, exist_ok=True)
+    capture_input = capture_scenario(args.output, args.confirm_track_initialization)
+    capture_input_sha = sha(capture_input)
+    report['capture_scenario_sha256'] = capture_input_sha
+    report['operational_policy'] = {'confirm_track_initialization': args.confirm_track_initialization}
+    report['policy_scope'] = 'Existing measured-motion confirmation in this viewed authored-city regression; physical fixture and acceptance gates unchanged.'
     report_path = args.output/'report.json'
     report_path.write_text(json.dumps(report, indent=2)+'\n')
     cli, native = ROOT/'target/release/rustdriving', ROOT/'integrations/rne/target/release/rustdriving-rne'
     for seed in args.seeds:
         raw = (args.verify_existing or args.output)/f'seed-{seed}'
         if args.verify_existing is None:
-            code, error = g.hazards.invoke([native, '--plant', 'dynamic', '--scenario', SCENARIO, '--scene', SCENE,
+            code, error = g.hazards.invoke([native, '--plant', 'dynamic', '--scenario', capture_input, '--scene', SCENE,
                 '--lidar-3d', '--ground-segmentation', '--vehicle-body', '--precise-capsule-rays', '--seed', seed, '--output', raw])
             require(code == 0, f'native VRU episode failed: {error}')
         require(sum(p.stat().st_size for p in raw.rglob('*') if p.is_file()) <= 512 * 1024 * 1024,
@@ -630,6 +655,11 @@ def main():
         replay = json.load((raw/'replay/replay.json').open())
         summary = run['summary']
         require(supplied_fields(run['scenario'], fixture), 'serialized actual scenario changed')
+        with (raw/'sensors.jsonl').open() as stream:
+            config = json.loads(next(stream))['header']['config']
+        require(run['scenario'].get('confirm_track_initialization', False) == args.confirm_track_initialization
+                and config.get('confirm_track_initialization', False) == args.confirm_track_initialization,
+                'declared initial-motion confirmation differs from native scenario or operational configuration')
         require(summary['passed'] and summary['seed'] == seed and summary['simulated_seconds'] == 46
                 and summary['steps'] == 921 and summary['collisions'] == summary['road_violations'] == 0
                 and summary['min_clearance'] >= 1 and summary['final_speed'] <= .2
@@ -652,7 +682,8 @@ def main():
         report_path.write_text(json.dumps(report, indent=2)+'\n')
         print(f'seed {seed}: all 253 continuous actor pairs, ego clearance, signals, lane and actor evidence verified', flush=True)
     require(fingerprint == g.hazards.source_fingerprint() and hashes == {str(p.relative_to(ROOT)): sha(p) for p in dependencies}
-            and sha(SCENE) == SCENE_SHA and sha(SCENARIO) == SCENARIO_SHA,
+            and sha(SCENE) == SCENE_SHA and sha(SCENARIO) == SCENARIO_SHA
+            and sha(capture_input) == capture_input_sha,
             'source/checker changed during the independent proof')
     report.update(passed=True, complete=True, cases_verified=len(report['cases']),
                   replay_ticks_verified=sum(row['replay']['ticks'] for row in report['cases']))

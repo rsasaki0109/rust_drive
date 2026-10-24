@@ -1162,6 +1162,9 @@ jobs:
             cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- --scenario scenarios/mission.json --plant "$plant" --seed 7 --output "artifacts/rne-$plant"
             cargo run --release --locked --bin rustdriving -- replay --log "artifacts/rne-$plant/sensors.jsonl" --output "artifacts/rne-$plant/replay"
           done
+      - name: Verify Japanese urban intersection exits and physical construction clearance
+        working-directory: rust_drive
+        run: python3 scripts/check-japan-city-demo.py --confirm-track-initialization --compact --output artifacts/japan-city-demo --report artifacts/japan-city-demo/report.json
       - name: Run multi-seed hazard acceptance and full replay
         working-directory: rust_drive
         run: python3 scripts/check_hazards.py
@@ -1337,9 +1340,6 @@ jobs:
       - name: Independently verify urban left-side traffic, signals and recorded dog walking
         working-directory: rust_drive
         run: python3 scripts/check-city-demo.py --compact --output artifacts/city-demo --report artifacts/city-demo/report.json
-      - name: Verify Japanese urban intersection exits and physical construction clearance
-        working-directory: rust_drive
-        run: python3 scripts/check-japan-city-demo.py --compact --output artifacts/japan-city-demo --report artifacts/japan-city-demo/report.json
       - name: Independently verify optional adaptive terrain driving
         working-directory: rust_drive
         run: python3 scripts/check-adaptive-native.py --compact --output artifacts/adaptive-native

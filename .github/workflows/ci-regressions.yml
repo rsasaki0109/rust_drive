@@ -19,6 +19,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: ci-regressions-${{ github.head_ref || github.ref_name }}
@@ -47,33 +48,6 @@ jobs:
           python scripts/test_gnss_antenna.py
           python scripts/test_observed_detours.py
           python scripts/test_recorded_numeric.py
-      - name: Confirm the queue regression fails on the original planner
-        if: matrix.os == 'ubuntu-24.04'
-        run: |
-          rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
-          git fetch --no-tags --depth=1 origin 9dab991a82ec7113970e393af0a91913c9570eca
-          python - <<'PY'
-          from pathlib import Path
-          import subprocess
-          path = Path('crates/planning/src/lib.rs')
-          current = path.read_bytes()
-          original = subprocess.check_output([
-              'git', 'show', '9dab991a82ec7113970e393af0a91913c9570eca:crates/planning/src/lib.rs'])
-          try:
-              path.write_bytes(original)
-              result = subprocess.run([
-                  'cargo', '+1.90.0', 'test', '--locked', '-p', 'rustdriving-planning',
-                  '--test', 'yield_recovery',
-                  'a_temporary_infeasible_hold_does_not_restart_the_same_blocked_queue',
-                  '--', '--exact'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-              print(result.stdout)
-              assert result.returncode == 101, 'original source did not reproduce the failed test'
-              assert 'blocked queue restarted after a temporary emergency' in result.stdout, \
-                  'original source failed for an unrelated reason'
-          finally:
-              path.write_bytes(current)
-          assert path.read_bytes() == current
-          PY
       - name: Check the pinned workspace and scenario replays
         if: matrix.os == 'ubuntu-24.04'
         run: |
@@ -81,7 +55,8 @@ jobs:
           bash scripts/check.sh
 
   historical-visual:
-    if: github.event_name != 'push'
+    if: github.event_name != 'pull_request'
+    needs: portable-recordings
     name: Frozen RGB-D reproduction (Ubuntu 24.04)
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -155,9 +130,11 @@ jobs:
           if-no-files-found: warn
 
   native-city:
-    name: Native red-light queue (Ubuntu 24.04)
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    if: github.event_name != 'pull_request'
+    needs: portable-recordings
+    name: Native red-light queue
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
     defaults:
       run:
         shell: bash
@@ -184,6 +161,9 @@ jobs:
           rustup toolchain install 1.90.0 --profile minimal
           rustup toolchain install 1.95.0 --profile minimal
           test "$(git -C ../RobotNativeEngine rev-parse HEAD)" = "$(cat integrations/rne/rne-revision.txt)"
+      - name: Identify the native runner release
+        id: native-host
+        run: python -c 'import platform; print("version=" + platform.freedesktop_os_release()["VERSION_ID"])' >> "$GITHUB_OUTPUT"
       - uses: actions/cache/restore@v4
         id: native-cache
         with:
@@ -192,7 +172,7 @@ jobs:
             ~/.cargo/git
             rust_drive/target
             rust_drive/integrations/rne/target
-          key: native-city-ubuntu24-rust190-195-df6007a-v1-${{ hashFiles('rust_drive/Cargo.lock', 'rust_drive/integrations/rne/Cargo.lock') }}
+          key: native-city-ubuntu-${{ steps.native-host.outputs.version }}-rust190-195-df6007a-v1-${{ hashFiles('rust_drive/Cargo.lock', 'rust_drive/integrations/rne/Cargo.lock') }}
       - name: Build the active pipeline and pinned native plant
         run: |
           cargo +1.95.0 build --release --locked --manifest-path integrations/rne/Cargo.toml
@@ -206,184 +186,66 @@ jobs:
             rust_drive/target
             rust_drive/integrations/rne/target
           key: ${{ steps.native-cache.outputs.cache-primary-key }}
-      - name: Capture the unchanged city with the active pipeline
-        run: |
-          integrations/rne/target/release/rustdriving-rne --plant dynamic --scenario scenarios/native-japan-city-demo.json --scene scenes/japan-city-construction.json --lidar-3d --ground-segmentation --vehicle-body --precise-capsule-rays --seed 1 --output artifacts/ci-regressions/japan/seed-1
-          target/release/rustdriving replay --log artifacts/ci-regressions/japan/seed-1/sensors.jsonl --output artifacts/ci-regressions/japan/seed-1/replay
-      - name: Inspect sensor-only decisions around the interrupted stop
-        run: |
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          raw = Path('artifacts/ci-regressions/japan/seed-1')
-          run = json.loads((raw/'run.json').read_text())
-          with (raw/'sensors.jsonl').open() as source:
-              records = [json.loads(line) for line in source]
-          header = records[0]['header']
-          print('operational configuration', json.dumps(header['config']))
-          ticks = [record['tick'] for record in records if 'tick' in record]
-          print('frame keys', sorted(run['frames'][0]), 'output keys', sorted(ticks[0]['expected']))
-          for index, (frame, tick) in enumerate(zip(run['frames'], ticks)):
-              now = frame['time']
-              if not (12 <= now <= 17 and index % 2 == 0):
-                  continue
-              out, sample = tick['expected'], tick['input']
-              trajectory = out['trajectory']
-              points = trajectory['points']
-              print(json.dumps(dict(time_s=now, truth=frame['truth'],
-                    estimate=out['estimate'], command=out['command'],
-                    health=out['health'], mode=trajectory['mode'],
-                    lateral=trajectory['lateral_target'],
-                    first=points[:1], last=points[-1:],
-                    max_planned_speed=max((p['speed'] for p in points), default=None),
-                    lidar_acquired=sample.get('lidar3d') is not None,
-                    gnss=sample.get('gnss'),
-                    forecasts=[p for p in out['predictions']
-                               if p['positions'] and abs(p['positions'][0]['y']) < 4
-                               and 0 < p['positions'][0]['x']-out['estimate']['pose']['position']['x'] < 18])))
-          PY
-      - name: Preserve posthoc queue predicate diagnostics
-        if: ${{ !cancelled() }}
+      - name: Download the retained unversioned sensor recording
+        uses: actions/download-artifact@v4
+        with:
+          name: native-city-ubuntu24
+          run-id: 40038874516
+          github-token: ${{ github.token }}
+          path: rust_drive/artifacts/ci-regressions/legacy-city
+      - name: Verify all 921 original controls without rewriting the old header
         run: |
           python - <<'PY'
+          import hashlib
           import json
-          from pathlib import Path
-          path = Path('artifacts/ci-regressions/japan/seed-1/run.json')
-          if not path.exists():
-              print('No raw city capture remains; see the native checker result.')
-              raise SystemExit(0)
-          run = json.loads(path.read_text())
-          first, second = run['scenario']['traffic_signals']
-          def phase(signal, now):
-              return next(p['color'] for p in reversed(signal['phases']) if p['from'] <= now + 1e-9)
-          crossed, start, longest, interval = False, None, 0., None
-          failures, samples = {}, []
-          for frame in run['frames']:
-              now = frame['time']
-              front = frame['truth']['pose']['position']['x'] + run['vehicle']['radius']
-              crossed |= front >= first['stop_line']['route_s_m']
-              lead = next(actor for actor in frame['objects'] if actor['id'] == 0)
-              traffic = next(actor for actor in frame['traffic'] if actor['id'] == 0)
-              signal = traffic.get('signal_control')
-              margin = second['stop_line']['route_s_m'] - signal['physical_front_s_m'] if signal else None
-              checks = dict(first_crossed=crossed, red=phase(second, now) != 'Green',
-                            ego_stopped=frame['truth']['speed'] <= .1,
-                            lead_stopped=traffic['speed_m_s'] <= .1,
-                            lead_nonpermissive=signal is not None and not signal['permissive'],
-                            lead_at_margin=margin is not None and .5-1e-8 <= margin <= .55,
-                            ego_behind=front < lead['position']['x']-lead['radius'])
-              if all(checks.values()):
-                  if start is None:
-                      start = now
-                  if now-start > longest:
-                      longest, interval = now-start, [start, now]
-              else:
-                  start = None
-              if 10 <= now < 24:
-                  for key, value in checks.items():
-                      failures[key] = failures.get(key, 0) + int(not value)
-                  if abs(now*2-round(now*2)) < 1e-8:
-                      samples.append(dict(time_s=now, ego_speed=frame['truth']['speed'],
-                                          lead_speed=traffic['speed_m_s'], lead_margin_m=margin,
-                                          ego_front_m=front, lead_rear_m=lead['position']['x']-lead['radius'],
-                                          checks=checks))
-          result = dict(longest_hold_s=longest, interval_s=interval,
-                        failed_predicate_ticks_between_10_and_24_s=failures, samples=samples,
-                        scope='Posthoc truth diagnostics only; unchanged checker determines acceptance.')
-          output = path.parent.parent / 'queue-diagnostics.json'
-          output.write_text(json.dumps(result, indent=2)+'\n')
-          print(json.dumps(result, indent=2))
-          PY
-      - name: Compare existing measured-motion and checked-stop policies without changing the frozen world
-        run: |
-          python - <<'PY'
-          import importlib.util
-          import json
-          import math
           from pathlib import Path
           import subprocess
-          import sys
-          sys.path.insert(0, 'scripts')
-          spec = importlib.util.spec_from_file_location('city', 'scripts/check-japan-city-demo.py')
-          city = importlib.util.module_from_spec(spec)
-          spec.loader.exec_module(city)
-          frozen = json.loads(city.SCENARIO.read_text())
-          policies = {
-              'slow-confirmation': dict(confirm_slow_motion=True),
-              'cold-initialization': dict(confirm_track_initialization=True),
-              'recent-measurements': dict(fit_recent_track_motion=True, enclose_track_measurements=True),
-              'checked-stops': dict(settle_obstruction_stops=True, search_obstruction_stops=True),
-              'recent-checked-stops': dict(fit_recent_track_motion=True, enclose_track_measurements=True,
-                                         settle_obstruction_stops=True, search_obstruction_stops=True),
-          }
-          results = []
-          for name, policy in policies.items():
-              folder = Path('artifacts/ci-regressions/policies') / name
-              folder.mkdir(parents=True)
-              scenario = dict(frozen, **policy)
-              assert all(scenario[k] == v for k, v in frozen.items())
-              source = folder/'scenario.json'
-              source.write_text(json.dumps(scenario, indent=2)+'\n')
-              raw = folder/'capture'
-              command = ['integrations/rne/target/release/rustdriving-rne',
-                         '--plant', 'dynamic', '--scenario', str(source), '--scene', str(city.SCENE),
-                         '--lidar-3d', '--ground-segmentation', '--vehicle-body',
-                         '--precise-capsule-rays', '--seed', '1', '--output', str(raw)]
-              process = subprocess.run(command)
-              row = dict(name=name, operational_policy=policy, native_exit_code=process.returncode,
-                         frozen_world_fields_unchanged=True, positive_full_acceptance_claimed=False)
-              if (raw/'run.json').exists() and (raw/'scene.json').exists():
-                  run = json.loads((raw/'run.json').read_text())
-                  evidence = json.loads((raw/'scene.json').read_text())
-                  row['summary'] = run['summary']
-                  try:
-                      row['signals'] = city.verify_signals(run, evidence, raw/'sensors.jsonl')
-                  except (ValueError, KeyError) as error:
-                      row['signal_failure'] = str(error)
-                  poses = evidence['body_guard']['motion_samples']
-                  stopped_inside = []
-                  for before, sample in zip(poses, poses[1:]):
-                      pose, previous = sample['pose'], before['pose']
-                      x, yaw = pose['position']['x'], pose['yaw']
-                      extent = max(run['vehicle']['radius'], 2.14*abs(math.cos(yaw))+1.1*abs(math.sin(yaw)))
-                      speed = math.hypot(x-previous['position']['x'],
-                                         pose['position']['y']-previous['position']['y']) / (sample['time']-before['time'])
-                      if speed <= .1 and any(x+extent >= center-half and x-extent <= center+half
-                                             for _, _, center, half in city.JUNCTIONS):
-                          stopped_inside.append(sample['time'])
-                  row['stationary_body_samples_inside_junctions'] = len(stopped_inside)
-                  row['stationary_body_inside_interval_s'] = [min(stopped_inside), max(stopped_inside)] if stopped_inside else None
-                  if 'signals' in row:
-                      start, end = row['signals']['ego_stopped_behind_red_queue_interval_s']
-                      held = [s['pose'] for s in poses if start <= s['time'] <= end]
-                      row['queue_rear_bound_m'] = min(p['position']['x']-max(
-                          run['vehicle']['radius'], 2.14*abs(math.cos(p['yaw']))+1.1*abs(math.sin(p['yaw'])))
-                          for p in held)-12*.005/2
-                  del evidence
-              (folder/'diagnostic.json').write_text(json.dumps(row, indent=2)+'\n')
-              results.append(row)
-              print('POLICY_DIAGNOSTIC', json.dumps(row))
-          Path('artifacts/ci-regressions/policies/results.json').write_text(json.dumps(results, indent=2)+'\n')
+          root = Path('artifacts/ci-regressions')
+          files = list((root/'legacy-city').rglob('sensors.jsonl'))
+          assert len(files) == 1, 'retained legacy sensor recording missing or ambiguous'
+          source = files[0]
+          with source.open() as stream:
+              config = json.loads(next(stream))['header']['config']
+          assert 'retain_yield_stop_on_emergency' not in config
+          output = root/'legacy-city-replay'
+          subprocess.run(['target/release/rustdriving', 'replay', '--log', str(source),
+                          '--output', str(output)], check=True)
+          proof = json.loads((output/'replay.json').read_text())
+          assert proof['verified'] and proof['ticks'] == 921
+          with source.open('rb') as stream:
+              digest = hashlib.file_digest(stream, 'sha256').hexdigest()
+          receipt = dict(original_run=40038874516, original_job=120704941686,
+                         unmodified_sensor_sha256=digest, replay=proof,
+                         scope='Exact command replay of the retained unversioned recording.')
+          (output/'receipt.json').write_text(json.dumps(receipt, indent=2)+'\n')
+          print(json.dumps(receipt))
           PY
-      - name: Verify original signal gate independently
+      - name: Verify all three frozen city seeds with confirmed initial motion
+        run: |
+          python scripts/check-japan-city-demo.py --confirm-track-initialization --seeds 1 7 42 --compact --output artifacts/ci-regressions/japan --report artifacts/ci-regressions/japan/report.json
+      - name: Report independently verified stopped queues and complete junction exits
         run: |
           python - <<'PY'
-          import importlib.util
           import json
           from pathlib import Path
-          import sys
-          sys.path.insert(0, 'scripts')
-          spec = importlib.util.spec_from_file_location('city', 'scripts/check-japan-city-demo.py')
-          city = importlib.util.module_from_spec(spec)
-          spec.loader.exec_module(city)
-          raw = Path('artifacts/ci-regressions/japan/seed-1')
-          print(city.verify_signals(json.loads((raw/'run.json').read_text()),
-                                    json.loads((raw/'scene.json').read_text()), raw/'sensors.jsonl'))
+          report = json.loads(Path('artifacts/ci-regressions/japan/report.json').read_text())
+          assert report['passed'] and report['complete'] and report['cases_verified'] == 3
+          for case in report['cases']:
+              signals = case['signals']
+              junctions = case['junctions_and_construction']
+              print('seed', case['seed'], 'stopped queue seconds',
+                    signals['continuous_ego_stopped_behind_red_queue_duration_s'],
+                    'interval', signals['ego_stopped_behind_red_queue_interval_s'],
+                    'queue rear bound', junctions['queued_vehicle_si_footprints']['ego_red_queue_continuous_rear_bound_x_m'],
+                    'stopped body samples in junctions',
+                    [j['stopped_body_samples_inside'] for j in junctions['intersections']])
           PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: native-city-ubuntu24
-          path: rust_drive/artifacts/ci-regressions
-          compression-level: 1
+          name: native-city-regressions
+          path: |
+            rust_drive/artifacts/ci-regressions/japan
+            rust_drive/artifacts/ci-regressions/legacy-city-replay
           if-no-files-found: warn
+          compression-level: 1

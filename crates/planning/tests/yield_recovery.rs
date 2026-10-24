@@ -56,12 +56,7 @@ fn crossing(stopped: EgoState, yaw: f64) -> Prediction {
     Prediction {
         id: 2,
         positions: (0..=40)
-            .map(|i| {
-                stopped
-                    .pose
-                    .position
-                    .plus(left.scaled(6. - i as f64 * 0.2))
-            })
+            .map(|i| stopped.pose.position.plus(left.scaled(6. - i as f64 * 0.2)))
             .collect(),
         radius: 0.5,
         additional_radius_m: vec![],
@@ -128,6 +123,17 @@ fn a_route_reset_withdraws_the_previous_yield_endpoint() {
     let emergency = planner.plan(stopped, &route(0.), &[lead(24., 0.), crossing(stopped, 0.)]);
     assert_eq!(emergency.mode, DrivingMode::Emergency);
     planner.reset_route_state();
+    let renewed = planner.plan(stopped, &route(0.), &[lead(26., 0.)]);
+    assert_ne!(renewed.mode, DrivingMode::Emergency);
+    assert!(renewed.points.iter().any(|p| p.speed > 0.1));
+}
+
+#[test]
+fn legacy_recordings_can_reproduce_the_original_restart() {
+    let (mut planner, stopped) = settled(0.);
+    planner.retain_yield_stop_on_emergency = false;
+    let emergency = planner.plan(stopped, &route(0.), &[lead(24., 0.), crossing(stopped, 0.)]);
+    assert_eq!(emergency.mode, DrivingMode::Emergency);
     let renewed = planner.plan(stopped, &route(0.), &[lead(26., 0.)]);
     assert_ne!(renewed.mode, DrivingMode::Emergency);
     assert!(renewed.points.iter().any(|p| p.speed > 0.1));
