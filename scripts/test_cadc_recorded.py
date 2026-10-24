@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import io
 import itertools
+import importlib.util
 import json
 import math
 from pathlib import Path
@@ -9,6 +10,7 @@ import struct
 import tarfile
 import tempfile
 import unittest
+from unittest import mock
 import zipfile
 import cadc_recorded as cadc
 
@@ -99,6 +101,25 @@ class RecordedTests(unittest.TestCase):
                 item=tarfile.TarInfo(name);item.type=tarfile.SYMTYPE;item.linkname='/outside';tar.addfile(item)
             data.seek(0)
             with self.assertRaises(ValueError):cadc.select_tar(data,[0])
+    @unittest.skipUnless(importlib.util.find_spec('zstandard'),'optional real-zstd regression')
+    def test_streamed_zstd_window_exceeds_old_limit_without_retaining_images(self):
+        import zstandard
+        data=io.BytesIO();point=raw([(3,0,-.6,1)])
+        with tarfile.open(fileobj=data,mode='w') as tar:
+            image=tarfile.TarInfo('labeled/image_00/data/0000000000.png')
+            image.size=1024*1024;tar.addfile(image,io.BytesIO(b'x'*image.size))
+            member=tarfile.TarInfo('labeled/lidar_points/data/0000000000.bin')
+            member.size=len(point);tar.addfile(member,io.BytesIO(point))
+        payload=zstandard.ZstdCompressor(write_content_size=False).compress(data.getvalue())
+        self.assertGreater(zstandard.get_frame_parameters(payload).window_size,256*1024)
+        record={'url':'https://wiselab.uwaterloo.ca/cadc-clear/d/s/labeled.tar.zst',
+                'size':len(payload),'etag':'"v1"'}
+        response=Response(payload,record['url'],200,{'ETag':'"v1"','Content-Length':str(len(payload))})
+        with mock.patch.object(cadc.urllib.request,'urlopen',return_value=response):
+            selected,receipt=cadc.zstd_points(record,{0})
+        self.assertEqual(selected,{0:point})
+        self.assertEqual(receipt['transferred_bytes'],len(payload))
+        self.assertEqual(receipt['archive_sha256'],cadc.digest(payload))
     def test_existing_data_destination_is_preserved_before_network(self):
         with tempfile.TemporaryDirectory() as tmp:
             destination=Path(tmp)/'existing';destination.mkdir();sentinel=destination/'keep';sentinel.write_text('unchanged')

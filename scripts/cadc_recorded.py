@@ -135,7 +135,8 @@ def zstd_points(record,wanted):
         require(response.status==200 and response.geturl()==record['url'],'unexpected zstd response')
         require(response.headers.get('ETag')==record['etag'] and int(response.headers['Content-Length'])==record['size'],'zstd archive changed')
         counted=CountedStream(response,record['size'])
-        with zstandard.ZstdDecompressor(max_window_size=256*1024).stream_reader(counted,read_size=131072,read_across_frames=True) as decoded:
+        # python-zstandard 0.25 forwards this value to ZSTD_DCtx_setMaxWindowSize in bytes.
+        with zstandard.ZstdDecompressor(max_window_size=256*1024*1024).stream_reader(counted,read_size=131072,read_across_frames=True) as decoded:
             bounded=CountedStream(decoded,8*1024*1024*1024)
             result=select_tar(bounded,wanted)
             while bounded.read(131072):pass
