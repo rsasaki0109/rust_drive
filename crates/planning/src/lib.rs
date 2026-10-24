@@ -28,6 +28,9 @@ pub struct LatticePlanner {
     /// Finish a near-stationary goal within the terminal position tolerance.
     /// Disable for temporary regulatory or route-handover stopping prefixes.
     pub terminal_settling: bool,
+    /// Preserve settled yield endpoints through emergency replans. Retained
+    /// sensor logs can explicitly select the original behavior.
+    pub retain_yield_stop_on_emergency: bool,
     /// After collision-induced emergency braking, retain a feasible immediate
     /// stop until a complete unblocked candidate clears the ordinary sweep.
     pub settle_obstruction_stops: bool,
@@ -88,6 +91,7 @@ impl Default for LatticePlanner {
             local_route_geometry: false,
             point_reference_recovery: false,
             terminal_settling: true,
+            retain_yield_stop_on_emergency: true,
             settle_obstruction_stops: false,
             search_obstruction_stops: false,
             replan_checked_approaches: false,
@@ -919,15 +923,19 @@ impl LatticePlanner {
                 self.previous_lateral = trajectory.lateral_target;
             }
         }
-        self.yield_stop_s = if trajectory.mode == DrivingMode::Yield {
-            trajectory
+        if trajectory.mode == DrivingMode::Yield {
+            self.yield_stop_s = trajectory
                 .points
                 .last()
                 .filter(|p| p.speed < 1e-8)
-                .map(|p| route.project(p.position).0)
-        } else {
-            None
-        };
+                .map(|p| route.project(p.position).0);
+        } else if trajectory.mode != DrivingMode::Emergency || !self.retain_yield_stop_on_emergency
+        {
+            self.yield_stop_s = None;
+        }
+        // An infeasible replan still requests emergency braking. Retain the
+        // previous yield endpoint so a recovered but still blocked proposal
+        // cannot restart a settled stop. Every new hold is swept as usual.
         if let Some(record) = &mut diagnostics {
             record.obstruction_stop_requested = self.obstruction_stop_requested;
             record.obstruction_stop_active = self.obstruction_stop_active;

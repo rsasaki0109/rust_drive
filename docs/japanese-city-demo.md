@@ -68,6 +68,17 @@ for roadworks. All three seeds have zero returns from the work-zone cuboid becau
 
 ## Evidence and boundaries
 
+Current CI enables the existing `confirm_track_initialization` policy for this
+authored scene. Initial velocity needs at least three acquired observations
+spanning 0.2 s and the existing shape/residual checks. Partial visible circles
+can change their fitted centers before the target moves; confirmation separates
+that shape refinement from initial velocity estimation. The checker records the
+selected operational policy and the SHA-256 of its derived scenario input.
+The original physical fixture, traffic schedule, 8 s continuous stop, full-body
+junction exits and clearance gates remain pinned. Use
+`--no-confirm-track-initialization` to record the unconfirmed comparison.
+This is a viewed regression configuration, with no fresh holdout claim.
+
 [Physical results](../assets/japan-city-demo-results.json) retain full sensor
 replay, native inclined LiDAR/ray and measured-ground checks, native ego-body
 checks, all 253 actor pairs and all actor-to-construction clearance checks.

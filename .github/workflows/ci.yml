@@ -73,6 +73,8 @@ jobs:
         run: python scripts/test_planning_diagnostics.py
       - name: Check observation control ownership and archive integrity
         run: python scripts/test_comparison_control.py
+      - name: Check portable recording receipts and retained bytes
+        run: python scripts/test_recording_archive.py
       - name: Check historical roundoff bounds and exact clocks and gates
         run: python scripts/test_recorded_numeric.py
       - name: Check reconstructed submap fingerprints and voxel integrity
@@ -600,7 +602,8 @@ jobs:
           name: opencv-reference-controls
           path: artifacts/opencv-reference/**/*.json
   research-cpu:
-    runs-on: ubuntu-latest
+    # Retain the qualified OS for frozen f64 regressions; ubuntu-latest rolled to 26.04.
+    runs-on: ubuntu-24.04
     defaults:
       run:
         shell: bash ${{ github.workspace }}/scripts/ci-report.sh {0}
@@ -611,6 +614,13 @@ jobs:
           python-version: '3.12'
       - name: Install pinned Rust
         run: rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
+      - name: Verify optional Rust CPU image detector
+        run: |
+          cargo fmt --manifest-path integrations/onnx/Cargo.toml --check
+          cargo clippy --release --manifest-path integrations/onnx/Cargo.toml --all-targets --locked -- -D warnings
+          cargo test --release --manifest-path integrations/onnx/Cargo.toml --all-targets --locked
+          cargo build --release --manifest-path integrations/onnx/Cargo.toml --all-targets --locked
+          python integrations/onnx/check.py --binary integrations/onnx/target/release/rustdriving-camera-detect --summary artifacts/camera-model/summary.json
       - name: Validate additional measured-data acquisition
         run: |
           python scripts/test-fetch-additional-datasets.py
@@ -662,13 +672,6 @@ jobs:
           python scripts/fetch-visual-datasets.py tum-fr3-office-visual
           python scripts/fetch-visual-datasets.py tum-fr3-sitting-visual
           python scripts/check-recorded-visual-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-evaluate --output artifacts/recorded-visual
-      - name: Verify optional Rust CPU image detector
-        run: |
-          cargo fmt --manifest-path integrations/onnx/Cargo.toml --check
-          cargo clippy --release --manifest-path integrations/onnx/Cargo.toml --all-targets --locked -- -D warnings
-          cargo test --release --manifest-path integrations/onnx/Cargo.toml --all-targets --locked
-          cargo build --release --manifest-path integrations/onnx/Cargo.toml --all-targets --locked
-          python integrations/onnx/check.py --binary integrations/onnx/target/release/rustdriving-camera-detect --summary artifacts/camera-model/summary.json
       - name: Reproduce independently annotated urban-camera diagnostics
         run: |
           python integrations/onnx/road_check.py --binary integrations/onnx/target/release/rustdriving-camera-detect --model artifacts/camera-model/yolox_nano.onnx --data artifacts/road-camera --output artifacts/road-camera/check --baseline integrations/onnx/road-results.json
@@ -1159,6 +1162,9 @@ jobs:
             cargo +1.95.0 run --release --locked --manifest-path integrations/rne/Cargo.toml -- --scenario scenarios/mission.json --plant "$plant" --seed 7 --output "artifacts/rne-$plant"
             cargo run --release --locked --bin rustdriving -- replay --log "artifacts/rne-$plant/sensors.jsonl" --output "artifacts/rne-$plant/replay"
           done
+      - name: Verify Japanese urban intersection exits and physical construction clearance
+        working-directory: rust_drive
+        run: python3 scripts/check-japan-city-demo.py --confirm-track-initialization --compact --output artifacts/japan-city-demo --report artifacts/japan-city-demo/report.json
       - name: Run multi-seed hazard acceptance and full replay
         working-directory: rust_drive
         run: python3 scripts/check_hazards.py
@@ -1334,9 +1340,6 @@ jobs:
       - name: Independently verify urban left-side traffic, signals and recorded dog walking
         working-directory: rust_drive
         run: python3 scripts/check-city-demo.py --compact --output artifacts/city-demo --report artifacts/city-demo/report.json
-      - name: Verify Japanese urban intersection exits and physical construction clearance
-        working-directory: rust_drive
-        run: python3 scripts/check-japan-city-demo.py --compact --output artifacts/japan-city-demo --report artifacts/japan-city-demo/report.json
       - name: Independently verify optional adaptive terrain driving
         working-directory: rust_drive
         run: python3 scripts/check-adaptive-native.py --compact --output artifacts/adaptive-native

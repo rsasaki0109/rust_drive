@@ -1,0 +1,232 @@
+name: CI regression checks
+
+on:
+  push:
+    branches: ['codex/ci-*']
+  pull_request:
+    paths:
+      - 'scripts/check_gnss_antenna.py'
+      - 'scripts/test_recording_archive.py'
+      - 'scripts/recorded_numeric.py'
+      - 'scripts/test_recorded_numeric.py'
+      - '.github/workflows/ci-regressions.yml'
+      - '.github/workflows/ci.yml'
+      - 'scripts/check-japan-city-demo.py'
+      - 'integrations/rgbd/**'
+      - 'integrations/rne/**'
+      - 'crates/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-regression-checks-${{ github.event_name == 'workflow_dispatch' && 'manual' || 'automatic' }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  portable-recordings:
+    name: Portable recordings (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-latest]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify portable receipts, retained bytes and tamper rejection
+        run: |
+          python scripts/test_recording_archive.py
+          python scripts/test_gnss_antenna.py
+          python scripts/test_observed_detours.py
+          python scripts/test_recorded_numeric.py
+      - uses: actions/cache/restore@v4
+        if: matrix.os == 'ubuntu-24.04'
+        id: workspace-cache
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: workspace-ubuntu24-rust190-v1-${{ hashFiles('Cargo.lock', 'rust-toolchain.toml', '.cargo/config.toml') }}
+      - name: Check the pinned workspace and scenario replays
+        if: matrix.os == 'ubuntu-24.04'
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
+          bash scripts/check.sh
+
+      - uses: actions/cache/save@v4
+        if: matrix.os == 'ubuntu-24.04' && steps.workspace-cache.outputs.cache-hit != 'true'
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ steps.workspace-cache.outputs.cache-primary-key }}
+
+  historical-visual:
+    if: github.event_name == 'workflow_dispatch'
+    needs: portable-recordings
+    name: Frozen RGB-D reproduction (Ubuntu 24.04)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install the recorded Rust toolchain
+        run: rustup toolchain install 1.90.0 --profile minimal
+      - name: Stage unchanged historical shared libraries
+        run: |
+          mkdir -p artifacts
+          git fetch --no-tags --depth=1 origin a2776053d88bcdcae4e39134c73d95412ff49125
+          python scripts/test-rgbd-regression-staging.py
+          python scripts/prepare-rgbd-regression.py --output "$RUNNER_TEMP/rustdriving-rgbd-regression"
+      - uses: actions/cache/restore@v4
+        id: visual-cache
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ${{ runner.temp }}/rustdriving-rgbd-regression/integrations/rgbd/target
+          key: frozen-visual-ubuntu24-rust190-v1-${{ hashFiles('integrations/rgbd/Cargo.lock') }}
+      - name: Build the unchanged frozen evaluator
+        run: cargo +1.90.0 build --release --locked --manifest-path "$RUNNER_TEMP/rustdriving-rgbd-regression/integrations/rgbd/Cargo.toml"
+      - uses: actions/cache/save@v4
+        if: steps.visual-cache.outputs.cache-hit != 'true'
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ${{ runner.temp }}/rustdriving-rgbd-regression/integrations/rgbd/target
+          key: ${{ steps.visual-cache.outputs.cache-primary-key }}
+      - name: Reproduce all three frozen visual regressions without changing numeric bounds
+        working-directory: ${{ runner.temp }}/rustdriving-rgbd-regression
+        run: |
+          python -m pip install -r scripts/requirements-visual.txt
+          python scripts/fetch-visual-datasets.py tum-fr1-desk-visual
+          python scripts/fetch-visual-datasets.py tum-fr3-office-visual
+          python scripts/fetch-visual-datasets.py tum-fr3-sitting-visual
+          python scripts/check-recorded-visual-suite.py --binary integrations/rgbd/target/release/rustdriving-rgbd-evaluate --output artifacts/ci-regressions/recorded-visual
+      - name: Preserve numerical failure diagnostics
+        if: failure()
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path('artifacts/ci-regressions/recorded-visual')
+          for report in root.glob('*/results.json'):
+              baseline = Path('assets/recorded-visual/current-regression') / report.parent.name / 'results.json'
+              current, original = json.loads(report.read_text()), json.loads(baseline.read_text())
+              print(report.parent.name, 'summaries', original['summary'], current['summary'])
+              for index, (left, right) in enumerate(zip(original['frames'], current['frames'])):
+                  lq = ((left.get('root_accuracy') or {}).get('estimate') or {}).get('quaternion_wxyz')
+                  rq = ((right.get('root_accuracy') or {}).get('estimate') or {}).get('quaternion_wxyz')
+                  if lq is not None and lq != rq:
+                      print('frame', index, 'baseline quaternion', lq, 'current quaternion', rq,
+                            'delta', [b-a for a, b in zip(lq, rq)])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frozen-visual-ubuntu24
+          path: |
+            artifacts/ci-regressions/recorded-visual
+            ${{ runner.temp }}/rustdriving-rgbd-regression/regression-sources.json
+          if-no-files-found: warn
+
+  native-city:
+    if: github.event_name == 'workflow_dispatch'
+    needs: portable-recordings
+    name: Native red-light queue
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    defaults:
+      run:
+        shell: bash
+        working-directory: rust_drive
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: rust_drive
+      - uses: actions/checkout@v4
+        with:
+          repository: rsasaki0109/RobotNativeEngine
+          ref: df6007aa40315e81d12ae00fc1f60369e393a178
+          path: RobotNativeEngine
+          sparse-checkout: |
+            crates
+            third_party
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install isolated pinned Rust toolchains
+        run: |
+          echo "RUSTUP_HOME=$RUNNER_TEMP/rustdriving-rustup" >> "$GITHUB_ENV"
+          export RUSTUP_HOME="$RUNNER_TEMP/rustdriving-rustup"
+          rustup toolchain install 1.90.0 --profile minimal
+          rustup toolchain install 1.95.0 --profile minimal
+          test "$(git -C ../RobotNativeEngine rev-parse HEAD)" = "$(cat integrations/rne/rne-revision.txt)"
+      - name: Identify the native runner release
+        id: native-host
+        run: python -c 'import platform; print("version=" + platform.freedesktop_os_release()["VERSION_ID"])' >> "$GITHUB_OUTPUT"
+      - uses: actions/cache/restore@v4
+        id: native-cache
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            rust_drive/target
+            rust_drive/integrations/rne/target
+          key: native-city-ubuntu-${{ steps.native-host.outputs.version }}-rust190-195-df6007a-v1-${{ hashFiles('rust_drive/Cargo.lock', 'rust_drive/integrations/rne/Cargo.lock') }}
+      - name: Build the active pipeline and pinned native plant
+        run: |
+          cargo +1.95.0 build --release --locked --manifest-path integrations/rne/Cargo.toml
+          cargo +1.90.0 build --release --locked --bin rustdriving
+      - uses: actions/cache/save@v4
+        if: steps.native-cache.outputs.cache-hit != 'true'
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            rust_drive/target
+            rust_drive/integrations/rne/target
+          key: ${{ steps.native-cache.outputs.cache-primary-key }}
+      - name: Verify all three frozen city seeds with confirmed initial motion
+        run: |
+          python scripts/check-japan-city-demo.py --confirm-track-initialization --seeds 1 7 42 --compact --output artifacts/ci-regressions/japan --report artifacts/ci-regressions/japan/report.json
+      - name: Report independently verified stopped queues and complete junction exits
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path('artifacts/ci-regressions/japan/report.json').read_text())
+          assert report['passed'] and report['complete'] and report['cases_verified'] == 3
+          for case in report['cases']:
+              signals = case['signals']
+              junctions = case['junctions_and_construction']
+              print('seed', case['seed'], 'stopped queue seconds',
+                    signals['continuous_ego_stopped_behind_red_queue_duration_s'],
+                    'interval', signals['ego_stopped_behind_red_queue_interval_s'],
+                    'queue rear bound', junctions['queued_vehicle_si_footprints']['ego_red_queue_continuous_rear_bound_x_m'],
+                    'stopped body samples in junctions',
+                    [j['stopped_body_samples_inside'] for j in junctions['intersections']])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-city-regressions
+          path: rust_drive/artifacts/ci-regressions/japan
+          if-no-files-found: warn
+          compression-level: 1

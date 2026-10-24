@@ -135,6 +135,10 @@ pub struct PipelineConfig {
     /// Require completed empty rays and synchronous stopped motion for absence recovery.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub clear_sweep_recovery: Option<ClearSweepRecoveryConfig>,
+    /// New recordings retain a settled yield through emergency replans.
+    /// Missing in older sensor headers selects their original command behavior.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub retain_yield_stop_on_emergency: bool,
     #[serde(default, skip_serializing_if = "is_false")]
     pub settle_obstruction_stops: bool,
     /// Search earlier collision-safe stopping positions and retain their hold.
@@ -230,6 +234,7 @@ impl PipelineConfig {
             forecast_recent_velocity_hypotheses: false,
             forecast_consistency_guard: false,
             clear_sweep_recovery: None,
+            retain_yield_stop_on_emergency: true,
             settle_obstruction_stops: false,
             search_obstruction_stops: false,
             replan_checked_approaches: false,
@@ -778,6 +783,7 @@ impl DrivingPipeline {
         );
         planner.local_route_geometry = config.local_route_geometry;
         planner.point_reference_recovery = config.rear_axle_offset_m.is_none();
+        planner.retain_yield_stop_on_emergency = config.retain_yield_stop_on_emergency;
         planner.settle_obstruction_stops = config.settle_obstruction_stops;
         planner.search_obstruction_stops = config.search_obstruction_stops;
         planner.replan_checked_approaches = config.replan_checked_approaches;

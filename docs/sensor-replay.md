@@ -244,6 +244,17 @@ The physical clearance/priority gates and replay checks are independent. The fin
 
 ## Log schema 1
 
+New configurations created with `PipelineConfig::new` record
+`retain_yield_stop_on_emergency: true`. A temporary emergency preserves the
+previous yield endpoint; recovered stopping paths still undergo the complete
+collision sweep. A clear candidate or route reset can release it. This prevents
+a settled queue stop from restarting solely because an intermediate replan had
+no feasible path.
+
+An older header without this field selects `false` and retains its original
+command behavior for exact sensor replay. False is omitted on serialization,
+so loading an old configuration does not silently upgrade its recovery policy.
+
 Optional `lane_change.return_on_conflict` supplies surveyed source-lane geometry
 and a maximum early-return length. Fresh measured motion supplies initial
 curvature; accepted scans/forecasts supply source confirmation and conflicts.
