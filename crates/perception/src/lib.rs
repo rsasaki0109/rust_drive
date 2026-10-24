@@ -2,7 +2,9 @@
 mod association;
 mod clustering;
 mod component_selection;
-pub use component_selection::{ComponentSelection, ComponentSelectionConfig, ComponentSuppression, select_components};
+pub use component_selection::{
+    ComponentSelection, ComponentSelectionConfig, ComponentSuppression, select_components,
+};
 pub mod ground3d;
 pub mod image_features;
 mod initialization;
