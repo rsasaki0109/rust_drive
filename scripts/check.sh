@@ -5,6 +5,7 @@ source scripts/env.sh
 python3 scripts/test-rgbd-regression-staging.py
 python3 scripts/test_comparison_control.py
 python3 scripts/test_recording_archive.py
+python3 scripts/test_cadc_recorded.py
 python3 scripts/test_recorded_numeric.py
 python3 scripts/test_recorded_submap.py
 python3 scripts/test_prediction_evidence.py

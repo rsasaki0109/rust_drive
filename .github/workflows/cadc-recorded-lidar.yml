@@ -1,0 +1,163 @@
+name: CADC recorded LiDAR study
+on:
+  push:
+    branches: [feat/cadc-recorded-lidar]
+    paths: ['crates/**','scripts/cadc_recorded.py','scripts/check-cadc-recorded.py','scripts/test_cadc_recorded.py','scripts/requirements-cadc.txt','scripts/check.sh','integrations/cadc/**','docs/cadc-recorded-lidar.md','.github/workflows/cadc-recorded-lidar.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: cadc-recorded-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  CARGO_INCREMENTAL: '0'
+jobs:
+  prepare:
+    if: github.ref_name == 'feat/cadc-recorded-lidar'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    outputs:
+      sha: ${{ steps.source.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.90.0
+          components: rustfmt
+      - name: Format only the new adapter and pin tested source
+        id: source
+        env:
+          RUSTDRIVING_EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          rustfmt --edition 2021 crates/sim/examples/cadc_planar_study.rs
+          python - <<'PY'
+          import subprocess
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          assert changed <= {'crates/sim/examples/cadc_planar_study.rs'}, changed
+          PY
+          if ! git diff --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add crates/sim/examples/cadc_planar_study.rs
+            git commit -m 'Format recorded CADC planar adapter'
+            git push --force-with-lease="refs/heads/feat/cadc-recorded-lidar:$RUSTDRIVING_EXPECTED_SHA" origin HEAD:refs/heads/feat/cadc-recorded-lidar
+          fi
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+  core:
+    needs: prepare
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.90.0
+          components: rustfmt,clippy
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pillow==12.0.0
+      - name: Required core regression on the formatted source
+        run: bash scripts/check.sh
+  build:
+    needs: prepare
+    runs-on: ubuntu-22.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.90.0
+          components: rustfmt,clippy
+      - name: Test and build the native label-free adapter
+        run: |
+          cargo fmt --all --check
+          cargo clippy --locked -p rustdriving-sim --example cadc_planar_study -- -D warnings
+          cargo test --locked -p rustdriving-sim --example cadc_planar_study
+          cargo build --release --locked -p rustdriving-sim --example cadc_planar_study
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cadc-native
+          path: target/release/examples/cadc_planar_study
+          retention-days: 7
+          if-no-files-found: error
+  study:
+    needs: [prepare,build]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        pair: [0,1]
+    env:
+      RUSTDRIVING_SOURCE_SHA: ${{ needs.prepare.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r scripts/requirements-cadc.txt
+      - uses: actions/download-artifact@v4
+        with:
+          name: cadc-native
+          path: /tmp/cadc-bin
+      - name: Fetch only frozen point members with pinned source identity
+        run: python scripts/cadc_recorded.py --protocol integrations/cadc/protocol-v1.json --pair "${{ matrix.pair }}" --output /tmp/cadc-data
+      - name: Execute the native detector twice without labels
+        run: |
+          chmod +x /tmp/cadc-bin/cadc_planar_study
+          /tmp/cadc-bin/cadc_planar_study /tmp/cadc-data/sensor.json > /tmp/cadc-native.json
+          /tmp/cadc-bin/cadc_planar_study /tmp/cadc-data/sensor.json > /tmp/cadc-repeat.json
+          cmp /tmp/cadc-native.json /tmp/cadc-repeat.json
+      - name: Independently audit geometry and retain all numerical outcomes
+        run: python scripts/check-cadc-recorded.py --data /tmp/cadc-data --native /tmp/cadc-native.json --binary /tmp/cadc-bin/cadc_planar_study --protocol integrations/cadc/protocol-v1.json --output /tmp/cadc-audit
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cadc-pair-${{ matrix.pair }}
+          path: /tmp/cadc-audit/result.json
+          retention-days: 7
+          if-no-files-found: error
+  publish:
+    needs: [prepare,core,study]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      RUSTDRIVING_SOURCE_SHA: ${{ needs.prepare.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r scripts/requirements-cadc.txt
+      - uses: actions/download-artifact@v4
+        with:
+          name: cadc-pair-0
+          path: /tmp/cadc-pair-0
+      - uses: actions/download-artifact@v4
+        with:
+          name: cadc-pair-1
+          path: /tmp/cadc-pair-1
+      - name: Audit the complete frozen sample and generate aggregate evidence
+        run: python scripts/check-cadc-recorded.py --merge /tmp/cadc-pair-0/result.json /tmp/cadc-pair-1/result.json --protocol integrations/cadc/protocol-v1.json --output assets/cadc-planar-v1
+      - name: Publish every outcome with a lease on the tested source
+        run: |
+          test "$(git rev-parse HEAD)" = "$RUSTDRIVING_SOURCE_SHA"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/cadc-planar-v1
+          git commit -m 'Retain audited recorded CADC planar diagnostics'
+          git push --force-with-lease="refs/heads/feat/cadc-recorded-lidar:$RUSTDRIVING_SOURCE_SHA" origin HEAD:refs/heads/feat/cadc-recorded-lidar
