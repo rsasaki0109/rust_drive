@@ -21,4 +21,4 @@ jobs:
           cache-dependency-path: web/package-lock.json
       - run: npm ci --prefix web --ignore-scripts
       - name: Verify actual fleet and individual demand
-        run: node --test web/tests/fleet.test.mjs
+        run: node --test web/tests/fleet.test.mjs web/tests/traffic.test.mjs web/tests/traffic-junctions.test.mjs

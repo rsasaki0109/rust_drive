@@ -297,4 +297,6 @@ async function boot() {
     console.error(error); $('error').hidden = false; $('error').textContent = '起動できませんでした。WebGL 2とWebAssemblyに対応したブラウザで、ページを再読み込みしてください。'; $('start').innerHTML = '再読み込み'; $('start').disabled = false; $('start').onclick = () => location.reload();
   }
 }
-boot();
+if (new URLSearchParams(location.search).get('mode') === 'fleet') {
+  import('./fleet-view.js').then(module => module.bootFleet()).catch(console.error);
+} else boot();

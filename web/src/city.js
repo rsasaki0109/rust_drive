@@ -335,7 +335,8 @@ export class Traffic {
       const distance = Math.hypot(tx - c.x, ty - c.y);
       const arcAim = c.arc && arcTarget(c.arc, c);
       if (c.arc && !arcAim) c.arc = null;
-      const toward = Math.atan2((arcAim?.y ?? ty) - c.y, (arcAim?.x ?? tx) - c.x);
+      const serviceAim = onStopEdge(c, c.serviceStop) ? c.serviceStop : null;
+      const toward = Math.atan2((arcAim?.y ?? serviceAim?.y ?? ty) - c.y, (arcAim?.x ?? serviceAim?.x ?? tx) - c.x);
       let desired = c.police ? 17 + Math.min(5, Math.hypot(c.x - player.x, c.y - player.y) * .04) : c.desired;
       // Brake for the actual bend instead of carrying cruise speed through tight alleys.
       desired = Math.min(desired, Math.max(5, (c.police ? 24 : 15) - 12 * Math.abs(wrap(toward-c.yaw))));

@@ -38,7 +38,7 @@ export function createDemand(seed = 1701, count = 72) {
       walkSpeed: purpose.speed * (.88 + random() * .24),
       patience: purpose.patience * (.8 + random() * .4),
       dwell: purpose.dwell + random() * 1.5,
-      offset: (random() < .5 ? -1 : 1) * (7 + random() * 4),
+      offset: (random() < .5 ? -1 : 1) * (7 + random() * 4), queueOffset: (i % 7 - 3) * 1.3,
     };
   }).sort((a, b) => a.release - b.release || a.id.localeCompare(b.id));
 }
@@ -60,7 +60,8 @@ export class TaxiFleet {
           ![plan.release, plan.walkSpeed, plan.patience, plan.dwell, plan.offset].every(Number.isFinite) ||
           plan.release < 0 || plan.walkSpeed <= 0 || plan.patience <= 0 || plan.dwell <= 0) throw new Error('Invalid individual travel plan: ' + plan.id);
       return { ...plan, origin, destination, state: 'scheduled', taxi: null, walked: 0,
-        x: origin.curb.x + origin.dx * plan.offset, y: origin.curb.y + origin.dy * plan.offset, yaw: 0 };
+        x: origin.curb.x + origin.dx * plan.offset, y: origin.curb.y + origin.dy * plan.offset, yaw: 0,
+        waitPoint: { x: origin.curb.x + origin.dx * (plan.queueOffset ?? 0), y: origin.curb.y + origin.dy * (plan.queueOffset ?? 0) } };
     });
     if (new Set(this.people.map(p => p.id)).size !== this.people.length) throw new Error('Duplicate person ID');
   }
@@ -77,7 +78,7 @@ export class TaxiFleet {
         if (taxi) { taxi.state = 'idle'; taxi.person = null; /* Drive to the last assigned bay before idling. */ }
         p.taxi = null; p.state = 'cancelled'; p.finishedAt = this.time; this.event('cancel', p, taxi);
       }
-      if (p.state === 'walking' && walk(p, p.origin.curb, dt)) { p.state = 'waiting'; this.event('curb', p); }
+      if (p.state === 'walking' && walk(p, p.waitPoint, dt)) { p.state = 'waiting'; this.event('curb', p); }
       if (p.state === 'leaving' || p.state === 'cancelled') {
         const stop = p.state === 'leaving' ? p.destination : p.origin;
         if (walk(p, { x: stop.curb.x + stop.dx * p.offset, y: stop.curb.y + stop.dy * p.offset }, dt) && p.state === 'leaving') {
