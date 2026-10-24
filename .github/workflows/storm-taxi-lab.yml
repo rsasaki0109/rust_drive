@@ -1,0 +1,252 @@
+name: Storm taxi lab
+on:
+  push:
+    branches: [feat/storm-taxi-lab]
+    paths: ['web/**','integrations/playground/**','docs/storm-taxi-lab.md',README.md,'.github/workflows/storm-taxi-lab.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: storm-taxi-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  PAGES_BASE: /${{ github.event.repository.name }}/
+  CARGO_INCREMENTAL: '0'
+jobs:
+  prepare:
+    if: github.ref_name == 'feat/storm-taxi-lab'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    outputs:
+      sha: ${{ steps.source.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.90.0
+          components: rustfmt
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Format and resolve only the pinned standalone integration
+        id: source
+        env:
+          RUSTDRIVING_EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          cargo metadata --format-version 1 --manifest-path integrations/playground/Cargo.toml > /tmp/storm-metadata.json
+          cargo fmt --manifest-path integrations/playground/Cargo.toml
+          python - <<'PY'
+          import subprocess,tomllib
+          from pathlib import Path
+          root=tomllib.loads(Path('Cargo.lock').read_text())
+          standalone=tomllib.loads(Path('integrations/playground/Cargo.lock').read_text())
+          pins={(p['name'],p['version'],p.get('source'),p.get('checksum')) for p in root['package'] if 'source' in p}
+          actual={(p['name'],p['version'],p.get('source'),p.get('checksum')) for p in standalone['package'] if 'source' in p}
+          assert actual<=pins,actual-pins
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          allowed={'integrations/playground/Cargo.lock','integrations/playground/src/lib.rs','integrations/playground/src/fleet_lidar.rs'}
+          assert changed<=allowed,changed
+          PY
+          if ! git diff --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add integrations/playground/Cargo.lock integrations/playground/src/lib.rs integrations/playground/src/fleet_lidar.rs
+            git commit -m 'Format and pin the storm taxi Wasm integration'
+            git push --force-with-lease="refs/heads/feat/storm-taxi-lab:$RUSTDRIVING_EXPECTED_SHA" origin HEAD:refs/heads/feat/storm-taxi-lab
+          fi
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+  core:
+    needs: prepare
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.90.0
+          components: rustfmt,clippy
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pillow==12.0.0
+      - run: bash scripts/check.sh
+  visual:
+    needs: prepare
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    env:
+      RUSTDRIVING_SOURCE_SHA: ${{ needs.prepare.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.90.0
+          components: rustfmt,clippy
+          targets: wasm32-unknown-unknown
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check the actual Rust ABI and production browser build
+        run: |
+          cargo fmt --manifest-path integrations/playground/Cargo.toml --check
+          cargo clippy --locked --manifest-path integrations/playground/Cargo.toml --all-targets -- -D warnings
+          cargo test --locked --manifest-path integrations/playground/Cargo.toml
+          npm ci --prefix web --ignore-scripts
+          bash scripts/build-playground.sh
+          npm --prefix web test
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: city-life-ubuntu22-playwright-1.56.0
+      - run: |
+          python -m pip install playwright==1.56.0 pillow==12.0.0
+          python -m playwright install --with-deps chromium
+      - name: Inspect measured clouds and weather rendering
+        run: |
+          npm --prefix web run preview -- --host 127.0.0.1 --port 4173 > /tmp/storm-visual.log 2>&1 &
+          rustdriving_storm_preview_pid=$!
+          trap 'kill "$rustdriving_storm_preview_pid" || true' EXIT
+          python - <<'PY'
+          import os,time,urllib.request
+          url='http://127.0.0.1:4173'+os.environ['PAGES_BASE']
+          for _ in range(60):
+              try:
+                  urllib.request.urlopen(url,timeout=1).close()
+                  break
+              except OSError:time.sleep(.25)
+          else:raise SystemExit('Preview did not start')
+          PY
+          python web/tests/storm_smoke.py --url "http://127.0.0.1:4173$PAGES_BASE" --output web/test-results/storm-proof --proof-only
+      - name: Return real proof PNGs
+        if: always()
+        run: |
+          python - <<'PY'
+          import base64
+          from pathlib import Path
+          for p in sorted(Path('web/test-results/storm-proof').rglob('*.png')):
+              print('IMAGE_BEGIN:'+p.as_posix());print(base64.encodebytes(p.read_bytes()).decode('ascii'));print('IMAGE_END:'+p.as_posix())
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: storm-visual-proof
+          path: web/test-results/storm-proof
+      - uses: actions/upload-artifact@v4
+        with:
+          name: storm-production-build
+          path: web/dist
+  record:
+    needs: [prepare,visual]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    env:
+      RUSTDRIVING_SOURCE_SHA: ${{ needs.prepare.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci --prefix web --ignore-scripts
+      - uses: actions/download-artifact@v4
+        with:
+          name: storm-production-build
+          path: web/dist
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: city-life-ubuntu22-playwright-1.56.0
+      - run: |
+          python -m pip install playwright==1.56.0 pillow==12.0.0
+          python -m playwright install --with-deps chromium
+      - name: Run both staffing policies and record the real weather transitions
+        run: |
+          npm --prefix web run preview -- --host 127.0.0.1 --port 4173 > /tmp/storm-record.log 2>&1 &
+          rustdriving_storm_preview_pid=$!
+          trap 'kill "$rustdriving_storm_preview_pid" || true' EXIT
+          python - <<'PY'
+          import os,time,urllib.request
+          url='http://127.0.0.1:4173'+os.environ['PAGES_BASE']
+          for _ in range(60):
+              try:
+                  urllib.request.urlopen(url,timeout=1).close()
+                  break
+              except OSError:time.sleep(.25)
+          else:raise SystemExit('Preview did not start')
+          PY
+          python web/tests/storm_smoke.py --url "http://127.0.0.1:4173$PAGES_BASE" --output web/test-results/storm --record assets/storm-taxi-demo.gif
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: storm-operation-evidence
+          path: web/test-results/storm
+      - uses: actions/upload-artifact@v4
+        with:
+          name: storm-verified-media
+          path: |
+            assets/storm-taxi-demo.gif
+            assets/storm-taxi-demo.png
+            assets/storm-taxi-demo.json
+            assets/storm-taxi-comparison.json
+  publish:
+    needs: [prepare,core,record]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    env:
+      RUSTDRIVING_SOURCE_SHA: ${{ needs.prepare.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: storm-verified-media
+          path: assets
+      - uses: actions/download-artifact@v4
+        with:
+          name: storm-production-build
+          path: /tmp/storm-verified-build
+      - name: Bind media to the tested source and Wasm
+        run: |
+          python - <<'PY'
+          import hashlib,json,os
+          from pathlib import Path
+          r=json.loads(Path('assets/storm-taxi-demo.json').read_text())
+          sha=lambda p:hashlib.sha256(Path(p).read_bytes()).hexdigest()
+          assert r['sourceCommit']==os.environ['RUSTDRIVING_SOURCE_SHA']
+          assert r['frames']==240 and r['gifSeconds']==24
+          assert r['wasmSha256']==sha('/tmp/storm-verified-build/drive.wasm')
+          assert r['gifSha256']==sha('assets/storm-taxi-demo.gif')
+          assert r['posterSha256']==sha('assets/storm-taxi-demo.png')
+          for path,digest in r['sourceSha256'].items():assert sha(path)==digest,path
+          PY
+      - name: Save verified media to the unchanged feature branch
+        run: |
+          git fetch origin refs/heads/feat/storm-taxi-lab
+          test "$(git rev-parse FETCH_HEAD)" = "$RUSTDRIVING_SOURCE_SHA"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/storm-taxi-demo.gif assets/storm-taxi-demo.png assets/storm-taxi-demo.json assets/storm-taxi-comparison.json
+          git commit -m 'Record measured LiDAR and storm taxi operations'
+          git push --force-with-lease="refs/heads/feat/storm-taxi-lab:$RUSTDRIVING_SOURCE_SHA" origin HEAD:refs/heads/feat/storm-taxi-lab

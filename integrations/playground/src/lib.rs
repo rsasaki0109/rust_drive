@@ -1,9 +1,11 @@
-//! Manual-driving arcade model, separate from the autonomous research pipeline.
+//! Manual-driving arcade physics and optional measured-cloud taxi brake lab.
+//! The city's map/signal steering remains separate from the research pipeline.
 //! SI units; X/Y ground plane, positive yaw and steering turn left.
 //! The two-axle tire model integrates lateral speed and yaw independently.
 //! A handbrake reduces rear grip. Contact uses an explicit arcade impulse.
 use std::cell::RefCell;
 mod elevation;
+mod fleet_lidar;
 mod structures;
 use elevation::{DrivingVehicle, surface};
 

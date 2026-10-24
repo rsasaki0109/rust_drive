@@ -41,3 +41,15 @@
 .fleet-standby-control label { display: block; font-size: 9px; letter-spacing: 1.2px; color: #9cb2b9; margin-bottom: 7px; }
 .fleet-standby-control select { width: 100%; min-width: 0; padding: 8px; border: 1px solid #668e9c; border-radius: 4px; color: #d5e7ed; background: #203941; font: inherit; font-size: 10px; }
 .fleet-standby-control p { margin: 7px 0 0; font-size: 10px; color: #95bfce; }
+
+.fleet-lab-entry{font:9px ui-monospace,monospace;color:#9ce8da;margin:0 0 12px}.fleet-lab-entry a{color:inherit;text-decoration:none}
+.fleet-weather-panel{padding:12px;border:1px solid #6da5b966;border-radius:5px;margin-bottom:14px;background:#1e3741}
+.fleet-weather-panel label{display:block;font-size:9px;letter-spacing:.06em;color:#bbd5de;margin-bottom:11px}.fleet-weather-panel select{width:100%;margin-top:5px;padding:8px;background:#142c35;color:#e5f3f5;border:1px solid #7797a6;border-radius:3px;font:inherit}
+.fleet-weather-panel input[type=range]{display:block;width:100%;margin:7px 0 0;accent-color:#83dbd0}.fleet-weather-panel input[type=checkbox]{accent-color:#83dbd0;vertical-align:middle}
+.fleet-weather-panel p{font-size:9px;line-height:1.6;color:#a5c5d0;margin:6px 0 10px}.fleet-ops-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;font:8px ui-monospace,monospace;color:#b0cad1}.fleet-ops-metrics b{display:block;font:19px system-ui,sans-serif;color:#b3eddf;margin-top:3px}
+.fleet-lidar-hud{position:absolute;right:20px;top:78px;max-width:280px;padding:13px 15px;border-left:2px solid #8ceacf;background:#132d35e8;font:10px ui-monospace,monospace;color:#b8efe0}.fleet-lidar-hud p{font-size:9px;margin:7px 0 10px;color:#a5cbd0}.fleet-lidar-hud button{padding:6px 8px;border:1px solid #66ab9d;background:#1c4943;color:#cffbf0;border-radius:3px;font:8px ui-monospace,monospace}
+@media(max-width:600px){.fleet-weather-panel{padding:9px}.fleet-lidar-hud{right:12px;top:118px;padding:9px;max-width:220px;font-size:8px}.fleet-lidar-hud p{font-size:7px}.fleet-sidebar:has(.fleet-weather-panel){height:270px}.fleet-weather-panel label{font-size:8px}.fleet-camera button{padding:8px 5px}.fleet-lab-entry{font-size:8px}}
+
+#fleet-app:has(.fleet-weather-panel) .fleet-sidebar h2,#fleet-app:has(.fleet-weather-panel) .fleet-eyebrow,#fleet-app:has(.fleet-weather-panel) .fleet-description{display:none}
+.fleet-lidar-hud select{margin-right:9px;padding:6px;background:#183f44;color:#c5f1e7;border:1px solid #58908b;border-radius:3px;font:9px ui-monospace,monospace}
+#fleet-app:has(.fleet-weather-panel) .fleet-metrics{margin-bottom:14px}
