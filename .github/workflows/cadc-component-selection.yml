@@ -134,6 +134,7 @@ jobs:
         with:
           name: cadc-selection-native
           path: /tmp/cadc-selection-native
+          include-hidden-files: true
           retention-days: 7
           if-no-files-found: error
   development:
@@ -158,6 +159,22 @@ jobs:
         with:
           name: cadc-selection-native
           path: /tmp/cadc-bin
+      - name: Validate complete historical source bundles before data acquisition
+        run: |
+          python - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          protocol=json.loads(Path('integrations/cadc/protocol-selection-v1.json').read_text())
+          for kind,asset,key in [('planar','cadc-planar-v1','baseline_source'),('raw','cadc-volume-v1','raw_source')]:
+              root=Path('/tmp/cadc-bin')/(kind+'-source')
+              manifest=json.loads((root/'source.json').read_text())
+              expected=json.loads((Path('assets')/asset/'provenance.json').read_text())
+              assert manifest['sourceCommit']==protocol[key]
+              assert manifest['files']==expected['sourceSha256']
+              for name,h in manifest['files'].items():
+                  path=Path(name);assert not path.is_absolute() and '..' not in path.parts
+                  assert hashlib.sha256((root/path).read_bytes()).hexdigest()==h, name
+          PY
       - name: Fetch only the registered development pair
         run: python scripts/cadc_selection_acquire.py --protocol integrations/cadc/protocol-selection-v1.json --pair "${{ matrix.pair }}" --output /tmp/cadc-data
       - name: Run both historical sensor-only references twice
@@ -270,6 +287,22 @@ jobs:
         with:
           name: cadc-selection-native
           path: /tmp/cadc-bin
+      - name: Validate complete historical source bundles before data acquisition
+        run: |
+          python - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          protocol=json.loads(Path('integrations/cadc/protocol-selection-v1.json').read_text())
+          for kind,asset,key in [('planar','cadc-planar-v1','baseline_source'),('raw','cadc-volume-v1','raw_source')]:
+              root=Path('/tmp/cadc-bin')/(kind+'-source')
+              manifest=json.loads((root/'source.json').read_text())
+              expected=json.loads((Path('assets')/asset/'provenance.json').read_text())
+              assert manifest['sourceCommit']==protocol[key]
+              assert manifest['files']==expected['sourceSha256']
+              for name,h in manifest['files'].items():
+                  path=Path(name);assert not path.is_absolute() and '..' not in path.parts
+                  assert hashlib.sha256((root/path).read_bytes()).hexdigest()==h, name
+          PY
       - uses: actions/download-artifact@v4
         with:
           name: cadc-selection-freeze
