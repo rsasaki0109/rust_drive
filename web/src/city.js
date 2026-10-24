@@ -344,7 +344,12 @@ export class Traffic {
         Math.sqrt(c.plannedArc.speed ** 2 + 7 * Math.max(0, distance - 7)));
       if (c.arc) desired = Math.min(desired, c.arc.speed);
       desired = Math.min(desired, this.junctions.limit(c), stopSpeedLimit(c));
-      for (const other of [...this.cars, player]) {
+      if (c.sensorDriven) {
+        const sensor = c.sensor;
+        const fresh = sensor?.ready && time >= sensor.stamp && time - sensor.stamp <= .6;
+        desired = Math.min(desired, fresh ? sensor.limit : 0);
+      }
+      for (const other of c.sensorDriven ? [] : [...this.cars, player]) {
         if (other === c) continue;
         const dx = other.x - c.x, dy = other.y - c.y, front = dx * Math.cos(c.yaw) + dy * Math.sin(c.yaw), lateral = -dx * Math.sin(c.yaw) + dy * Math.cos(c.yaw);
         if (front <= 0 || front >= 15 || Math.abs(lateral) >= 2.4) continue;

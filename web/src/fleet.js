@@ -1,4 +1,5 @@
 import { makeStop, pickupDistance, atServiceStop } from './fleet-routing.js';
+import { CITY_WEATHER, weatherSupply } from './city-weather.js';
 import { makeStandbyStop, standbyPriorities } from './fleet-standby.js';
 import { cityConditions, FACILITIES, NorthLine, STATION_PATH, PLATFORM_WAIT, RAIL_Y } from './city-life.js';
 
@@ -21,9 +22,10 @@ export const PURPOSES = Object.freeze([
   { id: 'appointment', label: 'APPOINTMENT', color: '#9be0b4', origins: [0, 2, 7, 5], destinations: [3], speed: .85, patience: 110, dwell: 7, item: 'bag' },
   { id: 'leisure', label: 'MEETUP', color: '#f3df7e', origins: [6, 8], destinations: [1, 5, 7, 8], speed: 1.2, patience: 80, dwell: 4, item: 'backpack' },
 ]);
-export const DEPOT_STOPS = Object.freeze(Array.from({ length: 4 }, (_, i) => {
-  const base = makeStop('depot-' + i, 'FLEET DEPOT', { x: -150, y: -150 }, { x: -100, y: -150 });
-  const along = 12 + i * 8; return Object.freeze({ ...base, along, x: -150 + along });
+export const DEPOT_STOPS = Object.freeze(Array.from({ length: 8 }, (_, i) => {
+  const x = i < 4 ? -150 : -100;
+  const base = makeStop('depot-' + i, 'FLEET DEPOT', { x, y: -150 }, { x: x+50, y: -150 });
+  const along = 12 + i % 4 * 8; return Object.freeze({ ...base, along, x: x + along });
 }));
 const byStop = new Map(FLEET_STOPS.map(s => [s.id, s]));
 const byPurpose = new Map(PURPOSES.map(p => [p.id, p]));
@@ -67,6 +69,7 @@ export class TaxiFleet {
   constructor(graph, cars, options = {}) {
     const { seed = 1701, period = 'morning', plans, standby = true } = options;
     this.graph = graph; this.seed = seed; this.period = period; this.time = 0; this.nextDispatch = 0;
+    this.weather='clear'; this.weatherStrength=0; this.reserveEnabled=true; this.weatherSequence=0; this.nextWeatherDemand=Infinity; this.weatherEvents=[];
     this.standbyEnabled = Boolean(standby); this.nextStandby = 0; this.standbyEvents = []; this.standbyScores = [];
     this.standbyStops = new Map(FLEET_STOPS.map(s => [s.id, makeStandbyStop(s)]));
     this.events = []; this.waits = []; this.people = []; this.taxis = []; this.auto = plans === undefined;
@@ -156,6 +159,26 @@ export class TaxiFleet {
         x: train.x + (i % 2 ? 8 : -8), y: RAIL_Y - .8, height: 1, insideBuilding: null });
     }
   }
+  targetSupply() { return weatherSupply(cityConditions(this.period,this.time).taxiSupply,this.weather,this.weatherStrength,this.reserveEnabled); }
+  setWeather(weather,strength=.5) {
+    weatherSupply(8,weather,strength,true);
+    this.weather=weather; this.weatherStrength=weather==='clear'?0:strength;
+    this.nextWeatherDemand=weather==='clear'||strength===0?Infinity:this.time+2;
+    this.weatherEvents.push({time:this.time,type:'weather',weather,strength:this.weatherStrength});
+  }
+  setReserveEnabled(enabled) {
+    if(typeof enabled!=='boolean') throw new Error('Reserve policy must be boolean');
+    this.reserveEnabled=enabled; this.weatherEvents.push({time:this.time,type:'reserve',enabled});
+  }
+  stormDemand() {
+    if(!this.auto || this.weather==='clear' || this.weatherStrength===0 || this.time<this.nextWeatherDemand) return;
+    this.nextWeatherDemand=this.time+CITY_WEATHER[this.weather].interval/Math.max(.1,this.weatherStrength);
+    const night=cityConditions(this.period,this.time).night, serial=++this.weatherSequence;
+    const purpose=PURPOSES[(serial-1)%PURPOSES.length];
+    this.addPerson({id:'W'+String(serial).padStart(4,'0'),purpose:purpose.id,origin:night?'nightlife':'office',
+      destination:['homes','west','hotel'][serial%3],release:this.time+.3,walkSpeed:purpose.speed,
+      patience:purpose.patience,dwell:purpose.dwell,offset:8,source:'weather-demand'});
+  }
   setStandbyEnabled(enabled) {
     if (typeof enabled !== 'boolean') throw new Error('Standby mode must be boolean');
     this.standbyEnabled = enabled; this.nextStandby = this.time;
@@ -203,13 +226,14 @@ export class TaxiFleet {
   update(dt) {
     if (!Number.isFinite(dt) || dt <= 0 || dt > .1) throw new Error('Fleet step must be in (0, .1] seconds');
     this.time += dt;
-    const clock = cityConditions(this.period, this.time);
+    const clock = cityConditions(this.period, this.time), supply = this.targetSupply();
+    this.stormDemand();
     this.taxis.forEach((t, i) => {
       const odometer = t.car.distance ?? 0, driven = Math.max(0, odometer - t.lastDistance);
       if (!t.person || t.state === 'pickup') t.emptyDistance += driven;
       if (!t.person && t.standbyStop) t.repositionDistance += driven;
       t.lastDistance = odometer;
-      t.onDuty = i < clock.taxiSupply || Boolean(t.person); t.retiring = i >= clock.taxiSupply;
+      t.onDuty = i < supply || Boolean(t.person); t.retiring = i >= supply;
       if (!t.person) {
         if (!t.onDuty) { t.standbyStop = null; t.car.serviceStop = DEPOT_STOPS[i % DEPOT_STOPS.length]; }
         else if (t.state === 'off-duty') t.car.serviceStop = FLEET_STOPS[i % FLEET_STOPS.length];
@@ -324,11 +348,13 @@ export class TaxiFleet {
   snapshot() {
     const count = states => this.people.filter(p => states.includes(p.state)).length;
     return { time: this.time, seed: this.seed, period: this.period, clock: cityConditions(this.period, this.time),
+      weather:{name:this.weather,strength:this.weatherStrength,reserve:this.reserveEnabled,targetSupply:this.targetSupply(),events:this.weatherEvents.map(e=>({...e}))},
       demand: 'authored individual travel plans; not calibrated',
       standby: { enabled: this.standbyEnabled, scores: this.standbyScores.map(s => ({ ...s })), events: this.standbyEvents.map(e => ({ ...e })) },
       doors: Object.fromEntries(Object.entries(this.doors).map(([id, door]) => [id, { ...door }])),
       train: this.line?.snapshot() ?? null, railEvents: this.line?.events.map(e => ({ ...e })) ?? [],
-      metrics: { emptyDistance: this.taxis.reduce((n, t) => n + t.emptyDistance, 0),
+      metrics: { targetSupply:this.targetSupply(), weatherRequests:this.events.filter(e=>e.type==='request'&&e.source==='weather-demand').length,
+        emptyDistance: this.taxis.reduce((n, t) => n + t.emptyDistance, 0),
         repositionDistance: this.taxis.reduce((n, t) => n + t.repositionDistance, 0),
         repositioning: this.taxis.filter(t => t.standbyStop && !t.person && !atServiceStop(t.car, t.standbyStop)).length,
         standby: this.taxis.filter(t => t.standbyStop && !t.person && atServiceStop(t.car, t.standbyStop)).length,

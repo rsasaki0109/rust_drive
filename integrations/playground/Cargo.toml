@@ -6,6 +6,11 @@ rust-version = "1.90"
 license = "Apache-2.0"
 description = "Standalone manual-driving arcade physics for the browser playground"
 
+[dependencies]
+rustdriving-core = { path = "../../crates/core" }
+rustdriving-perception = { path = "../../crates/perception" }
+rustdriving-sim = { path = "../../crates/sim" }
+
 [workspace]
 
 [lib]

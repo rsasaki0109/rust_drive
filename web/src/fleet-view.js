@@ -5,6 +5,9 @@ import { createRidge } from './ridge.js';
 import { createStructures } from './structures.js';
 import { createUrbanDistrict } from './urban-city.js';
 import { TaxiFleet, FLEET_STOPS, PURPOSES } from './fleet.js';
+import { FleetLidar, ContactEvaluator, visiblePerson } from './fleet-lidar.js';
+import { createStormVisuals } from './fleet-storm-view.js';
+import { CITY_WEATHER } from './city-weather.js';
 import { makeStandbyStop } from './fleet-standby.js';
 import { cityConditions, PERIODS } from './city-life.js';
 import { createFleetPlaces } from './fleet-places.js';
@@ -49,21 +52,25 @@ function pedestrian(p, index) {
 export async function bootFleet() {
   const requestedPeriod = new URLSearchParams(location.search).get('period');
   const period = Object.hasOwn(PERIODS, requestedPeriod) ? requestedPeriod : 'morning';
-  document.title = 'RustDriving · City Life';
+  const query=new URLSearchParams(location.search),lab=query.get('lab')==='1';
+  document.title = lab?'RustDriving · Storm Taxi Lab':'RustDriving · City Life';
   document.getElementById('game').hidden = true;
   document.body.insertAdjacentHTML('beforeend', '<main id="fleet-app">' +
-    '<header class="fleet-header"><a class="fleet-brand" href="./">R<span>∕</span></a><div><p>RUSTDRIVING / CITY LAB</p><h1>People, trains &amp; taxis<span>02</span></h1></div>' +
+    '<header class="fleet-header"><a class="fleet-brand" href="./">R<span>∕</span></a><div><p>RUSTDRIVING / CITY LAB</p><h1>'+(lab?'Storm taxi operations':'People, trains &amp; taxis')+'<span>03</span></h1></div>' +
     '<div class="fleet-clock"><i></i><b id="fleet-clock">08:00:00</b><small>CITY CLOCK · 15×</small></div><label class="fleet-period-label"><span>SCENARIO / START TIME</span><select id="fleet-period" aria-label="City time of day">' + Object.entries(PERIODS).map(([key, value]) => '<option value="' + key + '"' + (key === period ? ' selected' : '') + '>' + value.label + '</option>').join('') + '</select></label><a class="fleet-drive" href="./">DRIVE ↗</a><button id="fleet-play" disabled>LOADING…</button></header>' +
     '<div class="fleet-layout"><aside class="fleet-sidebar"><p class="fleet-eyebrow">EVERY TRIP STARTS WITH SOMEONE</p><h2>A city that<br>keeps moving.</h2><p class="fleet-description">People leave buildings, catch trains<br>and call for a ride home.</p>' +
     '<div class="fleet-metrics" aria-label="Live trip metrics"><div><b id="fleet-waiting">0</b><span>WAITING</span></div><div><b id="fleet-riding">0</b><span>RIDING</span></div><div><b id="fleet-served">0</b><span>DELIVERED</span></div><div><b id="fleet-cancelled">0</b><span>GAVE UP</span></div></div>' +
+    '<div class="fleet-lab-entry">'+(lab?'STORM TAXI LAB':'<a href="?mode=fleet&lab=1">WEATHER + AUTONOMOUS TAXIS ↗</a>')+'</div>'+
+    (lab?'<div class="fleet-weather-panel"><label>WEATHER<select id="fleet-weather" aria-label="City weather">'+Object.entries(CITY_WEATHER).map(([key,p])=>'<option value="'+key+'">'+p.label+'</option>').join('')+'</select></label><label>STRENGTH <span id="fleet-strength-value">50%</span><input id="fleet-strength" type="range" min="0" max="100" value="50" aria-label="Weather strength"></label><label class="fleet-reserve-label"><input id="fleet-reserve" type="checkbox" checked> DEPLOY RESERVE CABS</label><p id="fleet-storm-policy">Weather reserve stands by.</p><div class="fleet-ops-metrics"><span>PICKUP AVG <b id="fleet-pickup-avg">0s</b></span><span>EMPTY TRAVEL <b id="fleet-empty-distance">0m</b></span><span>SENSOR BRAKING <b id="fleet-braking">0s</b></span><span>CONTACTS <b id="fleet-contacts">0</b></span></div></div>':'')+
     '<div class="fleet-standby-control"><label for="fleet-standby">EMPTY TAXIS</label><select id="fleet-standby" aria-label="Empty taxi strategy"><option value="demand">FOLLOW DEMAND</option><option value="last">WAIT AT LAST STOP</option></select><p id="fleet-standby-status" role="status">Standby locations follow the city.</p></div>' +
     '<p class="fleet-rail-status" id="fleet-rail">NORTH LINE / INBOUND</p><div class="fleet-section-title">PEOPLE, NOT JUST REQUESTS <span id="fleet-demand">0 TRIPS</span></div><div id="fleet-people" aria-label="Individual travel requests"></div>' +
     '<div class="fleet-purpose-key">' + PURPOSES.map(p => '<span><i style="background:' + p.color + '"></i>' + p.label + '</span>').join('') + '</div><p class="fleet-scope"><b id="fleet-supply">8 CABS ON DUTY</b> · 1 RIDER PER TAXI<br>Fictional city · local simulation<br>No accounts · no saved progress.</p></aside>' +
     '<section id="fleet-stage" aria-label="Live taxi and pedestrian city simulation"><canvas id="fleet-world" aria-label="People walking to taxis on a city street network"></canvas>' +
     '<div class="fleet-scene-heading"><span id="fleet-view-label">LIVE CITY / DISPATCH</span><b id="fleet-view-title">From the office to the curb.</b></div>' +
+    (lab?'<div class="fleet-lidar-hud"><b id="fleet-lidar-title">T01 · PLANAR LIDAR</b><p id="fleet-lidar-status">Waiting for measured returns</p><select id="fleet-inspect" aria-label="Inspect taxi"></select><button id="fleet-lidar-toggle" aria-pressed="true">HIDE POINTS</button></div>':'')+
     '<button class="fleet-rate" id="fleet-rate" aria-pressed="false">1× SPEED</button><div class="fleet-start-hint" id="fleet-hint">Press START to watch people make their way.</div>' +
     '<div class="fleet-event" id="fleet-event" role="status"></div><div class="fleet-bottom"><span><i style="background:#ffca62"></i>PICKUP</span><span><i style="background:#63decb"></i>OCCUPIED</span><span><i style="background:#c4f19a"></i>DROPOFF</span><span><i style="background:#72c8ff"></i>STANDBY</span><span><i style="background:#aab9c4"></i>AVAILABLE</span></div>' +
-    '<div class="fleet-camera"><button id="fleet-overview" aria-pressed="false">CITY</button><button id="fleet-office" aria-pressed="true">OFFICE</button><button id="fleet-nightlife" aria-pressed="false">NIGHTLIFE</button><button id="fleet-station" aria-pressed="false">STATION</button><button id="fleet-follow" aria-pressed="false">FOLLOW</button></div></section></div></main>');
+    '<div class="fleet-camera"><button id="fleet-overview" aria-pressed="false">CITY</button><button id="fleet-office" aria-pressed="true">OFFICE</button><button id="fleet-nightlife" aria-pressed="false">NIGHTLIFE</button><button id="fleet-station" aria-pressed="false">STATION</button><button id="fleet-follow" aria-pressed="false">FOLLOW</button>'+(lab?'<button id="fleet-road" aria-pressed="false">ROAD</button>':'')+'</div></section></div></main>');
   const $ = id => document.getElementById(id), stage = $('fleet-stage');
   let renderer;
   try {
@@ -85,6 +92,8 @@ export async function bootFleet() {
     sun.target.position.set(0, 0, -50); scene.add(sun, sun.target);
     const city = createCity(scene, { fleet: true }); createRidge(scene, drive);
     const structures = createStructures(scene, drive), urban = createUrbanDistrict(scene, drive, phase);
+    const instrumentColliders=[...city.colliders,...structures.colliders,...urban.colliders,
+      {x:-25,y:-24,w:9,h:10,bottom:0,top:14},{x:-31,y:76,w:6,h:12,bottom:0,top:13}];
     const traffic = new Traffic(scene, { drive, urban: true, cityCars: 14 });
     const cars = [], spawnCab = (index, arriving = false) => {
       const stop = FLEET_STOPS[index % FLEET_STOPS.length];
@@ -97,6 +106,21 @@ export async function bootFleet() {
     traffic.update(1 / 60, 0, observer);
     const standby = new URLSearchParams(location.search).get('standby') !== 'off';
     const fleet = new TaxiFleet(traffic.graph, cars, { period, standby }), places = createFleetPlaces(scene);
+    const lidar=lab?new FleetLidar(drive,instrumentColliders):null, contacts=lab?new ContactEvaluator():null, storm=lab?createStormVisuals(scene):null;
+    let showLidar=true;
+    if(lab) {
+      const weather=Object.hasOwn(CITY_WEATHER,query.get('weather'))?query.get('weather'):'clear';
+      const amount=Number(query.get('strength')??50),strength=Number.isFinite(amount)?Math.max(0,Math.min(100,amount)):50;
+      $('fleet-weather').value=weather;$('fleet-strength').value=String(strength);$('fleet-strength-value').textContent=strength+'%';
+      fleet.setWeather(weather,strength/100);fleet.setReserveEnabled(query.get('reserve')!=='off');$('fleet-reserve').checked=fleet.reserveEnabled;
+      const setWeather=()=>{const value=Number($('fleet-strength').value);fleet.setWeather($('fleet-weather').value,value/100);$('fleet-strength-value').textContent=value+'%';hudAt=-1;
+        const url=new URL(location.href);url.searchParams.set('weather',fleet.weather);url.searchParams.set('strength',String(value));history.replaceState(null,'',url);};
+      $('fleet-weather').addEventListener('change',setWeather);$('fleet-strength').addEventListener('input',setWeather);
+      $('fleet-reserve').addEventListener('change',()=>{fleet.setReserveEnabled($('fleet-reserve').checked);hudAt=-1;
+        const url=new URL(location.href);if(fleet.reserveEnabled)url.searchParams.delete('reserve');else url.searchParams.set('reserve','off');history.replaceState(null,'',url);});
+      $('fleet-inspect').addEventListener('change',event=>{selected=event.target.value;selectView(view==='road'?'road':'follow');hudAt=-1;});
+      $('fleet-lidar-toggle').addEventListener('click',()=>{showLidar=!showLidar;$('fleet-lidar-toggle').textContent=showLidar?'HIDE POINTS':'SHOW POINTS';$('fleet-lidar-toggle').setAttribute('aria-pressed',String(showLidar));});
+    }
     $('fleet-standby').value = standby ? 'demand' : 'last';
     $('fleet-standby').addEventListener('change', event => {
       fleet.setStandbyEnabled(event.target.value === 'demand'); hudAt = -1;
@@ -126,7 +150,7 @@ export async function bootFleet() {
       scene.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(standbyPoints),
         new THREE.LineBasicMaterial({ color: 0x72aacc })));
     }
-    let paused = true, playbackRate = 1, view = period === 'night' ? 'nightlife' : 'office', selected = fleet.taxis[0].id, previous = performance.now(), accumulator = 0, hudAt = -1;
+    let paused = true, playbackRate = 1, view = lab?'follow':period === 'night' ? 'nightlife' : 'office', selected = fleet.taxis[0].id, previous = performance.now(), accumulator = 0, hudAt = -1;
     const resize = () => { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); };
     resize(); addEventListener('resize', resize);
     const setPaused = value => {
@@ -139,16 +163,16 @@ export async function bootFleet() {
     $('fleet-rate').addEventListener('click', () => { playbackRate = playbackRate === 1 ? 4 : 1; $('fleet-rate').textContent = playbackRate + '× SPEED'; $('fleet-rate').setAttribute('aria-pressed', String(playbackRate === 4)); });
     const selectView = id => {
       view = id;
-      for (const [mode, button] of Object.entries({ city: 'overview', office: 'office', nightlife: 'nightlife', station: 'station', follow: 'follow' }))
+      for (const [mode, button] of Object.entries({ city: 'overview', office: 'office', nightlife: 'nightlife', station: 'station', follow: 'follow', ...(lab?{road:'road'}:{}) }))
         $('fleet-' + button).setAttribute('aria-pressed', String(mode === id));
       const titles = { city: ['LIVE CITY / DISPATCH', 'Different places. Different journeys.'],
         office: ['OFFICE / DOOR TO CURB', 'From the lobby to the pickup.'],
         nightlife: ['NIGHTLIFE / AFTER HOURS', 'When the trains stop, the taxis keep going.'],
         station: ['NORTH LINE / PLATFORM 1', 'From the platform to the pickup.'],
-        follow: ['LIVE TAXI / ON THE ROAD', 'One ride through a moving city.'] };
+        follow: ['LIVE TAXI / ON THE ROAD', 'One ride through a moving city.'], road:['SENSOR-GUIDED TAXI','A ride through changing weather.'] };
       $('fleet-view-label').textContent = titles[id][0]; $('fleet-view-title').textContent = titles[id][1];
     };
-    for (const [mode, button] of Object.entries({ city: 'overview', office: 'office', nightlife: 'nightlife', station: 'station', follow: 'follow' }))
+    for (const [mode, button] of Object.entries({ city: 'overview', office: 'office', nightlife: 'nightlife', station: 'station', follow: 'follow', ...(lab?{road:'road'}:{}) }))
       $('fleet-' + button).addEventListener('click', () => selectView(mode));
     selectView(view);
     $('fleet-people').addEventListener('click', event => { const id = event.target.closest('[data-taxi]')?.dataset.taxi; if (id) selected = id; });
@@ -156,7 +180,7 @@ export async function bootFleet() {
     addEventListener('keydown', event => { if (event.code === 'Escape') setPaused(!paused); });
     const project = mesh => { const p = mesh.position.clone().project(camera); return mesh.visible && p.z > -1 && p.z < 1 && Math.abs(p.x) < .96 && Math.abs(p.y) < .96; };
     window.rustDrivingFleet = Object.freeze({ snapshot: () => ({
-      ...fleet.snapshot(), ready: true, paused, playbackRate, cameraMode: view, selectedTaxi: selected,
+      ...fleet.snapshot(), lab:lab?{...lidar.snapshot(fleet.taxis.find(t=>t.id===selected)),contacts:contacts.snapshot(),showLidar}:null, ready: true, paused, playbackRate, cameraMode: view, selectedTaxi: selected,
       lighting: { sky: scene.background.getHex(), ambient: ambient.intensity, sunlight: sun.intensity },
       physics: 'rust-wasm terrain + arcade traffic', ambientCars: traffic.cars.length - cars.length,
       visiblePeople: [...people.values()].filter(project).length, visibleTaxis: fleet.taxis.filter(t => t.onDuty && project(t.car.mesh)).length,
@@ -170,6 +194,16 @@ export async function bootFleet() {
       const seconds = Math.floor(snapshot.clock.minutes * 60);
       $('fleet-clock').textContent = [Math.floor(seconds / 3600), Math.floor(seconds / 60) % 60, seconds % 60].map(n => String(n).padStart(2, '0')).join(':');
       $('fleet-supply').textContent = m.onDuty + ' CABS ON DUTY';
+      if(lab){
+        $('fleet-storm-policy').textContent=m.onDuty+' ON DUTY / '+m.targetSupply+' TARGET · '+m.weatherRequests+' WEATHER REQUESTS';
+        $('fleet-pickup-avg').textContent=Math.round(m.meanWait)+'s';$('fleet-empty-distance').textContent=(m.emptyDistance/1000).toFixed(2)+'km';
+        $('fleet-braking').textContent=Math.round(lidar.brakeSeconds)+'s';$('fleet-contacts').textContent=contacts.events.length;
+        if($('fleet-inspect').options.length!==fleet.taxis.length)$('fleet-inspect').innerHTML=fleet.taxis.map(t=>'<option value="'+t.id+'">'+t.id+'</option>').join('');
+        $('fleet-inspect').value=selected;
+        const selectedCab=fleet.taxis.find(t=>t.id===selected)??fleet.taxis[0],sensor=selectedCab.car.sensor;
+        $('fleet-lidar-title').textContent=selectedCab.id+' · PLANAR LIDAR / 45m';
+        $('fleet-lidar-status').textContent=sensor?.ready?sensor.points.length+' RETURNS · '+sensor.detections.length+' CLUSTERS · LIMIT '+Math.round(sensor.limit*3.6)+'km/h · SPEED '+Math.round(selectedCab.car.speed*3.6)+'km/h':'Awaiting a fresh scan · holding';
+      }
       $('fleet-standby-status').textContent = snapshot.standby.enabled ?
         m.repositioning + ' heading to stands · ' + m.standby + ' ready' : 'Empty cabs wait at their last stop.';
       $('fleet-standby-status').title = 'Actual empty travel: ' + Math.round(m.emptyDistance) +
@@ -198,13 +232,14 @@ export async function bootFleet() {
         accumulator += dt * playbackRate;
         while (accumulator >= 1 / 60) {
           fleet.update(1 / 60);
-          while (fleet.taxis.length < cityConditions(period, fleet.time).taxiSupply) fleet.addTaxi(spawnCab(fleet.taxis.length, true));
-          traffic.update(1 / 60, fleet.time, observer); accumulator -= 1 / 60;
+          while (fleet.taxis.length < fleet.targetSupply()) fleet.addTaxi(spawnCab(fleet.taxis.length, true));
+          if(lab)lidar.update(fleet,traffic,1/60);
+          traffic.update(1 / 60, fleet.time, observer);
+          if(lab)contacts.update(fleet,traffic,instrumentColliders); accumulator -= 1 / 60;
         }
       }
       fleet.people.forEach((p, i) => {
-        const visible = !['scheduled', 'riding', 'arrived', 'on-train', 'riding-train'].includes(p.state) &&
-          !(p.state === 'cancelled' && (p.insideBuilding || fleet.time - p.finishedAt > 6));
+        const visible = visiblePerson(p,fleet.time);
         let mesh = people.get(p.id);
         if (!mesh && visible) { mesh = pedestrian(p, i); people.set(p.id, mesh); scene.add(mesh); }
         if (!mesh) return;
@@ -229,6 +264,7 @@ export async function bootFleet() {
         nightlife: [new THREE.Vector3(-9, 11, -48), new THREE.Vector3(-29, 2, -64)],
         station: [new THREE.Vector3(25, 18, -155), new THREE.Vector3(25, 1.5, -185)],
         follow: [new THREE.Vector3(taxi.car.x - 22, level + 39, -taxi.car.y + 32), new THREE.Vector3(taxi.car.x, level, -taxi.car.y)],
+        road:[new THREE.Vector3(taxi.car.x-Math.cos(taxi.car.yaw)*12,level+6,-taxi.car.y+Math.sin(taxi.car.yaw)*12),new THREE.Vector3(taxi.car.x+Math.cos(taxi.car.yaw)*8,level+1.1,-taxi.car.y-Math.sin(taxi.car.yaw)*8)],
       };
       const [destination, target] = views[view];
       camera.position.lerp(destination, 1 - Math.exp(-dt * 3)); camera.lookAt(target);
@@ -239,7 +275,10 @@ export async function bootFleet() {
       for (const sign of stopLabels) { const scale = pixelScale(sign); sign.scale.set(96 * scale, 22 * scale, 1); sign.visible = view === 'city' || view === 'follow'; }
       for (const { tag } of cabVisuals.values()) { const scale = pixelScale(tag); tag.scale.set(38 * scale, 22 * scale, 1); }
       const clock = cityConditions(period, fleet.time), day = clock.daylight;
+      if(lab)storm.update(fleet.weather,fleet.weatherStrength,fleet.time,taxi.car,taxi.car.sensor,showLidar);
       const sky = new THREE.Color(0x122336).lerp(new THREE.Color(0xcbd9dd), day);
+      if(lab&&fleet.weather!=='clear')sky.lerp(new THREE.Color(fleet.weather==='snow'?0xb7c6d2:0x526b7d),fleet.weatherStrength*.6);
+      scene.fog.near=lab&&fleet.weather!=='clear'?45:260;scene.fog.far=lab&&fleet.weather!=='clear'?620-fleet.weatherStrength*(fleet.weather==='snow'?410:340):620;
       scene.background.copy(sky); scene.fog.color.copy(sky); ambient.intensity = .82 + day * 1.68;
       sun.intensity = .06 + day * 2.94; sun.color.setHex(day < .5 ? 0xffb27c : 0xffefd5);
       const sunAngle = (clock.hour - 6) * Math.PI / 12;
