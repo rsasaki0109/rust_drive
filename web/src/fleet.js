@@ -20,6 +20,10 @@ export const PURPOSES = Object.freeze([
   { id: 'appointment', label: 'APPOINTMENT', color: '#9be0b4', origins: [0, 2, 7, 5], destinations: [3], speed: .85, patience: 110, dwell: 7, item: 'bag' },
   { id: 'leisure', label: 'MEETUP', color: '#f3df7e', origins: [6, 8], destinations: [1, 5, 7, 8], speed: 1.2, patience: 80, dwell: 4, item: 'backpack' },
 ]);
+export const DEPOT_STOPS = Object.freeze(Array.from({ length: 4 }, (_, i) => {
+  const base = makeStop('depot-' + i, 'FLEET DEPOT', { x: -150, y: -150 }, { x: -100, y: -150 });
+  const along = 12 + i * 8; return Object.freeze({ ...base, along, x: -150 + along });
+}));
 const byStop = new Map(FLEET_STOPS.map(s => [s.id, s]));
 const byPurpose = new Map(PURPOSES.map(p => [p.id, p]));
 
@@ -154,7 +158,11 @@ export class TaxiFleet {
     const clock = cityConditions(this.period, this.time);
     this.taxis.forEach((t, i) => {
       t.onDuty = i < clock.taxiSupply || Boolean(t.person); t.retiring = i >= clock.taxiSupply;
-      if (!t.person) t.state = t.onDuty ? 'idle' : 'off-duty';
+      if (!t.person) {
+        if (!t.onDuty) t.car.serviceStop = DEPOT_STOPS[i % DEPOT_STOPS.length];
+        else if (t.state === 'off-duty') t.car.serviceStop = FLEET_STOPS[i % FLEET_STOPS.length];
+        t.state = t.onDuty ? 'idle' : 'off-duty';
+      }
     });
     if (this.auto && this.time >= this.nextDemand - 8) {
       this.demandBatch++;

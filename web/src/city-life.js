@@ -5,9 +5,9 @@ export const PERIODS = Object.freeze({
   night: { label: 'LATE NIGHT / 23:40', start: 23 * 60 + 40 },
 });
 export function cityConditions(period, seconds) {
-  const minutes = ((PERIODS[period] ?? PERIODS.morning).start + seconds / 4) % 1440;
+  const minutes = ((Object.hasOwn(PERIODS, period) ? PERIODS[period] : PERIODS.morning).start + seconds / 4) % 1440;
   const hour = minutes / 60, night = hour >= 22 || hour < 5;
-  return { minutes, hour, night, daylight: Math.max(0, Math.min(1, (Math.sin((hour - 6) * Math.PI / 12) + .08) / .86)),
+  return { minutes, hour, night, daylight: Math.max(0, Math.min(1, (Math.sin((hour - 6) * Math.PI / 12) + .22) / .98)),
     taxiSupply: night ? 12 : hour >= 17 && hour < 22 ? 10 : 8,
     railOpen: hour >= 5, clockRate: 15 };
 }
