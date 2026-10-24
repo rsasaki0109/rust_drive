@@ -2,12 +2,12 @@
 
 ![Recorded city pursuit among ordinary traffic, hillside streets, a breakaway guardrail and the station loop](assets/urban-hills-chase-demo.gif)
 
-[🎮 Play City Playground](https://rsasaki0109.github.io/rust_driving/) · [🚕 People & taxi fleet](https://rsasaki0109.github.io/rust_driving/?mode=fleet)
+[🎮 Play City Playground](https://rsasaki0109.github.io/rust_driving/) · [🚕 People, trains & taxis](https://rsasaki0109.github.io/rust_driving/?mode=fleet)
 
 <table>
   <tr>
-    <td width="33%"><img src="assets/taxi-fleet-demo.gif" width="260" alt="Recorded people requesting, boarding and riding taxis"><br>People & taxi fleet</td>
-    <td width="33%"><img src="assets/harbor-pursuit-demo.gif" width="260" alt="Recorded harbor pursuit"><br>Harbor pursuit</td>
+    <td width="33%"><img src="assets/taxi-fleet-demo.gif" width="260" alt="Recorded people leaving office doors, requesting and riding taxis"><br>Office departures & taxis</td>
+    <td width="33%"><img src="assets/nightlife-train-demo.gif" width="260" alt="Recorded nightlife demand and last train arrivals"><br>Nightlife & last train</td>
     <td width="33%"><img src="assets/forest-trail-demo.gif" width="260" alt="Recorded forest shortcuts"><br>Forest shortcuts</td>
   </tr>
   <tr>

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Junctions } from './junctions.js';
-import { routeToStop, onStopEdge, stopAhead, stopSpeedLimit } from './fleet-routing.js';
+import { routeToStop, stopAhead, stopSpeedLimit } from './fleet-routing.js';
 import { turnArc, arcTarget } from './traffic-turns.js';
 import { applyVehiclePose } from './vehicle-pose.js';
 import { districtAt } from './regions.js';
@@ -33,7 +33,7 @@ function instances(parent, geometry, material, rows) {
   m.instanceMatrix.needsUpdate = true; parent.add(m); return m;
 }
 
-export function createCity(scene) {
+export function createCity(scene, options = {}) {
   const colliders = [], windows = [], bodies = [], roofs = [], curbs = [], paint = [], lamps = [];
   // Eastern terrain is cut around the excavated tunnel by createRidge.
   mesh(scene, box, matte(0x53635b), 0, -.42, 0, 380, .5, 380).receiveShadow = true;
@@ -54,7 +54,7 @@ export function createCity(scene) {
   }
   for (let ix = 0; ix < 6; ix++) for (let iy = 0; iy < 6; iy++) {
     const cx = -125 + 50 * ix, cy = -125 + 50 * iy;
-    if (districtAt(cx, cy).id !== 'downtown') continue;
+    if (districtAt(cx, cy).id !== 'downtown' || (options.fleet && cx === -25 && cy === 75)) continue;
     curbs.push({ x: cx, y: .04, z: -cy, w: 31.8, h: .08, d: 31.8 });
     for (let building = 0; building < 3; building++) {
       const width = building === 2 ? 23 : 10.5, depth = building === 2 ? 11 : 12;
@@ -292,7 +292,7 @@ export class Traffic {
     c.next = choices[Math.floor(random() * (c.police && player ? 1 : choices.length))];
   }
   lane(c) {
-    if (onStopEdge(c, c.serviceStop)) return c.serviceStop.lane;
+    // Junction arcs stay in the through lane; the stop aim handles the curb approach.
     return this.urban && c.node.y === c.next.y && [118.5, 181.5].includes(c.node.y) ? 0 : 3.8;
   }
   setChase(enabled, player) {

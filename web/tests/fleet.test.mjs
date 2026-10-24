@@ -94,7 +94,7 @@ test('assignments are exclusive; abandonment releases the taxi without creating 
   assert.ok(fleet.people.every(p => !p.taxi));
 });
 
-test('real traffic steers, queues and stops to serve individual trips across the city', () => {
+test('real traffic serves trips while an off-duty cab remains parked in its curb bay', () => {
   const traffic = new Traffic(new THREE.Scene(), { urban: true, cityCars: 14 });
   const cars = FLEET_STOPS.map((stop, i) => {
     const car = traffic.spawn(false, 0xffc34b, { ...stop.from, to: stop.to, advance: 10 + i, variant: 'taxi', serviceStop: stop });
@@ -109,7 +109,7 @@ test('real traffic steers, queues and stops to serve individual trips across the
     maxRiding = Math.max(maxRiding, fleet.people.filter(p => p.state === 'riding').length);
     const assigned = fleet.people.filter(p => p.taxi);
     assert.equal(new Set(assigned.map(p => p.taxi)).size, assigned.length);
-    for (const taxi of fleet.taxis) assert.equal(Boolean(taxi.person), taxi.state !== 'idle');
+    for (const taxi of fleet.taxis) assert.equal(Boolean(taxi.person), !['idle', 'off-duty'].includes(taxi.state));
   }
   const snapshot = fleet.snapshot();
   console.log('Actual fleet integration:', JSON.stringify({ metrics: snapshot.metrics, maxWalking, maxRiding,

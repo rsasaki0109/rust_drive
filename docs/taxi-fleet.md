@@ -1,44 +1,86 @@
-# People and taxi fleet
+# City life: people, buildings, trains and taxis
 
-[Open the fleet](https://rsasaki0109.github.io/rust_driving/?mode=fleet).
-The driving game's start screen also links here.
+[Open City Life](https://rsasaki0109.github.io/rust_driving/?mode=fleet).
+Choose **MORNING**, **DUSK** or **LATE NIGHT** in the time-of-day menu.
+Changing the scenario starts a new run.
 
-![Recorded people walking, requesting taxis, boarding and arriving](../assets/taxi-fleet-demo.gif)
+![Recorded office departures and city taxi operations](../assets/taxi-fleet-demo.gif)
 
-Press **START** to run or pause. **CITY VIEW** shows the neighbourhood;
-**FOLLOW TAXI** follows a taxi selected by clicking a person's request card.
-Escape also pauses. Reload starts the same authored morning again.
+![Recorded nightlife and the last North Line train](../assets/nightlife-train-demo.gif)
 
-## What is simulated
+Press **START** to run or pause. Escape also pauses. **1× / 4× SPEED**
+changes the simulation playback rate; the GIFs are captured at 1×.
+**OFFICE**, **NIGHTLIFE**, **STATION** and **CITY** frame different parts of
+the same simulation. Select a person's card and use **FOLLOW** to track their
+assigned taxi.
 
-Seventy-two individual travel plans are released over about four minutes.
-Commuting, shopping, train connections, appointments and meetups have different
-origins, destinations, departure times, walking speeds, patience and boarding
-times. A train-arrival pulse creates a small burst of demand. Each person walks
-along the sidewalk to a pickup point. Requests can be assigned while the person
-is walking; a taxi must then wait for them to reach the curb.
+## Buildings and individual demand
 
-Eight one-rider taxis serve eight curb stops among ordinary city traffic.
-The dispatcher processes the oldest requests first and chooses an available
-taxi by legal road distance, including the directed pickup approach. Taxis use
-the existing traffic steering, acceleration, car following and junction
-admission. They cannot reverse across a street to collect a nearby rider.
+Office workers start inside a real lobby. The sliding doors open as they
+approach; people walk through the opening, onto the sidewalk and to the taxi
+queue. They request a ride after leaving the building. Arriving passengers
+can walk back through the entrance. Abandoned office/club requests return
+indoors rather than disappearing at the curb.
 
-Boarding starts only within 1.1 m of the pickup pose at under 0.25 m/s.
-A person then walks to the door and completes their individual boarding dwell.
-Dropoff has the same stopped-arrival requirement. The person walks back to the
-sidewalk before the taxi becomes available again, then continues along the
-sidewalk to their destination. A request that exceeds the person's patience
-is cancelled and releases its assignment. Counts come from these events;
-passing time alone never completes a trip.
+The nightlife block has a club, late cafe, signs, emissive windows and
+local night lighting. Club customers use its actual entrance and walk to the
+pickup. Demand mixes commuting, shopping, train connections, appointments and
+meetups, with different origins, destinations, departure times, walking
+speeds, patience, boarding times, outfits and luggage.
 
-The colours identify trip purposes. Taxi rings indicate available, pickup,
-occupied and dropoff states. The sidebar shows three current people; it is
-a sample of the active agents, not the full dispatch queue.
+A seeded generator replenishes travel plans as time advances. Late-night
+plans have a higher departure rate and concentrate on the nightlife strip.
+Queue positions have individual slots; trip requests are independent of
+available taxi capacity.
+
+The target fleet is eight taxis by day, ten in the evening and twelve at
+night. Additional drivers enter from the city boundary. A retiring driver
+finishes an occupied trip, then drives to a depot parking bay. Off-duty
+taxis are excluded from dispatch and do not occupy passenger pickup stands.
+
+The dispatcher processes the oldest actual requests first and chooses a
+free taxi by legal directed road distance. Taxis use the existing steering,
+acceleration, car following and junction admission. Boarding/dropoff require
+arrival within 1.1 m at under 0.25 m/s. A person walks to/from the door and
+completes their own dwell time. A trip is counted only after real dropoff.
+
+## North Line and the last train
+
+The North Line enters from the western boundary, brakes at the platform,
+opens its doors, unloads, closes and departs east. Its state drives the
+visible train and door panels. Passengers are created inside the stopped
+train after its doors open; they walk out onto the platform.
+
+A raised footbridge crosses the northern avenue at 5 m. Continuous
+three-dimensional walking paths connect the platform, ramps and station
+pickup; no passenger is teleported from the platform to a curb.
+A train arrival therefore generates taxi requests only after its riders
+have completed the station walk.
+
+Taxi passengers travelling to the station can walk up to the platform and
+board a stopped train. Boarding reservations respect capacity and hold doors
+while someone is crossing. A rider missing the final service walks back to
+the pickup and creates a second taxi leg home.
+
+New services stop spawning at midnight; an already running last train
+finishes its journey. Service resumes after 05:00. The train sign and station
+status identify the last service.
+
+## Time and lighting
+
+The city clock runs at **15×**: four physical simulation seconds represent
+one city minute. People, cars, door actuators and trains retain physical
+metres and seconds. Timetables, demand and duty targets use the city clock.
+The clock wraps at 24 hours; sunlight, sky, ambient light and venue lighting
+change continuously. Morning, dusk and late-night presets expose these
+conditions without waiting through a full day.
+
+These are authored scenarios, not a real location, population, railway
+schedule or demand model calibrated against travel surveys.
 
 ## Reproduce and inspect
 
-With the pinned toolchains and normal browser-playground prerequisites:
+Use the pinned Rust/Node toolchains and the normal playground prerequisites:
 
 ~~~sh
 npm ci --prefix web --ignore-scripts
@@ -47,37 +89,46 @@ npm --prefix web test
 npm --prefix web run preview -- --host 127.0.0.1 --port 4173
 ~~~
 
-In another terminal (Python 3.12, Playwright 1.56.0, Pillow 12.0.0 and Chromium):
+With Python 3.12, Playwright 1.56.0, Pillow 12.0.0 and Chromium installed,
+run this in another terminal:
 
 ~~~sh
 python web/tests/fleet_smoke.py \
   --url http://127.0.0.1:4173/ \
-  --output web/test-results/fleet \
+  --output web/test-results/city-life \
   --record assets/taxi-fleet-demo.gif
 ~~~
 
-The capture starts through UI controls and advances the real rendered simulation
-with the existing deterministic browser clock. It pre-rolls to a real dropoff,
-then records 280 frames at 100 ms each: 28 seconds at normal playback speed.
-It does not write agent poses or counters. The longer 120-second browser check
-also requires completed trips, abandonments, exclusive assignments and working
-pause, follow and mobile controls.
+The two GIFs contain **two normal-speed recorded intervals each**. They
+show office departures followed by city operations, and nightlife followed
+by a last-train arrival. Between intervals the actual simulation advances
+off camera; the city clock visibly jumps at those edits. The recorder uses
+UI start/pause/camera/speed controls and the deterministic frame clock. It never
+writes agent poses or counters. A short initial visual check is available
+with **--proof-only**.
 
-The [receipt](../assets/taxi-fleet-demo.json) records the source commit and
-SHA-256 hashes, frame hashes, actual event times, recording duration and metrics.
-The [poster](../assets/taxi-fleet-demo.png) is one unmodified recorded frame.
-The **Taxi fleet evidence** workflow can record a same-repository feature branch;
-it checks the branch has not moved before committing the media.
-The normal **Browser playground** workflow also tests the fleet before Pages
-deployment.
+Each 32-second GIF uses 320 frames at 100 ms. Its JSON receipt records the
+source commit, input hashes, frame hashes, segment times, physical playback
+rate, 15× city-clock rate, building exits and rail-to-taxi requests.
+The PNG posters are unmodified captured frames. The longer browser
+acceptance also runs both scenarios to 120 physical seconds and exercises
+pause, camera controls, the dusk menu and mobile layout.
+
+The **Taxi fleet evidence** workflow runs core checks and recording in
+parallel. It verifies the generated media hashes and source hashes before
+committing the six media files to the unchanged feature branch. The normal
+**Browser playground** workflow runs the city-life suite alongside the
+driving suite; both gate Pages deployment.
 
 ## Scope
 
-This is an optional authored arcade scenario, not demand fitted to travel
-surveys or a real Tokyo population. Its eight stops are fictional local
-destinations in the existing city. It models individual first/last walking legs,
-not general pedestrian crossing behaviour. There is one rider per cab;
-pooling, multi-person parties, fares, shifts, batteries and predictive fleet
-rebalancing are not implemented. Routing and dispatch use simulation state
-inside the playground and are independent of the Rust autonomous-driving stack.
-These GIFs do not establish perception, localization or real-vehicle performance.
+This optional arcade city is independent of the Rust autonomous-driving
+research pipeline. It uses authored simulation state for dispatch and
+rendering. It does not validate sensing, localization, real-vehicle safety,
+real-time performance or a real railway network.
+
+Taxis have one rider each; pooling, parties, fares, batteries and
+predictive rebalancing are not implemented. Pedestrian routes and a simple
+doorway headway are authored; this is not a validated crowd-avoidance or
+accessibility model. Rail travel beyond the entry/exit boundary is outside
+the model.
