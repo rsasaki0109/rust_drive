@@ -929,7 +929,8 @@ impl LatticePlanner {
                 .last()
                 .filter(|p| p.speed < 1e-8)
                 .map(|p| route.project(p.position).0);
-        } else if trajectory.mode != DrivingMode::Emergency || !self.retain_yield_stop_on_emergency {
+        } else if trajectory.mode != DrivingMode::Emergency || !self.retain_yield_stop_on_emergency
+        {
             self.yield_stop_s = None;
         }
         // An infeasible replan still requests emergency braking. Retain the
