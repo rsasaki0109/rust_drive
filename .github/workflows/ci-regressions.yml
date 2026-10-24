@@ -29,7 +29,7 @@ jobs:
   portable-recordings:
     name: Portable recordings (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 10
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -48,11 +48,71 @@ jobs:
           python scripts/test_gnss_antenna.py
           python scripts/test_observed_detours.py
           python scripts/test_recorded_numeric.py
+      - uses: actions/cache/restore@v4
+        if: matrix.os == 'ubuntu-24.04'
+        id: workspace-cache
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: workspace-ubuntu24-rust190-v1-${{ hashFiles('Cargo.lock', 'rust-toolchain.toml', '.cargo/config.toml') }}
       - name: Check the pinned workspace and scenario replays
         if: matrix.os == 'ubuntu-24.04'
         run: |
           rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
           bash scripts/check.sh
+
+      - uses: actions/cache/save@v4
+        if: matrix.os == 'ubuntu-24.04' && steps.workspace-cache.outputs.cache-hit != 'true'
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ steps.workspace-cache.outputs.cache-primary-key }}
+      - name: Download the retained unversioned sensor recording
+        if: matrix.os == 'ubuntu-24.04'
+        uses: actions/download-artifact@v4
+        with:
+          name: native-city-ubuntu24
+          run-id: 40038874516
+          github-token: ${{ github.token }}
+          path: artifacts/ci-regressions/legacy-city
+      - name: Verify all 921 original controls without rewriting the old header
+        if: matrix.os == 'ubuntu-24.04'
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+          import subprocess
+          root = Path('artifacts/ci-regressions')
+          files = list((root/'legacy-city').rglob('sensors.jsonl'))
+          assert len(files) == 1, 'retained legacy sensor recording missing or ambiguous'
+          source = files[0]
+          with source.open() as stream:
+              config = json.loads(next(stream))['header']['config']
+          assert 'retain_yield_stop_on_emergency' not in config
+          output = root/'legacy-city-replay'
+          subprocess.run(['target/release/rustdriving', 'replay', '--log', str(source),
+                          '--output', str(output)], check=True)
+          proof = json.loads((output/'replay.json').read_text())
+          assert proof['verified'] and proof['ticks'] == 921
+          with source.open('rb') as stream:
+              digest = hashlib.file_digest(stream, 'sha256').hexdigest()
+          receipt = dict(original_run=40038874516, original_job=120704941686,
+                         unmodified_sensor_sha256=digest, replay=proof,
+                         scope='Exact command replay of the retained unversioned recording.')
+          (output/'receipt.json').write_text(json.dumps(receipt, indent=2)+'\n')
+          print(json.dumps(receipt))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() && matrix.os == 'ubuntu-24.04' }}
+        with:
+          name: legacy-sensor-replay
+          path: artifacts/ci-regressions/legacy-city-replay
+          if-no-files-found: warn
 
   historical-visual:
     if: github.event_name != 'pull_request'
@@ -186,40 +246,6 @@ jobs:
             rust_drive/target
             rust_drive/integrations/rne/target
           key: ${{ steps.native-cache.outputs.cache-primary-key }}
-      - name: Download the retained unversioned sensor recording
-        uses: actions/download-artifact@v4
-        with:
-          name: native-city-ubuntu24
-          run-id: 40038874516
-          github-token: ${{ github.token }}
-          path: rust_drive/artifacts/ci-regressions/legacy-city
-      - name: Verify all 921 original controls without rewriting the old header
-        run: |
-          python - <<'PY'
-          import hashlib
-          import json
-          from pathlib import Path
-          import subprocess
-          root = Path('artifacts/ci-regressions')
-          files = list((root/'legacy-city').rglob('sensors.jsonl'))
-          assert len(files) == 1, 'retained legacy sensor recording missing or ambiguous'
-          source = files[0]
-          with source.open() as stream:
-              config = json.loads(next(stream))['header']['config']
-          assert 'retain_yield_stop_on_emergency' not in config
-          output = root/'legacy-city-replay'
-          subprocess.run(['target/release/rustdriving', 'replay', '--log', str(source),
-                          '--output', str(output)], check=True)
-          proof = json.loads((output/'replay.json').read_text())
-          assert proof['verified'] and proof['ticks'] == 921
-          with source.open('rb') as stream:
-              digest = hashlib.file_digest(stream, 'sha256').hexdigest()
-          receipt = dict(original_run=40038874516, original_job=120704941686,
-                         unmodified_sensor_sha256=digest, replay=proof,
-                         scope='Exact command replay of the retained unversioned recording.')
-          (output/'receipt.json').write_text(json.dumps(receipt, indent=2)+'\n')
-          print(json.dumps(receipt))
-          PY
       - name: Verify all three frozen city seeds with confirmed initial motion
         run: |
           python scripts/check-japan-city-demo.py --confirm-track-initialization --seeds 1 7 42 --compact --output artifacts/ci-regressions/japan --report artifacts/ci-regressions/japan/report.json
@@ -244,8 +270,6 @@ jobs:
         if: always()
         with:
           name: native-city-regressions
-          path: |
-            rust_drive/artifacts/ci-regressions/japan
-            rust_drive/artifacts/ci-regressions/legacy-city-replay
+          path: rust_drive/artifacts/ci-regressions/japan
           if-no-files-found: warn
           compression-level: 1
