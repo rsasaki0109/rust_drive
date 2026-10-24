@@ -39,7 +39,8 @@ stale packet holds the cab; a fresh measured cloud supplies the speed limit.
 Supported returned points constrain a 1.15 m corridor along the map's current
 turn and outgoing tangent. A 5 m/s² brake calibration, 0.3 s reaction allowance
 and 3.5 m sensor-origin reserve set the speed limit. Near returns also have a
-small emergency support rule. Weather can create false braking or hide an
+two-neighbor emergency support rule: returns must be within 0.25 m and
+0.03 rad of one another. Separated precipitation speckles do not qualify. Weather can create false braking or hide an
 obstacle: an empty degraded cloud is not a clear-road certificate. Stationary boarding/alighting transitions are exempt only for their own carrier.
 Proxy overlap episodes are independently evaluated and retained, without imposing
 physical contact forces or declaring real-world safety.

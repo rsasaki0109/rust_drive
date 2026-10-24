@@ -76,11 +76,11 @@ fn govern(
         .map(|i| (i as f64 * 0.5, path_at(i as f64 * 0.5, curvature, bend)))
         .collect();
     let mut nearest = RANGE;
-    let close = points
-        .iter()
-        .filter(|p| p.x > 0.0 && p.x < 3.5 && p.y.abs() < 1.15)
-        .count();
-    if close >= 2 {
+    let close: Vec<_> = points.iter().filter(|p| p.x > 0.0 && p.x < 3.5 && p.y.abs() < 1.15 && p.x.hypot(p.y) > 0.3).collect();
+    // Spatially separated weather speckles are not a two-ray obstacle.
+    // Immediate braking still accepts two nearby neighboring-bearing returns.
+    if close.iter().enumerate().any(|(i,p)| close.iter().skip(i+1).any(|q|
+        p.distance(**q) < 0.25 && (p.y.atan2(p.x)-q.y.atan2(q.x)).abs() < 0.03)) {
         nearest = 0.0;
     }
     for point in points {
@@ -368,5 +368,13 @@ mod tests {
         assert_ne!(fleet_lidar_read(2, 2), fleet_lidar_read(3, 2));
         assert!(fleet_lidar_read(3, 2) <= 360.0);
         assert!(fleet_lidar_point(3, 0, 0).is_finite());
+    }
+
+    #[test]
+    fn isolated_precipitation_speckles_are_not_a_two_ray_obstacle() {
+        let scattered = vec![Vec2::new(0.5, -1.0), Vec2::new(2.6, 0.9)];
+        assert_eq!(govern(&scattered, &[], 8.0, 0.0, 0.0).0, 14.0);
+        let neighbors = vec![Vec2::new(2.0, 0.0), Vec2::new(2.05, 0.035)];
+        assert_eq!(govern(&neighbors, &[], 8.0, 0.0, 0.0).0, 0.0);
     }
 }
