@@ -13,6 +13,27 @@ rewrite component bounds or certify free space.
 [Chosen policy](../integrations/cadc/selected-components-v1.json) ·
 [Provenance](../assets/cadc-selection-v1/provenance.json)
 
+## Recorded outcome
+
+The frozen policy is `p12-8-3-nms`: 12/8/3 measured returns at the declared
+range breaks, with overlap suppression enabled. On the 32 new validation scans:
+
+| Domain (16 scans each) | Raw → selected hypotheses | Reduction | Retained raw matches | Retained matches at 30–45 m |
+|---|---:|---:|---:|---:|
+| Clear | 4,380 → 3,862 | 11.83% | 137/138 (99.28%) | 50/50 |
+| Winter | 5,314 → 3,618 | 31.92% | 113/119 (94.96%) | 61/61 |
+
+**The declared experimental criteria were not met.** Clear output reduction is
+below 30%, and winter overall match retention is below 95%. Winter loses three
+raw matches at 2–15 m and three at 15–30 m. The frozen policy remains unchanged
+after validation; `qualifiedExperimental` is false. This research API is not
+enabled in the default driving path.
+
+Required checks and the complete 96-scan acquisition/audit passed on
+[GitHub Actions](https://github.com/rsasaki0109/rust_driving/actions/runs/40113282719).
+Check success verifies reproducibility and contracts; it does not change the
+failed experimental outcome.
+
 ## Selection rule
 
 The support threshold depends on horizontal range of the measured AABB

@@ -2,7 +2,7 @@ name: CADC component selection
 on:
   push:
     branches: [feat/cadc-component-selection]
-    paths: ['crates/perception/src/component_selection.rs','crates/perception/src/lib.rs','crates/sim/examples/cadc_component_selection.rs','scripts/*cadc*','integrations/cadc/protocol-selection-v1.json','docs/cadc-component-selection.md','.github/workflows/cadc-component-selection.yml']
+    paths: ['crates/perception/src/component_selection.rs','crates/perception/src/lib.rs','crates/sim/examples/cadc_component_selection.rs','scripts/*cadc*','integrations/cadc/protocol-selection-v1.json','.github/workflows/cadc-component-selection.yml']
   pull_request:
     paths: ['crates/perception/src/component_selection.rs','crates/perception/src/lib.rs','crates/sim/examples/cadc_component_selection.rs','scripts/*cadc*','integrations/cadc/protocol-selection-v1.json','.github/workflows/cadc-component-selection.yml']
   workflow_dispatch:
