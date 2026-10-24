@@ -109,7 +109,7 @@ test('real traffic steers, queues and stops to serve individual trips across the
     maxRiding = Math.max(maxRiding, fleet.people.filter(p => p.state === 'riding').length);
     const assigned = fleet.people.filter(p => p.taxi);
     assert.equal(new Set(assigned.map(p => p.taxi)).size, assigned.length);
-    for (const taxi of fleet.taxis) assert.equal(Boolean(taxi.person), taxi.state !== 'idle');
+    for (const taxi of fleet.taxis) assert.equal(Boolean(taxi.person), !['idle', 'off-duty'].includes(taxi.state));
   }
   const snapshot = fleet.snapshot();
   console.log('Actual fleet integration:', JSON.stringify({ metrics: snapshot.metrics, maxWalking, maxRiding,

@@ -1,0 +1,22 @@
+name: City life model checks
+on:
+  push:
+    branches: [codex/city-life]
+permissions:
+  contents: read
+concurrency:
+  group: city-life-development
+  cancel-in-progress: true
+jobs:
+  models:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci --prefix web --ignore-scripts
+      - run: node --test web/tests/fleet.test.mjs web/tests/city-life.test.mjs web/tests/traffic-junctions.test.mjs web/tests/traffic.test.mjs
