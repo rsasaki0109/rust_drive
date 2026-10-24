@@ -1,0 +1,30 @@
+{
+  "sourceCommit": "7f22024d9a01f3f1d84cc1398cf10a6d8751f14b",
+  "sourceSha256": {
+    "Cargo.lock": "7a3bd25c2f2d697fb6777da25e70c0552c3bcc1b3dad80b2e9c07c0049abc44d",
+    "crates/sim/Cargo.toml": "bd256d56c527ba58378bd4fa8bdd1abf2b0512adde9d6be81b8d35ca17a6b0b0",
+    "crates/sim/src/lib.rs": "4d5a0b517fcf727244b64d29c7eda5d87d642bbf08165ffbc58e839fb72124b4",
+    "crates/sim/src/lidar_weather.rs": "08d84253d93e06e6a9c4bb33501718348300119c688ac4996c281da2ffcd1658",
+    "crates/sim/src/lidar_weather/tests.rs": "765cbfbfa81f9d722f0a73595632ee4b883d13dc3e0a634c9ae19fbbc0efef03",
+    "crates/sim/examples/lidar_weather_study.rs": "1b25ca00b54a82951a2ae5712d31757ca65201adc230e0786db183661a11bbca",
+    "crates/perception/src/lib.rs": "9756034bac8ad6e5d8bd18edaf635176870fa34f0d29aec233101f7043ac10cd",
+    "crates/perception/src/clustering.rs": "934b191db6111295cfa9d867492d896575140e18af617f78394b99b162cd2133",
+    "crates/perception/src/planar_sweep.rs": "70ee7a5330cad9565f0c6e65a51a95ac6e704857b56f468bc875bddde29cc872",
+    "crates/core/src/lib.rs": "2685be4f42832d73e147baa147d228499747172ee27e2ac808eed459d471250a",
+    "crates/core/src/planar_sweep.rs": "fe7e5a51b9885372551a96734e1695ddd38651a303533942b86cd996283a72e3",
+    "Cargo.toml": "698502521a95c57e7c9d1bd09ffd1ff06e56f8ce02562479c74f9314e72928c6",
+    "rust-toolchain.toml": "5597a94fc41b6f56313d195195fbeb63df9eb694cfe9fa5d0a8011c999e335ed",
+    "scripts/check-lidar-weather.py": "b5b085efc004d5c56f54e9c09c93df00160d488d7f5d685f6f82d24af3209e79"
+  },
+  "rawReportSha256": "7e6e87c2b5aff8a804795c24887fb7eb8739c33a4f7fcb30a9c02313c67fb849",
+  "outputsSha256": {
+    "report.json.gz": "49a703035129e0a882640ee32ad7a9d37f2810ff7941a637bb35fce2cc0bbb2d",
+    "summary.json": "3ff43638836eb126f777f2c1d3d52453889f555718f834303f07674e516513d0",
+    "overview.png": "2b389e50436da77363ad9fd084e344aa517714249f534bc7c4a3d11b00aca08a"
+  },
+  "matplotlib": "3.10.7",
+  "numpy": "2.3.4",
+  "cases": 160,
+  "model": "synthetic two-way extinction + effective Poisson particle returns + bounded range jitter",
+  "qualification": "first-return frozen 2D fixtures only; not calibrated rain/snow or real-weather validation"
+}
