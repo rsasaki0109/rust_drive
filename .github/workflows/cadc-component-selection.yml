@@ -1,0 +1,388 @@
+name: CADC component selection
+on:
+  push:
+    branches: [feat/cadc-component-selection]
+    paths: ['crates/perception/src/component_selection.rs','crates/perception/src/lib.rs','crates/sim/examples/cadc_component_selection.rs','scripts/*cadc*','integrations/cadc/protocol-selection-v1.json','docs/cadc-component-selection.md','.github/workflows/cadc-component-selection.yml']
+  pull_request:
+    paths: ['crates/perception/src/component_selection.rs','crates/perception/src/lib.rs','crates/sim/examples/cadc_component_selection.rs','scripts/*cadc*','integrations/cadc/protocol-selection-v1.json','.github/workflows/cadc-component-selection.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: cadc-selection-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  CARGO_INCREMENTAL: '0'
+jobs:
+  contracts:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.90.0
+          components: rustfmt,clippy
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r scripts/requirements-cadc-selection.txt
+      - name: Small offline contracts without dataset download
+        env:
+          CADC_SELECTION_BINARY: ${{ github.workspace }}/target/debug/examples/cadc_component_selection
+        run: |
+          cargo fmt --all --check
+          cargo clippy --locked -p rustdriving-sim --example cadc_component_selection -- -D warnings
+          cargo test --locked -p rustdriving-perception component_selection
+          cargo test --locked -p rustdriving-sim --example cadc_component_selection
+          cargo build --locked -p rustdriving-sim --example cadc_component_selection
+          python scripts/test_cadc_selection.py
+  verify_build:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 40
+    permissions:
+      contents: write
+    outputs:
+      sha: ${{ steps.source.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.90.0
+          components: rustfmt,clippy
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Format only the new implementation and pin actual source
+        id: source
+        env:
+          RUSTDRIVING_EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          cargo fmt --all
+          python - <<'PY'
+          import subprocess
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          allowed={'crates/perception/src/component_selection.rs','crates/perception/src/lib.rs','crates/sim/examples/cadc_component_selection.rs'}
+          assert changed<=allowed, changed
+          PY
+          if ! git diff --quiet; then
+            test "$GITHUB_REF_NAME" = 'feat/cadc-component-selection'
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add crates/perception/src/component_selection.rs crates/perception/src/lib.rs crates/sim/examples/cadc_component_selection.rs
+            git commit -m 'Format bounded component selection and sensor-only adapter'
+            git push --force-with-lease="refs/heads/feat/cadc-component-selection:$RUSTDRIVING_EXPECTED_SHA" origin HEAD:refs/heads/feat/cadc-component-selection
+          fi
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "RUSTDRIVING_SOURCE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - run: python -m pip install -r scripts/requirements-cadc-selection.txt
+      - name: Native selection and independent small geometry contracts
+        env:
+          CADC_SELECTION_BINARY: ${{ github.workspace }}/target/debug/examples/cadc_component_selection
+        run: |
+          cargo fmt --all --check
+          cargo clippy --locked -p rustdriving-sim --example cadc_component_selection -- -D warnings
+          cargo test --locked -p rustdriving-perception component_selection
+          cargo test --locked -p rustdriving-sim --example cadc_component_selection
+          cargo build --locked -p rustdriving-sim --example cadc_component_selection
+          python scripts/test_cadc_selection.py
+      - name: Required full core regression
+        run: bash scripts/check.sh
+      - name: Build current selector and both pinned historical models
+        env:
+          CADC_PLANAR_SOURCE: 57f8b1c65ba151221718fda4d6dad093f1e40a57
+          CADC_RAW_SOURCE: 2d1341cc07147ef1fdf22edd41e44dcd5b16bb26
+        run: |
+          cargo build --release --locked -p rustdriving-sim --example cadc_component_selection
+          mkdir -p /tmp/cadc-planar-source /tmp/cadc-raw-source /tmp/cadc-selection-native
+          git fetch --no-tags --depth=1 origin "$CADC_PLANAR_SOURCE"
+          git archive "$CADC_PLANAR_SOURCE" Cargo.toml Cargo.lock rust-toolchain.toml crates scripts integrations/cadc | tar -x -C /tmp/cadc-planar-source
+          cargo test --locked --manifest-path /tmp/cadc-planar-source/Cargo.toml -p rustdriving-sim --example cadc_planar_study
+          cargo build --release --locked --manifest-path /tmp/cadc-planar-source/Cargo.toml -p rustdriving-sim --example cadc_planar_study
+          git fetch --no-tags --depth=1 origin "$CADC_RAW_SOURCE"
+          git archive "$CADC_RAW_SOURCE" Cargo.toml Cargo.lock rust-toolchain.toml crates scripts integrations/cadc .github/workflows/cadc-volume.yml assets/cadc-planar-v1 | tar -x -C /tmp/cadc-raw-source
+          cargo test --locked --manifest-path /tmp/cadc-raw-source/Cargo.toml -p rustdriving-sim --example cadc_volume_study
+          cargo build --release --locked --manifest-path /tmp/cadc-raw-source/Cargo.toml -p rustdriving-sim --example cadc_volume_study
+          cp target/release/examples/cadc_component_selection /tmp/cadc-selection-native/
+          cp /tmp/cadc-planar-source/target/release/examples/cadc_planar_study /tmp/cadc-selection-native/
+          cp /tmp/cadc-raw-source/target/release/examples/cadc_volume_study /tmp/cadc-selection-native/
+          python - <<'PY'
+          import ast,hashlib,importlib.util,json,os,shutil,sys
+          from pathlib import Path
+          jobs=[('planar',Path('/tmp/cadc-planar-source'),'scripts/check-cadc-recorded.py',os.environ['CADC_PLANAR_SOURCE']),
+                ('raw',Path('/tmp/cadc-raw-source'),'scripts/check-cadc-volume.py',os.environ['CADC_RAW_SOURCE'])]
+          for kind,source,script,revision in jobs:
+              if kind=='planar':
+                  tree=ast.parse((source/script).read_text())
+                  names=ast.literal_eval(next(n.value for n in tree.body if isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='SOURCES' for t in n.targets)))
+              else:
+                  sys.path.insert(0,str(source/'scripts'))
+                  spec=importlib.util.spec_from_file_location('frozen_raw_audit',source/script)
+                  module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);names=module.SOURCES
+              destination=Path('/tmp/cadc-selection-native')/(kind+'-source')
+              manifest={'sourceCommit':revision,'files':{}}
+              for name in names:
+                  target=destination/name;target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(source/name,target)
+                  manifest['files'][name]=hashlib.sha256(target.read_bytes()).hexdigest()
+              (destination/'source.json').write_text(json.dumps(manifest,indent=2)+'\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cadc-selection-native
+          path: /tmp/cadc-selection-native
+          retention-days: 7
+          if-no-files-found: error
+  development:
+    needs: verify_build
+    runs-on: ubuntu-22.04
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        pair: [0,1,2,3]
+    env:
+      RUSTDRIVING_SOURCE_SHA: ${{ needs.verify_build.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.verify_build.outputs.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r scripts/requirements-cadc-selection.txt
+      - uses: actions/download-artifact@v4
+        with:
+          name: cadc-selection-native
+          path: /tmp/cadc-bin
+      - name: Fetch only the registered development pair
+        run: python scripts/cadc_selection_acquire.py --protocol integrations/cadc/protocol-selection-v1.json --pair "${{ matrix.pair }}" --output /tmp/cadc-data
+      - name: Run both historical sensor-only references twice
+        run: |
+          chmod +x /tmp/cadc-bin/cadc_planar_study /tmp/cadc-bin/cadc_volume_study /tmp/cadc-bin/cadc_component_selection
+          /tmp/cadc-bin/cadc_planar_study /tmp/cadc-data/sensor.json > /tmp/cadc-planar.json
+          /tmp/cadc-bin/cadc_planar_study /tmp/cadc-data/sensor.json > /tmp/cadc-planar-repeat.json
+          cmp /tmp/cadc-planar.json /tmp/cadc-planar-repeat.json
+          /tmp/cadc-bin/cadc_volume_study /tmp/cadc-data/sensor.json > /tmp/cadc-raw.json
+          /tmp/cadc-bin/cadc_volume_study /tmp/cadc-data/sensor.json > /tmp/cadc-raw-repeat.json
+          cmp /tmp/cadc-raw.json /tmp/cadc-raw-repeat.json
+      - name: Audit the frozen planar executable and input bytes
+        env:
+          RUSTDRIVING_SOURCE_SHA: 57f8b1c65ba151221718fda4d6dad093f1e40a57
+        run: python /tmp/cadc-bin/planar-source/scripts/check-cadc-recorded.py --data /tmp/cadc-data --native /tmp/cadc-planar.json --binary /tmp/cadc-bin/cadc_planar_study --protocol "$GITHUB_WORKSPACE/integrations/cadc/protocol-selection-v1.json" --output /tmp/cadc-planar-audit
+      - name: Independently audit historical raw XYZ components
+        env:
+          RUSTDRIVING_SOURCE_SHA: 2d1341cc07147ef1fdf22edd41e44dcd5b16bb26
+        run: python /tmp/cadc-bin/raw-source/scripts/check-cadc-volume.py --data /tmp/cadc-data --native /tmp/cadc-raw.json --binary /tmp/cadc-bin/cadc_volume_study --baseline /tmp/cadc-planar-audit/result.json --protocol "$GITHUB_WORKSPACE/integrations/cadc/protocol-selection-v1.json" --output /tmp/cadc-raw-audit
+      - name: Extract geometry and measured support without label metadata
+        run: python scripts/check-cadc-selection.py prepare --phase development --protocol integrations/cadc/protocol-selection-v1.json --raw /tmp/cadc-raw.json --raw-audit /tmp/cadc-raw-audit/result.json --output /tmp/cadc-selection-input.json
+      - name: Run the candidate selector twice
+        run: |
+          /tmp/cadc-bin/cadc_component_selection /tmp/cadc-selection-input.json > /tmp/cadc-selected.json
+          /tmp/cadc-bin/cadc_component_selection /tmp/cadc-selection-input.json > /tmp/cadc-selected-repeat.json
+          cmp /tmp/cadc-selected.json /tmp/cadc-selected-repeat.json
+      - name: Audit numerical overlap, greedy selection and all retained evidence
+        run: python scripts/check-cadc-selection.py audit --phase development --protocol integrations/cadc/protocol-selection-v1.json --data /tmp/cadc-data --raw /tmp/cadc-raw.json --raw-audit /tmp/cadc-raw-audit/result.json --input /tmp/cadc-selection-input.json --native /tmp/cadc-selected.json --binary /tmp/cadc-bin/cadc_component_selection --output /tmp/cadc-selection-audit
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cadc-selection-development-${{ matrix.pair }}
+          path: /tmp/cadc-selection-audit/result.json
+          retention-days: 7
+          if-no-files-found: error
+
+  choose:
+    needs: [verify_build,development]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      RUSTDRIVING_SOURCE_SHA: ${{ needs.verify_build.outputs.sha }}
+    outputs:
+      sha: ${{ steps.freeze.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.verify_build.outputs.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r scripts/requirements-cadc-selection.txt
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: cadc-selection-development-*
+          path: /tmp/cadc-development
+      - name: Choose solely from the previous 64 audited scans
+        run: python scripts/check-cadc-selection.py choose --protocol integrations/cadc/protocol-selection-v1.json --reports /tmp/cadc-development/*/result.json --output /tmp/cadc-freeze/selection.json
+      - name: Freeze the exact policy before any validation point acquisition
+        id: freeze
+        run: |
+          test "$(git rev-parse HEAD)" = "$RUSTDRIVING_SOURCE_SHA"
+          if test "$GITHUB_REF_NAME" = 'feat/cadc-component-selection'; then
+            mkdir -p integrations/cadc
+            cp /tmp/cadc-freeze/selection.json integrations/cadc/selected-components-v1.json
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add integrations/cadc/selected-components-v1.json
+            git commit -m 'Freeze component policy from development data before validation'
+            git push --force-with-lease="refs/heads/feat/cadc-component-selection:$RUSTDRIVING_SOURCE_SHA" origin HEAD:refs/heads/feat/cadc-component-selection
+          fi
+          python - <<'PY'
+          import hashlib,json,os,subprocess
+          from pathlib import Path
+          path=Path('/tmp/cadc-freeze/selection.json');head=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
+          git_mode=os.environ['GITHUB_REF_NAME']=='feat/cadc-component-selection'
+          result={'kind':'git_commit' if git_mode else 'workflow_artifact',
+              'revision':head if git_mode else os.environ['GITHUB_RUN_ID'],
+              'sourceCommit':os.environ['RUSTDRIVING_SOURCE_SHA'],'selectionSha256':hashlib.sha256(path.read_bytes()).hexdigest()}
+          (path.parent/'freeze.json').write_text(json.dumps(result,indent=2)+'\n')
+          with open(os.environ['GITHUB_OUTPUT'],'a') as output:output.write('sha='+head+'\n')
+          print('SELECTION FROZEN',json.dumps(result),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cadc-selection-freeze
+          path: /tmp/cadc-freeze
+          retention-days: 14
+          if-no-files-found: error
+  validation:
+    needs: [verify_build,choose]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        pair: [4,5]
+    env:
+      RUSTDRIVING_SOURCE_SHA: ${{ needs.verify_build.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.verify_build.outputs.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r scripts/requirements-cadc-selection.txt
+      - uses: actions/download-artifact@v4
+        with:
+          name: cadc-selection-native
+          path: /tmp/cadc-bin
+      - uses: actions/download-artifact@v4
+        with:
+          name: cadc-selection-freeze
+          path: /tmp/cadc-freeze
+      - name: Verify the policy was frozen before fetching validation clouds
+        env:
+          RUSTDRIVING_POLICY_SHA: ${{ needs.choose.outputs.sha }}
+        run: |
+          python - <<'PY'
+          import hashlib,json,os,subprocess
+          from pathlib import Path
+          root=Path('/tmp/cadc-freeze');freeze=json.loads((root/'freeze.json').read_text())
+          assert freeze['sourceCommit']==os.environ['RUSTDRIVING_SOURCE_SHA']
+          assert hashlib.sha256((root/'selection.json').read_bytes()).hexdigest()==freeze['selectionSha256']
+          if freeze['kind']=='git_commit':
+              revision=freeze['revision'];assert revision==os.environ['RUSTDRIVING_POLICY_SHA']
+              subprocess.run(['git','fetch','--no-tags','--depth=1','origin',revision],check=True)
+              commit=subprocess.check_output(['git','cat-file','-p',revision],text=True)
+              parents=[line[7:] for line in commit.splitlines() if line.startswith('parent ')]
+              assert parents==[freeze['sourceCommit']]
+              data=subprocess.check_output(['git','show',revision+':integrations/cadc/selected-components-v1.json'])
+              assert hashlib.sha256(data).hexdigest()==freeze['selectionSha256']
+              changed=subprocess.check_output(['git','diff','--name-only',freeze['sourceCommit'],revision],text=True).splitlines()
+              assert changed==['integrations/cadc/selected-components-v1.json'], changed
+          else:
+              assert freeze['kind']=='workflow_artifact' and freeze['revision']==os.environ['GITHUB_RUN_ID']
+          PY
+      - name: Fetch only the registered validation pair
+        run: python scripts/cadc_selection_acquire.py --protocol integrations/cadc/protocol-selection-v1.json --pair "${{ matrix.pair }}" --output /tmp/cadc-data
+      - name: Run both historical sensor-only references twice
+        run: |
+          chmod +x /tmp/cadc-bin/cadc_planar_study /tmp/cadc-bin/cadc_volume_study /tmp/cadc-bin/cadc_component_selection
+          /tmp/cadc-bin/cadc_planar_study /tmp/cadc-data/sensor.json > /tmp/cadc-planar.json
+          /tmp/cadc-bin/cadc_planar_study /tmp/cadc-data/sensor.json > /tmp/cadc-planar-repeat.json
+          cmp /tmp/cadc-planar.json /tmp/cadc-planar-repeat.json
+          /tmp/cadc-bin/cadc_volume_study /tmp/cadc-data/sensor.json > /tmp/cadc-raw.json
+          /tmp/cadc-bin/cadc_volume_study /tmp/cadc-data/sensor.json > /tmp/cadc-raw-repeat.json
+          cmp /tmp/cadc-raw.json /tmp/cadc-raw-repeat.json
+      - name: Audit the frozen planar executable and input bytes
+        env:
+          RUSTDRIVING_SOURCE_SHA: 57f8b1c65ba151221718fda4d6dad093f1e40a57
+        run: python /tmp/cadc-bin/planar-source/scripts/check-cadc-recorded.py --data /tmp/cadc-data --native /tmp/cadc-planar.json --binary /tmp/cadc-bin/cadc_planar_study --protocol "$GITHUB_WORKSPACE/integrations/cadc/protocol-selection-v1.json" --output /tmp/cadc-planar-audit
+      - name: Independently audit historical raw XYZ components
+        env:
+          RUSTDRIVING_SOURCE_SHA: 2d1341cc07147ef1fdf22edd41e44dcd5b16bb26
+        run: python /tmp/cadc-bin/raw-source/scripts/check-cadc-volume.py --data /tmp/cadc-data --native /tmp/cadc-raw.json --binary /tmp/cadc-bin/cadc_volume_study --baseline /tmp/cadc-planar-audit/result.json --protocol "$GITHUB_WORKSPACE/integrations/cadc/protocol-selection-v1.json" --output /tmp/cadc-raw-audit
+      - name: Extract geometry and measured support without label metadata
+        run: python scripts/check-cadc-selection.py prepare --phase validation --protocol integrations/cadc/protocol-selection-v1.json --raw /tmp/cadc-raw.json --raw-audit /tmp/cadc-raw-audit/result.json --selection /tmp/cadc-freeze/selection.json --freeze /tmp/cadc-freeze/freeze.json --output /tmp/cadc-selection-input.json
+      - name: Run the candidate selector twice
+        run: |
+          /tmp/cadc-bin/cadc_component_selection /tmp/cadc-selection-input.json > /tmp/cadc-selected.json
+          /tmp/cadc-bin/cadc_component_selection /tmp/cadc-selection-input.json > /tmp/cadc-selected-repeat.json
+          cmp /tmp/cadc-selected.json /tmp/cadc-selected-repeat.json
+      - name: Audit numerical overlap, greedy selection and all retained evidence
+        run: python scripts/check-cadc-selection.py audit --phase validation --protocol integrations/cadc/protocol-selection-v1.json --data /tmp/cadc-data --raw /tmp/cadc-raw.json --raw-audit /tmp/cadc-raw-audit/result.json --input /tmp/cadc-selection-input.json --native /tmp/cadc-selected.json --binary /tmp/cadc-bin/cadc_component_selection --selection /tmp/cadc-freeze/selection.json --freeze /tmp/cadc-freeze/freeze.json --output /tmp/cadc-selection-audit
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cadc-selection-validation-${{ matrix.pair }}
+          path: /tmp/cadc-selection-audit/result.json
+          retention-days: 7
+          if-no-files-found: error
+
+  publish:
+    needs: [verify_build,development,choose,validation]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      RUSTDRIVING_SOURCE_SHA: ${{ needs.verify_build.outputs.sha }}
+      RUSTDRIVING_POLICY_SHA: ${{ needs.choose.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.choose.outputs.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r scripts/requirements-cadc-selection.txt
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: cadc-selection-development-*
+          path: /tmp/cadc-development
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: cadc-selection-validation-*
+          path: /tmp/cadc-validation
+      - uses: actions/download-artifact@v4
+        with:
+          name: cadc-selection-freeze
+          path: /tmp/cadc-freeze
+      - name: Audit all 96 scans, unchanged policy and complete evidence
+        run: python scripts/check-cadc-selection.py merge --protocol integrations/cadc/protocol-selection-v1.json --reports /tmp/cadc-development/*/result.json /tmp/cadc-validation/*/result.json --selection /tmp/cadc-freeze/selection.json --freeze /tmp/cadc-freeze/freeze.json --output /tmp/cadc-selection-evidence
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cadc-selection-evidence
+          path: /tmp/cadc-selection-evidence
+          retention-days: 14
+          if-no-files-found: error
+      - name: Publish every outcome with a lease on the frozen policy commit
+        if: github.ref_name == 'feat/cadc-component-selection'
+        run: |
+          test "$(git rev-parse HEAD)" = "$RUSTDRIVING_POLICY_SHA"
+          git fetch --no-tags --depth=1 origin "$RUSTDRIVING_SOURCE_SHA"
+          python - <<'PY'
+          import os,subprocess
+          changed=subprocess.check_output(['git','diff','--name-only',os.environ['RUSTDRIVING_SOURCE_SHA'],'HEAD'],text=True).splitlines()
+          assert changed==['integrations/cadc/selected-components-v1.json'], changed
+          PY
+          mkdir -p assets/cadc-selection-v1
+          cp /tmp/cadc-selection-evidence/* assets/cadc-selection-v1/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/cadc-selection-v1
+          git commit -m 'Retain full development and frozen-policy validation results'
+          git push --force-with-lease="refs/heads/feat/cadc-component-selection:$RUSTDRIVING_POLICY_SHA" origin HEAD:refs/heads/feat/cadc-component-selection
