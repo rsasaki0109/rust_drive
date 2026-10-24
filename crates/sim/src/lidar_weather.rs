@@ -30,7 +30,9 @@ impl WeatherConfig {
             || !self.range_jitter_m.is_finite()
             || !(0.0..=1.0).contains(&self.range_jitter_m)
         {
-            return Err("weather coefficients must be finite and within declared stress bounds".into());
+            return Err(
+                "weather coefficients must be finite and within declared stress bounds".into(),
+            );
         }
         Ok(())
     }
@@ -96,18 +98,21 @@ pub fn reference_scan(
 
 /// Apply common counter-based draws to a complete baseline acquisition.
 /// Coefficients and source labels do not enter the driving pipeline.
-pub fn apply(
-    input: &LidarScan,
-    config: WeatherConfig,
-    seed: u64,
-) -> Result<WeatherScan, String> {
+pub fn apply(input: &LidarScan, config: WeatherConfig, seed: u64) -> Result<WeatherScan, String> {
     config.validate()?;
     validate_sweep(input).map_err(str::to_owned)?;
-    let sweep = input.sweep.as_ref().ok_or("complete baseline sweep required")?;
+    let sweep = input
+        .sweep
+        .as_ref()
+        .ok_or("complete baseline sweep required")?;
     let c = sweep.calibration;
     let clear = config == WeatherConfig::CLEAR;
     let mut result = WeatherScan {
-        scan: LidarScan { stamp: input.stamp, points: Vec::new(), sweep: None },
+        scan: LidarScan {
+            stamp: input.stamp,
+            points: Vec::new(),
+            sweep: None,
+        },
         rays: Vec::with_capacity(c.ray_count),
         sources: Vec::new(),
         effects: Vec::with_capacity(c.ray_count),
@@ -138,12 +143,20 @@ pub fn apply(
             particle.filter(|distance| *distance < range.unwrap_or(c.max_range_m))
         {
             let angle = c.first_angle_rad + c.angular_step_rad * beam as f64;
-            Some((Vec2::new(angle.cos(), angle.sin()), distance, ReturnSource::Precipitation { beam }))
+            Some((
+                Vec2::new(angle.cos(), angle.sin()),
+                distance,
+                ReturnSource::Precipitation { beam },
+            ))
         } else if loss >= (-2.0 * config.extinction_m_inv * range.unwrap_or(c.max_range_m)).exp() {
             result.rays.push(PlanarRayOutcome::Unavailable);
             None
         } else if let Some((index, point)) = surface {
-            Some((point.scaled(1.0 / range.unwrap()), range.unwrap(), ReturnSource::Surface { input: index }))
+            Some((
+                point.scaled(1.0 / range.unwrap()),
+                range.unwrap(),
+                ReturnSource::Surface { input: index },
+            ))
         } else {
             result.rays.push(PlanarRayOutcome::Clear);
             None
@@ -151,9 +164,13 @@ pub fn apply(
         if let Some((direction, distance, source)) = chosen {
             // Bounds include the original noisy sample: zero added jitter
             // cannot change a valid baseline merely by clipping its base noise.
-            let observed = (distance + jitter * config.range_jitter_m)
-                .clamp(c.min_range_m.min(distance).max(1e-9), c.max_range_m.max(distance));
-            result.rays.push(PlanarRayOutcome::Return(result.scan.points.len()));
+            let observed = (distance + jitter * config.range_jitter_m).clamp(
+                c.min_range_m.min(distance).max(1e-9),
+                c.max_range_m.max(distance),
+            );
+            result
+                .rays
+                .push(PlanarRayOutcome::Return(result.scan.points.len()));
             result.scan.points.push(direction.scaled(observed));
             result.sources.push(source);
         }
@@ -162,7 +179,9 @@ pub fn apply(
         // Preserve original floating-point values and certified ray ownership.
         result.scan = input.clone();
         result.rays = sweep.rays.clone();
-        result.sources = (0..input.points.len()).map(|input| ReturnSource::Surface { input }).collect();
+        result.sources = (0..input.points.len())
+            .map(|input| ReturnSource::Surface { input })
+            .collect();
     }
     Ok(result)
 }
