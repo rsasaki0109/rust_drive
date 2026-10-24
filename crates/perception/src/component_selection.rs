@@ -161,7 +161,7 @@ mod tests {
     }
     #[test]
     fn range_support_keeps_sparse_far_components_and_retains_raw_evidence() {
-        let raw=vec![object(5.,0.,6,0,.1),object(20.,0.,5,6,.1),object(35.,0.,3,11,.1)];
+        let raw=vec![object(5.,0.,6,0,0.1),object(20.,0.,5,6,0.1),object(35.,0.,3,11,0.1)];
         let before:Vec<_>=raw.iter().map(|o|o.indices.clone()).collect();
         let result=select_components(&raw,&ComponentSelectionConfig::default()).unwrap();
         assert_eq!(result.kept_indices,vec![1,2]);assert_eq!(result.low_support_indices,vec![0]);
@@ -169,19 +169,19 @@ mod tests {
     }
     #[test]
     fn higher_support_suppresses_overlapping_proxy_across_grid_boundary() {
-        let raw=vec![object(5.99,0.,8,0,.1),object(6.01,0.,12,8,.1)];
+        let raw=vec![object(5.99,0.,8,0,0.1),object(6.01,0.,12,8,0.1)];
         let r=select_components(&raw,&ComponentSelectionConfig::default()).unwrap();
         assert_eq!(r.kept_indices,vec![1]);assert_eq!(r.suppressed,vec![ComponentSuppression { candidate:0,representative:1 }]);
     }
     #[test]
     fn vertical_separation_and_different_proxy_scales_remain_distinct() {
-        let raw=vec![object(10.,0.,10,0,.1),object(10.,3.,10,10,.1),object(10.,0.,30,20,4.)];
+        let raw=vec![object(10.,0.,10,0,0.1),object(10.,3.,10,10,0.1),object(10.,0.,30,20,4.)];
         let r=select_components(&raw,&ComponentSelectionConfig::default()).unwrap();
         assert_eq!(r.kept_indices,vec![0,1,2]);assert!(r.suppressed.is_empty());
     }
     #[test]
     fn support_tie_uses_source_ordinals_independent_of_input_permutation() {
-        let raw=vec![object(-.01,0.,10,30,.1),object(.01,0.,10,0,.1)];
+        let raw=vec![object(-0.01,0.,10,30,0.1),object(0.01,0.,10,0,0.1)];
         let a=select_components(&raw,&ComponentSelectionConfig::default()).unwrap();
         let swapped=vec![raw[1].clone(),raw[0].clone()];
         let b=select_components(&swapped,&ComponentSelectionConfig::default()).unwrap();
@@ -189,19 +189,19 @@ mod tests {
     }
     #[test]
     fn disabled_suppression_with_minimum_three_keeps_every_raw_component() {
-        let raw=vec![object(5.,0.,3,0,.1),object(5.,0.,3,3,.1)];
+        let raw=vec![object(5.,0.,3,0,0.1),object(5.,0.,3,3,0.1)];
         let cfg=ComponentSelectionConfig { min_points_by_range:[3;3],overlap_threshold:None,..Default::default() };
         let r=select_components(&raw,&cfg).unwrap();
         assert_eq!(r.kept_indices,vec![0,1]);assert_eq!(r.candidate_work,0);
     }
     #[test]
     fn malformed_support_geometry_and_exhausted_work_fail_without_partial_result() {
-        let a=object(5.,0.,10,0,.1);let mut bad=a.clone();bad.point_count=9;
+        let a=object(5.,0.,10,0,0.1);let mut bad=a.clone();bad.point_count=9;
         assert!(select_components(&[bad],&Default::default()).is_err());
         assert!(select_components(&[a.clone(),a.clone()],&Default::default()).is_err());
         let mut bad=a.clone();bad.min.z=f64::NAN;
         assert!(select_components(&[bad],&Default::default()).is_err());
-        let raw=vec![a,object(7.,0.,10,10,.1),object(9.,0.,10,20,.1)];
+        let raw=vec![a,object(7.,0.,10,10,0.1),object(9.,0.,10,20,0.1)];
         let cfg=ComponentSelectionConfig { max_candidate_work:1,..Default::default() };
         assert!(select_components(&raw,&cfg).is_err());
         let cfg=ComponentSelectionConfig { overlap_threshold:Some(f64::NAN),..Default::default() };
@@ -209,7 +209,7 @@ mod tests {
     }
     #[test]
     fn spatially_separated_components_avoid_all_pairs_comparisons() {
-        let raw:Vec<_>=(0..500).map(|i|object(i as f64*10.,0.,8,i*8,.1)).collect();
+        let raw:Vec<_>=(0..500).map(|i|object(i as f64*10.,0.,8,i*8,0.1)).collect();
         let r=select_components(&raw,&Default::default()).unwrap();
         assert_eq!(r.kept_indices.len(),raw.len());assert!(r.candidate_work<raw.len()*3);
     }
