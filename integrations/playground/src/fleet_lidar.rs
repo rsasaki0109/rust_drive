@@ -76,11 +76,18 @@ fn govern(
         .map(|i| (i as f64 * 0.5, path_at(i as f64 * 0.5, curvature, bend)))
         .collect();
     let mut nearest = RANGE;
-    let close: Vec<_> = points.iter().filter(|p| p.x > 0.0 && p.x < 3.5 && p.y.abs() < 1.15 && p.x.hypot(p.y) > 0.3).collect();
+    let close: Vec<_> = points
+        .iter()
+        .filter(|p| p.x > 0.0 && p.x < 3.5 && p.y.abs() < 1.15 && p.x.hypot(p.y) > 0.3)
+        .collect();
     // Spatially separated weather speckles are not a two-ray obstacle.
     // Immediate braking still accepts two nearby neighboring-bearing returns.
-    if close.iter().enumerate().any(|(i,p)| close.iter().skip(i+1).any(|q|
-        p.distance(**q) < 0.25 && (p.y.atan2(p.x)-q.y.atan2(q.x)).abs() < 0.03)) {
+    if close.iter().enumerate().any(|(i, p)| {
+        close
+            .iter()
+            .skip(i + 1)
+            .any(|q| p.distance(**q) < 0.25 && (p.y.atan2(p.x) - q.y.atan2(q.x)).abs() < 0.03)
+    }) {
         nearest = 0.0;
     }
     for point in points {
