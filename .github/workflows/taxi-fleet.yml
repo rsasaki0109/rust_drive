@@ -1,0 +1,111 @@
+name: Taxi fleet evidence
+
+on:
+  push:
+    branches: [codex/taxi-fleet]
+    paths-ignore: [README.md, 'docs/**', .github/workflows/playground.yml, .github/workflows/taxi-fleet.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: taxi-fleet-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fleet:
+    if: github.ref_name != 'main' && github.ref_name != 'develop'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 50
+    permissions:
+      contents: write
+    env:
+      RUSTDRIVING_SOURCE_SHA: ${{ github.sha }}
+      RUSTDRIVING_SOURCE_BRANCH: ${{ github.ref_name }}
+      PAGES_BASE: /${{ github.event.repository.name }}/
+      CARGO_INCREMENTAL: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RUSTDRIVING_SOURCE_SHA }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.90.0
+          targets: wasm32-unknown-unknown
+          components: rustfmt, clippy
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify physics, traffic and individual demand
+        run: |
+          cargo fmt --manifest-path integrations/playground/Cargo.toml --check
+          cargo clippy --locked --manifest-path integrations/playground/Cargo.toml --all-targets -- -D warnings
+          cargo test --locked --manifest-path integrations/playground/Cargo.toml
+          npm ci --prefix web --ignore-scripts
+          bash scripts/build-playground.sh
+          npm --prefix web test
+      - name: Install actual-browser recording tools
+        run: |
+          python -m pip install playwright==1.56.0 pillow==12.0.0
+          python -m playwright install --with-deps chromium
+          python web/tests/gif_capture.py --check
+      - name: Start the production build
+        id: preview
+        run: |
+          npm --prefix web run preview -- --host 127.0.0.1 --port 4173 > /tmp/rustdriving-fleet-preview.log 2>&1 &
+          echo "$!" > /tmp/rustdriving-fleet-preview.pid
+          python - <<'PY'
+          import os, time, urllib.request
+          url = 'http://127.0.0.1:4173' + os.environ['PAGES_BASE']
+          for attempt in range(60):
+              try:
+                  with urllib.request.urlopen(url, timeout=1) as response:
+                      if response.status == 200:
+                          break
+              except OSError:
+                  pass
+              time.sleep(.25)
+          else:
+              raise SystemExit('Production preview did not start')
+          PY
+      - name: Verify the normal driving mode
+        run: python web/tests/browser_smoke.py --url "http://127.0.0.1:4173$PAGES_BASE" --output web/test-results/normal
+      - name: Record actual walking, waiting, boarding and dropoff
+        run: python web/tests/fleet_smoke.py --url "http://127.0.0.1:4173$PAGES_BASE" --output web/test-results/fleet --record assets/taxi-fleet-demo.gif
+      - name: Run the required core regression suite
+        run: bash scripts/check.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: taxi-fleet-evidence
+          path: |
+            web/test-results
+            assets/taxi-fleet-demo.*
+      - name: Publish the actual recording to the unchanged feature branch
+        run: |
+          git fetch origin "refs/heads/$RUSTDRIVING_SOURCE_BRANCH"
+          rustdriving_fleet_current=$(git rev-parse FETCH_HEAD)
+          if [ "$rustdriving_fleet_current" != "$RUSTDRIVING_SOURCE_SHA" ]; then
+            echo "The feature branch moved; preserve evidence without overwriting newer work."
+            exit 1
+          fi
+          git add assets/taxi-fleet-demo.gif assets/taxi-fleet-demo.png assets/taxi-fleet-demo.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if ! git diff --cached --quiet; then
+            git commit -m 'Record people requesting and riding the city taxi fleet'
+            git push --force-with-lease="refs/heads/$RUSTDRIVING_SOURCE_BRANCH:$RUSTDRIVING_SOURCE_SHA" origin "HEAD:refs/heads/$RUSTDRIVING_SOURCE_BRANCH"
+          fi
+      - name: Stop the production preview
+        if: always()
+        run: |
+          if [ -f /tmp/rustdriving-fleet-preview.pid ]; then
+            read -r rustdriving_fleet_preview_pid < /tmp/rustdriving-fleet-preview.pid
+            kill "$rustdriving_fleet_preview_pid" || true
+          fi

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Junctions } from './junctions.js';
+import { routeToStop, onStopEdge, stopAhead, stopSpeedLimit } from './fleet-routing.js';
 import { turnArc, arcTarget } from './traffic-turns.js';
 import { applyVehiclePose } from './vehicle-pose.js';
 import { districtAt } from './regions.js';
@@ -256,8 +257,8 @@ export class Traffic {
       ? [...this.graph.values()].reduce((a, b) => Math.hypot(a.x - near.x, a.y - near.y) < Math.hypot(b.x - near.x, b.y - near.y) ? a : b)
       : this.graph.get(nodeKey({ x: STREETS[Math.floor(random() * STREETS.length)], y: STREETS[Math.floor(random() * STREETS.length)] }));
     const gx = node.x, gy = node.y;
-    const variant = police ? 'police' : ['sedan', 'compact', 'taxi', 'van'][this.cars.filter(c => !c.police).length % 4];
-    const c = { id: this.nextId++, variant, mesh: makeCar(variant === 'taxi' ? 0xe2bd58 : color, police, false, variant), x: gx, y: gy, yaw: random() * Math.PI * 2, speed: 0, desired: 7 + random() * 7, police, node, previous: null, next: null, distance: 0 };
+    const variant = police ? 'police' : near?.variant === 'taxi' ? 'taxi' : ['sedan', 'compact', 'taxi', 'van'][this.cars.filter(c => !c.police).length % 4];
+    const c = { id: this.nextId++, variant, serviceStop: near?.serviceStop ?? null, mesh: makeCar(variant === 'taxi' ? 0xe2bd58 : color, police, false, variant), x: gx, y: gy, yaw: random() * Math.PI * 2, speed: 0, desired: 7 + random() * 7, police, node, previous: null, next: null, distance: 0 };
     const planned = near?.to && this.graph.get(nodeKey(near.to));
     if (!police && planned && node.links.includes(planned)) c.next = planned;
     else this.choose(c, police ? pursuitTarget : null);
@@ -277,6 +278,10 @@ export class Traffic {
   }
   choose(c, player) {
     const n = c.node;
+    if (c.serviceStop) {
+      const route = routeToStop(this.graph, n, c.previous, c.serviceStop);
+      if (route?.nodes.length) { c.next = route.nodes[0]; return; }
+    }
     let choices = (this.graph.get(nodeKey(n))?.links ?? []).filter(p => !c.previous || nodeKey(p) !== nodeKey(c.previous));
     if (!choices.length) choices = [c.previous || { x: 0, y: 0 }];
     if (c.police && player) {
@@ -287,6 +292,7 @@ export class Traffic {
     c.next = choices[Math.floor(random() * (c.police && player ? 1 : choices.length))];
   }
   lane(c) {
+    if (onStopEdge(c, c.serviceStop)) return c.serviceStop.lane;
     return this.urban && c.node.y === c.next.y && [118.5, 181.5].includes(c.node.y) ? 0 : 3.8;
   }
   setChase(enabled, player) {
@@ -307,18 +313,18 @@ export class Traffic {
   }
   update(dt, time, player) {
     for (const c of this.cars) {
-      const fresh = c.plannedAt !== c.next;
+      const fresh = c.plannedAt !== c.next, retarget = c.plannedStop !== c.serviceStop;
       const moved = Math.hypot(player.x - (c.plannedTarget?.x ?? Infinity),
                                player.y - (c.plannedTarget?.y ?? Infinity));
-      if (!fresh && (!c.police || c.arc || moved < 8)) continue;
-      const turn = { id: c.id, node: c.next, previous: c.node, police: c.police };
+      if (!fresh && !retarget && (!c.police || c.arc || moved < 8)) continue;
+      const turn = { id: c.id, node: c.next, previous: c.node, police: c.police, serviceStop: c.serviceStop };
       this.choose(turn, player);
       const arc = turnArc(c.node, c.next, turn.next, this.lane(c),
         this.lane({ node: c.next, next: turn.next }));
       // Refresh a moving pursuit target, retaining a bend when it is too late to brake.
       const distance = Math.hypot(c.next.x - c.x, c.next.y - c.y);
       if (fresh || !arc || distance >= 7 + Math.max(0, c.speed ** 2 - arc.speed ** 2) / 7) {
-        c.plannedAt = c.next; c.plannedNext = turn.next; c.plannedArc = arc;
+        c.plannedAt = c.next; c.plannedNext = turn.next; c.plannedArc = arc; c.plannedStop = c.serviceStop;
       }
       if (c.police) c.plannedTarget = { x: player.x, y: player.y };
     }
@@ -329,14 +335,15 @@ export class Traffic {
       const distance = Math.hypot(tx - c.x, ty - c.y);
       const arcAim = c.arc && arcTarget(c.arc, c);
       if (c.arc && !arcAim) c.arc = null;
-      const toward = Math.atan2((arcAim?.y ?? ty) - c.y, (arcAim?.x ?? tx) - c.x);
+      const serviceAim = stopAhead(c) ? c.serviceStop : null;
+      const toward = Math.atan2((arcAim?.y ?? serviceAim?.y ?? ty) - c.y, (arcAim?.x ?? serviceAim?.x ?? tx) - c.x);
       let desired = c.police ? 17 + Math.min(5, Math.hypot(c.x - player.x, c.y - player.y) * .04) : c.desired;
       // Brake for the actual bend instead of carrying cruise speed through tight alleys.
       desired = Math.min(desired, Math.max(5, (c.police ? 24 : 15) - 12 * Math.abs(wrap(toward-c.yaw))));
       if (c.plannedArc) desired = Math.min(desired,
         Math.sqrt(c.plannedArc.speed ** 2 + 7 * Math.max(0, distance - 7)));
       if (c.arc) desired = Math.min(desired, c.arc.speed);
-      desired = Math.min(desired, this.junctions.limit(c));
+      desired = Math.min(desired, this.junctions.limit(c), stopSpeedLimit(c));
       for (const other of [...this.cars, player]) {
         if (other === c) continue;
         const dx = other.x - c.x, dy = other.y - c.y, front = dx * Math.cos(c.yaw) + dy * Math.sin(c.yaw), lateral = -dx * Math.sin(c.yaw) + dy * Math.cos(c.yaw);

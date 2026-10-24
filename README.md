@@ -2,11 +2,11 @@
 
 ![Recorded city pursuit among ordinary traffic, hillside streets, a breakaway guardrail and the station loop](assets/urban-hills-chase-demo.gif)
 
-[🎮 Play City Playground — 自分で運転・ドリフト・カーチェイス](https://rsasaki0109.github.io/rust_driving/)
+[🎮 Play City Playground](https://rsasaki0109.github.io/rust_driving/) · [🚕 People & taxi fleet](https://rsasaki0109.github.io/rust_driving/?mode=fleet)
 
 <table>
   <tr>
-    <td width="33%"><img src="assets/city-crossing-demo.gif" width="260" alt="Recorded daytime intersections"><br>Daytime intersections</td>
+    <td width="33%"><img src="assets/taxi-fleet-demo.gif" width="260" alt="Recorded people requesting, boarding and riding taxis"><br>People & taxi fleet</td>
     <td width="33%"><img src="assets/harbor-pursuit-demo.gif" width="260" alt="Recorded harbor pursuit"><br>Harbor pursuit</td>
     <td width="33%"><img src="assets/forest-trail-demo.gif" width="260" alt="Recorded forest shortcuts"><br>Forest shortcuts</td>
   </tr>
