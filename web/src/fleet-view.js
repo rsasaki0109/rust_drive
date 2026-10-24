@@ -5,10 +5,11 @@ import { createRidge } from './ridge.js';
 import { createStructures } from './structures.js';
 import { createUrbanDistrict } from './urban-city.js';
 import { TaxiFleet, FLEET_STOPS, PURPOSES } from './fleet.js';
+import { makeStandbyStop } from './fleet-standby.js';
 import { cityConditions, PERIODS } from './city-life.js';
 import { createFleetPlaces } from './fleet-places.js';
 
-const COLORS = { 'off-duty': '#52636c', idle: '#aab9c4', pickup: '#ffca62', boarding: '#ffffff', occupied: '#63decb', alighting: '#c4f19a' };
+const COLORS = { 'off-duty': '#52636c', idle: '#aab9c4', repositioning: '#72c8ff', standby: '#72c8ff', pickup: '#ffca62', boarding: '#ffffff', occupied: '#63decb', alighting: '#c4f19a' };
 const LABELS = { exiting: 'LEAVING THE BUILDING', entering: 'ENTERING THE BUILDING', returning: 'RETURNING INSIDE',
   'exiting-train': 'LEAVING THE TRAIN', 'walking-from-train': 'WALKING FROM THE STATION', 'to-train': 'WALKING TO THE TRAIN',
   'waiting-train': 'WAITING ON THE PLATFORM', 'boarding-train': 'BOARDING THE TRAIN', walking: 'WALKING TO PICKUP', waiting: 'WAITING', boarding: 'BOARDING', riding: 'ON THE WAY',
@@ -55,12 +56,13 @@ export async function bootFleet() {
     '<div class="fleet-clock"><i></i><b id="fleet-clock">08:00:00</b><small>CITY CLOCK · 15×</small></div><label class="fleet-period-label"><span>SCENARIO / START TIME</span><select id="fleet-period" aria-label="City time of day">' + Object.entries(PERIODS).map(([key, value]) => '<option value="' + key + '"' + (key === period ? ' selected' : '') + '>' + value.label + '</option>').join('') + '</select></label><a class="fleet-drive" href="./">DRIVE ↗</a><button id="fleet-play" disabled>LOADING…</button></header>' +
     '<div class="fleet-layout"><aside class="fleet-sidebar"><p class="fleet-eyebrow">EVERY TRIP STARTS WITH SOMEONE</p><h2>A city that<br>keeps moving.</h2><p class="fleet-description">People leave buildings, catch trains<br>and call for a ride home.</p>' +
     '<div class="fleet-metrics" aria-label="Live trip metrics"><div><b id="fleet-waiting">0</b><span>WAITING</span></div><div><b id="fleet-riding">0</b><span>RIDING</span></div><div><b id="fleet-served">0</b><span>DELIVERED</span></div><div><b id="fleet-cancelled">0</b><span>GAVE UP</span></div></div>' +
+    '<div class="fleet-standby-control"><label for="fleet-standby">EMPTY TAXIS</label><select id="fleet-standby" aria-label="Empty taxi strategy"><option value="demand">FOLLOW DEMAND</option><option value="last">WAIT AT LAST STOP</option></select><p id="fleet-standby-status" role="status">Standby locations follow the city.</p></div>' +
     '<p class="fleet-rail-status" id="fleet-rail">NORTH LINE / INBOUND</p><div class="fleet-section-title">PEOPLE, NOT JUST REQUESTS <span id="fleet-demand">0 TRIPS</span></div><div id="fleet-people" aria-label="Individual travel requests"></div>' +
     '<div class="fleet-purpose-key">' + PURPOSES.map(p => '<span><i style="background:' + p.color + '"></i>' + p.label + '</span>').join('') + '</div><p class="fleet-scope"><b id="fleet-supply">8 CABS ON DUTY</b> · 1 RIDER PER TAXI<br>Fictional city · local simulation<br>No accounts · no saved progress.</p></aside>' +
     '<section id="fleet-stage" aria-label="Live taxi and pedestrian city simulation"><canvas id="fleet-world" aria-label="People walking to taxis on a city street network"></canvas>' +
     '<div class="fleet-scene-heading"><span id="fleet-view-label">LIVE CITY / DISPATCH</span><b id="fleet-view-title">From the office to the curb.</b></div>' +
     '<button class="fleet-rate" id="fleet-rate" aria-pressed="false">1× SPEED</button><div class="fleet-start-hint" id="fleet-hint">Press START to watch people make their way.</div>' +
-    '<div class="fleet-event" id="fleet-event" role="status"></div><div class="fleet-bottom"><span><i style="background:#ffca62"></i>PICKUP</span><span><i style="background:#63decb"></i>OCCUPIED</span><span><i style="background:#c4f19a"></i>DROPOFF</span><span><i style="background:#aab9c4"></i>AVAILABLE</span></div>' +
+    '<div class="fleet-event" id="fleet-event" role="status"></div><div class="fleet-bottom"><span><i style="background:#ffca62"></i>PICKUP</span><span><i style="background:#63decb"></i>OCCUPIED</span><span><i style="background:#c4f19a"></i>DROPOFF</span><span><i style="background:#72c8ff"></i>STANDBY</span><span><i style="background:#aab9c4"></i>AVAILABLE</span></div>' +
     '<div class="fleet-camera"><button id="fleet-overview" aria-pressed="false">CITY</button><button id="fleet-office" aria-pressed="true">OFFICE</button><button id="fleet-nightlife" aria-pressed="false">NIGHTLIFE</button><button id="fleet-station" aria-pressed="false">STATION</button><button id="fleet-follow" aria-pressed="false">FOLLOW</button></div></section></div></main>');
   const $ = id => document.getElementById(id), stage = $('fleet-stage');
   let renderer;
@@ -93,7 +95,15 @@ export async function bootFleet() {
     };
     for (let i = 0; i < cityConditions(period, 0).taxiSupply; i++) spawnCab(i);
     traffic.update(1 / 60, 0, observer);
-    const fleet = new TaxiFleet(traffic.graph, cars, { period }), places = createFleetPlaces(scene);
+    const standby = new URLSearchParams(location.search).get('standby') !== 'off';
+    const fleet = new TaxiFleet(traffic.graph, cars, { period, standby }), places = createFleetPlaces(scene);
+    $('fleet-standby').value = standby ? 'demand' : 'last';
+    $('fleet-standby').addEventListener('change', event => {
+      fleet.setStandbyEnabled(event.target.value === 'demand'); hudAt = -1;
+      const url = new URL(location.href);
+      if (fleet.standbyEnabled) url.searchParams.delete('standby'); else url.searchParams.set('standby', 'off');
+      history.replaceState(null, '', url);
+    });
     const people = new Map(), cabVisuals = new Map();
     const makeCabVisual = t => {
       const ring = new THREE.Mesh(new THREE.RingGeometry(2.10, 2.23, 24), new THREE.MeshBasicMaterial({ color: COLORS.idle, side: THREE.DoubleSide }));
@@ -110,6 +120,11 @@ export async function bootFleet() {
         new THREE.Vector3(stop.x + stop.dx * along + stop.normal.x * across, level + .04, -stop.y - stop.dy * along - stop.normal.y * across));
       const geometry = new THREE.BufferGeometry().setFromPoints(points);
       scene.add(new THREE.LineLoop(geometry, new THREE.LineBasicMaterial({ color: 0xb6a578 })));
+      const bay = makeStandbyStop(stop);
+      const standbyPoints = [[-3.6, -1.2], [3.6, -1.2], [3.6, 1.2], [-3.6, 1.2]].map(([along, across]) =>
+        new THREE.Vector3(bay.x + bay.dx * along + bay.normal.x * across, level + .045, -bay.y - bay.dy * along - bay.normal.y * across));
+      scene.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(standbyPoints),
+        new THREE.LineBasicMaterial({ color: 0x72aacc })));
     }
     let paused = true, playbackRate = 1, view = period === 'night' ? 'nightlife' : 'office', selected = fleet.taxis[0].id, previous = performance.now(), accumulator = 0, hudAt = -1;
     const resize = () => { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); };
@@ -155,6 +170,10 @@ export async function bootFleet() {
       const seconds = Math.floor(snapshot.clock.minutes * 60);
       $('fleet-clock').textContent = [Math.floor(seconds / 3600), Math.floor(seconds / 60) % 60, seconds % 60].map(n => String(n).padStart(2, '0')).join(':');
       $('fleet-supply').textContent = m.onDuty + ' CABS ON DUTY';
+      $('fleet-standby-status').textContent = snapshot.standby.enabled ?
+        m.repositioning + ' heading to stands · ' + m.standby + ' ready' : 'Empty cabs wait at their last stop.';
+      $('fleet-standby-status').title = 'Actual empty travel: ' + Math.round(m.emptyDistance) +
+        ' m; standby travel: ' + Math.round(m.repositionDistance) + ' m';
       const train = snapshot.train;
       $('fleet-rail').textContent = train ? (train.lastService ? 'LAST TRAIN' : 'NORTH LINE') + ' / ' +
         ({ approach: 'INBOUND', dwell: 'DOORS OPEN', depart: 'DEPARTING' })[train.phase] :
@@ -200,7 +219,7 @@ export async function bootFleet() {
         if (!cabVisuals.has(t.id)) cabVisuals.set(t.id, makeCabVisual(t));
         const visual = cabVisuals.get(t.id), level = t.car.height ?? 0;
         visual.ring.visible = t.onDuty; visual.tag.visible = t.onDuty && (view === 'city' || view === 'follow');
-        visual.ring.position.set(t.car.x, level + .10, -t.car.y); visual.ring.material.color.set(COLORS[t.state]);
+        visual.ring.position.set(t.car.x, level + .10, -t.car.y); visual.ring.material.color.set(COLORS[t.standbyStop && !t.person ? 'standby' : t.state]);
         visual.tag.position.set(t.car.x, level + 4, -t.car.y);
       });
       const taxi = fleet.taxis.find(t => t.id === selected) ?? fleet.taxis[0], level = taxi.car.height ?? 0;

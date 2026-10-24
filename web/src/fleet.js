@@ -1,4 +1,5 @@
 import { makeStop, pickupDistance, atServiceStop } from './fleet-routing.js';
+import { makeStandbyStop, standbyPriorities } from './fleet-standby.js';
 import { cityConditions, FACILITIES, NorthLine, STATION_PATH, PLATFORM_WAIT, RAIL_Y } from './city-life.js';
 
 // Authored agents, not demand calibrated against a real population.
@@ -64,8 +65,10 @@ function walk(p, target, dt) {
 
 export class TaxiFleet {
   constructor(graph, cars, options = {}) {
-    const { seed = 1701, period = 'morning', plans } = options;
+    const { seed = 1701, period = 'morning', plans, standby = true } = options;
     this.graph = graph; this.seed = seed; this.period = period; this.time = 0; this.nextDispatch = 0;
+    this.standbyEnabled = Boolean(standby); this.nextStandby = 0; this.standbyEvents = []; this.standbyScores = [];
+    this.standbyStops = new Map(FLEET_STOPS.map(s => [s.id, makeStandbyStop(s)]));
     this.events = []; this.waits = []; this.people = []; this.taxis = []; this.auto = plans === undefined;
     this.line = this.auto ? new NorthLine(period) : null; this.railCursor = 0; this.demandBatch = 0;
     this.doors = Object.fromEntries(Object.keys(FACILITIES).map(id => [id, { open: 0 }]));
@@ -75,7 +78,8 @@ export class TaxiFleet {
   }
   addTaxi(car) {
     const taxi = { id: 'T' + String(this.taxis.length + 1).padStart(2, '0'), car, state: 'idle',
-      person: null, capacity: 1, served: 0, onDuty: true };
+      person: null, capacity: 1, served: 0, onDuty: true, standbyStop: null, standbySince: 0,
+      idleStop: car.serviceStop, lastDistance: car.distance ?? 0, emptyDistance: 0, repositionDistance: 0 };
     this.taxis.push(taxi); return taxi;
   }
   addPerson(plan) {
@@ -126,7 +130,7 @@ export class TaxiFleet {
       y: p.origin.curb.y + p.origin.dy * along + p.origin.normal.y * row, height: 0 };
     p.requestAt = this.time;
     this.path(p, p.facility ? [p.facility.apron, p.waitPoint] : [p.waitPoint], 'walking');
-    this.event('request', p, null, { source: p.source ?? p.origin.id });
+    this.event('request', p, null, { source: p.source ?? p.origin.id, stop: p.origin.id });
   }
   finishWalk(p) {
     p.state = p.cancelledJourney ? 'cancelled' : 'arrived'; p.finishedAt = this.time;
@@ -152,14 +156,62 @@ export class TaxiFleet {
         x: train.x + (i % 2 ? 8 : -8), y: RAIL_Y - .8, height: 1, insideBuilding: null });
     }
   }
+  setStandbyEnabled(enabled) {
+    if (typeof enabled !== 'boolean') throw new Error('Standby mode must be boolean');
+    this.standbyEnabled = enabled; this.nextStandby = this.time;
+    if (!enabled) for (const taxi of this.taxis) {
+      if (taxi.standbyStop && !taxi.person && taxi.onDuty) taxi.car.serviceStop = taxi.idleStop;
+      taxi.standbyStop = null;
+    }
+  }
+  rebalance() {
+    for (const taxi of this.taxis) if (taxi.standbyStop && !taxi.person &&
+        !taxi.standbyArrived && atServiceStop(taxi.car, taxi.standbyStop)) {
+      taxi.standbyArrived = true;
+      this.standbyEvents.push({ time: this.time, type: 'standby-arrive', taxi: taxi.id, stop: taxi.standbyStop.id,
+        x: taxi.car.x, y: taxi.car.y, speed: taxi.car.speed });
+    }
+    if (!this.standbyEnabled || this.time < this.nextStandby) return;
+    this.nextStandby = this.time + 5;
+    const idle = this.taxis.filter(t => !t.person && t.onDuty && !t.retiring);
+    const scores = standbyPriorities(FLEET_STOPS, cityConditions(this.period, this.time), this.time,
+      this.events, this.people.filter(p => p.state !== 'scheduled'), this.line?.train);
+    this.standbyScores = scores.map(s => ({ stop: s.stop.id, label: s.stop.label, score: s.score, reason: s.reason }));
+    const desired = new Set(scores.slice(0, idle.length).map(s => s.stop.id)), used = new Set(), free = [];
+    for (const taxi of idle) {
+      const id = taxi.standbyStop?.id.slice('standby-'.length);
+      if (id && !used.has(id) && (desired.has(id) || this.time - taxi.standbySince < 20)) used.add(id);
+      else free.push(taxi);
+    }
+    for (const item of scores) {
+      if (!free.length) break;
+      if (used.has(item.stop.id)) continue;
+      const stop = this.standbyStops.get(item.stop.id);
+      const choices = free.map(t => ({ t, distance: pickupDistance(this.graph, t.car, stop) }))
+        .filter(c => Number.isFinite(c.distance)).sort((a, b) => a.distance - b.distance || a.t.id.localeCompare(b.t.id));
+      const choice = choices[0]; if (!choice) continue;
+      const taxi = choice.t;
+      taxi.standbyStop = stop; taxi.standbySince = this.time; taxi.standbyArrived = false;
+      taxi.car.serviceStop = stop; used.add(item.stop.id); free.splice(free.indexOf(taxi), 1);
+      this.standbyEvents.push({ time: this.time, type: 'reposition', taxi: taxi.id, stop: stop.id,
+        x: taxi.car.x, y: taxi.car.y, distance: choice.distance, reason: item.reason });
+    }
+    // More idle cabs than bays cruise through the road network; they do not
+    // pile up in a pickup bay or claim another cab's standby space.
+    for (const taxi of free) { taxi.standbyStop = null; taxi.car.serviceStop = null; }
+  }
   update(dt) {
     if (!Number.isFinite(dt) || dt <= 0 || dt > .1) throw new Error('Fleet step must be in (0, .1] seconds');
     this.time += dt;
     const clock = cityConditions(this.period, this.time);
     this.taxis.forEach((t, i) => {
+      const odometer = t.car.distance ?? 0, driven = Math.max(0, odometer - t.lastDistance);
+      if (!t.person || t.state === 'pickup') t.emptyDistance += driven;
+      if (!t.person && t.standbyStop) t.repositionDistance += driven;
+      t.lastDistance = odometer;
       t.onDuty = i < clock.taxiSupply || Boolean(t.person); t.retiring = i >= clock.taxiSupply;
       if (!t.person) {
-        if (!t.onDuty) t.car.serviceStop = DEPOT_STOPS[i % DEPOT_STOPS.length];
+        if (!t.onDuty) { t.standbyStop = null; t.car.serviceStop = DEPOT_STOPS[i % DEPOT_STOPS.length]; }
         else if (t.state === 'off-duty') t.car.serviceStop = FLEET_STOPS[i % FLEET_STOPS.length];
         t.state = t.onDuty ? 'idle' : 'off-duty';
       }
@@ -227,7 +279,7 @@ export class TaxiFleet {
       if (p.state === 'riding-train' && train?.id === p.trainId) { p.x = train.x + p.trainOffset; p.y = RAIL_Y - .8; p.height = 1; }
       if (['walking', 'waiting'].includes(p.state) && this.time - p.requestAt > p.patience) {
         const taxi = this.taxis.find(t => t.id === p.taxi);
-        if (taxi) { taxi.state = 'idle'; taxi.person = null; }
+        if (taxi) { taxi.state = 'idle'; taxi.person = null; taxi.idleStop = p.origin; }
         p.taxi = null; this.event('cancel', p, taxi); this.startLastLeg(p, true);
       }
     }
@@ -239,8 +291,8 @@ export class TaxiFleet {
         const choices = this.taxis.filter(t => t.state === 'idle' && t.onDuty && !t.retiring)
           .map(t => ({ t, distance: pickupDistance(this.graph, t.car, p.origin) })).filter(c => Number.isFinite(c.distance));
         choices.sort((a, b) => a.distance - b.distance || a.t.id.localeCompare(b.t.id));
-        const taxi = choices[0]?.t; if (!taxi) break;
-        taxi.person = p; taxi.state = 'pickup'; taxi.car.serviceStop = p.origin; p.taxi = taxi.id;
+        const taxi = choices[0]?.t; if (!taxi) continue;
+        taxi.standbyStop = null; taxi.person = p; taxi.state = 'pickup'; taxi.car.serviceStop = p.origin; p.taxi = taxi.id;
         this.event('assign', p, taxi, { distance: choices[0].distance });
       }
     }
@@ -263,23 +315,31 @@ export class TaxiFleet {
           this.event('alight', p, taxi, { x: car.x, y: car.y, speed: car.speed, stop: p.destination.id });
         }
       } else if (taxi.state === 'alighting' && atServiceStop(car, p.destination) && walk(p, p.destination.curb, dt) && this.time >= p.dwellUntil) {
-        p.taxi = null; taxi.state = 'idle'; taxi.person = null; taxi.served++;
+        p.taxi = null; taxi.state = 'idle'; taxi.person = null; taxi.served++; taxi.idleStop = p.destination;
         this.event('complete', p, taxi); this.startLastLeg(p);
       }
     }
+    this.rebalance();
   }
   snapshot() {
     const count = states => this.people.filter(p => states.includes(p.state)).length;
     return { time: this.time, seed: this.seed, period: this.period, clock: cityConditions(this.period, this.time),
       demand: 'authored individual travel plans; not calibrated',
+      standby: { enabled: this.standbyEnabled, scores: this.standbyScores.map(s => ({ ...s })), events: this.standbyEvents.map(e => ({ ...e })) },
       doors: Object.fromEntries(Object.entries(this.doors).map(([id, door]) => [id, { ...door }])),
       train: this.line?.snapshot() ?? null, railEvents: this.line?.events.map(e => ({ ...e })) ?? [],
-      metrics: { requested: this.events.filter(e => e.type === 'request').length, waiting: count(['walking', 'waiting']),
+      metrics: { emptyDistance: this.taxis.reduce((n, t) => n + t.emptyDistance, 0),
+        repositionDistance: this.taxis.reduce((n, t) => n + t.repositionDistance, 0),
+        repositioning: this.taxis.filter(t => t.standbyStop && !t.person && !atServiceStop(t.car, t.standbyStop)).length,
+        standby: this.taxis.filter(t => t.standbyStop && !t.person && atServiceStop(t.car, t.standbyStop)).length,
+        requested: this.events.filter(e => e.type === 'request').length, waiting: count(['walking', 'waiting']),
         riding: count(['riding']), served: this.taxis.reduce((n, t) => n + t.served, 0),
         cancelled: this.events.filter(e => e.type === 'cancel').length, onDuty: this.taxis.filter(t => t.onDuty).length,
         railAlighted: this.events.filter(e => e.type === 'train-alight').length, railBoarded: this.events.filter(e => e.type === 'train-board').length,
         meanWait: this.waits.length ? this.waits.reduce((a, b) => a + b, 0) / this.waits.length : 0 },
       taxis: this.taxis.map(t => ({ id: t.id, state: t.state, person: t.person?.id ?? null, served: t.served, onDuty: t.onDuty,
+        standbyStop: t.standbyStop?.id ?? null, activity: t.standbyStop && !t.person ? (atServiceStop(t.car, t.standbyStop) ? 'standby' : 'repositioning') : t.state,
+        emptyDistance: t.emptyDistance, repositionDistance: t.repositionDistance,
         x: t.car.x, y: t.car.y, speed: t.car.speed, distance: t.car.distance, destination: t.car.serviceStop?.id ?? null, capacity: t.capacity })),
       people: this.people.filter(p => p.state !== 'scheduled').map(p => ({ id: p.id, purpose: p.purpose, origin: p.origin.id,
         destination: p.destination.id, state: p.state, taxi: p.taxi, x: p.x, y: p.y, height: p.height, source: p.source ?? p.origin.id,

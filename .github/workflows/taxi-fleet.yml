@@ -2,7 +2,7 @@ name: Taxi fleet evidence
 
 on:
   push:
-    branches: [codex/taxi-fleet, codex/city-life]
+    branches: [codex/taxi-fleet, codex/city-life, codex/fleet-standby]
     paths-ignore: [README.md, 'docs/**', .github/workflows/playground.yml, .github/workflows/taxi-fleet.yml]
   workflow_dispatch:
 
@@ -142,7 +142,7 @@ jobs:
         run: |
           python -m pip install playwright==1.56.0 pillow==12.0.0
           python -m playwright install --with-deps chromium
-      - name: Record two real city-life scenarios and their longer acceptance
+      - name: Exercise both city-life scenarios and optionally record media
         run: |
           npm --prefix web run preview -- --host 127.0.0.1 --port 4173 > /tmp/city-life-record.log 2>&1 &
           rustdriving_record_pid=$!
@@ -156,13 +156,18 @@ jobs:
               except OSError: time.sleep(.25)
           else: raise SystemExit('Capture preview did not start')
           PY
-          python web/tests/fleet_smoke.py --url "http://127.0.0.1:4173$PAGES_BASE" --output web/test-results/city-life --record assets/taxi-fleet-demo.gif
+          rustdriving_media_args=()
+          if [ "$RUSTDRIVING_SOURCE_BRANCH" != "codex/fleet-standby" ]; then
+            rustdriving_media_args=(--record assets/taxi-fleet-demo.gif)
+          fi
+          python web/tests/fleet_smoke.py --url "http://127.0.0.1:4173$PAGES_BASE" --output web/test-results/city-life "${rustdriving_media_args[@]}"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: city-life-recording-evidence
           path: web/test-results/city-life
       - uses: actions/upload-artifact@v4
+        if: github.ref_name != 'codex/fleet-standby'
         with:
           name: city-life-verified-media
           path: |
@@ -174,6 +179,7 @@ jobs:
             assets/nightlife-train-demo.json
 
   publish:
+    if: github.ref_name != 'codex/fleet-standby'
     needs: [core, record]
     runs-on: ubuntu-22.04
     timeout-minutes: 5
