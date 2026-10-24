@@ -33,7 +33,7 @@ jobs:
         env:
           RUSTDRIVING_EXPECTED_SHA: ${{ github.sha }}
         run: |
-          rustfmt --edition 2021 crates/sim/examples/cadc_planar_study.rs
+          rustfmt --edition 2024 crates/sim/examples/cadc_planar_study.rs
           python - <<'PY'
           import subprocess
           changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
