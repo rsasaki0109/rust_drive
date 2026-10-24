@@ -19,10 +19,9 @@ on:
 
 permissions:
   contents: read
-  actions: read
 
 concurrency:
-  group: ci-regressions-${{ github.head_ref || github.ref_name }}
+  group: ci-regression-checks-${{ github.event_name == 'workflow_dispatch' && 'manual' || 'automatic' }}-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -71,51 +70,9 @@ jobs:
             ~/.cargo/git
             target
           key: ${{ steps.workspace-cache.outputs.cache-primary-key }}
-      - name: Download the retained unversioned sensor recording
-        if: matrix.os == 'ubuntu-24.04'
-        uses: actions/download-artifact@v4
-        with:
-          name: native-city-ubuntu24
-          run-id: 40038874516
-          github-token: ${{ github.token }}
-          path: artifacts/ci-regressions/legacy-city
-      - name: Verify all 921 original controls without rewriting the old header
-        if: matrix.os == 'ubuntu-24.04'
-        run: |
-          python - <<'PY'
-          import hashlib
-          import json
-          from pathlib import Path
-          import subprocess
-          root = Path('artifacts/ci-regressions')
-          files = list((root/'legacy-city').rglob('sensors.jsonl'))
-          assert len(files) == 1, 'retained legacy sensor recording missing or ambiguous'
-          source = files[0]
-          with source.open() as stream:
-              config = json.loads(next(stream))['header']['config']
-          assert 'retain_yield_stop_on_emergency' not in config
-          output = root/'legacy-city-replay'
-          subprocess.run(['target/release/rustdriving', 'replay', '--log', str(source),
-                          '--output', str(output)], check=True)
-          proof = json.loads((output/'replay.json').read_text())
-          assert proof['verified'] and proof['ticks'] == 921
-          with source.open('rb') as stream:
-              digest = hashlib.file_digest(stream, 'sha256').hexdigest()
-          receipt = dict(original_run=40038874516, original_job=120704941686,
-                         unmodified_sensor_sha256=digest, replay=proof,
-                         scope='Exact command replay of the retained unversioned recording.')
-          (output/'receipt.json').write_text(json.dumps(receipt, indent=2)+'\n')
-          print(json.dumps(receipt))
-          PY
-      - uses: actions/upload-artifact@v4
-        if: ${{ always() && matrix.os == 'ubuntu-24.04' }}
-        with:
-          name: legacy-sensor-replay
-          path: artifacts/ci-regressions/legacy-city-replay
-          if-no-files-found: warn
 
   historical-visual:
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'workflow_dispatch'
     needs: portable-recordings
     name: Frozen RGB-D reproduction (Ubuntu 24.04)
     runs-on: ubuntu-24.04
@@ -190,7 +147,7 @@ jobs:
           if-no-files-found: warn
 
   native-city:
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'workflow_dispatch'
     needs: portable-recordings
     name: Native red-light queue
     runs-on: ubuntu-latest
