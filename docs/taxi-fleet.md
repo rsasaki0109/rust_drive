@@ -44,6 +44,35 @@ acceleration, car following and junction admission. Boarding/dropoff require
 arrival within 1.1 m at under 0.25 m/s. A person walks to/from the door and
 completes their own dwell time. A trip is counted only after real dropoff.
 
+
+## Empty-cab standby
+
+**EMPTY TAXIS → FOLLOW DEMAND** sends available cabs to separate blue standby
+bays, 12 m upstream of passenger pickup points. Each bay has one owner.
+Surplus idle cabs continue through the road network instead of stacking in a
+pickup bay. Actual requests retain FIFO priority and immediately interrupt
+standby; occupied, boarding and retiring drivers are excluded.
+
+Standby uses authored time-of-day preferences, current public rail service,
+and actual requests from the last 60 physical seconds. A last train increases
+station coverage. Future unreleased travel plans are never consulted.
+Targets are reconsidered every five physical seconds; existing targets are
+retained for at least 20 seconds to reduce churn, unless a rider needs the cab.
+
+Choose **WAIT AT LAST STOP** to compare the preceding behavior in the same
+running city. The mode also persists in the URL as **standby=off**. Changing
+strategy preserves passengers and does not move cars instantly. Blue ground
+markings and cab rings show standby, and the live status reports cabs heading
+to a stand and cabs actually stopped there.
+
+The snapshot records actual empty and standby travel in metres from cab
+odometers, along with standby departure/arrival events. This enables comparison
+without awarding service or movement merely because time has passed.
+The paired Node acceptance uses fresh copies of the same traffic RNG and the
+same late-night departure: one cab waits at its previous stop while the other
+physically reaches a nightlife standby bay before the person requests a ride.
+This narrow scenario is a regression example, not a general performance claim.
+
 ## North Line and the last train
 
 The North Line enters from the western boundary, brakes at the platform,
@@ -114,8 +143,9 @@ The PNG posters are unmodified captured frames. The longer browser
 acceptance also runs both scenarios to 120 physical seconds and exercises
 pause, camera controls, the dusk menu and mobile layout.
 
-The **Taxi fleet evidence** workflow runs core checks and recording in
-parallel. It verifies the generated media hashes and source hashes before
+The **Taxi fleet evidence** workflow runs core and visual/build checks in
+parallel, followed by the two-scenario browser acceptance. The standby feature
+branch runs acceptance without re-recording existing media. It verifies the generated media hashes and source hashes before
 committing the six media files to the unchanged feature branch. The normal
 **Browser playground** workflow runs the city-life suite alongside the
 driving suite; both gate Pages deployment.
@@ -127,8 +157,8 @@ research pipeline. It uses authored simulation state for dispatch and
 rendering. It does not validate sensing, localization, real-vehicle safety,
 real-time performance or a real railway network.
 
-Taxis have one rider each; pooling, parties, fares, batteries and
-predictive rebalancing are not implemented. Pedestrian routes and a simple
+Taxis have one rider each; pooling, parties, fares, batteries and learned
+demand forecasting are not implemented. Standby remains a small authored heuristic. Pedestrian routes and a simple
 doorway headway are authored; this is not a validated crowd-avoidance or
 accessibility model. Rail travel beyond the entry/exit boundary is outside
 the model.

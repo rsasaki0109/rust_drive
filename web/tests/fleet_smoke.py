@@ -18,10 +18,10 @@ ROOT = Path(__file__).resolve().parents[2]
 WIDTH, HEIGHT, FRAME_MS = 1280, 800, 100
 SOURCES = [
     'web/src/fleet.js', 'web/src/city-life.js', 'web/src/fleet-places.js',
-    'web/src/fleet-routing.js', 'web/src/fleet-view.js', 'web/src/fleet.css',
+    'web/src/fleet-routing.js', 'web/src/fleet-standby.js', 'web/src/fleet-view.js', 'web/src/fleet.css',
     'web/src/city.js', 'web/src/junctions.js', 'web/src/traffic-turns.js', 'web/src/urban-roads.js',
     'web/src/main.js', 'web/tests/fleet_smoke.py', 'web/tests/fleet.test.mjs',
-    'web/tests/city-life.test.mjs', 'web/tests/fleet-places.test.mjs',
+    'web/tests/city-life.test.mjs', 'web/tests/fleet-standby.test.mjs', 'web/tests/fleet-places.test.mjs',
     'web/tests/browser_clock.py', 'web/tests/gif_capture.py', 'integrations/playground/src/lib.rs',
 ]
 SEGMENTS = {
@@ -169,6 +169,17 @@ def run_case(browser, args, period):
 
             page.locator('#fleet-play').click()
             stopped = snapshot()
+            assert stopped['standby']['enabled']
+            assert stopped['standby']['events'], 'idle cabs must actually get standby routes'
+            assert stopped['metrics']['emptyDistance'] >= stopped['metrics']['repositionDistance'] > 0
+            page.locator('#fleet-standby').select_option('last')
+            advance(page, 100)
+            disabled = snapshot()
+            assert not disabled['standby']['enabled'] and disabled['time'] == stopped['time']
+            assert all(t['standbyStop'] is None for t in disabled['taxis'])
+            page.locator('#fleet-standby').select_option('demand')
+            advance(page, 100)
+            assert snapshot()['standby']['enabled']
             advance(page, 400)
             assert snapshot()['time'] == stopped['time']
             page.locator('#fleet-play').click()
@@ -181,6 +192,7 @@ def run_case(browser, args, period):
             page.set_viewport_size({'width': 390, 'height': 844})
             tick(200)
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+            assert page.locator('#fleet-standby').is_visible()
             assert page.locator('#fleet-play').is_visible() and page.locator('#fleet-period').is_visible()
             page.screenshot(path=str(output / 'mobile.png'))
             assert not errors, errors
