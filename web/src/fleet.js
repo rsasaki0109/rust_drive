@@ -163,7 +163,7 @@ export class TaxiFleet {
   setWeather(weather,strength=.5) {
     weatherSupply(8,weather,strength,true);
     this.weather=weather; this.weatherStrength=weather==='clear'?0:strength;
-    this.nextWeatherDemand=this.time+(CITY_WEATHER[weather].interval/Math.max(.1,strength));
+    this.nextWeatherDemand=weather==='clear'||strength===0?Infinity:this.time+2;
     this.weatherEvents.push({time:this.time,type:'weather',weather,strength:this.weatherStrength});
   }
   setReserveEnabled(enabled) {

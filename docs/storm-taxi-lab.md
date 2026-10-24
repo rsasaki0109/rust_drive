@@ -54,7 +54,8 @@ the base target. Retiring drivers complete passenger trips before returning
 to one of eight distinct depot bays. Passenger assignment/boarding/dropoff
 still require actual travel, stopped arrival and dwell time.
 
-Storm demand releases additional individual plans at the office or nightclub.
+A new storm releases its first additional travel plan after two physical seconds,
+then uses a strength-dependent interval at the office or nightclub.
 People walk through the actual building entrance before requesting a taxi.
 The model never creates served trips by advancing counters. Existing
 passengers and assignments survive weather and staffing changes.
