@@ -1,0 +1,198 @@
+name: CADC volume comparison
+on:
+  push:
+    branches: [feat/cadc-volume-comparison]
+    paths: ['crates/sim/examples/cadc_volume_study.rs','crates/perception/src/ground3d.rs','crates/perception/src/objects3d.rs','scripts/*cadc*','integrations/cadc/protocol-volume-v1.json','docs/cadc-volume-comparison.md','.github/workflows/cadc-volume.yml']
+  pull_request:
+    paths: ['crates/sim/examples/cadc_volume_study.rs','crates/perception/src/ground3d.rs','crates/perception/src/objects3d.rs','scripts/*cadc*','integrations/cadc/protocol-volume-v1.json','.github/workflows/cadc-volume.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: cadc-volume-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  CARGO_INCREMENTAL: '0'
+  RUSTDRIVING_BASELINE_SHA: 57f8b1c65ba151221718fda4d6dad093f1e40a57
+jobs:
+  contracts:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.90.0
+          components: rustfmt,clippy
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r scripts/requirements-cadc-volume.txt
+      - name: Offline geometry contracts without dataset download
+        run: |
+          cargo fmt --all --check
+          cargo clippy --locked -p rustdriving-sim --example cadc_volume_study -- -D warnings
+          cargo test --locked -p rustdriving-sim --example cadc_volume_study
+          python scripts/test_cadc_volume.py
+  verify_build:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 40
+    permissions:
+      contents: write
+    outputs:
+      sha: ${{ steps.source.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.90.0
+          components: rustfmt,clippy
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Format only the new adapter and pin actual source
+        id: source
+        env:
+          RUSTDRIVING_EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          rustfmt --edition 2024 crates/sim/examples/cadc_volume_study.rs
+          python - <<'PY'
+          import subprocess
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          assert changed <= {'crates/sim/examples/cadc_volume_study.rs'}, changed
+          PY
+          if ! git diff --quiet; then
+            test "$GITHUB_REF_NAME" = 'feat/cadc-volume-comparison'
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add crates/sim/examples/cadc_volume_study.rs
+            git commit -m 'Format recorded XYZ comparison adapter'
+            git push --force-with-lease="refs/heads/feat/cadc-volume-comparison:$RUSTDRIVING_EXPECTED_SHA" origin HEAD:refs/heads/feat/cadc-volume-comparison
+          fi
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "RUSTDRIVING_SOURCE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - run: python -m pip install -r scripts/requirements-cadc-volume.txt
+      - name: Test independent geometry and actual native adapter
+        run: |
+          cargo fmt --all --check
+          cargo clippy --locked -p rustdriving-sim --example cadc_volume_study -- -D warnings
+          cargo test --locked -p rustdriving-sim --example cadc_volume_study
+          python scripts/test_cadc_volume.py
+      - name: Required core regression on the actual formatted source
+        run: bash scripts/check.sh
+      - name: Build the candidate and pinned historical baseline independently
+        run: |
+          cargo build --release --locked -p rustdriving-sim --example cadc_volume_study
+          git fetch --no-tags --depth=1 origin "$RUSTDRIVING_BASELINE_SHA"
+          mkdir -p /tmp/cadc-reference /tmp/cadc-native
+          git archive "$RUSTDRIVING_BASELINE_SHA" Cargo.toml Cargo.lock rust-toolchain.toml crates scripts/check-cadc-recorded.py scripts/cadc_recorded.py scripts/test_cadc_recorded.py scripts/requirements-cadc.txt integrations/cadc/protocol-v1.json | tar -x -C /tmp/cadc-reference
+          cargo test --locked --manifest-path /tmp/cadc-reference/Cargo.toml -p rustdriving-sim --example cadc_planar_study
+          cargo build --release --locked --manifest-path /tmp/cadc-reference/Cargo.toml -p rustdriving-sim --example cadc_planar_study
+          cp target/release/examples/cadc_volume_study /tmp/cadc-native/
+          cp /tmp/cadc-reference/target/release/examples/cadc_planar_study /tmp/cadc-native/
+          python - <<'PY'
+          import ast,hashlib,json,os,shutil
+          from pathlib import Path
+          source=Path('/tmp/cadc-reference');destination=Path('/tmp/cadc-native/baseline-source')
+          tree=ast.parse((source/'scripts/check-cadc-recorded.py').read_text())
+          names=ast.literal_eval(next(node.value for node in tree.body if isinstance(node,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='SOURCES' for t in node.targets)))
+          manifest={'sourceCommit':os.environ['RUSTDRIVING_BASELINE_SHA'],'files':{}}
+          for name in names:
+              path=destination/name;path.parent.mkdir(parents=True,exist_ok=True)
+              shutil.copyfile(source/name,path);manifest['files'][name]=hashlib.sha256(path.read_bytes()).hexdigest()
+          (destination/'source.json').write_text(json.dumps(manifest,indent=2)+'\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cadc-volume-native
+          path: /tmp/cadc-native
+          retention-days: 7
+          if-no-files-found: error
+  study:
+    needs: verify_build
+    runs-on: ubuntu-22.04
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        pair: [0,1,2,3]
+    env:
+      RUSTDRIVING_SOURCE_SHA: ${{ needs.verify_build.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.verify_build.outputs.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r scripts/requirements-cadc-volume.txt
+      - uses: actions/download-artifact@v4
+        with:
+          name: cadc-volume-native
+          path: /tmp/cadc-bin
+      - name: Acquire frozen original or additional sequences
+        run: python scripts/cadc_volume_acquire.py --protocol integrations/cadc/protocol-volume-v1.json --pair "${{ matrix.pair }}" --output /tmp/cadc-data
+      - name: Execute both native builds twice on the same sensor-only inputs
+        run: |
+          chmod +x /tmp/cadc-bin/cadc_planar_study /tmp/cadc-bin/cadc_volume_study
+          /tmp/cadc-bin/cadc_planar_study /tmp/cadc-data/sensor.json > /tmp/cadc-base.json
+          /tmp/cadc-bin/cadc_planar_study /tmp/cadc-data/sensor.json > /tmp/cadc-base-repeat.json
+          cmp /tmp/cadc-base.json /tmp/cadc-base-repeat.json
+          /tmp/cadc-bin/cadc_volume_study /tmp/cadc-data/sensor.json > /tmp/cadc-volume.json
+          /tmp/cadc-bin/cadc_volume_study /tmp/cadc-data/sensor.json > /tmp/cadc-volume-repeat.json
+          cmp /tmp/cadc-volume.json /tmp/cadc-volume-repeat.json
+      - name: Independently audit the pinned historical baseline
+        env:
+          RUSTDRIVING_SOURCE_SHA: 57f8b1c65ba151221718fda4d6dad093f1e40a57
+        run: python /tmp/cadc-bin/baseline-source/scripts/check-cadc-recorded.py --data /tmp/cadc-data --native /tmp/cadc-base.json --binary /tmp/cadc-bin/cadc_planar_study --protocol "$GITHUB_WORKSPACE/integrations/cadc/protocol-volume-v1.json" --output /tmp/cadc-base-audit
+      - name: Independently check XYZ selection, sparse morphology and connected components
+        run: python scripts/check-cadc-volume.py --data /tmp/cadc-data --native /tmp/cadc-volume.json --binary /tmp/cadc-bin/cadc_volume_study --baseline /tmp/cadc-base-audit/result.json --protocol integrations/cadc/protocol-volume-v1.json --output /tmp/cadc-volume-audit
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cadc-volume-case-${{ matrix.pair }}
+          path: /tmp/cadc-volume-audit/result.json
+          retention-days: 7
+          if-no-files-found: error
+  publish:
+    needs: [verify_build,study]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      RUSTDRIVING_SOURCE_SHA: ${{ needs.verify_build.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.verify_build.outputs.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r scripts/requirements-cadc-volume.txt
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: cadc-volume-case-*
+          path: /tmp/cadc-volume-cases
+      - name: Audit every original and additional frame before generating evidence
+        run: python scripts/check-cadc-volume.py --merge /tmp/cadc-volume-cases/*/result.json --protocol integrations/cadc/protocol-volume-v1.json --output /tmp/cadc-volume-evidence
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cadc-volume-evidence
+          path: /tmp/cadc-volume-evidence
+          retention-days: 14
+          if-no-files-found: error
+      - name: Publish all outcomes with a lease on tested source
+        if: github.ref_name == 'feat/cadc-volume-comparison'
+        run: |
+          test "$(git rev-parse HEAD)" = "$RUSTDRIVING_SOURCE_SHA"
+          mkdir -p assets/cadc-volume-v1
+          cp /tmp/cadc-volume-evidence/* assets/cadc-volume-v1/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/cadc-volume-v1
+          git commit -m 'Retain all recorded XYZ comparison outcomes and provenance'
+          git push --force-with-lease="refs/heads/feat/cadc-volume-comparison:$RUSTDRIVING_SOURCE_SHA" origin HEAD:refs/heads/feat/cadc-volume-comparison
