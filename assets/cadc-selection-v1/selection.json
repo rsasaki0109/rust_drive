@@ -1,0 +1,1450 @@
+{
+  "schema_version": 1,
+  "sourceCommit": "a1f0e669d3dd964c009cab1a7edec0f773ea0424",
+  "protocolSha256": "a1a52965b70390f9bac990e422fd72446ec4b213153d3c41f9bbf0afba2b1f45",
+  "selected": {
+    "id": "p12-8-3-nms",
+    "policy": {
+      "id": "p12-8-3-nms",
+      "min_points_by_range": [
+        12,
+        8,
+        3
+      ],
+      "overlap_threshold": 0.5
+    },
+    "constraints": [
+      {
+        "domain": "clear",
+        "range": "all",
+        "retained": 615,
+        "rawMatched": 629,
+        "ratio": 0.9777424483306836,
+        "passes": true
+      },
+      {
+        "domain": "clear",
+        "range": "30-45m",
+        "retained": 216,
+        "rawMatched": 218,
+        "ratio": 0.9908256880733946,
+        "passes": true
+      },
+      {
+        "domain": "winter",
+        "range": "all",
+        "retained": 562,
+        "rawMatched": 575,
+        "ratio": 0.9773913043478261,
+        "passes": true
+      },
+      {
+        "domain": "winter",
+        "range": "30-45m",
+        "retained": 307,
+        "rawMatched": 307,
+        "ratio": 1.0,
+        "passes": true
+      }
+    ],
+    "objectiveOutputs": 16970
+  },
+  "criteria": {
+    "minimum_development_retention": 0.95,
+    "domains": [
+      "clear",
+      "winter"
+    ],
+    "metrics": [
+      "all",
+      "30-45m"
+    ],
+    "objective": "minimum total selected hypotheses among policies satisfying each development retention constraint; deterministic policy id breaks ties",
+    "fallback": "p3-3-3-off is the raw fallback when development match denominators are nonzero; otherwise abort without selecting a policy"
+  },
+  "developmentSummary": {
+    "clear": {
+      "raw": {
+        "frames": 32,
+        "eligible": 702,
+        "matched": 629,
+        "matchFraction": 0.896011396011396,
+        "outputs": 9915,
+        "outputsPerFrame": 309.84375,
+        "unassociatedPerFrame": 290.1875,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 194,
+            "matched": 187
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 251,
+            "matched": 224
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 257,
+            "matched": 218
+          }
+        ],
+        "context": {
+          "matched": 629,
+          "unassignedEligibleOverlap": 482,
+          "outsideEligibilityOnly": 275,
+          "noAnnotatedOverlap": 8529
+        }
+      },
+      "p3-3-3-off": {
+        "frames": 32,
+        "eligible": 702,
+        "matched": 629,
+        "matchFraction": 0.896011396011396,
+        "outputs": 9915,
+        "outputsPerFrame": 309.84375,
+        "unassociatedPerFrame": 290.1875,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 194,
+            "matched": 187
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 251,
+            "matched": 224
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 257,
+            "matched": 218
+          }
+        ],
+        "context": {
+          "matched": 629,
+          "unassignedEligibleOverlap": 482,
+          "outsideEligibilityOnly": 275,
+          "noAnnotatedOverlap": 8529
+        }
+      },
+      "p3-3-3-nms": {
+        "frames": 32,
+        "eligible": 702,
+        "matched": 629,
+        "matchFraction": 0.896011396011396,
+        "outputs": 9908,
+        "outputsPerFrame": 309.625,
+        "unassociatedPerFrame": 289.96875,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 194,
+            "matched": 187
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 251,
+            "matched": 224
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 257,
+            "matched": 218
+          }
+        ],
+        "context": {
+          "matched": 629,
+          "unassignedEligibleOverlap": 481,
+          "outsideEligibilityOnly": 275,
+          "noAnnotatedOverlap": 8523
+        }
+      },
+      "p5-5-5-off": {
+        "frames": 32,
+        "eligible": 702,
+        "matched": 611,
+        "matchFraction": 0.8703703703703703,
+        "outputs": 7913,
+        "outputsPerFrame": 247.28125,
+        "unassociatedPerFrame": 228.1875,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 194,
+            "matched": 185
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 251,
+            "matched": 219
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 257,
+            "matched": 207
+          }
+        ],
+        "context": {
+          "matched": 611,
+          "unassignedEligibleOverlap": 366,
+          "outsideEligibilityOnly": 227,
+          "noAnnotatedOverlap": 6709
+        }
+      },
+      "p5-5-5-nms": {
+        "frames": 32,
+        "eligible": 702,
+        "matched": 611,
+        "matchFraction": 0.8703703703703703,
+        "outputs": 7906,
+        "outputsPerFrame": 247.0625,
+        "unassociatedPerFrame": 227.96875,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 194,
+            "matched": 185
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 251,
+            "matched": 219
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 257,
+            "matched": 207
+          }
+        ],
+        "context": {
+          "matched": 611,
+          "unassignedEligibleOverlap": 365,
+          "outsideEligibilityOnly": 227,
+          "noAnnotatedOverlap": 6703
+        }
+      },
+      "p8-8-8-off": {
+        "frames": 32,
+        "eligible": 702,
+        "matched": 590,
+        "matchFraction": 0.8404558404558404,
+        "outputs": 6430,
+        "outputsPerFrame": 200.9375,
+        "unassociatedPerFrame": 182.5,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 194,
+            "matched": 185
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 251,
+            "matched": 214
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 257,
+            "matched": 191
+          }
+        ],
+        "context": {
+          "matched": 590,
+          "unassignedEligibleOverlap": 264,
+          "outsideEligibilityOnly": 184,
+          "noAnnotatedOverlap": 5392
+        }
+      },
+      "p8-8-8-nms": {
+        "frames": 32,
+        "eligible": 702,
+        "matched": 590,
+        "matchFraction": 0.8404558404558404,
+        "outputs": 6423,
+        "outputsPerFrame": 200.71875,
+        "unassociatedPerFrame": 182.28125,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 194,
+            "matched": 185
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 251,
+            "matched": 214
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 257,
+            "matched": 191
+          }
+        ],
+        "context": {
+          "matched": 590,
+          "unassignedEligibleOverlap": 263,
+          "outsideEligibilityOnly": 184,
+          "noAnnotatedOverlap": 5386
+        }
+      },
+      "p12-12-12-off": {
+        "frames": 32,
+        "eligible": 702,
+        "matched": 565,
+        "matchFraction": 0.8048433048433048,
+        "outputs": 5386,
+        "outputsPerFrame": 168.3125,
+        "unassociatedPerFrame": 150.65625,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 194,
+            "matched": 185
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 251,
+            "matched": 207
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 257,
+            "matched": 173
+          }
+        ],
+        "context": {
+          "matched": 565,
+          "unassignedEligibleOverlap": 201,
+          "outsideEligibilityOnly": 158,
+          "noAnnotatedOverlap": 4462
+        }
+      },
+      "p12-12-12-nms": {
+        "frames": 32,
+        "eligible": 702,
+        "matched": 565,
+        "matchFraction": 0.8048433048433048,
+        "outputs": 5379,
+        "outputsPerFrame": 168.09375,
+        "unassociatedPerFrame": 150.4375,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 194,
+            "matched": 185
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 251,
+            "matched": 207
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 257,
+            "matched": 173
+          }
+        ],
+        "context": {
+          "matched": 565,
+          "unassignedEligibleOverlap": 200,
+          "outsideEligibilityOnly": 158,
+          "noAnnotatedOverlap": 4456
+        }
+      },
+      "p16-16-16-off": {
+        "frames": 32,
+        "eligible": 702,
+        "matched": 550,
+        "matchFraction": 0.7834757834757835,
+        "outputs": 4602,
+        "outputsPerFrame": 143.8125,
+        "unassociatedPerFrame": 126.625,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 194,
+            "matched": 185
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 251,
+            "matched": 200
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 257,
+            "matched": 165
+          }
+        ],
+        "context": {
+          "matched": 550,
+          "unassignedEligibleOverlap": 145,
+          "outsideEligibilityOnly": 138,
+          "noAnnotatedOverlap": 3769
+        }
+      },
+      "p16-16-16-nms": {
+        "frames": 32,
+        "eligible": 702,
+        "matched": 550,
+        "matchFraction": 0.7834757834757835,
+        "outputs": 4595,
+        "outputsPerFrame": 143.59375,
+        "unassociatedPerFrame": 126.40625,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 194,
+            "matched": 185
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 251,
+            "matched": 200
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 257,
+            "matched": 165
+          }
+        ],
+        "context": {
+          "matched": 550,
+          "unassignedEligibleOverlap": 144,
+          "outsideEligibilityOnly": 138,
+          "noAnnotatedOverlap": 3763
+        }
+      },
+      "p8-5-3-off": {
+        "frames": 32,
+        "eligible": 702,
+        "matched": 621,
+        "matchFraction": 0.8846153846153846,
+        "outputs": 8980,
+        "outputsPerFrame": 280.625,
+        "unassociatedPerFrame": 261.21875,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 194,
+            "matched": 185
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 251,
+            "matched": 219
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 257,
+            "matched": 217
+          }
+        ],
+        "context": {
+          "matched": 621,
+          "unassignedEligibleOverlap": 386,
+          "outsideEligibilityOnly": 255,
+          "noAnnotatedOverlap": 7718
+        }
+      },
+      "p8-5-3-nms": {
+        "frames": 32,
+        "eligible": 702,
+        "matched": 621,
+        "matchFraction": 0.8846153846153846,
+        "outputs": 8973,
+        "outputsPerFrame": 280.40625,
+        "unassociatedPerFrame": 261.0,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 194,
+            "matched": 185
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 251,
+            "matched": 219
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 257,
+            "matched": 217
+          }
+        ],
+        "context": {
+          "matched": 621,
+          "unassignedEligibleOverlap": 385,
+          "outsideEligibilityOnly": 255,
+          "noAnnotatedOverlap": 7712
+        }
+      },
+      "p12-8-3-off": {
+        "frames": 32,
+        "eligible": 702,
+        "matched": 615,
+        "matchFraction": 0.8760683760683761,
+        "outputs": 8442,
+        "outputsPerFrame": 263.8125,
+        "unassociatedPerFrame": 244.59375,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 194,
+            "matched": 185
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 251,
+            "matched": 214
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 257,
+            "matched": 216
+          }
+        ],
+        "context": {
+          "matched": 615,
+          "unassignedEligibleOverlap": 326,
+          "outsideEligibilityOnly": 250,
+          "noAnnotatedOverlap": 7251
+        }
+      },
+      "p12-8-3-nms": {
+        "frames": 32,
+        "eligible": 702,
+        "matched": 615,
+        "matchFraction": 0.8760683760683761,
+        "outputs": 8435,
+        "outputsPerFrame": 263.59375,
+        "unassociatedPerFrame": 244.375,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 194,
+            "matched": 185
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 251,
+            "matched": 214
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 257,
+            "matched": 216
+          }
+        ],
+        "context": {
+          "matched": 615,
+          "unassignedEligibleOverlap": 325,
+          "outsideEligibilityOnly": 250,
+          "noAnnotatedOverlap": 7245
+        }
+      }
+    },
+    "winter": {
+      "raw": {
+        "frames": 32,
+        "eligible": 725,
+        "matched": 575,
+        "matchFraction": 0.7931034482758621,
+        "outputs": 11278,
+        "outputsPerFrame": 352.4375,
+        "unassociatedPerFrame": 334.46875,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 47,
+            "matched": 44
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 252,
+            "matched": 224
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 426,
+            "matched": 307
+          }
+        ],
+        "context": {
+          "matched": 575,
+          "unassignedEligibleOverlap": 331,
+          "outsideEligibilityOnly": 131,
+          "noAnnotatedOverlap": 10241
+        }
+      },
+      "p3-3-3-off": {
+        "frames": 32,
+        "eligible": 725,
+        "matched": 575,
+        "matchFraction": 0.7931034482758621,
+        "outputs": 11278,
+        "outputsPerFrame": 352.4375,
+        "unassociatedPerFrame": 334.46875,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 47,
+            "matched": 44
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 252,
+            "matched": 224
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 426,
+            "matched": 307
+          }
+        ],
+        "context": {
+          "matched": 575,
+          "unassignedEligibleOverlap": 331,
+          "outsideEligibilityOnly": 131,
+          "noAnnotatedOverlap": 10241
+        }
+      },
+      "p3-3-3-nms": {
+        "frames": 32,
+        "eligible": 725,
+        "matched": 575,
+        "matchFraction": 0.7931034482758621,
+        "outputs": 11268,
+        "outputsPerFrame": 352.125,
+        "unassociatedPerFrame": 334.15625,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 47,
+            "matched": 44
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 252,
+            "matched": 224
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 426,
+            "matched": 307
+          }
+        ],
+        "context": {
+          "matched": 575,
+          "unassignedEligibleOverlap": 331,
+          "outsideEligibilityOnly": 131,
+          "noAnnotatedOverlap": 10231
+        }
+      },
+      "p5-5-5-off": {
+        "frames": 32,
+        "eligible": 725,
+        "matched": 550,
+        "matchFraction": 0.7586206896551724,
+        "outputs": 8298,
+        "outputsPerFrame": 259.3125,
+        "unassociatedPerFrame": 242.125,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 47,
+            "matched": 41
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 252,
+            "matched": 220
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 426,
+            "matched": 289
+          }
+        ],
+        "context": {
+          "matched": 550,
+          "unassignedEligibleOverlap": 224,
+          "outsideEligibilityOnly": 106,
+          "noAnnotatedOverlap": 7418
+        }
+      },
+      "p5-5-5-nms": {
+        "frames": 32,
+        "eligible": 725,
+        "matched": 550,
+        "matchFraction": 0.7586206896551724,
+        "outputs": 8290,
+        "outputsPerFrame": 259.0625,
+        "unassociatedPerFrame": 241.875,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 47,
+            "matched": 41
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 252,
+            "matched": 220
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 426,
+            "matched": 289
+          }
+        ],
+        "context": {
+          "matched": 550,
+          "unassignedEligibleOverlap": 224,
+          "outsideEligibilityOnly": 106,
+          "noAnnotatedOverlap": 7410
+        }
+      },
+      "p8-8-8-off": {
+        "frames": 32,
+        "eligible": 725,
+        "matched": 513,
+        "matchFraction": 0.7075862068965517,
+        "outputs": 6444,
+        "outputsPerFrame": 201.375,
+        "unassociatedPerFrame": 185.34375,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 47,
+            "matched": 41
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 252,
+            "matched": 215
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 426,
+            "matched": 257
+          }
+        ],
+        "context": {
+          "matched": 513,
+          "unassignedEligibleOverlap": 144,
+          "outsideEligibilityOnly": 91,
+          "noAnnotatedOverlap": 5696
+        }
+      },
+      "p8-8-8-nms": {
+        "frames": 32,
+        "eligible": 725,
+        "matched": 513,
+        "matchFraction": 0.7075862068965517,
+        "outputs": 6437,
+        "outputsPerFrame": 201.15625,
+        "unassociatedPerFrame": 185.125,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 47,
+            "matched": 41
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 252,
+            "matched": 215
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 426,
+            "matched": 257
+          }
+        ],
+        "context": {
+          "matched": 513,
+          "unassignedEligibleOverlap": 144,
+          "outsideEligibilityOnly": 91,
+          "noAnnotatedOverlap": 5689
+        }
+      },
+      "p12-12-12-off": {
+        "frames": 32,
+        "eligible": 725,
+        "matched": 473,
+        "matchFraction": 0.6524137931034483,
+        "outputs": 5024,
+        "outputsPerFrame": 157.0,
+        "unassociatedPerFrame": 142.21875,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 47,
+            "matched": 39
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 252,
+            "matched": 205
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 426,
+            "matched": 229
+          }
+        ],
+        "context": {
+          "matched": 473,
+          "unassignedEligibleOverlap": 82,
+          "outsideEligibilityOnly": 77,
+          "noAnnotatedOverlap": 4392
+        }
+      },
+      "p12-12-12-nms": {
+        "frames": 32,
+        "eligible": 725,
+        "matched": 473,
+        "matchFraction": 0.6524137931034483,
+        "outputs": 5017,
+        "outputsPerFrame": 156.78125,
+        "unassociatedPerFrame": 142.0,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 47,
+            "matched": 39
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 252,
+            "matched": 205
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 426,
+            "matched": 229
+          }
+        ],
+        "context": {
+          "matched": 473,
+          "unassignedEligibleOverlap": 82,
+          "outsideEligibilityOnly": 77,
+          "noAnnotatedOverlap": 4385
+        }
+      },
+      "p16-16-16-off": {
+        "frames": 32,
+        "eligible": 725,
+        "matched": 426,
+        "matchFraction": 0.5875862068965517,
+        "outputs": 4152,
+        "outputsPerFrame": 129.75,
+        "unassociatedPerFrame": 116.4375,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 47,
+            "matched": 39
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 252,
+            "matched": 194
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 426,
+            "matched": 193
+          }
+        ],
+        "context": {
+          "matched": 426,
+          "unassignedEligibleOverlap": 59,
+          "outsideEligibilityOnly": 65,
+          "noAnnotatedOverlap": 3602
+        }
+      },
+      "p16-16-16-nms": {
+        "frames": 32,
+        "eligible": 725,
+        "matched": 426,
+        "matchFraction": 0.5875862068965517,
+        "outputs": 4146,
+        "outputsPerFrame": 129.5625,
+        "unassociatedPerFrame": 116.25,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 47,
+            "matched": 39
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 252,
+            "matched": 194
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 426,
+            "matched": 193
+          }
+        ],
+        "context": {
+          "matched": 426,
+          "unassignedEligibleOverlap": 59,
+          "outsideEligibilityOnly": 65,
+          "noAnnotatedOverlap": 3596
+        }
+      },
+      "p8-5-3-off": {
+        "frames": 32,
+        "eligible": 725,
+        "matched": 569,
+        "matchFraction": 0.7848275862068965,
+        "outputs": 9257,
+        "outputsPerFrame": 289.28125,
+        "unassociatedPerFrame": 271.5,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 47,
+            "matched": 41
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 252,
+            "matched": 221
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 426,
+            "matched": 307
+          }
+        ],
+        "context": {
+          "matched": 569,
+          "unassignedEligibleOverlap": 276,
+          "outsideEligibilityOnly": 130,
+          "noAnnotatedOverlap": 8282
+        }
+      },
+      "p8-5-3-nms": {
+        "frames": 32,
+        "eligible": 725,
+        "matched": 569,
+        "matchFraction": 0.7848275862068965,
+        "outputs": 9249,
+        "outputsPerFrame": 289.03125,
+        "unassociatedPerFrame": 271.25,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 47,
+            "matched": 41
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 252,
+            "matched": 221
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 426,
+            "matched": 307
+          }
+        ],
+        "context": {
+          "matched": 569,
+          "unassignedEligibleOverlap": 276,
+          "outsideEligibilityOnly": 130,
+          "noAnnotatedOverlap": 8274
+        }
+      },
+      "p12-8-3-off": {
+        "frames": 32,
+        "eligible": 725,
+        "matched": 562,
+        "matchFraction": 0.7751724137931034,
+        "outputs": 8543,
+        "outputsPerFrame": 266.96875,
+        "unassociatedPerFrame": 249.40625,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 47,
+            "matched": 39
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 252,
+            "matched": 216
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 426,
+            "matched": 307
+          }
+        ],
+        "context": {
+          "matched": 562,
+          "unassignedEligibleOverlap": 241,
+          "outsideEligibilityOnly": 129,
+          "noAnnotatedOverlap": 7611
+        }
+      },
+      "p12-8-3-nms": {
+        "frames": 32,
+        "eligible": 725,
+        "matched": 562,
+        "matchFraction": 0.7751724137931034,
+        "outputs": 8535,
+        "outputsPerFrame": 266.71875,
+        "unassociatedPerFrame": 249.15625,
+        "rangeBins": [
+          {
+            "near": 2,
+            "far": 15,
+            "eligible": 47,
+            "matched": 39
+          },
+          {
+            "near": 15,
+            "far": 30,
+            "eligible": 252,
+            "matched": 216
+          },
+          {
+            "near": 30,
+            "far": 45,
+            "eligible": 426,
+            "matched": 307
+          }
+        ],
+        "context": {
+          "matched": 562,
+          "unassignedEligibleOverlap": 241,
+          "outsideEligibilityOnly": 129,
+          "noAnnotatedOverlap": 7603
+        }
+      }
+    }
+  },
+  "developmentInputs": [
+    {
+      "id": "winter-0-0000000000",
+      "pair": 0,
+      "pointSha256": "88d794c22061cc6aed13d395e943c9b7106797cb3dc8e47b0dec041317aa5cb6"
+    },
+    {
+      "id": "winter-0-0000000010",
+      "pair": 0,
+      "pointSha256": "992744237c6f8d6a821a93b86748b57cd9cd123e0d680d4db29981e4dcddbe3c"
+    },
+    {
+      "id": "winter-0-0000000020",
+      "pair": 0,
+      "pointSha256": "f4551603ec683ff0470e155cc3e32335b96854cc8bf7210afde961ec2e069052"
+    },
+    {
+      "id": "winter-0-0000000030",
+      "pair": 0,
+      "pointSha256": "8c914663e35f367d5f8e286d623b625a479fb9248bc599b514c8b7b794c3a3d4"
+    },
+    {
+      "id": "winter-0-0000000040",
+      "pair": 0,
+      "pointSha256": "589e8f7f439ef0d811e96e0fd5792a90c004ca5e2afdeb30dcdb6a8941eb3644"
+    },
+    {
+      "id": "winter-0-0000000050",
+      "pair": 0,
+      "pointSha256": "cec8bfc944a48783e17a181a29ab42f8244f1847390751da691014245a230db5"
+    },
+    {
+      "id": "winter-0-0000000060",
+      "pair": 0,
+      "pointSha256": "f36ba71ff8d0e42f2ec828997664859648e5a081e463e65c740e9d7de175265a"
+    },
+    {
+      "id": "winter-0-0000000070",
+      "pair": 0,
+      "pointSha256": "c412a44e8757e1bae936ea7228dcfd9a9e56ee24f5199cb86f0db345f0326f23"
+    },
+    {
+      "id": "clear-0-0000000000",
+      "pair": 0,
+      "pointSha256": "6abaf9fc9eccaee8a1148032c18f6f634d593601b9f76328efaeb9665895d2cc"
+    },
+    {
+      "id": "clear-0-0000000010",
+      "pair": 0,
+      "pointSha256": "30c77514159b4d1d7a01395dd0fcb50007f112ae7bbb93adde3dcd2497747265"
+    },
+    {
+      "id": "clear-0-0000000020",
+      "pair": 0,
+      "pointSha256": "8c03e6b56e2aaca6cd0715e17f32efd3cc5589dfeb1ce13bcec610cb511c6344"
+    },
+    {
+      "id": "clear-0-0000000030",
+      "pair": 0,
+      "pointSha256": "d2dcbdac50d797df0381ec2066bdbfad61ed976ee6dcdd189c0e6426ae8253d6"
+    },
+    {
+      "id": "clear-0-0000000040",
+      "pair": 0,
+      "pointSha256": "14ce79aadb3d568535de1eaf63add9d2aa3fd990c97fdda8f6e6b035e3eff9f8"
+    },
+    {
+      "id": "clear-0-0000000050",
+      "pair": 0,
+      "pointSha256": "98ca1fe1db55b67f50de8979a213877528dff5519e80cbc0f001cb5b112c3525"
+    },
+    {
+      "id": "clear-0-0000000060",
+      "pair": 0,
+      "pointSha256": "872ed05b98e23a508a4ce0d5ce26beeeaa475666cbde2087c3bf689a6cb5d3e4"
+    },
+    {
+      "id": "clear-0-0000000070",
+      "pair": 0,
+      "pointSha256": "31572fe5abbcf3543cf9ea11e2c145aee402d7c243c9533e7d123e847406ee12"
+    },
+    {
+      "id": "winter-1-0000000000",
+      "pair": 1,
+      "pointSha256": "ad9960c6a43811fc5aea17a2c90f43a2b587bcfc111d8699a7734fdb5a2eb15b"
+    },
+    {
+      "id": "winter-1-0000000010",
+      "pair": 1,
+      "pointSha256": "947c6c4372b0f5d8adc339c98284645cd86a7dc2247be10d946ab75ba3180e54"
+    },
+    {
+      "id": "winter-1-0000000020",
+      "pair": 1,
+      "pointSha256": "23db76ff60042fa84b5d446b934a1659c94d25491ef941dd34269d1810835a05"
+    },
+    {
+      "id": "winter-1-0000000030",
+      "pair": 1,
+      "pointSha256": "b952f4fc15dad426b342e597398f0b1db088b3d1d6a5d98f46718b8463c52360"
+    },
+    {
+      "id": "winter-1-0000000040",
+      "pair": 1,
+      "pointSha256": "3b73544b173303bec1330902d3fca478e3c347f057272306b19e959112de2563"
+    },
+    {
+      "id": "winter-1-0000000050",
+      "pair": 1,
+      "pointSha256": "6b486eaa0ab211709213fb3d19fbdf97fa92ba616582d89597a5c3cc573506a4"
+    },
+    {
+      "id": "winter-1-0000000060",
+      "pair": 1,
+      "pointSha256": "0131cc837239401b3bbccd95c7c1879698bb075c7f1fa9bc5ac01b126ae1990e"
+    },
+    {
+      "id": "winter-1-0000000070",
+      "pair": 1,
+      "pointSha256": "3ddd74c13c007faf05564e2c3be5cf4962d03b149f3ccfc2c15dfc7ee7922fde"
+    },
+    {
+      "id": "clear-1-0000000000",
+      "pair": 1,
+      "pointSha256": "8041bcedf3c996d2d0803d9cb3d40ca5e9128ad90b9ddc118d9352666bbb7cfd"
+    },
+    {
+      "id": "clear-1-0000000010",
+      "pair": 1,
+      "pointSha256": "8f51dd803f79b9162b8b001af4b801372313349095902206f2af7fdd5a913d5c"
+    },
+    {
+      "id": "clear-1-0000000020",
+      "pair": 1,
+      "pointSha256": "f89241450f05ca46fc775b93709e6b94ae5c8d636bd8a68bc4de17ae995b864b"
+    },
+    {
+      "id": "clear-1-0000000030",
+      "pair": 1,
+      "pointSha256": "f82ef8e112052f42370ca4f3fc441cd5ecf2952e138f8f78bcece4d211d99e51"
+    },
+    {
+      "id": "clear-1-0000000040",
+      "pair": 1,
+      "pointSha256": "f88a4c9cdaff602bca6e2ecfbe173d0e47236ee2d0ceaa0a27b29841b540043f"
+    },
+    {
+      "id": "clear-1-0000000050",
+      "pair": 1,
+      "pointSha256": "656a8e2066c39accc31bb2ac041b5e7620f40c48bb0ae70acaeea177c10b0e48"
+    },
+    {
+      "id": "clear-1-0000000060",
+      "pair": 1,
+      "pointSha256": "70825e58b3e942692a02f30d3918b4a681f2be52fc403982085c0b7473373784"
+    },
+    {
+      "id": "clear-1-0000000070",
+      "pair": 1,
+      "pointSha256": "7812c88240b36050e9d0925fc01b3af0e4eca94841c7210bddc54b317fad5071"
+    },
+    {
+      "id": "winter-2-0000000000",
+      "pair": 2,
+      "pointSha256": "8055fa1409dab2370bb56c93d03b7789aabf8b8f8cf3d5c0069109c9d2fdbce6"
+    },
+    {
+      "id": "winter-2-0000000010",
+      "pair": 2,
+      "pointSha256": "071e149349185e7ab3bd467e51ac8936ac4f7822d1a0508fdfbb326d50240f57"
+    },
+    {
+      "id": "winter-2-0000000020",
+      "pair": 2,
+      "pointSha256": "4b32c89a29c0e42a520562d4b73e8ab3e6e0aae8e3b894ecbfab4de1da70398e"
+    },
+    {
+      "id": "winter-2-0000000030",
+      "pair": 2,
+      "pointSha256": "cde6c7fb49cf41f861f173212c56c3f8200342b55178cee797dce49148e90b7c"
+    },
+    {
+      "id": "winter-2-0000000040",
+      "pair": 2,
+      "pointSha256": "fc2495a87607eca14b8556419a11444892e58ebba45c825c8a18e9d912b5f1ad"
+    },
+    {
+      "id": "winter-2-0000000050",
+      "pair": 2,
+      "pointSha256": "4b9bd6e700500a31633aa608fe1ebda21a2bc2706fee180821f2c32408e35ba9"
+    },
+    {
+      "id": "winter-2-0000000060",
+      "pair": 2,
+      "pointSha256": "d57de5e97476f34300cd2fe5570fe12fe6d160502c3dd6029852bb816d2bd83f"
+    },
+    {
+      "id": "winter-2-0000000070",
+      "pair": 2,
+      "pointSha256": "eac21570c102441a9953e3b4920c83b99c2925bbdb83c55871dca565626fc3c0"
+    },
+    {
+      "id": "clear-2-0000000000",
+      "pair": 2,
+      "pointSha256": "b96f64dd5bb405b4464bea29a1a1296f6edd690d01eba5fcf64c872b9667fd99"
+    },
+    {
+      "id": "clear-2-0000000010",
+      "pair": 2,
+      "pointSha256": "8b5d0d3572f6da9f82a3e61a17f2590cfbc26d340316e682d9c938af74da48c5"
+    },
+    {
+      "id": "clear-2-0000000020",
+      "pair": 2,
+      "pointSha256": "5e2fea16dd855b1bce31b3293361d0a8e66294f4b07b54de5544f7e8de144fb9"
+    },
+    {
+      "id": "clear-2-0000000030",
+      "pair": 2,
+      "pointSha256": "ca6c60ae64afe9b8e7ffdec21a058734b4defe04e920623b8010df834560f5d7"
+    },
+    {
+      "id": "clear-2-0000000040",
+      "pair": 2,
+      "pointSha256": "1bf28650859a63c456cdda010351bf4859459fcdf2b7fed80fcc2cd26c301771"
+    },
+    {
+      "id": "clear-2-0000000050",
+      "pair": 2,
+      "pointSha256": "3ff5c5bbe3f3a9fd0c927d4018223914a20218eac74429262d43960c101013d2"
+    },
+    {
+      "id": "clear-2-0000000060",
+      "pair": 2,
+      "pointSha256": "8749b527bf9301478ebe4ba93496aa860f8c621af10e2f52bd30997fa06cc6a0"
+    },
+    {
+      "id": "clear-2-0000000070",
+      "pair": 2,
+      "pointSha256": "eeff7ccb2e93e413363fa8d1ca1b5dce36e052dd3c5e75cb2542f00376f1babd"
+    },
+    {
+      "id": "winter-3-0000000000",
+      "pair": 3,
+      "pointSha256": "0547bf45e6691a7be1aa3f928417568f54eba82b6ca9e2ad1b8ebb9cf7aef2fa"
+    },
+    {
+      "id": "winter-3-0000000010",
+      "pair": 3,
+      "pointSha256": "7e54e200939fce75645b728bf4c34619d630b23cd6b982d9d71d71372aaea7ce"
+    },
+    {
+      "id": "winter-3-0000000020",
+      "pair": 3,
+      "pointSha256": "1c6a566c4e4ed5dea297f11475dfb89eda137a16c86b85d2e9506a6c41ca35dd"
+    },
+    {
+      "id": "winter-3-0000000030",
+      "pair": 3,
+      "pointSha256": "f25623cc931a75fa243c892e7854c13922c26ec8a3b7eb27b19e9ab34e7aa901"
+    },
+    {
+      "id": "winter-3-0000000040",
+      "pair": 3,
+      "pointSha256": "1847dc441dd2e4d4d022eaae4f37695e440782b9276a12a92bb2734fc1e686a5"
+    },
+    {
+      "id": "winter-3-0000000050",
+      "pair": 3,
+      "pointSha256": "9686589fdad116a5d6400b84438701314c468a701971ca86900accede07d3f55"
+    },
+    {
+      "id": "winter-3-0000000060",
+      "pair": 3,
+      "pointSha256": "7de3feefbf00165aaa8a5e1c07e7904bf0f89d5ba70d97e5fdd7aeb771ce3986"
+    },
+    {
+      "id": "winter-3-0000000070",
+      "pair": 3,
+      "pointSha256": "cfea5e02fcf79f3c1aa05cb9bcb6b9a5de526309f5dedf9475c5efb5860632a5"
+    },
+    {
+      "id": "clear-3-0000000000",
+      "pair": 3,
+      "pointSha256": "cf5b53bee97e78e5a7c764e7c9c3134e6ec850cfaafb4c80cc3c01c50baf2632"
+    },
+    {
+      "id": "clear-3-0000000010",
+      "pair": 3,
+      "pointSha256": "1d47ba5a38c6aafcece8d56f6694c5f108c445a2952766908933930af13b832e"
+    },
+    {
+      "id": "clear-3-0000000020",
+      "pair": 3,
+      "pointSha256": "56057a6c10bdb300cfe9295550169d65a6f549074df1bb0957f62f2d2b45eebc"
+    },
+    {
+      "id": "clear-3-0000000030",
+      "pair": 3,
+      "pointSha256": "6e8d3eecfbef39bad4527384f7bd149c53e30faaab2d1db2f365bd05469ada18"
+    },
+    {
+      "id": "clear-3-0000000040",
+      "pair": 3,
+      "pointSha256": "05befc02d0c9cd48f9dd064dcb598adf5cb071a450822c323d947b088b28a426"
+    },
+    {
+      "id": "clear-3-0000000050",
+      "pair": 3,
+      "pointSha256": "302426f2d4cf47a0fb9ad1f1e04f52f5180b9bb339a38a483f9cbe0a23b2adac"
+    },
+    {
+      "id": "clear-3-0000000060",
+      "pair": 3,
+      "pointSha256": "78aff13547d0239fe1df0cbf8bb5d62c1d5788119910155c1673e5447ec20744"
+    },
+    {
+      "id": "clear-3-0000000070",
+      "pair": 3,
+      "pointSha256": "876cb15132b3b6574278700df47a8152bd8e25f5b1859dd3a1896bbad2715f91"
+    }
+  ],
+  "developmentReports": [
+    "3637adce11359819593bae01273fedd3f94d42b7b42a490ad3e277715d2b71fc",
+    "c16640a30749f408675b23108d9364603dc5b30e99cb5ecffe71e084ac6689a6",
+    "70a0845a2266340f485fd79ab944047212808437c26d047127123014e850f8dd",
+    "2828df6ba9807be857827099e7d633be1aec35778c98c9c3e37edfd4bd0c13bf"
+  ],
+  "interpretation": "Chosen using only the previous 64 scans. Validation point clouds must be acquired after freezing this selection. Counts are geometric proxies, not semantic precision or calibrated detection probability."
+}

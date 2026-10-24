@@ -145,3 +145,7 @@ The original CADC is **CC BY-NC 4.0**. Consult the
 Only aggregate plots, numerical diagnostics and hashes are published here;
 raw clouds, annotation files and spatial detector outputs are not redistributed.
 The repository's code licence does not relicense the external data.
+
+The [component-selection follow-up](cadc-component-selection.md) investigates
+support and overlap selection, retaining source returns and evaluating a policy
+frozen on these 64 scans against additional sequences.
