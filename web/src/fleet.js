@@ -1,4 +1,5 @@
 import { makeStop, pickupDistance, atServiceStop } from './fleet-routing.js';
+import { DISPATCH_POLICIES, RoadTravelTimes, etaAssignments, forecastDemand, forecastStandby, percentile } from './fleet-dispatch.js';
 import { CITY_WEATHER, weatherSupply } from './city-weather.js';
 import { makeStandbyStop, standbyPriorities } from './fleet-standby.js';
 import { cityConditions, FACILITIES, NorthLine, STATION_PATH, PLATFORM_WAIT, RAIL_Y } from './city-life.js';
@@ -73,6 +74,8 @@ export class TaxiFleet {
     this.standbyEnabled = Boolean(standby); this.nextStandby = 0; this.standbyEvents = []; this.standbyScores = [];
     this.standbyStops = new Map(FLEET_STOPS.map(s => [s.id, makeStandbyStop(s)]));
     this.events = []; this.waits = []; this.people = []; this.taxis = []; this.auto = plans === undefined;
+    this.roadTimes = new RoadTravelTimes(); this.pickupErrors = []; this.forecast = [];
+    this.dispatchPolicy = 'distance'; this.setDispatchPolicy(options.dispatch ?? 'distance');
     this.line = this.auto ? new NorthLine(period) : null; this.railCursor = 0; this.demandBatch = 0;
     this.doors = Object.fromEntries(Object.keys(FACILITIES).map(id => [id, { open: 0 }]));
     for (const car of cars) this.addTaxi(car);
@@ -179,6 +182,16 @@ export class TaxiFleet {
       destination:['homes','west','hotel'][serial%3],release:this.time+.3,walkSpeed:purpose.speed,
       patience:purpose.patience,dwell:purpose.dwell,offset:8,source:'weather-demand'});
   }
+  setDispatchPolicy(policy) {
+    if (!DISPATCH_POLICIES.includes(policy)) throw new Error('Unknown fleet dispatch policy');
+    this.dispatchPolicy = policy; this.nextDispatch = 0; this.nextStandby = 0;
+  }
+  assign(taxi, person, distance, eta = null) {
+    taxi.standbyStop = null; taxi.person = person; taxi.state = 'pickup';
+    taxi.car.serviceStop = person.origin; person.taxi = taxi.id;
+    taxi.pickupPrediction = eta === null ? null : { at: this.time, seconds: eta, person: person.id, leg: person.leg };
+    this.event('assign', person, taxi, { distance, policy: this.dispatchPolicy, etaSeconds: eta });
+  }
   setStandbyEnabled(enabled) {
     if (typeof enabled !== 'boolean') throw new Error('Standby mode must be boolean');
     this.standbyEnabled = enabled; this.nextStandby = this.time;
@@ -196,6 +209,24 @@ export class TaxiFleet {
     }
     if (!this.standbyEnabled || this.time < this.nextStandby) return;
     this.nextStandby = this.time + 5;
+    if (this.dispatchPolicy === 'eta') {
+      this.forecast = forecastDemand(FLEET_STOPS, cityConditions(this.period, this.time),
+        this.time, this.events, this.line?.train);
+      this.standbyScores = this.forecast.map(f => ({ stop: f.stop.id, label: f.stop.label,
+        score: f.expected, reason: 'next-minute request forecast' }));
+      for (const choice of forecastStandby(this.graph, this.roadTimes, this.taxis,
+          this.forecast, this.standbyStops, this.time)) {
+        const taxi = choice.taxi, stop = choice.stop;
+        if (stop === taxi.standbyStop) continue;
+        taxi.standbyStop = stop; taxi.standbySince = this.time; taxi.standbyArrived = false;
+        taxi.car.serviceStop = stop;
+        if (stop) this.standbyEvents.push({ time: this.time, type: 'reposition', taxi: taxi.id,
+          stop: stop.id, x: taxi.car.x, y: taxi.car.y,
+          distance: pickupDistance(this.graph, taxi.car, stop), expectedRequests: choice.expected,
+          reason: 'ETA and next-minute request forecast' });
+      }
+      return;
+    }
     const idle = this.taxis.filter(t => !t.person && t.onDuty && !t.retiring);
     const scores = standbyPriorities(FLEET_STOPS, cityConditions(this.period, this.time), this.time,
       this.events, this.people.filter(p => p.state !== 'scheduled'), this.line?.train);
@@ -226,6 +257,7 @@ export class TaxiFleet {
   update(dt) {
     if (!Number.isFinite(dt) || dt <= 0 || dt > .1) throw new Error('Fleet step must be in (0, .1] seconds');
     this.time += dt;
+    this.roadTimes.observe(this.taxis, this.time);
     const clock = cityConditions(this.period, this.time), supply = this.targetSupply();
     this.stormDemand();
     this.taxis.forEach((t, i) => {
@@ -309,15 +341,18 @@ export class TaxiFleet {
     }
     if (this.time >= this.nextDispatch) {
       this.nextDispatch = this.time + .5;
-      const waiting = this.people.filter(p => ['walking', 'waiting'].includes(p.state) && !p.taxi)
-        .sort((a, b) => a.requestAt - b.requestAt || a.id.localeCompare(b.id));
-      for (const p of waiting) {
-        const choices = this.taxis.filter(t => t.state === 'idle' && t.onDuty && !t.retiring)
-          .map(t => ({ t, distance: pickupDistance(this.graph, t.car, p.origin) })).filter(c => Number.isFinite(c.distance));
-        choices.sort((a, b) => a.distance - b.distance || a.t.id.localeCompare(b.t.id));
-        const taxi = choices[0]?.t; if (!taxi) continue;
-        taxi.standbyStop = null; taxi.person = p; taxi.state = 'pickup'; taxi.car.serviceStop = p.origin; p.taxi = taxi.id;
-        this.event('assign', p, taxi, { distance: choices[0].distance });
+      if (this.dispatchPolicy === 'eta') {
+        for (const choice of etaAssignments(this.graph, this.roadTimes, this.taxis, this.people, this.time))
+          this.assign(choice.taxi, choice.person, choice.distance, choice.eta);
+      } else {
+        const waiting = this.people.filter(p => ['walking', 'waiting'].includes(p.state) && !p.taxi)
+          .sort((a, b) => a.requestAt - b.requestAt || a.id.localeCompare(b.id));
+        for (const p of waiting) {
+          const choices = this.taxis.filter(t => t.state === 'idle' && t.onDuty && !t.retiring)
+            .map(t => ({ t, distance: pickupDistance(this.graph, t.car, p.origin) })).filter(c => Number.isFinite(c.distance));
+          choices.sort((a, b) => a.distance - b.distance || a.t.id.localeCompare(b.t.id));
+          if (choices[0]) this.assign(choices[0].t, p, choices[0].distance);
+        }
       }
     }
     for (const taxi of this.taxis) {
@@ -325,6 +360,12 @@ export class TaxiFleet {
       if (taxi.state === 'pickup' && p.state === 'waiting' && atServiceStop(car, p.origin)) {
         taxi.state = 'boarding'; p.state = 'boarding'; p.queueSlot = null; p.dwellUntil = this.time + p.dwell;
         this.waits.push(this.time - p.requestAt);
+        const prediction = taxi.pickupPrediction;
+        if (prediction?.person === p.id && prediction.leg === p.leg) {
+          const actual = this.time - prediction.at;
+          this.pickupErrors.push({ time: this.time, person: p.id, leg: p.leg, taxi: taxi.id,
+            predictedSeconds: prediction.seconds, actualSeconds: actual, errorSeconds: actual - prediction.seconds });
+        }
         this.event('board', p, taxi, { x: car.x, y: car.y, speed: car.speed, stop: p.origin.id });
       }
       if (taxi.state === 'boarding' && atServiceStop(car, p.origin)) {
@@ -350,10 +391,19 @@ export class TaxiFleet {
     return { time: this.time, seed: this.seed, period: this.period, clock: cityConditions(this.period, this.time),
       weather:{name:this.weather,strength:this.weatherStrength,reserve:this.reserveEnabled,targetSupply:this.targetSupply(),events:this.weatherEvents.map(e=>({...e}))},
       demand: 'authored individual travel plans; not calibrated',
+      dispatch: { policy: this.dispatchPolicy, telemetrySamples: this.roadTimes.samples, knownEdges: this.roadTimes.edges.size,
+        forecast: this.forecast.map(f => ({ stop: f.stop.id, expectedRequests: f.expected, horizonSeconds: f.horizonSeconds })),
+        etaErrors: this.pickupErrors.map(e => ({ ...e })),
+        pickups: this.taxis.filter(t => t.state === 'pickup' && t.pickupPrediction).map(t =>
+          ({ taxi: t.id, person: t.person.id, remainingSeconds: Math.max(0,
+            t.pickupPrediction.seconds - (this.time - t.pickupPrediction.at)) })) },
       standby: { enabled: this.standbyEnabled, scores: this.standbyScores.map(s => ({ ...s })), events: this.standbyEvents.map(e => ({ ...e })) },
       doors: Object.fromEntries(Object.entries(this.doors).map(([id, door]) => [id, { ...door }])),
       train: this.line?.snapshot() ?? null, railEvents: this.line?.events.map(e => ({ ...e })) ?? [],
-      metrics: { targetSupply:this.targetSupply(), weatherRequests:this.events.filter(e=>e.type==='request'&&e.source==='weather-demand').length,
+      metrics: { pickupWaitSamples: this.waits.length, pickupP50: percentile(this.waits, .5), pickupP95: percentile(this.waits, .95),
+        etaErrorSamples: this.pickupErrors.length,
+        etaMeanAbsoluteError: this.pickupErrors.length ? this.pickupErrors.reduce((n, e) => n + Math.abs(e.errorSeconds), 0) / this.pickupErrors.length : null,
+        targetSupply:this.targetSupply(), weatherRequests:this.events.filter(e=>e.type==='request'&&e.source==='weather-demand').length,
         emptyDistance: this.taxis.reduce((n, t) => n + t.emptyDistance, 0),
         repositionDistance: this.taxis.reduce((n, t) => n + t.repositionDistance, 0),
         repositioning: this.taxis.filter(t => t.standbyStop && !t.person && !atServiceStop(t.car, t.standbyStop)).length,

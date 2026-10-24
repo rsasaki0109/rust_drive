@@ -1,0 +1,168 @@
+name: Fleet ETA study
+on:
+  push:
+    branches: [feat/fleet-eta-forecast]
+    paths: ['web/**','docs/fleet-eta-dispatch.md','docs/storm-taxi-lab.md','.github/workflows/fleet-eta-study.yml','.github/workflows/playground.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: fleet-eta-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  PAGES_BASE: /${{ github.event.repository.name }}/
+  CARGO_INCREMENTAL: '0'
+  RUSTDRIVING_SOURCE_SHA: ${{ github.sha }}
+jobs:
+  core:
+    if: github.ref_name == 'feat/fleet-eta-forecast'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.90.0
+          components: rustfmt,clippy
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pillow==12.0.0
+      - run: bash scripts/check.sh
+  build:
+    if: github.ref_name == 'feat/fleet-eta-forecast'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.90.0
+          targets: wasm32-unknown-unknown
+          components: rustfmt,clippy
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Check production Wasm and all browser algorithms
+        run: |
+          cargo fmt --manifest-path integrations/playground/Cargo.toml --check
+          cargo clippy --manifest-path integrations/playground/Cargo.toml --locked --all-targets -- -D warnings
+          cargo test --manifest-path integrations/playground/Cargo.toml --locked
+          npm ci --prefix web --ignore-scripts
+          bash scripts/build-playground.sh
+          npm --prefix web test
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fleet-eta-production
+          path: |
+            web/dist
+            web/public/drive.wasm
+  study:
+    needs: build
+    runs-on: ubuntu-22.04
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        weather: [clear,rain,snow]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci --prefix web --ignore-scripts
+      - uses: actions/download-artifact@v4
+        with:
+          name: fleet-eta-production
+          path: web
+      - name: Execute every frozen pair without rendering
+        run: node web/scripts/benchmark-fleet-eta.mjs --weather "${{ matrix.weather }}" --output "web/test-results/fleet-eta/${{ matrix.weather }}.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fleet-eta-study-${{ matrix.weather }}
+          path: web/test-results/fleet-eta
+  browser:
+    needs: build
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci --prefix web --ignore-scripts
+      - uses: actions/download-artifact@v4
+        with:
+          name: fleet-eta-production
+          path: web
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: city-life-ubuntu22-playwright-1.56.0
+      - run: |
+          python -m pip install playwright==1.56.0
+          python -m playwright install --with-deps chromium
+      - name: Operate the actual experimental policy
+        run: |
+          npm --prefix web run preview -- --host 127.0.0.1 --port 4173 > /tmp/fleet-eta-preview.log 2>&1 &
+          rustdriving_eta_preview_pid=$!
+          trap 'kill "$rustdriving_eta_preview_pid" || true' EXIT
+          python - <<'PY'
+          import os,time,urllib.request
+          for _ in range(60):
+              try:
+                  urllib.request.urlopen('http://127.0.0.1:4173'+os.environ['PAGES_BASE'],timeout=1).close()
+                  break
+              except OSError:time.sleep(.25)
+          else:raise SystemExit('Preview did not start')
+          PY
+          python web/tests/fleet_eta_smoke.py --url "http://127.0.0.1:4173$PAGES_BASE" --output web/test-results/fleet-eta-browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fleet-eta-browser
+          path: web/test-results/fleet-eta-browser
+  publish:
+    needs: [core,study,browser]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: fleet-eta-study-*
+          path: /tmp/fleet-eta-reports
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: fleet-eta-browser
+          path: /tmp/fleet-eta-browser
+      - uses: actions/download-artifact@v4
+        with:
+          name: fleet-eta-production
+          path: /tmp/fleet-eta-build
+      - name: Independently audit all cases and bind proof to the tested build
+        run: python web/scripts/summarize-fleet-eta.py --reports /tmp/fleet-eta-reports --browser /tmp/fleet-eta-browser --wasm /tmp/fleet-eta-build/public/drive.wasm --output assets/fleet-eta-v1
+      - name: Publish every outcome with a lease on the tested source
+        run: |
+          test "$(git rev-parse HEAD)" = "$RUSTDRIVING_SOURCE_SHA"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/fleet-eta-v1
+          git commit -m 'Retain full paired ETA dispatch outcomes and rendered proof'
+          git push --force-with-lease="refs/heads/feat/fleet-eta-forecast:$RUSTDRIVING_SOURCE_SHA" origin HEAD:refs/heads/feat/fleet-eta-forecast

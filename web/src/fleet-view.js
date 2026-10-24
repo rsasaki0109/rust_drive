@@ -1,9 +1,7 @@
 import * as THREE from 'three';
 import './fleet.css';
-import { createCity, Traffic, STREETS, phase } from './city.js';
-import { createRidge } from './ridge.js';
-import { createStructures } from './structures.js';
-import { createUrbanDistrict } from './urban-city.js';
+import { phase } from './city.js';
+import { createFleetWorld, spawnFleetCab, FLEET_OBSERVER } from './fleet-world.js';
 import { TaxiFleet, FLEET_STOPS, PURPOSES } from './fleet.js';
 import { FleetLidar, ContactEvaluator, visiblePerson } from './fleet-lidar.js';
 import { createStormVisuals } from './fleet-storm-view.js';
@@ -18,7 +16,7 @@ const LABELS = { exiting: 'LEAVING THE BUILDING', entering: 'ENTERING THE BUILDI
   'waiting-train': 'WAITING ON THE PLATFORM', 'boarding-train': 'BOARDING THE TRAIN', walking: 'WALKING TO PICKUP', waiting: 'WAITING', boarding: 'BOARDING', riding: 'ON THE WAY',
   alighting: 'GETTING OUT', leaving: 'WALKING TO DESTINATION', arrived: 'ARRIVED', cancelled: 'LEFT THE QUEUE' };
 const PURPOSE = new Map(PURPOSES.map(p => [p.id, p]));
-const observer = { x: -1000, y: -1000, height: 0, yaw: 0 };
+const observer = FLEET_OBSERVER;
 const box = new THREE.BoxGeometry(1, 1, 1);
 function block(parent, material, x, y, z, sx, sy, sz) {
   const mesh = new THREE.Mesh(box, material); mesh.position.set(x, y, z); mesh.scale.set(sx, sy, sz); mesh.castShadow = true; parent.add(mesh); return mesh;
@@ -61,7 +59,7 @@ export async function bootFleet() {
     '<div class="fleet-layout"><aside class="fleet-sidebar"><p class="fleet-eyebrow">EVERY TRIP STARTS WITH SOMEONE</p><h2>A city that<br>keeps moving.</h2><p class="fleet-description">People leave buildings, catch trains<br>and call for a ride home.</p>' +
     '<div class="fleet-metrics" aria-label="Live trip metrics"><div><b id="fleet-waiting">0</b><span>WAITING</span></div><div><b id="fleet-riding">0</b><span>RIDING</span></div><div><b id="fleet-served">0</b><span>DELIVERED</span></div><div><b id="fleet-cancelled">0</b><span>GAVE UP</span></div></div>' +
     '<div class="fleet-lab-entry">'+(lab?'STORM TAXI LAB':'<a href="?mode=fleet&lab=1">WEATHER + AUTONOMOUS TAXIS ↗</a>')+'</div>'+
-    (lab?'<div class="fleet-weather-panel"><label>WEATHER<select id="fleet-weather" aria-label="City weather">'+Object.entries(CITY_WEATHER).map(([key,p])=>'<option value="'+key+'">'+p.label+'</option>').join('')+'</select></label><label>STRENGTH <span id="fleet-strength-value">50%</span><input id="fleet-strength" type="range" min="0" max="100" value="50" aria-label="Weather strength"></label><label class="fleet-reserve-label"><input id="fleet-reserve" type="checkbox" checked> DEPLOY RESERVE CABS</label><p id="fleet-storm-policy">Weather reserve stands by.</p><div class="fleet-ops-metrics"><span>PICKUP AVG <b id="fleet-pickup-avg">0s</b></span><span>EMPTY TRAVEL <b id="fleet-empty-distance">0m</b></span><span>SENSOR BRAKING <b id="fleet-braking">0s</b></span><span>CONTACTS <b id="fleet-contacts">0</b></span></div></div>':'')+
+    (lab?'<div class="fleet-weather-panel"><label>WEATHER<select id="fleet-weather" aria-label="City weather">'+Object.entries(CITY_WEATHER).map(([key,p])=>'<option value="'+key+'">'+p.label+'</option>').join('')+'</select></label><label>STRENGTH <span id="fleet-strength-value">50%</span><input id="fleet-strength" type="range" min="0" max="100" value="50" aria-label="Weather strength"></label><label class="fleet-reserve-label"><input id="fleet-reserve" type="checkbox" checked> DEPLOY RESERVE CABS</label><label>DISPATCH<select id="fleet-dispatch" aria-label="Dispatch strategy"><option value="distance">ROAD DISTANCE</option><option value="eta">TRAVEL TIME + FORECAST</option></select></label><p id="fleet-dispatch-status">Nearest road distance</p><p id="fleet-storm-policy">Weather reserve stands by.</p><div class="fleet-ops-metrics"><span>PICKUP AVG <b id="fleet-pickup-avg">0s</b></span><span>EMPTY TRAVEL <b id="fleet-empty-distance">0m</b></span><span>P95 PICKUP <b id="fleet-pickup-p95" title="95th percentile of observed pickup waits">—</b></span><span>SENSOR BRAKING <b id="fleet-braking">0s</b></span><span>CONTACTS <b id="fleet-contacts">0</b></span></div></div>':'')+
     '<div class="fleet-standby-control"><label for="fleet-standby">EMPTY TAXIS</label><select id="fleet-standby" aria-label="Empty taxi strategy"><option value="demand">FOLLOW DEMAND</option><option value="last">WAIT AT LAST STOP</option></select><p id="fleet-standby-status" role="status">Standby locations follow the city.</p></div>' +
     '<p class="fleet-rail-status" id="fleet-rail">NORTH LINE / INBOUND</p><div class="fleet-section-title">PEOPLE, NOT JUST REQUESTS <span id="fleet-demand">0 TRIPS</span></div><div id="fleet-people" aria-label="Individual travel requests"></div>' +
     '<div class="fleet-purpose-key">' + PURPOSES.map(p => '<span><i style="background:' + p.color + '"></i>' + p.label + '</span>').join('') + '</div><p class="fleet-scope"><b id="fleet-supply">8 CABS ON DUTY</b> · 1 RIDER PER TAXI<br>Fictional city · local simulation<br>No accounts · no saved progress.</p></aside>' +
@@ -90,25 +88,25 @@ export async function bootFleet() {
     sun.shadow.mapSize.set(1024, 1024); sun.shadow.camera.left = sun.shadow.camera.bottom = -135;
     sun.shadow.camera.right = sun.shadow.camera.top = 135; sun.shadow.camera.far = 450; sun.shadow.bias = -.001;
     sun.target.position.set(0, 0, -50); scene.add(sun, sun.target);
-    const city = createCity(scene, { fleet: true }); createRidge(scene, drive);
-    const structures = createStructures(scene, drive), urban = createUrbanDistrict(scene, drive, phase);
-    const instrumentColliders=[...city.colliders,...structures.colliders,...urban.colliders,
-      {x:-25,y:-24,w:9,h:10,bottom:0,top:14},{x:-31,y:76,w:6,h:12,bottom:0,top:13}];
-    const traffic = new Traffic(scene, { drive, urban: true, cityCars: 14 });
+    const { city, structures, urban, instrumentColliders, traffic } = createFleetWorld(scene, drive);
     const cars = [], spawnCab = (index, arriving = false) => {
-      const stop = FLEET_STOPS[index % FLEET_STOPS.length];
-      const from = arriving ? { x: -150, y: -150 } : stop.from;
-      const to = arriving ? { x: -100, y: -150 } : stop.to;
-      const car = traffic.spawn(false, 0xffc34b, { ...from, to, advance: arriving ? 2 + index % 4 * 7 : 7 + index % 7 * 2, variant: 'taxi', serviceStop: stop });
-      car.desired = 8 + index % 3; cars.push(car); return car;
+      const car = spawnFleetCab(traffic, index, arriving); cars.push(car); return car;
     };
     for (let i = 0; i < cityConditions(period, 0).taxiSupply; i++) spawnCab(i);
     traffic.update(1 / 60, 0, observer);
     const standby = new URLSearchParams(location.search).get('standby') !== 'off';
-    const fleet = new TaxiFleet(traffic.graph, cars, { period, standby }), places = createFleetPlaces(scene);
+    const fleet = new TaxiFleet(traffic.graph, cars, { period, standby, dispatch: lab && query.get('dispatch') === 'eta' ? 'eta' : 'distance' }), places = createFleetPlaces(scene);
     const lidar=lab?new FleetLidar(drive,instrumentColliders):null, contacts=lab?new ContactEvaluator():null, storm=lab?createStormVisuals(scene):null;
     let showLidar=true;
     if(lab) {
+      $('fleet-dispatch').value = fleet.dispatchPolicy;
+      $('fleet-dispatch').addEventListener('change', event => {
+        fleet.setDispatchPolicy(event.target.value); hudAt = -1;
+        const url = new URL(location.href);
+        if (fleet.dispatchPolicy === 'eta') url.searchParams.set('dispatch', 'eta');
+        else url.searchParams.delete('dispatch');
+        history.replaceState(null, '', url);
+      });
       const weather=Object.hasOwn(CITY_WEATHER,query.get('weather'))?query.get('weather'):'clear';
       const amount=Number(query.get('strength')??50),strength=Number.isFinite(amount)?Math.max(0,Math.min(100,amount)):50;
       $('fleet-weather').value=weather;$('fleet-strength').value=String(strength);$('fleet-strength-value').textContent=strength+'%';
@@ -201,6 +199,12 @@ export async function bootFleet() {
         if($('fleet-inspect').options.length!==fleet.taxis.length)$('fleet-inspect').innerHTML=fleet.taxis.map(t=>'<option value="'+t.id+'">'+t.id+'</option>').join('');
         $('fleet-inspect').value=selected;
         const selectedCab=fleet.taxis.find(t=>t.id===selected)??fleet.taxis[0],sensor=selectedCab.car.sensor;
+        const pickup = snapshot.dispatch.pickups.find(p => p.taxi === selectedCab.id);
+        $('fleet-dispatch-status').textContent = fleet.dispatchPolicy === 'distance' ? 'Nearest road distance' :
+          pickup ? selectedCab.id + (pickup.remainingSeconds > 0 ? ' · PICKUP EST. ' + Math.ceil(pickup.remainingSeconds) + 's' : ' · PICKUP ETA OVERDUE') :
+          'Travel-time dispatch · forecast standby';
+        $('fleet-pickup-p95').textContent = m.pickupP95 === null ? '—' : Math.round(m.pickupP95) + 's';
+        $('fleet-pickup-p95').title = '95th percentile of ' + m.pickupWaitSamples + ' observed pickup waits. Pending/cancelled requests are reported separately.';
         $('fleet-lidar-title').textContent=selectedCab.id+' · PLANAR LIDAR / 45m';
         $('fleet-lidar-status').textContent=sensor?.ready?sensor.points.length+' RETURNS · '+sensor.detections.length+' CLUSTERS · LIMIT '+Math.round(sensor.limit*3.6)+'km/h · SPEED '+Math.round(selectedCab.car.speed*3.6)+'km/h':'Awaiting a fresh scan · holding';
       }
