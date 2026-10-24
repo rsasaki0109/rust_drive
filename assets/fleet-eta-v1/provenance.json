@@ -1,0 +1,463 @@
+{
+  "sourceCommit": "817723116302b90fe1fe1ae621c548ddd635541c",
+  "wasmSha256": "02d8a98a5bbb959994ef70d7bb368e446c9419de66573efb0e8fa5f13b2318d4",
+  "sourceSha256": {
+    "web/src/fleet-dispatch.js": "a850d903d98c11413d0953693b83ca8e362a4bec73410ad895954cc29a9e0ddb",
+    "web/src/fleet-world.js": "104ba67d39780d466bb6e168176057f1fc5462053089603da94d29ba4844b208",
+    "web/src/fleet.js": "85edcb43f37b41eb029b77fe241d078a0a204be28f144e915eecb43f5f56c54b",
+    "web/src/fleet-routing.js": "4c5623f54799bf9f0e34f5ff68eabf82bcd4abe4befa52e2ce4750fb4b98eef8",
+    "web/src/fleet-standby.js": "0b8406e980516704e2c324e36cec8e3e7825d4ff0e50073081067e4d2a2b0381",
+    "web/src/fleet-lidar.js": "8e1c8cff6ca18803f67e3b1116bb9f835d66123ae61bbd98e52d0ed141c8d639",
+    "web/src/city.js": "6643ac5fa9f7ec0086bba61033da0003868f8c78a093f256657312016b76f0e5",
+    "web/src/city-life.js": "89e3dabcf5a3cb0da765fafa45252bce0318770303e76205020dd0c75222c99b",
+    "web/src/junctions.js": "829fca94ddb05c9db9f53bd2ad75fbf999a95e79ab1c6d628f0c7af205c7ecc2",
+    "web/src/traffic-turns.js": "4ce2e3bf7988f4189d24c07edac060341335e900e87f7a6523e556827cb763a4",
+    "web/src/urban-roads.js": "deae0354eec75c83ea5dfaa2dbe2cc5a1a7b8788c002d68f67dec6e7daec1d26",
+    "web/src/urban-city.js": "f5bb7a8cfb99630eb18046e1a88fec36f50c8ab588bb312c7670514cb2b07ab4",
+    "web/src/scenery.js": "e8e74d474f6f650b497920a15891dd44040d6578c0cc6fd68bdecd9554746ee1",
+    "web/src/ridge.js": "8ac77824313151c534bf5a5ac4a869bc90db65492207265383d5f6ddc1499881",
+    "web/src/structures.js": "6b984295150e316613d0fae473da78ec1d886a28534b64451e0af389d0c14fb7",
+    "web/src/vehicle-pose.js": "9fe4683c466b096aba2faa35dfca15244f07ed4a1f339867a89c4a94878b9a6b",
+    "web/scripts/benchmark-fleet-eta.mjs": "9e34b31d03937f2b630bf1dcc1bca8fb25394cbf1a1d5d3af4767220d3ca94c0",
+    "web/scripts/summarize-fleet-eta.py": "d977a538cd7a439e7be12aed27e936281db996c1357f14785ac54ed7e1e88146",
+    "web/tests/fleet_eta_smoke.py": "736b2b9db29ef810dfab1aa3fe043775e9d5de0a79e2b2cbb9b3ac4e3243d3a6",
+    "web/src/fleet-view.js": "eebe66366f4635088913fd7b5ea1b514751af8eb0a4d9422d02f73b4af1feb20",
+    "web/package-lock.json": "f0191e9598e42d8dc3f8ff7895fbc14b14305a4d4064bd78eacd2a364d1d2073",
+    "integrations/playground/Cargo.lock": "f6de16ee83d70f9f561ef8880705fb5107e707188b7003664e16c2d05dc5c9db"
+  },
+  "browser": {
+    "sourceCommit": "817723116302b90fe1fe1ae621c548ddd635541c",
+    "wasmSha256": "02d8a98a5bbb959994ef70d7bb368e446c9419de66573efb0e8fa5f13b2318d4",
+    "pngSha256": {
+      "clear.png": "5d44ecda702e83fbe0368df6410d73d7a6c7724aee62d5f43d1d41ded7de9d83",
+      "snow.png": "205ceb4dfeb8ae5d63afb8331875d0f9c3ba1e533ca41f4abcd37bbae3971477",
+      "rain.png": "a09c4dcff9f0c9ad38b08f726bcc8e49da956cb3cb13c550e62eb2020b8e69c0",
+      "mobile.png": "8d45b8f436a0ebf4331022aefc594bb8f0ededcbf2be024a8f6605be8a5fef2a"
+    },
+    "phases": [
+      {
+        "weather": "clear",
+        "time": 15.000000000000325,
+        "metrics": {
+          "pickupWaitSamples": 2,
+          "pickupP50": 5.633333333333347,
+          "pickupP95": 7.983333333333565,
+          "etaErrorSamples": 2,
+          "etaMeanAbsoluteError": 1.1629960010851539,
+          "targetSupply": 8,
+          "weatherRequests": 0,
+          "emptyDistance": 192.56225189754474,
+          "repositionDistance": 149.5093415655661,
+          "repositioning": 2,
+          "standby": 2,
+          "requested": 4,
+          "waiting": 2,
+          "riding": 1,
+          "served": 0,
+          "cancelled": 0,
+          "onDuty": 8,
+          "railAlighted": 0,
+          "railBoarded": 0,
+          "meanWait": 6.808333333333456
+        },
+        "dispatch": {
+          "policy": "eta",
+          "telemetrySamples": 0,
+          "knownEdges": 0,
+          "forecast": [
+            {
+              "stop": "office",
+              "expectedRequests": 1.3227278734201102,
+              "horizonSeconds": 60
+            },
+            {
+              "stop": "market",
+              "expectedRequests": 0.5933189493139095,
+              "horizonSeconds": 60
+            },
+            {
+              "stop": "homes",
+              "expectedRequests": 0.3064083336213372,
+              "horizonSeconds": 60
+            },
+            {
+              "stop": "clinic",
+              "expectedRequests": 0.16713181833891122,
+              "horizonSeconds": 60
+            },
+            {
+              "stop": "station",
+              "expectedRequests": 1.1884929304100353,
+              "horizonSeconds": 60
+            },
+            {
+              "stop": "hotel",
+              "expectedRequests": 0.3064083336213372,
+              "horizonSeconds": 60
+            },
+            {
+              "stop": "campus",
+              "expectedRequests": 0.16713181833891122,
+              "horizonSeconds": 60
+            },
+            {
+              "stop": "west",
+              "expectedRequests": 0.3064083336213372,
+              "horizonSeconds": 60
+            },
+            {
+              "stop": "nightlife",
+              "expectedRequests": 0.16713181833891122,
+              "horizonSeconds": 60
+            }
+          ],
+          "etaErrors": [
+            {
+              "time": 8.616666666666674,
+              "person": "P001",
+              "leg": 1,
+              "taxi": "T01",
+              "predictedSeconds": 6.992759090967565,
+              "actualSeconds": 5.51666666666668,
+              "errorSeconds": -1.4760924243008855
+            },
+            {
+              "time": 12.883333333333553,
+              "person": "P002",
+              "leg": 1,
+              "taxi": "T02",
+              "predictedSeconds": 6.866767088797477,
+              "actualSeconds": 7.7166666666668995,
+              "errorSeconds": 0.8498995778694223
+            }
+          ],
+          "pickups": [
+            {
+              "taxi": "T06",
+              "person": "P004",
+              "remainingSeconds": 0
+            },
+            {
+              "taxi": "T08",
+              "person": "P003",
+              "remainingSeconds": 12.873023935991283
+            }
+          ]
+        },
+        "contacts": {
+          "episodes": 0,
+          "active": 0,
+          "events": [],
+          "scope": "body-proxy overlaps; no contact-force or safety qualification"
+        }
+      },
+      {
+        "weather": "rain",
+        "time": 29.999999999999577,
+        "metrics": {
+          "pickupWaitSamples": 3,
+          "pickupP50": 7.983333333333565,
+          "pickupP95": 14.466666666666173,
+          "etaErrorSamples": 3,
+          "etaMeanAbsoluteError": 5.480886222945489,
+          "targetSupply": 8,
+          "weatherRequests": 1,
+          "emptyDistance": 344.840365731719,
+          "repositionDistance": 179.3812395499282,
+          "repositioning": 0,
+          "standby": 0,
+          "requested": 8,
+          "waiting": 5,
+          "riding": 2,
+          "served": 0,
+          "cancelled": 0,
+          "onDuty": 8,
+          "railAlighted": 0,
+          "railBoarded": 0,
+          "meanWait": 9.361111111111029
+        },
+        "dispatch": {
+          "policy": "eta",
+          "telemetrySamples": 1,
+          "knownEdges": 1,
+          "forecast": [
+            {
+              "stop": "office",
+              "expectedRequests": 1.87440144217606,
+              "horizonSeconds": 60
+            },
+            {
+              "stop": "market",
+              "expectedRequests": 0.45891421318935266,
+              "horizonSeconds": 60
+            },
+            {
+              "stop": "homes",
+              "expectedRequests": 0.6795240382387846,
+              "horizonSeconds": 60
+            },
+            {
+              "stop": "clinic",
+              "expectedRequests": 0.15374815893525895,
+              "horizonSeconds": 60
+            },
+            {
+              "stop": "station",
+              "expectedRequests": 1.093320241317397,
+              "horizonSeconds": 60
+            },
+            {
+              "stop": "hotel",
+              "expectedRequests": 0.6305637610194953,
+              "horizonSeconds": 60
+            },
+            {
+              "stop": "campus",
+              "expectedRequests": 0.15374815893525895,
+              "horizonSeconds": 60
+            },
+            {
+              "stop": "west",
+              "expectedRequests": 0.2818716247146414,
+              "horizonSeconds": 60
+            },
+            {
+              "stop": "nightlife",
+              "expectedRequests": 0.5468974447894679,
+              "horizonSeconds": 60
+            }
+          ],
+          "etaErrors": [
+            {
+              "time": 8.616666666666674,
+              "person": "P001",
+              "leg": 1,
+              "taxi": "T01",
+              "predictedSeconds": 6.992759090967565,
+              "actualSeconds": 5.51666666666668,
+              "errorSeconds": -1.4760924243008855
+            },
+            {
+              "time": 12.883333333333553,
+              "person": "P002",
+              "leg": 1,
+              "taxi": "T02",
+              "predictedSeconds": 6.866767088797477,
+              "actualSeconds": 7.7166666666668995,
+              "errorSeconds": 0.8498995778694223
+            },
+            {
+              "time": 27.366666666666394,
+              "person": "P004",
+              "leg": 1,
+              "taxi": "T06",
+              "predictedSeconds": 0,
+              "actualSeconds": 14.116666666666156,
+              "errorSeconds": 14.116666666666156
+            }
+          ],
+          "pickups": [
+            {
+              "taxi": "T03",
+              "person": "P005",
+              "remainingSeconds": 12.715302644983193
+            },
+            {
+              "taxi": "T04",
+              "person": "P006",
+              "remainingSeconds": 28.616592507914717
+            },
+            {
+              "taxi": "T05",
+              "person": "P007",
+              "remainingSeconds": 17.836581963133725
+            },
+            {
+              "taxi": "T07",
+              "person": "W0001",
+              "remainingSeconds": 2.027132554565494
+            },
+            {
+              "taxi": "T08",
+              "person": "P003",
+              "remainingSeconds": 0
+            }
+          ]
+        },
+        "contacts": {
+          "episodes": 1,
+          "active": 1,
+          "events": [
+            {
+              "time": 27.8499999999997,
+              "pair": "car:35:13"
+            }
+          ],
+          "scope": "body-proxy overlaps; no contact-force or safety qualification"
+        }
+      },
+      {
+        "weather": "snow",
+        "time": 44.99999999999873,
+        "metrics": {
+          "pickupWaitSamples": 5,
+          "pickupP50": 14.466666666666173,
+          "pickupP95": 25.916666666665513,
+          "etaErrorSamples": 5,
+          "etaMeanAbsoluteError": 5.953654142232209,
+          "targetSupply": 8,
+          "weatherRequests": 3,
+          "emptyDistance": 549.9436820466917,
+          "repositionDistance": 179.3812395499282,
+          "repositioning": 0,
+          "standby": 0,
+          "requested": 13,
+          "waiting": 8,
+          "riding": 4,
+          "served": 0,
+          "cancelled": 0,
+          "onDuty": 8,
+          "railAlighted": 4,
+          "railBoarded": 0,
+          "meanWait": 14.86999999999949
+        },
+        "dispatch": {
+          "policy": "eta",
+          "telemetrySamples": 7,
+          "knownEdges": 7,
+          "forecast": [
+            {
+              "stop": "office",
+              "expectedRequests": 2.2800208562343007,
+              "horizonSeconds": 60
+            },
+            {
+              "stop": "market",
+              "expectedRequests": 0.36823883900175236,
+              "horizonSeconds": 60
+            },
+            {
+              "stop": "homes",
+              "expectedRequests": 0.899424810133125,
+              "horizonSeconds": 60
+            },
+            {
+              "stop": "clinic",
+              "expectedRequests": 0.14471895089231535,
+              "horizonSeconds": 60
+            },
+            {
+              "stop": "station",
+              "expectedRequests": 1.0291125396786869,
+              "horizonSeconds": 60
+            },
+            {
+              "stop": "hotel",
+              "expectedRequests": 0.5207187878388876,
+              "horizonSeconds": 60
+            },
+            {
+              "stop": "campus",
+              "expectedRequests": 0.5215219933552506,
+              "horizonSeconds": 60
+            },
+            {
+              "stop": "west",
+              "expectedRequests": 0.5798756308257458,
+              "horizonSeconds": 60
+            },
+            {
+              "stop": "nightlife",
+              "expectedRequests": 0.43268244866480393,
+              "horizonSeconds": 60
+            }
+          ],
+          "etaErrors": [
+            {
+              "time": 8.616666666666674,
+              "person": "P001",
+              "leg": 1,
+              "taxi": "T01",
+              "predictedSeconds": 6.992759090967565,
+              "actualSeconds": 5.51666666666668,
+              "errorSeconds": -1.4760924243008855
+            },
+            {
+              "time": 12.883333333333553,
+              "person": "P002",
+              "leg": 1,
+              "taxi": "T02",
+              "predictedSeconds": 6.866767088797477,
+              "actualSeconds": 7.7166666666668995,
+              "errorSeconds": 0.8498995778694223
+            },
+            {
+              "time": 27.366666666666394,
+              "person": "P004",
+              "leg": 1,
+              "taxi": "T06",
+              "predictedSeconds": 0,
+              "actualSeconds": 14.116666666666156,
+              "errorSeconds": 14.116666666666156
+            },
+            {
+              "time": 38.933333333332406,
+              "person": "P003",
+              "leg": 1,
+              "taxi": "T08",
+              "predictedSeconds": 14.62302393599137,
+              "actualSeconds": 25.68333333333217,
+              "errorSeconds": 11.060309397340799
+            },
+            {
+              "time": 40.44999999999899,
+              "person": "P005",
+              "leg": 1,
+              "taxi": "T03",
+              "predictedSeconds": 22.315302644982648,
+              "actualSeconds": 20.049999999998864,
+              "errorSeconds": -2.265302644983784
+            }
+          ],
+          "pickups": [
+            {
+              "taxi": "T04",
+              "person": "P006",
+              "remainingSeconds": 13.616592507915566
+            },
+            {
+              "taxi": "T05",
+              "person": "P007",
+              "remainingSeconds": 2.8365819631345737
+            },
+            {
+              "taxi": "T07",
+              "person": "W0001",
+              "remainingSeconds": 0
+            }
+          ]
+        },
+        "contacts": {
+          "episodes": 1,
+          "active": 0,
+          "events": [
+            {
+              "time": 27.8499999999997,
+              "pair": "car:35:13"
+            }
+          ],
+          "scope": "body-proxy overlaps; no contact-force or safety qualification"
+        }
+      }
+    ],
+    "pausedSwitchPreservedOwnership": true,
+    "mobile": true
+  },
+  "fileSha256": {
+    "clear.json": "36200b4b10f84d870f262d88e8d0e658ac7a220e8ccc6582247bb81618bece9a",
+    "preview.png": "a09c4dcff9f0c9ad38b08f726bcc8e49da956cb3cb13c550e62eb2020b8e69c0",
+    "rain.json": "0af2b6b8b333b8fb032fbd70a121af3a6832797ac1f6a642278451c7ac270f7d",
+    "snow.json": "11a13f58aa283088a02d8b9616012909c76c90fde396cf2ee4de94a71014f45c",
+    "summary.json": "3b8ebe06b889d64cc399e94b3e9a8f12e8416de6259b8cb0850971f2e537804b"
+  }
+}
