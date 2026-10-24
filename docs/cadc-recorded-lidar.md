@@ -110,7 +110,8 @@ relicense those external inputs.
 The **CADC recorded LiDAR study** workflow runs the required
 `bash scripts/check.sh`, adapter tests, one native build and both route pairs.
 It publishes every frame only after independent audit, and leases its output
-commit to the tested source. The workflow is opt-in; normal CI runs the small
+commit to the tested source. Manual runs on main return an evidence artifact without changing the branch.
+The workflow is opt-in; normal CI runs the small
 offline acquisition/geometry tests without downloading CADC.
 
 [MuFoRa's record](https://zenodo.org/records/15016480) currently restricts actual
