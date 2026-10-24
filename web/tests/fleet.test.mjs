@@ -94,7 +94,7 @@ test('assignments are exclusive; abandonment releases the taxi without creating 
   assert.ok(fleet.people.every(p => !p.taxi));
 });
 
-test('real traffic steers, queues and stops to serve individual trips across the city', () => {
+test('real traffic serves trips while an off-duty cab remains parked in its curb bay', () => {
   const traffic = new Traffic(new THREE.Scene(), { urban: true, cityCars: 14 });
   const cars = FLEET_STOPS.map((stop, i) => {
     const car = traffic.spawn(false, 0xffc34b, { ...stop.from, to: stop.to, advance: 10 + i, variant: 'taxi', serviceStop: stop });
