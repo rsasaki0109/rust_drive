@@ -1,0 +1,443 @@
+{
+  "schema_version": 1,
+  "sourceCommit": "2d1341cc07147ef1fdf22edd41e44dcd5b16bb26",
+  "protocolSha256": "5e1e068e8ee1e22427bc05be023eeddf2b9892c8f97d90717d5626b49c52fa91",
+  "frames": 64,
+  "previousFrames": 32,
+  "additionalFrames": 32,
+  "aggregate": {
+    "previous": {
+      "clear": {
+        "frames": 16,
+        "supportedGroundFrames": 16,
+        "rawRows": 685907,
+        "retainedReturns": 229264,
+        "methods": {
+          "planar_v1": {
+            "frames": 16,
+            "eligible": 356,
+            "matched": 117,
+            "matchFraction": 0.32865168539325845,
+            "outputsPerFrame": 20.25,
+            "unassociatedPerFrame": 12.9375,
+            "rangeBins": [
+              {
+                "near": 2,
+                "far": 15,
+                "eligible": 55,
+                "matched": 43
+              },
+              {
+                "near": 15,
+                "far": 30,
+                "eligible": 107,
+                "matched": 49
+              },
+              {
+                "near": 30,
+                "far": 45,
+                "eligible": 194,
+                "matched": 25
+              }
+            ],
+            "vsPlanar": {
+              "matchedBetterFrames": 0,
+              "matchedWorseFrames": 0,
+              "unassociatedWorseFrames": 0
+            }
+          },
+          "ground_dense_xy": {
+            "frames": 16,
+            "eligible": 356,
+            "matched": 301,
+            "matchFraction": 0.8455056179775281,
+            "outputsPerFrame": 243.875,
+            "unassociatedPerFrame": 225.0625,
+            "rangeBins": [
+              {
+                "near": 2,
+                "far": 15,
+                "eligible": 55,
+                "matched": 54
+              },
+              {
+                "near": 15,
+                "far": 30,
+                "eligible": 107,
+                "matched": 93
+              },
+              {
+                "near": 30,
+                "far": 45,
+                "eligible": 194,
+                "matched": 154
+              }
+            ],
+            "vsPlanar": {
+              "matchedBetterFrames": 16,
+              "matchedWorseFrames": 0,
+              "unassociatedWorseFrames": 16
+            }
+          },
+          "ground_xyz": {
+            "frames": 16,
+            "eligible": 356,
+            "matched": 313,
+            "matchFraction": 0.8792134831460674,
+            "outputsPerFrame": 293.875,
+            "unassociatedPerFrame": 274.3125,
+            "rangeBins": [
+              {
+                "near": 2,
+                "far": 15,
+                "eligible": 55,
+                "matched": 55
+              },
+              {
+                "near": 15,
+                "far": 30,
+                "eligible": 107,
+                "matched": 98
+              },
+              {
+                "near": 30,
+                "far": 45,
+                "eligible": 194,
+                "matched": 160
+              }
+            ],
+            "vsPlanar": {
+              "matchedBetterFrames": 16,
+              "matchedWorseFrames": 0,
+              "unassociatedWorseFrames": 16
+            }
+          }
+        }
+      },
+      "winter": {
+        "frames": 16,
+        "supportedGroundFrames": 16,
+        "rawRows": 706658,
+        "retainedReturns": 268063,
+        "methods": {
+          "planar_v1": {
+            "frames": 16,
+            "eligible": 350,
+            "matched": 89,
+            "matchFraction": 0.2542857142857143,
+            "outputsPerFrame": 19.3125,
+            "unassociatedPerFrame": 13.75,
+            "rangeBins": [
+              {
+                "near": 2,
+                "far": 15,
+                "eligible": 21,
+                "matched": 15
+              },
+              {
+                "near": 15,
+                "far": 30,
+                "eligible": 99,
+                "matched": 40
+              },
+              {
+                "near": 30,
+                "far": 45,
+                "eligible": 230,
+                "matched": 34
+              }
+            ],
+            "vsPlanar": {
+              "matchedBetterFrames": 0,
+              "matchedWorseFrames": 0,
+              "unassociatedWorseFrames": 0
+            }
+          },
+          "ground_dense_xy": {
+            "frames": 16,
+            "eligible": 350,
+            "matched": 279,
+            "matchFraction": 0.7971428571428572,
+            "outputsPerFrame": 257.25,
+            "unassociatedPerFrame": 239.8125,
+            "rangeBins": [
+              {
+                "near": 2,
+                "far": 15,
+                "eligible": 21,
+                "matched": 13
+              },
+              {
+                "near": 15,
+                "far": 30,
+                "eligible": 99,
+                "matched": 94
+              },
+              {
+                "near": 30,
+                "far": 45,
+                "eligible": 230,
+                "matched": 172
+              }
+            ],
+            "vsPlanar": {
+              "matchedBetterFrames": 16,
+              "matchedWorseFrames": 0,
+              "unassociatedWorseFrames": 16
+            }
+          },
+          "ground_xyz": {
+            "frames": 16,
+            "eligible": 350,
+            "matched": 293,
+            "matchFraction": 0.8371428571428572,
+            "outputsPerFrame": 349.1875,
+            "unassociatedPerFrame": 330.875,
+            "rangeBins": [
+              {
+                "near": 2,
+                "far": 15,
+                "eligible": 21,
+                "matched": 21
+              },
+              {
+                "near": 15,
+                "far": 30,
+                "eligible": 99,
+                "matched": 96
+              },
+              {
+                "near": 30,
+                "far": 45,
+                "eligible": 230,
+                "matched": 176
+              }
+            ],
+            "vsPlanar": {
+              "matchedBetterFrames": 16,
+              "matchedWorseFrames": 0,
+              "unassociatedWorseFrames": 16
+            }
+          }
+        }
+      }
+    },
+    "additional": {
+      "clear": {
+        "frames": 16,
+        "supportedGroundFrames": 11,
+        "rawRows": 743745,
+        "retainedReturns": 399606,
+        "methods": {
+          "planar_v1": {
+            "frames": 16,
+            "eligible": 346,
+            "matched": 136,
+            "matchFraction": 0.3930635838150289,
+            "outputsPerFrame": 20.625,
+            "unassociatedPerFrame": 12.125,
+            "rangeBins": [
+              {
+                "near": 2,
+                "far": 15,
+                "eligible": 139,
+                "matched": 99
+              },
+              {
+                "near": 15,
+                "far": 30,
+                "eligible": 144,
+                "matched": 33
+              },
+              {
+                "near": 30,
+                "far": 45,
+                "eligible": 63,
+                "matched": 4
+              }
+            ],
+            "vsPlanar": {
+              "matchedBetterFrames": 0,
+              "matchedWorseFrames": 0,
+              "unassociatedWorseFrames": 0
+            }
+          },
+          "ground_dense_xy": {
+            "frames": 16,
+            "eligible": 346,
+            "matched": 277,
+            "matchFraction": 0.8005780346820809,
+            "outputsPerFrame": 210.8125,
+            "unassociatedPerFrame": 193.5,
+            "rangeBins": [
+              {
+                "near": 2,
+                "far": 15,
+                "eligible": 139,
+                "matched": 110
+              },
+              {
+                "near": 15,
+                "far": 30,
+                "eligible": 144,
+                "matched": 110
+              },
+              {
+                "near": 30,
+                "far": 45,
+                "eligible": 63,
+                "matched": 57
+              }
+            ],
+            "vsPlanar": {
+              "matchedBetterFrames": 13,
+              "matchedWorseFrames": 0,
+              "unassociatedWorseFrames": 16
+            }
+          },
+          "ground_xyz": {
+            "frames": 16,
+            "eligible": 346,
+            "matched": 316,
+            "matchFraction": 0.9132947976878613,
+            "outputsPerFrame": 325.8125,
+            "unassociatedPerFrame": 306.0625,
+            "rangeBins": [
+              {
+                "near": 2,
+                "far": 15,
+                "eligible": 139,
+                "matched": 132
+              },
+              {
+                "near": 15,
+                "far": 30,
+                "eligible": 144,
+                "matched": 126
+              },
+              {
+                "near": 30,
+                "far": 45,
+                "eligible": 63,
+                "matched": 58
+              }
+            ],
+            "vsPlanar": {
+              "matchedBetterFrames": 13,
+              "matchedWorseFrames": 0,
+              "unassociatedWorseFrames": 16
+            }
+          }
+        }
+      },
+      "winter": {
+        "frames": 16,
+        "supportedGroundFrames": 14,
+        "rawRows": 751639,
+        "retainedReturns": 340918,
+        "methods": {
+          "planar_v1": {
+            "frames": 16,
+            "eligible": 375,
+            "matched": 79,
+            "matchFraction": 0.21066666666666667,
+            "outputsPerFrame": 21.1875,
+            "unassociatedPerFrame": 16.25,
+            "rangeBins": [
+              {
+                "near": 2,
+                "far": 15,
+                "eligible": 26,
+                "matched": 23
+              },
+              {
+                "near": 15,
+                "far": 30,
+                "eligible": 153,
+                "matched": 40
+              },
+              {
+                "near": 30,
+                "far": 45,
+                "eligible": 196,
+                "matched": 16
+              }
+            ],
+            "vsPlanar": {
+              "matchedBetterFrames": 0,
+              "matchedWorseFrames": 0,
+              "unassociatedWorseFrames": 0
+            }
+          },
+          "ground_dense_xy": {
+            "frames": 16,
+            "eligible": 375,
+            "matched": 278,
+            "matchFraction": 0.7413333333333333,
+            "outputsPerFrame": 231.4375,
+            "unassociatedPerFrame": 214.0625,
+            "rangeBins": [
+              {
+                "near": 2,
+                "far": 15,
+                "eligible": 26,
+                "matched": 18
+              },
+              {
+                "near": 15,
+                "far": 30,
+                "eligible": 153,
+                "matched": 128
+              },
+              {
+                "near": 30,
+                "far": 45,
+                "eligible": 196,
+                "matched": 132
+              }
+            ],
+            "vsPlanar": {
+              "matchedBetterFrames": 14,
+              "matchedWorseFrames": 1,
+              "unassociatedWorseFrames": 16
+            }
+          },
+          "ground_xyz": {
+            "frames": 16,
+            "eligible": 375,
+            "matched": 282,
+            "matchFraction": 0.752,
+            "outputsPerFrame": 355.6875,
+            "unassociatedPerFrame": 338.0625,
+            "rangeBins": [
+              {
+                "near": 2,
+                "far": 15,
+                "eligible": 26,
+                "matched": 23
+              },
+              {
+                "near": 15,
+                "far": 30,
+                "eligible": 153,
+                "matched": 128
+              },
+              {
+                "near": 30,
+                "far": 45,
+                "eligible": 196,
+                "matched": 131
+              }
+            ],
+            "vsPlanar": {
+              "matchedBetterFrames": 16,
+              "matchedWorseFrames": 0,
+              "unassociatedWorseFrames": 16
+            }
+          }
+        }
+      }
+    }
+  },
+  "interpretation": "Fixed geometric proxy comparison. Additional sequences are metadata-selected from the same city/winter dates, not an official held-out validation split. Different dates confound weather attribution. Eligibility remains the original slab-intersecting cuboids; no semantic AP, hidden-shape, calibrated sweep, weather fit or driving claim. More geometric outputs can increase both matching and unassociated outputs."
+}
