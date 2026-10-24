@@ -182,6 +182,7 @@ jobs:
           else: raise SystemExit('Fleet preview did not start')
           PY
           python web/tests/storm_smoke.py --url "http://127.0.0.1:4173$PAGES_BASE" --output web/test-results/storm
+          python web/tests/fleet_eta_smoke.py --url "http://127.0.0.1:4173$PAGES_BASE" --output web/test-results/storm/eta
       - uses: actions/upload-artifact@v4
         if: always()
         with:

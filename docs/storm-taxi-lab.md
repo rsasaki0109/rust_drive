@@ -45,6 +45,10 @@ obstacle: an empty degraded cloud is not a clear-road certificate. Stationary bo
 Proxy overlap episodes are independently evaluated and retained, without imposing
 physical contact forces or declaring real-world safety.
 
+An optional **TRAVEL TIME + FORECAST** dispatch policy learns road timings and
+assigns idle cabs using past requests. [Algorithm and paired study](fleet-eta-dispatch.md).
+The original **ROAD DISTANCE** policy remains the default.
+
 ## Fleet operations
 
 The original eight/day, ten/evening and twelve/night targets remain the base.
