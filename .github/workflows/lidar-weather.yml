@@ -1,0 +1,159 @@
+name: LiDAR weather study
+
+on:
+  push:
+    branches: [feat/lidar-weather-study]
+    paths: ['crates/**', 'scripts/check-lidar-weather.py', Cargo.toml, Cargo.lock, rust-toolchain.toml, docs/lidar-weather.md, .github/workflows/lidar-weather.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lidar-weather-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    if: github.ref_name == 'feat/lidar-weather-study'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    outputs:
+      sha: ${{ steps.source.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.90.0
+          components: rustfmt
+      - name: Format the new Rust files and pin the actual source
+        id: source
+        env:
+          RUSTDRIVING_EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          cargo fmt --all
+          python - <<'PY'
+          import subprocess
+          allowed = {'crates/sim/src/lib.rs', 'crates/sim/src/lidar_weather.rs',
+                     'crates/sim/src/lidar_weather/tests.rs', 'crates/sim/examples/lidar_weather_study.rs'}
+          changed = set(subprocess.check_output(['git', 'diff', '--name-only'], text=True).splitlines())
+          assert changed <= allowed, changed
+          PY
+          if ! git diff --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add crates/sim/src/lib.rs crates/sim/src/lidar_weather.rs crates/sim/src/lidar_weather/tests.rs crates/sim/examples/lidar_weather_study.rs
+            git commit -m 'Format the planar LiDAR weather study'
+            git push --force-with-lease="refs/heads/feat/lidar-weather-study:$RUSTDRIVING_EXPECTED_SHA" origin HEAD:refs/heads/feat/lidar-weather-study
+          fi
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  core:
+    needs: prepare
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.90.0
+          components: rustfmt, clippy
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pillow==12.0.0
+      - name: Run the required regression on the actual formatted source
+        run: bash scripts/check.sh
+
+  study:
+    needs: prepare
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    env:
+      RUSTDRIVING_SOURCE_SHA: ${{ needs.prepare.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.90.0
+          components: rustfmt, clippy
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build the actual detector study and check repeatability
+        run: |
+          cargo fmt --all --check
+          cargo test --locked -p rustdriving-sim --lib
+          cargo run --release --locked -p rustdriving-sim --example lidar_weather_study > /tmp/lidar-weather-report.json
+          target/release/examples/lidar_weather_study > /tmp/lidar-weather-repeat.json
+          cmp /tmp/lidar-weather-report.json /tmp/lidar-weather-repeat.json
+      - name: Audit physical rays and score actual detections
+        run: |
+          python -m pip install numpy==2.3.4 matplotlib==3.10.7 pillow==12.0.0
+          python scripts/check-lidar-weather.py --report /tmp/lidar-weather-report.json --output /tmp/rustdriving-lidar-weather
+      - name: Return the actual research figure
+        if: always()
+        run: |
+          python - <<'PY'
+          import base64
+          from pathlib import Path
+          path = Path('/tmp/rustdriving-lidar-weather/overview.png')
+          if path.exists():
+              print('IMAGE_BEGIN:overview.png')
+              print(base64.encodebytes(path.read_bytes()).decode('ascii'))
+              print('IMAGE_END:overview.png')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lidar-weather-evidence
+          path: /tmp/rustdriving-lidar-weather
+
+  publish:
+    needs: [prepare, core, study]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    env:
+      RUSTDRIVING_SOURCE_SHA: ${{ needs.prepare.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: lidar-weather-evidence
+          path: assets/lidar-weather-v1
+      - name: Verify source, raw data and figure hashes
+        run: |
+          python - <<'PY'
+          import gzip, hashlib, json, os
+          from pathlib import Path
+          root = Path('assets/lidar-weather-v1')
+          receipt = json.loads((root / 'provenance.json').read_text())
+          digest = lambda path: hashlib.sha256(Path(path).read_bytes()).hexdigest()
+          assert receipt['sourceCommit'] == os.environ['RUSTDRIVING_SOURCE_SHA']
+          assert receipt['cases'] == 160
+          for path, expected in receipt['sourceSha256'].items(): assert digest(path) == expected, path
+          for path, expected in receipt['outputsSha256'].items(): assert digest(root / path) == expected, path
+          raw = gzip.decompress((root / 'report.json.gz').read_bytes())
+          assert hashlib.sha256(raw).hexdigest() == receipt['rawReportSha256']
+          PY
+      - name: Save verified evidence without overwriting newer work
+        run: |
+          git fetch origin refs/heads/feat/lidar-weather-study
+          test "$(git rev-parse FETCH_HEAD)" = "$RUSTDRIVING_SOURCE_SHA"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/lidar-weather-v1
+          git commit -m 'Record paired planar LiDAR rain and snow stress results'
+          git push --force-with-lease="refs/heads/feat/lidar-weather-study:$RUSTDRIVING_SOURCE_SHA" origin HEAD:refs/heads/feat/lidar-weather-study

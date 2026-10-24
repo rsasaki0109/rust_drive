@@ -1,0 +1,265 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "7f22024d9a01f3f1d84cc1398cf10a6d8751f14b",
+  "scope": "Frozen planar first-return scenes, synthetic uncalibrated weather coefficients and unchanged LidarClusters; no driving or real-weather qualification",
+  "seeds": 16,
+  "fixtures": 2,
+  "cases": 160,
+  "matchingGates": {
+    "centerErrorM": 1,
+    "radiusErrorM": 0.75
+  },
+  "coordinateFrame": "body x forward / y left metres; frozen ENU ego origin yaw=0",
+  "rows": [
+    {
+      "condition": "clear",
+      "config": {
+        "extinction_m_inv": 0.0,
+        "backscatter_rate_m_inv": 0.0,
+        "range_jitter_m": 0.0
+      },
+      "surfaceRetentionByRange": [
+        {
+          "minM": 0,
+          "maxM": 15,
+          "retained": 368,
+          "baseline": 368,
+          "fraction": 1.0
+        },
+        {
+          "minM": 15,
+          "maxM": 30,
+          "retained": 192,
+          "baseline": 192,
+          "fraction": 1.0
+        },
+        {
+          "minM": 30,
+          "maxM": 45,
+          "retained": 144,
+          "baseline": 144,
+          "fraction": 1.0
+        }
+      ],
+      "addedSurfaceRangeRmseM": 0.0,
+      "fixtures": {
+        "targets": {
+          "matchedObjects": 48,
+          "objects": 48,
+          "recall": 1.0,
+          "falseDetectionsPerScan": 0.0,
+          "falseDetectionsStd": 0.0,
+          "precipitationReturnsPerScan": 0.0
+        },
+        "empty": {
+          "matchedObjects": 0,
+          "objects": 0,
+          "recall": null,
+          "falseDetectionsPerScan": 0.0,
+          "falseDetectionsStd": 0.0,
+          "precipitationReturnsPerScan": 0.0
+        }
+      }
+    },
+    {
+      "condition": "rain_light",
+      "config": {
+        "extinction_m_inv": 0.002,
+        "backscatter_rate_m_inv": 0.0004,
+        "range_jitter_m": 0.025
+      },
+      "surfaceRetentionByRange": [
+        {
+          "minM": 0,
+          "maxM": 15,
+          "retained": 354,
+          "baseline": 368,
+          "fraction": 0.9619565217391305
+        },
+        {
+          "minM": 15,
+          "maxM": 30,
+          "retained": 172,
+          "baseline": 192,
+          "fraction": 0.8958333333333334
+        },
+        {
+          "minM": 30,
+          "maxM": 45,
+          "retained": 118,
+          "baseline": 144,
+          "fraction": 0.8194444444444444
+        }
+      ],
+      "addedSurfaceRangeRmseM": 0.01474213074859691,
+      "fixtures": {
+        "targets": {
+          "matchedObjects": 46,
+          "objects": 48,
+          "recall": 0.9583333333333334,
+          "falseDetectionsPerScan": 0.125,
+          "falseDetectionsStd": 0.3415650255319866,
+          "precipitationReturnsPerScan": 11.75
+        },
+        "empty": {
+          "matchedObjects": 0,
+          "objects": 0,
+          "recall": null,
+          "falseDetectionsPerScan": 0.0,
+          "falseDetectionsStd": 0.0,
+          "precipitationReturnsPerScan": 12.0625
+        }
+      }
+    },
+    {
+      "condition": "rain_heavy",
+      "config": {
+        "extinction_m_inv": 0.018,
+        "backscatter_rate_m_inv": 0.0025,
+        "range_jitter_m": 0.12
+      },
+      "surfaceRetentionByRange": [
+        {
+          "minM": 0,
+          "maxM": 15,
+          "retained": 269,
+          "baseline": 368,
+          "fraction": 0.7309782608695652
+        },
+        {
+          "minM": 15,
+          "maxM": 30,
+          "retained": 86,
+          "baseline": 192,
+          "fraction": 0.4479166666666667
+        },
+        {
+          "minM": 30,
+          "maxM": 45,
+          "retained": 30,
+          "baseline": 144,
+          "fraction": 0.20833333333333334
+        }
+      ],
+      "addedSurfaceRangeRmseM": 0.06952231113369035,
+      "fixtures": {
+        "targets": {
+          "matchedObjects": 24,
+          "objects": 48,
+          "recall": 0.5,
+          "falseDetectionsPerScan": 0.375,
+          "falseDetectionsStd": 0.5,
+          "precipitationReturnsPerScan": 73.0625
+        },
+        "empty": {
+          "matchedObjects": 0,
+          "objects": 0,
+          "recall": null,
+          "falseDetectionsPerScan": 0.0,
+          "falseDetectionsStd": 0.0,
+          "precipitationReturnsPerScan": 76.4375
+        }
+      }
+    },
+    {
+      "condition": "snow_light",
+      "config": {
+        "extinction_m_inv": 0.004,
+        "backscatter_rate_m_inv": 0.002,
+        "range_jitter_m": 0.06
+      },
+      "surfaceRetentionByRange": [
+        {
+          "minM": 0,
+          "maxM": 15,
+          "retained": 337,
+          "baseline": 368,
+          "fraction": 0.9157608695652174
+        },
+        {
+          "minM": 15,
+          "maxM": 30,
+          "retained": 151,
+          "baseline": 192,
+          "fraction": 0.7864583333333334
+        },
+        {
+          "minM": 30,
+          "maxM": 45,
+          "retained": 93,
+          "baseline": 144,
+          "fraction": 0.6458333333333334
+        }
+      ],
+      "addedSurfaceRangeRmseM": 0.03531857127936062,
+      "fixtures": {
+        "targets": {
+          "matchedObjects": 40,
+          "objects": 48,
+          "recall": 0.8333333333333334,
+          "falseDetectionsPerScan": 0.375,
+          "falseDetectionsStd": 0.5,
+          "precipitationReturnsPerScan": 59.9375
+        },
+        "empty": {
+          "matchedObjects": 0,
+          "objects": 0,
+          "recall": null,
+          "falseDetectionsPerScan": 0.0,
+          "falseDetectionsStd": 0.0,
+          "precipitationReturnsPerScan": 62.6875
+        }
+      }
+    },
+    {
+      "condition": "snow_heavy",
+      "config": {
+        "extinction_m_inv": 0.01,
+        "backscatter_rate_m_inv": 0.015,
+        "range_jitter_m": 0.3
+      },
+      "surfaceRetentionByRange": [
+        {
+          "minM": 0,
+          "maxM": 15,
+          "retained": 276,
+          "baseline": 368,
+          "fraction": 0.75
+        },
+        {
+          "minM": 15,
+          "maxM": 30,
+          "retained": 84,
+          "baseline": 192,
+          "fraction": 0.4375
+        },
+        {
+          "minM": 30,
+          "maxM": 45,
+          "retained": 42,
+          "baseline": 144,
+          "fraction": 0.2916666666666667
+        }
+      ],
+      "addedSurfaceRangeRmseM": 0.17099922115411403,
+      "fixtures": {
+        "targets": {
+          "matchedObjects": 20,
+          "objects": 48,
+          "recall": 0.4166666666666667,
+          "falseDetectionsPerScan": 2.25,
+          "falseDetectionsStd": 1.2382783747337807,
+          "precipitationReturnsPerScan": 339.1875
+        },
+        "empty": {
+          "matchedObjects": 0,
+          "objects": 0,
+          "recall": null,
+          "falseDetectionsPerScan": 1.4375,
+          "falseDetectionsStd": 1.2632629707758134,
+          "precipitationReturnsPerScan": 350.4375
+        }
+      }
+    }
+  ]
+}
