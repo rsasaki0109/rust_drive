@@ -87,3 +87,7 @@ and output hashes before publishing evidence to the unchanged feature branch.
 
 This is a first sensing/perception stress experiment. It does not establish
 real-weather robustness, safe driving, real-time performance or 3D validity.
+
+The [recorded CADC+ planar diagnostic](cadc-recorded-lidar.md) separately applies
+this unchanged detector to real clear/winter scans. It does not fit the
+synthetic weather coefficients or establish their physical validity.

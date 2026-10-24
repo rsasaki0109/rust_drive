@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "profile": {
+    "z_min": -0.9,
+    "z_max": -0.3,
+    "min_range": 2,
+    "max_range": 45,
+    "bins": 360
+  },
+  "frames": [
+    0,
+    10,
+    20,
+    30,
+    40,
+    50,
+    60,
+    70
+  ],
+  "sequences": [
+    {
+      "pair": 0,
+      "domain": "winter",
+      "sequence": "2018_03_06/0001",
+      "url": "https://wiselab.uwaterloo.ca/cadc/2018_03_06/0001/labeled.zip",
+      "size": 1359698164,
+      "etag": "\"510b58f4-59b53dbda1b6b\"",
+      "annotation_url": "https://wiselab.uwaterloo.ca/cadc/2018_03_06/0001/3d_ann.json",
+      "annotation_sha256": "0fcbabd9043bdf06af614cd6b7006b4e51e7eda8e788de1dc9d9276f1b426a69"
+    },
+    {
+      "pair": 0,
+      "domain": "clear",
+      "sequence": "2018_03_05/0025",
+      "url": "https://wiselab.uwaterloo.ca/cadc-clear/2018_03_05/0025/labeled.tar.zst",
+      "size": 1387618776,
+      "etag": "\"52b561d8-634e57912ec3f\"",
+      "annotation_url": "https://wiselab.uwaterloo.ca/cadc-clear/2018_03_05/0025/3d_ann.json",
+      "annotation_sha256": "80e26b9f14e4a10331a8a593ab43e008bf07d2adf800b6d511e0fb4f5feb9235"
+    },
+    {
+      "pair": 1,
+      "domain": "winter",
+      "sequence": "2019_02_27/0003",
+      "url": "https://wiselab.uwaterloo.ca/cadc/2019_02_27/0003/labeled.zip",
+      "size": 1374005716,
+      "etag": "\"51e5a9d4-59b8fca412f16\"",
+      "annotation_url": "https://wiselab.uwaterloo.ca/cadc/2019_02_27/0003/3d_ann.json",
+      "annotation_sha256": "d74a968eb835ed1c9b88007f85a3b8b29c923909e897f94a4253f05e00de8047"
+    },
+    {
+      "pair": 1,
+      "domain": "clear",
+      "sequence": "2018_04_02/0067",
+      "url": "https://wiselab.uwaterloo.ca/cadc-clear/2018_04_02/0067/labeled.tar.zst",
+      "size": 1349560138,
+      "etag": "\"5070a74a-634e62f5552fd\"",
+      "annotation_url": "https://wiselab.uwaterloo.ca/cadc-clear/2018_04_02/0067/3d_ann.json",
+      "annotation_sha256": "984f4a65335cac399ab5222ee97c7f3ebbedddead93e5073b34a24f4dde14050"
+    }
+  ],
+  "selection": "first sequence with at least 80 frames and a one-to-one CADC+ match for each of 2018_03_06 and 2019_02_27; selected solely from published route metadata",
+  "coordinates": "CADC LiDAR local: x forward, y left, z up. XY ranges in metres; nominal frame/10 seconds only for stateless LidarScan input.",
+  "association": {
+    "polygon_vertices": 64,
+    "iou_threshold": 0.1,
+    "range_edges": [
+      2,
+      15,
+      30,
+      45
+    ],
+    "eligibility": "center horizontal range within [2,45] and original 3D cuboid intersects height slab; all labels including zero-point/occluded boxes retained"
+  },
+  "mapping_url": "https://wiselab.uwaterloo.ca/cadc-clear/sequence_pairs.yaml",
+  "license_url": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "dataset_url": "https://uwaterloo.ca/waterloo-intelligent-systems-engineering-lab/cadc-plus",
+  "mufo_ra_access": "https://zenodo.org/records/15016480 has restricted files; not downloaded.",
+  "scope": "32 preselected recorded scans; observed winter/clear diagnostic of unchanged LidarClusters. Not coefficient fitting, official 3D AP, paired-ray weather isolation or driving qualification"
+}

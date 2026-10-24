@@ -1,0 +1,67 @@
+{
+  "sourceCommit": "57f8b1c65ba151221718fda4d6dad093f1e40a57",
+  "protocolSha256": "f9fba28289bb66db71317e81e520078f145389601a55eaf529b73fe3ed8df0ee",
+  "frames": 32,
+  "routePairs": 2,
+  "aggregate": {
+    "clear": {
+      "frames": 16,
+      "rawRows": 685907,
+      "projectedReturns": 2982,
+      "eligibleCuboids": 356,
+      "matchedCuboids": 117,
+      "proxyMatchFraction": 0.32865168539325845,
+      "unassociatedProxiesPerFrame": 12.9375,
+      "rangeBins": [
+        {
+          "near": 2,
+          "far": 15,
+          "eligible": 55,
+          "matched": 43
+        },
+        {
+          "near": 15,
+          "far": 30,
+          "eligible": 107,
+          "matched": 49
+        },
+        {
+          "near": 30,
+          "far": 45,
+          "eligible": 194,
+          "matched": 25
+        }
+      ]
+    },
+    "winter": {
+      "frames": 16,
+      "rawRows": 706658,
+      "projectedReturns": 3398,
+      "eligibleCuboids": 350,
+      "matchedCuboids": 89,
+      "proxyMatchFraction": 0.2542857142857143,
+      "unassociatedProxiesPerFrame": 13.75,
+      "rangeBins": [
+        {
+          "near": 2,
+          "far": 15,
+          "eligible": 21,
+          "matched": 15
+        },
+        {
+          "near": 15,
+          "far": 30,
+          "eligible": 99,
+          "matched": 40
+        },
+        {
+          "near": 30,
+          "far": 45,
+          "eligible": 230,
+          "matched": 34
+        }
+      ]
+    }
+  },
+  "interpretation": "Geometric circle proxies on a fixed LiDAR-local slab, not semantic 3D AP or a causal snowfall comparison. Unassociated proxies include walls, ground and unlabelled objects; they are not proven false objects. Different days contain different traffic, occlusions and surface conditions. No fitted weather coefficients or driving result."
+}
