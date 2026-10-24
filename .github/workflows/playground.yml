@@ -74,8 +74,6 @@ jobs:
           python web/tests/ridge_smoke.py --url "http://127.0.0.1:4173${PAGES_BASE}" --output web/test-results/ridge
           python web/tests/structures_smoke.py --url "http://127.0.0.1:4173${PAGES_BASE}" --output web/test-results/structures
           python web/tests/urban_smoke.py --url "http://127.0.0.1:4173${PAGES_BASE}" --output web/test-results/urban
-      - name: Verify people and taxi dispatch
-        run: python web/tests/fleet_smoke.py --url "http://127.0.0.1:4173${PAGES_BASE}" --output web/test-results/fleet
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -85,9 +83,60 @@ jobs:
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         with:
           path: web/dist
+  fleet:
+    # Keep the 120-second rendered fleet acceptance out of the driving job's
+    # time budget; Pages still requires both suites to pass.
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    env:
+      PAGES_BASE: /${{ github.event.repository.name }}/
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.90.0
+          targets: wasm32-unknown-unknown
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build the same static city
+        run: |
+          npm ci --prefix web --ignore-scripts
+          bash scripts/build-playground.sh
+      - name: Install fleet browser tools
+        run: |
+          python -m pip install playwright==1.56.0 pillow==12.0.0
+          python -m playwright install --with-deps chromium
+      - name: Verify individual people and the taxi fleet
+        run: |
+          npm --prefix web run preview -- --host 127.0.0.1 --port 4173 > /tmp/playground-fleet-preview.log 2>&1 &
+          rustdriving_fleet_pid=$!
+          trap 'kill "$rustdriving_fleet_pid" || true' EXIT
+          python - <<'PY'
+          import os, time, urllib.request
+          url = 'http://127.0.0.1:4173' + os.environ['PAGES_BASE']
+          for attempt in range(60):
+              try:
+                  with urllib.request.urlopen(url, timeout=1) as response:
+                      if response.status == 200: break
+              except OSError: pass
+              time.sleep(.25)
+          else: raise SystemExit('Fleet preview did not start')
+          PY
+          python web/tests/fleet_smoke.py --url "http://127.0.0.1:4173$PAGES_BASE" --output web/test-results/fleet
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playground-fleet-evidence
+          path: web/test-results/fleet
   deploy:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    needs: build
+    needs: [build, fleet]
     runs-on: ubuntu-22.04
     permissions:
       pages: write
