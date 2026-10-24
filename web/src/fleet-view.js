@@ -10,7 +10,7 @@ const COLORS = { idle: '#aab9c4', pickup: '#ffca62', boarding: '#ffffff', occupi
 const LABELS = { walking: 'WALKING TO PICKUP', waiting: 'WAITING', boarding: 'BOARDING', riding: 'ON THE WAY',
   alighting: 'GETTING OUT', leaving: 'WALKING TO DESTINATION', arrived: 'ARRIVED', cancelled: 'LEFT THE QUEUE' };
 const PURPOSE = new Map(PURPOSES.map(p => [p.id, p]));
-const observer = { x: -1000, y: -1000 };
+const observer = { x: -1000, y: -1000, height: 0, yaw: 0 };
 const box = new THREE.BoxGeometry(1, 1, 1);
 function block(parent, material, x, y, z, sx, sy, sz) {
   const mesh = new THREE.Mesh(box, material); mesh.position.set(x, y, z); mesh.scale.set(sx, sy, sz); mesh.castShadow = true; parent.add(mesh); return mesh;
@@ -81,6 +81,7 @@ export async function bootFleet() {
       const car = traffic.spawn(false, 0xffc34b, { ...stop.from, to: stop.to, advance: 10 + i, variant: 'taxi', serviceStop: stop });
       car.desired = 8 + i % 3; return car;
     });
+    traffic.update(1 / 60, 0, observer);
     const fleet = new TaxiFleet(traffic.graph, cars);
     const people = fleet.people.map((p, i) => { const mesh = pedestrian(p, i); mesh.visible = false; scene.add(mesh); return mesh; });
     const cabVisuals = fleet.taxis.map(t => {
@@ -126,7 +127,7 @@ export async function bootFleet() {
       $('fleet-demand').textContent = m.requested + ' TRIPS';
       $('fleet-clock').textContent = '08:' + String(Math.floor(fleet.time / 60)).padStart(2, '0') + ':' + String(Math.floor(fleet.time % 60)).padStart(2, '0');
       const rank = { boarding: 0, alighting: 1, walking: 2, waiting: 3, riding: 4, leaving: 5 };
-      const active = fleet.people.filter(p => rank[p.state] !== undefined).sort((a, b) => rank[a.state] - rank[b.state] || b.release - a.release).slice(0, 4);
+      const active = fleet.people.filter(p => rank[p.state] !== undefined).sort((a, b) => rank[a.state] - rank[b.state] || b.release - a.release).slice(0, 3);
       $('fleet-people').innerHTML = active.length ? active.map(p => {
         const purpose = PURPOSE.get(p.purpose), elapsed = Math.max(0, fleet.time - p.release);
         return '<button class="fleet-person" data-taxi="' + (p.taxi ?? '') + '" style="--purpose:' + purpose.color + '">' +

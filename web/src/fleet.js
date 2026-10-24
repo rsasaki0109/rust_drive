@@ -29,7 +29,7 @@ export function createDemand(seed = 1701, count = 72) {
   return Array.from({ length: count }, (_, i) => {
     // Morning commuters, a train-arrival pulse, then mixed individual trips.
     const purpose = i < 8 ? PURPOSES[i % PURPOSES.length] : i >= 18 && i < 25 ? PURPOSES[4] : pick(PURPOSES);
-    const origin = pick(purpose.origins);
+    const origin = i >= 18 && i < 25 ? 4 : pick(purpose.origins);
     const destination = pick(purpose.destinations.filter(s => s !== origin));
     return {
       id: 'P' + String(i + 1).padStart(2, '0'), purpose: purpose.id,
