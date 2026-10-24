@@ -40,8 +40,8 @@ Supported returned points constrain a 1.15 m corridor along the map's current
 turn and outgoing tangent. A 5 m/s² brake calibration, 0.3 s reaction allowance
 and 3.5 m sensor-origin reserve set the speed limit. Near returns also have a
 small emergency support rule. Weather can create false braking or hide an
-obstacle: an empty degraded cloud is not a clear-road certificate. Proxy
-overlap episodes are independently evaluated and retained, without imposing
+obstacle: an empty degraded cloud is not a clear-road certificate. Stationary boarding/alighting transitions are exempt only for their own carrier.
+Proxy overlap episodes are independently evaluated and retained, without imposing
 physical contact forces or declaring real-world safety.
 
 ## Fleet operations

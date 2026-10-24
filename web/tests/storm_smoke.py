@@ -120,7 +120,7 @@ def run_case(browser,args,reserve,record=False):
                 with Image.open(frames/'frame-0080.png') as image:image.save(target.with_suffix('.png'))
                 receipt={**trace,'frames':frames_count,'gifSeconds':duration,'frameMilliseconds':100,'physicalPlayback':1,
                          'cityClockRate':15,'preRollSeconds':20,'frameSha256':frame_hashes,'encoder':ENCODER,
-                         'wasmSha256':sha(ROOT/'web/public/drive.wasm'),'gifSha256':sha(target),'posterSha256':sha(target.with_suffix('.png')),
+                         'wasmSha256':sha(ROOT/'web/dist/drive.wasm'),'gifSha256':sha(target),'posterSha256':sha(target.with_suffix('.png')),
                          'scope':'Arcade mapped taxi routes, simulated signal reservation, planar collision-prism measurements and Rust point-cloud brake; synthetic uncalibrated weather'}
                 target.with_suffix('.json').write_text(json.dumps(receipt,indent=2)+'\n')
             return {'reserve':reserve,'metrics':final['metrics'],'contacts':final['lab']['contacts']['episodes']}

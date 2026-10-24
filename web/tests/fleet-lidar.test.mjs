@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import * as THREE from 'three';
 import { Traffic } from '../src/city.js';
-import { measureScan, rayBox, rayDisc, FleetLidar, sensorLimit, boxesOverlap } from '../src/fleet-lidar.js';
+import { measureScan, rayBox, rayDisc, FleetLidar, ContactEvaluator, sensorLimit, boxesOverlap } from '../src/fleet-lidar.js';
 
 async function wasm(){return (await WebAssembly.instantiate(await readFile(new URL('../public/drive.wasm',import.meta.url)),{})).instance.exports;}
 const car={x:0,y:0,yaw:0,height:0,speed:8,desired:9};
@@ -63,4 +63,14 @@ test('body overlap evaluation is independent of the ray instrument',()=>{
   assert.ok(boxesOverlap(a,{...a,x:3}));
   assert.equal(boxesOverlap(a,{...a,x:5}),false);
   assert.equal(boxesOverlap(a,{...a,x:0,bottom:4,top:5.5}),false);
+});
+
+test('stationary boarding touches are exempt only for the passenger carrier',()=>{
+  const host={...car,id:1,speed:0};
+  const p={id:'P1',x:0,y:1.15,height:0,state:'boarding',taxi:'T01'};
+  const f={time:1,taxis:[{id:'T01',car:host}],people:[p]};
+  const e=new ContactEvaluator();e.update(f,{cars:[host]},[]);
+  assert.equal(e.events.length,0);
+  host.speed=2;f.time=2;e.update(f,{cars:[host]},[]);
+  assert.equal(e.events.length,1,'a moving carrier still counts a pedestrian body overlap');
 });

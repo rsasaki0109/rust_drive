@@ -106,7 +106,7 @@ export class ContactEvaluator {
         if(Math.hypot(a.x-b.x,a.y-b.y)<6&&boxesOverlap(a,b)) current.add('car:'+car.id+':'+other.id);
       }
       colliders.forEach((b,i)=>{if(!b.broken&&Math.abs(a.x-b.x)<b.w+3&&Math.abs(a.y-b.y)<b.h+3&&boxesOverlap(a,b))current.add('body:'+car.id+':'+i);});
-      for(const p of fleet.people) if(visiblePerson(p,fleet.time)&&Math.abs((p.height??0)-a.bottom)<1.5) {
+      for(const p of fleet.people) if(visiblePerson(p,fleet.time)&&!(p.taxi===taxi.id&&['boarding','alighting'].includes(p.state)&&car.speed<.25)&&Math.abs((p.height??0)-a.bottom)<1.5) {
         const c=Math.cos(car.yaw),s=Math.sin(car.yaw),x=(p.x-car.x)*c+(p.y-car.y)*s,y=-(p.x-car.x)*s+(p.y-car.y)*c;
         if(Math.hypot(x-Math.max(-2.15,Math.min(2.15,x)),y-Math.max(-.95,Math.min(.95,y)))<.32)current.add('person:'+car.id+':'+p.id);
       }

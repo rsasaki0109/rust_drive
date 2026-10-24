@@ -202,7 +202,7 @@ export async function bootFleet() {
         $('fleet-inspect').value=selected;
         const selectedCab=fleet.taxis.find(t=>t.id===selected)??fleet.taxis[0],sensor=selectedCab.car.sensor;
         $('fleet-lidar-title').textContent=selectedCab.id+' · PLANAR LIDAR / 45m';
-        $('fleet-lidar-status').textContent=sensor?.ready?sensor.points.length+' RETURNS · '+sensor.detections.length+' CLUSTERS · LIMIT '+Math.round(sensor.limit*3.6)+'km/h':'Awaiting a fresh scan · holding';
+        $('fleet-lidar-status').textContent=sensor?.ready?sensor.points.length+' RETURNS · '+sensor.detections.length+' CLUSTERS · LIMIT '+Math.round(sensor.limit*3.6)+'km/h · SPEED '+Math.round(selectedCab.car.speed*3.6)+'km/h':'Awaiting a fresh scan · holding';
       }
       $('fleet-standby-status').textContent = snapshot.standby.enabled ?
         m.repositioning + ' heading to stands · ' + m.standby + ' ready' : 'Empty cabs wait at their last stop.';
